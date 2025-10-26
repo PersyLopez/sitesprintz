@@ -1,49 +1,419 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Small Business Website Template</title>
-    <meta name="description" content="A clean, customizable small business website template." />
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fix&Go Mobile Tire Service - 24/7 Emergency Auto Repair</title>
+  <meta name="description" content="24/7 emergency mobile tire and auto repair across New Jersey and Pennsylvania. We come to you at home, work, or roadside." />
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/public/assets/favicon.svg" />
+  <link rel="apple-touch-icon" href="/public/assets/favicon.svg" />
+  
+  <!-- Additional SEO -->
+  <meta name="keywords" content="mobile tire service, emergency auto repair, roadside assistance, New Jersey, Pennsylvania, 24/7, tire repair, battery service, lockout service" />
+  <meta name="author" content="Fix&Go Mobile Tire Service" />
+  <meta name="robots" content="index, follow" />
+  <meta name="language" content="en-US" />
+  <meta name="geo.region" content="US-NJ,US-PA" />
+  <meta name="geo.placename" content="New Jersey, Pennsylvania" />
+  
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "Fix&Go Mobile Tire Service",
+    "description": "24/7 emergency mobile tire and auto repair service across New Jersey and Pennsylvania",
+    "url": "/",
+    "telephone": "+16093490879",
+    "email": "info@fixandgo.com",
+    "address": {
+      "@type": "PostalAddress",
+      "addressRegion": "NJ, PA",
+      "addressCountry": "US"
+    },
+    "areaServed": [
+      {
+        "@type": "State",
+        "name": "New Jersey"
+      },
+      {
+        "@type": "State", 
+        "name": "Pennsylvania"
+      }
+    ],
+    "serviceType": "Mobile Tire and Auto Repair Service",
+    "openingHours": "Mo,Tu,We,Th,Fr,Sa,Su 00:00-23:59",
+    "priceRange": "$$",
+    "image": "/public/assets/hero-placeholder.jpg"
+  }
+  </script>
 
-    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <a class="skip-link" href="#content">Skip to content</a>
+  <!-- Canonical & Social -->
+  <link rel="canonical" href="/" />
+  <meta property="og:title" content="Fix&Go Mobile Tire Service - 24/7 Emergency Auto Repair" />
+  <meta property="og:description" content="24/7 emergency mobile tire and auto repair across New Jersey and Pennsylvania. We come to you at home, work, or roadside." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="/" />
+  <meta property="og:image" content="/public/assets/hero-placeholder.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Fix&Go Mobile Tire Service - 24/7 Emergency Auto Repair" />
+  <meta name="twitter:description" content="24/7 emergency mobile tire and auto repair across New Jersey and Pennsylvania. We come to you at home, work, or roadside." />
+  <meta name="twitter:image" content="/public/assets/hero-placeholder.jpg" />
 
-    <header class="site-header" id="top">
-      <div class="container header-inner">
-        <a href="#top" class="brand" aria-label="Home">
-          <img id="brand-logo" class="brand-logo" src="assets/logo.svg" alt="" />
-          <span id="brand-name" class="brand-name">Your Business</span>
-        </a>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
-        <button class="nav-toggle" id="nav-toggle" aria-controls="site-nav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="nav-toggle-bar"></span>
-          <span class="nav-toggle-bar"></span>
-          <span class="nav-toggle-bar"></span>
-        </button>
+  <!-- Styles -->
+  <link rel="stylesheet" href="/style.css" />
 
-        <nav class="site-nav" id="site-nav" aria-label="Primary">
-          <ul id="nav-links" class="nav-links"></ul>
-        </nav>
+  <!-- JSON-LD: Local Business -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "AutomotiveBusiness",
+    "name": "Fix&Go Mobile Tire Service",
+    "url": "https://fixandgo.example.com/",
+    "telephone": "+1-609-349-0879",
+    "areaServed": ["US-NJ", "US-PA"],
+    "openingHours": "Mo-Su 00:00-23:59",
+    "image": "https://fixandgo.example.com/og-image.jpg",
+    "address": {
+      "@type": "PostalAddress",
+      "addressRegion": "NJ",
+      "addressCountry": "US"
+    }
+  }
+  </script>
+
+  <!-- Scripts -->
+  <script defer src="/main.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="header">
+    <nav class="nav-container" aria-label="Primary">
+      <div class="logo">
+        <h1 class="logo-text">🚨 Fix&Go Mobile Tire Service</h1>
       </div>
-    </header>
+      
+      <!-- Hamburger Menu Button -->
+      <button class="hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+      
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="/" aria-current="page">Home</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
 
-    <main id="content" class="site-main" tabindex="-1">
-      <!-- Sections will be rendered here by app.js using data/site.json -->
-      <noscript>
-        <div class="container">
-          <p>This template requires JavaScript to render content from <code>data/site.json</code>. Please enable JavaScript.</p>
+  <main id="main">
+    <!-- Hero -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-content">
+        <h2 id="hero-title" class="hero-title">Professional Mobile Tire & Auto Repair Service</h2>
+        <p class="hero-subtitle">24/7 mobile tire and auto repair services throughout New Jersey and Pennsylvania. We come to you - at home, work, or roadside!</p>
+        
+        <!-- Emergency Contact -->
+        <div class="emergency-contact">
+          <h3>🚨 Need Immediate Help?</h3>
+          <p>Call our emergency line for immediate roadside assistance</p>
+          <a class="emergency-phone" href="tel:6093490879">📞 (609) 349-0879</a>
         </div>
-      </noscript>
-    </main>
 
-    <footer class="site-footer" id="site-footer">
-      <div class="container" id="footer-content"></div>
-    </footer>
+        <!-- Emergency CTA (red section) -->
 
-    <script src="./app.js" defer></script>
-  </body>
+        <!-- Progress Indicator -->
+        <div class="progress-indicator" role="group" aria-label="Request steps">
+          <div class="progress-step active" data-step="1" aria-current="step" aria-label="Step 1">1</div>
+          <div class="progress-line" aria-hidden="true"></div>
+          <div class="progress-step" data-step="2" aria-label="Step 2">2</div>
+          <div class="progress-line" aria-hidden="true"></div>
+          <div class="progress-step" data-step="3" aria-label="Step 3">3</div>
+        </div>
+
+        <!-- Step 1: Service Selection -->
+        <section class="service-selection" id="serviceSelection" aria-labelledby="service-title">
+          <h3 id="service-title">🔧 What service do you need?</h3>
+          <p>Select the type of service you require. Use arrow keys to navigate or click to select.</p>
+
+          <div class="service-grid" role="list">
+            <div class="service-option" role="button" tabindex="0" data-service="tire-repair" aria-pressed="false">
+              <h4>🚗 Tire Repair</h4>
+              <p>Flat tire, puncture repair</p>
+            </div>
+            <div class="service-option" role="button" tabindex="0" data-service="battery-replacement" aria-pressed="false">
+              <h4>🔋 Battery Service</h4>
+              <p>Battery replacement, jump starts</p>
+            </div>
+            <div class="service-option" role="button" tabindex="0" data-service="tire-replacement" aria-pressed="false">
+              <h4>🔄 Tire Replacement</h4>
+              <p>New tire installation at your location</p>
+            </div>
+            <div class="service-option" role="button" tabindex="0" data-service="oil-change" aria-pressed="false">
+              <h4>🛢️ Oil Change</h4>
+              <p>Engine oil and filter service</p>
+            </div>
+            <div class="service-option" role="button" tabindex="0" data-service="brake-service" aria-pressed="false">
+              <h4>🛑 Brake Service</h4>
+              <p>Brake inspection and repair</p>
+            </div>
+            <div class="service-option" role="button" tabindex="0" data-service="diagnostic" aria-pressed="false">
+              <h4>🔍 Diagnostic</h4>
+              <p>Check engine light, warning light troubleshooting</p>
+            </div>
+            <div class="service-option" role="button" tabindex="0" data-service="other" aria-pressed="false">
+              <h4>⚙️ Other Service</h4>
+              <p>Custom repair services (quote provided)</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Step 2: Service Details & Contact Information -->
+        <section class="contact-info-section" id="contactInfoSection" aria-labelledby="contact-title" hidden>
+          <div class="selected-service-display" id="selectedServiceDisplay">
+            <div class="service-badge">
+              <span class="service-icon">🔧</span>
+              <div class="service-info">
+                <h4><span id="selectedServiceName"></span></h4>
+                <p class="service-description" id="selectedServiceDescription"></p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="request-header">
+            <h3 id="contact-title">Complete Your Request</h3>
+            <p class="request-intro">Just a few details and we'll get you back on the road.</p>
+          </div>
+
+          <form class="contact-form" id="contactForm" novalidate>
+            <!-- Contact Information -->
+            <div class="form-section">
+              <div class="section-header">
+                <h4>👤 Contact Information</h4>
+                <span class="section-number">1</span>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-field">
+                  <label for="customerName">Full Name *</label>
+                  <input type="text" id="customerName" name="name" autocomplete="name" required aria-describedby="error-name" placeholder="Enter your full name" />
+                  <p class="field-error" id="error-name" aria-live="polite" role="alert"></p>
+                </div>
+                <div class="form-field">
+                  <label for="customerPhone">Phone Number *</label>
+                  <input type="tel" id="customerPhone" name="phone" autocomplete="tel" inputmode="tel" required aria-describedby="error-phone" placeholder="(609) 349-0879" />
+                  <p class="field-error" id="error-phone" aria-live="polite" role="alert"></p>
+                </div>
+              </div>
+              
+              <div class="form-field">
+                <label for="customerEmail">Email Address (optional)</label>
+                <input type="email" id="customerEmail" name="email" autocomplete="email" aria-describedby="error-email" placeholder="your.email@example.com" />
+                <p class="field-help">We'll send you a confirmation email with service details and location map</p>
+                <p class="field-error" id="error-email" aria-live="polite" role="alert"></p>
+              </div>
+            </div>
+
+            <!-- Service Location -->
+            <div class="form-section">
+              <div class="section-header">
+                <h4>📍 Service Location</h4>
+                <span class="section-number">2</span>
+              </div>
+              
+              <div class="form-field full">
+                <label for="serviceLocation">Service Address *</label>
+                <input type="text" id="serviceLocation" name="serviceLocation" placeholder="123 Main Street, Newark, NJ 07102" required aria-describedby="error-location" />
+                <p class="field-error" id="error-location" aria-live="polite" role="alert"></p>
+              </div>
+              
+              <!-- Location Selection Controls -->
+              <div class="location-controls">
+                <button type="button" id="useCurrentLocation" class="btn btn-primary">
+                  📍 Use My Current Location
+                </button>
+                <p class="location-help">We'll automatically detect your location and fill in your address</p>
+              </div>
+            </div>
+
+            <!-- Service Details -->
+            <div class="form-section">
+              <div class="section-header">
+                <h4>🔧 Service Details</h4>
+                <span class="section-number">3</span>
+              </div>
+              
+              <div class="form-field full">
+                <label for="problemDescription">Describe the problem or service needed *</label>
+                <textarea id="problemDescription" name="problemDescription" rows="4" placeholder="Please describe what's wrong with your vehicle or what service you need..." required aria-describedby="error-description"></textarea>
+                <p class="field-error" id="error-description" aria-live="polite" role="alert"></p>
+              </div>
+            </div>
+
+            <!-- Vehicle Information -->
+            <div class="form-section">
+              <div class="section-header">
+                <h4>🚗 Vehicle Information</h4>
+                <span class="section-number">4</span>
+              </div>
+              
+              <div class="form-row vehicle-row">
+                <div class="form-field">
+                  <label for="vehicleYear">Vehicle Year</label>
+                  <input type="text" id="vehicleYear" name="vehicleYear" inputmode="numeric" autocomplete="off" placeholder="2020" />
+                </div>
+                <div class="form-field">
+                  <label for="vehicleMake">Vehicle Make</label>
+                  <input type="text" id="vehicleMake" name="vehicleMake" autocomplete="off" placeholder="Toyota" />
+                </div>
+                <div class="form-field">
+                  <label for="vehicleModel">Vehicle Model</label>
+                  <input type="text" id="vehicleModel" name="vehicleModel" autocomplete="off" placeholder="Camry" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Preferred Service Time -->
+            <div class="form-section">
+              <div class="section-header">
+                <h4>📅 Preferred Service Time</h4>
+                <span class="section-number">5</span>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-field">
+                  <label for="preferredDate">Preferred Date *</label>
+                  <input type="date" id="preferredDate" name="preferredDate" required aria-describedby="error-date" />
+                  <p class="field-error" id="error-date" aria-live="polite" role="alert"></p>
+                </div>
+                <div class="form-field">
+                  <label for="preferredTime">Preferred Time *</label>
+                  <select id="preferredTime" name="preferredTime" required aria-describedby="error-time">
+                    <option value="">Choose time slot</option>
+                    <option value="asap">ASAP (Emergency)</option>
+                    <option value="morning">Morning (8 AM - 12 PM)</option>
+                    <option value="afternoon">Afternoon (12 PM - 5 PM)</option>
+                    <option value="evening">Evening (5 PM - 8 PM)</option>
+                    <option value="flexible">Flexible - Any time</option>
+                  </select>
+                  <p class="field-error" id="error-time" aria-live="polite" role="alert"></p>
+                </div>
+              </div>
+            </div>
+          </form>
+
+          <div class="form-buttons">
+            <button type="button" class="btn btn-secondary" id="backToServices">← Back to Services</button>
+            <button type="button" class="btn btn-primary" id="proceedToSchedule">Continue to Schedule →</button>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- Services Overview -->
+    <section class="services-overview" id="services" aria-labelledby="services-title">
+      <div class="services-container">
+        <h3 id="services-title">Our Mobile Services</h3>
+        <div class="services-grid">
+          <article class="service-card">
+            <h4>🚗 Mobile Tire Services</h4>
+            <p>Tire repair, rotation, installation at your location. We bring the equipment to you.</p>
+          </article>
+          <article class="service-card">
+            <h4>🔋 Battery Services</h4>
+            <p>Battery replacement, jump starts, and electrical system diagnostics at your location.</p>
+          </article>
+          <article class="service-card">
+            <h4>🛢️ Oil Change Service</h4>
+            <p>Professional oil change and filter replacement service at your home or office.</p>
+          </article>
+          <article class="service-card">
+            <h4>🛑 Brake Service</h4>
+            <p>Brake inspection, pad replacement, and rotor service at your location.</p>
+          </article>
+          <article class="service-card">
+            <h4>🔍 Diagnostic Services</h4>
+            <p>Check engine light diagnosis, warning light troubleshooting, and system diagnostics.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- About / Contact -->
+    <section class="contact-section" id="about" aria-labelledby="about-title">
+      <h3 id="about-title">About Fix&Go</h3>
+      <p>Professional mobile tire and auto repair services. 24/7 emergency service available. We come to you!</p>
+    </section>
+
+    <section class="contact-section" id="contact" aria-labelledby="contact-title-bottom">
+      <h3 id="contact-title-bottom">Need Help? Contact Us Now!</h3>
+      <p>Available 24/7 for emergency roadside assistance throughout New Jersey and Pennsylvania.</p>
+      <div class="contact-info">
+        <div class="contact-item emergency">
+          <h4>🚨 Emergency Line</h4>
+          <a href="tel:6093490879" class="emergency-link">(609) 349-0879</a>
+        </div>
+        <div class="contact-item">
+          <h4>📧 Email</h4>
+          <a href="mailto:info@fixandgo.com">info@fixandgo.com</a>
+        </div>
+        <div class="contact-item">
+          <h4>📍 Service Areas</h4>
+          <p>New Jersey & Pennsylvania</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>Fix&Go Mobile Tire Service</h4>
+        <p>Professional mobile tire and auto repair services</p>
+        <p>24/7 Emergency Service Available</p>
+        <p>We come to you!</p>
+      </div>
+      <div class="footer-section">
+        <h4>Emergency Contact</h4>
+        <p><a href="tel:6093490879">(609) 349-0879</a></p>
+        <p><a href="mailto:info@fixandgo.com">info@fixandgo.com</a></p>
+        <p>Available 24/7</p>
+      </div>
+      <div class="footer-section">
+        <h4>Service Areas</h4>
+        <p>New Jersey</p>
+        <p>Pennsylvania</p>
+        <p>24/7 Emergency Service</p>
+      </div>
+      <div class="footer-section">
+        <h4>Quick Links</h4>
+        <p><a href="#services">Services</a></p>
+        <p><a href="#about">About</a></p>
+        <p><a href="#contact">Contact</a></p>
+        <p><a href="enhanced-schedule.html">Schedule</a></p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2024 Fix&Go Mobile Tire Service. All rights reserved. | Serving New Jersey and Pennsylvania</p>
+      <p>24/7 Emergency Service: <a href="tel:6093490879" class="footer-hotline">(609) 349-0879</a></p>
+    </div>
+  </footer>
+
+  <noscript>
+    <div class="noscript-warning">JavaScript is required for the request flow. Please enable JavaScript to continue.</div>
+  </noscript>
+</body>
 </html>
