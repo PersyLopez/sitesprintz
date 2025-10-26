@@ -6,7 +6,7 @@ let serviceRequests = [];
 
 // Email configuration (using Gmail SMTP - free tier)
 const createTransporter = () => {
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     service: 'gmail',
     auth: {
       user: process.env.EMAIL_USER, // Set in Vercel environment variables
@@ -103,7 +103,7 @@ async function sendCustomerConfirmation(requestData) {
             <h3>🚨 Emergency Contact</h3>
             <p>If you need immediate assistance, please call us at:</p>
             <p style="font-size: 24px; font-weight: bold; color: #dc3545;">
-              <a href="tel:5551234567">(555) 123-4567</a>
+              <a href="tel:6093490879">(609) 349-0879</a>
             </p>
           </div>
           
