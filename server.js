@@ -598,6 +598,25 @@ function generateSubdomain(businessName) {
   return subdomain;
 }
 
+// Route handler for /sites/{subdomain}/ paths
+app.get('/sites/:subdomain/*', async (req, res, next) => {
+  const { subdomain } = req.params;
+  const remainingPath = req.params[0] || 'index.html';
+  
+  // Build the file path
+  const sitePath = path.join(publicDir, 'sites', subdomain, remainingPath);
+  
+  try {
+    // Check if file exists
+    await fs.access(sitePath);
+    // File exists, serve it
+    res.sendFile(sitePath);
+  } catch (err) {
+    // File doesn't exist, continue to next middleware
+    next();
+  }
+});
+
 // Subdomain Routing Middleware
 app.use((req, res, next) => {
   const hostname = req.get('host') || '';
