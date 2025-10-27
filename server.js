@@ -6,6 +6,8 @@ import path from 'path';
 import bodyParser from 'body-parser';
 import { fileURLToPath } from 'url';
 import multer from 'multer';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 dotenv.config();
 
@@ -19,12 +21,15 @@ const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'dev-token';
 const publicDir = path.join(__dirname, 'public');
 const uploadsDir = path.join(publicDir, 'uploads');
 const draftsDir = path.join(publicDir, 'drafts');
+const usersDir = path.join(publicDir, 'users');
 const dataFile = path.join(publicDir, 'data', 'site.json');
 const templatesDir = path.join(publicDir, 'data', 'templates');
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 // Ensure directories exist
 fs.mkdir(uploadsDir, { recursive: true }).catch(() => {});
 fs.mkdir(draftsDir, { recursive: true }).catch(() => {});
+fs.mkdir(usersDir, { recursive: true }).catch(() => {});
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -59,6 +64,121 @@ function requireAdmin(req, res, next){
   if(token === ADMIN_TOKEN) return next();
   return res.status(401).json({ error: 'Unauthorized' });
 }
+
+// JWT Authentication middleware
+function requireAuth(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+  
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+}
+
+// Authentication Endpoints
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password required' });
+    }
+    
+    // Check if user already exists
+    const userFile = path.join(usersDir, `${email.replace(/[^a-zA-Z0-9]/g, '_')}.json`);
+    
+    try {
+      await fs.access(userFile);
+      return res.status(409).json({ error: 'User already exists' });
+    } catch (err) {
+      // User doesn't exist, proceed with registration
+    }
+    
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Create user
+    const user = {
+      id: `user_${Date.now()}`,
+      email: email,
+      password: hashedPassword,
+      createdAt: new Date().toISOString(),
+      sites: []
+    };
+    
+    await fs.writeFile(userFile, JSON.stringify(user, null, 2));
+    
+    // Generate JWT
+    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+    
+    res.json({ success: true, token, user: { id: user.id, email: user.email } });
+  } catch (err) {
+    console.error('Registration error:', err);
+    res.status(500).json({ error: 'Failed to register user' });
+  }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password required' });
+    }
+    
+    // Load user
+    const userFile = path.join(usersDir, `${email.replace(/[^a-zA-Z0-9]/g, '_')}.json`);
+    
+    let user;
+    try {
+      const userData = await fs.readFile(userFile, 'utf-8');
+      user = JSON.parse(userData);
+    } catch (err) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    
+    // Verify password
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    
+    // Generate JWT
+    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+    
+    res.json({ success: true, token, user: { id: user.id, email: user.email } });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Failed to login' });
+  }
+});
+
+app.get('/api/auth/me', requireAuth, async (req, res) => {
+  try {
+    const { email } = req.user;
+    const userFile = path.join(usersDir, `${email.replace(/[^a-zA-Z0-9]/g, '_')}.json`);
+    
+    const userData = await fs.readFile(userFile, 'utf-8');
+    const user = JSON.parse(userData);
+    
+    res.json({ id: user.id, email: user.email, sites: user.sites });
+  } catch (err) {
+    res.status(404).json({ error: 'User not found' });
+  }
+});
+
+app.post('/api/auth/logout', (req, res) => {
+  // JWT is stateless, so logout is handled client-side
+  res.json({ success: true, message: 'Logged out successfully' });
+});
 
 app.get('/api/site', async (req, res) => {
   try{

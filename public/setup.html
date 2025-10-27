@@ -576,6 +576,75 @@
     </div>
   </div>
 
+  <!-- Payment Modal -->
+  <div id="paymentModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 16px; padding: 30px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <h2 style="margin: 0; font-size: 1.8rem;">Publish Your Site</h2>
+        <button onclick="closePaymentModal()" style="background: #f1f5f9; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 1.2rem;">✕</button>
+      </div>
+      
+      <p style="color: #64748b; margin-bottom: 25px;">Choose a plan to make your site live and accessible to the world.</p>
+      
+      <div id="planSelection" style="margin-bottom: 25px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+          <label style="border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.2s;">
+            <input type="radio" name="plan" value="starter" checked style="margin-right: 10px;">
+            <div>
+              <strong>Starter</strong>
+              <div style="font-size: 1.5rem; color: #f97316; margin: 5px 0;">$9<span style="font-size: 0.9rem;">/mo</span></div>
+            </div>
+          </label>
+          <label style="border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.2s;">
+            <input type="radio" name="plan" value="business" style="margin-right: 10px;">
+            <div>
+              <strong>Business</strong>
+              <div style="font-size: 1.5rem; color: #f97316; margin: 5px 0;">$19<span style="font-size: 0.9rem;">/mo</span></div>
+            </div>
+          </label>
+          <label style="border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.2s;">
+            <input type="radio" name="plan" value="pro" style="margin-right: 10px;">
+            <div>
+              <strong>Pro</strong>
+              <div style="font-size: 1.5rem; color: #f97316; margin: 5px 0;">$39<span style="font-size: 0.9rem;">/mo</span></div>
+            </div>
+          </label>
+        </div>
+      </div>
+      
+      <div style="background: #f8fafc; border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+        <h3 style="margin: 0 0 15px 0; font-size: 1.1rem;">What You'll Get:</h3>
+        <div id="planFeatures">
+          <div style="margin: 8px 0; display: flex; align-items: center;">
+            <span style="margin-right: 10px;">✓</span>
+            <span>Your site goes live with a unique URL</span>
+          </div>
+          <div style="margin: 8px 0; display: flex; align-items: center;">
+            <span style="margin-right: 10px;">✓</span>
+            <span>Mobile-responsive design</span>
+          </div>
+          <div style="margin: 8px 0; display: flex; align-items: center;">
+            <span style="margin-right: 10px;">✓</span>
+            <span>Unlimited updates</span>
+          </div>
+        </div>
+      </div>
+      
+      <div style="margin-bottom: 25px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Email (for invoice)</label>
+        <input type="email" id="paymentEmail" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1rem;" placeholder="your@email.com" required>
+      </div>
+      
+      <button onclick="processPayment()" class="btn btn-primary-large" style="width: 100%;">
+        💳 Pay & Publish
+      </button>
+      
+      <p style="text-align: center; font-size: 0.85rem; color: #64748b; margin-top: 15px;">
+        Secure payment by Stripe. Cancel anytime.
+      </p>
+    </div>
+  </div>
+
   <script>
     let currentStep = 1;
     let selectedTemplate = null;
@@ -1384,8 +1453,32 @@
     }
 
     function showPaymentModal() {
-      alert('Payment modal will appear here. This will be implemented by Agent C (Payment Modal).\n\nDraft ID: ' + window.currentDraftId);
-      // TODO: Agent C will implement this
+      const modal = document.getElementById('paymentModal');
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePaymentModal() {
+      const modal = document.getElementById('paymentModal');
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+
+    async function processPayment() {
+      const email = document.getElementById('paymentEmail').value;
+      const plan = document.querySelector('input[name="plan"]:checked').value;
+      const draftId = window.currentDraftId;
+      
+      if (!email) {
+        alert('Please enter your email address.');
+        return;
+      }
+      
+      console.log('Processing payment for draft:', draftId, 'plan:', plan);
+      
+      // TODO: Agent C will integrate with actual Stripe API
+      // For now, simulate payment
+      alert(`Payment simulation:\n- Email: ${email}\n- Plan: ${plan}\n- Draft ID: ${draftId}\n\nThis will be connected to Stripe in the final implementation.`);
     }
 
     // Functions are now global since script is not a module
