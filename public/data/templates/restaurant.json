@@ -1,0 +1,28 @@
+{
+  "brand": {"name": "Tasty Bites", "logo": "assets/logo.svg"},
+  "themeVars": {"color-primary": "#ef4444", "color-accent": "#f59e0b"},
+  "nav": [
+    {"label": "Menu", "href": "#products"},
+    {"label": "About", "href": "#about"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "Fresh Daily",
+    "title": "Delicious meals, made with love",
+    "subtitle": "Order online or book a table.",
+    "cta": [
+      {"label": "Order Now", "href": "#products"},
+      {"label": "Reserve", "href": "https://cal.com/your-restaurant", "variant": "secondary"}
+    ],
+    "image": "assets/hero-placeholder.jpg",
+    "imageAlt": "Restaurant dishes"
+  },
+  "about": {"title": "Our Kitchen", "body": "Locally sourced ingredients and family recipes."},
+  "products": [
+    {"name": "Margherita Pizza", "price": 12, "description": "Classic pizza with fresh basil."},
+    {"name": "Caesar Salad", "price": 9, "description": "Crisp romaine with house dressing."},
+    {"name": "Tiramisu", "price": 7, "description": "Homemade dessert."}
+  ],
+  "contact": {"title": "Visit Us", "subtitle": "123 Main St, Springfield", "phone": "+1 555 987 6543"},
+  "footer": {"text": "Open Tue–Sun. See you soon!"}
+}

@@ -1,0 +1,33 @@
+{
+  "brand": {"name": "Jane Doe", "logo": "assets/logo.svg"},
+  "themeVars": {"color-primary": "#0ea5e9", "color-accent": "#22c55e"},
+  "nav": [
+    {"label": "Work", "href": "#pages"},
+    {"label": "Packages", "href": "#pricing"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "Independent Designer",
+    "title": "Websites that win clients",
+    "subtitle": "I help small businesses stand out.",
+    "cta": [
+      {"label": "See Work", "href": "#pages"},
+      {"label": "Hire Me", "href": "#contact", "variant": "secondary"}
+    ],
+    "image": "assets/hero-placeholder.svg",
+    "imageAlt": "Laptop"
+  },
+  "pages": [
+    {"slug": "project-a", "title": "Project A", "body": "## Redesign for Cafe\nIncreased conversions by 35%."},
+    {"slug": "project-b", "title": "Project B", "body": "## Branding for Salon\nGrew bookings 2x."}
+  ],
+  "pricing": {
+    "title": "Packages",
+    "plans": [
+      {"name": "Starter", "description": "Single page site", "price": 800, "cta": {"label": "Start", "href": "#contact"}},
+      {"name": "Pro", "description": "Multi-page site", "price": 2000, "cta": {"label": "Start", "href": "#contact"}}
+    ]
+  },
+  "contact": {"title": "Contact", "subtitle": "Email jane@example.com"},
+  "footer": {"text": "© Jane Doe"}
+}
