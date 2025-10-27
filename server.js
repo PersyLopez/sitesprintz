@@ -420,6 +420,142 @@ app.post('/api/setup', async (req, res) => {
   }
 });
 
+// Publish Draft to Live Site
+app.post('/api/drafts/:draftId/publish', async (req, res) => {
+  try {
+    const { draftId } = req.params;
+    const { plan, email } = req.body; // plan: starter, business, pro
+    
+    // Load draft
+    const draftFile = path.join(draftsDir, `${draftId}.json`);
+    let draft;
+    
+    try {
+      const draftRaw = await fs.readFile(draftFile, 'utf-8');
+      draft = JSON.parse(draftRaw);
+    } catch (err) {
+      return res.status(404).json({ error: 'Draft not found' });
+    }
+    
+    // Check if draft is expired
+    if (new Date(draft.expiresAt) < new Date()) {
+      await fs.unlink(draftFile);
+      return res.status(410).json({ error: 'Draft has expired' });
+    }
+    
+    // Load template data
+    const templateFile = path.join(templatesDir, `${draft.templateId}.json`);
+    let siteData;
+    
+    try {
+      const templateRaw = await fs.readFile(templateFile, 'utf-8');
+      siteData = JSON.parse(templateRaw);
+    } catch (err) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+    
+    // Update site data with draft business data
+    if (draft.businessData) {
+      if (draft.businessData.businessName && draft.businessData.businessName.trim()) {
+        siteData.brand.name = draft.businessData.businessName;
+      }
+      
+      if (siteData.hero) {
+        if (draft.businessData.heroTitle) siteData.hero.title = draft.businessData.heroTitle;
+        if (draft.businessData.heroSubtitle) siteData.hero.subtitle = draft.businessData.heroSubtitle;
+        if (draft.businessData.heroImage) siteData.hero.image = draft.businessData.heroImage;
+      }
+      
+      if (siteData.contact) {
+        if (draft.businessData.email) siteData.contact.email = draft.businessData.email;
+        if (draft.businessData.phone) siteData.contact.phone = draft.businessData.phone;
+        if (draft.businessData.address) siteData.contact.subtitle = draft.businessData.address;
+        if (draft.businessData.businessHours) siteData.contact.hours = draft.businessData.businessHours;
+      }
+      
+      // Update services/products
+      if (Array.isArray(draft.businessData.services) && draft.businessData.services.length > 0) {
+        if (siteData.products) {
+          siteData.products = draft.businessData.services
+            .filter(s => s.name && s.name.trim())
+            .map(s => ({
+              name: s.name,
+              price: parseFloat(s.price) || 0,
+              description: s.description || '',
+              ...(s.image && { image: s.image }),
+              ...(s.imageAlt && { imageAlt: s.imageAlt })
+            }));
+        } else if (siteData.services) {
+          siteData.services.items = draft.businessData.services
+            .filter(s => s.name && s.name.trim())
+            .map(s => ({
+              title: s.name,
+              description: s.description || '',
+              ...(s.price && { price: s.price }),
+              ...(s.image && { image: s.image }),
+              ...(s.imageAlt && { imageAlt: s.imageAlt })
+            }));
+        }
+      }
+    }
+    
+    // Generate unique subdomain
+    const subdomain = generateSubdomain(siteData.brand.name);
+    const sitesDir = path.join(publicDir, 'sites', subdomain);
+    const siteConfigFile = path.join(sitesDir, 'site.json');
+    const siteIndexFile = path.join(sitesDir, 'index.html');
+    
+    // Create site directory
+    await fs.mkdir(sitesDir, { recursive: true });
+    
+    // Save site.json
+    await fs.writeFile(siteConfigFile, JSON.stringify(siteData, null, 2));
+    
+    // Create index.html for the site
+    const templateHtml = await fs.readFile(path.join(publicDir, 'index.html'), 'utf-8');
+    const siteHtml = templateHtml.replace('./data/site.json', './site.json');
+    await fs.writeFile(siteIndexFile, siteHtml);
+    
+    // Delete draft after successful publish
+    await fs.unlink(draftFile);
+    
+    // TODO: Store user info and site association if authenticated
+    
+    res.json({
+      success: true,
+      subdomain: subdomain,
+      url: `http://${subdomain}.localhost:${PORT}`, // In production: https://${subdomain}.fixngomobile.com
+      plan: plan,
+      publishedAt: new Date().toISOString()
+    });
+    
+  } catch (err) {
+    console.error('Publish error:', err);
+    res.status(500).json({ error: err.message, details: err.stack });
+  }
+});
+
+// Helper function to generate subdomain from business name
+function generateSubdomain(businessName) {
+  // Convert to lowercase, remove special chars, replace spaces with hyphens
+  let subdomain = businessName
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .substring(0, 30); // Limit length
+  
+  // Remove trailing hyphens
+  subdomain = subdomain.replace(/-+$/g, '');
+  
+  // If empty, use default
+  if (!subdomain) subdomain = 'mybusiness';
+  
+  // Add timestamp to make it unique
+  subdomain += `-${Date.now().toString(36)}`;
+  
+  return subdomain;
+}
+
 // Subdomain Routing Middleware
 app.use((req, res, next) => {
   const hostname = req.get('host') || '';

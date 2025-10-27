@@ -1476,9 +1476,67 @@
       
       console.log('Processing payment for draft:', draftId, 'plan:', plan);
       
-      // TODO: Agent C will integrate with actual Stripe API
-      // For now, simulate payment
-      alert(`Payment simulation:\n- Email: ${email}\n- Plan: ${plan}\n- Draft ID: ${draftId}\n\nThis will be connected to Stripe in the final implementation.`);
+      // Show loading state
+      const payButton = document.querySelector('#paymentModal button[onclick="processPayment()"]');
+      const originalText = payButton.textContent;
+      payButton.textContent = 'Processing...';
+      payButton.disabled = true;
+      
+      try {
+        // Simulate payment (in production, integrate with Stripe)
+        // For now, we'll proceed directly to publishing
+        console.log('Simulating payment for plan:', plan);
+        
+        // Call publish endpoint
+        const response = await fetch(`/api/drafts/${draftId}/publish`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            plan: plan,
+            email: email
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+          // Close payment modal
+          closePaymentModal();
+          
+          // Show success message
+          const successDiv = document.getElementById('success');
+          successDiv.innerHTML = `
+            <div class="success-message">
+              <div class="success-icon">🎉</div>
+              <h2>Your Site is Live!</h2>
+              <p class="muted">Congratulations! Your website has been published successfully.</p>
+              <div style="margin-top: 30px; padding: 20px; background: #f8fafc; border-radius: 12px;">
+                <p><strong>Your Site URL:</strong></p>
+                <h3 style="margin: 10px 0; color: #f97316;">${result.url}</h3>
+                <p style="font-size: 0.9rem; color: #64748b;">Visit your site to see it live!</p>
+              </div>
+              <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center;">
+                <a href="${result.url}" target="_blank" class="btn btn-primary-large">🔗 Visit Your Site</a>
+                <a href="/dashboard.html" class="btn btn-secondary-large">📊 Go to Dashboard</a>
+              </div>
+            </div>
+          `;
+          successDiv.style.display = 'block';
+          
+        } else {
+          alert('Failed to publish your site. Please try again.');
+          payButton.textContent = originalText;
+          payButton.disabled = false;
+        }
+        
+      } catch (error) {
+        console.error('Publish error:', error);
+        alert('Failed to publish your site: ' + error.message);
+        payButton.textContent = originalText;
+        payButton.disabled = false;
+      }
     }
 
     // Functions are now global since script is not a module
