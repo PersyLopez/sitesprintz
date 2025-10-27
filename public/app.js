@@ -19,6 +19,42 @@
     return res.json();
   }
 
+  function updateOpenGraphMetaTags(cfg){
+    // Update title and description
+    const title = cfg.brand?.name || 'Small Business Website';
+    const description = cfg.hero?.subtitle || cfg.about?.body || 'Professional business website';
+    const image = cfg.hero?.image || '/assets/og-image.jpg';
+    
+    document.title = title;
+    
+    // Update or create meta tags
+    function setMeta(name, property, content){
+      let meta = document.querySelector(`meta[${property ? 'property' : 'name'}="${name}"]`);
+      if(!meta){
+        meta = document.createElement('meta');
+        meta.setAttribute(property ? 'property' : 'name', name);
+        document.head.appendChild(meta);
+      }
+      meta.setAttribute('content', content);
+    }
+    
+    // Basic meta tags
+    setMeta('description', false, description);
+    
+    // Open Graph tags for Facebook, LinkedIn, etc.
+    setMeta('og:title', true, title);
+    setMeta('og:description', true, description);
+    setMeta('og:image', true, new URL(image, window.location.origin).href);
+    setMeta('og:url', true, window.location.href);
+    setMeta('og:type', true, 'website');
+    
+    // Twitter Card tags
+    setMeta('twitter:card', false, 'summary_large_image');
+    setMeta('twitter:title', false, title);
+    setMeta('twitter:description', false, description);
+    setMeta('twitter:image', false, new URL(image, window.location.origin).href);
+  }
+
   function setTheme(theme){
     if(!theme) return;
     const root = document.documentElement;
@@ -237,6 +273,7 @@
 
   try{
     state.config = await loadConfig();
+    updateOpenGraphMetaTags(state.config);
     setTheme(state.config.themeVars);
     renderAll(state.config);
   }catch(err){

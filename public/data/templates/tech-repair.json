@@ -1,0 +1,51 @@
+{
+  "brand": {"name": "TechFix Pro", "logo": "assets/logo.svg"},
+  "themeVars": {"color-primary": "#059669", "color-accent": "#10b981"},
+  "nav": [
+    {"label": "Services", "href": "#services"},
+    {"label": "Pricing", "href": "#pricing"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "Tech Support",
+    "title": "Fast, reliable computer repair",
+    "subtitle": "We fix computers, phones, and tablets. Same-day service available.",
+    "cta": [
+      {"label": "Book Repair", "href": "#contact"},
+      {"label": "See Services", "href": "#services", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1587825147138-2a4aa9c9f4ef?w=1200&q=80",
+    "imageAlt": "Computer and device repair"
+  },
+  "services": {
+    "title": "Repair Services",
+    "subtitle": "We fix it all",
+    "items": [
+      {"title": "Computer Repair", "description": "Hardware and software issues.", "image": "https://images.unsplash.com/photo-1518432031352-d6fc5c10da5a?w=800&q=80", "imageAlt": "Computer repair service"},
+      {"title": "Phone Repair", "description": "Screen replacement and more.", "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80", "imageAlt": "Phone repair"},
+      {"title": "Data Recovery", "description": "Recover lost files safely.", "image": "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&q=80", "imageAlt": "Data recovery service"}
+    ]
+  },
+  "pricing": {
+    "title": "Service Rates",
+    "plans": [
+      {"name": "Diagnostic", "description": "Free assessment", "price": 0, "cta": {"label": "Book", "href": "#contact"}},
+      {"name": "Basic Repair", "description": "Software fixes", "price": 89, "cta": {"label": "Book", "href": "#contact"}},
+      {"name": "Hardware Repair", "description": "Screen, battery, etc.", "price": 149, "cta": {"label": "Book", "href": "#contact"}}
+    ]
+  },
+  "testimonials": {
+    "title": "Customer Reviews",
+    "items": [
+      {"quote": "Fixed my laptop in 2 hours!", "author": "Maria"},
+      {"quote": "Honest pricing, great service.", "author": "John"}
+    ]
+  },
+  "contact": {
+    "title": "Get Fixed",
+    "subtitle": "Walk-ins welcome or call ahead",
+    "phone": "+1-555-456-7890",
+    "email": "repair@techfixpro.com"
+  },
+  "footer": {"text": "© TechFix Pro. Your tech, our expertise."}
+}

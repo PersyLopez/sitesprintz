@@ -35,6 +35,48 @@
     </div>
 
     <div class="card mt-4">
+      <h2 class="section-title">Images - Add Photos or Search</h2>
+      
+      <!-- Tabs for different image sources -->
+      <div class="row" style="margin-bottom: 15px; border-bottom: 1px solid rgba(148,163,184,0.12);">
+        <button class="btn btn-secondary" id="tabCamera" style="border-radius: 8px 8px 0 0; border-bottom: 2px solid var(--color-primary);">📸 Camera</button>
+        <button class="btn btn-secondary" id="tabGallery" style="border-radius: 8px 8px 0 0;">🖼️ Gallery</button>
+        <button class="btn btn-secondary" id="tabGoogle" style="border-radius: 8px 8px 0 0;">🔍 Google</button>
+      </div>
+
+      <!-- Camera Tab -->
+      <div id="cameraTab" class="image-tab" style="display: block;">
+        <div class="field">
+          <label>Take Photo or Upload</label>
+          <input type="file" id="imageUpload" accept="image/*" capture="environment" />
+          <p class="muted" style="font-size: 12px; margin-top: 5px;">On mobile: Use camera or select from gallery</p>
+        </div>
+      </div>
+
+      <!-- Gallery Tab -->
+      <div id="galleryTab" class="image-tab" style="display: none;">
+        <div class="field">
+          <label>Select from Gallery</label>
+          <input type="file" id="galleryUpload" accept="image/*" multiple />
+          <p class="muted" style="font-size: 12px; margin-top: 5px;">Choose one or multiple images</p>
+        </div>
+      </div>
+
+      <!-- Google Search Tab -->
+      <div id="googleTab" class="image-tab" style="display: none;">
+        <div class="field">
+          <label>Search for Images</label>
+          <input type="text" id="googleSearch" placeholder="Search for images (e.g., 'coffee shop', 'salon')" />
+          <button class="btn btn-secondary" id="searchGoogleBtn" style="margin-top: 10px;">Search Google Images</button>
+        </div>
+        <div id="googleResults" style="margin-top: 15px;"></div>
+      </div>
+
+      <button class="btn btn-primary" id="uploadBtn" style="margin-top: 15px; width: 100%;">Upload Selected</button>
+      <div id="imagePreview" style="margin-top: 10px;"></div>
+    </div>
+
+    <div class="card mt-4">
       <h2 class="section-title">Templates</h2>
       <div class="row" style="flex-wrap:wrap">
         <select id="templateSelect" style="min-width:220px"></select>
