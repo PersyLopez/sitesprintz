@@ -1,0 +1,47 @@
+{
+  "brand": {"name": "Strategic Solutions", "logo": "assets/logo.svg"},
+  "themeVars": {"color-primary": "#1e40af", "color-accent": "#3b82f6"},
+  "nav": [
+    {"label": "Services", "href": "#services"},
+    {"label": "About", "href": "#about"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "Business Consulting",
+    "title": "Strategic solutions for growing businesses",
+    "subtitle": "Expert guidance to scale your operations efficiently.",
+    "cta": [
+      {"label": "Get Started", "href": "#contact"},
+      {"label": "Learn More", "href": "#services", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1200&q=80",
+    "imageAlt": "Business strategy and consulting"
+  },
+  "services": {
+    "title": "Our Services",
+    "subtitle": "Tailored solutions for your business",
+    "items": [
+      {"title": "Strategy Planning", "description": "Roadmaps for sustainable growth.", "image": "https://images.unsplash.com/photo-1559149811-ff2a4e2d3ded?w=800&q=80", "imageAlt": "Strategic planning"},
+      {"title": "Process Optimization", "description": "Streamline operations for efficiency.", "image": "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80", "imageAlt": "Process optimization"},
+      {"title": "Team Development", "description": "Build high-performing teams.", "image": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80", "imageAlt": "Team development"}
+    ]
+  },
+  "about": {
+    "title": "About Us",
+    "body": "We help small and medium businesses optimize their operations and scale strategically. With 15+ years of experience across industries."
+  },
+  "testimonials": {
+    "title": "Client Success",
+    "items": [
+      {"quote": "Increased our efficiency by 40%.", "author": "Sarah, CEO"},
+      {"quote": "Best investment we made.", "author": "Mike, Founder"}
+    ]
+  },
+  "contact": {
+    "title": "Let's Talk",
+    "subtitle": "Schedule a free consultation",
+    "email": "hello@strategicsolutions.com",
+    "phone": "+1-555-012-3456"
+  },
+  "footer": {"text": "© Strategic Solutions. All rights reserved."}
+}

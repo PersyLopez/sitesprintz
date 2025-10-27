@@ -1,0 +1,51 @@
+{
+  "brand": {"name": "CleanSpace", "logo": "assets/logo.svg"},
+  "themeVars": {"color-primary": "#0891b2", "color-accent": "#06b6d4"},
+  "nav": [
+    {"label": "Services", "href": "#services"},
+    {"label": "Pricing", "href": "#pricing"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "Professional Cleaning",
+    "title": "Spotless spaces, every time",
+    "subtitle": "Residential and commercial cleaning services you can trust.",
+    "cta": [
+      {"label": "Get Quote", "href": "#contact"},
+      {"label": "Our Services", "href": "#services", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=1200&q=80",
+    "imageAlt": "Professional cleaning service"
+  },
+  "services": {
+    "title": "Cleaning Services",
+    "subtitle": "Comprehensive cleaning solutions",
+    "items": [
+      {"title": "Residential Cleaning", "description": "Regular and deep cleaning for homes.", "image": "https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?w=800&q=80", "imageAlt": "Residential cleaning"},
+      {"title": "Commercial Cleaning", "description": "Office and business space cleaning.", "image": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80", "imageAlt": "Commercial cleaning"},
+      {"title": "Move-in/out Cleaning", "description": "Fresh start cleaning services.", "image": "https://images.unsplash.com/photo-1554995207-c18c203602cb?w=800&q=80", "imageAlt": "Move-in cleaning"}
+    ]
+  },
+  "pricing": {
+    "title": "Service Packages",
+    "plans": [
+      {"name": "Basic", "description": "Weekly residential", "price": 120, "cta": {"label": "Book", "href": "#contact"}},
+      {"name": "Standard", "description": "Bi-weekly + extras", "price": 200, "cta": {"label": "Book", "href": "#contact"}},
+      {"name": "Premium", "description": "Deep clean + maintenance", "price": 350, "cta": {"label": "Book", "href": "#contact"}}
+    ]
+  },
+  "testimonials": {
+    "title": "Happy Customers",
+    "items": [
+      {"quote": "My house has never been cleaner!", "author": "Lisa"},
+      {"quote": "Reliable and thorough service.", "author": "Robert"}
+    ]
+  },
+  "contact": {
+    "title": "Book Service",
+    "subtitle": "Call or text for immediate booking",
+    "phone": "+1-555-234-5678",
+    "email": "book@cleanspace.com"
+  },
+  "footer": {"text": "© CleanSpace. Making spaces shine."}
+}

@@ -1,8 +1,67 @@
 {
   "templates": [
-    { "id": "starter", "name": "Starter (Hero + Services)", "description": "Clean hero, three services, contact CTA." },
-    { "id": "restaurant", "name": "Restaurant", "description": "Menu-style products, reservations CTA." },
-    { "id": "salon", "name": "Salon/Barber", "description": "Services, pricing, testimonials, booking CTA." },
-    { "id": "freelancer", "name": "Freelancer", "description": "Portfolio pages, packages, contact form link." }
+    {
+      "id": "starter",
+      "name": "Starter",
+      "description": "Simple one-page template",
+      "category": "Basic",
+      "color": "#22c55e"
+    },
+    {
+      "id": "restaurant",
+      "name": "Restaurant",
+      "description": "Menu, booking, and contact",
+      "category": "Food & Dining",
+      "color": "#ef4444"
+    },
+    {
+      "id": "salon",
+      "name": "Salon",
+      "description": "Services, pricing, and booking",
+      "category": "Beauty & Wellness",
+      "color": "#a855f7"
+    },
+    {
+      "id": "freelancer",
+      "name": "Freelancer",
+      "description": "Portfolio and services",
+      "category": "Professional Services",
+      "color": "#0ea5e9"
+    },
+    {
+      "id": "consultant",
+      "name": "Business Consultant",
+      "description": "Strategy and consulting services",
+      "category": "Professional Services",
+      "color": "#1e40af"
+    },
+    {
+      "id": "gym",
+      "name": "Gym & Fitness",
+      "description": "Classes, membership, and training",
+      "category": "Fitness & Health",
+      "color": "#dc2626"
+    },
+    {
+      "id": "tech-repair",
+      "name": "Tech Repair",
+      "description": "Computer and phone repair services",
+      "category": "Technology",
+      "color": "#059669"
+    },
+    {
+      "id": "cleaning",
+      "name": "Cleaning Service",
+      "description": "Residential and commercial cleaning",
+      "category": "Home Services",
+      "color": "#0891b2"
+    },
+    {
+      "id": "pet-care",
+      "name": "Pet Care",
+      "description": "Grooming, walking, and pet sitting",
+      "category": "Pet Services",
+      "color": "#7c3aed"
+    }
   ]
 }

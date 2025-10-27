@@ -5,6 +5,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import bodyParser from 'body-parser';
 import { fileURLToPath } from 'url';
+import multer from 'multer';
 
 dotenv.config();
 
@@ -16,8 +17,35 @@ const PORT = process.env.PORT || 3000;
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'dev-token';
 
 const publicDir = path.join(__dirname, 'public');
+const uploadsDir = path.join(publicDir, 'uploads');
 const dataFile = path.join(publicDir, 'data', 'site.json');
 const templatesDir = path.join(publicDir, 'data', 'templates');
+
+// Ensure uploads directory exists
+fs.mkdir(uploadsDir, { recursive: true }).catch(() => {});
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
+  }
+});
 
 app.use(cors());
 app.use(bodyParser.json({ limit: '1mb' }));
@@ -61,6 +89,140 @@ app.post('/api/site', requireAdmin, async (req, res) => {
     res.json({ ok: true });
   }catch(err){
     res.status(500).json({ error: 'Failed to write site.json' });
+  }
+});
+
+// Upload image endpoint
+app.post('/api/upload', requireAdmin, (req, res) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      console.error('Upload error:', err);
+      return res.status(400).json({ error: err.message || 'Upload failed' });
+    }
+    
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    
+    res.json({ 
+      success: true, 
+      url: `/uploads/${req.file.filename}`,
+      filename: req.file.filename
+    });
+  });
+});
+
+// Delete uploaded image
+app.delete('/api/uploads/:filename', requireAdmin, async (req, res) => {
+  try {
+    const filename = req.params.filename;
+    await fs.unlink(path.join(uploadsDir, filename));
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete file' });
+  }
+});
+
+// Save site data from setup flow
+app.post('/api/setup', async (req, res) => {
+  try {
+    const setupData = req.body;
+    console.log('Received setup data:', JSON.stringify(setupData, null, 2));
+    
+    if (!setupData) {
+      return res.status(400).json({ error: 'No data received' });
+    }
+    
+    if (!setupData.templateId) {
+      return res.status(400).json({ error: 'templateId is required' });
+    }
+    
+    // Load the template
+    const templateFile = path.join(templatesDir, `${setupData.templateId}.json`);
+    let siteData;
+    
+    try {
+      const templateRaw = await fs.readFile(templateFile, 'utf-8');
+      siteData = JSON.parse(templateRaw);
+    } catch (err) {
+      // Fallback to starter template if template not found
+      const starterRaw = await fs.readFile(path.join(templatesDir, 'starter.json'), 'utf-8');
+      siteData = JSON.parse(starterRaw);
+    }
+    
+    // Update site data with setup information
+    if (setupData.businessData && typeof setupData.businessData === 'object') {
+      if (setupData.businessData.businessName && setupData.businessData.businessName.trim()) {
+        siteData.brand.name = setupData.businessData.businessName;
+      }
+      
+      if (siteData.hero) {
+        if (setupData.businessData.heroTitle && setupData.businessData.heroTitle.trim()) {
+          siteData.hero.title = setupData.businessData.heroTitle;
+        }
+        if (setupData.businessData.heroSubtitle && setupData.businessData.heroSubtitle.trim()) {
+          siteData.hero.subtitle = setupData.businessData.heroSubtitle;
+        }
+        if (setupData.businessData.heroImage && setupData.businessData.heroImage.trim()) {
+          siteData.hero.image = setupData.businessData.heroImage;
+        }
+      }
+      
+      if (siteData.contact) {
+        if (setupData.businessData.email && setupData.businessData.email.trim()) siteData.contact.email = setupData.businessData.email;
+        if (setupData.businessData.phone && setupData.businessData.phone.trim()) siteData.contact.phone = setupData.businessData.phone;
+        if (setupData.businessData.address && setupData.businessData.address.trim()) siteData.contact.subtitle = setupData.businessData.address;
+        if (setupData.businessData.businessHours && setupData.businessData.businessHours.trim()) siteData.contact.hours = setupData.businessData.businessHours;
+      }
+      
+      // Update services/products
+      if (Array.isArray(setupData.businessData.services) && setupData.businessData.services.length > 0) {
+        // Determine if this template uses 'products' or 'services'
+        if (siteData.products) {
+          siteData.products = setupData.businessData.services
+            .filter(s => s.name && s.name.trim())
+            .map(s => ({
+              name: s.name,
+              price: parseFloat(s.price) || 0,
+              description: s.description || '',
+              ...(s.image && s.image.trim() && { image: s.image }),
+              ...(s.imageAlt && { imageAlt: s.imageAlt })
+            }));
+        } else if (siteData.services) {
+          siteData.services.items = setupData.businessData.services
+            .filter(s => s.name && s.name.trim())
+            .map(s => ({
+              title: s.name,
+              description: s.description || '',
+              ...(s.price && { price: s.price }),
+              ...(s.image && s.image.trim() && { image: s.image }),
+              ...(s.imageAlt && { imageAlt: s.imageAlt })
+            }));
+        }
+      }
+    }
+    
+    // Create unique page ID
+    const pageId = `${setupData.templateId}-${Date.now()}`;
+    const pageDir = path.join(publicDir, 'pages', pageId);
+    const pageDataFile = path.join(pageDir, 'site.json');
+    
+    // Save to new page directory
+    await fs.mkdir(pageDir, { recursive: true });
+    await fs.writeFile(pageDataFile, JSON.stringify(siteData, null, 2));
+    
+    // Create page index.html
+    const pageHtml = await fs.readFile(path.join(publicDir, 'index.html'), 'utf-8');
+    const modifiedHtml = pageHtml.replace(
+      './data/site.json',
+      `./site.json?page=${pageId}`
+    );
+    await fs.writeFile(path.join(pageDir, 'index.html'), modifiedHtml);
+    
+    res.json({ success: true, templateId: setupData.templateId, pageId: pageId });
+  } catch (err) {
+    console.error('Setup save error:', err);
+    res.status(500).json({ error: err.message, details: err.stack });
   }
 });
 
