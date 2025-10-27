@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Register | Atom</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      padding: 20px;
+    }
+
+    .auth-container {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 450px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .auth-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .auth-logo {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+
+    .auth-title {
+      font-size: 2rem;
+      margin: 0 0 10px 0;
+      color: #1f2937;
+    }
+
+    .auth-subtitle {
+      color: #64748b;
+      margin: 0;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #f97316;
+    }
+
+    .password-strength {
+      font-size: 0.85rem;
+      margin-top: 5px;
+      color: #64748b;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+    }
+
+    .auth-footer {
+      text-align: center;
+      margin-top: 25px;
+      padding-top: 25px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .auth-footer a {
+      color: #f97316;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .error-message {
+      color: #ef4444;
+      font-size: 0.9rem;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .error-message.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-header">
+      <div class="auth-logo">✨</div>
+      <h1 class="auth-title">Get Started</h1>
+      <p class="auth-subtitle">Create your account in seconds</p>
+    </div>
+
+    <form id="registerForm" onsubmit="handleRegister(event)">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="email" placeholder="your@email.com" required>
+        <div class="error-message" id="emailError"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-input" id="password" placeholder="Create a secure password" required minlength="6">
+        <div class="password-strength" id="passwordStrength">At least 6 characters</div>
+        <div class="error-message" id="passwordError"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Confirm Password</label>
+        <input type="password" class="form-input" id="confirmPassword" placeholder="Re-enter your password" required>
+        <div class="error-message" id="confirmError"></div>
+      </div>
+
+      <button type="submit" class="btn-primary">Create Account</button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Already have an account? <a href="/login.html">Sign in</a></p>
+      <p style="margin-top: 15px;"><a href="/">← Back to Home</a></p>
+    </div>
+  </div>
+
+  <script>
+    // Password strength indicator
+    document.getElementById('password').addEventListener('input', function() {
+      const password = this.value;
+      const strengthDiv = document.getElementById('passwordStrength');
+      
+      if (password.length === 0) {
+        strengthDiv.textContent = 'At least 6 characters';
+        strengthDiv.style.color = '#64748b';
+      } else if (password.length < 6) {
+        strengthDiv.textContent = 'Too short';
+        strengthDiv.style.color = '#ef4444';
+      } else if (password.length < 10) {
+        strengthDiv.textContent = 'Good';
+        strengthDiv.style.color = '#f97316';
+      } else {
+        strengthDiv.textContent = 'Strong';
+        strengthDiv.style.color = '#22c55e';
+      }
+    });
+
+    // Password match validation
+    document.getElementById('confirmPassword').addEventListener('input', function() {
+      const password = document.getElementById('password').value;
+      const confirm = this.value;
+      const confirmError = document.getElementById('confirmError');
+      
+      if (confirm && password !== confirm) {
+        confirmError.textContent = 'Passwords do not match';
+        confirmError.classList.add('show');
+      } else {
+        confirmError.classList.remove('show');
+      }
+    });
+
+    async function handleRegister(event) {
+      event.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      
+      const emailError = document.getElementById('emailError');
+      const passwordError = document.getElementById('passwordError');
+      const confirmError = document.getElementById('confirmError');
+      
+      // Clear errors
+      emailError.classList.remove('show');
+      passwordError.classList.remove('show');
+      confirmError.classList.remove('show');
+      
+      // Validate passwords match
+      if (password !== confirmPassword) {
+        confirmError.textContent = 'Passwords do not match';
+        confirmError.classList.add('show');
+        return;
+      }
+      
+      // Validate password length
+      if (password.length < 6) {
+        passwordError.textContent = 'Password must be at least 6 characters';
+        passwordError.classList.add('show');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+          // Store token
+          localStorage.setItem('authToken', result.token);
+          
+          // Redirect to dashboard
+          alert('Account created successfully! Redirecting to dashboard...\nToken: ' + result.token.substring(0, 20) + '...');
+          window.location.href = '/dashboard.html';
+        } else {
+          if (result.error.includes('already exists')) {
+            emailError.textContent = result.error;
+            emailError.classList.add('show');
+          } else {
+            passwordError.textContent = result.error || 'Registration failed';
+            passwordError.classList.add('show');
+          }
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+        passwordError.textContent = 'Failed to register. Please try again.';
+        passwordError.classList.add('show');
+      }
+    }
+  </script>
+</body>
+</html>
+
