@@ -1,0 +1,8 @@
+{
+  "templates": [
+    { "id": "starter", "name": "Starter (Hero + Services)", "description": "Clean hero, three services, contact CTA." },
+    { "id": "restaurant", "name": "Restaurant", "description": "Menu-style products, reservations CTA." },
+    { "id": "salon", "name": "Salon/Barber", "description": "Services, pricing, testimonials, booking CTA." },
+    { "id": "freelancer", "name": "Freelancer", "description": "Portfolio pages, packages, contact form link." }
+  ]
+}

@@ -6,6 +6,14 @@
   const qsa = (sel, el=document) => Array.from(el.querySelectorAll(sel));
 
   async function loadConfig(){
+    const params = new URLSearchParams(window.location.search);
+    const tpl = params.get('template');
+    if(tpl){
+      try{
+        const resTpl = await fetch(`/data/templates/${encodeURIComponent(tpl)}.json`, { cache:'no-cache' });
+        if(resTpl.ok){ return resTpl.json(); }
+      }catch(_){ /* fall back below */ }
+    }
     const res = await fetch('./data/site.json', { cache:'no-cache' });
     if(!res.ok){ throw new Error('Failed to load data/site.json'); }
     return res.json();

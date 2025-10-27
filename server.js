@@ -17,6 +17,7 @@ const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'dev-token';
 
 const publicDir = path.join(__dirname, 'public');
 const dataFile = path.join(publicDir, 'data', 'site.json');
+const templatesDir = path.join(publicDir, 'data', 'templates');
 
 app.use(cors());
 app.use(bodyParser.json({ limit: '1mb' }));
@@ -35,6 +36,16 @@ app.get('/api/site', async (req, res) => {
     const json = JSON.parse(raw);
     res.json(json);
   }catch(err){
+    // If no site.json yet, fall back to a sensible default template
+    if (err && (err.code === 'ENOENT' || err.message?.includes('ENOENT'))) {
+      try{
+        const fallbackRaw = await fs.readFile(path.join(templatesDir, 'starter.json'), 'utf-8');
+        const fallback = JSON.parse(fallbackRaw);
+        return res.json(fallback);
+      }catch(e){
+        return res.status(500).json({ error: 'No site.json and failed to load default template' });
+      }
+    }
     res.status(500).json({ error: 'Failed to read site.json' });
   }
 });
