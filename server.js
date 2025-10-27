@@ -555,7 +555,7 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
     res.json({
       success: true,
       subdomain: subdomain,
-      url: `http://${subdomain}.localhost:${PORT}`, // In production: https://${subdomain}.fixngomobile.com
+      url: `http://localhost:${PORT}/sites/${subdomain}/`, // Correct URL for current setup
       plan: plan,
       publishedAt: new Date().toISOString(),
       businessName: siteData.brand?.name || 'Your Business',
