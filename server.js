@@ -420,6 +420,44 @@ app.post('/api/setup', async (req, res) => {
   }
 });
 
+// Subdomain Routing Middleware
+app.use((req, res, next) => {
+  const hostname = req.get('host') || '';
+  const subdomain = hostname.split('.')[0];
+  
+  // Skip for localhost or if it's a known route/api
+  if (hostname.includes('localhost') || req.path.startsWith('/api/') || req.path.startsWith('/data/') || req.path.includes('.')) {
+    return next();
+  }
+  
+  // Check if subdomain exists in sites directory
+  const sitesDir = path.join(publicDir, 'sites', subdomain);
+  const siteIndexFile = path.join(sitesDir, 'index.html');
+  
+  // Check if site exists
+  fs.access(siteIndexFile)
+    .then(() => {
+      // Site exists, serve from subdomain directory
+      const siteConfigFile = path.join(sitesDir, 'site.json');
+      
+      fs.access(siteConfigFile)
+        .then(() => {
+          // Serve the site's index.html
+          req.url = `/sites/${subdomain}/index.html`;
+          next();
+        })
+        .catch(() => {
+          // If no site.json, serve index.html directly
+          req.url = `/sites/${subdomain}/index.html`;
+          next();
+        });
+    })
+    .catch(() => {
+      // Not a subdomain site, continue with normal routing
+      next();
+    });
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
