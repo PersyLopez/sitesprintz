@@ -599,7 +599,16 @@ function generateSubdomain(businessName) {
 }
 
 // Route handler for /sites/{subdomain}/ paths
-app.use('/sites/:subdomain', express.static(path.join(publicDir, 'sites')));
+app.use('/sites/:subdomain/*', (req, res, next) => {
+  const { subdomain } = req.params;
+  const siteDir = path.join(publicDir, 'sites', subdomain);
+  const filePath = req.params[0] || 'index.html';
+  const fullPath = path.join(siteDir, filePath);
+  
+  res.sendFile(fullPath, (err) => {
+    if (err) next();
+  });
+});
 
 // Subdomain Routing Middleware
 app.use((req, res, next) => {
