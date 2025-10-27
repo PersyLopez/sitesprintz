@@ -1544,19 +1544,39 @@
             <div class="success-message">
               <div class="success-icon">🎉</div>
               <h2>Your Site is Live!</h2>
-              <p class="muted">Congratulations! Your website has been published successfully.</p>
+              <p class="muted">Congratulations, ${result.businessName}! Your website has been published successfully.</p>
+              
               <div style="margin-top: 30px; padding: 20px; background: #f8fafc; border-radius: 12px;">
-                <p><strong>Your Site URL:</strong></p>
-                <h3 style="margin: 10px 0; color: #f97316;">${result.url}</h3>
-                <p style="font-size: 0.9rem; color: #64748b;">Visit your site to see it live!</p>
+                <p style="margin-bottom: 10px;"><strong>🌐 Your Site URL:</strong></p>
+                <input type="text" id="siteUrl" value="${result.url}" readonly style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1.1rem; text-align: center; background: white; color: #1f2937;">
+                <button onclick="copySuccessUrl()" style="margin-top: 10px; width: 100%; padding: 10px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                  📋 Copy URL
+                </button>
               </div>
-              <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center;">
+              
+              <div style="margin-top: 25px; padding: 20px; background: #dbeafe; border-radius: 12px; border-left: 4px solid #3b82f6;">
+                <p style="margin: 0 0 10px 0; font-weight: 600; color: #1e40af;"><strong>✓ What's Included:</strong></p>
+                <ul style="margin: 0; padding-left: 20px; color: #1e40af;">
+                  ${result.whatsIncluded.map(f => `<li>${f}</li>`).join('')}
+                </ul>
+              </div>
+              
+              <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
                 <a href="${result.url}" target="_blank" class="btn btn-primary-large">🔗 Visit Your Site</a>
-                <a href="/dashboard.html" class="btn btn-secondary-large">📊 Go to Dashboard</a>
+                <button onclick="shareSuccess()" class="btn btn-secondary-large">📤 Share Your Site</button>
+                <a href="/dashboard.html" class="btn btn-secondary-large">📊 Dashboard</a>
               </div>
+              
+              <p style="margin-top: 25px; font-size: 0.85rem; color: #64748b; text-align: center;">
+                💡 <strong>Tip:</strong> Add your business hours, social media links, and more by editing your site!
+              </p>
             </div>
           `;
           successDiv.style.display = 'block';
+          
+          // Store URL for copy/share functions
+          window.publishedSiteUrl = result.url;
+          window.publishedBusinessName = result.businessName;
           
         } else {
           alert('Failed to publish your site. Please try again.');
@@ -1569,6 +1589,49 @@
         alert('Failed to publish your site: ' + error.message);
         payButton.textContent = originalText;
         payButton.disabled = false;
+      }
+    }
+
+    // Success screen helper functions
+    function copySuccessUrl() {
+      const urlInput = document.getElementById('siteUrl');
+      urlInput.select();
+      urlInput.setSelectionRange(0, 99999); // For mobile
+      
+      navigator.clipboard.writeText(urlInput.value).then(() => {
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = '✓ Copied!';
+        btn.style.background = '#10b981';
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.style.background = '#10b981';
+        }, 2000);
+      }).catch(() => {
+        // Fallback
+        urlInput.select();
+        document.execCommand('copy');
+        alert('URL copied to clipboard!');
+      });
+    }
+
+    function shareSuccess() {
+      const url = window.publishedSiteUrl;
+      const title = `Check out ${window.publishedBusinessName} website!`;
+      
+      if (navigator.share) {
+        navigator.share({
+          title: title,
+          text: `Check out this website!`,
+          url: url,
+        }).catch(err => {
+          if (err.name !== 'AbortError') {
+            console.error('Share error:', err);
+          }
+        });
+      } else {
+        // Fallback to copy
+        copySuccessUrl();
       }
     }
 
