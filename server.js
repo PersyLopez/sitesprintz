@@ -599,15 +599,17 @@ function generateSubdomain(businessName) {
 }
 
 // Route handler for /sites/{subdomain}/ paths
-app.use('/sites/:subdomain/*', (req, res, next) => {
-  const { subdomain } = req.params;
+app.get('/sites/:subdomain/:filename', async (req, res, next) => {
+  const { subdomain, filename } = req.params;
   const siteDir = path.join(publicDir, 'sites', subdomain);
-  const filePath = req.params[0] || 'index.html';
-  const fullPath = path.join(siteDir, filePath);
+  const fullPath = path.join(siteDir, filename);
   
-  res.sendFile(fullPath, (err) => {
-    if (err) next();
-  });
+  try {
+    await fs.access(fullPath);
+    res.sendFile(fullPath);
+  } catch (err) {
+    next();
+  }
 });
 
 // Subdomain Routing Middleware
