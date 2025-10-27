@@ -139,8 +139,18 @@
     }
 
     function useTemplate(templateId) {
+      // Redirect to setup with selected template
       window.location.href = `/setup.html?template=${templateId}`;
     }
+
+    // Check for template parameter on load
+    window.addEventListener('load', () => {
+      const params = new URLSearchParams(window.location.search);
+      const templateFromUrl = params.get('template');
+      if (templateFromUrl) {
+        useTemplate(templateFromUrl);
+      }
+    });
 
     // Load templates when page loads
     loadTemplates();
