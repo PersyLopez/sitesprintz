@@ -259,24 +259,24 @@
     footer.appendChild(el('p', { class:'muted' }, [cfg.footer?.text || `© ${year} ${cfg.brand?.name || ''}. All rights reserved.`]));
   }
 
-  // Share functions
-  function shareToFacebook() {
+  // Share functions (make global)
+  window.shareToFacebook = function() {
     const url = encodeURIComponent(window.location.href);
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'width=600,height=400');
   }
 
-  function shareToTwitter() {
+  window.shareToTwitter = function() {
     const url = encodeURIComponent(window.location.href);
     const title = encodeURIComponent(document.title);
     window.open(`https://twitter.com/intent/tweet?url=${url}&text=${title}`, '_blank', 'width=600,height=400');
   }
 
-  function shareToLinkedIn() {
+  window.shareToLinkedIn = function() {
     const url = encodeURIComponent(window.location.href);
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'width=600,height=400');
   }
 
-  async function copyLinkToClipboard() {
+  window.copyLinkToClipboard = async function() {
     try {
       await navigator.clipboard.writeText(window.location.href);
       
@@ -301,7 +301,7 @@
   }
 
   // Native share on mobile devices
-  async function nativeShare() {
+  window.nativeShare = async function() {
     if (navigator.share) {
       try {
         await navigator.share({
