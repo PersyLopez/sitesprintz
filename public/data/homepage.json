@@ -1,0 +1,175 @@
+{
+  "brand": {
+    "name": "Atom",
+    "logo": "assets/logo.svg"
+  },
+  "themeVars": {
+    "color-primary": "#f97316",
+    "color-accent": "#ea580c"
+  },
+  "nav": [
+    {
+      "label": "How It Works",
+      "href": "#how-it-works"
+    },
+    {
+      "label": "Templates",
+      "href": "/templates.html"
+    },
+    {
+      "label": "Pricing",
+      "href": "#pricing"
+    },
+    {
+      "label": "Start Free",
+      "href": "/setup.html"
+    }
+  ],
+  "hero": {
+    "eyebrow": "Create Your Website Free",
+    "title": "Small websites. Big impact.",
+    "subtitle": "Build a professional website for your small business in minutes. Try it free, pay only when you publish.",
+    "cta": [
+      {
+        "label": "Browse Templates",
+        "href": "/templates.html"
+      },
+      {
+        "label": "Start Free",
+        "href": "/setup.html",
+        "variant": "secondary"
+      }
+    ],
+    "image": "https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=1200&q=80",
+    "imageAlt": "Professional website creation"
+  },
+  "features": {
+    "title": "Everything You Need",
+    "items": [
+      {
+        "icon": "🚀",
+        "title": "One-Click Setup",
+        "description": "Choose a template and customize. No coding required."
+      },
+      {
+        "icon": "📱",
+        "title": "Mobile Ready",
+        "description": "Your site looks perfect on every device automatically."
+      },
+      {
+        "icon": "⚡",
+        "title": "Lightning Fast",
+        "description": "Built for speed. Your customers will thank you."
+      },
+      {
+        "icon": "🎨",
+        "title": "Beautiful Templates",
+        "description": "Professional designs for every type of business."
+      }
+    ]
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "steps": [
+      {
+        "number": "1",
+        "title": "Browse Templates",
+        "description": "Choose from our collection of professional templates",
+        "icon": "👀"
+      },
+      {
+        "number": "2",
+        "title": "Customize Free",
+        "description": "Edit every element - no payment required",
+        "icon": "✏️"
+      },
+      {
+        "number": "3",
+        "title": "Preview & Publish",
+        "description": "See your site live, then pay to make it public",
+        "icon": "🚀"
+      }
+    ]
+  },
+  "examples": {
+    "title": "See Examples",
+    "subtitle": "Check out sites built with Atom",
+    "items": [
+      {
+        "name": "Restaurant",
+        "category": "Food & Dining",
+        "image": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80"
+      },
+      {
+        "name": "Salon",
+        "category": "Beauty & Wellness",
+        "image": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&q=80"
+      },
+      {
+        "name": "Gym",
+        "category": "Fitness",
+        "image": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80"
+      }
+    ]
+  },
+  "pricing": {
+    "title": "Simple, Transparent Pricing",
+    "subtitle": "Try everything free. Pay only when you publish.",
+    "plans": [
+      {
+        "name": "Starter",
+        "price": "$9",
+        "period": "/mo",
+        "description": "Perfect for small businesses just getting started",
+        "cta": "Start Free",
+        "href": "/setup.html",
+        "features": [
+          "Basic templates",
+          "Your own subdomain",
+          "Mobile-responsive",
+          "Contact form",
+          "Social media links"
+        ]
+      },
+      {
+        "name": "Business",
+        "price": "$19",
+        "period": "/mo",
+        "description": "For growing businesses with more needs",
+        "cta": "Start Free",
+        "href": "/setup.html",
+        "features": [
+          "Premium templates",
+          "Custom domain support",
+          "Unlimited pages",
+          "SEO optimization",
+          "Analytics included"
+        ],
+        "popular": true
+      },
+      {
+        "name": "Pro",
+        "price": "$39",
+        "period": "/mo",
+        "description": "Advanced features for serious businesses",
+        "cta": "Start Free",
+        "href": "/setup.html",
+        "features": [
+          "All templates",
+          "Priority support",
+          "Custom branding",
+          "Advanced analytics",
+          "API access"
+        ]
+      }
+    ]
+  },
+  "about": {
+    "title": "Why Atom?",
+    "body": "We believe small businesses deserve powerful, affordable web presence. That's why we built Atom - to give you professional websites without the complexity or high costs of traditional solutions. Start free, pay only when you're ready to publish."
+  },
+  "footer": {
+    "text": "© 2024 Atom. Small websites. Big impact."
+  }
+}
+
