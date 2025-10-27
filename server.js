@@ -599,12 +599,12 @@ function generateSubdomain(businessName) {
 }
 
 // Route handler for /sites/{subdomain}/ paths
-app.get('/sites/:subdomain/*', async (req, res, next) => {
-  const { subdomain } = req.params;
-  const remainingPath = req.params[0] || 'index.html';
+app.get('/sites/:subdomain/:file(*)', async (req, res, next) => {
+  const { subdomain, file } = req.params;
+  const filePath = file || 'index.html';
   
   // Build the file path
-  const sitePath = path.join(publicDir, 'sites', subdomain, remainingPath);
+  const sitePath = path.join(publicDir, 'sites', subdomain, filePath);
   
   try {
     // Check if file exists
