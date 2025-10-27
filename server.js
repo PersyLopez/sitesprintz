@@ -456,21 +456,37 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
     
     // Update site data with draft business data
     if (draft.businessData) {
+      // Business name
       if (draft.businessData.businessName && draft.businessData.businessName.trim()) {
         siteData.brand.name = draft.businessData.businessName;
       }
       
+      // Hero section
       if (siteData.hero) {
         if (draft.businessData.heroTitle) siteData.hero.title = draft.businessData.heroTitle;
         if (draft.businessData.heroSubtitle) siteData.hero.subtitle = draft.businessData.heroSubtitle;
         if (draft.businessData.heroImage) siteData.hero.image = draft.businessData.heroImage;
       }
       
+      // Contact information
       if (siteData.contact) {
         if (draft.businessData.email) siteData.contact.email = draft.businessData.email;
         if (draft.businessData.phone) siteData.contact.phone = draft.businessData.phone;
         if (draft.businessData.address) siteData.contact.subtitle = draft.businessData.address;
         if (draft.businessData.businessHours) siteData.contact.hours = draft.businessData.businessHours;
+      }
+      
+      // Social media links (add new section if not exists)
+      if (!siteData.social) siteData.social = {};
+      if (draft.businessData.websiteUrl) siteData.social.website = draft.businessData.websiteUrl;
+      if (draft.businessData.facebookUrl) siteData.social.facebook = draft.businessData.facebookUrl;
+      if (draft.businessData.instagramUrl) siteData.social.instagram = draft.businessData.instagramUrl;
+      if (draft.businessData.googleMapsUrl) siteData.social.maps = draft.businessData.googleMapsUrl;
+      
+      // Template-specific fields (preserve custom data)
+      if (draft.businessData.templateSpecific && Object.keys(draft.businessData.templateSpecific).length > 0) {
+        if (!siteData.custom) siteData.custom = {};
+        Object.assign(siteData.custom, draft.businessData.templateSpecific);
       }
       
       // Update services/products
@@ -497,6 +513,14 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
             }));
         }
       }
+      
+      // Add publishing metadata
+      siteData.published = {
+        at: new Date().toISOString(),
+        plan: plan,
+        email: email,
+        subdomain: null // will be set after generation
+      };
     }
     
     // Generate unique subdomain
@@ -516,6 +540,13 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
     const siteHtml = templateHtml.replace('./data/site.json', './site.json');
     await fs.writeFile(siteIndexFile, siteHtml);
     
+    // Update published metadata with subdomain
+    if (siteData.published) {
+      siteData.published.subdomain = subdomain;
+      // Re-save site.json with subdomain
+      await fs.writeFile(siteConfigFile, JSON.stringify(siteData, null, 2));
+    }
+    
     // Delete draft after successful publish
     await fs.unlink(draftFile);
     
@@ -526,8 +557,19 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
       subdomain: subdomain,
       url: `http://${subdomain}.localhost:${PORT}`, // In production: https://${subdomain}.fixngomobile.com
       plan: plan,
-      publishedAt: new Date().toISOString()
+      publishedAt: new Date().toISOString(),
+      businessName: siteData.brand?.name || 'Your Business',
+      whatsIncluded: getPlanFeatures(plan)
     });
+    
+    function getPlanFeatures(plan) {
+      const features = {
+        starter: ['Your unique subdomain', 'Mobile-responsive design', 'Contact form', 'Social media links', 'Basic support'],
+        business: ['Everything in Starter', 'Custom domain support', 'Unlimited pages', 'SEO optimization', 'Analytics', 'Priority support'],
+        pro: ['Everything in Business', 'All premium templates', 'Advanced customization', 'Custom branding', 'API access', '24/7 support']
+      };
+      return features[plan] || features.starter;
+    }
     
   } catch (err) {
     console.error('Publish error:', err);
