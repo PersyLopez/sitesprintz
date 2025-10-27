@@ -646,14 +646,47 @@
   </div>
 
   <script>
-    let currentStep = 1;
+    let currentStep = 2; // Start at customization step
     let selectedTemplate = null;
     let uploadedImages = [];
     const ADMIN_TOKEN = 'test-admin-token-12345'; // TODO: Load from config or env
 
-    // Initialize
-    loadTemplates();
-    setupDragAndDrop();
+    // Initialize - load template from URL parameter
+    window.addEventListener('DOMContentLoaded', async () => {
+      const params = new URLSearchParams(window.location.search);
+      const templateId = params.get('template');
+      
+      if (templateId) {
+        // Load template from URL
+        try {
+          const response = await fetch('/data/templates/index.json');
+          const data = await response.json();
+          const template = data.templates.find(t => t.id === templateId);
+          
+          if (template) {
+            selectedTemplate = template;
+            // Hide step 1 (template selection), show step 2 (customization)
+            document.getElementById('step1').style.display = 'none';
+            document.getElementById('step2').style.display = 'block';
+            
+            // Hide progress bar since we're skipping step 1
+            document.querySelector('.progress-bar').style.display = 'none';
+            
+            // Setup customization
+            await setupCustomize();
+            updatePreview();
+          }
+        } catch (error) {
+          console.error('Failed to load template:', error);
+        }
+      } else {
+        // No template selected, show step 1
+        currentStep = 1;
+        loadTemplates();
+      }
+      
+      setupDragAndDrop();
+    });
 
     async function loadTemplates() {
       try {
