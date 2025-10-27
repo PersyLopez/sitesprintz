@@ -20,6 +20,18 @@ async function saveSite(site, token){
   return res.json();
 }
 
+async function fetchTemplatesIndex(){
+  const res = await fetch('/data/templates/index.json', { cache: 'no-cache' });
+  if(!res.ok) throw new Error('Failed to load templates');
+  return res.json();
+}
+
+async function fetchTemplateById(id){
+  const res = await fetch(`/data/templates/${encodeURIComponent(id)}.json`, { cache: 'no-cache' });
+  if(!res.ok) throw new Error('Template not found');
+  return res.json();
+}
+
 function renderTables(state){
   const pagesBody = $('#pages-table tbody');
   pagesBody.innerHTML = '';
@@ -44,6 +56,42 @@ function renderTables(state){
     selectedPageIndex: null,
     selectedProdIndex: null
   };
+
+  // Initialize templates selector
+  try{
+    const idx = await fetchTemplatesIndex();
+    const sel = $('#templateSelect');
+    if(sel){
+      sel.innerHTML = ['<option value="">Select a template…</option>']
+        .concat((idx.templates || []).map(t => `<option value="${t.id}">${t.name} — ${t.description}</option>`))
+        .join('');
+    }
+  }catch(e){ /* ignore if template index missing */ }
+
+  const previewBtn = $('#previewTemplate');
+  if(previewBtn){
+    previewBtn.addEventListener('click', () =>{
+      const sel = $('#templateSelect');
+      const id = sel && sel.value;
+      if(!id) return alert('Select a template');
+      window.open(`/?template=${encodeURIComponent(id)}`, '_blank');
+    });
+  }
+
+  const applyBtn = $('#applyTemplate');
+  if(applyBtn){
+    applyBtn.addEventListener('click', async () =>{
+      const sel = $('#templateSelect');
+      const id = sel && sel.value;
+      if(!id) return alert('Select a template');
+      try{
+        const tpl = await fetchTemplateById(id);
+        state.site = { ...tpl, pages: tpl.pages || [], products: tpl.products || [] };
+        renderTables(state);
+        alert('Template applied. Customize content and press Save.');
+      }catch(e){ alert(e.message); }
+    });
+  }
 
   $('#load').addEventListener('click', async ()=>{
     try{
