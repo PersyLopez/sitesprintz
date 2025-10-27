@@ -213,8 +213,128 @@
     const footer = qs('#footer-content');
     footer.innerHTML = '';
     const year = new Date().getFullYear();
+    
+    // Add share buttons section
+    const shareButtons = [];
+    
+    // Show native share on mobile if available
+    if (navigator.share) {
+      shareButtons.push(el('button', { 
+        class: 'share-btn',
+        style: 'background: linear-gradient(135deg, #f97316, #ea580c); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem;',
+        onclick: 'nativeShare()'
+      }, ['📤 Share']));
+    }
+    
+    // Add individual share buttons
+    shareButtons.push(
+      el('button', { 
+        class: 'share-btn',
+        style: 'background: #1877F2; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;',
+        onclick: 'shareToFacebook()'
+      }, ['📘 Facebook']),
+      el('button', { 
+        class: 'share-btn',
+        style: 'background: #1DA1F2; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;',
+        onclick: 'shareToTwitter()'
+      }, ['🐦 Twitter']),
+      el('button', { 
+        class: 'share-btn',
+        style: 'background: #0077B5; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;',
+        onclick: 'shareToLinkedIn()'
+      }, ['💼 LinkedIn']),
+      el('button', { 
+        class: 'share-btn',
+        style: 'background: #1f2937; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;',
+        onclick: 'copyLinkToClipboard()'
+      }, ['🔗 Copy Link'])
+    );
+    
+    const shareSection = el('div', { style: 'text-align: center; margin-bottom: 30px;' }, [
+      el('h3', { style: 'margin-bottom: 15px; font-size: 1.2rem;' }, ['Share This Page']),
+      el('div', { style: 'display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;' }, shareButtons)
+    ]);
+    
+    footer.appendChild(shareSection);
     footer.appendChild(el('p', { class:'muted' }, [cfg.footer?.text || `© ${year} ${cfg.brand?.name || ''}. All rights reserved.`]));
   }
+
+  // Share functions
+  function shareToFacebook() {
+    const url = encodeURIComponent(window.location.href);
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'width=600,height=400');
+  }
+
+  function shareToTwitter() {
+    const url = encodeURIComponent(window.location.href);
+    const title = encodeURIComponent(document.title);
+    window.open(`https://twitter.com/intent/tweet?url=${url}&text=${title}`, '_blank', 'width=600,height=400');
+  }
+
+  function shareToLinkedIn() {
+    const url = encodeURIComponent(window.location.href);
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'width=600,height=400');
+  }
+
+  async function copyLinkToClipboard() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      
+      // Show feedback
+      const event = new CustomEvent('showNotification', { 
+        detail: { message: '✅ Link copied to clipboard!', type: 'success' } 
+      });
+      document.dispatchEvent(event);
+    } catch (err) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = window.location.href;
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      alert('Link copied to clipboard!');
+    }
+  }
+
+  // Native share on mobile devices
+  async function nativeShare() {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: document.title,
+          text: document.querySelector('meta[name="description"]')?.content || '',
+          url: window.location.href,
+        });
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Error sharing:', err);
+        }
+      }
+    } else {
+      // Fallback to copy
+      copyLinkToClipboard();
+    }
+  }
+
+  // Notification system for copy feedback
+  document.addEventListener('DOMContentLoaded', () => {
+    const notification = document.createElement('div');
+    notification.id = 'shareNotification';
+    notification.style.cssText = 'position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 15px 30px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 10000; display: none; font-weight: 600;';
+    document.body.appendChild(notification);
+
+    document.addEventListener('showNotification', (e) => {
+      notification.textContent = e.detail.message;
+      notification.style.display = 'block';
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 3000);
+    });
+  });
 
   function renderAll(cfg){
     renderHeader(cfg);
