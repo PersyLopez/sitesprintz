@@ -18,11 +18,13 @@ const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'dev-token';
 
 const publicDir = path.join(__dirname, 'public');
 const uploadsDir = path.join(publicDir, 'uploads');
+const draftsDir = path.join(publicDir, 'drafts');
 const dataFile = path.join(publicDir, 'data', 'site.json');
 const templatesDir = path.join(publicDir, 'data', 'templates');
 
-// Ensure uploads directory exists
+// Ensure directories exist
 fs.mkdir(uploadsDir, { recursive: true }).catch(() => {});
+fs.mkdir(draftsDir, { recursive: true }).catch(() => {});
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -120,6 +122,78 @@ app.delete('/api/uploads/:filename', requireAdmin, async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete file' });
+  }
+});
+
+// Draft Management Endpoints
+app.post('/api/drafts', async (req, res) => {
+  try {
+    const draftData = req.body;
+    
+    if (!draftData || !draftData.templateId) {
+      return res.status(400).json({ error: 'Invalid draft data' });
+    }
+    
+    // Generate unique draft ID
+    const draftId = `draft-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const draftFile = path.join(draftsDir, `${draftId}.json`);
+    
+    // Add expiration timestamp (7 days from now)
+    const draft = {
+      draftId: draftId,
+      templateId: draftData.templateId,
+      businessData: draftData.businessData || {},
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      status: 'draft'
+    };
+    
+    await fs.writeFile(draftFile, JSON.stringify(draft, null, 2));
+    
+    res.json({ 
+      success: true, 
+      draftId: draftId,
+      previewUrl: `/preview/${draftId}`,
+      expiresAt: draft.expiresAt
+    });
+  } catch (err) {
+    console.error('Draft save error:', err);
+    res.status(500).json({ error: 'Failed to save draft' });
+  }
+});
+
+app.get('/api/drafts/:draftId', async (req, res) => {
+  try {
+    const draftId = req.params.draftId;
+    const draftFile = path.join(draftsDir, `${draftId}.json`);
+    
+    const draftRaw = await fs.readFile(draftFile, 'utf-8');
+    const draft = JSON.parse(draftRaw);
+    
+    // Check if draft is expired
+    if (new Date(draft.expiresAt) < new Date()) {
+      await fs.unlink(draftFile);
+      return res.status(410).json({ error: 'Draft has expired' });
+    }
+    
+    res.json(draft);
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      res.status(404).json({ error: 'Draft not found' });
+    } else {
+      res.status(500).json({ error: 'Failed to load draft' });
+    }
+  }
+});
+
+app.delete('/api/drafts/:draftId', async (req, res) => {
+  try {
+    const draftId = req.params.draftId;
+    const draftFile = path.join(draftsDir, `${draftId}.json`);
+    await fs.unlink(draftFile);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete draft' });
   }
 });
 

@@ -580,6 +580,7 @@
     let currentStep = 1;
     let selectedTemplate = null;
     let uploadedImages = [];
+    const ADMIN_TOKEN = 'test-admin-token-12345'; // TODO: Load from config or env
 
     // Initialize
     loadTemplates();
@@ -1153,7 +1154,7 @@
       return div;
     }
 
-    function openImagePicker(element, type) {
+    async function openImagePicker(element, type) {
       const card = element.closest('.form-group');
       const fileInput = card.querySelector('.service-image-file');
       const imageInput = card.querySelector('.service-image');
@@ -1161,27 +1162,49 @@
       if (type === 'camera' || type === 'gallery') {
         fileInput.setAttribute('capture', type === 'camera' ? 'environment' : 'user');
         fileInput.click();
-        fileInput.onchange = (e) => {
+        fileInput.onchange = async (e) => {
           const file = e.target.files[0];
           if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-              // Store for upload later
-              uploadedImages.push({
-                file: file,
-                url: event.target.result,
-                name: file.name,
-                serviceCard: card
+            // Show uploading status
+            imageInput.value = `[Uploading ${file.name}...]`;
+            imageInput.style.color = '#94a3b8';
+            
+            try {
+              // Upload to server
+              const formData = new FormData();
+              formData.append('image', file);
+              
+              const response = await fetch('/api/upload', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${ADMIN_TOKEN}`
+                },
+                body: formData
               });
-              imageInput.value = `[Uploading ${file.name}...]`;
-              imageInput.style.color = '#94a3b8';
-            };
-            reader.readAsDataURL(file);
+              
+              if (!response.ok) {
+                throw new Error('Upload failed');
+              }
+              
+              const result = await response.json();
+              
+              // Update image input with server URL
+              imageInput.value = result.url;
+              imageInput.style.color = '#1f2937';
+              
+              // Trigger preview update
+              updatePreview();
+              
+            } catch (error) {
+              console.error('Upload error:', error);
+              imageInput.value = '';
+              imageInput.style.color = '#ef4444';
+              alert('Failed to upload image. Please try again or use a URL.');
+            }
           }
         };
       } else if (type === 'url') {
         imageInput.focus();
-        alert('Paste or type the image URL here');
       }
     }
 
@@ -1199,28 +1222,52 @@
       button.closest('.form-group').remove();
     }
 
-    function pickHeroImage(type) {
+    async function pickHeroImage(type) {
       const fileInput = document.getElementById('heroImageFile');
       const imageInput = document.getElementById('heroImage');
       
       if (type === 'camera' || type === 'gallery') {
         fileInput.setAttribute('capture', type === 'camera' ? 'environment' : 'user');
         fileInput.click();
-        fileInput.onchange = (e) => {
+        fileInput.onchange = async (e) => {
           const file = e.target.files[0];
           if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-              uploadedImages.push({
-                file: file,
-                url: event.target.result,
-                name: file.name,
-                isHeroImage: true
+            // Show uploading status
+            imageInput.value = `[Uploading ${file.name}...]`;
+            imageInput.style.color = '#94a3b8';
+            
+            try {
+              // Upload to server
+              const formData = new FormData();
+              formData.append('image', file);
+              
+              const response = await fetch('/api/upload', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${ADMIN_TOKEN}`
+                },
+                body: formData
               });
-              imageInput.value = `[Uploading ${file.name}...]`;
-              imageInput.style.color = '#94a3b8';
-            };
-            reader.readAsDataURL(file);
+              
+              if (!response.ok) {
+                throw new Error('Upload failed');
+              }
+              
+              const result = await response.json();
+              
+              // Update image input with server URL
+              imageInput.value = result.url;
+              imageInput.style.color = '#1f2937';
+              
+              // Trigger preview update
+              updatePreview();
+              
+            } catch (error) {
+              console.error('Upload error:', error);
+              imageInput.value = '';
+              imageInput.style.color = '#ef4444';
+              alert('Failed to upload image. Please try again or use a URL.');
+            }
           }
         };
       } else if (type === 'url') {
