@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard | Atom</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .dashboard-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: white;
+      border-radius: 16px;
+    }
+    
+    .user-greeting h1 {
+      margin: 0;
+      font-size: 2rem;
+    }
+    
+    .user-greeting p {
+      margin: 5px 0 0 0;
+      opacity: 0.9;
+    }
+    
+    .logout-btn {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .stat-card {
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #f97316;
+      margin: 10px 0;
+    }
+    
+    .stat-label {
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+    
+    .sites-section {
+      margin-top: 30px;
+    }
+    
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .sites-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    
+    .site-card {
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.2s;
+    }
+    
+    .site-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .site-status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+    
+    .status-draft {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    
+    .status-published {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    
+    .site-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .site-actions button {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      background: white;
+    }
+    
+    .site-actions button:hover {
+      background: #f9fafb;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.2s;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <div class="dashboard-header">
+      <div class="user-greeting">
+        <h1 id="userName">Loading...</h1>
+        <p>Manage your websites</p>
+      </div>
+      <div>
+        <button class="logout-btn" onclick="handleLogout()">Logout</button>
+      </div>
+    </div>
+    
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="totalSites">0</div>
+        <div class="stat-label">Total Sites</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="publishedSites">0</div>
+        <div class="stat-label">Published</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="draftSites">0</div>
+        <div class="stat-label">Drafts</div>
+      </div>
+    </div>
+    
+    <div class="sites-section">
+      <div class="section-header">
+        <h2>Your Websites</h2>
+        <button class="btn-primary" onclick="createNewSite()">+ Create New Site</button>
+      </div>
+      
+      <div class="sites-grid" id="sitesGrid">
+        <div style="text-align: center; padding: 40px; color: #64748b;">
+          <div style="font-size: 3rem; margin-bottom: 10px;">📝</div>
+          <p>No sites yet. Create your first website!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentUser = null;
+    
+    // Check authentication
+    async function checkAuth() {
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        window.location.href = '/login.html';
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          currentUser = await response.json();
+          document.getElementById('userName').textContent = `Hello, ${currentUser.email}`;
+          loadUserSites();
+        } else {
+          window.location.href = '/login.html';
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        window.location.href = '/login.html';
+      }
+    }
+    
+    async function loadUserSites() {
+      // TODO: Load user's sites from API
+      // For now, show empty state
+      updateStats(0, 0, 0);
+    }
+    
+    function updateStats(total, published, drafts) {
+      document.getElementById('totalSites').textContent = total;
+      document.getElementById('publishedSites').textContent = published;
+      document.getElementById('draftSites').textContent = drafts;
+    }
+    
+    function createNewSite() {
+      window.location.href = '/templates.html';
+    }
+    
+    function handleLogout() {
+      localStorage.removeItem('authToken');
+      window.location.href = '/login.html';
+    }
+    
+    // Initialize
+    checkAuth();
+  </script>
+</body>
+</html>
+
