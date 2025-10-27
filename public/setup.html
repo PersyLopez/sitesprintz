@@ -562,7 +562,7 @@
       
       <div class="navigation">
         <button class="btn-secondary-large" onclick="prevStep()">← Back</button>
-        <button class="btn-primary-large" onclick="finishSetup()">🚀 Launch My Site!</button>
+        <button class="btn-primary-large" onclick="finishSetup()">✅ Save Draft (Free)</button>
       </div>
     </div>
 
@@ -1326,11 +1326,11 @@
       
       console.log('Business data collected:', businessData);
       
-      // Send data to server
+      // Send data to server as draft (no payment required)
       try {
-        console.log('Sending data to server...', { templateId: selectedTemplate.id, businessData });
+        console.log('Saving draft...', { templateId: selectedTemplate.id, businessData });
         
-        const response = await fetch('/api/setup', {
+        const response = await fetch('/api/drafts', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -1350,25 +1350,42 @@
         }
         
         const result = await response.json();
-        console.log('Result:', result);
+        console.log('Draft saved:', result);
         
         if (result.success) {
-          console.log('Success! Showing success message...');
-          // Show success message
+          // Show success message with preview link
           document.getElementById('step2').style.display = 'none';
-          document.getElementById('success').style.display = 'block';
           
-          // Redirect to the new page
-          setTimeout(() => {
-            window.location.href = `/${result.pageId || result.templateId}`;
-          }, 2000);
+          // Create success message HTML dynamically
+          const successDiv = document.getElementById('success');
+          successDiv.innerHTML = `
+            <div class="success-message">
+              <div class="success-icon">✅</div>
+              <h2>Draft Saved!</h2>
+              <p class="muted">Your site has been saved as a draft. You can preview it or publish it anytime.</p>
+              <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <a href="${result.previewUrl}" target="_blank" class="btn btn-secondary-large">👁️ Preview Draft</a>
+                <button onclick="showPaymentModal()" class="btn btn-primary-large">🚀 Publish Now</button>
+              </div>
+              <p style="margin-top: 20px; font-size: 0.9rem; color: #64748b;">Draft expires: ${new Date(result.expiresAt).toLocaleDateString()}</p>
+            </div>
+          `;
+          successDiv.style.display = 'block';
+          
+          // Store draft ID for payment modal
+          window.currentDraftId = result.draftId;
         } else {
-          alert('Failed to save your site. Please try again.');
+          alert('Failed to save your draft. Please try again.');
         }
       } catch (error) {
         console.error('Save error:', error);
-        alert('Failed to save your site: ' + error.message);
+        alert('Failed to save your draft: ' + error.message);
       }
+    }
+
+    function showPaymentModal() {
+      alert('Payment modal will appear here. This will be implemented by Agent C (Payment Modal).\n\nDraft ID: ' + window.currentDraftId);
+      // TODO: Agent C will implement this
     }
 
     // Functions are now global since script is not a module
