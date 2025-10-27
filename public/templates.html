@@ -52,8 +52,16 @@
     </header>
 
     <main>
-      <h1>Template Gallery</h1>
-      <p class="muted">Choose from 9+ business templates designed for different industries.</p>
+      <h1 style="font-size: 3rem; margin-bottom: 1rem;">Browse Templates</h1>
+      <p class="muted" style="font-size: 1.2rem;">Choose from professional templates designed for your business</p>
+      
+      <div style="margin: 30px 0; text-align: center;">
+        <button class="btn btn-secondary" onclick="filterTemplates('all')">All</button>
+        <button class="btn btn-secondary" onclick="filterTemplates('restaurant')">Restaurants</button>
+        <button class="btn btn-secondary" onclick="filterTemplates('salon')">Salons</button>
+        <button class="btn btn-secondary" onclick="filterTemplates('gym')">Gyms</button>
+        <button class="btn btn-secondary" onclick="filterTemplates('consultant')">Consultants</button>
+      </div>
       
       <div class="template-grid" id="templateGrid">
         <!-- Templates will be loaded here -->
@@ -62,49 +70,76 @@
   </div>
 
   <script>
+    let allTemplates = [];
+    
     async function loadTemplates() {
       try {
         const response = await fetch('/data/templates/index.json');
         const data = await response.json();
         
-        const grid = document.getElementById('templateGrid');
-        
-        data.templates.forEach(template => {
-          const card = document.createElement('div');
-          card.className = 'template-card';
-          
-          card.innerHTML = `
-            <div style="display: flex; align-items: center; margin-bottom: 10px;">
-              <span class="template-color" style="background-color: ${template.color}"></span>
-              <h3 style="margin: 0;">${template.name}</h3>
-            </div>
-            <p class="muted">${template.description}</p>
-            <div class="template-preview">
-              <strong>Category:</strong> ${template.category}<br>
-              <strong>Template ID:</strong> ${template.id}
-            </div>
-            <div style="margin-top: 15px;">
-              <button class="btn btn-secondary" onclick="previewTemplate('${template.id}')">Preview</button>
-              <button class="btn btn-primary" onclick="applyTemplate('${template.id}')">Use Template</button>
-            </div>
-          `;
-          
-          grid.appendChild(card);
-        });
+        allTemplates = data.templates;
+        renderTemplates(allTemplates);
       } catch (error) {
         console.error('Failed to load templates:', error);
         document.getElementById('templateGrid').innerHTML = '<p>Failed to load templates. Please try again.</p>';
       }
     }
-
-    function previewTemplate(templateId) {
-      window.open(`/admin.html?template=${templateId}`, '_blank');
+    
+    function renderTemplates(templates) {
+      const grid = document.getElementById('templateGrid');
+      grid.innerHTML = '';
+      
+      const icons = {
+        'restaurant': '🍽️', 'salon': '💇‍♀️', 'gym': '💪', 'consultant': '💼',
+        'tech-repair': '🔧', 'cleaning': '🧽', 'pet-care': '🐕', 'freelancer': '🎨', 'starter': '🚀'
+      };
+      
+      templates.forEach(template => {
+        const card = document.createElement('div');
+        card.className = 'template-card';
+        card.dataset.category = template.category;
+        
+        card.innerHTML = `
+          <div style="display: flex; align-items: center; margin-bottom: 15px;">
+            <span style="font-size: 2.5rem; margin-right: 10px;">${icons[template.id] || '📋'}</span>
+            <div>
+              <h3 style="margin: 0;">${template.name}</h3>
+              <span style="font-size: 0.85rem; color: #64748b;">${template.category}</span>
+            </div>
+          </div>
+          <p style="color: #64748b; margin-bottom: 20px;">${template.description}</p>
+          <div style="background: #f8fafc; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+            <div style="font-size: 0.9rem; color: #1f2937;">
+              <strong>✓</strong> Mobile-responsive<br>
+              <strong>✓</strong> Fast loading<br>
+              <strong>✓</strong> Easy to customize
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-secondary" onclick="previewTemplate('${template.id}')" style="flex: 1;">👁️ Preview</button>
+            <button class="btn btn-primary" onclick="useTemplate('${template.id}')" style="flex: 1;">🚀 Use This</button>
+          </div>
+        `;
+        
+        grid.appendChild(card);
+      });
+    }
+    
+    function filterTemplates(category) {
+      if (category === 'all') {
+        renderTemplates(allTemplates);
+      } else {
+        const filtered = allTemplates.filter(t => t.category.toLowerCase().includes(category));
+        renderTemplates(filtered);
+      }
     }
 
-    function applyTemplate(templateId) {
-      if (confirm(`Apply the ${templateId} template? This will replace your current site content.`)) {
-        window.open(`/admin.html?apply=${templateId}`, '_blank');
-      }
+    function previewTemplate(templateId) {
+      window.open(`/setup.html?template=${templateId}`, '_blank');
+    }
+
+    function useTemplate(templateId) {
+      window.location.href = `/setup.html?template=${templateId}`;
     }
 
     // Load templates when page loads
