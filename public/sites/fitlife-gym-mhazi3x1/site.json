@@ -1,0 +1,140 @@
+{
+  "brand": {
+    "name": "FitLife Gym",
+    "logo": "assets/logo.svg"
+  },
+  "themeVars": {
+    "color-primary": "#dc2626",
+    "color-accent": "#f59e0b"
+  },
+  "nav": [
+    {
+      "label": "Classes",
+      "href": "#services"
+    },
+    {
+      "label": "Membership",
+      "href": "#pricing"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
+  ],
+  "hero": {
+    "eyebrow": "Transform Your Body",
+    "title": "Achieve your fitness goals",
+    "subtitle": "Join our community of dedicated athletes.",
+    "cta": [
+      {
+        "label": "Join Now",
+        "href": "#pricing"
+      },
+      {
+        "label": "Free Trial",
+        "href": "#contact",
+        "variant": "secondary"
+      }
+    ],
+    "image": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80",
+    "imageAlt": "Fitness training and gym"
+  },
+  "services": {
+    "title": "Classes & Training",
+    "subtitle": "Something for everyone",
+    "items": [
+      {
+        "title": "Personal Training",
+        "description": "One-on-one coaching sessions.",
+        "image": "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&q=80"
+      },
+      {
+        "title": "Group Classes",
+        "description": "HIIT, yoga, and strength training.",
+        "image": "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&q=80"
+      },
+      {
+        "title": "Nutrition Coaching",
+        "description": "Fuel your body right.",
+        "image": "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=80"
+      }
+    ]
+  },
+  "pricing": {
+    "title": "Membership Plans",
+    "plans": [
+      {
+        "name": "Basic",
+        "description": "Gym access only",
+        "price": 49,
+        "cta": {
+          "label": "Join",
+          "href": "#contact"
+        }
+      },
+      {
+        "name": "Premium",
+        "description": "Gym + classes",
+        "price": 79,
+        "cta": {
+          "label": "Join",
+          "href": "#contact"
+        }
+      },
+      {
+        "name": "Elite",
+        "description": "All access + personal training",
+        "price": 149,
+        "cta": {
+          "label": "Join",
+          "href": "#contact"
+        }
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Member Stories",
+    "items": [
+      {
+        "quote": "Lost 30 pounds in 3 months!",
+        "author": "Jessica"
+      },
+      {
+        "quote": "Best gym in the city.",
+        "author": "David"
+      }
+    ]
+  },
+  "contact": {
+    "title": "Visit Us",
+    "subtitle": "123 Fitness Ave, Downtown",
+    "phone": "+1-555-789-0123",
+    "email": "info@fitlifegym.com"
+  },
+  "footer": {
+    "text": "© FitLife Gym. Train hard, live well."
+  },
+  "social": {},
+  "custom": {
+    "cardio": false,
+    "weights": false,
+    "machines": false,
+    "classes": false,
+    "pool": false,
+    "sauna": false,
+    "trainer": false,
+    "parking": false,
+    "monthly": false,
+    "yearly": false,
+    "daypass": false,
+    "student": false,
+    "senior": false,
+    "family": false
+  },
+  "published": {
+    "at": "2025-10-28T19:53:23.029Z",
+    "plan": "starter",
+    "email": "test",
+    "subdomain": "fitlife-gym-mhazi3x1"
+  }
+}

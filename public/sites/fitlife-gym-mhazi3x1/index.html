@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FitLife Gym</title>
+    <style>
+      body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f8fafc; }
+      .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+      .card { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin: 20px 0; }
+      .btn { display: inline-block; padding: 12px 24px; background: #dc2626; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; }
+      .btn-primary { background: #dc2626; }
+      .btn-secondary { background: #6b7280; }
+      .hero { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; padding: 60px 0; }
+      .hero h1 { font-size: 3rem; font-weight: 700; margin: 0 0 20px 0; }
+      .hero p { font-size: 1.2rem; color: #6b7280; margin: 0 0 30px 0; }
+      .hero img { width: 100%; height: 400px; object-fit: cover; border-radius: 12px; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+      .muted { color: #6b7280; }
+    </style>
+  </head>
+  <body>
+    <div id="loading">Loading...</div>
+    <div id="main-content" style="display: none;"></div>
+    
+    <script>
+      console.log('Fresh script starting...');
+      
+      async function loadSite() {
+        try {
+          console.log('Fetching site data...');
+          const response = await fetch('./site.json');
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          
+          const data = await response.json();
+          console.log('Data loaded:', data);
+          
+          // Hide loading, show content
+          document.getElementById('loading').style.display = 'none';
+          const mainContent = document.getElementById('main-content');
+          mainContent.style.display = 'block';
+          
+          // Render the site
+          mainContent.innerHTML = `
+            <div class="container">
+              <!-- Header -->
+              <header style="padding: 20px 0; border-bottom: 1px solid #e5e7eb;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <h1 style="margin: 0; color: ${data.themeVars?.['color-primary'] || '#dc2626'};">
+                    ${data.brand?.name || 'FitLife Gym'}
+                  </h1>
+                  <nav>
+                    ${data.nav?.map(item => `<a href="${item.href}" style="margin-left: 20px; text-decoration: none; color: #6b7280;">${item.label}</a>`).join('') || ''}
+                  </nav>
+                </div>
+              </header>
+              
+              <!-- Hero Section -->
+              <section class="hero">
+                <div>
+                  <p style="color: ${data.themeVars?.['color-primary'] || '#dc2626'}; font-weight: 600; margin-bottom: 10px;">
+                    ${data.hero?.eyebrow || 'Transform Your Body'}
+                  </p>
+                  <h1 style="font-size: 3rem; font-weight: 700; margin: 0 0 20px 0;">
+                    ${data.hero?.title || 'Achieve your fitness goals'}
+                  </h1>
+                  <p style="font-size: 1.2rem; color: #6b7280; margin: 0 0 30px 0;">
+                    ${data.hero?.subtitle || 'Join our community of dedicated athletes.'}
+                  </p>
+                  <div>
+                    ${data.hero?.cta?.map(btn => `
+                      <a href="${btn.href}" class="btn ${btn.variant === 'secondary' ? 'btn-secondary' : 'btn-primary'}" style="margin-right: 15px;">
+                        ${btn.label}
+                      </a>
+                    `).join('') || ''}
+                  </div>
+                </div>
+                ${data.hero?.image ? `
+                  <div>
+                    <img src="${data.hero.image}" alt="${data.hero.imageAlt || 'Fitness training'}" style="width: 100%; height: 400px; object-fit: cover; border-radius: 12px;">
+                  </div>
+                ` : ''}
+              </section>
+              
+              <!-- Services Section -->
+              ${data.services?.items?.length ? `
+                <section class="card">
+                  <h2>${data.services.title || 'Classes & Training'}</h2>
+                  <p>${data.services.subtitle || 'Something for everyone'}</p>
+                  <div class="grid">
+                    ${data.services.items.map(item => `
+                      <div class="card">
+                        ${item.image ? `<img src="${item.image}" alt="${item.title}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">` : ''}
+                        <h3>${item.title}</h3>
+                        <p>${item.description || ''}</p>
+                      </div>
+                    `).join('')}
+                  </div>
+                </section>
+              ` : ''}
+              
+              <!-- Pricing Section -->
+              ${data.pricing?.plans?.length ? `
+                <section class="card">
+                  <h2>${data.pricing.title || 'Membership Plans'}</h2>
+                  <div class="grid">
+                    ${data.pricing.plans.map(plan => `
+                      <div class="card" style="text-align: center;">
+                        <h3>${plan.name}</h3>
+                        <p style="font-size: 2rem; font-weight: 700; color: ${data.themeVars?.['color-primary'] || '#dc2626'};">$${plan.price}</p>
+                        <p>${plan.description}</p>
+                        ${plan.cta ? `<a href="${plan.cta.href}" class="btn btn-primary">${plan.cta.label}</a>` : ''}
+                      </div>
+                    `).join('')}
+                  </div>
+                </section>
+              ` : ''}
+              
+              <!-- Testimonials Section -->
+              ${data.testimonials?.items?.length ? `
+                <section class="card">
+                  <h2>${data.testimonials.title || 'Member Stories'}</h2>
+                  <div class="grid">
+                    ${data.testimonials.items.map(testimonial => `
+                      <div class="card">
+                        <p style="font-style: italic; font-size: 1.1rem;">"${testimonial.quote}"</p>
+                        <p style="text-align: right; font-weight: 600;">- ${testimonial.author}</p>
+                      </div>
+                    `).join('')}
+                  </div>
+                </section>
+              ` : ''}
+              
+              <!-- Contact Section -->
+              ${data.contact ? `
+                <section class="card">
+                  <h2>${data.contact.title || 'Contact Us'}</h2>
+                  <p>${data.contact.subtitle || ''}</p>
+                  ${data.contact.phone ? `<p><strong>Phone:</strong> ${data.contact.phone}</p>` : ''}
+                  ${data.contact.email ? `<p><strong>Email:</strong> ${data.contact.email}</p>` : ''}
+                </section>
+              ` : ''}
+              
+              <!-- Footer -->
+              <footer style="text-align: center; padding: 40px 0; border-top: 1px solid #e5e7eb; margin-top: 40px;">
+                <p class="muted">${data.footer?.text || 'Thank you for visiting!'}</p>
+              </footer>
+            </div>
+          `;
+          
+        } catch (error) {
+          console.error('Error:', error);
+          document.getElementById('loading').innerHTML = `
+            <div style="padding: 40px; text-align: center;">
+              <h2 style="color: #dc2626;">Error Loading Site</h2>
+              <p>${error.message}</p>
+            </div>
+          `;
+        }
+      }
+      
+      // Start loading
+      loadSite();
+    </script>
+  </body>
+</html>
