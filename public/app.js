@@ -229,9 +229,10 @@
       const prevText = btn.textContent;
       btn.disabled = true; btn.textContent = 'Redirecting…';
       try{
+        const idemKey = (self.crypto && typeof self.crypto.randomUUID === 'function') ? self.crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
         const res = await fetch('/api/payments/checkout-sessions', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idemKey },
           body: JSON.stringify({ productIndex: idx, quantity: 1, currency: 'usd', siteId: cfg.brand?.name || '' })
         });
         const data = await res.json().catch(()=>({}));
