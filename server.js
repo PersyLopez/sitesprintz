@@ -58,6 +58,11 @@ app.use(cors());
 app.use(bodyParser.json({ limit: '1mb' }));
 app.use(express.static(publicDir));
 
+// Add favicon route to prevent 404 errors
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).end(); // No content, but no error
+});
+
 function requireAdmin(req, res, next){
   const header = req.headers['authorization'] || '';
   const token = header.startsWith('Bearer ') ? header.slice(7) : header;
@@ -535,9 +540,37 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
     // Save site.json
     await fs.writeFile(siteConfigFile, JSON.stringify(siteData, null, 2));
     
-    // Create index.html for the site
-    const templateHtml = await fs.readFile(path.join(publicDir, 'index.html'), 'utf-8');
-    const siteHtml = templateHtml.replace('./data/site.json', './site.json');
+    // Create index.html for the site (use a dynamic template)
+    const siteHtml = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Loading...</title>
+    <style>
+      body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; }
+      .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+      .card { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin: 20px 0; }
+      .btn { display: inline-block; padding: 12px 24px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; }
+      .btn-primary { background: #3b82f6; }
+      .btn-secondary { background: #6b7280; }
+      .hero { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; padding: 60px 0; }
+      .hero h1 { font-size: 3rem; font-weight: 700; margin: 0 0 20px 0; }
+      .hero p { font-size: 1.2rem; color: #6b7280; margin: 0 0 30px 0; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+      .mt-2 { margin-top: 1rem; }
+      .mt-3 { margin-top: 1.5rem; }
+      .muted { color: #6b7280; }
+      #app { min-height: 100vh; }
+      #content { min-height: 100vh; }
+    </style>
+  </head>
+  <body>
+    <div id="app">Loading...</div>
+    <div id="content"></div>
+    <script src="/app.js"></script>
+  </body>
+</html>`;
     await fs.writeFile(siteIndexFile, siteHtml);
     
     // Update published metadata with subdomain
@@ -607,6 +640,20 @@ app.get('/sites/:subdomain/:filename', async (req, res, next) => {
   try {
     await fs.access(fullPath);
     res.sendFile(fullPath);
+  } catch (err) {
+    next();
+  }
+});
+
+// Route handler for /sites/{subdomain}/ (root of site)
+app.get('/sites/:subdomain/', async (req, res, next) => {
+  const { subdomain } = req.params;
+  const siteDir = path.join(publicDir, 'sites', subdomain);
+  const siteIndexFile = path.join(siteDir, 'index.html');
+  
+  try {
+    await fs.access(siteIndexFile);
+    res.sendFile(siteIndexFile);
   } catch (err) {
     next();
   }

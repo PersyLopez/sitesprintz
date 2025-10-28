@@ -14,8 +14,13 @@
         if(resTpl.ok){ return resTpl.json(); }
       }catch(_){ /* fall back below */ }
     }
-    const res = await fetch('./data/site.json', { cache:'no-cache' });
-    if(!res.ok){ throw new Error('Failed to load data/site.json'); }
+    
+    // Check if we're on a published site (URL contains /sites/)
+    const isPublishedSite = window.location.pathname.includes('/sites/');
+    const configPath = isPublishedSite ? './site.json' : './data/site.json';
+    
+    const res = await fetch(configPath, { cache:'no-cache' });
+    if(!res.ok){ throw new Error(`Failed to load ${configPath}`); }
     return res.json();
   }
 
@@ -68,25 +73,27 @@
     const brandLogo = qs('#brand-logo');
     const navLinks = qs('#nav-links');
 
-    if(cfg.brand?.name) brandName.textContent = cfg.brand.name;
-    if(cfg.brand?.logo){ brandLogo.src = cfg.brand.logo; brandLogo.alt = cfg.brand.alt || cfg.brand.name || 'Logo'; }
+    if(cfg.brand?.name && brandName) brandName.textContent = cfg.brand.name;
+    if(cfg.brand?.logo && brandLogo){ brandLogo.src = cfg.brand.logo; brandLogo.alt = cfg.brand.alt || cfg.brand.name || 'Logo'; }
 
-    navLinks.innerHTML = '';
-    const dynamicNav = [...(cfg.nav || [])];
-    if(Array.isArray(cfg.pages) && cfg.pages.length){
-      dynamicNav.push({ label: 'Pages', href: '#pages' });
+    if(navLinks){
+      navLinks.innerHTML = '';
+      const dynamicNav = [...(cfg.nav || [])];
+      if(Array.isArray(cfg.pages) && cfg.pages.length){
+        dynamicNav.push({ label: 'Pages', href: '#pages' });
+      }
+      if(Array.isArray(cfg.products) && cfg.products.length){
+        dynamicNav.push({ label: 'Products', href: '#products' });
+      }
+      dynamicNav.forEach(item =>{
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = item.href || '#';
+        a.textContent = item.label || '';
+        li.appendChild(a);
+        navLinks.appendChild(li);
+      });
     }
-    if(Array.isArray(cfg.products) && cfg.products.length){
-      dynamicNav.push({ label: 'Products', href: '#products' });
-    }
-    dynamicNav.forEach(item =>{
-      const li = document.createElement('li');
-      const a = document.createElement('a');
-      a.href = item.href || '#';
-      a.textContent = item.label || '';
-      li.appendChild(a);
-      navLinks.appendChild(li);
-    });
 
     const navToggle = qs('#nav-toggle');
     const siteNav = qs('#site-nav');
@@ -211,6 +218,8 @@
 
   function renderFooter(cfg){
     const footer = qs('#footer-content');
+    if(!footer) return; // Skip if footer element doesn't exist
+    
     footer.innerHTML = '';
     const year = new Date().getFullYear();
     
@@ -396,14 +405,25 @@
     updateOpenGraphMetaTags(state.config);
     setTheme(state.config.themeVars);
     renderAll(state.config);
+    
+    // Clear the loading text from #app div
+    const appDiv = document.getElementById('app');
+    if(appDiv) {
+      appDiv.innerHTML = '';
+    }
   }catch(err){
-    console.error(err);
-    const main = document.getElementById('content');
-    main.appendChild(el('div', { class:'container' }, [
-      el('div', { class:'card' }, [
-        el('h2', {}, ['Could not load site.json']),
-        el('p', {}, ['Place a configuration file at ', el('code',{},['public/data/site.json']), ' or run a local server.'])
-      ])
-    ]));
+    console.error('App error:', err);
+    const main = document.getElementById('app') || document.getElementById('content');
+    if(main){
+      main.innerHTML = `
+        <div class="container" style="max-width: 800px; margin: 50px auto; padding: 20px;">
+          <div class="card" style="background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h2 style="color: #ef4444; margin-bottom: 15px;">⚠️ Could not load site data</h2>
+            <p style="color: #6b7280; margin-bottom: 20px;">There was an error loading the site configuration.</p>
+            <p style="color: #9ca3af; font-size: 0.9rem;">Error: ${err.message}</p>
+          </div>
+        </div>
+      `;
+    }
   }
 })();
