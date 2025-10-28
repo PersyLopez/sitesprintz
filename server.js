@@ -566,9 +566,135 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
     </style>
   </head>
   <body>
-    <div id="app">Loading...</div>
-    <div id="content"></div>
-    <script src="/app.js"></script>
+    <div id="loading">Loading...</div>
+    <div id="main-content" style="display: none;"></div>
+    
+    <script>
+      console.log('Fresh script starting...');
+      
+      async function loadSite() {
+        try {
+          console.log('Fetching site data...');
+          const response = await fetch('./site.json');
+          
+          if (!response.ok) {
+            throw new Error(\`HTTP \${response.status}\`);
+          }
+          
+          const data = await response.json();
+          console.log('Data loaded:', data);
+          
+          // Hide loading, show content
+          document.getElementById('loading').style.display = 'none';
+          const mainContent = document.getElementById('main-content');
+          mainContent.style.display = 'block';
+          
+          // Render the site
+          mainContent.innerHTML = \`
+            <div class="container">
+              <!-- Header -->
+              <header style="padding: 20px 0; border-bottom: 1px solid #e5e7eb;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <h1 style="margin: 0; color: \${data.themeVars?.['color-primary'] || '#3b82f6'};">
+                    \${data.brand?.name || 'Business Name'}
+                  </h1>
+                  <nav>
+                    \${data.nav?.map(item => \`<a href="\${item.href}" style="margin-left: 20px; text-decoration: none; color: #6b7280;">\${item.label}</a>\`).join('') || ''}
+                  </nav>
+                </div>
+              </header>
+              
+              <!-- Hero Section -->
+              <section class="hero">
+                <div>
+                  <p style="color: \${data.themeVars?.['color-primary'] || '#3b82f6'}; font-weight: 600; margin-bottom: 10px;">
+                    \${data.hero?.eyebrow || ''}
+                  </p>
+                  <h1 style="font-size: 3rem; font-weight: 700; margin: 0 0 20px 0;">
+                    \${data.hero?.title || 'Welcome'}
+                  </h1>
+                  <p style="font-size: 1.2rem; color: #6b7280; margin: 0 0 30px 0;">
+                    \${data.hero?.subtitle || ''}
+                  </p>
+                  <div>
+                    \${data.hero?.cta?.map(btn => \`
+                      <a href="\${btn.href}" class="btn \${btn.variant === 'secondary' ? 'btn-secondary' : 'btn-primary'}" style="margin-right: 15px;">
+                        \${btn.label}
+                      </a>
+                    \`).join('') || ''}
+                  </div>
+                </div>
+                \${data.hero?.image ? \`
+                  <div>
+                    <img src="\${data.hero.image}" alt="\${data.hero.imageAlt || ''}" style="width: 100%; height: 400px; object-fit: cover; border-radius: 12px;">
+                  </div>
+                \` : ''}
+              </section>
+              
+              <!-- Services/Products Section -->
+              \${data.services?.items?.length ? \`
+                <section class="card">
+                  <h2>\${data.services.title || 'Services'}</h2>
+                  <p>\${data.services.subtitle || ''}</p>
+                  <div class="grid">
+                    \${data.services.items.map(item => \`
+                      <div class="card">
+                        \${item.image ? \`<img src="\${item.image}" alt="\${item.title}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">\` : ''}
+                        <h3>\${item.title}</h3>
+                        <p>\${item.description || ''}</p>
+                      </div>
+                    \`).join('')}
+                  </div>
+                </section>
+              \` : ''}
+              
+              \${data.products?.length ? \`
+                <section class="card">
+                  <h2>Our \${data.products[0]?.price ? 'Menu' : 'Services'}</h2>
+                  <div class="grid">
+                    \${data.products.map(item => \`
+                      <div class="card">
+                        \${item.image ? \`<img src="\${item.image}" alt="\${item.name}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">\` : ''}
+                        <h3>\${item.name}</h3>
+                        \${item.price ? \`<p style="font-size: 1.2rem; font-weight: 600; color: \${data.themeVars?.['color-primary'] || '#3b82f6'};}">$\${item.price}</p>\` : ''}
+                        <p>\${item.description || ''}</p>
+                      </div>
+                    \`).join('')}
+                  </div>
+                </section>
+              \` : ''}
+              
+              <!-- Contact Section -->
+              \${data.contact ? \`
+                <section class="card">
+                  <h2>\${data.contact.title || 'Contact Us'}</h2>
+                  <p>\${data.contact.subtitle || ''}</p>
+                  \${data.contact.phone ? \`<p><strong>Phone:</strong> \${data.contact.phone}</p>\` : ''}
+                  \${data.contact.email ? \`<p><strong>Email:</strong> \${data.contact.email}</p>\` : ''}
+                </section>
+              \` : ''}
+              
+              <!-- Footer -->
+              <footer style="text-align: center; padding: 40px 0; border-top: 1px solid #e5e7eb; margin-top: 40px;">
+                <p class="muted">\${data.footer?.text || 'Thank you for visiting!'}</p>
+              </footer>
+            </div>
+          \`;
+          
+        } catch (error) {
+          console.error('Error:', error);
+          document.getElementById('loading').innerHTML = \`
+            <div style="padding: 40px; text-align: center;">
+              <h2 style="color: #ef4444;">Error Loading Site</h2>
+              <p>\${error.message}</p>
+            </div>
+          \`;
+        }
+      }
+      
+      // Start loading
+      loadSite();
+    </script>
   </body>
 </html>`;
     await fs.writeFile(siteIndexFile, siteHtml);

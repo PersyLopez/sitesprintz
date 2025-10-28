@@ -1,0 +1,128 @@
+{
+  "brand": {
+    "name": "PetCare Plus",
+    "logo": "assets/logo.svg"
+  },
+  "themeVars": {
+    "color-primary": "#7c3aed",
+    "color-accent": "#a855f7"
+  },
+  "nav": [
+    {
+      "label": "Services",
+      "href": "#services"
+    },
+    {
+      "label": "Pricing",
+      "href": "#pricing"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
+  ],
+  "hero": {
+    "eyebrow": "Pet Care Services",
+    "title": "Your pets deserve the best",
+    "subtitle": "Professional grooming, walking, and pet sitting services.",
+    "cta": [
+      {
+        "label": "Book Service",
+        "href": "#contact"
+      },
+      {
+        "label": "See Services",
+        "href": "#services",
+        "variant": "secondary"
+      }
+    ],
+    "image": "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=1200&q=80",
+    "imageAlt": "Pet care services"
+  },
+  "services": {
+    "title": "Pet Services",
+    "subtitle": "Comprehensive care for your furry friends",
+    "items": [
+      {
+        "title": "Pet Grooming",
+        "description": "Professional grooming and styling.",
+        "image": "https://images.unsplash.com/photo-1525253086316-d0c936cf15d0?w=800&q=80"
+      },
+      {
+        "title": "Dog Walking",
+        "description": "Daily walks and exercise.",
+        "image": "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=800&q=80"
+      },
+      {
+        "title": "Pet Sitting",
+        "description": "Overnight and vacation care.",
+        "image": "https://images.unsplash.com/photo-1544513217-93f018c2cd3e?w=800&q=80"
+      }
+    ]
+  },
+  "pricing": {
+    "title": "Service Rates",
+    "plans": [
+      {
+        "name": "Grooming",
+        "description": "Bath, cut, and style",
+        "price": 65,
+        "cta": {
+          "label": "Book",
+          "href": "#contact"
+        }
+      },
+      {
+        "name": "Walking",
+        "description": "30-min daily walks",
+        "price": 25,
+        "cta": {
+          "label": "Book",
+          "href": "#contact"
+        }
+      },
+      {
+        "name": "Sitting",
+        "description": "Overnight pet care",
+        "price": 85,
+        "cta": {
+          "label": "Book",
+          "href": "#contact"
+        }
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Pet Parent Reviews",
+    "items": [
+      {
+        "quote": "My dog loves coming here!",
+        "author": "Sarah"
+      },
+      {
+        "quote": "Trustworthy and caring staff.",
+        "author": "Mike"
+      }
+    ]
+  },
+  "contact": {
+    "title": "Book Care",
+    "subtitle": "Available 7 days a week",
+    "phone": "+1-555-345-6789",
+    "email": "care@petcareplus.com"
+  },
+  "footer": {
+    "text": "© PetCare Plus. Loving care for your pets."
+  },
+  "social": {},
+  "custom": {
+    "businessDescription": "",
+    "specialOffers": ""
+  },
+  "published": {
+    "at": "2025-10-28T20:02:28.360Z",
+    "plan": "starter",
+    "email": "test",
+    "subdomain": "petcare-plus-mhaztsp4"
+  }
+}

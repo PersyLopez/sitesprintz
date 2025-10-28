@@ -1,0 +1,108 @@
+{
+  "brand": {
+    "name": "Acme Co.",
+    "logo": "assets/logo.svg"
+  },
+  "themeVars": {
+    "color-primary": "#22c55e",
+    "color-accent": "#38bdf8"
+  },
+  "nav": [
+    {
+      "label": "Home",
+      "href": "#top"
+    },
+    {
+      "label": "Services",
+      "href": "#services"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
+  ],
+  "hero": {
+    "eyebrow": "Welcome",
+    "title": "We help your business grow",
+    "subtitle": "Modern solutions tailored for small businesses.",
+    "cta": [
+      {
+        "label": "Get Started",
+        "href": "#contact"
+      },
+      {
+        "label": "Our Services",
+        "href": "#services",
+        "variant": "secondary"
+      }
+    ],
+    "image": "assets/hero-placeholder.svg",
+    "imageAlt": "Hero"
+  },
+  "services": {
+    "title": "Our Services",
+    "subtitle": "What we do best",
+    "items": [
+      {
+        "title": "Consulting",
+        "description": "Expert advice to grow."
+      },
+      {
+        "title": "Design",
+        "description": "Beautiful and functional."
+      },
+      {
+        "title": "Development",
+        "description": "Fast and reliable."
+      }
+    ]
+  },
+  "about": {
+    "title": "About Us",
+    "body": "We are a friendly neighborhood business."
+  },
+  "contact": {
+    "title": "Get in touch",
+    "subtitle": "We'd love to hear from you",
+    "email": "hello@example.com",
+    "phone": "+1 555 123 4567"
+  },
+  "footer": {
+    "text": "Proudly serving our community."
+  },
+  "pages": [
+    {
+      "slug": "about",
+      "title": "About",
+      "body": "# Our Story\nWe started in 2012..."
+    }
+  ],
+  "products": [
+    {
+      "name": "Consulting",
+      "price": 0,
+      "description": "Expert advice to grow."
+    },
+    {
+      "name": "Design",
+      "price": 0,
+      "description": "Beautiful and functional."
+    },
+    {
+      "name": "Development",
+      "price": 0,
+      "description": "Fast and reliable."
+    }
+  ],
+  "social": {},
+  "custom": {
+    "businessDescription": "",
+    "specialOffers": ""
+  },
+  "published": {
+    "at": "2025-10-28T19:56:27.914Z",
+    "plan": "starter",
+    "email": "test",
+    "subdomain": "acme-co-mhazm2kq"
+  }
+}
