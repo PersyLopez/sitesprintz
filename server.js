@@ -6,6 +6,7 @@ import path from 'path';
 import bodyParser from 'body-parser';
 import { fileURLToPath } from 'url';
 import Stripe from 'stripe';
+import { randomUUID as nodeRandomUUID } from 'crypto';
 
 dotenv.config();
 
@@ -22,16 +23,31 @@ const STRIPE_PUBLISHABLE_KEY = process.env.STRIPE_PUBLISHABLE_KEY || '';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
 const stripe = STRIPE_SECRET_KEY ? new Stripe(STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' }) : null;
 
+// Allowed origins for creating checkout sessions (comma-separated list). Same-origin is always allowed.
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
 const publicDir = path.join(__dirname, 'public');
 const dataFile = path.join(publicDir, 'data', 'site.json');
 const templatesDir = path.join(publicDir, 'data', 'templates');
+
+// Server-side var dir for webhook persistence
+const varDir = path.join(__dirname, 'var');
+const stripeEventsDir = path.join(varDir, 'stripe-events');
+const stripeFailedDir = path.join(varDir, 'stripe-events-failed');
+
+// Ensure directories exist (best-effort)
+await fs.mkdir(stripeEventsDir, { recursive: true }).catch(() => {});
+await fs.mkdir(stripeFailedDir, { recursive: true }).catch(() => {});
 
 app.use(cors());
 app.use(express.static(publicDir));
 
 // Stripe webhook must be defined BEFORE bodyParser.json so we can access the raw body
 if (stripe && STRIPE_WEBHOOK_SECRET) {
-  app.post('/api/webhooks/stripe', bodyParser.raw({ type: 'application/json' }), (req, res) => {
+  app.post('/api/webhooks/stripe', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
     const signature = req.headers['stripe-signature'];
     let event;
     try {
@@ -42,6 +58,27 @@ if (stripe && STRIPE_WEBHOOK_SECRET) {
 
     // Minimal handling: acknowledge and log important events
     try {
+      // Deduplicate by event.id: create file with wx flag
+      const filePath = path.join(stripeEventsDir, `${event.id}.json`);
+      const payloadRecord = {
+        id: event.id,
+        type: event.type,
+        account: event.account || null,
+        created: event.created,
+        received_at: Date.now(),
+        signature: signature || null,
+        raw: req.body.toString('utf8')
+      };
+      try {
+        await fs.writeFile(filePath, JSON.stringify(payloadRecord, null, 2), { flag: 'wx' });
+      } catch (e) {
+        if (e && (e.code === 'EEXIST' || e.message?.includes('EEXIST'))) {
+          // Duplicate delivery; acknowledge without reprocessing
+          return res.status(200).send();
+        }
+        // If we cannot persist, still acknowledge to avoid webhook retries
+      }
+
       switch (event.type) {
         case 'checkout.session.completed':
         case 'payment_intent.succeeded':
@@ -50,10 +87,13 @@ if (stripe && STRIPE_WEBHOOK_SECRET) {
           console.log('Stripe event:', event.type, event.data?.object?.id || '');
           break;
         default:
-          // no-op
           break;
       }
-    } catch (_) {
+    } catch (err) {
+      try {
+        const failedPath = path.join(stripeFailedDir, `${event.id}-${Date.now()}.json`);
+        await fs.writeFile(failedPath, JSON.stringify({ error: String(err?.message || err), event }, null, 2));
+      } catch (_) { /* ignore */ }
       // Never block webhook on internal errors – acknowledge and alert separately if needed
     }
     return res.status(200).send();
@@ -78,10 +118,32 @@ app.get('/api/payments/config', (req, res) => {
   });
 });
 
+function getRequestOrigin(req){
+  const hdrOrigin = req.headers['origin'];
+  if (typeof hdrOrigin === 'string' && hdrOrigin) return hdrOrigin;
+  const ref = req.headers['referer'];
+  if (typeof ref === 'string' && ref) {
+    try { const u = new URL(ref); return `${u.protocol}//${u.host}`; } catch (_) {}
+  }
+  return '';
+}
+
+function isAllowedOrigin(req){
+  const origin = getRequestOrigin(req);
+  if (!origin) return true; // Non-browser clients; allow
+  const sameOrigin = `${req.protocol}://${req.get('host')}`;
+  const allowed = [sameOrigin, ...ALLOWED_ORIGINS];
+  return allowed.some(o => o && o.toLowerCase() === origin.toLowerCase());
+}
+
 // Create a Checkout Session for a product defined in data/site.json by index
 app.post('/api/payments/checkout-sessions', async (req, res) => {
   try {
     if (!stripe) return res.status(503).json({ error: 'Payments not configured' });
+
+    if (!isAllowedOrigin(req)) {
+      return res.status(403).json({ error: 'Origin not allowed' });
+    }
 
     const { productIndex, quantity, currency, successUrl, cancelUrl, siteId } = req.body || {};
     const idx = Number(productIndex);
@@ -111,6 +173,12 @@ app.post('/api/payments/checkout-sessions', async (req, res) => {
     const success = successUrl || `${origin}/?checkout=success`;
     const cancel = cancelUrl || `${origin}/?checkout=cancel`;
 
+    // Idempotency key: prefer header, then body, then generated
+    const incomingIdem = (req.headers['idempotency-key'] || req.headers['Idempotency-Key'] || req.body?.idempotencyKey);
+    const idempotencyKey = typeof incomingIdem === 'string' && incomingIdem
+      ? incomingIdem
+      : (typeof nodeRandomUUID === 'function' ? nodeRandomUUID() : `${Date.now()}-${Math.random()}`);
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       line_items: [
@@ -129,12 +197,13 @@ app.post('/api/payments/checkout-sessions', async (req, res) => {
       success_url: success,
       cancel_url: cancel,
       allow_promotion_codes: false,
-      automatic_tax: { enabled: false },
+      // Enable Stripe Tax for automatic tax calculation
+      automatic_tax: { enabled: true },
       metadata: {
         siteId: siteId ? String(siteId) : '',
         productIndex: String(idx)
       }
-    });
+    }, { idempotencyKey });
 
     return res.json({ url: session.url });
   } catch (err) {
