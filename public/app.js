@@ -17,11 +17,26 @@
     
     // Check if we're on a published site (URL contains /sites/)
     const isPublishedSite = window.location.pathname.includes('/sites/');
-    const configPath = isPublishedSite ? './site.json' : './data/site.json';
     
-    const res = await fetch(configPath, { cache:'no-cache' });
-    if(!res.ok){ throw new Error(`Failed to load ${configPath}`); }
-    return res.json();
+    if(isPublishedSite){
+      // For published sites, load from local site.json
+      const res = await fetch('./site.json', { cache:'no-cache' });
+      if(!res.ok){ throw new Error('Failed to load site.json'); }
+      return res.json();
+    } else {
+      // For main site, try API endpoint first, then fallback to static file
+      try {
+        const resApi = await fetch('/api/site', { cache:'no-cache' });
+        if(resApi.ok){ 
+          return resApi.json(); 
+        }
+      }catch(_){ /* fall back to static file */ }
+      
+      // Fallback to static file
+      const res = await fetch('./data/site.json', { cache:'no-cache' });
+      if(!res.ok){ throw new Error('Failed to load data/site.json'); }
+      return res.json();
+    }
   }
 
   function updateOpenGraphMetaTags(cfg){
