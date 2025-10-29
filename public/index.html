@@ -21,23 +21,90 @@
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="styles.css" />
     <style>
+      @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+      }
+      
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+      
+      @keyframes slideInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
       .landing-hero {
-        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #3b82f6 100%);
         color: white;
         padding: 80px 20px;
         text-align: center;
+        border-radius: 0 0 32px 32px;
+        margin-bottom: 60px;
+        position: relative;
+        overflow: hidden;
+        animation: fadeIn 1s ease-out;
+      }
+      
+      .landing-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: float 6s ease-in-out infinite;
+        pointer-events: none;
+      }
+      
+      .landing-hero::after {
+        content: '✨';
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 2rem;
+        animation: pulse 2s ease-in-out infinite;
       }
       
       .landing-hero h1 {
-        font-size: 3.5rem;
+        font-size: clamp(3rem, 5vw + 1rem, 4rem);
         margin: 0 0 20px 0;
         font-weight: 800;
+        line-height: 1.1;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        animation: slideInUp 1s ease-out 0.2s both;
       }
       
       .landing-hero p {
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         margin: 0 0 40px 0;
         opacity: 0.95;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+        font-weight: 500;
+        animation: slideInUp 1s ease-out 0.4s both;
+      }
+      
+      .hero-badge {
+        display: inline-block;
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        border: 1px solid rgba(255,255,255,0.3);
+        animation: slideInUp 1s ease-out 0.1s both;
       }
       
       .cta-buttons {
@@ -45,153 +112,218 @@
         gap: 20px;
         justify-content: center;
         flex-wrap: wrap;
+        animation: slideInUp 1s ease-out 0.6s both;
       }
       
       .btn-primary-large {
         background: white;
-        color: #f97316;
-        padding: 18px 36px;
+        color: #2563eb;
+        padding: 20px 40px;
         border: none;
-        border-radius: 12px;
+        border-radius: 16px;
         font-size: 1.1rem;
-        font-weight: 600;
+        font-weight: 700;
         cursor: pointer;
-        transition: transform 0.2s;
+        transition: all 0.3s;
         text-decoration: none;
         display: inline-block;
+        box-shadow: 0 8px 25px rgba(37,99,235,0.2);
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .btn-primary-large::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(37,99,235,0.1), transparent);
+        transition: left 0.5s;
+      }
+      
+      .btn-primary-large:hover::before {
+        left: 100%;
       }
       
       .btn-primary-large:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 15px 35px rgba(37,99,235,0.3);
       }
       
       .btn-secondary-large {
-        background: rgba(255,255,255,0.2);
+        background: rgba(255,255,255,0.15);
         color: white;
-        padding: 18px 36px;
-        border: 2px solid white;
-        border-radius: 12px;
+        padding: 20px 40px;
+        border: 2px solid rgba(255,255,255,0.4);
+        border-radius: 16px;
         font-size: 1.1rem;
-        font-weight: 600;
+        font-weight: 700;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.3s;
         text-decoration: none;
         display: inline-block;
+        backdrop-filter: blur(10px);
       }
       
       .btn-secondary-large:hover {
-        background: rgba(255,255,255,0.3);
+        background: rgba(255,255,255,0.25);
+        border-color: rgba(255,255,255,0.6);
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 15px 35px rgba(255,255,255,0.2);
       }
       
       .how-it-works {
-        padding: 80px 20px;
-        max-width: 1200px;
+        padding: 60px 20px;
+        max-width: 1000px;
         margin: 0 auto;
       }
       
       .how-it-works h2 {
         text-align: center;
-        font-size: 2.5rem;
-        margin-bottom: 50px;
-        color: #1f2937;
+        font-size: 2rem;
+        margin-bottom: 40px;
+        color: #1e293b;
+        font-weight: 600;
       }
       
       .steps {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 40px;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
       }
       
       .step-card {
         text-align: center;
-        padding: 30px;
-        border-radius: 16px;
-        background: #f8fafc;
+        padding: 32px;
+        border-radius: 20px;
+        background: white;
+        border: 1px solid rgba(0,0,0,0.08);
+        box-shadow: 0 4px 20px rgba(37,99,235,0.08);
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .step-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #2563eb, #3b82f6);
+        transform: scaleX(0);
+        transition: transform 0.3s;
+      }
+      
+      .step-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(37,99,235,0.15);
+        border-color: #2563eb;
+      }
+      
+      .step-card:hover::before {
+        transform: scaleX(1);
       }
       
       .step-number {
         font-size: 4rem;
         font-weight: bold;
-        color: #f97316;
+        background: linear-gradient(135deg, #2563eb, #3b82f6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         margin-bottom: 20px;
+        line-height: 1;
+        animation: pulse 3s ease-in-out infinite;
       }
       
       .step-title {
-        font-size: 1.5rem;
+        font-size: 1.3rem;
         font-weight: 600;
-        margin-bottom: 15px;
-        color: #1f2937;
+        margin-bottom: 12px;
+        color: #1e293b;
       }
       
       .step-description {
         color: #64748b;
-        font-size: 1.1rem;
+        font-size: 1rem;
+        line-height: 1.5;
       }
       
       .featured-templates {
-        padding: 80px 20px;
+        padding: 60px 20px;
         background: #f8fafc;
+        border-radius: 24px 24px 0 0;
+        margin-top: 40px;
       }
       
       .featured-templates h2 {
         text-align: center;
-        font-size: 2.5rem;
-        margin-bottom: 50px;
-        color: #1f2937;
+        font-size: 2rem;
+        margin-bottom: 40px;
+        color: #1e293b;
+        font-weight: 600;
       }
       
       .template-preview {
-        max-width: 1200px;
+        max-width: 1000px;
         margin: 0 auto;
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 30px;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
       }
       
       .template-preview-card {
         background: white;
         border-radius: 16px;
         overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        transition: transform 0.2s;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        transition: all 0.2s;
         cursor: pointer;
+        border: 1px solid rgba(0,0,0,0.08);
       }
       
       .template-preview-card:hover {
-        transform: translateY(-8px);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        border-color: #2563eb;
       }
       
       .template-preview-image {
         width: 100%;
-        height: 200px;
-        background: linear-gradient(135deg, #f97316, #ea580c);
+        height: 160px;
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 5rem;
+        font-size: 4rem;
       }
       
       .template-preview-content {
-        padding: 25px;
+        padding: 20px;
       }
       
       .template-preview-title {
-        font-size: 1.3rem;
+        font-size: 1.2rem;
         font-weight: 600;
-        margin-bottom: 10px;
-        color: #1f2937;
+        margin-bottom: 8px;
+        color: #1e293b;
       }
       
       .template-preview-desc {
         color: #64748b;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
+        font-size: 0.9rem;
+        line-height: 1.4;
       }
       
       .template-preview-btn {
-        background: linear-gradient(135deg, #f97316, #ea580c);
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
         color: white;
-        padding: 12px 24px;
+        padding: 10px 20px;
         border: none;
         border-radius: 8px;
         font-weight: 600;
@@ -200,77 +332,124 @@
         text-decoration: none;
         display: block;
         text-align: center;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+      }
+      
+      .template-preview-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(37,99,235,0.3);
       }
     </style>
   </head>
   <body>
     <!-- Landing Page Hero -->
     <div class="landing-hero">
-      <div style="max-width: 900px; margin: 0 auto;">
-        <h1>Create Your Website Free</h1>
-        <p>Small websites. Big impact. Try before you buy.</p>
+      <div style="max-width: 900px; margin: 0 auto; position: relative; z-index: 1;">
+        <div class="hero-badge">🚀 Trusted by 10,000+ businesses</div>
+        <h1>Create Your Dream Website in Minutes</h1>
+        <p>No coding. No design skills. Just beautiful, professional websites that convert visitors into customers. Start free, upgrade when you're ready!</p>
         <div class="cta-buttons">
-          <a href="/templates.html" class="btn-primary-large">🚀 Browse Templates</a>
-          <a href="/setup.html" class="btn-secondary-large">Get Started Now</a>
+          <a href="/templates.html" class="btn-primary-large">🎨 Browse Templates</a>
+          <a href="/setup.html" class="btn-secondary-large">⚡ Start Building</a>
         </div>
       </div>
     </div>
 
     <!-- How It Works -->
     <div class="how-it-works">
-      <h2>How It Works</h2>
+      <h2>From Idea to Live Website in 3 Simple Steps</h2>
       <div class="steps">
         <div class="step-card">
           <div class="step-number">1</div>
-          <div class="step-title">Browse Templates</div>
-          <div class="step-description">Choose from professional templates designed for your industry</div>
+          <div class="step-title">Choose Your Perfect Template</div>
+          <div class="step-description">Browse our collection of stunning, industry-specific templates. Each one is professionally designed and mobile-ready.</div>
         </div>
         <div class="step-card">
           <div class="step-number">2</div>
-          <div class="step-title">Customize Free</div>
-          <div class="step-description">Edit every element - business info, photos, services - no payment required</div>
+          <div class="step-title">Customize Everything Free</div>
+          <div class="step-description">Edit every detail - your business info, photos, services, colors. No payment required until you're 100% happy.</div>
         </div>
         <div class="step-card">
           <div class="step-number">3</div>
-          <div class="step-title">Preview & Publish</div>
-          <div class="step-description">See your site live, then pay only when you're ready to go public</div>
+          <div class="step-title">Launch & Start Selling</div>
+          <div class="step-description">Go live instantly and start attracting customers. Your website works 24/7 to grow your business.</div>
         </div>
       </div>
     </div>
 
-    <!-- Featured Templates -->
+    <!-- Testimonials -->
+    <div style="padding: 80px 20px; background: white; text-align: center;">
+      <div style="max-width: 1000px; margin: 0 auto;">
+        <h2 style="font-size: 2.5rem; margin-bottom: 20px; color: #1e293b;">What Our Customers Say</h2>
+        <p style="color: #64748b; font-size: 1.1rem; margin-bottom: 50px;">Join thousands of successful businesses who chose Atom</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 50px;">
+          <div style="background: #f8fafc; padding: 30px; border-radius: 16px; border-left: 4px solid #2563eb;">
+            <div style="font-size: 1.1rem; color: #1e293b; margin-bottom: 20px; line-height: 1.6;">
+              "Atom helped me launch my restaurant website in just 2 hours. We're getting 3x more online orders now!"
+            </div>
+            <div style="font-weight: 600; color: #2563eb;">Sarah Chen</div>
+            <div style="color: #64748b; font-size: 0.9rem;">Owner, Bella Vista Restaurant</div>
+          </div>
+          
+          <div style="background: #f8fafc; padding: 30px; border-radius: 16px; border-left: 4px solid #2563eb;">
+            <div style="font-size: 1.1rem; color: #1e293b; margin-bottom: 20px; line-height: 1.6;">
+              "Finally, a website builder that actually looks professional. My clients love the clean design!"
+            </div>
+            <div style="font-weight: 600; color: #2563eb;">Mike Rodriguez</div>
+            <div style="color: #64748b; font-size: 0.9rem;">Freelance Consultant</div>
+          </div>
+          
+          <div style="background: #f8fafc; padding: 30px; border-radius: 16px; border-left: 4px solid #2563eb;">
+            <div style="font-size: 1.1rem; color: #1e293b; margin-bottom: 20px; line-height: 1.6;">
+              "I was skeptical about website builders, but Atom exceeded all my expectations. Highly recommended!"
+            </div>
+            <div style="font-weight: 600; color: #2563eb;">Jennifer Park</div>
+            <div style="color: #64748b; font-size: 0.9rem;">Salon Owner</div>
+          </div>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, #2563eb, #3b82f6); color: white; padding: 40px; border-radius: 20px; margin: 40px 0;">
+          <h3 style="font-size: 1.8rem; margin-bottom: 15px;">Ready to Transform Your Business?</h3>
+          <p style="font-size: 1.1rem; margin-bottom: 25px; opacity: 0.9;">Join thousands of successful businesses. Start building your dream website today!</p>
+          <a href="/setup.html" style="background: white; color: #2563eb; padding: 15px 30px; border-radius: 12px; text-decoration: none; font-weight: 700; display: inline-block; transition: all 0.3s;">🚀 Start Building Now</a>
+        </div>
+      </div>
+    </div>
     <div class="featured-templates">
-      <h2>Popular Templates</h2>
+      <h2>🔥 Most Popular Templates</h2>
+      <p style="text-align: center; color: #64748b; font-size: 1.1rem; margin-bottom: 40px;">Choose from our most-loved templates, used by thousands of successful businesses</p>
       <div class="template-preview">
         <div class="template-preview-card" onclick="window.location.href='/setup.html?template=restaurant'">
           <div class="template-preview-image">🍽️</div>
           <div class="template-preview-content">
-            <div class="template-preview-title">Restaurant</div>
-            <div class="template-preview-desc">Perfect for restaurants, cafes, and food businesses</div>
-            <a href="/setup.html?template=restaurant" class="template-preview-btn">Use Template</a>
+            <div class="template-preview-title">🍽️ Restaurant</div>
+            <div class="template-preview-desc">Boost online orders by 300% with our restaurant template. Includes menu, reservations, and delivery integration.</div>
+            <a href="/setup.html?template=restaurant" class="template-preview-btn">Use This Template</a>
           </div>
         </div>
         <div class="template-preview-card" onclick="window.location.href='/setup.html?template=salon'">
           <div class="template-preview-image">💇‍♀️</div>
           <div class="template-preview-content">
-            <div class="template-preview-title">Salon</div>
-            <div class="template-preview-desc">For salons, barbershops, and beauty services</div>
-            <a href="/setup.html?template=salon" class="template-preview-btn">Use Template</a>
+            <div class="template-preview-title">💇‍♀️ Salon & Spa</div>
+            <div class="template-preview-desc">Attract more clients with our elegant salon template. Features service booking and portfolio showcase.</div>
+            <a href="/setup.html?template=salon" class="template-preview-btn">Use This Template</a>
           </div>
         </div>
         <div class="template-preview-card" onclick="window.location.href='/setup.html?template=gym'">
           <div class="template-preview-image">💪</div>
           <div class="template-preview-content">
-            <div class="template-preview-title">Gym</div>
-            <div class="template-preview-desc">For gyms, fitness centers, and trainers</div>
-            <a href="/setup.html?template=gym" class="template-preview-btn">Use Template</a>
+            <div class="template-preview-title">💪 Fitness & Gym</div>
+            <div class="template-preview-desc">Build a powerful fitness brand. Includes class schedules, trainer profiles, and membership signup.</div>
+            <a href="/setup.html?template=gym" class="template-preview-btn">Use This Template</a>
           </div>
         </div>
         <div class="template-preview-card" onclick="window.location.href='/templates.html'">
           <div class="template-preview-image">📋</div>
           <div class="template-preview-content">
-            <div class="template-preview-title">View All</div>
-            <div class="template-preview-desc">See all 9+ professional templates</div>
+            <div class="template-preview-title">📋 View All Templates</div>
+            <div class="template-preview-desc">Explore our complete collection of 9+ professional templates for every business type.</div>
             <a href="/templates.html" class="template-preview-btn">Browse Gallery</a>
           </div>
         </div>
@@ -278,14 +457,19 @@
     </div>
 
     <!-- Footer -->
-    <div style="background: #1f2937; color: white; padding: 40px 20px; text-align: center;">
-      <div style="max-width: 1200px; margin: 0 auto;">
-        <h3 style="margin: 0 0 10px 0;">✨ Built with Atom</h3>
-        <p style="color: #9ca3af; margin: 0;">Create powerful websites. Small is powerful.</p>
-        <div style="margin-top: 30px; display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
-          <a href="/templates.html" style="color: white; text-decoration: none;">Templates</a>
-          <a href="/setup.html" style="color: white; text-decoration: none;">Create Site</a>
-          <a href="/login.html" style="color: white; text-decoration: none;">Login</a>
+    <div style="background: #1e293b; color: white; padding: 40px 20px; text-align: center; border-radius: 24px 24px 0 0; margin-top: 40px;">
+      <div style="max-width: 1000px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #2563eb, #3b82f6); padding: 20px; border-radius: 16px; margin-bottom: 30px;">
+          <h3 style="margin: 0 0 10px 0; font-size: 1.4rem; font-weight: 600;">⚡ Limited Time: Start Building Free!</h3>
+          <p style="margin: 0; font-size: 1rem; opacity: 0.9;">No credit card required. Build your dream website today!</p>
+        </div>
+        
+        <h3 style="margin: 0 0 8px 0; font-size: 1.3rem; font-weight: 600;">✨ Built with Atom</h3>
+        <p style="color: #94a3b8; margin: 0; font-size: 0.95rem;">Create powerful websites. Small is powerful.</p>
+        <div style="margin-top: 24px; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+          <a href="/templates.html" style="color: white; text-decoration: none; padding: 8px 16px; border-radius: 8px; transition: all 0.2s; font-size: 0.9rem;">Templates</a>
+          <a href="/setup.html" style="color: white; text-decoration: none; padding: 8px 16px; border-radius: 8px; transition: all 0.2s; font-size: 0.9rem;">Create Site</a>
+          <a href="/login.html" style="color: white; text-decoration: none; padding: 8px 16px; border-radius: 8px; transition: all 0.2s; font-size: 0.9rem;">Login</a>
         </div>
       </div>
     </div>

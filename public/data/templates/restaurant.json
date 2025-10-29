@@ -1,28 +1,248 @@
 {
-  "brand": {"name": "Tasty Bites", "logo": "assets/logo.svg"},
-  "themeVars": {"color-primary": "#ef4444", "color-accent": "#f59e0b"},
+  "brand": {
+    "name": "Bella Vista", 
+    "logo": "assets/logo.svg",
+    "tagline": "Authentic Italian • Since 2008",
+    "phone": "(555) 123-4567",
+    "email": "info@bellavista.com"
+  },
+  "themeVars": {
+    "color-primary": "#d4af37", 
+    "color-accent": "#8b4513",
+    "color-success": "#228b22",
+    "color-warning": "#ff8c00",
+    "color-danger": "#dc143c"
+  },
   "nav": [
-    {"label": "Menu", "href": "#products"},
+    {"label": "Menu", "href": "#menu"},
     {"label": "About", "href": "#about"},
+    {"label": "Reservations", "href": "#reservations"},
+    {"label": "Events", "href": "#events"},
     {"label": "Contact", "href": "#contact"}
   ],
   "hero": {
-    "eyebrow": "Fresh Daily",
-    "title": "Delicious meals, made with love",
-    "subtitle": "Order online or book a table.",
+    "eyebrow": "🍝 Authentic Italian Cuisine",
+    "title": "Experience the flavors of Italy",
+    "subtitle": "From our family recipes passed down through generations, we bring you authentic Italian dishes made with the finest ingredients. Join us for an unforgettable dining experience.",
     "cta": [
-      {"label": "Order Now", "href": "#products"},
-      {"label": "Reserve", "href": "https://cal.com/your-restaurant", "variant": "secondary"}
+      {"label": "🍕 View Menu", "href": "#menu"},
+      {"label": "📅 Make Reservation", "href": "#reservations", "variant": "secondary"}
     ],
     "image": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=80",
-    "imageAlt": "Restaurant dishes and ambiance"
+    "imageAlt": "Elegant Italian restaurant interior with warm lighting and beautiful table settings"
   },
-  "about": {"title": "Our Kitchen", "body": "Locally sourced ingredients and family recipes."},
+  "about": {
+    "title": "Our Story", 
+    "body": "Founded in 2008 by Chef Marco Rossi, Bella Vista brings authentic Italian cuisine to the heart of the city. Our recipes have been passed down through three generations, originating from a small trattoria in Tuscany. Every dish is prepared with the same passion and attention to detail that has made Italian cuisine world-renowned.",
+    "subtitle": "What makes us special",
+    "features": [
+      "🍅 Imported Italian ingredients",
+      "👨‍🍳 Chef Marco's family recipes",
+      "🔥 Traditional wood-fired oven",
+      "🍷 Award-winning wine selection",
+      "🌿 Fresh herbs from our garden",
+      "🥖 Daily homemade bread"
+    ],
+    "chef": {
+      "name": "Chef Marco Rossi",
+      "title": "Executive Chef & Owner",
+      "bio": "Born in Florence, Chef Marco brings 20+ years of culinary expertise to Bella Vista. Trained in traditional Italian techniques, he ensures every dish meets the highest standards of authenticity.",
+      "image": "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400&q=80",
+      "imageAlt": "Chef Marco Rossi in the kitchen"
+    }
+  },
   "products": [
-    {"name": "Margherita Pizza", "price": 12, "description": "Classic pizza with fresh basil.", "image": "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=800&q=80", "imageAlt": "Margherita pizza"},
-    {"name": "Caesar Salad", "price": 9, "description": "Crisp romaine with house dressing.", "image": "https://images.unsplash.com/photo-1546793665-c74683f339c1?w=800&q=80", "imageAlt": "Caesar salad"},
-    {"name": "Tiramisu", "price": 7, "description": "Homemade dessert.", "image": "https://images.unsplash.com/photo-1571115177098-24ec42ed204d?w=800&q=80", "imageAlt": "Tiramisu dessert"}
+    {
+      "name": "Margherita Pizza",
+      "price": 18,
+      "description": "San Marzano tomatoes, fresh mozzarella, basil, and extra virgin olive oil",
+      "image": "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=600&q=80",
+      "imageAlt": "Classic Margherita pizza",
+      "category": "Pizza",
+      "popular": true
+    },
+    {
+      "name": "Spaghetti Carbonara",
+      "price": 22,
+      "description": "Traditional Roman pasta with pancetta, eggs, pecorino cheese, and black pepper",
+      "image": "https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?w=600&q=80",
+      "imageAlt": "Spaghetti carbonara",
+      "category": "Pasta",
+      "popular": true
+    },
+    {
+      "name": "Bruschetta Classica",
+      "price": 12,
+      "description": "Grilled artisan bread with fresh tomatoes, basil, garlic, and extra virgin olive oil",
+      "image": "https://images.unsplash.com/photo-1572441713132-51c75654db73?w=600&q=80",
+      "imageAlt": "Classic Italian bruschetta",
+      "category": "Appetizers",
+      "vegetarian": true
+    },
+    {
+      "name": "Osso Buco",
+      "price": 32,
+      "description": "Braised veal shanks with vegetables, white wine, and saffron risotto",
+      "image": "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&q=80",
+      "imageAlt": "Osso buco with risotto",
+      "category": "Main Courses"
+    },
+    {
+      "name": "Tiramisu",
+      "price": 10,
+      "description": "Classic Italian dessert with coffee-soaked ladyfingers and mascarpone",
+      "image": "https://images.unsplash.com/photo-1571115177098-24ec42ed204d?w=600&q=80",
+      "imageAlt": "Traditional tiramisu",
+      "category": "Desserts",
+      "vegetarian": true,
+      "popular": true
+    }
   ],
-  "contact": {"title": "Visit Us", "subtitle": "123 Main St, Springfield", "phone": "+1 555 987 6543"},
-  "footer": {"text": "Open Tue–Sun. See you soon!"}
+  "services": {
+    "title": "Our Services",
+    "subtitle": "We offer multiple ways to enjoy our delicious food",
+    "items": [
+      {
+        "title": "🍽️ Dine In",
+        "description": "Experience our cozy atmosphere with full table service",
+        "features": ["Full menu available", "Wine pairings", "Dessert menu"]
+      },
+      {
+        "title": "🍕 Takeout",
+        "description": "Order ahead and pick up your favorite dishes",
+        "features": ["Online ordering", "Quick pickup", "Hot and fresh"]
+      },
+      {
+        "title": "🚚 Delivery",
+        "description": "Get our food delivered to your door",
+        "features": ["30-min delivery", "Contactless delivery", "Live tracking"]
+      },
+      {
+        "title": "📅 Private Events",
+        "description": "Host your special occasions with us",
+        "features": ["Private dining room", "Custom menus", "Event planning"]
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "What Our Guests Say",
+    "subtitle": "Real reviews from our valued customers",
+    "items": [
+      {
+        "text": "Absolutely incredible! The carbonara is exactly like what I had in Rome. Chef Marco's attention to detail is remarkable.",
+        "author": "Sarah Mitchell",
+        "location": "Local Food Critic",
+        "rating": 5,
+        "date": "2 weeks ago",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&q=80",
+        "imageAlt": "Sarah Mitchell"
+      },
+      {
+        "text": "We've been coming here for our anniversary dinner for 5 years. The osso buco is phenomenal and the wine selection is perfect.",
+        "author": "Michael & Elena Rodriguez",
+        "location": "Regular Customers",
+        "rating": 5,
+        "date": "1 month ago",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "imageAlt": "Michael Rodriguez"
+      },
+      {
+        "text": "The atmosphere is magical and the food transports you to Italy. The tiramisu is the best I've ever had outside of Tuscany!",
+        "author": "Jennifer Walsh",
+        "location": "Travel Blogger",
+        "rating": 5,
+        "date": "3 weeks ago",
+        "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
+        "imageAlt": "Jennifer Walsh"
+      },
+      {
+        "text": "Perfect for date night! The service is impeccable and every dish is a work of art. Highly recommend the tasting menu.",
+        "author": "David Chen",
+        "location": "Food Enthusiast",
+        "rating": 5,
+        "date": "1 week ago",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80",
+        "imageAlt": "David Chen"
+      }
+    ],
+    "stats": {
+      "averageRating": 4.9,
+      "totalReviews": 247,
+      "googleRating": 4.8,
+      "yelpRating": 4.9
+    }
+  },
+  "contact": {
+    "title": "Visit Us", 
+    "subtitle": "We'd love to welcome you to Bella Vista",
+    "phone": "(555) 123-4567",
+    "email": "info@bellavista.com",
+    "address": "1247 Oak Street, Downtown District, Springfield, IL 62701",
+    "coordinates": {
+      "lat": 39.7817,
+      "lng": -89.6501
+    },
+    "parking": "Valet parking available • Street parking • Garage nearby",
+    "accessibility": "Wheelchair accessible • Elevator available • Accessible restrooms",
+    "hours": {
+      "title": "Restaurant Hours",
+      "items": [
+        "Monday: Closed",
+        "Tuesday - Thursday: 5:00 PM - 10:00 PM",
+        "Friday - Saturday: 5:00 PM - 11:00 PM",
+        "Sunday: 4:00 PM - 9:00 PM"
+      ],
+      "note": "Kitchen closes 30 minutes before restaurant closing"
+    },
+    "reservations": {
+      "phone": "(555) 123-4567",
+      "online": "https://resy.com/bellavista",
+      "note": "Reservations recommended, especially for weekends"
+    }
+  },
+  "social": {
+    "facebook": "https://facebook.com/bellavistarestaurant",
+    "instagram": "https://instagram.com/bellavista_italian",
+    "googleMaps": "https://maps.google.com/bellavista-restaurant",
+    "yelp": "https://yelp.com/biz/bellavista-springfield",
+    "tripadvisor": "https://tripadvisor.com/bellavista-springfield"
+  },
+  "events": {
+    "title": "Special Events",
+    "subtitle": "Make your occasion unforgettable",
+    "items": [
+      {
+        "title": "Wine Tasting Evenings",
+        "description": "Monthly wine tastings featuring Italian wines paired with small plates",
+        "schedule": "First Friday of each month",
+        "price": "$45 per person"
+      },
+      {
+        "title": "Private Dining Room",
+        "description": "Intimate space for parties up to 20 guests with custom menu options",
+        "schedule": "Available for lunch and dinner",
+        "price": "Minimum $500"
+      },
+      {
+        "title": "Cooking Classes",
+        "description": "Learn authentic Italian techniques with Chef Marco",
+        "schedule": "Saturdays 10 AM - 1 PM",
+        "price": "$85 per person"
+      }
+    ]
+  },
+  "footer": {
+    "text": "🍝 Bella Vista • Authentic Italian Cuisine Since 2008",
+    "links": [
+      {"label": "Privacy Policy", "href": "#privacy"},
+      {"label": "Terms of Service", "href": "#terms"},
+      {"label": "Careers", "href": "#careers"},
+      {"label": "Gift Cards", "href": "#giftcards"}
+    ],
+    "awards": [
+      "Best Italian Restaurant 2023",
+      "Wine Spectator Award",
+      "TripAdvisor Certificate of Excellence"
+    ]
+  }
 }
