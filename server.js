@@ -156,10 +156,38 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
     
-    // Generate JWT
-    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+    // Check if temporary password has expired
+    if (user.tempPasswordExpires) {
+      const tempPasswordExpires = new Date(user.tempPasswordExpires);
+      if (tempPasswordExpires < new Date()) {
+        return res.status(401).json({ error: 'Temporary password has expired. Please request a new one.' });
+      }
+    }
     
-    res.json({ success: true, token, user: { id: user.id, email: user.email } });
+    // Update last login
+    user.lastLogin = new Date().toISOString();
+    await fs.writeFile(userFile, JSON.stringify(user, null, 2));
+    
+    // Generate JWT
+    const token = jwt.sign({ 
+      userId: user.id, 
+      email: user.email, 
+      role: user.role,
+      status: user.status,
+      needsPasswordChange: user.status === 'invited'
+    }, JWT_SECRET, { expiresIn: '7d' });
+    
+    res.json({ 
+      success: true, 
+      token, 
+      user: { 
+        id: user.id, 
+        email: user.email, 
+        role: user.role,
+        status: user.status,
+        needsPasswordChange: user.status === 'invited'
+      } 
+    });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: 'Failed to login' });
@@ -183,6 +211,319 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
 app.post('/api/auth/logout', (req, res) => {
   // JWT is stateless, so logout is handled client-side
   res.json({ success: true, message: 'Logged out successfully' });
+});
+
+// User site management endpoints
+app.get('/api/users/:userId/sites', requireAuth, async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    
+    // Verify user can only access their own sites
+    if (req.user.id !== userId) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    
+    const sites = [];
+    
+    // Load published sites
+    const sitesDir = path.join(publicDir, 'sites');
+    if (await fs.access(sitesDir).then(() => true).catch(() => false)) {
+      const siteDirs = await fs.readdir(sitesDir);
+      
+      for (const siteDir of siteDirs) {
+        const sitePath = path.join(sitesDir, siteDir, 'site.json');
+        try {
+          const siteData = JSON.parse(await fs.readFile(sitePath, 'utf-8'));
+          if (siteData.published?.email === req.user.email) {
+            sites.push({
+              id: siteDir,
+              name: siteData.brand?.name || 'Untitled Site',
+              url: `/sites/${siteDir}/`,
+              status: 'published',
+              createdAt: siteData.published?.at || new Date().toISOString(),
+              plan: siteData.published?.plan || 'Starter',
+              template: siteData.template || 'unknown'
+            });
+          }
+        } catch (err) {
+          console.error(`Error reading site ${siteDir}:`, err.message);
+        }
+      }
+    }
+    
+    // Load draft sites
+    const draftsDir = path.join(publicDir, 'drafts');
+    if (await fs.access(draftsDir).then(() => true).catch(() => false)) {
+      const draftFiles = await fs.readdir(draftsDir);
+      
+      for (const draftFile of draftFiles) {
+        if (draftFile.endsWith('.json')) {
+          try {
+            const draftData = JSON.parse(await fs.readFile(path.join(draftsDir, draftFile), 'utf-8'));
+            if (draftData.businessData?.email === req.user.email) {
+              sites.push({
+                id: draftFile.replace('.json', ''),
+                name: draftData.businessData?.businessName || 'Untitled Draft',
+                url: `/drafts/${draftFile.replace('.json', '')}`,
+                status: 'draft',
+                createdAt: draftData.createdAt || new Date().toISOString(),
+                plan: 'Draft',
+                template: draftData.templateId || 'unknown'
+              });
+            }
+          } catch (err) {
+            console.error(`Error reading draft ${draftFile}:`, err.message);
+          }
+        }
+      }
+    }
+    
+    // Sort by creation date (newest first)
+    sites.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    res.json({ sites });
+  } catch (error) {
+    console.error('Error loading user sites:', error);
+    res.status(500).json({ error: 'Failed to load sites' });
+  }
+});
+
+// Delete user site
+app.delete('/api/users/:userId/sites/:siteId', requireAuth, async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const siteId = req.params.siteId;
+    
+    // Verify user can only delete their own sites
+    if (req.user.id !== userId) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    
+    // Check if it's a published site
+    const sitePath = path.join(publicDir, 'sites', siteId);
+    if (await fs.access(sitePath).then(() => true).catch(() => false)) {
+      // Verify ownership
+      const siteDataPath = path.join(sitePath, 'site.json');
+      try {
+        const siteData = JSON.parse(await fs.readFile(siteDataPath, 'utf-8'));
+        if (siteData.published?.email !== req.user.email) {
+          return res.status(403).json({ error: 'Access denied' });
+        }
+        
+        // Delete the site directory
+        await fs.rm(sitePath, { recursive: true, force: true });
+        res.json({ message: 'Site deleted successfully' });
+        return;
+      } catch (err) {
+        console.error(`Error verifying site ownership:`, err.message);
+        return res.status(500).json({ error: 'Failed to verify site ownership' });
+      }
+    }
+    
+    // Check if it's a draft
+    const draftPath = path.join(publicDir, 'drafts', `${siteId}.json`);
+    if (await fs.access(draftPath).then(() => true).catch(() => false)) {
+      try {
+        const draftData = JSON.parse(await fs.readFile(draftPath, 'utf-8'));
+        if (draftData.businessData?.email !== req.user.email) {
+          return res.status(403).json({ error: 'Access denied' });
+        }
+        
+        // Delete the draft file
+        await fs.unlink(draftPath);
+        res.json({ message: 'Draft deleted successfully' });
+        return;
+      } catch (err) {
+        console.error(`Error verifying draft ownership:`, err.message);
+        return res.status(500).json({ error: 'Failed to verify draft ownership' });
+      }
+    }
+    
+    res.status(404).json({ error: 'Site not found' });
+  } catch (error) {
+    console.error('Error deleting site:', error);
+    res.status(500).json({ error: 'Failed to delete site' });
+  }
+});
+
+// Password reset endpoints
+app.post('/api/auth/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+    
+    // Check if user exists
+    const userPath = path.join(usersDir, `${email.replace('@', '_at_').replace('.', '_dot_')}.json`);
+    
+    if (!(await fs.access(userPath).then(() => true).catch(() => false))) {
+      // Don't reveal if user exists or not for security
+      return res.json({ message: 'If an account with that email exists, a password reset link has been sent.' });
+    }
+    
+    // Generate reset token (in production, use crypto.randomBytes)
+    const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const resetExpires = new Date(Date.now() + 3600000); // 1 hour
+    
+    // Load user data
+    const userData = JSON.parse(await fs.readFile(userPath, 'utf-8'));
+    userData.resetToken = resetToken;
+    userData.resetExpires = resetExpires.toISOString();
+    
+    // Save updated user data
+    await fs.writeFile(userPath, JSON.stringify(userData, null, 2));
+    
+    // In production, send email here
+    console.log(`Password reset token for ${email}: ${resetToken}`);
+    
+    res.json({ message: 'If an account with that email exists, a password reset link has been sent.' });
+  } catch (error) {
+    console.error('Error processing password reset:', error);
+    res.status(500).json({ error: 'Failed to process password reset request' });
+  }
+});
+
+// User invitation system endpoints
+app.post('/api/admin/invite-user', requireAuth, async (req, res) => {
+  try {
+    const { email, role = 'user' } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+    
+    // Check if user already exists
+    const userPath = path.join(usersDir, `${email.replace('@', '_at_').replace('.', '_dot_')}.json`);
+    
+    if (await fs.access(userPath).then(() => true).catch(() => false)) {
+      return res.status(400).json({ error: 'User with this email already exists' });
+    }
+    
+    // Generate temporary password
+    const tempPassword = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const tempPasswordExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    
+    // Create user account
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
+    
+    const userData = {
+      id: email.replace('@', '_at_').replace('.', '_dot_'),
+      email: email,
+      password: hashedPassword,
+      role: role,
+      status: 'invited',
+      tempPassword: tempPassword,
+      tempPasswordExpires: tempPasswordExpires.toISOString(),
+      createdAt: new Date().toISOString(),
+      lastLogin: null,
+      sites: []
+    };
+    
+    // Save user data
+    await fs.writeFile(userPath, JSON.stringify(userData, null, 2));
+    
+    // In production, send email here
+    console.log(`\n=== USER INVITATION ===`);
+    console.log(`Email: ${email}`);
+    console.log(`Temporary Password: ${tempPassword}`);
+    console.log(`Login URL: http://localhost:3000/login.html`);
+    console.log(`Password expires: ${tempPasswordExpires.toLocaleString()}`);
+    console.log(`========================\n`);
+    
+    res.json({ 
+      message: 'User invitation sent successfully',
+      email: email,
+      tempPassword: tempPassword, // Only for development - remove in production
+      loginUrl: `${req.protocol}://${req.get('host')}/login.html`
+    });
+  } catch (error) {
+    console.error('Error creating user invitation:', error);
+    res.status(500).json({ error: 'Failed to create user invitation' });
+  }
+});
+
+// List all users (admin only)
+app.get('/api/admin/users', requireAuth, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    
+    const users = [];
+    const userFiles = await fs.readdir(usersDir);
+    
+    for (const userFile of userFiles) {
+      if (userFile.endsWith('.json')) {
+        try {
+          const userData = JSON.parse(await fs.readFile(path.join(usersDir, userFile), 'utf-8'));
+          // Don't include sensitive data
+          users.push({
+            id: userData.id,
+            email: userData.email,
+            role: userData.role,
+            status: userData.status,
+            createdAt: userData.createdAt,
+            lastLogin: userData.lastLogin,
+            sitesCount: userData.sites ? userData.sites.length : 0
+          });
+        } catch (err) {
+          console.error(`Error reading user file ${userFile}:`, err.message);
+        }
+      }
+    }
+    
+    // Sort by creation date (newest first)
+    users.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    res.json({ users });
+  } catch (error) {
+    console.error('Error loading users:', error);
+    res.status(500).json({ error: 'Failed to load users' });
+  }
+});
+
+// Force password change on first login
+app.post('/api/auth/change-temp-password', requireAuth, async (req, res) => {
+  try {
+    const { newPassword } = req.body;
+    
+    if (!newPassword) {
+      return res.status(400).json({ error: 'New password is required' });
+    }
+    
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+    }
+    
+    // Load user data
+    const userPath = path.join(usersDir, `${req.user.id}.json`);
+    const userData = JSON.parse(await fs.readFile(userPath, 'utf-8'));
+    
+    // Check if user is using temporary password
+    if (userData.status !== 'invited' && !userData.tempPassword) {
+      return res.status(400).json({ error: 'No temporary password to change' });
+    }
+    
+    // Update password and status
+    const bcrypt = require('bcryptjs');
+    userData.password = await bcrypt.hash(newPassword, 10);
+    userData.status = 'active';
+    userData.tempPassword = undefined;
+    userData.tempPasswordExpires = undefined;
+    userData.passwordChangedAt = new Date().toISOString();
+    
+    // Save updated user data
+    await fs.writeFile(userPath, JSON.stringify(userData, null, 2));
+    
+    res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+    console.error('Error changing temporary password:', error);
+    res.status(500).json({ error: 'Failed to change password' });
+  }
 });
 
 app.get('/api/site', async (req, res) => {
@@ -546,23 +887,88 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Loading...</title>
+    <title>${siteData.brand?.name || 'Loading...'}</title>
     <style>
-      body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; }
-      .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-      .card { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin: 20px 0; }
-      .btn { display: inline-block; padding: 12px 24px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; }
-      .btn-primary { background: #3b82f6; }
-      .btn-secondary { background: #6b7280; }
-      .hero { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; padding: 60px 0; }
-      .hero h1 { font-size: 3rem; font-weight: 700; margin: 0 0 20px 0; }
-      .hero p { font-size: 1.2rem; color: #6b7280; margin: 0 0 30px 0; }
-      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
-      .mt-2 { margin-top: 1rem; }
-      .mt-3 { margin-top: 1.5rem; }
-      .muted { color: #6b7280; }
-      #app { min-height: 100vh; }
-      #content { min-height: 100vh; }
+      :root {
+        --color-bg: #fefefe;
+        --color-surface: #ffffff;
+        --color-card: #f8fafc;
+        --color-text: #1e293b;
+        --color-muted: #64748b;
+        --color-primary: #2563eb;
+        --color-primary-600: #1d4ed8;
+        --color-accent: #3b82f6;
+        --radius: 12px;
+        --shadow-lg: 0 10px 25px rgba(0,0,0,.08);
+        --shadow-sm: 0 2px 8px rgba(0,0,0,.06);
+        --shadow-hover: 0 4px 12px rgba(0,0,0,.12);
+        --spacing-xs: 4px;
+        --spacing-sm: 8px;
+        --spacing-md: 16px;
+        --spacing-lg: 24px;
+        --spacing-xl: 32px;
+        --spacing-2xl: 48px;
+      }
+      
+      * { box-sizing: border-box; }
+      body { 
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        margin: 0; 
+        padding: 0; 
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        color: var(--color-text);
+        line-height: 1.5;
+        font-size: 16px;
+      }
+      .container { max-width: 1000px; margin: 0 auto; padding: var(--spacing-lg); }
+      .card { 
+        background: var(--color-surface); 
+        border: 1px solid rgba(0,0,0,0.08); 
+        border-radius: var(--radius); 
+        padding: var(--spacing-lg); 
+        box-shadow: var(--shadow-sm); 
+        margin: var(--spacing-lg) 0;
+        transition: all 0.2s;
+      }
+      .card:hover { 
+        transform: translateY(-2px); 
+        box-shadow: var(--shadow-hover); 
+        border-color: var(--color-primary);
+      }
+      .btn { 
+        display: inline-flex; 
+        align-items: center; 
+        gap: var(--spacing-sm); 
+        padding: var(--spacing-md) var(--spacing-lg); 
+        border-radius: var(--radius); 
+        text-decoration: none; 
+        font-weight: 600; 
+        border: 1px solid transparent; 
+        transition: all 0.2s;
+        font-size: 0.95rem;
+      }
+      .btn-primary { background: var(--color-primary); color: white; }
+      .btn-primary:hover { background: var(--color-primary-600); transform: translateY(-1px); box-shadow: var(--shadow-hover); }
+      .btn-secondary { background: var(--color-card); color: var(--color-text); border-color: rgba(0,0,0,0.1); }
+      .btn-secondary:hover { background: var(--color-surface); border-color: var(--color-primary); color: var(--color-primary); }
+      .hero { 
+        display: grid; 
+        grid-template-columns: 1.1fr 0.9fr; 
+        align-items: center; 
+        gap: var(--spacing-xl); 
+        padding: var(--spacing-2xl) 0; 
+      }
+      .hero h1 { font-size: clamp(1.8rem, 3.5vw + 1rem, 2.8rem); line-height: 1.2; margin: var(--spacing-sm) 0 var(--spacing-md); font-weight: 700; }
+      .hero p { font-size: 1.1rem; color: var(--color-muted); margin: 0 0 var(--spacing-lg); }
+      .hero img { width: 100%; height: 350px; object-fit: cover; border-radius: var(--radius); }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--spacing-lg); }
+      .muted { color: var(--color-muted); }
+      .text-center { text-align: center; }
+      
+      @media (max-width: 900px) {
+        .hero { grid-template-columns: 1fr; gap: var(--spacing-lg); }
+        .container { padding: var(--spacing-md); }
+      }
     </style>
   </head>
   <body>
