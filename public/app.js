@@ -391,12 +391,43 @@
     const sec = sectionWrapper('products');
     const container = sec.firstChild;
     container.appendChild(el('h2', { class:'section-title' }, ['Products']));
-    const grid = el('div', { class:'grid-3' }, cfg.products.map(prod => el('div', { class:'card' }, [
+    const grid = el('div', { class:'grid-3' }, cfg.products.map((prod, i) => el('div', { class:'card' }, [
       el('h3', {}, [prod.name || 'Product']),
       prod.price != null ? el('p', { class:'mt-2' }, [`$${prod.price}`]) : null,
-      renderMarkdown(prod.description || '')
+      renderMarkdown(prod.description || ''),
+      el('button', { class:'btn btn-primary mt-2', 'data-product-index': String(i) }, ['Buy'])
     ])));
     container.appendChild(grid);
+
+    // Attach delegated click handler for checkout
+    container.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-product-index]');
+      if(!btn) return;
+      e.preventDefault();
+      const idx = Number(btn.getAttribute('data-product-index'));
+      if(Number.isNaN(idx)) return;
+      const prevText = btn.textContent;
+      btn.disabled = true; btn.textContent = 'Redirecting…';
+      try{
+        const idemKey = (self.crypto && typeof self.crypto.randomUUID === 'function') ? self.crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+        const res = await fetch('/api/payments/checkout-sessions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idemKey },
+          body: JSON.stringify({ productIndex: idx, quantity: 1, currency: 'usd', siteId: cfg.brand?.name || '' })
+        });
+        const data = await res.json().catch(()=>({}));
+        if(res.ok && data.url){
+          window.location.href = data.url;
+        }else{
+          alert(data?.error || 'Payment is unavailable.');
+        }
+      }catch(err){
+        alert('Failed to start checkout.');
+      }finally{
+        btn.disabled = false; btn.textContent = prevText;
+      }
+    });
+
     document.getElementById('content').appendChild(sec);
   }
 
