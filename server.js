@@ -1745,6 +1745,142 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
   }
 });
 
+// Get published site data for editing (authenticated)
+app.get('/api/sites/:subdomain', authenticateToken, async (req, res) => {
+  try {
+    const { subdomain } = req.params;
+    const userEmail = req.user.email;
+    
+    // Load site data
+    const sitePath = path.join(publicDir, 'sites', subdomain, 'site.json');
+    let siteData;
+    
+    try {
+      siteData = JSON.parse(await fs.readFile(sitePath, 'utf-8'));
+    } catch (error) {
+      return res.status(404).json({ error: 'Site not found' });
+    }
+    
+    // Verify ownership
+    if (siteData.published?.email !== userEmail) {
+      return res.status(403).json({ error: 'Not authorized to edit this site' });
+    }
+    
+    res.json({
+      success: true,
+      site: siteData,
+      subdomain: subdomain
+    });
+  } catch (error) {
+    console.error('Load site error:', error);
+    res.status(500).json({ error: 'Failed to load site' });
+  }
+});
+
+// Update published site (authenticated)
+app.put('/api/sites/:subdomain', authenticateToken, async (req, res) => {
+  try {
+    const { subdomain } = req.params;
+    const userEmail = req.user.email;
+    const updatedData = req.body;
+    
+    // Load existing site
+    const siteDir = path.join(publicDir, 'sites', subdomain);
+    const sitePath = path.join(siteDir, 'site.json');
+    let existingSite;
+    
+    try {
+      existingSite = JSON.parse(await fs.readFile(sitePath, 'utf-8'));
+    } catch (error) {
+      return res.status(404).json({ error: 'Site not found' });
+    }
+    
+    // Verify ownership
+    if (existingSite.published?.email !== userEmail) {
+      return res.status(403).json({ error: 'Not authorized to edit this site' });
+    }
+    
+    // Create backup before updating
+    const backupDir = path.join(siteDir, 'backups');
+    await fs.mkdir(backupDir, { recursive: true });
+    const backupPath = path.join(backupDir, `site.backup.${Date.now()}.json`);
+    await fs.writeFile(backupPath, JSON.stringify(existingSite, null, 2));
+    
+    // Update site data (preserve published metadata)
+    const updatedSite = {
+      ...updatedData,
+      published: {
+        ...existingSite.published,
+        lastUpdated: new Date().toISOString()
+      }
+    };
+    
+    // Save updated site
+    await fs.writeFile(sitePath, JSON.stringify(updatedSite, null, 2));
+    
+    // Send notification email to site owner
+    try {
+      await sendEmail(
+        userEmail,
+        EmailTypes.SITE_UPDATED,
+        {
+          businessName: updatedSite.brand?.name || 'Your Business',
+          siteUrl: `${process.env.SITE_URL || 'http://localhost:3000'}/sites/${subdomain}/`,
+          updateTime: new Date().toLocaleString()
+        }
+      );
+    } catch (emailError) {
+      console.error('Failed to send update email:', emailError);
+      // Don't fail the update if email fails
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Site updated successfully',
+      subdomain: subdomain,
+      updatedAt: updatedSite.published.lastUpdated
+    });
+  } catch (error) {
+    console.error('Update site error:', error);
+    res.status(500).json({ error: 'Failed to update site' });
+  }
+});
+
+// Delete published site (authenticated)
+app.delete('/api/sites/:subdomain', authenticateToken, async (req, res) => {
+  try {
+    const { subdomain } = req.params;
+    const userEmail = req.user.email;
+    
+    // Load existing site
+    const siteDir = path.join(publicDir, 'sites', subdomain);
+    const sitePath = path.join(siteDir, 'site.json');
+    let existingSite;
+    
+    try {
+      existingSite = JSON.parse(await fs.readFile(sitePath, 'utf-8'));
+    } catch (error) {
+      return res.status(404).json({ error: 'Site not found' });
+    }
+    
+    // Verify ownership
+    if (existingSite.published?.email !== userEmail) {
+      return res.status(403).json({ error: 'Not authorized to delete this site' });
+    }
+    
+    // Delete site directory
+    await fs.rm(siteDir, { recursive: true, force: true });
+    
+    res.json({ 
+      success: true, 
+      message: 'Site deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete site error:', error);
+    res.status(500).json({ error: 'Failed to delete site' });
+  }
+});
+
 // Helper function to generate subdomain from business name
 function generateSubdomain(businessName) {
   // Convert to lowercase, remove special chars, replace spaces with hyphens

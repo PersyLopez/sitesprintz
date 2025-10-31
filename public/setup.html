@@ -942,13 +942,192 @@
       }
     }
 
-    // Initialize - load template from URL parameter
+    // Load site data into form fields for editing
+    async function loadSiteDataIntoForm(site) {
+      try {
+        // Basic business info
+        if (document.getElementById('businessName')) {
+          document.getElementById('businessName').value = site.brand?.name || '';
+        }
+        if (document.getElementById('heroTitle')) {
+          document.getElementById('heroTitle').value = site.hero?.title || '';
+        }
+        if (document.getElementById('heroSubtitle')) {
+          document.getElementById('heroSubtitle').value = site.hero?.subtitle || '';
+        }
+        if (document.getElementById('heroImage')) {
+          document.getElementById('heroImage').value = site.hero?.image || '';
+        }
+        
+        // Contact info
+        if (document.getElementById('email')) {
+          document.getElementById('email').value = site.contact?.email || '';
+        }
+        if (document.getElementById('phone')) {
+          document.getElementById('phone').value = site.contact?.phone || '';
+        }
+        if (document.getElementById('address')) {
+          document.getElementById('address').value = site.contact?.address || '';
+        }
+        if (document.getElementById('hours')) {
+          document.getElementById('hours').value = site.contact?.hours || '';
+        }
+        
+        // Social links
+        if (document.getElementById('website')) {
+          document.getElementById('website').value = site.social?.website || '';
+        }
+        if (document.getElementById('facebook')) {
+          document.getElementById('facebook').value = site.social?.facebook || '';
+        }
+        if (document.getElementById('instagram')) {
+          document.getElementById('instagram').value = site.social?.instagram || '';
+        }
+        if (document.getElementById('maps')) {
+          document.getElementById('maps').value = site.social?.maps || '';
+        }
+        
+        // Services/Products
+        const servicesList = document.getElementById('servicesList');
+        if (servicesList && site.services) {
+          servicesList.innerHTML = ''; // Clear existing
+          const servicesArray = site.services.items || site.services || [];
+          servicesArray.forEach((service, index) => {
+            addServiceField(
+              service.title || service.name || '',
+              service.description || '',
+              service.price || '',
+              service.image || ''
+            );
+          });
+        }
+        
+        // For product-based templates
+        if (site.products && Array.isArray(site.products)) {
+          site.products.forEach((product, index) => {
+            const nameInput = document.getElementById(`product${index}Name`);
+            const priceInput = document.getElementById(`product${index}Price`);
+            const descInput = document.getElementById(`product${index}Description`);
+            const imageInput = document.getElementById(`product${index}Image`);
+            
+            if (nameInput) nameInput.value = product.name || '';
+            if (priceInput) priceInput.value = product.price || '';
+            if (descInput) descInput.value = product.description || '';
+            if (imageInput) imageInput.value = product.image || '';
+          });
+        }
+        
+        // Template-specific fields
+        if (site.custom) {
+          Object.keys(site.custom).forEach(key => {
+            const field = document.getElementById(key);
+            if (field) {
+              if (field.type === 'checkbox') {
+                field.checked = site.custom[key];
+              } else {
+                field.value = site.custom[key];
+              }
+            }
+          });
+        }
+        
+        // Trigger preview update
+        updatePreview();
+        
+        console.log('Site data loaded into form successfully');
+      } catch (error) {
+        console.error('Error loading site data into form:', error);
+      }
+    }
+
+    // Initialize - load template from URL parameter or edit mode
     window.addEventListener('DOMContentLoaded', async () => {
       renderTemplateSummary(null);
       const params = new URLSearchParams(window.location.search);
       const templateId = params.get('template');
+      const editSubdomain = params.get('edit');
       
-      if (templateId) {
+      // Check if we're in edit mode
+      if (editSubdomain) {
+        try {
+          const token = localStorage.getItem('token');
+          if (!token) {
+            alert('Please log in to edit your site');
+            window.location.href = '/login.html';
+            return;
+          }
+          
+          // Fetch the published site data
+          const response = await fetch(`/api/sites/${editSubdomain}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (!response.ok) {
+            const error = await response.json();
+            alert(`Failed to load site: ${error.error}`);
+            window.location.href = '/dashboard.html';
+            return;
+          }
+          
+          const { site, subdomain } = await response.json();
+          
+          // Load the template for this site
+          const templatesResponse = await fetch('/data/templates/index.json');
+          const templatesData = await templatesResponse.json();
+          const template = templatesData.templates.find(t => t.id === site.templateId);
+          
+          if (!template) {
+            alert('Template not found for this site');
+            window.location.href = '/dashboard.html';
+            return;
+          }
+          
+          selectedTemplate = template;
+          renderTemplateSummary(template);
+          
+          // Hide step 1, show step 2
+          document.getElementById('step1').style.display = 'none';
+          document.getElementById('step2').style.display = 'block';
+          document.querySelector('.progress-bar').style.display = 'none';
+          
+          // Setup customization
+          await setupCustomize();
+          
+          // Pre-populate form with existing site data
+          await loadSiteDataIntoForm(site);
+          
+          // Mark as edit mode
+          const publishBtn = document.querySelector('.publish-btn');
+          if (publishBtn) {
+            publishBtn.textContent = '📝 Update Site';
+            publishBtn.dataset.editMode = 'true';
+            publishBtn.dataset.subdomain = subdomain;
+          }
+          
+          // Show edit notification
+          const notification = document.createElement('div');
+          notification.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 15px 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000; font-weight: 600;';
+          notification.textContent = '✏️ Editing Mode: Make changes and click "Update Site" to save';
+          document.body.appendChild(notification);
+          setTimeout(() => notification.remove(), 5000);
+          
+          // Show preview
+          const panel = document.getElementById('previewPanel');
+          const toggle = document.getElementById('previewToggle');
+          if (panel && toggle) {
+            panel.style.display = 'block';
+            toggle.textContent = '✕ Close Preview';
+          }
+          updatePreview();
+          
+        } catch (error) {
+          console.error('Failed to load site for editing:', error);
+          alert('Failed to load site. Please try again.');
+          window.location.href = '/dashboard.html';
+        }
+      } else if (templateId) {
         // Load template from URL
         try {
           const response = await fetch('/data/templates/index.json');
@@ -2117,7 +2296,197 @@
       document.body.style.overflow = '';
     }
 
+    // Update existing site (edit mode)
+    async function updateExistingSite(subdomain) {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert('Please log in to update your site');
+          window.location.href = '/login.html';
+          return;
+        }
+        
+        // Close payment modal if open
+        closePaymentModal();
+        
+        // Show loading message
+        const successDiv = document.getElementById('success');
+        successDiv.style.display = 'block';
+        successDiv.innerHTML = `
+          <div class="success-message">
+            <div class="success-icon">⏳</div>
+            <h2>Updating Your Site...</h2>
+            <p class="muted">Please wait while we save your changes.</p>
+          </div>
+        `;
+        successDiv.scrollIntoView({ behavior: 'smooth' });
+        
+        // Collect current form data (similar to draft saving logic)
+        const businessData = {};
+        businessData.businessName = document.getElementById('businessName')?.value || '';
+        businessData.heroTitle = document.getElementById('heroTitle')?.value || '';
+        businessData.heroSubtitle = document.getElementById('heroSubtitle')?.value || '';
+        businessData.heroImage = document.getElementById('heroImage')?.value || '';
+        businessData.email = document.getElementById('email')?.value || '';
+        businessData.phone = document.getElementById('phone')?.value || '';
+        businessData.address = document.getElementById('address')?.value || '';
+        businessData.hours = document.getElementById('hours')?.value || '';
+        businessData.website = document.getElementById('website')?.value || '';
+        businessData.facebook = document.getElementById('facebook')?.value || '';
+        businessData.instagram = document.getElementById('instagram')?.value || '';
+        businessData.maps = document.getElementById('maps')?.value || '';
+        
+        // Collect services
+        const services = [];
+        const serviceItems = document.querySelectorAll('#servicesList .service-item');
+        serviceItems.forEach(item => {
+          const name = item.querySelector('input[placeholder="Service name"]')?.value;
+          const description = item.querySelector('input[placeholder="Description"]')?.value;
+          const price = item.querySelector('input[placeholder="Price"]')?.value;
+          const image = item.querySelector('input[placeholder="Image URL"]')?.value;
+          if (name) {
+            services.push({ name, description, price, image });
+          }
+        });
+        businessData.services = services;
+        
+        // Collect template-specific data
+        businessData.templateSpecific = {};
+        const templateSpecificFields = document.querySelectorAll('#templateSpecificContent input, #templateSpecificContent select, #templateSpecificContent textarea');
+        templateSpecificFields.forEach(field => {
+          if (field.type === 'checkbox') {
+            businessData.templateSpecific[field.id] = field.checked;
+          } else {
+            businessData.templateSpecific[field.id] = field.value;
+          }
+        });
+        
+        // Build the updated site structure (this mimics the publish endpoint logic)
+        // Load the template to get the base structure
+        const templateResponse = await fetch(`/data/templates/${selectedTemplate.id}.json`);
+        const templateData = await templateResponse.json();
+        
+        const updatedSite = {
+          templateId: selectedTemplate.id,
+          brand: {
+            name: businessData.businessName,
+            logo: businessData.heroImage || templateData.brand?.logo
+          },
+          hero: {
+            title: businessData.heroTitle,
+            subtitle: businessData.heroSubtitle,
+            image: businessData.heroImage,
+            cta: templateData.hero?.cta || { text: 'Get Started', link: '#contact' }
+          },
+          contact: {
+            email: businessData.email,
+            phone: businessData.phone,
+            address: businessData.address,
+            hours: businessData.hours
+          },
+          social: {
+            website: businessData.website,
+            facebook: businessData.facebook,
+            instagram: businessData.instagram,
+            maps: businessData.maps
+          },
+          ...templateData
+        };
+        
+        // Add services
+        if (businessData.services && businessData.services.length > 0) {
+          if (updatedSite.products) {
+            updatedSite.products = businessData.services.map(s => ({
+              name: s.name,
+              price: parseFloat(s.price) || 0,
+              description: s.description || '',
+              ...(s.image && { image: s.image })
+            }));
+          } else if (updatedSite.services) {
+            updatedSite.services.items = businessData.services.map(s => ({
+              title: s.name,
+              description: s.description || '',
+              ...(s.price && { price: s.price }),
+              ...(s.image && { image: s.image })
+            }));
+          }
+        }
+        
+        // Add custom fields
+        updatedSite.custom = businessData.templateSpecific;
+        
+        // Call the update endpoint
+        const response = await fetch(`/api/sites/${subdomain}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(updatedSite)
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to update site');
+        }
+        
+        // Show success message
+        successDiv.innerHTML = `
+          <div class="success-message">
+            <div class="success-icon">✅</div>
+            <h2>Site Updated Successfully!</h2>
+            <p class="muted">Your changes are now live.</p>
+            
+            <div style="margin-top: 30px; padding: 20px; background: #f8fafc; border-radius: 12px;">
+              <p style="margin-bottom: 10px;"><strong>🌐 Your Site URL:</strong></p>
+              <input type="text" id="siteUrl" value="${window.location.origin}/sites/${subdomain}/" readonly style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1.1rem; text-align: center; background: white; color: #1f2937;">
+              <button onclick="copyUrl()" style="margin-top: 15px; padding: 12px 24px; background: linear-gradient(135deg, #06b6d4, #0891b2); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                📋 Copy URL
+              </button>
+            </div>
+            
+            <div style="margin-top: 30px;">
+              <a href="/sites/${subdomain}/" target="_blank" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #10b981, #059669); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; margin-right: 10px;">
+                🌐 View Your Site
+              </a>
+              <a href="/dashboard.html" style="display: inline-block; padding: 14px 32px; background: #f1f5f9; color: #475569; text-decoration: none; border-radius: 10px; font-weight: 600;">
+                📊 Go to Dashboard
+              </a>
+            </div>
+          </div>
+        `;
+        
+        console.log('Site updated successfully:', result);
+        
+      } catch (error) {
+        console.error('Update error:', error);
+        const successDiv = document.getElementById('success');
+        successDiv.style.display = 'block';
+        successDiv.innerHTML = `
+          <div class="success-message" style="border-left: 4px solid #ef4444;">
+            <div class="success-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">❌</div>
+            <h2 style="color: #dc2626;">Update Failed</h2>
+            <p class="muted">${error.message || 'Failed to update your site. Please try again.'}</p>
+            <button onclick="location.reload()" style="margin-top: 20px; padding: 12px 24px; background: #ef4444; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+              Try Again
+            </button>
+          </div>
+        `;
+      }
+    }
+
     async function processPayment() {
+      // Check if we're in edit mode
+      const publishBtn = document.querySelector('.publish-btn');
+      const isEditMode = publishBtn?.dataset.editMode === 'true';
+      const subdomain = publishBtn?.dataset.subdomain;
+      
+      if (isEditMode && subdomain) {
+        // Update existing site instead of publishing
+        return await updateExistingSite(subdomain);
+      }
+      
       const email = document.getElementById('paymentEmail').value;
       const plan = document.querySelector('input[name="plan"]:checked').value;
       const draftId = window.currentDraftId;

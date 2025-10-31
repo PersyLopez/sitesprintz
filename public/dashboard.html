@@ -381,8 +381,8 @@
     
     function editSite(siteId, status) {
       if (status === 'published') {
-        // For published sites, we could create a new draft or show edit options
-        alert('Editing published sites will create a new draft. This feature is coming soon!');
+        // For published sites, redirect to setup with edit mode
+        window.location.href = `/setup.html?edit=${siteId}`;
       } else {
         // For drafts, redirect to setup with the draft
         window.location.href = `/setup.html?draft=${siteId}`;
