@@ -1327,7 +1327,7 @@
         if (!grid) return;
         grid.innerHTML = '';
         if (guide) {
-          guide.textContent = 'Select any Starter or Checkout template to continue.';
+          guide.textContent = 'Select any template to continue. Premium templates include advanced features!';
           guide.style.opacity = 1;
         }
 
@@ -1489,10 +1489,7 @@
     }
 
     function selectTemplate(template, element) {
-      if (template.plan === 'Premium' || template.status === 'coming-soon') {
-        alert('Premium Suite is coming soon. Please choose a Starter or Checkout template for now.');
-        return;
-      }
+      // Premium templates are now available!
       selectedTemplate = template;
       renderTemplateSummary(template);
       const guide = document.getElementById('autoAdvanceText');
