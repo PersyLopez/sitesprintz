@@ -1,0 +1,134 @@
+{
+  "brand": {
+    "name": "ClearFlow Plumbing",
+    "logo": "assets/logo.svg",
+    "alt": "ClearFlow Plumbing emblem"
+  },
+  "themeVars": {
+    "color-primary": "#0ea5e9",
+    "color-primary-600": "#0284c7",
+    "color-accent": "#14b8a6"
+  },
+  "nav": [
+    { "label": "Services", "href": "#services" },
+    { "label": "About", "href": "#about" },
+    { "label": "Testimonials", "href": "#testimonials" },
+    { "label": "Plans", "href": "#pricing" },
+    { "label": "Contact", "href": "#contact" }
+  ],
+  "hero": {
+    "eyebrow": "Emergency plumbers on-call",
+    "title": "Leak-free homes and businesses guaranteed",
+    "subtitle": "Licensed, bonded, and insured plumbers with 60-minute emergency response across the metro area.",
+    "image": "assets/hero-placeholder.svg",
+    "imageAlt": "Plumber repairing a kitchen sink",
+    "cta": [
+      { "label": "Request emergency dispatch", "href": "tel:+15557654321" },
+      { "label": "Book routine visit", "href": "#contact", "variant": "secondary" }
+    ]
+  },
+  "services": {
+    "title": "Full-service plumbing",
+    "subtitle": "From pinhole leaks to full remodels",
+    "items": [
+      {
+        "title": "Leak detection",
+        "description": "Thermal imaging and acoustic tools to locate hidden leaks without demo."
+      },
+      {
+        "title": "Water heater service",
+        "description": "Repair, replace, and upgrade to tankless systems with permits handled."
+      },
+      {
+        "title": "Drain cleaning",
+        "description": "Hydro-jetting and rooter service for residential and commercial lines."
+      },
+      {
+        "title": "Remodel and rough-in",
+        "description": "Bathroom, kitchen, and multi-unit plumbing completed to code."
+      }
+    ]
+  },
+  "about": {
+    "title": "30 years of dependable plumbing",
+    "body": "ClearFlow Plumbing is a second-generation, family-owned company delivering upfront pricing and respectful service. Our techs arrive in marked vehicles, wear protective boot covers, and leave your space cleaner than we found it."
+  },
+  "testimonials": {
+    "title": "Hear from our customers",
+    "items": [
+      {
+        "quote": "They replaced our water heater the same day and handled all the permits.",
+        "author": "Shannon M., Homeowner"
+      },
+      {
+        "quote": "Our restaurant cannot afford downtime. ClearFlow keeps our drains running.",
+        "author": "Victor T., Restaurant Owner"
+      },
+      {
+        "quote": "Professional, friendly, and transparent with every recommendation.",
+        "author": "Evelyn D., Property Manager"
+      }
+    ]
+  },
+  "pricing": {
+    "title": "Maintenance plans and specials",
+    "plans": [
+      {
+        "name": "Annual Plumbing Check",
+        "description": "Whole-home inspection, water pressure test, and fixture tune-up.",
+        "price": 159,
+        "cta": { "label": "Schedule", "href": "#contact" }
+      },
+      {
+        "name": "Drain Care Membership",
+        "description": "Two preventive drain cleanings per year plus prorated emergency rates.",
+        "price": 19,
+        "cta": { "label": "Join plan", "href": "#contact" }
+      },
+      {
+        "name": "Tankless Flush and Service",
+        "description": "Annual descaling and performance check for all major brands.",
+        "price": 189,
+        "cta": { "label": "Book visit", "href": "#contact" }
+      }
+    ]
+  },
+  "contact": {
+    "title": "Contact ClearFlow",
+    "subtitle": "Emergency dispatch available 24/7. Office open 7:00am to 6:00pm daily.",
+    "email": "dispatch@clearflowplumbing.com",
+    "phone": "+1-555-765-4321"
+  },
+  "footer": {
+    "text": "ClearFlow Plumbing. Proud members of the Plumbing-Heating-Cooling Contractors Association."
+  },
+  "pages": [
+    {
+      "slug": "guarantees",
+      "title": "Our Guarantees",
+      "body": "# Service promises\nUpfront, no-surprise pricing\nWorkmanship guaranteed for 2 years\nLicensed, background-checked technicians\nRespect for your home and schedule"
+    },
+    {
+      "slug": "commercial",
+      "title": "Commercial Services",
+      "body": "# Commercial plumbing\n24/7 priority dispatch\nBackflow testing and certification\nTenant improvement projects\nScheduled maintenance for HOAs and facilities"
+    }
+  ],
+  "products": [
+    {
+      "name": "Water Heater Replacement",
+      "price": 1289,
+      "description": "Standard 50-gallon install including haul-away and code upgrades."
+    },
+    {
+      "name": "LeakSense Monitoring",
+      "price": 399,
+      "description": "Smart leak detection system with app alerts and automatic shutoff."
+    },
+    {
+      "name": "Commercial Jetting Service",
+      "price": 349,
+      "description": "High-pressure hydro-jetting for main lines up to 12 inches."
+    }
+  ]
+}
