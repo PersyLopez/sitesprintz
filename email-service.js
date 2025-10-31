@@ -312,6 +312,69 @@ const templates = {
         </div>
       </div>
     `
+  }),
+
+  contactFormSubmission: (businessName, submitterName, submitterEmail, submitterPhone, message, type, siteUrl, submissionTime) => ({
+    subject: `🔔 New ${type === 'quote' ? 'Quote Request' : 'Contact Form'} Submission - ${businessName}`,
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #10b981; margin: 0; font-size: 2rem;">🔔 New Submission!</h1>
+        </div>
+        
+        <div style="background: #f0fdf4; border-radius: 12px; padding: 30px; margin-bottom: 20px; border: 2px solid #86efac;">
+          <p style="font-size: 1.1rem; color: #1e293b; line-height: 1.6; margin: 0 0 20px 0;">
+            You have a new ${type === 'quote' ? 'quote request' : 'contact form submission'} for <strong>${businessName}</strong>!
+          </p>
+          
+          <div style="background: white; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="margin: 0 0 15px 0; color: #1e293b; font-size: 1.1rem;">📋 Submission Details:</h3>
+            
+            <p style="margin: 8px 0; color: #64748b;">
+              <strong style="color: #1e293b;">From:</strong> ${submitterName}
+            </p>
+            <p style="margin: 8px 0; color: #64748b;">
+              <strong style="color: #1e293b;">Email:</strong> 
+              <a href="mailto:${submitterEmail}" style="color: #2563eb; text-decoration: none;">${submitterEmail}</a>
+            </p>
+            <p style="margin: 8px 0; color: #64748b;">
+              <strong style="color: #1e293b;">Phone:</strong> ${submitterPhone}
+            </p>
+            <p style="margin: 8px 0; color: #64748b;">
+              <strong style="color: #1e293b;">Submitted:</strong> ${submissionTime}
+            </p>
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="margin: 0 0 10px 0; color: #1e293b; font-weight: 600;">Message:</p>
+              <div style="background: #f8fafc; border-radius: 8px; padding: 15px; color: #475569; line-height: 1.6; white-space: pre-wrap;">
+${message}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div style="background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 16px; margin: 20px 0;">
+          <p style="color: #1e40af; font-size: 0.9rem; margin: 0; line-height: 1.5;">
+            💡 <strong>Pro Tip:</strong> Respond within 1 hour to increase your conversion rate by 7x!
+          </p>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="mailto:${submitterEmail}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #10b981, #059669); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 1rem; margin-right: 10px;">
+            📧 Reply Now
+          </a>
+          <a href="${siteUrl}" style="display: inline-block; padding: 14px 32px; background: #f1f5f9; color: #475569; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 1rem;">
+            🌐 View Site
+          </a>
+        </div>
+        
+        <div style="border-top: 1px solid #e2e8f0; margin-top: 30px; padding-top: 20px;">
+          <p style="color: #94a3b8; font-size: 0.875rem; text-align: center; margin: 0;">
+            This submission was sent from your website: <a href="${siteUrl}" style="color: #2563eb;">${siteUrl}</a>
+          </p>
+        </div>
+      </div>
+    `
   })
 };
 
@@ -365,6 +428,7 @@ export const EmailTypes = {
   SITE_PUBLISHED: 'sitePublished',
   SITE_UPDATED: 'siteUpdated',
   TRIAL_EXPIRING_SOON: 'trialExpiringSoon',
-  TRIAL_EXPIRED: 'trialExpired'
+  TRIAL_EXPIRED: 'trialExpired',
+  CONTACT_FORM_SUBMISSION: 'contactFormSubmission'
 };
 
