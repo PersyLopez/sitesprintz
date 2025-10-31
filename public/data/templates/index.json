@@ -3,6 +3,9 @@
     { "id": "starter", "name": "Starter (Hero + Services)", "description": "Clean hero, three services, contact CTA." },
     { "id": "restaurant", "name": "Restaurant", "description": "Menu-style products, reservations CTA." },
     { "id": "salon", "name": "Salon/Barber", "description": "Services, pricing, testimonials, booking CTA." },
-    { "id": "freelancer", "name": "Freelancer", "description": "Portfolio pages, packages, contact form link." }
+    { "id": "freelancer", "name": "Freelancer", "description": "Portfolio pages, packages, contact form link." },
+    { "id": "electrician", "name": "Electrician Service", "description": "Emergency response, service areas, certifications, maintenance plans." },
+    { "id": "auto-repair", "name": "Auto Repair Shop", "description": "ASE-certified team, diagnostics, fleet program, digital inspections." },
+    { "id": "plumbing", "name": "Plumbing Company", "description": "On-call plumbers, service guarantees, membership plans, commercial work." }
   ]
 }
