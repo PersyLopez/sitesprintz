@@ -1,0 +1,292 @@
+{
+  "brand": {
+    "name": "Glow Studio",
+    "logo": "assets/logo.svg",
+    "tagline": "Beauty & Wellness • Since 2015",
+    "phone": "(555) 234-5678",
+    "email": "hello@glowstudio.com"
+  },
+  "themeVars": {
+    "color-primary": "#d946ef",
+    "color-accent": "#f472b6",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {
+      "label": "Services",
+      "href": "#services"
+    },
+    {
+      "label": "Gallery",
+      "href": "#gallery"
+    },
+    {
+      "label": "Book",
+      "href": "#book"
+    },
+    {
+      "label": "About",
+      "href": "#about"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
+  ],
+  "hero": {
+    "eyebrow": "💇‍♀️ Professional Beauty Services",
+    "title": "Look and feel your absolute best",
+    "subtitle": "From precision cuts to stunning color transformations, our expert stylists create looks that enhance your natural beauty. Book your appointment and discover the Glow Studio difference.",
+    "cta": [
+      {
+        "label": "📅 Book Now",
+        "href": "#book"
+      },
+      {
+        "label": "🖼️ View Gallery",
+        "href": "#gallery",
+        "variant": "secondary"
+      }
+    ],
+    "image": "https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=1200&q=80",
+    "imageAlt": "Modern salon interior with professional styling stations and elegant lighting"
+  },
+  "about": {
+    "title": "Our Story",
+    "body": "Founded in 2015 by Master Stylist Sarah Chen, Glow Studio has become the premier destination for beauty and wellness in our community. Our team of certified professionals brings years of experience and the latest techniques to every service.",
+    "subtitle": "Why choose Glow Studio",
+    "features": [
+      "💇‍♀️ Master stylists with 10+ years experience",
+      "🎨 Latest color techniques and trends",
+      "🌿 Organic and eco-friendly products",
+      "✨ Luxurious spa-like atmosphere",
+      "📱 Easy online booking system",
+      "🏆 Award-winning customer service"
+    ],
+    "owner": {
+      "name": "Sarah Chen",
+      "title": "Master Stylist & Owner",
+      "bio": "Sarah brings 15+ years of experience from top salons in New York and Los Angeles. She specializes in color correction and bridal styling, and has been featured in multiple beauty magazines.",
+      "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
+      "imageAlt": "Sarah Chen, Master Stylist"
+    }
+  },
+  "products": [
+    {
+      "name": "Precision Haircut",
+      "price": 65,
+      "description": "Expert cut tailored to your face shape and lifestyle. Includes wash, cut, and style.",
+      "image": "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600&q=80",
+      "imageAlt": "Professional haircut service",
+      "category": "Hair Services",
+      "duration": "60 minutes",
+      "popular": true
+    },
+    {
+      "name": "Full Color Service",
+      "price": 120,
+      "description": "Complete color transformation with premium products. Includes consultation, color, and style.",
+      "image": "https://images.unsplash.com/photo-1560066984-4173d6fe64e2?w=600&q=80",
+      "imageAlt": "Hair coloring service",
+      "category": "Hair Services",
+      "duration": "2.5 hours",
+      "popular": true
+    },
+    {
+      "name": "Gel Manicure",
+      "price": 50,
+      "description": "Long-lasting gel polish that stays perfect for up to 3 weeks.",
+      "image": "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=600&q=80",
+      "imageAlt": "Gel manicure",
+      "category": "Nail Services",
+      "duration": "60 minutes",
+      "popular": true
+    },
+    {
+      "name": "Spa Pedicure",
+      "price": 55,
+      "description": "Luxurious pedicure with exfoliation, massage, and polish. Perfect for relaxation.",
+      "image": "https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=600&q=80",
+      "imageAlt": "Spa pedicure",
+      "category": "Nail Services",
+      "duration": "75 minutes"
+    },
+    {
+      "name": "Signature Facial",
+      "price": 85,
+      "description": "Deep cleansing facial with extraction, mask, and moisturizing treatment.",
+      "image": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&q=80",
+      "imageAlt": "Facial treatment",
+      "category": "Skin Care",
+      "duration": "60 minutes"
+    },
+    {
+      "name": "Bridal Package",
+      "price": 250,
+      "description": "Complete bridal styling including trial, hair, makeup, and touch-up kit.",
+      "image": "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80",
+      "imageAlt": "Bridal hair styling",
+      "category": "Special Occasions",
+      "duration": "3 hours",
+      "popular": true
+    }
+  ],
+  "testimonials": {
+    "title": "What Our Clients Say",
+    "subtitle": "Real reviews from our valued clients",
+    "items": [
+      {
+        "text": "Sarah transformed my hair completely! The color correction was amazing and I get compliments everywhere I go.",
+        "author": "Jessica Martinez",
+        "location": "Regular Client",
+        "rating": 5,
+        "date": "1 week ago",
+        "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
+        "imageAlt": "Jessica Martinez"
+      },
+      {
+        "text": "The bridal package was worth every penny. I felt absolutely beautiful on my wedding day and the photos are stunning.",
+        "author": "Amanda Thompson",
+        "location": "Bride",
+        "rating": 5,
+        "date": "2 weeks ago",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&q=80",
+        "imageAlt": "Amanda Thompson"
+      },
+      {
+        "text": "Best salon experience ever! The atmosphere is so relaxing and the staff is incredibly professional and friendly.",
+        "author": "Maria Rodriguez",
+        "location": "New Client",
+        "rating": 5,
+        "date": "3 days ago",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "imageAlt": "Maria Rodriguez"
+      },
+      {
+        "text": "I've been coming here for 3 years and they never disappoint. The gel manicures last forever and look perfect.",
+        "author": "Lisa Chen",
+        "location": "Loyal Client",
+        "rating": 5,
+        "date": "5 days ago",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80",
+        "imageAlt": "Lisa Chen"
+      }
+    ],
+    "stats": {
+      "averageRating": 4.9,
+      "totalReviews": 186,
+      "googleRating": 4.8,
+      "yelpRating": 4.9
+    }
+  },
+  "contact": {
+    "title": "Visit Us",
+    "subtitle": "We'd love to welcome you to Glow Studio",
+    "phone": "(555) 234-5678",
+    "email": "hello@glowstudio.com",
+    "address": "892 Beauty Lane, Downtown District, Springfield, IL 62701",
+    "coordinates": {
+      "lat": 39.7817,
+      "lng": -89.6501
+    },
+    "parking": "Free parking available • Street parking • Valet service",
+    "accessibility": "Wheelchair accessible • Ground floor location • Accessible restrooms",
+    "hours": {
+      "title": "Salon Hours",
+      "items": [
+        "Monday: Closed",
+        "Tuesday - Friday: 9:00 AM - 7:00 PM",
+        "Saturday: 8:00 AM - 6:00 PM",
+        "Sunday: 10:00 AM - 4:00 PM"
+      ],
+      "note": "Extended hours available for special events"
+    },
+    "booking": {
+      "phone": "(555) 234-5678",
+      "online": "https://glowstudio.salonbooking.com",
+      "note": "Appointments recommended, walk-ins welcome when available"
+    }
+  },
+  "social": {
+    "facebook": "https://facebook.com/glowstudiosalon",
+    "instagram": "https://instagram.com/glowstudio_beauty",
+    "googleMaps": "https://maps.google.com/glowstudio-salon",
+    "yelp": "https://yelp.com/biz/glowstudio-springfield",
+    "pinterest": "https://pinterest.com/glowstudio"
+  },
+  "events": {
+    "title": "Special Services",
+    "subtitle": "Make your special moments unforgettable",
+    "items": [
+      {
+        "title": "Bridal Consultations",
+        "description": "Free consultation for bridal packages with trial styling",
+        "schedule": "Available by appointment",
+        "price": "Free consultation"
+      },
+      {
+        "title": "Group Bookings",
+        "description": "Special rates for bridal parties and group events",
+        "schedule": "Available weekends",
+        "price": "10% discount for groups of 4+"
+      },
+      {
+        "title": "Mobile Services",
+        "description": "We come to you for special events and parties",
+        "schedule": "Available by arrangement",
+        "price": "Additional travel fee applies"
+      }
+    ]
+  },
+  "footer": {
+    "text": "💇‍♀️ Glow Studio • Beauty & Wellness Since 2015",
+    "links": [
+      {
+        "label": "Privacy Policy",
+        "href": "#privacy"
+      },
+      {
+        "label": "Terms of Service",
+        "href": "#terms"
+      },
+      {
+        "label": "Careers",
+        "href": "#careers"
+      },
+      {
+        "label": "Gift Cards",
+        "href": "#giftcards"
+      }
+    ],
+    "awards": [
+      "Best Salon 2023",
+      "Beauty Excellence Award",
+      "Customer Choice Winner"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "productCta": "Book Appointment",
+    "productCtaHref": "https://calendly.com/glowstudio",
+    "productNote": "Click to book online through Calendly, or call us at (555) 234-5678. Want payment processing at booking? Contact us about upgrading."
+  },
+  "custom": {
+    "haircuts": false,
+    "coloring": false,
+    "styling": false,
+    "manicures": false,
+    "pedicures": false,
+    "facials": false,
+    "massage": false,
+    "eyebrows": false,
+    "bookingType": ""
+  },
+  "published": {
+    "at": "2025-10-31T06:05:13.116Z",
+    "plan": "starter",
+    "email": "persylopez9@gmail.com",
+    "subdomain": "glow-studio-mheg8mxo"
+  }
+}

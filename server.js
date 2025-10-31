@@ -10,6 +10,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import Stripe from 'stripe';
 import { randomUUID as nodeRandomUUID } from 'crypto';
+import { sendEmail, EmailTypes } from './email-service.js';
 
 dotenv.config();
 
@@ -39,6 +40,29 @@ const usersDir = path.join(publicDir, 'users');
 const dataFile = path.join(publicDir, 'data', 'site.json');
 const templatesDir = path.join(publicDir, 'data', 'templates');
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+
+// Standardized user file naming helper
+function getUserFilePath(email) {
+  const sanitized = email.toLowerCase().replace(/[^a-z0-9@.]/g, '_');
+  return path.join(usersDir, `${sanitized}.json`);
+}
+
+// Validation helpers
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+function isValidPhone(phone) {
+  // Allow various phone formats
+  const phoneRegex = /^[\+]?[1-9][\d\s\-\(\)]{7,}$/;
+  return phoneRegex.test(phone);
+}
+
+function sanitizeString(str, maxLength = 500) {
+  if (typeof str !== 'string') return '';
+  return str.trim().substring(0, maxLength);
+}
 
 // Ensure directories exist
 fs.mkdir(uploadsDir, { recursive: true }).catch(() => {});
@@ -168,6 +192,12 @@ function requireAuth(req, res, next) {
   }
 }
 
+// Endpoint to get admin token (for image uploads during setup)
+app.get('/api/admin-token', (req, res) => {
+  // Return the admin token - in production, you might want to add rate limiting here
+  res.json({ token: ADMIN_TOKEN });
+});
+
 // Authentication Endpoints
 app.post('/api/auth/register', async (req, res) => {
   try {
@@ -178,7 +208,7 @@ app.post('/api/auth/register', async (req, res) => {
     }
     
     // Check if user already exists
-    const userFile = path.join(usersDir, `${email.replace(/[^a-zA-Z0-9]/g, '_')}.json`);
+    const userFile = getUserFilePath(email);
     
     try {
       await fs.access(userFile);
@@ -204,6 +234,9 @@ app.post('/api/auth/register', async (req, res) => {
     // Generate JWT
     const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
     
+    // Send welcome email
+    await sendEmail(email, EmailTypes.WELCOME, { email });
+    
     res.json({ success: true, token, user: { id: user.id, email: user.email } });
   } catch (err) {
     console.error('Registration error:', err);
@@ -220,7 +253,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
     
     // Load user
-    const userFile = path.join(usersDir, `${email.replace(/[^a-zA-Z0-9]/g, '_')}.json`);
+    const userFile = getUserFilePath(email);
     
     let user;
     try {
@@ -277,7 +310,7 @@ app.post('/api/auth/login', async (req, res) => {
 app.get('/api/auth/me', requireAuth, async (req, res) => {
   try {
     const { email } = req.user;
-    const userFile = path.join(usersDir, `${email.replace(/[^a-zA-Z0-9]/g, '_')}.json`);
+    const userFile = getUserFilePath(email);
     
     const userData = await fs.readFile(userFile, 'utf-8');
     const user = JSON.parse(userData);
@@ -436,7 +469,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     }
     
     // Check if user exists
-    const userPath = path.join(usersDir, `${email.replace('@', '_at_').replace('.', '_dot_')}.json`);
+    const userPath = getUserFilePath(email);
     
     if (!(await fs.access(userPath).then(() => true).catch(() => false))) {
       // Don't reveal if user exists or not for security
@@ -455,13 +488,67 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     // Save updated user data
     await fs.writeFile(userPath, JSON.stringify(userData, null, 2));
     
-    // In production, send email here
-    console.log(`Password reset token for ${email}: ${resetToken}`);
+    // Send password reset email
+    await sendEmail(email, EmailTypes.PASSWORD_RESET, { email, resetToken });
     
     res.json({ message: 'If an account with that email exists, a password reset link has been sent.' });
   } catch (error) {
     console.error('Error processing password reset:', error);
     res.status(500).json({ error: 'Failed to process password reset request' });
+  }
+});
+
+// Password reset with token endpoint
+app.post('/api/auth/reset-password', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: 'Token and new password required' });
+    }
+    
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+    
+    // Find user with this reset token
+    const userFiles = await fs.readdir(usersDir);
+    let userFile = null;
+    let userData = null;
+    
+    for (const file of userFiles) {
+      if (!file.endsWith('.json')) continue;
+      const filePath = path.join(usersDir, file);
+      const data = JSON.parse(await fs.readFile(filePath, 'utf-8'));
+      
+      if (data.resetToken === token) {
+        userFile = filePath;
+        userData = data;
+        break;
+      }
+    }
+    
+    if (!userData) {
+      return res.status(400).json({ error: 'Invalid or expired reset token' });
+    }
+    
+    // Check if token expired
+    if (new Date(userData.resetExpires) < new Date()) {
+      return res.status(400).json({ error: 'Reset token has expired' });
+    }
+    
+    // Update password
+    userData.password = await bcrypt.hash(newPassword, 10);
+    userData.resetToken = undefined;
+    userData.resetExpires = undefined;
+    userData.passwordChangedAt = new Date().toISOString();
+    
+    await fs.writeFile(userFile, JSON.stringify(userData, null, 2));
+    
+    res.json({ success: true, message: 'Password reset successfully' });
+  } catch (error) {
+    console.error('Password reset error:', error);
+    res.status(500).json({ error: 'Failed to reset password' });
   }
 });
 
@@ -475,7 +562,7 @@ app.post('/api/admin/invite-user', requireAuth, async (req, res) => {
     }
     
     // Check if user already exists
-    const userPath = path.join(usersDir, `${email.replace('@', '_at_').replace('.', '_dot_')}.json`);
+    const userPath = getUserFilePath(email);
     
     if (await fs.access(userPath).then(() => true).catch(() => false)) {
       return res.status(400).json({ error: 'User with this email already exists' });
@@ -505,18 +592,14 @@ app.post('/api/admin/invite-user', requireAuth, async (req, res) => {
     // Save user data
     await fs.writeFile(userPath, JSON.stringify(userData, null, 2));
     
-    // In production, send email here
-    console.log(`\n=== USER INVITATION ===`);
-    console.log(`Email: ${email}`);
-    console.log(`Temporary Password: ${tempPassword}`);
-    console.log(`Login URL: http://localhost:3000/login.html`);
-    console.log(`Password expires: ${tempPasswordExpires.toLocaleString()}`);
-    console.log(`========================\n`);
+    // Send invitation email
+    await sendEmail(email, EmailTypes.INVITATION, { email, tempPassword });
+    
+    console.log(`✅ Invitation email sent to ${email}`);
     
     res.json({ 
       message: 'User invitation sent successfully',
       email: email,
-      tempPassword: tempPassword, // Only for development - remove in production
       loginUrl: `${req.protocol}://${req.get('host')}/login.html`
     });
   } catch (error) {
@@ -580,7 +663,7 @@ app.post('/api/auth/change-temp-password', requireAuth, async (req, res) => {
     }
     
     // Load user data
-    const userPath = path.join(usersDir, `${req.user.id}.json`);
+    const userPath = getUserFilePath(req.user.email);
     const userData = JSON.parse(await fs.readFile(userPath, 'utf-8'));
     
     // Check if user is using temporary password
@@ -654,6 +737,11 @@ app.post('/api/payments/checkout-sessions', async (req, res) => {
     const product = products[idx];
     if (!product || typeof product.price !== 'number' || !product.name) {
       return res.status(400).json({ error: 'Product not found' });
+    }
+
+    const allowCheckout = site.settings?.allowCheckout !== false;
+    if (!allowCheckout) {
+      return res.status(403).json({ error: 'Checkout disabled for this site' });
     }
 
     const unitAmountCents = Math.round(product.price * 100);
@@ -779,7 +867,28 @@ app.post('/api/drafts', async (req, res) => {
     const draftData = req.body;
     
     if (!draftData || !draftData.templateId) {
-      return res.status(400).json({ error: 'Invalid draft data' });
+      return res.status(400).json({ error: 'Invalid draft data: templateId is required' });
+    }
+    
+    // Validate business data if provided
+    if (draftData.businessData) {
+      const bd = draftData.businessData;
+      
+      // Validate email if provided
+      if (bd.email && !isValidEmail(bd.email)) {
+        return res.status(400).json({ error: 'Invalid email address' });
+      }
+      
+      // Validate phone if provided
+      if (bd.phone && !isValidPhone(bd.phone)) {
+        return res.status(400).json({ error: 'Invalid phone number format' });
+      }
+      
+      // Sanitize string fields
+      if (bd.businessName) bd.businessName = sanitizeString(bd.businessName, 200);
+      if (bd.heroTitle) bd.heroTitle = sanitizeString(bd.heroTitle, 200);
+      if (bd.heroSubtitle) bd.heroSubtitle = sanitizeString(bd.heroSubtitle, 500);
+      if (bd.address) bd.address = sanitizeString(bd.address, 300);
     }
     
     // Generate unique draft ID
@@ -953,6 +1062,15 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
   try {
     const { draftId } = req.params;
     const { plan, email } = req.body; // plan: starter, business, pro
+    
+    // Validate required fields
+    if (!email || !isValidEmail(email)) {
+      return res.status(400).json({ error: 'Valid email address is required' });
+    }
+    
+    if (!plan || !['starter', 'business', 'pro'].includes(plan.toLowerCase())) {
+      return res.status(400).json({ error: 'Invalid plan selected' });
+    }
     
     // Load draft
     const draftFile = path.join(draftsDir, `${draftId}.json`);
@@ -1297,15 +1415,23 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
     // Delete draft after successful publish
     await fs.unlink(draftFile);
     
-    // TODO: Store user info and site association if authenticated
+    const siteUrl = `http://localhost:${PORT}/sites/${subdomain}/`;
+    const siteName = siteData.brand?.name || 'Your Business';
+    
+    // Send site published email
+    await sendEmail(email, EmailTypes.SITE_PUBLISHED, { 
+      email,
+      siteName: siteName,
+      siteUrl: siteUrl
+    });
     
     res.json({
       success: true,
       subdomain: subdomain,
-      url: `http://localhost:${PORT}/sites/${subdomain}/`, // Correct URL for current setup
+      url: siteUrl,
       plan: plan,
       publishedAt: new Date().toISOString(),
-      businessName: siteData.brand?.name || 'Your Business',
+      businessName: siteName,
       whatsIncluded: getPlanFeatures(plan)
     });
     

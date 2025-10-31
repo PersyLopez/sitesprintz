@@ -47,5 +47,11 @@
     "phone": "+1-555-345-6789",
     "email": "care@petcareplus.com"
   },
-  "footer": {"text": "© PetCare Plus. Loving care for your pets."}
+  "footer": {"text": "© PetCare Plus. Loving care for your pets."},
+  "settings": {
+    "allowCheckout": false,
+    "productCta": "Book Service",
+    "productCtaHref": "tel:+15553456789",
+    "productNote": "Call to schedule grooming, walking, or boarding. First-time customers get 10% off!"
+  }
 }

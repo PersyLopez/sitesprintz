@@ -1,0 +1,96 @@
+{
+  "brand": {
+    "name": "BrightShelf Boutique",
+    "logo": "assets/logo.svg",
+    "alt": "BrightShelf logo"
+  },
+  "themeVars": {
+    "color-primary": "#f97316",
+    "color-primary-600": "#ea580c",
+    "color-accent": "#fb923c"
+  },
+  "nav": [
+    { "label": "Home", "href": "#hero" },
+    { "label": "Collections", "href": "#products" },
+    { "label": "About", "href": "#about" },
+    { "label": "Contact", "href": "#contact" }
+  ],
+  "hero": {
+    "eyebrow": "New arrivals in store",
+    "title": "Showcase your products without the complexity",
+    "subtitle": "Perfect for boutiques that want to highlight pricing while taking orders offline.",
+    "image": "assets/hero-placeholder.jpg",
+    "imageAlt": "Boutique interior",
+    "cta": [
+      { "label": "View Collections", "href": "#products" },
+      { "label": "Contact Us", "href": "#contact", "variant": "secondary" }
+    ]
+  },
+  "about": {
+    "title": "Tailored for in-person experiences",
+    "body": "BrightShelf Boutique offers curated home goods and accessories. Use this template to highlight pricing, share your story, and invite shoppers to reach out by phone or visit your location."
+  },
+  "testimonials": {
+    "title": "Customers love the experience",
+    "items": [
+      {
+        "quote": "Our customers love browsing online before visiting in person!",
+        "author": "Morgan, Owner"
+      },
+      {
+        "quote": "The template makes sharing new arrivals simple and fast.",
+        "author": "Jules, Store Manager"
+      }
+    ]
+  },
+  "products": [
+    {
+      "name": "Hand-crafted Stoneware Mug",
+      "price": 28,
+      "description": "Heirloom-quality mug with a matte finish and ergonomic handle."
+    },
+    {
+      "name": "Warm Cedar Candle",
+      "price": 36,
+      "description": "Slow-burning soy candle with notes of cedarwood, amber, and sage."
+    },
+    {
+      "name": "Linen Throw Blanket",
+      "price": 74,
+      "description": "Soft, breathable linen throw available in oat, slate, and moss."
+    }
+  ],
+  "pricing": {
+    "title": "Signature collections",
+    "plans": [
+      {
+        "name": "Home Essentials",
+        "description": "Everyday pieces curated for easy styling.",
+        "price": 59,
+        "cta": { "label": "Call to order", "href": "#contact" }
+      },
+      {
+        "name": "Gifting Suite",
+        "description": "Ready-to-wrap gifts for every occasion.",
+        "price": 95,
+        "cta": { "label": "Email for details", "href": "mailto:hello@brightshelf.com" }
+      }
+    ]
+  },
+  "contact": {
+    "title": "Visit or reach out",
+    "subtitle": "Call, email, or stop by our boutique to reserve your favorites.",
+    "email": "hello@brightshelf.com",
+    "phone": "+1-212-555-0148"
+  },
+  "footer": {
+    "text": "© BrightShelf Boutique — Custom collections with personal service."
+  },
+  "settings": {
+    "allowCheckout": false,
+    "productCta": "Call us to reserve",
+    "productCtaHref": "tel:+12125550148",
+    "productNote": "Need online ordering? Upgrade to the Premium Ordering template to unlock checkout."
+  }
+}
+

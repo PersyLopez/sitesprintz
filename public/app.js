@@ -1,6 +1,7 @@
 /* Minimal client-side renderer for site.json */
 (async function(){
-  const state = { config:null };
+  const IS_PUBLISHED_SITE = window.location.pathname.includes('/sites/');
+  const state = { config:null, templates:null };
 
   const qs = (sel, el=document) => el.querySelector(sel);
   const qsa = (sel, el=document) => Array.from(el.querySelectorAll(sel));
@@ -15,10 +16,7 @@
       }catch(_){ /* fall back below */ }
     }
     
-    // Check if we're on a published site (URL contains /sites/)
-    const isPublishedSite = window.location.pathname.includes('/sites/');
-    
-    if(isPublishedSite){
+    if(IS_PUBLISHED_SITE){
       // For published sites, load from local site.json
       const res = await fetch('./site.json', { cache:'no-cache' });
       if(!res.ok){ throw new Error('Failed to load site.json'); }
@@ -36,6 +34,16 @@
       const res = await fetch('./data/site.json', { cache:'no-cache' });
       if(!res.ok){ throw new Error('Failed to load data/site.json'); }
       return res.json();
+    }
+  }
+
+  async function loadTemplatesIndex(){
+    try{
+      const res = await fetch('/data/templates/index.json', { cache:'no-cache' });
+      if(!res.ok) return null;
+      return res.json();
+    }catch(_){
+      return null;
     }
   }
 
@@ -117,6 +125,18 @@
       navToggle.setAttribute('aria-expanded', String(!expanded));
       siteNav.classList.toggle('open');
     });
+    
+    // Close mobile nav when clicking a link
+    if(navLinks){
+      navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          if(window.innerWidth <= 720 && siteNav.classList.contains('open')){
+            siteNav.classList.remove('open');
+            if(navToggle) navToggle.setAttribute('aria-expanded', 'false');
+          }
+        });
+      });
+    }
   }
 
   function el(tag, attrs={}, children=[]){
@@ -227,6 +247,81 @@
     const phone = cfg.contact.phone ? el('a', { href:`tel:${cfg.contact.phone}`, class:'btn btn-secondary mt-3' }, ['Call us']) : null;
     const ctas = el('div', { class:'cta-row' }, [email, phone].filter(Boolean));
     container.appendChild(ctas);
+
+    document.getElementById('content').appendChild(sec);
+  }
+
+  function renderTemplateShowcase(cfg){
+    if(IS_PUBLISHED_SITE) return;
+    
+    // Don't show template showcase when previewing a specific template
+    const params = new URLSearchParams(window.location.search);
+    if(params.get('template')) return;
+    
+    const templateIndex = state.templates;
+    if(!templateIndex || !Array.isArray(templateIndex.templates)) return;
+
+    const tiers = [
+      {
+        plan: 'Starter',
+        title: 'Starter Templates',
+        description: 'Launch a catalog site fast. Perfect for restaurants, salons, consultants, and service businesses.'
+      },
+      {
+        plan: 'Checkout',
+        title: 'Checkout Ready',
+        description: 'Accept secure payments with Stripe. Same editing experience, added commerce power.'
+      },
+      {
+        plan: 'Premium',
+        title: 'Premium Suite',
+        description: 'Multi-page sites with blogs, scheduling, and CRM. Coming soon.'
+      }
+    ];
+
+    const sec = sectionWrapper('templates', 'section templates-section');
+    const container = sec.firstChild;
+    container.appendChild(el('h2', { class:'section-title text-center' }, ['Templates by tier']));
+    container.appendChild(el('p', { class:'section-subtitle text-center' }, ['Pick your starting point based on features you need. All templates are fully customizable.']));
+
+    tiers.forEach(tier => {
+      const tierTemplates = templateIndex.templates.filter(t => t.plan === tier.plan && tier.plan !== 'Premium');
+      const tierBlock = el('div', { class:'tier-block-compact card' }, [
+        el('div', { class:'tier-header-compact' }, [
+          el('h3', {}, [tier.title]),
+          el('p', { class:'muted' }, [tier.description])
+        ])
+      ]);
+
+      if(tier.plan === 'Premium'){
+        tierBlock.appendChild(el('div', { class:'premium-placeholder mt-2' }, [
+          el('p', { class:'muted' }, ['Full-site templates in development. Join the waitlist for early access.'])
+        ]));
+      } else if(tierTemplates.length){
+        const cards = tierTemplates.map(template => {
+          const featureList = Array.isArray(template.features) && template.features.length
+            ? el('ul', { class:'features-compact' }, template.features.slice(0, 3).map(f => el('li', {}, [f])))
+            : null;
+
+          return el('div', { class:'template-card-compact card' }, [
+            el('span', { class:'template-badge-compact' }, [template.plan === 'Checkout' ? 'Checkout' : 'Starter']),
+            el('h4', {}, [template.name]),
+            el('p', { class:'muted template-desc-compact' }, [template.description || '']),
+            featureList,
+            el('a', {
+              class:'btn btn-secondary btn-small mt-2',
+              href:`/?template=${encodeURIComponent(template.id)}`,
+              target:'_blank',
+              rel:'noopener'
+            }, ['Preview →'])
+          ]);
+        });
+
+        tierBlock.appendChild(el('div', { class:'template-grid-compact' }, cards));
+      }
+
+      container.appendChild(tierBlock);
+    });
 
     document.getElementById('content').appendChild(sec);
   }
@@ -360,16 +455,304 @@
     });
   });
 
+  // Enhanced rendering functions
+  function renderStats(cfg){
+    if(!cfg.stats || !cfg.stats.items || !cfg.stats.items.length) return;
+    const sec = sectionWrapper('stats');
+    const container = sec.firstChild;
+
+    if(cfg.stats.title) container.appendChild(el('h2', { class:'section-title text-center' }, [cfg.stats.title]));
+    
+    const grid = el('div', { class:'stats-grid' }, cfg.stats.items.map(stat => el('div', { class:'stat-item' }, [
+      el('div', { class:'stat-number' }, [stat.number || '0']),
+      el('div', { class:'stat-label' }, [stat.label || ''])
+    ])));
+    
+    container.appendChild(grid);
+    document.getElementById('content').appendChild(sec);
+  }
+
+  function renderFAQ(cfg){
+    if(!cfg.faq || !cfg.faq.items || !cfg.faq.items.length) return;
+    const sec = sectionWrapper('faq');
+    const container = sec.firstChild;
+
+    container.appendChild(el('h2', { class:'section-title' }, [cfg.faq.title || 'Frequently Asked Questions']));
+    if(cfg.faq.subtitle) container.appendChild(el('p', { class:'section-subtitle' }, [cfg.faq.subtitle]));
+
+    const accordion = el('div', { class:'accordion' }, cfg.faq.items.map((item, idx) => {
+      const itemEl = el('div', { class:'accordion-item' }, [
+        el('div', { 
+          class:'accordion-header',
+          role:'button',
+          tabindex:'0',
+          'aria-expanded':'false',
+          onclick: (e) => toggleAccordion(e.currentTarget)
+        }, [
+          el('span', {}, [item.question || '']),
+          el('span', { class:'accordion-icon' }, ['▼'])
+        ]),
+        el('div', { class:'accordion-content' }, [
+          el('p', {}, [item.answer || ''])
+        ])
+      ]);
+      return itemEl;
+    }));
+    
+    container.appendChild(accordion);
+    document.getElementById('content').appendChild(sec);
+  }
+
+  function toggleAccordion(header){
+    const item = header.parentElement;
+    const content = item.querySelector('.accordion-content');
+    const icon = header.querySelector('.accordion-icon');
+    const isOpen = content.classList.contains('open');
+    
+    // Close all accordions
+    document.querySelectorAll('.accordion-content').forEach(c => c.classList.remove('open'));
+    document.querySelectorAll('.accordion-icon').forEach(i => i.textContent = '▼');
+    document.querySelectorAll('.accordion-header').forEach(h => h.setAttribute('aria-expanded', 'false'));
+    
+    // Open clicked one if it was closed
+    if(!isOpen){
+      content.classList.add('open');
+      icon.textContent = '▲';
+      header.setAttribute('aria-expanded', 'true');
+    }
+  }
+
+  function renderCredentials(cfg){
+    if(!cfg.credentials || !cfg.credentials.items || !cfg.credentials.items.length) return;
+    const sec = sectionWrapper('credentials');
+    const container = sec.firstChild;
+
+    container.appendChild(el('h2', { class:'section-title text-center' }, [cfg.credentials.title || 'Credentials & Certifications']));
+    if(cfg.credentials.subtitle) container.appendChild(el('p', { class:'section-subtitle text-center' }, [cfg.credentials.subtitle]));
+
+    const grid = el('div', { class:'credentials-grid' }, cfg.credentials.items.map(cred => el('div', { class:'credential-badge' }, [
+      el('div', { class:'credential-icon' }, [cred.icon || '✓']),
+      el('h3', { class:'credential-name' }, [cred.name || '']),
+      cred.description ? el('p', { class:'credential-desc muted' }, [cred.description]) : null
+    ].filter(Boolean))));
+    
+    container.appendChild(grid);
+    document.getElementById('content').appendChild(sec);
+  }
+
+  function renderProcess(cfg){
+    if(!cfg.process || !cfg.process.steps || !cfg.process.steps.length) return;
+    const sec = sectionWrapper('process');
+    const container = sec.firstChild;
+
+    container.appendChild(el('h2', { class:'section-title' }, [cfg.process.title || 'How It Works']));
+    if(cfg.process.subtitle) container.appendChild(el('p', { class:'section-subtitle' }, [cfg.process.subtitle]));
+
+    const timeline = el('div', { class:'process-timeline' }, cfg.process.steps.map((step, idx) => el('div', { class:'process-step' }, [
+      el('div', { class:'process-number' }, [String(idx + 1)]),
+      el('div', { class:'process-content' }, [
+        el('h3', {}, [step.title || '']),
+        el('p', { class:'muted' }, [step.description || ''])
+      ])
+    ])));
+    
+    container.appendChild(timeline);
+    document.getElementById('content').appendChild(sec);
+  }
+
+  function renderTeam(cfg){
+    if(!cfg.team || !cfg.team.members || !cfg.team.members.length) return;
+    const sec = sectionWrapper('team');
+    const container = sec.firstChild;
+
+    container.appendChild(el('h2', { class:'section-title text-center' }, [cfg.team.title || 'Meet Our Team']));
+    if(cfg.team.subtitle) container.appendChild(el('p', { class:'section-subtitle text-center' }, [cfg.team.subtitle]));
+
+    const grid = el('div', { class:'team-grid' }, cfg.team.members.map(member => {
+      const credentials = member.credentials && member.credentials.length 
+        ? el('ul', { class:'team-credentials muted' }, member.credentials.map(c => el('li', {}, [c])))
+        : null;
+
+      return el('div', { class:'team-member' }, [
+        member.image ? el('img', { src:member.image, alt:member.name || '', class:'team-photo' }) : null,
+        el('h3', { class:'team-name' }, [member.name || '']),
+        el('p', { class:'team-title' }, [member.title || '']),
+        el('p', { class:'team-bio' }, [member.bio || '']),
+        credentials
+      ].filter(Boolean));
+    }));
+    
+    container.appendChild(grid);
+    document.getElementById('content').appendChild(sec);
+  }
+
+  function renderTestimonialsAdvanced(cfg){
+    if(!cfg.testimonials || !cfg.testimonials.items || !cfg.testimonials.items.length) return;
+    const sec = sectionWrapper('reviews');
+    const container = sec.firstChild;
+
+    container.appendChild(el('h2', { class:'section-title text-center' }, [cfg.testimonials.title || 'What Our Customers Say']));
+    if(cfg.testimonials.subtitle) container.appendChild(el('p', { class:'section-subtitle text-center' }, [cfg.testimonials.subtitle]));
+
+    // Show stats if available
+    if(cfg.testimonials.stats){
+      const stats = cfg.testimonials.stats;
+      const statsRow = el('div', { class:'testimonial-stats' }, [
+        el('div', { class:'stat-item' }, [
+          el('div', { class:'stat-number' }, [String(stats.averageRating || '0')]),
+          el('div', { class:'stat-label' }, ['Average Rating'])
+        ]),
+        el('div', { class:'stat-item' }, [
+          el('div', { class:'stat-number' }, [String(stats.totalReviews || '0')]),
+          el('div', { class:'stat-label' }, ['Total Reviews'])
+        ])
+      ]);
+      container.appendChild(statsRow);
+    }
+
+    const grid = el('div', { class:'cards' }, cfg.testimonials.items.map(t => {
+      const rating = t.rating || 5;
+      const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+      
+      return el('div', { class:'testimonial-card' }, [
+        el('div', { class:'testimonial-stars' }, [stars]),
+        el('p', { class:'testimonial-text' }, ['"' + (t.text || t.quote || '') + '"']),
+        el('div', { class:'testimonial-author' }, [
+          t.image ? el('img', { src:t.image, alt:t.author || '', class:'testimonial-avatar' }) : null,
+          el('div', { class:'testimonial-info' }, [
+            el('p', { class:'testimonial-name' }, [t.author || '']),
+            el('p', { class:'testimonial-location' }, [t.location || ''])
+          ])
+        ].filter(Boolean))
+      ]);
+    }));
+    
+    container.appendChild(grid);
+    document.getElementById('content').appendChild(sec);
+  }
+
+  function renderProductsEnhanced(cfg){
+    if(!Array.isArray(cfg.products) || cfg.products.length === 0) return;
+    const sec = sectionWrapper('products');
+    const container = sec.firstChild;
+    
+    container.appendChild(el('h2', { class:'section-title' }, [cfg.productsTitle || 'Our Services']));
+    if(cfg.productsSubtitle) container.appendChild(el('p', { class:'section-subtitle' }, [cfg.productsSubtitle]));
+
+    // Get unique categories
+    const categories = ['All', ...new Set(cfg.products.map(p => p.category).filter(Boolean))];
+    
+    // Filter buttons
+    if(categories.length > 1){
+      const filterContainer = el('div', { class:'filter-buttons' }, 
+        categories.map((cat, idx) => 
+          el('button', {
+            class: `filter-btn ${idx === 0 ? 'active' : ''}`,
+            'data-category': cat,
+            onclick: (e) => filterProducts(e, cat)
+          }, [cat])
+        )
+      );
+      container.appendChild(filterContainer);
+    }
+
+    const allowCheckout = cfg.settings?.allowCheckout !== false;
+    const productCtaLabel = cfg.settings?.productCta || 'Book Now';
+    const productCtaHref = cfg.settings?.productCtaHref || '#contact';
+    const productNote = cfg.settings?.productNote;
+
+    const grid = el('div', { class:'cards product-grid', id:'products-grid' }, cfg.products.map((prod, i) => {
+      const badges = [];
+      if(prod.popular) badges.push(el('span', { class:'badge badge-popular' }, ['Popular']));
+      if(prod.new) badges.push(el('span', { class:'badge badge-new' }, ['New']));
+
+      const actionNode = allowCheckout
+        ? el('button', { class:'btn btn-primary mt-2', 'data-product-index': String(i) }, ['Buy'])
+        : el('a', { class:'btn btn-secondary mt-2', href: productCtaHref }, [productCtaLabel]);
+
+      return el('div', { 
+        class:'card product-card',
+        'data-category': prod.category || ''
+      }, [
+        badges.length ? el('div', { class:'badge-container' }, badges) : null,
+        prod.image ? el('img', { src:prod.image, alt:prod.imageAlt || prod.name, class:'product-image' }) : null,
+        el('h3', {}, [prod.name || 'Product']),
+        prod.price != null ? el('p', { class:'product-price mt-2' }, [`$${prod.price}`]) : null,
+        prod.duration ? el('p', { class:'product-meta muted' }, [`⏱️ ${prod.duration}`]) : null,
+        renderMarkdown(prod.description || ''),
+        actionNode
+      ].filter(Boolean));
+    }));
+    
+    container.appendChild(grid);
+
+    if(!allowCheckout && productNote){
+      container.appendChild(el('p', { class:'muted mt-3' }, [productNote]));
+    }
+
+    if(allowCheckout){
+      grid.addEventListener('click', async (e) => {
+        const btn = e.target.closest('button[data-product-index]');
+        if(!btn) return;
+        e.preventDefault();
+        const idx = Number(btn.getAttribute('data-product-index'));
+        if(Number.isNaN(idx)) return;
+        const prevText = btn.textContent;
+        btn.disabled = true; btn.textContent = 'Redirecting…';
+        try{
+          const idemKey = (self.crypto && typeof self.crypto.randomUUID === 'function') ? self.crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+          const res = await fetch('/api/payments/checkout-sessions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idemKey },
+            body: JSON.stringify({ productIndex: idx, quantity: 1, currency: 'usd', siteId: cfg.brand?.name || '' })
+          });
+          const data = await res.json().catch(()=>({}));
+          if(res.ok && data.url){
+            window.location.href = data.url;
+          }else{
+            alert(data?.error || 'Payment is unavailable.');
+          }
+        }catch(err){
+          alert('Failed to start checkout.');
+        }finally{
+          btn.disabled = false; btn.textContent = prevText;
+        }
+      });
+    }
+
+    document.getElementById('content').appendChild(sec);
+  }
+
+  function filterProducts(event, category){
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    const products = document.querySelectorAll('.product-card');
+    products.forEach(card => {
+      if(category === 'All' || card.dataset.category === category){
+        card.style.display = 'block';
+      }else{
+        card.style.display = 'none';
+      }
+    });
+  }
+
   function renderAll(cfg){
     renderHeader(cfg);
     renderHero(cfg);
+    renderTemplateShowcase(cfg);
+    renderStats(cfg);
     renderServices(cfg);
     renderAbout(cfg);
-    renderTestimonials(cfg);
+    renderProcess(cfg);
+    renderCredentials(cfg);
+    renderTeam(cfg);
+    renderTestimonialsAdvanced(cfg);
     renderPricing(cfg);
+    renderFAQ(cfg);
     renderContact(cfg);
     renderPages(cfg);
-    renderProducts(cfg);
+    renderProductsEnhanced(cfg);
     renderFooter(cfg);
   }
 
@@ -391,42 +774,60 @@
     const sec = sectionWrapper('products');
     const container = sec.firstChild;
     container.appendChild(el('h2', { class:'section-title' }, ['Products']));
-    const grid = el('div', { class:'grid-3' }, cfg.products.map((prod, i) => el('div', { class:'card' }, [
-      el('h3', {}, [prod.name || 'Product']),
-      prod.price != null ? el('p', { class:'mt-2' }, [`$${prod.price}`]) : null,
-      renderMarkdown(prod.description || ''),
-      el('button', { class:'btn btn-primary mt-2', 'data-product-index': String(i) }, ['Buy'])
-    ])));
+
+    const allowCheckout = cfg.settings?.allowCheckout !== false;
+    const productCtaLabel = cfg.settings?.productCta || 'Contact us to order';
+    const productCtaHref = cfg.settings?.productCtaHref || '#contact';
+    const productNote = cfg.settings?.productNote;
+
+    const grid = el('div', { class:'grid-3' }, cfg.products.map((prod, i) => {
+      const actionNode = allowCheckout
+        ? el('button', { class:'btn btn-primary mt-2', 'data-product-index': String(i) }, ['Buy'])
+        : el('a', { class:'btn btn-secondary mt-2', href: productCtaHref }, [productCtaLabel]);
+
+      return el('div', { class:'card' }, [
+        el('h3', {}, [prod.name || 'Product']),
+        prod.price != null ? el('p', { class:'mt-2' }, [`$${prod.price}`]) : null,
+        renderMarkdown(prod.description || ''),
+        actionNode
+      ]);
+    }));
     container.appendChild(grid);
 
-    // Attach delegated click handler for checkout
-    container.addEventListener('click', async (e) => {
-      const btn = e.target.closest('button[data-product-index]');
-      if(!btn) return;
-      e.preventDefault();
-      const idx = Number(btn.getAttribute('data-product-index'));
-      if(Number.isNaN(idx)) return;
-      const prevText = btn.textContent;
-      btn.disabled = true; btn.textContent = 'Redirecting…';
-      try{
-        const idemKey = (self.crypto && typeof self.crypto.randomUUID === 'function') ? self.crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
-        const res = await fetch('/api/payments/checkout-sessions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idemKey },
-          body: JSON.stringify({ productIndex: idx, quantity: 1, currency: 'usd', siteId: cfg.brand?.name || '' })
-        });
-        const data = await res.json().catch(()=>({}));
-        if(res.ok && data.url){
-          window.location.href = data.url;
-        }else{
-          alert(data?.error || 'Payment is unavailable.');
+    if(!allowCheckout && productNote){
+      container.appendChild(el('p', { class:'muted mt-3' }, [productNote]));
+    }
+
+    if(allowCheckout){
+      // Attach delegated click handler for checkout only when enabled
+      grid.addEventListener('click', async (e) => {
+        const btn = e.target.closest('button[data-product-index]');
+        if(!btn) return;
+        e.preventDefault();
+        const idx = Number(btn.getAttribute('data-product-index'));
+        if(Number.isNaN(idx)) return;
+        const prevText = btn.textContent;
+        btn.disabled = true; btn.textContent = 'Redirecting…';
+        try{
+          const idemKey = (self.crypto && typeof self.crypto.randomUUID === 'function') ? self.crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+          const res = await fetch('/api/payments/checkout-sessions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idemKey },
+            body: JSON.stringify({ productIndex: idx, quantity: 1, currency: 'usd', siteId: cfg.brand?.name || '' })
+          });
+          const data = await res.json().catch(()=>({}));
+          if(res.ok && data.url){
+            window.location.href = data.url;
+          }else{
+            alert(data?.error || 'Payment is unavailable.');
+          }
+        }catch(err){
+          alert('Failed to start checkout.');
+        }finally{
+          btn.disabled = false; btn.textContent = prevText;
         }
-      }catch(err){
-        alert('Failed to start checkout.');
-      }finally{
-        btn.disabled = false; btn.textContent = prevText;
-      }
-    });
+      });
+    }
 
     document.getElementById('content').appendChild(sec);
   }
@@ -448,6 +849,9 @@
 
   try{
     state.config = await loadConfig();
+    if(!IS_PUBLISHED_SITE){
+      state.templates = await loadTemplatesIndex();
+    }
     updateOpenGraphMetaTags(state.config);
     setTheme(state.config.themeVars);
     renderAll(state.config);

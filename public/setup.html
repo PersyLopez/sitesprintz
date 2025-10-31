@@ -3,8 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Setup Your Site | Atom</title>
+  <title>Setup Your Site | SiteSprintz</title>
+  <link rel="stylesheet" href="theme.css" />
   <link rel="stylesheet" href="styles.css" />
+  <script src="https://js.stripe.com/v3/"></script>
   <style>
     .setup-container {
       max-width: 1000px;
@@ -51,10 +53,36 @@
     }
     
     .template-grid {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xl);
+      margin: var(--spacing-xl) 0;
+    }
+
+    .template-tier-card {
+      background: linear-gradient(180deg, rgba(15,27,45,0.45), rgba(15,27,45,0.1));
+      border: 1px solid rgba(148,163,184,0.22);
+      border-radius: calc(var(--radius) + 4px);
+      padding: var(--spacing-xl);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .template-tier-header h3 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: white;
+    }
+
+    .template-tier-header p {
+      margin: var(--spacing-sm) 0 0;
+      color: rgba(226,232,240,0.8);
+    }
+
+    .template-card-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: var(--spacing-lg);
-      margin: var(--spacing-xl) 0;
+      margin-top: var(--spacing-lg);
     }
     
     .template-card {
@@ -66,6 +94,20 @@
       transition: all 0.2s ease;
       position: relative;
       overflow: hidden;
+    }
+
+    .template-plan-badge {
+      position: absolute;
+      top: var(--spacing-sm);
+      left: var(--spacing-sm);
+      background: rgba(37,99,235,0.1);
+      color: var(--color-primary);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
     }
     
     .template-card::before {
@@ -94,6 +136,18 @@
     .template-card.selected::before {
       transform: scaleX(1);
     }
+
+    .template-card.disabled {
+      cursor: default;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .template-card.disabled:hover {
+      transform: none;
+      box-shadow: var(--shadow-sm);
+      border-color: rgba(0,0,0,0.08);
+    }
     
     .template-icon {
       font-size: 2.5rem;
@@ -118,6 +172,207 @@
       font-size: 0.85rem;
       color: var(--color-muted);
       opacity: 0.8;
+    }
+
+    .template-card-actions {
+      display: flex;
+      gap: var(--spacing-sm);
+      flex-wrap: wrap;
+      margin-top: var(--spacing-md);
+    }
+
+    .template-card-actions .btn {
+      flex: 1 1 48%;
+      min-width: 120px;
+      justify-content: center;
+    }
+
+    .template-summary {
+      background: linear-gradient(180deg, rgba(37,99,235,0.12), rgba(30,64,175,0.1));
+      border: 1px solid rgba(59,130,246,0.25);
+      border-radius: calc(var(--radius) + 4px);
+      padding: var(--spacing-xl);
+      margin-bottom: var(--spacing-xl);
+      box-shadow: var(--shadow-sm);
+      display: none;
+    }
+
+    .template-summary h2 {
+      margin: 0;
+      font-size: 1.6rem;
+      color: #0f172a;
+    }
+
+    .summary-header {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--spacing-lg);
+      align-items: flex-start;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .summary-plan-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(37,99,235,0.15);
+      color: var(--color-primary);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .summary-description {
+      color: var(--color-muted);
+      margin: 0;
+    }
+
+    .summary-features {
+      list-style: none;
+      margin: var(--spacing-md) 0 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .summary-features li {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      background: rgba(148,163,184,0.12);
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      color: var(--color-text);
+      font-size: 0.95rem;
+    }
+
+    .summary-features li span:first-child {
+      color: var(--color-primary);
+      font-weight: 600;
+    }
+
+    .summary-actions {
+      display: flex;
+      gap: var(--spacing-sm);
+      flex-wrap: wrap;
+      margin-top: var(--spacing-md);
+    }
+
+    .summary-actions .btn {
+      flex: 1 1 160px;
+      justify-content: center;
+    }
+
+    .customize-section {
+      background: var(--color-surface);
+      border: 1px solid rgba(15,23,42,0.08);
+      border-radius: var(--radius);
+      padding: var(--spacing-xl);
+      box-shadow: var(--shadow-sm);
+      margin-top: var(--spacing-xl);
+    }
+
+    .option-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .option-grid label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .section-icon {
+      font-size: 1.6rem;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 1.25rem;
+      color: var(--color-text);
+    }
+
+    .section-body {
+      display: grid;
+      gap: var(--spacing-md);
+    }
+
+    .media-button-grid {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .service-card {
+      border: 2px solid #334155;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      background: rgba(15,27,45,0.18);
+    }
+
+    .service-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .service-card-title {
+      margin: 0;
+      font-size: 1.05rem;
+      color: white;
+    }
+
+    .remove-service-btn {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 6px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.2s ease;
+    }
+
+    .remove-service-btn:hover {
+      background: #dc2626;
+    }
+
+    .service-card .form-group {
+      margin-bottom: 15px;
+    }
+
+    .service-card textarea {
+      min-height: 80px;
+    }
+
+    .service-card .media-button-grid button {
+      flex: 1 1 120px;
+    }
+
+    .service-card .service-image {
+      margin-top: 10px;
+    }
+
+    .add-service-btn {
+      width: 100%;
+      justify-content: center;
     }
     
     .upload-zone {
@@ -375,17 +630,16 @@
         padding: 10px;
       }
       
-      .template-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
-      }
-      
       .upload-zone {
         padding: 40px 20px;
       }
       
       .step-title {
         font-size: 2rem;
+      }
+
+      .template-card-grid {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -401,14 +655,14 @@
     <div id="step1" class="step-content">
       <div class="step-header">
         <h1 class="step-title">Choose Your Template</h1>
-        <p class="step-subtitle">Pick the perfect design for your business</p>
+        <p class="step-subtitle">Browse tiers below. Starter sites publish instantly, Checkout enables payments, and Premium is on the way.</p>
       </div>
       
       <div class="template-grid" id="templateGrid"></div>
       
       <div class="navigation">
         <div></div>
-        <p class="muted" id="autoAdvanceText" style="text-align: center; font-size: 0.9rem; opacity: 0;">Select a template to continue...</p>
+        <p class="muted" id="autoAdvanceText" style="text-align: center; font-size: 0.9rem; opacity: 0;">Select any Starter or Checkout template to continue.</p>
       </div>
     </div>
 
@@ -421,133 +675,126 @@
       
       <div class="customize-layout">
         <div class="customize-panel">
+          <div class="template-summary" id="templateSummary" aria-live="polite"></div>
           <div class="preview-toggle">
             <button class="btn btn-secondary" id="previewToggle" onclick="togglePreview()">✕ Close Preview</button>
           </div>
       
-      <div class="card">
-        <h3 style="margin-bottom: 20px; display: flex; align-items: center;">
-          <span style="font-size: 1.5rem; margin-right: 10px;">🏢</span>
-          Business Information
-        </h3>
-        
-        <div class="form-group">
-          <label class="form-label">Business Name</label>
-          <input type="text" class="form-input" id="businessName" placeholder="Enter your business name">
+      <section class="customize-section" aria-labelledby="section-business">
+        <div class="section-header">
+          <span class="section-icon" aria-hidden="true">🏢</span>
+          <h3 id="section-business" class="section-title">Business Information</h3>
         </div>
-        
-        <div class="form-group">
-          <label class="form-label">Tagline / Hero Title</label>
-          <input type="text" class="form-input" id="heroTitle" placeholder="What makes you special?">
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label">Subtitle / Description</label>
-          <textarea class="form-input form-textarea" id="heroSubtitle" placeholder="Tell visitors what you do..."></textarea>
-        </div>
-      </div>
-
-      <div class="card" style="margin-top: 30px;">
-        <h3 style="margin-bottom: 20px; display: flex; align-items: center;">
-          <span style="font-size: 1.5rem; margin-right: 10px;">📸</span>
-          Cover Photo
-        </h3>
-        
-        <div class="form-group">
-          <label class="form-label">Hero/Cover Image</label>
-          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <button class="btn btn-secondary" onclick="pickHeroImage('camera')" style="flex: 1; min-width: 120px;">
-              📸 Camera
-            </button>
-            <button class="btn btn-secondary" onclick="pickHeroImage('gallery')" style="flex: 1; min-width: 120px;">
-              🖼️ Gallery
-            </button>
-            <button class="btn btn-secondary" onclick="pickHeroImage('url')" style="flex: 1; min-width: 120px;">
-              🔗 URL
-            </button>
+        <div class="section-body">
+          <div class="form-group">
+            <label class="form-label">Business Name</label>
+            <input type="text" class="form-input" id="businessName" placeholder="Enter your business name">
           </div>
-          <input type="file" id="heroImageFile" accept="image/*" capture="environment" style="display: none;">
-          <input type="text" class="form-input" id="heroImage" placeholder="Or paste image URL here" style="margin-top: 10px;">
+          <div class="form-group">
+            <label class="form-label">Tagline / Hero Title</label>
+            <input type="text" class="form-input" id="heroTitle" placeholder="What makes you special?">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Subtitle / Description</label>
+            <textarea class="form-input form-textarea" id="heroSubtitle" placeholder="Tell visitors what you do..."></textarea>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div class="card" style="margin-top: 30px;">
-        <h3 style="margin-bottom: 20px; display: flex; align-items: center;">
-          <span style="font-size: 1.5rem; margin-right: 10px;">⚙️</span>
-          Services/Products
-        </h3>
-        
-        <div id="servicesContainer"></div>
-        
-        <button class="btn btn-secondary" onclick="addService()" style="width: 100%; margin-top: 15px;">+ Add Service</button>
-      </div>
+      <section class="customize-section" aria-labelledby="section-cover">
+        <div class="section-header">
+          <span class="section-icon" aria-hidden="true">📸</span>
+          <h3 id="section-cover" class="section-title">Cover Photo</h3>
+        </div>
+        <div class="section-body">
+          <div class="form-group">
+            <label class="form-label">Hero/Cover Image</label>
+            <div class="media-button-grid">
+              <button class="btn btn-secondary" onclick="pickHeroImage('camera')">📸 Camera</button>
+              <button class="btn btn-secondary" onclick="pickHeroImage('gallery')">🖼️ Gallery</button>
+              <button class="btn btn-secondary" onclick="pickHeroImage('url')">🔗 URL</button>
+            </div>
+            <input type="file" id="heroImageFile" accept="image/*" capture="environment" style="display: none;">
+            <input type="text" class="form-input" id="heroImage" placeholder="Or paste image URL here">
+          </div>
+        </div>
+      </section>
 
-      <div class="card" style="margin-top: 30px;" id="templateSpecificFields">
-        <h3 style="margin-bottom: 20px; display: flex; align-items: center;">
-          <span style="font-size: 1.5rem; margin-right: 10px;">🎯</span>
-          <span id="templateSpecificTitle">Template-Specific Fields</span>
-        </h3>
-        
-        <div id="templateSpecificContent">
+      <section class="customize-section" aria-labelledby="section-services">
+        <div class="section-header">
+          <span class="section-icon" aria-hidden="true">⚙️</span>
+          <h3 id="section-services" class="section-title">Services &amp; Products</h3>
+        </div>
+        <div class="section-body">
+          <p class="muted">Add the offerings you want to highlight on your site. You can change or reorder them anytime.</p>
+          <div id="servicesContainer"></div>
+          <button class="btn btn-secondary add-service-btn" onclick="addService()">+ Add Service</button>
+        </div>
+      </section>
+
+      <section class="customize-section" id="templateSpecificFields" aria-labelledby="section-template-fields" hidden>
+        <div class="section-header">
+          <span class="section-icon" aria-hidden="true">🎯</span>
+          <h3 id="section-template-fields" class="section-title">
+            <span id="templateSpecificTitle">Template-Specific Fields</span>
+          </h3>
+        </div>
+        <div class="section-body" id="templateSpecificContent">
           <!-- Dynamic content based on template -->
         </div>
-      </div>
+      </section>
 
-      <div class="card" style="margin-top: 30px;">
-        <h3 style="margin-bottom: 20px; display: flex; align-items: center;">
-          <span style="font-size: 1.5rem; margin-right: 10px;">📞</span>
-          Contact Information
-        </h3>
-        
-        <div class="form-group required">
-          <label class="form-label">Email</label>
-          <input type="email" class="form-input" id="contactEmail" placeholder="your@email.com" required>
-          <div class="error-message" id="emailError"></div>
+      <section class="customize-section" aria-labelledby="section-contact">
+        <div class="section-header">
+          <span class="section-icon" aria-hidden="true">📞</span>
+          <h3 id="section-contact" class="section-title">Contact Information</h3>
         </div>
-        
-        <div class="form-group required">
-          <label class="form-label">Phone</label>
-          <input type="tel" class="form-input" id="contactPhone" placeholder="(555) 123-4567" required>
-          <div class="error-message" id="phoneError"></div>
+        <div class="section-body">
+          <div class="form-group required">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" id="contactEmail" placeholder="your@email.com" required>
+            <div class="error-message" id="emailError"></div>
+          </div>
+          <div class="form-group required">
+            <label class="form-label">Phone</label>
+            <input type="tel" class="form-input" id="contactPhone" placeholder="(555) 123-4567" required>
+            <div class="error-message" id="phoneError"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Address</label>
+            <input type="text" class="form-input" id="contactAddress" placeholder="123 Main St, Your City">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Business Hours</label>
+            <input type="text" class="form-input" id="businessHours" placeholder="Mon-Fri 9AM-5PM">
+          </div>
         </div>
-        
-        <div class="form-group">
-          <label class="form-label">Address</label>
-          <input type="text" class="form-input" id="contactAddress" placeholder="123 Main St, Your City">
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label">Business Hours</label>
-          <input type="text" class="form-input" id="businessHours" placeholder="Mon-Fri 9AM-5PM">
-        </div>
-      </div>
+      </section>
 
-      <div class="card" style="margin-top: 30px;">
-        <h3 style="margin-bottom: 20px; display: flex; align-items: center;">
-          <span style="font-size: 1.5rem; margin-right: 10px;">🌐</span>
-          Social Media & Links
-        </h3>
-        
-        <div class="form-group">
-          <label class="form-label">Website URL</label>
-          <input type="url" class="form-input" id="websiteUrl" placeholder="https://yourwebsite.com">
+      <section class="customize-section" aria-labelledby="section-social">
+        <div class="section-header">
+          <span class="section-icon" aria-hidden="true">🌐</span>
+          <h3 id="section-social" class="section-title">Social Media &amp; Links</h3>
         </div>
-        
-        <div class="form-group">
-          <label class="form-label">Facebook</label>
-          <input type="url" class="form-input" id="facebookUrl" placeholder="https://facebook.com/yourpage">
+        <div class="section-body">
+          <div class="form-group">
+            <label class="form-label">Website URL</label>
+            <input type="url" class="form-input" id="websiteUrl" placeholder="https://yourwebsite.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Facebook</label>
+            <input type="url" class="form-input" id="facebookUrl" placeholder="https://facebook.com/yourpage">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Instagram</label>
+            <input type="url" class="form-input" id="instagramUrl" placeholder="https://instagram.com/yourpage">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Google Maps</label>
+            <input type="url" class="form-input" id="googleMapsUrl" placeholder="https://maps.google.com/...">
+          </div>
         </div>
-        
-        <div class="form-group">
-          <label class="form-label">Instagram</label>
-          <input type="url" class="form-input" id="instagramUrl" placeholder="https://instagram.com/yourpage">
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label">Google Maps</label>
-          <input type="url" class="form-input" id="googleMapsUrl" placeholder="https://maps.google.com/...">
-        </div>
-      </div>
+      </section>
       
       </div>
       
@@ -574,6 +821,23 @@
         <div class="success-icon">🎉</div>
         <h2>Your Site is Ready!</h2>
         <p class="muted">Redirecting you to customize and publish...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Template Preview Modal -->
+  <div id="templatePreviewModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1001; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: white; border-radius: 16px; width: 100%; max-width: 1200px; height: 90vh; display: flex; flex-direction: column; overflow: hidden;">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #e5e7eb;">
+        <h2 style="margin: 0; font-size: 1.5rem;" id="previewModalTitle">Template Preview</h2>
+        <button onclick="closeTemplatePreview()" style="background: #f1f5f9; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 1.2rem;">✕</button>
+      </div>
+      <div style="flex: 1; overflow: hidden; background: #f8fafc;">
+        <iframe id="previewIframe" style="width: 100%; height: 100%; border: none;" sandbox="allow-scripts allow-same-origin"></iframe>
+      </div>
+      <div style="padding: 20px; border-top: 1px solid #e5e7eb; display: flex; gap: 12px; justify-content: flex-end;">
+        <button onclick="closeTemplatePreview()" class="btn btn-secondary">Close Preview</button>
+        <button onclick="useTemplateFromPreview()" class="btn btn-primary" id="usePreviewTemplateBtn">Use This Template</button>
       </div>
     </div>
   </div>
@@ -662,10 +926,25 @@
     let currentStep = 2; // Start at customization step
     let selectedTemplate = null;
     let uploadedImages = [];
-    const ADMIN_TOKEN = 'test-admin-token-12345'; // TODO: Load from config or env
+    let ADMIN_TOKEN = null;
+
+    // Fetch admin token from server
+    async function getAdminToken() {
+      if (ADMIN_TOKEN) return ADMIN_TOKEN;
+      try {
+        const response = await fetch('/api/admin-token');
+        const data = await response.json();
+        ADMIN_TOKEN = data.token;
+        return ADMIN_TOKEN;
+      } catch (error) {
+        console.error('Failed to get admin token:', error);
+        return null;
+      }
+    }
 
     // Initialize - load template from URL parameter
     window.addEventListener('DOMContentLoaded', async () => {
+      renderTemplateSummary(null);
       const params = new URLSearchParams(window.location.search);
       const templateId = params.get('template');
       
@@ -678,6 +957,7 @@
           
           if (template) {
             selectedTemplate = template;
+            renderTemplateSummary(template);
             // Hide step 1 (template selection), show step 2 (customization)
             document.getElementById('step1').style.display = 'none';
             document.getElementById('step2').style.display = 'block';
@@ -687,6 +967,14 @@
             
             // Setup customization
             await setupCustomize();
+            
+            // Show preview panel automatically
+            const panel = document.getElementById('previewPanel');
+            const toggle = document.getElementById('previewToggle');
+            if (panel && toggle) {
+              panel.style.display = 'block';
+              toggle.textContent = '✕ Close Preview';
+            }
             updatePreview();
           }
         } catch (error) {
@@ -699,28 +987,221 @@
       }
       
       setupDragAndDrop();
+      
+      // Add keyboard support for modal
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          const previewModal = document.getElementById('templatePreviewModal');
+          if (previewModal && previewModal.style.display === 'flex') {
+            closeTemplatePreview();
+          }
+        }
+      });
     });
+
+    const PLAN_METADATA = {
+      Starter: {
+        title: '🎯 Starter Templates (Display Only)',
+        description: 'Perfect for service businesses. Show pricing, hours, and contact info with offline CTAs (call, email, visit, external booking). No payment processing included.',
+        badge: 'View-Only',
+        empty: 'Starter templates will appear here.'
+      },
+      Checkout: {
+        title: '💳 Checkout Templates (Payment Enabled)',
+        description: 'Everything in Starter, plus Stripe checkout integration. Accept payments online, send automated order confirmations, and manage orders from the admin dashboard.',
+        badge: 'Payment Processing',
+        empty: 'Checkout templates will appear here soon.'
+      },
+      Premium: {
+        title: '🚀 Premium Suite (Coming Soon)',
+        description: 'Everything in Checkout, plus multi-page layouts, blog, scheduling integrations, CRM automation, and advanced analytics. Currently in development.',
+        badge: 'Full-Site',
+        comingSoonMessage: 'Premium Suite is in development. Join the waitlist to get early access and influence the roadmap.'
+      }
+    };
+
+    function resolveTemplateFeatures(template) {
+      if (!template) return [];
+      if (Array.isArray(template.features) && template.features.length) {
+        return template.features;
+      }
+      if (template.plan === 'Checkout') {
+        return [
+          'Stripe Checkout built-in',
+          'Idempotent payment requests',
+          'Order metadata captured automatically'
+        ];
+      }
+      return [
+        'Responsive sections for hero, services, and testimonials',
+        'Simple content editing from the dashboard',
+        'SEO-friendly structure with sharing metadata'
+      ];
+    }
+
+    function renderTemplateSummary(template) {
+      const summary = document.getElementById('templateSummary');
+      if (!summary) return;
+
+      if (!template) {
+        summary.style.display = 'none';
+        summary.innerHTML = '';
+        return;
+      }
+
+      const planLabel = template.plan === 'Checkout'
+        ? 'Checkout Ready'
+        : template.plan === 'Premium'
+          ? 'Premium Suite'
+          : 'Starter Catalog';
+
+      const description = template.description || 'Customize this template to match your brand.';
+      const features = resolveTemplateFeatures(template);
+
+      summary.style.display = 'block';
+      summary.innerHTML = `
+        <div class="summary-header">
+          <div>
+            <span class="summary-plan-pill">${planLabel}</span>
+            <h2>${template.name}</h2>
+            <p class="summary-description">${description}</p>
+          </div>
+        </div>
+        <div class="summary-actions">
+          <button type="button" class="btn btn-secondary" onclick="returnToTemplateSelection()">Change template</button>
+          <button type="button" class="btn btn-primary" onclick="ensurePreviewVisible()">View Live Preview</button>
+        </div>
+        <ul class="summary-features">
+          ${features.map(feature => `<li><span aria-hidden="true">✔</span><span>${feature}</span></li>`).join('')}
+        </ul>
+      `;
+    }
+
+    let previewingTemplate = null;
+
+    function openTemplatePreview(template) {
+      previewingTemplate = template;
+      const modal = document.getElementById('templatePreviewModal');
+      const iframe = document.getElementById('previewIframe');
+      const title = document.getElementById('previewModalTitle');
+      
+      if (modal && iframe && title) {
+        title.textContent = `Preview: ${template.name}`;
+        // Use preview.html which includes app.js to render templates dynamically
+        const previewUrl = `/preview.html?template=${encodeURIComponent(template.id)}`;
+        iframe.src = previewUrl;
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeTemplatePreview() {
+      const modal = document.getElementById('templatePreviewModal');
+      const iframe = document.getElementById('previewIframe');
+      
+      if (modal && iframe) {
+        modal.style.display = 'none';
+        iframe.src = '';
+        document.body.style.overflow = '';
+      }
+      previewingTemplate = null;
+    }
+
+    function useTemplateFromPreview() {
+      if (previewingTemplate) {
+        closeTemplatePreview();
+        // Find the template card and select it
+        const cards = document.querySelectorAll('.template-card');
+        cards.forEach(card => {
+          const name = card.querySelector('.template-name');
+          if (name && name.textContent === previewingTemplate.name) {
+            selectTemplate(previewingTemplate, card);
+          }
+        });
+      }
+    }
+
+    function returnToTemplateSelection() {
+      selectedTemplate = null;
+      currentStep = 1;
+      renderTemplateSummary(null);
+      const step1 = document.getElementById('step1');
+      const step2 = document.getElementById('step2');
+      if (step1 && step2) {
+        step1.style.display = 'block';
+        step2.style.display = 'none';
+      }
+      const progressBar = document.querySelector('.progress-bar');
+      if (progressBar) progressBar.style.display = '';
+      updateProgress();
+      loadTemplates();
+    }
 
     async function loadTemplates() {
       try {
         const response = await fetch('/data/templates/index.json');
         const data = await response.json();
-        
+
+        renderTemplateSummary(null);
         const grid = document.getElementById('templateGrid');
-        data.templates.forEach(template => {
-          const card = document.createElement('div');
-          card.className = 'template-card';
-          card.style.setProperty('--template-color', template.color);
-          card.onclick = () => selectTemplate(template, card);
-          
-          card.innerHTML = `
-            <div class="template-icon">${getTemplateIcon(template.id)}</div>
-            <h3 class="template-name">${template.name}</h3>
-            <p class="template-desc">${template.description}</p>
-            <p class="template-features">${getTemplateFeatures(template.id)}</p>
-          `;
-          
-          grid.appendChild(card);
+        const guide = document.getElementById('autoAdvanceText');
+        if (!grid) return;
+        grid.innerHTML = '';
+        if (guide) {
+          guide.textContent = 'Select any Starter or Checkout template to continue.';
+          guide.style.opacity = 1;
+        }
+
+        ['Starter', 'Checkout', 'Premium'].forEach(plan => {
+          const meta = PLAN_METADATA[plan];
+          if (!meta) return;
+
+          const tierSection = document.createElement('section');
+          tierSection.className = 'template-tier-card';
+
+          const header = document.createElement('div');
+          header.className = 'template-tier-header';
+          header.innerHTML = `<h3>${meta.title}</h3><p>${meta.description}</p>`;
+          tierSection.appendChild(header);
+
+          const templatesForPlan = data.templates.filter(t => t.plan === plan);
+
+          if (plan === 'Premium') {
+            if (templatesForPlan.length) {
+              const cardGrid = document.createElement('div');
+              cardGrid.className = 'template-card-grid';
+              templatesForPlan.forEach(template => {
+                cardGrid.appendChild(createTemplateCard(template, {
+                  disabled: true,
+                  disabledMessage: meta.comingSoonMessage
+                }));
+              });
+              tierSection.appendChild(cardGrid);
+            } else {
+              const message = document.createElement('p');
+              message.className = 'muted';
+              message.style.marginTop = 'var(--spacing-md)';
+              message.textContent = meta.comingSoonMessage;
+              tierSection.appendChild(message);
+            }
+          } else {
+            if (templatesForPlan.length) {
+              const cardGrid = document.createElement('div');
+              cardGrid.className = 'template-card-grid';
+              templatesForPlan.forEach(template => {
+                cardGrid.appendChild(createTemplateCard(template));
+              });
+              tierSection.appendChild(cardGrid);
+            } else {
+              const emptyState = document.createElement('p');
+              emptyState.className = 'muted';
+              emptyState.style.marginTop = 'var(--spacing-md)';
+              emptyState.textContent = meta.empty;
+              tierSection.appendChild(emptyState);
+            }
+          }
+
+          grid.appendChild(tierSection);
         });
       } catch (error) {
         console.error('Failed to load templates:', error);
@@ -737,28 +1218,106 @@
         'cleaning': '🧽',
         'pet-care': '🐕',
         'freelancer': '🎨',
-        'starter': '🚀'
+        'starter': '🚀',
+        'product-showcase': '🛍️',
+        'product-ordering': '🛒'
       };
       return icons[id] || '📋';
     }
 
-    function getTemplateFeatures(id) {
-      const features = {
-        'restaurant': 'Menu • Booking • Reviews',
-        'salon': 'Services • Pricing • Booking',
-        'gym': 'Classes • Membership • Training',
-        'consultant': 'Services • Case Studies • Contact',
-        'tech-repair': 'Services • Pricing • Reviews',
-        'cleaning': 'Services • Packages • Contact',
-        'pet-care': 'Grooming • Walking • Sitting',
-        'freelancer': 'Portfolio • Services • Contact',
-        'starter': 'Simple • Clean • Fast'
-      };
-      return features[id] || 'Professional • Modern • Responsive';
+    function createTemplateCard(template, options = {}) {
+      const card = document.createElement('div');
+      card.className = 'template-card';
+      card.style.setProperty('--template-color', template.color || 'var(--color-primary)');
+
+      const isDisabled = Boolean(options.disabled || template.plan === 'Premium' || template.status === 'coming-soon');
+      if (isDisabled) {
+        card.classList.add('disabled');
+      }
+
+      const badge = document.createElement('span');
+      badge.className = 'template-plan-badge';
+      badge.textContent = template.plan === 'Checkout' ? 'Checkout tier' : template.plan === 'Premium' ? 'Premium tier' : 'Starter tier';
+      card.appendChild(badge);
+
+      const icon = document.createElement('div');
+      icon.className = 'template-icon';
+      icon.textContent = getTemplateIcon(template.id);
+      card.appendChild(icon);
+
+      const name = document.createElement('h3');
+      name.className = 'template-name';
+      name.textContent = template.name;
+      card.appendChild(name);
+
+      if (template.description) {
+        const desc = document.createElement('p');
+        desc.className = 'template-desc';
+        desc.textContent = template.description;
+        card.appendChild(desc);
+      }
+
+      const features = resolveTemplateFeatures(template);
+
+      if (features.length) {
+        const list = document.createElement('ul');
+        list.className = 'feature-list';
+        features.forEach(feature => {
+          const li = document.createElement('li');
+          li.textContent = feature;
+          list.appendChild(li);
+        });
+        card.appendChild(list);
+      }
+
+      if (isDisabled) {
+        const message = document.createElement('p');
+        message.className = 'muted';
+        message.style.marginTop = 'var(--spacing-md)';
+        message.textContent = options.disabledMessage || 'Coming soon.';
+        card.appendChild(message);
+      } else {
+        const actions = document.createElement('div');
+        actions.className = 'template-card-actions';
+
+        const selectBtn = document.createElement('button');
+        selectBtn.type = 'button';
+        selectBtn.className = 'btn btn-primary';
+        selectBtn.textContent = 'Use Template';
+        selectBtn.onclick = (event) => {
+          event.stopPropagation();
+          selectTemplate(template, card);
+        };
+
+        const preview = document.createElement('button');
+        preview.type = 'button';
+        preview.className = 'btn btn-secondary';
+        preview.textContent = 'Quick Preview';
+        preview.title = 'Preview template in modal';
+        preview.onclick = (event) => {
+          event.stopPropagation();
+          openTemplatePreview(template);
+        };
+
+        actions.appendChild(selectBtn);
+        actions.appendChild(preview);
+        card.appendChild(actions);
+
+        card.addEventListener('click', () => selectTemplate(template, card));
+      }
+
+      return card;
     }
 
     function selectTemplate(template, element) {
+      if (template.plan === 'Premium' || template.status === 'coming-soon') {
+        alert('Premium Suite is coming soon. Please choose a Starter or Checkout template for now.');
+        return;
+      }
       selectedTemplate = template;
+      renderTemplateSummary(template);
+      const guide = document.getElementById('autoAdvanceText');
+      if (guide) guide.style.opacity = 0;
       
       // Update UI
       document.querySelectorAll('.template-card').forEach(card => card.classList.remove('selected'));
@@ -771,9 +1330,17 @@
         setupCustomize();
         document.getElementById('step1').style.display = 'none';
         document.getElementById('step2').style.display = 'block';
+        const progressBar = document.querySelector('.progress-bar');
+        if (progressBar) progressBar.style.display = 'none';
         
         // Show preview by default when entering step 2
         setTimeout(() => {
+          const panel = document.getElementById('previewPanel');
+          const toggle = document.getElementById('previewToggle');
+          if (panel && toggle) {
+            panel.style.display = 'block';
+            toggle.textContent = '✕ Close Preview';
+          }
           updatePreview();
         }, 100);
       }, 1000);
@@ -813,6 +1380,13 @@
       
       // Update progress
       updateProgress();
+
+       if (currentStep === 1) {
+         const progressBar = document.querySelector('.progress-bar');
+         if (progressBar) progressBar.style.display = '';
+         renderTemplateSummary(null);
+         loadTemplates();
+       }
     }
 
     function updateProgress() {
@@ -924,6 +1498,10 @@
     function populateTemplateSpecificFields(templateData) {
       const titleEl = document.getElementById('templateSpecificTitle');
       const contentEl = document.getElementById('templateSpecificContent');
+      const sectionEl = document.getElementById('templateSpecificFields');
+      if (!titleEl || !contentEl || !sectionEl) return;
+      contentEl.innerHTML = '';
+      sectionEl.hidden = true;
       
       switch(selectedTemplate.id) {
         case 'restaurant':
@@ -953,7 +1531,7 @@
             </div>
             <div class="form-group">
               <label class="form-label">Special Features</label>
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
+              <div class="option-grid">
                 <label><input type="checkbox" id="delivery"> Delivery</label>
                 <label><input type="checkbox" id="takeout"> Takeout</label>
                 <label><input type="checkbox" id="reservations"> Reservations</label>
@@ -963,6 +1541,7 @@
               </div>
             </div>
           `;
+          sectionEl.hidden = false;
           break;
           
         case 'salon':
@@ -970,7 +1549,7 @@
           contentEl.innerHTML = `
             <div class="form-group">
               <label class="form-label">Services Offered</label>
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
+              <div class="option-grid">
                 <label><input type="checkbox" id="haircuts"> Haircuts</label>
                 <label><input type="checkbox" id="coloring"> Hair Coloring</label>
                 <label><input type="checkbox" id="styling"> Hair Styling</label>
@@ -992,6 +1571,7 @@
               </select>
             </div>
           `;
+          sectionEl.hidden = false;
           break;
           
         case 'gym':
@@ -999,7 +1579,7 @@
           contentEl.innerHTML = `
             <div class="form-group">
               <label class="form-label">Facility Features</label>
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
+              <div class="option-grid">
                 <label><input type="checkbox" id="cardio"> Cardio Equipment</label>
                 <label><input type="checkbox" id="weights"> Free Weights</label>
                 <label><input type="checkbox" id="machines"> Weight Machines</label>
@@ -1012,7 +1592,7 @@
             </div>
             <div class="form-group">
               <label class="form-label">Membership Types</label>
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
+              <div class="option-grid">
                 <label><input type="checkbox" id="monthly"> Monthly</label>
                 <label><input type="checkbox" id="yearly"> Yearly</label>
                 <label><input type="checkbox" id="daypass"> Day Pass</label>
@@ -1022,6 +1602,7 @@
               </div>
             </div>
           `;
+          sectionEl.hidden = false;
           break;
           
         default:
@@ -1036,6 +1617,7 @@
               <input type="text" class="form-input" id="specialOffers" placeholder="Any current promotions or offers?">
             </div>
           `;
+          sectionEl.hidden = false;
       }
     }
 
@@ -1102,7 +1684,7 @@
       const previewServices = document.getElementById('previewServices');
       if (!previewServices) return;
       
-      const serviceFields = document.querySelectorAll('#servicesContainer > .form-group');
+      const serviceFields = document.querySelectorAll('#servicesContainer > .service-card');
       let servicesHtml = '';
       
       serviceFields.forEach(field => {
@@ -1184,6 +1766,26 @@
       errorEl.textContent = '';
     }
 
+    function ensurePreviewVisible() {
+      const panel = document.getElementById('previewPanel');
+      const toggle = document.getElementById('previewToggle');
+      
+      if (!panel || !toggle) {
+        console.error('Preview elements not found');
+        return;
+      }
+      
+      // Always show the preview and update content
+      updatePreview();
+      panel.style.display = 'block';
+      toggle.textContent = '✕ Close Preview';
+      
+      // On mobile, scroll to preview
+      if (window.innerWidth < 768) {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
     function togglePreview() {
       const panel = document.getElementById('previewPanel');
       const toggle = document.getElementById('previewToggle');
@@ -1220,57 +1822,58 @@
         // Add empty service if none exist
         container.appendChild(createServiceField({name: '', description: '', price: '', image: ''}, 0));
       }
+
+      refreshServiceNumbers();
     }
 
     function createServiceField(service, index) {
       const div = document.createElement('div');
-      div.className = 'form-group';
-      div.style.cssText = 'border: 2px solid #334155; border-radius: 12px; padding: 20px; margin-bottom: 15px; position: relative;';
-      
+      div.className = 'service-card';
       div.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-          <h4 style="margin: 0; font-size: 1.1rem;">Service ${index + 1}</h4>
-          <button onclick="removeService(this)" style="background: #ef4444; color: white; border: none; padding: 5px 15px; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">Remove</button>
+        <div class="service-card-header">
+          <h4 class="service-card-title">Service ${index + 1}</h4>
+          <button type="button" class="remove-service-btn" onclick="removeService(this)">Remove</button>
         </div>
         
-        <div style="margin-bottom: 15px;">
+        <div class="form-group">
           <label class="form-label">Service Name</label>
           <input type="text" class="form-input service-name" placeholder="e.g., Haircut, Pizza, Training" value="${service.name || service.title || ''}">
         </div>
         
-        <div style="margin-bottom: 15px;">
+        <div class="form-group">
           <label class="form-label">Description</label>
-          <textarea class="form-input form-textarea service-description" placeholder="Describe this service..." style="min-height: 80px;">${service.description || ''}</textarea>
+          <textarea class="form-input form-textarea service-description" placeholder="Describe this service...">${service.description || ''}</textarea>
         </div>
         
-        <div style="margin-bottom: 15px;">
+        <div class="form-group">
           <label class="form-label">Price (optional)</label>
           <input type="text" class="form-input service-price" placeholder="$0" value="${service.price || ''}">
         </div>
         
-        <div style="margin-bottom: 15px;">
+        <div class="form-group">
           <label class="form-label">Service Image</label>
-          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <button class="btn btn-secondary" onclick="openImagePicker(this, 'camera')" style="flex: 1; min-width: 120px;">
-              📸 Camera
-            </button>
-            <button class="btn btn-secondary" onclick="openImagePicker(this, 'gallery')" style="flex: 1; min-width: 120px;">
-              🖼️ Gallery
-            </button>
-            <button class="btn btn-secondary" onclick="openImagePicker(this, 'url')" style="flex: 1; min-width: 120px;">
-              🔗 URL
-            </button>
+          <div class="media-button-grid">
+            <button type="button" class="btn btn-secondary" onclick="openImagePicker(this, 'camera')">📸 Camera</button>
+            <button type="button" class="btn btn-secondary" onclick="openImagePicker(this, 'gallery')">🖼️ Gallery</button>
+            <button type="button" class="btn btn-secondary" onclick="openImagePicker(this, 'url')">🔗 URL</button>
           </div>
           <input type="file" class="service-image-file" accept="image/*" capture="environment" style="display: none;">
-          <input type="text" class="form-input service-image" placeholder="Or paste image URL here" value="${service.image || ''}" style="margin-top: 10px;">
+          <input type="text" class="form-input service-image" placeholder="Or paste image URL here" value="${service.image || ''}">
         </div>
       `;
       
       return div;
     }
 
+    function refreshServiceNumbers() {
+      const titles = document.querySelectorAll('#servicesContainer .service-card-title');
+      titles.forEach((title, idx) => {
+        title.textContent = `Service ${idx + 1}`;
+      });
+    }
+
     async function openImagePicker(element, type) {
-      const card = element.closest('.form-group');
+      const card = element.closest('.service-card');
       const fileInput = card.querySelector('.service-image-file');
       const imageInput = card.querySelector('.service-image');
       
@@ -1289,10 +1892,11 @@
               const formData = new FormData();
               formData.append('image', file);
               
+              const token = await getAdminToken();
               const response = await fetch('/api/upload', {
                 method: 'POST',
                 headers: {
-                  'Authorization': `Bearer ${ADMIN_TOKEN}`
+                  'Authorization': `Bearer ${token}`
                 },
                 body: formData
               });
@@ -1327,6 +1931,7 @@
       const container = document.getElementById('servicesContainer');
       const index = container.children.length;
       container.appendChild(createServiceField({name: '', description: '', price: '', image: ''}, index));
+      refreshServiceNumbers();
     }
 
     function removeService(button) {
@@ -1334,7 +1939,8 @@
         alert('You need at least one service!');
         return;
       }
-      button.closest('.form-group').remove();
+      button.closest('.service-card').remove();
+      refreshServiceNumbers();
     }
 
     async function pickHeroImage(type) {
@@ -1356,10 +1962,11 @@
               const formData = new FormData();
               formData.append('image', file);
               
+              const token = await getAdminToken();
               const response = await fetch('/api/upload', {
                 method: 'POST',
                 headers: {
-                  'Authorization': `Bearer ${ADMIN_TOKEN}`
+                  'Authorization': `Bearer ${token}`
                 },
                 body: formData
               });
@@ -1520,6 +2127,13 @@
         return;
       }
       
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        alert('Please enter a valid email address.');
+        return;
+      }
+      
       console.log('Processing payment for draft:', draftId, 'plan:', plan);
       
       // Show loading state
@@ -1529,9 +2143,12 @@
       payButton.disabled = true;
       
       try {
-        // Simulate payment (in production, integrate with Stripe)
-        // For now, we'll proceed directly to publishing
-        console.log('Simulating payment for plan:', plan);
+        // TODO: When Stripe keys are configured, uncomment this to enable real payments
+        // const stripe = Stripe('your_publishable_key_here');
+        // Create a payment intent and handle Stripe checkout
+        
+        // For now, proceed directly to publishing (free launch or test mode)
+        console.log('Publishing site for plan:', plan);
         
         // Call publish endpoint
         const response = await fetch(`/api/drafts/${draftId}/publish`, {

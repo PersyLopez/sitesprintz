@@ -1,6 +1,6 @@
 {
   "brand": {
-    "name": "Atom",
+    "name": "SiteSprintz",
     "logo": "assets/logo.svg"
   },
   "themeVars": {
@@ -93,7 +93,7 @@
   },
   "examples": {
     "title": "See Examples",
-    "subtitle": "Check out sites built with Atom",
+    "subtitle": "Check out sites built with SiteSprintz",
     "items": [
       {
         "name": "Restaurant",
@@ -165,11 +165,11 @@
     ]
   },
   "about": {
-    "title": "Why Atom?",
-    "body": "We believe small businesses deserve powerful, affordable web presence. That's why we built Atom - to give you professional websites without the complexity or high costs of traditional solutions. Start free, pay only when you're ready to publish."
+    "title": "Why SiteSprintz?",
+    "body": "We believe small businesses deserve powerful, affordable web presence. That's why we built SiteSprintz - to help you launch your business online in minutes without the complexity or high costs of traditional solutions. Start free, pay only when you're ready to publish."
   },
   "footer": {
-    "text": "© 2024 Atom. Small websites. Big impact."
+    "text": "© 2024 SiteSprintz. Launch your business online in minutes."
   }
 }
 

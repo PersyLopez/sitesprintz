@@ -29,5 +29,11 @@
     ]
   },
   "contact": {"title": "Contact", "subtitle": "Email jane@example.com"},
-  "footer": {"text": "© Jane Doe"}
+  "footer": {"text": "© Jane Doe"},
+  "settings": {
+    "allowCheckout": false,
+    "productCta": "Request Quote",
+    "productCtaHref": "mailto:jane@example.com",
+    "productNote": "Email for a custom quote and timeline. All pricing is customized per project."
+  }
 }

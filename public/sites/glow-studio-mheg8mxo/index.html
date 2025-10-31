@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Glow Studio</title>
+    <style>
+      :root {
+        --color-bg: #fefefe;
+        --color-surface: #ffffff;
+        --color-card: #f8fafc;
+        --color-text: #1e293b;
+        --color-muted: #64748b;
+        --color-primary: #2563eb;
+        --color-primary-600: #1d4ed8;
+        --color-accent: #3b82f6;
+        --radius: 12px;
+        --shadow-lg: 0 10px 25px rgba(0,0,0,.08);
+        --shadow-sm: 0 2px 8px rgba(0,0,0,.06);
+        --shadow-hover: 0 4px 12px rgba(0,0,0,.12);
+        --spacing-xs: 4px;
+        --spacing-sm: 8px;
+        --spacing-md: 16px;
+        --spacing-lg: 24px;
+        --spacing-xl: 32px;
+        --spacing-2xl: 48px;
+      }
+      
+      * { box-sizing: border-box; }
+      body { 
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        margin: 0; 
+        padding: 0; 
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        color: var(--color-text);
+        line-height: 1.5;
+        font-size: 16px;
+      }
+      .container { max-width: 1000px; margin: 0 auto; padding: var(--spacing-lg); }
+      .card { 
+        background: var(--color-surface); 
+        border: 1px solid rgba(0,0,0,0.08); 
+        border-radius: var(--radius); 
+        padding: var(--spacing-lg); 
+        box-shadow: var(--shadow-sm); 
+        margin: var(--spacing-lg) 0;
+        transition: all 0.2s;
+      }
+      .card:hover { 
+        transform: translateY(-2px); 
+        box-shadow: var(--shadow-hover); 
+        border-color: var(--color-primary);
+      }
+      .btn { 
+        display: inline-flex; 
+        align-items: center; 
+        gap: var(--spacing-sm); 
+        padding: var(--spacing-md) var(--spacing-lg); 
+        border-radius: var(--radius); 
+        text-decoration: none; 
+        font-weight: 600; 
+        border: 1px solid transparent; 
+        transition: all 0.2s;
+        font-size: 0.95rem;
+      }
+      .btn-primary { background: var(--color-primary); color: white; }
+      .btn-primary:hover { background: var(--color-primary-600); transform: translateY(-1px); box-shadow: var(--shadow-hover); }
+      .btn-secondary { background: var(--color-card); color: var(--color-text); border-color: rgba(0,0,0,0.1); }
+      .btn-secondary:hover { background: var(--color-surface); border-color: var(--color-primary); color: var(--color-primary); }
+      .hero { 
+        display: grid; 
+        grid-template-columns: 1.1fr 0.9fr; 
+        align-items: center; 
+        gap: var(--spacing-xl); 
+        padding: var(--spacing-2xl) 0; 
+      }
+      .hero h1 { font-size: clamp(1.8rem, 3.5vw + 1rem, 2.8rem); line-height: 1.2; margin: var(--spacing-sm) 0 var(--spacing-md); font-weight: 700; }
+      .hero p { font-size: 1.1rem; color: var(--color-muted); margin: 0 0 var(--spacing-lg); }
+      .hero img { width: 100%; height: 350px; object-fit: cover; border-radius: var(--radius); }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--spacing-lg); }
+      .muted { color: var(--color-muted); }
+      .text-center { text-align: center; }
+      
+      @media (max-width: 900px) {
+        .hero { grid-template-columns: 1fr; gap: var(--spacing-lg); }
+        .container { padding: var(--spacing-md); }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loading">Loading...</div>
+    <div id="main-content" style="display: none;"></div>
+    
+    <script>
+      console.log('Fresh script starting...');
+      
+      async function loadSite() {
+        try {
+          console.log('Fetching site data...');
+          const response = await fetch('./site.json');
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          
+          const data = await response.json();
+          console.log('Data loaded:', data);
+          
+          // Hide loading, show content
+          document.getElementById('loading').style.display = 'none';
+          const mainContent = document.getElementById('main-content');
+          mainContent.style.display = 'block';
+          
+          // Render the site
+          mainContent.innerHTML = `
+            <div class="container">
+              <!-- Header -->
+              <header style="padding: 20px 0; border-bottom: 1px solid #e5e7eb;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <h1 style="margin: 0; color: ${data.themeVars?.['color-primary'] || '#3b82f6'};">
+                    ${data.brand?.name || 'Business Name'}
+                  </h1>
+                  <nav>
+                    ${data.nav?.map(item => `<a href="${item.href}" style="margin-left: 20px; text-decoration: none; color: #6b7280;">${item.label}</a>`).join('') || ''}
+                  </nav>
+                </div>
+              </header>
+              
+              <!-- Hero Section -->
+              <section class="hero">
+                <div>
+                  <p style="color: ${data.themeVars?.['color-primary'] || '#3b82f6'}; font-weight: 600; margin-bottom: 10px;">
+                    ${data.hero?.eyebrow || ''}
+                  </p>
+                  <h1 style="font-size: 3rem; font-weight: 700; margin: 0 0 20px 0;">
+                    ${data.hero?.title || 'Welcome'}
+                  </h1>
+                  <p style="font-size: 1.2rem; color: #6b7280; margin: 0 0 30px 0;">
+                    ${data.hero?.subtitle || ''}
+                  </p>
+                  <div>
+                    ${data.hero?.cta?.map(btn => `
+                      <a href="${btn.href}" class="btn ${btn.variant === 'secondary' ? 'btn-secondary' : 'btn-primary'}" style="margin-right: 15px;">
+                        ${btn.label}
+                      </a>
+                    `).join('') || ''}
+                  </div>
+                </div>
+                ${data.hero?.image ? `
+                  <div>
+                    <img src="${data.hero.image}" alt="${data.hero.imageAlt || ''}" style="width: 100%; height: 400px; object-fit: cover; border-radius: 12px;">
+                  </div>
+                ` : ''}
+              </section>
+              
+              <!-- Services/Products Section -->
+              ${data.services?.items?.length ? `
+                <section class="card">
+                  <h2>${data.services.title || 'Services'}</h2>
+                  <p>${data.services.subtitle || ''}</p>
+                  <div class="grid">
+                    ${data.services.items.map(item => `
+                      <div class="card">
+                        ${item.image ? `<img src="${item.image}" alt="${item.title}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">` : ''}
+                        <h3>${item.title}</h3>
+                        <p>${item.description || ''}</p>
+                      </div>
+                    `).join('')}
+                  </div>
+                </section>
+              ` : ''}
+              
+              ${data.products?.length ? `
+                <section class="card">
+                  <h2>Our ${data.products[0]?.price ? 'Menu' : 'Services'}</h2>
+                  <div class="grid">
+                    ${data.products.map(item => `
+                      <div class="card">
+                        ${item.image ? `<img src="${item.image}" alt="${item.name}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">` : ''}
+                        <h3>${item.name}</h3>
+                        ${item.price ? `<p style="font-size: 1.2rem; font-weight: 600; color: ${data.themeVars?.['color-primary'] || '#3b82f6'};}">$${item.price}</p>` : ''}
+                        <p>${item.description || ''}</p>
+                      </div>
+                    `).join('')}
+                  </div>
+                </section>
+              ` : ''}
+              
+              <!-- Contact Section -->
+              ${data.contact ? `
+                <section class="card">
+                  <h2>${data.contact.title || 'Contact Us'}</h2>
+                  <p>${data.contact.subtitle || ''}</p>
+                  ${data.contact.phone ? `<p><strong>Phone:</strong> ${data.contact.phone}</p>` : ''}
+                  ${data.contact.email ? `<p><strong>Email:</strong> ${data.contact.email}</p>` : ''}
+                </section>
+              ` : ''}
+              
+              <!-- Footer -->
+              <footer style="text-align: center; padding: 40px 0; border-top: 1px solid #e5e7eb; margin-top: 40px;">
+                <p class="muted">${data.footer?.text || 'Thank you for visiting!'}</p>
+              </footer>
+            </div>
+          `;
+          
+        } catch (error) {
+          console.error('Error:', error);
+          document.getElementById('loading').innerHTML = `
+            <div style="padding: 40px; text-align: center;">
+              <h2 style="color: #ef4444;">Error Loading Site</h2>
+              <p>${error.message}</p>
+            </div>
+          `;
+        }
+      }
+      
+      // Start loading
+      loadSite();
+    </script>
+  </body>
+</html>

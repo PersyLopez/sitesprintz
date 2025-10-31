@@ -5,63 +5,165 @@
       "name": "Starter",
       "description": "Simple one-page template",
       "category": "Basic",
-      "color": "#22c55e"
+      "color": "#22c55e",
+      "plan": "Starter",
+      "features": [
+        "Hero, services, and contact sections",
+        "Mobile-responsive navigation",
+        "Offline CTAs (call, email, visit)"
+      ]
     },
     {
       "id": "restaurant",
       "name": "Restaurant",
-      "description": "Menu, booking, and contact",
+      "description": "Menu display and reservation CTAs",
       "category": "Food & Dining",
-      "color": "#ef4444"
+      "color": "#ef4444",
+      "plan": "Starter",
+      "features": [
+        "Menu pricing display (no ordering)",
+        "External reservation links (OpenTable, Resy)",
+        "Hours, location, and contact info"
+      ]
     },
     {
       "id": "salon",
       "name": "Salon",
-      "description": "Services, pricing, and booking",
+      "description": "Services and booking links",
       "category": "Beauty & Wellness",
-      "color": "#a855f7"
+      "color": "#a855f7",
+      "plan": "Starter",
+      "features": [
+        "Service pricing display (view-only)",
+        "External booking CTAs (Calendly, phone)",
+        "Testimonials and gallery sections"
+      ]
     },
     {
       "id": "freelancer",
       "name": "Freelancer",
-      "description": "Portfolio and services",
+      "description": "Portfolio and contact",
       "category": "Professional Services",
-      "color": "#0ea5e9"
+      "color": "#0ea5e9",
+      "plan": "Starter",
+      "features": [
+        "Project showcase and case studies",
+        "Pricing table display (no checkout)",
+        "Contact form and consultation CTAs"
+      ]
     },
     {
       "id": "consultant",
       "name": "Business Consultant",
-      "description": "Strategy and consulting services",
+      "description": "Services and lead capture",
       "category": "Professional Services",
-      "color": "#1e40af"
+      "color": "#1e40af",
+      "plan": "Starter",
+      "features": [
+        "Service descriptions with outcomes",
+        "Testimonials and client logos",
+        "Consultation request CTAs (no payment)"
+      ]
     },
     {
       "id": "gym",
       "name": "Gym & Fitness",
-      "description": "Classes, membership, and training",
+      "description": "Classes and membership info",
       "category": "Fitness & Health",
-      "color": "#dc2626"
+      "color": "#dc2626",
+      "plan": "Starter",
+      "features": [
+        "Membership tier display (no signup)",
+        "Class schedule and trainer bios",
+        "Visit or call CTAs (offline signup)"
+      ]
     },
     {
       "id": "tech-repair",
       "name": "Tech Repair",
-      "description": "Computer and phone repair services",
+      "description": "Services and contact info",
       "category": "Technology",
-      "color": "#059669"
+      "color": "#059669",
+      "plan": "Starter",
+      "features": [
+        "Service pricing display (no booking)",
+        "Device categories and repair FAQs",
+        "Phone and walk-in CTAs"
+      ]
     },
     {
       "id": "cleaning",
       "name": "Cleaning Service",
-      "description": "Residential and commercial cleaning",
+      "description": "Service packages and quotes",
       "category": "Home Services",
-      "color": "#0891b2"
+      "color": "#0891b2",
+      "plan": "Starter",
+      "features": [
+        "Package pricing display (no booking)",
+        "Service area and availability info",
+        "Call or email for quote CTAs"
+      ]
     },
     {
       "id": "pet-care",
       "name": "Pet Care",
-      "description": "Grooming, walking, and pet sitting",
+      "description": "Services and contact",
       "category": "Pet Services",
-      "color": "#7c3aed"
+      "color": "#7c3aed",
+      "plan": "Starter",
+      "features": [
+        "Service pricing display (view-only)",
+        "Photo gallery and testimonials",
+        "Phone or form CTAs (no online booking)"
+      ]
+    },
+    {
+      "id": "product-showcase",
+      "name": "Product Showcase",
+      "description": "Catalog display with offline ordering",
+      "category": "Retail",
+      "color": "#f97316",
+      "plan": "Starter",
+      "features": [
+        "Product catalog with pricing (view-only)",
+        "Custom offline CTAs (call, email, visit)",
+        "No payment processing or cart"
+      ]
+    },
+    {
+      "id": "product-ordering",
+      "name": "Product Ordering",
+      "description": "Full e-commerce with Stripe checkout",
+      "category": "Retail",
+      "color": "#2563eb",
+      "plan": "Checkout",
+      "features": [
+        "Stripe checkout with secure payments",
+        "Automatic order confirmations via email",
+        "Admin dashboard for order management"
+      ]
+    },
+    {
+      "id": "restaurant-ordering",
+      "name": "Restaurant (Online Ordering)",
+      "description": "Menu with Stripe checkout for takeout/delivery",
+      "category": "Food & Dining",
+      "color": "#dc2626",
+      "plan": "Checkout",
+      "features": [
+        "Accept online orders with Stripe checkout",
+        "Menu display with secure payment processing",
+        "Automated order confirmations and tracking"
+      ]
+    },
+    {
+      "id": "premium-suite",
+      "name": "Premium Suite (Coming Soon)",
+      "description": "Full multi-page experience with blog, scheduling, and CRM integrations",
+      "category": "Premium",
+      "color": "#9333ea",
+      "plan": "Premium",
+      "status": "coming-soon"
     }
   ]
 }

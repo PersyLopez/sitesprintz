@@ -233,5 +233,11 @@
       "Customer Service Excellence",
       "Trusted Business Award"
     ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "productCta": "Get a Quote",
+    "productCtaHref": "tel:+15555556789",
+    "productNote": "Call or visit for a free diagnostic. Most repairs completed same-day!"
   }
 }
