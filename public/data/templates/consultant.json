@@ -268,5 +268,11 @@
       "Excellence in Business Strategy",
       "Client Satisfaction Award"
     ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "productCta": "Schedule Consultation",
+    "productCtaHref": "https://calendly.com/strategicsolutions",
+    "productNote": "Book a free 30-minute consultation to discuss your business needs. Custom proposals provided after initial meeting."
   }
 }

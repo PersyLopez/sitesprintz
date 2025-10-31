@@ -1,0 +1,87 @@
+{
+  "brand": {
+    "name": "QuickCart Electronics",
+    "logo": "assets/logo.svg",
+    "alt": "QuickCart logo"
+  },
+  "themeVars": {
+    "color-primary": "#2563eb",
+    "color-primary-600": "#1d4ed8",
+    "color-accent": "#38bdf8"
+  },
+  "nav": [
+    { "label": "Home", "href": "#hero" },
+    { "label": "Products", "href": "#products" },
+    { "label": "Support", "href": "#support" },
+    { "label": "Contact", "href": "#contact" }
+  ],
+  "hero": {
+    "eyebrow": "Premium ordering experience",
+    "title": "Sell online with integrated checkout",
+    "subtitle": "Perfect for shops ready to accept payment through Stripe checkout in minutes.",
+    "image": "assets/hero-placeholder.svg",
+    "imageAlt": "Team packaging products",
+    "cta": [
+      { "label": "Shop Products", "href": "#products" },
+      { "label": "Learn More", "href": "#support", "variant": "secondary" }
+    ]
+  },
+  "services": {
+    "title": "Why customers choose us",
+    "subtitle": "Every template includes secure payments, receipts, and order tracking.",
+    "items": [
+      { "title": "Secure checkout", "description": "Powered by Stripe with fraud detection built in." },
+      { "title": "Fast fulfillment", "description": "Automated email confirmations with every order." },
+      { "title": "Mobile optimized", "description": "Beautiful on any device for higher conversions." }
+    ]
+  },
+  "products": [
+    {
+      "name": "Wireless Earbuds",
+      "price": 129,
+      "description": "Active noise cancellation, 24-hour battery life, and Qi charging."
+    },
+    {
+      "name": "Smart Home Hub",
+      "price": 189,
+      "description": "Control lights, climate, and security from one sleek hub."
+    },
+    {
+      "name": "Portable Solar Charger",
+      "price": 89,
+      "description": "Fast USB-C charging with rugged, water-resistant design."
+    }
+  ],
+  "pricing": {
+    "title": "Flexible bundles",
+    "plans": [
+      {
+        "name": "Starter Kit",
+        "description": "Best-selling devices and priority setup support.",
+        "price": 249,
+        "cta": { "label": "Buy Now", "href": "#products" }
+      },
+      {
+        "name": "Smart Home Pro",
+        "description": "Advanced automations, installation, and training.",
+        "price": 449,
+        "cta": { "label": "Buy Now", "href": "#products" }
+      }
+    ]
+  },
+  "contact": {
+    "title": "Need a custom quote?",
+    "subtitle": "Talk with our team for enterprise pricing and integrations.",
+    "email": "sales@quickcart.io",
+    "phone": "+1-415-555-0199"
+  },
+  "footer": {
+    "text": "© QuickCart Electronics — Built for modern online retail."
+  },
+  "settings": {
+    "allowCheckout": true,
+    "productCta": "Buy Now",
+    "productNote": "Checkout buttons are active. Configure your Stripe keys to begin accepting payments."
+  }
+}
+

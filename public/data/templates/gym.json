@@ -312,5 +312,11 @@
       "Community Choice Award",
       "Excellence in Fitness"
     ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "productCta": "Visit to Join",
+    "productCtaHref": "tel:+15555551234",
+    "productNote": "Call or visit us to sign up for a membership. First week free trial available!"
   }
 }

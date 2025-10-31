@@ -14,10 +14,10 @@
     "color-danger": "#dc143c"
   },
   "nav": [
-    {"label": "Menu", "href": "#menu"},
+    {"label": "Menu", "href": "#products"},
     {"label": "About", "href": "#about"},
-    {"label": "Reservations", "href": "#reservations"},
-    {"label": "Events", "href": "#events"},
+    {"label": "Chef", "href": "#team"},
+    {"label": "Reviews", "href": "#reviews"},
     {"label": "Contact", "href": "#contact"}
   ],
   "hero": {
@@ -231,6 +231,58 @@
       }
     ]
   },
+  "stats": {
+    "items": [
+      {"number": "15+", "label": "Years Serving"},
+      {"number": "4.8", "label": "Star Rating"},
+      {"number": "200+", "label": "Dishes Available"},
+      {"number": "50K+", "label": "Happy Guests"}
+    ]
+  },
+  "team": {
+    "title": "Meet Our Team",
+    "subtitle": "Passionate culinary experts bringing Italy to your table",
+    "members": [
+      {
+        "name": "Chef Marco Rossi",
+        "title": "Executive Chef & Owner",
+        "bio": "Born in Florence, Chef Marco brings 20+ years of culinary expertise to Bella Vista. Trained in traditional Italian techniques, he ensures every dish meets the highest standards of authenticity.",
+        "image": "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400&q=80",
+        "credentials": ["Culinary Institute of Florence", "James Beard Nominee", "Michelin-Trained"]
+      }
+    ]
+  },
+  "process": {
+    "title": "The Bella Vista Experience",
+    "steps": [
+      {"title": "Make Reservation", "description": "Book your table online or call us for availability"},
+      {"title": "Arrive & Be Seated", "description": "Enjoy our warm ambiance and Italian hospitality"},
+      {"title": "Culinary Journey", "description": "Savor authentic dishes made with imported ingredients"},
+      {"title": "Dolce Vita", "description": "Complete your meal with espresso and traditional desserts"}
+    ]
+  },
+  "credentials": {
+    "title": "What Sets Us Apart",
+    "items": [
+      {"icon": "🍅", "name": "Authentic Ingredients", "description": "Imported from Italy"},
+      {"icon": "👨‍🍳", "name": "Family Recipes", "description": "3 generations"},
+      {"icon": "🔥", "name": "Wood-Fired Oven", "description": "Traditional methods"},
+      {"icon": "🍷", "name": "Wine Spectator Award", "description": "Excellence in wine"}
+    ]
+  },
+  "faq": {
+    "title": "Common Questions",
+    "items": [
+      {"question": "Do you take reservations?", "answer": "Yes, we highly recommend reservations especially for weekends and holidays. You can book online through our website or call us at (555) 123-4567."},
+      {"question": "Do you accommodate dietary restrictions?", "answer": "Absolutely! We can modify most dishes for gluten-free, vegetarian, and vegan diets. Please inform your server of any allergies or dietary needs."},
+      {"question": "Is there parking available?", "answer": "Yes, we offer complimentary valet parking Tuesday-Saturday evenings. There's also street parking and a public garage one block away."},
+      {"question": "Do you host private events?", "answer": "Yes! Our private dining room accommodates up to 20 guests with custom menus available. Contact us at least 2 weeks in advance to plan your event."},
+      {"question": "What are your hours?", "answer": "We're closed Mondays. Tuesday-Thursday 5PM-10PM, Friday-Saturday 5PM-11PM, Sunday 4PM-9PM. Kitchen closes 30 minutes before restaurant."},
+      {"question": "Do you offer takeout or delivery?", "answer": "Yes, we offer takeout for most menu items. Call ahead to place your order. For delivery, we partner with major delivery services."},
+      {"question": "What is your wine selection like?", "answer": "We have an award-winning wine list featuring over 100 Italian wines, from Tuscany to Sicily. Our sommelier is happy to help with pairings."},
+      {"question": "Is the restaurant family-friendly?", "answer": "Yes! We welcome families and have a children's menu available. We recommend earlier dining times (before 7PM) for families with young children."}
+    ]
+  },
   "footer": {
     "text": "🍝 Bella Vista • Authentic Italian Cuisine Since 2008",
     "links": [
@@ -244,5 +296,13 @@
       "Wine Spectator Award",
       "TripAdvisor Certificate of Excellence"
     ]
-  }
+  },
+  "settings": {
+    "allowCheckout": false,
+    "productCta": "Call to Reserve",
+    "productCtaHref": "tel:+15551234567",
+    "productNote": "Call us to place an order for pickup or delivery, or make a reservation for dine-in. Want online ordering? Upgrade to the Restaurant (Online Ordering) template."
+  },
+  "productsTitle": "Our Menu",
+  "productsSubtitle": "Authentic Italian dishes crafted with passion"
 }

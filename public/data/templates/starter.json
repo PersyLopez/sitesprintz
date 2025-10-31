@@ -32,5 +32,11 @@
   "pages": [
     {"slug": "about", "title": "About", "body": "# Our Story\nWe started in 2012..."}
   ],
-  "products": []
+  "products": [],
+  "settings": {
+    "allowCheckout": false,
+    "productCta": "Contact Us",
+    "productCtaHref": "mailto:hello@example.com",
+    "productNote": "Get in touch to learn more about our services and pricing."
+  }
 }

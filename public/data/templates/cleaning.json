@@ -14,10 +14,10 @@
     "color-danger": "#ef4444"
   },
   "nav": [
-    {"label": "Services", "href": "#services"},
-    {"label": "Book", "href": "#book"},
-    {"label": "Reviews", "href": "#reviews"},
+    {"label": "Services", "href": "#products"},
     {"label": "About", "href": "#about"},
+    {"label": "Reviews", "href": "#reviews"},
+    {"label": "FAQ", "href": "#faq"},
     {"label": "Contact", "href": "#contact"}
   ],
   "hero": {
@@ -221,6 +221,48 @@
       }
     ]
   },
+  "stats": {
+    "items": [
+      {"number": "500+", "label": "Homes Cleaned"},
+      {"number": "8", "label": "Years Experience"},
+      {"number": "4.9", "label": "Average Rating"},
+      {"number": "100%", "label": "Satisfaction Rate"}
+    ]
+  },
+  "credentials": {
+    "title": "Licensed & Certified",
+    "subtitle": "Trust and professionalism you can count on",
+    "items": [
+      {"icon": "🛡️", "name": "Fully Insured", "description": "General Liability & Bonding"},
+      {"icon": "✅", "name": "Background Checked", "description": "All team members vetted"},
+      {"icon": "🌱", "name": "Eco-Certified", "description": "Green Seal Approved"},
+      {"icon": "🏆", "name": "BBB A+ Rating", "description": "Accredited since 2016"}
+    ]
+  },
+  "process": {
+    "title": "How It Works",
+    "subtitle": "Simple, fast, and hassle-free booking",
+    "steps": [
+      {"title": "Book Online", "description": "Choose your service and preferred date through our easy booking system"},
+      {"title": "We Confirm", "description": "Receive confirmation within 1 hour with your assigned team"},
+      {"title": "We Clean", "description": "Professional team arrives on time with all supplies"},
+      {"title": "You Relax", "description": "Enjoy your spotless space with 100% satisfaction guarantee"}
+    ]
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know about our services",
+    "items": [
+      {"question": "Are you insured and bonded?", "answer": "Yes, we carry full liability insurance and all team members are bonded for your protection. You can request proof of insurance at any time."},
+      {"question": "What products do you use?", "answer": "We use eco-friendly, non-toxic cleaning products that are safe for children and pets. All products are EPA-approved and Green Seal certified."},
+      {"question": "Do I need to be home during cleaning?", "answer": "No, many clients provide a key or code. We're fully bonded and trustworthy. You can go about your day while we make your space sparkle!"},
+      {"question": "What if I'm not satisfied?", "answer": "We offer a 100% satisfaction guarantee. We'll re-clean any areas you're not happy with within 24 hours, free of charge."},
+      {"question": "How much does cleaning cost?", "answer": "Prices vary based on home size and service type. Regular house cleaning starts at $120, deep cleaning at $250. Contact us for a free, no-obligation quote."},
+      {"question": "Do you provide cleaning supplies?", "answer": "Yes! We bring all necessary supplies and equipment. If you have specific products you'd like us to use, just let us know."},
+      {"question": "Can I schedule recurring cleanings?", "answer": "Absolutely! We offer weekly, bi-weekly, and monthly packages at discounted rates. Save 15% with a monthly plan."},
+      {"question": "What areas do you serve?", "answer": "We serve Springfield and surrounding areas within a 50-mile radius. Use our zip code checker or call to confirm service availability."}
+    ]
+  },
   "footer": {
     "text": "🧽 Sparkle Clean • Professional Cleaning Since 2016",
     "links": [
@@ -234,5 +276,13 @@
       "Customer Choice Award",
       "Eco-Friendly Business"
     ]
-  }
+  },
+  "settings": {
+    "allowCheckout": false,
+    "productCta": "Request Quote",
+    "productCtaHref": "mailto:hello@sparkleclean.com",
+    "productNote": "Email or call (555) 789-0123 for a free estimate. Same-day service available!"
+  },
+  "productsTitle": "Our Services",
+  "productsSubtitle": "Professional cleaning solutions for every need"
 }

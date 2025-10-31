@@ -3,24 +3,68 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Atom - Create Your Business Website Free</title>
-    <meta name="description" content="Create a professional website for your small business in minutes. Try it free, pay only when you publish." />
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Atom - Create Your Business Website Free" />
-    <meta property="og:description" content="Create a professional website for your small business in minutes. Try it free, pay only when you publish." />
-    <meta property="og:image" content="/assets/og-image.jpg" />
-    
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Atom - Create Your Business Website Free" />
-    <meta name="twitter:description" content="Create a professional website for your small business in minutes. Try it free, pay only when you publish." />
-    <meta name="twitter:image" content="/assets/og-image.jpg" />
+  <title>SiteSprintz - Create Your Business Website in Minutes</title>
+  <meta name="description" content="Create a professional website for your small business in minutes. Choose a template, customize it free, and launch when ready." />
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="SiteSprintz - Create Your Business Website in Minutes" />
+  <meta property="og:description" content="Create a professional website for your small business in minutes. Choose a template, customize it free, and launch when ready." />
+  <meta property="og:image" content="/assets/og-image.jpg" />
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="SiteSprintz - Create Your Business Website in Minutes" />
+  <meta name="twitter:description" content="Create a professional website for your small business in minutes. Choose a template, customize it free, and launch when ready." />
+  <meta name="twitter:image" content="/assets/og-image.jpg" />
 
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+      :root {
+        --primary-gradient: linear-gradient(135deg, #5f9ea0 0%, #4a7c7e 100%);
+        --secondary-gradient: linear-gradient(135deg, #7ba9a3 0%, #6b9b95 100%);
+        --accent-gradient: linear-gradient(135deg, #80b3b3 0%, #5f9ea0 100%);
+        --success-gradient: linear-gradient(135deg, #6bb6a3 0%, #5a9f8e 100%);
+        --warm-gradient: linear-gradient(135deg, #c9a76f 0%, #b39360 100%);
+        
+        --primary-color: #5f9ea0;
+        --primary-dark: #4a7c7e;
+        --primary-light: #80b3b3;
+        
+        --text-dark: #0f172a;
+        --text-medium: #475569;
+        --text-light: #64748b;
+        --bg-light: #f7f9f9;
+        --bg-white: #ffffff;
+        --border-light: #e5e9e9;
+        
+        --shadow-sm: 0 1px 3px 0 rgba(95, 158, 160, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+        --shadow-md: 0 4px 6px -1px rgba(95, 158, 160, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
+        --shadow-lg: 0 10px 15px -3px rgba(95, 158, 160, 0.12), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+        --shadow-xl: 0 20px 25px -5px rgba(95, 158, 160, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --shadow-2xl: 0 25px 50px -12px rgba(95, 158, 160, 0.2);
+        --shadow-natural: 0 10px 40px rgba(95, 158, 160, 0.18);
+      }
+      
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        color: var(--text-dark);
+        background: var(--bg-white);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      
       @keyframes float {
         0%, 100% { transform: translateY(0px); }
         50% { transform: translateY(-10px); }
@@ -42,92 +86,104 @@
       }
       
       .landing-hero {
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #3b82f6 100%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        padding: 80px 20px;
+        padding: 80px 20px 100px;
         text-align: center;
-        border-radius: 0 0 32px 32px;
-        margin-bottom: 60px;
         position: relative;
         overflow: hidden;
-        animation: fadeIn 1s ease-out;
       }
       
       .landing-hero::before {
         content: '';
         position: absolute;
         top: -50%;
-        left: -50%;
-        width: 200%;
+        right: -10%;
+        width: 50%;
         height: 200%;
         background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-        animation: float 6s ease-in-out infinite;
+        animation: float 8s ease-in-out infinite;
         pointer-events: none;
       }
       
       .landing-hero::after {
-        content: '✨';
+        content: '';
         position: absolute;
-        top: 20px;
-        right: 20px;
-        font-size: 2rem;
-        animation: pulse 2s ease-in-out infinite;
+        bottom: -50%;
+        left: -10%;
+        width: 50%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+        animation: float 10s ease-in-out infinite reverse;
+        pointer-events: none;
+      }
+      
+      .hero-content {
+        max-width: 800px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
       }
       
       .landing-hero h1 {
-        font-size: clamp(3rem, 5vw + 1rem, 4rem);
-        margin: 0 0 20px 0;
+        font-size: clamp(2.5rem, 5vw + 1rem, 4rem);
+        margin: 0 0 24px 0;
         font-weight: 800;
         line-height: 1.1;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        animation: slideInUp 1s ease-out 0.2s both;
+        letter-spacing: -0.02em;
+        text-shadow: 0 2px 20px rgba(0,0,0,0.2);
       }
       
       .landing-hero p {
-        font-size: 1.4rem;
+        font-size: 1.25rem;
         margin: 0 0 40px 0;
         opacity: 0.95;
-        max-width: 700px;
+        line-height: 1.6;
+        max-width: 600px;
         margin-left: auto;
         margin-right: auto;
-        font-weight: 500;
-        animation: slideInUp 1s ease-out 0.4s both;
+        font-weight: 400;
       }
       
       .hero-badge {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
         background: rgba(255,255,255,0.2);
-        backdrop-filter: blur(10px);
+        backdrop-filter: blur(20px);
         padding: 8px 20px;
         border-radius: 50px;
         font-size: 0.9rem;
         font-weight: 600;
-        margin-bottom: 20px;
+        margin-bottom: 24px;
         border: 1px solid rgba(255,255,255,0.3);
-        animation: slideInUp 1s ease-out 0.1s both;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        animation: slideInUp 0.6s ease 0.2s backwards;
       }
       
       .cta-buttons {
         display: flex;
-        gap: 20px;
+        gap: 16px;
         justify-content: center;
         flex-wrap: wrap;
-        animation: slideInUp 1s ease-out 0.6s both;
+        animation: slideInUp 0.6s ease 0.4s backwards;
       }
       
       .btn-primary-large {
         background: white;
-        color: #2563eb;
-        padding: 20px 40px;
+        color: var(--primary-color);
+        padding: 16px 40px;
         border: none;
-        border-radius: 16px;
+        border-radius: 14px;
         font-size: 1.1rem;
         font-weight: 700;
         cursor: pointer;
-        transition: all 0.3s;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         text-decoration: none;
-        display: inline-block;
-        box-shadow: 0 8px 25px rgba(37,99,235,0.2);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         position: relative;
         overflow: hidden;
       }
@@ -139,7 +195,7 @@
         left: -100%;
         width: 100%;
         height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(37,99,235,0.1), transparent);
+        background: linear-gradient(90deg, transparent, rgba(95, 158, 160, 0.25), transparent);
         transition: left 0.5s;
       }
       
@@ -148,330 +204,843 @@
       }
       
       .btn-primary-large:hover {
-        transform: translateY(-3px) scale(1.02);
-        box-shadow: 0 15px 35px rgba(37,99,235,0.3);
+        transform: translateY(-3px);
+        box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+      }
+      
+      .btn-primary-large:active {
+        transform: translateY(-1px);
       }
       
       .btn-secondary-large {
-        background: rgba(255,255,255,0.15);
-        color: white;
-        padding: 20px 40px;
-        border: 2px solid rgba(255,255,255,0.4);
-        border-radius: 16px;
-        font-size: 1.1rem;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.3s;
-        text-decoration: none;
-        display: inline-block;
+        background: rgba(255,255,255,0.1);
         backdrop-filter: blur(10px);
+        color: white;
+        padding: 16px 40px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 14px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
       }
       
       .btn-secondary-large:hover {
-        background: rgba(255,255,255,0.25);
-        border-color: rgba(255,255,255,0.6);
-        transform: translateY(-3px) scale(1.02);
-        box-shadow: 0 15px 35px rgba(255,255,255,0.2);
+        background: rgba(255,255,255,0.2);
+        border-color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
       }
       
-      .how-it-works {
-        padding: 60px 20px;
-        max-width: 1000px;
-        margin: 0 auto;
+      .btn-secondary-large:active {
+        transform: translateY(-1px);
       }
       
-      .how-it-works h2 {
-        text-align: center;
-        font-size: 2rem;
-        margin-bottom: 40px;
-        color: #1e293b;
+      .btn-text-link {
+        color: #2563eb;
+        text-decoration: none;
         font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.2s;
       }
       
-      .steps {
+      .btn-text-link:hover {
+        color: #1d4ed8;
+      }
+      
+      .compact-section {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 80px 20px;
+      }
+      
+      .section-header-compact {
+        text-align: center;
+        margin-bottom: 56px;
+      }
+      
+      .section-header-compact h2 {
+        font-size: 2.5rem;
+        margin: 0 0 16px 0;
+        color: var(--text-dark);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      
+      .section-header-compact p {
+        color: var(--text-medium);
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 400;
+      }
+      
+      .steps-compact {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 24px;
+        gap: 32px;
       }
       
-      .step-card {
+      .step-compact {
         text-align: center;
-        padding: 32px;
-        border-radius: 20px;
+        padding: 40px 32px;
         background: white;
-        border: 1px solid rgba(0,0,0,0.08);
-        box-shadow: 0 4px 20px rgba(37,99,235,0.08);
-        transition: all 0.3s;
+        border: 2px solid var(--border-light);
+        border-radius: 24px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
       }
       
-      .step-card::before {
+      .step-compact::before {
         content: '';
         position: absolute;
         top: 0;
         left: 0;
-        right: 0;
+        width: 100%;
         height: 4px;
-        background: linear-gradient(90deg, #2563eb, #3b82f6);
+        background: var(--primary-gradient);
         transform: scaleX(0);
-        transition: transform 0.3s;
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       }
       
-      .step-card:hover {
-        transform: translateY(-8px) scale(1.02);
-        box-shadow: 0 20px 40px rgba(37,99,235,0.15);
-        border-color: #2563eb;
-      }
-      
-      .step-card:hover::before {
+      .step-compact:hover::before {
         transform: scaleX(1);
       }
       
-      .step-number {
-        font-size: 4rem;
-        font-weight: bold;
-        background: linear-gradient(135deg, #2563eb, #3b82f6);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+      .step-compact:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-xl);
+        border-color: transparent;
+      }
+      
+      .step-icon {
+        font-size: 3.5rem;
+        display: block;
         margin-bottom: 20px;
-        line-height: 1;
-        animation: pulse 3s ease-in-out infinite;
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       }
       
-      .step-title {
-        font-size: 1.3rem;
-        font-weight: 600;
-        margin-bottom: 12px;
-        color: #1e293b;
+      .step-compact:hover .step-icon {
+        transform: scale(1.1) rotate(-5deg);
       }
       
-      .step-description {
-        color: #64748b;
+      .step-compact h3 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin: 0 0 12px 0;
+        color: var(--text-dark);
+      }
+      
+      .step-compact p {
+        color: var(--text-medium);
         font-size: 1rem;
-        line-height: 1.5;
+        margin: 0;
+        line-height: 1.6;
       }
       
-      .featured-templates {
-        padding: 60px 20px;
+      .social-proof-compact {
         background: #f8fafc;
-        border-radius: 24px 24px 0 0;
-        margin-top: 40px;
+        padding: 40px 0;
       }
       
-      .featured-templates h2 {
-        text-align: center;
-        font-size: 2rem;
-        margin-bottom: 40px;
-        color: #1e293b;
-        font-weight: 600;
-      }
-      
-      .template-preview {
-        max-width: 1000px;
-        margin: 0 auto;
+      .testimonials-compact {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 20px;
       }
       
-      .template-preview-card {
+      .testimonial-compact {
         background: white;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        transition: all 0.2s;
-        cursor: pointer;
+        padding: 20px;
+        border-radius: 12px;
         border: 1px solid rgba(0,0,0,0.08);
+        transition: all 0.2s;
       }
       
-      .template-preview-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-        border-color: #2563eb;
+      .testimonial-compact:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(37,99,235,0.08);
       }
       
-      .template-preview-image {
+      .testimonial-compact p {
+        color: #1e293b;
+        font-size: 0.95rem;
+        margin: 0 0 12px 0;
+        line-height: 1.5;
+      }
+      
+      .testimonial-compact cite {
+        color: #64748b;
+        font-size: 0.85rem;
+        font-style: normal;
+      }
+      
+      .templates-highlight {
+        background: linear-gradient(180deg, #f7fafc 0%, #edf2f7 100%);
+      }
+      
+      .quick-templates {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 24px;
+      }
+      
+      .quick-template-card {
+        background: white;
+        border: 2px solid var(--border-light);
+        border-radius: 20px;
+        padding: 32px 24px;
+        text-align: center;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .quick-template-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
-        height: 160px;
-        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        height: 100%;
+        background: var(--primary-gradient);
+        opacity: 0;
+        transition: opacity 0.4s;
+        z-index: 0;
+      }
+      
+      .quick-template-card:hover::before {
+        opacity: 0.05;
+      }
+      
+      .quick-template-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: var(--shadow-2xl);
+        border-color: transparent;
+      }
+      
+      .template-emoji {
+        font-size: 3.5rem;
+        display: block;
+        margin-bottom: 16px;
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        z-index: 1;
+      }
+      
+      .quick-template-card:hover .template-emoji {
+        transform: scale(1.2) rotate(-10deg);
+      }
+      
+      .quick-template-card h3 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin: 0 0 8px 0;
+        color: var(--text-dark);
+        position: relative;
+        z-index: 1;
+      }
+      
+      .quick-template-card p {
+        font-size: 0.95rem;
+        color: var(--text-medium);
+        margin: 0;
+        position: relative;
+        z-index: 1;
+      }
+      
+      .cta-footer {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 80px 20px;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .cta-footer::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 60%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+        pointer-events: none;
+      }
+      
+      .cta-box {
+        text-align: center;
+        color: white;
+        max-width: 700px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+      }
+      
+      .cta-box h2 {
+        font-size: 2.8rem;
+        margin: 0 0 16px 0;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+      
+      .cta-box p {
+        font-size: 1.25rem;
+        margin: 0 0 32px 0;
+        opacity: 0.95;
+        line-height: 1.6;
+      }
+      
+      .site-footer-compact {
+        background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+        color: #a0aec0;
+        padding: 48px 20px;
+        text-align: center;
+      }
+      
+      .site-footer-compact p {
+        margin: 0 0 20px 0;
+        font-size: 1rem;
+        font-weight: 500;
+      }
+      
+      .footer-links {
+        display: flex;
+        gap: 32px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      
+      .footer-links a {
+        color: white;
+        text-decoration: none;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: all 0.3s;
+        position: relative;
+      }
+      
+      .footer-links a::after {
+        content: '';
+        position: absolute;
+        bottom: -4px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: var(--accent-gradient);
+        transition: width 0.3s;
+      }
+      
+      .footer-links a:hover::after {
+        width: 100%;
+      }
+      
+      .footer-links a:hover {
+        color: #fff;
+      }
+      
+      /* Hero Showcase Carousel */
+      .hero-showcase {
+        max-width: 1000px;
+        margin: 60px auto 0;
+        position: relative;
+        animation: slideInUp 0.6s ease 0.6s backwards;
+      }
+      
+      .showcase-container {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 10;
+        border-radius: 24px;
+        overflow: hidden;
+      }
+      
+      .showcase-slide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transform: translateX(30px) scale(0.95);
+        transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: none;
+      }
+      
+      .showcase-slide.active {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+        pointer-events: auto;
+      }
+      
+      .showcase-browser {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 30px 80px rgba(0,0,0,0.3), 0 0 0 1px rgba(0,0,0,0.05);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .browser-bar {
+        background: linear-gradient(180deg, #f8f9fa 0%, #f1f3f5 100%);
+        padding: 14px 20px;
         display: flex;
         align-items: center;
-        justify-content: center;
-        font-size: 4rem;
+        gap: 12px;
+        border-bottom: 1px solid #e9ecef;
       }
       
-      .template-preview-content {
-        padding: 20px;
+      .browser-dots {
+        display: flex;
+        gap: 8px;
       }
       
-      .template-preview-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        margin-bottom: 8px;
-        color: #1e293b;
-      }
-      
-      .template-preview-desc {
-        color: #64748b;
-        margin-bottom: 16px;
-        font-size: 0.9rem;
-        line-height: 1.4;
-      }
-      
-      .template-preview-btn {
-        background: linear-gradient(135deg, #2563eb, #1d4ed8);
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        width: 100%;
-        text-decoration: none;
+      .browser-dots i {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
         display: block;
-        text-align: center;
-        font-size: 0.9rem;
-        transition: all 0.2s;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
       }
       
-      .template-preview-btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+      .browser-dots i:nth-child(1) { background: #ff5f56; }
+      .browser-dots i:nth-child(2) { background: #ffbd2e; }
+      .browser-dots i:nth-child(3) { background: #27c93f; }
+      
+      .browser-url {
+        background: white;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        color: var(--text-medium);
+        flex: 1;
+        text-align: left;
+        border: 1px solid #e2e8f0;
+        font-weight: 500;
+      }
+      
+      .showcase-browser iframe {
+        width: 100%;
+        flex: 1;
+        border: none;
+        background: white;
+        pointer-events: none;
+      }
+      
+      .showcase-label {
+        position: absolute;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(255,255,255,0.98);
+        backdrop-filter: blur(20px);
+        padding: 14px 32px;
+        border-radius: 60px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.5);
+        border: 1px solid rgba(255,255,255,0.8);
+      }
+      
+      .showcase-label strong {
+        color: var(--text-dark);
+        font-size: 1.1rem;
+        font-weight: 700;
+      }
+      
+      .showcase-label span {
+        color: var(--text-medium);
+        font-size: 0.9rem;
+        margin-top: 2px;
+        font-weight: 500;
+      }
+      
+      .showcase-dots {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 32px;
+      }
+      
+      .showcase-dots .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.4);
+        border: 2px solid rgba(255,255,255,0.6);
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 0;
+      }
+      
+      .showcase-dots .dot:hover {
+        background: rgba(255,255,255,0.7);
+        transform: scale(1.3);
+        border-color: white;
+      }
+      
+      .showcase-dots .dot.active {
+        background: white;
+        width: 32px;
+        border-radius: 6px;
+        border-color: white;
+      }
+      
+      /* Mobile responsive */
+      @media (max-width: 768px) {
+        .landing-hero {
+          padding: 60px 20px 80px;
+        }
+        
+        .landing-hero h1 {
+          font-size: 2.2rem;
+        }
+        
+        .landing-hero p {
+          font-size: 1.1rem;
+        }
+        
+        .cta-buttons {
+          flex-direction: column;
+          gap: 12px;
+        }
+        
+        .btn-primary-large,
+        .btn-secondary-large {
+          width: 100%;
+          justify-content: center;
+        }
+        
+        .hero-showcase {
+          margin-top: 48px;
+        }
+        
+        .showcase-container {
+          aspect-ratio: 4 / 5;
+        }
+        
+        .browser-bar {
+          padding: 10px 12px;
+        }
+        
+        .browser-url {
+          font-size: 0.75rem;
+          padding: 6px 12px;
+        }
+        
+        .showcase-label {
+          bottom: 16px;
+          padding: 10px 20px;
+        }
+        
+        .showcase-label strong {
+          font-size: 0.95rem;
+        }
+        
+        .showcase-label span {
+          font-size: 0.8rem;
+        }
+        
+        .compact-section {
+          padding: 60px 20px;
+        }
+        
+        .section-header-compact h2 {
+          font-size: 2rem;
+        }
+        
+        .section-header-compact p {
+          font-size: 1.05rem;
+        }
+        
+        .steps-compact {
+          grid-template-columns: 1fr;
+          gap: 24px;
+        }
+        
+        .quick-templates {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 16px;
+        }
+        
+        .quick-template-card {
+          padding: 24px 16px;
+        }
+        
+        .cta-footer {
+          padding: 60px 20px;
+        }
+        
+        .cta-box h2 {
+          font-size: 2rem;
+        }
+        
+        .cta-box p {
+          font-size: 1.1rem;
+        }
+      }
+      
+      @media (max-width: 480px) {
+        .landing-hero h1 {
+          font-size: 1.8rem;
+        }
+        
+        .landing-hero p {
+          font-size: 1rem;
+        }
+        
+        .section-header-compact h2 {
+          font-size: 1.75rem;
+        }
+        
+        .quick-templates {
+          grid-template-columns: 1fr;
+        }
+        
+        .footer-links {
+          flex-direction: column;
+          gap: 16px;
+        }
       }
     </style>
   </head>
   <body>
-    <!-- Landing Page Hero -->
+    <!-- Compact Hero -->
     <div class="landing-hero">
-      <div style="max-width: 900px; margin: 0 auto; position: relative; z-index: 1;">
-        <div class="hero-badge">🚀 Trusted by 10,000+ businesses</div>
-        <h1>Create Your Dream Website in Minutes</h1>
-        <p>No coding. No design skills. Just beautiful, professional websites that convert visitors into customers. Start free, upgrade when you're ready!</p>
+      <div class="hero-content">
+        <span class="hero-badge">🚀 Built for small businesses</span>
+        <h1>From Idea to Live Website in Under 10 Minutes</h1>
+        <p>Choose a template, customize it free, and publish when ready. No code, no credit card required.</p>
         <div class="cta-buttons">
-          <a href="/templates.html" class="btn-primary-large">🎨 Browse Templates</a>
-          <a href="/setup.html" class="btn-secondary-large">⚡ Start Building</a>
+          <a href="/setup.html" class="btn-primary-large">Start Building Free</a>
+          <a href="#templates" class="btn-secondary-large">Browse Templates</a>
         </div>
       </div>
-    </div>
-
-    <!-- How It Works -->
-    <div class="how-it-works">
-      <h2>From Idea to Live Website in 3 Simple Steps</h2>
-      <div class="steps">
-        <div class="step-card">
-          <div class="step-number">1</div>
-          <div class="step-title">Choose Your Perfect Template</div>
-          <div class="step-description">Browse our collection of stunning, industry-specific templates. Each one is professionally designed and mobile-ready.</div>
-        </div>
-        <div class="step-card">
-          <div class="step-number">2</div>
-          <div class="step-title">Customize Everything Free</div>
-          <div class="step-description">Edit every detail - your business info, photos, services, colors. No payment required until you're 100% happy.</div>
-        </div>
-        <div class="step-card">
-          <div class="step-number">3</div>
-          <div class="step-title">Launch & Start Selling</div>
-          <div class="step-description">Go live instantly and start attracting customers. Your website works 24/7 to grow your business.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Testimonials -->
-    <div style="padding: 80px 20px; background: white; text-align: center;">
-      <div style="max-width: 1000px; margin: 0 auto;">
-        <h2 style="font-size: 2.5rem; margin-bottom: 20px; color: #1e293b;">What Our Customers Say</h2>
-        <p style="color: #64748b; font-size: 1.1rem; margin-bottom: 50px;">Join thousands of successful businesses who chose Atom</p>
-        
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 50px;">
-          <div style="background: #f8fafc; padding: 30px; border-radius: 16px; border-left: 4px solid #2563eb;">
-            <div style="font-size: 1.1rem; color: #1e293b; margin-bottom: 20px; line-height: 1.6;">
-              "Atom helped me launch my restaurant website in just 2 hours. We're getting 3x more online orders now!"
+      
+      <!-- Live Site Carousel -->
+      <div class="hero-showcase">
+        <div class="showcase-container">
+          <div class="showcase-slide active" data-site="bella-vista">
+            <div class="showcase-browser">
+              <div class="browser-bar">
+                <span class="browser-dots">
+                  <i></i><i></i><i></i>
+                </span>
+                <span class="browser-url">sitesprintz.com/bella-vista</span>
+              </div>
+              <iframe src="/sites/bella-vista-mhea2466/" loading="lazy"></iframe>
             </div>
-            <div style="font-weight: 600; color: #2563eb;">Sarah Chen</div>
-            <div style="color: #64748b; font-size: 0.9rem;">Owner, Bella Vista Restaurant</div>
+            <div class="showcase-label">
+              <strong>Bella Vista Restaurant</strong>
+              <span>Built in 8 minutes</span>
+            </div>
           </div>
           
-          <div style="background: #f8fafc; padding: 30px; border-radius: 16px; border-left: 4px solid #2563eb;">
-            <div style="font-size: 1.1rem; color: #1e293b; margin-bottom: 20px; line-height: 1.6;">
-              "Finally, a website builder that actually looks professional. My clients love the clean design!"
+          <div class="showcase-slide" data-site="glow-studio">
+            <div class="showcase-browser">
+              <div class="browser-bar">
+                <span class="browser-dots">
+                  <i></i><i></i><i></i>
+                </span>
+                <span class="browser-url">sitesprintz.com/glow-studio</span>
+              </div>
+              <iframe src="/sites/glow-studio-mheg8mxo/" loading="lazy"></iframe>
             </div>
-            <div style="font-weight: 600; color: #2563eb;">Mike Rodriguez</div>
-            <div style="color: #64748b; font-size: 0.9rem;">Freelance Consultant</div>
+            <div class="showcase-label">
+              <strong>Glow Studio Salon</strong>
+              <span>Built in 6 minutes</span>
+            </div>
           </div>
           
-          <div style="background: #f8fafc; padding: 30px; border-radius: 16px; border-left: 4px solid #2563eb;">
-            <div style="font-size: 1.1rem; color: #1e293b; margin-bottom: 20px; line-height: 1.6;">
-              "I was skeptical about website builders, but Atom exceeded all my expectations. Highly recommended!"
+          <div class="showcase-slide" data-site="strategic">
+            <div class="showcase-browser">
+              <div class="browser-bar">
+                <span class="browser-dots">
+                  <i></i><i></i><i></i>
+                </span>
+                <span class="browser-url">sitesprintz.com/strategic-solutions</span>
+              </div>
+              <iframe src="/sites/strategic-solutions-mheg7o4n/" loading="lazy"></iframe>
             </div>
-            <div style="font-weight: 600; color: #2563eb;">Jennifer Park</div>
-            <div style="color: #64748b; font-size: 0.9rem;">Salon Owner</div>
+            <div class="showcase-label">
+              <strong>Strategic Solutions</strong>
+              <span>Built in 10 minutes</span>
+            </div>
           </div>
         </div>
         
-        <div style="background: linear-gradient(135deg, #2563eb, #3b82f6); color: white; padding: 40px; border-radius: 20px; margin: 40px 0;">
-          <h3 style="font-size: 1.8rem; margin-bottom: 15px;">Ready to Transform Your Business?</h3>
-          <p style="font-size: 1.1rem; margin-bottom: 25px; opacity: 0.9;">Join thousands of successful businesses. Start building your dream website today!</p>
-          <a href="/setup.html" style="background: white; color: #2563eb; padding: 15px 30px; border-radius: 12px; text-decoration: none; font-weight: 700; display: inline-block; transition: all 0.3s;">🚀 Start Building Now</a>
-        </div>
-      </div>
-    </div>
-    <div class="featured-templates">
-      <h2>🔥 Most Popular Templates</h2>
-      <p style="text-align: center; color: #64748b; font-size: 1.1rem; margin-bottom: 40px;">Choose from our most-loved templates, used by thousands of successful businesses</p>
-      <div class="template-preview">
-        <div class="template-preview-card" onclick="window.location.href='/setup.html?template=restaurant'">
-          <div class="template-preview-image">🍽️</div>
-          <div class="template-preview-content">
-            <div class="template-preview-title">🍽️ Restaurant</div>
-            <div class="template-preview-desc">Boost online orders by 300% with our restaurant template. Includes menu, reservations, and delivery integration.</div>
-            <a href="/setup.html?template=restaurant" class="template-preview-btn">Use This Template</a>
-          </div>
-        </div>
-        <div class="template-preview-card" onclick="window.location.href='/setup.html?template=salon'">
-          <div class="template-preview-image">💇‍♀️</div>
-          <div class="template-preview-content">
-            <div class="template-preview-title">💇‍♀️ Salon & Spa</div>
-            <div class="template-preview-desc">Attract more clients with our elegant salon template. Features service booking and portfolio showcase.</div>
-            <a href="/setup.html?template=salon" class="template-preview-btn">Use This Template</a>
-          </div>
-        </div>
-        <div class="template-preview-card" onclick="window.location.href='/setup.html?template=gym'">
-          <div class="template-preview-image">💪</div>
-          <div class="template-preview-content">
-            <div class="template-preview-title">💪 Fitness & Gym</div>
-            <div class="template-preview-desc">Build a powerful fitness brand. Includes class schedules, trainer profiles, and membership signup.</div>
-            <a href="/setup.html?template=gym" class="template-preview-btn">Use This Template</a>
-          </div>
-        </div>
-        <div class="template-preview-card" onclick="window.location.href='/templates.html'">
-          <div class="template-preview-image">📋</div>
-          <div class="template-preview-content">
-            <div class="template-preview-title">📋 View All Templates</div>
-            <div class="template-preview-desc">Explore our complete collection of 9+ professional templates for every business type.</div>
-            <a href="/templates.html" class="template-preview-btn">Browse Gallery</a>
-          </div>
+        <div class="showcase-dots">
+          <button class="dot active" data-index="0"></button>
+          <button class="dot" data-index="1"></button>
+          <button class="dot" data-index="2"></button>
         </div>
       </div>
     </div>
 
+    <!-- Compact Steps -->
+    <div class="compact-section">
+      <div class="section-header-compact">
+        <h2>How It Works</h2>
+        <p>Three steps to your online presence</p>
+      </div>
+      <div class="steps-compact">
+        <div class="step-compact">
+          <span class="step-icon">📝</span>
+          <h3>Pick Template</h3>
+          <p>Choose from 9+ industry-specific designs</p>
+        </div>
+        <div class="step-compact">
+          <span class="step-icon">✏️</span>
+          <h3>Customize Free</h3>
+          <p>Edit everything—no payment until you publish</p>
+        </div>
+        <div class="step-compact">
+          <span class="step-icon">🚀</span>
+          <h3>Go Live</h3>
+          <p>Launch instantly and start growing</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Testimonials Section - Ready for Real Customer Stories -->
+    <!-- 
+      TODO: Add real testimonials here once you have customer permission
+      Template structure:
+      <div class="social-proof-compact">
+        <div class="compact-section">
+          <div class="section-header-compact">
+            <h2>Loved by Small Business Owners</h2>
+          </div>
+          <div class="testimonials-compact">
+            <div class="testimonial-compact">
+              <img src="/assets/customers/photo.jpg" alt="Customer name" />
+              <p>"[Real quote from customer]"</p>
+              <cite>
+                <strong>Name</strong>
+                Business Name
+              </cite>
+              <a href="/sites/their-site" class="view-site">View their site →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    -->
+    <!-- Quick Start Templates -->
+    <div id="templates" class="compact-section templates-highlight">
+      <div class="section-header-compact">
+        <h2>Quick-Start Templates</h2>
+        <p>Pick your industry and start customizing</p>
+      </div>
+      <div class="quick-templates">
+        <a href="/setup.html?template=restaurant" class="quick-template-card">
+          <span class="template-emoji">🍽️</span>
+          <h3>Restaurant</h3>
+          <p>Menu & orders</p>
+        </a>
+        <a href="/setup.html?template=salon" class="quick-template-card">
+          <span class="template-emoji">💇</span>
+          <h3>Salon & Spa</h3>
+          <p>Bookings & services</p>
+        </a>
+        <a href="/setup.html?template=gym" class="quick-template-card">
+          <span class="template-emoji">💪</span>
+          <h3>Fitness</h3>
+          <p>Classes & memberships</p>
+        </a>
+        <a href="/setup.html?template=product-ordering" class="quick-template-card">
+          <span class="template-emoji">🛍️</span>
+          <h3>E-commerce</h3>
+          <p>Products & checkout</p>
+        </a>
+      </div>
+      <div style="text-align: center; margin-top: 24px;">
+        <a href="/setup.html" class="btn-text-link">View all 9+ templates →</a>
+      </div>
+    </div>
+
+    <!-- CTA Footer -->
+    <div class="cta-footer">
+      <div class="compact-section">
+        <div class="cta-box">
+          <h2>Ready to Launch?</h2>
+          <p>Start building your professional website today—free, no credit card required.</p>
+          <a href="/setup.html" class="btn-primary-large">Start Building Free</a>
+        </div>
+      </div>
+    </div>
+    
     <!-- Footer -->
-    <div style="background: #1e293b; color: white; padding: 40px 20px; text-align: center; border-radius: 24px 24px 0 0; margin-top: 40px;">
-      <div style="max-width: 1000px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #2563eb, #3b82f6); padding: 20px; border-radius: 16px; margin-bottom: 30px;">
-          <h3 style="margin: 0 0 10px 0; font-size: 1.4rem; font-weight: 600;">⚡ Limited Time: Start Building Free!</h3>
-          <p style="margin: 0; font-size: 1rem; opacity: 0.9;">No credit card required. Build your dream website today!</p>
-        </div>
+    <footer class="site-footer-compact">
+      <p>© SiteSprintz — Launch your business online in minutes.</p>
+      <nav class="footer-links">
+        <a href="/setup.html">Create Site</a>
+        <a href="/login.html">Login</a>
+      </nav>
+    </footer>
+    
+    <script>
+      // Hero Showcase Carousel
+      (function() {
+        const slides = document.querySelectorAll('.showcase-slide');
+        const dots = document.querySelectorAll('.showcase-dots .dot');
+        let currentSlide = 0;
+        let autoPlayInterval;
         
-        <h3 style="margin: 0 0 8px 0; font-size: 1.3rem; font-weight: 600;">✨ Built with Atom</h3>
-        <p style="color: #94a3b8; margin: 0; font-size: 0.95rem;">Create powerful websites. Small is powerful.</p>
-        <div style="margin-top: 24px; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
-          <a href="/templates.html" style="color: white; text-decoration: none; padding: 8px 16px; border-radius: 8px; transition: all 0.2s; font-size: 0.9rem;">Templates</a>
-          <a href="/setup.html" style="color: white; text-decoration: none; padding: 8px 16px; border-radius: 8px; transition: all 0.2s; font-size: 0.9rem;">Create Site</a>
-          <a href="/login.html" style="color: white; text-decoration: none; padding: 8px 16px; border-radius: 8px; transition: all 0.2s; font-size: 0.9rem;">Login</a>
-        </div>
-      </div>
-    </div>
+        function showSlide(index) {
+          // Remove active class from all slides and dots
+          slides.forEach(slide => slide.classList.remove('active'));
+          dots.forEach(dot => dot.classList.remove('active'));
+          
+          // Add active class to current slide and dot
+          slides[index].classList.add('active');
+          dots[index].classList.add('active');
+          currentSlide = index;
+        }
+        
+        function nextSlide() {
+          const next = (currentSlide + 1) % slides.length;
+          showSlide(next);
+        }
+        
+        function startAutoPlay() {
+          autoPlayInterval = setInterval(nextSlide, 5000); // Change slide every 5 seconds
+        }
+        
+        function stopAutoPlay() {
+          clearInterval(autoPlayInterval);
+        }
+        
+        // Dot click handlers
+        dots.forEach((dot, index) => {
+          dot.addEventListener('click', () => {
+            showSlide(index);
+            stopAutoPlay();
+            startAutoPlay(); // Restart auto-play after manual interaction
+          });
+        });
+        
+        // Start auto-play on page load
+        startAutoPlay();
+        
+        // Pause on hover
+        const showcase = document.querySelector('.hero-showcase');
+        if (showcase) {
+          showcase.addEventListener('mouseenter', stopAutoPlay);
+          showcase.addEventListener('mouseleave', startAutoPlay);
+        }
+      })();
+    </script>
   </body>
 </html>

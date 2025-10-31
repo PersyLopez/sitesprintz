@@ -1,0 +1,26 @@
+{
+  "draftId": "draft-1761896246941-2ga75x594",
+  "templateId": "freelancer",
+  "businessData": {
+    "businessName": "Jane Doe",
+    "heroTitle": "Websites that win clients",
+    "heroSubtitle": "I help small businesses stand out.",
+    "heroImage": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&q=80",
+    "email": "",
+    "phone": "",
+    "address": "Email jane@example.com",
+    "businessHours": "",
+    "websiteUrl": "",
+    "facebookUrl": "",
+    "instagramUrl": "",
+    "googleMapsUrl": "",
+    "services": [],
+    "templateSpecific": {
+      "businessDescription": "",
+      "specialOffers": ""
+    }
+  },
+  "createdAt": "2025-10-31T07:37:26.941Z",
+  "expiresAt": "2025-11-07T07:37:26.941Z",
+  "status": "draft"
+}

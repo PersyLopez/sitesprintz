@@ -14,10 +14,10 @@
     "color-danger": "#ef4444"
   },
   "nav": [
-    {"label": "Services", "href": "#services"},
-    {"label": "Gallery", "href": "#gallery"},
-    {"label": "Book", "href": "#book"},
+    {"label": "Services", "href": "#products"},
     {"label": "About", "href": "#about"},
+    {"label": "Team", "href": "#team"},
+    {"label": "Reviews", "href": "#reviews"},
     {"label": "Contact", "href": "#contact"}
   ],
   "hero": {
@@ -218,6 +218,57 @@
       }
     ]
   },
+  "stats": {
+    "items": [
+      {"number": "1000+", "label": "Clients Served"},
+      {"number": "10+", "label": "Years Experience"},
+      {"number": "4.9", "label": "Star Rating"},
+      {"number": "5", "label": "Master Stylists"}
+    ]
+  },
+  "team": {
+    "title": "Meet Our Team",
+    "subtitle": "Expert stylists dedicated to your beauty goals",
+    "members": [
+      {
+        "name": "Sarah Chen",
+        "title": "Master Stylist & Owner",
+        "bio": "Sarah brings 15+ years of experience from top salons in New York and Los Angeles. She specializes in color correction and bridal styling.",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
+        "credentials": ["Vidal Sassoon Certified", "Redken Color Specialist", "Featured in Beauty Magazine"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Your Visit",
+    "subtitle": "What to expect at Glow Studio",
+    "steps": [
+      {"title": "Book Appointment", "description": "Choose your service and preferred stylist online or by phone"},
+      {"title": "Consultation", "description": "Discuss your vision, concerns, and desired results"},
+      {"title": "Transformation", "description": "Relax while we work our magic with premium products"},
+      {"title": "Style & Finish", "description": "Walk out looking and feeling absolutely amazing"}
+    ]
+  },
+  "credentials": {
+    "title": "Why Choose Glow Studio",
+    "items": [
+      {"icon": "🌟", "name": "Master Stylists", "description": "10+ years experience"},
+      {"icon": "💎", "name": "Premium Products", "description": "Oribe, Redken, Moroccan Oil"},
+      {"icon": "🏆", "name": "Award Winning", "description": "Best Salon 2023"},
+      {"icon": "💯", "name": "Satisfaction Guaranteed", "description": "Love it or we'll fix it free"}
+    ]
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "items": [
+      {"question": "How do I book an appointment?", "answer": "You can book online through our website, call us at (555) 234-5678, or use our mobile app. We recommend booking 1-2 weeks in advance for popular time slots."},
+      {"question": "What should I bring to my appointment?", "answer": "Just bring yourself! We provide everything you need. If you have inspiration photos, feel free to bring those for your consultation."},
+      {"question": "What is your cancellation policy?", "answer": "We require 24 hours notice for cancellations or rescheduling. Late cancellations may incur a 50% service fee."},
+      {"question": "Do you offer bridal services?", "answer": "Yes! We offer complete bridal packages including trials, hair, makeup, and day-of styling. Book your complimentary bridal consultation today."},
+      {"question": "What products do you use?", "answer": "We use premium brands including Oribe, Redken, Moroccan Oil, and Pureology. All products are salon-quality and many are organic."},
+      {"question": "Do you offer gift certificates?", "answer": "Yes! Gift certificates are available in any amount and can be purchased online or in-salon. They never expire and make perfect gifts."}
+    ]
+  },
   "footer": {
     "text": "💇‍♀️ Glow Studio • Beauty & Wellness Since 2015",
     "links": [
@@ -231,5 +282,13 @@
       "Beauty Excellence Award",
       "Customer Choice Winner"
     ]
-  }
+  },
+  "settings": {
+    "allowCheckout": false,
+    "productCta": "Book Appointment",
+    "productCtaHref": "https://calendly.com/glowstudio",
+    "productNote": "Click to book online through Calendly, or call us at (555) 234-5678. Want payment processing at booking? Contact us about upgrading."
+  },
+  "productsTitle": "Our Services",
+  "productsSubtitle": "Expert beauty services tailored to you"
 }
