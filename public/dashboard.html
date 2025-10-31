@@ -163,7 +163,8 @@
         <h1 id="userName">Loading...</h1>
         <p>Manage your websites</p>
       </div>
-      <div>
+      <div id="headerActions" style="display: flex; gap: 10px;">
+        <button class="logout-btn" onclick="window.location.href='/analytics.html'" style="background: rgba(99, 102, 241, 0.2); border-color: rgba(99, 102, 241, 0.3);">📊 Analytics</button>
         <button class="logout-btn" onclick="handleLogout()">Logout</button>
       </div>
     </div>
@@ -294,6 +295,26 @@
           currentUser = await response.json();
           document.getElementById('userName').textContent = `Hello, ${currentUser.email}`;
           
+          // Add admin links if user is admin
+          if (currentUser.role === 'admin') {
+            const headerActions = document.getElementById('headerActions');
+            const adminBtn = document.createElement('button');
+            adminBtn.className = 'logout-btn';
+            adminBtn.style.background = 'rgba(220, 38, 38, 0.2)';
+            adminBtn.style.borderColor = 'rgba(220, 38, 38, 0.3)';
+            adminBtn.textContent = '⚙️ Admin';
+            adminBtn.onclick = () => window.location.href = '/admin-analytics.html';
+            headerActions.insertBefore(adminBtn, headerActions.children[0]);
+            
+            const usersBtn = document.createElement('button');
+            usersBtn.className = 'logout-btn';
+            usersBtn.style.background = 'rgba(37, 99, 235, 0.2)';
+            usersBtn.style.borderColor = 'rgba(37, 99, 235, 0.3)';
+            usersBtn.textContent = '👥 Users';
+            usersBtn.onclick = () => window.location.href = '/admin-users.html';
+            headerActions.insertBefore(usersBtn, headerActions.children[1]);
+          }
+          
           // Check for post-checkout flow first
           await handlePostCheckout();
           
@@ -422,7 +443,7 @@
     }
     
     function createNewSite() {
-      window.location.href = '/templates.html';
+      window.location.href = '/setup.html';
     }
     
     function handleLogout() {

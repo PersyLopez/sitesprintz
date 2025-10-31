@@ -138,12 +138,30 @@
     }
     navLinksEl.innerHTML = '';
     const items = [...(cfg.nav || [])];
-    if(Array.isArray(cfg.pages) && cfg.pages.length) items.push({ label:'Pages', href:'#pages' });
-    if(Array.isArray(cfg.products) && cfg.products.length) items.push({ label:'Products', href:'#products' });
+    
+    // Auto-add nav items for optional sections if they exist and aren't already in nav
+    const existingHrefs = items.map(i => i.href);
+    if(Array.isArray(cfg.pages) && cfg.pages.length && !existingHrefs.includes('#pages')) {
+      items.push({ label:'Pages', href:'#pages' });
+    }
+    if(Array.isArray(cfg.products) && cfg.products.length && !existingHrefs.includes('#products')) {
+      items.push({ label:'Products', href:'#products' });
+    }
+    
     items.forEach(item => {
       const li = el('li');
       li.appendChild(el('a', { href:item.href || '#' }, [item.label || '']));
       navLinksEl.appendChild(li);
+    });
+    
+    // Mobile menu auto-close functionality
+    navLinksEl.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        if(window.innerWidth <= 720 && siteNav?.classList.contains('open')){
+          siteNav.classList.remove('open');
+          if(navToggle) navToggle.setAttribute('aria-expanded', 'false');
+        }
+      });
     });
   }
 
@@ -194,14 +212,56 @@
 
   function renderClassicTestimonials(cfg){
     if(!cfg.testimonials) return;
-    const sec = sectionWrapper('testimonials');
+    const sec = sectionWrapper('reviews', 'section testimonials-section');
     const container = sec.firstChild;
     container.appendChild(el('h2', { class:'section-title' }, [cfg.testimonials.title || 'Testimonials']));
-    const grid = el('div', { class:'grid-3' }, (cfg.testimonials.items || []).map(item => el('div', { class:'card' }, [
-      el('p', {}, [`"${item.quote || ''}"`]),
-      el('p', { class:'muted mt-2' }, ['? ' + (item.author || '')])
-    ])));
-    container.appendChild(grid);
+    if(cfg.testimonials.subtitle) container.appendChild(el('p', { class:'section-subtitle' }, [cfg.testimonials.subtitle]));
+    
+    const items = cfg.testimonials.items || [];
+    // Check if using enhanced format (with rating, image, etc.) or simple format (with quote)
+    const isEnhanced = items.length > 0 && (items[0].rating || items[0].text);
+    
+    if(isEnhanced){
+      // Enhanced testimonials with ratings, photos, locations
+      const grid = el('div', { class:'grid-3' }, items.map(item => {
+        const card = el('div', { class:'testimonial-card card' });
+        
+        // Star rating
+        if(item.rating){
+          const stars = el('div', { class:'testimonial-stars' });
+          for(let i = 0; i < 5; i++){
+            stars.appendChild(el('span', { class: i < item.rating ? 'star-filled' : 'star-empty' }, ['★']));
+          }
+          card.appendChild(stars);
+        }
+        
+        // Testimonial text
+        card.appendChild(el('p', { class:'testimonial-text' }, [item.text || item.quote || '']));
+        
+        // Author section
+        const author = el('div', { class:'testimonial-author' });
+        if(item.image){
+          author.appendChild(el('img', { src: item.image, alt: item.imageAlt || item.author, class:'testimonial-avatar' }));
+        }
+        const info = el('div', { class:'testimonial-info' }, [
+          el('div', { class:'testimonial-name' }, [item.author || '']),
+          item.location ? el('div', { class:'testimonial-location muted' }, [item.location]) : null
+        ].filter(Boolean));
+        author.appendChild(info);
+        card.appendChild(author);
+        
+        return card;
+      }));
+      container.appendChild(grid);
+    }else{
+      // Simple testimonials (legacy format)
+      const grid = el('div', { class:'grid-3' }, items.map(item => el('div', { class:'card' }, [
+        el('p', {}, [`"${item.quote || ''}"`]),
+        el('p', { class:'muted mt-2' }, ['— ' + (item.author || '')])
+      ])));
+      container.appendChild(grid);
+    }
+    
     contentRoot.appendChild(sec);
   }
 
@@ -281,13 +341,133 @@
     return wrapper;
   }
 
+  // Optional: Stats section
+  function renderClassicStats(cfg){
+    if(!cfg.stats || !Array.isArray(cfg.stats.items) || !cfg.stats.items.length) return;
+    const sec = sectionWrapper('stats', 'section stats-section');
+    const container = sec.firstChild;
+    const grid = el('div', { class:'stats-grid' }, cfg.stats.items.map(stat => 
+      el('div', { class:'stat-item' }, [
+        el('div', { class:'stat-number' }, [stat.number || '0']),
+        el('div', { class:'stat-label' }, [stat.label || ''])
+      ])
+    ));
+    container.appendChild(grid);
+    contentRoot.appendChild(sec);
+  }
+
+  // Optional: Process timeline section
+  function renderClassicProcess(cfg){
+    if(!cfg.process || !Array.isArray(cfg.process.steps) || !cfg.process.steps.length) return;
+    const sec = sectionWrapper('process', 'section process-section');
+    const container = sec.firstChild;
+    if(cfg.process.title) container.appendChild(el('h2', { class:'section-title' }, [cfg.process.title]));
+    if(cfg.process.subtitle) container.appendChild(el('p', { class:'section-subtitle' }, [cfg.process.subtitle]));
+    const timeline = el('div', { class:'process-timeline' }, cfg.process.steps.map((step, idx) =>
+      el('div', { class:'process-step' }, [
+        el('div', { class:'process-number' }, [String(idx + 1)]),
+        el('div', { class:'process-content' }, [
+          el('h3', {}, [step.title || '']),
+          el('p', {}, [step.description || ''])
+        ])
+      ])
+    ));
+    container.appendChild(timeline);
+    contentRoot.appendChild(sec);
+  }
+
+  // Optional: Credentials badges section
+  function renderClassicCredentials(cfg){
+    if(!cfg.credentials || !Array.isArray(cfg.credentials.items) || !cfg.credentials.items.length) return;
+    const sec = sectionWrapper('credentials', 'section credentials-section');
+    const container = sec.firstChild;
+    if(cfg.credentials.title) container.appendChild(el('h2', { class:'section-title' }, [cfg.credentials.title]));
+    if(cfg.credentials.subtitle) container.appendChild(el('p', { class:'section-subtitle' }, [cfg.credentials.subtitle]));
+    const grid = el('div', { class:'credentials-grid' }, cfg.credentials.items.map(item =>
+      el('div', { class:'credential-badge' }, [
+        el('div', { class:'credential-icon' }, [item.icon || '✓']),
+        el('div', { class:'credential-name' }, [item.name || '']),
+        el('div', { class:'credential-desc' }, [item.description || ''])
+      ])
+    ));
+    container.appendChild(grid);
+    contentRoot.appendChild(sec);
+  }
+
+  // Optional: Team section
+  function renderClassicTeam(cfg){
+    if(!cfg.team || !Array.isArray(cfg.team.members) || !cfg.team.members.length) return;
+    const sec = sectionWrapper('team', 'section team-section');
+    const container = sec.firstChild;
+    if(cfg.team.title) container.appendChild(el('h2', { class:'section-title' }, [cfg.team.title]));
+    if(cfg.team.subtitle) container.appendChild(el('p', { class:'section-subtitle' }, [cfg.team.subtitle]));
+    const grid = el('div', { class:'team-grid' }, cfg.team.members.map(member =>
+      el('div', { class:'team-member' }, [
+        member.image ? el('img', { src: member.image, alt: member.imageAlt || member.name, class:'team-photo' }) : null,
+        el('h3', { class:'team-name' }, [member.name || '']),
+        el('div', { class:'team-title' }, [member.title || '']),
+        member.bio ? el('p', { class:'team-bio' }, [member.bio]) : null,
+        Array.isArray(member.credentials) && member.credentials.length ? 
+          el('div', { class:'team-credentials' }, member.credentials.map(cred => el('span', { class:'badge' }, [cred]))) : null
+      ].filter(Boolean))
+    ));
+    container.appendChild(grid);
+    contentRoot.appendChild(sec);
+  }
+
+  // Optional: FAQ accordion section
+  function renderClassicFAQ(cfg){
+    if(!cfg.faq || !Array.isArray(cfg.faq.items) || !cfg.faq.items.length) return;
+    const sec = sectionWrapper('faq', 'section faq-section');
+    const container = sec.firstChild;
+    if(cfg.faq.title) container.appendChild(el('h2', { class:'section-title' }, [cfg.faq.title]));
+    if(cfg.faq.subtitle) container.appendChild(el('p', { class:'section-subtitle' }, [cfg.faq.subtitle]));
+    const accordion = el('div', { class:'accordion' }, cfg.faq.items.map((item, idx) => {
+      const accordionItem = el('div', { class:'accordion-item' });
+      const header = el('button', { 
+        class:'accordion-header', 
+        type:'button',
+        'aria-expanded': 'false',
+        'aria-controls': `faq-content-${idx}`
+      }, [
+        el('span', {}, [item.question || '']),
+        el('span', { class:'accordion-icon' }, ['▼'])
+      ]);
+      const content = el('div', { 
+        class:'accordion-content',
+        id: `faq-content-${idx}`,
+        'aria-hidden': 'true'
+      }, [
+        el('p', {}, [item.answer || ''])
+      ]);
+      
+      header.addEventListener('click', () => {
+        const isOpen = header.getAttribute('aria-expanded') === 'true';
+        header.setAttribute('aria-expanded', String(!isOpen));
+        content.setAttribute('aria-hidden', String(isOpen));
+        accordionItem.classList.toggle('active', !isOpen);
+      });
+      
+      accordionItem.appendChild(header);
+      accordionItem.appendChild(content);
+      return accordionItem;
+    }));
+    container.appendChild(accordion);
+    contentRoot.appendChild(sec);
+  }
+
   function renderClassicSite(cfg){
     renderClassicHeader(cfg);
     renderClassicHero(cfg);
+    renderClassicStats(cfg);        // Optional: Stats section
     renderClassicServices(cfg);
     renderClassicAbout(cfg);
+    renderClassicProcess(cfg);      // Optional: Process timeline
+    renderClassicCredentials(cfg);  // Optional: Credentials badges
+    renderClassicTeam(cfg);         // Optional: Team section
     renderClassicTestimonials(cfg);
     renderClassicPricing(cfg);
+    renderClassicFAQ(cfg);          // Optional: FAQ accordion
     renderClassicContact(cfg);
     renderClassicPages(cfg);
     renderClassicProducts(cfg);
