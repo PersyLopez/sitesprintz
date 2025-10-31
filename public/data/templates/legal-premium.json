@@ -1,0 +1,312 @@
+{
+  "id": "legal-premium",
+  "name": "Legal Services Premium",
+  "plan": "Premium",
+  "category": "Legal",
+  "meta": {
+    "businessName": "[Law Firm Name]",
+    "pageTitle": "[Law Firm Name] | Experienced Legal Representation in [City]",
+    "metaDescription": "Award-winning attorneys delivering results for personal injury, family law, business law, and estate planning clients throughout [City].",
+    "logo": "assets/logo.svg",
+    "logoAlt": "[Law Firm Name] logo",
+    "primaryPhone": "+1-555-301-4444",
+    "primaryPhoneLabel": "Call 24/7: (555) 301-4444",
+    "mobileCallLabel": "Call 24/7"
+  },
+  "styles": {
+    "primaryColor": "#1e3a8a",
+    "primaryColorDark": "#172c6a",
+    "accentColor": "#f59e0b",
+    "secondaryColor": "#475569",
+    "textColor": "#111827",
+    "mutedColor": "#4b5563",
+    "surfaceColor": "#ffffff",
+    "borderColor": "rgba(17,24,39,0.1)",
+    "backgroundColor": "#f5f6fa",
+    "radius": "18px"
+  },
+  "navigation": [
+    { "label": "Practice Areas", "href": "#practice-areas-grid" },
+    { "label": "Results", "href": "#results-showcase" },
+    { "label": "Attorneys", "href": "#attorney-team" },
+    { "label": "Why Choose Us", "href": "#differentiators" },
+    { "label": "FAQs", "href": "#faq-legal" },
+    { "label": "Contact", "href": "#cta-urgent" }
+  ],
+  "sections": [
+    {
+      "id": "legal-hero",
+      "type": "legal-hero",
+      "settings": {
+        "headline": "Experienced legal representation you can trust",
+        "subheadline": "For more than 25 years, we have protected the rights of individuals, families, and businesses throughout [Region].",
+        "trustIndicators": ["No Fee Unless We Win", "Free Consultation", "24/7 Availability"],
+        "primaryCta": { "label": "Free Case Evaluation", "href": "#case-evaluation-form" },
+        "secondaryCta": { "label": "Call Now", "href": "tel:+15553014444" },
+        "image": "https://images.unsplash.com/photo-1589395595558-877d0fcc1c19?auto=format&fit=crop&w=900&q=80",
+        "imageAlt": "Attorney meeting with client",
+        "stats": [
+          { "value": "$2.5M+", "label": "Recovered for clients" },
+          { "value": "25+", "label": "Years of experience" },
+          { "value": "98%", "label": "Client satisfaction" }
+        ]
+      }
+    },
+    {
+      "id": "practice-areas-grid",
+      "type": "practice-areas-grid",
+      "settings": {
+        "heading": "Practice areas",
+        "subheading": "Comprehensive representation tailored to your case.",
+        "areas": [
+          {
+            "icon": "PI",
+            "name": "Personal Injury",
+            "description": "Auto accidents, wrongful death, premises liability, and catastrophic injuries.",
+            "services": ["Auto and trucking accidents", "Wrongful death", "Slip and fall", "Defective products"],
+            "link": { "label": "Learn about injury law", "href": "#case-evaluation-form" }
+          },
+          {
+            "icon": "FL",
+            "name": "Family Law",
+            "description": "Divorce, custody, support, and adoption matters handled with compassion and strategy.",
+            "services": ["Divorce and separation", "Child custody", "Spousal support", "Adoption"],
+            "link": { "label": "Discuss family matters", "href": "#case-evaluation-form" }
+          },
+          {
+            "icon": "BL",
+            "name": "Business Law",
+            "description": "Contracts, disputes, and counsel for startups, small businesses, and corporations.",
+            "services": ["Contract drafting", "Commercial disputes", "General counsel", "Mergers and acquisitions"],
+            "link": { "label": "Protect your business", "href": "#case-evaluation-form" }
+          },
+          {
+            "icon": "ES",
+            "name": "Estate Planning",
+            "description": "Wills, trusts, probate, and elder law guidance to secure your legacy.",
+            "services": ["Wills and trusts", "Estate administration", "Special needs planning", "Elder law"],
+            "link": { "label": "Plan your estate", "href": "#case-evaluation-form" }
+          },
+          {
+            "icon": "CR",
+            "name": "Criminal Defense",
+            "description": "Strong defense for misdemeanors, felonies, and federal charges.",
+            "services": ["DUI and DWI", "Felony defense", "White collar", "Record sealing"],
+            "link": { "label": "Request defense consult", "href": "#case-evaluation-form" }
+          },
+          {
+            "icon": "WC",
+            "name": "Workers' Compensation",
+            "description": "Protecting employees and firefighters injured on the job.",
+            "services": ["Workplace injuries", "Denied claims", "Third-party claims", "First responder representation"],
+            "link": { "label": "Get benefits help", "href": "#case-evaluation-form" }
+          }
+        ]
+      }
+    },
+    {
+      "id": "case-evaluation-form",
+      "type": "case-evaluation-form",
+      "settings": {
+        "heading": "Free, confidential case evaluation",
+        "subheading": "Tell us about your situation. We will review your case and explain your options within 24 hours.",
+        "caseTypes": ["Personal Injury", "Family Law", "Criminal Defense", "Estate Planning", "Business Law", "Other"],
+        "contactMethods": ["Phone", "Email", "Text"],
+        "maxLength": 1200,
+        "submit": { "endpoint": "/api/contact-form", "type": "legal-consultation", "label": "Request Free Consultation" },
+        "successMessage": "Thank you. An attorney will review your case within 24 hours.",
+        "privacy": "Attorney-client privilege applies from the moment you contact our firm."
+      }
+    },
+    {
+      "id": "results-showcase",
+      "type": "results-showcase",
+      "settings": {
+        "heading": "Proven results",
+        "disclaimer": "Past results do not guarantee future outcomes. Each case is unique.",
+        "results": [
+          { "tag": "Personal Injury", "outcome": "$750,000 Settlement", "description": "Motor vehicle collision resulting in traumatic brain injury. Recovered full policy limits." },
+          { "tag": "Family Law", "outcome": "Custody Agreement", "description": "Secured joint custody with fair support and relocation protections for client." },
+          { "tag": "Business Law", "outcome": "Case Dismissed", "description": "Defended regional company in contract dispute; case dismissed with prejudice." },
+          { "tag": "Estate Planning", "outcome": "Tax-Efficient Trust", "description": "Implemented multi-generational trust reducing estate taxes by 35 percent." },
+          { "tag": "Criminal Defense", "outcome": "Not Guilty Verdict", "description": "Jury acquitted client on felony charges after three-day trial." },
+          { "tag": "Workers' Comp", "outcome": "$420,000 Award", "description": "Recovered lifetime medical benefits and back pay for firefighter injured on duty." }
+        ],
+        "cta": { "label": "See more results", "href": "#cta-urgent" }
+      }
+    },
+    {
+      "id": "attorney-team",
+      "type": "attorney-team",
+      "settings": {
+        "heading": "Meet our legal team",
+        "subheading": "Dedicated advocates with the experience and drive to win your case.",
+        "attorneys": [
+          {
+            "name": "Jordan Ellis, Esq.",
+            "title": "Managing Partner",
+            "credentials": "JD, Harvard Law School",
+            "practiceAreas": "Personal Injury, Wrongful Death, Catastrophic Claims",
+            "education": ["Harvard Law School", "University of Michigan"],
+            "memberships": ["American Association for Justice", "State Trial Lawyers Association"],
+            "experience": "25 years in practice",
+            "bio": "Jordan has recovered millions for injured clients and is recognized for strategic litigation and compassionate advocacy.",
+            "photo": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=400&q=80",
+            "cta": { "label": "Contact Jordan", "href": "#case-evaluation-form" }
+          },
+          {
+            "name": "Amelia Brooks, Esq.",
+            "title": "Senior Counsel",
+            "credentials": "JD, Georgetown University",
+            "practiceAreas": "Family Law, Estate Planning",
+            "education": ["Georgetown University Law Center", "Boston College"],
+            "memberships": ["American Bar Association", "Family Law Section"],
+            "experience": "18 years in practice",
+            "bio": "Amelia guides families through complex transitions with clarity and respect, focusing on lasting resolutions.",
+            "photo": "https://images.unsplash.com/photo-1524635962361-d7f8ae9c79b1?auto=format&fit=crop&w=400&q=80",
+            "cta": { "label": "Consult Amelia", "href": "#case-evaluation-form" }
+          },
+          {
+            "name": "Marcus Patel, Esq.",
+            "title": "Partner",
+            "credentials": "JD, University of Texas",
+            "practiceAreas": "Business Litigation, Contracts",
+            "education": ["University of Texas School of Law", "Rice University"],
+            "memberships": ["American Bar Association", "Business Law Section"],
+            "experience": "14 years in practice",
+            "bio": "Marcus defends businesses in high-stakes disputes and serves as outside general counsel for rapidly growing companies.",
+            "photo": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80",
+            "cta": { "label": "Schedule consult", "href": "#case-evaluation-form" }
+          }
+        ]
+      }
+    },
+    {
+      "id": "differentiators",
+      "type": "differentiators",
+      "settings": {
+        "heading": "Why choose [Law Firm Name]?",
+        "subheading": "We combine aggressive representation with personalized attention.",
+        "items": [
+          { "icon": "XP", "title": "25+ Years Combined Experience", "description": "Seasoned trial attorneys who have argued in state and federal courts." },
+          { "icon": "FEE", "title": "No Fee Unless We Win", "description": "For injury cases, you pay nothing unless we recover compensation for you." },
+          { "icon": "AVAIL", "title": "24/7 Availability", "description": "Your emergency is our priority. Call anytime and speak with a real attorney." },
+          { "icon": "TRACK", "title": "Proven Track Record", "description": "Multi-million dollar results and successful defense verdicts for complex cases." },
+          { "icon": "SUPPORT", "title": "Personal Attention", "description": "Every client receives a dedicated attorney and case manager from start to finish." },
+          { "icon": "TECH", "title": "Modern Case Management", "description": "Secure client portal for documents, messaging, and real-time case updates." }
+        ]
+      }
+    },
+    {
+      "id": "testimonials-legal",
+      "type": "testimonials-legal",
+      "settings": {
+        "heading": "Clients share their stories",
+        "subheading": "Real testimonials from people we have represented.",
+        "testimonials": [
+          { "rating": 5, "quote": "Jordan and the team secured a settlement that changed my life. They kept me informed every step of the way.", "name": "C. Reynolds", "location": "Downtown", "service": "Personal Injury", "year": "2024" },
+          { "rating": 5, "quote": "Professional, strategic, and compassionate during a difficult custody case. I always felt heard.", "name": "M. Carter", "location": "Westview", "service": "Family Law", "year": "2023" },
+          { "rating": 5, "quote": "Our company avoided a costly lawsuit thanks to Marcus. His business insight is invaluable.", "name": "Acme Manufacturing", "location": "North District", "service": "Business Litigation", "year": "2024" },
+          { "rating": 5, "quote": "They fought tirelessly after my workplace injury. The benefits they obtained keep my family secure.", "name": "A. Nguyen", "location": "Riverside", "service": "Workers' Compensation", "year": "2023" }
+        ],
+        "cta": { "label": "Read more reviews on Avvo", "href": "https://www.avvo.com" },
+        "disclaimer": "Testimonials do not guarantee similar results."
+      }
+    },
+    {
+      "id": "process-steps",
+      "type": "process-steps",
+      "settings": {
+        "heading": "Our process",
+        "steps": [
+          { "title": "Free consultation", "description": "We listen to your story, gather key facts, and outline next steps at no cost." },
+          { "title": "Investigation", "description": "Our team gathers evidence, interviews witnesses, and collaborates with experts." },
+          { "title": "Strategy", "description": "We craft a tailored legal strategy designed to achieve the best outcome." },
+          { "title": "Negotiation or filing", "description": "We negotiate from a position of strength or file suit to protect your rights." },
+          { "title": "Resolution", "description": "Whether through settlement or trial, we pursue maximum compensation or dismissal." },
+          { "title": "Follow-through", "description": "We ensure judgments are enforced and that you receive the support you need." }
+        ]
+      }
+    },
+    {
+      "id": "faq-legal",
+      "type": "faq-legal",
+      "settings": {
+        "heading": "Questions clients often ask",
+        "items": [
+          { "question": "How much does a lawyer cost?", "answer": "Injury cases are contingency fee based. Other matters offer flat or hourly rates with transparent billing." },
+          { "question": "What is a contingency fee?", "answer": "You pay nothing upfront. We only collect a fee if we secure compensation for you." },
+          { "question": "How long will my case take?", "answer": "Timelines vary. Many cases resolve in 3-9 months, but complex litigation can take longer." },
+          { "question": "Should I accept the insurance company's offer?", "answer": "Never settle without legal advice. Insurance companies often undervalue claims." },
+          { "question": "Will my case go to trial?", "answer": "Most cases settle, but we prepare every case as if it is going to trial so we are ready." },
+          { "question": "What should I bring to my consultation?", "answer": "Bring any contracts, police reports, medical records, or correspondence related to your case." },
+          { "question": "How often will you communicate with me?", "answer": "You will receive regular updates via phone, email, or portal, and you can reach us anytime." },
+          { "question": "Do you handle cases outside [City]?", "answer": "Yes - we represent clients statewide and partner with trusted counsel for national matters." }
+        ]
+      }
+    },
+    {
+      "id": "credentials-legal",
+      "type": "credentials-legal",
+      "settings": {
+        "heading": "Credentials & recognition",
+        "subheading": "Trusted by clients, peers, and the courts.",
+        "barAdmissions": ["State Bar of [State]", "United States District Court - [District]", "United States Court of Appeals"],
+        "associations": ["American Bar Association", "State Trial Lawyers Association", "National Trial Lawyers Top 100"],
+        "awards": ["Super Lawyers", "Best Lawyers", "Martindale-Hubbell AV Preeminent"],
+        "publications": ["Frequent speaker at the State Trial Lawyers Annual Conference", "Author of 'Navigating Complex Injury Claims'"],
+        "community": "We sponsor local youth sports, provide pro bono legal clinics, and serve on nonprofit boards across [City]."
+      }
+    },
+    {
+      "id": "cta-urgent",
+      "type": "cta-urgent",
+      "settings": {
+        "heading": "Don't wait - your case has deadlines",
+        "subheading": "Free consultation. No obligation. We are ready to help right now.",
+        "primaryCta": { "label": "Start your free consultation", "href": "#case-evaluation-form" },
+        "secondaryCta": { "label": "Call 24/7: (555) 301-4444", "href": "tel:+15553014444" },
+        "trustBadges": ["No Fee Unless We Win", "Confidential", "Experienced Trial Lawyers"],
+        "urgency": "Time-sensitive? Call now for immediate assistance."
+      }
+    },
+    {
+      "id": "footer-legal",
+      "type": "footer-legal",
+      "settings": {
+        "firm": {
+          "name": "[Law Firm Name]",
+          "logo": "assets/logo.svg",
+          "tagline": "Fighting for justice across [Region] since 1998."
+        },
+        "offices": ["Main Office: 812 Justice Avenue, Suite 400, [City], [State] [ZIP]"],
+        "contact": {
+          "phone": "+1-555-301-4444",
+          "email": "intake@[lawfirm].com",
+          "fax": "+1-555-301-4400",
+          "availability": "Phone lines answered 24/7"
+        },
+        "practiceLinks": [
+          { "label": "Personal Injury", "href": "#practice-areas-grid" },
+          { "label": "Family Law", "href": "#practice-areas-grid" },
+          { "label": "Business Law", "href": "#practice-areas-grid" },
+          { "label": "Estate Planning", "href": "#practice-areas-grid" },
+          { "label": "Contact", "href": "#cta-urgent" }
+        ],
+        "legal": "This website is for informational purposes only and does not constitute legal advice. No attorney-client relationship is formed by using this website.",
+        "disclaimer": "Prior results do not guarantee a similar outcome.",
+        "policies": [
+          { "label": "Privacy Policy", "href": "/legal/privacy" },
+          { "label": "Terms of Use", "href": "/legal/terms" }
+        ],
+        "social": [
+          { "label": "LinkedIn", "href": "https://linkedin.com" },
+          { "label": "Twitter", "href": "https://twitter.com" },
+          { "label": "YouTube", "href": "https://youtube.com" }
+        ]
+      }
+    }
+  ],
+  "pages": [],
+  "products": []
+}
