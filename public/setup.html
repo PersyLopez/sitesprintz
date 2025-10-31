@@ -1351,8 +1351,7 @@
               cardGrid.className = 'template-card-grid';
               templatesForPlan.forEach(template => {
                 cardGrid.appendChild(createTemplateCard(template, {
-                  disabled: true,
-                  disabledMessage: meta.comingSoonMessage
+                  disabled: false  // Premium templates are now available!
                 }));
               });
               tierSection.appendChild(cardGrid);
@@ -1360,7 +1359,7 @@
               const message = document.createElement('p');
               message.className = 'muted';
               message.style.marginTop = 'var(--spacing-md)';
-              message.textContent = meta.comingSoonMessage;
+              message.textContent = 'No premium templates available yet.';
               tierSection.appendChild(message);
             }
           } else {
@@ -1409,7 +1408,7 @@
       card.className = 'template-card';
       card.style.setProperty('--template-color', template.color || 'var(--color-primary)');
 
-      const isDisabled = Boolean(options.disabled || template.plan === 'Premium' || template.status === 'coming-soon');
+      const isDisabled = Boolean(options.disabled || template.status === 'coming-soon');
       if (isDisabled) {
         card.classList.add('disabled');
       }
