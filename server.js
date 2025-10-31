@@ -772,6 +772,236 @@ app.post('/api/auth/change-temp-password', requireAuth, async (req, res) => {
   }
 });
 
+// ============================================
+// ANALYTICS API ENDPOINTS
+// ============================================
+
+// Get user analytics
+app.get('/api/users/:userId/analytics', requireAuth, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Users can only view their own analytics unless they're admin
+    if (req.user.id !== userId && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    
+    // Load user data
+    const userPath = getUserFilePath(req.user.email);
+    const userData = JSON.parse(await fs.readFile(userPath, 'utf-8'));
+    
+    // Get user's sites
+    const userSites = userData.sites || [];
+    const sitesDir = path.join(publicDir, 'sites');
+    
+    const sitesAnalytics = [];
+    let totalViews = 0;
+    let viewsThisMonth = 0;
+    let publishedCount = 0;
+    let draftCount = 0;
+    
+    // Analyze each site
+    for (const siteId of userSites) {
+      try {
+        const sitePath = path.join(sitesDir, siteId, 'site.json');
+        const siteData = JSON.parse(await fs.readFile(sitePath, 'utf-8'));
+        
+        // Generate mock analytics (in production, this would come from real tracking)
+        const views = Math.floor(Math.random() * 1000);
+        const viewsLast7Days = Math.floor(Math.random() * 100);
+        
+        totalViews += views;
+        
+        // Count published vs draft
+        if (siteData.status === 'published') {
+          publishedCount++;
+        } else {
+          draftCount++;
+        }
+        
+        sitesAnalytics.push({
+          id: siteId,
+          name: siteData.brand?.name || siteId,
+          template: siteData.template || 'Unknown',
+          status: siteData.status || 'draft',
+          views: views,
+          viewsLast7Days: viewsLast7Days,
+          createdAt: siteData.createdAt || new Date().toISOString()
+        });
+      } catch (err) {
+        console.error(`Error reading site ${siteId}:`, err.message);
+      }
+    }
+    
+    // Calculate month views (mock data)
+    const now = new Date();
+    const monthAgo = new Date(now.getFullYear(), now.getMonth(), 1);
+    viewsThisMonth = Math.floor(totalViews * 0.3); // Mock: 30% of total views this month
+    
+    // Calculate changes (mock)
+    const viewsChange = Math.floor(Math.random() * 50) - 10; // -10 to +40
+    const engagementChange = Math.floor(Math.random() * 20) - 5; // -5 to +15
+    
+    res.json({
+      totalSites: userSites.length,
+      publishedSites: publishedCount,
+      totalViews: totalViews,
+      viewsThisMonth: viewsThisMonth,
+      viewsChange: viewsChange,
+      avgEngagement: Math.floor(Math.random() * 40) + 30, // 30-70%
+      engagementChange: engagementChange,
+      activeSites: publishedCount,
+      sites: sitesAnalytics.sort((a, b) => b.views - a.views)
+    });
+  } catch (error) {
+    console.error('Error loading user analytics:', error);
+    res.status(500).json({ error: 'Failed to load analytics' });
+  }
+});
+
+// Get admin analytics (platform-wide)
+app.get('/api/admin/analytics', requireAuth, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    
+    // Load all users
+    const userFiles = await fs.readdir(usersDir);
+    const users = [];
+    let totalSites = 0;
+    let publishedSites = 0;
+    let activePlans = { free: 0, starter: 0, pro: 0 };
+    
+    for (const userFile of userFiles) {
+      if (userFile.endsWith('.json')) {
+        try {
+          const userData = JSON.parse(await fs.readFile(path.join(usersDir, userFile), 'utf-8'));
+          users.push(userData);
+          
+          // Count sites
+          const userSiteCount = userData.sites ? userData.sites.length : 0;
+          totalSites += userSiteCount;
+          
+          // Count user's published sites
+          if (userData.sites) {
+            for (const siteId of userData.sites) {
+              try {
+                const sitePath = path.join(publicDir, 'sites', siteId, 'site.json');
+                const siteData = JSON.parse(await fs.readFile(sitePath, 'utf-8'));
+                if (siteData.status === 'published') {
+                  publishedSites++;
+                }
+                // Count plans
+                const plan = siteData.plan || 'free';
+                if (activePlans[plan] !== undefined) {
+                  activePlans[plan]++;
+                }
+              } catch (err) {
+                // Site might not exist
+              }
+            }
+          }
+        } catch (err) {
+          console.error(`Error reading user file ${userFile}:`, err.message);
+        }
+      }
+    }
+    
+    // Calculate metrics
+    const totalUsers = users.length;
+    const activeUsers = users.filter(u => u.status === 'active').length;
+    const newUsersThisMonth = users.filter(u => {
+      const created = new Date(u.createdAt);
+      const now = new Date();
+      return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+    }).length;
+    
+    // Calculate revenue (mock - in production, get from Stripe)
+    const starterRevenue = activePlans.starter * 10;
+    const proRevenue = activePlans.pro * 25;
+    const totalRevenue = starterRevenue + proRevenue;
+    const mrr = totalRevenue; // Monthly recurring revenue
+    
+    // Calculate growth rates (mock)
+    const userGrowth = totalUsers > 0 ? Math.floor((newUsersThisMonth / totalUsers) * 100) : 0;
+    const siteGrowth = Math.floor(Math.random() * 30) + 5; // 5-35%
+    const revenueGrowth = Math.floor(Math.random() * 40) + 10; // 10-50%
+    
+    // Conversion rate (signups who published)
+    const usersWithSites = users.filter(u => u.sites && u.sites.length > 0).length;
+    const conversionRate = totalUsers > 0 ? Math.floor((usersWithSites / totalUsers) * 100) : 0;
+    
+    // Get recent signups (last 10)
+    const recentSignups = users
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 10)
+      .map(u => ({
+        email: u.email,
+        role: u.role,
+        status: u.status,
+        createdAt: u.createdAt,
+        lastLogin: u.lastLogin,
+        sitesCount: u.sites ? u.sites.length : 0
+      }));
+    
+    // Get top users by site count
+    const topUsers = users
+      .map(u => ({
+        email: u.email,
+        totalSites: u.sites ? u.sites.length : 0,
+        publishedSites: 0, // Would need to calculate
+        draftSites: 0,
+        plan: 'Free', // Would need to get from sites
+        createdAt: u.createdAt
+      }))
+      .sort((a, b) => b.totalSites - a.totalSites)
+      .slice(0, 20);
+    
+    // System health metrics
+    const uptime = process.uptime();
+    const uptimePercent = '99.9'; // Mock uptime
+    
+    res.json({
+      system: {
+        status: 'Online',
+        uptime: uptimePercent + '%',
+        responseTime: Math.floor(Math.random() * 100) + 50, // 50-150ms
+        activeUsers: activeUsers,
+        totalRequests: Math.floor(Math.random() * 100000) + 50000 // Mock
+      },
+      platform: {
+        totalUsers: totalUsers,
+        activeUsers: activeUsers,
+        totalSites: totalSites,
+        publishedSites: publishedSites,
+        totalRevenue: totalRevenue,
+        mrr: mrr,
+        conversionRate: conversionRate,
+        userGrowth: userGrowth,
+        siteGrowth: siteGrowth,
+        revenueGrowth: revenueGrowth,
+        conversionChange: Math.floor(Math.random() * 10) // Mock
+      },
+      growth: {
+        signupsThisMonth: newUsersThisMonth,
+        signupsToday: Math.floor(Math.random() * 5), // Mock
+        publishesThisMonth: Math.floor(publishedSites * 0.6), // Mock
+        publishesToday: Math.floor(Math.random() * 3), // Mock
+        paymentsThisMonth: activePlans.starter + activePlans.pro,
+        revenueThisMonth: totalRevenue,
+        activationRate: conversionRate
+      },
+      recentSignups: recentSignups,
+      topUsers: topUsers
+    });
+  } catch (error) {
+    console.error('Error loading admin analytics:', error);
+    res.status(500).json({ error: 'Failed to load analytics' });
+  }
+});
+
 // Payments config – expose if payments are enabled
 app.get('/api/payments/config', (req, res) => {
   res.json({
@@ -1967,6 +2197,211 @@ app.use((req, res, next) => {
       // Not a subdomain site, continue with normal routing
       next();
     });
+});
+
+// Contact Form Submission Endpoint
+app.post('/api/contact-form', async (req, res) => {
+  try {
+    const { subdomain, name, email, phone, message, type, ...otherFields } = req.body;
+    
+    if (!subdomain || !email || !message) {
+      return res.status(400).json({ error: 'Missing required fields: subdomain, email, message' });
+    }
+    
+    // Validate email
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ error: 'Invalid email address' });
+    }
+    
+    // Validate phone if provided
+    if (phone && !isValidPhone(phone)) {
+      return res.status(400).json({ error: 'Invalid phone number format' });
+    }
+    
+    const siteDir = path.join(publicDir, 'sites', subdomain);
+    const submissionsFile = path.join(siteDir, 'submissions.json');
+    
+    // Check if site exists
+    try {
+      await fs.access(siteDir);
+    } catch (error) {
+      return res.status(404).json({ error: 'Site not found' });
+    }
+    
+    // Load site data to get owner email
+    const siteJsonPath = path.join(siteDir, 'site.json');
+    let siteData;
+    try {
+      siteData = JSON.parse(await fs.readFile(siteJsonPath, 'utf-8'));
+    } catch (error) {
+      console.error('Error loading site data:', error);
+      return res.status(500).json({ error: 'Failed to load site data' });
+    }
+    
+    const siteOwnerEmail = siteData.published?.email || siteData.contact?.email;
+    const businessName = siteData.brand?.name || 'Your Business';
+    
+    // Create submission object
+    const submission = {
+      id: `sub-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      type: type || 'contact',
+      submittedAt: new Date().toISOString(),
+      name: sanitizeString(name || '', 200),
+      email: email,
+      phone: phone || '',
+      message: sanitizeString(message, 2000),
+      status: 'unread',
+      ...otherFields // Include any additional fields (for quote forms, etc.)
+    };
+    
+    // Load existing submissions
+    let submissions = [];
+    try {
+      const existingData = await fs.readFile(submissionsFile, 'utf-8');
+      submissions = JSON.parse(existingData);
+    } catch (error) {
+      // File doesn't exist yet, start with empty array
+      submissions = [];
+    }
+    
+    // Add new submission
+    submissions.unshift(submission); // Add to beginning
+    
+    // Keep only last 1000 submissions per site
+    if (submissions.length > 1000) {
+      submissions = submissions.slice(0, 1000);
+    }
+    
+    // Save submissions
+    await fs.writeFile(submissionsFile, JSON.stringify(submissions, null, 2));
+    
+    // Send notification email to site owner
+    if (siteOwnerEmail) {
+      try {
+        const siteUrl = `${process.env.SITE_URL || 'http://localhost:3000'}/sites/${subdomain}/`;
+        
+        await sendEmail(
+          siteOwnerEmail,
+          'contactFormSubmission', // We'll add this template
+          {
+            businessName,
+            submitterName: submission.name || 'Someone',
+            submitterEmail: submission.email,
+            submitterPhone: submission.phone || 'Not provided',
+            message: submission.message,
+            type: submission.type,
+            siteUrl,
+            submissionTime: new Date(submission.submittedAt).toLocaleString()
+          }
+        );
+      } catch (emailError) {
+        console.error('Failed to send submission notification email:', emailError);
+        // Don't fail the submission if email fails
+      }
+    }
+    
+    console.log(`✅ Contact form submission received for ${subdomain}`);
+    
+    res.json({
+      success: true,
+      message: 'Thank you for your submission! We\'ll get back to you soon.',
+      submissionId: submission.id
+    });
+    
+  } catch (error) {
+    console.error('Contact form error:', error);
+    res.status(500).json({ error: 'Failed to process submission' });
+  }
+});
+
+// Get submissions for a site (authenticated)
+app.get('/api/sites/:subdomain/submissions', authenticateToken, async (req, res) => {
+  try {
+    const { subdomain } = req.params;
+    const userEmail = req.user.email;
+    
+    // Load site to verify ownership
+    const siteJsonPath = path.join(publicDir, 'sites', subdomain, 'site.json');
+    let siteData;
+    try {
+      siteData = JSON.parse(await fs.readFile(siteJsonPath, 'utf-8'));
+    } catch (error) {
+      return res.status(404).json({ error: 'Site not found' });
+    }
+    
+    // Verify ownership
+    if (siteData.published?.email !== userEmail) {
+      return res.status(403).json({ error: 'Not authorized to view submissions for this site' });
+    }
+    
+    // Load submissions
+    const submissionsFile = path.join(publicDir, 'sites', subdomain, 'submissions.json');
+    let submissions = [];
+    try {
+      const data = await fs.readFile(submissionsFile, 'utf-8');
+      submissions = JSON.parse(data);
+    } catch (error) {
+      // No submissions yet
+      submissions = [];
+    }
+    
+    res.json({
+      success: true,
+      submissions,
+      total: submissions.length,
+      unread: submissions.filter(s => s.status === 'unread').length
+    });
+    
+  } catch (error) {
+    console.error('Get submissions error:', error);
+    res.status(500).json({ error: 'Failed to load submissions' });
+  }
+});
+
+// Mark submission as read
+app.patch('/api/submissions/:submissionId/read', authenticateToken, async (req, res) => {
+  try {
+    const { submissionId } = req.params;
+    const { subdomain } = req.body;
+    const userEmail = req.user.email;
+    
+    if (!subdomain) {
+      return res.status(400).json({ error: 'Missing subdomain' });
+    }
+    
+    // Verify ownership
+    const siteJsonPath = path.join(publicDir, 'sites', subdomain, 'site.json');
+    let siteData;
+    try {
+      siteData = JSON.parse(await fs.readFile(siteJsonPath, 'utf-8'));
+    } catch (error) {
+      return res.status(404).json({ error: 'Site not found' });
+    }
+    
+    if (siteData.published?.email !== userEmail) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+    
+    // Load and update submissions
+    const submissionsFile = path.join(publicDir, 'sites', subdomain, 'submissions.json');
+    let submissions = JSON.parse(await fs.readFile(submissionsFile, 'utf-8'));
+    
+    const submission = submissions.find(s => s.id === submissionId);
+    if (!submission) {
+      return res.status(404).json({ error: 'Submission not found' });
+    }
+    
+    submission.status = 'read';
+    submission.readAt = new Date().toISOString();
+    
+    await fs.writeFile(submissionsFile, JSON.stringify(submissions, null, 2));
+    
+    res.json({ success: true, submission });
+    
+  } catch (error) {
+    console.error('Mark as read error:', error);
+    res.status(500).json({ error: 'Failed to update submission' });
+  }
 });
 
 // Trial Expiration Checker
