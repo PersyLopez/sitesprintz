@@ -1,0 +1,160 @@
+{
+  "brand": {
+    "name": "Growing Business",
+    "logo": "assets/logo.svg",
+    "tagline": "Trusted Since 2020"
+  },
+  "themeVars": {
+    "color-primary": "#3b82f6",
+    "color-accent": "#10b981"
+  },
+  "nav": [
+    {"label": "Home", "href": "#top"},
+    {"label": "Services", "href": "#products"},
+    {"label": "About", "href": "#about"},
+    {"label": "FAQ", "href": "#faq"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "Professional Services",
+    "title": "Your success is our mission",
+    "subtitle": "Join 100+ satisfied clients who trust us with their business needs. Experience, quality, and results you can count on.",
+    "cta": [
+      {"label": "Get Started", "href": "#contact"},
+      {"label": "Our Services", "href": "#products", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&q=80",
+    "imageAlt": "Professional business team"
+  },
+  "stats": {
+    "items": [
+      {"number": "100+", "label": "Happy Clients"},
+      {"number": "4+", "label": "Years Experience"},
+      {"number": "4.8", "label": "Star Rating"},
+      {"number": "98%", "label": "Satisfaction Rate"}
+    ]
+  },
+  "about": {
+    "title": "About Us",
+    "body": "Founded in 2020, we're a team of dedicated professionals committed to helping businesses succeed. Our client-first approach and proven track record speak for themselves.",
+    "subtitle": "Why choose us",
+    "features": [
+      "🎯 Results-driven approach",
+      "⚡ Fast turnaround times",
+      "💰 Transparent pricing",
+      "🏆 Award-winning service",
+      "🔒 100% satisfaction guaranteed",
+      "📞 Responsive support"
+    ]
+  },
+  "products": [
+    {
+      "name": "Starter Package",
+      "price": 199,
+      "description": "Perfect for new businesses. Includes consultation, basic setup, and 1 month support.",
+      "image": "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=600&q=80",
+      "imageAlt": "Starter package"
+    },
+    {
+      "name": "Growth Package",
+      "price": 499,
+      "description": "For growing businesses. Everything in Starter plus advanced features and 3 months support.",
+      "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80",
+      "imageAlt": "Growth package"
+    },
+    {
+      "name": "Enterprise Package",
+      "price": 999,
+      "description": "Full-service solution. Custom strategy, priority support, and dedicated account manager.",
+      "image": "https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&q=80",
+      "imageAlt": "Enterprise package"
+    }
+  ],
+  "testimonials": {
+    "title": "What Clients Say",
+    "subtitle": "Don't just take our word for it",
+    "items": [
+      {
+        "text": "Working with this team transformed our business. Professional, responsive, and delivered beyond expectations!",
+        "author": "Sarah Johnson",
+        "location": "Business Owner",
+        "rating": 5,
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&q=80",
+        "imageAlt": "Sarah Johnson"
+      },
+      {
+        "text": "Best decision we made this year. The ROI has been incredible and the support is outstanding.",
+        "author": "Michael Chen",
+        "location": "CEO, Tech Startup",
+        "rating": 5,
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "imageAlt": "Michael Chen"
+      },
+      {
+        "text": "Professional, knowledgeable, and genuinely care about results. Highly recommend to anyone!",
+        "author": "Emily Rodriguez",
+        "location": "Marketing Director",
+        "rating": 5,
+        "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
+        "imageAlt": "Emily Rodriguez"
+      }
+    ]
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Got questions? We've got answers",
+    "items": [
+      {
+        "question": "How quickly can we get started?",
+        "answer": "Most clients start within 1-2 business days of initial consultation. We work on your timeline."
+      },
+      {
+        "question": "What's included in the packages?",
+        "answer": "Each package includes consultation, implementation, training, and ongoing support. Specific features vary by tier."
+      },
+      {
+        "question": "Do you offer custom solutions?",
+        "answer": "Absolutely! While our packages cover most needs, we can create custom solutions for unique requirements."
+      },
+      {
+        "question": "What if I'm not satisfied?",
+        "answer": "We offer a 30-day satisfaction guarantee. If you're not happy, we'll make it right or provide a full refund."
+      },
+      {
+        "question": "Can I upgrade my package later?",
+        "answer": "Yes! You can upgrade anytime. We'll credit your existing package towards the upgrade cost."
+      }
+    ]
+  },
+  "contact": {
+    "title": "Ready to Get Started?",
+    "subtitle": "Schedule your free consultation today",
+    "phone": "(555) 123-4567",
+    "email": "hello@growingbusiness.com",
+    "address": "456 Business Ave, Suite 200, Your City, ST 12345",
+    "hours": {
+      "title": "Office Hours",
+      "items": [
+        "Monday - Friday: 8:00 AM - 6:00 PM",
+        "Saturday: 9:00 AM - 1:00 PM",
+        "Sunday: Closed"
+      ],
+      "note": "Same-day appointments available for urgent needs"
+    }
+  },
+  "footer": {
+    "text": "© 2024 Growing Business. Helping businesses succeed since 2020.",
+    "links": [
+      {"label": "Privacy Policy", "href": "#privacy"},
+      {"label": "Terms of Service", "href": "#terms"},
+      {"label": "Refund Policy", "href": "#refunds"}
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "productCta": "Get Quote",
+    "productCtaHref": "tel:+15551234567",
+    "productNote": "Call or email to discuss which package is right for you. Free 30-minute consultation included!"
+  }
+}
+
