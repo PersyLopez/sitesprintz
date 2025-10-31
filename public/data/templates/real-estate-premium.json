@@ -1,0 +1,352 @@
+{
+  "id": "real-estate-premium",
+  "name": "Real Estate Premium",
+  "plan": "Premium",
+  "category": "Real Estate",
+  "meta": {
+    "businessName": "[Agent Name], REALTOR",
+    "pageTitle": "[Agent Name] | Trusted Real Estate Expert in [City]",
+    "metaDescription": "Award-winning real estate agent helping clients buy, sell, and invest in [City] with proven results and concierge service.",
+    "logo": "assets/logo.svg",
+    "logoAlt": "[Agent Name] brand mark",
+    "primaryPhone": "+1-555-890-2233",
+    "primaryPhoneLabel": "Call/Text: (555) 890-2233",
+    "mobileCallLabel": "Call/Text Agent"
+  },
+  "styles": {
+    "primaryColor": "#2563eb",
+    "primaryColorDark": "#1d4ed8",
+    "accentColor": "#d97706",
+    "secondaryColor": "#475569",
+    "textColor": "#0f172a",
+    "mutedColor": "#4b5563",
+    "surfaceColor": "#ffffff",
+    "borderColor": "rgba(15,23,42,0.08)",
+    "backgroundColor": "#f4f6fb",
+    "radius": "18px"
+  },
+  "navigation": [
+    { "label": "Listings", "href": "#property-showcase" },
+    { "label": "Services", "href": "#realtor-services" },
+    { "label": "About", "href": "#agent-bio" },
+    { "label": "Markets", "href": "#market-areas" },
+    { "label": "Testimonials", "href": "#testimonials-realtor" },
+    { "label": "Resources", "href": "#buyer-seller-resources" },
+    { "label": "Contact", "href": "#cta-contact" }
+  ],
+  "sections": [
+    {
+      "id": "realtor-hero",
+      "type": "realtor-hero",
+      "settings": {
+        "headline": "Your trusted real estate expert in [City]",
+        "subheadline": "Helping families buy and sell homes since 2005 with concierge-level service and data-driven strategy.",
+        "trustIndicators": ["200+ Homes Sold", "$50M+ Closed", "5-Star Reviews"],
+        "primaryCta": { "label": "Free Home Valuation", "href": "#valuation-calculator" },
+        "secondaryCta": { "label": "View Current Listings", "href": "#property-showcase" },
+        "image": "https://images.unsplash.com/photo-1502673530728-f79b4cab31b1?auto=format&fit=crop&w=900&q=80",
+        "imageAlt": "Agent welcoming clients",
+        "stats": [
+          { "value": "200+", "label": "Homes sold" },
+          { "value": "$50M+", "label": "Closed volume" },
+          { "value": "15 Days", "label": "Average DOM" }
+        ]
+      }
+    },
+    {
+      "id": "property-showcase",
+      "type": "property-showcase",
+      "settings": {
+        "heading": "Featured properties",
+        "subheading": "Curated listings and recent sales representing the best of [City] living.",
+        "filters": [
+          { "label": "For Sale", "value": "active" },
+          { "label": "Recently Sold", "value": "sold" },
+          { "label": "All Properties", "value": "all" }
+        ],
+        "properties": [
+          {
+            "status": "active",
+            "image": "https://images.unsplash.com/photo-1501183638710-841dd1904471?auto=format&fit=crop&w=900&q=80",
+            "address": "742 Lakeview Drive",
+            "city": "[City], [State]",
+            "price": "$1,250,000",
+            "beds": 4,
+            "baths": 3.5,
+            "sqft": "3,420",
+            "description": "Modern lakefront retreat with panoramic views, chef's kitchen, and private dock.",
+            "link": { "label": "View details", "href": "https://example.com/listing1" }
+          },
+          {
+            "status": "active",
+            "image": "https://images.unsplash.com/photo-1572120360610-d971b9b78825?auto=format&fit=crop&w=900&q=80",
+            "address": "189 Maple Grove Court",
+            "city": "[City], [State]",
+            "price": "$835,000",
+            "beds": 5,
+            "baths": 4,
+            "sqft": "3,050",
+            "description": "Cul-de-sac craftsman with open-concept living, dedicated office, and resort-style backyard.",
+            "link": { "label": "View details", "href": "https://example.com/listing2" }
+          },
+          {
+            "status": "sold",
+            "image": "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=900&q=80",
+            "address": "58 Market Street Loft",
+            "city": "[City], [State]",
+            "price": "Sold for $615,000",
+            "beds": 2,
+            "baths": 2,
+            "sqft": "1,480",
+            "description": "Historic downtown loft with exposed brick, skyline views, and secure parking.",
+            "link": { "label": "See case study", "href": "https://example.com/sale1" }
+          },
+          {
+            "status": "sold",
+            "image": "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80",
+            "address": "412 Meadowlark Lane",
+            "city": "[City], [State]",
+            "price": "Sold for $972,500",
+            "beds": 4,
+            "baths": 3,
+            "sqft": "2,890",
+            "description": "Multiple offers secured in 5 days with strategic staging and targeted marketing.",
+            "link": { "label": "See marketing plan", "href": "https://example.com/sale2" }
+          },
+          {
+            "status": "active",
+            "image": "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=900&q=80",
+            "address": "275 Oceanview Penthouse",
+            "city": "[City], [State]",
+            "price": "$1,890,000",
+            "beds": 3,
+            "baths": 3,
+            "sqft": "2,200",
+            "description": "Luxury penthouse with floor-to-ceiling windows, smart home tech, and concierge amenities.",
+            "link": { "label": "Schedule tour", "href": "https://example.com/listing3" }
+          }
+        ],
+        "cta": { "label": "See all listings", "href": "https://example.com/listings" }
+      }
+    },
+    {
+      "id": "valuation-calculator",
+      "type": "valuation-calculator",
+      "settings": {
+        "heading": "What is your home worth?",
+        "subheading": "Get a free, no-obligation market analysis with up-to-date comps and strategy.",
+        "propertyTypes": ["Single Family", "Condo", "Townhome", "Multi-Family", "Other"],
+        "upgrades": ["Kitchen remodel", "Bathroom remodel", "Flooring update", "Roof replacement", "HVAC upgrade", "Solar"],
+        "timelines": [
+          { "label": "0-3 months", "value": "0-3" },
+          { "label": "3-6 months", "value": "3-6" },
+          { "label": "6-12 months", "value": "6-12" },
+          { "label": "Just curious", "value": "research" }
+        ],
+        "submit": { "endpoint": "/api/contact-form", "type": "home-valuation", "label": "Get My Free Home Valuation" },
+        "successMessage": "Thank you! We'll prepare your personalized market analysis within 24 hours."
+      }
+    },
+    {
+      "id": "realtor-services",
+      "type": "realtor-services",
+      "settings": {
+        "heading": "How I can help",
+        "subheading": "Tailored services for buyers, sellers, and investors.",
+        "services": [
+          { "icon": "BUY", "name": "Buyer Representation", "description": "Neighborhood expertise, off-market access, strategic negotiation, and full transaction management." },
+          { "icon": "SELL", "name": "Seller Representation", "description": "Staging, professional media, digital marketing, and pricing strategy to maximize sale price." },
+          { "icon": "INV", "name": "Investment Advisory", "description": "Rental analysis, cap rate evaluation, portfolio strategy, and 1031 exchange guidance." },
+          { "icon": "RELO", "name": "Relocation Concierge", "description": "Virtual tours, temporary housing, school insights, and trusted contractor introductions." },
+          { "icon": "FIRST", "name": "First-Time Buyers", "description": "Financing education, closing cost planning, and step-by-step support from search to keys." },
+          { "icon": "LUX", "name": "Luxury Marketing", "description": "Targeted campaigns, lifestyle storytelling, and global syndication for premium listings." }
+        ]
+      }
+    },
+    {
+      "id": "agent-bio",
+      "type": "agent-bio",
+      "settings": {
+        "heading": "Meet [Agent Name]",
+        "name": "[Agent Name], REALTOR",
+        "credentials": "CRS / ABR / Certified Luxury Home Marketing Specialist",
+        "paragraphs": [
+          "As a lifelong [City] resident, I bring deep market knowledge, strong negotiating skills, and a network of trusted professionals to every transaction.",
+          "My approach blends data-driven strategy with concierge-level service. Whether you are moving up, downsizing, or investing, I handle the details so you can focus on what is next.",
+          "I am proud to be a top 1 percent producer with consistent recognition for client satisfaction and community involvement."
+        ],
+        "stats": [
+          { "value": "$50M+", "label": "Closed in past 24 months" },
+          { "value": "98%", "label": "List-to-sale price ratio" },
+          { "value": "15 Days", "label": "Average days on market" }
+        ],
+        "credentialsList": ["Certified Residential Specialist (CRS)", "Accredited Buyer's Representative (ABR)", "Certified Luxury Home Marketing Specialist (CLHMS)"],
+        "photo": "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=600&q=80",
+        "cta": { "label": "Work with [Agent Name]", "href": "#cta-contact" }
+      }
+    },
+    {
+      "id": "market-areas",
+      "type": "market-areas",
+      "settings": {
+        "heading": "Markets I serve",
+        "subheading": "Local expertise across [City] and surrounding neighborhoods.",
+        "areas": [
+          { "name": "Downtown [City]", "description": "Urban condos and lofts with walkability to dining, culture, and transit.", "medianPrice": "$725,000", "marketTrend": "Seller's market", "daysOnMarket": "12" },
+          { "name": "Lakeview", "description": "Waterfront estates, gated communities, and top-rated schools.", "medianPrice": "$1.1M", "marketTrend": "Balanced market", "daysOnMarket": "18" },
+          { "name": "Cedar Grove", "description": "Family-friendly suburb with new construction and community amenities.", "medianPrice": "$650,000", "marketTrend": "Seller's market", "daysOnMarket": "10" },
+          { "name": "Old Town", "description": "Historic homes, tree-lined streets, and boutique shopping.", "medianPrice": "$540,000", "marketTrend": "Seller's market", "daysOnMarket": "16" },
+          { "name": "Riverside", "description": "Mixed-use district with townhomes, condos, and nightlife.", "medianPrice": "$480,000", "marketTrend": "Balanced market", "daysOnMarket": "21" }
+        ],
+        "cta": { "label": "View market reports", "href": "https://example.com/market-reports" }
+      }
+    },
+    {
+      "id": "testimonials-realtor",
+      "type": "testimonials-realtor",
+      "settings": {
+        "heading": "What my clients say",
+        "subheading": "Relationships built on trust, communication, and results.",
+        "testimonials": [
+          { "rating": 5, "quote": "Sold our home in one weekend with multiple offers above list. Marketing plan was flawless.", "name": "The Parker Family", "location": "Lakeview", "service": "Sold", "year": "2024" },
+          { "rating": 5, "quote": "[Agent Name] listened to what we needed and negotiated repairs that saved us thousands.", "name": "S. Martinez", "location": "Old Town", "service": "Bought", "year": "2023" },
+          { "rating": 5, "quote": "As investors, we value data. The analysis and property management referrals have been spot on.", "name": "R. Chen", "location": "Downtown", "service": "Invested", "year": "2024" },
+          { "rating": 5, "quote": "Relocating was easy thanks to virtual tours, school research, and closing coordination.", "name": "J. Patel", "location": "Cedar Grove", "service": "Relocation", "year": "2023" }
+        ],
+        "cta": { "label": "Read more reviews on Zillow", "href": "https://www.zillow.com" }
+      }
+    },
+    {
+      "id": "seller-journey",
+      "type": "seller-journey",
+      "settings": {
+        "heading": "Selling your home - step by step",
+        "steps": [
+          { "title": "Consultation", "description": "Discuss goals, timeline, and pricing strategy." },
+          { "title": "Home preparation", "description": "Professional staging, repairs, and pre-market checklist." },
+          { "title": "Marketing launch", "description": "Photography, video, 3D tours, and digital campaigns." },
+          { "title": "Showings & open houses", "description": "Managed schedules with feedback and screening." },
+          { "title": "Offers & negotiation", "description": "Review offers, negotiate terms, and select the best outcome." },
+          { "title": "Inspection to closing", "description": "Coordinate repairs, appraisal, and closing logistics." }
+        ],
+        "cta": { "label": "Get your home selling plan", "href": "#valuation-calculator" }
+      }
+    },
+    {
+      "id": "buyer-journey",
+      "type": "buyer-journey",
+      "settings": {
+        "heading": "Buying a home - your roadmap",
+        "steps": [
+          { "title": "Get pre-approved", "description": "Connect with trusted lenders to understand budget." },
+          { "title": "Define criteria", "description": "Clarify must-haves, lifestyle preferences, and neighborhoods." },
+          { "title": "Curated search", "description": "Receive new listings, off-market opportunities, and tour plans." },
+          { "title": "Offer strategy", "description": "Craft competitive offers and navigate negotiations." },
+          { "title": "Due diligence", "description": "Coordinate inspections, appraisal, and repairs." },
+          { "title": "Closing & beyond", "description": "Celebrate keys in hand with post-closing concierge support." }
+        ],
+        "cta": { "label": "Start your home search", "href": "https://example.com/search" }
+      }
+    },
+    {
+      "id": "market-stats",
+      "type": "market-stats",
+      "settings": {
+        "heading": "Current market snapshot",
+        "subheading": "Data for [City] as of [Month Year].",
+        "stats": [
+          { "value": "$682,500", "label": "Average sale price" },
+          { "value": "15 days", "label": "Average days on market" },
+          { "value": "1.8 months", "label": "Months of inventory" },
+          { "value": "102%", "label": "Average list-to-sale" }
+        ],
+        "context": "Stay informed with weekly market updates tailored to your neighborhood.",
+        "cta": { "label": "Get detailed market report", "href": "https://example.com/market-report" }
+      }
+    },
+    {
+      "id": "buyer-seller-resources",
+      "type": "buyer-seller-resources",
+      "settings": {
+        "heading": "Helpful resources",
+        "subheading": "Guides, calculators, and checklists to inform your next move.",
+        "items": [
+          { "icon": "CALC", "title": "Mortgage Calculator", "description": "Estimate payments and explore scenarios.", "link": { "label": "Open calculator", "href": "https://example.com/mortgage-calculator" } },
+          { "icon": "BUY", "title": "Buyer's Guide", "description": "Step-by-step guide from search to closing.", "link": { "label": "Download PDF", "href": "/guides/buyers-guide.pdf" } },
+          { "icon": "SELL", "title": "Seller's Guide", "description": "Prep checklist, pricing tips, and marketing overview.", "link": { "label": "Download PDF", "href": "/guides/sellers-guide.pdf" } },
+          { "icon": "SCHOOL", "title": "School Information", "description": "Top-rated schools, ratings, and enrollment links.", "link": { "label": "View schools", "href": "https://example.com/schools" } },
+          { "icon": "MOVE", "title": "Moving Checklist", "description": "Timeline and tasks to stay organized during your move.", "link": { "label": "Download checklist", "href": "/guides/moving-checklist.pdf" } },
+          { "icon": "MAINT", "title": "Home Maintenance Tips", "description": "Seasonal checklist to protect your investment.", "link": { "label": "View tips", "href": "https://example.com/maintenance" } }
+        ]
+      }
+    },
+    {
+      "id": "faq-realtor",
+      "type": "faq-realtor",
+      "settings": {
+        "heading": "FAQs",
+        "items": [
+          { "question": "How much does it cost to work with you?", "answer": "For buyers, representation is typically paid by the seller. For sellers, commission is discussed upfront and customized to your goals." },
+          { "question": "How do you determine my home's value?", "answer": "We analyze comparable sales, current demand, condition, and neighborhood trends to create a pricing strategy." },
+          { "question": "How long does it take to sell a home?", "answer": "Average market time is 15-25 days, depending on price point and preparation. We tailor plans to your timeline." },
+          { "question": "Should I buy or sell first?", "answer": "We evaluate finances, risk tolerance, and market conditions to recommend the best approach for your situation." },
+          { "question": "What should I look for in a home inspection?", "answer": "We review structural systems, mechanicals, roof, and safety issues, then negotiate repairs or credits where appropriate." },
+          { "question": "How much should I offer on a home?", "answer": "Offers are based on comparable sales, market conditions, and your goals. We model scenarios and negotiate strategically." },
+          { "question": "What are closing costs?", "answer": "Closing costs typically range from 2 to 4 percent of the purchase price and include lender, title, and government fees." },
+          { "question": "Do I need a pre-approval letter?", "answer": "Yes - pre-approval strengthens your offer and clarifies budget. We can connect you with trusted lenders." },
+          { "question": "How many clients do you work with at once?", "answer": "We limit active clients so every buyer and seller receives dedicated attention and timely communication." }
+        ]
+      }
+    },
+    {
+      "id": "cta-contact",
+      "type": "cta-contact",
+      "settings": {
+        "heading": "Ready to make your move?",
+        "subheading": "Whether buying or selling, I am here to guide you every step of the way.",
+        "primaryCta": { "label": "Schedule a consultation", "href": "https://calendly.com" },
+        "secondaryCta": { "label": "Call/Text: (555) 890-2233", "href": "tel:+15558902233" },
+        "trustBadges": ["No-pressure consultations", "Local market expert", "Trusted negotiation" ]
+      }
+    },
+    {
+      "id": "footer-realtor",
+      "type": "footer-realtor",
+      "settings": {
+        "agent": {
+          "name": "[Agent Name], REALTOR",
+          "photo": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=200&q=80",
+          "phone": "+1-555-890-2233",
+          "email": "[agent]@[brokerage].com"
+        },
+        "brokerage": {
+          "name": "[Brokerage Name]",
+          "logo": "assets/logo.svg",
+          "address": "210 Market Street, Suite 500, [City], [State] [ZIP]",
+          "phone": "+1-555-555-1212"
+        },
+        "links": [
+          { "label": "Buy", "href": "https://example.com/buy" },
+          { "label": "Sell", "href": "https://example.com/sell" },
+          { "label": "About", "href": "#agent-bio" },
+          { "label": "Listings", "href": "#property-showcase" },
+          { "label": "Contact", "href": "#cta-contact" }
+        ],
+        "social": [
+          { "label": "Facebook", "href": "https://facebook.com" },
+          { "label": "Instagram", "href": "https://instagram.com" },
+          { "label": "LinkedIn", "href": "https://linkedin.com" },
+          { "label": "YouTube", "href": "https://youtube.com" }
+        ],
+        "disclaimer": "Listings courtesy of [MLS Name] and [Brokerage Name]. Equal Housing Opportunity.",
+        "legal": "(c) [Current Year] [Agent Name]. All rights reserved.",
+        "policies": [
+          { "label": "Privacy Policy", "href": "/privacy" },
+          { "label": "Terms of Use", "href": "/terms" }
+        ]
+      }
+    }
+  ],
+  "pages": [],
+  "products": []
+}
