@@ -3,7 +3,7 @@
   "themeVars": {"color-primary": "#22c55e", "color-accent": "#38bdf8"},
   "nav": [
     {"label": "Home", "href": "#top"},
-    {"label": "Services", "href": "#services"},
+    {"label": "Services", "href": "#products"},
     {"label": "Contact", "href": "#contact"}
   ],
   "hero": {

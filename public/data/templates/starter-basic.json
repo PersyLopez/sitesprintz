@@ -1,0 +1,79 @@
+{
+  "brand": {
+    "name": "Example Business",
+    "logo": "assets/logo.svg",
+    "tagline": "Quality Service Since 2020"
+  },
+  "themeVars": {
+    "color-primary": "#3b82f6",
+    "color-accent": "#10b981"
+  },
+  "nav": [
+    {"label": "Home", "href": "#top"},
+    {"label": "Services", "href": "#products"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "Welcome",
+    "title": "We help your business grow",
+    "subtitle": "Professional services tailored for your success. Get started today with a free consultation.",
+    "cta": [
+      {"label": "Get Started", "href": "#contact"},
+      {"label": "Learn More", "href": "#products", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&q=80",
+    "imageAlt": "Professional business team"
+  },
+  "products": [
+    {
+      "name": "Consultation",
+      "price": 0,
+      "description": "Free 30-minute consultation to discuss your needs",
+      "image": "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=600&q=80",
+      "imageAlt": "Business consultation"
+    },
+    {
+      "name": "Basic Package",
+      "price": 299,
+      "description": "Perfect for small businesses just getting started",
+      "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80",
+      "imageAlt": "Basic service package"
+    },
+    {
+      "name": "Premium Package",
+      "price": 599,
+      "description": "Comprehensive solution for growing businesses",
+      "image": "https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&q=80",
+      "imageAlt": "Premium service package"
+    }
+  ],
+  "contact": {
+    "title": "Get In Touch",
+    "subtitle": "Ready to get started? Contact us today",
+    "phone": "(555) 123-4567",
+    "email": "hello@example.com",
+    "address": "123 Main St, Your City, ST 12345",
+    "hours": {
+      "title": "Business Hours",
+      "items": [
+        "Monday - Friday: 9:00 AM - 5:00 PM",
+        "Saturday: 10:00 AM - 2:00 PM",
+        "Sunday: Closed"
+      ]
+    }
+  },
+  "footer": {
+    "text": "© 2024 Example Business. All rights reserved.",
+    "links": [
+      {"label": "Privacy Policy", "href": "#privacy"},
+      {"label": "Terms of Service", "href": "#terms"}
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "productCta": "Get Quote",
+    "productCtaHref": "tel:+15551234567",
+    "productNote": "Call or email to schedule your free consultation today!"
+  }
+}
+

@@ -846,8 +846,24 @@
     </style>
   </head>
   <body>
+    <!-- Navigation Header -->
+    <header style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1);">
+      <div style="max-width: 1200px; margin: 0 auto; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center;">
+        <a href="/" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text-light); font-weight: 700; font-size: 1.25rem;">
+          <span style="font-size: 1.5rem;">🚀</span>
+          <span>SiteSprintz</span>
+        </a>
+        <nav style="display: flex; align-items: center; gap: 32px;">
+          <a href="#templates" style="color: var(--text-medium); text-decoration: none; font-weight: 500; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-medium)'">Templates</a>
+          <a href="#pricing" style="color: var(--text-medium); text-decoration: none; font-weight: 500; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-medium)'">Pricing</a>
+          <a href="/login.html" style="color: var(--text-medium); text-decoration: none; font-weight: 500; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-medium)'">Login</a>
+          <a href="/setup.html" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(6,182,212,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">Start Free</a>
+        </nav>
+      </div>
+    </header>
+    
     <!-- Compact Hero -->
-    <div class="landing-hero">
+    <div class="landing-hero" style="padding-top: 80px;">
       <div class="hero-content">
         <span class="hero-badge">🚀 Built for small businesses</span>
         <h1>From Idea to Live Website in Under 10 Minutes</h1>
@@ -995,7 +1011,72 @@
         </a>
       </div>
       <div style="text-align: center; margin-top: 24px;">
-        <a href="/setup.html" class="btn-text-link">View all 9+ templates →</a>
+        <a href="/setup.html" class="btn-text-link">View all 19 templates →</a>
+      </div>
+    </div>
+
+    <!-- Pricing Section -->
+    <div id="pricing" class="compact-section" style="padding: 80px 24px; background: var(--bg-darker);">
+      <div class="section-header-compact">
+        <h2>Simple, Transparent Pricing</h2>
+        <p>Start free, upgrade when ready. No hidden fees.</p>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; max-width: 1000px; margin: 40px auto 0;">
+        <!-- Free Trial -->
+        <div style="background: var(--bg-card); border-radius: 16px; padding: 32px; border: 2px solid var(--border-dark); transition: transform 0.3s, box-shadow 0.3s;">
+          <div style="font-size: 2rem; margin-bottom: 12px;">🎁</div>
+          <h3 style="font-size: 1.5rem; margin: 0 0 8px 0; color: var(--text-light);">Free Trial</h3>
+          <div style="font-size: 2.5rem; font-weight: 700; margin: 16px 0; color: var(--primary-color);">$0</div>
+          <p style="color: var(--text-muted); margin: 0 0 24px 0;">7 days to test everything</p>
+          <ul style="list-style: none; padding: 0; margin: 0 0 24px 0; color: var(--text-medium);">
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>1 published website</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>All templates</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Contact forms</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Free subdomain</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>⏰</span><span>Expires after 7 days</span></li>
+          </ul>
+          <a href="/setup.html" style="display: block; text-align: center; background: rgba(6, 182, 212, 0.2); color: var(--primary-color); padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600; border: 1px solid rgba(6, 182, 212, 0.3);">Start Free Trial</a>
+        </div>
+        
+        <!-- Starter -->
+        <div style="background: var(--bg-card); border-radius: 16px; padding: 32px; border: 2px solid var(--primary-color); box-shadow: var(--shadow-glow-sm); transform: scale(1.05); position: relative;">
+          <div style="position: absolute; top: -12px; right: 24px; background: var(--primary-gradient); color: white; padding: 4px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">MOST POPULAR</div>
+          <div style="font-size: 2rem; margin-bottom: 12px;">💼</div>
+          <h3 style="font-size: 1.5rem; margin: 0 0 8px 0; color: var(--text-light);">Starter</h3>
+          <div style="font-size: 2.5rem; font-weight: 700; margin: 16px 0; color: var(--primary-color);">$10<span style="font-size: 1rem; font-weight: 400; color: var(--text-muted);">/mo</span></div>
+          <p style="color: var(--text-muted); margin: 0 0 24px 0;">Display-only website</p>
+          <ul style="list-style: none; padding: 0; margin: 0 0 24px 0; color: var(--text-medium);">
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>1 published website</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Display pricing & services</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Contact forms</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Unlimited edits</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>❌</span><span style="text-decoration: line-through; opacity: 0.6;">Online payments</span></li>
+          </ul>
+          <a href="/setup.html" style="display: block; text-align: center; background: var(--primary-gradient); color: white; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600; box-shadow: 0 4px 12px rgba(6,182,212,0.3);">Get Started</a>
+        </div>
+        
+        <!-- Pro -->
+        <div style="background: var(--bg-card); border-radius: 16px; padding: 32px; border: 2px solid var(--border-dark); transition: transform 0.3s, box-shadow 0.3s;">
+          <div style="font-size: 2rem; margin-bottom: 12px;">💳</div>
+          <h3 style="font-size: 1.5rem; margin: 0 0 8px 0; color: var(--text-light);">Pro</h3>
+          <div style="font-size: 2.5rem; font-weight: 700; margin: 16px 0; color: var(--primary-color);">$25<span style="font-size: 1rem; font-weight: 400; color: var(--text-muted);">/mo</span></div>
+          <p style="color: var(--text-muted); margin: 0 0 24px 0;">Accept online payments</p>
+          <ul style="list-style: none; padding: 0; margin: 0 0 24px 0; color: var(--text-medium);">
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Everything in Starter</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Online payments (Stripe)</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Shopping cart</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Order management</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Sales analytics</span></li>
+          </ul>
+          <a href="/setup.html" style="display: block; text-align: center; background: rgba(6, 182, 212, 0.2); color: var(--primary-color); padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600; border: 1px solid rgba(6, 182, 212, 0.3);">Get Started</a>
+        </div>
+      </div>
+      
+      <div style="text-align: center; margin-top: 48px; padding: 24px; background: rgba(6, 182, 212, 0.1); border-radius: 12px; max-width: 700px; margin-left: auto; margin-right: auto;">
+        <p style="color: var(--text-medium); margin: 0; line-height: 1.6;">
+          💡 <strong>Need multiple sites?</strong> Add additional sites for 50% off! ($5 for Starter, $12.50 for Pro)
+        </p>
       </div>
     </div>
 
@@ -1012,10 +1093,13 @@
     
     <!-- Footer -->
     <footer class="site-footer-compact">
-      <p>© SiteSprintz — Launch your business online in minutes.</p>
+      <p>© 2025 SiteSprintz — Launch your business online in minutes.</p>
       <nav class="footer-links">
         <a href="/setup.html">Create Site</a>
+        <a href="#templates">Templates</a>
+        <a href="#pricing">Pricing</a>
         <a href="/login.html">Login</a>
+        <a href="/dashboard.html">Dashboard</a>
       </nav>
     </footer>
     
