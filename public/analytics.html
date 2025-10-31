@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Analytics | SiteSprintz</title>
+  <link rel="stylesheet" href="theme.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .analytics-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .analytics-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding: 25px;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+    }
+    
+    .header-content h1 {
+      margin: 0;
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .header-content p {
+      margin: 5px 0 0 0;
+      opacity: 0.9;
+      font-size: 0.95rem;
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .btn-secondary {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .stat-card {
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 24px;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .stat-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #1f2937;
+      margin: 10px 0;
+      line-height: 1;
+    }
+    
+    .stat-label {
+      color: #64748b;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    
+    .stat-change {
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+    
+    .stat-change.positive {
+      color: #10b981;
+    }
+    
+    .stat-change.negative {
+      color: #ef4444;
+    }
+    
+    .charts-section {
+      margin-top: 30px;
+    }
+    
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .chart-card {
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 24px;
+    }
+    
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .chart-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #1f2937;
+    }
+    
+    .chart-filter {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+      background: white;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    
+    .chart-placeholder {
+      height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #f9fafb, #f3f4f6);
+      border-radius: 8px;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+    
+    .sites-analytics {
+      margin-top: 30px;
+    }
+    
+    .sites-table {
+      width: 100%;
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    .sites-table table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .sites-table th {
+      background: #f9fafb;
+      padding: 16px;
+      text-align: left;
+      font-weight: 600;
+      color: #374151;
+      border-bottom: 2px solid #e5e7eb;
+    }
+    
+    .sites-table td {
+      padding: 16px;
+      border-bottom: 1px solid #f3f4f6;
+      color: #1f2937;
+    }
+    
+    .sites-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .sites-table tr:hover {
+      background: #f9fafb;
+    }
+    
+    .site-name {
+      font-weight: 600;
+      color: #6366f1;
+      text-decoration: none;
+    }
+    
+    .site-name:hover {
+      text-decoration: underline;
+    }
+    
+    .metric-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+    
+    .badge-success {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    
+    .badge-warning {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    
+    .badge-info {
+      background: #dbeafe;
+      color: #1e3a8a;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+      color: #64748b;
+    }
+    
+    .empty-state-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 60px;
+      color: #64748b;
+    }
+    
+    .loading-spinner {
+      border: 3px solid #f3f4f6;
+      border-top: 3px solid #6366f1;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    @media (max-width: 768px) {
+      .chart-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .analytics-header {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .header-actions {
+        width: 100%;
+      }
+      
+      .header-actions .btn {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="analytics-container">
+    <div class="analytics-header">
+      <div class="header-content">
+        <h1>📊 My Analytics</h1>
+        <p id="lastUpdated">Last updated: Just now</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-secondary" onclick="window.location.href='/dashboard.html'">← Dashboard</button>
+        <button class="btn btn-secondary" onclick="refreshData()">🔄 Refresh</button>
+      </div>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="loading">
+        <div class="loading-spinner"></div>
+        <p>Loading analytics...</p>
+      </div>
+    </div>
+    
+    <!-- Charts Section -->
+    <div class="charts-section">
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3 class="chart-title">Site Views Over Time</h3>
+            <select class="chart-filter" id="viewsFilter" onchange="updateChart('views')">
+              <option value="7">Last 7 Days</option>
+              <option value="30" selected>Last 30 Days</option>
+              <option value="90">Last 90 Days</option>
+            </select>
+          </div>
+          <div class="chart-placeholder" id="viewsChart">
+            📈 Chart coming soon - Integrate with Chart.js or similar
+          </div>
+        </div>
+        
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3 class="chart-title">Top Performing Sites</h3>
+            <select class="chart-filter" id="performanceFilter" onchange="updateChart('performance')">
+              <option value="views">By Views</option>
+              <option value="engagement">By Engagement</option>
+            </select>
+          </div>
+          <div class="chart-placeholder" id="performanceChart">
+            📊 Chart coming soon
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Sites Analytics Table -->
+    <div class="sites-analytics">
+      <h2 style="margin-bottom: 20px; color: #1f2937;">Your Sites Performance</h2>
+      <div class="sites-table" id="sitesAnalytics">
+        <div class="loading">
+          <div class="loading-spinner"></div>
+          <p>Loading site analytics...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentUser = null;
+    let analyticsData = null;
+    
+    // Check authentication
+    async function checkAuth() {
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        window.location.href = '/login.html';
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          currentUser = await response.json();
+          loadAnalytics();
+        } else {
+          window.location.href = '/login.html';
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        window.location.href = '/login.html';
+      }
+    }
+    
+    // Load analytics data
+    async function loadAnalytics() {
+      try {
+        const response = await fetch(`/api/users/${currentUser.id}/analytics`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          }
+        });
+        
+        if (response.ok) {
+          analyticsData = await response.json();
+          renderStats(analyticsData);
+          renderSitesAnalytics(analyticsData.sites);
+          updateLastUpdated();
+        } else {
+          showError('Failed to load analytics');
+        }
+      } catch (error) {
+        console.error('Error loading analytics:', error);
+        showError('Failed to load analytics');
+      }
+    }
+    
+    // Render quick stats
+    function renderStats(data) {
+      const statsGrid = document.getElementById('statsGrid');
+      
+      const stats = [
+        {
+          icon: '🌐',
+          value: data.totalSites || 0,
+          label: 'Total Sites',
+          change: null
+        },
+        {
+          icon: '👁️',
+          value: formatNumber(data.totalViews || 0),
+          label: 'Total Views',
+          change: data.viewsChange || 0
+        },
+        {
+          icon: '📅',
+          value: formatNumber(data.viewsThisMonth || 0),
+          label: 'Views This Month',
+          change: null
+        },
+        {
+          icon: '📈',
+          value: data.publishedSites || 0,
+          label: 'Published Sites',
+          change: null
+        },
+        {
+          icon: '⭐',
+          value: data.avgEngagement ? `${data.avgEngagement}%` : '0%',
+          label: 'Avg. Engagement',
+          change: data.engagementChange || 0
+        },
+        {
+          icon: '🎯',
+          value: data.activeSites || 0,
+          label: 'Active Sites',
+          change: null
+        }
+      ];
+      
+      statsGrid.innerHTML = stats.map(stat => `
+        <div class="stat-card">
+          <div class="stat-icon">${stat.icon}</div>
+          <div class="stat-label">${stat.label}</div>
+          <div class="stat-value">${stat.value}</div>
+          ${stat.change !== null ? `
+            <div class="stat-change ${stat.change >= 0 ? 'positive' : 'negative'}">
+              ${stat.change >= 0 ? '↑' : '↓'} ${Math.abs(stat.change)}% from last period
+            </div>
+          ` : ''}
+        </div>
+      `).join('');
+    }
+    
+    // Render sites analytics table
+    function renderSitesAnalytics(sites) {
+      const container = document.getElementById('sitesAnalytics');
+      
+      if (!sites || sites.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📊</div>
+            <h3>No sites yet</h3>
+            <p>Create your first site to see analytics</p>
+            <button class="btn" style="background: #6366f1; color: white; margin-top: 20px;" 
+                    onclick="window.location.href='/templates.html'">
+              Create Site
+            </button>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Site Name</th>
+              <th>Template</th>
+              <th>Status</th>
+              <th>Views</th>
+              <th>Last 7 Days</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sites.map(site => `
+              <tr>
+                <td>
+                  ${site.status === 'published' ? 
+                    `<a href="/sites/${site.id}/" target="_blank" class="site-name">${site.name}</a>` : 
+                    `<span class="site-name">${site.name}</span>`
+                  }
+                </td>
+                <td>${site.template}</td>
+                <td>
+                  <span class="metric-badge ${site.status === 'published' ? 'badge-success' : 'badge-warning'}">
+                    ${site.status === 'published' ? '✅ Published' : '📝 Draft'}
+                  </span>
+                </td>
+                <td><strong>${formatNumber(site.views || 0)}</strong></td>
+                <td>
+                  <span class="metric-badge badge-info">
+                    ${formatNumber(site.viewsLast7Days || 0)}
+                  </span>
+                </td>
+                <td>${new Date(site.createdAt).toLocaleDateString()}</td>
+                <td>
+                  <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;" 
+                          onclick="viewSiteDetails('${site.id}')">
+                    View Details
+                  </button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+    
+    // Helper functions
+    function formatNumber(num) {
+      if (num >= 1000000) {
+        return (num / 1000000).toFixed(1) + 'M';
+      }
+      if (num >= 1000) {
+        return (num / 1000).toFixed(1) + 'K';
+      }
+      return num.toString();
+    }
+    
+    function updateLastUpdated() {
+      const now = new Date();
+      document.getElementById('lastUpdated').textContent = 
+        `Last updated: ${now.toLocaleTimeString()}`;
+    }
+    
+    function refreshData() {
+      loadAnalytics();
+    }
+    
+    function updateChart(chartType) {
+      console.log('Updating chart:', chartType);
+      // TODO: Implement chart updates with selected filters
+    }
+    
+    function viewSiteDetails(siteId) {
+      // TODO: Create detailed analytics view for individual site
+      alert(`Detailed analytics for site ${siteId} - Coming soon!`);
+    }
+    
+    function showError(message) {
+      const statsGrid = document.getElementById('statsGrid');
+      statsGrid.innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; padding: 40px; background: white; border-radius: 12px; border: 2px solid #fecaca;">
+          <div style="font-size: 3rem; margin-bottom: 10px;">⚠️</div>
+          <p style="color: #dc2626; font-weight: 600;">${message}</p>
+          <button class="btn btn-secondary" style="margin-top: 15px;" onclick="refreshData()">Try Again</button>
+        </div>
+      `;
+    }
+    
+    // Initialize
+    checkAuth();
+  </script>
+</body>
+</html>
+

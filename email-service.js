@@ -240,6 +240,78 @@ const templates = {
         </div>
       </div>
     `
+  }),
+
+  trialExpiringSoon: (businessName, siteUrl, daysLeft) => ({
+    subject: `⏰ Your Free Trial Expires in ${daysLeft} Day${daysLeft > 1 ? 's' : ''}`,
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #f59e0b; margin: 0; font-size: 2rem;">⏰ Trial Ending Soon</h1>
+        </div>
+        
+        <div style="background: #fffbeb; border-radius: 12px; padding: 30px; margin-bottom: 20px; border: 2px solid #fbbf24;">
+          <p style="font-size: 1.1rem; color: #1e293b; line-height: 1.6; margin: 0 0 20px 0;">
+            Your free trial for <strong>${businessName}</strong> will expire in <strong style="color: #f59e0b;">${daysLeft} day${daysLeft > 1 ? 's' : ''}</strong>!
+          </p>
+          
+          <div style="background: white; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <p style="margin: 0 0 10px 0; color: #64748b; font-size: 0.9rem;">
+              <strong style="color: #1e293b;">Your Site:</strong>
+            </p>
+            <a href="${siteUrl}" style="color: #2563eb; text-decoration: none; word-break: break-all; display: block; margin-top: 8px;">
+              ${siteUrl}
+            </a>
+          </div>
+          
+          <p style="color: #92400e; line-height: 1.6; margin: 20px 0 0 0; font-size: 0.95rem;">
+            After your trial expires, your site will go offline. Subscribe to any plan to keep it live!
+          </p>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${SITE_URL}/dashboard.html" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 1rem;">
+            🚀 Subscribe Now
+          </a>
+        </div>
+      </div>
+    `
+  }),
+
+  trialExpired: (businessName, siteUrl) => ({
+    subject: `❌ Your Free Trial Has Expired - ${businessName}`,
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #ef4444; margin: 0; font-size: 2rem;">❌ Trial Expired</h1>
+        </div>
+        
+        <div style="background: #fef2f2; border-radius: 12px; padding: 30px; margin-bottom: 20px; border: 2px solid #fca5a5;">
+          <p style="font-size: 1.1rem; color: #1e293b; line-height: 1.6; margin: 0 0 20px 0;">
+            Your free trial for <strong>${businessName}</strong> has expired and your site is now offline.
+          </p>
+          
+          <div style="background: white; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <p style="margin: 0 0 10px 0; color: #64748b; font-size: 0.9rem;">
+              <strong style="color: #1e293b;">Your Site (Offline):</strong>
+            </p>
+            <p style="color: #94a3b8; text-decoration: line-through; word-break: break-all; margin: 8px 0;">
+              ${siteUrl}
+            </p>
+          </div>
+          
+          <p style="color: #991b1b; line-height: 1.6; margin: 20px 0 0 0; font-size: 0.95rem; font-weight: 600;">
+            ⚠️ Your site data is saved for 30 days. Subscribe now to restore it!
+          </p>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${SITE_URL}/dashboard.html" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
+            🚀 Restore My Site Now
+          </a>
+        </div>
+      </div>
+    `
   })
 };
 
@@ -291,6 +363,8 @@ export const EmailTypes = {
   INVITATION: 'invitation',
   PASSWORD_RESET: 'passwordReset',
   SITE_PUBLISHED: 'sitePublished',
-  SITE_UPDATED: 'siteUpdated'
+  SITE_UPDATED: 'siteUpdated',
+  TRIAL_EXPIRING_SOON: 'trialExpiringSoon',
+  TRIAL_EXPIRED: 'trialExpired'
 };
 

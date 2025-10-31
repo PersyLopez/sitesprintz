@@ -11,6 +11,7 @@ import jwt from 'jsonwebtoken';
 import Stripe from 'stripe';
 import { randomUUID as nodeRandomUUID } from 'crypto';
 import { sendEmail, EmailTypes } from './email-service.js';
+import cron from 'node-cron';
 
 dotenv.config();
 
@@ -1966,6 +1967,252 @@ app.use((req, res, next) => {
       // Not a subdomain site, continue with normal routing
       next();
     });
+});
+
+// Trial Expiration Checker
+async function checkTrialExpirations() {
+  try {
+    console.log('🔍 Checking for trial expirations...');
+    
+    const sitesDir = path.join(publicDir, 'sites');
+    
+    // Check if sites directory exists
+    try {
+      await fs.access(sitesDir);
+    } catch (error) {
+      console.log('No sites directory found, skipping trial check');
+      return;
+    }
+    
+    // Get all subdirectories in sites
+    const subdirs = await fs.readdir(sitesDir);
+    
+    for (const subdomain of subdirs) {
+      const siteJsonPath = path.join(sitesDir, subdomain, 'site.json');
+      
+      try {
+        const siteData = JSON.parse(await fs.readFile(siteJsonPath, 'utf-8'));
+        
+        // Check if site has published metadata and is on free plan
+        if (!siteData.published || siteData.published.plan !== 'free') {
+          continue; // Skip paid sites
+        }
+        
+        // Check if site is already marked as expired
+        if (siteData.published.status === 'expired') {
+          continue; // Already handled
+        }
+        
+        const publishedAt = new Date(siteData.published.at);
+        const now = new Date();
+        const daysElapsed = Math.floor((now - publishedAt) / (1000 * 60 * 60 * 24));
+        const daysRemaining = 7 - daysElapsed;
+        
+        console.log(`Site ${subdomain}: ${daysElapsed} days elapsed, ${daysRemaining} days remaining`);
+        
+        const siteUrl = `${process.env.SITE_URL || 'http://localhost:3000'}/sites/${subdomain}/`;
+        const businessName = siteData.brand?.name || 'Your Business';
+        const ownerEmail = siteData.published.email;
+        
+        if (!ownerEmail) {
+          console.warn(`No owner email for site ${subdomain}, skipping notifications`);
+          continue;
+        }
+        
+        // Day 5: 2 days left warning
+        if (daysElapsed === 5 && !siteData.published.warning2DaysSent) {
+          console.log(`📧 Sending 2-days-left warning to ${ownerEmail} for ${subdomain}`);
+          await sendEmail(
+            ownerEmail,
+            EmailTypes.TRIAL_EXPIRING_SOON,
+            {
+              businessName,
+              siteUrl,
+              daysLeft: 2
+            }
+          );
+          
+          // Mark as sent
+          siteData.published.warning2DaysSent = true;
+          await fs.writeFile(siteJsonPath, JSON.stringify(siteData, null, 2));
+        }
+        
+        // Day 6: 1 day left warning
+        if (daysElapsed === 6 && !siteData.published.warning1DaySent) {
+          console.log(`📧 Sending 1-day-left warning to ${ownerEmail} for ${subdomain}`);
+          await sendEmail(
+            ownerEmail,
+            EmailTypes.TRIAL_EXPIRING_SOON,
+            {
+              businessName,
+              siteUrl,
+              daysLeft: 1
+            }
+          );
+          
+          // Mark as sent
+          siteData.published.warning1DaySent = true;
+          await fs.writeFile(siteJsonPath, JSON.stringify(siteData, null, 2));
+        }
+        
+        // Day 7+: Trial expired
+        if (daysElapsed >= 7) {
+          console.log(`❌ Trial expired for ${subdomain}, marking as expired`);
+          
+          // Mark site as expired
+          siteData.published.status = 'expired';
+          siteData.published.expiredAt = new Date().toISOString();
+          await fs.writeFile(siteJsonPath, JSON.stringify(siteData, null, 2));
+          
+          // Send expiration email (only once)
+          if (!siteData.published.expirationEmailSent) {
+            console.log(`📧 Sending expiration email to ${ownerEmail} for ${subdomain}`);
+            await sendEmail(
+              ownerEmail,
+              EmailTypes.TRIAL_EXPIRED,
+              {
+                businessName,
+                siteUrl
+              }
+            );
+            
+            siteData.published.expirationEmailSent = true;
+            await fs.writeFile(siteJsonPath, JSON.stringify(siteData, null, 2));
+          }
+        }
+        
+      } catch (error) {
+        console.error(`Error processing site ${subdomain}:`, error);
+      }
+    }
+    
+    console.log('✅ Trial expiration check complete');
+  } catch (error) {
+    console.error('Error in trial expiration checker:', error);
+  }
+}
+
+// Schedule trial expiration checker to run daily at 9 AM
+cron.schedule('0 9 * * *', () => {
+  console.log('⏰ Running scheduled trial expiration check...');
+  checkTrialExpirations();
+});
+
+// Also run once on server start
+console.log('🚀 Running initial trial expiration check...');
+checkTrialExpirations();
+
+// Middleware to check if site is expired before serving
+app.use('/sites/:subdomain', async (req, res, next) => {
+  const { subdomain } = req.params;
+  const siteJsonPath = path.join(publicDir, 'sites', subdomain, 'site.json');
+  
+  try {
+    const siteData = JSON.parse(await fs.readFile(siteJsonPath, 'utf-8'));
+    
+    // If site is marked as expired, show expiration page
+    if (siteData.published?.status === 'expired') {
+      return res.send(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Trial Expired - ${siteData.brand?.name || 'This Site'}</title>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              min-height: 100vh;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 0;
+              padding: 20px;
+            }
+            .container {
+              background: white;
+              border-radius: 20px;
+              padding: 50px 40px;
+              max-width: 500px;
+              text-align: center;
+              box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            }
+            .icon {
+              font-size: 80px;
+              margin-bottom: 20px;
+            }
+            h1 {
+              color: #1e293b;
+              margin: 0 0 15px 0;
+              font-size: 2rem;
+            }
+            p {
+              color: #64748b;
+              line-height: 1.6;
+              margin: 0 0 30px 0;
+              font-size: 1.1rem;
+            }
+            .cta-button {
+              display: inline-block;
+              padding: 16px 40px;
+              background: linear-gradient(135deg, #ef4444, #dc2626);
+              color: white;
+              text-decoration: none;
+              border-radius: 12px;
+              font-weight: 600;
+              font-size: 1.1rem;
+              box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+              transition: transform 0.2s, box-shadow 0.2s;
+            }
+            .cta-button:hover {
+              transform: translateY(-2px);
+              box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+            }
+            .info-box {
+              background: #eff6ff;
+              border-left: 4px solid #3b82f6;
+              border-radius: 8px;
+              padding: 16px;
+              margin: 25px 0;
+              text-align: left;
+            }
+            .info-box p {
+              color: #1e40af;
+              margin: 0;
+              font-size: 0.9rem;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="icon">⏰</div>
+            <h1>Free Trial Expired</h1>
+            <p>The free trial for <strong>${siteData.brand?.name || 'this site'}</strong> has ended.</p>
+            
+            <div class="info-box">
+              <p>💡 <strong>Good News:</strong> Your site data is safely stored for 30 days. Subscribe now to restore it instantly!</p>
+            </div>
+            
+            <a href="${process.env.SITE_URL || 'http://localhost:3000'}/dashboard.html" class="cta-button">
+              🚀 Restore My Site
+            </a>
+            
+            <p style="margin-top: 30px; font-size: 0.9rem; color: #94a3b8;">
+              Plans start at just $10/month
+            </p>
+          </div>
+        </body>
+        </html>
+      `);
+    }
+    
+    // Site is not expired, continue normally
+    next();
+  } catch (error) {
+    // If we can't read the site data, let the normal 404 handler deal with it
+    next();
+  }
 });
 
 app.listen(PORT, () => {
