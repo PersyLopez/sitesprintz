@@ -201,6 +201,79 @@
   <script>
     let currentUser = null;
     
+    // Handle post-checkout flow
+    async function handlePostCheckout() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sessionId = urlParams.get('session_id');
+      const plan = urlParams.get('plan');
+      const draftId = urlParams.get('draft');
+      
+      if (sessionId && plan && draftId) {
+        console.log('Post-checkout detected:', { sessionId, plan, draftId });
+        
+        // Get pending publish data from localStorage
+        const pendingPublish = localStorage.getItem('pendingPublish');
+        if (pendingPublish) {
+          try {
+            const publishData = JSON.parse(pendingPublish);
+            
+            // Show loading message
+            const sitesGrid = document.getElementById('sitesGrid');
+            if (sitesGrid) {
+              sitesGrid.innerHTML = `
+                <div style="text-align: center; padding: 60px;">
+                  <div style="font-size: 3rem; margin-bottom: 20px;">⏳</div>
+                  <h2 style="color: var(--color-primary); margin-bottom: 10px;">Publishing Your Site...</h2>
+                  <p style="color: var(--text-muted);">Please wait while we set up your website.</p>
+                </div>
+              `;
+            }
+            
+            // Wait a moment for webhook to process (if it hasn't already)
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Attempt to publish the site
+            const response = await fetch(`/api/drafts/${publishData.draftId}/publish`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                plan: publishData.plan,
+                email: publishData.email
+              })
+            });
+            
+            const result = await response.json();
+            
+            // Clear pending publish data
+            localStorage.removeItem('pendingPublish');
+            
+            // Clear URL parameters
+            window.history.replaceState({}, document.title, window.location.pathname);
+            
+            if (response.ok && result.success) {
+              // Show success message
+              alert(`🎉 Success! Your site is now live at: ${result.url}`);
+              
+              // Reload sites list
+              if (currentUser) {
+                loadUserSites();
+              }
+            } else {
+              // Handle error
+              console.error('Publish failed:', result);
+              alert(`⚠️ ${result.message || result.error || 'Failed to publish site. Please contact support.'}`);
+            }
+          } catch (error) {
+            console.error('Post-checkout error:', error);
+            alert('An error occurred while publishing your site. Please refresh the page or contact support.');
+            localStorage.removeItem('pendingPublish');
+          }
+        }
+      }
+    }
+    
     // Check authentication
     async function checkAuth() {
       const token = localStorage.getItem('authToken');
@@ -220,6 +293,11 @@
         if (response.ok) {
           currentUser = await response.json();
           document.getElementById('userName').textContent = `Hello, ${currentUser.email}`;
+          
+          // Check for post-checkout flow first
+          await handlePostCheckout();
+          
+          // Then load sites (will reload if publish completed)
           loadUserSites();
         } else {
           window.location.href = '/login.html';

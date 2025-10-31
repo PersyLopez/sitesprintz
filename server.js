@@ -145,11 +145,93 @@ if (stripe && STRIPE_WEBHOOK_SECRET) {
 
       switch (event.type) {
         case 'checkout.session.completed':
+          const session = event.data.object;
+          console.log('Stripe event:', event.type, session.id);
+          
+          // Handle subscription checkout completion
+          if (session.mode === 'subscription' && session.subscription) {
+            const customerEmail = session.customer_email || session.customer_details?.email;
+            if (customerEmail) {
+              try {
+                const subscription = await stripe.subscriptions.retrieve(session.subscription);
+                const plan = session.metadata?.plan || 'starter';
+                const priceId = subscription.items.data[0]?.price?.id;
+                
+                await updateUserSubscription(customerEmail, {
+                  subscriptionId: subscription.id,
+                  customerId: subscription.customer,
+                  status: subscription.status,
+                  plan: plan,
+                  priceId: priceId,
+                  currentPeriodEnd: subscription.current_period_end,
+                  cancelAtPeriodEnd: subscription.cancel_at_period_end || false
+                });
+                
+                console.log(`Subscription created for ${customerEmail}: ${plan} plan`);
+              } catch (error) {
+                console.error('Error processing subscription checkout:', error);
+              }
+            }
+          }
+          break;
+
+        case 'customer.subscription.created':
+        case 'customer.subscription.updated':
+          const subscription = event.data.object;
+          console.log('Stripe event:', event.type, subscription.id);
+          
+          try {
+            // Get customer email
+            const customer = await stripe.customers.retrieve(subscription.customer);
+            if (customer.email) {
+              // Determine plan from price ID
+              const priceId = subscription.items.data[0]?.price?.id;
+              let plan = 'starter';
+              if (priceId === process.env.STRIPE_PRICE_PRO) {
+                plan = 'pro';
+              }
+              
+              await updateUserSubscription(customer.email, {
+                subscriptionId: subscription.id,
+                customerId: subscription.customer,
+                status: subscription.status,
+                plan: plan,
+                priceId: priceId,
+                currentPeriodEnd: subscription.current_period_end,
+                cancelAtPeriodEnd: subscription.cancel_at_period_end || false
+              });
+              
+              console.log(`Subscription ${event.type === 'customer.subscription.created' ? 'created' : 'updated'} for ${customer.email}`);
+            }
+          } catch (error) {
+            console.error('Error processing subscription event:', error);
+          }
+          break;
+
+        case 'customer.subscription.deleted':
+          const deletedSub = event.data.object;
+          console.log('Stripe event: subscription deleted', deletedSub.id);
+          
+          try {
+            const customer = await stripe.customers.retrieve(deletedSub.customer);
+            if (customer.email) {
+              await updateUserSubscription(customer.email, {
+                status: 'cancelled',
+                cancelledAt: Date.now()
+              });
+              console.log(`Subscription cancelled for ${customer.email}`);
+            }
+          } catch (error) {
+            console.error('Error processing subscription cancellation:', error);
+          }
+          break;
+
         case 'payment_intent.succeeded':
         case 'charge.refunded':
         case 'payment_intent.payment_failed':
           console.log('Stripe event:', event.type, event.data?.object?.id || '');
           break;
+
         default:
           break;
       }
@@ -796,6 +878,162 @@ app.post('/api/payments/checkout-sessions', async (req, res) => {
   }
 });
 
+// Create Checkout Session for subscription (Starter/Pro plans)
+app.post('/api/create-subscription-checkout', authenticateToken, async (req, res) => {
+  try {
+    if (!stripe) {
+      return res.status(503).json({ error: 'Stripe not configured. Add STRIPE_SECRET_KEY to .env' });
+    }
+
+    const { plan, draftId } = req.body;
+    const userEmail = req.user.email;
+
+    // Validate plan
+    const validPlans = ['starter', 'pro'];
+    if (!validPlans.includes(plan)) {
+      return res.status(400).json({ error: 'Invalid plan. Must be "starter" or "pro"' });
+    }
+
+    // Get price ID from environment
+    const priceId = plan === 'starter' 
+      ? process.env.STRIPE_PRICE_STARTER 
+      : process.env.STRIPE_PRICE_PRO;
+
+    if (!priceId || priceId.includes('placeholder')) {
+      return res.status(503).json({ 
+        error: 'Stripe prices not configured. Please add STRIPE_PRICE_STARTER and STRIPE_PRICE_PRO to .env',
+        instructions: 'Create products at https://dashboard.stripe.com/test/products'
+      });
+    }
+
+    // Create or retrieve Stripe customer
+    let customer;
+    const existingCustomers = await stripe.customers.list({ email: userEmail, limit: 1 });
+
+    if (existingCustomers.data.length > 0) {
+      customer = existingCustomers.data[0];
+    } else {
+      customer = await stripe.customers.create({
+        email: userEmail,
+        metadata: { 
+          source: 'sitesprintz',
+          signupDate: new Date().toISOString()
+        }
+      });
+    }
+
+    // Create checkout session
+    const session = await stripe.checkout.sessions.create({
+      customer: customer.id,
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      line_items: [{
+        price: priceId,
+        quantity: 1,
+      }],
+      success_url: `${process.env.SITE_URL}/dashboard.html?session_id={CHECKOUT_SESSION_ID}&plan=${plan}&draft=${draftId || ''}`,
+      cancel_url: `${process.env.SITE_URL}/setup.html?draft=${draftId || ''}`,
+      allow_promotion_codes: true,
+      billing_address_collection: 'auto',
+      metadata: {
+        plan,
+        user_email: userEmail,
+        draft_id: draftId || '',
+        source: 'sitesprintz_subscription'
+      }
+    });
+
+    console.log(`Created subscription checkout session for ${userEmail}, plan: ${plan}, session: ${session.id}`);
+    res.json({ sessionId: session.id, url: session.url });
+  } catch (error) {
+    console.error('Subscription checkout error:', error);
+    res.status(500).json({ 
+      error: 'Failed to create checkout session',
+      message: error.message 
+    });
+  }
+});
+
+// Get user's subscription status
+app.get('/api/subscription/status', authenticateToken, async (req, res) => {
+  try {
+    const userEmail = req.user.email;
+    
+    // Load user data
+    const userFilePath = getUserFilePath(userEmail);
+    let userData;
+    try {
+      userData = JSON.parse(await fs.readFile(userFilePath, 'utf-8'));
+    } catch (error) {
+      return res.json({ hasSubscription: false, plan: 'free' });
+    }
+
+    // Check if user has subscription data
+    if (!userData.subscription || !userData.subscription.subscriptionId) {
+      return res.json({ hasSubscription: false, plan: 'free' });
+    }
+
+    // Verify subscription status with Stripe
+    if (stripe && userData.subscription.subscriptionId) {
+      try {
+        const subscription = await stripe.subscriptions.retrieve(userData.subscription.subscriptionId);
+        
+        // Update local data if different
+        if (subscription.status !== userData.subscription.status) {
+          userData.subscription.status = subscription.status;
+          await fs.writeFile(userFilePath, JSON.stringify(userData, null, 2));
+        }
+
+        return res.json({
+          hasSubscription: subscription.status === 'active' || subscription.status === 'trialing',
+          plan: userData.subscription.plan || 'free',
+          status: subscription.status,
+          currentPeriodEnd: subscription.current_period_end,
+          cancelAtPeriodEnd: subscription.cancel_at_period_end
+        });
+      } catch (error) {
+        console.error('Error fetching subscription from Stripe:', error);
+      }
+    }
+
+    // Fallback to local data
+    res.json({
+      hasSubscription: userData.subscription.status === 'active',
+      plan: userData.subscription.plan || 'free',
+      status: userData.subscription.status
+    });
+  } catch (error) {
+    console.error('Subscription status error:', error);
+    res.status(500).json({ error: 'Failed to fetch subscription status' });
+  }
+});
+
+// Helper function to update user subscription data
+async function updateUserSubscription(email, subscriptionData) {
+  const userFilePath = getUserFilePath(email);
+  try {
+    let userData;
+    try {
+      userData = JSON.parse(await fs.readFile(userFilePath, 'utf-8'));
+    } catch (error) {
+      // User file doesn't exist, create basic structure
+      userData = { email, createdAt: Date.now() };
+    }
+
+    userData.subscription = {
+      ...userData.subscription,
+      ...subscriptionData,
+      updatedAt: Date.now()
+    };
+
+    await fs.writeFile(userFilePath, JSON.stringify(userData, null, 2));
+    console.log(`Updated subscription for ${email}:`, subscriptionData);
+  } catch (error) {
+    console.error('Failed to update user subscription:', error);
+    throw error;
+  }
+}
+
 app.get('/api/site', async (req, res) => {
   try{
     const raw = await fs.readFile(dataFile, 'utf-8');
@@ -1070,6 +1308,63 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
     
     if (!plan || !['starter', 'business', 'pro'].includes(plan.toLowerCase())) {
       return res.status(400).json({ error: 'Invalid plan selected' });
+    }
+    
+    // Check subscription requirement for paid plans
+    if (plan.toLowerCase() !== 'free') {
+      try {
+        const userFilePath = getUserFilePath(email);
+        let userData;
+        
+        try {
+          userData = JSON.parse(await fs.readFile(userFilePath, 'utf-8'));
+        } catch (error) {
+          // User file doesn't exist
+          return res.status(402).json({ 
+            error: 'Subscription required',
+            message: 'This plan requires an active subscription. Please subscribe first.',
+            requiresPayment: true,
+            plan: plan.toLowerCase()
+          });
+        }
+        
+        // Check if user has subscription
+        if (!userData.subscription || !userData.subscription.subscriptionId) {
+          return res.status(402).json({ 
+            error: 'Subscription required',
+            message: 'This plan requires an active subscription. Please subscribe first.',
+            requiresPayment: true,
+            plan: plan.toLowerCase()
+          });
+        }
+        
+        // Verify subscription is active
+        const subStatus = userData.subscription.status;
+        if (subStatus !== 'active' && subStatus !== 'trialing') {
+          return res.status(402).json({ 
+            error: 'Inactive subscription',
+            message: `Your subscription is ${subStatus}. Please update your payment method or subscribe again.`,
+            requiresPayment: true,
+            plan: plan.toLowerCase()
+          });
+        }
+        
+        // Verify plan tier matches (pro requires pro subscription)
+        if (plan.toLowerCase() === 'pro' && userData.subscription.plan !== 'pro') {
+          return res.status(403).json({ 
+            error: 'Plan upgrade required',
+            message: 'This template requires a Pro subscription. Please upgrade your plan.',
+            requiresUpgrade: true,
+            currentPlan: userData.subscription.plan,
+            requiredPlan: 'pro'
+          });
+        }
+        
+        console.log(`Subscription verified for ${email}: ${userData.subscription.plan} (${subStatus})`);
+      } catch (error) {
+        console.error('Error checking subscription:', error);
+        return res.status(500).json({ error: 'Failed to verify subscription' });
+      }
     }
     
     // Load draft

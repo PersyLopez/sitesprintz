@@ -2143,11 +2143,49 @@
       payButton.disabled = true;
       
       try {
-        // TODO: When Stripe keys are configured, uncomment this to enable real payments
-        // const stripe = Stripe('your_publishable_key_here');
-        // Create a payment intent and handle Stripe checkout
+        // If it's a paid plan (starter or pro), redirect to Stripe Checkout
+        if (plan.toLowerCase() === 'starter' || plan.toLowerCase() === 'pro') {
+          const token = localStorage.getItem('token');
+          if (!token) {
+            alert('Please log in to subscribe to a paid plan.');
+            payButton.textContent = originalText;
+            payButton.disabled = false;
+            return;
+          }
+          
+          // Create Stripe checkout session
+          const checkoutResponse = await fetch('/api/create-subscription-checkout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              plan: plan.toLowerCase(),
+              draftId: draftId
+            })
+          });
+          
+          const checkoutResult = await checkoutResponse.json();
+          
+          if (!checkoutResponse.ok) {
+            throw new Error(checkoutResult.error || 'Failed to create checkout session');
+          }
+          
+          // Store draft ID and email in localStorage for post-checkout processing
+          localStorage.setItem('pendingPublish', JSON.stringify({
+            draftId,
+            email,
+            plan
+          }));
+          
+          // Redirect to Stripe Checkout
+          console.log('Redirecting to Stripe Checkout...');
+          window.location.href = checkoutResult.url;
+          return;
+        }
         
-        // For now, proceed directly to publishing (free launch or test mode)
+        // For free plan, proceed directly to publishing
         console.log('Publishing site for plan:', plan);
         
         // Call publish endpoint
