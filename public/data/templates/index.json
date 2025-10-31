@@ -131,6 +131,48 @@
       ]
     },
     {
+      "id": "electrician",
+      "name": "Electrician Service",
+      "description": "Emergency response, service areas, certifications",
+      "category": "Home Services",
+      "color": "#f59e0b",
+      "plan": "Starter",
+      "features": [
+        "Emergency service emphasis",
+        "Service area coverage",
+        "Certifications and licenses",
+        "Maintenance plans"
+      ]
+    },
+    {
+      "id": "auto-repair",
+      "name": "Auto Repair Shop",
+      "description": "ASE-certified team, diagnostics, fleet program",
+      "category": "Automotive",
+      "color": "#ef4444",
+      "plan": "Starter",
+      "features": [
+        "ASE-certified technicians",
+        "Digital vehicle inspections",
+        "Fleet maintenance programs",
+        "Diagnostic services"
+      ]
+    },
+    {
+      "id": "plumbing",
+      "name": "Plumbing Company",
+      "description": "On-call plumbers, service guarantees, membership plans",
+      "category": "Home Services",
+      "color": "#3b82f6",
+      "plan": "Starter",
+      "features": [
+        "24/7 emergency service",
+        "Service guarantees",
+        "Membership plans",
+        "Commercial work"
+      ]
+    },
+    {
       "id": "product-ordering",
       "name": "Product Ordering",
       "description": "Full e-commerce with Stripe checkout",
@@ -157,13 +199,68 @@
       ]
     },
     {
-      "id": "premium-suite",
-      "name": "Premium Suite (Coming Soon)",
-      "description": "Full multi-page experience with blog, scheduling, and CRM integrations",
-      "category": "Premium",
-      "color": "#9333ea",
+      "id": "home-services-premium",
+      "name": "Home Services Pro",
+      "description": "Premium template for contractors, HVAC, plumbing, and trade businesses",
+      "category": "Home Services",
+      "color": "#1e40af",
       "plan": "Premium",
-      "status": "coming-soon"
+      "features": [
+        "Multi-step quote form with file upload",
+        "Before/after project galleries",
+        "Service area coverage map",
+        "Credentials and trust badges",
+        "Emergency service emphasis",
+        "Testimonials with star ratings"
+      ]
+    },
+    {
+      "id": "medical-premium",
+      "name": "Medical & Wellness Premium",
+      "description": "Premium template for medical, dental, and wellness practices",
+      "category": "Healthcare",
+      "color": "#0369a1",
+      "plan": "Premium",
+      "features": [
+        "Advanced appointment booking form",
+        "Provider profiles with credentials",
+        "Insurance acceptance showcase",
+        "Patient testimonials and journey",
+        "Office hours and location details",
+        "HIPAA-focused content blocks"
+      ]
+    },
+    {
+      "id": "legal-premium",
+      "name": "Legal Services Premium",
+      "description": "Premium template for law firms and attorneys",
+      "category": "Legal",
+      "color": "#1e3a8a",
+      "plan": "Premium",
+      "features": [
+        "Free consultation form",
+        "Practice areas and case results",
+        "Attorney team showcase",
+        "Process timeline and FAQs",
+        "Credentials and awards",
+        "24/7 urgency CTAs"
+      ]
+    },
+    {
+      "id": "real-estate-premium",
+      "name": "Real Estate Premium",
+      "description": "Premium template for real estate agents and teams",
+      "category": "Real Estate",
+      "color": "#2563eb",
+      "plan": "Premium",
+      "features": [
+        "Featured listings showcase",
+        "Home valuation lead capture",
+        "Agent bio and stats",
+        "Market insights and testimonials",
+        "Buyer and seller journeys",
+        "Resource library and contact CTAs"
+      ]
     }
   ]
 }
