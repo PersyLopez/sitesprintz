@@ -186,6 +186,60 @@ const templates = {
         </div>
       </div>
     `
+  }),
+
+  siteUpdated: (businessName, siteUrl, updateTime) => ({
+    subject: `✅ Your Site Has Been Updated - ${businessName}`,
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #10b981; margin: 0; font-size: 2rem;">✅ Site Updated!</h1>
+        </div>
+        
+        <div style="background: #f0fdf4; border-radius: 12px; padding: 30px; margin-bottom: 20px; border: 2px solid #86efac;">
+          <p style="font-size: 1.1rem; color: #1e293b; line-height: 1.6; margin: 0 0 20px 0;">
+            <strong>${businessName}</strong> has been successfully updated!
+          </p>
+          
+          <div style="background: white; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <p style="margin: 0 0 10px 0; color: #64748b; font-size: 0.9rem;">
+              <strong style="color: #1e293b;">Updated At:</strong> ${updateTime}
+            </p>
+            <p style="margin: 10px 0 0 0; color: #64748b; font-size: 0.9rem;">
+              <strong style="color: #1e293b;">Your Site:</strong>
+            </p>
+            <a href="${siteUrl}" style="color: #2563eb; text-decoration: none; word-break: break-all; display: block; margin-top: 8px;">
+              ${siteUrl}
+            </a>
+          </div>
+          
+          <p style="color: #64748b; line-height: 1.6; margin: 20px 0 0 0; font-size: 0.95rem;">
+            Your changes are now live! Visit your site to see the updates.
+          </p>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${siteUrl}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #10b981, #059669); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 1rem; margin-right: 10px;">
+            View Your Site
+          </a>
+          <a href="${SITE_URL}/dashboard.html" style="display: inline-block; padding: 14px 32px; background: #f1f5f9; color: #475569; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 1rem;">
+            Go to Dashboard
+          </a>
+        </div>
+        
+        <div style="background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 16px; margin: 20px 0;">
+          <p style="color: #1e40af; font-size: 0.9rem; margin: 0; line-height: 1.5;">
+            💡 <strong>Tip:</strong> All site updates are automatically backed up. You can always roll back to a previous version if needed.
+          </p>
+        </div>
+        
+        <div style="border-top: 1px solid #e2e8f0; margin-top: 30px; padding-top: 20px;">
+          <p style="color: #94a3b8; font-size: 0.875rem; text-align: center; margin: 0;">
+            Need help? Visit our <a href="${SITE_URL}" style="color: #2563eb; text-decoration: none;">support center</a> or reply to this email.
+          </p>
+        </div>
+      </div>
+    `
   })
 };
 
@@ -236,6 +290,7 @@ export const EmailTypes = {
   WELCOME: 'welcome',
   INVITATION: 'invitation',
   PASSWORD_RESET: 'passwordReset',
-  SITE_PUBLISHED: 'sitePublished'
+  SITE_PUBLISHED: 'sitePublished',
+  SITE_UPDATED: 'siteUpdated'
 };
 
