@@ -1,0 +1,295 @@
+{
+  "id": "home-services-premium",
+  "name": "Home Services Pro",
+  "plan": "Premium",
+  "category": "Home Services",
+  "meta": {
+    "businessName": "[Business Name] Home Services",
+    "pageTitle": "[Business Name] | Trusted Home & Commercial Services",
+    "metaDescription": "Licensed HVAC, plumbing, and electrical experts providing 24/7 emergency response across [City] and the surrounding metro.",
+    "logo": "assets/logo.svg",
+    "logoAlt": "[Business Name] logo",
+    "primaryPhone": "+1-555-222-8899",
+    "primaryPhoneLabel": "Call 24/7: (555) 222-8899",
+    "mobileCallLabel": "Tap to Call 24/7"
+  },
+  "styles": {
+    "primaryColor": "#1e40af",
+    "primaryColorDark": "#1d3a9c",
+    "accentColor": "#f97316",
+    "secondaryColor": "#059669",
+    "textColor": "#0f172a",
+    "mutedColor": "#475569",
+    "surfaceColor": "#ffffffd9",
+    "borderColor": "rgba(15,23,42,0.08)",
+    "backgroundColor": "#f8fafc",
+    "radius": "20px"
+  },
+  "navigation": [
+    { "label": "Services", "href": "#services-advanced" },
+    { "label": "Why Us", "href": "#credentials-showcase" },
+    { "label": "Gallery", "href": "#before-after-showcase" },
+    { "label": "Testimonials", "href": "#testimonials-advanced" },
+    { "label": "Service Area", "href": "#coverage-map" },
+    { "label": "Contact", "href": "#cta-conversion" }
+  ],
+  "sections": [
+    {
+      "id": "emergency-hero",
+      "type": "emergency-hero",
+      "settings": {
+        "badge": "24/7 Emergency Service Available",
+        "headline": "Your trusted pros for HVAC, plumbing, and electrical in [City]",
+        "subheadline": "Licensed, bonded, and insured contractors delivering rapid response and award-winning craftsmanship for homes and businesses across [Region].",
+        "trustIndicators": ["Licensed & Insured", "25+ Years Experience", "A+ BBB Rating", "500+ 5-Star Reviews"],
+        "primaryCta": { "label": "Get Free Quote", "href": "#quote-form" },
+        "secondaryCta": { "label": "Call Now: (555) 222-8899", "href": "tel:+15552228899" },
+        "image": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=900&q=80",
+        "imageAlt": "Technician repairing HVAC unit",
+        "stats": [
+          { "value": "2,500+", "label": "Projects Completed" },
+          { "value": "60 min", "label": "Average Emergency Response" },
+          { "value": "98%", "label": "Customer Satisfaction" }
+        ]
+      }
+    },
+    {
+      "id": "services-advanced",
+      "type": "services-advanced",
+      "settings": {
+        "heading": "Full-service solutions under one roof",
+        "subheading": "From emergency outages to full system upgrades, our certified teams handle every trade with precision.",
+        "services": [
+          {
+            "icon": "HV",
+            "name": "HVAC Install & Repair",
+            "description": "High-efficiency heating and cooling design, installation, and maintenance for residential and commercial properties.",
+            "link": { "label": "Learn more", "href": "#quote-form" }
+          },
+          {
+            "icon": "PL",
+            "name": "Plumbing & Sewer",
+            "description": "Whole-home repipes, tankless water heaters, leak detection, and hydro-jetting backed by clean workspace guarantees.",
+            "badge": "Emergency",
+            "link": { "label": "Schedule inspection", "href": "#quote-form" }
+          },
+          {
+            "icon": "EL",
+            "name": "Electrical Upgrades",
+            "description": "Panel replacements, EV charging stations, lighting design, and code compliance handled by master electricians.",
+            "link": { "label": "View capabilities", "href": "#credentials-showcase" }
+          },
+          {
+            "icon": "RF",
+            "name": "Roofing & Exterior",
+            "description": "Storm damage assessments, shingle and metal roofing, gutters, and weatherproofing with lifetime workmanship warranty.",
+            "link": { "label": "Request inspection", "href": "#quote-form" }
+          },
+          {
+            "icon": "SF",
+            "name": "Safety & Compliance",
+            "description": "Fire alarms, backup generators, smart-home monitoring, and OSHA-compliant safety programs for facilities.",
+            "link": { "label": "See safety services", "href": "#credentials-showcase" }
+          },
+          {
+            "icon": "FM",
+            "name": "Facility Maintenance",
+            "description": "Proactive service plans with dedicated account managers, quarterly reporting, and priority dispatch for property managers.",
+            "link": { "label": "Explore plans", "href": "#coverage-map" }
+          }
+        ],
+        "viewAll": { "label": "View all services", "href": "#cta-conversion" }
+      }
+    },
+    {
+      "id": "quote-form",
+      "type": "quote-form-wizard",
+      "settings": {
+        "heading": "Request your custom quote",
+        "subheading": "Answer a few quick questions and a project manager will call you within 2 hours (often sooner).",
+        "serviceOptions": [
+          { "label": "HVAC", "value": "hvac", "icon": "HVAC", "description": "Installation, repair, maintenance" },
+          { "label": "Plumbing", "value": "plumbing", "icon": "PLMB", "description": "Leaks, clogs, repipes, heaters" },
+          { "label": "Electrical", "value": "electrical", "icon": "ELEC", "description": "Panels, wiring, lighting" },
+          { "label": "Roofing", "value": "roofing", "icon": "ROOF", "description": "Repairs, replacements" },
+          { "label": "Remodel/Build", "value": "construction", "icon": "BUILD", "description": "Whole home or commercial" },
+          { "label": "Other", "value": "other", "icon": "OTHER", "description": "Tell us about your project" }
+        ],
+        "contactMethods": ["Phone", "Email", "Text"],
+        "urgencyLevels": ["Routine", "Soon", "Emergency"],
+        "stepLabels": ["Service", "Project Details", "Contact", "Preferences"],
+        "submit": { "endpoint": "/api/contact-form", "type": "quote" },
+        "successMessage": "Quote request received! We'll contact you within 2 hours."
+      }
+    },
+    {
+      "id": "before-after-showcase",
+      "type": "before-after-showcase",
+      "settings": {
+        "heading": "See the difference",
+        "subheading": "From emergency recoveries to full-scale remodels, every project is managed with precision and pride.",
+        "filters": [
+          { "label": "All Projects", "value": "all" },
+          { "label": "Residential", "value": "residential" },
+          { "label": "Commercial", "value": "commercial" },
+          { "label": "Emergency", "value": "emergency" }
+        ],
+        "projects": [
+          {
+            "title": "Data center electrical retrofit",
+            "tag": "Commercial",
+            "category": "commercial",
+            "beforeImage": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=900&q=80",
+            "afterImage": "https://images.unsplash.com/photo-1582719478250-38c6d53d4b12?auto=format&fit=crop&w=900&q=80",
+            "description": "Upgraded the main service, installed redundant generators, and brought all wiring to current NFPA standards in <6 weeks."
+          },
+          {
+            "title": "Historic home plumbing repipe",
+            "tag": "Residential",
+            "category": "residential",
+            "beforeImage": "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=900&q=80",
+            "afterImage": "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=900&q=80",
+            "description": "Copper to PEX conversion, tankless water heater, and fixture refresh - completed without opening original plaster walls."
+          },
+          {
+            "title": "Emergency grocery store reopening",
+            "tag": "Emergency",
+            "category": "emergency",
+            "beforeImage": "https://images.unsplash.com/photo-1509395062183-67c5ad6faff9?auto=format&fit=crop&w=900&q=80",
+            "afterImage": "https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&w=900&q=80",
+            "description": "Pipe burst mitigation, electrical dry-out, refrigeration restart, and interior restoration - store reopened in 72 hours."
+          },
+          {
+            "title": "Multifamily HVAC modernization",
+            "tag": "Commercial",
+            "category": "commercial",
+            "beforeImage": "https://images.unsplash.com/photo-1555774698-0b77e0d5fac6?auto=format&fit=crop&w=900&q=80",
+            "afterImage": "https://images.unsplash.com/photo-1581579186989-4c04e5a5b98b?auto=format&fit=crop&w=900&q=80",
+            "description": "Installed VRF system with smart zoning, reducing tenant utility spend by 23% year-over-year."
+          }
+        ],
+        "cta": { "label": "See your project here - Get Started", "href": "#quote-form" }
+      }
+    },
+    {
+      "id": "credentials-showcase",
+      "type": "credentials-showcase",
+      "settings": {
+        "heading": "Credentials that protect your property",
+        "subheading": "We invest in training, safety, and partnerships so you receive the highest standard of workmanship.",
+        "license": [
+          "State Contractor Licenses: HVAC #HC-11890 - Plumbing #PC-44127 - Electrical #EC-99810",
+          "Insurance coverage: $4M General Liability, Workers Comp, Bonded"
+        ],
+        "manufacturers": ["Carrier", "Trane", "Generac", "Navien", "Tesla Powerwall"],
+        "financing": {
+          "description": "0% APR for 18 months on qualifying projects with approved credit.",
+          "partners": ["Synchrony", "GreenSky", "Wells Fargo Home Projects"]
+        },
+        "warranty": "All workmanship guaranteed for up to 10 years with manufacturer-registered systems.",
+        "emergencyBadge": "Rapid Response Team - On site within 2 hours for most emergencies."
+      }
+    },
+    {
+      "id": "testimonials-advanced",
+      "type": "testimonials-advanced",
+      "settings": {
+        "heading": "What property owners are saying",
+        "subheading": "Real feedback from homeowners, facility managers, and builders across [Region].",
+        "intervalMs": 6500,
+        "testimonials": [
+          { "rating": 5, "quote": "From the first phone call to the final walkthrough, the team kept our restaurant running and communicated every step.", "name": "Sarah L.", "location": "Downtown", "service": "Emergency plumbing" },
+          { "rating": 5, "quote": "They replaced our aging HVAC system and secured rebates we didn't even know existed. Monthly bills are down 28%.", "name": "Marcus & Tia A.", "location": "Cedar Heights", "service": "HVAC retrofit" },
+          { "rating": 5, "quote": "The electricians coordinated with city inspectors and finished our warehouse expansion ahead of schedule.", "name": "Darryl P.", "location": "Commerce Park", "service": "Electrical build-out" },
+          { "rating": 5, "quote": "We rely on their maintenance plan for 14 rental homes - proactive, professional, and they treat our tenants with respect.", "name": "Horizon Rentals", "location": "Metro Area", "service": "Maintenance plan" },
+          { "rating": 5, "quote": "Storm damage had us shut down. They handled roofing, electrical, and insurance paperwork in one seamless process.", "name": "Kimberly R.", "location": "Lake District", "service": "Restoration & roofing" },
+          { "rating": 5, "quote": "Project managers are incredible - daily updates, detailed punchlists, and quality work that passed inspection the first time.", "name": "Jared W.", "location": "Riverbend", "service": "Whole-home renovation" }
+        ],
+        "cta": { "label": "Read more reviews on Google", "href": "https://google.com" },
+        "disclaimer": "Reviews verified via Google and HomeAdvisor. Individual results may vary."
+      }
+    },
+    {
+      "id": "coverage-map",
+      "type": "coverage-map",
+      "settings": {
+        "heading": "Serving [City] and the surrounding metro",
+        "subheading": "Enter your ZIP to confirm coverage or view our most-requested neighborhoods.",
+        "zipCodes": ["7500*", "7511*", "7520*", "7532*", "75409"],
+        "areas": ["Downtown [City]", "Westlake", "Cedar Heights", "Riverside", "North Ridge", "Eastfield", "Meadow Park", "Lake District"],
+        "radius": "Serving a 50-mile radius from Downtown [City]",
+        "mapNote": "Not sure if we cover your address? We often travel farther for commercial or emergency projects.",
+        "successMessage": "Yes, we serve your area!",
+        "failureMessage": "Call us at (555) 222-8899 - we can often schedule nearby jobs.",
+        "cta": { "label": "Not sure if we serve you? Call us!", "href": "tel:+15552228899" }
+      }
+    },
+    {
+      "id": "faq-section",
+      "type": "faq-section",
+      "settings": {
+        "heading": "Frequently asked questions",
+        "items": [
+          { "question": "Are you licensed and insured?", "answer": "Yes - every trade is fully licensed in the state of [State], backed by $4M liability, workers comp, and bonding." },
+          { "question": "Do you offer emergency services?", "answer": "Our rapid response team is on call 24/7 with an average arrival time of 60 minutes within our core service area." },
+          { "question": "What warranties do you provide?", "answer": "Standard workmanship is covered for 2 years, with up to 10-year coverage on premium systems. Manufacturer warranties are registered on your behalf." },
+          { "question": "Can you help with financing?", "answer": "Yes - we partner with Synchrony, GreenSky, and Wells Fargo to offer 0% introductory financing and flexible monthly plans." },
+          { "question": "Do you pull permits and handle inspections?", "answer": "Absolutely. Our team coordinates permitting, code compliance, and inspector walk-throughs for every project." },
+          { "question": "How quickly can you start?", "answer": "Emergency jobs start immediately. Planned projects typically begin within 3-5 business days after approval, or on your preferred schedule." },
+          { "question": "Do you provide free estimates?", "answer": "Yes - site visits and written proposals are complimentary. For complex engineering scopes we credit design fees toward the final project." },
+          { "question": "Do you work with commercial facilities?", "answer": "We service medical offices, retail, data centers, multifamily, and industrial spaces with tailored maintenance programs." }
+        ]
+      }
+    },
+    {
+      "id": "cta-conversion",
+      "type": "cta-conversion",
+      "settings": {
+        "heading": "Ready to get started?",
+        "subheading": "Join 500+ property owners who trust [Business Name] for responsive service and guaranteed workmanship.",
+        "primaryCta": { "label": "Schedule Free Estimate", "href": "#quote-form" },
+        "secondaryCta": { "label": "Call Now: (555) 222-8899", "href": "tel:+15552228899" },
+        "trustBadges": ["Licensed / Bonded / Insured", "Satisfaction Guaranteed", "Energy Star Partner"]
+      }
+    },
+    {
+      "id": "footer",
+      "type": "footer-comprehensive",
+      "settings": {
+        "company": {
+          "name": "[Business Name] Home Services",
+          "logo": "assets/logo.svg",
+          "tagline": "Whole-home and commercial comfort solutions since 1998.",
+          "license": "State Licenses: HVAC #HC-11890 - Plumbing #PC-44127 - Electrical #EC-99810"
+        },
+        "quickLinks": [
+          { "label": "Services", "href": "#services-advanced" },
+          { "label": "About", "href": "#credentials-showcase" },
+          { "label": "Projects", "href": "#before-after-showcase" },
+          { "label": "Testimonials", "href": "#testimonials-advanced" },
+          { "label": "Financing", "href": "#credentials-showcase" }
+        ],
+        "contact": {
+          "phone": "+1-555-222-8899",
+          "email": "dispatch@[businessname].com",
+          "address": "412 Industrial Way, Suite 300, [City], [State] [ZIP]",
+          "hours": "Emergency support 24/7 - Office Mon-Fri 7:00am-6:00pm"
+        },
+        "social": [
+          { "label": "Facebook", "href": "https://facebook.com" },
+          { "label": "Instagram", "href": "https://instagram.com" },
+          { "label": "LinkedIn", "href": "https://linkedin.com" },
+          { "label": "YouTube", "href": "https://youtube.com" }
+        ],
+        "badges": ["BBB Accredited", "HomeAdvisor Elite", "Angi Super Service", "ENERGY STAR"],
+        "legal": "(c) [Current Year] [Business Name] Home Services. All rights reserved.",
+        "policies": [
+          { "label": "Privacy Policy", "href": "/privacy" },
+          { "label": "Terms of Service", "href": "/terms" }
+        ]
+      }
+    }
+  ],
+  "pages": [],
+  "products": []
+}
