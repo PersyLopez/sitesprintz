@@ -50,7 +50,7 @@
     }
     const res = await fetch('./data/site.json', { cache:'no-cache' });
     if(!res.ok) throw new Error('Failed to load data/site.json');
-    return res.json();
+      return res.json();
   }
 
   function setThemeFromConfig(cfg){
@@ -258,10 +258,10 @@
       const grid = el('div', { class:'grid-3' }, items.map(item => el('div', { class:'card' }, [
         el('p', {}, [`"${item.quote || ''}"`]),
         el('p', { class:'muted mt-2' }, ['— ' + (item.author || '')])
-      ])));
-      container.appendChild(grid);
-    }
-    
+    ])));
+    container.appendChild(grid);
+  }
+
     contentRoot.appendChild(sec);
   }
 
@@ -310,15 +310,101 @@
 
   function renderClassicProducts(cfg){
     if(!Array.isArray(cfg.products) || !cfg.products.length) return;
-    const sec = sectionWrapper('products');
+    const sec = sectionWrapper('products', 'section products-section');
     const container = sec.firstChild;
-    container.appendChild(el('h2', { class:'section-title' }, ['Products']));
-    const grid = el('div', { class:'grid-3' }, cfg.products.map(prod => el('div', { class:'card' }, [
-      el('h3', {}, [prod.name || 'Product']),
-      prod.price != null ? el('p', { class:'mt-2' }, [`$${prod.price}`]) : null,
-      renderMarkdown(prod.description || '')
-    ])));
+    
+    // Title and subtitle
+    const title = cfg.productsTitle || cfg.products.title || 'Products';
+    const subtitle = cfg.productsSubtitle || cfg.products.subtitle;
+    container.appendChild(el('h2', { class:'section-title' }, [title]));
+    if(subtitle) container.appendChild(el('p', { class:'section-subtitle' }, [subtitle]));
+    
+    // Get unique categories from products
+    const categories = [...new Set(cfg.products.map(p => p.category).filter(Boolean))];
+    
+    // Filter buttons (if categories exist)
+    if(categories.length > 0){
+      const filters = el('div', { class:'filter-buttons' }, [
+        el('button', { type:'button', class:'filter-btn active', 'data-filter': 'all' }, ['All']),
+        ...categories.map(cat => el('button', { type:'button', class:'filter-btn', 'data-filter': cat }, [cat]))
+      ]);
+      container.appendChild(filters);
+    }
+    
+    // Enhanced product grid
+    const grid = el('div', { class:'product-grid grid-3' }, cfg.products.map(prod => {
+      const card = el('div', { class:'product-card card', 'data-category': prod.category || 'all' });
+      
+      // Image
+      if(prod.image){
+        card.appendChild(el('img', { src: prod.image, alt: prod.imageAlt || prod.name, class:'product-image' }));
+      }
+      
+      // Badge (if popular or new)
+      if(prod.popular){
+        card.appendChild(el('span', { class:'badge badge-popular' }, ['Popular']));
+      }
+      
+      // Content
+      const content = el('div', { class:'card-content' }, [
+        el('h3', {}, [prod.name || 'Product']),
+        prod.price != null ? el('div', { class:'product-price' }, [`$${prod.price}`]) : null,
+        prod.description ? el('p', { class:'product-description' }, [prod.description]) : null
+      ].filter(Boolean));
+      
+      // Meta info (duration, category, etc.)
+      const meta = [];
+      if(prod.duration) meta.push(prod.duration);
+      if(prod.category) meta.push(prod.category);
+      if(meta.length > 0){
+        content.appendChild(el('div', { class:'product-meta muted' }, [meta.join(' • ')]));
+      }
+      
+      card.appendChild(content);
+      
+      // CTA button (if settings provided)
+      if(cfg.settings && cfg.settings.productCta){
+        const ctaHref = cfg.settings.productCtaHref || '#contact';
+        card.appendChild(el('a', { 
+          class:'btn btn-secondary btn-small', 
+          href: ctaHref 
+        }, [cfg.settings.productCta]));
+      }
+      
+      return card;
+    }));
+    
     container.appendChild(grid);
+    
+    // Filter functionality
+    if(categories.length > 0){
+      const filterBtns = sec.querySelectorAll('.filter-btn');
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          // Update active button
+          filterBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          
+          // Filter products
+          const filter = btn.getAttribute('data-filter');
+          const productCards = grid.querySelectorAll('.product-card');
+          productCards.forEach(card => {
+            const category = card.getAttribute('data-category');
+            if(filter === 'all' || category === filter){
+              card.style.display = '';
+            }else{
+              card.style.display = 'none';
+            }
+          });
+        });
+      });
+    }
+    
+    // Settings note (if provided)
+    if(cfg.settings && cfg.settings.productNote){
+      container.appendChild(el('p', { class:'muted text-center mt-3' }, [cfg.settings.productNote]));
+    }
+    
     contentRoot.appendChild(sec);
   }
 
@@ -1405,7 +1491,7 @@
 
     filters.addEventListener('click', e => {
       const btn = e.target.closest('button');
-      if(!btn) return;
+        if(!btn) return;
       qsa('.filter-btn', filters).forEach(button => button.classList.toggle('active', button === btn));
       const filter = btn.getAttribute('data-filter');
       qsa('.property-card', grid).forEach(card => {
@@ -1489,18 +1575,18 @@
         if(key === 'upgrades'){
           if(!payload.upgrades) payload.upgrades = [];
           payload.upgrades.push(value);
-        }else{
+          }else{
           payload[key] = value;
-        }
+          }
       });
       try{
         await submitPremiumForm(settings.submit?.endpoint || '/api/contact-form', payload);
         statusEl.appendChild(el('div', { class:'form-success' }, [settings.successMessage || "Thank you! We'll prepare your personalized market analysis within 24 hours."]));
         form.reset();
-      }catch(err){
+        }catch(err){
         console.error(err);
         statusEl.appendChild(el('div', { class:'form-error' }, ['Unable to submit valuation request. Please call or email us.']));
-      }finally{
+        }finally{
         submitBtn.disabled = false;
         submitBtn.textContent = settings.submit?.label || 'Get My Free Home Valuation';
       }
