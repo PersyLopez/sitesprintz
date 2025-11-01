@@ -284,15 +284,137 @@
 
   function renderClassicContact(cfg){
     if(!cfg.contact) return;
-    const sec = sectionWrapper('contact');
+    const sec = sectionWrapper('contact', 'section contact-section');
     const container = sec.firstChild;
     container.appendChild(el('h2', { class:'section-title' }, [cfg.contact.title || 'Contact']));
     if(cfg.contact.subtitle) container.appendChild(el('p', { class:'section-subtitle' }, [cfg.contact.subtitle]));
+    
+    // Contact information
+    const contactInfo = el('div', { class:'contact-info' });
+    
+    // Phone and email buttons
     const buttons = [];
     if(cfg.contact.email) buttons.push(el('a', { href:`mailto:${cfg.contact.email}`, class:'btn btn-secondary mt-3' }, ['Email us']));
     if(cfg.contact.phone) buttons.push(el('a', { href:`tel:${cfg.contact.phone}`, class:'btn btn-secondary mt-3' }, ['Call us']));
-    container.appendChild(el('div', { class:'cta-row' }, buttons));
+    contactInfo.appendChild(el('div', { class:'cta-row' }, buttons));
+    
+    // Additional contact details
+    if(cfg.contact.address) contactInfo.appendChild(el('p', { class:'mt-2' }, [
+      el('strong', {}, ['Address: ']),
+      cfg.contact.address
+    ]));
+    
+    // Hours
+    if(cfg.contact.hours && cfg.contact.hours.items){
+      contactInfo.appendChild(el('div', { class:'hours-section mt-2' }, [
+        el('strong', {}, [cfg.contact.hours.title || 'Hours']),
+        el('ul', { class:'hours-list' }, cfg.contact.hours.items.map(hour => el('li', {}, [hour])))
+      ]));
+    }
+    
+    container.appendChild(contactInfo);
+    
+    // Booking widget (if configured)
+    if(cfg.booking && cfg.booking.enabled !== false){
+      renderBookingWidget(cfg.booking, container);
+    }
+    
     contentRoot.appendChild(sec);
+  }
+
+  function renderBookingWidget(booking, container){
+    const bookingSection = el('div', { class:'booking-widget-section' });
+    
+    if(booking.title){
+      bookingSection.appendChild(el('h3', {}, [booking.title]));
+    }
+    if(booking.subtitle){
+      bookingSection.appendChild(el('p', { class:'muted' }, [booking.subtitle]));
+    }
+    
+    const provider = booking.provider || 'calendly';
+    const style = booking.style || 'inline';
+    
+    if(style === 'inline'){
+      // Inline embed
+      const embedContainer = el('div', { class:'booking-embed-container' });
+      
+      if(provider === 'calendly' && booking.url){
+        embedContainer.innerHTML = `
+          <div class="calendly-inline-widget" 
+               data-url="${booking.url}" 
+               style="min-width:320px;height:630px;">
+          </div>
+        `;
+        // Load Calendly script
+        if(!document.querySelector('script[src*="calendly"]')){
+          const script = document.createElement('script');
+          script.src = 'https://assets.calendly.com/assets/external/widget.js';
+          script.async = true;
+          document.head.appendChild(script);
+        }
+      } else if(provider === 'acuity' && booking.url){
+        embedContainer.innerHTML = `
+          <iframe src="${booking.url}" 
+                  width="100%" 
+                  height="800" 
+                  frameBorder="0"
+                  title="Schedule Appointment">
+          </iframe>
+        `;
+      } else if(provider === 'square' && booking.url){
+        embedContainer.innerHTML = `
+          <iframe src="${booking.url}" 
+                  width="100%" 
+                  height="700" 
+                  frameBorder="0"
+                  title="Square Appointments">
+          </iframe>
+        `;
+      } else if(booking.embedCode){
+        // Custom embed code
+        embedContainer.innerHTML = booking.embedCode;
+      }
+      
+      bookingSection.appendChild(embedContainer);
+      
+    } else if(style === 'popup' || style === 'button'){
+      // Button that opens popup
+      const button = el('a', {
+        class: 'btn btn-primary btn-booking',
+        href: booking.url || '#',
+        target: '_blank',
+        rel: 'noopener noreferrer'
+      }, [booking.buttonText || 'Book Appointment']);
+      
+      if(provider === 'calendly' && style === 'popup'){
+        button.addEventListener('click', (e) => {
+          e.preventDefault();
+          if(window.Calendly){
+            window.Calendly.initPopupWidget({url: booking.url});
+          }
+        });
+        // Load Calendly popup script
+        if(!document.querySelector('script[src*="calendly"]')){
+          const script = document.createElement('script');
+          script.src = 'https://assets.calendly.com/assets/external/widget.js';
+          script.async = true;
+          document.head.appendChild(script);
+          const link = document.createElement('link');
+          link.href = 'https://assets.calendly.com/assets/external/widget.css';
+          link.rel = 'stylesheet';
+          document.head.appendChild(link);
+        }
+      }
+      
+      bookingSection.appendChild(button);
+    }
+    
+    if(booking.note){
+      bookingSection.appendChild(el('p', { class:'muted text-center mt-2' }, [booking.note]));
+    }
+    
+    container.appendChild(bookingSection);
   }
 
   function renderClassicPages(cfg){
