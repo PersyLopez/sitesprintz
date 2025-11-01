@@ -12,8 +12,16 @@ import Stripe from 'stripe';
 import { randomUUID as nodeRandomUUID } from 'crypto';
 import { sendEmail, EmailTypes } from './email-service.js';
 import cron from 'node-cron';
+import { query as dbQuery, transaction as dbTransaction, testConnection } from './database/db.js';
 
 dotenv.config();
+
+// Test database connection on startup
+testConnection().then(connected => {
+  if (!connected) {
+    console.error('❌ Failed to connect to database. Server will continue but auth may not work.');
+  }
+});
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -258,7 +266,29 @@ function requireAdmin(req, res, next){
 }
 
 // JWT Authentication middleware
-function requireAuth(req, res, next) {
+/**
+ * AUTHENTICATION MIDDLEWARE
+ * 
+ * Purpose: Verify JWT token and load user from database
+ * 
+ * How it works:
+ * 1. Extract JWT token from Authorization header
+ * 2. Verify token is valid and not expired
+ * 3. Query database to get current user data
+ * 4. Check user status is 'active'
+ * 5. Attach user object to request
+ * 6. Continue to next middleware/route
+ * 
+ * Changes from JSON version:
+ * - BEFORE: Decoded JWT contains all user data
+ * - AFTER: Decoded JWT contains only user ID, query DB for current data
+ * 
+ * Benefits:
+ * - Always get fresh user data (status, subscription, etc.)
+ * - Can revoke access by changing status in database
+ * - No need to re-issue token when user data changes
+ */
+async function requireAuth(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
   
@@ -267,11 +297,48 @@ function requireAuth(req, res, next) {
   }
   
   try {
+    // Step 1: Verify JWT token
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
+    
+    // Step 2: Get fresh user data from database
+    const result = await dbQuery(
+      'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+      [decoded.userId || decoded.id] // Support both old and new token formats
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+    
+    const user = result.rows[0];
+    
+    // Step 3: Check if user account is active
+    if (user.status !== 'active') {
+      return res.status(403).json({ error: 'Account is suspended' });
+    }
+    
+    // Step 4: Attach user to request
+    req.user = {
+      id: user.id,
+      userId: user.id, // For backwards compatibility
+      email: user.email,
+      role: user.role,
+      status: user.status,
+      subscriptionStatus: user.subscription_status,
+      subscriptionPlan: user.subscription_plan
+    };
+    
     next();
+    
   } catch (err) {
-    return res.status(401).json({ error: 'Invalid token' });
+    if (err.name === 'JsonWebTokenError') {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+    if (err.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Token expired' });
+    }
+    console.error('Auth middleware error:', err);
+    return res.status(500).json({ error: 'Authentication failed' });
   }
 }
 
@@ -282,97 +349,184 @@ app.get('/api/admin-token', (req, res) => {
 });
 
 // Authentication Endpoints
+/**
+ * USER REGISTRATION ENDPOINT
+ * 
+ * Purpose: Create new user account in database
+ * 
+ * Request body:
+ * - email: User's email address
+ * - password: Plain text password (will be hashed)
+ * 
+ * Process:
+ * 1. Validate email and password
+ * 2. Check if user already exists (database query)
+ * 3. Hash password with bcrypt
+ * 4. Insert user into database
+ * 5. Generate JWT token
+ * 6. Send welcome email
+ * 7. Return token and user data
+ * 
+ * Changes from JSON version:
+ * - BEFORE: Check file existence, write JSON file
+ * - AFTER: Query database, INSERT command
+ * 
+ * Benefits:
+ * - Instant duplicate check (indexed email column)
+ * - No race conditions
+ * - Automatic ID generation (UUID)
+ */
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { email, password } = req.body;
     
+    // Step 1: Validate input
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password required' });
     }
     
-    // Check if user already exists
-    const userFile = getUserFilePath(email);
-    
-    try {
-      await fs.access(userFile);
-      return res.status(409).json({ error: 'User already exists' });
-    } catch (err) {
-      // User doesn't exist, proceed with registration
+    if (!email.includes('@')) {
+      return res.status(400).json({ error: 'Invalid email format' });
     }
     
-    // Hash password
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    }
+    
+    // Step 2: Check if user already exists
+    const existingUser = await dbQuery(
+      'SELECT id FROM users WHERE email = $1',
+      [email.toLowerCase()]
+    );
+    
+    if (existingUser.rows.length > 0) {
+      return res.status(409).json({ error: 'User already exists' });
+    }
+    
+    // Step 3: Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    // Create user
-    const user = {
-      id: `user_${Date.now()}`,
-      email: email,
-      password: hashedPassword,
-      createdAt: new Date().toISOString(),
-      sites: []
-    };
+    // Step 4: Insert user into database
+    const result = await dbQuery(`
+      INSERT INTO users (email, password_hash, role, status, created_at)
+      VALUES ($1, $2, 'user', 'active', NOW())
+      RETURNING id, email, role, status, created_at
+    `, [email.toLowerCase(), hashedPassword]);
     
-    await fs.writeFile(userFile, JSON.stringify(user, null, 2));
+    const user = result.rows[0];
     
-    // Generate JWT
-    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+    // Step 5: Generate JWT token (valid for 7 days)
+    const token = jwt.sign(
+      { 
+        userId: user.id,
+        id: user.id, // For compatibility
+        email: user.email,
+        role: user.role 
+      },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
     
-    // Send welcome email
-    await sendEmail(email, EmailTypes.WELCOME, { email });
+    // Step 6: Send welcome email (don't fail registration if email fails)
+    try {
+      await sendEmail(user.email, EmailTypes.WELCOME, { email: user.email });
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError);
+      // Don't fail registration if email fails
+    }
     
-    res.json({ success: true, token, user: { id: user.id, email: user.email } });
+    // Step 7: Return success
+    res.json({ 
+      success: true, 
+      token, 
+      user: { 
+        id: user.id, 
+        email: user.email,
+        role: user.role
+      } 
+    });
+    
   } catch (err) {
     console.error('Registration error:', err);
     res.status(500).json({ error: 'Failed to register user' });
   }
 });
 
+/**
+ * USER LOGIN ENDPOINT
+ * 
+ * Purpose: Authenticate user and return JWT token
+ * 
+ * Request body:
+ * - email: User's email address
+ * - password: Plain text password
+ * 
+ * Process:
+ * 1. Validate email and password provided
+ * 2. Query database for user by email
+ * 3. Verify password matches (bcrypt.compare)
+ * 4. Check account status is active
+ * 5. Update last_login timestamp
+ * 6. Generate JWT token
+ * 7. Return token and user data
+ * 
+ * Changes from JSON version:
+ * - BEFORE: Read file, parse JSON
+ * - AFTER: Query database (instant with indexed email)
+ * 
+ * Benefits:
+ * - Fast lookup (indexed email column)
+ * - Fresh user data every time
+ * - Can check subscription status
+ * - Update last_login atomically (no race conditions)
+ */
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     
+    // Step 1: Validate input
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password required' });
     }
     
-    // Load user
-    const userFile = getUserFilePath(email);
+    // Step 2: Get user from database
+    const result = await dbQuery(
+      'SELECT * FROM users WHERE email = $1',
+      [email.toLowerCase()]
+    );
     
-    let user;
-    try {
-      const userData = await fs.readFile(userFile, 'utf-8');
-      user = JSON.parse(userData);
-    } catch (err) {
+    if (result.rows.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
     
-    // Verify password
-    const isValid = await bcrypt.compare(password, user.password);
+    const user = result.rows[0];
+    
+    // Step 3: Verify password
+    const isValid = await bcrypt.compare(password, user.password_hash);
     if (!isValid) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
     
-    // Check if temporary password has expired
-    if (user.tempPasswordExpires) {
-      const tempPasswordExpires = new Date(user.tempPasswordExpires);
-      if (tempPasswordExpires < new Date()) {
-        return res.status(401).json({ error: 'Temporary password has expired. Please request a new one.' });
-      }
+    // Step 4: Check account status
+    if (user.status !== 'active') {
+      return res.status(403).json({ error: 'Account is suspended' });
     }
     
-    // Update last login
-    user.lastLogin = new Date().toISOString();
-    await fs.writeFile(userFile, JSON.stringify(user, null, 2));
+    // Step 5: Update last login timestamp (async, don't wait)
+    dbQuery(
+      'UPDATE users SET last_login = NOW() WHERE id = $1',
+      [user.id]
+    ).catch(err => console.error('Failed to update last login:', err));
     
-    // Generate JWT
+    // Step 6: Generate JWT token (valid for 7 days)
     const token = jwt.sign({ 
-      userId: user.id, 
+      userId: user.id,
+      id: user.id, // For compatibility
       email: user.email, 
-      role: user.role,
-      status: user.status,
-      needsPasswordChange: user.status === 'invited'
+      role: user.role
     }, JWT_SECRET, { expiresIn: '7d' });
     
+    // Step 7: Return success
     res.json({ 
       success: true, 
       token, 
@@ -381,9 +535,11 @@ app.post('/api/auth/login', async (req, res) => {
         email: user.email, 
         role: user.role,
         status: user.status,
-        needsPasswordChange: user.status === 'invited'
+        subscriptionStatus: user.subscription_status,
+        subscriptionPlan: user.subscription_plan
       } 
     });
+    
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: 'Failed to login' });
