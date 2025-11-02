@@ -131,6 +131,22 @@
       ]
     },
     {
+      "id": "gym-pro",
+      "name": "FitLife Gym (Pro)",
+      "description": "Membership subscriptions with before/after gallery",
+      "category": "Fitness & Health",
+      "color": "#dc2626",
+      "plan": "Pro",
+      "features": [
+        "Recurring subscription display (monthly/yearly)",
+        "Before/after transformation gallery",
+        "Inline booking widget",
+        "Member testimonials with ratings",
+        "Detailed pricing with features list",
+        "Service filters"
+      ]
+    },
+    {
       "id": "electrician",
       "name": "Electrician Service",
       "description": "Emergency response, service areas, certifications",

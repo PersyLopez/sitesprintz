@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products - SiteSprintz</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .products-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .page-header h1 {
+      font-size: 2rem;
+      color: #1e293b;
+      margin: 0;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .product-card {
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .product-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-color: #cbd5e1;
+    }
+
+    .product-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      background: #f8fafc;
+    }
+
+    .product-body {
+      padding: 15px;
+    }
+
+    .product-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+
+    .product-description {
+      color: #64748b;
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .product-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .product-price {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #10b981;
+    }
+
+    .product-category {
+      background: #eff6ff;
+      color: #1e40af;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .product-status {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .status-available {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-unavailable {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .product-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+      font-size: 0.85rem;
+      flex: 1;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+    }
+
+    .btn-success {
+      background: #10b981;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #059669;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn-secondary {
+      background: #f1f5f9;
+      color: #475569;
+    }
+
+    .btn-secondary:hover {
+      background: #e2e8f0;
+    }
+
+    .btn-icon {
+      padding: 8px;
+      min-width: auto;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 30px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #1e293b;
+    }
+
+    .close-modal {
+      background: #f1f5f9;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: #475569;
+    }
+
+    .close-modal:hover {
+      background: #e2e8f0;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #2563eb;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .image-upload {
+      border: 2px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #f8fafc;
+    }
+
+    .image-upload:hover {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+
+    .image-upload.dragging {
+      border-color: #10b981;
+      background: #d1fae5;
+    }
+
+    .image-preview {
+      margin-top: 15px;
+      position: relative;
+    }
+
+    .image-preview img {
+      max-width: 100%;
+      border-radius: 8px;
+      max-height: 200px;
+    }
+
+    .remove-image {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #94a3b8;
+    }
+
+    .empty-state-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+      color: #64748b;
+      margin-bottom: 10px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #64748b;
+    }
+
+    .error {
+      background: #fee2e2;
+      border: 2px solid #fca5a5;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 0;
+      color: #991b1b;
+    }
+
+    .success {
+      background: #d1fae5;
+      border: 2px solid #86efac;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 0;
+      color: #065f46;
+    }
+
+    @media (max-width: 768px) {
+      .products-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header-actions {
+        width: 100%;
+      }
+
+      .header-actions .btn {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="products-container">
+    <div class="page-header">
+      <h1>📦 Products</h1>
+      <div class="header-actions">
+        <button class="btn btn-secondary" onclick="ProductImporter.showImportDialog()">
+          📤 Import CSV
+        </button>
+        <button class="btn btn-secondary" onclick="exportProducts()">
+          📥 Export CSV
+        </button>
+        <button class="btn btn-success" onclick="openAddProductModal()">
+          ➕ Add Product
+        </button>
+        <button class="btn btn-secondary" onclick="window.location.href='/dashboard.html'">
+          ← Dashboard
+        </button>
+      </div>
+    </div>
+
+    <div id="message"></div>
+
+    <div id="products-list">
+      <div class="loading">Loading products...</div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Product Modal -->
+  <div id="productModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Add Product</h2>
+        <button class="close-modal" onclick="closeProductModal()">✕</button>
+      </div>
+
+      <form id="productForm" onsubmit="saveProduct(event)">
+        <div class="form-group">
+          <label for="productName">Product Name *</label>
+          <input type="text" id="productName" required placeholder="e.g. Margherita Pizza">
+        </div>
+
+        <div class="form-group">
+          <label for="productDescription">Description</label>
+          <textarea id="productDescription" placeholder="Describe your product..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="productPrice">Price ($) *</label>
+          <input type="number" id="productPrice" required step="0.01" min="0" placeholder="0.00">
+        </div>
+
+        <div class="form-group">
+          <label for="productCategory">Category</label>
+          <input type="text" id="productCategory" placeholder="e.g. Pizzas, Appetizers">
+        </div>
+
+        <div class="form-group">
+          <label>Product Image</label>
+          <div id="imageUpload" class="image-upload">
+            <div>📷 Click or drag image here</div>
+            <div style="font-size: 0.9rem; color: #64748b; margin-top: 8px;">
+              Max 5MB • JPG, PNG
+            </div>
+          </div>
+          <input type="file" id="imageInput" accept="image/*" style="display: none;">
+          <input type="hidden" id="productImage">
+          <div id="imagePreview" class="image-preview"></div>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="productAvailable" checked>
+            Available for purchase
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeProductModal()">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary">
+            Save Product
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/modules/product-importer.js"></script>
+  <script>
+    let products = [];
+    let currentSiteId = null;
+    let editingIndex = -1;
+    let authToken = null;
+
+    // Get auth token
+    function getAuthToken() {
+      return localStorage.getItem('token');
+    }
+
+    // Get user
+    async function getUser() {
+      const token = getAuthToken();
+      if (!token) {
+        window.location.href = '/login.html';
+        return null;
+      }
+
+      try {
+        const response = await fetch('/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+          window.location.href = '/login.html';
+          return null;
+        }
+
+        return await response.json();
+      } catch (error) {
+        window.location.href = '/login.html';
+        return null;
+      }
+    }
+
+    // Get siteId from URL
+    function getSiteIdFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('siteId');
+    }
+
+    // Load products
+    async function loadProducts() {
+      const token = getAuthToken();
+      if (!token) return;
+
+      currentSiteId = getSiteIdFromUrl();
+      if (!currentSiteId) {
+        showError('No site selected. Please select a site from your dashboard.');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/sites/${currentSiteId}/products`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load products');
+        }
+
+        const data = await response.json();
+        products = data.products || [];
+        renderProducts();
+      } catch (error) {
+        console.error('Load products error:', error);
+        showError('Failed to load products. Please try again.');
+      }
+    }
+
+    // Render products
+    function renderProducts() {
+      const container = document.getElementById('products-list');
+
+      if (products.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">🍽️</div>
+            <h3>No products yet</h3>
+            <p>Add your first product to get started!</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="products-grid">
+          ${products.map((product, index) => `
+            <div class="product-card">
+              <img src="${product.image || 'https://via.placeholder.com/280x200?text=No+Image'}" 
+                   alt="${product.name}" 
+                   class="product-image"
+                   onerror="this.src='https://via.placeholder.com/280x200?text=No+Image'">
+              <div class="product-body">
+                <div class="product-name">${product.name}</div>
+                <div class="product-description">${product.description || 'No description'}</div>
+                <div class="product-meta">
+                  <div class="product-price">$${product.price.toFixed(2)}</div>
+                  <div class="product-category">${product.category || 'General'}</div>
+                </div>
+                <div class="product-status ${product.available !== false ? 'status-available' : 'status-unavailable'}">
+                  ${product.available !== false ? '✅ Available' : '❌ Unavailable'}
+                </div>
+                <div class="product-actions">
+                  <button class="btn btn-icon" onclick="toggleAvailability(${index})" title="Toggle Availability">
+                    ${product.available !== false ? '👁️' : '🚫'}
+                  </button>
+                  <button class="btn btn-primary btn-icon" onclick="editProduct(${index})" title="Edit">
+                    ✏️
+                  </button>
+                  <button class="btn btn-secondary btn-icon" onclick="duplicateProduct(${index})" title="Duplicate">
+                    📋
+                  </button>
+                  <button class="btn btn-danger btn-icon" onclick="deleteProduct(${index})" title="Delete">
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // Open add product modal
+    function openAddProductModal() {
+      editingIndex = -1;
+      document.getElementById('modalTitle').textContent = 'Add Product';
+      document.getElementById('productForm').reset();
+      document.getElementById('productImage').value = '';
+      document.getElementById('imagePreview').innerHTML = '';
+      document.getElementById('productModal').classList.add('active');
+    }
+
+    // Edit product
+    function editProduct(index) {
+      editingIndex = index;
+      const product = products[index];
+
+      document.getElementById('modalTitle').textContent = 'Edit Product';
+      document.getElementById('productName').value = product.name;
+      document.getElementById('productDescription').value = product.description || '';
+      document.getElementById('productPrice').value = product.price;
+      document.getElementById('productCategory').value = product.category || '';
+      document.getElementById('productImage').value = product.image || '';
+      document.getElementById('productAvailable').checked = product.available !== false;
+
+      if (product.image) {
+        document.getElementById('imagePreview').innerHTML = `
+          <img src="${product.image}" alt="Product">
+          <button type="button" class="remove-image" onclick="removeImage()">Remove</button>
+        `;
+      }
+
+      document.getElementById('productModal').classList.add('active');
+    }
+
+    // Close modal
+    function closeProductModal() {
+      document.getElementById('productModal').classList.remove('active');
+    }
+
+    // Save product
+    async function saveProduct(event) {
+      event.preventDefault();
+
+      const product = {
+        name: document.getElementById('productName').value.trim(),
+        description: document.getElementById('productDescription').value.trim(),
+        price: parseFloat(document.getElementById('productPrice').value),
+        category: document.getElementById('productCategory').value.trim() || 'General',
+        image: document.getElementById('productImage').value.trim(),
+        available: document.getElementById('productAvailable').checked
+      };
+
+      if (editingIndex >= 0) {
+        products[editingIndex] = { ...products[editingIndex], ...product };
+      } else {
+        products.push(product);
+      }
+
+      await updateProducts();
+      closeProductModal();
+    }
+
+    // Toggle availability
+    async function toggleAvailability(index) {
+      products[index].available = !products[index].available;
+      await updateProducts();
+    }
+
+    // Duplicate product
+    async function duplicateProduct(index) {
+      const duplicate = { ...products[index], name: products[index].name + ' (Copy)' };
+      products.push(duplicate);
+      await updateProducts();
+    }
+
+    // Delete product
+    async function deleteProduct(index) {
+      if (!confirm(`Delete "${products[index].name}"?`)) return;
+
+      products.splice(index, 1);
+      await updateProducts();
+    }
+
+    // Update products on server
+    async function updateProducts() {
+      const token = getAuthToken();
+      if (!token) return;
+
+      try {
+        const response = await fetch(`/api/sites/${currentSiteId}/products`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ products })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update products');
+        }
+
+        renderProducts();
+        showSuccess('Products updated successfully!');
+      } catch (error) {
+        console.error('Update products error:', error);
+        showError('Failed to update products. Please try again.');
+      }
+    }
+
+    // Export products to CSV
+    function exportProducts() {
+      if (products.length === 0) {
+        alert('No products to export!');
+        return;
+      }
+
+      let csv = 'name,description,price,category,image,available\n';
+      products.forEach(p => {
+        csv += `"${p.name}","${p.description || ''}",${p.price},"${p.category || 'General'}","${p.image || '"}",${p.available !== false}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `products-${currentSiteId}.csv`;
+      link.click();
+
+      showSuccess(`✅ Exported ${products.length} products!`);
+    }
+
+    // Image upload handling
+    const imageUpload = document.getElementById('imageUpload');
+    const imageInput = document.getElementById('imageInput');
+
+    imageUpload.onclick = () => imageInput.click();
+
+    imageUpload.ondragover = (e) => {
+      e.preventDefault();
+      imageUpload.classList.add('dragging');
+    };
+
+    imageUpload.ondragleave = () => {
+      imageUpload.classList.remove('dragging');
+    };
+
+    imageUpload.ondrop = async (e) => {
+      e.preventDefault();
+      imageUpload.classList.remove('dragging');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        await uploadImage(file);
+      }
+    };
+
+    imageInput.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        await uploadImage(file);
+      }
+    };
+
+    async function uploadImage(file) {
+      const token = getAuthToken();
+      if (!token) return;
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const response = await fetch('/api/upload/image', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('Upload failed');
+        }
+
+        const data = await response.json();
+        document.getElementById('productImage').value = data.url;
+        document.getElementById('imagePreview').innerHTML = `
+          <img src="${data.url}" alt="Product">
+          <button type="button" class="remove-image" onclick="removeImage()">Remove</button>
+        `;
+      } catch (error) {
+        console.error('Upload error:', error);
+        alert('Failed to upload image. Please try again.');
+      }
+    }
+
+    function removeImage() {
+      document.getElementById('productImage').value = '';
+      document.getElementById('imagePreview').innerHTML = '';
+    }
+
+    // Show messages
+    function showError(message) {
+      const container = document.getElementById('message');
+      container.innerHTML = `<div class="error">${message}</div>`;
+      setTimeout(() => container.innerHTML = '', 5000);
+    }
+
+    function showSuccess(message) {
+      const container = document.getElementById('message');
+      container.innerHTML = `<div class="success">${message}</div>`;
+      setTimeout(() => container.innerHTML = '', 3000);
+    }
+
+    // Initialize ProductImporter with site data
+    window.addEventListener('load', async () => {
+      const user = await getUser();
+      if (!user) return;
+
+      authToken = getAuthToken();
+      await loadProducts();
+
+      // Set site data for importer
+      window.siteData = {
+        siteId: currentSiteId,
+        products: products
+      };
+    });
+  </script>
+</body>
+</html>
+

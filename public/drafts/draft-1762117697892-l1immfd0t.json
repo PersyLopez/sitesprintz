@@ -1,0 +1,26 @@
+{
+  "draftId": "draft-1762117697892-l1immfd0t",
+  "templateId": "product-showcase",
+  "businessData": {
+    "businessName": "BrightShelf Boutique",
+    "heroTitle": "Showcase your products without the complexity",
+    "heroSubtitle": "Perfect for boutiques that want to highlight pricing while taking orders offline.",
+    "heroImage": "assets/hero-placeholder.jpg",
+    "email": "hello@brightshelf.com",
+    "phone": "+1-212-555-0148",
+    "address": "Call, email, or stop by our boutique to reserve your favorites.",
+    "businessHours": "",
+    "websiteUrl": "",
+    "facebookUrl": "",
+    "instagramUrl": "",
+    "googleMapsUrl": "",
+    "services": [],
+    "templateSpecific": {
+      "businessDescription": "",
+      "specialOffers": ""
+    }
+  },
+  "createdAt": "2025-11-02T21:08:17.892Z",
+  "expiresAt": "2025-11-09T21:08:17.892Z",
+  "status": "draft"
+}

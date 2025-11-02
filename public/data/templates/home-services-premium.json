@@ -33,6 +33,23 @@
     { "label": "Service Area", "href": "#coverage-map" },
     { "label": "Contact", "href": "#cta-conversion" }
   ],
+  "chat": {
+    "enabled": true,
+    "provider": "tidio",
+    "appId": "YOUR_TIDIO_KEY_HERE",
+    "position": "bottom-right"
+  },
+  "serviceFilters": {
+    "enabled": true,
+    "containerId": "services-showcase",
+    "filters": [
+      { "label": "All Services", "value": "all" },
+      { "label": "Plumbing", "value": "plumbing" },
+      { "label": "Electrical", "value": "electrical" },
+      { "label": "HVAC", "value": "hvac" },
+      { "label": "Emergency", "value": "emergency" }
+    ]
+  },
   "sections": [
     {
       "id": "emergency-hero",

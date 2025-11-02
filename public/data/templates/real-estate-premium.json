@@ -34,6 +34,23 @@
     { "label": "Resources", "href": "#buyer-seller-resources" },
     { "label": "Contact", "href": "#cta-contact" }
   ],
+  "chat": {
+    "enabled": true,
+    "provider": "intercom",
+    "appId": "YOUR_INTERCOM_APP_ID_HERE",
+    "position": "bottom-right"
+  },
+  "serviceFilters": {
+    "enabled": true,
+    "containerId": "property-listings",
+    "filters": [
+      { "label": "All Properties", "value": "all" },
+      { "label": "Buying", "value": "buying" },
+      { "label": "Selling", "value": "selling" },
+      { "label": "Luxury", "value": "luxury" },
+      { "label": "Commercial", "value": "commercial" }
+    ]
+  },
   "sections": [
     {
       "id": "realtor-hero",

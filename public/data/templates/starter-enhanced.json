@@ -12,6 +12,7 @@
     {"label": "Home", "href": "#top"},
     {"label": "Services", "href": "#products"},
     {"label": "About", "href": "#about"},
+    {"label": "Gallery", "href": "#gallery"},
     {"label": "FAQ", "href": "#faq"},
     {"label": "Contact", "href": "#contact"}
   ],
@@ -126,6 +127,32 @@
       }
     ]
   },
+  "gallery": {
+    "title": "Our Work",
+    "subtitle": "See the transformation we deliver",
+    "items": [
+      {
+        "title": "Brand Redesign",
+        "description": "Complete visual overhaul for a local tech company",
+        "beforeImage": "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=600&q=80",
+        "afterImage": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80",
+        "beforeLabel": "Before",
+        "afterLabel": "After"
+      },
+      {
+        "title": "Office Space Setup",
+        "description": "Modern workspace design and implementation",
+        "beforeImage": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80",
+        "afterImage": "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=600&q=80"
+      },
+      {
+        "title": "Digital Marketing Campaign",
+        "description": "Social media presence boost for retail client",
+        "beforeImage": "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=600&q=80",
+        "afterImage": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80"
+      }
+    ]
+  },
   "contact": {
     "title": "Ready to Get Started?",
     "subtitle": "Schedule your free consultation today",
@@ -138,9 +165,18 @@
         "Monday - Friday: 8:00 AM - 6:00 PM",
         "Saturday: 9:00 AM - 1:00 PM",
         "Sunday: Closed"
-      ],
-      "note": "Same-day appointments available for urgent needs"
+      ]
     }
+  },
+  "booking": {
+    "enabled": true,
+    "provider": "calendly",
+    "style": "button",
+    "url": "https://calendly.com/yourbusiness/consultation",
+    "buttonText": "Schedule Free Consultation",
+    "title": "Book Your Appointment",
+    "subtitle": "Choose a time that works best for you",
+    "note": "Free 30-minute consultation included with all bookings"
   },
   "footer": {
     "text": "© 2024 Growing Business. Helping businesses succeed since 2020.",

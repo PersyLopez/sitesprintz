@@ -33,6 +33,23 @@
     { "label": "New Patients", "href": "#patient-journey" },
     { "label": "Contact", "href": "#cta-appointment" }
   ],
+  "chat": {
+    "enabled": true,
+    "provider": "intercom",
+    "appId": "YOUR_INTERCOM_APP_ID_HERE",
+    "position": "bottom-right"
+  },
+  "serviceFilters": {
+    "enabled": true,
+    "containerId": "medical-services",
+    "filters": [
+      { "label": "All Services", "value": "all" },
+      { "label": "Primary Care", "value": "primary" },
+      { "label": "Women's Health", "value": "womens" },
+      { "label": "Physical Therapy", "value": "therapy" },
+      { "label": "Specialty Care", "value": "specialty" }
+    ]
+  },
   "sections": [
     {
       "id": "healthcare-hero",
@@ -65,6 +82,7 @@
             "name": "Preventive Care",
             "description": "Annual physicals, vaccinations, screenings, and health coaching to keep you feeling your best.",
             "duration": "Typical visit 30-45 min",
+            "category": "primary",
             "link": { "label": "See preventive services", "href": "#patient-journey" }
           },
           {
@@ -72,6 +90,7 @@
             "name": "Women's Health",
             "description": "OB/GYN visits, prenatal care, fertility counseling, and hormone therapy guided by specialists.",
             "duration": "Visit length varies",
+            "category": "womens",
             "link": { "label": "Schedule consult", "href": "#booking-advanced" }
           },
           {
@@ -79,6 +98,7 @@
             "name": "Physical Therapy",
             "description": "Personalized rehabilitation, mobility assessments, and injury prevention programs.",
             "duration": "Initial evaluation 60 min",
+            "category": "therapy",
             "link": { "label": "Request evaluation", "href": "#booking-advanced" }
           },
           {
@@ -86,6 +106,7 @@
             "name": "Dermatology",
             "description": "Skin cancer screenings, acne management, cosmetic dermatology, and chronic condition support.",
             "duration": "Follow-up 20 min",
+            "category": "specialty",
             "link": { "label": "Explore treatments", "href": "#medical-services" }
           },
           {
@@ -93,6 +114,7 @@
             "name": "Integrative Medicine",
             "description": "Nutrition, stress reduction, IV therapy, and medically supervised wellness plans.",
             "duration": "Consult 45 min",
+            "category": "specialty",
             "link": { "label": "View wellness options", "href": "#insurance-accepted" }
           },
           {
@@ -100,6 +122,7 @@
             "name": "Same-Day & Telehealth",
             "description": "Acute visits, virtual check-ins, e-prescribing, and after-hours triage by on-call providers.",
             "duration": "Telehealth 20 min",
+            "category": "primary",
             "link": { "label": "Request same-day visit", "href": "#booking-advanced" }
           }
         ],
@@ -138,8 +161,16 @@
             "education": ["Georgetown University School of Medicine", "Mayo Clinic Residency"],
             "certifications": ["American Board of Internal Medicine", "Institute for Functional Medicine"],
             "experience": "17 years of clinical experience",
+            "languages": ["English", "Spanish", "Mandarin"],
+            "specializations": ["Preventive Medicine", "Lifestyle Medicine", "Chronic Disease Management"],
+            "availability": "Monday, Wednesday, Friday 9am-5pm",
+            "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
             "statement": "I believe in partnering with patients to build sustainable habits that support long-term health.",
             "photo": "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=400&q=80",
+            "reviews": [
+              { "rating": 5, "quote": "Dr. Chen is thorough and caring. She takes time to listen.", "reviewer": "Sarah M." },
+              { "rating": 5, "quote": "Best doctor I've ever had. Highly recommend!", "reviewer": "John K." }
+            ],
             "cta": { "label": "Book with Dr. Chen", "href": "#booking-advanced" }
           },
           {

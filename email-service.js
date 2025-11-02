@@ -9,7 +9,7 @@ function getResend() {
   return resend;
 }
 
-const FROM_EMAIL = process.env.FROM_EMAIL || 'onboarding@resend.dev';
+const FROM_EMAIL = process.env.FROM_EMAIL || process.env.RESEND_FROM_EMAIL || 'noreply@sitesprintz.com';
 const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
 
 // Email templates
@@ -375,6 +375,314 @@ ${message}
         </div>
       </div>
     `
+  }),
+
+  orderConfirmation: (customerName, orderId, items, total, currency, businessName) => ({
+    subject: `✅ Order Confirmation #${orderId} - ${businessName}`,
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #10b981; margin: 0; font-size: 2rem;">✅ Order Confirmed!</h1>
+        </div>
+        
+        <div style="background: #f0fdf4; border-radius: 12px; padding: 30px; margin-bottom: 20px; border: 2px solid #86efac;">
+          <p style="font-size: 1.1rem; color: #1e293b; line-height: 1.6; margin: 0 0 20px 0;">
+            Thank you for your order, <strong>${customerName}</strong>!
+          </p>
+          
+          <div style="background: white; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="margin: 0 0 15px 0; color: #1e293b; font-size: 1.1rem;">📦 Order Details</h3>
+            <p style="margin: 0 0 15px 0; color: #64748b;">
+              <strong style="color: #1e293b;">Order Number:</strong> #${orderId}
+            </p>
+            
+            <div style="border-top: 1px solid #e5e7eb; padding-top: 15px; margin-top: 15px;">
+              ${items.map(item => `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0; padding: 12px; background: #f8fafc; border-radius: 8px;">
+                  <div>
+                    <div style="color: #1e293b; font-weight: 600;">${item.name}</div>
+                    <div style="color: #64748b; font-size: 0.9rem;">Quantity: ${item.quantity}</div>
+                  </div>
+                  <div style="color: #1e293b; font-weight: 600;">
+                    ${currency === 'usd' ? '$' : ''}${item.price.toFixed(2)}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            
+            <div style="border-top: 2px solid #e5e7eb; margin-top: 20px; padding-top: 20px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 1.2rem; font-weight: 600; color: #1e293b;">Total:</span>
+                <span style="font-size: 1.3rem; font-weight: 700; color: #10b981;">
+                  ${currency === 'usd' ? '$' : ''}${total.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <p style="color: #64748b; line-height: 1.6; margin: 20px 0 0 0; font-size: 0.95rem;">
+            We'll contact you shortly about next steps. If you have any questions, please reply to this email.
+          </p>
+        </div>
+        
+        <div style="background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 16px; margin: 20px 0;">
+          <p style="color: #1e40af; font-size: 0.9rem; margin: 0; line-height: 1.5;">
+            💡 <strong>What's Next?</strong> ${businessName} will be in touch soon with delivery/pickup details.
+          </p>
+        </div>
+        
+        <div style="border-top: 1px solid #e2e8f0; margin-top: 30px; padding-top: 20px;">
+          <p style="color: #94a3b8; font-size: 0.875rem; text-align: center; margin: 0;">
+            Questions about your order? Reply to this email and we'll be happy to help!
+          </p>
+        </div>
+      </div>
+    `
+  }),
+
+  newOrderAlert: (businessName, orderId, customerName, customerEmail, customerPhone, items, total, currency, siteId) => ({
+    subject: `🎉 New Order #${orderId} - ${businessName}`,
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #f59e0b; margin: 0; font-size: 2rem;">🎉 New Order!</h1>
+        </div>
+        
+        <div style="background: #fffbeb; border-radius: 12px; padding: 30px; margin-bottom: 20px; border: 2px solid #fbbf24;">
+          <p style="font-size: 1.1rem; color: #1e293b; line-height: 1.6; margin: 0 0 20px 0;">
+            You have received a new order for <strong>${businessName}</strong>!
+          </p>
+          
+          <div style="background: white; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="margin: 0 0 15px 0; color: #1e293b; font-size: 1.1rem;">📋 Order #${orderId}</h3>
+            
+            <div style="background: #f8fafc; border-radius: 8px; padding: 15px; margin: 15px 0;">
+              <p style="margin: 8px 0; color: #64748b;">
+                <strong style="color: #1e293b;">Customer:</strong> ${customerName}
+              </p>
+              <p style="margin: 8px 0; color: #64748b;">
+                <strong style="color: #1e293b;">Email:</strong> 
+                <a href="mailto:${customerEmail}" style="color: #2563eb; text-decoration: none;">${customerEmail}</a>
+              </p>
+              ${customerPhone ? `
+                <p style="margin: 8px 0; color: #64748b;">
+                  <strong style="color: #1e293b;">Phone:</strong> ${customerPhone}
+                </p>
+              ` : ''}
+            </div>
+            
+            <div style="border-top: 1px solid #e5e7eb; padding-top: 15px; margin-top: 15px;">
+              <h4 style="margin: 0 0 12px 0; color: #1e293b;">Order Items:</h4>
+              ${items.map(item => `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0; padding: 12px; background: #f8fafc; border-radius: 8px;">
+                  <div>
+                    <div style="color: #1e293b; font-weight: 600;">${item.name}</div>
+                    <div style="color: #64748b; font-size: 0.9rem;">Qty: ${item.quantity}</div>
+                  </div>
+                  <div style="color: #1e293b; font-weight: 600;">
+                    ${currency === 'usd' ? '$' : ''}${item.price.toFixed(2)}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            
+            <div style="border-top: 2px solid #e5e7eb; margin-top: 20px; padding-top: 20px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 1.2rem; font-weight: 600; color: #1e293b;">Total Paid:</span>
+                <span style="font-size: 1.3rem; font-weight: 700; color: #f59e0b;">
+                  ${currency === 'usd' ? '$' : ''}${total.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${SITE_URL}/orders.html?siteId=${siteId}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 1rem; margin-right: 10px;">
+            📦 View Order in Dashboard
+          </a>
+          <a href="mailto:${customerEmail}" style="display: inline-block; padding: 14px 32px; background: #10b981; color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 1rem;">
+            📧 Contact Customer
+          </a>
+        </div>
+        
+        <div style="background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 8px; padding: 16px; margin: 20px 0;">
+          <p style="color: #991b1b; font-size: 0.9rem; margin: 0; line-height: 1.5;">
+            ⏱️ <strong>Action Required:</strong> Contact the customer to arrange delivery or pickup!
+          </p>
+        </div>
+        
+        <div style="border-top: 1px solid #e2e8f0; margin-top: 30px; padding-top: 20px;">
+          <p style="color: #94a3b8; font-size: 0.875rem; text-align: center; margin: 0;">
+            This order was placed on your SiteSprintz website. Manage all orders from your dashboard.
+          </p>
+        </div>
+      </div>
+    `
+  }),
+
+  // ===== ADMIN NOTIFICATIONS =====
+  
+  adminNewUser: (userEmail, userName) => ({
+    subject: `👤 New User Signup - ${userEmail}`,
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #2563eb; margin: 0; font-size: 2rem;">New User! 👤</h1>
+        </div>
+        
+        <div style="background: #eff6ff; border-left: 4px solid #2563eb; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+          <h2 style="color: #1e40af; margin: 0 0 10px 0; font-size: 1.2rem;">New Signup</h2>
+          <p style="color: #1e3a8a; margin: 0; font-size: 0.9rem;">A new user has joined SiteSprintz</p>
+        </div>
+        
+        <div style="background: #f8fafc; border-radius: 12px; padding: 25px; margin-bottom: 20px;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 8px 0; color: #64748b; font-size: 0.9rem; width: 30%;">Email:</td>
+              <td style="padding: 8px 0; color: #1e293b; font-weight: 500;">${userEmail}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b; font-size: 0.9rem;">Name:</td>
+              <td style="padding: 8px 0; color: #1e293b;">${userName || 'Not provided'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b; font-size: 0.9rem;">Signed up:</td>
+              <td style="padding: 8px 0; color: #1e293b;">${new Date().toLocaleString()}</td>
+            </tr>
+          </table>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${SITE_URL}/admin-users.html" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 1rem;">
+            View All Users
+          </a>
+        </div>
+      </div>
+    `
+  }),
+
+  adminNewSite: (siteName, siteTemplate, userName, userEmail, siteId, plan) => ({
+    subject: `🚀 New Site Created - ${siteName} (${plan})`,
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #8b5cf6; margin: 0; font-size: 2rem;">New Site! 🚀</h1>
+        </div>
+        
+        <div style="background: #f5f3ff; border-left: 4px solid #8b5cf6; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+          <h2 style="color: #6d28d9; margin: 0 0 10px 0; font-size: 1.2rem;">${siteName}</h2>
+          <p style="color: #5b21b6; margin: 0; font-size: 0.9rem;">Template: ${siteTemplate} | Plan: ${plan}</p>
+        </div>
+        
+        <div style="background: #f8fafc; border-radius: 12px; padding: 25px; margin-bottom: 20px;">
+          <h3 style="color: #1e293b; margin: 0 0 15px 0; font-size: 1.1rem;">Site Owner</h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 8px 0; color: #64748b; font-size: 0.9rem; width: 30%;">Name:</td>
+              <td style="padding: 8px 0; color: #1e293b; font-weight: 500;">${userName || 'Not provided'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b; font-size: 0.9rem;">Email:</td>
+              <td style="padding: 8px 0; color: #1e293b;">${userEmail}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b; font-size: 0.9rem;">Created:</td>
+              <td style="padding: 8px 0; color: #1e293b;">${new Date().toLocaleString()}</td>
+            </tr>
+          </table>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${SITE_URL}/admin-analytics.html" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 1rem;">
+            View Analytics
+          </a>
+        </div>
+      </div>
+    `
+  }),
+
+  adminSitePublished: (siteName, siteTemplate, userName, userEmail, siteId, plan) => ({
+    subject: `✅ Site Published - ${siteName}`,
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #10b981; margin: 0; font-size: 2rem;">Site Published! ✅</h1>
+        </div>
+        
+        <div style="background: #f0fdf4; border-left: 4px solid #10b981; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+          <h2 style="color: #059669; margin: 0 0 10px 0; font-size: 1.2rem;">${siteName}</h2>
+          <p style="color: #166534; margin: 0; font-size: 0.9rem;">Template: ${siteTemplate} | Plan: ${plan}</p>
+        </div>
+        
+        <div style="background: #f8fafc; border-radius: 12px; padding: 25px; margin-bottom: 20px;">
+          <h3 style="color: #1e293b; margin: 0 0 15px 0; font-size: 1.1rem;">Published By</h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 8px 0; color: #64748b; font-size: 0.9rem; width: 30%;">Name:</td>
+              <td style="padding: 8px 0; color: #1e293b; font-weight: 500;">${userName || 'Not provided'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b; font-size: 0.9rem;">Email:</td>
+              <td style="padding: 8px 0; color: #1e293b;">${userEmail}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b; font-size: 0.9rem;">Published:</td>
+              <td style="padding: 8px 0; color: #1e293b;">${new Date().toLocaleString()}</td>
+            </tr>
+          </table>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${SITE_URL}/sites/${siteId}/" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #10b981, #059669); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 1rem;">
+            View Live Site
+          </a>
+        </div>
+      </div>
+    `
+  }),
+
+  adminProUpgrade: (userName, userEmail, siteName, siteId) => ({
+    subject: `💎 Pro Upgrade - ${siteName} by ${userName}`,
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #f59e0b; margin: 0; font-size: 2rem;">Pro Upgrade! 💎</h1>
+        </div>
+        
+        <div style="background: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+          <h2 style="color: #d97706; margin: 0 0 10px 0; font-size: 1.2rem;">${siteName}</h2>
+          <p style="color: #92400e; margin: 0; font-size: 0.9rem;">User upgraded to Pro plan! 🎉</p>
+        </div>
+        
+        <div style="background: #f8fafc; border-radius: 12px; padding: 25px; margin-bottom: 20px;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 8px 0; color: #64748b; font-size: 0.9rem; width: 30%;">User:</td>
+              <td style="padding: 8px 0; color: #1e293b; font-weight: 500;">${userName || 'Not provided'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b; font-size: 0.9rem;">Email:</td>
+              <td style="padding: 8px 0; color: #1e293b;">${userEmail}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b; font-size: 0.9rem;">Site:</td>
+              <td style="padding: 8px 0; color: #1e293b;">${siteName}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b; font-size: 0.9rem;">Upgraded:</td>
+              <td style="padding: 8px 0; color: #1e293b;">${new Date().toLocaleString()}</td>
+            </tr>
+          </table>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${SITE_URL}/admin-analytics.html" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 1rem;">
+            View Analytics
+          </a>
+        </div>
+      </div>
+    `
   })
 };
 
@@ -429,6 +737,25 @@ export const EmailTypes = {
   SITE_UPDATED: 'siteUpdated',
   TRIAL_EXPIRING_SOON: 'trialExpiringSoon',
   TRIAL_EXPIRED: 'trialExpired',
-  CONTACT_FORM_SUBMISSION: 'contactFormSubmission'
+  CONTACT_FORM_SUBMISSION: 'contactFormSubmission',
+  ORDER_CONFIRMATION: 'orderConfirmation',
+  NEW_ORDER_ALERT: 'newOrderAlert',
+  // Admin notifications
+  ADMIN_NEW_USER: 'adminNewUser',
+  ADMIN_NEW_SITE: 'adminNewSite',
+  ADMIN_SITE_PUBLISHED: 'adminSitePublished',
+  ADMIN_PRO_UPGRADE: 'adminProUpgrade'
 };
+
+// Helper function to send admin notifications
+export async function sendAdminNotification(templateName, templateData = {}) {
+  const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+  
+  if (!ADMIN_EMAIL) {
+    console.warn('⚠️ ADMIN_EMAIL not configured. Skipping admin notification:', templateName);
+    return { success: false, error: 'Admin email not configured' };
+  }
+  
+  return await sendEmail(ADMIN_EMAIL, templateName, templateData);
+}
 
