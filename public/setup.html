@@ -96,6 +96,146 @@
       overflow: hidden;
     }
 
+    /* Template Preview Modal */
+    .template-preview-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(4px);
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .template-preview-modal.active {
+      display: flex;
+    }
+
+    .preview-container {
+      background: white;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 1200px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .preview-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .preview-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin: 0;
+    }
+
+    .preview-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn-preview-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #64748b;
+      padding: 4px 8px;
+      transition: color 0.2s;
+    }
+
+    .btn-preview-close:hover {
+      color: #1f2937;
+    }
+
+    .btn-use-template {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-600));
+      color: white;
+      padding: 10px 24px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-use-template:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+    }
+
+    .preview-iframe-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+    }
+
+    .preview-loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #64748b;
+      font-size: 1.1rem;
+    }
+
+    .template-card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .btn-preview-template {
+      flex: 1;
+      background: #f1f5f9;
+      color: #475569;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .btn-preview-template:hover {
+      background: #e2e8f0;
+    }
+
     .template-plan-badge {
       position: absolute;
       top: var(--spacing-sm);
@@ -645,6 +785,23 @@
   </style>
 </head>
 <body>
+  <!-- Template Preview Modal -->
+  <div class="template-preview-modal" id="templatePreviewModal">
+    <div class="preview-container">
+      <div class="preview-header">
+        <h3 class="preview-title" id="previewTemplateName">Template Preview</h3>
+        <div class="preview-actions">
+          <button class="btn-use-template" onclick="selectFromPreview()">Use This Template</button>
+          <button class="btn-preview-close" onclick="closeTemplatePreview()">✕</button>
+        </div>
+      </div>
+      <div class="preview-iframe-container">
+        <div class="preview-loading" id="previewLoading">Loading preview...</div>
+        <iframe id="previewIframe" class="preview-iframe" style="display: none;"></iframe>
+      </div>
+    </div>
+  </div>
+
   <div class="setup-container">
     <!-- Progress Bar -->
     <div class="progress-bar">
@@ -1474,7 +1631,7 @@
         preview.title = 'Preview template in modal';
         preview.onclick = (event) => {
           event.stopPropagation();
-          openTemplatePreview(template);
+          openTemplatePreview(template, `${template.charAt(0).toUpperCase() + template.slice(1).replace(/-/g, ' ')} Template`);
         };
 
         actions.appendChild(selectBtn);
@@ -1496,7 +1653,17 @@
       
       // Update UI
       document.querySelectorAll('.template-card').forEach(card => card.classList.remove('selected'));
-      element.classList.add('selected');
+      if (element) {
+        element.classList.add('selected');
+      } else {
+        // If no element provided (from preview modal), find and select the card
+        const cards = document.querySelectorAll('.template-card');
+        cards.forEach(card => {
+          if (card.dataset.template === template) {
+            card.classList.add('selected');
+          }
+        });
+      }
       
       // Auto-advance to customization step after 1 second
       setTimeout(() => {
@@ -2667,6 +2834,65 @@
         copySuccessUrl();
       }
     }
+
+    // Template Preview System
+    let currentPreviewTemplate = null;
+
+    function openTemplatePreview(templateId, templateName) {
+      currentPreviewTemplate = templateId;
+      const modal = document.getElementById('templatePreviewModal');
+      const iframe = document.getElementById('previewIframe');
+      const loading = document.getElementById('previewLoading');
+      const titleElement = document.getElementById('previewTemplateName');
+
+      // Show modal
+      modal.classList.add('active');
+      
+      // Update title
+      titleElement.textContent = templateName;
+
+      // Reset iframe
+      iframe.style.display = 'none';
+      loading.style.display = 'block';
+
+      // Load template preview
+      iframe.src = `/demo.html?template=${templateId}`;
+      
+      iframe.onload = function() {
+        loading.style.display = 'none';
+        iframe.style.display = 'block';
+      };
+
+      // Close on escape key
+      document.addEventListener('keydown', handlePreviewEscape);
+    }
+
+    function closeTemplatePreview() {
+      const modal = document.getElementById('templatePreviewModal');
+      modal.classList.remove('active');
+      currentPreviewTemplate = null;
+      document.removeEventListener('keydown', handlePreviewEscape);
+    }
+
+    function handlePreviewEscape(e) {
+      if (e.key === 'Escape') {
+        closeTemplatePreview();
+      }
+    }
+
+    function selectFromPreview() {
+      if (currentPreviewTemplate) {
+        selectTemplate(currentPreviewTemplate);
+        closeTemplatePreview();
+      }
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('templatePreviewModal')?.addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeTemplatePreview();
+      }
+    });
 
     // Functions are now global since script is not a module
   </script>

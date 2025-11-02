@@ -76,6 +76,15 @@ function sanitizeString(str, maxLength = 500) {
   return str.trim().substring(0, maxLength);
 }
 
+function generateRandomPassword(length = 16) {
+  const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+  let password = '';
+  for (let i = 0; i < length; i++) {
+    password += charset.charAt(Math.floor(Math.random() * charset.length));
+  }
+  return password;
+}
+
 // Ensure directories exist
 fs.mkdir(uploadsDir, { recursive: true }).catch(() => {});
 fs.mkdir(draftsDir, { recursive: true }).catch(() => {});
@@ -665,6 +674,143 @@ app.post('/api/auth/register', async (req, res) => {
  * - Can check subscription status
  * - Update last_login atomically (no race conditions)
  */
+/**
+ * QUICK REGISTER ENDPOINT (SEAMLESS UX)
+ * 
+ * Purpose: Create account with just email for seamless publishing flow
+ * Users can set password later via magic link
+ */
+app.post('/api/auth/quick-register', async (req, res) => {
+  try {
+    const { email, skipPassword } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email required' });
+    }
+    
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+    
+    // Check if user exists
+    const existingUser = await dbQuery(
+      'SELECT id FROM users WHERE email = $1',
+      [email.toLowerCase()]
+    );
+    
+    if (existingUser.rows.length > 0) {
+      return res.status(409).json({ error: 'User with this email already exists' });
+    }
+    
+    // Create temporary password if skipPassword is true
+    const tempPassword = skipPassword ? generateRandomPassword() : null;
+    const hashedPassword = tempPassword ? await bcrypt.hash(tempPassword, 10) : null;
+    
+    // Insert user with pending status until email verified
+    const result = await dbQuery(`
+      INSERT INTO users (email, password_hash, role, status, created_at)
+      VALUES ($1, $2, 'user', 'pending', NOW())
+      RETURNING id, email, role, status, created_at
+    `, [email.toLowerCase(), hashedPassword]);
+    
+    const user = result.rows[0];
+    
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        userId: user.id,
+        id: user.id,
+        email: user.email,
+        role: user.role 
+      },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    
+    // Send welcome email with magic link to set password
+    try {
+      await sendEmail(user.email, EmailTypes.WELCOME, { 
+        email: user.email,
+        magicLink: `${process.env.BASE_URL || 'http://localhost:3000'}/set-password?token=${token}`
+      });
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError);
+    }
+    
+    res.json({ 
+      success: true, 
+      token, 
+      user: { 
+        id: user.id, 
+        email: user.email,
+        role: user.role,
+        needsPassword: skipPassword
+      } 
+    });
+    
+  } catch (err) {
+    console.error('Quick registration error:', err);
+    res.status(500).json({ error: 'Failed to create account' });
+  }
+});
+
+/**
+ * SEND MAGIC LINK ENDPOINT
+ * 
+ * Purpose: Send magic login link to existing users
+ */
+app.post('/api/auth/send-magic-link', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email || !isValidEmail(email)) {
+      return res.status(400).json({ error: 'Valid email required' });
+    }
+    
+    // Check if user exists
+    const result = await dbQuery(
+      'SELECT id, email, role FROM users WHERE email = $1',
+      [email.toLowerCase()]
+    );
+    
+    if (result.rows.length === 0) {
+      // Don't reveal if user exists or not
+      return res.json({ success: true, message: 'If an account exists, a login link has been sent' });
+    }
+    
+    const user = result.rows[0];
+    
+    // Generate token
+    const token = jwt.sign(
+      { 
+        userId: user.id,
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        magicLink: true
+      },
+      JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+    
+    // Send magic link email
+    try {
+      await sendEmail(user.email, EmailTypes.WELCOME, {
+        email: user.email,
+        magicLink: `${process.env.BASE_URL || 'http://localhost:3000'}/magic-login?token=${token}`
+      });
+    } catch (emailError) {
+      console.error('Failed to send magic link:', emailError);
+    }
+    
+    res.json({ success: true, message: 'If an account exists, a login link has been sent' });
+    
+  } catch (err) {
+    console.error('Magic link error:', err);
+    res.status(500).json({ error: 'Failed to send magic link' });
+  }
+});
+
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -1921,6 +2067,132 @@ app.post('/api/setup', async (req, res) => {
   } catch (err) {
     console.error('Setup save error:', err);
     res.status(500).json({ error: err.message, details: err.stack });
+  }
+});
+
+/**
+ * GUEST PUBLISH ENDPOINT (SEAMLESS UX)
+ * 
+ * Purpose: Publish site for users who built without logging in
+ * Creates account and publishes site in one flow
+ */
+app.post('/api/sites/guest-publish', async (req, res) => {
+  try {
+    const { email, data } = req.body;
+    
+    if (!email || !isValidEmail(email)) {
+      return res.status(400).json({ error: 'Valid email required' });
+    }
+    
+    if (!data) {
+      return res.status(400).json({ error: 'Site data required' });
+    }
+    
+    // Check if user exists
+    const existingUser = await dbQuery(
+      'SELECT id FROM users WHERE email = $1',
+      [email.toLowerCase()]
+    );
+    
+    let userId;
+    
+    if (existingUser.rows.length === 0) {
+      // Create new user with temporary password
+      const tempPassword = generateRandomPassword();
+      const hashedPassword = await bcrypt.hash(tempPassword, 10);
+      
+      const userResult = await dbQuery(`
+        INSERT INTO users (email, password_hash, role, status, created_at)
+        VALUES ($1, $2, 'user', 'pending', NOW())
+        RETURNING id
+      `, [email.toLowerCase(), hashedPassword]);
+      
+      userId = userResult.rows[0].id;
+      
+      // Send welcome email
+      try {
+        await sendEmail(email, EmailTypes.WELCOME, { email });
+      } catch (emailError) {
+        console.error('Failed to send welcome email:', emailError);
+      }
+    } else {
+      userId = existingUser.rows[0].id;
+    }
+    
+    // Generate subdomain
+    const businessName = data.brand?.name || data.meta?.businessName || 'my-site';
+    const baseSubdomain = businessName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+    
+    let subdomain = baseSubdomain;
+    let attempt = 0;
+    
+    // Ensure unique subdomain
+    while (true) {
+      const siteDir = path.join(publicDir, 'sites', subdomain);
+      try {
+        await fs.access(siteDir);
+        // Directory exists, try with suffix
+        attempt++;
+        subdomain = `${baseSubdomain}-${Math.random().toString(36).substr(2, 9)}`;
+      } catch {
+        // Directory doesn't exist, we can use this subdomain
+        break;
+      }
+    }
+    
+    // Create site directory
+    const siteDir = path.join(publicDir, 'sites', subdomain);
+    await fs.mkdir(siteDir, { recursive: true });
+    await fs.mkdir(path.join(siteDir, 'data'), { recursive: true });
+    
+    // Save site data
+    await fs.writeFile(
+      path.join(siteDir, 'data', 'site.json'),
+      JSON.stringify(data, null, 2)
+    );
+    
+    // Copy index.html template
+    const indexContent = await fs.readFile(
+      path.join(publicDir, 'demo.html'),
+      'utf-8'
+    );
+    await fs.writeFile(path.join(siteDir, 'index.html'), indexContent);
+    
+    // Set 7-day trial expiration
+    const trialExpiresAt = new Date();
+    trialExpiresAt.setDate(trialExpiresAt.getDate() + 7);
+    
+    // Save site metadata
+    const metadata = {
+      subdomain,
+      email,
+      userId,
+      businessName,
+      plan: 'free',
+      status: 'active',
+      publishedAt: new Date().toISOString(),
+      trialExpiresAt: trialExpiresAt.toISOString()
+    };
+    
+    await fs.writeFile(
+      path.join(siteDir, 'metadata.json'),
+      JSON.stringify(metadata, null, 2)
+    );
+    
+    res.json({
+      success: true,
+      subdomain,
+      url: `${req.protocol}://${req.get('host')}/sites/${subdomain}`,
+      businessName,
+      trialDays: 7
+    });
+    
+  } catch (err) {
+    console.error('Guest publish error:', err);
+    res.status(500).json({ error: 'Failed to publish site' });
   }
 });
 

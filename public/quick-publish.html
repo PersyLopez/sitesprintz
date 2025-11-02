@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Publish Your Site | SiteSprintz</title>
+  <link rel="stylesheet" href="theme.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    }
+
+    .publish-container {
+      background: white;
+      border-radius: 24px;
+      padding: 48px;
+      max-width: 550px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: slideUp 0.4s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .publish-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .publish-emoji {
+      font-size: 4rem;
+      margin-bottom: 16px;
+    }
+
+    .publish-title {
+      font-size: 2.2rem;
+      margin: 0 0 12px 0;
+      color: #1f2937;
+      font-weight: 800;
+    }
+
+    .publish-subtitle {
+      color: #64748b;
+      font-size: 1.05rem;
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    .publish-preview {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 32px;
+    }
+
+    .preview-label {
+      font-size: 0.85rem;
+      color: #64748b;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .preview-url {
+      font-size: 1.1rem;
+      color: #06b6d4;
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #1f2937;
+      font-size: 0.95rem;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: all 0.2s;
+      box-sizing: border-box;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #06b6d4;
+      box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+    }
+
+    .form-hint {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-top: 6px;
+    }
+
+    .btn-publish {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #06b6d4, #0891b2);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-publish:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(6, 182, 212, 0.3);
+    }
+
+    .btn-publish:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .benefits-list {
+      list-style: none;
+      padding: 0;
+      margin: 24px 0;
+    }
+
+    .benefits-list li {
+      padding: 12px 0;
+      color: #475569;
+      display: flex;
+      align-items: start;
+      gap: 12px;
+      font-size: 0.95rem;
+    }
+
+    .benefits-list li::before {
+      content: '✓';
+      color: #10b981;
+      font-weight: 700;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .trust-badge {
+      text-align: center;
+      padding: 16px;
+      background: #f0fdfa;
+      border-radius: 8px;
+      margin-top: 24px;
+    }
+
+    .trust-badge p {
+      margin: 0;
+      color: #0d9488;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .error-message {
+      background: #fee2e2;
+      color: #dc2626;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .error-message.show {
+      display: block;
+    }
+
+    .back-link {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .back-link a {
+      color: #06b6d4;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .back-link a:hover {
+      text-decoration: underline;
+    }
+
+    /* Loading state */
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 640px) {
+      .publish-container {
+        padding: 32px 24px;
+      }
+
+      .publish-title {
+        font-size: 1.8rem;
+      }
+
+      .publish-subtitle {
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="publish-container">
+    <div class="publish-header">
+      <div class="publish-emoji">🚀</div>
+      <h1 class="publish-title">Ready to Go Live?</h1>
+      <p class="publish-subtitle">
+        Enter your email to publish your site instantly. We'll send you a verification link to manage it later.
+      </p>
+    </div>
+
+    <div class="publish-preview">
+      <div class="preview-label">Your Site Will Be:</div>
+      <div class="preview-url" id="previewUrl">sitesprintz.com/your-site</div>
+    </div>
+
+    <div class="error-message" id="errorMessage"></div>
+
+    <form id="publishForm" onsubmit="handleQuickPublish(event)">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input 
+          type="email" 
+          class="form-input" 
+          id="email" 
+          placeholder="you@example.com" 
+          required
+          autocomplete="email"
+        >
+        <div class="form-hint">We'll send you a link to manage your site</div>
+      </div>
+
+      <ul class="benefits-list">
+        <li>Instant publish - your site goes live immediately</li>
+        <li>7-day free trial included</li>
+        <li>Verify your email anytime to access dashboard</li>
+        <li>No credit card required to start</li>
+      </ul>
+
+      <button type="submit" class="btn-publish" id="publishBtn">
+        <span id="btnText">Publish My Site</span>
+      </button>
+    </form>
+
+    <div class="trust-badge">
+      <p>🔒 Your email is safe. We'll never spam you.</p>
+    </div>
+
+    <div class="back-link">
+      <a href="#" onclick="history.back(); return false;">← Back to Editor</a>
+    </div>
+  </div>
+
+  <script>
+    // Generate preview URL on load
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedProgress = localStorage.getItem('guestEditorProgress');
+      if (savedProgress) {
+        try {
+          const progress = JSON.parse(savedProgress);
+          const businessName = progress.data?.brand?.name || progress.data?.meta?.businessName || 'your-site';
+          const slug = businessName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+          document.getElementById('previewUrl').textContent = `sitesprintz.com/${slug}`;
+        } catch (error) {
+          console.error('Failed to parse progress:', error);
+        }
+      }
+    });
+
+    async function handleQuickPublish(event) {
+      event.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const errorMessage = document.getElementById('errorMessage');
+      const publishBtn = document.getElementById('publishBtn');
+      const btnText = document.getElementById('btnText');
+      
+      // Clear previous errors
+      errorMessage.classList.remove('show');
+      
+      // Get saved progress
+      const savedProgress = localStorage.getItem('guestEditorProgress');
+      if (!savedProgress) {
+        errorMessage.textContent = 'No site data found. Please go back and create your site first.';
+        errorMessage.classList.add('show');
+        return;
+      }
+
+      try {
+        const progress = JSON.parse(savedProgress);
+        
+        // Disable button and show loading
+        publishBtn.disabled = true;
+        btnText.innerHTML = '<span class="spinner"></span> Publishing...';
+        
+        // Step 1: Create account (if needed) or just register email
+        const registerResponse = await fetch('/api/auth/quick-register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            email,
+            skipPassword: true // Allow passwordless initial registration
+          })
+        });
+        
+        const registerResult = await registerResponse.json();
+        
+        if (!registerResponse.ok) {
+          // If user already exists, try to send them a magic link instead
+          if (registerResult.error?.includes('already exists')) {
+            // Send magic login link
+            const magicLinkResponse = await fetch('/api/auth/send-magic-link', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email })
+            });
+            
+            if (magicLinkResponse.ok) {
+              // Publish as guest, associate with email
+              await publishAsGuest(email, progress.data);
+              return;
+            }
+          }
+          
+          throw new Error(registerResult.error || 'Failed to create account');
+        }
+        
+        // Step 2: Publish the site
+        const token = registerResult.token;
+        const publishResponse = await fetch('/api/sites', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            data: progress.data,
+            template: progress.template,
+            autoPublish: true
+          })
+        });
+        
+        const publishResult = await publishResponse.json();
+        
+        if (!publishResponse.ok) {
+          throw new Error(publishResult.error || 'Failed to publish site');
+        }
+        
+        // Success! Store token and redirect
+        localStorage.setItem('authToken', token);
+        localStorage.removeItem('guestEditorProgress'); // Clear guest data
+        
+        // Redirect to success page
+        window.location.href = `/publish-success.html?site=${publishResult.subdomain}&email=${encodeURIComponent(email)}`;
+        
+      } catch (error) {
+        console.error('Publish error:', error);
+        errorMessage.textContent = error.message || 'Failed to publish. Please try again.';
+        errorMessage.classList.add('show');
+        
+        // Re-enable button
+        publishBtn.disabled = false;
+        btnText.textContent = 'Publish My Site';
+      }
+    }
+
+    async function publishAsGuest(email, siteData) {
+      // Fallback: Publish without full registration
+      try {
+        const response = await fetch('/api/sites/guest-publish', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            data: siteData
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          localStorage.removeItem('guestEditorProgress');
+          window.location.href = `/publish-success.html?site=${result.subdomain}&email=${encodeURIComponent(email)}&verify=true`;
+        } else {
+          throw new Error(result.error || 'Failed to publish');
+        }
+      } catch (error) {
+        console.error('Guest publish error:', error);
+        document.getElementById('errorMessage').textContent = 'Failed to publish. Please try again.';
+        document.getElementById('errorMessage').classList.add('show');
+        document.getElementById('publishBtn').disabled = false;
+        document.getElementById('btnText').textContent = 'Publish My Site';
+      }
+    }
+  </script>
+</body>
+</html>
+

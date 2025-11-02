@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Build Your Site | SiteSprintz</title>
+  <link rel="stylesheet" href="theme.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Guest Editor Banner */
+    .guest-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+      color: white;
+      padding: 12px 20px;
+      text-align: center;
+      z-index: 10000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .guest-banner-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .guest-banner-text {
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .guest-banner-text strong {
+      font-weight: 700;
+    }
+
+    .guest-banner-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn-save-progress {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      padding: 8px 20px;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+    }
+
+    .btn-save-progress:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    .btn-publish-now {
+      background: white;
+      color: #0891b2;
+      padding: 8px 24px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+    }
+
+    .btn-publish-now:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    /* Editor Tour Tooltips */
+    .editor-tour-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 9998;
+      display: none;
+    }
+
+    .editor-tour-overlay.active {
+      display: block;
+    }
+
+    .tour-tooltip {
+      position: fixed;
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 380px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      z-index: 9999;
+      display: none;
+      animation: tooltipPop 0.3s ease-out;
+    }
+
+    .tour-tooltip.active {
+      display: block;
+    }
+
+    @keyframes tooltipPop {
+      from {
+        opacity: 0;
+        transform: scale(0.9) translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .tour-step-indicator {
+      font-size: 0.85rem;
+      color: #64748b;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .tour-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin: 0 0 12px 0;
+    }
+
+    .tour-description {
+      color: #64748b;
+      line-height: 1.6;
+      margin: 0 0 20px 0;
+    }
+
+    .tour-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .btn-tour-skip {
+      background: none;
+      border: none;
+      color: #64748b;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-tour-next {
+      background: linear-gradient(135deg, #06b6d4, #0891b2);
+      color: white;
+      padding: 8px 24px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .tour-arrow {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-style: solid;
+    }
+
+    .tour-arrow.top {
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 0 10px 10px 10px;
+      border-color: transparent transparent white transparent;
+    }
+
+    .tour-arrow.bottom {
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 10px 10px 0 10px;
+      border-color: white transparent transparent transparent;
+    }
+
+    .tour-arrow.left {
+      left: -10px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-width: 10px 10px 10px 0;
+      border-color: transparent white transparent transparent;
+    }
+
+    .tour-arrow.right {
+      right: -10px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-width: 10px 0 10px 10px;
+      border-color: transparent transparent transparent white;
+    }
+
+    /* Main editor body needs top padding for banner */
+    body {
+      padding-top: 60px;
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+      .guest-banner-content {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .guest-banner-actions {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .tour-tooltip {
+        max-width: calc(100% - 40px);
+        left: 20px !important;
+        right: 20px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Guest Editor Banner -->
+  <div class="guest-banner" id="guestBanner" style="display: none;">
+    <div class="guest-banner-content">
+      <div class="guest-banner-text">
+        <strong>🎨 Building in preview mode</strong> — Your progress is saved automatically. Create an account to publish!
+      </div>
+      <div class="guest-banner-actions">
+        <button class="btn-save-progress" onclick="showSaveModal()">
+          💾 Save Progress
+        </button>
+        <button class="btn-publish-now" onclick="showPublishModal()">
+          🚀 Publish Site
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Editor Tour Overlay -->
+  <div class="editor-tour-overlay" id="tourOverlay"></div>
+
+  <!-- Tour Tooltip Step 1 -->
+  <div class="tour-tooltip" id="tourStep1">
+    <div class="tour-arrow top"></div>
+    <div class="tour-step-indicator">STEP 1 OF 3</div>
+    <h3 class="tour-title">👋 Welcome to the Editor!</h3>
+    <p class="tour-description">
+      Click on any text or image to edit it. Changes are saved automatically as you work.
+    </p>
+    <div class="tour-actions">
+      <button class="btn-tour-skip" onclick="skipTour()">Skip Tour</button>
+      <button class="btn-tour-next" onclick="nextTourStep()">Next →</button>
+    </div>
+  </div>
+
+  <!-- Tour Tooltip Step 2 -->
+  <div class="tour-tooltip" id="tourStep2">
+    <div class="tour-arrow left"></div>
+    <div class="tour-step-indicator">STEP 2 OF 3</div>
+    <h3 class="tour-title">🎨 Customize Everything</h3>
+    <p class="tour-description">
+      Use the panel on the right to add sections, upload images, and customize your site's look.
+    </p>
+    <div class="tour-actions">
+      <button class="btn-tour-skip" onclick="skipTour()">Skip Tour</button>
+      <button class="btn-tour-next" onclick="nextTourStep()">Next →</button>
+    </div>
+  </div>
+
+  <!-- Tour Tooltip Step 3 -->
+  <div class="tour-tooltip" id="tourStep3">
+    <div class="tour-arrow bottom"></div>
+    <div class="tour-step-indicator">STEP 3 OF 3</div>
+    <h3 class="tour-title">🚀 Ready to Publish?</h3>
+    <p class="tour-description">
+      When you're happy with your site, click "Publish Site" to make it live. No credit card needed to start!
+    </p>
+    <div class="tour-actions">
+      <button class="btn-tour-next" onclick="completeTour()">Got it! ✓</button>
+    </div>
+  </div>
+
+  <!-- Main Editor Content (will be loaded by editor script) -->
+  <div id="editorRoot"></div>
+
+  <script>
+    // Guest Editor System
+    const GuestEditor = {
+      isGuest: false,
+      autoSaveInterval: null,
+      tourCompleted: localStorage.getItem('editorTourCompleted') === 'true',
+
+      init() {
+        // Check if user is logged in
+        const token = localStorage.getItem('authToken');
+        this.isGuest = !token;
+
+        if (this.isGuest) {
+          document.getElementById('guestBanner').style.display = 'block';
+          this.startAutoSave();
+          
+          // Show tour on first visit
+          if (!this.tourCompleted) {
+            setTimeout(() => this.startTour(), 1000);
+          }
+        }
+
+        // Load any saved guest progress
+        this.loadGuestProgress();
+      },
+
+      startAutoSave() {
+        // Auto-save every 30 seconds
+        this.autoSaveInterval = setInterval(() => {
+          this.saveGuestProgress();
+        }, 30000);
+      },
+
+      saveGuestProgress() {
+        try {
+          // Get current site config from the editor
+          const editorData = window.currentSiteData || {};
+          localStorage.setItem('guestEditorProgress', JSON.stringify({
+            data: editorData,
+            timestamp: Date.now(),
+            template: new URLSearchParams(window.location.search).get('template')
+          }));
+          console.log('✓ Progress saved');
+        } catch (error) {
+          console.error('Failed to save progress:', error);
+        }
+      },
+
+      loadGuestProgress() {
+        try {
+          const saved = localStorage.getItem('guestEditorProgress');
+          if (saved) {
+            const progress = JSON.parse(saved);
+            // Load this data into the editor
+            window.guestProgressData = progress.data;
+            console.log('✓ Previous progress loaded');
+          }
+        } catch (error) {
+          console.error('Failed to load progress:', error);
+        }
+      },
+
+      // Tour System
+      currentTourStep: 0,
+      tourSteps: ['tourStep1', 'tourStep2', 'tourStep3'],
+
+      startTour() {
+        document.getElementById('tourOverlay').classList.add('active');
+        this.showTourStep(0);
+      },
+
+      showTourStep(index) {
+        // Hide all tooltips
+        this.tourSteps.forEach(id => {
+          document.getElementById(id).classList.remove('active');
+        });
+
+        // Show current step
+        if (index < this.tourSteps.length) {
+          const tooltip = document.getElementById(this.tourSteps[index]);
+          tooltip.classList.add('active');
+          this.positionTooltip(tooltip, index);
+          this.currentTourStep = index;
+        }
+      },
+
+      positionTooltip(tooltip, index) {
+        // Position tooltips based on step
+        switch(index) {
+          case 0: // Center top
+            tooltip.style.top = '120px';
+            tooltip.style.left = '50%';
+            tooltip.style.transform = 'translateX(-50%)';
+            break;
+          case 1: // Right side
+            tooltip.style.top = '50%';
+            tooltip.style.right = '20px';
+            tooltip.style.left = 'auto';
+            tooltip.style.transform = 'translateY(-50%)';
+            break;
+          case 2: // Top right
+            tooltip.style.bottom = '80px';
+            tooltip.style.right = '20px';
+            tooltip.style.left = 'auto';
+            tooltip.style.top = 'auto';
+            tooltip.style.transform = 'none';
+            break;
+        }
+      }
+    };
+
+    // Tour control functions
+    function nextTourStep() {
+      GuestEditor.currentTourStep++;
+      if (GuestEditor.currentTourStep < GuestEditor.tourSteps.length) {
+        GuestEditor.showTourStep(GuestEditor.currentTourStep);
+      } else {
+        completeTour();
+      }
+    }
+
+    function skipTour() {
+      document.getElementById('tourOverlay').classList.remove('active');
+      GuestEditor.tourSteps.forEach(id => {
+        document.getElementById(id).classList.remove('active');
+      });
+      localStorage.setItem('editorTourCompleted', 'true');
+      GuestEditor.tourCompleted = true;
+    }
+
+    function completeTour() {
+      skipTour();
+      // Show success message
+      showToast('🎉 You\'re all set! Start building your site.');
+    }
+
+    // Modal functions
+    function showSaveModal() {
+      GuestEditor.saveGuestProgress();
+      showToast('✓ Progress saved! Your work is safe.');
+    }
+
+    function showPublishModal() {
+      // Save current progress
+      GuestEditor.saveGuestProgress();
+      
+      // Redirect to quick registration/publish flow
+      window.location.href = '/quick-publish.html';
+    }
+
+    // Toast notification helper
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #1f2937;
+        color: white;
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        z-index: 10001;
+        animation: slideInRight 0.3s ease-out;
+      `;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.3s ease-out';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      GuestEditor.init();
+    });
+
+    // Save progress before page unload
+    window.addEventListener('beforeunload', () => {
+      if (GuestEditor.isGuest) {
+        GuestEditor.saveGuestProgress();
+      }
+    });
+  </script>
+
+  <style>
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideOutRight {
+      from {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+    }
+  </style>
+
+  <!-- Load the actual editor -->
+  <script src="editor.js"></script>
+</body>
+</html>
+
