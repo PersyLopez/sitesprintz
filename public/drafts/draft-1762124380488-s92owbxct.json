@@ -1,0 +1,26 @@
+{
+  "draftId": "draft-1762124380488-s92owbxct",
+  "templateId": "starter",
+  "businessData": {
+    "businessName": "Acme Co.",
+    "heroTitle": "We help your business grow",
+    "heroSubtitle": "Modern solutions tailored for small businesses.",
+    "heroImage": "assets/hero-placeholder.svg",
+    "email": "hello@example.com",
+    "phone": "+1 555 123 4567",
+    "address": "We'd love to hear from you",
+    "businessHours": "",
+    "websiteUrl": "",
+    "facebookUrl": "",
+    "instagramUrl": "",
+    "googleMapsUrl": "",
+    "services": [],
+    "templateSpecific": {
+      "businessDescription": "",
+      "specialOffers": ""
+    }
+  },
+  "createdAt": "2025-11-02T22:59:40.488Z",
+  "expiresAt": "2025-11-09T22:59:40.488Z",
+  "status": "draft"
+}

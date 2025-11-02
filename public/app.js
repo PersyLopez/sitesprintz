@@ -430,6 +430,65 @@
     contentRoot.appendChild(sec);
   }
 
+  function renderGallery(cfg){
+    if(!cfg.gallery || !Array.isArray(cfg.gallery.items) || !cfg.gallery.items.length) return;
+    
+    const sec = sectionWrapper('gallery', 'section gallery-section');
+    const container = sec.firstChild;
+    
+    // Title and subtitle
+    container.appendChild(el('h2', { class:'section-title' }, [cfg.gallery.title || 'Our Work']));
+    if(cfg.gallery.subtitle){
+      container.appendChild(el('p', { class:'section-subtitle' }, [cfg.gallery.subtitle]));
+    }
+    
+    // Gallery grid
+    const grid = el('div', { class:'gallery-grid' });
+    
+    cfg.gallery.items.forEach(item => {
+      const galleryItem = el('div', { class:'gallery-item' });
+      
+      // Comparison images (before/after slider)
+      const comparison = el('div', { class:'gallery-comparison' });
+      
+      if(item.beforeImage && item.afterImage){
+        const slider = el('div', { class:'gallery-slider' });
+        
+        const beforeDiv = el('div', { class:'gallery-before' }, [
+          el('span', { class:'gallery-label label-before' }, [item.beforeLabel || 'Before']),
+          el('img', { src: item.beforeImage, alt: item.beforeAlt || 'Before' })
+        ]);
+        
+        const afterDiv = el('div', { class:'gallery-after' }, [
+          el('span', { class:'gallery-label label-after' }, [item.afterLabel || 'After']),
+          el('img', { src: item.afterImage, alt: item.afterAlt || 'After' })
+        ]);
+        
+        slider.appendChild(beforeDiv);
+        slider.appendChild(afterDiv);
+        comparison.appendChild(slider);
+      } else if(item.image){
+        // Single image fallback
+        comparison.appendChild(el('img', { src: item.image, alt: item.alt || item.title || 'Gallery image' }));
+      }
+      
+      galleryItem.appendChild(comparison);
+      
+      // Caption
+      if(item.title || item.description){
+        const caption = el('div', { class:'gallery-caption' });
+        if(item.title) caption.appendChild(el('h4', {}, [item.title]));
+        if(item.description) caption.appendChild(el('p', {}, [item.description]));
+        galleryItem.appendChild(caption);
+      }
+      
+      grid.appendChild(galleryItem);
+    });
+    
+    container.appendChild(grid);
+    contentRoot.appendChild(sec);
+  }
+
   function renderClassicProducts(cfg){
     if(!Array.isArray(cfg.products) || !cfg.products.length) return;
     const sec = sectionWrapper('products', 'section products-section');
@@ -468,11 +527,47 @@
       }
       
       // Content
-      const content = el('div', { class:'card-content' }, [
-        el('h3', {}, [prod.name || 'Product']),
-        prod.price != null ? el('div', { class:'product-price' }, [`$${prod.price}`]) : null,
-        prod.description ? el('p', { class:'product-description' }, [prod.description]) : null
-      ].filter(Boolean));
+      const content = el('div', { class:'card-content' });
+      content.appendChild(el('h3', {}, [prod.name || 'Product']));
+      
+      // Price (support one-time and recurring)
+      if(prod.price != null){
+        const priceDiv = el('div', { class:'product-price' });
+        
+        if(prod.recurring){
+          // Recurring subscription
+          const priceText = `$${prod.price}/${prod.recurring}`;
+          priceDiv.textContent = priceText;
+          priceDiv.classList.add('price-recurring');
+          
+          if(prod.originalPrice){
+            const savings = el('span', { class:'price-savings' }, [`was $${prod.originalPrice}`]);
+            priceDiv.appendChild(savings);
+          }
+        } else {
+          // One-time price
+          priceDiv.textContent = `$${prod.price}`;
+          
+          if(prod.originalPrice){
+            priceDiv.innerHTML = `<span class="price-strike">$${prod.originalPrice}</span> $${prod.price}`;
+          }
+        }
+        
+        content.appendChild(priceDiv);
+      }
+      
+      // Description
+      if(prod.description){
+        content.appendChild(el('p', { class:'product-description' }, [prod.description]));
+      }
+      
+      // Features list (for subscriptions/plans)
+      if(prod.features && Array.isArray(prod.features)){
+        const featuresList = el('ul', { class:'product-features' }, 
+          prod.features.map(feature => el('li', {}, [feature]))
+        );
+        content.appendChild(featuresList);
+      }
       
       // Meta info (duration, category, etc.)
       const meta = [];
@@ -484,8 +579,51 @@
       
       card.appendChild(content);
       
-      // CTA button (if settings provided)
-      if(cfg.settings && cfg.settings.productCta){
+      // CTA buttons (Add to Cart + Buy Now for checkout, or custom CTA)
+      if(cfg.settings && cfg.settings.allowCheckout && !prod.recurring){
+        const buttonContainer = el('div', { class:'product-buttons', style:'display:flex;gap:8px;flex-wrap:wrap;' });
+        
+        // Add to Cart button
+        const addToCartBtn = el('button', { 
+          class:'btn btn-secondary btn-small btn-add-to-cart',
+          type: 'button',
+          'data-product-id': prod.id || prod.name
+        }, ['🛒 Add to Cart']);
+        
+        addToCartBtn.addEventListener('click', () => {
+          addToCart({
+            id: prod.id || prod.name,
+            name: prod.name,
+            price: prod.price,
+            image: prod.image
+          });
+        });
+        
+        // Buy Now button (direct checkout)
+        const buyNowBtn = el('button', { 
+          class:'btn btn-primary btn-small',
+          type: 'button',
+          'data-product-index': i
+        }, ['Buy Now']);
+        
+        buyNowBtn.addEventListener('click', async () => {
+          if(window.ProPayments){
+            try {
+              await ProPayments.checkout(i, 1);
+            } catch (error) {
+              console.error('Buy Now error:', error);
+              alert('Checkout failed. Please try again or contact support.');
+            }
+          } else {
+            alert('Payment system loading... Please wait a moment and try again.');
+          }
+        });
+        
+        buttonContainer.appendChild(buyNowBtn);
+        buttonContainer.appendChild(addToCartBtn);
+        card.appendChild(buttonContainer);
+      } else if(cfg.settings && cfg.settings.productCta){
+        // Custom CTA for Starter tier or recurring products
         const ctaHref = cfg.settings.productCtaHref || '#contact';
         card.appendChild(el('a', { 
           class:'btn btn-secondary btn-small', 
@@ -534,6 +672,526 @@
     footerRoot.innerHTML = '';
     const year = new Date().getFullYear();
     footerRoot.appendChild(el('p', { class:'muted' }, [cfg.footer?.text || `? ${year} ${cfg.brand?.name || ''}. All rights reserved.`]));
+  }
+
+  // Pro Tier Features
+
+  function renderLiveChat(cfg){
+    if(!cfg.chat || cfg.chat.enabled === false) return;
+    
+    const provider = cfg.chat.provider || 'tawk.to';
+    
+    if(provider === 'tawk.to' && cfg.chat.propertyId && cfg.chat.widgetId){
+      // Tawk.to integration
+      if(!document.querySelector('script[src*="embed.tawk.to"]')){
+        window.Tawk_API = window.Tawk_API || {};
+        window.Tawk_LoadStart = new Date();
+        const s1 = document.createElement('script');
+        s1.async = true;
+        s1.src = `https://embed.tawk.to/${cfg.chat.propertyId}/${cfg.chat.widgetId}`;
+        s1.charset = 'UTF-8';
+        s1.setAttribute('crossorigin', '*');
+        document.head.appendChild(s1);
+      }
+    } else if(provider === 'intercom' && cfg.chat.appId){
+      // Intercom integration
+      if(!document.querySelector('script[src*="widget.intercom.io"]')){
+        window.intercomSettings = { app_id: cfg.chat.appId };
+        (function(){
+          const w = window;
+          const ic = w.Intercom;
+          if(typeof ic === 'function'){
+            ic('reattach_activator');
+            ic('update', w.intercomSettings);
+          }else{
+            const d = document;
+            const i = function(){ i.c(arguments); };
+            i.q = [];
+            i.c = function(args){ i.q.push(args); };
+            w.Intercom = i;
+            const s = d.createElement('script');
+            s.type = 'text/javascript';
+            s.async = true;
+            s.src = 'https://widget.intercom.io/widget/' + cfg.chat.appId;
+            d.head.appendChild(s);
+          }
+        })();
+      }
+    } else if(provider === 'drift' && cfg.chat.appId){
+      // Drift integration
+      if(!document.querySelector('script[src*="js.driftt.com"]')){
+        !function(){
+          const t = window.driftt = window.drift = window.driftt || [];
+          if(!t.init){
+            if(t.invoked) return;
+            t.invoked = true;
+            t.methods = ['identify', 'config', 'track', 'reset', 'debug', 'show', 'ping', 'page', 'hide', 'off', 'on'];
+            t.factory = function(e){
+              return function(){
+                const n = Array.prototype.slice.call(arguments);
+                n.unshift(e);
+                t.push(n);
+                return t;
+              };
+            };
+            t.methods.forEach(function(e){
+              t[e] = t.factory(e);
+            });
+            t.load = function(t){
+              const e = document.createElement('script');
+              e.type = 'text/javascript';
+              e.async = true;
+              e.src = 'https://js.driftt.com/include/' + t + '/drift.min.js';
+              document.head.appendChild(e);
+            };
+          }
+          t.SNIPPET_VERSION = '0.3.1';
+          t.load(cfg.chat.appId);
+        }();
+      }
+    } else if(provider === 'crisp' && cfg.chat.websiteId){
+      // Crisp integration
+      if(!document.querySelector('script[src*="client.crisp.chat"]')){
+        window.$crisp = [];
+        window.CRISP_WEBSITE_ID = cfg.chat.websiteId;
+        const s = document.createElement('script');
+        s.src = 'https://client.crisp.chat/l.js';
+        s.async = true;
+        document.head.appendChild(s);
+      }
+    }
+  }
+
+  function renderVideoEmbed(cfg){
+    if(!cfg.video || !Array.isArray(cfg.video.items) || !cfg.video.items.length) return;
+    
+    const sec = sectionWrapper('video', 'section video-section');
+    const container = sec.firstChild;
+    
+    container.appendChild(el('h2', { class:'section-title' }, [cfg.video.title || 'Videos']));
+    if(cfg.video.subtitle){
+      container.appendChild(el('p', { class:'section-subtitle' }, [cfg.video.subtitle]));
+    }
+    
+    const grid = el('div', { class:'video-grid' });
+    
+    cfg.video.items.forEach(video => {
+      const videoCard = el('div', { class:'video-card' });
+      
+      // Video embed
+      const embedContainer = el('div', { class:'video-embed' });
+      
+      if(video.provider === 'youtube' && video.videoId){
+        const iframe = el('iframe', {
+          src: `https://www.youtube.com/embed/${video.videoId}`,
+          frameborder: '0',
+          allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
+          allowfullscreen: 'true',
+          title: video.title || 'Video'
+        });
+        embedContainer.appendChild(iframe);
+      } else if(video.provider === 'vimeo' && video.videoId){
+        const iframe = el('iframe', {
+          src: `https://player.vimeo.com/video/${video.videoId}`,
+          frameborder: '0',
+          allow: 'autoplay; fullscreen; picture-in-picture',
+          allowfullscreen: 'true',
+          title: video.title || 'Video'
+        });
+        embedContainer.appendChild(iframe);
+      } else if(video.url){
+        // Custom embed URL
+        const iframe = el('iframe', {
+          src: video.url,
+          frameborder: '0',
+          allowfullscreen: 'true',
+          title: video.title || 'Video'
+        });
+        embedContainer.appendChild(iframe);
+      }
+      
+      videoCard.appendChild(embedContainer);
+      
+      // Caption
+      if(video.title || video.description){
+        const caption = el('div', { class:'video-caption' });
+        if(video.title) caption.appendChild(el('h4', {}, [video.title]));
+        if(video.description) caption.appendChild(el('p', {}, [video.description]));
+        videoCard.appendChild(caption);
+      }
+      
+      grid.appendChild(videoCard);
+    });
+    
+    container.appendChild(grid);
+    contentRoot.appendChild(sec);
+  }
+
+  function renderMapEmbed(cfg){
+    if(!cfg.map || cfg.map.enabled === false) return;
+    
+    const sec = sectionWrapper('map', 'section map-section');
+    const container = sec.firstChild;
+    
+    if(cfg.map.title){
+      container.appendChild(el('h2', { class:'section-title' }, [cfg.map.title]));
+    }
+    if(cfg.map.subtitle){
+      container.appendChild(el('p', { class:'section-subtitle' }, [cfg.map.subtitle]));
+    }
+    
+    const mapContainer = el('div', { class:'map-embed' });
+    
+    if(cfg.map.embedUrl){
+      // Google Maps embed URL
+      const iframe = el('iframe', {
+        src: cfg.map.embedUrl,
+        width: '100%',
+        height: '450',
+        style: 'border:0;',
+        allowfullscreen: 'true',
+        loading: 'lazy',
+        referrerpolicy: 'no-referrer-when-downgrade',
+        title: cfg.map.title || 'Location Map'
+      });
+      mapContainer.appendChild(iframe);
+    }
+    
+    container.appendChild(mapContainer);
+    contentRoot.appendChild(sec);
+  }
+
+  function renderEmailCapture(cfg){
+    if(!cfg.newsletter || cfg.newsletter.enabled === false) return;
+    
+    const sec = sectionWrapper('newsletter', 'section newsletter-section');
+    const container = sec.firstChild;
+    
+    container.appendChild(el('h2', { class:'section-title' }, [cfg.newsletter.title || 'Stay Updated']));
+    if(cfg.newsletter.subtitle){
+      container.appendChild(el('p', { class:'section-subtitle' }, [cfg.newsletter.subtitle]));
+    }
+    
+    const form = el('form', { 
+      class:'newsletter-form',
+      action: cfg.newsletter.actionUrl || '#',
+      method: 'POST',
+      target: '_blank'
+    });
+    
+    const inputGroup = el('div', { class:'newsletter-input-group' });
+    
+    const emailInput = el('input', {
+      type: 'email',
+      name: cfg.newsletter.emailFieldName || 'email',
+      placeholder: cfg.newsletter.placeholder || 'Enter your email',
+      required: 'true',
+      class: 'newsletter-input'
+    });
+    
+    const submitBtn = el('button', {
+      type: 'submit',
+      class: 'btn btn-primary newsletter-submit'
+    }, [cfg.newsletter.buttonText || 'Subscribe']);
+    
+    inputGroup.appendChild(emailInput);
+    inputGroup.appendChild(submitBtn);
+    form.appendChild(inputGroup);
+    
+    if(cfg.newsletter.note){
+      form.appendChild(el('p', { class:'newsletter-note muted' }, [cfg.newsletter.note]));
+    }
+    
+    container.appendChild(form);
+    contentRoot.appendChild(sec);
+  }
+
+  function renderSocialProof(cfg){
+    if(!cfg.socialProof || cfg.socialProof.enabled === false) return;
+    
+    // Social proof badge (bottom left/right)
+    const badge = el('div', { class:'social-proof-badge' });
+    
+    if(cfg.socialProof.showVisitors && cfg.socialProof.visitorCount){
+      badge.appendChild(el('div', { class:'social-proof-item' }, [
+        el('span', { class:'social-proof-icon' }, ['👥']),
+        el('span', { class:'social-proof-text' }, [`${cfg.socialProof.visitorCount} people viewing`])
+      ]));
+    }
+    
+    if(cfg.socialProof.showRecentSignups && cfg.socialProof.recentActivity){
+      // Rotating activity feed
+      let currentIndex = 0;
+      const activityEl = el('div', { class:'social-proof-item social-proof-activity' }, [
+        el('span', { class:'social-proof-icon' }, ['🎉']),
+        el('span', { class:'social-proof-text' }, [cfg.socialProof.recentActivity[0] || ''])
+      ]);
+      
+      badge.appendChild(activityEl);
+      
+      // Rotate messages every 5 seconds
+      if(cfg.socialProof.recentActivity.length > 1){
+        setInterval(() => {
+          currentIndex = (currentIndex + 1) % cfg.socialProof.recentActivity.length;
+          const textEl = activityEl.querySelector('.social-proof-text');
+          if(textEl){
+            textEl.textContent = cfg.socialProof.recentActivity[currentIndex];
+          }
+        }, 5000);
+      }
+    }
+    
+    document.body.appendChild(badge);
+  }
+
+  // Pro Tier: Shopping Cart & Stripe Checkout
+
+  let cart = [];
+
+  function addToCart(product){
+    const existingItem = cart.find(item => item.id === product.id);
+    if(existingItem){
+      existingItem.quantity += 1;
+    }else{
+      cart.push({ ...product, quantity: 1 });
+    }
+    updateCartDisplay();
+    showCartNotification();
+  }
+
+  function removeFromCart(productId){
+    cart = cart.filter(item => item.id !== productId);
+    updateCartDisplay();
+  }
+
+  function updateQuantity(productId, quantity){
+    const item = cart.find(item => item.id === productId);
+    if(item){
+      if(quantity <= 0){
+        removeFromCart(productId);
+      }else{
+        item.quantity = quantity;
+        updateCartDisplay();
+      }
+    }
+  }
+
+  function getCartTotal(){
+    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+  }
+
+  function updateCartDisplay(){
+    const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const cartBadge = document.querySelector('.cart-badge');
+    if(cartBadge){
+      cartBadge.textContent = cartCount;
+      cartBadge.style.display = cartCount > 0 ? 'flex' : 'none';
+    }
+    
+    // Update cart modal if open
+    const cartModal = document.querySelector('.cart-modal');
+    if(cartModal && cartModal.style.display !== 'none'){
+      renderCartModal();
+    }
+  }
+
+  function showCartNotification(){
+    const notification = el('div', { class:'cart-notification' }, [
+      '✓ Added to cart'
+    ]);
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.classList.add('show');
+    }, 10);
+    
+    setTimeout(() => {
+      notification.classList.remove('show');
+      setTimeout(() => notification.remove(), 300);
+    }, 2000);
+  }
+
+  function renderCartModal(){
+    let cartModal = document.querySelector('.cart-modal');
+    if(!cartModal){
+      cartModal = el('div', { class:'cart-modal' });
+      document.body.appendChild(cartModal);
+    }
+    
+    cartModal.innerHTML = '';
+    
+    const overlay = el('div', { class:'cart-modal-overlay' });
+    overlay.addEventListener('click', () => {
+      cartModal.style.display = 'none';
+    });
+    
+    const modal = el('div', { class:'cart-modal-content' });
+    
+    // Header
+    const header = el('div', { class:'cart-modal-header' }, [
+      el('h3', {}, ['Shopping Cart']),
+      el('button', { class:'cart-modal-close', type:'button' }, ['×'])
+    ]);
+    header.querySelector('.cart-modal-close').addEventListener('click', () => {
+      cartModal.style.display = 'none';
+    });
+    modal.appendChild(header);
+    
+    // Cart items
+    if(cart.length === 0){
+      modal.appendChild(el('div', { class:'cart-empty' }, ['Your cart is empty']));
+    }else{
+      const itemsList = el('div', { class:'cart-items' });
+      
+      cart.forEach(item => {
+        const itemEl = el('div', { class:'cart-item' }, [
+          el('div', { class:'cart-item-info' }, [
+            el('h4', {}, [item.name]),
+            el('p', { class:'cart-item-price' }, [`$${item.price}`])
+          ]),
+          el('div', { class:'cart-item-quantity' }, [
+            el('button', { class:'btn-quantity', type:'button', 'data-action':'decrease', 'data-id':item.id }, ['-']),
+            el('span', { class:'quantity-value' }, [item.quantity.toString()]),
+            el('button', { class:'btn-quantity', type:'button', 'data-action':'increase', 'data-id':item.id }, ['+'])
+          ]),
+          el('div', { class:'cart-item-total' }, [`$${(item.price * item.quantity).toFixed(2)}`]),
+          el('button', { class:'btn-remove', type:'button', 'data-id':item.id }, ['Remove'])
+        ]);
+        
+        itemEl.querySelectorAll('.btn-quantity').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const action = btn.getAttribute('data-action');
+            const id = btn.getAttribute('data-id');
+            const item = cart.find(i => i.id === id);
+            if(item){
+              const newQty = action === 'increase' ? item.quantity + 1 : item.quantity - 1;
+              updateQuantity(id, newQty);
+            }
+          });
+        });
+        
+        itemEl.querySelector('.btn-remove').addEventListener('click', function(){
+          removeFromCart(this.getAttribute('data-id'));
+        });
+        
+        itemsList.appendChild(itemEl);
+      });
+      
+      modal.appendChild(itemsList);
+      
+      // Total and checkout
+      const footer = el('div', { class:'cart-modal-footer' }, [
+        el('div', { class:'cart-total' }, [
+          el('span', {}, ['Total:']),
+          el('span', { class:'cart-total-amount' }, [`$${getCartTotal().toFixed(2)}`])
+        ]),
+        el('button', { class:'btn btn-primary btn-checkout', type:'button' }, ['Proceed to Checkout'])
+      ]);
+      
+      footer.querySelector('.btn-checkout').addEventListener('click', () => {
+        initiateCheckout();
+      });
+      
+      modal.appendChild(footer);
+    }
+    
+    cartModal.appendChild(overlay);
+    cartModal.appendChild(modal);
+  }
+
+  async function initiateCheckout(){
+    // Use Pro Payment module if available
+    if(window.ProPayments && cart.length > 0){
+      // For now, checkout first item (multi-product checkout coming soon)
+      const firstItem = cart[0];
+      const productIndex = state.config.products.findIndex(p => 
+        (p.id || p.name) === firstItem.id
+      );
+      
+      if(productIndex >= 0){
+        try {
+          await ProPayments.checkout(productIndex, firstItem.quantity || 1);
+        } catch (error) {
+          console.error('Checkout error:', error);
+          alert('Checkout failed: ' + error.message);
+        }
+      } else {
+        alert('Product not found');
+      }
+    } else if(!window.ProPayments){
+      // Fallback: show setup message
+      const config = window.currentSiteConfig;
+      if(config && config.settings && config.settings.allowCheckout){
+        alert('Payment system loading... Please try again in a moment, or contact support if the issue persists.');
+      } else {
+        alert('Checkout not configured. Connect Stripe to enable payments.');
+      }
+    } else {
+      alert('Your cart is empty');
+    }
+  }
+
+  function initializeCart(cfg){
+    // Only initialize cart if checkout is enabled
+    if(!cfg.settings || !cfg.settings.allowCheckout) return;
+    
+    // Add cart button to header
+    const nav = document.querySelector('.nav-links');
+    if(nav && !document.querySelector('.cart-button')){
+      const cartBtn = el('button', { class:'cart-button', type:'button' }, [
+        el('span', {}, ['🛒']),
+        el('span', { class:'cart-badge' }, ['0'])
+      ]);
+      
+      cartBtn.addEventListener('click', () => {
+        renderCartModal();
+        const cartModal = document.querySelector('.cart-modal');
+        if(cartModal){
+          cartModal.style.display = 'flex';
+        }
+      });
+      
+      nav.appendChild(el('li', {}, [cartBtn]));
+    }
+    
+    // Store config globally for checkout
+    window.currentSiteConfig = cfg;
+    
+    // Initialize Pro Payments module if available
+    initializeProPayments(cfg);
+  }
+  
+  function initializeProPayments(cfg){
+    // Load Pro Payment modules if checkout is enabled
+    if(cfg.settings && cfg.settings.allowCheckout){
+      // Create siteData for Pro Payments module
+      const siteId = getSiteIdFromURL() || 'preview';
+      window.siteData = {
+        siteId: siteId,
+        businessName: cfg.brand?.name || cfg.meta?.businessName || 'Store',
+        products: cfg.products || [],
+        ownerEmail: cfg.ownerEmail || cfg.meta?.email
+      };
+      
+      // Load Pro Payment module if not already loaded
+      if(!window.ProPayments && !document.querySelector('script[src*="pro-payments.js"]')){
+        const script = document.createElement('script');
+        script.src = '/modules/pro-payments.js';
+        script.onload = () => {
+          console.log('Pro Payments module loaded');
+          if(window.ProPayments){
+            ProPayments.init(siteId, window.siteData);
+          }
+        };
+        document.body.appendChild(script);
+      }
+    }
+  }
+  
+  function getSiteIdFromURL(){
+    const path = window.location.pathname;
+    const match = path.match(/\/sites\/([^\/]+)/);
+    return match ? match[1] : null;
   }
 
   function renderMarkdown(md){
@@ -673,13 +1331,22 @@
     renderClassicProcess(cfg);      // Optional: Process timeline
     renderClassicCredentials(cfg);  // Optional: Credentials badges
     renderClassicTeam(cfg);         // Optional: Team section
+    renderGallery(cfg);             // Optional: Before/After gallery
+    renderVideoEmbed(cfg);          // Optional: Pro - Video embeds
     renderClassicTestimonials(cfg);
     renderClassicPricing(cfg);
     renderClassicFAQ(cfg);          // Optional: FAQ accordion
+    renderEmailCapture(cfg);        // Optional: Pro - Newsletter signup
     renderClassicContact(cfg);
+    renderMapEmbed(cfg);            // Optional: Pro - Location map
     renderClassicPages(cfg);
     renderClassicProducts(cfg);
     renderClassicFooter(cfg);
+    
+    // Pro Tier Integrations (load after page render)
+    initializeCart(cfg);            // Optional: Pro - Shopping cart
+    renderLiveChat(cfg);            // Optional: Pro - Live chat widget
+    renderSocialProof(cfg);         // Optional: Pro - Social proof badge
   }
 
   /* ----------------------- premium helpers -------------------------- */

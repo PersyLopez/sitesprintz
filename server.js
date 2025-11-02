@@ -10,9 +10,12 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import Stripe from 'stripe';
 import { randomUUID as nodeRandomUUID } from 'crypto';
-import { sendEmail, EmailTypes } from './email-service.js';
+import { sendEmail, EmailTypes, sendAdminNotification } from './email-service.js';
 import cron from 'node-cron';
 import { query as dbQuery, transaction as dbTransaction, testConnection } from './database/db.js';
+import passport from 'passport';
+import session from 'express-session';
+import { configureGoogleAuth, setupGoogleRoutes } from './auth-google.js';
 
 dotenv.config();
 
@@ -182,6 +185,46 @@ if (stripe && STRIPE_WEBHOOK_SECRET) {
               }
             }
           }
+          
+          // Handle product order checkout completion
+          if (session.mode === 'payment' && session.metadata?.siteId) {
+            try {
+              const siteId = session.metadata.siteId;
+              const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 100 });
+              
+              // Create order object
+              const order = {
+                id: session.id,
+                orderId: generateOrderId(),
+                siteId: siteId,
+                amount: session.amount_total / 100,
+                currency: session.currency || 'usd',
+                customer: {
+                  name: session.customer_details?.name || 'Unknown',
+                  email: session.customer_details?.email || session.customer_email || '',
+                  phone: session.customer_details?.phone || null
+                },
+                items: lineItems.data.map(item => ({
+                  name: item.description,
+                  quantity: item.quantity,
+                  price: item.amount_total / 100 / item.quantity
+                })),
+                status: 'new',
+                createdAt: new Date(session.created * 1000).toISOString(),
+                stripeSessionId: session.id,
+                stripePaymentIntentId: session.payment_intent
+              };
+              
+              // Save order
+              await saveOrder(order);
+              console.log(`Order ${order.orderId} saved for site ${siteId}`);
+              
+              // Send email notifications
+              await sendOrderNotifications(order);
+            } catch (error) {
+              console.error('Error processing product order:', error);
+            }
+          }
           break;
 
         case 'customer.subscription.created':
@@ -257,6 +300,27 @@ if (stripe && STRIPE_WEBHOOK_SECRET) {
 
 // After webhook: enable JSON parser for the rest of the API
 app.use(bodyParser.json({ limit: '1mb' }));
+
+// Configure Passport for OAuth
+app.use(session({
+  secret: process.env.JWT_SECRET || 'your-secret-key-change-this',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: process.env.NODE_ENV === 'production' }
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Configure Google OAuth if credentials are provided
+const googleAuthConfigured = configureGoogleAuth();
+if (googleAuthConfigured) {
+  setupGoogleRoutes(app);
+}
+
+// Passport serialization (required for session support)
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((user, done) => done(null, user));
 
 function requireAdmin(req, res, next){
   const header = req.headers['authorization'] || '';
@@ -339,6 +403,117 @@ async function requireAuth(req, res, next) {
     }
     console.error('Auth middleware error:', err);
     return res.status(500).json({ error: 'Authentication failed' });
+  }
+}
+
+// Order Management Helper Functions
+const ordersDir = path.join(publicDir, 'data', 'orders');
+fs.mkdir(ordersDir, { recursive: true }).catch(() => {});
+
+// Generate unique order ID
+function generateOrderId() {
+  const timestamp = Date.now().toString().slice(-6);
+  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  return `ORD-${timestamp}${random}`;
+}
+
+// Save order to file
+async function saveOrder(order) {
+  try {
+    const siteOrdersDir = path.join(ordersDir, order.siteId);
+    await fs.mkdir(siteOrdersDir, { recursive: true });
+    
+    const ordersFile = path.join(siteOrdersDir, 'orders.json');
+    
+    // Load existing orders
+    let orders = { orders: [] };
+    try {
+      const content = await fs.readFile(ordersFile, 'utf-8');
+      orders = JSON.parse(content);
+    } catch (err) {
+      // File doesn't exist yet, start with empty array
+    }
+    
+    // Add new order to beginning of array
+    orders.orders.unshift(order);
+    
+    // Save back to file
+    await fs.writeFile(ordersFile, JSON.stringify(orders, null, 2));
+    
+    return true;
+  } catch (error) {
+    console.error('Error saving order:', error);
+    return false;
+  }
+}
+
+// Load orders for a site
+async function loadOrders(siteId) {
+  try {
+    const ordersFile = path.join(ordersDir, siteId, 'orders.json');
+    const content = await fs.readFile(ordersFile, 'utf-8');
+    return JSON.parse(content);
+  } catch (error) {
+    return { orders: [] };
+  }
+}
+
+// Send order notification emails
+async function sendOrderNotifications(order) {
+  try {
+    // Load site data to get business name and notification email
+    const siteFile = path.join(publicDir, 'sites', order.siteId, 'site.json');
+    let site = { name: 'Your Business', notificationEmail: null, ownerEmail: null };
+    try {
+      const siteContent = await fs.readFile(siteFile, 'utf-8');
+      site = JSON.parse(siteContent);
+    } catch (err) {
+      console.error('Could not load site data for email:', err);
+    }
+    
+    const businessName = site.name || site.businessName || 'Your Business';
+    
+    // Send confirmation email to customer
+    if (order.customer.email) {
+      await sendEmail(
+        order.customer.email,
+        'orderConfirmation',
+        {
+          customerName: order.customer.name,
+          orderId: order.orderId,
+          items: order.items,
+          total: order.amount,
+          currency: order.currency,
+          businessName: businessName
+        }
+      );
+      console.log(`✅ Order confirmation sent to customer: ${order.customer.email}`);
+    }
+    
+    // Send alert email to business owner (use notificationEmail if set, fallback to ownerEmail)
+    const notificationEmail = site.notificationEmail || site.ownerEmail;
+    if (notificationEmail) {
+      await sendEmail(
+        notificationEmail,
+        'newOrderAlert',
+        {
+          businessName: businessName,
+          orderId: order.orderId,
+          customerName: order.customer.name,
+          customerEmail: order.customer.email,
+          customerPhone: order.customer.phone,
+          items: order.items,
+          total: order.amount,
+          currency: order.currency,
+          siteId: order.siteId
+        }
+      );
+      console.log(`✅ Order alert sent to: ${notificationEmail}`);
+    } else {
+      console.log(`⚠️ No notification email configured for site ${order.siteId}`);
+    }
+  } catch (error) {
+    console.error('Error sending order notifications:', error);
   }
 }
 
@@ -433,6 +608,16 @@ app.post('/api/auth/register', async (req, res) => {
     } catch (emailError) {
       console.error('Failed to send welcome email:', emailError);
       // Don't fail registration if email fails
+    }
+    
+    // Step 6b: Notify admin of new user (don't fail registration if this fails)
+    try {
+      await sendAdminNotification(EmailTypes.ADMIN_NEW_USER, {
+        userEmail: user.email,
+        userName: user.email.split('@')[0] // Use email prefix as name
+      });
+    } catch (emailError) {
+      console.error('Failed to send admin notification:', emailError);
     }
     
     // Step 7: Return success
@@ -1184,7 +1369,7 @@ function isAllowedOrigin(req){
   return allowed.some(o => o && o.toLowerCase() === origin.toLowerCase());
 }
 
-// Create a Checkout Session for a product defined in data/site.json by index
+// Create a Checkout Session for a product with dynamic pricing and Stripe Connect support
 app.post('/api/payments/checkout-sessions', async (req, res) => {
   try {
     if (!stripe) return res.status(503).json({ error: 'Payments not configured' });
@@ -1199,11 +1384,20 @@ app.post('/api/payments/checkout-sessions', async (req, res) => {
       return res.status(400).json({ error: 'Invalid productIndex' });
     }
 
-    // Load authoritative product data from server-side site.json
-    const raw = await fs.readFile(dataFile, 'utf-8');
+    // Load site data - try siteId path first, fallback to dataFile
+    let siteFile = dataFile;
+    if (siteId) {
+      const potentialPath = path.join(__dirname, 'public', 'sites', siteId, 'site.json');
+      if (fs.existsSync(potentialPath)) {
+        siteFile = potentialPath;
+      }
+    }
+
+    const raw = await fs.readFile(siteFile, 'utf-8');
     const site = JSON.parse(raw);
     const products = Array.isArray(site.products) ? site.products : [];
     const product = products[idx];
+    
     if (!product || typeof product.price !== 'number' || !product.name) {
       return res.status(400).json({ error: 'Product not found' });
     }
@@ -1223,16 +1417,37 @@ app.post('/api/payments/checkout-sessions', async (req, res) => {
 
     // Determine return URLs
     const origin = `${req.protocol}://${req.get('host')}`;
-    const success = successUrl || `${origin}/?checkout=success`;
-    const cancel = cancelUrl || `${origin}/?checkout=cancel`;
+    let success, cancel;
+    if (siteId) {
+      success = successUrl || `${origin}/sites/${siteId}/?order=success`;
+      cancel = cancelUrl || `${origin}/sites/${siteId}/?order=cancelled`;
+    } else {
+      success = successUrl || `${origin}/?checkout=success`;
+      cancel = cancelUrl || `${origin}/?checkout=cancel`;
+    }
 
-    // Idempotency key: prefer header, then body, then generated
+    // Check if site owner has Stripe Connect configured
+    let stripeAccountId = null;
+    if (site.ownerEmail) {
+      const userFile = path.join(__dirname, 'public', 'users', 
+        site.ownerEmail.replace('@', '_').replace(/\./g, '_') + '.json');
+      
+      if (fs.existsSync(userFile)) {
+        const userData = JSON.parse(fs.readFileSync(userFile, 'utf-8'));
+        if (userData.stripe?.connected && userData.stripe?.accountId) {
+          stripeAccountId = userData.stripe.accountId;
+        }
+      }
+    }
+
+    // Idempotency key
     const incomingIdem = (req.headers['idempotency-key'] || req.headers['Idempotency-Key'] || req.body?.idempotencyKey);
     const idempotencyKey = typeof incomingIdem === 'string' && incomingIdem
       ? incomingIdem
       : (typeof nodeRandomUUID === 'function' ? nodeRandomUUID() : `${Date.now()}-${Math.random()}`);
 
-    const session = await stripe.checkout.sessions.create({
+    // Create session - use Connect account if available
+    const sessionOptions = {
       mode: 'payment',
       line_items: [
         {
@@ -1250,13 +1465,22 @@ app.post('/api/payments/checkout-sessions', async (req, res) => {
       success_url: success,
       cancel_url: cancel,
       allow_promotion_codes: false,
-      // Enable Stripe Tax for automatic tax calculation
       automatic_tax: { enabled: true },
       metadata: {
         siteId: siteId ? String(siteId) : '',
         productIndex: String(idx)
       }
-    }, { idempotencyKey });
+    };
+
+    const createOptions = { idempotencyKey };
+    
+    // If connected account exists, use it
+    if (stripeAccountId) {
+      createOptions.stripeAccount = stripeAccountId;
+      console.log(`Creating checkout on connected account: ${stripeAccountId}`);
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionOptions, createOptions);
 
     return res.json({ url: session.url });
   } catch (err) {
@@ -1266,7 +1490,7 @@ app.post('/api/payments/checkout-sessions', async (req, res) => {
 });
 
 // Create Checkout Session for subscription (Starter/Pro plans)
-app.post('/api/create-subscription-checkout', authenticateToken, async (req, res) => {
+async function createSubscriptionCheckout(req, res) {
   try {
     if (!stripe) {
       return res.status(503).json({ error: 'Stripe not configured. Add STRIPE_SECRET_KEY to .env' });
@@ -1275,23 +1499,27 @@ app.post('/api/create-subscription-checkout', authenticateToken, async (req, res
     const { plan, draftId } = req.body;
     const userEmail = req.user.email;
 
-    // Validate plan
+    // Validate plan and get pricing details
     const validPlans = ['starter', 'pro'];
     if (!validPlans.includes(plan)) {
       return res.status(400).json({ error: 'Invalid plan. Must be "starter" or "pro"' });
     }
 
-    // Get price ID from environment
-    const priceId = plan === 'starter' 
-      ? process.env.STRIPE_PRICE_STARTER 
-      : process.env.STRIPE_PRICE_PRO;
+    // Define plan details (dynamic pricing - no need for pre-created products!)
+    const planDetails = {
+      starter: {
+        name: 'SiteSprintz Starter',
+        amount: 1000, // $10.00 in cents
+        description: 'Professional website with all premium features'
+      },
+      pro: {
+        name: 'SiteSprintz Pro',
+        amount: 2500, // $25.00 in cents
+        description: 'Pro plan with payments, ecommerce, and advanced features'
+      }
+    };
 
-    if (!priceId || priceId.includes('placeholder')) {
-      return res.status(503).json({ 
-        error: 'Stripe prices not configured. Please add STRIPE_PRICE_STARTER and STRIPE_PRICE_PRO to .env',
-        instructions: 'Create products at https://dashboard.stripe.com/test/products'
-      });
-    }
+    const selectedPlan = planDetails[plan];
 
     // Create or retrieve Stripe customer
     let customer;
@@ -1309,17 +1537,27 @@ app.post('/api/create-subscription-checkout', authenticateToken, async (req, res
       });
     }
 
-    // Create checkout session
+    // Create checkout session with dynamic pricing
     const session = await stripe.checkout.sessions.create({
       customer: customer.id,
       mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [{
-        price: priceId,
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: selectedPlan.name,
+            description: selectedPlan.description,
+          },
+          unit_amount: selectedPlan.amount,
+          recurring: {
+            interval: 'month',
+          },
+        },
         quantity: 1,
       }],
-      success_url: `${process.env.SITE_URL}/dashboard.html?session_id={CHECKOUT_SESSION_ID}&plan=${plan}&draft=${draftId || ''}`,
-      cancel_url: `${process.env.SITE_URL}/setup.html?draft=${draftId || ''}`,
+      success_url: `${process.env.SITE_URL || 'http://localhost:3000'}/payment-success.html?session_id={CHECKOUT_SESSION_ID}&plan=${plan}`,
+      cancel_url: `${process.env.SITE_URL || 'http://localhost:3000'}/payment-cancel.html?plan=${plan}`,
       allow_promotion_codes: true,
       billing_address_collection: 'auto',
       metadata: {
@@ -1339,10 +1577,14 @@ app.post('/api/create-subscription-checkout', authenticateToken, async (req, res
       message: error.message 
     });
   }
-});
+}
+
+// Mount handlers at both paths for compatibility
+app.post('/api/payments/create-subscription-checkout', requireAuth, createSubscriptionCheckout);
+app.post('/api/create-subscription-checkout', requireAuth, createSubscriptionCheckout);
 
 // Get user's subscription status
-app.get('/api/subscription/status', authenticateToken, async (req, res) => {
+app.get('/api/subscription/status', requireAuth, async (req, res) => {
   try {
     const userEmail = req.user.email;
     
@@ -2107,6 +2349,20 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
       siteUrl: siteUrl
     });
     
+    // Notify admin of new published site
+    try {
+      await sendAdminNotification(EmailTypes.ADMIN_SITE_PUBLISHED, {
+        siteName: siteName,
+        siteTemplate: draft.templateId,
+        userName: email.split('@')[0],
+        userEmail: email,
+        siteId: subdomain,
+        plan: plan
+      });
+    } catch (emailError) {
+      console.error('Failed to send admin notification:', emailError);
+    }
+    
     res.json({
       success: true,
       subdomain: subdomain,
@@ -2133,7 +2389,7 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
 });
 
 // Get published site data for editing (authenticated)
-app.get('/api/sites/:subdomain', authenticateToken, async (req, res) => {
+app.get('/api/sites/:subdomain', requireAuth, async (req, res) => {
   try {
     const { subdomain } = req.params;
     const userEmail = req.user.email;
@@ -2165,7 +2421,7 @@ app.get('/api/sites/:subdomain', authenticateToken, async (req, res) => {
 });
 
 // Update published site (authenticated)
-app.put('/api/sites/:subdomain', authenticateToken, async (req, res) => {
+app.put('/api/sites/:subdomain', requireAuth, async (req, res) => {
   try {
     const { subdomain } = req.params;
     const userEmail = req.user.email;
@@ -2234,7 +2490,7 @@ app.put('/api/sites/:subdomain', authenticateToken, async (req, res) => {
 });
 
 // Delete published site (authenticated)
-app.delete('/api/sites/:subdomain', authenticateToken, async (req, res) => {
+app.delete('/api/sites/:subdomain', requireAuth, async (req, res) => {
   try {
     const { subdomain } = req.params;
     const userEmail = req.user.email;
@@ -2471,7 +2727,7 @@ app.post('/api/contact-form', async (req, res) => {
 });
 
 // Get submissions for a site (authenticated)
-app.get('/api/sites/:subdomain/submissions', authenticateToken, async (req, res) => {
+app.get('/api/sites/:subdomain/submissions', requireAuth, async (req, res) => {
   try {
     const { subdomain } = req.params;
     const userEmail = req.user.email;
@@ -2515,7 +2771,7 @@ app.get('/api/sites/:subdomain/submissions', authenticateToken, async (req, res)
 });
 
 // Mark submission as read
-app.patch('/api/submissions/:submissionId/read', authenticateToken, async (req, res) => {
+app.patch('/api/submissions/:submissionId/read', requireAuth, async (req, res) => {
   try {
     const { submissionId } = req.params;
     const { subdomain } = req.body;
@@ -2803,6 +3059,457 @@ app.use('/sites/:subdomain', async (req, res, next) => {
   } catch (error) {
     // If we can't read the site data, let the normal 404 handler deal with it
     next();
+  }
+});
+
+// ===== PRO FEATURES: Product Management & Stripe Connect =====
+
+// Get products for a site
+app.get('/api/sites/:siteId/products', requireAuth, async (req, res) => {
+  try {
+    const { siteId } = req.params;
+    const siteFile = path.join(__dirname, 'public', 'sites', siteId, 'site.json');
+    
+    if (!fs.existsSync(siteFile)) {
+      return res.status(404).json({ error: 'Site not found' });
+    }
+    
+    const siteData = JSON.parse(fs.readFileSync(siteFile, 'utf-8'));
+    
+    // Verify ownership
+    if (siteData.ownerEmail !== req.user.email && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    
+    res.json({
+      products: siteData.products || [],
+      siteName: siteData.businessName || siteData.brand?.name || siteId
+    });
+    
+  } catch (error) {
+    console.error('Get products error:', error);
+    res.status(500).json({ error: 'Failed to load products' });
+  }
+});
+
+// Update products for a site
+app.put('/api/sites/:siteId/products', requireAuth, async (req, res) => {
+  try {
+    const { siteId } = req.params;
+    const { products } = req.body;
+    
+    const siteFile = path.join(__dirname, 'public', 'sites', siteId, 'site.json');
+    
+    if (!fs.existsSync(siteFile)) {
+      return res.status(404).json({ error: 'Site not found' });
+    }
+    
+    const siteData = JSON.parse(fs.readFileSync(siteFile, 'utf-8'));
+    
+    // Verify ownership
+    if (siteData.ownerEmail !== req.user.email && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    
+    // Validate products array
+    if (!Array.isArray(products)) {
+      return res.status(400).json({ error: 'Products must be an array' });
+    }
+    
+    // Update products
+    siteData.products = products.map((p, index) => ({
+      id: index,
+      name: String(p.name || '').trim(),
+      description: String(p.description || '').trim(),
+      price: parseFloat(p.price) || 0,
+      category: String(p.category || 'General').trim(),
+      image: String(p.image || '').trim(),
+      available: p.available !== false
+    })).filter(p => p.name && p.price > 0);
+    
+    // Save
+    fs.writeFileSync(siteFile, JSON.stringify(siteData, null, 2));
+    
+    // Note: Regenerate site HTML here if needed
+    // await regenerateSiteHTML(siteId);
+    
+    console.log(`Updated ${siteData.products.length} products for site ${siteId}`);
+    
+    res.json({
+      success: true,
+      count: siteData.products.length,
+      message: `Updated ${siteData.products.length} products`
+    });
+    
+  } catch (error) {
+    console.error('Update products error:', error);
+    res.status(500).json({ error: 'Failed to update products' });
+  }
+});
+
+// Save notification email for a site
+app.post('/api/sites/:siteId/notification-email', requireAuth, async (req, res) => {
+  try {
+    const { siteId } = req.params;
+    const { notificationEmail } = req.body;
+    
+    const siteFile = path.join(__dirname, 'public', 'sites', siteId, 'site.json');
+    
+    // Check if site exists
+    try {
+      await fs.access(siteFile);
+    } catch {
+      return res.status(404).json({ error: 'Site not found' });
+    }
+    
+    const siteContent = await fs.readFile(siteFile, 'utf-8');
+    const siteData = JSON.parse(siteContent);
+    
+    // Verify ownership
+    if (siteData.ownerEmail !== req.user.email && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    
+    // Validate email if provided (can be empty to disable)
+    if (notificationEmail && !notificationEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      return res.status(400).json({ error: 'Invalid email address' });
+    }
+    
+    // Update notification email
+    siteData.notificationEmail = notificationEmail || '';
+    
+    // Save
+    await fs.writeFile(siteFile, JSON.stringify(siteData, null, 2));
+    
+    console.log(`Updated notification email for site ${siteId}: ${notificationEmail || '(disabled)'}`);
+    
+    res.json({
+      success: true,
+      notificationEmail: siteData.notificationEmail,
+      message: notificationEmail ? 'Notification email saved' : 'Notifications disabled'
+    });
+    
+  } catch (error) {
+    console.error('Save notification email error:', error);
+    res.status(500).json({ error: 'Failed to save notification email' });
+  }
+});
+
+// Get site config (for notification email)
+app.get('/api/sites/:siteId/config.json', requireAuth, async (req, res) => {
+  try {
+    const { siteId } = req.params;
+    const siteFile = path.join(__dirname, 'public', 'sites', siteId, 'site.json');
+    
+    try {
+      await fs.access(siteFile);
+    } catch {
+      return res.status(404).json({ error: 'Site not found' });
+    }
+    
+    const siteContent = await fs.readFile(siteFile, 'utf-8');
+    const siteData = JSON.parse(siteContent);
+    
+    // Verify ownership
+    if (siteData.ownerEmail !== req.user.email && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    
+    // Return config (notification email and other settings)
+    res.json({
+      notificationEmail: siteData.notificationEmail || '',
+      businessName: siteData.businessName || siteData.name || '',
+      siteUrl: `${req.protocol}://${req.get('host')}/sites/${siteId}/`
+    });
+    
+  } catch (error) {
+    console.error('Get config error:', error);
+    res.status(500).json({ error: 'Failed to get config' });
+  }
+});
+
+// Order Management Endpoints
+
+// Get orders for a site
+app.get('/api/sites/:siteId/orders', requireAuth, async (req, res) => {
+  try {
+    const { siteId } = req.params;
+    const { status } = req.query; // Optional filter: 'new', 'completed', 'cancelled'
+    
+    // Load site to verify ownership
+    const siteFile = path.join(__dirname, 'public', 'sites', siteId, 'site.json');
+    
+    try {
+      const siteContent = await fs.readFile(siteFile, 'utf-8');
+      const siteData = JSON.parse(siteContent);
+      
+      // Verify ownership
+      if (siteData.ownerEmail !== req.user.email && req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+    } catch (err) {
+      return res.status(404).json({ error: 'Site not found' });
+    }
+    
+    // Load orders
+    let ordersData = await loadOrders(siteId);
+    let orders = ordersData.orders || [];
+    
+    // Filter by status if requested
+    if (status && status !== 'all') {
+      orders = orders.filter(o => o.status === status);
+    }
+    
+    res.json({
+      success: true,
+      orders: orders,
+      count: orders.length
+    });
+    
+  } catch (error) {
+    console.error('Get orders error:', error);
+    res.status(500).json({ error: 'Failed to load orders' });
+  }
+});
+
+// Update order status
+app.patch('/api/sites/:siteId/orders/:orderId', requireAuth, async (req, res) => {
+  try {
+    const { siteId, orderId } = req.params;
+    const { status } = req.body;
+    
+    if (!['new', 'completed', 'cancelled'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+    
+    // Load site to verify ownership
+    const siteFile = path.join(__dirname, 'public', 'sites', siteId, 'site.json');
+    
+    try {
+      const siteContent = await fs.readFile(siteFile, 'utf-8');
+      const siteData = JSON.parse(siteContent);
+      
+      // Verify ownership
+      if (siteData.ownerEmail !== req.user.email && req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+    } catch (err) {
+      return res.status(404).json({ error: 'Site not found' });
+    }
+    
+    // Load orders
+    const ordersFile = path.join(ordersDir, siteId, 'orders.json');
+    let ordersData = await loadOrders(siteId);
+    
+    // Find and update order
+    const orderIndex = ordersData.orders.findIndex(o => o.orderId === orderId);
+    
+    if (orderIndex === -1) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+    
+    ordersData.orders[orderIndex].status = status;
+    if (status === 'completed') {
+      ordersData.orders[orderIndex].completedAt = new Date().toISOString();
+    }
+    
+    // Save
+    await fs.writeFile(ordersFile, JSON.stringify(ordersData, null, 2));
+    
+    res.json({
+      success: true,
+      order: ordersData.orders[orderIndex]
+    });
+    
+  } catch (error) {
+    console.error('Update order error:', error);
+    res.status(500).json({ error: 'Failed to update order' });
+  }
+});
+
+// Image Upload with Optimization
+app.post('/api/upload/image', requireAuth, upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No image file provided' });
+    }
+    
+    const inputPath = req.file.path;
+    const optimizedFilename = `optimized-${req.file.filename}`;
+    const outputPath = path.join(uploadsDir, optimizedFilename);
+    
+    // Import sharp dynamically
+    const sharp = (await import('sharp')).default;
+    
+    // Optimize image
+    await sharp(inputPath)
+      .resize(1200, 1200, { 
+        fit: 'inside', 
+        withoutEnlargement: true 
+      })
+      .jpeg({ 
+        quality: 85,
+        progressive: true 
+      })
+      .toFile(outputPath);
+    
+    // Delete original unoptimized file
+    await fs.unlink(inputPath);
+    
+    // Return URL for optimized image
+    const imageUrl = `/uploads/${optimizedFilename}`;
+    
+    res.json({
+      success: true,
+      url: imageUrl,
+      filename: optimizedFilename
+    });
+    
+  } catch (error) {
+    console.error('Image upload error:', error);
+    // Clean up files on error
+    if (req.file) {
+      try {
+        await fs.unlink(req.file.path);
+      } catch (_) {}
+    }
+    res.status(500).json({ error: 'Failed to upload image' });
+  }
+});
+
+// Stripe Connect OAuth callback
+app.get('/stripe/callback', async (req, res) => {
+  try {
+    const { code, state } = req.query;
+    
+    if (!code) {
+      return res.redirect('/dashboard.html?stripe=error&reason=no_code');
+    }
+    
+    if (!stripe) {
+      return res.redirect('/dashboard.html?stripe=error&reason=no_stripe');
+    }
+    
+    // Exchange authorization code for access token
+    const response = await stripe.oauth.token({
+      grant_type: 'authorization_code',
+      code: code
+    });
+    
+    const stripeAccountId = response.stripe_user_id;
+    
+    console.log(`Stripe Connect successful: ${stripeAccountId}`);
+    
+    // Redirect to dashboard with account ID to save
+    res.redirect(`/dashboard.html?stripe=connected&account=${stripeAccountId}&state=${state || ''}`);
+    
+  } catch (error) {
+    console.error('Stripe Connect error:', error);
+    res.redirect('/dashboard.html?stripe=error&reason=' + encodeURIComponent(error.message));
+  }
+});
+
+// Save Stripe connection to user account
+app.post('/api/stripe/connect', requireAuth, async (req, res) => {
+  try {
+    const { accountId } = req.body;
+    const userEmail = req.user.email;
+    
+    if (!accountId) {
+      return res.status(400).json({ error: 'Account ID required' });
+    }
+    
+    // Load user data
+    const userFile = path.join(__dirname, 'public', 'users',
+      userEmail.replace('@', '_').replace(/\./g, '_') + '.json');
+    
+    if (!fs.existsSync(userFile)) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    const userData = JSON.parse(fs.readFileSync(userFile, 'utf-8'));
+    
+    // Verify account with Stripe API (if possible)
+    let accountDetails = {};
+    if (stripe) {
+      try {
+        const account = await stripe.accounts.retrieve(accountId);
+        accountDetails = {
+          country: account.country,
+          email: account.email
+        };
+      } catch (err) {
+        console.error('Failed to retrieve Stripe account details:', err);
+      }
+    }
+    
+    // Store connection info
+    userData.stripe = {
+      connected: true,
+      accountId: accountId,
+      mode: accountId.includes('_test_') ? 'test' : 'live',
+      connectedAt: new Date().toISOString(),
+      ...accountDetails
+    };
+    
+    // Update all sites owned by this user with ownerEmail
+    const sitesDir = path.join(__dirname, 'public', 'sites');
+    if (fs.existsSync(sitesDir)) {
+      const sites = fs.readdirSync(sitesDir);
+      sites.forEach(siteId => {
+        const siteFile = path.join(sitesDir, siteId, 'site.json');
+        if (fs.existsSync(siteFile)) {
+          const siteData = JSON.parse(fs.readFileSync(siteFile, 'utf-8'));
+          if (!siteData.ownerEmail) {
+            siteData.ownerEmail = userEmail;
+            fs.writeFileSync(siteFile, JSON.stringify(siteData, null, 2));
+          }
+        }
+      });
+    }
+    
+    // Save user data
+    fs.writeFileSync(userFile, JSON.stringify(userData, null, 2));
+    
+    console.log(`Stripe connected for user: ${userEmail}`);
+    
+    res.json({
+      success: true,
+      message: 'Stripe connected successfully!',
+      mode: userData.stripe.mode
+    });
+    
+  } catch (error) {
+    console.error('Save Stripe connection error:', error);
+    res.status(500).json({ error: 'Failed to save connection' });
+  }
+});
+
+// Disconnect Stripe
+app.post('/api/stripe/disconnect', requireAuth, async (req, res) => {
+  try {
+    const userEmail = req.user.email;
+    const userFile = path.join(__dirname, 'public', 'users',
+      userEmail.replace('@', '_').replace(/\./g, '_') + '.json');
+    
+    if (!fs.existsSync(userFile)) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    const userData = JSON.parse(fs.readFileSync(userFile, 'utf-8'));
+    
+    // Remove Stripe connection
+    delete userData.stripe;
+    
+    fs.writeFileSync(userFile, JSON.stringify(userData, null, 2));
+    
+    console.log(`Stripe disconnected for user: ${userEmail}`);
+    
+    res.json({ success: true, message: 'Stripe disconnected' });
+    
+  } catch (error) {
+    console.error('Disconnect error:', error);
+    res.status(500).json({ error: 'Failed to disconnect' });
   }
 });
 

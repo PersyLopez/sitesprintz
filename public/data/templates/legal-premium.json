@@ -33,6 +33,23 @@
     { "label": "FAQs", "href": "#faq-legal" },
     { "label": "Contact", "href": "#cta-urgent" }
   ],
+  "chat": {
+    "enabled": true,
+    "provider": "drift",
+    "appId": "YOUR_DRIFT_APP_ID_HERE",
+    "position": "bottom-right"
+  },
+  "serviceFilters": {
+    "enabled": true,
+    "containerId": "practice-areas-grid",
+    "filters": [
+      { "label": "All Practice Areas", "value": "all" },
+      { "label": "Personal Injury", "value": "personal-injury" },
+      { "label": "Family Law", "value": "family" },
+      { "label": "Business Law", "value": "business" },
+      { "label": "Estate Planning", "value": "estate" }
+    ]
+  },
   "sections": [
     {
       "id": "legal-hero",

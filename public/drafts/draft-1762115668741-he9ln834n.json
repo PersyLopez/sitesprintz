@@ -1,0 +1,26 @@
+{
+  "draftId": "draft-1762115668741-he9ln834n",
+  "templateId": "restaurant-ordering",
+  "businessData": {
+    "businessName": "Bella Vista",
+    "heroTitle": "Experience the flavors of Italy",
+    "heroSubtitle": "From our family recipes passed down through generations, we bring you authentic Italian dishes made with the finest ingredients. Order online for pickup or delivery, or join us for an unforgettable dining experience.",
+    "heroImage": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=80",
+    "email": "info@bellavista.com",
+    "phone": "(555) 123-4567",
+    "address": "We'd love to serve you at Bella Vista",
+    "businessHours": "",
+    "websiteUrl": "",
+    "facebookUrl": "",
+    "instagramUrl": "",
+    "googleMapsUrl": "",
+    "services": [],
+    "templateSpecific": {
+      "businessDescription": "",
+      "specialOffers": ""
+    }
+  },
+  "createdAt": "2025-11-02T20:34:28.742Z",
+  "expiresAt": "2025-11-09T20:34:28.742Z",
+  "status": "draft"
+}

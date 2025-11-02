@@ -1037,7 +1037,7 @@
             <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Free subdomain</span></li>
             <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>⏰</span><span>Expires after 7 days</span></li>
           </ul>
-          <a href="/setup.html" style="display: block; text-align: center; background: rgba(6, 182, 212, 0.2); color: var(--primary-color); padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600; border: 1px solid rgba(6, 182, 212, 0.3);">Start Free Trial</a>
+          <button onclick="handlePlanSelection('free', this)" style="display: block; width: 100%; text-align: center; background: rgba(6, 182, 212, 0.2); color: var(--primary-color); padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600; border: 1px solid rgba(6, 182, 212, 0.3); cursor: pointer;">Start Free Trial</button>
         </div>
         
         <!-- Starter -->
@@ -1054,7 +1054,7 @@
             <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Unlimited edits</span></li>
             <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>❌</span><span style="text-decoration: line-through; opacity: 0.6;">Online payments</span></li>
           </ul>
-          <a href="/setup.html" style="display: block; text-align: center; background: var(--primary-gradient); color: white; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600; box-shadow: 0 4px 12px rgba(6,182,212,0.3);">Get Started</a>
+          <button onclick="handlePlanSelection('starter', this)" style="display: block; width: 100%; text-align: center; background: var(--primary-gradient); color: white; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600; box-shadow: 0 4px 12px rgba(6,182,212,0.3); border: none; cursor: pointer;">Subscribe Now</button>
         </div>
         
         <!-- Pro -->
@@ -1070,7 +1070,7 @@
             <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Order management</span></li>
             <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Sales analytics</span></li>
           </ul>
-          <a href="/setup.html" style="display: block; text-align: center; background: rgba(6, 182, 212, 0.2); color: var(--primary-color); padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600; border: 1px solid rgba(6, 182, 212, 0.3);">Get Started</a>
+          <button onclick="handlePlanSelection('pro', this)" style="display: block; width: 100%; text-align: center; background: rgba(6, 182, 212, 0.2); color: var(--primary-color); padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600; border: 1px solid rgba(6, 182, 212, 0.3); cursor: pointer;">Subscribe Now</button>
         </div>
       </div>
       
@@ -1155,6 +1155,57 @@
           showcase.addEventListener('mouseleave', startAutoPlay);
         }
       })();
+      
+      // Payment handling
+      async function handlePlanSelection(plan, buttonElement) {
+        // If free trial, just redirect to setup
+        if (plan === 'free') {
+          window.location.href = '/setup.html';
+          return;
+        }
+        
+        // Check if user is logged in
+        const token = localStorage.getItem('authToken');
+        
+        if (!token) {
+          // Not logged in - redirect to register with plan parameter
+          window.location.href = `/register.html?plan=${plan}`;
+          return;
+        }
+        
+        // Logged in - redirect to checkout
+        try {
+          const button = buttonElement;
+          const originalText = button.textContent;
+          button.disabled = true;
+          button.textContent = 'Loading...';
+          
+          const response = await fetch('/api/payments/create-subscription-checkout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ plan })
+          });
+          
+          const data = await response.json();
+          
+          if (response.ok && data.url) {
+            // Redirect to Stripe Checkout
+            window.location.href = data.url;
+          } else {
+            alert(data.error || 'Failed to start checkout. Please try again.');
+            button.disabled = false;
+            button.textContent = originalText;
+          }
+        } catch (error) {
+          console.error('Checkout error:', error);
+          alert('Something went wrong. Please try again.');
+          buttonElement.disabled = false;
+          buttonElement.textContent = 'Subscribe Now';
+        }
+      }
     </script>
   </body>
 </html>

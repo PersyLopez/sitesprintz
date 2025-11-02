@@ -43,6 +43,172 @@
       cursor: pointer;
       font-size: 0.9rem;
     }
+
+    /* Welcome Modal Styles */
+    .welcome-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(4px);
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .welcome-modal {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: slideUp 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .welcome-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .welcome-emoji {
+      font-size: 4rem;
+      margin-bottom: 16px;
+    }
+
+    .welcome-title {
+      font-size: 2rem;
+      color: #1f2937;
+      margin: 0 0 12px 0;
+    }
+
+    .welcome-subtitle {
+      color: #64748b;
+      font-size: 1.1rem;
+      margin: 0;
+    }
+
+    .plan-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: white;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-top: 12px;
+    }
+
+    .quick-start-section {
+      margin: 30px 0;
+    }
+
+    .quick-start-title {
+      font-size: 1.2rem;
+      color: #1f2937;
+      margin: 0 0 20px 0;
+      font-weight: 600;
+    }
+
+    .quick-action-card {
+      background: #f9fafb;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: start;
+      gap: 16px;
+    }
+
+    .quick-action-card:hover {
+      border-color: #f97316;
+      background: #fff7ed;
+      transform: translateX(4px);
+    }
+
+    .quick-action-icon {
+      font-size: 2rem;
+      min-width: 40px;
+    }
+
+    .quick-action-content {
+      flex: 1;
+    }
+
+    .quick-action-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin: 0 0 6px 0;
+    }
+
+    .quick-action-desc {
+      color: #64748b;
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    .quick-action-time {
+      font-size: 0.75rem;
+      color: #f97316;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    .welcome-footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .btn-start {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .btn-start:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(249, 115, 22, 0.3);
+    }
+
+    .skip-link {
+      display: inline-block;
+      margin-top: 16px;
+      color: #64748b;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .skip-link:hover {
+      color: #f97316;
+    }
     
     .stats-grid {
       display: grid;
@@ -364,7 +530,10 @@
         return;
       }
       
-      sitesGrid.innerHTML = sites.map(site => `
+      sitesGrid.innerHTML = sites.map(site => {
+        const isProSite = site.plan === 'pro';
+        
+        return `
         <div class="site-card">
           <div class="site-status ${site.status === 'published' ? 'status-published' : 'status-draft'}">
             ${site.status === 'published' ? '✅ Published' : '📝 Draft'}
@@ -376,6 +545,19 @@
           <p style="margin: 5px 0; color: #64748b; font-size: 0.8rem;">
             Created: ${new Date(site.createdAt).toLocaleDateString()}
           </p>
+          ${isProSite ? `
+            <div class="site-actions" style="margin-bottom: 10px;">
+              <button onclick="window.location.href='/orders.html?siteId=${site.id}'" style="background: #f59e0b; color: white; border-color: #f59e0b;">
+                📦 Orders
+              </button>
+              <button onclick="window.location.href='/products.html?siteId=${site.id}'" style="background: #10b981; color: white; border-color: #10b981;">
+                🍽️ Products
+              </button>
+              <button onclick="configureNotifications('${site.id}', '${site.name}')" style="background: #8b5cf6; color: white; border-color: #8b5cf6;">
+                📧 Email Setup
+              </button>
+            </div>
+          ` : ''}
           <div class="site-actions">
             <button onclick="viewSite('${site.id}', '${site.status}')" style="background: #3b82f6; color: white; border-color: #3b82f6;">
               ${site.status === 'published' ? '🌐 View' : '👁️ Preview'}
@@ -388,7 +570,8 @@
             </button>
           </div>
         </div>
-      `).join('');
+        `;
+      }).join('');
     }
     
     function viewSite(siteId, status) {
@@ -446,10 +629,224 @@
       window.location.href = '/setup.html';
     }
     
+    async function configureNotifications(siteId, siteName) {
+      // Load current notification email
+      const response = await fetch(`/api/sites/${siteId}/config.json`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        }
+      });
+      
+      let currentEmail = '';
+      if (response.ok) {
+        const config = await response.json();
+        currentEmail = config.notificationEmail || '';
+      }
+      
+      const email = prompt(
+        `📧 Email Notification Setup for "${siteName}"\n\n` +
+        `Enter the email address where you want to receive order notifications:\n` +
+        `(This is where customer order alerts will be sent)`,
+        currentEmail
+      );
+      
+      if (email === null) return; // User cancelled
+      
+      // Validate email
+      if (email && !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        alert('❌ Please enter a valid email address');
+        return;
+      }
+      
+      // Save notification email
+      try {
+        const saveResponse = await fetch(`/api/sites/${siteId}/notification-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          },
+          body: JSON.stringify({ notificationEmail: email })
+        });
+        
+        if (saveResponse.ok) {
+          alert(`✅ Email notifications configured!\n\nOrder alerts will be sent to:\n${email}`);
+        } else {
+          const error = await saveResponse.json();
+          alert(`❌ Failed to save: ${error.error}`);
+        }
+      } catch (error) {
+        console.error('Error saving notification email:', error);
+        alert('❌ Failed to save email. Please try again.');
+      }
+    }
+    
     function handleLogout() {
       localStorage.removeItem('authToken');
       window.location.href = '/login.html';
     }
+    
+    // Welcome Modal Functionality
+    function showWelcomeModal(user, sites) {
+      // Check if user has seen welcome modal
+      const hasSeenWelcome = localStorage.getItem(`welcome_seen_${user.id}`);
+      
+      // Only show for new users with no sites
+      if (hasSeenWelcome || sites.length > 0) {
+        return;
+      }
+      
+      const plan = user.subscription_plan || user.plan || 'free';
+      const planName = plan.charAt(0).toUpperCase() + plan.slice(1);
+      
+      // Define quick actions based on plan
+      const quickActions = {
+        free: [
+          {
+            icon: '🎨',
+            title: 'Choose a Template',
+            desc: 'Browse our collection of professionally designed templates',
+            time: '2 minutes',
+            action: () => window.location.href = '/setup.html'
+          },
+          {
+            icon: '✏️',
+            title: 'Customize Your Site',
+            desc: 'Edit text, images, and colors to match your brand',
+            time: '10 minutes',
+            action: () => window.location.href = '/setup.html'
+          },
+          {
+            icon: '🚀',
+            title: 'Publish & Share',
+            desc: 'Go live with your website and start getting visitors',
+            time: '1 minute',
+            action: () => window.location.href = '/setup.html'
+          }
+        ],
+        starter: [
+          {
+            icon: '🎨',
+            title: 'Choose a Template',
+            desc: 'Select from our premium template collection',
+            time: '2 minutes',
+            action: () => window.location.href = '/setup.html'
+          },
+          {
+            icon: '📧',
+            title: 'Set Up Contact Form',
+            desc: 'Start receiving customer inquiries instantly',
+            time: '5 minutes',
+            action: () => window.location.href = '/setup.html'
+          },
+          {
+            icon: '🌐',
+            title: 'Connect Your Domain',
+            desc: 'Use your own custom domain name (optional)',
+            time: '10 minutes',
+            action: () => alert('Domain connection coming soon!')
+          }
+        ],
+        pro: [
+          {
+            icon: '💳',
+            title: 'Set Up Payments',
+            desc: 'Connect Stripe to start accepting payments',
+            time: '5 minutes',
+            action: () => alert('Navigate to site settings after creation')
+          },
+          {
+            icon: '🛍️',
+            title: 'Add Products',
+            desc: 'Create your product catalog and start selling',
+            time: '15 minutes',
+            action: () => window.location.href = '/setup.html'
+          },
+          {
+            icon: '📊',
+            title: 'Track Orders',
+            desc: 'Monitor sales and manage customer orders',
+            time: 'Ongoing',
+            action: () => window.location.href = '/setup.html'
+          }
+        ]
+      };
+      
+      const actions = quickActions[plan] || quickActions.free;
+      
+      // Create modal HTML
+      const modalHTML = `
+        <div class="welcome-modal-overlay" id="welcomeModal">
+          <div class="welcome-modal">
+            <div class="welcome-header">
+              <div class="welcome-emoji">🎉</div>
+              <h1 class="welcome-title">Welcome to SiteSprintz!</h1>
+              <p class="welcome-subtitle">Let's get your website online in minutes</p>
+              <div class="plan-badge">${planName} Plan</div>
+            </div>
+            
+            <div class="quick-start-section">
+              <h3 class="quick-start-title">📋 Quick Start Guide</h3>
+              ${actions.map(action => `
+                <div class="quick-action-card" onclick='${JSON.stringify(action.action).slice(0, -1).substring(1)}'>
+                  <div class="quick-action-icon">${action.icon}</div>
+                  <div class="quick-action-content">
+                    <h4 class="quick-action-title">${action.title}</h4>
+                    <p class="quick-action-desc">${action.desc}</p>
+                    <div class="quick-action-time">⏱️ ${action.time}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            
+            <div class="welcome-footer">
+              <button class="btn-start" onclick="startBuilding()">🚀 Start Building Now</button>
+              <br>
+              <a href="#" class="skip-link" onclick="closeWelcomeModal(event)">I'll explore on my own</a>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Insert modal into page
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+      
+      // Mark as seen
+      localStorage.setItem(`welcome_seen_${user.id}`, 'true');
+    }
+    
+    function closeWelcomeModal(event) {
+      if (event) event.preventDefault();
+      const modal = document.getElementById('welcomeModal');
+      if (modal) {
+        modal.style.animation = 'fadeOut 0.3s ease-out';
+        setTimeout(() => modal.remove(), 300);
+      }
+    }
+    
+    function startBuilding() {
+      closeWelcomeModal();
+      window.location.href = '/setup.html';
+    }
+    
+    // Update loadUserSites to show welcome modal for new users
+    const originalLoadUserSites = loadUserSites;
+    loadUserSites = async function() {
+      await originalLoadUserSites();
+      
+      // Get sites count to determine if user is new
+      const response = await fetch(`/api/users/${currentUser.id}/sites`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        // Show welcome modal for new users
+        showWelcomeModal(currentUser, data.sites);
+      }
+    };
     
     // Initialize
     checkAuth();
