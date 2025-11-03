@@ -113,6 +113,40 @@
       display: block;
     }
 
+    .success-message {
+      color: #10b981;
+      font-size: 0.9rem;
+      margin-top: 8px;
+      display: none;
+      text-align: center;
+    }
+
+    .success-message.show {
+      display: block;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.6s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     /* Social Auth Buttons */
     .social-auth-section {
       margin-bottom: 25px;
@@ -209,7 +243,9 @@
         <div class="error-message" id="passwordError"></div>
       </div>
 
-      <button type="submit" class="btn-primary">Sign In</button>
+      <div class="success-message" id="successMessage">✓ Login successful! Redirecting...</div>
+
+      <button type="submit" class="btn-primary" id="loginButton">Sign In</button>
     </form>
 
     <div class="auth-footer">
@@ -228,8 +264,17 @@
       
       const emailError = document.getElementById('emailError');
       const passwordError = document.getElementById('passwordError');
+      const successMessage = document.getElementById('successMessage');
+      const loginButton = document.getElementById('loginButton');
+      
+      // Reset messages
       emailError.classList.remove('show');
       passwordError.classList.remove('show');
+      successMessage.classList.remove('show');
+      
+      // Disable button and show loading
+      loginButton.disabled = true;
+      loginButton.innerHTML = '<span class="loading-spinner"></span>Signing in...';
       
       try {
         const response = await fetch('/api/auth/login', {
@@ -244,17 +289,31 @@
           // Store token
           localStorage.setItem('authToken', result.token);
           
-          // Redirect to dashboard (to be created by Agent F)
-          alert('Login successful! Redirecting to dashboard...\nToken: ' + result.token.substring(0, 20) + '...');
-          window.location.href = '/dashboard.html';
+          // Show success message
+          successMessage.classList.add('show');
+          loginButton.innerHTML = '<span class="loading-spinner"></span>Redirecting...';
+          
+          // Smooth redirect after brief delay
+          setTimeout(() => {
+            window.location.href = '/dashboard.html';
+          }, 800);
         } else {
-          passwordError.textContent = result.error || 'Login failed';
+          // Show error
+          passwordError.textContent = result.error || 'Invalid email or password';
           passwordError.classList.add('show');
+          
+          // Re-enable button
+          loginButton.disabled = false;
+          loginButton.innerHTML = 'Sign In';
         }
       } catch (error) {
         console.error('Login error:', error);
-        passwordError.textContent = 'Failed to login. Please try again.';
+        passwordError.textContent = 'Connection error. Please check your internet and try again.';
         passwordError.classList.add('show');
+        
+        // Re-enable button
+        loginButton.disabled = false;
+        loginButton.innerHTML = 'Sign In';
       }
     }
   </script>

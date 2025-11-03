@@ -877,17 +877,47 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+/**
+ * GET CURRENT USER ENDPOINT
+ * 
+ * Purpose: Return current authenticated user's data
+ * 
+ * Authentication: Required (JWT)
+ * 
+ * Process:
+ * 1. User already loaded by requireAuth middleware
+ * 2. Return user data (id, email, role, subscription)
+ * 
+ * Changes from JSON version:
+ * - BEFORE: Read user file, parse JSON
+ * - AFTER: User already in req.user (from database)
+ * 
+ * Benefits:
+ * - Instant response (no file I/O)
+ * - Always fresh data (from middleware)
+ * - No race conditions
+ */
 app.get('/api/auth/me', requireAuth, async (req, res) => {
   try {
-    const { email } = req.user;
-    const userFile = getUserFilePath(email);
+    // User already loaded and verified by requireAuth middleware
+    // which queries the database for fresh user data
+    const user = req.user;
     
-    const userData = await fs.readFile(userFile, 'utf-8');
-    const user = JSON.parse(userData);
-    
-    res.json({ id: user.id, email: user.email, sites: user.sites });
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        userId: user.userId, // For backwards compatibility
+        email: user.email,
+        role: user.role,
+        status: user.status,
+        subscriptionStatus: user.subscriptionStatus,
+        subscriptionPlan: user.subscriptionPlan
+      }
+    });
   } catch (err) {
-    res.status(404).json({ error: 'User not found' });
+    console.error('Get user error:', err);
+    res.status(500).json({ error: 'Failed to get user data' });
   }
 });
 
