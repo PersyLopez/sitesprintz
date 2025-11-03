@@ -140,21 +140,49 @@ export function setupGoogleRoutes(app) {
       state += `,intent:${intent}`;
     }
     
+    console.log('🚀 Initiating Google OAuth...');
+    console.log('Callback URL:', process.env.GOOGLE_CALLBACK_URL);
+    
     passport.authenticate('google', {
       scope: ['profile', 'email'],
-      state: state
+      state: state,
+      callbackURL: process.env.GOOGLE_CALLBACK_URL  // Explicitly use our callback URL
     })(req, res, next);
   });
 
   // Google OAuth callback
-  app.get('/auth/google/callback',
+  app.get('/auth/google/callback', (req, res, next) => {
+    console.log('🎯 CALLBACK HIT - Starting passport authentication...');
     passport.authenticate('google', { 
       session: false,
       failureRedirect: '/register.html?error=oauth_failed' 
-    }),
-    (req, res) => {
+    }, (err, user, info) => {
+      console.log('🎯 Passport authenticate callback fired');
+      console.log('Error:', err);
+      console.log('User:', user ? user.email : 'NO USER');
+      console.log('Info:', info);
+      
+      if (err) {
+        console.error('❌ Passport authentication error:', err);
+        return res.redirect('/register.html?error=auth_error');
+      }
+      
+      if (!user) {
+        console.error('❌ No user returned from passport');
+        return res.redirect('/register.html?error=no_user');
+      }
+      
+      req.user = user;
+      next();
+    })(req, res, next);
+  }, (req, res) => {
       try {
         const user = req.user;
+        
+        console.log('🔥🔥🔥 OAUTH CALLBACK FIRED 🔥🔥🔥');
+        console.log('User email:', user.email);
+        console.log('User ID:', user.id);
+        console.log('User role:', user.role);
 
         // Generate JWT token
         const token = jwt.sign(
@@ -166,32 +194,33 @@ export function setupGoogleRoutes(app) {
           JWT_SECRET,
           { expiresIn: '7d' }
         );
+        
+        console.log('Token generated:', token.substring(0, 20) + '...');
 
-        console.log('🔍 OAuth callback - user:', user.email);
-        console.log('🔍 Pending intent:', user.pendingIntent);
-        console.log('🔍 Pending plan:', user.pendingPlan);
+        console.log('🔍 Checking redirect logic...');
+        console.log('Pending intent:', user.pendingIntent);
+        console.log('Pending plan:', user.pendingPlan);
         
         // Check if user came from publish flow
         if (user.pendingIntent === 'publish') {
-          console.log('✅ Redirecting to auto-publish');
-          // Redirect to auto-publish page
           const redirectUrl = `/auto-publish.html?token=${token}`;
-          res.redirect(redirectUrl);
+          console.log('✅ REDIRECTING TO:', redirectUrl);
+          return res.redirect(redirectUrl);
         }
         // Check if user needs to be redirected to Stripe checkout
         else if (user.pendingPlan && (user.pendingPlan === 'starter' || user.pendingPlan === 'pro')) {
-          console.log('✅ Redirecting to register-success with plan:', user.pendingPlan);
-          // Redirect to a page that will create Stripe checkout
           const redirectUrl = `/register-success.html?token=${token}&plan=${user.pendingPlan}`;
-          res.redirect(redirectUrl);
+          console.log('✅ REDIRECTING TO:', redirectUrl);
+          return res.redirect(redirectUrl);
         } else {
-          console.log('✅ Redirecting to register-success (dashboard flow)');
           // Free trial - redirect directly to dashboard with token
           const redirectUrl = `/dashboard.html?token=${token}`;
-          res.redirect(redirectUrl);
+          console.log('✅ REDIRECTING TO:', redirectUrl);
+          console.log('🚀 User should now land on dashboard!');
+          return res.redirect(redirectUrl);
         }
       } catch (error) {
-        console.error('OAuth callback error:', error);
+        console.error('❌ OAuth callback error:', error);
         res.redirect('/register.html?error=auth_failed');
       }
     }
