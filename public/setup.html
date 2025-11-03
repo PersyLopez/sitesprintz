@@ -845,15 +845,8 @@
     <!-- Step 2: Customize -->
     <div id="step2" class="step-content" style="display: none;">
       <div class="step-header">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <div>
-            <h1 class="step-title" style="margin: 0;">Customize Your Site</h1>
-            <p class="step-subtitle" style="margin: 8px 0 0 0;">Edit all the details that matter</p>
-          </div>
-          <button onclick="showClearDemoModal()" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 12px 24px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; transition: all 0.3s;">
-            🧹 Clear & Start Fresh
-          </button>
-        </div>
+        <h1 class="step-title">Customize Your Site</h1>
+        <p class="step-subtitle">Edit all the details that matter</p>
       </div>
       
       <div class="customize-layout">
@@ -861,6 +854,19 @@
           <div class="template-summary" id="templateSummary" aria-live="polite"></div>
           <div class="preview-toggle">
             <button class="btn btn-secondary" id="previewToggle" onclick="togglePreview()">✕ Close Preview</button>
+          </div>
+          
+          <!-- Clear Demo Data Button - Positioned with forms -->
+          <div style="background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 2px solid #fecaca; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px;">
+              <div>
+                <div style="font-weight: 700; color: #991b1b; margin-bottom: 4px;">📝 Editing Demo Content</div>
+                <div style="font-size: 0.9rem; color: #7f1d1d;">This template has example data. Clear it to add your own or edit directly.</div>
+              </div>
+              <button onclick="showClearDemoModal()" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 12px 20px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.9rem; white-space: nowrap; transition: all 0.3s; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
+                🧹 Clear All Demo Data
+              </button>
+            </div>
           </div>
       
       <section class="customize-section" aria-labelledby="section-business">
@@ -2940,24 +2946,45 @@
     }
 
     function confirmClearDemo() {
-      // Clear all input fields
-      document.getElementById('businessName').value = '';
-      document.getElementById('heroTitle').value = '';
-      document.getElementById('heroSubtitle').value = '';
-      document.getElementById('heroImage').value = '';
-      document.getElementById('contactEmail').value = '';
-      document.getElementById('contactPhone').value = '';
-      document.getElementById('contactAddress').value = '';
+      // Clear all main input fields
+      const fieldsToReset = [
+        'businessName',
+        'heroTitle', 
+        'heroSubtitle',
+        'heroImage',
+        'contactEmail',
+        'contactPhone',
+        'contactAddress',
+        'businessHours',
+        'websiteUrl',
+        'facebookUrl',
+        'instagramUrl',
+        'googleMapsUrl'
+      ];
       
-      // Clear services
+      fieldsToReset.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+          field.value = '';
+        }
+      });
+      
+      // Clear services - remove all service items
       const servicesContainer = document.getElementById('servicesContainer');
       if (servicesContainer) {
         servicesContainer.innerHTML = '<p class="muted">No services added yet. Click "Add Service" below.</p>';
       }
       
+      // Reset services array
+      if (typeof services !== 'undefined') {
+        services = [];
+      }
+      
       // Clear uploaded images
-      uploadedImages = [];
-      updateImagePreview();
+      if (typeof uploadedImages !== 'undefined') {
+        uploadedImages = [];
+        updateImagePreview();
+      }
       
       // Clear any template-specific fields
       const templateSpecific = document.getElementById('templateSpecificContent');
@@ -2972,8 +2999,17 @@
         });
       }
       
-      // Update preview
-      updatePreview();
+      // Clear all textareas in the page
+      document.querySelectorAll('textarea').forEach(textarea => {
+        if (textarea.id && !textarea.id.includes('prodDesc')) {
+          textarea.value = '';
+        }
+      });
+      
+      // Update preview with cleared data
+      if (typeof updatePreview === 'function') {
+        updatePreview();
+      }
       
       // Close modal
       closeClearDemoModal();
