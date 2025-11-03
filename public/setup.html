@@ -1669,9 +1669,26 @@
         guide.style.opacity = 1;
       }
       
-      // Redirect to visual builder with template after brief animation
+      // Show loading animation then proceed to customization
       setTimeout(() => {
-        window.location.href = `/guest-editor.html?template=${template}`;
+        currentStep = 2;
+        updateProgress();
+        setupCustomize();
+        document.getElementById('step1').style.display = 'none';
+        document.getElementById('step2').style.display = 'block';
+        const progressBar = document.querySelector('.progress-bar');
+        if (progressBar) progressBar.style.display = 'none';
+        
+        // Show preview by default
+        setTimeout(() => {
+          const panel = document.getElementById('previewPanel');
+          const toggle = document.getElementById('previewToggle');
+          if (panel && toggle) {
+            panel.style.display = 'block';
+            toggle.textContent = '✕ Close Preview';
+          }
+          updatePreview();
+        }, 100);
       }, 800);
     }
 
