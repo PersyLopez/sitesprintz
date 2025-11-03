@@ -226,3 +226,159 @@ Info: undefined
   line: '2528',
   routine: 'transformUpdateTargetList'
 }
+🚀 Initiating Google OAuth...
+Callback URL: https://tenurial-subemarginate-fay.ngrok-free.dev/auth/google/callback
+🎯 CALLBACK HIT - Starting passport authentication...
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT * FROM users WHERE email = $1',
+  duration: 152,
+  rows: 1
+}
+Query executed: {
+  text: 'UPDATE users SET google_id = $1, picture = $2, last_login = NOW() WHERE email = $3',
+  duration: 22,
+  rows: 1
+}
+🎯 Passport authenticate callback fired
+Error: null
+User: persylopez9@gmail.com
+Info: {}
+🔥🔥🔥 OAUTH CALLBACK FIRED 🔥🔥🔥
+User email: persylopez9@gmail.com
+User ID: c9ff275b-45f0-4d4b-90c8-55ac98819e43
+User role: user
+Token generated: eyJhbGciOiJIUzI1NiIs...
+🔍 Checking redirect logic...
+Pending intent: undefined
+Pending plan: undefined
+✅ REDIRECTING TO: /dashboard.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjOWZmMjc1Yi00NWYwLTRkNGItOTBjOC01NWFjOTg4MTllNDMiLCJlbWFpbCI6InBlcnN5bG9wZXo5QGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzYyMjE0MjI3LCJleHAiOjE3NjI4MTkwMjd9.UNH4He9X6EvGV0RIbu_dBea0IrP1iZqyJXsUwMH5cQE
+🚀 User should now land on dashboard!
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 17,
+  rows: 1
+}
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 18,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 134,
+  rows: 1
+}
+Query executed: {
+  text: '\n' +
+    '      SELECT \n' +
+    '        id, subdomain, template_id, status, plan, \n' +
+    '        published_at, created_at, ',
+  duration: 29,
+  rows: 0
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 18,
+  rows: 1
+}
+Query executed: {
+  text: '\n' +
+    '      SELECT \n' +
+    '        id, subdomain, template_id, status, plan, \n' +
+    '        published_at, created_at, ',
+  duration: 18,
+  rows: 0
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 20,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 20,
+  rows: 1
+}
+🚀 Initiating Google OAuth...
+Callback URL: https://tenurial-subemarginate-fay.ngrok-free.dev/auth/google/callback
+🎯 CALLBACK HIT - Starting passport authentication...
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT * FROM users WHERE email = $1',
+  duration: 130,
+  rows: 1
+}
+Query executed: {
+  text: 'UPDATE users SET last_login = NOW() WHERE email = $1',
+  duration: 17,
+  rows: 1
+}
+🎯 Passport authenticate callback fired
+Error: null
+User: persylopez9@gmail.com
+Info: {}
+🔥🔥🔥 OAUTH CALLBACK FIRED 🔥🔥🔥
+User email: persylopez9@gmail.com
+User ID: c9ff275b-45f0-4d4b-90c8-55ac98819e43
+User role: user
+Token generated: eyJhbGciOiJIUzI1NiIs...
+🔍 Checking redirect logic...
+Pending intent: undefined
+Pending plan: undefined
+✅ REDIRECTING TO: /dashboard.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjOWZmMjc1Yi00NWYwLTRkNGItOTBjOC01NWFjOTg4MTllNDMiLCJlbWFpbCI6InBlcnN5bG9wZXo5QGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzYyMjE0MjUxLCJleHAiOjE3NjI4MTkwNTF9.qhoMRhjH_1WEZet05hEaYTwCB8GVz95YiqeoLUJaMf0
+🚀 User should now land on dashboard!
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 19,
+  rows: 1
+}
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 122,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 15,
+  rows: 1
+}
+Query executed: {
+  text: '\n' +
+    '      SELECT \n' +
+    '        id, subdomain, template_id, status, plan, \n' +
+    '        published_at, created_at, ',
+  duration: 16,
+  rows: 0
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 15,
+  rows: 1
+}
+Query executed: {
+  text: '\n' +
+    '      SELECT \n' +
+    '        id, subdomain, template_id, status, plan, \n' +
+    '        published_at, created_at, ',
+  duration: 16,
+  rows: 0
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 16,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 17,
+  rows: 1
+}
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 151,
+  rows: 1
+}
