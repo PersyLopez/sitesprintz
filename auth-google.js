@@ -6,21 +6,10 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import jwt from 'jsonwebtoken';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { dbQuery } from './database.js';
 import crypto from 'crypto';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this';
-const usersDir = path.join(__dirname, 'public', 'data', 'users');
-
-// Ensure users directory exists
-if (!fs.existsSync(usersDir)) {
-  fs.mkdirSync(usersDir, { recursive: true });
-}
 
 /**
  * Configure Google OAuth Strategy
@@ -48,56 +37,84 @@ export function configureGoogleAuth() {
       const googleId = profile.id;
       const picture = profile.photos[0]?.value;
 
-      // Check if user exists
-      const userFilePath = path.join(usersDir, `${email.replace(/[^a-zA-Z0-9]/g, '_')}.json`);
-      let userData;
+      // Check if user exists in database
+      let result = await dbQuery(
+        'SELECT * FROM users WHERE email = $1',
+        [email]
+      );
 
-      if (fs.existsSync(userFilePath)) {
-        // Existing user - load and update Google info
-        userData = JSON.parse(fs.readFileSync(userFilePath, 'utf8'));
+      let user;
+      
+      if (result.rows.length > 0) {
+        // Existing user - update Google info if needed
+        user = result.rows[0];
         
-        // Update Google info if not already set
-        if (!userData.googleId) {
-          userData.googleId = googleId;
-          userData.picture = picture;
-          userData.lastLogin = new Date().toISOString();
-          fs.writeFileSync(userFilePath, JSON.stringify(userData, null, 2));
+        if (!user.google_id) {
+          await dbQuery(
+            'UPDATE users SET google_id = $1, picture = $2, last_login = NOW() WHERE email = $3',
+            [googleId, picture, email]
+          );
+          user.google_id = googleId;
+          user.picture = picture;
+        } else {
+          // Just update last login
+          await dbQuery(
+            'UPDATE users SET last_login = NOW() WHERE email = $1',
+            [email]
+          );
         }
       } else {
-        // New user - create account
+        // New user - create account in database
         const userId = crypto.randomUUID();
-        userData = {
-          id: userId,
-          email: email,
-          name: name,
-          googleId: googleId,
-          picture: picture,
-          role: 'user',
-          plan: 'free',
-          createdAt: new Date().toISOString(),
-          lastLogin: new Date().toISOString(),
-          authProvider: 'google',
-          emailVerified: true, // Google emails are verified
-          sites: []
-        };
-
-        fs.writeFileSync(userFilePath, JSON.stringify(userData, null, 2));
+        
+        // Set trial expiration to 7 days from now
+        const trialExpiration = new Date();
+        trialExpiration.setDate(trialExpiration.getDate() + 7);
+        
+        result = await dbQuery(
+          `INSERT INTO users (
+            id, email, name, google_id, picture, role, status,
+            subscription_status, subscription_plan, trial_expires_at,
+            auth_provider, email_verified, created_at, last_login
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW(), NOW())
+          RETURNING *`,
+          [
+            userId,
+            email,
+            name,
+            googleId,
+            picture,
+            'user',
+            'active',
+            'trial',
+            'free',
+            trialExpiration,
+            'google',
+            true
+          ]
+        );
+        
+        user = result.rows[0];
         console.log(`✅ New user created via Google: ${email}`);
       }
 
-      // Store plan if provided (for paid subscriptions)
-      const plan = req.query.state; // Pass plan via state parameter
+      // Parse state parameter for plan and intent
+      const state = req.query.state || '';
+      const stateParts = state.split(',');
+      const plan = stateParts[0];
+      const intentPart = stateParts.find(p => p.startsWith('intent:'));
+      const intent = intentPart ? intentPart.split(':')[1] : null;
+
+      // Store plan and intent temporarily (for redirect logic)
       if (plan && (plan === 'starter' || plan === 'pro')) {
-        userData.pendingPlan = plan;
+        user.pendingPlan = plan;
       }
-
-      // Store intent if provided (for publish flow)
-      const intent = req.query.intent;
+      
       if (intent) {
-        userData.pendingIntent = intent;
+        user.pendingIntent = intent;
       }
 
-      return done(null, userData);
+      return done(null, user);
     } catch (error) {
       console.error('Google OAuth error:', error);
       return done(error, null);
@@ -176,21 +193,9 @@ export function setupGoogleRoutes(app) {
   console.log('✅ Google OAuth routes configured');
 }
 
-/**
- * Helper function to get user by email
- */
-export function getUserByEmail(email) {
-  const userFilePath = path.join(usersDir, `${email.replace(/[^a-zA-Z0-9]/g, '_')}.json`);
-  if (fs.existsSync(userFilePath)) {
-    return JSON.parse(fs.readFileSync(userFilePath, 'utf8'));
-  }
-  return null;
-}
-
 export default {
   configureGoogleAuth,
-  setupGoogleRoutes,
-  getUserByEmail
+  setupGoogleRoutes
 };
 
 
