@@ -427,7 +427,7 @@
       autoSaveInterval: null,
       tourCompleted: localStorage.getItem('editorTourCompleted') === 'true',
 
-      init() {
+      async init() {
         // Check if user is logged in
         const token = localStorage.getItem('authToken');
         this.isGuest = !token;
@@ -442,8 +442,48 @@
           }
         }
 
-        // Load any saved guest progress
-        this.loadGuestProgress();
+        // Check for template parameter from setup flow
+        const urlParams = new URLSearchParams(window.location.search);
+        const templateId = urlParams.get('template');
+        
+        if (templateId) {
+          // Load template data
+          await this.loadTemplateData(templateId);
+        } else {
+          // Load any saved guest progress
+          this.loadGuestProgress();
+        }
+      },
+      
+      async loadTemplateData(templateId) {
+        try {
+          const response = await fetch(`/data/templates/${templateId}.json`);
+          if (!response.ok) throw new Error('Template not found');
+          
+          const templateData = await response.json();
+          
+          // Store template data for the editor
+          window.currentSiteData = templateData;
+          window.selectedTemplate = templateId;
+          
+          // Save as guest progress
+          localStorage.setItem('guestEditorProgress', JSON.stringify({
+            data: templateData,
+            timestamp: Date.now(),
+            template: templateId
+          }));
+          
+          console.log(`✓ Loaded template: ${templateId}`);
+          
+          // Initialize editor with template data
+          if (window.initializeEditor) {
+            window.initializeEditor(templateData);
+          }
+        } catch (error) {
+          console.error('Failed to load template:', error);
+          // Fall back to saved progress
+          this.loadGuestProgress();
+        }
       },
 
       startAutoSave() {
