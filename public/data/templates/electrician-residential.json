@@ -1,0 +1,186 @@
+{
+  "brand": {
+    "name": "HomeWire Residential Electric",
+    "logo": "assets/logo.svg",
+    "tagline": "Licensed Electricians • Home Specialists",
+    "phone": "(555) 444-5566",
+    "email": "service@homewire.electric"
+  },
+  "themeVars": {
+    "color-primary": "#f59e0b",
+    "color-accent": "#fbbf24",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "About", "href": "#about"},
+    {"label": "Reviews", "href": "#testimonials"},
+    {"label": "Emergency", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "⚡ Residential Electrical Services",
+    "title": "Safe, reliable electrical work for your home",
+    "subtitle": "Licensed electricians specializing in home electrical repairs, upgrades, and installations. From outlets to panel upgrades, we do it right. Same-day service available. Trusted by homeowners since 2010.",
+    "cta": [
+      {"label": "Schedule Service", "href": "#contact"},
+      {"label": "See Services", "href": "#products", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=1200&q=80",
+    "imageAlt": "Electrician working on residential panel"
+  },
+  "about": {
+    "title": "Your Home Electrical Experts",
+    "subtitle": "Licensed, insured, and trusted",
+    "content": "HomeWire specializes exclusively in residential electrical work. From troubleshooting problems to whole-home rewiring, our licensed electricians treat your home with care. Clean work, honest pricing, and safety-first approach."
+  },
+  "products": [
+    {
+      "name": "Outlet & Switch Service",
+      "price": 125,
+      "description": "Install, replace, or repair outlets and switches. GFCI outlets for safety. Same-day service available.",
+      "category": "Repairs",
+      "duration": "1-2 hours",
+      "popular": true
+    },
+    {
+      "name": "Ceiling Fan Installation",
+      "price": 175,
+      "description": "Professional ceiling fan installation with proper support and wiring. Includes fan or you provide yours.",
+      "category": "Installation",
+      "duration": "2-3 hours",
+      "popular": true
+    },
+    {
+      "name": "Panel Upgrade",
+      "price": 1800,
+      "description": "Upgrade to 200-amp panel for modern electrical needs. Includes permits and inspection. Safe and code-compliant.",
+      "category": "Upgrade",
+      "duration": "1 day"
+    },
+    {
+      "name": "Lighting Installation",
+      "price": 150,
+      "description": "Install interior or exterior lighting. Recessed lights, chandeliers, outdoor fixtures. Professional installation.",
+      "category": "Installation",
+      "duration": "2-3 hours",
+      "popular": true
+    },
+    {
+      "name": "Electrical Troubleshooting",
+      "price": 95,
+      "description": "Diagnose electrical problems. Tripping breakers, flickering lights, outlets not working. Expert diagnosis.",
+      "category": "Diagnosis",
+      "duration": "1 hour"
+    },
+    {
+      "name": "Whole-Home Surge Protection",
+      "price": 450,
+      "description": "Protect your entire home from power surges. Safeguard electronics and appliances. Peace of mind.",
+      "category": "Protection",
+      "duration": "2-3 hours"
+    }
+  ],
+  "services": {
+    "title": "Electrical Services",
+    "subtitle": "Complete home electrical solutions",
+    "items": [
+      {
+        "title": "🔌 Repairs",
+        "description": "Fix outlets, switches, lights, and other electrical problems"
+      },
+      {
+        "title": "💡 Installation",
+        "description": "Install ceiling fans, lighting, outlets, and electrical fixtures"
+      },
+      {
+        "title": "⚡ Upgrades",
+        "description": "Panel upgrades, rewiring, and electrical system modernization"
+      },
+      {
+        "title": "🚨 Emergency Service",
+        "description": "24/7 emergency electrical service for urgent problems"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Homeowner Reviews",
+    "subtitle": "Trusted by your neighbors",
+    "items": [
+      {
+        "text": "Upgraded our electrical panel and added outlets throughout the house. Professional work, clean job site, and passed inspection first try. Highly recommend!",
+        "author": "Michael Johnson",
+        "title": "Homeowner"
+      },
+      {
+        "text": "Had flickering lights driving me crazy. They diagnosed the problem quickly and fixed it same day. Fair pricing and excellent service!",
+        "author": "Sarah Thompson",
+        "title": "Happy Customer"
+      },
+      {
+        "text": "Installed ceiling fans in three bedrooms. Showed up on time, worked efficiently, cleaned up after. Perfect job! Using them for all electrical needs now.",
+        "author": "Robert Kim",
+        "title": "Regular Customer"
+      }
+    ]
+  },
+  "team": {
+    "title": "Licensed Electricians",
+    "subtitle": "Experienced residential specialists",
+    "members": [
+      {
+        "name": "Tom Peterson",
+        "title": "Master Electrician & Owner",
+        "bio": "Licensed Master Electrician with 20+ years experience in residential electrical work. Specializes in troubleshooting, panel upgrades, and whole-home electrical solutions.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "Tom Peterson",
+        "credentials": ["Master Electrician License", "20+ Years Experience", "Fully Insured"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Service Process",
+    "subtitle": "Professional electrical work",
+    "steps": [
+      {"title": "Schedule Service", "description": "Call or book online. Describe your electrical needs"},
+      {"title": "On-Site Assessment", "description": "Licensed electrician assesses and provides clear quote"},
+      {"title": "Professional Work", "description": "Safe, code-compliant electrical work"},
+      {"title": "Final Inspection", "description": "Test everything and ensure your satisfaction"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "14+", "label": "Years Serving Homes"},
+      {"number": "2,000+", "label": "Projects Completed"},
+      {"number": "4.9", "label": "Star Rating"},
+      {"number": "Licensed", "label": "& Insured"}
+    ]
+  },
+  "contact": {
+    "title": "Need an Electrician?",
+    "subtitle": "Same-day service available",
+    "phone": "(555) 444-5566",
+    "email": "service@homewire.electric",
+    "address": "Serving Metro Phoenix, AZ"
+  },
+  "footer": {
+    "text": "⚡ HomeWire Residential Electric • Safe Home Electrical Since 2010",
+    "awards": [
+      "Licensed Master Electrician",
+      "Best Residential Electric 2023",
+      "5-Star Rated"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "service@homewire.electric",
+    "productCta": "Schedule Service",
+    "productCtaHref": "tel:+15554445566",
+    "productNote": "Submit your service request and we'll contact you within 4 hours to schedule. Emergency service available 24/7."
+  },
+  "productsTitle": "Electrical Services",
+  "productsSubtitle": "Licensed, safe, reliable"
+}
+

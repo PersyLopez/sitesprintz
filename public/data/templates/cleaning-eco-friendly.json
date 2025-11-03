@@ -1,0 +1,186 @@
+{
+  "brand": {
+    "name": "EcoSpark Green Cleaning",
+    "logo": "assets/logo.svg",
+    "tagline": "100% Eco-Friendly • Chemical-Free",
+    "phone": "(555) 333-8899",
+    "email": "hello@ecospark.green"
+  },
+  "themeVars": {
+    "color-primary": "#059669",
+    "color-accent": "#34d399",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "Green Practices", "href": "#about"},
+    {"label": "Reviews", "href": "#testimonials"},
+    {"label": "Book", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "🌿 Eco-Friendly Cleaning",
+    "title": "Clean home, clean conscience",
+    "subtitle": "100% plant-based, non-toxic cleaning products. Safe for kids, pets, and the planet. Professional results without harsh chemicals. Breathe easier knowing your home is truly clean and healthy.",
+    "cta": [
+      {"label": "Get Started", "href": "#contact"},
+      {"label": "Our Methods", "href": "#about", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=1200&q=80",
+    "imageAlt": "Natural cleaning products and supplies"
+  },
+  "about": {
+    "title": "Truly Green Cleaning",
+    "subtitle": "Healthy homes, healthy planet",
+    "content": "EcoSpark uses only certified organic, plant-based cleaning products. No harsh chemicals, no toxic fumes, no residue. We prove that eco-friendly cleaning can deliver spotless results. Perfect for families with allergies, asthma, or environmental concerns."
+  },
+  "products": [
+    {
+      "name": "Eco Home Cleaning",
+      "price": 149,
+      "description": "Complete home cleaning with plant-based products. Kitchen, bathrooms, floors. Toxin-free and pet-safe. Perfect for weekly or bi-weekly service.",
+      "category": "Recurring",
+      "duration": "2-3 hours",
+      "popular": true
+    },
+    {
+      "name": "Green Deep Clean",
+      "price": 279,
+      "description": "Intensive eco-friendly deep cleaning. Natural disinfection, organic products throughout. Great for allergy sufferers.",
+      "category": "One-Time",
+      "duration": "4-6 hours",
+      "popular": true
+    },
+    {
+      "name": "Nursery & Kids' Room",
+      "price": 89,
+      "description": "Extra-safe cleaning for baby nurseries and kids' rooms. Chemical-free, hypoallergenic products only.",
+      "category": "Specialty",
+      "duration": "1-2 hours"
+    },
+    {
+      "name": "Allergen-Free Package",
+      "price": 189,
+      "description": "HEPA vacuuming, natural dust removal, and air purification. Ideal for asthma and allergy sufferers.",
+      "category": "Specialty",
+      "duration": "2-3 hours",
+      "popular": true
+    },
+    {
+      "name": "Pet-Friendly Cleaning",
+      "price": 159,
+      "description": "100% pet-safe products. Remove pet hair, odors, and stains naturally. Safe for all pets.",
+      "category": "Specialty",
+      "duration": "2-3 hours"
+    },
+    {
+      "name": "Monthly Eco Plan",
+      "price": 549,
+      "description": "Four weekly eco-cleanings per month. Lock in this rate. Same green team every time.",
+      "category": "Recurring",
+      "duration": "Monthly"
+    }
+  ],
+  "services": {
+    "title": "Green Cleaning Services",
+    "subtitle": "Effective, safe, eco-friendly",
+    "items": [
+      {
+        "title": "🌿 Plant-Based Products",
+        "description": "100% organic, biodegradable cleaning solutions. No harsh chemicals"
+      },
+      {
+        "title": "👶 Safe for Families",
+        "description": "Non-toxic cleaning perfect for homes with kids, babies, and pets"
+      },
+      {
+        "title": "🌎 Earth-Friendly",
+        "description": "Sustainable practices, minimal waste, carbon-neutral operations"
+      },
+      {
+        "title": "💨 Allergy Relief",
+        "description": "HEPA filtration and hypoallergenic products for sensitive households"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Happy Green Homes",
+    "subtitle": "Families who switched",
+    "items": [
+      {
+        "text": "My son has severe asthma and regular cleaners made it worse. EcoSpark's products don't trigger any symptoms. Our home is cleaner than ever and we can actually breathe!",
+        "author": "Rachel Thompson",
+        "title": "Mom of 2"
+      },
+      {
+        "text": "I love that our home is spotless without exposing our toddler to chemicals. EcoSpark's plant-based products work just as well. Peace of mind is worth it!",
+        "author": "Emily Garcia",
+        "title": "New Parent"
+      },
+      {
+        "text": "As someone passionate about the environment, I was thrilled to find truly eco-friendly cleaners. Great service, effective products, and guilt-free clean!",
+        "author": "Jordan Park",
+        "title": "Eco-Conscious Client"
+      }
+    ]
+  },
+  "team": {
+    "title": "Our Green Team",
+    "subtitle": "Passionate about health and sustainability",
+    "members": [
+      {
+        "name": "Maya Rodriguez",
+        "title": "Founder & Green Cleaning Specialist",
+        "bio": "Founded EcoSpark after her daughter developed chemical sensitivities. Certified in green cleaning methods. Passionate about proving eco-friendly works.",
+        "image": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80",
+        "imageAlt": "Maya Rodriguez",
+        "credentials": ["Green Certified", "Organic Product Specialist", "EPA Safer Choice Partner"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Our Green Process",
+    "subtitle": "Clean without compromise",
+    "steps": [
+      {"title": "Eco Assessment", "description": "Understand your needs and any sensitivities"},
+      {"title": "Product Selection", "description": "Choose plant-based products perfect for your home"},
+      {"title": "Green Cleaning", "description": "Thorough cleaning with zero toxic chemicals"},
+      {"title": "Breathe Easy", "description": "Enjoy a spotless, healthy, chemical-free home"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "100%", "label": "Plant-Based"},
+      {"number": "0", "label": "Harsh Chemicals"},
+      {"number": "4.9", "label": "Star Rating"},
+      {"number": "300+", "label": "Green Homes"}
+    ]
+  },
+  "contact": {
+    "title": "Go Green Today",
+    "subtitle": "Eco-friendly cleaning for your home",
+    "phone": "(555) 333-8899",
+    "email": "hello@ecospark.green",
+    "address": "Serving Portland Metro Area, OR"
+  },
+  "footer": {
+    "text": "🌿 EcoSpark Green Cleaning • Healthy Homes, Healthy Planet",
+    "awards": [
+      "Green Business Certified",
+      "EPA Safer Choice Partner",
+      "Best Eco-Cleaning 2023"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "hello@ecospark.green",
+    "productCta": "Get Free Quote",
+    "productCtaHref": "tel:+15553338899",
+    "productNote": "Submit your request and we'll provide a custom eco-friendly cleaning plan within 24 hours."
+  },
+  "productsTitle": "Eco-Friendly Services",
+  "productsSubtitle": "Clean home, clear conscience"
+}
+

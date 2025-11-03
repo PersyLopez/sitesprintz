@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Layout System Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    h1 {
+      color: #6366f1;
+      margin-bottom: 30px;
+    }
+    .test-section {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 2px solid #334155;
+    }
+    .test-section h2 {
+      margin-top: 0;
+      color: #a78bfa;
+    }
+    .result {
+      font-family: 'Monaco', monospace;
+      background: #0f172a;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 12px;
+      border-left: 4px solid #6366f1;
+    }
+    .success { border-left-color: #10b981; }
+    .error { border-left-color: #ef4444; }
+    .template-item {
+      padding: 12px;
+      margin: 8px 0;
+      background: #334155;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .status {
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .status.ok { background: #10b981; color: #0f172a; }
+    .status.missing { background: #ef4444; color: white; }
+  </style>
+</head>
+<body>
+  <h1>🧪 Layout System Verification</h1>
+  
+  <div class="test-section">
+    <h2>1. TEMPLATE_LAYOUTS Configuration</h2>
+    <div id="configTest"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>2. Template JSON Files</h2>
+    <div id="filesTest"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>3. Base ID Extraction Logic</h2>
+    <div id="logicTest"></div>
+  </div>
+
+  <script>
+    // Copy the TEMPLATE_LAYOUTS from setup.html
+    const TEMPLATE_LAYOUTS = {
+      'restaurant': { defaultLayout: 'casual', layouts: { 'fine-dining': {}, 'casual': {}, 'fast-casual': {} } },
+      'salon': { defaultLayout: 'modern-studio', layouts: { 'luxury-spa': {}, 'modern-studio': {}, 'neighborhood': {} } },
+      'gym': { defaultLayout: 'boutique', layouts: { 'boutique': {}, 'strength': {}, 'family': {} } },
+      'consultant': { defaultLayout: 'small-business', layouts: { 'corporate': {}, 'small-business': {}, 'executive-coach': {} } },
+      'freelancer': { defaultLayout: 'developer', layouts: { 'designer': {}, 'developer': {}, 'writer': {} } },
+      'tech-repair': { defaultLayout: 'phone-repair', layouts: { 'phone-repair': {}, 'computer': {}, 'gaming': {} } },
+      'cleaning': { defaultLayout: 'residential', layouts: { 'residential': {}, 'commercial': {}, 'eco-friendly': {} } },
+      'pet-care': { defaultLayout: 'full-service', layouts: { 'dog-grooming': {}, 'full-service': {}, 'mobile': {} } },
+      'electrician': { defaultLayout: 'residential', layouts: { 'residential': {}, 'commercial': {}, 'smart-home': {} } },
+      'auto-repair': { defaultLayout: 'full-service', layouts: { 'quick-service': {}, 'full-service': {}, 'performance': {} } },
+      'plumbing': { defaultLayout: 'emergency', layouts: { 'emergency': {}, 'renovation': {}, 'commercial': {} } },
+      'product-showcase': { defaultLayout: 'fashion', layouts: { 'fashion': {}, 'home-goods': {}, 'artisan': {} } }
+    };
+
+    // Test 1: Configuration
+    function testConfiguration() {
+      const configDiv = document.getElementById('configTest');
+      const keys = Object.keys(TEMPLATE_LAYOUTS);
+      
+      let html = '<div class="result success">';
+      html += `<strong>✅ Found ${keys.length} template types configured:</strong><br><br>`;
+      keys.forEach((key, i) => {
+        const layoutCount = Object.keys(TEMPLATE_LAYOUTS[key].layouts).length;
+        html += `${i + 1}. <strong>${key}</strong> (${layoutCount} layouts)<br>`;
+      });
+      html += '</div>';
+      
+      configDiv.innerHTML = html;
+    }
+
+    // Test 2: File existence
+    async function testFiles() {
+      const filesDiv = document.getElementById('filesTest');
+      let html = '';
+      let totalExpected = 0;
+      let totalFound = 0;
+      
+      for (const [baseId, config] of Object.entries(TEMPLATE_LAYOUTS)) {
+        const layouts = Object.keys(config.layouts);
+        
+        for (const layout of layouts) {
+          totalExpected++;
+          const filename = `${baseId}-${layout}.json`;
+          const filepath = `/data/templates/${filename}`;
+          
+          try {
+            const response = await fetch(filepath, { method: 'HEAD' });
+            if (response.ok) {
+              totalFound++;
+              html += `<div class="template-item">
+                <span>${filename}</span>
+                <span class="status ok">✓ EXISTS</span>
+              </div>`;
+            } else {
+              html += `<div class="template-item">
+                <span>${filename}</span>
+                <span class="status missing">✗ MISSING</span>
+              </div>`;
+            }
+          } catch (e) {
+            html += `<div class="template-item">
+              <span>${filename}</span>
+              <span class="status missing">✗ ERROR</span>
+            </div>`;
+          }
+        }
+      }
+      
+      const resultClass = totalFound === totalExpected ? 'success' : 'error';
+      filesDiv.innerHTML = `
+        <div class="result ${resultClass}">
+          <strong>Found ${totalFound} / ${totalExpected} template files</strong>
+        </div>
+        ${html}
+      `;
+    }
+
+    // Test 3: Logic
+    function testLogic() {
+      const logicDiv = document.getElementById('logicTest');
+      
+      // Test the base ID extraction logic
+      function findBaseId(templateId) {
+        for (const [key, config] of Object.entries(TEMPLATE_LAYOUTS)) {
+          if (templateId === key || templateId.startsWith(key + '-')) {
+            return key;
+          }
+        }
+        return null;
+      }
+      
+      const testCases = [
+        'restaurant-casual',
+        'salon-modern-studio',
+        'tech-repair-phone-repair',
+        'pet-care-full-service',
+        'auto-repair-quick-service',
+        'product-showcase-fashion'
+      ];
+      
+      let html = '<div class="result success"><strong>Testing base ID extraction:</strong><br><br>';
+      testCases.forEach(testId => {
+        const baseId = findBaseId(testId);
+        html += `"${testId}" → baseId: <strong>"${baseId}"</strong> ${baseId ? '✓' : '✗'}<br>`;
+      });
+      html += '</div>';
+      
+      logicDiv.innerHTML = html;
+    }
+
+    // Run tests
+    testConfiguration();
+    testFiles();
+    testLogic();
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,185 @@
+{
+  "brand": {
+    "name": "Luna Design Studio",
+    "logo": "assets/logo.svg",
+    "tagline": "Brand & Web Design • Est. 2019",
+    "phone": "(555) 123-7890",
+    "email": "hello@lunadesign.co"
+  },
+  "themeVars": {
+    "color-primary": "#ec4899",
+    "color-accent": "#f472b6",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Portfolio", "href": "#about"},
+    {"label": "Services", "href": "#products"},
+    {"label": "Process", "href": "#process"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "🎨 Brand & Web Designer",
+    "title": "Design that connects with your audience",
+    "subtitle": "I help small businesses and startups create beautiful, strategic brand identities and websites that attract customers and build trust. From concept to launch, let's bring your vision to life.",
+    "cta": [
+      {"label": "View Portfolio", "href": "#about"},
+      {"label": "Start Project", "href": "#contact", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=1200&q=80",
+    "imageAlt": "Designer workspace with sketches and color swatches"
+  },
+  "about": {
+    "title": "Creative Design Solutions",
+    "subtitle": "Bringing brands to life since 2019",
+    "content": "I'm Luna, a freelance designer specializing in brand identity and web design for purpose-driven businesses. My approach combines strategic thinking with beautiful aesthetics to create designs that not only look amazing but drive real results."
+  },
+  "products": [
+    {
+      "name": "Brand Identity Package",
+      "price": 2500,
+      "description": "Complete brand identity including logo, color palette, typography, brand guidelines, and marketing materials.",
+      "category": "Branding",
+      "duration": "3 weeks",
+      "popular": true
+    },
+    {
+      "name": "Website Design",
+      "price": 3500,
+      "description": "Custom 5-page website design in Figma with responsive layouts. Includes 2 rounds of revisions.",
+      "category": "Web Design",
+      "duration": "4 weeks",
+      "popular": true
+    },
+    {
+      "name": "Logo Design",
+      "price": 800,
+      "description": "Unique logo design with 3 concepts, unlimited revisions, and final files in all formats.",
+      "category": "Branding",
+      "duration": "1 week"
+    },
+    {
+      "name": "Social Media Templates",
+      "price": 450,
+      "description": "15 customizable Canva templates for Instagram, Facebook, and LinkedIn. On-brand and ready to use.",
+      "category": "Marketing",
+      "duration": "1 week"
+    },
+    {
+      "name": "Brand Refresh",
+      "price": 1800,
+      "description": "Update your existing brand with modern design, refined colors, and updated marketing materials.",
+      "category": "Branding",
+      "duration": "2 weeks",
+      "popular": true
+    },
+    {
+      "name": "VIP Design Day",
+      "price": 1200,
+      "description": "Intensive 8-hour session to tackle your urgent design project. Perfect for quick turnaround needs.",
+      "category": "Express",
+      "duration": "1 day"
+    }
+  ],
+  "services": {
+    "title": "Design Services",
+    "subtitle": "Strategic design for growing businesses",
+    "items": [
+      {
+        "title": "🎨 Brand Identity",
+        "description": "Logos, color palettes, typography, and brand guidelines that tell your story"
+      },
+      {
+        "title": "💻 Web Design",
+        "description": "Beautiful, user-friendly websites designed to convert visitors into customers"
+      },
+      {
+        "title": "📱 Digital Marketing",
+        "description": "Social media templates, email designs, and digital assets"
+      },
+      {
+        "title": "📦 Print Design",
+        "description": "Business cards, packaging, brochures, and other printed materials"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Client Love",
+    "subtitle": "Real feedback from real clients",
+    "items": [
+      {
+        "text": "Luna transformed our brand! The new identity perfectly captures who we are. Our customers love it and we've seen a 40% increase in inquiries since launching.",
+        "author": "Sarah Chen",
+        "title": "Founder, Wellness Studio"
+      },
+      {
+        "text": "Working with Luna was a dream. She listened, asked great questions, and delivered exactly what we needed. The website is stunning and super easy to navigate!",
+        "author": "Mike Rodriguez",
+        "title": "Owner, Local Coffee Shop"
+      },
+      {
+        "text": "Best investment we made! Luna's brand package gave us a professional look that elevated our entire business. Highly recommend!",
+        "author": "Emma Taylor",
+        "title": "Co-Founder, Tech Startup"
+      }
+    ]
+  },
+  "team": {
+    "title": "About Luna",
+    "subtitle": "Your dedicated designer",
+    "members": [
+      {
+        "name": "Luna Martinez",
+        "title": "Brand & Web Designer",
+        "bio": "BFA in Graphic Design from RISD. 6+ years helping businesses create impactful brands. Featured in Design Milk and The Dieline. Passionate about empowering entrepreneurs through great design.",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
+        "imageAlt": "Luna Martinez",
+        "credentials": ["BFA RISD", "Adobe Certified", "Featured in Design Milk"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Design Process",
+    "subtitle": "How we'll work together",
+    "steps": [
+      {"title": "Discovery Call", "description": "We'll discuss your vision, goals, and project requirements"},
+      {"title": "Research & Concepts", "description": "I'll research your industry and create initial design concepts"},
+      {"title": "Revisions", "description": "Refine the design based on your feedback until it's perfect"},
+      {"title": "Final Delivery", "description": "Receive all final files and launch your new brand!"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "50+", "label": "Projects Completed"},
+      {"number": "6", "label": "Years Experience"},
+      {"number": "100%", "label": "Client Satisfaction"},
+      {"number": "4.9", "label": "Star Rating"}
+    ]
+  },
+  "contact": {
+    "title": "Let's Create Together",
+    "subtitle": "Ready to elevate your brand?",
+    "phone": "(555) 123-7890",
+    "email": "hello@lunadesign.co",
+    "address": "Remote • Serving clients worldwide"
+  },
+  "footer": {
+    "text": "🎨 Luna Design Studio • Creative Design Since 2019",
+    "awards": [
+      "Featured in Design Milk",
+      "Awwwards Honorable Mention",
+      "Top Designer 2023"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "hello@lunadesign.co",
+    "productCta": "Get Quote",
+    "productCtaHref": "mailto:hello@lunadesign.co",
+    "productNote": "Submit your project inquiry and I'll get back to you within 24 hours with a custom quote."
+  },
+  "productsTitle": "Services & Pricing",
+  "productsSubtitle": "Fixed pricing for predictable budgets"
+}

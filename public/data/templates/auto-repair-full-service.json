@@ -1,0 +1,186 @@
+{
+  "brand": {
+    "name": "Complete Auto Care Center",
+    "logo": "assets/logo.svg",
+    "tagline": "Full-Service Auto Repair • ASE Certified",
+    "phone": "(555) 888-3344",
+    "email": "service@completeauto.care"
+  },
+  "themeVars": {
+    "color-primary": "#2563eb",
+    "color-accent": "#3b82f6",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "About", "href": "#about"},
+    {"label": "Reviews", "href": "#testimonials"},
+    {"label": "Schedule", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "🔧 Full-Service Auto Repair",
+    "title": "Your complete auto care solution",
+    "subtitle": "From routine maintenance to major repairs, we fix it all. ASE-certified technicians, state-of-the-art diagnostics, and honest service. Brakes, engines, transmissions, electrical - trust us with your vehicle.",
+    "cta": [
+      {"label": "Schedule Service", "href": "#contact"},
+      {"label": "All Services", "href": "#products", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=1200&q=80",
+    "imageAlt": "Modern auto repair shop"
+  },
+  "about": {
+    "title": "Complete Auto Care",
+    "subtitle": "Expert service you can trust",
+    "content": "Complete Auto Care has been the trusted choice for auto repair since 2008. Our ASE-certified technicians use the latest diagnostic equipment to accurately diagnose and repair all makes and models. Honest estimates, quality parts, guaranteed work."
+  },
+  "products": [
+    {
+      "name": "Brake Service",
+      "price": 299,
+      "description": "Complete brake service including pads, rotors if needed, and fluid flush. Safety inspection included. Most vehicles.",
+      "category": "Safety",
+      "duration": "2-3 hours",
+      "popular": true
+    },
+    {
+      "name": "Engine Diagnostics",
+      "price": 129,
+      "description": "Complete diagnostic with professional scan tools. Identify check engine lights and performance issues. Expert analysis.",
+      "category": "Diagnosis",
+      "duration": "1 hour",
+      "popular": true
+    },
+    {
+      "name": "Transmission Service",
+      "price": 199,
+      "description": "Transmission fluid flush and filter replacement. Extend transmission life. Prevent costly repairs.",
+      "category": "Maintenance",
+      "duration": "1-2 hours"
+    },
+    {
+      "name": "AC Repair & Recharge",
+      "price": 159,
+      "description": "AC system diagnosis, leak check, and refrigerant recharge. Stay cool all summer.",
+      "category": "Comfort",
+      "duration": "1-2 hours"
+    },
+    {
+      "name": "Timing Belt Replacement",
+      "price": 599,
+      "description": "Critical maintenance to prevent engine damage. Includes water pump if recommended. Most vehicles.",
+      "category": "Major Service",
+      "duration": "3-5 hours",
+      "popular": true
+    },
+    {
+      "name": "State Inspection & Emissions",
+      "price": 45,
+      "description": "Official state safety and emissions inspection. Pass or we'll tell you what's needed.",
+      "category": "Inspection",
+      "duration": "30 min"
+    }
+  ],
+  "services": {
+    "title": "Auto Services",
+    "subtitle": "Complete repair and maintenance",
+    "items": [
+      {
+        "title": "🔧 General Repair",
+        "description": "Engine, transmission, electrical, and drivetrain repairs"
+      },
+      {
+        "title": "🛑 Brakes & Safety",
+        "description": "Brake service, suspension, steering, and safety inspections"
+      },
+      {
+        "title": "🛠️ Maintenance",
+        "description": "Oil changes, tune-ups, fluid services, and preventive care"
+      },
+      {
+        "title": "💻 Diagnostics",
+        "description": "Advanced computer diagnostics for all systems"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Customer Reviews",
+    "subtitle": "Trusted by local drivers",
+    "items": [
+      {
+        "text": "Honest shop! They diagnosed my transmission issue and saved me $2000 with a simple fix. Other shops wanted to replace it. Highly recommend!",
+        "author": "David Thompson",
+        "title": "Regular Customer"
+      },
+      {
+        "text": "Fair prices, excellent work, and they explain everything clearly. My family has been using them for years. Best mechanic in town!",
+        "author": "Maria Garcia",
+        "title": "Long-Time Client"
+      },
+      {
+        "text": "Fixed my check engine light issue quickly and for a fair price. No unnecessary upselling. These guys are honest and skilled. I'm a customer for life!",
+        "author": "James Wilson",
+        "title": "Satisfied Customer"
+      }
+    ]
+  },
+  "team": {
+    "title": "Our Technicians",
+    "subtitle": "ASE-certified professionals",
+    "members": [
+      {
+        "name": "Rick Martinez",
+        "title": "Shop Owner & Master Technician",
+        "bio": "ASE Master Technician with 25+ years experience. Opened Complete Auto Care to provide honest, expert service. Believes in treating every customer's car like his own.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "Rick Martinez",
+        "credentials": ["ASE Master Technician", "25+ Years Experience", "Honest Service Advocate"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Service Process",
+    "subtitle": "Professional auto repair",
+    "steps": [
+      {"title": "Schedule Appointment", "description": "Call or book online. Describe your vehicle's symptoms"},
+      {"title": "Diagnosis", "description": "Complete inspection and diagnostic. Clear explanation of findings"},
+      {"title": "Approval & Repair", "description": "Approve estimate, then we complete quality repairs"},
+      {"title": "Test Drive & Warranty", "description": "Test vehicle and provide warranty on parts and labor"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "16+", "label": "Years in Business"},
+      {"number": "5,000+", "label": "Vehicles Repaired"},
+      {"number": "4.9", "label": "Star Rating"},
+      {"number": "ASE", "label": "Certified"}
+    ]
+  },
+  "contact": {
+    "title": "Schedule Service",
+    "subtitle": "Call or book online",
+    "phone": "(555) 888-3344",
+    "email": "service@completeauto.care",
+    "address": "789 Service Road, Auto Center, Denver, CO 80202"
+  },
+  "footer": {
+    "text": "🔧 Complete Auto Care Center • Trusted Repair Since 2008",
+    "awards": [
+      "ASE Master Certified",
+      "Best Auto Repair 2023",
+      "Customer Choice Award"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "service@completeauto.care",
+    "productCta": "Schedule Appointment",
+    "productCtaHref": "tel:+15558883344",
+    "productNote": "Submit your service request and we'll contact you within 4 hours to schedule your appointment."
+  },
+  "productsTitle": "Auto Repair Services",
+  "productsSubtitle": "Expert service for all makes and models"
+}
+

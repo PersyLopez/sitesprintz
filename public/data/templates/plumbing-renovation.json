@@ -1,0 +1,186 @@
+{
+  "brand": {
+    "name": "RenovatePro Plumbing",
+    "logo": "assets/logo.svg",
+    "tagline": "Remodeling & Renovation Plumbing",
+    "phone": "(555) 444-9988",
+    "email": "renovate@renovatepro.plumbing"
+  },
+  "themeVars": {
+    "color-primary": "#7c3aed",
+    "color-accent": "#a78bfa",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "Projects", "href": "#about"},
+    {"label": "Gallery", "href": "#testimonials"},
+    {"label": "Quote", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "🔧 Remodeling Plumbing Specialists",
+    "title": "Expert plumbing for your renovation",
+    "subtitle": "Bathroom remodels, kitchen upgrades, and whole-home renovations. We work with contractors and homeowners to deliver quality plumbing that meets code. From design to final inspection - beautiful, functional results.",
+    "cta": [
+      {"label": "Get Quote", "href": "#contact"},
+      {"label": "View Projects", "href": "#testimonials", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1200&q=80",
+    "imageAlt": "Modern bathroom renovation"
+  },
+  "about": {
+    "title": "Renovation Plumbing Experts",
+    "subtitle": "Beautiful bathrooms, functional kitchens",
+    "content": "RenovatePro specializes in plumbing for home renovations. We understand the coordination required between trades and work seamlessly with contractors or directly with homeowners. Quality fixtures, code-compliant work, and attention to detail."
+  },
+  "products": [
+    {
+      "name": "Bathroom Remodel Plumbing",
+      "price": 3500,
+      "description": "Complete bathroom plumbing including shower, tub, toilet, vanity. Rough-in to fixture installation. Permits included.",
+      "category": "Bathroom",
+      "duration": "3-5 days",
+      "popular": true
+    },
+    {
+      "name": "Kitchen Remodel Plumbing",
+      "price": 2800,
+      "description": "Kitchen plumbing for sink, dishwasher, disposal, ice maker. Gas line for range if needed. Code-compliant.",
+      "category": "Kitchen",
+      "duration": "2-4 days",
+      "popular": true
+    },
+    {
+      "name": "Master Suite Addition",
+      "price": 5500,
+      "description": "Complete plumbing for new master bath addition. Extend lines, install fixtures, luxury options available.",
+      "category": "Addition",
+      "duration": "1 week"
+    },
+    {
+      "name": "Whole-Home Repipe",
+      "price": 8000,
+      "description": "Replace all supply lines with PEX. Perfect for renovations. Improve pressure and eliminate leaks.",
+      "category": "Major Project",
+      "duration": "3-5 days",
+      "popular": true
+    },
+    {
+      "name": "Luxury Fixture Package",
+      "price": 2500,
+      "description": "High-end fixtures supply and install. Kohler, Delta, Moen. Beautiful finishes for your dream space.",
+      "category": "Fixtures",
+      "duration": "2 days"
+    },
+    {
+      "name": "Outdoor Kitchen Plumbing",
+      "price": 1800,
+      "description": "Plumbing for outdoor kitchen and bar. Sink, ice maker, and drainage. Extend your living space.",
+      "category": "Outdoor",
+      "duration": "2-3 days"
+    }
+  ],
+  "services": {
+    "title": "Renovation Services",
+    "subtitle": "Complete plumbing for your remodel",
+    "items": [
+      {
+        "title": "🛁 Bathroom Remodels",
+        "description": "Complete plumbing for bathroom renovations of any scale"
+      },
+      {
+        "title": "🍽️ Kitchen Upgrades",
+        "description": "Kitchen plumbing including gas lines and specialty fixtures"
+      },
+      {
+        "title": "🏠 Additions",
+        "description": "Extend plumbing for room additions and master suites"
+      },
+      {
+        "title": "💎 Luxury Fixtures",
+        "description": "High-end fixture selection and professional installation"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Renovation Success",
+    "subtitle": "Beautiful, functional results",
+    "items": [
+      {
+        "text": "RenovatePro handled all plumbing for our master bath remodel. Professional coordination with our contractor, quality work, and passed inspection first time. The heated floors are amazing!",
+        "author": "Rachel Martinez",
+        "title": "Homeowner"
+      },
+      {
+        "text": "We use them for all our remodeling projects. Reliable, skilled, and they understand the timeline pressures. Our clients love the quality of their work.",
+        "author": "Tom Wilson",
+        "title": "General Contractor"
+      },
+      {
+        "text": "They helped us design the plumbing layout for our kitchen remodel and installed beautiful fixtures. Everything works perfectly. Would definitely use again!",
+        "author": "Sarah Chen",
+        "title": "Kitchen Remodel"
+      }
+    ]
+  },
+  "team": {
+    "title": "Renovation Team",
+    "subtitle": "Licensed plumbers who understand remodeling",
+    "members": [
+      {
+        "name": "Brian Foster",
+        "title": "Owner & Master Plumber",
+        "bio": "Licensed Master Plumber specializing in remodeling projects for 15+ years. Works with contractors and homeowners to deliver beautiful, code-compliant plumbing systems.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "Brian Foster",
+        "credentials": ["Master Plumber", "15+ Years Remodeling", "Licensed & Insured"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Renovation Process",
+    "subtitle": "From design to completion",
+    "steps": [
+      {"title": "Design Consultation", "description": "Review plans and discuss fixture options and layouts"},
+      {"title": "Detailed Quote", "description": "Comprehensive estimate with timeline and specifications"},
+      {"title": "Rough-In Work", "description": "Install all supply and drain lines per code"},
+      {"title": "Fixture Installation", "description": "Install fixtures and complete final inspection"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "200+", "label": "Remodels Completed"},
+      {"number": "15+", "label": "Years Experience"},
+      {"number": "4.9", "label": "Client Rating"},
+      {"number": "Licensed", "label": "& Insured"}
+    ]
+  },
+  "contact": {
+    "title": "Plan Your Renovation",
+    "subtitle": "Free consultation and quote",
+    "phone": "(555) 444-9988",
+    "email": "renovate@renovatepro.plumbing",
+    "address": "Serving Seattle Metro Area, WA"
+  },
+  "footer": {
+    "text": "🔧 RenovatePro Plumbing • Beautiful Renovations Since 2009",
+    "awards": [
+      "Licensed Master Plumber",
+      "Renovation Specialist",
+      "Top Rated"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "renovate@renovatepro.plumbing",
+    "productCta": "Request Quote",
+    "productCtaHref": "tel:+15554449988",
+    "productNote": "Submit your renovation project details and we'll provide a detailed quote within 24 hours."
+  },
+  "productsTitle": "Renovation Plumbing",
+  "productsSubtitle": "Quality work for your remodel"
+}
+

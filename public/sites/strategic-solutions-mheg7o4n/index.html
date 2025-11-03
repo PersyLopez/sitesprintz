@@ -4,91 +4,421 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Strategic Solutions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
       :root {
-        --color-bg: #fefefe;
-        --color-surface: #ffffff;
-        --color-card: #f8fafc;
-        --color-text: #1e293b;
-        --color-muted: #64748b;
-        --color-primary: #2563eb;
-        --color-primary-600: #1d4ed8;
-        --color-accent: #3b82f6;
-        --radius: 12px;
-        --shadow-lg: 0 10px 25px rgba(0,0,0,.08);
-        --shadow-sm: 0 2px 8px rgba(0,0,0,.06);
-        --shadow-hover: 0 4px 12px rgba(0,0,0,.12);
-        --spacing-xs: 4px;
-        --spacing-sm: 8px;
-        --spacing-md: 16px;
-        --spacing-lg: 24px;
-        --spacing-xl: 32px;
-        --spacing-2xl: 48px;
+        --color-bg: #0a0a0f;
+        --color-surface: rgba(255, 255, 255, 0.03);
+        --color-card: rgba(255, 255, 255, 0.06);
+        --color-text: #f8fafc;
+        --color-muted: #94a3b8;
+        --color-primary: #6366f1;
+        --color-primary-light: #818cf8;
+        --color-primary-dark: #4f46e5;
+        --color-accent: #8b5cf6;
+        --color-accent-light: #a78bfa;
+        --color-success: #10b981;
+        --color-warning: #f59e0b;
+        --radius: 20px;
+        --radius-lg: 28px;
+        --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.3);
+        --shadow-soft: 0 20px 60px rgba(0, 0, 0, 0.5);
+        --shadow-subtle: 0 8px 32px rgba(0, 0, 0, 0.3);
+        --spacing-xs: 6px;
+        --spacing-sm: 12px;
+        --spacing-md: 20px;
+        --spacing-lg: 32px;
+        --spacing-xl: 48px;
+        --spacing-2xl: 72px;
       }
       
-      * { box-sizing: border-box; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      
+      @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+      }
+      
+      @keyframes shimmer {
+        0% { background-position: -200% center; }
+        100% { background-position: 200% center; }
+      }
+      
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      @keyframes gradientShift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+      }
+      
       body { 
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         margin: 0; 
         padding: 0; 
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        background: linear-gradient(135deg, #0a0a0f 0%, #1a0f2e 50%, #0a0a0f 100%);
+        background-size: 200% 200%;
+        animation: gradientShift 15s ease infinite;
         color: var(--color-text);
-        line-height: 1.5;
+        line-height: 1.6;
         font-size: 16px;
+        position: relative;
+        overflow-x: hidden;
       }
-      .container { max-width: 1000px; margin: 0 auto; padding: var(--spacing-lg); }
+      
+      body::before {
+        content: '';
+        position: fixed;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background-image: 
+          radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+          radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+          radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
+        animation: float 20s ease-in-out infinite;
+        pointer-events: none;
+        z-index: 0;
+      }
+      
+      .container { 
+        max-width: 1200px; 
+        margin: 0 auto; 
+        padding: var(--spacing-lg);
+        position: relative;
+        z-index: 1;
+      }
+      
+      .glass {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      }
+      
       .card { 
-        background: var(--color-surface); 
-        border: 1px solid rgba(0,0,0,0.08); 
-        border-radius: var(--radius); 
-        padding: var(--spacing-lg); 
-        box-shadow: var(--shadow-sm); 
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: var(--radius);
+        padding: var(--spacing-lg);
+        box-shadow: var(--shadow-subtle);
         margin: var(--spacing-lg) 0;
-        transition: all 0.2s;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out;
       }
+      
+      .card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.1), transparent);
+        transition: left 0.6s;
+      }
+      
+      .card:hover::before {
+        left: 100%;
+      }
+      
       .card:hover { 
-        transform: translateY(-2px); 
-        box-shadow: var(--shadow-hover); 
-        border-color: var(--color-primary);
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 20px 60px rgba(99, 102, 241, 0.3),
+                    0 0 0 1px rgba(99, 102, 241, 0.3);
+        border-color: rgba(99, 102, 241, 0.5);
       }
+      
+      .card-grid {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+        padding: var(--spacing-md);
+        border-radius: var(--radius);
+        border: 1px solid rgba(99, 102, 241, 0.1);
+      }
+      
       .btn { 
         display: inline-flex; 
         align-items: center; 
         gap: var(--spacing-sm); 
-        padding: var(--spacing-md) var(--spacing-lg); 
-        border-radius: var(--radius); 
+        padding: var(--spacing-md) var(--spacing-xl); 
+        border-radius: 14px;
         text-decoration: none; 
-        font-weight: 600; 
-        border: 1px solid transparent; 
-        transition: all 0.2s;
-        font-size: 0.95rem;
+        font-weight: 700; 
+        border: 2px solid transparent; 
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 1rem;
+        position: relative;
+        overflow: hidden;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
       }
-      .btn-primary { background: var(--color-primary); color: white; }
-      .btn-primary:hover { background: var(--color-primary-600); transform: translateY(-1px); box-shadow: var(--shadow-hover); }
-      .btn-secondary { background: var(--color-card); color: var(--color-text); border-color: rgba(0,0,0,0.1); }
-      .btn-secondary:hover { background: var(--color-surface); border-color: var(--color-primary); color: var(--color-primary); }
+      
+      .btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+      }
+      
+      .btn:hover::before {
+        left: 100%;
+      }
+      
+      .btn-primary { 
+        background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+        color: white;
+        box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+      
+      .btn-primary:hover { 
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 16px 48px rgba(99, 102, 241, 0.6);
+      }
+      
+      .btn-secondary { 
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(10px);
+        color: var(--color-text);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+      }
+      
+      .btn-secondary:hover { 
+        background: rgba(255, 255, 255, 0.15);
+        border-color: var(--color-primary);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px rgba(99, 102, 241, 0.3);
+      }
+      
       .hero { 
         display: grid; 
         grid-template-columns: 1.1fr 0.9fr; 
         align-items: center; 
-        gap: var(--spacing-xl); 
-        padding: var(--spacing-2xl) 0; 
+        gap: var(--spacing-2xl); 
+        padding: var(--spacing-2xl) 0;
+        min-height: 70vh;
+        position: relative;
       }
-      .hero h1 { font-size: clamp(1.8rem, 3.5vw + 1rem, 2.8rem); line-height: 1.2; margin: var(--spacing-sm) 0 var(--spacing-md); font-weight: 700; }
-      .hero p { font-size: 1.1rem; color: var(--color-muted); margin: 0 0 var(--spacing-lg); }
-      .hero img { width: 100%; height: 350px; object-fit: cover; border-radius: var(--radius); }
-      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--spacing-lg); }
+      
+      .hero::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 800px;
+        height: 800px;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+        border-radius: 50%;
+        filter: blur(60px);
+        pointer-events: none;
+      }
+      
+      .hero-content {
+        position: relative;
+        z-index: 2;
+      }
+      
+      .eyebrow {
+        display: inline-block;
+        padding: 8px 20px;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        border-radius: 50px;
+        color: var(--color-primary-light);
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: var(--spacing-md);
+        animation: fadeInUp 0.8s ease-out;
+      }
+      
+      .hero h1 { 
+        font-size: clamp(2.5rem, 5vw + 1rem, 4rem);
+        line-height: 1.1;
+        margin: var(--spacing-md) 0;
+        font-weight: 900;
+        background: linear-gradient(135deg, #ffffff 0%, var(--color-primary-light) 50%, var(--color-accent-light) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: fadeInUp 1s ease-out;
+      }
+      
+      .hero p { 
+        font-size: 1.25rem;
+        color: var(--color-muted);
+        margin: 0 0 var(--spacing-xl);
+        line-height: 1.7;
+        animation: fadeInUp 1.2s ease-out;
+      }
+      
+      .hero-image-wrapper {
+        position: relative;
+        animation: fadeInUp 1.4s ease-out;
+      }
+      
+      .hero img { 
+        width: 100%;
+        height: 450px;
+        object-fit: cover;
+        border-radius: var(--radius-lg);
+        border: 2px solid rgba(99, 102, 241, 0.3);
+        box-shadow: 0 30px 80px rgba(99, 102, 241, 0.4),
+                    0 0 100px rgba(99, 102, 241, 0.2);
+        transition: all 0.4s ease;
+      }
+      
+      .hero img:hover {
+        transform: scale(1.05) rotate(2deg);
+        box-shadow: 0 40px 100px rgba(99, 102, 241, 0.6);
+      }
+      
+      .grid { 
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--spacing-xl);
+        margin: var(--spacing-xl) 0;
+      }
+      
+      .section-header {
+        text-align: center;
+        margin: var(--spacing-2xl) 0 var(--spacing-xl);
+      }
+      
+      .section-header h2 {
+        font-size: clamp(2rem, 4vw + 1rem, 3rem);
+        font-weight: 800;
+        margin-bottom: var(--spacing-sm);
+        background: linear-gradient(135deg, #ffffff 0%, var(--color-primary-light) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      
+      .section-header p {
+        font-size: 1.15rem;
+        color: var(--color-muted);
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      
+      .product-card {
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .product-card img {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        border-radius: var(--radius);
+        margin-bottom: var(--spacing-md);
+        transition: all 0.4s ease;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+      }
+      
+      .product-card:hover img {
+        transform: scale(1.1);
+        box-shadow: 0 20px 60px rgba(99, 102, 241, 0.4);
+      }
+      
+      .product-card h3 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: var(--spacing-sm);
+        color: var(--color-text);
+      }
+      
+      .price-tag {
+        display: inline-block;
+        font-size: 1.8rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: var(--spacing-sm) 0;
+      }
+      
       .muted { color: var(--color-muted); }
       .text-center { text-align: center; }
       
+      header {
+        position: sticky;
+        top: 0;
+        backdrop-filter: blur(20px);
+        background: rgba(10, 10, 15, 0.8);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: var(--spacing-md) 0;
+        z-index: 100;
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+      }
+      
+      header h1 {
+        font-size: 1.8rem;
+        font-weight: 900;
+        margin: 0;
+        background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      
+      nav a {
+        color: var(--color-muted);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+        padding: 8px 16px;
+        border-radius: 8px;
+      }
+      
+      nav a:hover {
+        color: var(--color-primary-light);
+        background: rgba(99, 102, 241, 0.1);
+      }
+      
+      footer {
+        text-align: center;
+        padding: var(--spacing-2xl) 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: var(--spacing-2xl);
+        background: linear-gradient(180deg, transparent 0%, rgba(99, 102, 241, 0.05) 100%);
+      }
+      
       @media (max-width: 900px) {
-        .hero { grid-template-columns: 1fr; gap: var(--spacing-lg); }
+        .hero { 
+          grid-template-columns: 1fr;
+          gap: var(--spacing-xl);
+          min-height: auto;
+        }
         .container { padding: var(--spacing-md); }
+        .grid { grid-template-columns: 1fr; }
       }
     </style>
   </head>
   <body>
-    <div id="loading">Loading...</div>
+    <div id="loading" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; flex-direction: column; gap: 20px;">
+      <div style="width: 60px; height: 60px; border: 4px solid rgba(99, 102, 241, 0.2); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+      <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+      <p style="color: var(--color-muted); font-size: 1.1rem; font-weight: 600;">Loading your experience...</p>
+    </div>
     <div id="main-content" style="display: none;"></div>
     
     <script>
@@ -113,73 +443,72 @@
           
           // Render the site
           mainContent.innerHTML = `
+            <!-- Header -->
+            <header>
+              <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+                <h1>${data.brand?.name || 'Business Name'}</h1>
+                <nav style="display: flex; gap: 8px;">
+                  ${data.nav?.map(item => `<a href="${item.href}">${item.label}</a>`).join('') || ''}
+                </nav>
+              </div>
+            </header>
+            
             <div class="container">
-              <!-- Header -->
-              <header style="padding: 20px 0; border-bottom: 1px solid #e5e7eb;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <h1 style="margin: 0; color: ${data.themeVars?.['color-primary'] || '#3b82f6'};">
-                    ${data.brand?.name || 'Business Name'}
-                  </h1>
-                  <nav>
-                    ${data.nav?.map(item => `<a href="${item.href}" style="margin-left: 20px; text-decoration: none; color: #6b7280;">${item.label}</a>`).join('') || ''}
-                  </nav>
-                </div>
-              </header>
-              
               <!-- Hero Section -->
               <section class="hero">
-                <div>
-                  <p style="color: ${data.themeVars?.['color-primary'] || '#3b82f6'}; font-weight: 600; margin-bottom: 10px;">
-                    ${data.hero?.eyebrow || ''}
-                  </p>
-                  <h1 style="font-size: 3rem; font-weight: 700; margin: 0 0 20px 0;">
-                    ${data.hero?.title || 'Welcome'}
-                  </h1>
-                  <p style="font-size: 1.2rem; color: #6b7280; margin: 0 0 30px 0;">
-                    ${data.hero?.subtitle || ''}
-                  </p>
-                  <div>
+                <div class="hero-content">
+                  ${data.hero?.eyebrow ? `<span class="eyebrow">${data.hero.eyebrow}</span>` : ''}
+                  <h1>${data.hero?.title || 'Welcome to ' + (data.brand?.name || 'Our Business')}</h1>
+                  <p>${data.hero?.subtitle || 'Discover amazing products and services'}</p>
+                  <div style="display: flex; gap: var(--spacing-md); flex-wrap: wrap;">
                     ${data.hero?.cta?.map(btn => `
-                      <a href="${btn.href}" class="btn ${btn.variant === 'secondary' ? 'btn-secondary' : 'btn-primary'}" style="margin-right: 15px;">
+                      <a href="${btn.href}" class="btn ${btn.variant === 'secondary' ? 'btn-secondary' : 'btn-primary'}">
                         ${btn.label}
                       </a>
                     `).join('') || ''}
                   </div>
                 </div>
                 ${data.hero?.image ? `
-                  <div>
-                    <img src="${data.hero.image}" alt="${data.hero.imageAlt || ''}" style="width: 100%; height: 400px; object-fit: cover; border-radius: 12px;">
+                  <div class="hero-image-wrapper">
+                    <img src="${data.hero.image}" alt="${data.hero.imageAlt || data.brand?.name || ''}" />
                   </div>
                 ` : ''}
               </section>
               
-              <!-- Services/Products Section -->
+              <!-- Services Section -->
               ${data.services?.items?.length ? `
-                <section class="card">
-                  <h2>${data.services.title || 'Services'}</h2>
-                  <p>${data.services.subtitle || ''}</p>
+                <section>
+                  <div class="section-header">
+                    <h2>${data.services.title || 'Our Services'}</h2>
+                    ${data.services.subtitle ? `<p>${data.services.subtitle}</p>` : ''}
+                  </div>
                   <div class="grid">
                     ${data.services.items.map(item => `
-                      <div class="card">
-                        ${item.image ? `<img src="${item.image}" alt="${item.title}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">` : ''}
+                      <div class="card product-card">
+                        ${item.image ? `<img src="${item.image}" alt="${item.title}" />` : ''}
                         <h3>${item.title}</h3>
-                        <p>${item.description || ''}</p>
+                        <p class="muted">${item.description || ''}</p>
+                        ${item.price ? `<div class="price-tag">$${item.price}</div>` : ''}
                       </div>
                     `).join('')}
                   </div>
                 </section>
               ` : ''}
               
+              <!-- Products Section -->
               ${data.products?.length ? `
-                <section class="card">
-                  <h2>Our ${data.products[0]?.price ? 'Menu' : 'Services'}</h2>
+                <section>
+                  <div class="section-header">
+                    <h2>${data.products[0]?.price ? 'Our Menu' : 'What We Offer'}</h2>
+                    <p>Discover our carefully curated selection</p>
+                  </div>
                   <div class="grid">
                     ${data.products.map(item => `
-                      <div class="card">
-                        ${item.image ? `<img src="${item.image}" alt="${item.name}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">` : ''}
+                      <div class="card product-card">
+                        ${item.image ? `<img src="${item.image}" alt="${item.name}" />` : ''}
                         <h3>${item.name}</h3>
-                        ${item.price ? `<p style="font-size: 1.2rem; font-weight: 600; color: ${data.themeVars?.['color-primary'] || '#3b82f6'};}">$${item.price}</p>` : ''}
-                        <p>${item.description || ''}</p>
+                        ${item.price ? `<div class="price-tag">$${item.price}</div>` : ''}
+                        <p class="muted">${item.description || ''}</p>
                       </div>
                     `).join('')}
                   </div>
@@ -188,27 +517,54 @@
               
               <!-- Contact Section -->
               ${data.contact ? `
-                <section class="card">
-                  <h2>${data.contact.title || 'Contact Us'}</h2>
-                  <p>${data.contact.subtitle || ''}</p>
-                  ${data.contact.phone ? `<p><strong>Phone:</strong> ${data.contact.phone}</p>` : ''}
-                  ${data.contact.email ? `<p><strong>Email:</strong> ${data.contact.email}</p>` : ''}
+                <section class="card glass" style="margin-top: var(--spacing-2xl);">
+                  <div class="section-header">
+                    <h2>${data.contact.title || 'Get In Touch'}</h2>
+                    ${data.contact.subtitle ? `<p>${data.contact.subtitle}</p>` : ''}
+                  </div>
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-lg); text-align: center;">
+                    ${data.contact.phone ? `
+                      <div>
+                        <div style="font-size: 2rem; margin-bottom: var(--spacing-sm);">📞</div>
+                        <strong style="display: block; margin-bottom: var(--spacing-xs);">Phone</strong>
+                        <a href="tel:${data.contact.phone}" style="color: var(--color-primary-light); text-decoration: none; font-weight: 600;">${data.contact.phone}</a>
+                      </div>
+                    ` : ''}
+                    ${data.contact.email ? `
+                      <div>
+                        <div style="font-size: 2rem; margin-bottom: var(--spacing-sm);">✉️</div>
+                        <strong style="display: block; margin-bottom: var(--spacing-xs);">Email</strong>
+                        <a href="mailto:${data.contact.email}" style="color: var(--color-primary-light); text-decoration: none; font-weight: 600;">${data.contact.email}</a>
+                      </div>
+                    ` : ''}
+                    ${data.contact.address ? `
+                      <div>
+                        <div style="font-size: 2rem; margin-bottom: var(--spacing-sm);">📍</div>
+                        <strong style="display: block; margin-bottom: var(--spacing-xs);">Location</strong>
+                        <span style="color: var(--color-muted);">${data.contact.address}</span>
+                      </div>
+                    ` : ''}
+                  </div>
                 </section>
               ` : ''}
-              
-              <!-- Footer -->
-              <footer style="text-align: center; padding: 40px 0; border-top: 1px solid #e5e7eb; margin-top: 40px;">
-                <p class="muted">${data.footer?.text || 'Thank you for visiting!'}</p>
-              </footer>
             </div>
+            
+            <!-- Footer -->
+            <footer>
+              <div class="container">
+                <p class="muted">${data.footer?.text || '© ' + new Date().getFullYear() + ' ' + (data.brand?.name || 'Business Name') + '. All rights reserved.'}</p>
+              </div>
+            </footer>
           `;
           
         } catch (error) {
           console.error('Error:', error);
           document.getElementById('loading').innerHTML = `
-            <div style="padding: 40px; text-align: center;">
-              <h2 style="color: #ef4444;">Error Loading Site</h2>
-              <p>${error.message}</p>
+            <div style="padding: 60px; text-align: center; max-width: 500px;">
+              <div style="font-size: 4rem; margin-bottom: 20px;">⚠️</div>
+              <h2 style="background: linear-gradient(135deg, #ef4444, #dc2626); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2rem; margin-bottom: 16px;">Unable to Load Site</h2>
+              <p style="color: var(--color-muted); line-height: 1.6;">${error.message}</p>
+              <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 24px;">Try Again</button>
             </div>
           `;
         }

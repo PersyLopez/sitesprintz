@@ -1,0 +1,186 @@
+{
+  "brand": {
+    "name": "GameFix Pro Gaming Repair",
+    "logo": "assets/logo.svg",
+    "tagline": "Console & Gaming PC Specialists",
+    "phone": "(555) 999-6677",
+    "email": "repairs@gamefixpro.gg"
+  },
+  "themeVars": {
+    "color-primary": "#8b5cf6",
+    "color-accent": "#a78bfa",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "Consoles", "href": "#about"},
+    {"label": "Reviews", "href": "#testimonials"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "🎮 Gaming Console & PC Repair",
+    "title": "Get back in the game",
+    "subtitle": "Expert repair for PlayStation, Xbox, Nintendo Switch, and gaming PCs. From red rings to HDMI ports to overheating issues - we fix it all. Fast turnaround. Gamers helping gamers since 2016.",
+    "cta": [
+      {"label": "Book Repair", "href": "#contact"},
+      {"label": "See Pricing", "href": "#products", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=1200&q=80",
+    "imageAlt": "Gaming console repair workspace"
+  },
+  "about": {
+    "title": "Gaming Repair Specialists",
+    "subtitle": "We understand gaming",
+    "content": "GameFix Pro was founded by gamers who got tired of slow, expensive console repairs. We specialize exclusively in gaming hardware - consoles, gaming PCs, and accessories. Quick turnaround, fair prices, and we actually test your repairs by gaming on them!"
+  },
+  "products": [
+    {
+      "name": "PlayStation Repair",
+      "price": 89,
+      "description": "PS5/PS4 repairs including disc drive issues, overheating, HDMI port, and power problems. Fast turnaround.",
+      "category": "Console",
+      "duration": "2-3 days",
+      "popular": true
+    },
+    {
+      "name": "Xbox Repair",
+      "price": 89,
+      "description": "Xbox Series X/S/One repairs. Fix disc drives, power issues, overheating, and HDMI problems.",
+      "category": "Console",
+      "duration": "2-3 days",
+      "popular": true
+    },
+    {
+      "name": "Nintendo Switch Repair",
+      "price": 79,
+      "description": "Switch repairs including Joy-Con drift, cracked screens, charging issues, and game card slots.",
+      "category": "Console",
+      "duration": "1-2 days",
+      "popular": true
+    },
+    {
+      "name": "Gaming PC Repair",
+      "price": 99,
+      "description": "Gaming PC diagnostics and repair. Overheating, crashes, performance issues. GPU and CPU service.",
+      "category": "PC",
+      "duration": "2-4 days"
+    },
+    {
+      "name": "Controller Repair",
+      "price": 45,
+      "description": "Fix stick drift, broken buttons, and connectivity issues. PS5, Xbox, and Switch controllers.",
+      "category": "Accessories",
+      "duration": "1-2 days"
+    },
+    {
+      "name": "Gaming PC Build",
+      "price": 1299,
+      "description": "Custom gaming PC build consultation and assembly. Optimized for your budget and games.",
+      "category": "Build",
+      "duration": "1 week"
+    }
+  ],
+  "services": {
+    "title": "Gaming Services",
+    "subtitle": "Repairs by gamers, for gamers",
+    "items": [
+      {
+        "title": "🎮 Console Repair",
+        "description": "PlayStation, Xbox, Nintendo Switch - we fix all major consoles"
+      },
+      {
+        "title": "💻 Gaming PC Service",
+        "description": "Repair, upgrade, and custom PC builds for optimal gaming"
+      },
+      {
+        "title": "🕹️ Controller Repair",
+        "description": "Fix stick drift, broken buttons, and other controller issues"
+      },
+      {
+        "title": "⚡ Performance Upgrades",
+        "description": "SSD upgrades, cooling improvements, and performance mods"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Gamer Reviews",
+    "subtitle": "Back in the game",
+    "items": [
+      {
+        "text": "My PS5 was overheating and shutting down during games. GameFix cleaned it, replaced thermal paste, and now it runs perfect! Great service, fair price.",
+        "author": "Jake Morrison",
+        "title": "PS5 Gamer"
+      },
+      {
+        "text": "Both my Joy-Cons had drift and Nintendo wanted $40 each. GameFix fixed both for $45 total and had them back in 2 days. Awesome!",
+        "author": "Emma Chen",
+        "title": "Switch Player"
+      },
+      {
+        "text": "They built my gaming PC and it's a beast! Helped me get the best parts for my budget. Runs everything on ultra. Highly recommend!",
+        "author": "Marcus Rivera",
+        "title": "PC Gamer"
+      }
+    ]
+  },
+  "team": {
+    "title": "Our Team",
+    "subtitle": "Gamers who know hardware",
+    "members": [
+      {
+        "name": "Tyler Wu",
+        "title": "Owner & Lead Technician",
+        "bio": "Lifelong gamer and electronics enthusiast. 8+ years repairing gaming hardware. Former micro-soldering specialist. Can fix almost anything gaming-related.",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+        "imageAlt": "Tyler Wu",
+        "credentials": ["Micro-Soldering Expert", "8+ Years Experience", "Custom PC Builder"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Repair Process",
+    "subtitle": "Fast and reliable",
+    "steps": [
+      {"title": "Drop Off or Mail", "description": "Bring your console/PC or use our mail-in service"},
+      {"title": "Diagnosis", "description": "Free diagnostic within 24 hours. Clear quote provided"},
+      {"title": "Repair", "description": "Fast repair with quality parts. We test by gaming on it"},
+      {"title": "Warranty", "description": "90-day warranty on all repairs. Game with confidence"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "1,500+", "label": "Consoles Fixed"},
+      {"number": "2-3", "label": "Days Average"},
+      {"number": "4.9", "label": "Star Rating"},
+      {"number": "90-Day", "label": "Warranty"}
+    ]
+  },
+  "contact": {
+    "title": "Level Up Your Repair",
+    "subtitle": "Drop-off or mail-in service",
+    "phone": "(555) 999-6677",
+    "email": "repairs@gamefixpro.gg",
+    "address": "789 Gamer Avenue, Tech District, Los Angeles, CA 90012"
+  },
+  "footer": {
+    "text": "🎮 GameFix Pro • Gamers Helping Gamers Since 2016",
+    "awards": [
+      "Best Gaming Repair 2023",
+      "5-Star Service",
+      "Trusted by Gamers"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "repairs@gamefixpro.gg",
+    "productCta": "Schedule Repair",
+    "productCtaHref": "tel:+15559996677",
+    "productNote": "Submit your repair request and we'll reach out within 24 hours to confirm."
+  },
+  "productsTitle": "Gaming Repair Services",
+  "productsSubtitle": "Fair prices, fast service, tested by gaming"
+}
+

@@ -1,0 +1,26 @@
+{
+  "draftId": "draft-1762211017356-eq1o0b9xe",
+  "templateId": "product-ordering",
+  "businessData": {
+    "businessName": "QuickCart Electronics",
+    "heroTitle": "Sell online with integrated checkout",
+    "heroSubtitle": "Perfect for shops ready to accept payment through Stripe checkout in minutes.",
+    "heroImage": "assets/hero-placeholder.svg",
+    "email": "sales@quickcart.io",
+    "phone": "+1-415-555-0199",
+    "address": "Talk with our team for enterprise pricing and integrations.",
+    "businessHours": "",
+    "websiteUrl": "",
+    "facebookUrl": "",
+    "instagramUrl": "",
+    "googleMapsUrl": "",
+    "services": [],
+    "templateSpecific": {
+      "businessDescription": "",
+      "specialOffers": ""
+    }
+  },
+  "createdAt": "2025-11-03T23:03:37.356Z",
+  "expiresAt": "2025-11-10T23:03:37.356Z",
+  "status": "draft"
+}

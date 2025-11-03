@@ -14,7 +14,7 @@
     },
     {
       "label": "Templates",
-      "href": "/templates.html"
+      "href": "/setup.html"
     },
     {
       "label": "Pricing",
@@ -32,7 +32,7 @@
     "cta": [
       {
         "label": "Browse Templates",
-        "href": "/templates.html"
+        "href": "/setup.html"
       },
       {
         "label": "Start Free",

@@ -1,0 +1,199 @@
+{
+  "brand": {
+    "name": "EDGE Hair Studio", 
+    "logo": "assets/logo.svg",
+    "tagline": "Bold Cuts • Fresh Color • 2018",
+    "phone": "(555) 432-1100",
+    "email": "hello@edgestudio.co"
+  },
+  "themeVars": {
+    "color-primary": "#06b6d4", 
+    "color-accent": "#22d3ee",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "Portfolio", "href": "#about"},
+    {"label": "Team", "href": "#team"},
+    {"label": "Reviews", "href": "#testimonials"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "✂️ Trendsetting Hair Studio",
+    "title": "Bold cuts that turn heads",
+    "subtitle": "We're not your average salon. At EDGE, we specialize in fashion-forward cuts, vibrant color, and styles that make a statement. Expect the unexpected and leave with confidence.",
+    "cta": [
+      {"label": "Book Now", "href": "#contact"},
+      {"label": "View Work", "href": "#about", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1560869713-7d0a29430803?w=1200&q=80",
+    "imageAlt": "Modern industrial hair studio with exposed brick"
+  },
+  "about": {
+    "title": "The EDGE Difference", 
+    "subtitle": "Where creativity meets technique",
+    "content": "Founded by creative director Jamie Park in 2018, EDGE is downtown's go-to studio for clients who aren't afraid to push boundaries. We stay ahead of trends, master the latest techniques, and believe your hair is your ultimate accessory."
+  },
+  "products": [
+    {
+      "name": "Signature Cut",
+      "price": 75,
+      "description": "Precision cutting with our trained stylists. Includes wash, cut, style, and finishing products.",
+      "image": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&q=80",
+      "imageAlt": "Modern haircut",
+      "category": "Cuts",
+      "duration": "60 minutes",
+      "popular": true
+    },
+    {
+      "name": "Creative Color",
+      "price": 150,
+      "description": "Vivid fashion colors, pastels, or natural tones. We're color specialists. Includes toner and blow dry.",
+      "image": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&q=80",
+      "imageAlt": "Creative hair color",
+      "category": "Color",
+      "duration": "2.5 hours",
+      "popular": true
+    },
+    {
+      "name": "Balayage",
+      "price": 185,
+      "description": "Hand-painted highlights for that lived-in, sun-kissed look. Includes treatment and style.",
+      "image": "https://images.unsplash.com/photo-1521490683712-35a1cb235d1c?w=600&q=80",
+      "imageAlt": "Balayage highlights",
+      "category": "Color",
+      "duration": "3 hours"
+    },
+    {
+      "name": "Keratin Treatment",
+      "price": 295,
+      "description": "Smooth, frizz-free hair for months. Professional formula with style included.",
+      "image": "https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=600&q=80",
+      "imageAlt": "Smooth keratin treatment",
+      "category": "Treatments",
+      "duration": "2.5 hours"
+    },
+    {
+      "name": "Tape Extensions",
+      "price": 350,
+      "description": "Natural-looking length and volume with premium tape-in extensions. Consultation included.",
+      "image": "https://images.unsplash.com/photo-1487412912498-0447578fcca8?w=600&q=80",
+      "imageAlt": "Hair extensions",
+      "category": "Extensions",
+      "duration": "2 hours",
+      "popular": true
+    },
+    {
+      "name": "Special Event Styling",
+      "price": 85,
+      "description": "Updos, braids, or editorial styling for your event. Includes trial consultation.",
+      "image": "https://images.unsplash.com/photo-1633681926022-84c23e8cb2d6?w=600&q=80",
+      "imageAlt": "Event styling",
+      "category": "Styling",
+      "duration": "90 minutes"
+    }
+  ],
+  "services": {
+    "title": "What We Do Best",
+    "subtitle": "Specializing in modern hair artistry",
+    "items": [
+      {
+        "title": "✂️ Precision Cuts",
+        "description": "From edgy pixies to textured lobs, we create wearable art tailored to your lifestyle"
+      },
+      {
+        "title": "🎨 Color Mastery",
+        "description": "Vivid fashion colors, dimensional balayage, and expert color correction"
+      },
+      {
+        "title": "💇 Extensions",
+        "description": "Tape-ins, hand-tied, and nano rings for seamless length and volume"
+      },
+      {
+        "title": "✨ Styling",
+        "description": "Special event styling, updos, and editorial looks for any occasion"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "What Clients Are Saying",
+    "subtitle": "Real feedback from real people",
+    "items": [
+      {
+        "text": "Jamie gave me the pixie cut I've been dreaming about! I feel so confident and get compliments daily. 10/10 would recommend!",
+        "author": "Alex Rivera",
+        "title": "Regular Client"
+      },
+      {
+        "text": "I went from boring brown to rose gold balayage and I'm OBSESSED. These artists really know color.",
+        "author": "Maya Patel",
+        "title": "Color Client"
+      },
+      {
+        "text": "Best hair extensions experience ever. They look so natural and the application was meticulous. Worth every penny!",
+        "author": "Zoe Kim",
+        "title": "Extension Client"
+      }
+    ]
+  },
+  "team": {
+    "title": "Meet the Artists",
+    "subtitle": "Creative stylists who love what they do",
+    "members": [
+      {
+        "name": "Jamie Park",
+        "title": "Creative Director & Founder",
+        "bio": "10+ years pushing creative boundaries in hair. Trained in NYC, featured in editorial shoots, and obsessed with making clients feel amazing.",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+        "imageAlt": "Jamie Park",
+        "credentials": ["Bumble & Bumble Certified", "Pulp Riot Color Specialist", "Featured in Allure"]
+      }
+    ]
+  },
+  "process": {
+    "title": "How It Works",
+    "subtitle": "From booking to final look",
+    "steps": [
+      {"title": "Book Online", "description": "Choose your service and stylist through our easy booking system"},
+      {"title": "Consult", "description": "We'll discuss your vision, lifestyle, and hair goals"},
+      {"title": "Create", "description": "Sit back and let us work our magic with premium products"},
+      {"title": "Style & Go", "description": "Walk out with killer hair and the confidence to match"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "500+", "label": "5-Star Reviews"},
+      {"number": "5", "label": "Expert Stylists"},
+      {"number": "4.9", "label": "Rating"},
+      {"number": "2000+", "label": "Transformations"}
+    ]
+  },
+  "contact": {
+    "title": "Visit the Studio", 
+    "subtitle": "Ready for your transformation?",
+    "phone": "(555) 432-1100",
+    "email": "hello@edgestudio.co",
+    "address": "123 Main Street, Arts District, Portland, OR 97209"
+  },
+  "footer": {
+    "text": "✂️ EDGE Hair Studio • Bold Cuts Since 2018",
+    "awards": [
+      "Best New Salon 2019",
+      "Portland Style Award",
+      "Top Colorist 2023"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "hello@edgestudio.co",
+    "productCta": "Book Appointment",
+    "productCtaHref": "tel:+15554321100",
+    "productNote": "Submit your booking request and we'll reach out to confirm your appointment time."
+  },
+  "productsTitle": "Services & Pricing",
+  "productsSubtitle": "Quality work at fair prices"
+}
+

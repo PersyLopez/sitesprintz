@@ -1,0 +1,278 @@
+{
+  "id": "restaurant-fast-casual",
+  "name": "Fast Casual Restaurant",
+  "category": "restaurant",
+  "layoutVariant": "fast-casual",
+  "description": "Modern quick-service restaurant template for fast-casual dining, build-your-own concepts, and on-the-go meals",
+  "suitableFor": ["Fast Casual", "Quick Service", "Build Your Own", "Health-Focused", "Modern Counter Service"],
+  "heroStyle": "video-background",
+  "menuStyle": "build-your-own",
+  "brand": {
+    "name": "Fresh Bowl Co.",
+    "tagline": "Build Your Perfect Bowl",
+    "phone": "(555) 246-8135",
+    "email": "hello@freshbowl.com"
+  },
+  "themeVars": {
+    "color-primary": "#10b981",
+    "color-accent": "#059669",
+    "color-success": "#22c55e",
+    "layout-style": "fast-casual"
+  },
+  "nav": [
+    { "label": "Order Now", "href": "#order", "highlight": true },
+    { "label": "Menu", "href": "#menu" },
+    { "label": "Locations", "href": "#locations" },
+    { "label": "Rewards", "href": "#rewards" },
+    { "label": "About", "href": "#about" }
+  ],
+  "hero": {
+    "style": "video-overlay",
+    "videoUrl": "background-video.mp4",
+    "videoPoster": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1920&q=80",
+    "eyebrow": "Fresh. Fast. Delicious.",
+    "title": "Build Your Perfect Bowl in Minutes",
+    "subtitle": "Choose from our signature bowls or create your own with fresh ingredients, proteins, and toppings. Order ahead for quick pickup.",
+    "cta": [
+      { "label": "Order Online", "href": "#order", "prominent": true },
+      { "label": "Download App", "href": "#app", "variant": "secondary" }
+    ],
+    "quickStats": [
+      { "icon": "⚡", "text": "Ready in 5 min" },
+      { "icon": "🥗", "text": "100% Fresh" },
+      { "icon": "📱", "text": "Order Ahead" },
+      { "icon": "⭐", "text": "4.8 Rating" }
+    ]
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "subtitle": "Your perfect meal in 3 simple steps",
+    "steps": [
+      {
+        "number": "1",
+        "title": "Choose Your Base",
+        "description": "Start with your favorite greens, grains, or noodles",
+        "options": ["Mixed Greens", "Quinoa", "Brown Rice", "Zucchini Noodles", "Cauliflower Rice"]
+      },
+      {
+        "number": "2",
+        "title": "Pick Your Protein",
+        "description": "Add grilled chicken, tofu, salmon, or more",
+        "options": ["Grilled Chicken", "Marinated Tofu", "Atlantic Salmon", "Steak", "Falafel"]
+      },
+      {
+        "number": "3",
+        "title": "Customize & Enjoy",
+        "description": "Choose toppings, dressing, and extras",
+        "options": ["20+ Toppings", "12 Dressings", "Premium Add-ons"]
+      }
+    ]
+  },
+  "signatureBowls": {
+    "title": "Signature Bowls",
+    "subtitle": "Chef-crafted combinations ready to order",
+    "items": [
+      {
+        "name": "Southwest Chicken Bowl",
+        "price": 12.99,
+        "calories": 450,
+        "description": "Grilled chicken, black beans, corn, avocado, tomatoes, cilantro-lime dressing",
+        "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=80",
+        "tags": ["High Protein", "Gluten-Free"],
+        "popular": true,
+        "nutrition": {
+          "calories": 450,
+          "protein": "42g",
+          "carbs": "38g",
+          "fat": "18g"
+        }
+      },
+      {
+        "name": "Mediterranean Bowl",
+        "price": 11.99,
+        "calories": 380,
+        "description": "Falafel, hummus, cucumber, tomatoes, olives, feta, tahini dressing",
+        "image": "https://images.unsplash.com/photo-1529059997568-3d847b1154f0?w=600&q=80",
+        "tags": ["Vegetarian", "High Fiber"]
+      },
+      {
+        "name": "Teriyaki Salmon Bowl",
+        "price": 14.99,
+        "calories": 520,
+        "description": "Grilled salmon, edamame, seaweed salad, carrots, ginger-soy dressing",
+        "image": "https://images.unsplash.com/photo-1546069901-d5bfd2cbfb1f?w=600&q=80",
+        "tags": ["Omega-3", "Gluten-Free"],
+        "popular": true
+      },
+      {
+        "name": "Power Protein Bowl",
+        "price": 13.99,
+        "calories": 580,
+        "description": "Double chicken, quinoa, kale, broccoli, hard-boiled egg, avocado",
+        "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80",
+        "tags": ["High Protein", "Keto Friendly"]
+      }
+    ]
+  },
+  "buildYourOwn": {
+    "title": "Build Your Own Bowl",
+    "subtitle": "Over 1,000 possible combinations",
+    "pricing": {
+      "base": "Starting at $9.99",
+      "protein": "+ $3-5",
+      "extras": "+ $0.50-2 each"
+    },
+    "ingredients": {
+      "bases": [
+        { "name": "Mixed Greens", "calories": 15, "price": 0 },
+        { "name": "Spinach", "calories": 20, "price": 0 },
+        { "name": "Quinoa", "calories": 120, "price": 0 },
+        { "name": "Brown Rice", "calories": 110, "price": 0 },
+        { "name": "Cauliflower Rice", "calories": 25, "price": 0, "tag": "Low Carb" },
+        { "name": "Zucchini Noodles", "calories": 20, "price": 0, "tag": "Keto" }
+      ],
+      "proteins": [
+        { "name": "Grilled Chicken", "calories": 140, "price": 3.00, "tag": "Lean" },
+        { "name": "Marinated Tofu", "calories": 120, "price": 2.50, "tag": "Vegan" },
+        { "name": "Atlantic Salmon", "calories": 180, "price": 5.00, "tag": "Omega-3" },
+        { "name": "Grass-Fed Steak", "calories": 200, "price": 4.50 },
+        { "name": "Falafel", "calories": 150, "price": 2.50, "tag": "Vegan" },
+        { "name": "Hard-Boiled Eggs", "calories": 140, "price": 2.00, "tag": "Vegetarian" }
+      ],
+      "toppings": [
+        "Cherry Tomatoes", "Cucumbers", "Red Onions", "Bell Peppers",
+        "Avocado (+$2)", "Feta Cheese", "Chickpeas", "Black Beans",
+        "Corn", "Edamame", "Broccoli", "Carrots", "Beets", "Olives",
+        "Sunflower Seeds", "Almonds", "Crispy Onions", "Tortilla Strips"
+      ],
+      "dressings": [
+        { "name": "Cilantro Lime", "calories": 80 },
+        { "name": "Balsamic Vinaigrette", "calories": 60 },
+        { "name": "Caesar", "calories": 120 },
+        { "name": "Tahini", "calories": 90 },
+        { "name": "Ginger-Soy", "calories": 70 },
+        { "name": "Spicy Sriracha", "calories": 50 }
+      ]
+    }
+  },
+  "nutrition": {
+    "title": "Nutrition Transparency",
+    "subtitle": "Every ingredient's nutritional info available",
+    "features": [
+      { "icon": "📊", "title": "Calorie Counter", "description": "See calories as you build" },
+      { "icon": "🥗", "title": "Dietary Filters", "description": "Vegan, Keto, Gluten-Free options" },
+      { "icon": "⚠️", "title": "Allergen Info", "description": "Clear labeling for all allergens" },
+      { "icon": "🌱", "title": "Sourcing", "description": "Know where your food comes from" }
+    ],
+    "commitment": "We're committed to using fresh, responsibly-sourced ingredients. All nutritional information is available in our app and at checkout."
+  },
+  "rewards": {
+    "title": "Fresh Rewards Program",
+    "subtitle": "Earn points with every purchase",
+    "benefits": [
+      { "icon": "🎁", "title": "1 Point = $1", "description": "Earn 1 point for every dollar spent" },
+      { "icon": "🆓", "title": "Free Bowl at 100", "description": "Redeem 100 points for a free bowl" },
+      { "icon": "🎂", "title": "Birthday Reward", "description": "Free bowl on your birthday" },
+      { "icon": "⚡", "title": "Skip the Line", "description": "Order ahead, skip the wait" }
+    ],
+    "cta": "Download the app to join"
+  },
+  "locations": {
+    "title": "Find Us",
+    "subtitle": "Multiple locations for your convenience",
+    "stores": [
+      {
+        "name": "Downtown",
+        "address": "123 Main St",
+        "hours": "Mon-Sun: 11AM-9PM",
+        "phone": "(555) 246-8135"
+      },
+      {
+        "name": "Westside",
+        "address": "456 Oak Ave",
+        "hours": "Mon-Sun: 11AM-9PM",
+        "phone": "(555) 246-8136"
+      },
+      {
+        "name": "University",
+        "address": "789 College Blvd",
+        "hours": "Mon-Sun: 10AM-10PM",
+        "phone": "(555) 246-8137"
+      }
+    ],
+    "comingSoon": ["Eastside Mall - Opening Spring 2025", "Airport Terminal - Opening Summer 2025"]
+  },
+  "app": {
+    "title": "Download Our App",
+    "subtitle": "Order ahead, earn rewards, skip the line",
+    "features": [
+      "Order and pay from your phone",
+      "Save your favorite bowls",
+      "Track your rewards points",
+      "Get exclusive app-only deals",
+      "Find the nearest location"
+    ],
+    "appStore": "Download on App Store",
+    "playStore": "Get it on Google Play"
+  },
+  "about": {
+    "title": "Our Story",
+    "subtitle": "Fresh food, fast service, no compromises",
+    "story": "Founded in 2019, Fresh Bowl Co. was born from a simple idea: healthy food shouldn't take forever. We source fresh, quality ingredients daily and prepare everything in-house. Whether you're grabbing lunch between meetings or fueling up after the gym, we've got you covered.",
+    "values": [
+      { "icon": "🥬", "title": "Fresh Daily", "description": "Ingredients delivered daily" },
+      { "icon": "⚡", "title": "Fast Service", "description": "In and out in under 5 minutes" },
+      { "icon": "♻️", "title": "Sustainable", "description": "Compostable packaging" },
+      { "icon": "💪", "title": "Health First", "description": "Nutrition you can trust" }
+    ]
+  },
+  "catering": {
+    "title": "Catering",
+    "subtitle": "Feed your team, office, or event",
+    "options": [
+      {
+        "name": "Bowl Bar",
+        "description": "Set up a build-your-own station with all the fixings",
+        "serves": "10-50 people",
+        "price": "Starting at $15/person"
+      },
+      {
+        "name": "Boxed Lunches",
+        "description": "Individual bowls packaged for easy distribution",
+        "serves": "10+ people",
+        "price": "Starting at $13/person"
+      }
+    ],
+    "note": "Catering orders require 24 hours notice. Contact us for custom options.",
+    "cta": "Request Catering Quote"
+  },
+  "contact": {
+    "title": "Get In Touch",
+    "email": "hello@freshbowl.com",
+    "phone": "(555) 246-8135",
+    "hours": "Open 7 days a week, 11AM-9PM",
+    "social": {
+      "instagram": "@freshbowlco",
+      "facebook": "facebook.com/freshbowlco",
+      "twitter": "@freshbowlco"
+    }
+  },
+  "footer": {
+    "text": "Fresh Bowl Co. - Build Your Perfect Bowl",
+    "links": [
+      { "label": "Nutrition Calculator", "href": "#nutrition" },
+      { "label": "Allergen Info", "href": "#allergens" },
+      { "label": "Careers", "href": "#jobs" },
+      { "label": "Franchise", "href": "#franchise" },
+      { "label": "Press Kit", "href": "#press" }
+    ]
+  },
+  "settings": {
+    "allowCheckout": true,
+    "onlineOrderingPrimary": true,
+    "showCalories": true,
+    "customizable": true,
+    "fastCasual": true
+  }
+}
+

@@ -1,0 +1,128 @@
+{
+  "brand": {
+    "name": "Luxe Fashion Boutique",
+    "logo": "assets/logo.svg",
+    "tagline": "Curated Style • Online & In-Store",
+    "phone": "(555) 222-3355",
+    "email": "hello@luxeboutique.style"
+  },
+  "themeVars": {
+    "color-primary": "#ec4899",
+    "color-accent": "#f472b6",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Shop", "href": "#products"},
+    {"label": "Collections", "href": "#about"},
+    {"label": "Visit Us", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "👗 Curated Fashion Boutique",
+    "title": "Discover your signature style",
+    "subtitle": "Carefully curated women's fashion from emerging designers and timeless brands. Browse our collection online and visit our boutique for personalized styling. New arrivals weekly.",
+    "cta": [
+      {"label": "Shop Collection", "href": "#products"},
+      {"label": "Visit Store", "href": "#contact", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1445205170230-053b83016050?w=1200&q=80",
+    "imageAlt": "Fashion boutique interior"
+  },
+  "about": {
+    "title": "Curated with Care",
+    "subtitle": "Fashion that reflects you",
+    "content": "Luxe Boutique brings together the best in contemporary women's fashion. From everyday essentials to statement pieces, every item is hand-selected for quality, style, and versatility. Visit us in-store for personalized styling advice."
+  },
+  "products": [
+    {
+      "name": "Silk Blend Midi Dress",
+      "price": 185,
+      "description": "Elegant midi dress in luxurious silk blend. Perfect for special occasions or elevated everyday wear. Multiple colors available.",
+      "image": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&q=80",
+      "imageAlt": "Silk midi dress",
+      "category": "Dresses",
+      "popular": true
+    },
+    {
+      "name": "Italian Leather Handbag",
+      "price": 295,
+      "description": "Handcrafted Italian leather tote. Timeless design, impeccable quality. The bag you'll carry for years.",
+      "image": "https://images.unsplash.com/photo-1564422170194-896b89110ef8?w=600&q=80",
+      "imageAlt": "Leather handbag",
+      "category": "Accessories",
+      "popular": true
+    },
+    {
+      "name": "Cashmere Blend Sweater",
+      "price": 165,
+      "description": "Incredibly soft cashmere blend sweater. Versatile layering piece in seasonal colors. Sizes XS-XL.",
+      "image": "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=600&q=80",
+      "imageAlt": "Cashmere sweater",
+      "category": "Tops",
+      "popular": true
+    },
+    {
+      "name": "High-Waist Tailored Trousers",
+      "price": 145,
+      "description": "Perfectly tailored high-waist trousers. Professional polish with all-day comfort. Available in classic colors.",
+      "image": "https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=600&q=80",
+      "imageAlt": "Tailored trousers",
+      "category": "Bottoms"
+    },
+    {
+      "name": "Statement Gold Earrings",
+      "price": 85,
+      "description": "Bold yet elegant gold-plated earrings. Add instant sophistication to any outfit. Hypoallergenic.",
+      "image": "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600&q=80",
+      "imageAlt": "Gold earrings",
+      "category": "Jewelry"
+    },
+    {
+      "name": "Versatile Blazer",
+      "price": 195,
+      "description": "The blazer that does it all. Dress up or down. Impeccable fit and quality construction.",
+      "image": "https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=600&q=80",
+      "imageAlt": "Women's blazer",
+      "category": "Outerwear"
+    }
+  ],
+  "testimonials": {
+    "title": "What Customers Say",
+    "subtitle": "Style & service",
+    "items": [
+      {
+        "text": "My favorite boutique! The owner has impeccable taste and always helps me find pieces that actually work for my lifestyle. Quality is exceptional.",
+        "author": "Emma Chen",
+        "title": "Regular Customer"
+      },
+      {
+        "text": "Love that I can browse online and then try things on in-store. The curated selection makes shopping so much easier. Found my wedding guest dress here!",
+        "author": "Sofia Martinez",
+        "title": "Happy Shopper"
+      }
+    ]
+  },
+  "contact": {
+    "title": "Visit Our Boutique",
+    "subtitle": "Personal styling available",
+    "phone": "(555) 222-3355",
+    "email": "hello@luxeboutique.style",
+    "address": "123 Fashion Avenue, Downtown, New York, NY 10001"
+  },
+  "footer": {
+    "text": "👗 Luxe Fashion Boutique • Curated Style",
+    "awards": []
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "hello@luxeboutique.style",
+    "productCta": "Inquire",
+    "productCtaHref": "tel:+15552223355",
+    "productNote": "Contact us to check availability, arrange in-store pickup, or schedule a personal styling appointment."
+  },
+  "productsTitle": "Current Collection",
+  "productsSubtitle": "Curated pieces for your wardrobe"
+}
+

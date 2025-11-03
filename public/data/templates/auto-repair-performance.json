@@ -1,0 +1,186 @@
+{
+  "brand": {
+    "name": "Apex Performance Tuning",
+    "logo": "assets/logo.svg",
+    "tagline": "Performance Upgrades • Dyno Tuning",
+    "phone": "(555) 777-5588",
+    "email": "shop@apextuning.pro"
+  },
+  "themeVars": {
+    "color-primary": "#dc2626",
+    "color-accent": "#ef4444",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "Builds", "href": "#about"},
+    {"label": "Gallery", "href": "#testimonials"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "🏁 Performance Automotive",
+    "title": "Unleash your car's potential",
+    "subtitle": "High-performance tuning, engine builds, forced induction, and custom fabrication. Dyno-proven results. Track-tested reliability. Whether street or strip, we build machines that perform. Passion for speed, precision in execution.",
+    "cta": [
+      {"label": "Build Consultation", "href": "#contact"},
+      {"label": "View Builds", "href": "#about", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1200&q=80",
+    "imageAlt": "Performance car engine bay"
+  },
+  "about": {
+    "title": "Performance Specialists",
+    "subtitle": "Building fast cars since 2012",
+    "content": "Apex Performance specializes in high-performance builds for enthusiasts who demand more. From bolt-ons to complete engine builds, our experienced team combines technical expertise with a passion for speed. Dyno tuning, turbo/supercharger kits, suspension, and more."
+  },
+  "products": [
+    {
+      "name": "ECU Tuning (Dyno)",
+      "price": 599,
+      "description": "Custom dyno tune for maximum power and drivability. 3-4 pulls minimum. Includes before/after dyno sheets.",
+      "category": "Tuning",
+      "duration": "3-4 hours",
+      "popular": true
+    },
+    {
+      "name": "Turbo Kit Installation",
+      "price": 3500,
+      "description": "Complete turbo system install with tuning. Garrett or Precision turbo. 50-150HP gains typical.",
+      "category": "Forced Induction",
+      "duration": "2-3 days",
+      "popular": true
+    },
+    {
+      "name": "Engine Build",
+      "price": 8000,
+      "description": "Complete performance engine build. Forged internals, head work, cam upgrade. Built for power and reliability.",
+      "category": "Engine",
+      "duration": "2-4 weeks"
+    },
+    {
+      "name": "Coilover Suspension",
+      "price": 1200,
+      "description": "Performance coilover install and corner balancing. BC, KW, or Ohlins. Transform handling.",
+      "category": "Suspension",
+      "duration": "1 day",
+      "popular": true
+    },
+    {
+      "name": "Exhaust System",
+      "price": 1500,
+      "description": "Custom exhaust fabrication or brand-name system install. More power, better sound.",
+      "category": "Exhaust",
+      "duration": "1 day"
+    },
+    {
+      "name": "Track Prep Package",
+      "price": 2500,
+      "description": "Prepare your car for track days. Brake fluid, pads, alignment, safety inspection. Ready to race.",
+      "category": "Track",
+      "duration": "2 days"
+    }
+  ],
+  "services": {
+    "title": "Performance Services",
+    "subtitle": "From street to track",
+    "items": [
+      {
+        "title": "🔧 Dyno Tuning",
+        "description": "Custom ECU tuning for maximum power on our in-house dyno"
+      },
+      {
+        "title": "🚀 Forced Induction",
+        "description": "Turbo and supercharger kits, installation, and tuning"
+      },
+      {
+        "title": "⚙️ Engine Builds",
+        "description": "Complete performance engine builds for street and track"
+      },
+      {
+        "title": "🏁 Track Prep",
+        "description": "Suspension, brakes, and safety prep for track days"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Customer Builds",
+    "subtitle": "Proven results",
+    "items": [
+      {
+        "text": "Apex built my turbo WRX and it's an absolute beast! 400WHP on pump gas and daily driver reliable. Dyno tune is perfect. Best shop for Subarus!",
+        "author": "Tyler Morrison",
+        "title": "WRX Owner"
+      },
+      {
+        "text": "Had them tune my Civic Si. Gained 30HP and it drives so much better. Professional, knowledgeable, and passionate about what they do. Highly recommend!",
+        "author": "Marcus Chen",
+        "title": "Honda Enthusiast"
+      },
+      {
+        "text": "They built my LSX Miata and it's a track weapon! Clean fabrication, reliable power, and it handles like a dream. Worth every penny!",
+        "author": "Sarah Rodriguez",
+        "title": "Track Day Regular"
+      }
+    ]
+  },
+  "team": {
+    "title": "The Apex Team",
+    "subtitle": "Performance experts",
+    "members": [
+      {
+        "name": "Jake Daniels",
+        "title": "Owner & Master Tuner",
+        "bio": "10+ years building and tuning performance cars. Certified HP Tuners and Cobb Tuning specialist. Former race team mechanic. Passionate about building fast, reliable machines.",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+        "imageAlt": "Jake Daniels",
+        "credentials": ["HP Tuners Certified", "Cobb Tuning Pro", "10+ Years Performance"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Build Process",
+    "subtitle": "From consultation to completion",
+    "steps": [
+      {"title": "Consultation", "description": "Discuss your goals, budget, and intended use"},
+      {"title": "Build Plan", "description": "Create detailed parts list and timeline"},
+      {"title": "Installation", "description": "Expert installation with quality parts"},
+      {"title": "Dyno Tune", "description": "Optimize on dyno for power and reliability"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "300+", "label": "Performance Builds"},
+      {"number": "In-House", "label": "Dyno"},
+      {"number": "4.9", "label": "Star Rating"},
+      {"number": "Track", "label": "Tested"}
+    ]
+  },
+  "contact": {
+    "title": "Start Your Build",
+    "subtitle": "Free consultation",
+    "phone": "(555) 777-5588",
+    "email": "shop@apextuning.pro",
+    "address": "234 Speed Way, Performance District, Los Angeles, CA 90012"
+  },
+  "footer": {
+    "text": "🏁 Apex Performance Tuning • Building Fast Since 2012",
+    "awards": [
+      "HP Tuners Certified",
+      "Dyno Tested",
+      "Track Proven"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "shop@apextuning.pro",
+    "productCta": "Schedule Consult",
+    "productCtaHref": "tel:+15557775588",
+    "productNote": "Submit your build inquiry and we'll schedule a consultation to discuss your performance goals."
+  },
+  "productsTitle": "Performance Services",
+  "productsSubtitle": "Proven power gains"
+}
+

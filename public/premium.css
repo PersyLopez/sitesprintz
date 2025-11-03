@@ -189,20 +189,15 @@ body.premium-template .stat-card:hover {
 body.premium-template .stat-value,
 body.premium-template .stat-number,
 body.premium-template .hero-stats .stat-value {
-  background: linear-gradient(135deg, var(--premium-primary, #2563eb), var(--premium-gradient-end));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: 800;
+  color: #1e40af;
+  font-weight: 900;
 }
 
 /* Premium Section Headers - Enhanced typography */
 body.premium-template .section-title,
 body.premium-template h2 {
-  background: linear-gradient(135deg, var(--premium-text, #0f172a), var(--premium-muted, #475569));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #0f172a;
+  font-weight: 800;
   position: relative;
   padding-bottom: 20px;
 }
@@ -244,14 +239,14 @@ body.premium-template select:focus {
 /* Premium Badges - Special indicators */
 body.premium-template .badge,
 body.premium-template .service-card .badge {
-  background: linear-gradient(135deg, var(--premium-gradient-start), var(--premium-gradient-end));
+  background: #1e40af;
   color: #fff;
-  padding: 4px 12px;
+  padding: 5px 14px;
   border-radius: 20px;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 800;
   letter-spacing: 0.5px;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 2px 8px rgba(30, 64, 175, 0.4);
   text-transform: uppercase;
 }
 
@@ -302,10 +297,11 @@ body.premium-template .process-step:hover {
 }
 
 body.premium-template .process-number {
-  background: linear-gradient(135deg, var(--premium-gradient-start), var(--premium-gradient-end));
+  background: #1e40af;
   color: #fff;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 15px rgba(30, 64, 175, 0.4);
   transition: var(--premium-transition);
+  font-weight: 900;
 }
 
 body.premium-template .process-step:hover .process-number {
@@ -355,12 +351,13 @@ body.premium-template .accordion-header {
 }
 
 body.premium-template .accordion-header:hover {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), transparent);
+  background: rgba(30, 64, 175, 0.05);
 }
 
 body.premium-template .accordion-icon {
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  color: var(--premium-primary, #2563eb);
+  color: #1e40af;
+  font-weight: bold;
 }
 
 body.premium-template .accordion-item.active .accordion-icon {

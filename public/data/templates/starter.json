@@ -1,6 +1,18 @@
 {
-  "brand": {"name": "Acme Co.", "logo": "assets/logo.svg"},
-  "themeVars": {"color-primary": "#22c55e", "color-accent": "#38bdf8"},
+  "brand": {
+    "name": "Summit Solutions",
+    "logo": "assets/logo.svg",
+    "tagline": "Business Growth Consulting • Since 2012",
+    "phone": "(555) 789-0123",
+    "email": "hello@summitsolutions.com"
+  },
+  "themeVars": {
+    "color-primary": "#22c55e",
+    "color-accent": "#38bdf8",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
   "nav": [
     {"label": "Home", "href": "#top"},
     {"label": "Services", "href": "#products"},
@@ -33,16 +45,22 @@
     "title": "What Our Clients Say",
     "items": [
       {
-        "quote": "Acme Co. transformed our business completely. Their strategic advice increased our revenue by 40% in just 6 months!",
-        "author": "Sarah Johnson, CEO of TechStart"
+        "text": "Summit Solutions transformed our business completely. Their strategic advice increased our revenue by 40% in just 6 months!",
+        "author": "Sarah Johnson",
+        "location": "CEO of TechStart",
+        "rating": 5
       },
       {
-        "quote": "The team's attention to detail and professionalism is unmatched. They delivered beyond our expectations every time.",
-        "author": "Mike Chen, Owner of Local Bakery"
+        "text": "The team's attention to detail and professionalism is unmatched. They delivered beyond our expectations every time.",
+        "author": "Mike Chen",
+        "location": "Owner of Local Bakery",
+        "rating": 5
       },
       {
-        "quote": "Working with Acme Co. was the best decision we made. They truly understand small business needs.",
-        "author": "Jennifer Martinez, Director of Operations"
+        "text": "Working with Summit Solutions was the best decision we made. They truly understand small business needs.",
+        "author": "Jennifer Martinez",
+        "location": "Director of Operations",
+        "rating": 5
       }
     ]
   },
@@ -52,11 +70,12 @@
   "pages": [
     {"slug": "about", "title": "About", "body": "# Our Story\nWe started in 2012..."}
   ],
-  "products": [],
   "settings": {
     "allowCheckout": false,
-    "productCta": "Contact Us",
-    "productCtaHref": "mailto:hello@example.com",
-    "productNote": "Get in touch to learn more about our services and pricing."
+    "allowOrders": true,
+    "orderNotificationEmail": "hello@summitsolutions.com",
+    "productCta": "Request Consultation",
+    "productCtaHref": "mailto:hello@summitsolutions.com",
+    "productNote": "Submit your request and we'll contact you within 24 hours to discuss your needs and provide a custom quote."
   }
 }

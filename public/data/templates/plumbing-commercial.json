@@ -1,0 +1,186 @@
+{
+  "brand": {
+    "name": "CommercialFlow Plumbing",
+    "logo": "assets/logo.svg",
+    "tagline": "Commercial & Industrial Plumbing",
+    "phone": "(555) 666-8822",
+    "email": "service@commercialflow.biz"
+  },
+  "themeVars": {
+    "color-primary": "#1e40af",
+    "color-accent": "#3b82f6",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "Industries", "href": "#about"},
+    {"label": "Projects", "href": "#testimonials"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "🏢 Commercial Plumbing Services",
+    "title": "Keeping businesses flowing smoothly",
+    "subtitle": "Licensed commercial plumbers for offices, restaurants, retail, and industrial facilities. Maintenance contracts, emergency service, new construction, and tenant improvements. Minimize downtime. Maximize reliability.",
+    "cta": [
+      {"label": "Request Quote", "href": "#contact"},
+      {"label": "Our Services", "href": "#products", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&q=80",
+    "imageAlt": "Commercial building plumbing"
+  },
+  "about": {
+    "title": "Commercial Plumbing Experts",
+    "subtitle": "Trusted by businesses since 2006",
+    "content": "CommercialFlow specializes in commercial and industrial plumbing. Our licensed plumbers handle everything from routine maintenance to complete plumbing systems for new construction. Available 24/7 for emergencies. Minimize business disruption."
+  },
+  "products": [
+    {
+      "name": "Commercial Maintenance Contract",
+      "price": 400,
+      "description": "Monthly maintenance program for commercial properties. Preventive service, priority scheduling, discounted repairs.",
+      "category": "Maintenance",
+      "duration": "Monthly",
+      "popular": true
+    },
+    {
+      "name": "Restaurant Plumbing Service",
+      "price": 350,
+      "description": "Specialized restaurant plumbing including grease traps, commercial equipment, and health code compliance.",
+      "category": "Restaurant",
+      "duration": "Per service",
+      "popular": true
+    },
+    {
+      "name": "Tenant Improvement",
+      "price": 5000,
+      "description": "Complete plumbing for office build-outs and tenant improvements. Timely completion, code-compliant.",
+      "category": "Construction",
+      "duration": "2-4 weeks"
+    },
+    {
+      "name": "Commercial Water Heater",
+      "price": 3500,
+      "description": "Commercial water heater installation or replacement. Tankless or tank systems sized for your needs.",
+      "category": "Water Heating",
+      "duration": "1-2 days",
+      "popular": true
+    },
+    {
+      "name": "Backflow Prevention",
+      "price": 450,
+      "description": "Backflow preventer installation and annual testing. Required for commercial properties. Certified testers.",
+      "category": "Compliance",
+      "duration": "Half day"
+    },
+    {
+      "name": "Emergency Service",
+      "price": 250,
+      "description": "24/7 emergency plumbing for businesses. Fast response to minimize downtime and protect property.",
+      "category": "Emergency",
+      "duration": "Same day"
+    }
+  ],
+  "services": {
+    "title": "Commercial Services",
+    "subtitle": "Complete plumbing for business",
+    "items": [
+      {
+        "title": "🏢 Office Buildings",
+        "description": "Maintenance, repairs, and tenant improvement plumbing"
+      },
+      {
+        "title": "🍽️ Restaurants",
+        "description": "Specialized restaurant plumbing and health code compliance"
+      },
+      {
+        "title": "🏭 Industrial",
+        "description": "Industrial plumbing, process piping, and facility maintenance"
+      },
+      {
+        "title": "🚨 24/7 Emergency",
+        "description": "Round-the-clock emergency service to minimize business disruption"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Client Projects",
+    "subtitle": "Trusted by local businesses",
+    "items": [
+      {
+        "text": "CommercialFlow handles all plumbing for our three restaurant locations. They understand the urgency when equipment goes down. Reliable, knowledgeable, and fair pricing.",
+        "author": "Maria Rodriguez",
+        "title": "Restaurant Owner"
+      },
+      {
+        "text": "We use them for all tenant improvements in our office building. Professional work, good communication with tenants, and always pass inspection. Highly recommend.",
+        "author": "David Chen",
+        "title": "Property Manager"
+      },
+      {
+        "text": "When our main water line broke, they had a crew there within an hour and fixed it with minimal disruption. Now on our maintenance contract. Great service!",
+        "author": "Jennifer Wilson",
+        "title": "Facility Manager"
+      }
+    ]
+  },
+  "team": {
+    "title": "Management Team",
+    "subtitle": "Licensed commercial plumbers",
+    "members": [
+      {
+        "name": "Carlos Mendez",
+        "title": "Owner & Master Plumber",
+        "bio": "Licensed Master Plumber with 18+ years in commercial plumbing. Specializes in restaurants, offices, and industrial facilities. Committed to minimizing business disruption.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "Carlos Mendez",
+        "credentials": ["Master Plumber", "18+ Years Commercial", "Fully Insured"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Project Process",
+    "subtitle": "Professional commercial service",
+    "steps": [
+      {"title": "Site Assessment", "description": "Visit facility to understand scope and requirements"},
+      {"title": "Detailed Proposal", "description": "Comprehensive quote with timeline and specifications"},
+      {"title": "Scheduled Work", "description": "Complete work during off-hours to minimize disruption"},
+      {"title": "Inspection & Warranty", "description": "Pass all inspections and provide warranty"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "18+", "label": "Years Serving Business"},
+      {"number": "300+", "label": "Commercial Clients"},
+      {"number": "24/7", "label": "Emergency Service"},
+      {"number": "$2M", "label": "Liability Coverage"}
+    ]
+  },
+  "contact": {
+    "title": "Request Quote",
+    "subtitle": "Commercial plumbing services",
+    "phone": "(555) 666-8822",
+    "email": "service@commercialflow.biz",
+    "address": "Serving Greater Atlanta, GA"
+  },
+  "footer": {
+    "text": "🏢 CommercialFlow Plumbing • Business Plumbing Since 2006",
+    "awards": [
+      "Licensed & Insured",
+      "Commercial Specialist",
+      "24/7 Emergency Service"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "service@commercialflow.biz",
+    "productCta": "Request Quote",
+    "productCtaHref": "tel:+15556668822",
+    "productNote": "Submit your commercial plumbing project details and we'll provide a quote within 24 hours."
+  },
+  "productsTitle": "Commercial Plumbing",
+  "productsSubtitle": "Professional service for business"
+}
+

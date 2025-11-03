@@ -315,9 +315,11 @@
   },
   "settings": {
     "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "info@strategicsolutions.com",
     "productCta": "Schedule Consultation",
     "productCtaHref": "https://calendly.com/strategicsolutions",
-    "productNote": "Book a free 30-minute consultation to discuss your business needs. Custom proposals provided after initial meeting."
+    "productNote": "Submit your consultation request and we'll contact you within 24 hours to schedule a free 30-minute session."
   },
   "productsTitle": "Consulting Services",
   "productsSubtitle": "Strategic solutions tailored to your business goals"

@@ -7,7 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
     "dev": "NODE_ENV=development node server.js",
-    "serve": "npx http-server public -p 5173"
+    "serve": "npx http-server public -p 5173",
+    "validate-template": "node validation/validate-template.js",
+    "validate-templates": "node validation/validate-template.js public/data/templates/"
   },
   "repository": {
     "type": "git",
@@ -22,6 +24,8 @@
   "homepage": "https://github.com/PersyLopez/Active-Directory#readme",
   "type": "module",
   "dependencies": {
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1",
     "bcryptjs": "^3.0.2",
     "body-parser": "^2.2.0",
     "compression": "^1.8.1",

@@ -2,12 +2,17 @@
   "brand": {
     "name": "Precision Auto Care",
     "logo": "assets/logo.svg",
-    "alt": "Precision Auto Care badge"
+    "alt": "Precision Auto Care badge",
+    "phone": "+1-555-987-1234",
+    "email": "service@precisionautocare.com"
   },
   "themeVars": {
     "color-primary": "#2563eb",
     "color-primary-600": "#1d4ed8",
-    "color-accent": "#f97316"
+    "color-accent": "#f97316",
+    "color-success": "#22c55e",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
   },
   "nav": [
     { "label": "Services", "href": "#services" },
@@ -57,16 +62,19 @@
     "title": "Drivers who trust us",
     "items": [
       {
-        "quote": "Transparent pricing and they texted photos of everything before doing the work.",
-        "author": "Jared P., Honda Owner"
+        "text": "Transparent pricing and they texted photos of everything before doing the work.",
+        "author": "Jared P.",
+        "title": "Honda Owner"
       },
       {
-        "quote": "Our delivery vans stay on the road thanks to their fleet maintenance program.",
-        "author": "Monique L., Operations Manager"
+        "text": "Our delivery vans stay on the road thanks to their fleet maintenance program.",
+        "author": "Monique L.",
+        "title": "Operations Manager"
       },
       {
-        "quote": "Finally a shop that listens. Repairs were finished the same day.",
-        "author": "Henry C., BMW Owner"
+        "text": "Finally a shop that listens. Repairs were finished the same day.",
+        "author": "Henry C.",
+        "title": "BMW Owner"
       }
     ]
   },
@@ -130,5 +138,15 @@
       "price": 109,
       "description": "Four-wheel alignment with tire rotation and tread depth report."
     }
-  ]
+  ],
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "service@precisionautocare.com",
+    "productCta": "Schedule Service",
+    "productCtaHref": "tel:+15559871234",
+    "productNote": "Submit your service request and we'll contact you within 24 hours to schedule your appointment."
+  },
+  "productsTitle": "Featured Services",
+  "productsSubtitle": "Professional auto care with transparent pricing"
 }

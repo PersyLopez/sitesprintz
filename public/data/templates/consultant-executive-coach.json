@@ -1,0 +1,187 @@
+{
+  "brand": {
+    "name": "Elevate Leadership Coaching",
+    "logo": "assets/logo.svg",
+    "tagline": "Executive & Leadership Development",
+    "phone": "(555) 888-9900",
+    "email": "coach@elevateleadership.com"
+  },
+  "themeVars": {
+    "color-primary": "#7c3aed",
+    "color-accent": "#a78bfa",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Coaching", "href": "#products"},
+    {"label": "Approach", "href": "#about"},
+    {"label": "About Me", "href": "#team"},
+    {"label": "Testimonials", "href": "#testimonials"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "🎯 Executive Leadership Coaching",
+    "title": "Unlock your leadership potential",
+    "subtitle": "Transform your leadership style and amplify your impact. Through 1-on-1 coaching, I help executives and emerging leaders develop the skills, mindset, and emotional intelligence to lead with confidence and authenticity.",
+    "cta": [
+      {"label": "Discovery Session", "href": "#contact"},
+      {"label": "Learn More", "href": "#about", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1515169067868-5387ec356754?w=1200&q=80",
+    "imageAlt": "Executive coaching session"
+  },
+  "about": {
+    "title": "Leadership Transformation",
+    "subtitle": "Personalized coaching for high-performers",
+    "content": "I work with ambitious leaders who want to elevate their performance, navigate complex challenges, and create lasting impact. Through deep listening, powerful questions, and proven frameworks, we unlock insights that lead to breakthrough results."
+  },
+  "products": [
+    {
+      "name": "Executive Coaching Package",
+      "price": 3500,
+      "description": "12 weekly 1-hour sessions with unlimited email support. Includes 360 assessment and personalized development plan.",
+      "category": "1-on-1 Coaching",
+      "duration": "3 months",
+      "popular": true
+    },
+    {
+      "name": "Leadership Intensive",
+      "price": 2500,
+      "description": "6-session focused program on a specific leadership challenge. Deep work on communication, influence, or team dynamics.",
+      "category": "1-on-1 Coaching",
+      "duration": "6 weeks",
+      "popular": true
+    },
+    {
+      "name": "Career Transition Coaching",
+      "price": 2800,
+      "description": "Navigate career changes with clarity and confidence. Ideal for executives considering new roles or industries.",
+      "category": "Career",
+      "duration": "8 weeks"
+    },
+    {
+      "name": "Team Leadership Workshop",
+      "price": 4500,
+      "description": "Full-day workshop for leadership teams. Build trust, improve communication, and align on vision.",
+      "category": "Team Development",
+      "duration": "1 day"
+    },
+    {
+      "name": "Discovery Session",
+      "price": 0,
+      "description": "Complimentary 45-minute session to explore your goals and see if we're a good fit.",
+      "category": "Getting Started",
+      "duration": "45 minutes",
+      "popular": true
+    },
+    {
+      "name": "Monthly Retainer",
+      "price": 1500,
+      "description": "Ongoing coaching support with 2 sessions per month plus email and phone access.",
+      "category": "Ongoing Support",
+      "duration": "Monthly"
+    }
+  ],
+  "services": {
+    "title": "Coaching Services",
+    "subtitle": "Personalized programs for your leadership journey",
+    "items": [
+      {
+        "title": "👤 1-on-1 Coaching",
+        "description": "Deep, personalized coaching focused on your specific goals and challenges"
+      },
+      {
+        "title": "🎯 Leadership Development",
+        "description": "Build the skills that set exceptional leaders apart from good ones"
+      },
+      {
+        "title": "💬 Communication Mastery",
+        "description": "Develop influence, presence, and the ability to inspire action"
+      },
+      {
+        "title": "👥 Team Workshops",
+        "description": "Transform team dynamics and build high-performing leadership cultures"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Client Transformations",
+    "subtitle": "Leaders who've elevated their impact",
+    "items": [
+      {
+        "text": "Working with Dr. Anderson changed my entire approach to leadership. I'm more confident, my team is more engaged, and I was promoted to VP. Best investment in my career.",
+        "author": "Jennifer Roberts",
+        "title": "VP of Operations"
+      },
+      {
+        "text": "The coaching helped me navigate a difficult career transition with clarity. I'm now in a role that aligns with my values and strengths. Couldn't have done it without this support.",
+        "author": "Michael Chen",
+        "title": "Director of Strategy"
+      },
+      {
+        "text": "As a new executive, I was struggling with imposter syndrome. The coaching gave me tools to lead authentically and the confidence to trust my voice. Game-changing.",
+        "author": "Sarah Martinez",
+        "title": "Chief Marketing Officer"
+      }
+    ]
+  },
+  "team": {
+    "title": "Your Coach",
+    "subtitle": "Experienced executive and certified coach",
+    "members": [
+      {
+        "name": "Dr. Alexandra Anderson",
+        "title": "Executive Coach & Leadership Consultant",
+        "bio": "Former Fortune 500 executive turned coach. PhD in Organizational Psychology. ICF-certified with 15+ years helping leaders unlock their potential and create meaningful impact.",
+        "image": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80",
+        "imageAlt": "Dr. Alexandra Anderson",
+        "credentials": ["PhD Org Psychology", "ICF-PCC Certified", "Former VP Operations"]
+      }
+    ]
+  },
+  "process": {
+    "title": "The Coaching Journey",
+    "subtitle": "Structured yet flexible approach",
+    "steps": [
+      {"title": "Discovery", "description": "Complimentary session to explore your goals and establish fit"},
+      {"title": "Assessment", "description": "360 feedback and leadership assessment to identify focus areas"},
+      {"title": "Coaching", "description": "Regular sessions with reflection, tools, and accountability"},
+      {"title": "Integration", "description": "Apply insights and measure progress toward your goals"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "15+", "label": "Years Coaching"},
+      {"number": "200+", "label": "Leaders Coached"},
+      {"number": "95%", "label": "Client Satisfaction"},
+      {"number": "ICF-PCC", "label": "Certified"}
+    ]
+  },
+  "contact": {
+    "title": "Start Your Journey",
+    "subtitle": "Schedule a complimentary discovery session",
+    "phone": "(555) 888-9900",
+    "email": "coach@elevateleadership.com",
+    "address": "Virtual coaching sessions via Zoom"
+  },
+  "footer": {
+    "text": "🎯 Elevate Leadership Coaching • Transform Your Leadership",
+    "awards": [
+      "ICF Professional Certified Coach",
+      "Top Executive Coach 2023",
+      "Leadership Excellence Award"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "coach@elevateleadership.com",
+    "productCta": "Book Discovery Call",
+    "productCtaHref": "tel:+15558889900",
+    "productNote": "Submit your request for a complimentary discovery session and I'll reach out within 48 hours."
+  },
+  "productsTitle": "Coaching Programs",
+  "productsSubtitle": "Investment in your leadership development"
+}
+
