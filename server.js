@@ -936,63 +936,25 @@ app.get('/api/users/:userId/sites', requireAuth, async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
     
-    const sites = [];
+    // Load sites from database
+    const result = await dbQuery(`
+      SELECT 
+        id, subdomain, template_id, status, plan, 
+        published_at, created_at, site_data
+      FROM sites 
+      WHERE user_id = $1
+      ORDER BY created_at DESC
+    `, [userId]);
     
-    // Load published sites
-    const sitesDir = path.join(publicDir, 'sites');
-    if (await fs.access(sitesDir).then(() => true).catch(() => false)) {
-      const siteDirs = await fs.readdir(sitesDir);
-      
-      for (const siteDir of siteDirs) {
-        const sitePath = path.join(sitesDir, siteDir, 'site.json');
-        try {
-          const siteData = JSON.parse(await fs.readFile(sitePath, 'utf-8'));
-          if (siteData.published?.email === req.user.email) {
-            sites.push({
-              id: siteDir,
-              name: siteData.brand?.name || 'Untitled Site',
-              url: `/sites/${siteDir}/`,
-              status: 'published',
-              createdAt: siteData.published?.at || new Date().toISOString(),
-              plan: siteData.published?.plan || 'Starter',
-              template: siteData.template || 'unknown'
-            });
-          }
-        } catch (err) {
-          console.error(`Error reading site ${siteDir}:`, err.message);
-        }
-      }
-    }
-    
-    // Load draft sites
-    const draftsDir = path.join(publicDir, 'drafts');
-    if (await fs.access(draftsDir).then(() => true).catch(() => false)) {
-      const draftFiles = await fs.readdir(draftsDir);
-      
-      for (const draftFile of draftFiles) {
-        if (draftFile.endsWith('.json')) {
-          try {
-            const draftData = JSON.parse(await fs.readFile(path.join(draftsDir, draftFile), 'utf-8'));
-            if (draftData.businessData?.email === req.user.email) {
-              sites.push({
-                id: draftFile.replace('.json', ''),
-                name: draftData.businessData?.businessName || 'Untitled Draft',
-                url: `/drafts/${draftFile.replace('.json', '')}`,
-                status: 'draft',
-                createdAt: draftData.createdAt || new Date().toISOString(),
-                plan: 'Draft',
-                template: draftData.templateId || 'unknown'
-              });
-            }
-          } catch (err) {
-            console.error(`Error reading draft ${draftFile}:`, err.message);
-          }
-        }
-      }
-    }
-    
-    // Sort by creation date (newest first)
-    sites.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const sites = result.rows.map(site => ({
+      id: site.id,
+      name: site.site_data?.brand?.name || 'Untitled Site',
+      url: `/sites/${site.subdomain}/`,
+      status: site.status,
+      createdAt: site.published_at || site.created_at,
+      plan: site.plan,
+      template: site.template_id
+    }));
     
     res.json({ sites });
   } catch (error) {
@@ -1012,47 +974,31 @@ app.delete('/api/users/:userId/sites/:siteId', requireAuth, async (req, res) => 
       return res.status(403).json({ error: 'Access denied' });
     }
     
-    // Check if it's a published site
-    const sitePath = path.join(publicDir, 'sites', siteId);
-    if (await fs.access(sitePath).then(() => true).catch(() => false)) {
-      // Verify ownership
-      const siteDataPath = path.join(sitePath, 'site.json');
-      try {
-        const siteData = JSON.parse(await fs.readFile(siteDataPath, 'utf-8'));
-        if (siteData.published?.email !== req.user.email) {
-          return res.status(403).json({ error: 'Access denied' });
-        }
-        
-        // Delete the site directory
-        await fs.rm(sitePath, { recursive: true, force: true });
-        res.json({ message: 'Site deleted successfully' });
-        return;
-      } catch (err) {
-        console.error(`Error verifying site ownership:`, err.message);
-        return res.status(500).json({ error: 'Failed to verify site ownership' });
-      }
+    // Check if site exists and belongs to user
+    const result = await dbQuery(
+      'SELECT subdomain FROM sites WHERE id = $1 AND user_id = $2',
+      [siteId, userId]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Site not found' });
     }
     
-    // Check if it's a draft
-    const draftPath = path.join(publicDir, 'drafts', `${siteId}.json`);
-    if (await fs.access(draftPath).then(() => true).catch(() => false)) {
-      try {
-        const draftData = JSON.parse(await fs.readFile(draftPath, 'utf-8'));
-        if (draftData.businessData?.email !== req.user.email) {
-          return res.status(403).json({ error: 'Access denied' });
-        }
-        
-        // Delete the draft file
-        await fs.unlink(draftPath);
-        res.json({ message: 'Draft deleted successfully' });
-        return;
-      } catch (err) {
-        console.error(`Error verifying draft ownership:`, err.message);
-        return res.status(500).json({ error: 'Failed to verify draft ownership' });
-      }
+    const subdomain = result.rows[0].subdomain;
+    
+    // Delete from database (CASCADE will delete related submissions and analytics)
+    await dbQuery('DELETE FROM sites WHERE id = $1 AND user_id = $2', [siteId, userId]);
+    
+    // Delete the site directory from file system
+    const sitePath = path.join(publicDir, 'sites', subdomain);
+    try {
+      await fs.rm(sitePath, { recursive: true, force: true });
+    } catch (err) {
+      console.error(`Error deleting site directory ${subdomain}:`, err.message);
+      // Continue even if file deletion fails - database record is gone
     }
     
-    res.status(404).json({ error: 'Site not found' });
+    res.json({ message: 'Site deleted successfully' });
   } catch (error) {
     console.error('Error deleting site:', error);
     res.status(500).json({ error: 'Failed to delete site' });
@@ -2482,22 +2428,26 @@ app.post('/api/sites/guest-publish', async (req, res) => {
     const trialExpiresAt = new Date();
     trialExpiresAt.setDate(trialExpiresAt.getDate() + 7);
     
-    // Save site metadata
-    const metadata = {
-      subdomain,
-      email,
-      userId,
-      businessName,
-      plan: 'free',
-      status: 'active',
-      publishedAt: new Date().toISOString(),
-      trialExpiresAt: trialExpiresAt.toISOString()
-    };
+    // Save site to database
+    const siteId = subdomain; // Use subdomain as site ID
+    const templateId = data.template || 'starter';
     
-    await fs.writeFile(
-      path.join(siteDir, 'metadata.json'),
-      JSON.stringify(metadata, null, 2)
-    );
+    await dbQuery(`
+      INSERT INTO sites (
+        id, user_id, subdomain, template_id, status, plan,
+        published_at, expires_at, site_data, json_file_path
+      ) VALUES ($1, $2, $3, $4, $5, $6, NOW(), $7, $8, $9)
+    `, [
+      siteId,
+      userId,
+      subdomain,
+      templateId,
+      'published',
+      'free',
+      trialExpiresAt,
+      JSON.stringify(data),
+      path.join('sites', subdomain, 'data', 'site.json')
+    ]);
     
     res.json({
       success: true,
