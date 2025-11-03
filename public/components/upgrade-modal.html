@@ -1,0 +1,575 @@
+<!-- Upgrade Modal Component -->
+<style>
+  /* Upgrade Modal Styles */
+  .upgrade-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease-out;
+    padding: 20px;
+  }
+
+  .upgrade-modal-overlay.active {
+    display: flex;
+  }
+
+  .upgrade-modal {
+    background: white;
+    border-radius: 24px;
+    max-width: 1000px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.4s ease-out;
+  }
+
+  .upgrade-modal-header {
+    padding: 32px 40px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .upgrade-modal-title {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #1f2937;
+  }
+
+  .upgrade-modal-subtitle {
+    color: #64748b;
+    margin: 8px 0 0 0;
+    font-size: 1.05rem;
+  }
+
+  .btn-close-modal {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    color: #64748b;
+    cursor: pointer;
+    padding: 8px;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+
+  .btn-close-modal:hover {
+    color: #1f2937;
+  }
+
+  .upgrade-modal-body {
+    padding: 40px;
+  }
+
+  /* Plan Comparison */
+  .plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .plan-card {
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 28px;
+    transition: all 0.3s;
+    position: relative;
+    background: white;
+  }
+
+  .plan-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+  }
+
+  .plan-card.current-plan {
+    border-color: #94a3b8;
+    background: #f8fafc;
+  }
+
+  .plan-card.recommended {
+    border-color: #06b6d4;
+    box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+  }
+
+  .plan-badge {
+    position: absolute;
+    top: -12px;
+    right: 24px;
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .plan-emoji {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+  }
+
+  .plan-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 8px 0;
+  }
+
+  .plan-price {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #06b6d4;
+    margin: 0 0 4px 0;
+  }
+
+  .plan-price-small {
+    font-size: 1rem;
+    font-weight: 400;
+    color: #64748b;
+  }
+
+  .plan-description {
+    color: #64748b;
+    font-size: 0.95rem;
+    margin: 0 0 20px 0;
+  }
+
+  .plan-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px 0;
+  }
+
+  .plan-features li {
+    padding: 10px 0;
+    color: #475569;
+    display: flex;
+    align-items: start;
+    gap: 10px;
+    font-size: 0.9rem;
+  }
+
+  .plan-features li::before {
+    content: '✓';
+    color: #10b981;
+    font-weight: 700;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .plan-features li.not-included {
+    opacity: 0.5;
+  }
+
+  .plan-features li.not-included::before {
+    content: '✗';
+    color: #ef4444;
+  }
+
+  .btn-select-plan {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+  }
+
+  .btn-select-plan.primary {
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    color: white;
+  }
+
+  .btn-select-plan.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(6, 182, 212, 0.3);
+  }
+
+  .btn-select-plan.secondary {
+    background: #f1f5f9;
+    color: #475569;
+    border: 2px solid #e2e8f0;
+  }
+
+  .btn-select-plan.secondary:hover {
+    background: #e2e8f0;
+  }
+
+  .btn-select-plan.current {
+    background: #94a3b8;
+    color: white;
+    cursor: default;
+  }
+
+  .btn-select-plan.current:hover {
+    transform: none;
+  }
+
+  /* Feature Comparison Table */
+  .feature-comparison {
+    margin-top: 40px;
+    padding-top: 40px;
+    border-top: 2px solid #e5e7eb;
+  }
+
+  .comparison-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 24px 0;
+    text-align: center;
+  }
+
+  .comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .comparison-table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #64748b;
+    border-bottom: 2px solid #e5e7eb;
+  }
+
+  .comparison-table td {
+    padding: 16px 12px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .comparison-table tr:hover {
+    background: #f8fafc;
+  }
+
+  .check-icon {
+    color: #10b981;
+    font-weight: 700;
+  }
+
+  .cross-icon {
+    color: #ef4444;
+  }
+
+  /* Loading/Success States */
+  .upgrade-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+    border-radius: 24px;
+  }
+
+  .upgrade-loading.active {
+    display: flex;
+  }
+
+  .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #e5e7eb;
+    border-top-color: #06b6d4;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    .upgrade-modal-header,
+    .upgrade-modal-body {
+      padding: 24px 20px;
+    }
+
+    .upgrade-modal-title {
+      font-size: 1.5rem;
+    }
+
+    .plans-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .comparison-table {
+      font-size: 0.85rem;
+    }
+  }
+</style>
+
+<!-- Upgrade Modal HTML -->
+<div class="upgrade-modal-overlay" id="upgradeModal">
+  <div class="upgrade-modal">
+    <div class="upgrade-modal-header">
+      <div>
+        <h2 class="upgrade-modal-title">Upgrade Your Plan</h2>
+        <p class="upgrade-modal-subtitle">Choose the plan that's right for your business</p>
+      </div>
+      <button class="btn-close-modal" onclick="closeUpgradeModal()">×</button>
+    </div>
+
+    <div class="upgrade-modal-body">
+      <!-- Plans Grid -->
+      <div class="plans-grid">
+        <!-- Free/Trial Plan -->
+        <div class="plan-card current-plan" id="freePlanCard">
+          <div class="plan-emoji">🎁</div>
+          <h3 class="plan-name">Free Trial</h3>
+          <div class="plan-price">
+            $0<span class="plan-price-small">/month</span>
+          </div>
+          <p class="plan-description">7 days to test everything</p>
+          <ul class="plan-features">
+            <li>1 published website</li>
+            <li>All templates</li>
+            <li>Contact forms</li>
+            <li>Free subdomain</li>
+            <li class="not-included">Online payments</li>
+            <li class="not-included">Custom domain</li>
+          </ul>
+          <button class="btn-select-plan current">Current Plan</button>
+        </div>
+
+        <!-- Starter Plan -->
+        <div class="plan-card recommended">
+          <span class="plan-badge">Most Popular</span>
+          <div class="plan-emoji">💼</div>
+          <h3 class="plan-name">Starter</h3>
+          <div class="plan-price">
+            $10<span class="plan-price-small">/month</span>
+          </div>
+          <p class="plan-description">Perfect for service businesses</p>
+          <ul class="plan-features">
+            <li>Everything in Free</li>
+            <li>Display pricing & services</li>
+            <li>Unlimited edits</li>
+            <li>No expiration</li>
+            <li class="not-included">Online payments</li>
+            <li class="not-included">Custom domain</li>
+          </ul>
+          <button class="btn-select-plan primary" onclick="upgradeNow('starter')">
+            Upgrade to Starter →
+          </button>
+        </div>
+
+        <!-- Pro Plan -->
+        <div class="plan-card">
+          <div class="plan-emoji">💳</div>
+          <h3 class="plan-name">Pro</h3>
+          <div class="plan-price">
+            $25<span class="plan-price-small">/month</span>
+          </div>
+          <p class="plan-description">Accept payments & sell online</p>
+          <ul class="plan-features">
+            <li>Everything in Starter</li>
+            <li>Online payments (Stripe)</li>
+            <li>Shopping cart</li>
+            <li>Order management</li>
+            <li>Sales analytics</li>
+            <li>Priority support</li>
+          </ul>
+          <button class="btn-select-plan secondary" onclick="upgradeNow('pro')">
+            Upgrade to Pro →
+          </button>
+        </div>
+      </div>
+
+      <!-- Feature Comparison -->
+      <div class="feature-comparison">
+        <h3 class="comparison-title">Full Feature Comparison</h3>
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th style="text-align: center;">Free</th>
+              <th style="text-align: center;">Starter</th>
+              <th style="text-align: center;">Pro</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Published Sites</strong></td>
+              <td style="text-align: center;">1</td>
+              <td style="text-align: center;">1</td>
+              <td style="text-align: center;">1</td>
+            </tr>
+            <tr>
+              <td><strong>All Templates</strong></td>
+              <td style="text-align: center;"><span class="check-icon">✓</span></td>
+              <td style="text-align: center;"><span class="check-icon">✓</span></td>
+              <td style="text-align: center;"><span class="check-icon">✓</span></td>
+            </tr>
+            <tr>
+              <td><strong>Contact Forms</strong></td>
+              <td style="text-align: center;"><span class="check-icon">✓</span></td>
+              <td style="text-align: center;"><span class="check-icon">✓</span></td>
+              <td style="text-align: center;"><span class="check-icon">✓</span></td>
+            </tr>
+            <tr>
+              <td><strong>Duration</strong></td>
+              <td style="text-align: center;">7 days</td>
+              <td style="text-align: center;">Unlimited</td>
+              <td style="text-align: center;">Unlimited</td>
+            </tr>
+            <tr>
+              <td><strong>Online Payments</strong></td>
+              <td style="text-align: center;"><span class="cross-icon">✗</span></td>
+              <td style="text-align: center;"><span class="cross-icon">✗</span></td>
+              <td style="text-align: center;"><span class="check-icon">✓</span></td>
+            </tr>
+            <tr>
+              <td><strong>Shopping Cart</strong></td>
+              <td style="text-align: center;"><span class="cross-icon">✗</span></td>
+              <td style="text-align: center;"><span class="cross-icon">✗</span></td>
+              <td style="text-align: center;"><span class="check-icon">✓</span></td>
+            </tr>
+            <tr>
+              <td><strong>Order Management</strong></td>
+              <td style="text-align: center;"><span class="cross-icon">✗</span></td>
+              <td style="text-align: center;"><span class="cross-icon">✗</span></td>
+              <td style="text-align: center;"><span class="check-icon">✓</span></td>
+            </tr>
+            <tr>
+              <td><strong>Analytics</strong></td>
+              <td style="text-align: center;"><span class="cross-icon">✗</span></td>
+              <td style="text-align: center;">Basic</td>
+              <td style="text-align: center;">Advanced</td>
+            </tr>
+            <tr>
+              <td><strong>Support</strong></td>
+              <td style="text-align: center;">Email</td>
+              <td style="text-align: center;">Email</td>
+              <td style="text-align: center;">Priority</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="upgrade-loading" id="upgradeLoading">
+      <div class="spinner"></div>
+      <p style="color: #64748b; font-weight: 600;">Processing your upgrade...</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Upgrade Modal Functions
+  function openUpgradeModal(suggestedPlan) {
+    const modal = document.getElementById('upgradeModal');
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    // Highlight suggested plan if provided
+    if (suggestedPlan) {
+      highlightPlan(suggestedPlan);
+    }
+  }
+
+  function closeUpgradeModal() {
+    const modal = document.getElementById('upgradeModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  function openPlanComparison() {
+    openUpgradeModal();
+    // Scroll to comparison table
+    setTimeout(() => {
+      document.querySelector('.feature-comparison')?.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }, 300);
+  }
+
+  function highlightPlan(plan) {
+    // Remove existing highlights
+    document.querySelectorAll('.plan-card').forEach(card => {
+      card.classList.remove('recommended');
+    });
+
+    // Add highlight to suggested plan
+    const planCard = document.querySelector(`[onclick*="'${plan}'"]`)?.closest('.plan-card');
+    if (planCard) {
+      planCard.classList.add('recommended');
+    }
+  }
+
+  async function upgradeNow(plan) {
+    const loadingEl = document.getElementById('upgradeLoading');
+    loadingEl.classList.add('active');
+
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        window.location.href = `/register.html?plan=${plan}`;
+        return;
+      }
+
+      // Create checkout session
+      const response = await fetch('/api/payments/create-subscription-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ plan })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.error || 'Failed to create checkout session');
+      }
+    } catch (error) {
+      console.error('Upgrade error:', error);
+      alert('Failed to start upgrade process. Please try again.');
+      loadingEl.classList.remove('active');
+    }
+  }
+
+  // Close modal on ESC key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeUpgradeModal();
+    }
+  });
+
+  // Close modal on outside click
+  document.getElementById('upgradeModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'upgradeModal') {
+      closeUpgradeModal();
+    }
+  });
+</script>
+
