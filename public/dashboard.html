@@ -1007,16 +1007,19 @@
         }
       } catch (error) {
         console.error('Auth check failed:', error);
-        // Show error state instead of immediate redirect
+        console.error('Error details:', error.message, error.stack);
+        console.error('Token used:', token?.substring(0, 20) + '...');
+        
+        // Show detailed error state
         const overlay = document.getElementById('loadingOverlay');
         if (overlay) {
           const loadingText = overlay.querySelector('.loading-text');
-          loadingText.textContent = 'Connection error. Redirecting to login...';
+          loadingText.textContent = `Connection error: ${error.message}. Redirecting to login...`;
           loadingText.style.color = '#fee2e2';
         }
         setTimeout(() => {
           window.location.href = '/login.html';
-        }, 1500);
+        }, 3000); // Give more time to see error
       }
     }
     
