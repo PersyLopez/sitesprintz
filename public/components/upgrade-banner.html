@@ -1,0 +1,227 @@
+<!-- Upgrade Banner Component -->
+<style>
+  /* Trial Banner Styles */
+  .trial-upgrade-banner {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 2px solid #f59e0b;
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+    animation: slideDown 0.4s ease-out;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .trial-banner-content {
+    flex: 1;
+  }
+
+  .trial-banner-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #92400e;
+    margin: 0 0 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .trial-countdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(245, 158, 11, 0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 700;
+    color: #b45309;
+  }
+
+  .trial-banner-description {
+    color: #78350f;
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .trial-banner-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .btn-upgrade-now {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    padding: 12px 32px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    white-space: nowrap;
+  }
+
+  .btn-upgrade-now:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+  }
+
+  .btn-compare-plans {
+    background: white;
+    color: #d97706;
+    padding: 12px 24px;
+    border: 2px solid #f59e0b;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-compare-plans:hover {
+    background: #fffbeb;
+  }
+
+  /* Urgent state (< 3 days) */
+  .trial-upgrade-banner.urgent {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    border-color: #ef4444;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
+    50% {
+      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+    }
+  }
+
+  .trial-upgrade-banner.urgent .trial-banner-title {
+    color: #991b1b;
+  }
+
+  .trial-upgrade-banner.urgent .trial-countdown {
+    background: rgba(239, 68, 68, 0.2);
+    color: #991b1b;
+  }
+
+  .trial-upgrade-banner.urgent .trial-banner-description {
+    color: #7f1d1d;
+  }
+
+  .trial-upgrade-banner.urgent .btn-upgrade-now {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    .trial-upgrade-banner {
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 16px;
+    }
+
+    .trial-banner-actions {
+      width: 100%;
+    }
+
+    .btn-upgrade-now,
+    .btn-compare-plans {
+      flex: 1;
+      text-align: center;
+      justify-content: center;
+    }
+  }
+</style>
+
+<!-- Banner HTML (will be injected dynamically) -->
+<div class="trial-upgrade-banner" id="trialBanner" style="display: none;">
+  <div class="trial-banner-content">
+    <div class="trial-banner-title">
+      ⏰ <span id="bannerTitle">Free Trial Active</span>
+      <span class="trial-countdown" id="trialCountdown">7 days remaining</span>
+    </div>
+    <p class="trial-banner-description" id="bannerDescription">
+      Upgrade now to keep your site online and unlock premium features!
+    </p>
+  </div>
+  <div class="trial-banner-actions">
+    <button class="btn-upgrade-now" onclick="openUpgradeModal('starter')">
+      Upgrade Now →
+    </button>
+    <button class="btn-compare-plans" onclick="openPlanComparison()">
+      Compare Plans
+    </button>
+  </div>
+</div>
+
+<script>
+  // Trial Banner Logic
+  function initTrialBanner(userData) {
+    const banner = document.getElementById('trialBanner');
+    if (!banner) return;
+
+    // Check if user is on trial
+    const subscription = userData.subscription;
+    const plan = subscription?.plan || 'free';
+    
+    // Only show for free/trial users
+    if (plan !== 'free' && subscription?.status !== 'trialing') {
+      banner.style.display = 'none';
+      return;
+    }
+
+    // Calculate days remaining
+    const trialEnd = subscription?.trial_end || userData.trialExpiresAt;
+    if (!trialEnd) {
+      banner.style.display = 'none';
+      return;
+    }
+
+    const now = new Date();
+    const endDate = new Date(trialEnd);
+    const daysRemaining = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+
+    if (daysRemaining <= 0) {
+      // Trial expired
+      document.getElementById('bannerTitle').textContent = '❗ Trial Expired';
+      document.getElementById('trialCountdown').textContent = 'Expired';
+      document.getElementById('bannerDescription').textContent = 
+        'Your trial has ended. Upgrade now to keep your site online and access all features!';
+      banner.classList.add('urgent');
+    } else if (daysRemaining <= 3) {
+      // Urgent (< 3 days)
+      document.getElementById('bannerTitle').textContent = '⚠️ Trial Ending Soon';
+      document.getElementById('trialCountdown').textContent = `${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'} left`;
+      document.getElementById('bannerDescription').textContent = 
+        'Your trial is ending soon! Upgrade now to avoid interruption and unlock all features.';
+      banner.classList.add('urgent');
+    } else {
+      // Normal trial
+      document.getElementById('trialCountdown').textContent = `${daysRemaining} days left`;
+    }
+
+    banner.style.display = 'flex';
+  }
+</script>
+
