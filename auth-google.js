@@ -167,20 +167,27 @@ export function setupGoogleRoutes(app) {
           { expiresIn: '7d' }
         );
 
+        console.log('🔍 OAuth callback - user:', user.email);
+        console.log('🔍 Pending intent:', user.pendingIntent);
+        console.log('🔍 Pending plan:', user.pendingPlan);
+        
         // Check if user came from publish flow
         if (user.pendingIntent === 'publish') {
+          console.log('✅ Redirecting to auto-publish');
           // Redirect to auto-publish page
           const redirectUrl = `/auto-publish.html?token=${token}`;
           res.redirect(redirectUrl);
         }
         // Check if user needs to be redirected to Stripe checkout
         else if (user.pendingPlan && (user.pendingPlan === 'starter' || user.pendingPlan === 'pro')) {
+          console.log('✅ Redirecting to register-success with plan:', user.pendingPlan);
           // Redirect to a page that will create Stripe checkout
           const redirectUrl = `/register-success.html?token=${token}&plan=${user.pendingPlan}`;
           res.redirect(redirectUrl);
         } else {
-          // Free trial - redirect to dashboard
-          const redirectUrl = `/register-success.html?token=${token}`;
+          console.log('✅ Redirecting to register-success (dashboard flow)');
+          // Free trial - redirect directly to dashboard with token
+          const redirectUrl = `/dashboard.html?token=${token}`;
           res.redirect(redirectUrl);
         }
       } catch (error) {
