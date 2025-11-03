@@ -21,12 +21,32 @@
     "title": "Our Services",
     "subtitle": "What we do best",
     "items": [
-      {"title": "Consulting", "description": "Expert advice to grow."},
-      {"title": "Design", "description": "Beautiful and functional."},
-      {"title": "Development", "description": "Fast and reliable."}
+      {"title": "Business Consulting", "description": "Expert strategic advice to help your business grow and thrive. We analyze your operations and create actionable plans."},
+      {"title": "Custom Design", "description": "Beautiful and functional design solutions for your brand. From logos to full brand identities, we bring your vision to life."},
+      {"title": "Web Development", "description": "Fast, reliable, and modern web solutions. We build responsive websites that convert visitors into customers."},
+      {"title": "Digital Marketing", "description": "Comprehensive digital marketing strategies including SEO, social media, and email campaigns to grow your reach."},
+      {"title": "Content Creation", "description": "Professional photography, videography, and copywriting that tells your brand's story and engages your audience."},
+      {"title": "Analytics & Reporting", "description": "Data-driven insights to track your success. We help you understand your metrics and make informed decisions."}
     ]
   },
-  "about": {"title": "About Us", "body": "We are a friendly neighborhood business."},
+  "testimonials": {
+    "title": "What Our Clients Say",
+    "items": [
+      {
+        "quote": "Acme Co. transformed our business completely. Their strategic advice increased our revenue by 40% in just 6 months!",
+        "author": "Sarah Johnson, CEO of TechStart"
+      },
+      {
+        "quote": "The team's attention to detail and professionalism is unmatched. They delivered beyond our expectations every time.",
+        "author": "Mike Chen, Owner of Local Bakery"
+      },
+      {
+        "quote": "Working with Acme Co. was the best decision we made. They truly understand small business needs.",
+        "author": "Jennifer Martinez, Director of Operations"
+      }
+    ]
+  },
+  "about": {"title": "About Us", "body": "We are a friendly neighborhood business dedicated to helping small and medium-sized companies reach their full potential. Since 2012, we've partnered with over 500 businesses to deliver strategic solutions that drive real results. Our team combines decades of experience with fresh, innovative thinking to solve your toughest challenges."},
   "contact": {"title": "Get in touch", "subtitle": "We'd love to hear from you", "email": "hello@example.com", "phone": "+1 555 123 4567"},
   "footer": {"text": "Proudly serving our community."},
   "pages": [
