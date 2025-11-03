@@ -1809,6 +1809,293 @@ async function updateUserSubscription(email, subscriptionData) {
   }
 }
 
+// ==================== STRIPE CONNECT ROUTES ====================
+
+// Initiate Stripe Connect onboarding
+app.post('/api/connect/onboard', requireAuth, async (req, res) => {
+  try {
+    if (!stripe) {
+      return res.status(500).json({ error: 'Stripe not configured' });
+    }
+
+    const userEmail = req.user.email;
+    
+    // Check if user has Pro or Premium subscription
+    const userFilePath = getUserFilePath(userEmail);
+    let userData;
+    try {
+      userData = JSON.parse(await fs.readFile(userFilePath, 'utf-8'));
+    } catch (error) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Verify user has Pro or Premium subscription
+    const plan = userData.subscription?.plan?.toLowerCase();
+    if (plan !== 'pro' && plan !== 'premium') {
+      return res.status(403).json({ 
+        error: 'Stripe Connect requires Pro or Premium subscription',
+        currentPlan: plan || 'free'
+      });
+    }
+
+    // Check if user already has a connected account
+    let accountId = userData.stripeConnect?.accountId;
+    
+    if (!accountId) {
+      // Create a new Stripe Connect account
+      const account = await stripe.accounts.create({
+        type: 'standard',
+        email: userEmail,
+        business_type: 'individual',
+        metadata: {
+          platform_user_email: userEmail,
+          created_via: 'sitesprintz_platform'
+        }
+      });
+      
+      accountId = account.id;
+      
+      // Save account ID to user data
+      userData.stripeConnect = {
+        accountId,
+        status: 'pending',
+        createdAt: Date.now()
+      };
+      await fs.writeFile(userFilePath, JSON.stringify(userData, null, 2));
+      
+      console.log(`Created Connect account ${accountId} for ${userEmail}`);
+    }
+
+    // Create Account Link for onboarding
+    const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
+    const accountLink = await stripe.accountLinks.create({
+      account: accountId,
+      refresh_url: `${origin}/dashboard.html?connect=refresh`,
+      return_url: `${origin}/dashboard.html?connect=success`,
+      type: 'account_onboarding',
+    });
+
+    res.json({ 
+      url: accountLink.url,
+      accountId 
+    });
+
+  } catch (error) {
+    console.error('Connect onboarding error:', error);
+    res.status(500).json({ 
+      error: 'Failed to initiate Connect onboarding',
+      message: error.message 
+    });
+  }
+});
+
+// Get Stripe Connect status
+app.get('/api/connect/status', requireAuth, async (req, res) => {
+  try {
+    if (!stripe) {
+      return res.json({ connected: false, message: 'Stripe not configured' });
+    }
+
+    const userEmail = req.user.email;
+    const userFilePath = getUserFilePath(userEmail);
+    
+    let userData;
+    try {
+      userData = JSON.parse(await fs.readFile(userFilePath, 'utf-8'));
+    } catch (error) {
+      return res.json({ connected: false });
+    }
+
+    if (!userData.stripeConnect?.accountId) {
+      return res.json({ connected: false });
+    }
+
+    // Verify account status with Stripe
+    try {
+      const account = await stripe.accounts.retrieve(userData.stripeConnect.accountId);
+      
+      const isConnected = account.charges_enabled && account.payouts_enabled;
+      
+      // Update local status if changed
+      if (userData.stripeConnect.status !== (isConnected ? 'active' : 'pending')) {
+        userData.stripeConnect.status = isConnected ? 'active' : 'pending';
+        userData.stripeConnect.updatedAt = Date.now();
+        await fs.writeFile(userFilePath, JSON.stringify(userData, null, 2));
+      }
+
+      res.json({
+        connected: isConnected,
+        accountId: account.id,
+        status: userData.stripeConnect.status,
+        chargesEnabled: account.charges_enabled,
+        payoutsEnabled: account.payouts_enabled,
+        detailsSubmitted: account.details_submitted,
+        email: account.email,
+        businessProfile: {
+          name: account.business_profile?.name,
+          url: account.business_profile?.url
+        }
+      });
+
+    } catch (error) {
+      console.error('Failed to retrieve Connect account:', error);
+      res.json({ 
+        connected: false,
+        error: 'Failed to verify account status',
+        accountId: userData.stripeConnect.accountId 
+      });
+    }
+
+  } catch (error) {
+    console.error('Connect status error:', error);
+    res.status(500).json({ error: 'Failed to fetch Connect status' });
+  }
+});
+
+// Refresh Connect account link (if onboarding incomplete)
+app.post('/api/connect/refresh', requireAuth, async (req, res) => {
+  try {
+    if (!stripe) {
+      return res.status(500).json({ error: 'Stripe not configured' });
+    }
+
+    const userEmail = req.user.email;
+    const userFilePath = getUserFilePath(userEmail);
+    
+    let userData;
+    try {
+      userData = JSON.parse(await fs.readFile(userFilePath, 'utf-8'));
+    } catch (error) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (!userData.stripeConnect?.accountId) {
+      return res.status(400).json({ error: 'No Connect account found. Please start onboarding first.' });
+    }
+
+    const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
+    const accountLink = await stripe.accountLinks.create({
+      account: userData.stripeConnect.accountId,
+      refresh_url: `${origin}/dashboard.html?connect=refresh`,
+      return_url: `${origin}/dashboard.html?connect=success`,
+      type: 'account_onboarding',
+    });
+
+    res.json({ url: accountLink.url });
+
+  } catch (error) {
+    console.error('Connect refresh error:', error);
+    res.status(500).json({ 
+      error: 'Failed to refresh Connect link',
+      message: error.message 
+    });
+  }
+});
+
+// Disconnect Stripe Connect account
+app.post('/api/connect/disconnect', requireAuth, async (req, res) => {
+  try {
+    const userEmail = req.user.email;
+    const userFilePath = getUserFilePath(userEmail);
+    
+    let userData;
+    try {
+      userData = JSON.parse(await fs.readFile(userFilePath, 'utf-8'));
+    } catch (error) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (userData.stripeConnect?.accountId) {
+      // Note: We don't delete the Stripe account, just disconnect it from our platform
+      // The business owner can delete it themselves from their Stripe dashboard
+      userData.stripeConnect = {
+        ...userData.stripeConnect,
+        status: 'disconnected',
+        disconnectedAt: Date.now()
+      };
+      
+      await fs.writeFile(userFilePath, JSON.stringify(userData, null, 2));
+      console.log(`Disconnected Connect account for ${userEmail}`);
+    }
+
+    res.json({ success: true, message: 'Account disconnected' });
+
+  } catch (error) {
+    console.error('Connect disconnect error:', error);
+    res.status(500).json({ error: 'Failed to disconnect account' });
+  }
+});
+
+// Create checkout session with connected account (for customer purchases)
+app.post('/api/connect/create-checkout', async (req, res) => {
+  try {
+    if (!stripe) {
+      return res.status(500).json({ error: 'Stripe not configured' });
+    }
+
+    const { connectedAccountId, lineItems, metadata } = req.body;
+
+    if (!connectedAccountId) {
+      return res.status(400).json({ error: 'Connected account ID required' });
+    }
+
+    if (!lineItems || !Array.isArray(lineItems) || lineItems.length === 0) {
+      return res.status(400).json({ error: 'Line items required' });
+    }
+
+    // Verify the connected account exists and is active
+    const account = await stripe.accounts.retrieve(connectedAccountId);
+    if (!account.charges_enabled) {
+      return res.status(400).json({ error: 'Connected account cannot accept charges' });
+    }
+
+    // Calculate platform fee (1% of total, min $0.50, max $5.00)
+    const total = lineItems.reduce((sum, item) => {
+      return sum + (item.price_data.unit_amount * item.quantity);
+    }, 0);
+    const platformFee = Math.min(Math.max(Math.round(total * 0.01), 50), 500);
+
+    const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
+
+    // Create checkout session on behalf of connected account
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      line_items: lineItems,
+      success_url: `${origin}/success.html?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/cancel.html`,
+      payment_intent_data: {
+        application_fee_amount: platformFee,
+        metadata: {
+          ...metadata,
+          platform: 'sitesprintz'
+        }
+      },
+      metadata: {
+        ...metadata,
+        connectedAccountId
+      }
+    }, {
+      stripeAccount: connectedAccountId // Create on behalf of connected account
+    });
+
+    console.log(`Created Connect checkout session ${session.id} for account ${connectedAccountId}`);
+    console.log(`Platform fee: $${(platformFee / 100).toFixed(2)}`);
+
+    res.json({ 
+      sessionId: session.id,
+      url: session.url,
+      platformFee: platformFee / 100
+    });
+
+  } catch (error) {
+    console.error('Connect checkout error:', error);
+    res.status(500).json({ 
+      error: 'Failed to create checkout session',
+      message: error.message 
+    });
+  }
+});
+
 app.get('/api/site', async (req, res) => {
   try{
     const raw = await fs.readFile(dataFile, 'utf-8');

@@ -1,0 +1,790 @@
+<!-- Personalized Welcome Experience Component -->
+<style>
+  /* Enhanced Welcome Modal */
+  .personalized-welcome-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .personalized-welcome-overlay.active {
+    display: flex;
+  }
+
+  .personalized-welcome-modal {
+    background: white;
+    border-radius: 24px;
+    padding: 48px;
+    max-width: 650px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(40px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .welcome-close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 8px;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+
+  .welcome-close-btn:hover {
+    color: #475569;
+  }
+
+  /* Personalized Header */
+  .personalized-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .welcome-wave {
+    font-size: 5rem;
+    margin-bottom: 16px;
+    animation: wave 1.5s ease-in-out infinite;
+  }
+
+  @keyframes wave {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(14deg); }
+    75% { transform: rotate(-14deg); }
+  }
+
+  .personalized-greeting {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #1f2937;
+    margin: 0 0 8px 0;
+  }
+
+  .personalized-greeting .user-name {
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .personalized-subtitle {
+    color: #64748b;
+    font-size: 1.05rem;
+    margin: 0 0 16px 0;
+    line-height: 1.6;
+  }
+
+  .user-plan-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+  }
+
+  /* Progress Section */
+  .onboarding-progress {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .progress-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+  }
+
+  .progress-percentage {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #06b6d4;
+  }
+
+  .progress-bar-container {
+    width: 100%;
+    height: 10px;
+    background: #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #06b6d4, #0891b2);
+    border-radius: 10px;
+    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+  }
+
+  .progress-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+  }
+
+  .progress-step {
+    text-align: center;
+    padding: 8px;
+  }
+
+  .step-icon {
+    font-size: 2rem;
+    margin-bottom: 6px;
+    opacity: 0.3;
+    transition: all 0.3s;
+  }
+
+  .progress-step.completed .step-icon {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+
+  .step-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 600;
+  }
+
+  .progress-step.completed .step-label {
+    color: #06b6d4;
+  }
+
+  /* Quick Start Actions */
+  .quick-start-section {
+    margin-bottom: 32px;
+  }
+
+  .quick-start-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .action-cards {
+    display: grid;
+    gap: 12px;
+  }
+
+  .action-card {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 2px solid #bae6fd;
+    border-radius: 16px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .action-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, #06b6d4, #0891b2);
+    transform: scaleY(0);
+    transition: transform 0.3s;
+  }
+
+  .action-card:hover::before {
+    transform: scaleY(1);
+  }
+
+  .action-card:hover {
+    transform: translateX(8px);
+    box-shadow: 0 8px 24px rgba(6, 182, 212, 0.2);
+    border-color: #06b6d4;
+  }
+
+  .action-card.completed {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-color: #bbf7d0;
+    opacity: 0.7;
+  }
+
+  .action-card.completed::before {
+    background: #10b981;
+  }
+
+  .action-icon-large {
+    font-size: 3rem;
+    min-width: 60px;
+    text-align: center;
+  }
+
+  .action-content {
+    flex: 1;
+  }
+
+  .action-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 4px 0;
+  }
+
+  .action-description {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin: 0 0 8px 0;
+    line-height: 1.4;
+  }
+
+  .action-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .action-time {
+    font-size: 0.75rem;
+    color: #06b6d4;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .action-status {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+  }
+
+  .action-status.completed {
+    background: #dcfce7;
+    color: #16a34a;
+  }
+
+  .action-status.recommended {
+    background: #fef3c7;
+    color: #d97706;
+  }
+
+  .action-arrow {
+    font-size: 1.5rem;
+    color: #06b6d4;
+    transition: transform 0.3s;
+  }
+
+  .action-card:hover .action-arrow {
+    transform: translateX(4px);
+  }
+
+  /* Contextual Tips */
+  .contextual-tip {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border: 2px solid #fde68a;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 12px;
+  }
+
+  .tip-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .tip-content {
+    flex: 1;
+  }
+
+  .tip-title {
+    font-weight: 700;
+    color: #92400e;
+    margin: 0 0 4px 0;
+  }
+
+  .tip-text {
+    color: #78350f;
+    font-size: 0.9rem;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* Footer Actions */
+  .welcome-footer-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+  }
+
+  .btn-get-started {
+    flex: 1;
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    color: white;
+    padding: 16px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .btn-get-started:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(6, 182, 212, 0.3);
+  }
+
+  .btn-skip-welcome {
+    flex: 1;
+    background: #f1f5f9;
+    color: #475569;
+    padding: 16px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-skip-welcome:hover {
+    background: #e2e8f0;
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    .personalized-welcome-modal {
+      padding: 32px 24px;
+    }
+
+    .personalized-greeting {
+      font-size: 1.8rem;
+    }
+
+    .progress-steps {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .action-card {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .welcome-footer-actions {
+      flex-direction: column;
+    }
+  }
+</style>
+
+<!-- Personalized Welcome Modal -->
+<div class="personalized-welcome-overlay" id="personalizedWelcome">
+  <div class="personalized-welcome-modal">
+    <button class="welcome-close-btn" onclick="closePersonalizedWelcome()">×</button>
+
+    <!-- Personalized Header -->
+    <div class="personalized-header">
+      <div class="welcome-wave">👋</div>
+      <h1 class="personalized-greeting">
+        Welcome, <span class="user-name" id="userName">Friend</span>!
+      </h1>
+      <p class="personalized-subtitle">
+        Let's get your website up and running in just a few minutes.
+      </p>
+      <span class="user-plan-badge" id="userPlanBadge">
+        🎁 Free Trial
+      </span>
+    </div>
+
+    <!-- Onboarding Progress -->
+    <div class="onboarding-progress">
+      <div class="progress-header">
+        <h3 class="progress-title">Your Setup Progress</h3>
+        <span class="progress-percentage" id="progressPercentage">0%</span>
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progressBar" style="width: 0%"></div>
+      </div>
+      <div class="progress-steps" id="progressSteps">
+        <div class="progress-step" data-step="register">
+          <div class="step-icon">✓</div>
+          <div class="step-label">Account</div>
+        </div>
+        <div class="progress-step" data-step="site">
+          <div class="step-icon">🌐</div>
+          <div class="step-label">Create Site</div>
+        </div>
+        <div class="progress-step" data-step="customize">
+          <div class="step-icon">✨</div>
+          <div class="step-label">Customize</div>
+        </div>
+        <div class="progress-step" data-step="publish">
+          <div class="step-icon">🚀</div>
+          <div class="step-label">Publish</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contextual Tip -->
+    <div class="contextual-tip" id="contextualTip">
+      <div class="tip-icon">💡</div>
+      <div class="tip-content">
+        <div class="tip-title" id="tipTitle">Getting Started</div>
+        <p class="tip-text" id="tipText">
+          Choose a template that matches your business type for the fastest setup.
+        </p>
+      </div>
+    </div>
+
+    <!-- Quick Start Actions -->
+    <div class="quick-start-section">
+      <h2 class="quick-start-title">
+        🎯 Quick Start Actions
+      </h2>
+      <div class="action-cards" id="actionCards">
+        <!-- Will be populated dynamically based on user status -->
+      </div>
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="welcome-footer-actions">
+      <button class="btn-get-started" onclick="startFirstAction()">
+        Let's Get Started! →
+      </button>
+      <button class="btn-skip-welcome" onclick="closePersonalizedWelcome()">
+        I'll Explore On My Own
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Personalized Welcome System
+  const welcomeActions = {
+    new_user: {
+      actions: [
+        {
+          id: 'choose_template',
+          icon: '📝',
+          title: 'Choose Your Template',
+          description: 'Browse 19 professional templates and pick one for your business',
+          time: '1 min',
+          status: 'recommended',
+          url: '/setup.html',
+          completed: false
+        },
+        {
+          id: 'build_site',
+          icon: '🎨',
+          title: 'Build Your Site',
+          description: 'Customize colors, add your content, upload images',
+          time: '5 min',
+          status: '',
+          url: '/setup.html?step=customize',
+          completed: false
+        },
+        {
+          id: 'publish',
+          icon: '🚀',
+          title: 'Publish Your Site',
+          description: 'Make your site live and get your public URL',
+          time: '30 sec',
+          status: '',
+          url: '/setup.html?step=publish',
+          completed: false
+        }
+      ],
+      tip: {
+        title: 'Pro Tip',
+        text: 'Start with a template similar to your business type. You can always change it later!'
+      }
+    },
+    
+    site_published: {
+      actions: [
+        {
+          id: 'share_site',
+          icon: '📤',
+          title: 'Share Your Site',
+          description: 'Get your shareable link and spread the word',
+          time: '30 sec',
+          status: 'recommended',
+          url: '/dashboard.html#share',
+          completed: false
+        },
+        {
+          id: 'customize_more',
+          icon: '✏️',
+          title: 'Customize Further',
+          description: 'Add more sections, refine your content, perfect your design',
+          time: '10 min',
+          status: '',
+          url: '/dashboard.html#edit',
+          completed: false
+        },
+        {
+          id: 'upgrade',
+          icon: '⭐',
+          title: 'Upgrade Your Plan',
+          description: 'Keep your site online forever and unlock premium features',
+          time: '1 min',
+          status: '',
+          url: 'javascript:openUpgradeModal()',
+          completed: false
+        }
+      ],
+      tip: {
+        title: 'Your Site is Live! 🎉',
+        text: 'Share it with friends, family, and customers. Your trial lasts 7 days.'
+      }
+    },
+    
+    pro_user: {
+      actions: [
+        {
+          id: 'setup_payments',
+          icon: '💳',
+          title: 'Setup Online Payments',
+          description: 'Connect Stripe and start accepting payments',
+          time: '3 min',
+          status: 'recommended',
+          url: '/products.html#stripe-setup',
+          completed: false
+        },
+        {
+          id: 'add_products',
+          icon: '🛍️',
+          title: 'Add Your Products',
+          description: 'Create your product catalog with prices and images',
+          time: '10 min',
+          status: '',
+          url: '/products.html',
+          completed: false
+        },
+        {
+          id: 'test_checkout',
+          icon: '🧪',
+          title: 'Test Your Checkout',
+          description: 'Make a test purchase to ensure everything works',
+          time: '2 min',
+          status: '',
+          url: '/products.html#test',
+          completed: false
+        }
+      ],
+      tip: {
+        title: 'Welcome to Pro! 💪',
+        text: 'Set up payments first, then add your products. Test thoroughly before going live.'
+      }
+    }
+  };
+
+  function showPersonalizedWelcome(userData) {
+    const modal = document.getElementById('personalizedWelcome');
+    if (!modal) return;
+
+    // Check if user has seen welcome before
+    const hasSeenWelcome = localStorage.getItem('hasSeenPersonalizedWelcome');
+    if (hasSeenWelcome && !userData.forceShow) {
+      return;
+    }
+
+    // Personalize greeting
+    const userName = userData.email?.split('@')[0] || 'Friend';
+    document.getElementById('userName').textContent = userName.charAt(0).toUpperCase() + userName.slice(1);
+
+    // Update plan badge
+    const planBadge = document.getElementById('userPlanBadge');
+    const planEmojis = { free: '🎁', starter: '💼', pro: '💳', business: '🏢' };
+    const planNames = { free: 'Free Trial', starter: 'Starter Plan', pro: 'Pro Plan', business: 'Business Plan' };
+    const plan = userData.subscription?.plan || 'free';
+    planBadge.innerHTML = `${planEmojis[plan]} ${planNames[plan]}`;
+
+    // Determine user stage
+    let stage = 'new_user';
+    if (userData.hasSite) {
+      stage = 'site_published';
+    }
+    if (plan === 'pro' || plan === 'business') {
+      stage = 'pro_user';
+    }
+
+    // Calculate progress
+    const progress = calculateProgress(userData);
+    updateProgress(progress);
+
+    // Show contextual tip
+    const tipData = welcomeActions[stage].tip;
+    document.getElementById('tipTitle').textContent = tipData.title;
+    document.getElementById('tipText').textContent = tipData.text;
+
+    // Populate actions
+    populateActions(welcomeActions[stage].actions, userData);
+
+    // Show modal
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    // Mark as seen
+    localStorage.setItem('hasSeenPersonalizedWelcome', 'true');
+  }
+
+  function calculateProgress(userData) {
+    let completed = 1; // Always have account
+    let total = 4;
+
+    if (userData.hasSite) completed++;
+    if (userData.hasCustomized) completed++;
+    if (userData.hasPublished) completed++;
+
+    const percentage = Math.round((completed / total) * 100);
+    return { completed, total, percentage };
+  }
+
+  function updateProgress(progress) {
+    document.getElementById('progressPercentage').textContent = progress.percentage + '%';
+    document.getElementById('progressBar').style.width = progress.percentage + '%';
+
+    // Update step indicators
+    const steps = ['register', 'site', 'customize', 'publish'];
+    steps.forEach((step, index) => {
+      const stepEl = document.querySelector(`[data-step="${step}"]`);
+      if (index < progress.completed) {
+        stepEl.classList.add('completed');
+      }
+    });
+  }
+
+  function populateActions(actions, userData) {
+    const container = document.getElementById('actionCards');
+    container.innerHTML = actions.map((action, index) => {
+      const completed = userData.completedActions?.includes(action.id) || false;
+      return `
+        <div class="action-card ${completed ? 'completed' : ''}" 
+             onclick="handleActionClick('${action.url}', '${action.id}')"
+             style="animation-delay: ${index * 0.1}s">
+          <div class="action-icon-large">${action.icon}</div>
+          <div class="action-content">
+            <div class="action-title">${action.title}</div>
+            <div class="action-description">${action.description}</div>
+            <div class="action-meta">
+              <span class="action-time">⏱️ ${action.time}</span>
+              ${action.status ? `<span class="action-status ${action.status}">${action.status}</span>` : ''}
+              ${completed ? '<span class="action-status completed">✓ Completed</span>' : ''}
+            </div>
+          </div>
+          <div class="action-arrow">→</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function handleActionClick(url, actionId) {
+    // Track action
+    trackEvent('quick_action_clicked', { action: actionId });
+
+    // Navigate
+    if (url.startsWith('javascript:')) {
+      eval(url.replace('javascript:', ''));
+    } else {
+      window.location.href = url;
+    }
+
+    closePersonalizedWelcome();
+  }
+
+  function startFirstAction() {
+    const firstAction = document.querySelector('.action-card:not(.completed)');
+    if (firstAction) {
+      firstAction.click();
+    } else {
+      closePersonalizedWelcome();
+    }
+  }
+
+  function closePersonalizedWelcome() {
+    const modal = document.getElementById('personalizedWelcome');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  // Track events
+  function trackEvent(event, data) {
+    console.log('Event:', event, data);
+    // Implement your analytics tracking here
+  }
+
+  // Initialize on dashboard load
+  window.addEventListener('DOMContentLoaded', () => {
+    // Check if on dashboard
+    if (!window.location.pathname.includes('dashboard')) return;
+
+    // Get user data
+    fetch('/api/auth/me', {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+    })
+    .then(r => r.json())
+    .then(data => {
+      // Show welcome if needed
+      setTimeout(() => {
+        showPersonalizedWelcome(data.user);
+      }, 500);
+    })
+    .catch(err => console.error('Failed to load user data:', err));
+  });
+
+  // Close on ESC
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closePersonalizedWelcome();
+    }
+  });
+</script>
+

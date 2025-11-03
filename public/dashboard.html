@@ -237,6 +237,72 @@
       font-size: 0.9rem;
     }
     
+    /* Stripe Connect Section */
+    .connect-section {
+      margin-top: 30px;
+    }
+    
+    .connect-card {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(59, 130, 246, 0.1));
+      border: 2px solid rgba(6, 182, 212, 0.3);
+      border-radius: 16px;
+      padding: 24px;
+    }
+    
+    .connect-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    
+    .connect-info h3 {
+      margin: 0 0 8px 0;
+      font-size: 1.25rem;
+      color: #1f2937;
+    }
+    
+    .connect-info p {
+      margin: 0;
+      color: #64748b;
+      font-size: 0.875rem;
+    }
+    
+    .connect-badge {
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    
+    .connect-badge.active {
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
+      border-color: rgba(34, 197, 94, 0.2);
+    }
+    
+    .connect-badge.pending {
+      background: rgba(251, 191, 36, 0.1);
+      color: #fbbf24;
+      border-color: rgba(251, 191, 36, 0.2);
+    }
+    
+    .connect-details {
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 0.875rem;
+      color: #475569;
+    }
+    
+    .connect-actions button {
+      margin-right: 8px;
+    }
+    
     .sites-section {
       margin-top: 30px;
     }
@@ -347,6 +413,23 @@
       <div class="stat-card">
         <div class="stat-value" id="draftSites">0</div>
         <div class="stat-label">Drafts</div>
+      </div>
+    </div>
+    
+    <!-- Stripe Connect Status (Pro/Premium Only) -->
+    <div id="connectSection" class="connect-section" style="display: none; margin-bottom: 30px;">
+      <div class="connect-card">
+        <div class="connect-header">
+          <div class="connect-info">
+            <h3>💳 Payment Processing</h3>
+            <p id="connectDescription">Connect your Stripe account to accept payments from customers</p>
+          </div>
+          <div id="connectBadge" class="connect-badge">Not Connected</div>
+        </div>
+        <div id="connectDetails" style="margin-top: 16px; display: none;"></div>
+        <div class="connect-actions" style="margin-top: 16px;">
+          <button id="connectActionBtn" class="btn-primary">Connect with Stripe</button>
+        </div>
       </div>
     </div>
     
@@ -848,8 +931,87 @@
       }
     };
     
+    // Load Stripe Connect status
+    async function loadConnectStatus() {
+      try {
+        // First check if user has Pro or Premium subscription
+        const subResponse = await fetch('/api/subscription/status', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+        });
+        
+        if (!subResponse.ok) return;
+        
+        const subData = await subResponse.json();
+        const plan = (subData.plan || '').toLowerCase();
+        const isProOrPremium = plan === 'pro' || plan === 'premium';
+        
+        if (!isProOrPremium) {
+          // Hide Connect section for non-Pro/Premium users
+          return;
+        }
+        
+        // Show Connect section
+        const connectSection = document.getElementById('connectSection');
+        connectSection.style.display = 'block';
+        
+        // Check Connect status
+        const response = await fetch('/api/connect/status', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+        });
+        
+        if (!response.ok) return;
+        
+        const data = await response.json();
+        const badge = document.getElementById('connectBadge');
+        const description = document.getElementById('connectDescription');
+        const details = document.getElementById('connectDetails');
+        const actionBtn = document.getElementById('connectActionBtn');
+        
+        if (data.connected) {
+          // Connected and active
+          badge.textContent = '✓ Active';
+          badge.className = 'connect-badge active';
+          description.textContent = 'Your Stripe account is connected and ready to accept payments';
+          
+          // Show details
+          details.style.display = 'block';
+          details.className = 'connect-details';
+          details.innerHTML = `
+            <div><strong>Account ID:</strong> ${data.accountId}</div>
+            ${data.email ? `<div><strong>Email:</strong> ${data.email}</div>` : ''}
+            ${data.businessProfile?.name ? `<div><strong>Business:</strong> ${data.businessProfile.name}</div>` : ''}
+          `;
+          
+          actionBtn.textContent = 'Manage Payment Settings';
+          actionBtn.onclick = () => window.location.href = '/connect.html';
+          
+        } else if (data.accountId) {
+          // Account created but onboarding incomplete
+          badge.textContent = '⚠ Incomplete';
+          badge.className = 'connect-badge pending';
+          description.textContent = 'Complete your Stripe onboarding to start accepting payments';
+          
+          actionBtn.textContent = 'Continue Onboarding';
+          actionBtn.onclick = () => window.location.href = '/connect.html';
+          
+        } else {
+          // Not connected
+          badge.textContent = 'Not Connected';
+          badge.className = 'connect-badge';
+          description.textContent = 'Connect your Stripe account to accept payments from customers';
+          
+          actionBtn.textContent = 'Connect with Stripe';
+          actionBtn.onclick = () => window.location.href = '/connect.html';
+        }
+        
+      } catch (error) {
+        console.error('Failed to load Connect status:', error);
+      }
+    }
+    
     // Initialize
     checkAuth();
+    loadConnectStatus();
   </script>
 </body>
 </html>
