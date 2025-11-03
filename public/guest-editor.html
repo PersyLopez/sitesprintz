@@ -79,6 +79,108 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
 
+    .btn-clear-demo {
+      background: rgba(239, 68, 68, 0.15);
+      color: white;
+      padding: 8px 20px;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+    }
+
+    .btn-clear-demo:hover {
+      background: rgba(239, 68, 68, 0.3);
+    }
+
+    /* Clear Demo Modal */
+    .clear-demo-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10001;
+    }
+
+    .clear-demo-modal.active {
+      display: flex;
+    }
+
+    .clear-demo-content {
+      background: white;
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .clear-demo-icon {
+      font-size: 3rem;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .clear-demo-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #1f2937;
+      margin: 0 0 12px 0;
+      text-align: center;
+    }
+
+    .clear-demo-description {
+      color: #64748b;
+      text-align: center;
+      margin: 0 0 24px 0;
+      line-height: 1.6;
+    }
+
+    .clear-demo-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .btn-cancel-clear {
+      background: #e5e7eb;
+      color: #1f2937;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-cancel-clear:hover {
+      background: #d1d5db;
+    }
+
+    .btn-confirm-clear {
+      background: #ef4444;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-confirm-clear:hover {
+      background: #dc2626;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
     /* Editor Tour Tooltips */
     .editor-tour-overlay {
       position: fixed;
@@ -236,14 +338,36 @@
   <div class="guest-banner" id="guestBanner" style="display: none;">
     <div class="guest-banner-content">
       <div class="guest-banner-text">
-        <strong>🎨 Building in preview mode</strong> — Your progress is saved automatically. Create an account to publish!
+        <strong>🎨 Building with demo data</strong> — Toggle "Clear & Customize" to add your own info. Progress saves automatically!
       </div>
       <div class="guest-banner-actions">
+        <button class="btn-clear-demo" onclick="showClearDemoModal()">
+          🧹 Clear & Customize
+        </button>
         <button class="btn-save-progress" onclick="showSaveModal()">
           💾 Save Progress
         </button>
         <button class="btn-publish-now" onclick="showPublishModal()">
           🚀 Publish Site
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clear Demo Modal -->
+  <div class="clear-demo-modal" id="clearDemoModal">
+    <div class="clear-demo-content">
+      <div class="clear-demo-icon">🧹</div>
+      <h2 class="clear-demo-title">Clear Demo Data?</h2>
+      <p class="clear-demo-description">
+        This will remove all the example content (products, services, testimonials, etc.) so you can add your own information. The template structure will remain intact.
+      </p>
+      <div class="clear-demo-actions">
+        <button class="btn-cancel-clear" onclick="closeClearDemoModal()">
+          Cancel
+        </button>
+        <button class="btn-confirm-clear" onclick="confirmClearDemo()">
+          Yes, Clear Demo Data
         </button>
       </div>
     </div>
@@ -444,6 +568,74 @@
       
       // Redirect to quick registration/publish flow
       window.location.href = '/quick-publish.html';
+    }
+
+    // Clear Demo Modal functions
+    function showClearDemoModal() {
+      document.getElementById('clearDemoModal').classList.add('active');
+    }
+
+    function closeClearDemoModal() {
+      document.getElementById('clearDemoModal').classList.remove('active');
+    }
+
+    function confirmClearDemo() {
+      clearDemoData();
+      closeClearDemoModal();
+      showToast('✓ Demo data cleared! Add your own content now.');
+    }
+
+    function clearDemoData() {
+      // Get current site data
+      const siteData = window.currentSiteData || {};
+      
+      // Clear arrays and text content while keeping structure
+      if (siteData.products) {
+        siteData.products = [];
+      }
+      
+      if (siteData.services && siteData.services.items) {
+        siteData.services.items = [];
+      }
+      
+      if (siteData.testimonials && siteData.testimonials.items) {
+        siteData.testimonials.items = [];
+      }
+      
+      if (siteData.pricing && siteData.pricing.plans) {
+        siteData.pricing.plans = [];
+      }
+      
+      // Clear text content
+      if (siteData.brand) {
+        siteData.brand.name = 'Your Business Name';
+      }
+      
+      if (siteData.hero) {
+        siteData.hero.title = 'Your Headline Here';
+        siteData.hero.subtitle = 'Your subtitle or tagline';
+        siteData.hero.eyebrow = '';
+      }
+      
+      if (siteData.about) {
+        siteData.about.body = '';
+      }
+      
+      if (siteData.contact) {
+        siteData.contact.email = '';
+        siteData.contact.phone = '';
+      }
+      
+      // Update the editor with cleared data
+      window.currentSiteData = siteData;
+      
+      // Trigger editor refresh if available
+      if (window.refreshEditor) {
+        window.refreshEditor(siteData);
+      }
+      
+      // Save the cleared state
+      GuestEditor.saveGuestProgress();
     }
 
     // Toast notification helper

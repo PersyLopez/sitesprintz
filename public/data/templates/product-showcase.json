@@ -47,17 +47,47 @@
     {
       "name": "Hand-crafted Stoneware Mug",
       "price": 28,
-      "description": "Heirloom-quality mug with a matte finish and ergonomic handle."
+      "description": "Heirloom-quality mug with a matte finish and ergonomic handle. Perfect for your morning coffee or evening tea. Each piece is unique."
     },
     {
       "name": "Warm Cedar Candle",
       "price": 36,
-      "description": "Slow-burning soy candle with notes of cedarwood, amber, and sage."
+      "description": "Slow-burning soy candle with notes of cedarwood, amber, and sage. 60-hour burn time. Hand-poured in small batches."
     },
     {
       "name": "Linen Throw Blanket",
       "price": 74,
-      "description": "Soft, breathable linen throw available in oat, slate, and moss."
+      "description": "Soft, breathable linen throw available in oat, slate, and moss. Perfect for any season. Size: 50x60 inches."
+    },
+    {
+      "name": "Ceramic Dinner Plate Set",
+      "price": 98,
+      "description": "Set of 4 hand-glazed dinner plates in a soft cream finish. Microwave and dishwasher safe. 11-inch diameter."
+    },
+    {
+      "name": "Organic Cotton Table Runner",
+      "price": 45,
+      "description": "Hand-woven table runner from 100% organic cotton. Available in natural, charcoal, and terracotta. 72 inches long."
+    },
+    {
+      "name": "Brass & Walnut Serving Board",
+      "price": 89,
+      "description": "Beautiful serving board combining American walnut with brass handles. Perfect for charcuterie. 18x12 inches."
+    },
+    {
+      "name": "Lavender & Honey Soap Bar",
+      "price": 12,
+      "description": "Handmade cold-process soap with organic lavender and local honey. Gentle on sensitive skin. 4 oz bar."
+    },
+    {
+      "name": "Woven Basket Set",
+      "price": 65,
+      "description": "Set of 3 handwoven seagrass baskets in graduated sizes. Perfect for storage or display. Fair trade certified."
+    },
+    {
+      "name": "Vintage-Style Enamel Pitcher",
+      "price": 42,
+      "description": "Classic white enamel pitcher with black rim. Perfect for flowers or serving beverages. Holds 2 quarts."
     }
   ],
   "pricing": {

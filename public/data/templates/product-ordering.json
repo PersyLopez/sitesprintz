@@ -37,19 +37,54 @@
   },
   "products": [
     {
-      "name": "Wireless Earbuds",
+      "name": "Wireless Earbuds Pro",
       "price": 129,
-      "description": "Active noise cancellation, 24-hour battery life, and Qi charging."
+      "description": "Active noise cancellation, 24-hour battery life, and Qi charging. Sweat-resistant with 6 different ear tip sizes. Perfect sound quality."
     },
     {
       "name": "Smart Home Hub",
       "price": 189,
-      "description": "Control lights, climate, and security from one sleek hub."
+      "description": "Control lights, climate, and security from one sleek hub. Works with Alexa, Google, and HomeKit. Voice control included."
     },
     {
       "name": "Portable Solar Charger",
       "price": 89,
-      "description": "Fast USB-C charging with rugged, water-resistant design."
+      "description": "Fast USB-C charging with rugged, water-resistant design. 20,000mAh capacity. Charge 3 devices simultaneously. Perfect for camping."
+    },
+    {
+      "name": "4K Streaming Stick",
+      "price": 59,
+      "description": "Ultra HD streaming with Dolby Vision and Atmos. Works with all major streaming apps. Voice remote included. Easy setup."
+    },
+    {
+      "name": "Wireless Mechanical Keyboard",
+      "price": 149,
+      "description": "Premium mechanical switches with RGB lighting. Connects via Bluetooth or USB-C. Hot-swappable keys. Aluminum frame."
+    },
+    {
+      "name": "Smart LED Light Bulbs (4-Pack)",
+      "price": 79,
+      "description": "16 million colors, dimmable, and voice-controlled. Works with your smart home hub. Set schedules and scenes. Energy efficient."
+    },
+    {
+      "name": "Wireless Charging Pad",
+      "price": 39,
+      "description": "Fast 15W charging for all Qi-enabled devices. Non-slip surface with LED indicator. Includes wall adapter. Slim aluminum design."
+    },
+    {
+      "name": "HD Security Camera",
+      "price": 119,
+      "description": "1080p HD video with night vision and motion detection. Two-way audio. Free cloud storage. Weather-resistant for indoor/outdoor use."
+    },
+    {
+      "name": "Bluetooth Speaker",
+      "price": 99,
+      "description": "360° sound with deep bass. 20-hour battery life. IPX7 waterproof. Perfect for parties, pool, or travel. Connects to 2 devices."
+    },
+    {
+      "name": "Fitness Tracker Watch",
+      "price": 159,
+      "description": "Heart rate monitoring, sleep tracking, GPS, and 50+ workout modes. 7-day battery. Water resistant to 50m. iOS & Android compatible."
     }
   ],
   "pricing": {
