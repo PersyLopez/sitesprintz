@@ -2,12 +2,17 @@
   "brand": {
     "name": "BrightSpark Electric",
     "logo": "assets/logo.svg",
-    "alt": "BrightSpark Electric logo"
+    "alt": "BrightSpark Electric logo",
+    "phone": "+1-555-432-7890",
+    "email": "service@brightsparkelectric.com"
   },
   "themeVars": {
     "color-primary": "#f59e0b",
     "color-primary-600": "#d97706",
-    "color-accent": "#2563eb"
+    "color-accent": "#2563eb",
+    "color-success": "#22c55e",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
   },
   "nav": [
     { "label": "Services", "href": "#services" },
@@ -57,16 +62,19 @@
     "title": "Trusted by our community",
     "items": [
       {
-        "quote": "They rewired our historic home and kept us informed every step of the way.",
-        "author": "Lena K., Homeowner"
+        "text": "They rewired our historic home and kept us informed every step of the way.",
+        "author": "Lena K.",
+        "title": "Homeowner"
       },
       {
-        "quote": "Fast response and professional repairs when our storefront lost power.",
-        "author": "Marcos R., Retail Owner"
+        "text": "Fast response and professional repairs when our storefront lost power.",
+        "author": "Marcos R.",
+        "title": "Retail Owner"
       },
       {
-        "quote": "Inspection passed on the first visit. Their team is top-notch.",
-        "author": "Dana W., General Contractor"
+        "text": "Inspection passed on the first visit. Their team is top-notch.",
+        "author": "Dana W.",
+        "title": "General Contractor"
       }
     ]
   },
@@ -130,5 +138,15 @@
       "price": 199,
       "description": "Thermal imaging report to prevent overloads and unexpected downtime."
     }
-  ]
+  ],
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "service@brightsparkelectric.com",
+    "productCta": "Request Service",
+    "productCtaHref": "tel:+15554327890",
+    "productNote": "Submit your service request and we'll contact you within 24 hours to schedule. Emergency calls available 24/7."
+  },
+  "productsTitle": "Featured Services",
+  "productsSubtitle": "Professional electrical solutions with transparent pricing"
 }

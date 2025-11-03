@@ -1,0 +1,186 @@
+{
+  "brand": {
+    "name": "Mobile Paws Grooming Van",
+    "logo": "assets/logo.svg",
+    "tagline": "We Come to You • Full Salon on Wheels",
+    "phone": "(555) 222-4466",
+    "email": "book@mobilepaws.pet"
+  },
+  "themeVars": {
+    "color-primary": "#06b6d4",
+    "color-accent": "#22d3ee",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "Our Van", "href": "#about"},
+    {"label": "Reviews", "href": "#testimonials"},
+    {"label": "Book", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "🚐 Mobile Dog Grooming",
+    "title": "Professional grooming at your door",
+    "subtitle": "Full-service dog grooming in our custom salon van. We bring everything to your driveway - no stressful car rides. One dog at a time for focused, calm grooming. Book your convenient mobile grooming today!",
+    "cta": [
+      {"label": "Schedule Service", "href": "#contact"},
+      {"label": "See Van", "href": "#about", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1200&q=80",
+    "imageAlt": "Mobile pet grooming van"
+  },
+  "about": {
+    "title": "Grooming Comes to You",
+    "subtitle": "Full salon on wheels",
+    "content": "Mobile Paws brings professional grooming right to your driveway. Our climate-controlled van has everything a traditional salon has - bathing station, grooming table, and all professional equipment. Perfect for anxious dogs, senior pets, or busy families!"
+  },
+  "products": [
+    {
+      "name": "Full Mobile Groom",
+      "price": 85,
+      "description": "Complete grooming service at your door. Bath, haircut, nails, ears. One-on-one attention in our van.",
+      "category": "Full Service",
+      "duration": "1.5-2 hours",
+      "popular": true
+    },
+    {
+      "name": "Mobile Bath & Brush",
+      "price": 55,
+      "description": "Refreshing bath, blow dry, and brush out. We come to you! No car ride stress for your pup.",
+      "category": "Basic",
+      "duration": "1 hour",
+      "popular": true
+    },
+    {
+      "name": "Senior Dog Mobile Groom",
+      "price": 75,
+      "description": "Extra-gentle grooming at your home. Perfect for senior dogs who struggle with travel. Comfort-focused.",
+      "category": "Specialty",
+      "duration": "1.5 hours"
+    },
+    {
+      "name": "Anxious Dog Package",
+      "price": 80,
+      "description": "Calm, patient grooming for nervous dogs. One-on-one attention. Familiar environment helps reduce stress.",
+      "category": "Specialty",
+      "duration": "1.5-2 hours",
+      "popular": true
+    },
+    {
+      "name": "De-Shedding Treatment",
+      "price": 35,
+      "description": "Special treatment to remove loose fur. Dramatically reduce shedding. Add to any mobile groom.",
+      "category": "Add-On",
+      "duration": "Included"
+    },
+    {
+      "name": "Multi-Dog Discount",
+      "price": 150,
+      "description": "Two dogs groomed back-to-back at your home. Save $20! Perfect for multi-dog households.",
+      "category": "Package",
+      "duration": "3-4 hours"
+    }
+  ],
+  "services": {
+    "title": "Mobile Grooming Services",
+    "subtitle": "Professional grooming without leaving home",
+    "items": [
+      {
+        "title": "🚐 We Come to You",
+        "description": "No stressful car rides. We groom your dog in your driveway"
+      },
+      {
+        "title": "👤 One-on-One Care",
+        "description": "Your dog is the only dog in the van. Undivided attention"
+      },
+      {
+        "title": "❤️ Perfect for Special Needs",
+        "description": "Ideal for anxious, senior, or mobility-challenged dogs"
+      },
+      {
+        "title": "🏠 Convenience",
+        "description": "You can watch from your window. Ultimate convenience"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Happy Mobile Clients",
+    "subtitle": "Convenience and quality",
+    "items": [
+      {
+        "text": "Game changer! My anxious dog hated going to the groomer. Now they come to us and she's so much calmer. The convenience is amazing and she looks great!",
+        "author": "Rachel Kim",
+        "title": "Anxious Dog Mom"
+      },
+      {
+        "text": "Perfect for our senior lab who has trouble getting in the car. The groomer is so gentle and patient. Worth every penny for the convenience and care!",
+        "author": "Tom Wilson",
+        "title": "Senior Dog Dad"
+      },
+      {
+        "text": "We have three dogs and getting them all to the groomer was a nightmare. Mobile Paws does all three in our driveway. So convenient and they all look amazing!",
+        "author": "Maria Garcia",
+        "title": "Multi-Dog Household"
+      }
+    ]
+  },
+  "team": {
+    "title": "Your Mobile Groomer",
+    "subtitle": "Professional grooming on wheels",
+    "members": [
+      {
+        "name": "Jake Morrison",
+        "title": "Owner & Mobile Groomer",
+        "bio": "10+ years grooming experience. Built Mobile Paws to provide convenient, stress-free grooming for dogs who struggle with traditional salons. Every dog deserves calm, patient care.",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+        "imageAlt": "Jake Morrison",
+        "credentials": ["Certified Groomer", "10+ Years Experience", "Mobile Grooming Specialist"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Mobile Grooming Process",
+    "subtitle": "Easy and convenient",
+    "steps": [
+      {"title": "Book Appointment", "description": "Schedule online or by phone. Choose your date and time"},
+      {"title": "We Arrive at Your Home", "description": "Our fully-equipped van pulls into your driveway"},
+      {"title": "Groom Your Pup", "description": "One-on-one grooming while you relax at home"},
+      {"title": "All Done!", "description": "Your freshly groomed dog comes back to your door"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "1,200+", "label": "Mobile Grooms"},
+      {"number": "4.9", "label": "Star Rating"},
+      {"number": "100%", "label": "Mobile Convenience"},
+      {"number": "1:1", "label": "Attention"}
+    ]
+  },
+  "contact": {
+    "title": "Schedule Mobile Grooming",
+    "subtitle": "Serving your neighborhood",
+    "phone": "(555) 222-4466",
+    "email": "book@mobilepaws.pet",
+    "address": "Serving 20-mile radius of Downtown Seattle, WA"
+  },
+  "footer": {
+    "text": "🚐 Mobile Paws Grooming • Professional Grooming at Your Door",
+    "awards": [
+      "Best Mobile Groomer 2023",
+      "Certified Groomer",
+      "5-Star Service"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "book@mobilepaws.pet",
+    "productCta": "Book Appointment",
+    "productCtaHref": "tel:+15552224466",
+    "productNote": "Submit your booking request and we'll contact you within 24 hours to schedule your mobile grooming."
+  },
+  "productsTitle": "Mobile Grooming Services",
+  "productsSubtitle": "Full salon service at your door"
+}
+

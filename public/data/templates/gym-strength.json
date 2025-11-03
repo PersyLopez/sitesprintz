@@ -1,0 +1,187 @@
+{
+  "brand": {
+    "name": "Iron Forge Strength Gym",
+    "logo": "assets/logo.svg",
+    "tagline": "Serious Training • Real Results",
+    "phone": "(555) 777-8800",
+    "email": "info@ironforge.gym"
+  },
+  "themeVars": {
+    "color-primary": "#dc2626",
+    "color-accent": "#ef4444",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Training", "href": "#products"},
+    {"label": "Equipment", "href": "#about"},
+    {"label": "Coaches", "href": "#team"},
+    {"label": "Testimonials", "href": "#testimonials"},
+    {"label": "Join", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "💪 Hardcore Strength Training",
+    "title": "Built for serious lifters",
+    "subtitle": "No frills. No gimmicks. Just iron, chalk, and people who are serious about getting strong. Olympic lifting platforms, competition-grade equipment, and a community of lifters who push each other to be better every day.",
+    "cta": [
+      {"label": "💪 Start Training", "href": "#contact"},
+      {"label": "🏋️ See Equipment", "href": "#about", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80",
+    "imageAlt": "Hardcore gym with powerlifting equipment"
+  },
+  "about": {
+    "title": "Welcome to Iron Forge",
+    "subtitle": "Where lifters become legends",
+    "content": "Since 2012, Iron Forge has been the home for serious strength athletes, powerlifters, Olympic weightlifters, and anyone who wants to get objectively stronger. We have the best equipment, experienced coaches, and a no-judgment atmosphere where hard work is respected."
+  },
+  "products": [
+    {
+      "name": "Open Gym Access",
+      "price": 69,
+      "description": "Unlimited gym access 24/7. All equipment, all the time. Perfect for self-directed training.",
+      "category": "Membership",
+      "duration": "Monthly",
+      "popular": true
+    },
+    {
+      "name": "Strength Coaching",
+      "price": 120,
+      "description": "1-on-1 coaching sessions. Custom programming, technique work, and accountability.",
+      "category": "Coaching",
+      "duration": "4 sessions",
+      "popular": true
+    },
+    {
+      "name": "Powerlifting Program",
+      "price": 89,
+      "description": "12-week periodized program for squat, bench, and deadlift. Includes open gym access.",
+      "category": "Programs",
+      "duration": "Monthly"
+    },
+    {
+      "name": "Olympic Lifting",
+      "price": 95,
+      "description": "Learn the snatch and clean & jerk from certified USAW coaches. Technical and powerful.",
+      "category": "Programs",
+      "duration": "Monthly",
+      "popular": true
+    },
+    {
+      "name": "Competition Prep",
+      "price": 200,
+      "description": "8-week prep for powerlifting or weightlifting meets. Includes programming and meet-day coaching.",
+      "category": "Coaching",
+      "duration": "8 weeks"
+    },
+    {
+      "name": "Drop-In",
+      "price": 20,
+      "description": "Single day pass. Train at one of the best-equipped gyms around.",
+      "category": "Day Pass",
+      "duration": "1 day"
+    }
+  ],
+  "services": {
+    "title": "Training Options",
+    "subtitle": "Programs for every strength goal",
+    "items": [
+      {
+        "title": "🏋️ Open Gym",
+        "description": "24/7 access to elite equipment. Train on your schedule with no restrictions"
+      },
+      {
+        "title": "💪 Powerlifting",
+        "description": "Squat, bench, deadlift programming with competition prep available"
+      },
+      {
+        "title": "🏆 Olympic Lifting",
+        "description": "Learn snatch and clean & jerk from certified coaches"
+      },
+      {
+        "title": "👥 Small Group Training",
+        "description": "Train with 3-5 athletes under coach supervision"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Member Results",
+    "subtitle": "Real lifters, real PRs",
+    "items": [
+      {
+        "text": "Added 100lbs to my deadlift in 6 months. The equipment and coaching at Iron Forge are second to none. Best gym I've ever trained at.",
+        "author": "Mike Johnson",
+        "title": "Powerlifter"
+      },
+      {
+        "text": "Finally learned proper Olympic lifting technique. Competed in my first meet and hit PRs on both lifts. Couldn't have done it without the coaches here.",
+        "author": "Alex Chen",
+        "title": "Weightlifter"
+      },
+      {
+        "text": "The community here is incredible. Everyone is supportive and the gym has everything you need to get strong. Worth every penny.",
+        "author": "Sarah Martinez",
+        "title": "Strength Athlete"
+      }
+    ]
+  },
+  "team": {
+    "title": "The Coaches",
+    "subtitle": "Experienced strength athletes",
+    "members": [
+      {
+        "name": "Marcus Steel",
+        "title": "Head Coach & Owner",
+        "bio": "Former competitive powerlifter with a 1800lb total. 15+ years coaching experience. CSCS certified and passionate about building strong athletes.",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+        "imageAlt": "Marcus Steel",
+        "credentials": ["NSCA-CSCS", "USAW Sports Performance", "Elite Powerlifter"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Getting Started",
+    "subtitle": "Join the Iron Forge family",
+    "steps": [
+      {"title": "Tour the Gym", "description": "Stop by anytime to see our facility and meet the members"},
+      {"title": "Choose Your Path", "description": "Select open gym access, coaching, or a specific program"},
+      {"title": "Start Training", "description": "Get your access key and begin your strength journey"},
+      {"title": "Track Progress", "description": "Log lifts, hit PRs, and watch yourself get stronger"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "12", "label": "Years Strong"},
+      {"number": "24/7", "label": "Access"},
+      {"number": "300+", "label": "Active Members"},
+      {"number": "15", "label": "Olympic Platforms"}
+    ]
+  },
+  "contact": {
+    "title": "Visit Iron Forge",
+    "subtitle": "Come see what serious training looks like",
+    "phone": "(555) 777-8800",
+    "email": "info@ironforge.gym",
+    "address": "567 Industrial Way, Warehouse District, Denver, CO 80202"
+  },
+  "footer": {
+    "text": "💪 Iron Forge Strength Gym • Built Different Since 2012",
+    "awards": [
+      "Best Powerlifting Gym 2023",
+      "Elite Lifting Equipment",
+      "Strength Community Award"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "info@ironforge.gym",
+    "productCta": "Join Now",
+    "productCtaHref": "tel:+15557778800",
+    "productNote": "Submit your membership inquiry and we'll get you started. Come tour the gym anytime."
+  },
+  "productsTitle": "Memberships & Training",
+  "productsSubtitle": "Options for every lifter"
+}
+

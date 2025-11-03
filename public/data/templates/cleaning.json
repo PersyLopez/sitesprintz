@@ -279,9 +279,11 @@
   },
   "settings": {
     "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "hello@sparkleclean.com",
     "productCta": "Request Quote",
     "productCtaHref": "mailto:hello@sparkleclean.com",
-    "productNote": "Email or call (555) 789-0123 for a free estimate. Same-day service available!"
+    "productNote": "Submit your quote request and we'll contact you with pricing within 24 hours. Same-day service available!"
   },
   "productsTitle": "Our Services",
   "productsSubtitle": "Professional cleaning solutions for every need"

@@ -16,10 +16,10 @@
   --primary-light: #80b3b3;
   --primary-lighter: #c5dede;
   
-  /* Text Colors */
+  /* Text Colors - WCAG AA compliant */
   --text-dark: #0f172a;
-  --text-medium: #475569;
-  --text-light: #64748b;
+  --text-medium: #334155;
+  --text-light: #475569;
   
   /* Background Colors */
   --bg-light: #f7f9f9;
@@ -63,7 +63,7 @@ body {
   border: none;
   border-radius: 10px;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
@@ -85,12 +85,12 @@ body {
 /* Secondary Button Style */
 .btn-secondary {
   background: white;
-  color: var(--primary-color);
+  color: var(--primary-dark);
   padding: 12px 24px;
-  border: 2px solid var(--primary-color);
+  border: 2px solid var(--primary-dark);
   border-radius: 10px;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
@@ -162,8 +162,8 @@ select:focus {
   padding: 6px 14px;
   border-radius: 20px;
   font-size: 0.85rem;
-  font-weight: 600;
-  border: 1px solid var(--primary-lighter);
+  font-weight: 700;
+  border: 2px solid var(--primary-dark);
 }
 
 /* Alert Styles */
@@ -187,20 +187,22 @@ select:focus {
 }
 
 .alert-info {
-  background: var(--bg-light);
-  color: var(--primary-dark);
-  border: 1px solid var(--primary-lighter);
+  background: #e0f2f1;
+  color: #004d40;
+  border: 2px solid #4db6ac;
+  font-weight: 600;
 }
 
 /* Link Styles */
 a {
-  color: var(--primary-color);
+  color: var(--primary-dark);
   text-decoration: none;
   transition: color 0.3s;
+  font-weight: 600;
 }
 
 a:hover {
-  color: var(--primary-dark);
+  color: #3a6264;
 }
 
 /* Utility Classes */

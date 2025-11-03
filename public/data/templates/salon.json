@@ -235,6 +235,7 @@
         "title": "Master Stylist & Owner",
         "bio": "Sarah brings 15+ years of experience from top salons in New York and Los Angeles. She specializes in color correction and bridal styling.",
         "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
+        "imageAlt": "Sarah Chen",
         "credentials": ["Vidal Sassoon Certified", "Redken Color Specialist", "Featured in Beauty Magazine"]
       }
     ]
@@ -285,9 +286,11 @@
   },
   "settings": {
     "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "bookings@glowstudio.com",
     "productCta": "Book Appointment",
     "productCtaHref": "https://calendly.com/glowstudio",
-    "productNote": "Click to book online through Calendly, or call us at (555) 234-5678. Want payment processing at booking? Contact us about upgrading."
+    "productNote": "Submit your booking request and we'll contact you to confirm your appointment."
   },
   "productsTitle": "Our Services",
   "productsSubtitle": "Expert beauty services tailored to you"

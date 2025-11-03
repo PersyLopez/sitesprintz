@@ -151,6 +151,7 @@
         "title": "Head Trainer & Owner",
         "bio": "Former NFL linebacker with 10+ years of professional training experience. Marcus specializes in strength training and athletic performance.",
         "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+        "imageAlt": "Marcus Johnson",
         "credentials": ["NSCA-CSCS", "NASM-CPT", "USAW Level 1"]
       },
       {
@@ -158,6 +159,7 @@
         "title": "Group Fitness Director",
         "bio": "8+ years leading HIIT, yoga, and specialty classes. Certified nutrition coach passionate about holistic wellness.",
         "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
+        "imageAlt": "Sarah Williams",
         "credentials": ["ACE-CPT", "RYT-200", "Precision Nutrition L1"]
       },
       {
@@ -165,6 +167,7 @@
         "title": "Personal Training Specialist",
         "bio": "Specializes in weight loss, bodybuilding, and injury rehabilitation. Helped 100+ clients achieve their goals.",
         "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "David Chen",
         "credentials": ["NASM-CPT", "ACSM-CPT", "FMS Level 1"]
       }
     ]
@@ -353,9 +356,11 @@
   },
   "settings": {
     "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "membership@irontemple.com",
     "productCta": "Visit to Join",
     "productCtaHref": "tel:+15555551234",
-    "productNote": "Call or visit us to sign up for a membership. First week free trial available!"
+    "productNote": "Submit your membership inquiry and we'll contact you to set up your first week free trial!"
   },
   "productsTitle": "Classes & Training",
   "productsSubtitle": "Diverse fitness options for every goal and fitness level"

@@ -1,0 +1,336 @@
+{
+  "brand": {
+    "name": "Harbor Bistro", 
+    "logo": "assets/logo.svg",
+    "tagline": "Family-Friendly Dining • Comfort Food Done Right",
+    "phone": "(555) 234-5678",
+    "email": "hello@harborbistro.com"
+  },
+  "themeVars": {
+    "color-primary": "#e67e22", 
+    "color-accent": "#d35400",
+    "color-success": "#27ae60",
+    "color-warning": "#f39c12",
+    "color-danger": "#c0392b"
+  },
+  "nav": [
+    {"label": "Full Menu", "href": "#products"},
+    {"label": "Daily Specials", "href": "#services"},
+    {"label": "Kids Menu", "href": "#about"},
+    {"label": "Takeout", "href": "#process"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "🍔 Your Neighborhood Favorite",
+    "title": "Great Food, Great Friends, Great Times",
+    "subtitle": "Welcome to Harbor Bistro, where delicious comfort food meets warm hospitality. Perfect for family dinners, date nights, and everything in between. We're your home away from home.",
+    "cta": [
+      {"label": "🍴 View Menu", "href": "#products"},
+      {"label": "📞 Call for Takeout", "href": "tel:+15552345678", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=80",
+    "imageAlt": "Cozy restaurant interior with families dining"
+  },
+  "about": {
+    "title": "Welcome to Our Family", 
+    "body": "Founded in 2010 by the Martinez family, Harbor Bistro has become a beloved neighborhood gathering spot. We believe great food brings people together. Our menu features classic American favorites made from scratch with quality ingredients. Whether you're celebrating a birthday or just grabbing dinner on a Tuesday, we treat every guest like family.",
+    "subtitle": "Why neighbors love us",
+    "features": [
+      "👨‍👩‍👧‍👦 Family-owned & operated",
+      "🥗 Fresh, never frozen ingredients",
+      "🎂 We celebrate your special days",
+      "🎵 Live music Friday nights",
+      "🍰 Homemade desserts daily",
+      "📦 Easy takeout & delivery"
+    ],
+    "chef": {
+      "name": "Maria Martinez",
+      "title": "Owner & Head Chef",
+      "bio": "Maria grew up in her grandmother's kitchen, learning the art of comfort food. After culinary school, she returned home to open Harbor Bistro with her family. Her goal: serve food that makes people smile.",
+      "image": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80",
+      "imageAlt": "Maria Martinez in the kitchen"
+    }
+  },
+  "products": [
+    {
+      "name": "Classic Burger & Fries",
+      "price": 14,
+      "description": "Half-pound Angus beef, lettuce, tomato, onion, pickles on a brioche bun with crispy fries",
+      "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&q=80",
+      "imageAlt": "Juicy burger with fries",
+      "category": "Burgers & Sandwiches",
+      "popular": true
+    },
+    {
+      "name": "Mom's Meatloaf",
+      "price": 16,
+      "description": "Homestyle meatloaf with mashed potatoes, gravy, and seasonal vegetables",
+      "image": "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=600&q=80",
+      "imageAlt": "Comfort food meatloaf dinner",
+      "category": "Comfort Classics",
+      "popular": true
+    },
+    {
+      "name": "Caesar Salad",
+      "price": 12,
+      "description": "Crisp romaine, parmesan, croutons, house-made Caesar dressing (Add chicken $5)",
+      "image": "https://images.unsplash.com/photo-1546793665-c74683f339c1?w=600&q=80",
+      "imageAlt": "Fresh Caesar salad",
+      "category": "Salads",
+      "vegetarian": true
+    },
+    {
+      "name": "Fish & Chips",
+      "price": 17,
+      "description": "Beer-battered cod, hand-cut fries, coleslaw, tartar sauce",
+      "image": "https://images.unsplash.com/photo-1579208575657-c595a05383b7?w=600&q=80",
+      "imageAlt": "Crispy fish and chips",
+      "category": "Seafood"
+    },
+    {
+      "name": "Chicken Parmesan",
+      "price": 18,
+      "description": "Breaded chicken breast, marinara, mozzarella, served with spaghetti",
+      "image": "https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=600&q=80",
+      "imageAlt": "Chicken parmesan with pasta",
+      "category": "Italian Favorites",
+      "popular": true
+    },
+    {
+      "name": "BBQ Ribs Half Rack",
+      "price": 22,
+      "description": "Slow-cooked pork ribs, house BBQ sauce, coleslaw, cornbread",
+      "image": "https://images.unsplash.com/photo-1544025162-d76694265947?w=600&q=80",
+      "imageAlt": "BBQ ribs dinner",
+      "category": "From the Grill"
+    },
+    {
+      "name": "Kids' Chicken Tenders",
+      "price": 8,
+      "description": "Three crispy tenders with fries and choice of dipping sauce (Includes drink)",
+      "image": "https://images.unsplash.com/photo-1562967914-608f82629710?w=600&q=80",
+      "imageAlt": "Kids chicken tenders meal",
+      "category": "Kids Menu"
+    },
+    {
+      "name": "Chocolate Lava Cake",
+      "price": 8,
+      "description": "Warm chocolate cake with molten center, vanilla ice cream",
+      "image": "https://images.unsplash.com/photo-1606312619470-d9f6a79a6f5f?w=600&q=80",
+      "imageAlt": "Chocolate lava cake dessert",
+      "category": "Desserts",
+      "vegetarian": true,
+      "popular": true
+    }
+  ],
+  "services": {
+    "title": "Daily Specials",
+    "subtitle": "Something special every day of the week",
+    "items": [
+      {
+        "title": "🌮 Taco Tuesday",
+        "description": "$2 tacos all day - beef, chicken, or fish",
+        "features": ["3 taco minimum", "Add sides", "Margarita specials"]
+      },
+      {
+        "title": "🍝 Pasta Wednesday",
+        "description": "All pasta dishes 20% off",
+        "features": ["Choose your pasta", "House-made sauces", "Add meatballs"]
+      },
+      {
+        "title": "🎵 Friday Night Live",
+        "description": "Local musicians + happy hour pricing",
+        "features": ["6-9 PM", "Full bar", "No cover charge"]
+      },
+      {
+        "title": "🥞 Sunday Brunch",
+        "description": "Breakfast & lunch favorites 10 AM - 2 PM",
+        "features": ["Pancakes & waffles", "Eggs your way", "Bottomless mimosas $15"]
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "What Our Guests Say",
+    "subtitle": "Real reviews from real neighbors",
+    "items": [
+      {
+        "text": "Our go-to spot for family dinners! The staff knows us by name and the kids menu is actually good. The burger is incredible too.",
+        "author": "Tom & Sarah Johnson",
+        "location": "Regular Customers",
+        "rating": 5,
+        "date": "1 week ago",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "imageAlt": "Tom Johnson"
+      },
+      {
+        "text": "Best comfort food in town. The meatloaf reminds me of my grandmother's recipe. Portions are generous and prices are fair.",
+        "author": "Linda Martinez",
+        "location": "Food Blogger",
+        "rating": 5,
+        "date": "2 weeks ago",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&q=80",
+        "imageAlt": "Linda Martinez"
+      },
+      {
+        "text": "Friday night live music is a tradition for us. Great atmosphere, fantastic service, and the ribs are fall-off-the-bone perfect!",
+        "author": "Mike Stevens",
+        "location": "Music Enthusiast",
+        "rating": 5,
+        "date": "3 weeks ago",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80",
+        "imageAlt": "Mike Stevens"
+      },
+      {
+        "text": "Had my daughter's 10th birthday party here. The staff made it so special! Great food, reasonable prices, and they really care.",
+        "author": "Jennifer Park",
+        "location": "Birthday Celebration",
+        "rating": 5,
+        "date": "1 month ago",
+        "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
+        "imageAlt": "Jennifer Park"
+      }
+    ],
+    "stats": {
+      "averageRating": 4.7,
+      "totalReviews": 892,
+      "googleRating": 4.7,
+      "yelpRating": 4.6
+    }
+  },
+  "contact": {
+    "title": "Visit Us", 
+    "subtitle": "We're in your neighborhood!",
+    "phone": "(555) 234-5678",
+    "email": "hello@harborbistro.com",
+    "address": "812 Harbor Street, Bayview District, Portland, OR 97201",
+    "coordinates": {
+      "lat": 45.5152,
+      "lng": -122.6784
+    },
+    "parking": "Free parking lot • Street parking • Bike racks available",
+    "accessibility": "Wheelchair accessible • Accessible restrooms • High chairs available",
+    "hours": {
+      "title": "Hours",
+      "items": [
+        "Monday - Thursday: 11:00 AM - 9:00 PM",
+        "Friday - Saturday: 11:00 AM - 10:00 PM",
+        "Sunday: 10:00 AM - 9:00 PM (Brunch until 2 PM)"
+      ],
+      "note": "Walk-ins welcome • Large parties please call ahead"
+    },
+    "reservations": {
+      "phone": "(555) 234-5678",
+      "online": null,
+      "note": "Reservations recommended for parties of 6+ and Friday/Saturday evenings"
+    }
+  },
+  "social": {
+    "facebook": "https://facebook.com/harborbistro",
+    "instagram": "https://instagram.com/harborbistro",
+    "googleMaps": "https://maps.google.com/harborbistro",
+    "yelp": "https://yelp.com/biz/harborbistro-portland",
+    "tripadvisor": "https://tripadvisor.com/harborbistro"
+  },
+  "events": {
+    "title": "Special Events",
+    "subtitle": "Join us for these recurring favorites",
+    "items": [
+      {
+        "title": "Kids Eat Free Mondays",
+        "description": "One free kids meal with each adult entree purchase",
+        "schedule": "Every Monday 5-8 PM",
+        "price": "Free with adult meal"
+      },
+      {
+        "title": "Birthday Club",
+        "description": "Sign up for a free dessert on your birthday!",
+        "schedule": "Year-round",
+        "price": "Free"
+      },
+      {
+        "title": "Private Party Room",
+        "description": "Host your celebration in our back room",
+        "schedule": "Available 7 days",
+        "price": "No room fee (food minimum applies)"
+      }
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "13+", "label": "Years Serving"},
+      {"number": "4.7", "label": "Star Rating"},
+      {"number": "50+", "label": "Menu Items"},
+      {"number": "850+", "label": "Happy Reviews"}
+    ]
+  },
+  "team": {
+    "title": "The Martinez Family",
+    "subtitle": "Family-owned and proud of it",
+    "members": [
+      {
+        "name": "Maria Martinez",
+        "title": "Owner & Head Chef",
+        "bio": "Maria grew up in her grandmother's kitchen, learning the art of comfort food. After culinary school, she returned home to open Harbor Bistro with her family.",
+        "image": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80",
+        "imageAlt": "Maria Martinez",
+        "credentials": ["Culinary Institute Graduate", "Family Recipe Keeper", "Community Favorite"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Easy Takeout & Delivery",
+    "steps": [
+      {"title": "Call or Order Online", "description": "Give us a call or visit our website to order"},
+      {"title": "We Prep Your Food", "description": "Everything is made fresh to order"},
+      {"title": "Pick Up or Delivery", "description": "Ready in 20-30 minutes for pickup"},
+      {"title": "Enjoy at Home", "description": "Our food travels well - still delicious at home!"}
+    ]
+  },
+  "credentials": {
+    "title": "Why Choose Harbor Bistro",
+    "items": [
+      {"icon": "👨‍👩‍👧‍👦", "name": "Family Owned", "description": "Since 2010"},
+      {"icon": "🥗", "name": "Fresh Ingredients", "description": "Never frozen"},
+      {"icon": "🎂", "name": "We Celebrate You", "description": "Birthday club"},
+      {"icon": "📦", "name": "Easy Takeout", "description": "Call ahead"}
+    ]
+  },
+  "faq": {
+    "title": "Common Questions",
+    "items": [
+      {"question": "Do you take reservations?", "answer": "Walk-ins are always welcome! We recommend calling ahead for parties of 6+ or Friday/Saturday evenings."},
+      {"question": "Do you have a kids menu?", "answer": "Yes! We have a full kids menu with favorites like chicken tenders, mac & cheese, and mini burgers. All kids meals include a drink."},
+      {"question": "Can I order takeout?", "answer": "Absolutely! Call us at (555) 234-5678 or order through our website. Most orders are ready in 20-30 minutes."},
+      {"question": "Do you deliver?", "answer": "Yes! We deliver through DoorDash, Uber Eats, and Grubhub. Or call us directly for delivery within 3 miles."},
+      {"question": "What are your daily specials?", "answer": "Taco Tuesday ($2 tacos), Pasta Wednesday (20% off), Friday Live Music, and Sunday Brunch. Plus Kids Eat Free Mondays!"},
+      {"question": "Can you accommodate dietary restrictions?", "answer": "Yes! We can modify most dishes for vegetarian, gluten-free, and allergy needs. Just let your server know."},
+      {"question": "Do you have a private room?", "answer": "Yes! Our back room fits up to 30 people. Perfect for birthdays, showers, and celebrations. No room fee - just a food minimum."},
+      {"question": "Is there parking?", "answer": "Yes! We have a free parking lot behind the restaurant. Street parking is also available."}
+    ]
+  },
+  "footer": {
+    "text": "🍔 Harbor Bistro • Your Neighborhood Favorite Since 2010",
+    "links": [
+      {"label": "Privacy Policy", "href": "#privacy"},
+      {"label": "Order Online", "href": "#order"},
+      {"label": "Careers", "href": "#careers"},
+      {"label": "Gift Cards", "href": "#giftcards"}
+    ],
+    "awards": [
+      "Best Family Restaurant 2023",
+      "Neighborhood Choice Award",
+      "Portland Monthly Readers' Pick"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "hello@harborbistro.com",
+    "productCta": "Call to Order",
+    "productCtaHref": "tel:+15552345678",
+    "productNote": "Submit your order and we'll contact you to arrange pickup or delivery."
+  },
+  "productsTitle": "Our Menu",
+  "productsSubtitle": "Comfort food made with love"
+}
+

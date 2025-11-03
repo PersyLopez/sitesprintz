@@ -280,9 +280,11 @@
   },
   "settings": {
     "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "repairs@techrescue.com",
     "productCta": "Get a Quote",
     "productCtaHref": "tel:+15555556789",
-    "productNote": "Call or visit for a free diagnostic. Most repairs completed same-day!"
+    "productNote": "Submit your repair request and we'll contact you for a free diagnostic. Most repairs completed same-day!"
   },
   "productsTitle": "Repair Services",
   "productsSubtitle": "Fast, affordable repairs for all your devices"

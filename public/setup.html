@@ -8,10 +8,36 @@
   <link rel="stylesheet" href="styles.css" />
   <script src="https://js.stripe.com/v3/"></script>
   <style>
+    /* Beautiful Animations */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    @keyframes slideInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
     .setup-container {
-      max-width: 1000px;
+      max-width: 1400px;
       margin: 0 auto;
-      padding: var(--spacing-lg);
+      padding: var(--spacing-xl);
     }
     
     .progress-bar {
@@ -33,67 +59,137 @@
     
     .step-header {
       text-align: center;
-      margin: var(--spacing-xl) 0;
+      margin: var(--spacing-2xl) 0 var(--spacing-xl);
+      animation: slideInUp 0.6s ease-out;
     }
     
     .step-title {
-      font-size: clamp(1.8rem, 3vw + 1rem, 2.2rem);
-      margin: 0;
-      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-600));
+      font-size: clamp(2.2rem, 4vw + 1rem, 3rem);
+      margin: 0 0 var(--spacing-md);
+      background: linear-gradient(135deg, #ffffff 0%, var(--color-primary) 50%, var(--color-accent) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      font-weight: 700;
+      font-weight: 800;
+      letter-spacing: -0.5px;
     }
     
     .step-subtitle {
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       color: var(--color-muted);
-      margin: var(--spacing-sm) 0;
+      margin: 0;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
     }
     
     .template-grid {
       display: flex;
       flex-direction: column;
-      gap: var(--spacing-xl);
-      margin: var(--spacing-xl) 0;
+      gap: var(--spacing-2xl);
+      margin: var(--spacing-2xl) 0;
     }
 
     .template-tier-card {
-      background: linear-gradient(180deg, rgba(15,27,45,0.45), rgba(15,27,45,0.1));
-      border: 1px solid rgba(148,163,184,0.22);
-      border-radius: calc(var(--radius) + 4px);
-      padding: var(--spacing-xl);
-      box-shadow: var(--shadow-sm);
+      background: linear-gradient(180deg, 
+        rgba(15,27,45,0.6) 0%, 
+        rgba(26,15,46,0.4) 50%, 
+        rgba(15,27,45,0.6) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      border-radius: 20px;
+      padding: var(--spacing-2xl);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+      animation: slideInUp 0.6s ease-out;
+    }
+
+    .template-tier-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.15), transparent);
+      animation: shimmer 3s infinite;
+    }
+
+    .template-tier-header {
+      margin-bottom: var(--spacing-lg);
     }
 
     .template-tier-header h3 {
-      margin: 0;
-      font-size: 1.5rem;
-      color: white;
+      margin: 0 0 var(--spacing-sm);
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 0%, var(--color-primary-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .template-tier-header p {
-      margin: var(--spacing-sm) 0 0;
-      color: rgba(226,232,240,0.8);
+      margin: 0;
+      color: rgba(226,232,240,0.9);
+      font-size: 1.05rem;
     }
 
     .template-card-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: var(--spacing-lg);
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: var(--spacing-xl);
       margin-top: var(--spacing-lg);
     }
     
     .template-card {
       background: var(--color-surface);
       border: 1px solid rgba(0,0,0,0.08);
-      border-radius: var(--radius);
-      padding: var(--spacing-lg);
+      border-radius: 20px;
+      padding: var(--spacing-xl);
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
+      animation: slideInUp 0.6s ease-out;
+    }
+
+    .template-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+      transform: scaleX(0);
+      transition: transform 0.3s;
+    }
+    
+    .template-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(37,99,235,0.1), transparent);
+      transition: left 0.6s;
+    }
+    
+    .template-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(37,99,235,0.15);
+      border-color: var(--color-primary);
+    }
+    
+    .template-card:hover::before {
+      transform: scaleX(1);
+    }
+    
+    .template-card:hover::after {
+      left: 100%;
     }
 
     /* Template Preview Modal */
@@ -176,19 +272,41 @@
     }
 
     .btn-use-template {
-      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-600));
+      background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
       color: white;
-      padding: 10px 24px;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
+      padding: 12px 32px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.9rem;
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-use-template::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.5s;
     }
 
     .btn-use-template:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 16px 48px rgba(99, 102, 241, 0.6);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .btn-use-template:hover::before {
+      left: 100%;
     }
 
     .preview-iframe-container {
@@ -221,56 +339,64 @@
 
     .btn-preview-template {
       flex: 1;
-      background: #f1f5f9;
-      color: #475569;
-      padding: 8px 16px;
-      border: none;
-      border-radius: 6px;
-      font-weight: 600;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.1));
+      color: var(--color-primary-light);
+      padding: 10px 20px;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 8px;
+      font-weight: 700;
       cursor: pointer;
       font-size: 0.85rem;
-      transition: all 0.2s;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-preview-template::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
     }
 
     .btn-preview-template:hover {
-      background: #e2e8f0;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(139, 92, 246, 0.2));
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+      border-color: rgba(99, 102, 241, 0.5);
+    }
+
+    .btn-preview-template:hover::before {
+      left: 100%;
     }
 
     .template-plan-badge {
       position: absolute;
-      top: var(--spacing-sm);
-      left: var(--spacing-sm);
-      background: rgba(37,99,235,0.1);
-      color: var(--color-primary);
-      font-size: 0.75rem;
+      top: var(--spacing-md);
+      right: var(--spacing-md);
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: var(--color-primary-light);
+      font-size: 0.7rem;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-weight: 600;
-      padding: 4px 10px;
+      letter-spacing: 0.1em;
+      font-weight: 700;
+      padding: 6px 14px;
       border-radius: 999px;
-    }
-    
-    .template-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: var(--template-color);
-      transform: scaleX(0);
-      transition: transform 0.2s ease;
-    }
-    
-    .template-card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-hover);
-      border-color: var(--color-primary);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+      animation: pulse 3s ease-in-out infinite;
     }
     
     .template-card.selected {
       border-color: var(--color-primary);
-      box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.15);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3), 0 20px 40px rgba(37,99,235,0.2);
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.05));
     }
     
     .template-card.selected::before {
@@ -279,8 +405,9 @@
 
     .template-card.disabled {
       cursor: default;
-      opacity: 0.6;
+      opacity: 0.5;
       pointer-events: none;
+      filter: grayscale(0.5);
     }
 
     .template-card.disabled:hover {
@@ -290,28 +417,36 @@
     }
     
     .template-icon {
-      font-size: 2.5rem;
+      font-size: 3rem;
       margin-bottom: var(--spacing-md);
       display: block;
+      animation: float 3s ease-in-out infinite;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+    }
+
+    .template-card:hover .template-icon {
+      animation: pulse 0.6s ease-in-out;
     }
     
     .template-name {
-      font-size: 1.3rem;
-      font-weight: 600;
-      margin: 0 0 8px 0;
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin: 0 0 var(--spacing-sm);
+      color: #ffffff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
     .template-desc {
-      color: var(--color-muted);
+      color: rgba(226,232,240,0.8);
       font-size: 0.95rem;
-      line-height: 1.4;
-      margin: 0 0 15px 0;
+      line-height: 1.6;
+      margin: 0 0 var(--spacing-md);
     }
     
     .template-features {
       font-size: 0.85rem;
-      color: var(--color-muted);
-      opacity: 0.8;
+      color: rgba(148,163,184,0.9);
+      line-height: 1.5;
     }
 
     .template-card-actions {
@@ -985,7 +1120,7 @@
       
       <div class="navigation">
         <button class="btn-secondary-large" onclick="prevStep()">← Back</button>
-        <button class="btn-primary-large" onclick="finishSetup()">✅ Save Draft (Free)</button>
+        <button class="btn-primary-large" onclick="publishNow()">🚀 Publish Site</button>
       </div>
     </div>
 
@@ -1373,6 +1508,182 @@
       }
     };
 
+    // Layout configuration for all templates with multiple variants
+    // Helper function to normalize template IDs (remove hyphens for lookup)
+    function normalizeTemplateId(id) {
+      return id.replace(/-/g, '');
+    }
+    
+    // Helper function to restore hyphens (for file paths)
+    function getHyphenatedId(normalizedId) {
+      const map = {
+        'techrepair': 'tech-repair',
+        'petcare': 'pet-care',
+        'autorepair': 'auto-repair',
+        'productshowcase': 'product-showcase'
+      };
+      return map[normalizedId] || normalizedId;
+    }
+    
+    const TEMPLATE_LAYOUTS = {
+      restaurant: {
+        emoji: '🍽️',
+        title: 'Restaurant Layout Style',
+        subtitle: 'Choose the layout that matches your restaurant type',
+        category: 'Food & Dining',
+        color: '#ef4444',
+        defaultLayout: 'casual',
+        layouts: {
+          'fine-dining': { emoji: '🍷', name: 'Fine Dining', desc: 'Upscale, tasting menus' },
+          'casual': { emoji: '🍔', name: 'Casual Dining', desc: 'Family-friendly' },
+          'fast-casual': { emoji: '🥗', name: 'Fast Casual', desc: 'Modern, healthy' }
+        }
+      },
+      salon: {
+        emoji: '💇',
+        title: 'Salon Layout Style',
+        subtitle: 'Choose the layout that matches your salon type',
+        category: 'Beauty & Wellness',
+        color: '#ec4899',
+        defaultLayout: 'modern-studio',
+        layouts: {
+          'luxury-spa': { emoji: '✨', name: 'Luxury Spa', desc: 'High-end, premium' },
+          'modern-studio': { emoji: '💅', name: 'Modern Studio', desc: 'Trendy, contemporary' },
+          'neighborhood': { emoji: '🏘️', name: 'Neighborhood', desc: 'Family-friendly' }
+        }
+      },
+      gym: {
+        emoji: '💪',
+        title: 'Gym Layout Style',
+        subtitle: 'Choose the layout that matches your fitness business',
+        category: 'Fitness & Health',
+        color: '#f59e0b',
+        defaultLayout: 'boutique',
+        layouts: {
+          'boutique': { emoji: '🧘', name: 'Boutique Fitness', desc: 'Specialized classes' },
+          'strength': { emoji: '🏋️', name: 'Strength Gym', desc: 'Powerlifting focused' },
+          'family': { emoji: '👨‍👩‍👧', name: 'Family Center', desc: 'All ages welcome' }
+        }
+      },
+      consultant: {
+        emoji: '📊',
+        title: 'Consultant Layout Style',
+        subtitle: 'Choose the layout that matches your consulting focus',
+        category: 'Professional Services',
+        color: '#3b82f6',
+        defaultLayout: 'small-business',
+        layouts: {
+          'corporate': { emoji: '🏢', name: 'Corporate Strategy', desc: 'Enterprise clients' },
+          'small-business': { emoji: '💼', name: 'Small Business', desc: 'SME focused' },
+          'executive-coach': { emoji: '🎯', name: 'Executive Coach', desc: 'Leadership dev' }
+        }
+      },
+      freelancer: {
+        emoji: '💻',
+        title: 'Freelancer Layout Style',
+        subtitle: 'Choose the layout that matches your specialty',
+        category: 'Freelance Services',
+        color: '#8b5cf6',
+        defaultLayout: 'developer',
+        layouts: {
+          'designer': { emoji: '🎨', name: 'Designer', desc: 'Visual design work' },
+          'developer': { emoji: '⚡', name: 'Developer', desc: 'Code & technical' },
+          'writer': { emoji: '✍️', name: 'Writer', desc: 'Content & copy' }
+        }
+      },
+      techrepair: {
+        emoji: '🔧',
+        title: 'Tech Repair Layout Style',
+        subtitle: 'Choose the layout that matches your repair specialty',
+        category: 'Technical Services',
+        color: '#10b981',
+        defaultLayout: 'phone-repair',
+        layouts: {
+          'phone-repair': { emoji: '📱', name: 'Phone Repair', desc: 'Mobile devices' },
+          'computer': { emoji: '💻', name: 'Computer Service', desc: 'PCs & laptops' },
+          'gaming': { emoji: '🎮', name: 'Gaming Repair', desc: 'Console & PC gaming' }
+        }
+      },
+      cleaning: {
+        emoji: '🧹',
+        title: 'Cleaning Layout Style',
+        subtitle: 'Choose the layout that matches your cleaning business',
+        category: 'Home Services',
+        color: '#06b6d4',
+        defaultLayout: 'residential',
+        layouts: {
+          'residential': { emoji: '🏠', name: 'Residential', desc: 'Home cleaning' },
+          'commercial': { emoji: '🏢', name: 'Commercial', desc: 'Office & business' },
+          'eco-friendly': { emoji: '🌱', name: 'Eco-Friendly', desc: 'Green cleaning' }
+        }
+      },
+      petcare: {
+        emoji: '🐾',
+        title: 'Pet Care Layout Style',
+        subtitle: 'Choose the layout that matches your pet services',
+        category: 'Pet Services',
+        color: '#f97316',
+        defaultLayout: 'full-service',
+        layouts: {
+          'dog-grooming': { emoji: '🐕', name: 'Dog Grooming', desc: 'Grooming specialist' },
+          'full-service': { emoji: '🐾', name: 'Full Service', desc: 'All pet services' },
+          'mobile': { emoji: '🚐', name: 'Mobile Grooming', desc: 'On-location service' }
+        }
+      },
+      electrician: {
+        emoji: '⚡',
+        title: 'Electrician Layout Style',
+        subtitle: 'Choose the layout that matches your electrical services',
+        category: 'Home Services',
+        color: '#eab308',
+        defaultLayout: 'residential',
+        layouts: {
+          'residential': { emoji: '🏠', name: 'Residential', desc: 'Home electrical' },
+          'commercial': { emoji: '🏢', name: 'Commercial', desc: 'Business electrical' },
+          'smart-home': { emoji: '🤖', name: 'Smart Home', desc: 'Home automation' }
+        }
+      },
+      autorepair: {
+        emoji: '🚗',
+        title: 'Auto Repair Layout Style',
+        subtitle: 'Choose the layout that matches your auto services',
+        category: 'Automotive',
+        color: '#dc2626',
+        defaultLayout: 'full-service',
+        layouts: {
+          'quick-service': { emoji: '⚡', name: 'Quick Service', desc: 'Oil & tires' },
+          'full-service': { emoji: '🔧', name: 'Full Service', desc: 'Complete repair' },
+          'performance': { emoji: '🏁', name: 'Performance', desc: 'Tuning & upgrades' }
+        }
+      },
+      plumbing: {
+        emoji: '🔧',
+        title: 'Plumbing Layout Style',
+        subtitle: 'Choose the layout that matches your plumbing services',
+        category: 'Home Services',
+        color: '#0ea5e9',
+        defaultLayout: 'emergency',
+        layouts: {
+          'emergency': { emoji: '🚨', name: 'Emergency', desc: '24/7 service' },
+          'renovation': { emoji: '🛁', name: 'Renovation', desc: 'Remodeling focus' },
+          'commercial': { emoji: '🏢', name: 'Commercial', desc: 'Business plumbing' }
+        }
+      },
+      productshowcase: {
+        emoji: '🛍️',
+        title: 'Showcase Layout Style',
+        subtitle: 'Choose the layout that matches your product type',
+        category: 'Retail',
+        color: '#a855f7',
+        defaultLayout: 'fashion',
+        layouts: {
+          'fashion': { emoji: '👗', name: 'Fashion Boutique', desc: 'Clothing & accessories' },
+          'home-goods': { emoji: '🏡', name: 'Home Goods', desc: 'Home essentials' },
+          'artisan': { emoji: '🎨', name: 'Artisan Crafts', desc: 'Handmade goods' }
+        }
+      }
+    };
+
     function resolveTemplateFeatures(template) {
       if (!template) return [];
       if (Array.isArray(template.features) && template.features.length) {
@@ -1410,6 +1721,53 @@
 
       const description = template.description || 'Customize this template to match your brand.';
       const features = resolveTemplateFeatures(template);
+      
+      // Check if this template has multiple layouts
+      // Find which base template this ID belongs to
+      let baseId = null;
+      let layoutConfig = null;
+      
+      // Try to find config by normalizing the template ID
+      const normalizedId = normalizeTemplateId(template.id);
+      for (const [key, config] of Object.entries(TEMPLATE_LAYOUTS)) {
+        const normalizedKey = normalizeTemplateId(key);
+        if (normalizedId === normalizedKey || normalizedId.startsWith(normalizedKey)) {
+          baseId = getHyphenatedId(key);
+          layoutConfig = config;
+          break;
+        }
+      }
+      
+      let layoutSelectorHtml = '';
+      
+      if (layoutConfig) {
+        const layoutButtons = Object.entries(layoutConfig.layouts).map(([key, layout]) => {
+          const fullId = `${baseId}-${key}`;
+          const isSelected = template.id === fullId;
+          return `
+            <button type="button" class="layout-btn" data-layout="${key}" onclick="switchLayout('${baseId}', '${key}')" style="padding: 14px; border: 2px solid ${isSelected ? 'var(--color-primary)' : 'rgba(255,255,255,0.15)'}; background: ${isSelected ? 'rgba(99, 102, 241, 0.15)' : 'rgba(255,255,255,0.05)'}; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-align: left;">
+              <div style="font-size: 1.5rem; margin-bottom: 6px;">${layout.emoji}</div>
+              <div style="font-weight: 700; font-size: 0.9rem; color: var(--color-text); margin-bottom: 4px;">${layout.name}</div>
+              <div style="font-size: 0.75rem; color: var(--color-muted); line-height: 1.4;">${layout.desc}</div>
+            </button>
+          `;
+        }).join('');
+        
+        layoutSelectorHtml = `
+          <div style="margin: 20px 0; padding: 20px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.08)); border: 2px solid rgba(99, 102, 241, 0.2); border-radius: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+              <span style="font-size: 1.5rem;">${layoutConfig.emoji}</span>
+              <div>
+                <div style="font-weight: 700; font-size: 0.95rem; color: var(--color-text); margin-bottom: 4px;">${layoutConfig.title}</div>
+                <div style="font-size: 0.85rem; color: var(--color-muted);">${layoutConfig.subtitle}</div>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
+              ${layoutButtons}
+            </div>
+          </div>
+        `;
+      }
 
       summary.style.display = 'block';
       summary.innerHTML = `
@@ -1420,6 +1778,7 @@
             <p class="summary-description">${description}</p>
           </div>
         </div>
+        ${layoutSelectorHtml}
         <div class="summary-actions">
           <button type="button" class="btn btn-secondary" onclick="returnToTemplateSelection()">Change template</button>
           <button type="button" class="btn btn-primary" onclick="ensurePreviewVisible()">View Live Preview</button>
@@ -1428,6 +1787,25 @@
           ${features.map(feature => `<li><span aria-hidden="true">✔</span><span>${feature}</span></li>`).join('')}
         </ul>
       `;
+      
+      // Add hover effects to layout buttons
+      if (layoutConfig) {
+        const layoutBtns = summary.querySelectorAll('.layout-btn');
+        layoutBtns.forEach(btn => {
+          btn.addEventListener('mouseenter', function() {
+            if (this.style.borderColor !== 'var(--color-primary)') {
+              this.style.borderColor = 'rgba(99, 102, 241, 0.4)';
+              this.style.transform = 'translateY(-2px)';
+            }
+          });
+          btn.addEventListener('mouseleave', function() {
+            if (this.style.borderColor !== 'var(--color-primary)') {
+              this.style.borderColor = 'rgba(255,255,255,0.15)';
+              this.style.transform = 'translateY(0)';
+            }
+          });
+        });
+      }
     }
 
     let previewingTemplate = null;
@@ -1648,20 +2026,40 @@
         preview.title = 'Preview template in modal';
         preview.onclick = (event) => {
           event.stopPropagation();
-          openTemplatePreview(template, `${template.charAt(0).toUpperCase() + template.slice(1).replace(/-/g, ' ')} Template`);
+          openTemplatePreview(template.id, template.name);
         };
 
         actions.appendChild(selectBtn);
         actions.appendChild(preview);
         card.appendChild(actions);
 
-        card.addEventListener('click', () => selectTemplate(template, card));
+        card.addEventListener('click', () => {
+          if (!isDisabled) {
+            selectTemplate(template, card);
+          }
+        });
       }
 
       return card;
     }
 
     function selectTemplate(template, element) {
+      // Check if this template has multiple layouts and default to the default layout
+      // Normalize ID by removing hyphens for lookup (tech-repair -> techrepair)
+      const normalizedId = template.id.replace(/-/g, '');
+      const layoutConfig = TEMPLATE_LAYOUTS[normalizedId];
+      
+      if (layoutConfig) {
+        // This is a base template with layouts, default to the default layout
+        const defaultLayoutKey = layoutConfig.defaultLayout;
+        const defaultLayoutInfo = layoutConfig.layouts[defaultLayoutKey];
+        template = {
+          ...template,
+          id: `${template.id}-${defaultLayoutKey}`,
+          name: `${template.name} (${defaultLayoutInfo.name})`
+        };
+      }
+      
       // Premium templates are now available!
       selectedTemplate = template;
       
@@ -1707,6 +2105,46 @@
           updatePreview();
         }, 100);
       }, 800);
+    }
+
+    
+    async function switchLayout(baseId, layoutKey) {
+      const layoutConfig = TEMPLATE_LAYOUTS[baseId];
+      if (!layoutConfig) return;
+      
+      const layoutInfo = layoutConfig.layouts[layoutKey];
+      if (!layoutInfo) return;
+      
+      const templateId = `${baseId}-${layoutKey}`;
+      
+      // Update selected template
+      selectedTemplate = {
+        id: templateId,
+        name: `${baseId.charAt(0).toUpperCase() + baseId.slice(1)} (${layoutInfo.name})`,
+        category: layoutConfig.category,
+        color: layoutConfig.color,
+        plan: 'Starter'
+      };
+      
+      // Update the template summary to reflect new selection
+      renderTemplateSummary(selectedTemplate);
+      
+      // Reload template data
+      await setupCustomize();
+      
+      // Update preview
+      updatePreview();
+      
+      // Show a subtle notification
+      const notification = document.createElement('div');
+      notification.style.cssText = 'position: fixed; top: 80px; right: 20px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 12px 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000; font-weight: 600; animation: slideInRight 0.3s ease;';
+      notification.innerHTML = `✨ Switched to ${layoutInfo.name}`;
+      document.body.appendChild(notification);
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.3s';
+        setTimeout(() => notification.remove(), 300);
+      }, 2000);
     }
 
     function nextStep() {
@@ -2914,6 +3352,30 @@
         closeTemplatePreview();
       }
     });
+
+    // Publish Now - Skip old draft system and go directly to publish
+    function publishNow() {
+      // Save progress to localStorage for quick-publish flow
+      const siteData = {
+        template: selectedTemplate?.id,
+        businessName: document.getElementById('businessName')?.value,
+        heroTitle: document.getElementById('heroTitle')?.value,
+        heroSubtitle: document.getElementById('heroSubtitle')?.value,
+        heroImage: document.getElementById('heroImage')?.value,
+        contactEmail: document.getElementById('contactEmail')?.value,
+        contactPhone: document.getElementById('contactPhone')?.value,
+        contactAddress: document.getElementById('contactAddress')?.value,
+      };
+      
+      localStorage.setItem('guestEditorProgress', JSON.stringify({
+        data: siteData,
+        timestamp: Date.now(),
+        template: selectedTemplate?.id
+      }));
+      
+      // Redirect to quick publish
+      window.location.href = '/quick-publish.html';
+    }
 
     // Demo Data Toggle Functions
     let demoDataBackup = null; // Store original demo data

@@ -2,12 +2,17 @@
   "brand": {
     "name": "ClearFlow Plumbing",
     "logo": "assets/logo.svg",
-    "alt": "ClearFlow Plumbing emblem"
+    "alt": "ClearFlow Plumbing emblem",
+    "phone": "+1-555-765-4321",
+    "email": "dispatch@clearflowplumbing.com"
   },
   "themeVars": {
     "color-primary": "#0ea5e9",
     "color-primary-600": "#0284c7",
-    "color-accent": "#14b8a6"
+    "color-accent": "#14b8a6",
+    "color-success": "#22c55e",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
   },
   "nav": [
     { "label": "Services", "href": "#services" },
@@ -57,16 +62,19 @@
     "title": "Hear from our customers",
     "items": [
       {
-        "quote": "They replaced our water heater the same day and handled all the permits.",
-        "author": "Shannon M., Homeowner"
+        "text": "They replaced our water heater the same day and handled all the permits.",
+        "author": "Shannon M.",
+        "title": "Homeowner"
       },
       {
-        "quote": "Our restaurant cannot afford downtime. ClearFlow keeps our drains running.",
-        "author": "Victor T., Restaurant Owner"
+        "text": "Our restaurant cannot afford downtime. ClearFlow keeps our drains running.",
+        "author": "Victor T.",
+        "title": "Restaurant Owner"
       },
       {
-        "quote": "Professional, friendly, and transparent with every recommendation.",
-        "author": "Evelyn D., Property Manager"
+        "text": "Professional, friendly, and transparent with every recommendation.",
+        "author": "Evelyn D.",
+        "title": "Property Manager"
       }
     ]
   },
@@ -130,5 +138,15 @@
       "price": 349,
       "description": "High-pressure hydro-jetting for main lines up to 12 inches."
     }
-  ]
+  ],
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "dispatch@clearflowplumbing.com",
+    "productCta": "Request Service",
+    "productCtaHref": "tel:+15557654321",
+    "productNote": "Submit your service request and we'll contact you within 24 hours. Emergency service available 24/7."
+  },
+  "productsTitle": "Featured Services",
+  "productsSubtitle": "Professional plumbing solutions with upfront pricing"
 }

@@ -1,0 +1,186 @@
+{
+  "brand": {
+    "name": "TechCare Computer Services",
+    "logo": "assets/logo.svg",
+    "tagline": "PC & Mac Repair • Data Recovery",
+    "phone": "(555) 888-4455",
+    "email": "support@techcare.services"
+  },
+  "themeVars": {
+    "color-primary": "#3b82f6",
+    "color-accent": "#60a5fa",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "Business", "href": "#about"},
+    {"label": "Reviews", "href": "#testimonials"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "💻 Computer Repair & IT Support",
+    "title": "Expert computer repair for home & business",
+    "subtitle": "From virus removal to hardware upgrades, we fix all PC and Mac issues. Onsite service available. Remote support for quick fixes. Serving homes and small businesses since 2010.",
+    "cta": [
+      {"label": "Schedule Service", "href": "#contact"},
+      {"label": "View Services", "href": "#products", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=1200&q=80",
+    "imageAlt": "Computer technician working on laptop repair"
+  },
+  "about": {
+    "title": "Comprehensive IT Solutions",
+    "subtitle": "Your trusted technology partner",
+    "content": "TechCare provides complete computer repair and IT support for homes and small businesses. Our certified technicians handle everything from simple fixes to complex network issues. Fast, reliable service with honest pricing."
+  },
+  "products": [
+    {
+      "name": "Computer Diagnostics",
+      "price": 59,
+      "description": "Complete system diagnostic to identify all issues. Free if you proceed with repair. Usually same-day.",
+      "category": "Diagnostic",
+      "duration": "2-4 hours",
+      "popular": true
+    },
+    {
+      "name": "Virus & Malware Removal",
+      "price": 99,
+      "description": "Complete malware removal, security update, and system optimization. Protect your data and privacy.",
+      "category": "Security",
+      "duration": "Same day",
+      "popular": true
+    },
+    {
+      "name": "Hardware Upgrade",
+      "price": 149,
+      "description": "RAM, SSD, or hard drive upgrades. Speed up your computer dramatically. Parts + labor included.",
+      "category": "Upgrade",
+      "duration": "1-2 days"
+    },
+    {
+      "name": "Data Recovery",
+      "price": 199,
+      "description": "Recover deleted files or data from failed drives. Emergency service available. Success-based pricing.",
+      "category": "Recovery",
+      "duration": "2-5 days",
+      "popular": true
+    },
+    {
+      "name": "Business IT Support",
+      "price": 150,
+      "description": "Per hour IT support for small businesses. Network setup, troubleshooting, and maintenance.",
+      "category": "Business",
+      "duration": "Per hour"
+    },
+    {
+      "name": "Remote Support",
+      "price": 79,
+      "description": "Fix many issues remotely without leaving home. Fast and convenient. Same-day availability.",
+      "category": "Remote",
+      "duration": "1 hour"
+    }
+  ],
+  "services": {
+    "title": "IT Services",
+    "subtitle": "Complete computer and network solutions",
+    "items": [
+      {
+        "title": "🔧 Repair & Upgrade",
+        "description": "Hardware repairs, component upgrades, and performance optimization"
+      },
+      {
+        "title": "🛡️ Security & Recovery",
+        "description": "Virus removal, data recovery, and system security hardening"
+      },
+      {
+        "title": "🏢 Business IT",
+        "description": "Network setup, server maintenance, and ongoing IT support"
+      },
+      {
+        "title": "💻 Remote Support",
+        "description": "Quick fixes via remote access. Convenient and affordable"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Client Feedback",
+    "subtitle": "Trusted by homes and businesses",
+    "items": [
+      {
+        "text": "My computer was running so slow I was ready to buy a new one. TechCare upgraded it for $200 and now it's faster than ever! Saved me so much money.",
+        "author": "Linda Thompson",
+        "title": "Home User"
+      },
+      {
+        "text": "They recovered all my files after my hard drive crashed. I thought everything was lost. Professional service and fair pricing. Highly recommend!",
+        "author": "Robert Chen",
+        "title": "Small Business Owner"
+      },
+      {
+        "text": "Use them for all our office IT needs. Response time is great, they explain things clearly, and pricing is always reasonable. Best IT support we've had.",
+        "author": "Maria Garcia",
+        "title": "Office Manager"
+      }
+    ]
+  },
+  "team": {
+    "title": "Our Technicians",
+    "subtitle": "Certified IT professionals",
+    "members": [
+      {
+        "name": "David Martinez",
+        "title": "Owner & Lead Technician",
+        "bio": "A+ and Network+ certified with 15+ years in IT. Former corporate IT manager now serving the community. Specializes in both Mac and PC systems.",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+        "imageAlt": "David Martinez",
+        "credentials": ["CompTIA A+ Certified", "Network+ Certified", "15+ Years Experience"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Service Process",
+    "subtitle": "Simple and transparent",
+    "steps": [
+      {"title": "Contact Us", "description": "Call, email, or book online. Describe your issue"},
+      {"title": "Diagnostic", "description": "We'll diagnose the problem and provide a clear quote"},
+      {"title": "Repair", "description": "Fix approved. Most repairs completed within 24-48 hours"},
+      {"title": "Follow-up", "description": "30-day warranty and free follow-up support"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "14+", "label": "Years in Business"},
+      {"number": "3,000+", "label": "Computers Fixed"},
+      {"number": "4.8", "label": "Star Rating"},
+      {"number": "95%", "label": "First-Time Fix Rate"}
+    ]
+  },
+  "contact": {
+    "title": "Get Tech Support",
+    "subtitle": "Onsite or remote service available",
+    "phone": "(555) 888-4455",
+    "email": "support@techcare.services",
+    "address": "456 Business Park, Suite 210, Austin, TX 78701"
+  },
+  "footer": {
+    "text": "💻 TechCare Computer Services • Trusted IT Since 2010",
+    "awards": [
+      "A+ Certified Technicians",
+      "Best Computer Repair 2023",
+      "Small Business Champion"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "support@techcare.services",
+    "productCta": "Request Service",
+    "productCtaHref": "tel:+15558884455",
+    "productNote": "Submit your service request and we'll contact you within 4 hours to schedule."
+  },
+  "productsTitle": "Computer Services",
+  "productsSubtitle": "Honest pricing, expert service"
+}
+

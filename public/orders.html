@@ -273,6 +273,68 @@
       color: #94a3b8;
     }
 
+    /* Bulk Actions */
+    .bulk-actions-bar {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .bulk-actions-bar.visible {
+      display: flex;
+    }
+
+    .bulk-info {
+      font-weight: 600;
+    }
+
+    .bulk-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .bulk-btn {
+      padding: 8px 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .bulk-btn:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-1px);
+    }
+
+    .order-checkbox {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
     .loading {
       text-align: center;
       padding: 40px;
@@ -338,6 +400,18 @@
       <button class="filter-btn" data-status="cancelled" onclick="filterOrders('cancelled')">
         Cancelled
       </button>
+    </div>
+
+    <!-- Bulk Actions Bar -->
+    <div class="bulk-actions-bar" id="bulkActionsBar">
+      <div class="bulk-info">
+        <span id="selectedCount">0</span> orders selected
+      </div>
+      <div class="bulk-actions">
+        <button class="bulk-btn" onclick="bulkMarkCompleted()">✓ Mark Completed</button>
+        <button class="bulk-btn" onclick="bulkMarkCancelled()">✕ Cancel Orders</button>
+        <button class="bulk-btn" onclick="clearSelection()">Clear Selection</button>
+      </div>
     </div>
 
     <div id="error-message"></div>
@@ -473,9 +547,12 @@
       return `
         <div class="order-card">
           <div class="order-header">
-            <div>
-              <div class="order-id">Order #${order.orderId}</div>
-              <div class="order-date">${formattedDate}</div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <input type="checkbox" class="order-checkbox" data-order-id="${order.orderId}" onchange="updateBulkSelection()">
+              <div>
+                <div class="order-id">Order #${order.orderId}</div>
+                <div class="order-date">${formattedDate}</div>
+              </div>
             </div>
             <span class="status-badge status-${order.status}">${order.status}</span>
           </div>
@@ -580,6 +657,111 @@
       setTimeout(() => {
         container.innerHTML = '';
       }, 3000);
+    }
+
+    // Bulk Actions
+    function getSelectedOrders() {
+      const checkboxes = document.querySelectorAll('.order-checkbox:checked');
+      return Array.from(checkboxes).map(cb => cb.dataset.orderId);
+    }
+
+    function updateBulkSelection() {
+      const selected = getSelectedOrders();
+      const bulkBar = document.getElementById('bulkActionsBar');
+      const countSpan = document.getElementById('selectedCount');
+      
+      countSpan.textContent = selected.length;
+      
+      if (selected.length > 0) {
+        bulkBar.classList.add('visible');
+      } else {
+        bulkBar.classList.remove('visible');
+      }
+    }
+
+    function clearSelection() {
+      document.querySelectorAll('.order-checkbox:checked').forEach(cb => {
+        cb.checked = false;
+      });
+      updateBulkSelection();
+    }
+
+    async function bulkMarkCompleted() {
+      const selected = getSelectedOrders();
+      if (selected.length === 0) return;
+      
+      if (!confirm(`Mark ${selected.length} order(s) as completed?`)) return;
+      
+      const token = getAuthToken();
+      let successCount = 0;
+      
+      for (const orderId of selected) {
+        try {
+          const response = await fetch(`/api/sites/${currentSiteId}/orders/${orderId}`, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status: 'completed' })
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            const index = allOrders.findIndex(o => o.orderId === orderId);
+            if (index !== -1) {
+              allOrders[index] = data.order;
+            }
+            successCount++;
+          }
+        } catch (error) {
+          console.error(`Failed to update order ${orderId}:`, error);
+        }
+      }
+      
+      // Re-render and clear selection
+      renderOrders();
+      clearSelection();
+      showSuccess(`${successCount} order(s) marked as completed!`);
+    }
+
+    async function bulkMarkCancelled() {
+      const selected = getSelectedOrders();
+      if (selected.length === 0) return;
+      
+      if (!confirm(`Cancel ${selected.length} order(s)?`)) return;
+      
+      const token = getAuthToken();
+      let successCount = 0;
+      
+      for (const orderId of selected) {
+        try {
+          const response = await fetch(`/api/sites/${currentSiteId}/orders/${orderId}`, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status: 'cancelled' })
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            const index = allOrders.findIndex(o => o.orderId === orderId);
+            if (index !== -1) {
+              allOrders[index] = data.order;
+            }
+            successCount++;
+          }
+        } catch (error) {
+          console.error(`Failed to update order ${orderId}:`, error);
+        }
+      }
+      
+      // Re-render and clear selection
+      renderOrders();
+      clearSelection();
+      showSuccess(`${successCount} order(s) cancelled!`);
     }
 
     // Initialize

@@ -1,0 +1,128 @@
+{
+  "brand": {
+    "name": "Haven Home Goods",
+    "logo": "assets/logo.svg",
+    "tagline": "Thoughtful Home Essentials",
+    "phone": "(555) 888-4477",
+    "email": "shop@havenhome.goods"
+  },
+  "themeVars": {
+    "color-primary": "#059669",
+    "color-accent": "#34d399",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Shop", "href": "#products"},
+    {"label": "About", "href": "#about"},
+    {"label": "Visit", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "🏡 Thoughtful Home Goods",
+    "title": "Make your house a haven",
+    "subtitle": "Carefully curated home essentials that blend function with beauty. From kitchen staples to cozy textiles, discover pieces that elevate everyday living. Browse online or visit our showroom.",
+    "cta": [
+      {"label": "Shop Collection", "href": "#products"},
+      {"label": "Visit Showroom", "href": "#contact", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1556912167-f556f1f39faa?w=1200&q=80",
+    "imageAlt": "Beautifully styled home interior"
+  },
+  "about": {
+    "title": "Thoughtful Living",
+    "subtitle": "Quality over quantity",
+    "content": "Haven specializes in well-made home goods that stand the test of time. We believe your home should reflect your values - quality craftsmanship, sustainable materials, and timeless design. Every product is chosen with intention."
+  },
+  "products": [
+    {
+      "name": "Hand-Thrown Ceramic Dinnerware Set",
+      "price": 245,
+      "description": "16-piece dinnerware set by local artisan. Microwave and dishwasher safe. Each piece unique. Service for 4.",
+      "image": "https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=600&q=80",
+      "imageAlt": "Ceramic dinnerware",
+      "category": "Kitchen",
+      "popular": true
+    },
+    {
+      "name": "Organic Cotton Throw Blanket",
+      "price": 89,
+      "description": "Luxuriously soft organic cotton throw. Perfect weight for all seasons. Multiple neutral colors. Machine washable.",
+      "image": "https://images.unsplash.com/photo-1581879086430-7c12a0534d13?w=600&q=80",
+      "imageAlt": "Cotton throw blanket",
+      "category": "Textiles",
+      "popular": true
+    },
+    {
+      "name": "Solid Walnut Cutting Board",
+      "price": 78,
+      "description": "Heirloom-quality walnut cutting board. Hand-finished with food-safe oil. Makes a beautiful gift.",
+      "image": "https://images.unsplash.com/photo-1594618801512-1090f1a7c1e1?w=600&q=80",
+      "imageAlt": "Walnut cutting board",
+      "category": "Kitchen",
+      "popular": true
+    },
+    {
+      "name": "Handwoven Jute Area Rug",
+      "price": 195,
+      "description": "Natural jute area rug, handwoven by artisans. Durable and sustainable. Multiple sizes available.",
+      "image": "https://images.unsplash.com/photo-1600166898405-da9535204843?w=600&q=80",
+      "imageAlt": "Jute area rug",
+      "category": "Textiles"
+    },
+    {
+      "name": "Vintage-Inspired Glass Vase",
+      "price": 42,
+      "description": "Beautiful mouth-blown glass vase. Perfect for fresh or dried flowers. Timeless design.",
+      "image": "https://images.unsplash.com/photo-1588159343745-445ae0b16383?w=600&q=80",
+      "imageAlt": "Glass vase",
+      "category": "Decor"
+    },
+    {
+      "name": "Linen Napkin Set",
+      "price": 56,
+      "description": "Set of 4 pure linen napkins. Softens with each wash. Available in curated colors. Eco-friendly.",
+      "image": "https://images.unsplash.com/photo-1600166898729-4d1e5230e196?w=600&q=80",
+      "imageAlt": "Linen napkins",
+      "category": "Kitchen"
+    }
+  ],
+  "testimonials": {
+    "title": "Customer Stories",
+    "subtitle": "Building beautiful homes",
+    "items": [
+      {
+        "text": "Everything I've bought from Haven is still in perfect condition years later. The quality is exceptional and the style is timeless. Worth every penny!",
+        "author": "Rachel Kim",
+        "title": "Long-Time Customer"
+      },
+      {
+        "text": "Love supporting local artisans through Haven. The dinnerware set I bought gets compliments at every dinner party. Beautiful and functional!",
+        "author": "Marcus Johnson",
+        "title": "Happy Homeowner"
+      }
+    ]
+  },
+  "contact": {
+    "title": "Visit Our Showroom",
+    "subtitle": "See and touch the quality",
+    "phone": "(555) 888-4477",
+    "email": "shop@havenhome.goods",
+    "address": "456 Main Street, Old Town, Portland, OR 97209"
+  },
+  "footer": {
+    "text": "🏡 Haven Home Goods • Thoughtful Living",
+    "awards": []
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "shop@havenhome.goods",
+    "productCta": "Inquire",
+    "productCtaHref": "tel:+15558884477",
+    "productNote": "Contact us to check availability or arrange in-store pickup. Visit our showroom to see products in person."
+  },
+  "productsTitle": "Curated Collection",
+  "productsSubtitle": "Quality pieces for thoughtful living"
+}
+

@@ -1,0 +1,186 @@
+{
+  "brand": {
+    "name": "Pampered Paws Dog Grooming",
+    "logo": "assets/logo.svg",
+    "tagline": "Professional Dog Grooming • Gentle Care",
+    "phone": "(555) 666-9900",
+    "email": "woof@pamperedpaws.pet"
+  },
+  "themeVars": {
+    "color-primary": "#f59e0b",
+    "color-accent": "#fbbf24",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "About", "href": "#about"},
+    {"label": "Gallery", "href": "#testimonials"},
+    {"label": "Book", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "🐕 Professional Dog Grooming",
+    "title": "Your pup deserves to be pampered",
+    "subtitle": "Expert grooming for dogs of all breeds and sizes. From basic baths to full spa treatments, we make grooming a positive experience. Gentle handling, premium products, and lots of treats!",
+    "cta": [
+      {"label": "Book Appointment", "href": "#contact"},
+      {"label": "View Services", "href": "#products", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1200&q=80",
+    "imageAlt": "Happy dog being groomed"
+  },
+  "about": {
+    "title": "Where Dogs Love to Visit",
+    "subtitle": "Grooming with patience and care",
+    "content": "Pampered Paws specializes in stress-free grooming for anxious and senior dogs. Our certified groomers take the time to build trust and make grooming enjoyable. We never rush and always put your dog's comfort first."
+  },
+  "products": [
+    {
+      "name": "Full Grooming Package",
+      "price": 65,
+      "description": "Bath, haircut, nail trim, ear cleaning, and brush out. Perfect for most breeds. Includes bandana!",
+      "category": "Full Service",
+      "duration": "2-3 hours",
+      "popular": true
+    },
+    {
+      "name": "Bath & Brush",
+      "price": 45,
+      "description": "Refreshing bath with premium shampoo, blow dry, and thorough brushing. Great between full grooms.",
+      "category": "Basic",
+      "duration": "1-2 hours",
+      "popular": true
+    },
+    {
+      "name": "Puppy First Groom",
+      "price": 35,
+      "description": "Gentle introduction to grooming for puppies under 6 months. Build positive associations early!",
+      "category": "Specialty",
+      "duration": "1 hour"
+    },
+    {
+      "name": "Senior Dog Special",
+      "price": 55,
+      "description": "Extra-gentle grooming for senior dogs. Comfortable table, frequent breaks, and lots of patience.",
+      "category": "Specialty",
+      "duration": "2 hours"
+    },
+    {
+      "name": "De-Shedding Treatment",
+      "price": 30,
+      "description": "Special shampoo and technique to remove loose undercoat. Reduce shedding by up to 80%!",
+      "category": "Add-On",
+      "duration": "Included",
+      "popular": true
+    },
+    {
+      "name": "Nail Trim Only",
+      "price": 15,
+      "description": "Quick nail trim for dogs who just need a touch-up. Walk-ins welcome!",
+      "category": "A La Carte",
+      "duration": "15 minutes"
+    }
+  ],
+  "services": {
+    "title": "Grooming Services",
+    "subtitle": "Everything your dog needs to look and feel great",
+    "items": [
+      {
+        "title": "✂️ Full Grooming",
+        "description": "Complete grooming including bath, haircut, nails, ears, and more"
+      },
+      {
+        "title": "🛁 Bath Services",
+        "description": "Premium shampoos, thorough cleaning, and professional blow-drying"
+      },
+      {
+        "title": "🐾 Special Needs",
+        "description": "Gentle care for anxious dogs, seniors, and puppies"
+      },
+      {
+        "title": "💅 A La Carte",
+        "description": "Individual services like nails, teeth brushing, and ear cleaning"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Happy Pups & Parents",
+    "subtitle": "See the Pampered Paws difference",
+    "items": [
+      {
+        "text": "My anxious rescue dog actually wags his tail when we pull up! The groomers are so patient and gentle. He comes home looking amazing and happy. Best groomer ever!",
+        "author": "Jessica Miller",
+        "title": "Anxious Dog Parent"
+      },
+      {
+        "text": "They handled my senior golden retriever with such care and respect. Took breaks when she needed it. She looked beautiful and wasn't stressed at all. Thank you!",
+        "author": "Robert Thompson",
+        "title": "Senior Dog Owner"
+      },
+      {
+        "text": "Amazing with my doodle! Cut is perfect, she smells great, and they even sent me photos during grooming. Professional service and fair prices. We're customers for life!",
+        "author": "Sarah Park",
+        "title": "Doodle Mom"
+      }
+    ]
+  },
+  "team": {
+    "title": "Our Groomers",
+    "subtitle": "Certified and passionate",
+    "members": [
+      {
+        "name": "Laura Chen",
+        "title": "Master Groomer & Owner",
+        "bio": "15+ years grooming dogs of all breeds. Certified by the National Dog Groomers Association. Specializes in anxious and senior dogs. Believes every dog deserves gentle, patient care.",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
+        "imageAlt": "Laura Chen",
+        "credentials": ["NDGA Certified", "Fear Free Certified", "15+ Years Experience"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Grooming Process",
+    "subtitle": "Stress-free experience",
+    "steps": [
+      {"title": "Book Appointment", "description": "Schedule online or by phone. Tell us about your pup's needs"},
+      {"title": "Drop Off", "description": "Meet your groomer and share any special requests"},
+      {"title": "Grooming Time", "description": "We take our time and never rush your dog"},
+      {"title": "Pick Up Happy Pup", "description": "Your dog comes home looking and smelling amazing!"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "1,000+", "label": "Dogs Groomed"},
+      {"number": "4.9", "label": "Star Rating"},
+      {"number": "15+", "label": "Years Experience"},
+      {"number": "100%", "label": "Gentle Care"}
+    ]
+  },
+  "contact": {
+    "title": "Book Grooming",
+    "subtitle": "Appointments fill fast!",
+    "phone": "(555) 666-9900",
+    "email": "woof@pamperedpaws.pet",
+    "address": "234 Bark Street, Pet District, San Diego, CA 92101"
+  },
+  "footer": {
+    "text": "🐕 Pampered Paws Dog Grooming • Where Dogs Love to Visit",
+    "awards": [
+      "Best Dog Groomer 2023",
+      "Fear Free Certified",
+      "5-Star Rated"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "woof@pamperedpaws.pet",
+    "productCta": "Book Appointment",
+    "productCtaHref": "tel:+15566669900",
+    "productNote": "Submit your booking request and we'll contact you within 24 hours to schedule your pup's appointment."
+  },
+  "productsTitle": "Grooming Services",
+  "productsSubtitle": "All breeds, all sizes welcome"
+}
+

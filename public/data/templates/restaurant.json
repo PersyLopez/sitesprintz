@@ -248,6 +248,7 @@
         "title": "Executive Chef & Owner",
         "bio": "Born in Florence, Chef Marco brings 20+ years of culinary expertise to Bella Vista. Trained in traditional Italian techniques, he ensures every dish meets the highest standards of authenticity.",
         "image": "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400&q=80",
+        "imageAlt": "Chef Marco Rossi",
         "credentials": ["Culinary Institute of Florence", "James Beard Nominee", "Michelin-Trained"]
       }
     ]
@@ -299,9 +300,11 @@
   },
   "settings": {
     "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "info@bellavista.com",
     "productCta": "Call to Reserve",
     "productCtaHref": "tel:+15551234567",
-    "productNote": "Call us to place an order for pickup or delivery, or make a reservation for dine-in. Want online ordering? Upgrade to the Restaurant (Online Ordering) template."
+    "productNote": "Submit your order and we'll contact you to confirm your reservation or arrange pickup/delivery."
   },
   "productsTitle": "Our Menu",
   "productsSubtitle": "Authentic Italian dishes crafted with passion"

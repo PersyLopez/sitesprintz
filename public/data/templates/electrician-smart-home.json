@@ -1,0 +1,186 @@
+{
+  "brand": {
+    "name": "SmartWire Home Automation",
+    "logo": "assets/logo.svg",
+    "tagline": "Smart Home Electrical Specialists",
+    "phone": "(555) 333-7722",
+    "email": "hello@smartwire.tech"
+  },
+  "themeVars": {
+    "color-primary": "#8b5cf6",
+    "color-accent": "#a78bfa",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "Smart Home", "href": "#about"},
+    {"label": "Portfolio", "href": "#testimonials"},
+    {"label": "Consult", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "🏠 Smart Home Electrical",
+    "title": "Transform your home with intelligent automation",
+    "subtitle": "Licensed electricians specializing in smart home technology. From smart lighting to EV chargers to whole-home automation. Expert installation, seamless integration, future-proof solutions. Welcome to the home of tomorrow.",
+    "cta": [
+      {"label": "Free Consultation", "href": "#contact"},
+      {"label": "Smart Solutions", "href": "#products", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1558002038-1055907df827?w=1200&q=80",
+    "imageAlt": "Smart home control system"
+  },
+  "about": {
+    "title": "Smart Home Experts",
+    "subtitle": "Electrical meets technology",
+    "content": "SmartWire combines licensed electrical expertise with cutting-edge smart home technology. We design and install integrated systems that make your home more convenient, efficient, and secure. From single devices to complete home automation."
+  },
+  "products": [
+    {
+      "name": "Smart Lighting System",
+      "price": 1200,
+      "description": "Control lights from anywhere. Automated schedules, voice control, and scenes. Philips Hue, Lutron, or LIFX integration.",
+      "category": "Lighting",
+      "duration": "1 day",
+      "popular": true
+    },
+    {
+      "name": "EV Charger Installation",
+      "price": 1500,
+      "description": "Level 2 EV charger installation for Tesla, Rivian, or any EV. Permits, electrical upgrade if needed. Charge overnight.",
+      "category": "EV Charging",
+      "duration": "1 day",
+      "popular": true
+    },
+    {
+      "name": "Whole-Home Automation",
+      "price": 5000,
+      "description": "Complete smart home integration. Lighting, thermostats, locks, security, and more. One system, total control.",
+      "category": "Automation",
+      "duration": "1 week",
+      "popular": true
+    },
+    {
+      "name": "Smart Thermostat Install",
+      "price": 350,
+      "description": "Nest, Ecobee, or Honeywell smart thermostat installation. Save 20%+ on energy costs with intelligent climate control.",
+      "category": "Climate",
+      "duration": "2-3 hours"
+    },
+    {
+      "name": "Solar Panel Electrical",
+      "price": 2500,
+      "description": "Electrical work for solar panel installation. Main panel upgrade, interconnection, and net metering setup.",
+      "category": "Solar",
+      "duration": "2-3 days"
+    },
+    {
+      "name": "Security System Integration",
+      "price": 1800,
+      "description": "Smart cameras, doorbells, and sensors integrated with your automation system. Monitor from anywhere.",
+      "category": "Security",
+      "duration": "1-2 days"
+    }
+  ],
+  "services": {
+    "title": "Smart Home Services",
+    "subtitle": "Intelligent electrical solutions",
+    "items": [
+      {
+        "title": "💡 Smart Lighting",
+        "description": "Automated lighting control, voice activation, and scheduled scenes"
+      },
+      {
+        "title": "🔌 EV Charging",
+        "description": "Level 2 charger installation for all electric vehicle makes"
+      },
+      {
+        "title": "🏠 Home Automation",
+        "description": "Integrated smart home systems for lighting, climate, security"
+      },
+      {
+        "title": "☀️ Solar & Energy",
+        "description": "Solar panel electrical work and energy management systems"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Smart Home Success",
+    "subtitle": "Transformed homes",
+    "items": [
+      {
+        "text": "SmartWire installed our Tesla charger and smart lighting throughout the house. Professional work, clean installation, and everything works perfectly. Love controlling lights from my phone!",
+        "author": "Michael Foster",
+        "title": "Tesla Owner"
+      },
+      {
+        "text": "They automated our entire home - lights, thermostat, locks, security. The system is intuitive and reliable. Energy bills dropped 25%! Best home upgrade we've made.",
+        "author": "Rachel Kim",
+        "title": "Smart Home Owner"
+      },
+      {
+        "text": "Handled all the electrical for our solar installation. Upgraded our panel, did the interconnection perfectly. Knowledgeable about smart home tech. Highly recommend!",
+        "author": "David Martinez",
+        "title": "Solar Homeowner"
+      }
+    ]
+  },
+  "team": {
+    "title": "Smart Home Specialists",
+    "subtitle": "Licensed electricians + tech experts",
+    "members": [
+      {
+        "name": "Alex Thompson",
+        "title": "Master Electrician & Smart Home Specialist",
+        "bio": "Licensed electrician with advanced certifications in home automation, EV charging, and solar systems. Combines traditional electrical expertise with cutting-edge technology.",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+        "imageAlt": "Alex Thompson",
+        "credentials": ["Master Electrician", "CEDIA Certified", "Tesla Certified Installer"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Smart Home Process",
+    "subtitle": "From consultation to automation",
+    "steps": [
+      {"title": "Free Consultation", "description": "Discuss your goals and assess your home's potential"},
+      {"title": "Custom Design", "description": "Create a smart home system tailored to your lifestyle"},
+      {"title": "Professional Installation", "description": "Licensed electrical work with technology integration"},
+      {"title": "Training & Support", "description": "Learn your system and enjoy ongoing support"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "200+", "label": "Smart Homes"},
+      {"number": "100+", "label": "EV Chargers Installed"},
+      {"number": "4.9", "label": "Star Rating"},
+      {"number": "Licensed", "label": "& Certified"}
+    ]
+  },
+  "contact": {
+    "title": "Start Your Smart Home",
+    "subtitle": "Free consultation available",
+    "phone": "(555) 333-7722",
+    "email": "hello@smartwire.tech",
+    "address": "Serving San Francisco Bay Area, CA"
+  },
+  "footer": {
+    "text": "🏠 SmartWire Home Automation • The Future of Home Electrical",
+    "awards": [
+      "CEDIA Certified",
+      "Tesla Certified",
+      "Smart Home Expert 2023"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "hello@smartwire.tech",
+    "productCta": "Free Consultation",
+    "productCtaHref": "tel:+15553337722",
+    "productNote": "Submit your smart home inquiry and we'll schedule a free consultation to discuss your project."
+  },
+  "productsTitle": "Smart Home Solutions",
+  "productsSubtitle": "Intelligent electrical systems"
+}
+

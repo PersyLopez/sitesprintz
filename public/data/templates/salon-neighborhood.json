@@ -1,0 +1,199 @@
+{
+  "brand": {
+    "name": "Friendly Cuts Family Salon", 
+    "logo": "assets/logo.svg",
+    "tagline": "Your Neighborhood Salon • Since 1995",
+    "phone": "(555) 678-2200",
+    "email": "info@friendlycuts.com"
+  },
+  "themeVars": {
+    "color-primary": "#f59e0b", 
+    "color-accent": "#fbbf24",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "About Us", "href": "#about"},
+    {"label": "Our Team", "href": "#team"},
+    {"label": "Reviews", "href": "#testimonials"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "👨‍👩‍👧‍👦 Family-Friendly Neighborhood Salon",
+    "title": "Great hair for the whole family",
+    "subtitle": "For nearly 30 years, Friendly Cuts has been the go-to salon for families in our community. From kids' first haircuts to grandma's weekly style, we treat everyone like family. Walk-ins welcome!",
+    "cta": [
+      {"label": "Call to Book", "href": "tel:+15556782200"},
+      {"label": "View Services", "href": "#products", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1562004760-acfde0850d59?w=1200&q=80",
+    "imageAlt": "Welcoming family salon interior"
+  },
+  "about": {
+    "title": "A Family Tradition", 
+    "subtitle": "Serving our community since 1995",
+    "content": "Started by Maria and Tom Johnson, Friendly Cuts has been cutting, styling, and coloring hair for families in our neighborhood for nearly three decades. We believe everyone deserves to look and feel great, with friendly service and affordable prices."
+  },
+  "products": [
+    {
+      "name": "Adult Haircut",
+      "price": 35,
+      "description": "Professional cut with shampoo and style. Quick, quality service.",
+      "image": "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=600&q=80",
+      "imageAlt": "Adult haircut service",
+      "category": "Haircuts",
+      "duration": "30 minutes",
+      "popular": true
+    },
+    {
+      "name": "Kids Cut (12 & Under)",
+      "price": 25,
+      "description": "Patient, gentle cuts for children. Lollipop included! First haircut certificates available.",
+      "image": "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=600&q=80",
+      "imageAlt": "Kids haircut",
+      "category": "Haircuts",
+      "duration": "20 minutes",
+      "popular": true
+    },
+    {
+      "name": "Senior Cut & Style",
+      "price": 30,
+      "description": "Special rate for seniors 65+. Includes cut, shampoo, and blow dry.",
+      "image": "https://images.unsplash.com/photo-1560869713-7d0a29430803?w=600&q=80",
+      "imageAlt": "Senior haircut",
+      "category": "Haircuts",
+      "duration": "40 minutes"
+    },
+    {
+      "name": "Single Process Color",
+      "price": 75,
+      "description": "Root touch-up or all-over color. Covers gray beautifully. Includes blow dry.",
+      "image": "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=600&q=80",
+      "imageAlt": "Hair coloring",
+      "category": "Color Services",
+      "duration": "90 minutes",
+      "popular": true
+    },
+    {
+      "name": "Highlights",
+      "price": 95,
+      "description": "Partial or full highlights to brighten your look. Includes toner and style.",
+      "image": "https://images.unsplash.com/photo-1521490683712-35a1cb235d1c?w=600&q=80",
+      "imageAlt": "Hair highlights",
+      "category": "Color Services",
+      "duration": "2 hours"
+    },
+    {
+      "name": "Perm",
+      "price": 85,
+      "description": "Classic perm or body wave. Long-lasting curls with professional care.",
+      "image": "https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?w=600&q=80",
+      "imageAlt": "Perm service",
+      "category": "Styling Services",
+      "duration": "2 hours"
+    }
+  ],
+  "services": {
+    "title": "Services for Everyone",
+    "subtitle": "Quality hair care at prices that work for families",
+    "items": [
+      {
+        "title": "💇 Haircuts",
+        "description": "Men, women, kids, and seniors. Quality cuts at affordable prices"
+      },
+      {
+        "title": "🎨 Color Services",
+        "description": "Root touch-ups, all-over color, highlights, and gray coverage"
+      },
+      {
+        "title": "💅 Additional Services",
+        "description": "Perms, straightening, deep conditioning, and special occasion styling"
+      },
+      {
+        "title": "👨‍👩‍👧‍👦 Family Packages",
+        "description": "Bring the whole family! Ask about our family discount rates"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "What Our Neighbors Say",
+    "subtitle": "Trusted by families for nearly 30 years",
+    "items": [
+      {
+        "text": "Been coming here since my kids were little - they're in college now! Maria always remembers how I like my cut. Like visiting an old friend.",
+        "author": "Linda Thompson",
+        "title": "20-Year Client"
+      },
+      {
+        "text": "My son was so nervous about his first haircut, but they were so patient and kind. He actually enjoyed it! Thank you, Friendly Cuts!",
+        "author": "Jessica Martinez",
+        "title": "Mom of 3"
+      },
+      {
+        "text": "Great prices, friendly staff, and they always fit me in even without an appointment. My go-to salon for over 10 years.",
+        "author": "Robert Chen",
+        "title": "Regular Customer"
+      }
+    ]
+  },
+  "team": {
+    "title": "Meet Our Team",
+    "subtitle": "Experienced stylists who care",
+    "members": [
+      {
+        "name": "Maria Johnson",
+        "title": "Owner & Master Stylist",
+        "bio": "Maria opened Friendly Cuts in 1995 with a vision of creating a welcoming salon for the whole family. 35+ years of experience and thousands of happy clients later, she still loves what she does.",
+        "image": "https://images.unsplash.com/photo-1487412912498-0447578fcca8?w=400&q=80",
+        "imageAlt": "Maria Johnson",
+        "credentials": ["35+ Years Experience", "Cosmetology Licensed", "Community Service Award"]
+      }
+    ]
+  },
+  "process": {
+    "title": "How We Work",
+    "subtitle": "Easy, friendly service",
+    "steps": [
+      {"title": "Walk In or Call", "description": "No fancy booking system needed. Just stop by or give us a call"},
+      {"title": "Quick Wait", "description": "Grab a magazine and relax. We'll call your name shortly"},
+      {"title": "Your Service", "description": "Tell us what you need and we'll take great care of you"},
+      {"title": "All Set!", "description": "Look great, feel great. We'll see you next time!"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "29", "label": "Years in Business"},
+      {"number": "10,000+", "label": "Satisfied Clients"},
+      {"number": "4.8", "label": "Star Rating"},
+      {"number": "6", "label": "Friendly Stylists"}
+    ]
+  },
+  "contact": {
+    "title": "Visit Us", 
+    "subtitle": "Walk-ins welcome! Or call ahead",
+    "phone": "(555) 678-2200",
+    "email": "info@friendlycuts.com",
+    "address": "789 Maple Avenue, Riverside, Springfield, IL 62702"
+  },
+  "footer": {
+    "text": "💇 Friendly Cuts Family Salon • Your Neighbors Since 1995",
+    "awards": [
+      "Best Family Salon 2022",
+      "Community Choice Award",
+      "30 Years Strong"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "info@friendlycuts.com",
+    "productCta": "Call to Book",
+    "productCtaHref": "tel:+15556782200",
+    "productNote": "Submit your appointment request or just give us a call. Walk-ins are always welcome!"
+  },
+  "productsTitle": "Services & Prices",
+  "productsSubtitle": "Quality care for the whole family"
+}
+

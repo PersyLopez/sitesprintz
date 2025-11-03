@@ -439,6 +439,322 @@
     .btn-primary:hover {
       transform: translateY(-2px);
     }
+
+    /* Notification Badge */
+    .notification-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #ef4444;
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 10px;
+      min-width: 20px;
+      text-align: center;
+      animation: badgePulse 2s infinite;
+    }
+
+    @keyframes badgePulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    /* Trial Upgrade Banner */
+    .trial-upgrade-banner {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border: 2px solid #f59e0b;
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+      animation: slideDown 0.4s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .trial-banner-content {
+      flex: 1;
+    }
+
+    .trial-banner-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #92400e;
+      margin: 0 0 6px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .trial-countdown {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(245, 158, 11, 0.2);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 700;
+      color: #b45309;
+    }
+
+    .trial-banner-description {
+      color: #78350f;
+      margin: 0;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .trial-banner-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-upgrade-now {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+      padding: 12px 32px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+      white-space: nowrap;
+    }
+
+    .btn-upgrade-now:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+    }
+
+    .btn-compare-plans {
+      background: white;
+      color: #d97706;
+      padding: 12px 24px;
+      border: 2px solid #f59e0b;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-compare-plans:hover {
+      background: #fffbeb;
+    }
+
+    .trial-upgrade-banner.urgent {
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      border-color: #ef4444;
+      animation: bannerPulse 2s infinite;
+    }
+
+    @keyframes bannerPulse {
+      0%, 100% {
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+      }
+      50% {
+        box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+      }
+    }
+
+    .trial-upgrade-banner.urgent .trial-banner-title {
+      color: #991b1b;
+    }
+
+    .trial-upgrade-banner.urgent .trial-countdown {
+      background: rgba(239, 68, 68, 0.2);
+      color: #991b1b;
+    }
+
+    .trial-upgrade-banner.urgent .trial-banner-description {
+      color: #7f1d1d;
+    }
+
+    .trial-upgrade-banner.urgent .btn-upgrade-now {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+
+    /* Toast Notifications */
+    .toast {
+      background: white;
+      border-radius: 12px;
+      padding: 16px 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 300px;
+      max-width: 500px;
+      animation: toastSlideIn 0.3s ease-out;
+      border-left: 4px solid #10b981;
+    }
+
+    .toast.success {
+      border-left-color: #10b981;
+    }
+
+    .toast.error {
+      border-left-color: #ef4444;
+    }
+
+    .toast.warning {
+      border-left-color: #f59e0b;
+    }
+
+    .toast.info {
+      border-left-color: #3b82f6;
+    }
+
+    @keyframes toastSlideIn {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .toast-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .toast-content {
+      flex: 1;
+    }
+
+    .toast-title {
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0 0 4px 0;
+      font-size: 0.95rem;
+    }
+
+    .toast-message {
+      color: #64748b;
+      margin: 0;
+      font-size: 0.9rem;
+    }
+
+    .toast-close {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 1.2rem;
+      padding: 0;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .toast-close:hover {
+      background: #f1f5f9;
+      color: #475569;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #64748b;
+    }
+
+    .empty-state-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+
+    .empty-state-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0 0 10px 0;
+    }
+
+    .empty-state-description {
+      font-size: 1rem;
+      color: #64748b;
+      margin: 0 0 24px 0;
+    }
+
+    .empty-state-cta {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: white;
+      padding: 14px 32px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+    }
+
+    .empty-state-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+    }
+
+    /* Keyboard Shortcuts Hint */
+    .kbd {
+      display: inline-block;
+      padding: 2px 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      line-height: 1;
+      color: #64748b;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+
+    @media (max-width: 768px) {
+      .trial-upgrade-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px;
+      }
+
+      .trial-banner-actions {
+        width: 100%;
+      }
+
+      .btn-upgrade-now,
+      .btn-compare-plans {
+        flex: 1;
+        text-align: center;
+        justify-content: center;
+      }
+    }
   </style>
 </head>
 <body>
@@ -449,7 +765,31 @@
     <div class="loading-spinner"></div>
   </div>
 
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;"></div>
+
   <div class="dashboard-container">
+    <!-- Upgrade Banner -->
+    <div class="trial-upgrade-banner" id="trialBanner" style="display: none;">
+      <div class="trial-banner-content">
+        <div class="trial-banner-title">
+          ⏰ <span id="bannerTitle">Free Trial Active</span>
+          <span class="trial-countdown" id="trialCountdown">7 days remaining</span>
+        </div>
+        <p class="trial-banner-description" id="bannerDescription">
+          Upgrade now to keep your site online and unlock premium features!
+        </p>
+      </div>
+      <div class="trial-banner-actions">
+        <button class="btn-upgrade-now" onclick="openUpgradeModal()">
+          Upgrade Now →
+        </button>
+        <button class="btn-compare-plans" onclick="window.location.href='/#pricing'">
+          Compare Plans
+        </button>
+      </div>
+    </div>
+
     <div class="dashboard-header">
       <div class="user-greeting">
         <h1 id="userName">Loading...</h1>
@@ -457,6 +797,10 @@
       </div>
       <div id="headerActions" style="display: flex; gap: 10px;">
         <button class="logout-btn" onclick="window.location.href='/analytics.html'" style="background: rgba(99, 102, 241, 0.2); border-color: rgba(99, 102, 241, 0.3);">📊 Analytics</button>
+        <button class="logout-btn badge-container" id="ordersBtn" onclick="window.location.href='/orders.html'" style="background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.3); position: relative;">
+          📦 Orders
+          <span class="notification-badge" id="ordersBadge" style="display: none;">0</span>
+        </button>
         <button class="logout-btn" onclick="handleLogout()">Logout</button>
       </div>
     </div>
@@ -500,9 +844,15 @@
       </div>
       
       <div class="sites-grid" id="sitesGrid">
-        <div style="text-align: center; padding: 40px; color: #64748b;">
-          <div style="font-size: 3rem; margin-bottom: 10px;">📝</div>
-          <p>No sites yet. Create your first website!</p>
+        <div class="empty-state">
+          <div class="empty-state-icon">🚀</div>
+          <h3 class="empty-state-title">No Sites Yet</h3>
+          <p class="empty-state-description">
+            Create your first website in minutes! Choose from beautiful templates and customize to your needs.
+          </p>
+          <button class="empty-state-cta" onclick="createNewSite()">
+            Create Your First Site
+          </button>
         </div>
       </div>
     </div>
@@ -1090,9 +1440,262 @@
       }
     }
     
+    // Toast Notification System
+    function showToast(type, title, message, duration = 5000) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      
+      const icons = {
+        success: '✓',
+        error: '✕',
+        warning: '⚠',
+        info: 'ℹ'
+      };
+      
+      toast.innerHTML = `
+        <div class="toast-icon">${icons[type] || '✓'}</div>
+        <div class="toast-content">
+          <div class="toast-title">${title}</div>
+          ${message ? `<div class="toast-message">${message}</div>` : ''}
+        </div>
+        <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+      `;
+      
+      container.appendChild(toast);
+      
+      // Auto remove
+      setTimeout(() => {
+        toast.style.animation = 'toastSlideIn 0.3s ease-out reverse';
+        setTimeout(() => toast.remove(), 300);
+      }, duration);
+    }
+
+    // Trial Banner Logic
+    async function initTrialBanner() {
+      try {
+        const banner = document.getElementById('trialBanner');
+        if (!banner) return;
+
+        // Fetch subscription status
+        const response = await fetch('/api/subscription/status', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+        });
+        
+        if (!response.ok) return;
+        
+        const data = await response.json();
+        const plan = (data.plan || 'free').toLowerCase();
+        
+        // Only show for free users or trial subscriptions
+        if (plan === 'free' || data.status === 'trialing') {
+          // For now, calculate based on account age (7 day trial)
+          // In production, use actual trial expiration from subscription
+          const trialDays = 7; // Default trial period
+          const createdAt = currentUser.created_at || currentUser.createdAt;
+          
+          if (createdAt) {
+            const now = new Date();
+            const created = new Date(createdAt);
+            const daysElapsed = Math.floor((now - created) / (1000 * 60 * 60 * 24));
+            const daysRemaining = Math.max(0, trialDays - daysElapsed);
+
+            const title = document.getElementById('bannerTitle');
+            const countdown = document.getElementById('trialCountdown');
+            const description = document.getElementById('bannerDescription');
+
+            if (daysRemaining <= 0) {
+              // Trial expired
+              title.textContent = '❗ Trial Expired';
+              countdown.textContent = 'Expired';
+              description.textContent = 'Your trial has ended. Upgrade now to keep your sites online!';
+              banner.classList.add('urgent');
+            } else if (daysRemaining <= 3) {
+              // Urgent
+              title.textContent = '⚠️ Trial Ending Soon';
+              countdown.textContent = `${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'} left`;
+              description.textContent = 'Your trial is ending soon! Upgrade now to avoid interruption.';
+              banner.classList.add('urgent');
+            } else {
+              // Normal trial
+              countdown.textContent = `${daysRemaining} days left`;
+            }
+
+            banner.style.display = 'flex';
+          }
+        }
+      } catch (error) {
+        console.error('Failed to init trial banner:', error);
+      }
+    }
+
+    // Order Notification Badge
+    async function updateOrderBadge() {
+      try {
+        // Check if user is Pro/Premium first
+        const subResponse = await fetch('/api/subscription/status', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+        });
+        
+        if (!subResponse.ok) return;
+        
+        const subData = await subResponse.json();
+        const plan = (subData.plan || '').toLowerCase();
+        const isProOrPremium = plan === 'pro' || plan === 'premium';
+        
+        if (!isProOrPremium) {
+          document.getElementById('ordersBtn').style.display = 'none';
+          return;
+        }
+
+        // Fetch orders count (new orders from last 24 hours)
+        const response = await fetch('/api/orders', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+        });
+        
+        if (response.ok) {
+          const orders = await response.json();
+          const now = new Date();
+          const oneDayAgo = new Date(now - 24 * 60 * 60 * 1000);
+          
+          const newOrders = orders.filter(order => {
+            const orderDate = new Date(order.created_at || order.createdAt);
+            return orderDate > oneDayAgo && order.status === 'pending';
+          });
+
+          if (newOrders.length > 0) {
+            const badge = document.getElementById('ordersBadge');
+            badge.textContent = newOrders.length;
+            badge.style.display = 'inline-block';
+          }
+        }
+      } catch (error) {
+        console.error('Failed to update order badge:', error);
+      }
+    }
+
+    // Upgrade Modal
+    function openUpgradeModal() {
+      // Create modal overlay
+      const overlay = document.createElement('div');
+      overlay.className = 'welcome-modal-overlay';
+      overlay.style.animation = 'fadeIn 0.3s ease-out';
+      
+      overlay.innerHTML = `
+        <div class="welcome-modal">
+          <div class="welcome-header">
+            <div class="welcome-emoji">🚀</div>
+            <h2 class="welcome-title">Upgrade Your Plan</h2>
+            <p class="welcome-subtitle">Unlock premium features and keep your sites online forever</p>
+          </div>
+          
+          <div class="quick-start-section">
+            <div class="quick-action-card" onclick="window.location.href='/subscribe.html?plan=starter'">
+              <div class="quick-action-icon">📦</div>
+              <div class="quick-action-content">
+                <div class="quick-action-title">Starter Plan - $10/month</div>
+                <p class="quick-action-desc">Perfect for single site owners. All essential features included.</p>
+                <div class="quick-action-time">✓ 1 website • ✓ Custom domain • ✓ No SiteSprintz branding</div>
+              </div>
+            </div>
+            
+            <div class="quick-action-card" onclick="window.location.href='/subscribe.html?plan=pro'">
+              <div class="quick-action-icon">💼</div>
+              <div class="quick-action-content">
+                <div class="quick-action-title">Pro Plan - $25/month</div>
+                <p class="quick-action-desc">For businesses that need e-commerce and advanced features.</p>
+                <div class="quick-action-time">✓ 5 websites • ✓ Payments • ✓ Products • ✓ Orders • ✓ Priority support</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="welcome-footer">
+            <button class="btn-start" onclick="this.closest('.welcome-modal-overlay').remove()">
+              Maybe Later
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(overlay);
+      
+      // Close on overlay click
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          overlay.remove();
+        }
+      });
+    }
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+      // Ctrl+N or Cmd+N - Create new site
+      if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        e.preventDefault();
+        createNewSite();
+      }
+      
+      // Ctrl+O or Cmd+O - Open orders
+      if ((e.ctrlKey || e.metaKey) && e.key === 'o') {
+        e.preventDefault();
+        const plan = currentUser?.subscription?.plan || 'free';
+        if (plan === 'pro' || plan === 'premium') {
+          window.location.href = '/orders.html';
+        }
+      }
+      
+      // Ctrl+A or Cmd+A - Open analytics
+      if ((e.ctrlKey || e.metaKey) && e.key === 'a' && !e.target.matches('input, textarea')) {
+        e.preventDefault();
+        window.location.href = '/analytics.html';
+      }
+      
+      // Escape - Close modals
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.welcome-modal-overlay').forEach(el => el.remove());
+      }
+    });
+
+    // Enhanced Error Handling
+    window.addEventListener('unhandledrejection', (event) => {
+      console.error('Unhandled promise rejection:', event.reason);
+      showToast('error', 'Something went wrong', 'Please try refreshing the page.');
+    });
+
+    // Update the checkAuth function to include trial banner and order badge
+    const originalCheckAuth = checkAuth;
+    checkAuth = async function() {
+      await originalCheckAuth();
+      // Initialize new UX features after auth
+      await initTrialBanner();
+      await updateOrderBadge();
+    };
+
     // Initialize
     checkAuth();
     loadConnectStatus();
+
+    // Refresh order badge every 5 minutes
+    setInterval(updateOrderBadge, 5 * 60 * 1000);
+  </script>
+
+  <!-- Crisp Chat Widget -->
+  <script type="text/javascript">
+    window.$crisp=[];
+    window.CRISP_WEBSITE_ID="YOUR_CRISP_WEBSITE_ID"; // Replace with actual Crisp ID
+    (function(){
+      var d=document;
+      var s=d.createElement("script");
+      s.src="https://client.crisp.chat/l.js";
+      s.async=1;
+      d.getElementsByTagName("head")[0].appendChild(s);
+    })();
+    
+    // Set user data in Crisp when available
+    if (window.$crisp && currentUser) {
+      window.$crisp.push(["set", "user:email", [currentUser.email]]);
+      window.$crisp.push(["set", "user:nickname", [currentUser.email.split('@')[0]]]);
+    }
   </script>
 </body>
 </html>

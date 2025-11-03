@@ -88,6 +88,7 @@
         "title": "Owner & Master Groomer",
         "bio": "15+ years grooming experience with specialization in anxious pets and senior animals. Gentle, patient, and passionate about animal welfare.",
         "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
+        "imageAlt": "Jennifer Martinez",
         "credentials": ["NDGA Certified", "Pet First Aid", "Fear Free Certified"]
       },
       {
@@ -95,6 +96,7 @@
         "title": "Senior Pet Sitter",
         "bio": "8+ years experience with dogs, cats, birds, and small animals. Specializes in medication administration and senior pet care.",
         "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "Michael Chen",
         "credentials": ["Insured & Bonded", "Pet CPR Certified", "Medication Administration"]
       }
     ]
@@ -344,9 +346,11 @@
   },
   "settings": {
     "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "hello@pawsitivepetcare.com",
     "productCta": "Book Service",
     "productCtaHref": "tel:+15553456789",
-    "productNote": "Call or book online to schedule grooming, walking, or sitting. First-time clients get 10% off!"
+    "productNote": "Submit your service request and we'll contact you to schedule. First-time clients get 10% off!"
   },
   "productsTitle": "Our Services",
   "productsSubtitle": "Professional pet care services for your furry family members"

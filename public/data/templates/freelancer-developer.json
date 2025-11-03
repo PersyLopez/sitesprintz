@@ -1,0 +1,185 @@
+{
+  "brand": {
+    "name": "CodeCraft Development",
+    "logo": "assets/logo.svg",
+    "tagline": "Full-Stack Web Development",
+    "phone": "(555) 987-6543",
+    "email": "dev@codecraft.io"
+  },
+  "themeVars": {
+    "color-primary": "#0ea5e9",
+    "color-accent": "#38bdf8",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Work", "href": "#about"},
+    {"label": "Services", "href": "#products"},
+    {"label": "Tech Stack", "href": "#process"},
+    {"label": "Hire Me", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "💻 Full-Stack Developer",
+    "title": "Building web apps that scale",
+    "subtitle": "I turn ideas into production-ready web applications. Specializing in React, Node.js, and modern cloud architecture. From MVP to enterprise, I build fast, secure, and maintainable code.",
+    "cta": [
+      {"label": "View Projects", "href": "#about"},
+      {"label": "Get Started", "href": "#contact", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&q=80",
+    "imageAlt": "Developer workspace with multiple monitors showing code"
+  },
+  "about": {
+    "title": "Web Development Expertise",
+    "subtitle": "Building the modern web",
+    "content": "I'm Alex, a full-stack developer with 8+ years building web applications for startups and established businesses. I specialize in React, Node.js, TypeScript, and AWS. Clean code, robust architecture, and user experience are my priorities."
+  },
+  "products": [
+    {
+      "name": "MVP Development",
+      "price": 8000,
+      "description": "Build your minimum viable product with React frontend and Node.js backend. Includes deployment and 30 days support.",
+      "category": "Development",
+      "duration": "6-8 weeks",
+      "popular": true
+    },
+    {
+      "name": "Custom Web Application",
+      "price": 12000,
+      "description": "Full-featured web app with authentication, database, API, and admin dashboard. Production-ready code.",
+      "category": "Development",
+      "duration": "8-12 weeks",
+      "popular": true
+    },
+    {
+      "name": "API Development",
+      "price": 4500,
+      "description": "RESTful or GraphQL API with documentation, authentication, and database integration.",
+      "category": "Backend",
+      "duration": "3-4 weeks"
+    },
+    {
+      "name": "Frontend Development",
+      "price": 5500,
+      "description": "Responsive React application from Figma designs. Component library, state management, and API integration.",
+      "category": "Frontend",
+      "duration": "4-5 weeks"
+    },
+    {
+      "name": "Technical Consulting",
+      "price": 150,
+      "description": "Hourly consulting for architecture reviews, code audits, or technical strategy. Minimum 10 hours.",
+      "category": "Consulting",
+      "duration": "Per hour",
+      "popular": true
+    },
+    {
+      "name": "Maintenance & Support",
+      "price": 2000,
+      "description": "Monthly retainer for ongoing development, bug fixes, and feature additions.",
+      "category": "Support",
+      "duration": "Monthly"
+    }
+  ],
+  "services": {
+    "title": "Development Services",
+    "subtitle": "Modern web development for ambitious projects",
+    "items": [
+      {
+        "title": "⚛️ Frontend Development",
+        "description": "React, Next.js, TypeScript, and modern CSS for performant user interfaces"
+      },
+      {
+        "title": "🔧 Backend Development",
+        "description": "Node.js, Express, PostgreSQL, and RESTful/GraphQL APIs"
+      },
+      {
+        "title": "☁️ Cloud & DevOps",
+        "description": "AWS, Docker, CI/CD pipelines, and infrastructure as code"
+      },
+      {
+        "title": "🔒 Security & Performance",
+        "description": "Authentication, authorization, optimization, and security best practices"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Client Feedback",
+    "subtitle": "Projects delivered on time and on budget",
+    "items": [
+      {
+        "text": "Alex built our SaaS MVP in 8 weeks and it's been rock solid. Clean code, great communication, and genuinely cares about the product. Can't recommend enough!",
+        "author": "Rachel Kim",
+        "title": "CTO, TechStartup"
+      },
+      {
+        "text": "Needed a complex API for our mobile app. Alex delivered ahead of schedule with comprehensive documentation. The code quality is exceptional.",
+        "author": "Marcus Johnson",
+        "title": "Product Manager"
+      },
+      {
+        "text": "Working with Alex felt like having a senior developer on our team. Proactive, detail-oriented, and solved problems we didn't even know we had.",
+        "author": "Sofia Martinez",
+        "title": "Founder, E-commerce Platform"
+      }
+    ]
+  },
+  "team": {
+    "title": "About Alex",
+    "subtitle": "Your development partner",
+    "members": [
+      {
+        "name": "Alex Thompson",
+        "title": "Full-Stack Developer",
+        "bio": "CS degree from MIT. 8+ years building scalable web applications. Former senior engineer at a YC-backed startup. Passionate about clean code, performance, and developer experience.",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+        "imageAlt": "Alex Thompson",
+        "credentials": ["CS MIT", "AWS Certified", "React Expert"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Development Process",
+    "subtitle": "Agile workflow with regular updates",
+    "steps": [
+      {"title": "Requirements", "description": "Detailed spec document and technical architecture planning"},
+      {"title": "Development", "description": "Iterative development with weekly demos and progress updates"},
+      {"title": "Testing", "description": "Comprehensive testing, code review, and QA"},
+      {"title": "Deployment", "description": "Production deployment with documentation and handoff"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "8+", "label": "Years Experience"},
+      {"number": "40+", "label": "Projects Delivered"},
+      {"number": "100%", "label": "On-Time Delivery"},
+      {"number": "15+", "label": "Technologies"}
+    ]
+  },
+  "contact": {
+    "title": "Let's Build Something",
+    "subtitle": "Have a project in mind?",
+    "phone": "(555) 987-6543",
+    "email": "dev@codecraft.io",
+    "address": "Remote • Serving clients globally"
+  },
+  "footer": {
+    "text": "💻 CodeCraft Development • Building the Modern Web",
+    "awards": [
+      "AWS Certified Solutions Architect",
+      "React Expert",
+      "Top Rated Developer"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "dev@codecraft.io",
+    "productCta": "Request Quote",
+    "productCtaHref": "mailto:dev@codecraft.io",
+    "productNote": "Submit your project details and I'll send you a detailed proposal within 48 hours."
+  },
+  "productsTitle": "Development Services",
+  "productsSubtitle": "Fixed-price projects and hourly consulting"
+}

@@ -2,12 +2,17 @@
   "brand": {
     "name": "BrightShelf Boutique",
     "logo": "assets/logo.svg",
-    "alt": "BrightShelf logo"
+    "alt": "BrightShelf logo",
+    "phone": "+1-212-555-0148",
+    "email": "hello@brightshelf.com"
   },
   "themeVars": {
     "color-primary": "#f97316",
     "color-primary-600": "#ea580c",
-    "color-accent": "#fb923c"
+    "color-accent": "#fb923c",
+    "color-success": "#22c55e",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
   },
   "nav": [
     { "label": "Home", "href": "#hero" },
@@ -34,12 +39,14 @@
     "title": "Customers love the experience",
     "items": [
       {
-        "quote": "Our customers love browsing online before visiting in person!",
-        "author": "Morgan, Owner"
+        "text": "Our customers love browsing online before visiting in person!",
+        "author": "Morgan",
+        "title": "Owner"
       },
       {
-        "quote": "The template makes sharing new arrivals simple and fast.",
-        "author": "Jules, Store Manager"
+        "text": "The template makes sharing new arrivals simple and fast.",
+        "author": "Jules",
+        "title": "Store Manager"
       }
     ]
   },
@@ -118,9 +125,11 @@
   },
   "settings": {
     "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "hello@brightshelf.com",
     "productCta": "Call us to reserve",
     "productCtaHref": "tel:+12125550148",
-    "productNote": "Need online ordering? Upgrade to the Premium Ordering template to unlock checkout."
+    "productNote": "Submit your order inquiry and we'll contact you to arrange pickup or delivery."
   }
 }
 
