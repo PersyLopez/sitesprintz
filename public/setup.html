@@ -802,25 +802,6 @@
     </div>
   </div>
 
-  <!-- Clear Demo Modal -->
-  <div id="clearDemoModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10001; align-items: center; justify-content: center;">
-    <div style="background: white; border-radius: 16px; padding: 32px; max-width: 500px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
-      <div style="font-size: 3rem; text-align: center; margin-bottom: 16px;">🧹</div>
-      <h2 style="font-size: 1.5rem; font-weight: 800; color: #1f2937; margin: 0 0 12px 0; text-align: center;">Clear Demo Data?</h2>
-      <p style="color: #64748b; text-align: center; margin: 0 0 24px 0; line-height: 1.6;">
-        This will empty all the example content (products, services, text) so you can add your own. The template structure will remain intact.
-      </p>
-      <div style="display: flex; gap: 12px; justify-content: center;">
-        <button onclick="closeClearDemoModal()" style="background: #e5e7eb; color: #1f2937; padding: 12px 24px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">
-          Cancel
-        </button>
-        <button onclick="confirmClearDemo()" style="background: #ef4444; color: white; padding: 12px 24px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">
-          Yes, Clear Demo Data
-        </button>
-      </div>
-    </div>
-  </div>
-
   <div class="setup-container">
     <!-- Progress Bar -->
     <div class="progress-bar">
@@ -856,16 +837,20 @@
             <button class="btn btn-secondary" id="previewToggle" onclick="togglePreview()">✕ Close Preview</button>
           </div>
           
-          <!-- Clear Demo Data Button - Positioned with forms -->
+          <!-- Demo Data Toggle - Positioned with forms -->
           <div style="background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 2px solid #fecaca; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
             <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px;">
               <div>
-                <div style="font-weight: 700; color: #991b1b; margin-bottom: 4px;">📝 Editing Demo Content</div>
-                <div style="font-size: 0.9rem; color: #7f1d1d;">This template has example data. Clear it to add your own or edit directly.</div>
+                <div style="font-weight: 700; color: #991b1b; margin-bottom: 4px;">📝 Template Demo Data</div>
+                <div style="font-size: 0.9rem; color: #7f1d1d;" id="demoDataDescription">Demo data is currently loaded. Toggle off to start with blank fields.</div>
               </div>
-              <button onclick="showClearDemoModal()" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 12px 20px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.9rem; white-space: nowrap; transition: all 0.3s; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
-                🧹 Clear All Demo Data
-              </button>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span id="toggleLabel" style="font-size: 0.9rem; font-weight: 600; color: #991b1b;">Demo ON</span>
+                <label class="demo-toggle-switch">
+                  <input type="checkbox" id="demoDataToggle" checked onchange="handleDemoToggle()">
+                  <span class="demo-toggle-slider"></span>
+                </label>
+              </div>
             </div>
           </div>
       
@@ -2930,22 +2915,40 @@
       }
     });
 
-    // Clear Demo Data Functions
-    function showClearDemoModal() {
-      const modal = document.getElementById('clearDemoModal');
-      if (modal) {
-        modal.style.display = 'flex';
+    // Demo Data Toggle Functions
+    let demoDataBackup = null; // Store original demo data
+    let isDemoDataActive = true;
+
+    function handleDemoToggle() {
+      const toggle = document.getElementById('demoDataToggle');
+      const label = document.getElementById('toggleLabel');
+      const description = document.getElementById('demoDataDescription');
+      
+      if (toggle.checked) {
+        // Restore demo data
+        label.textContent = 'Demo ON';
+        label.style.color = '#10b981';
+        description.textContent = 'Demo data is loaded. Toggle off to start with blank fields.';
+        restoreDemoData();
+        isDemoDataActive = true;
+        showToast('✓ Demo data restored!');
+      } else {
+        // Clear to blank
+        label.textContent = 'Demo OFF';
+        label.style.color = '#dc2626';
+        description.textContent = 'Blank fields active. Toggle on to restore demo data.';
+        clearDemoData();
+        isDemoDataActive = false;
+        showToast('✓ Switched to blank fields!');
       }
     }
 
-    function closeClearDemoModal() {
-      const modal = document.getElementById('clearDemoModal');
-      if (modal) {
-        modal.style.display = 'none';
+    function clearDemoData() {
+      // Backup current data before clearing (if not already backed up)
+      if (!demoDataBackup) {
+        demoDataBackup = backupCurrentData();
       }
-    }
-
-    function confirmClearDemo() {
+      
       // Clear all main input fields
       const fieldsToReset = [
         'businessName',
@@ -2969,13 +2972,12 @@
         }
       });
       
-      // Clear services - remove all service items
+      // Clear services
       const servicesContainer = document.getElementById('servicesContainer');
       if (servicesContainer) {
         servicesContainer.innerHTML = '<p class="muted">No services added yet. Click "Add Service" below.</p>';
       }
       
-      // Reset services array
       if (typeof services !== 'undefined') {
         services = [];
       }
@@ -2986,7 +2988,7 @@
         updateImagePreview();
       }
       
-      // Clear any template-specific fields
+      // Clear template-specific fields
       const templateSpecific = document.getElementById('templateSpecificContent');
       if (templateSpecific) {
         const inputs = templateSpecific.querySelectorAll('input, textarea, select');
@@ -2999,23 +3001,65 @@
         });
       }
       
-      // Clear all textareas in the page
+      // Clear all textareas
       document.querySelectorAll('textarea').forEach(textarea => {
         if (textarea.id && !textarea.id.includes('prodDesc')) {
           textarea.value = '';
         }
       });
       
-      // Update preview with cleared data
+      // Update preview
       if (typeof updatePreview === 'function') {
         updatePreview();
       }
+    }
+
+    function backupCurrentData() {
+      const backup = {};
+      const fieldsToBackup = [
+        'businessName', 'heroTitle', 'heroSubtitle', 'heroImage',
+        'contactEmail', 'contactPhone', 'contactAddress', 'businessHours',
+        'websiteUrl', 'facebookUrl', 'instagramUrl', 'googleMapsUrl'
+      ];
       
-      // Close modal
-      closeClearDemoModal();
+      fieldsToBackup.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+          backup[fieldId] = field.value;
+        }
+      });
       
-      // Show toast notification
-      showToast('✓ Demo data cleared! Add your own content now.');
+      // Backup services HTML
+      const servicesContainer = document.getElementById('servicesContainer');
+      if (servicesContainer) {
+        backup.servicesHTML = servicesContainer.innerHTML;
+      }
+      
+      return backup;
+    }
+
+    function restoreDemoData() {
+      if (!demoDataBackup) return;
+      
+      // Restore all fields
+      Object.keys(demoDataBackup).forEach(fieldId => {
+        if (fieldId === 'servicesHTML') {
+          const servicesContainer = document.getElementById('servicesContainer');
+          if (servicesContainer) {
+            servicesContainer.innerHTML = demoDataBackup.servicesHTML;
+          }
+        } else {
+          const field = document.getElementById(fieldId);
+          if (field) {
+            field.value = demoDataBackup[fieldId];
+          }
+        }
+      });
+      
+      // Update preview
+      if (typeof updatePreview === 'function') {
+        updatePreview();
+      }
     }
 
     function showToast(message) {
@@ -3066,6 +3110,57 @@
         opacity: 0;
         transform: translateX(100px);
       }
+    }
+
+    /* Toggle Switch Styles */
+    .demo-toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+
+    .demo-toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .demo-toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #dc2626;
+      transition: 0.4s;
+      border-radius: 34px;
+    }
+
+    .demo-toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    input:checked + .demo-toggle-slider {
+      background-color: #10b981;
+    }
+
+    input:checked + .demo-toggle-slider:before {
+      transform: translateX(26px);
+    }
+
+    .demo-toggle-slider:hover {
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
     }
   </style>
 </body>
