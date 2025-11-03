@@ -6,7 +6,7 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import jwt from 'jsonwebtoken';
-import { dbQuery } from './database.js';
+import { query as dbQuery } from './database/db.js';
 import crypto from 'crypto';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this';
@@ -24,7 +24,8 @@ export function configureGoogleAuth() {
     return false;
   }
 
-  passport.use(new GoogleStrategy({
+  // Create strategy with dynamic callback URL
+  const strategy = new GoogleStrategy({
     clientID: GOOGLE_CLIENT_ID,
     clientSecret: GOOGLE_CLIENT_SECRET,
     callbackURL: GOOGLE_CALLBACK_URL,
@@ -119,9 +120,12 @@ export function configureGoogleAuth() {
       console.error('Google OAuth error:', error);
       return done(error, null);
     }
-  }));
-
+  });
+  
+  passport.use(strategy);
+  
   console.log('✅ Google OAuth configured');
+  console.log('📍 Callback URL:', GOOGLE_CALLBACK_URL);
   return true;
 }
 
