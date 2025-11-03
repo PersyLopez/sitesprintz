@@ -802,6 +802,25 @@
     </div>
   </div>
 
+  <!-- Clear Demo Modal -->
+  <div id="clearDemoModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10001; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 16px; padding: 32px; max-width: 500px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+      <div style="font-size: 3rem; text-align: center; margin-bottom: 16px;">🧹</div>
+      <h2 style="font-size: 1.5rem; font-weight: 800; color: #1f2937; margin: 0 0 12px 0; text-align: center;">Clear Demo Data?</h2>
+      <p style="color: #64748b; text-align: center; margin: 0 0 24px 0; line-height: 1.6;">
+        This will empty all the example content (products, services, text) so you can add your own. The template structure will remain intact.
+      </p>
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button onclick="closeClearDemoModal()" style="background: #e5e7eb; color: #1f2937; padding: 12px 24px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">
+          Cancel
+        </button>
+        <button onclick="confirmClearDemo()" style="background: #ef4444; color: white; padding: 12px 24px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">
+          Yes, Clear Demo Data
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="setup-container">
     <!-- Progress Bar -->
     <div class="progress-bar">
@@ -826,8 +845,15 @@
     <!-- Step 2: Customize -->
     <div id="step2" class="step-content" style="display: none;">
       <div class="step-header">
-        <h1 class="step-title">Customize Your Site</h1>
-        <p class="step-subtitle">Edit all the details that matter</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div>
+            <h1 class="step-title" style="margin: 0;">Customize Your Site</h1>
+            <p class="step-subtitle" style="margin: 8px 0 0 0;">Edit all the details that matter</p>
+          </div>
+          <button onclick="showClearDemoModal()" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 12px 24px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; transition: all 0.3s;">
+            🧹 Clear & Start Fresh
+          </button>
+        </div>
       </div>
       
       <div class="customize-layout">
@@ -2898,7 +2924,113 @@
       }
     });
 
+    // Clear Demo Data Functions
+    function showClearDemoModal() {
+      const modal = document.getElementById('clearDemoModal');
+      if (modal) {
+        modal.style.display = 'flex';
+      }
+    }
+
+    function closeClearDemoModal() {
+      const modal = document.getElementById('clearDemoModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    }
+
+    function confirmClearDemo() {
+      // Clear all input fields
+      document.getElementById('businessName').value = '';
+      document.getElementById('heroTitle').value = '';
+      document.getElementById('heroSubtitle').value = '';
+      document.getElementById('heroImage').value = '';
+      document.getElementById('contactEmail').value = '';
+      document.getElementById('contactPhone').value = '';
+      document.getElementById('contactAddress').value = '';
+      
+      // Clear services
+      const servicesContainer = document.getElementById('servicesContainer');
+      if (servicesContainer) {
+        servicesContainer.innerHTML = '<p class="muted">No services added yet. Click "Add Service" below.</p>';
+      }
+      
+      // Clear uploaded images
+      uploadedImages = [];
+      updateImagePreview();
+      
+      // Clear any template-specific fields
+      const templateSpecific = document.getElementById('templateSpecificContent');
+      if (templateSpecific) {
+        const inputs = templateSpecific.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+          if (input.type === 'checkbox' || input.type === 'radio') {
+            input.checked = false;
+          } else {
+            input.value = '';
+          }
+        });
+      }
+      
+      // Update preview
+      updatePreview();
+      
+      // Close modal
+      closeClearDemoModal();
+      
+      // Show toast notification
+      showToast('✓ Demo data cleared! Add your own content now.');
+    }
+
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #1f2937;
+        color: white;
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        z-index: 10002;
+        font-weight: 600;
+        animation: slideInRight 0.3s ease-out;
+      `;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.3s ease-out';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
     // Functions are now global since script is not a module
   </script>
+  
+  <style>
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideOutRight {
+      from {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+    }
+  </style>
 </body>
 </html>
