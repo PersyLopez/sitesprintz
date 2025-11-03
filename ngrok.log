@@ -168,3 +168,18 @@ t=2025-11-03T05:26:11-0500 lvl=eror msg="heartbeat timeout, terminating session"
 t=2025-11-03T05:26:11-0500 lvl=eror msg="session closed, starting reconnect loop" obj=tunnels.session obj=csess id=98c43c5852fc err="session closed"
 t=2025-11-03T05:26:12-0500 lvl=info msg="client session established" obj=tunnels.session
 t=2025-11-03T05:26:12-0500 lvl=info msg="tunnel session started" obj=tunnels.session
+t=2025-11-03T06:01:07-0500 lvl=info msg="join connections" obj=join id=a2f2db6d15ae l=[::1]:3000 r=74.88.86.152:52468
+t=2025-11-03T06:01:07-0500 lvl=info msg="join connections" obj=join id=fd1eb4965c8f l=[::1]:3000 r=74.88.86.152:52468
+t=2025-11-03T06:01:07-0500 lvl=info msg="join connections" obj=join id=697c34f0dc85 l=[::1]:3000 r=74.88.86.152:52468
+t=2025-11-03T06:01:07-0500 lvl=info msg="join connections" obj=join id=e21b226f3dcd l=[::1]:3000 r=74.88.86.152:52468
+t=2025-11-03T06:01:24-0500 lvl=info msg="join connections" obj=join id=2717ab6e53f3 l=[::1]:3000 r=74.88.86.152:52468
+t=2025-11-03T06:01:25-0500 lvl=info msg="join connections" obj=join id=03a6e69c63df l=[::1]:3000 r=74.88.86.152:52468
+t=2025-11-03T06:01:38-0500 lvl=info msg="join connections" obj=join id=119abac5b543 l=[::1]:3000 r=74.88.86.152:52468
+t=2025-11-03T06:01:44-0500 lvl=info msg="join connections" obj=join id=299dea2937f2 l=[::1]:3000 r=74.88.86.152:52468
+t=2025-11-03T06:02:09-0500 lvl=info msg="join connections" obj=join id=9be64e48349a l=[::1]:3000 r=74.88.86.152:52468
+t=2025-11-03T06:02:26-0500 lvl=info msg="join connections" obj=join id=7cd3e26f25b9 l=[::1]:3000 r=74.88.86.152:52468
+t=2025-11-03T06:02:26-0500 lvl=info msg="join connections" obj=join id=d9bfbd122831 l=[::1]:3000 r=74.88.86.152:52468
+t=2025-11-03T06:03:03-0500 lvl=info msg="join connections" obj=join id=dec6cf33ac37 l=[::1]:3000 r=74.88.86.152:52468
+t=2025-11-03T06:03:03-0500 lvl=info msg="join connections" obj=join id=3dfafb8c6a9d l=[::1]:3000 r=74.88.86.152:52468
+t=2025-11-03T06:03:19-0500 lvl=info msg="join connections" obj=join id=399bb92a4ecf l=[::1]:3000 r=74.88.86.152:52468
+t=2025-11-03T06:03:31-0500 lvl=info msg="join connections" obj=join id=f44b78eabaa8 l=[::1]:3000 r=74.88.86.152:52468

@@ -91,6 +91,12 @@ export function configureGoogleAuth() {
         userData.pendingPlan = plan;
       }
 
+      // Store intent if provided (for publish flow)
+      const intent = req.query.intent;
+      if (intent) {
+        userData.pendingIntent = intent;
+      }
+
       return done(null, userData);
     } catch (error) {
       console.error('Google OAuth error:', error);
@@ -109,7 +115,13 @@ export function setupGoogleRoutes(app) {
   // Initiate Google OAuth
   app.get('/auth/google', (req, res, next) => {
     const plan = req.query.plan;
-    const state = plan || 'free'; // Pass plan as state parameter
+    const intent = req.query.intent;
+    
+    // Pass both plan and intent via state (comma-separated)
+    let state = plan || 'free';
+    if (intent) {
+      state += `,intent:${intent}`;
+    }
     
     passport.authenticate('google', {
       scope: ['profile', 'email'],
@@ -138,8 +150,14 @@ export function setupGoogleRoutes(app) {
           { expiresIn: '7d' }
         );
 
+        // Check if user came from publish flow
+        if (user.pendingIntent === 'publish') {
+          // Redirect to auto-publish page
+          const redirectUrl = `/auto-publish.html?token=${token}`;
+          res.redirect(redirectUrl);
+        }
         // Check if user needs to be redirected to Stripe checkout
-        if (user.pendingPlan && (user.pendingPlan === 'starter' || user.pendingPlan === 'pro')) {
+        else if (user.pendingPlan && (user.pendingPlan === 'starter' || user.pendingPlan === 'pro')) {
           // Redirect to a page that will create Stripe checkout
           const redirectUrl = `/register-success.html?token=${token}&plan=${user.pendingPlan}`;
           res.redirect(redirectUrl);
