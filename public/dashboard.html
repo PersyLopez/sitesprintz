@@ -936,6 +936,17 @@
     
     // Check authentication
     async function checkAuth() {
+      // Check if token is in URL (from OAuth redirect)
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlToken = urlParams.get('token');
+      
+      if (urlToken) {
+        // Store token from URL
+        localStorage.setItem('authToken', urlToken);
+        // Clean up URL
+        window.history.replaceState({}, document.title, '/dashboard.html');
+      }
+      
       const token = localStorage.getItem('authToken');
       
       if (!token) {
