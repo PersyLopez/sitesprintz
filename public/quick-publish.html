@@ -377,20 +377,18 @@
   </div>
 
   <script>
-    // Handle Google OAuth for publish flow
-    document.getElementById('googlePublishBtn')?.addEventListener('click', async function() {
-      // Save current site data before OAuth redirect
-      const savedProgress = localStorage.getItem('guestEditorProgress');
-      if (savedProgress) {
-        sessionStorage.setItem('pendingPublish', savedProgress);
+    // Check if user is already authenticated on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+      const authToken = localStorage.getItem('authToken');
+      
+      // If user is already logged in, auto-publish
+      if (authToken) {
+        console.log('User already authenticated, auto-publishing...');
+        await autoPublishForAuthenticatedUser(authToken);
+        return;
       }
       
-      // Redirect to Google OAuth with publish intent
-      window.location.href = '/auth/google?intent=publish';
-    });
-
-    // Generate preview URL on load
-    document.addEventListener('DOMContentLoaded', () => {
+      // Otherwise, show the normal quick-publish form
       const savedProgress = localStorage.getItem('guestEditorProgress');
       if (savedProgress) {
         try {
@@ -402,6 +400,82 @@
           console.error('Failed to parse progress:', error);
         }
       }
+    });
+    
+    // Auto-publish for already authenticated users
+    async function autoPublishForAuthenticatedUser(token) {
+      try {
+        // Show loading state
+        document.querySelector('.publish-container').innerHTML = `
+          <div style="text-align: center; padding: 40px;">
+            <div class="publish-emoji">🚀</div>
+            <h2 style="margin: 20px 0;">Publishing Your Site...</h2>
+            <p style="color: #64748b;">Almost there!</p>
+          </div>
+        `;
+        
+        // Get saved progress
+        const savedProgress = localStorage.getItem('guestEditorProgress');
+        if (!savedProgress) {
+          throw new Error('No site data found');
+        }
+        
+        const progress = JSON.parse(savedProgress);
+        
+        // Get user email from token or API
+        const userResponse = await fetch('/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!userResponse.ok) {
+          throw new Error('Authentication failed');
+        }
+        
+        const userData = await userResponse.json();
+        const userEmail = userData.user?.email || userData.email;
+        
+        // Call guest-publish API with authenticated user
+        const publishResponse = await fetch('/api/sites/guest-publish', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            email: userEmail,
+            data: progress.data
+          })
+        });
+        
+        const publishResult = await publishResponse.json();
+        
+        if (!publishResponse.ok) {
+          throw new Error(publishResult.error || 'Failed to publish site');
+        }
+        
+        // Clear guest data
+        localStorage.removeItem('guestEditorProgress');
+        
+        // Redirect to success page
+        window.location.href = `/publish-success.html?site=${publishResult.subdomain}&email=${encodeURIComponent(userEmail)}`;
+        
+      } catch (error) {
+        console.error('Auto-publish error:', error);
+        alert('Failed to publish site: ' + error.message + '\n\nPlease try again from the dashboard.');
+        window.location.href = '/dashboard.html';
+      }
+    }
+    
+    // Handle Google OAuth for publish flow (for non-authenticated users)
+    document.getElementById('googlePublishBtn')?.addEventListener('click', async function() {
+      // Save current site data before OAuth redirect
+      const savedProgress = localStorage.getItem('guestEditorProgress');
+      if (savedProgress) {
+        sessionStorage.setItem('pendingPublish', savedProgress);
+      }
+      
+      // Redirect to Google OAuth with publish intent
+      window.location.href = '/auth/google?intent=publish';
     });
 
     async function handleQuickPublish(event) {
