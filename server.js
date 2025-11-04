@@ -2417,9 +2417,9 @@ app.post('/api/sites/guest-publish', async (req, res) => {
       JSON.stringify(data, null, 2)
     );
     
-    // Copy index.html template
+    // Copy site template
     const indexContent = await fs.readFile(
-      path.join(publicDir, 'index.html'),
+      path.join(publicDir, 'site-template.html'),
       'utf-8'
     );
     await fs.writeFile(path.join(siteDir, 'index.html'), indexContent);
