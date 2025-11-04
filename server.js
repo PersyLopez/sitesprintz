@@ -948,6 +948,7 @@ app.get('/api/users/:userId/sites', requireAuth, async (req, res) => {
     
     const sites = result.rows.map(site => ({
       id: site.id,
+      subdomain: site.subdomain,
       name: site.site_data?.brand?.name || 'Untitled Site',
       url: `/sites/${site.subdomain}/`,
       status: site.status,
