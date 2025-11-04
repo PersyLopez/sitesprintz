@@ -1112,13 +1112,12 @@
     }
     
     function editSite(siteId, status) {
-      if (status === 'published') {
-        // For published sites, redirect to setup with edit mode
-        window.location.href = `/setup.html?edit=${siteId}`;
-      } else {
-        // For drafts, redirect to setup with the draft
-        window.location.href = `/setup.html?draft=${siteId}`;
-      }
+      // For now, show a message that editing is coming soon
+      // TODO: Implement proper edit functionality
+      alert('Edit functionality coming soon! For now, you can:\n\n1. View your published site\n2. Create a new site with updated content\n3. Delete the old site\n\nFull editing will be available in the next update.');
+      
+      // Optionally, open the site in a new tab so they can see what needs editing
+      window.open(`/sites/${siteId}/`, '_blank');
     }
     
     async function deleteSite(siteId) {
@@ -1127,7 +1126,8 @@
       }
       
       try {
-        const response = await fetch(`/api/sites/${siteId}`, {
+        // Use the correct API endpoint with userId
+        const response = await fetch(`/api/users/${currentUser.id}/sites/${siteId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('authToken')}`
@@ -1135,8 +1135,10 @@
         });
         
         if (response.ok) {
+          // Show success message
+          alert('Site deleted successfully!');
           // Reload the sites list
-          loadUserSites();
+          await loadUserSites();
         } else {
           const error = await response.json();
           alert(`Failed to delete site: ${error.error}`);
