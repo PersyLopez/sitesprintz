@@ -1302,6 +1302,9 @@
       
       const actions = quickActions[plan] || quickActions.free;
       
+      // Store actions for click handlers
+      window.welcomeActions = actions;
+      
       // Create modal HTML
       const modalHTML = `
         <div class="welcome-modal-overlay" id="welcomeModal">
@@ -1315,8 +1318,8 @@
             
             <div class="quick-start-section">
               <h3 class="quick-start-title">📋 Quick Start Guide</h3>
-              ${actions.map(action => `
-                <div class="quick-action-card" onclick='${JSON.stringify(action.action).slice(0, -1).substring(1)}'>
+              ${actions.map((action, index) => `
+                <div class="quick-action-card" onclick="window.welcomeActions[${index}].action()">
                   <div class="quick-action-icon">${action.icon}</div>
                   <div class="quick-action-content">
                     <h4 class="quick-action-title">${action.title}</h4>
