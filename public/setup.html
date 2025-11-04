@@ -2271,6 +2271,9 @@
         const response = await fetch(`/data/templates/${selectedTemplate.id}.json`);
         const templateData = await response.json();
         
+        // Store globally for publishNow function
+        window.currentTemplateData = templateData;
+        
         // Populate basic info
         document.getElementById('businessName').value = templateData.brand?.name || '';
         document.getElementById('heroTitle').value = templateData.hero?.title || '';
@@ -3355,20 +3358,63 @@
 
     // Publish Now - Skip old draft system and go directly to publish
     function publishNow() {
-      // Save progress to localStorage for quick-publish flow
-      const siteData = {
+      // Collect all form data in the format expected by site-template.html
+      const formData = {
         template: selectedTemplate?.id,
-        businessName: document.getElementById('businessName')?.value,
-        heroTitle: document.getElementById('heroTitle')?.value,
-        heroSubtitle: document.getElementById('heroSubtitle')?.value,
-        heroImage: document.getElementById('heroImage')?.value,
-        contactEmail: document.getElementById('contactEmail')?.value,
-        contactPhone: document.getElementById('contactPhone')?.value,
-        contactAddress: document.getElementById('contactAddress')?.value,
+        templateId: selectedTemplate?.id,
+        brand: {
+          name: document.getElementById('businessName')?.value || 'My Business'
+        },
+        hero: {
+          title: document.getElementById('heroTitle')?.value || 'Welcome',
+          subtitle: document.getElementById('heroSubtitle')?.value || 'Learn more about our services',
+          image: document.getElementById('heroImage')?.value || '',
+          cta: 'Get Started'
+        },
+        contact: {
+          email: document.getElementById('contactEmail')?.value || '',
+          phone: document.getElementById('contactPhone')?.value || '',
+          address: document.getElementById('contactAddress')?.value || ''
+        },
+        services: {
+          title: selectedTemplate?.id.includes('product') ? 'Our Products' : 'Our Services',
+          items: []
+        }
       };
       
+      // Collect services/products
+      const serviceFields = document.querySelectorAll('[data-service-index]');
+      serviceFields.forEach((field) => {
+        const index = field.dataset.serviceIndex;
+        const title = document.getElementById(`serviceTitle${index}`)?.value || '';
+        const description = document.getElementById(`serviceDescription${index}`)?.value || '';
+        const price = document.getElementById(`servicePrice${index}`)?.value || '';
+        const image = document.getElementById(`serviceImage${index}`)?.value || '';
+        
+        if (title) {
+          formData.services.items.push({
+            title: title,
+            name: title,
+            description: description,
+            price: price,
+            image: image
+          });
+        }
+      });
+      
+      // If no services were collected, add the defaults from the template
+      if (formData.services.items.length === 0 && selectedTemplate) {
+        // Use the template data that's already loaded
+        const templateData = window.currentTemplateData || {};
+        if (templateData.services?.items) {
+          formData.services.items = templateData.services.items;
+        } else if (templateData.products) {
+          formData.services.items = templateData.products;
+        }
+      }
+      
       localStorage.setItem('guestEditorProgress', JSON.stringify({
-        data: siteData,
+        data: formData,
         timestamp: Date.now(),
         template: selectedTemplate?.id
       }));
