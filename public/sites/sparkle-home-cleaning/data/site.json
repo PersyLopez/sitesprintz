@@ -1,0 +1,39 @@
+{
+  "template": "cleaning-residential",
+  "templateId": "cleaning-residential",
+  "brand": {
+    "name": "Sparkle Home Cleaning"
+  },
+  "hero": {
+    "title": "Come home to sparkle",
+    "subtitle": "Professional house cleaning you can trust. Weekly, bi-weekly, or monthly service. Background-checked cleaners, eco-friendly products, and satisfaction guaranteed. Enjoy more free time and a spotless home.",
+    "image": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&q=80",
+    "cta": "Get Started"
+  },
+  "contact": {
+    "email": "hello@sparklehome.com",
+    "phone": "(555) 444-7788",
+    "address": "Same-day service available"
+  },
+  "services": {
+    "title": "Our Services",
+    "items": [
+      {
+        "title": "🏠 Regular Cleaning",
+        "description": "Weekly or bi-weekly maintenance to keep your home consistently clean"
+      },
+      {
+        "title": "💎 Deep Cleaning",
+        "description": "Intensive cleaning for spring cleaning, holidays, or special occasions"
+      },
+      {
+        "title": "📦 Move In/Out",
+        "description": "Complete cleaning for moves. Perfect for getting deposits back"
+      },
+      {
+        "title": "✨ Custom Plans",
+        "description": "Tailored cleaning plans to fit your schedule and budget"
+      }
+    ]
+  }
+}

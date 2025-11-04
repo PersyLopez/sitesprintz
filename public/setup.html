@@ -1494,9 +1494,15 @@
         badge: 'View-Only',
         empty: 'Starter templates will appear here.'
       },
+      Pro: {
+        title: '⭐ Pro Templates (Enhanced Features)',
+        description: 'Everything in Starter, plus booking widgets, tabbed content, interactive galleries, owner dashboard, and email notifications. More sophisticated layouts with depth and interactivity.',
+        badge: 'Enhanced',
+        empty: 'Pro templates will appear here soon.'
+      },
       Checkout: {
         title: '💳 Checkout Templates (Payment Enabled)',
-        description: 'Everything in Starter, plus Stripe checkout integration. Accept payments online, send automated order confirmations, and manage orders from the admin dashboard.',
+        description: 'Everything in Pro, plus Stripe checkout integration. Accept payments online, send automated order confirmations, and manage orders from the admin dashboard.',
         badge: 'Payment Processing',
         empty: 'Checkout templates will appear here soon.'
       },
@@ -1883,7 +1889,7 @@
           guide.style.opacity = 1;
         }
 
-        ['Starter', 'Checkout', 'Premium'].forEach(plan => {
+        ['Starter', 'Pro', 'Checkout', 'Premium'].forEach(plan => {
           const meta = PLAN_METADATA[plan];
           if (!meta) return;
 
@@ -1913,6 +1919,25 @@
               message.style.marginTop = 'var(--spacing-md)';
               message.textContent = 'No premium templates available yet.';
               tierSection.appendChild(message);
+            }
+          } else if (plan === 'Pro') {
+            // Pro templates - show them as available
+            if (templatesForPlan.length) {
+              const cardGrid = document.createElement('div');
+              cardGrid.className = 'template-card-grid';
+              templatesForPlan.forEach(template => {
+                cardGrid.appendChild(createTemplateCard(template, {
+                  disabled: false,
+                  requiresUpgrade: false  // Pro templates are available to select
+                }));
+              });
+              tierSection.appendChild(cardGrid);
+            } else {
+              const emptyState = document.createElement('p');
+              emptyState.className = 'muted';
+              emptyState.style.marginTop = 'var(--spacing-md)';
+              emptyState.textContent = meta.empty;
+              tierSection.appendChild(emptyState);
             }
           } else {
             if (templatesForPlan.length) {
@@ -3382,14 +3407,13 @@
         }
       };
       
-      // Collect services/products
-      const serviceFields = document.querySelectorAll('[data-service-index]');
-      serviceFields.forEach((field) => {
-        const index = field.dataset.serviceIndex;
-        const title = document.getElementById(`serviceTitle${index}`)?.value || '';
-        const description = document.getElementById(`serviceDescription${index}`)?.value || '';
-        const price = document.getElementById(`servicePrice${index}`)?.value || '';
-        const image = document.getElementById(`serviceImage${index}`)?.value || '';
+      // Collect services/products from service cards
+      const serviceCards = document.querySelectorAll('.service-card');
+      serviceCards.forEach((card) => {
+        const title = card.querySelector('.service-name')?.value || '';
+        const description = card.querySelector('.service-description')?.value || '';
+        const price = card.querySelector('.service-price')?.value || '';
+        const image = card.querySelector('.service-image')?.value || '';
         
         if (title) {
           formData.services.items.push({
@@ -3412,6 +3436,8 @@
           formData.services.items = templateData.products;
         }
       }
+      
+      console.log('Publishing with data:', formData); // Debug log
       
       localStorage.setItem('guestEditorProgress', JSON.stringify({
         data: formData,
