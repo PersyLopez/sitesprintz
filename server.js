@@ -3078,6 +3078,204 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
         .container { padding: var(--spacing-md); }
         .grid { grid-template-columns: 1fr; }
       }
+      
+      /* Pro Template Styles */
+      .pro-tabs {
+        display: flex;
+        gap: var(--spacing-sm);
+        border-bottom: 2px solid rgba(255,255,255,0.1);
+        margin-bottom: var(--spacing-xl);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      .pro-tab {
+        padding: var(--spacing-md) var(--spacing-lg);
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        white-space: nowrap;
+        font-weight: 600;
+        color: var(--color-muted);
+        border: none;
+        background: none;
+        font-size: 1.1rem;
+      }
+      
+      .pro-tab:hover {
+        color: var(--color-primary-light);
+        background: rgba(99, 102, 241, 0.1);
+        border-radius: 8px;
+      }
+      
+      .pro-tab.active {
+        color: var(--color-primary-light);
+      }
+      
+      .pro-tab.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+        box-shadow: 0 0 20px var(--color-primary);
+      }
+      
+      .pro-tab-content {
+        display: none;
+        animation: fadeInUp 0.4s ease-out;
+      }
+      
+      .pro-tab-content.active {
+        display: block;
+      }
+      
+      .pro-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(10px);
+        z-index: 1000;
+        padding: var(--spacing-lg);
+        overflow-y: auto;
+      }
+      
+      .pro-modal.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease-out;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      .pro-modal-content {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+        backdrop-filter: blur(30px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-2xl);
+        max-width: 800px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 30px 90px rgba(0, 0, 0, 0.5);
+        position: relative;
+        animation: slideUp 0.3s ease-out;
+      }
+      
+      @keyframes slideUp {
+        from { transform: translateY(50px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      
+      .pro-modal-close {
+        position: absolute;
+        top: var(--spacing-md);
+        right: var(--spacing-md);
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1.5rem;
+        color: var(--color-text);
+        transition: all 0.3s;
+      }
+      
+      .pro-modal-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: rotate(90deg);
+      }
+      
+      .pro-section {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+        border-radius: var(--radius);
+        padding: var(--spacing-xl);
+        margin-bottom: var(--spacing-lg);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s;
+      }
+      
+      .pro-section:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px rgba(99, 102, 241, 0.2);
+        border-color: rgba(99, 102, 241, 0.3);
+      }
+      
+      .booking-widget {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+        border: 2px solid rgba(99, 102, 241, 0.3);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-xl);
+        text-align: center;
+        margin: var(--spacing-xl) 0;
+      }
+      
+      .gallery-filters {
+        display: flex;
+        gap: var(--spacing-sm);
+        margin-bottom: var(--spacing-lg);
+        flex-wrap: wrap;
+      }
+      
+      .gallery-filter {
+        padding: var(--spacing-sm) var(--spacing-lg);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--color-muted);
+        cursor: pointer;
+        transition: all 0.3s;
+        font-weight: 600;
+      }
+      
+      .gallery-filter:hover,
+      .gallery-filter.active {
+        background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+        color: white;
+        border-color: transparent;
+        transform: translateY(-2px);
+      }
+      
+      .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: var(--spacing-md);
+      }
+      
+      .gallery-item {
+        border-radius: var(--radius);
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+      
+      .gallery-item:hover {
+        transform: scale(1.05);
+        box-shadow: 0 20px 60px rgba(99, 102, 241, 0.4);
+      }
+      
+      .gallery-item img {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        display: block;
+      }
     </style>
   </head>
   <body>
@@ -3109,6 +3307,8 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
           mainContent.style.display = 'block';
           
           // Render the site
+          const isPro = data.features?.tabbedMenu || data.features?.bookingWidget || data.menu?.sections;
+          
           mainContent.innerHTML = \`
             <!-- Header -->
             <header>
@@ -3142,8 +3342,182 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
                 \` : ''}
               </section>
               
-              <!-- Services Section -->
-              \${data.services?.items?.length ? \`
+              <!-- Booking Widget (Pro) -->
+              \${data.features?.bookingWidget?.enabled ? \`
+                <section id="booking" class="booking-widget">
+                  <h2 style="margin-bottom: var(--spacing-md);">📅 Reserve Your Table</h2>
+                  <p class="muted" style="margin-bottom: var(--spacing-lg);">Book your reservation online or call us</p>
+                  <a href="\${data.features.bookingWidget.url}" target="_blank" class="btn btn-primary">
+                    Book Now
+                  </a>
+                </section>
+              \` : ''}
+              
+              <!-- Tabbed Menu Section (Pro) -->
+              \${data.menu?.sections?.length ? \`
+                <section id="menu" style="margin-top: var(--spacing-2xl);">
+                  <div class="section-header">
+                    <h2>\${data.menu.title || 'Our Menu'}</h2>
+                    <p>\${data.menu.subtitle || 'Explore our offerings'}</p>
+                  </div>
+                  
+                  <div class="pro-tabs">
+                    \${data.menu.sections.map((section, index) => \`
+                      <button class="pro-tab \${index === 0 ? 'active' : ''}" onclick="switchMenuTab('\${section.id}')">
+                        \${section.name}
+                      </button>
+                    \`).join('')}
+                  </div>
+                  
+                  \${data.menu.sections.map((section, index) => \`
+                    <div class="pro-tab-content \${index === 0 ? 'active' : ''}" id="tab-\${section.id}">
+                      \${section.description ? \`<p class="muted text-center" style="margin-bottom: var(--spacing-xl);">\${section.description}</p>\` : ''}
+                      <div class="grid">
+                        \${section.items.map(item => \`
+                          <div class="card product-card">
+                            \${item.image ? \`<img src="\${item.image}" alt="\${item.imageAlt || item.name}" />\` : ''}
+                            <h3>\${item.name}</h3>
+                            \${item.price ? \`<div class="price-tag">$\${item.price}</div>\` : ''}
+                            <p class="muted">\${item.description || ''}</p>
+                            \${item.dietary?.length ? \`<div style="margin-top: var(--spacing-sm);"><small class="muted">\${item.dietary.join(' • ')}</small></div>\` : ''}
+                            \${item.chefRecommended ? \`<div style="margin-top: var(--spacing-xs);"><span style="font-size: 0.85rem;">⭐ Chef Recommended</span></div>\` : ''}
+                          </div>
+                        \`).join('')}
+                      </div>
+                    </div>
+                  \`).join('')}
+                </section>
+              \` : ''}
+              
+              <!-- Chef's Specials (Pro) -->
+              \${data.chefSpecials?.items?.length ? \`
+                <section class="pro-section" style="margin-top: var(--spacing-2xl);">
+                  <div class="section-header">
+                    <h2>\${data.chefSpecials.title || "Chef's Specials"}</h2>
+                    \${data.chefSpecials.subtitle ? \`<p>\${data.chefSpecials.subtitle}</p>\` : ''}
+                  </div>
+                  <div class="grid">
+                    \${data.chefSpecials.items.map(item => \`
+                      <div class="card">
+                        \${item.image ? \`<img src="\${item.image}" alt="\${item.imageAlt || item.name}" style="border-radius: var(--radius); margin-bottom: var(--spacing-md);" />\` : ''}
+                        <h3>\${item.name}</h3>
+                        \${item.price ? \`<div class="price-tag">$\${item.price}</div>\` : ''}
+                        <p class="muted">\${item.description || ''}</p>
+                        \${item.availability ? \`<div style="margin-top: var(--spacing-sm);"><span style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; padding: 4px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600;">\${item.availability}</span></div>\` : ''}
+                      </div>
+                    \`).join('')}
+                  </div>
+                </section>
+              \` : ''}
+              
+              <!-- Private Events/Dining (Pro) -->
+              \${data.privateEvents?.rooms?.length ? \`
+                <section id="private" class="pro-section" style="margin-top: var(--spacing-2xl);">
+                  <div class="section-header">
+                    <h2>\${data.privateEvents.title || 'Private Events'}</h2>
+                    \${data.privateEvents.subtitle ? \`<p>\${data.privateEvents.subtitle}</p>\` : ''}
+                  </div>
+                  <div class="grid">
+                    \${data.privateEvents.rooms.map((room, index) => \`
+                      <div class="card" style="cursor: pointer;" onclick="openPrivateEventModal(\${index})">
+                        \${room.image ? \`<img src="\${room.image}" alt="\${room.imageAlt || room.name}" style="border-radius: var(--radius); margin-bottom: var(--spacing-md);" />\` : ''}
+                        <h3>\${room.name}</h3>
+                        <p class="muted"><strong>\${room.capacity}</strong></p>
+                        <p class="muted">\${room.description}</p>
+                        <button class="btn btn-secondary" style="margin-top: var(--spacing-md); width: 100%;">Learn More</button>
+                      </div>
+                    \`).join('')}
+                  </div>
+                </section>
+                
+                <!-- Private Event Modals -->
+                \${data.privateEvents.rooms.map((room, index) => \`
+                  <div class="pro-modal" id="private-modal-\${index}">
+                    <div class="pro-modal-content">
+                      <button class="pro-modal-close" onclick="closePrivateEventModal(\${index})">×</button>
+                      <h2 style="margin-bottom: var(--spacing-md);">\${room.name}</h2>
+                      \${room.image ? \`<img src="\${room.image}" alt="\${room.imageAlt || room.name}" style="width: 100%; border-radius: var(--radius); margin-bottom: var(--spacing-lg);" />\` : ''}
+                      <p><strong>Capacity:</strong> \${room.capacity}</p>
+                      <p class="muted" style="margin: var(--spacing-md) 0;">\${room.description}</p>
+                      <h3 style="margin: var(--spacing-lg) 0 var(--spacing-md) 0;">Features</h3>
+                      <ul style="list-style: none; padding: 0;">
+                        \${room.features?.map(feature => \`<li style="padding: var(--spacing-sm) 0; border-bottom: 1px solid rgba(255,255,255,0.1);">✓ \${feature}</li>\`).join('')}
+                      </ul>
+                      <a href="#contact" class="btn btn-primary" style="width: 100%; margin-top: var(--spacing-xl);" onclick="closePrivateEventModal(\${index})">
+                        Contact Us to Book
+                      </a>
+                    </div>
+                  </div>
+                \`).join('')}
+              \` : ''}
+              
+              <!-- Gallery with Filters (Pro) -->
+              \${data.gallery?.categories?.length ? \`
+                <section id="gallery" style="margin-top: var(--spacing-2xl);">
+                  <div class="section-header">
+                    <h2>\${data.gallery.title || 'Gallery'}</h2>
+                  </div>
+                  
+                  <div class="gallery-filters">
+                    <button class="gallery-filter active" onclick="filterGallery('all')">All</button>
+                    \${data.gallery.categories.map(cat => \`
+                      <button class="gallery-filter" onclick="filterGallery('\${cat.name.toLowerCase()}')">\${cat.name}</button>
+                    \`).join('')}
+                  </div>
+                  
+                  <div class="gallery-grid">
+                    \${data.gallery.categories.flatMap(cat => 
+                      cat.images.map(img => \`
+                        <div class="gallery-item" data-category="\${cat.name.toLowerCase()}">
+                          <img src="\${img.url}" alt="\${img.alt}" />
+                        </div>
+                      \`)
+                    ).join('')}
+                  </div>
+                </section>
+              \` : ''}
+              
+              <!-- Team Section (Pro) -->
+              \${data.team?.members?.length ? \`
+                <section style="margin-top: var(--spacing-2xl);">
+                  <div class="section-header">
+                    <h2>\${data.team.title || 'Our Team'}</h2>
+                    \${data.team.subtitle ? \`<p>\${data.team.subtitle}</p>\` : ''}
+                  </div>
+                  <div class="grid">
+                    \${data.team.members.map(member => \`
+                      <div class="card pro-section">
+                        \${member.image ? \`<img src="\${member.image}" alt="\${member.imageAlt || member.name}" style="width: 100%; height: 300px; object-fit: cover; border-radius: var(--radius); margin-bottom: var(--spacing-md);" />\` : ''}
+                        <h3>\${member.name}</h3>
+                        <p style="color: var(--color-primary-light); font-weight: 600; margin-bottom: var(--spacing-md);">\${member.title}</p>
+                        <p class="muted">\${member.bio}</p>
+                        \${member.credentials?.length ? \`
+                          <div style="margin-top: var(--spacing-md);">
+                            \${member.credentials.map(cred => \`<span style="display: inline-block; background: rgba(99, 102, 241, 0.2); color: var(--color-primary-light); padding: 4px 12px; border-radius: 8px; font-size: 0.85rem; margin: 4px;">\${cred}</span>\`).join('')}
+                          </div>
+                        \` : ''}
+                      </div>
+                    \`).join('')}
+                  </div>
+                </section>
+              \` : ''}
+              
+              <!-- Stats Section (Pro) -->
+              \${data.stats?.items?.length ? \`
+                <section class="pro-section" style="margin-top: var(--spacing-2xl);">
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-xl); text-align: center;">
+                    \${data.stats.items.map(stat => \`
+                      <div>
+                        <div style="font-size: 3rem; font-weight: 900; background: linear-gradient(135deg, var(--color-primary), var(--color-accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: var(--spacing-sm);">\${stat.number}</div>
+                        <div class="muted" style="font-weight: 600;">\${stat.label}</div>
+                      </div>
+                    \`).join('')}
+                  </div>
+                </section>
+              \` : ''}
+              
+              <!-- Services Section (Starter) -->
+              \${data.services?.items?.length && !isPro ? \`
                 <section>
                   <div class="section-header">
                     <h2>\${data.services.title || 'Our Services'}</h2>
@@ -3162,17 +3536,17 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
                 </section>
               \` : ''}
               
-              <!-- Products Section -->
-              \${data.products?.length ? \`
+              <!-- Products Section (Starter) -->
+              \${data.products?.length && !isPro ? \`
                 <section>
                   <div class="section-header">
-                    <h2>\${data.products[0]?.price ? 'Our Menu' : 'What We Offer'}</h2>
-                    <p>Discover our carefully curated selection</p>
+                    <h2>\${data.productsTitle || 'Our Menu'}</h2>
+                    <p>\${data.productsSubtitle || 'Discover our carefully curated selection'}</p>
                   </div>
                   <div class="grid">
                     \${data.products.map(item => \`
                       <div class="card product-card">
-                        \${item.image ? \`<img src="\${item.image}" alt="\${item.name}" />\` : ''}
+                        \${item.image ? \`<img src="\${item.image}" alt="\${item.imageAlt || item.name}" />\` : ''}
                         <h3>\${item.name}</h3>
                         \${item.price ? \`<div class="price-tag">$\${item.price}</div>\` : ''}
                         <p class="muted">\${item.description || ''}</p>
@@ -3182,9 +3556,34 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
                 </section>
               \` : ''}
               
+              <!-- Testimonials -->
+              \${data.testimonials?.items?.length ? \`
+                <section style="margin-top: var(--spacing-2xl);">
+                  <div class="section-header">
+                    <h2>\${data.testimonials.title || 'Testimonials'}</h2>
+                    \${data.testimonials.subtitle ? \`<p>\${data.testimonials.subtitle}</p>\` : ''}
+                  </div>
+                  <div class="grid">
+                    \${data.testimonials.items.map(item => \`
+                      <div class="card">
+                        <p style="font-size: 1.1rem; line-height: 1.8; margin-bottom: var(--spacing-md);">"\${item.text}"</p>
+                        <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+                          \${item.image ? \`<img src="\${item.image}" alt="\${item.imageAlt || item.author}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;" />\` : ''}
+                          <div>
+                            <div style="font-weight: 700;">\${item.author}</div>
+                            <div class="muted" style="font-size: 0.9rem;">\${item.location || ''}</div>
+                          </div>
+                        </div>
+                        \${item.rating ? \`<div style="color: #fbbf24; margin-top: var(--spacing-sm);">${'★'.repeat(item.rating)}</div>\` : ''}
+                      </div>
+                    \`).join('')}
+                  </div>
+                </section>
+              \` : ''}
+              
               <!-- Contact Section -->
               \${data.contact ? \`
-                <section class="card glass" style="margin-top: var(--spacing-2xl);">
+                <section id="contact" class="card glass" style="margin-top: var(--spacing-2xl);">
                   <div class="section-header">
                     <h2>\${data.contact.title || 'Get In Touch'}</h2>
                     \${data.contact.subtitle ? \`<p>\${data.contact.subtitle}</p>\` : ''}
@@ -3212,6 +3611,13 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
                       </div>
                     \` : ''}
                   </div>
+                  \${data.contact.hours?.items?.length ? \`
+                    <div style="margin-top: var(--spacing-xl); text-align: center;">
+                      <h3 style="margin-bottom: var(--spacing-md);">\${data.contact.hours.title || 'Hours'}</h3>
+                      \${data.contact.hours.items.map(hour => \`<p class="muted">\${hour}</p>\`).join('')}
+                      \${data.contact.hours.note ? \`<p style="margin-top: var(--spacing-md); font-style: italic; color: var(--color-primary-light);">\${data.contact.hours.note}</p>\` : ''}
+                    </div>
+                  \` : ''}
                 </section>
               \` : ''}
             </div>
@@ -3220,9 +3626,45 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
             <footer>
               <div class="container">
                 <p class="muted">\${data.footer?.text || '© ' + new Date().getFullYear() + ' ' + (data.brand?.name || 'Business Name') + '. All rights reserved.'}</p>
+                \${data.footer?.awards?.length ? \`
+                  <div style="margin-top: var(--spacing-md); display: flex; flex-wrap: wrap; gap: var(--spacing-md); justify-content: center;">
+                    \${data.footer.awards.map(award => \`<span style="font-size: 0.9rem; color: var(--color-primary-light);">🏆 \${award}</span>\`).join('')}
+                  </div>
+                \` : ''}
               </div>
             </footer>
           \`;
+          
+          // Pro Template JavaScript Functions
+          window.switchMenuTab = function(tabId) {
+            document.querySelectorAll('.pro-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.pro-tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tabId).classList.add('active');
+          };
+          
+          window.openPrivateEventModal = function(index) {
+            document.getElementById('private-modal-' + index).classList.add('active');
+          };
+          
+          window.closePrivateEventModal = function(index) {
+            document.getElementById('private-modal-' + index).classList.remove('active');
+          };
+          
+          window.filterGallery = function(category) {
+            document.querySelectorAll('.gallery-filter').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.gallery-item').forEach(item => {
+              if (category === 'all' || item.dataset.category === category) {
+                item.style.display = 'block';
+              } else {
+                item.style.display = 'none';
+              }
+            });
+          };
+          
           
         } catch (error) {
           console.error('Error:', error);
