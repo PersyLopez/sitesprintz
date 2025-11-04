@@ -1,0 +1,51 @@
+{
+  "template": "gym-boutique",
+  "templateId": "gym-boutique",
+  "brand": {
+    "name": "FLOW Boutique Fitness"
+  },
+  "hero": {
+    "title": "Find your flow",
+    "subtitle": "Boutique classes designed to challenge, inspire, and transform. From HIIT to barre to yoga sculpt, discover workouts that make you excited to move. Premium equipment, expert instructors, and a community that celebrates every win.",
+    "image": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80",
+    "cta": "Get Started"
+  },
+  "contact": {
+    "email": "hello@flowfitness.co",
+    "phone": "(555) 321-4500",
+    "address": "Come experience FLOW"
+  },
+  "services": {
+    "title": "Our Services",
+    "items": [
+      {
+        "title": "💪 HIIT & Strength",
+        "name": "💪 HIIT & Strength",
+        "description": "High-intensity circuits, weight training, and metabolic conditioning",
+        "price": "",
+        "image": ""
+      },
+      {
+        "title": "🩰 Barre & Sculpt",
+        "name": "🩰 Barre & Sculpt",
+        "description": "Ballet-inspired toning with light weights and targeted movements",
+        "price": "",
+        "image": ""
+      },
+      {
+        "title": "🧘 Yoga & Mindfulness",
+        "name": "🧘 Yoga & Mindfulness",
+        "description": "Vinyasa flow, power yoga, and restorative sessions",
+        "price": "",
+        "image": ""
+      },
+      {
+        "title": "🚴 Rhythm Cycling",
+        "name": "🚴 Rhythm Cycling",
+        "description": "Music-driven indoor cycling in our dedicated cycle room",
+        "price": "",
+        "image": ""
+      }
+    ]
+  }
+}
