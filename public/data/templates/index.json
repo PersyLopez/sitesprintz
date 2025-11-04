@@ -131,6 +131,22 @@
       ]
     },
     {
+      "id": "restaurant-pro",
+      "name": "Restaurant Pro",
+      "description": "Advanced restaurant with booking and interactive features",
+      "category": "Food & Dining",
+      "color": "#d4af37",
+      "plan": "Pro",
+      "features": [
+        "Tabbed menu navigation (Appetizers/Entrées/Desserts/Drinks)",
+        "Integrated booking widget (Calendly)",
+        "Chef's specials carousel",
+        "Private dining room showcases",
+        "Filterable photo gallery",
+        "Owner dashboard access"
+      ]
+    },
+    {
       "id": "gym-pro",
       "name": "FitLife Gym (Pro)",
       "description": "Membership subscriptions with before/after gallery",

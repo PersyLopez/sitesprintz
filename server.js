@@ -689,7 +689,7 @@ app.post('/api/auth/quick-register', async (req, res) => {
     }
     
     if (!isValidEmail(email)) {
-      return res.status(400).json({ error: 'Invalid email format' });
+      return res.status(400).json({ error: 'Valid email required' });
     }
     
     // Check if user exists
@@ -699,59 +699,78 @@ app.post('/api/auth/quick-register', async (req, res) => {
     );
     
     if (existingUser.rows.length > 0) {
-      return res.status(409).json({ error: 'User with this email already exists' });
+      return res.status(400).json({ error: 'Email already exists' });
     }
     
-    // Create temporary password if skipPassword is true
-    const tempPassword = skipPassword ? generateRandomPassword() : null;
-    const hashedPassword = tempPassword ? await bcrypt.hash(tempPassword, 10) : null;
+    // Create new user
+    const tempPassword = skipPassword ? generateRandomPassword() : req.body.password;
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
     
-    // Insert user with pending status until email verified
     const result = await dbQuery(`
       INSERT INTO users (email, password_hash, role, status, created_at)
-      VALUES ($1, $2, 'user', 'pending', NOW())
-      RETURNING id, email, role, status, created_at
-    `, [email.toLowerCase(), hashedPassword]);
+      VALUES ($1, $2, 'user', $3, NOW())
+      RETURNING id, email, role, created_at
+    `, [
+      email.toLowerCase(),
+      hashedPassword,
+      skipPassword ? 'pending' : 'active'
+    ]);
     
     const user = result.rows[0];
     
-    // Generate JWT token
+    // Generate token
     const token = jwt.sign(
-      { 
-        userId: user.id,
-        id: user.id,
-        email: user.email,
-        role: user.role 
-      },
+      { id: user.id, email: user.email, role: user.role },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
     
-    // Send welcome email with magic link to set password
-    try {
-      await sendEmail(user.email, EmailTypes.WELCOME, { 
-        email: user.email,
-        magicLink: `${process.env.BASE_URL || 'http://localhost:3000'}/set-password?token=${token}`
-      });
-    } catch (emailError) {
-      console.error('Failed to send welcome email:', emailError);
+    // Send welcome email if skip password
+    if (skipPassword) {
+      try {
+        await sendEmail(email, EmailTypes.WELCOME, { email });
+      } catch (emailError) {
+        console.error('Failed to send welcome email:', emailError);
+      }
     }
     
-    res.json({ 
-      success: true, 
-      token, 
-      user: { 
-        id: user.id, 
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user.id,
         email: user.email,
-        role: user.role,
-        needsPassword: skipPassword
-      } 
+        role: user.role
+      }
     });
-    
-  } catch (err) {
-    console.error('Quick registration error:', err);
-    res.status(500).json({ error: 'Failed to create account' });
+  } catch (error) {
+    console.error('Quick register error:', error);
+    res.status(500).json({ error: 'Registration failed' });
   }
+});
+
+// Verify auth token
+app.get('/api/auth/verify', requireAuth, async (req, res) => {
+  res.json({
+    success: true,
+    user: {
+      id: req.user.id,
+      email: req.user.email,
+      role: req.user.role
+    }
+  });
+});
+
+// Get current user info
+app.get('/api/auth/me', requireAuth, async (req, res) => {
+  res.json({
+    success: true,
+    user: {
+      id: req.user.id,
+      email: req.user.email,
+      role: req.user.role
+    }
+  });
 });
 
 /**
