@@ -2419,7 +2419,7 @@ app.post('/api/sites/guest-publish', async (req, res) => {
     
     // Copy index.html template
     const indexContent = await fs.readFile(
-      path.join(publicDir, 'demo.html'),
+      path.join(publicDir, 'index.html'),
       'utf-8'
     );
     await fs.writeFile(path.join(siteDir, 'index.html'), indexContent);
