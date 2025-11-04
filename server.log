@@ -1,5 +1,5 @@
-[dotenv@17.2.3] injecting env (18) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
-[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+[dotenv@17.2.3] injecting env (18) from .env -- tip: 🔑 add access controls to secrets: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
 ✅ Google OAuth configured
 📍 Callback URL: https://tenurial-subemarginate-fay.ngrok-free.dev/auth/google/callback
 ✅ Google OAuth routes configured
@@ -24,74 +24,25 @@ Error processing site my-site-0d787wo6w: Error: ENOENT: no such file or director
   syscall: 'open',
   path: '/Users/admin/active-directory-website/public/sites/my-site-0d787wo6w/site.json'
 }
+Error processing site my-site-tidqp5en8: Error: ENOENT: no such file or directory, open '/Users/admin/active-directory-website/public/sites/my-site-tidqp5en8/site.json'
+    at async open (node:internal/fs/promises:640:25)
+    at async Object.readFile (node:internal/fs/promises:1277:14)
+    at async checkTrialExpirations (file:///Users/admin/active-directory-website/server.js:3736:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/admin/active-directory-website/public/sites/my-site-tidqp5en8/site.json'
+}
+Error processing site my-site-zj93k58j5: Error: ENOENT: no such file or directory, open '/Users/admin/active-directory-website/public/sites/my-site-zj93k58j5/site.json'
+    at async open (node:internal/fs/promises:640:25)
+    at async Object.readFile (node:internal/fs/promises:1277:14)
+    at async checkTrialExpirations (file:///Users/admin/active-directory-website/server.js:3736:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/admin/active-directory-website/public/sites/my-site-zj93k58j5/site.json'
+}
 ✅ Trial expiration check complete
 ✅ Database connected successfully
-Query executed: { text: 'SELECT NOW()', duration: 196, rows: 1 }
-✅ Database connection test successful: { now: 2025-11-04T00:04:55.194Z }
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 134,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id FROM users WHERE email = $1',
-  duration: 18,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      INSERT INTO sites (\n' +
-    '        id, user_id, subdomain, template_id, status, plan,\n' +
-    '        publis',
-  duration: 23,
-  rows: 1
-}
-✅ Database connected successfully
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 144,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 144,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 17,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 18,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 21,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 16,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 18,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 17,
-  rows: 1
-}
+Query executed: { text: 'SELECT NOW()', duration: 201, rows: 1 }
+✅ Database connection test successful: { now: 2025-11-04T00:10:19.002Z }
