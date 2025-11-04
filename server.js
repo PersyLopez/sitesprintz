@@ -3384,6 +3384,301 @@ app.put('/api/sites/:subdomain', requireAuth, async (req, res) => {
   }
 });
 
+// PATCH endpoint for single field updates (seamless auto-save)
+app.patch('/api/sites/:subdomain', requireAuth, async (req, res) => {
+  try {
+    const { subdomain } = req.params;
+    const userEmail = req.user.email;
+    const { changes } = req.body; // Array of {field, value} objects
+    
+    // Load existing site
+    const siteDir = path.join(publicDir, 'sites', subdomain);
+    const sitePath = path.join(siteDir, 'site.json');
+    let existingSite;
+    
+    try {
+      existingSite = JSON.parse(await fs.readFile(sitePath, 'utf-8'));
+    } catch (error) {
+      return res.status(404).json({ error: 'Site not found' });
+    }
+    
+    // Verify ownership
+    if (existingSite.published?.email !== userEmail) {
+      return res.status(403).json({ error: 'Not authorized to edit this site' });
+    }
+    
+    // Create mini-checkpoint (for undo/redo)
+    const checkpointDir = path.join(siteDir, 'checkpoints');
+    await fs.mkdir(checkpointDir, { recursive: true });
+    const checkpointPath = path.join(checkpointDir, `checkpoint.${Date.now()}.json`);
+    await fs.writeFile(checkpointPath, JSON.stringify({
+      timestamp: Date.now(),
+      data: existingSite,
+      changes: changes
+    }, null, 2));
+    
+    // Apply changes using dot notation
+    const updatedSite = { ...existingSite };
+    
+    changes.forEach(({ field, value }) => {
+      const keys = field.split('.');
+      let obj = updatedSite;
+      
+      for (let i = 0; i < keys.length - 1; i++) {
+        if (!obj[keys[i]]) obj[keys[i]] = {};
+        obj = obj[keys[i]];
+      }
+      
+      obj[keys[keys.length - 1]] = value;
+    });
+    
+    // Update timestamp
+    updatedSite.published = {
+      ...updatedSite.published,
+      lastUpdated: new Date().toISOString()
+    };
+    
+    // Save updated site
+    await fs.writeFile(sitePath, JSON.stringify(updatedSite, null, 2));
+    
+    // Clean up old checkpoints (keep last 50)
+    try {
+      const checkpoints = await fs.readdir(checkpointDir);
+      if (checkpoints.length > 50) {
+        const sorted = checkpoints
+          .map(f => ({ name: f, time: parseInt(f.split('.')[1]) }))
+          .sort((a, b) => b.time - a.time);
+        
+        for (let i = 50; i < sorted.length; i++) {
+          await fs.unlink(path.join(checkpointDir, sorted[i].name));
+        }
+      }
+    } catch (cleanupError) {
+      console.error('Checkpoint cleanup error:', cleanupError);
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Changes saved',
+      checkpointId: Date.now()
+    });
+  } catch (error) {
+    console.error('Patch site error:', error);
+    res.status(500).json({ error: 'Failed to save changes' });
+  }
+});
+
+// Get version history
+app.get('/api/sites/:subdomain/history', requireAuth, async (req, res) => {
+  try {
+    const { subdomain } = req.params;
+    const userEmail = req.user.email;
+    
+    // Load site to verify ownership
+    const siteDir = path.join(publicDir, 'sites', subdomain);
+    const sitePath = path.join(siteDir, 'site.json');
+    let existingSite;
+    
+    try {
+      existingSite = JSON.parse(await fs.readFile(sitePath, 'utf-8'));
+    } catch (error) {
+      return res.status(404).json({ error: 'Site not found' });
+    }
+    
+    if (existingSite.published?.email !== userEmail) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+    
+    // Load all backups
+    const backupDir = path.join(siteDir, 'backups');
+    const checkpointDir = path.join(siteDir, 'checkpoints');
+    
+    let history = [];
+    
+    // Add major backups
+    try {
+      const backups = await fs.readdir(backupDir);
+      for (const backup of backups) {
+        if (backup.startsWith('site.backup.')) {
+          const timestamp = parseInt(backup.split('.')[2]);
+          history.push({
+            id: `backup-${timestamp}`,
+            timestamp: timestamp,
+            type: 'backup',
+            description: 'Manual save point',
+            date: new Date(timestamp).toLocaleString()
+          });
+        }
+      }
+    } catch (e) {
+      // No backups yet
+    }
+    
+    // Add checkpoints (last 20 only)
+    try {
+      const checkpoints = await fs.readdir(checkpointDir);
+      const sorted = checkpoints
+        .filter(f => f.startsWith('checkpoint.'))
+        .map(f => parseInt(f.split('.')[1]))
+        .sort((a, b) => b - a)
+        .slice(0, 20);
+      
+      for (const timestamp of sorted) {
+        const checkpointPath = path.join(checkpointDir, `checkpoint.${timestamp}.json`);
+        try {
+          const checkpoint = JSON.parse(await fs.readFile(checkpointPath, 'utf-8'));
+          const changeDesc = checkpoint.changes?.map(c => c.field).join(', ') || 'Multiple changes';
+          
+          history.push({
+            id: `checkpoint-${timestamp}`,
+            timestamp: timestamp,
+            type: 'checkpoint',
+            description: `Updated: ${changeDesc}`,
+            date: new Date(timestamp).toLocaleString()
+          });
+        } catch (e) {
+          // Skip corrupted checkpoint
+        }
+      }
+    } catch (e) {
+      // No checkpoints yet
+    }
+    
+    // Sort by timestamp descending
+    history.sort((a, b) => b.timestamp - a.timestamp);
+    
+    res.json({ 
+      success: true,
+      history: history
+    });
+  } catch (error) {
+    console.error('Get history error:', error);
+    res.status(500).json({ error: 'Failed to load history' });
+  }
+});
+
+// Restore from checkpoint or backup
+app.post('/api/sites/:subdomain/restore/:versionId', requireAuth, async (req, res) => {
+  try {
+    const { subdomain, versionId } = req.params;
+    const userEmail = req.user.email;
+    
+    // Load current site to verify ownership
+    const siteDir = path.join(publicDir, 'sites', subdomain);
+    const sitePath = path.join(siteDir, 'site.json');
+    let currentSite;
+    
+    try {
+      currentSite = JSON.parse(await fs.readFile(sitePath, 'utf-8'));
+    } catch (error) {
+      return res.status(404).json({ error: 'Site not found' });
+    }
+    
+    if (currentSite.published?.email !== userEmail) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+    
+    // Create backup of current state before restoring
+    const backupDir = path.join(siteDir, 'backups');
+    await fs.mkdir(backupDir, { recursive: true });
+    const beforeRestorePath = path.join(backupDir, `site.before-restore.${Date.now()}.json`);
+    await fs.writeFile(beforeRestorePath, JSON.stringify(currentSite, null, 2));
+    
+    // Load the version to restore
+    let restoredData;
+    
+    if (versionId.startsWith('backup-')) {
+      const timestamp = versionId.replace('backup-', '');
+      const backupPath = path.join(backupDir, `site.backup.${timestamp}.json`);
+      restoredData = JSON.parse(await fs.readFile(backupPath, 'utf-8'));
+    } else if (versionId.startsWith('checkpoint-')) {
+      const timestamp = versionId.replace('checkpoint-', '');
+      const checkpointPath = path.join(siteDir, 'checkpoints', `checkpoint.${timestamp}.json`);
+      const checkpoint = JSON.parse(await fs.readFile(checkpointPath, 'utf-8'));
+      restoredData = checkpoint.data;
+    } else {
+      return res.status(400).json({ error: 'Invalid version ID' });
+    }
+    
+    // Update timestamp
+    restoredData.published = {
+      ...restoredData.published,
+      lastUpdated: new Date().toISOString(),
+      restoredFrom: versionId,
+      restoredAt: new Date().toISOString()
+    };
+    
+    // Save restored version
+    await fs.writeFile(sitePath, JSON.stringify(restoredData, null, 2));
+    
+    res.json({ 
+      success: true,
+      message: 'Version restored successfully',
+      restoredFrom: versionId
+    });
+  } catch (error) {
+    console.error('Restore version error:', error);
+    res.status(500).json({ error: 'Failed to restore version' });
+  }
+});
+
+// Get current edit session info
+app.get('/api/sites/:subdomain/session', requireAuth, async (req, res) => {
+  try {
+    const { subdomain } = req.params;
+    const userEmail = req.user.email;
+    
+    // Load site to verify ownership
+    const siteDir = path.join(publicDir, 'sites', subdomain);
+    const sitePath = path.join(siteDir, 'site.json');
+    let existingSite;
+    
+    try {
+      existingSite = JSON.parse(await fs.readFile(sitePath, 'utf-8'));
+    } catch (error) {
+      return res.status(404).json({ error: 'Site not found' });
+    }
+    
+    if (existingSite.published?.email !== userEmail) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+    
+    // Get latest checkpoint info
+    const checkpointDir = path.join(siteDir, 'checkpoints');
+    let lastCheckpoint = null;
+    
+    try {
+      const checkpoints = await fs.readdir(checkpointDir);
+      if (checkpoints.length > 0) {
+        const latest = checkpoints
+          .filter(f => f.startsWith('checkpoint.'))
+          .map(f => parseInt(f.split('.')[1]))
+          .sort((a, b) => b - a)[0];
+        
+        lastCheckpoint = {
+          timestamp: latest,
+          date: new Date(latest).toLocaleString()
+        };
+      }
+    } catch (e) {
+      // No checkpoints
+    }
+    
+    res.json({
+      success: true,
+      session: {
+        subdomain: subdomain,
+        lastCheckpoint: lastCheckpoint,
+        lastUpdated: existingSite.published?.lastUpdated,
+        canEdit: true
+      }
+    });
+  } catch (error) {
+    console.error('Get session error:', error);
+    res.status(500).json({ error: 'Failed to get session info' });
+  }
+});
+
 // Delete published site (authenticated)
 app.delete('/api/sites/:subdomain', requireAuth, async (req, res) => {
   try {
