@@ -28,3 +28,70 @@ Error processing site my-site-0d787wo6w: Error: ENOENT: no such file or director
 ✅ Database connected successfully
 Query executed: { text: 'SELECT NOW()', duration: 196, rows: 1 }
 ✅ Database connection test successful: { now: 2025-11-04T00:04:55.194Z }
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 134,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id FROM users WHERE email = $1',
+  duration: 18,
+  rows: 1
+}
+Query executed: {
+  text: '\n' +
+    '      INSERT INTO sites (\n' +
+    '        id, user_id, subdomain, template_id, status, plan,\n' +
+    '        publis',
+  duration: 23,
+  rows: 1
+}
+✅ Database connected successfully
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 144,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 144,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 17,
+  rows: 1
+}
+Query executed: {
+  text: '\n' +
+    '      SELECT \n' +
+    '        id, subdomain, template_id, status, plan, \n' +
+    '        published_at, created_at, ',
+  duration: 18,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 21,
+  rows: 1
+}
+Query executed: {
+  text: '\n' +
+    '      SELECT \n' +
+    '        id, subdomain, template_id, status, plan, \n' +
+    '        published_at, created_at, ',
+  duration: 16,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 18,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 17,
+  rows: 1
+}
