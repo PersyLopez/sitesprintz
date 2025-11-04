@@ -306,7 +306,11 @@
 
     // Display site URL
     if (site) {
-      const fullUrl = `https://sitesprintz.com/${site}`;
+      // Use current host for the full URL
+      const currentHost = window.location.host;
+      const protocol = window.location.protocol;
+      const fullUrl = `${protocol}//${currentHost}/sites/${site}`;
+      
       document.getElementById('siteUrl').textContent = fullUrl;
       document.getElementById('visitLink').href = `/sites/${site}`;
     }
