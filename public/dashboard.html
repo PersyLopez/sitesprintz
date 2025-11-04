@@ -1090,7 +1090,7 @@
             <button onclick="viewSite('${site.id}', '${site.status}')" style="background: #3b82f6; color: white; border-color: #3b82f6;">
               ${site.status === 'published' ? '🌐 View' : '👁️ Preview'}
             </button>
-            <button onclick="editSite('${site.id}', '${site.status}')" style="background: #f97316; color: white; border-color: #f97316;">
+            <button onclick="editSite('${site.id}', '${site.subdomain}')" style="background: #f97316; color: white; border-color: #f97316;">
               ✏️ Edit
             </button>
             <button onclick="deleteSite('${site.id}')" style="background: #ef4444; color: white; border-color: #ef4444;">
@@ -1111,13 +1111,18 @@
       }
     }
     
-    function editSite(siteId, status) {
-      // For now, show a message that editing is coming soon
-      // TODO: Implement proper edit functionality
-      alert('Edit functionality coming soon! For now, you can:\n\n1. View your published site\n2. Create a new site with updated content\n3. Delete the old site\n\nFull editing will be available in the next update.');
+    function editSite(siteId, subdomain) {
+      // Get auth token
+      const token = localStorage.getItem('authToken');
       
-      // Optionally, open the site in a new tab so they can see what needs editing
-      window.open(`/sites/${siteId}/`, '_blank');
+      if (!token) {
+        alert('Please log in to edit your site');
+        window.location.href = '/login.html';
+        return;
+      }
+      
+      // Open site in seamless edit mode
+      window.location.href = `/sites/${subdomain}/?edit=true&token=${token}`;
     }
     
     async function deleteSite(siteId) {

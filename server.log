@@ -187,3 +187,237 @@ Query executed: {
   duration: 19,
   rows: 1
 }
+🚀 Initiating Google OAuth...
+Callback URL: https://tenurial-subemarginate-fay.ngrok-free.dev/auth/google/callback
+🎯 CALLBACK HIT - Starting passport authentication...
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT * FROM users WHERE email = $1',
+  duration: 141,
+  rows: 1
+}
+Query executed: {
+  text: 'UPDATE users SET last_login = NOW() WHERE email = $1',
+  duration: 21,
+  rows: 1
+}
+🎯 Passport authenticate callback fired
+Error: null
+User: persylopez9@gmail.com
+Info: {}
+🔥🔥🔥 OAUTH CALLBACK FIRED 🔥🔥🔥
+User email: persylopez9@gmail.com
+User ID: c9ff275b-45f0-4d4b-90c8-55ac98819e43
+User role: user
+Token generated: eyJhbGciOiJIUzI1NiIs...
+🔍 Checking redirect logic...
+Pending intent: undefined
+Pending plan: undefined
+✅ REDIRECTING TO: /dashboard.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjOWZmMjc1Yi00NWYwLTRkNGItOTBjOC01NWFjOTg4MTllNDMiLCJlbWFpbCI6InBlcnN5bG9wZXo5QGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzYyMjE1MjY2LCJleHAiOjE3NjI4MjAwNjZ9.CkrpcL3IsP_D4TTD8aQJJiroctqx8vl3xwk1QX7UDTI
+🚀 User should now land on dashboard!
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 19,
+  rows: 1
+}
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 152,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 19,
+  rows: 1
+}
+Query executed: {
+  text: '\n' +
+    '      SELECT \n' +
+    '        id, subdomain, template_id, status, plan, \n' +
+    '        published_at, created_at, ',
+  duration: 22,
+  rows: 3
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 19,
+  rows: 1
+}
+Query executed: {
+  text: '\n' +
+    '      SELECT \n' +
+    '        id, subdomain, template_id, status, plan, \n' +
+    '        published_at, created_at, ',
+  duration: 19,
+  rows: 3
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 19,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 20,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 21,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT subdomain FROM sites WHERE id = $1 AND user_id = $2',
+  duration: 20,
+  rows: 1
+}
+Query executed: {
+  text: 'DELETE FROM sites WHERE id = $1 AND user_id = $2',
+  duration: 45,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 18,
+  rows: 1
+}
+Query executed: {
+  text: '\n' +
+    '      SELECT \n' +
+    '        id, subdomain, template_id, status, plan, \n' +
+    '        published_at, created_at, ',
+  duration: 21,
+  rows: 2
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 18,
+  rows: 1
+}
+Query executed: {
+  text: '\n' +
+    '      SELECT \n' +
+    '        id, subdomain, template_id, status, plan, \n' +
+    '        published_at, created_at, ',
+  duration: 21,
+  rows: 2
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 19,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT subdomain FROM sites WHERE id = $1 AND user_id = $2',
+  duration: 19,
+  rows: 1
+}
+Query executed: {
+  text: 'DELETE FROM sites WHERE id = $1 AND user_id = $2',
+  duration: 20,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 20,
+  rows: 1
+}
+Query executed: {
+  text: '\n' +
+    '      SELECT \n' +
+    '        id, subdomain, template_id, status, plan, \n' +
+    '        published_at, created_at, ',
+  duration: 21,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 19,
+  rows: 1
+}
+Query executed: {
+  text: '\n' +
+    '      SELECT \n' +
+    '        id, subdomain, template_id, status, plan, \n' +
+    '        published_at, created_at, ',
+  duration: 18,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 21,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT subdomain FROM sites WHERE id = $1 AND user_id = $2',
+  duration: 19,
+  rows: 1
+}
+Query executed: {
+  text: 'DELETE FROM sites WHERE id = $1 AND user_id = $2',
+  duration: 20,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 21,
+  rows: 1
+}
+Query executed: {
+  text: '\n' +
+    '      SELECT \n' +
+    '        id, subdomain, template_id, status, plan, \n' +
+    '        published_at, created_at, ',
+  duration: 20,
+  rows: 0
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 18,
+  rows: 1
+}
+Query executed: {
+  text: '\n' +
+    '      SELECT \n' +
+    '        id, subdomain, template_id, status, plan, \n' +
+    '        published_at, created_at, ',
+  duration: 19,
+  rows: 0
+}
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 3986,
+  rows: 1
+}
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 157,
+  rows: 1
+}
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 1405,
+  rows: 1
+}
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 160,
+  rows: 1
+}
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 180,
+  rows: 1
+}
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 134,
+  rows: 1
+}

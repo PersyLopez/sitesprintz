@@ -214,7 +214,7 @@
     <header>
       <div class="container">
         <div class="header-content">
-          <div class="logo" id="brandName"></div>
+          <div class="logo" id="brandName" data-editable="brand.name"></div>
           <nav id="nav"></nav>
         </div>
       </div>
@@ -222,15 +222,15 @@
     
     <section class="hero">
       <div class="container">
-        <h1 id="heroTitle"></h1>
-        <p id="heroSubtitle"></p>
-        <a href="#contact" class="cta-button" id="heroCTA"></a>
+        <h1 id="heroTitle" data-editable="hero.title"></h1>
+        <p id="heroSubtitle" data-editable="hero.subtitle"></p>
+        <a href="#contact" class="cta-button" id="heroCTA" data-editable="hero.cta"></a>
       </div>
     </section>
     
     <section class="services">
       <div class="container">
-        <h2 id="servicesTitle"></h2>
+        <h2 id="servicesTitle" data-editable="services.title"></h2>
         <div class="services-grid" id="servicesGrid"></div>
       </div>
     </section>
@@ -250,10 +250,13 @@
   </div>
   
   <script>
+    let siteData = null; // Store globally for editor access
+    
     async function loadSite() {
       try {
         const response = await fetch('./data/site.json');
         const data = await response.json();
+        siteData = data; // Store for editor
         
         // Set title
         document.title = data.brand?.name || 'My Business';
@@ -273,20 +276,21 @@
         
         const items = data.services?.items || data.products || [];
         const grid = document.getElementById('servicesGrid');
-        grid.innerHTML = items.map(item => `
-          <div class="service-card">
-            <h3>${item.title || item.name}</h3>
-            <p>${item.description || ''}</p>
-            ${item.price ? `<div class="service-price">$${item.price}</div>` : ''}
+        grid.innerHTML = items.map((item, index) => `
+          <div class="service-card" data-editable-card="services.items.${index}">
+            <h3 data-editable="services.items.${index}.title">${item.title || item.name}</h3>
+            <p data-editable="services.items.${index}.description">${item.description || ''}</p>
+            ${item.price ? `<div class="service-price" data-editable="services.items.${index}.price">$${item.price}</div>` : ''}
           </div>
         `).join('');
         
         // Set contact
         const contact = data.contact || {};
-        document.getElementById('contactInfo').innerHTML = `
-          ${contact.email ? `<p>Email: <a href="mailto:${contact.email}">${contact.email}</a></p>` : ''}
-          ${contact.phone ? `<p>Phone: <a href="tel:${contact.phone}">${contact.phone}</a></p>` : ''}
-          ${contact.address ? `<p>${contact.address}</p>` : ''}
+        const contactInfo = document.getElementById('contactInfo');
+        contactInfo.innerHTML = `
+          ${contact.email ? `<p data-editable="contact.email">Email: <a href="mailto:${contact.email}">${contact.email}</a></p>` : ''}
+          ${contact.phone ? `<p data-editable="contact.phone">Phone: <a href="tel:${contact.phone}">${contact.phone}</a></p>` : ''}
+          ${contact.address ? `<p data-editable="contact.address">${contact.address}</p>` : ''}
         `;
         
         // Set footer
@@ -296,9 +300,44 @@
         document.getElementById('loading').style.display = 'none';
         document.getElementById('siteContent').style.display = 'block';
         
+        // Check if in edit mode
+        checkEditMode();
+        
       } catch (error) {
         console.error('Error loading site:', error);
         document.getElementById('loading').textContent = 'Error loading site. Please contact support.';
+      }
+    }
+    
+    // Auto-detect and load edit mode
+    async function checkEditMode() {
+      const params = new URLSearchParams(window.location.search);
+      const editMode = params.get('edit');
+      const token = params.get('token') || localStorage.getItem('authToken');
+      
+      if (editMode === 'true' && token) {
+        // Verify token is valid
+        try {
+          const authCheck = await fetch('/api/auth/verify', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          
+          if (authCheck.ok) {
+            // Load visual editor
+            const script = document.createElement('script');
+            script.src = '/visual-editor.js';
+            script.dataset.token = token;
+            script.dataset.subdomain = window.location.pathname.split('/')[2];
+            document.body.appendChild(script);
+            
+            // Store token in localStorage for future
+            localStorage.setItem('authToken', token);
+          } else {
+            console.warn('Authentication failed, edit mode disabled');
+          }
+        } catch (error) {
+          console.error('Failed to verify authentication:', error);
+        }
       }
     }
     
