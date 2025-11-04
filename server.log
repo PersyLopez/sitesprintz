@@ -1,5 +1,5 @@
-[dotenv@17.2.3] injecting env (18) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
-[dotenv@17.2.3] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+[dotenv@17.2.3] injecting env (18) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
 ✅ Google OAuth configured
 📍 Callback URL: https://tenurial-subemarginate-fay.ngrok-free.dev/auth/google/callback
 ✅ Google OAuth routes configured
@@ -9,7 +9,7 @@ Server running on http://localhost:3000
 Error processing site my-site: Error: ENOENT: no such file or directory, open '/Users/admin/active-directory-website/public/sites/my-site/site.json'
     at async open (node:internal/fs/promises:640:25)
     at async Object.readFile (node:internal/fs/promises:1277:14)
-    at async checkTrialExpirations (file:///Users/admin/active-directory-website/server.js:4031:37) {
+    at async checkTrialExpirations (file:///Users/admin/active-directory-website/server.js:4032:37) {
   errno: -2,
   code: 'ENOENT',
   syscall: 'open',
@@ -18,23 +18,58 @@ Error processing site my-site: Error: ENOENT: no such file or directory, open '/
 Error processing site my-site-0d787wo6w: Error: ENOENT: no such file or directory, open '/Users/admin/active-directory-website/public/sites/my-site-0d787wo6w/site.json'
     at async open (node:internal/fs/promises:640:25)
     at async Object.readFile (node:internal/fs/promises:1277:14)
-    at async checkTrialExpirations (file:///Users/admin/active-directory-website/server.js:4031:37) {
+    at async checkTrialExpirations (file:///Users/admin/active-directory-website/server.js:4032:37) {
   errno: -2,
   code: 'ENOENT',
   syscall: 'open',
   path: '/Users/admin/active-directory-website/public/sites/my-site-0d787wo6w/site.json'
 }
+Error processing site my-site-gh7um6nzc: Error: ENOENT: no such file or directory, open '/Users/admin/active-directory-website/public/sites/my-site-gh7um6nzc/site.json'
+    at async open (node:internal/fs/promises:640:25)
+    at async Object.readFile (node:internal/fs/promises:1277:14)
+    at async checkTrialExpirations (file:///Users/admin/active-directory-website/server.js:4032:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/admin/active-directory-website/public/sites/my-site-gh7um6nzc/site.json'
+}
 ✅ Trial expiration check complete
 ✅ Database connected successfully
-Query executed: { text: 'SELECT NOW()', duration: 3258, rows: 1 }
-✅ Database connection test successful: { now: 2025-11-04T11:21:29.271Z }
+Query executed: { text: 'SELECT NOW()', duration: 200, rows: 1 }
+✅ Database connection test successful: { now: 2025-11-04T11:33:48.235Z }
+🚀 Initiating Google OAuth...
+Callback URL: https://tenurial-subemarginate-fay.ngrok-free.dev/auth/google/callback
+🎯 CALLBACK HIT - Starting passport authentication...
 ✅ Database connected successfully
 Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 144,
+  text: 'SELECT * FROM users WHERE email = $1',
+  duration: 206,
   rows: 1
 }
-✅ Database connected successfully
+Query executed: {
+  text: 'UPDATE users SET last_login = NOW() WHERE email = $1',
+  duration: 45,
+  rows: 1
+}
+🎯 Passport authenticate callback fired
+Error: null
+User: persylopez9@gmail.com
+Info: {}
+🔥🔥🔥 OAUTH CALLBACK FIRED 🔥🔥🔥
+User email: persylopez9@gmail.com
+User ID: c9ff275b-45f0-4d4b-90c8-55ac98819e43
+User role: user
+Token generated: eyJhbGciOiJIUzI1NiIs...
+🔍 Checking redirect logic...
+Pending intent: undefined
+Pending plan: undefined
+✅ REDIRECTING TO: /dashboard.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjOWZmMjc1Yi00NWYwLTRkNGItOTBjOC01NWFjOTg4MTllNDMiLCJlbWFpbCI6InBlcnN5bG9wZXo5QGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzYyMjU2MDgwLCJleHAiOjE3NjI4NjA4ODB9.krZ9fhuhFihdAyDFhp-r9d3SRdquz0HzUUGumnDj9B0
+🚀 User should now land on dashboard!
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 17,
+  rows: 1
+}
 ✅ Database connected successfully
 Query executed: {
   text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
@@ -43,162 +78,7 @@ Query executed: {
 }
 Query executed: {
   text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 233,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 19,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 55,
-  rows: 0
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 33,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 19,
-  rows: 0
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 19,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 22,
-  rows: 1
-}
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 240,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id FROM users WHERE email = $1',
-  duration: 29,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      INSERT INTO sites (\n' +
-    '        id, user_id, subdomain, template_id, status, plan,\n' +
-    '        publis',
-  duration: 32,
-  rows: 1
-}
-✅ Database connected successfully
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 149,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 145,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 17,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 18,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 18,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 18,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 17,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 19,
-  rows: 1
-}
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 2689,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT subdomain FROM sites WHERE id = $1 AND user_id = $2',
-  duration: 17,
-  rows: 1
-}
-Query executed: {
-  text: 'DELETE FROM sites WHERE id = $1 AND user_id = $2',
-  duration: 27,
-  rows: 1
-}
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 151,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id FROM users WHERE email = $1',
-  duration: 18,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      INSERT INTO sites (\n' +
-    '        id, user_id, subdomain, template_id, status, plan,\n' +
-    '        publis',
-  duration: 21,
-  rows: 1
-}
-✅ Database connected successfully
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 130,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 133,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 17,
+  duration: 15,
   rows: 1
 }
 Query executed: {
@@ -219,16 +99,16 @@ Query executed: {
     '      SELECT \n' +
     '        id, subdomain, template_id, status, plan, \n' +
     '        published_at, created_at, ',
-  duration: 18,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 19,
+  duration: 16,
   rows: 1
 }
 Query executed: {
   text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
   duration: 17,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 16,
   rows: 1
 }
