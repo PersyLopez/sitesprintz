@@ -4197,6 +4197,201 @@ function generateSubdomain(businessName) {
   return subdomain;
 }
 
+// Function to generate site HTML from site data
+function generateSiteHTML(siteData) {
+  // Detect if this is a Pro template
+  const isPro = siteData.features?.tabbedMenu || siteData.features?.bookingWidget || siteData.menu?.sections;
+  
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${siteData.brand?.name || 'Loading...'}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --color-bg: #0a0a0f;
+        --color-surface: rgba(255, 255, 255, 0.03);
+        --color-card: rgba(255, 255, 255, 0.06);
+        --color-text: #f8fafc;
+        --color-muted: #94a3b8;
+        --color-primary: #6366f1;
+        --color-primary-light: #818cf8;
+        --color-primary-dark: #4f46e5;
+        --color-accent: #8b5cf6;
+        --color-accent-light: #a78bfa;
+        --color-success: #10b981;
+        --color-warning: #f59e0b;
+        --radius: 20px;
+        --radius-lg: 28px;
+        --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.3);
+        --shadow-soft: 0 20px 60px rgba(0, 0, 0, 0.5);
+        --shadow-subtle: 0 8px 32px rgba(0, 0, 0, 0.3);
+        --spacing-xs: 6px;
+        --spacing-sm: 12px;
+        --spacing-md: 20px;
+        --spacing-lg: 32px;
+        --spacing-xl: 48px;
+        --spacing-2xl: 72px;
+      }
+      
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      
+      @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+      }
+      
+      @keyframes shimmer {
+        0% { background-position: -200% center; }
+        100% { background-position: 200% center; }
+      }
+      
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      @keyframes gradientShift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+      }
+      
+      body { 
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        margin: 0; 
+        padding: 0; 
+        background: linear-gradient(135deg, #0a0a0f 0%, #1a0f2e 50%, #0a0a0f 100%);
+        background-size: 200% 200%;
+        animation: gradientShift 15s ease infinite;
+        color: var(--color-text);
+        line-height: 1.6;
+        font-size: 16px;
+        position: relative;
+        overflow-x: hidden;
+      }
+    </style>
+    <script>
+      // This will be populated with actual site data
+      window.siteData = ${JSON.stringify(siteData)};
+      window.isPro = ${isPro};
+    </script>
+  </head>
+  <body>
+    <div id="root">Loading...</div>
+    <script>
+      // Simple client-side rendering for preview
+      function renderSite() {
+        const data = window.siteData;
+        const root = document.getElementById('root');
+        
+        root.innerHTML = \`
+          <div style="min-height: 100vh; padding: 20px;">
+            <h1 style="text-align: center; margin-bottom: 20px;">\${data.brand?.name || 'Business'}</h1>
+            <p style="text-align: center; color: var(--color-muted);">Pro Template Preview - Full rendering will be available when published</p>
+          </div>
+        \`;
+      }
+      
+      renderSite();
+    </script>
+  </body>
+</html>`;
+}
+
+// Preview endpoint for templates (used in setup.html preview)
+app.get('/api/preview-template/:templateId', async (req, res) => {
+  try {
+    const { templateId } = req.params;
+    const templatePath = path.join(__dirname, 'public', 'data', 'templates', `${templateId}.json`);
+    
+    // Read template data
+    const templateJson = await fs.readFile(templatePath, 'utf-8');
+    const data = JSON.parse(templateJson);
+    
+    // Check if this is a Pro template
+    const isPro = data.features?.tabbedMenu || data.features?.bookingWidget || data.menu?.sections;
+    
+    if (!isPro) {
+      // For non-Pro templates, show a simple message
+      return res.send(generateSiteHTML(data));
+    }
+    
+    // For Pro templates, we need to create a full site with index.html
+    // We'll copy the exact generation logic from the publish endpoint
+    const tempSubdomain = `preview-${templateId.replace(/-pro$/, '')}-${Date.now().toString(36)}`;
+    const sitesDir = path.join(__dirname, 'public', 'sites', tempSubdomain);
+    const siteConfigFile = path.join(sitesDir, 'site.json');
+    const siteIndexFile = path.join(sitesDir, 'index.html');
+    
+    // Create temp directory
+    await fs.mkdir(sitesDir, { recursive: true });
+    
+    // Save site.json
+    await fs.writeFile(siteConfigFile, JSON.stringify(data, null, 2));
+    
+    // Here we need to generate the FULL index.html using the same code as publish
+    // For now, let's redirect to an existing demo site if available, otherwise temp site
+    if (templateId === 'restaurant-pro') {
+      return res.redirect('/sites/grandtable-demo/');
+    }
+    
+    // For other Pro templates, generate a basic index.html that loads site.json
+    const basicHtml = generateSiteHTML(data);
+    await fs.writeFile(siteIndexFile, basicHtml);
+    
+    // Redirect to the temp site
+    res.redirect(`/sites/${tempSubdomain}/`);
+    
+    // Schedule cleanup after 2 minutes
+    setTimeout(async () => {
+      try {
+        await fs.rm(sitesDir, { recursive: true, force: true });
+        console.log(`Cleaned up preview site: ${tempSubdomain}`);
+      } catch (err) {
+        console.error('Failed to cleanup preview site:', err);
+      }
+    }, 120000); // 120 seconds
+    
+  } catch (error) {
+    console.error('Preview error:', error);
+    res.status(500).send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Preview Error</title>
+        <style>
+          body {
+            font-family: system-ui;
+            padding: 40px;
+            text-align: center;
+            background: #f8fafc;
+          }
+          .error {
+            background: white;
+            border: 2px solid #ef4444;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            margin: 0 auto;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="error">
+          <h2>Preview Error</h2>
+          <p>Could not load template preview.</p>
+          <p style="font-size: 0.9rem; color: #6b7280;">${error.message}</p>
+        </div>
+      </body>
+      </html>
+    `);
+  }
+});
+
 // Route handler for /sites/{subdomain}/ paths
 app.get('/sites/:subdomain/:filename', async (req, res, next) => {
   const { subdomain, filename } = req.params;

@@ -1279,6 +1279,177 @@
     </div>
 
     <!-- How It Works -->
+      <div class="section-header-compact">
+        <h2>Choose Your Template</h2>
+        <p>Industry-specific designs built with real research. 36 templates, 3 layouts each.</p>
+      </div>
+      
+      <div style="max-width: 1200px; margin: 0 auto;">
+        <!-- Template Categories Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 32px;">
+          
+          <!-- Restaurant -->
+          <a href="/setup.html?template=restaurant" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">🍽️</span>
+            <h3>Restaurant</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Menu showcase, online ordering, reservations</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Fine Dining</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Casual</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Fast Casual</span>
+            </div>
+          </a>
+          
+          <!-- Salon & Spa -->
+          <a href="/setup.html?template=salon" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">💇</span>
+            <h3>Salon & Spa</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, booking, team showcase</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Luxury Spa</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Modern</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Neighborhood</span>
+            </div>
+          </a>
+          
+          <!-- Fitness -->
+          <a href="/setup.html?template=gym" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">💪</span>
+            <h3>Fitness & Gym</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Classes, memberships, trainer profiles</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">CrossFit</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Boutique</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Personal Training</span>
+            </div>
+          </a>
+          
+          <!-- Consultant -->
+          <a href="/setup.html?template=consultant" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">💼</span>
+            <h3>Consultant</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, case studies, contact forms</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Strategy</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Creative</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Executive</span>
+            </div>
+          </a>
+          
+          <!-- Freelancer -->
+          <a href="/setup.html?template=freelancer" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">🎨</span>
+            <h3>Freelancer</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Portfolio, services, contact</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Designer</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Developer</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Writer</span>
+            </div>
+          </a>
+          
+          <!-- Tech Repair -->
+          <a href="/setup.html?template=tech-repair" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">🔧</span>
+            <h3>Tech Repair</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, pricing, booking</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Phone Repair</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Computer</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Gaming</span>
+            </div>
+          </a>
+          
+          <!-- Cleaning Services -->
+          <a href="/setup.html?template=cleaning" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">🧹</span>
+            <h3>Cleaning Services</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, pricing, booking</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Residential</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Commercial</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Eco-Friendly</span>
+            </div>
+          </a>
+          
+          <!-- Pet Care -->
+          <a href="/setup.html?template=pet-care" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">🐾</span>
+            <h3>Pet Care</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, gallery, booking</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Dog Grooming</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Full Service</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Mobile</span>
+            </div>
+          </a>
+          
+          <!-- Electrician -->
+          <a href="/setup.html?template=electrician" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">⚡</span>
+            <h3>Electrician</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, emergency contact, booking</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Residential</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Commercial</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Industrial</span>
+            </div>
+          </a>
+          
+          <!-- Auto Repair -->
+          <a href="/setup.html?template=auto-repair" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">🚗</span>
+            <h3>Auto Repair</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, booking, pricing</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Quick Service</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Full Service</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Performance</span>
+            </div>
+          </a>
+          
+          <!-- Plumbing -->
+          <a href="/setup.html?template=plumbing" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">🔧</span>
+            <h3>Plumbing</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, emergency contact, booking</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Emergency</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Residential</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Commercial</span>
+            </div>
+          </a>
+          
+          <!-- Product Showcase -->
+          <a href="/setup.html?template=product-showcase" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">🛍️</span>
+            <h3>Product Showcase</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Catalog, order forms, gallery</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Fashion</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Home Goods</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Artisan</span>
+            </div>
+          </a>
+          
+        </div>
+        
+        <!-- Pro Template Highlight -->
+        <div style="margin-top: 64px; padding: 48px; background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(20, 184, 166, 0.15) 100%); border: 2px solid var(--primary-color); border-radius: 24px; text-align: center; position: relative; overflow: hidden;">
+          <div style="position: absolute; top: 16px; right: 16px; background: var(--primary-gradient); color: white; padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; box-shadow: var(--shadow-glow-sm);">⭐ PRO</div>
+          <h3 style="font-size: 2rem; margin: 0 0 16px 0; color: var(--text-light);">✨ Restaurant Pro Template</h3>
+          <p style="color: var(--text-medium); margin: 0 0 32px 0; font-size: 1.1rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+            Advanced features: Tabbed menu navigation, integrated booking widget (Calendly), chef's specials, private dining showcases, filterable gallery, and owner dashboard.
+          </p>
+          <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+            <a href="/sites/grandtable-demo/" target="_blank" style="background: var(--primary-gradient); color: white; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: 600; box-shadow: var(--shadow-md); transition: all 0.3s;">View Live Demo</a>
+            <a href="/setup.html?template=restaurant-pro" style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); color: white; padding: 14px 32px; border: 2px solid var(--primary-color); border-radius: 10px; text-decoration: none; font-weight: 600; transition: all 0.3s;">Use This Template</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- How It Works -->
     <div class="compact-section">
       <div class="section-header-compact">
         <h2>How It Works</h2>

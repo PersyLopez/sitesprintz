@@ -1,0 +1,457 @@
+{
+  "brand": {
+    "name": "Artisan Collective",
+    "logo": "assets/logo.svg",
+    "tagline": "Curated Handcrafted Products • Made with Love",
+    "phone": "(555) 890-1234",
+    "email": "hello@artisancollective.com"
+  },
+  "themeVars": {
+    "color-primary": "#f97316",
+    "color-accent": "#ea580c",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Shop", "href": "#products"},
+    {"label": "Collections", "href": "#collections"},
+    {"label": "Our Story", "href": "#about"},
+    {"label": "Testimonials", "href": "#testimonials"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "✨ Handcrafted with Care",
+    "title": "Discover Unique Artisan Products",
+    "subtitle": "Each piece in our collection tells a story. From hand-thrown ceramics to artisan jewelry, we curate exceptional handmade goods from talented makers around the world. Quality craftsmanship, sustainable materials, and timeless design.",
+    "cta": [
+      {"label": "📧 Request Catalog", "href": "#contact"},
+      {"label": "🛍️ Browse Collections", "href": "#collections", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&q=80",
+    "imageAlt": "Beautiful artisan products display"
+  },
+  "features": {
+    "productGallery": true,
+    "collections": true,
+    "artisanProfiles": true,
+    "ownerDashboard": true,
+    "analytics": true,
+    "testimonials": {
+      "enabled": true,
+      "ratings": true
+    }
+  },
+  "menu": {
+    "sections": [
+      {
+        "id": "ceramics",
+        "name": "Ceramics & Pottery",
+        "description": "Hand-thrown and sculpted pieces",
+        "items": [
+          {
+            "name": "Handmade Dinner Set",
+            "price": 285,
+            "description": "4-piece place setting: dinner plate, salad plate, bowl, mug. Each piece unique, dishwasher safe.",
+            "image": "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=600&q=80",
+            "imageAlt": "Ceramic dinner set",
+            "artist": "Sarah Chen Ceramics",
+            "popular": true
+          },
+          {
+            "name": "Artisan Coffee Mugs",
+            "price": 42,
+            "description": "Hand-thrown stoneware mugs, perfect size for your morning brew. Microwave and dishwasher safe.",
+            "image": "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=600&q=80",
+            "imageAlt": "Handmade coffee mugs",
+            "artist": "Mountain Clay Studio",
+            "popular": true
+          },
+          {
+            "name": "Decorative Vase Collection",
+            "price": 125,
+            "description": "Set of 3 hand-sculpted vases in complementary sizes. Beautiful as a centerpiece or accent.",
+            "image": "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=600&q=80",
+            "imageAlt": "Ceramic vases",
+            "artist": "Terra Forma"
+          },
+          {
+            "name": "Serving Bowl Set",
+            "price": 158,
+            "description": "Nesting serving bowls in three sizes, perfect for entertaining. Food-safe glazes.",
+            "image": "https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=600&q=80",
+            "imageAlt": "Serving bowls",
+            "artist": "Kiln & Clay Co."
+          }
+        ]
+      },
+      {
+        "id": "jewelry",
+        "name": "Artisan Jewelry",
+        "description": "Handcrafted pieces in precious metals",
+        "items": [
+          {
+            "name": "Sterling Silver Necklace",
+            "price": 185,
+            "description": "Handcrafted sterling silver pendant on delicate chain. Includes gift box and certificate.",
+            "image": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&q=80",
+            "imageAlt": "Silver necklace",
+            "artist": "Luna Jewelry Studio",
+            "popular": true
+          },
+          {
+            "name": "Hammered Gold Ring",
+            "price": 425,
+            "description": "14k gold filled ring with unique hammered texture. Made to order in your size.",
+            "image": "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=600&q=80",
+            "imageAlt": "Gold ring",
+            "artist": "Goldsmith Atelier"
+          },
+          {
+            "name": "Gemstone Earrings",
+            "price": 95,
+            "description": "Natural gemstone drops in sterling silver. Choice of stone available.",
+            "image": "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600&q=80",
+            "imageAlt": "Gemstone earrings",
+            "artist": "Stone & Metal"
+          },
+          {
+            "name": "Artisan Bracelet",
+            "price": 145,
+            "description": "Hand-woven leather and sterling silver bracelet. Adjustable sizing.",
+            "artist": "Leather & Silver Co."
+          }
+        ]
+      },
+      {
+        "id": "home-goods",
+        "name": "Home Goods",
+        "description": "Functional art for your home",
+        "items": [
+          {
+            "name": "Hand-Woven Throw Blanket",
+            "price": 245,
+            "description": "Luxurious merino wool throw, hand-woven on traditional loom. 50x70 inches.",
+            "image": "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=600&q=80",
+            "imageAlt": "Woven blanket",
+            "artist": "Fiber Arts Studio",
+            "popular": true
+          },
+          {
+            "name": "Wooden Cutting Board",
+            "price": 78,
+            "description": "Handcrafted from sustainably harvested walnut. Food-safe mineral oil finish.",
+            "image": "https://images.unsplash.com/photo-1566842600175-97dca489844f?w=600&q=80",
+            "imageAlt": "Wooden cutting board",
+            "artist": "Woodcraft Guild"
+          },
+          {
+            "name": "Scented Soy Candles",
+            "price": 32,
+            "description": "Hand-poured soy candles in reusable ceramic vessels. 40+ hour burn time.",
+            "image": "https://images.unsplash.com/photo-1602874801006-e583a546e2f7?w=600&q=80",
+            "imageAlt": "Artisan candles",
+            "artist": "Candlelight Collective",
+            "popular": true
+          },
+          {
+            "name": "Macramé Wall Hanging",
+            "price": 165,
+            "description": "Intricate hand-knotted wall art in natural cotton. Includes wooden dowel.",
+            "image": "https://images.unsplash.com/photo-1610198163949-7edfd2bb3f16?w=600&q=80",
+            "imageAlt": "Macramé wall art",
+            "artist": "Knotted Creations"
+          }
+        ]
+      },
+      {
+        "id": "accessories",
+        "name": "Accessories",
+        "description": "Handcrafted bags, scarves, and more",
+        "items": [
+          {
+            "name": "Leather Tote Bag",
+            "price": 195,
+            "description": "Full-grain leather tote, hand-stitched with brass hardware. Ages beautifully.",
+            "image": "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&q=80",
+            "imageAlt": "Leather tote",
+            "artist": "Leather Works Studio"
+          },
+          {
+            "name": "Hand-Dyed Silk Scarf",
+            "price": 88,
+            "description": "Vibrant hand-dyed silk scarf using traditional techniques. Unique patterns.",
+            "image": "https://images.unsplash.com/photo-1601924994987-69e26d50dc26?w=600&q=80",
+            "imageAlt": "Silk scarf",
+            "artist": "Dye & Fiber Co.",
+            "popular": true
+          },
+          {
+            "name": "Woven Basket Set",
+            "price": 125,
+            "description": "Set of 3 hand-woven storage baskets in natural fibers. Fair trade certified.",
+            "artist": "Weave Collective"
+          }
+        ]
+      }
+    ]
+  },
+  "about": {
+    "title": "Our Story",
+    "body": "Artisan Collective was founded in 2016 with a mission to connect talented makers with people who appreciate quality craftsmanship. We partner with independent artisans and small studios who share our values: sustainable materials, fair wages, and timeless design. Every product is handmade with care, and every purchase supports creative communities.",
+    "subtitle": "Our values",
+    "features": [
+      "🎨 Handmade by skilled artisans",
+      "🌱 Sustainable & eco-friendly materials",
+      "💝 Fair trade & ethical sourcing",
+      "✨ Unique, one-of-a-kind pieces",
+      "📦 Carefully packaged & shipped",
+      "🤝 Supporting creative communities"
+    ]
+  },
+  "featuredProducts": {
+    "title": "Featured Collection",
+    "subtitle": "This month's curated selection",
+    "items": [
+      {
+        "name": "Artisan Home Collection",
+        "price": 425,
+        "description": "Curated set: ceramic dinnerware, linen napkins, scented candles, and wooden serving board",
+        "availability": "Limited Edition",
+        "image": "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=600&q=80",
+        "imageAlt": "Home collection",
+        "savings": "Save $95 vs. individual"
+      },
+      {
+        "name": "Gift Box - The Curator",
+        "price": 195,
+        "description": "Thoughtfully curated gift box with artisan products. Perfect for any occasion.",
+        "availability": "Ready to Ship",
+        "image": "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=600&q=80",
+        "imageAlt": "Gift box",
+        "popular": true
+      }
+    ]
+  },
+  "collections": {
+    "title": "Shop By Collection",
+    "subtitle": "Curated groupings for every style",
+    "items": [
+      {
+        "name": "Modern Minimalist",
+        "description": "Clean lines, neutral tones, functional beauty",
+        "image": "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=600&q=80",
+        "productCount": 24
+      },
+      {
+        "name": "Bohemian Spirit",
+        "description": "Vibrant colors, natural textures, eclectic charm",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80",
+        "productCount": 18
+      },
+      {
+        "name": "Rustic Elegance",
+        "description": "Warm woods, earthy tones, timeless appeal",
+        "image": "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=600&q=80",
+        "productCount": 21
+      },
+      {
+        "name": "Coastal Living",
+        "description": "Ocean-inspired hues, natural materials, relaxed vibes",
+        "image": "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=600&q=80",
+        "productCount": 15
+      }
+    ]
+  },
+  "artisans": {
+    "title": "Meet Our Artisans",
+    "subtitle": "The makers behind the magic",
+    "members": [
+      {
+        "name": "Sarah Chen",
+        "title": "Ceramic Artist",
+        "bio": "Sarah creates functional pottery from her studio in Vermont. Each piece is hand-thrown on the wheel and finished with her signature glazes inspired by nature.",
+        "image": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80",
+        "imageAlt": "Sarah Chen",
+        "craft": "Ceramics",
+        "location": "Vermont, USA",
+        "yearsActive": "12+ years"
+      },
+      {
+        "name": "Marcus Rodriguez",
+        "title": "Jewelry Designer",
+        "bio": "Marcus combines traditional metalsmithing with contemporary design. His pieces are handcrafted in precious metals using techniques passed down through generations.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "Marcus Rodriguez",
+        "craft": "Jewelry",
+        "location": "New Mexico, USA",
+        "yearsActive": "15+ years"
+      },
+      {
+        "name": "Elena Petrov",
+        "title": "Textile Artist",
+        "bio": "Elena hand-weaves textiles on traditional looms using natural fibers and plant-based dyes. Her work celebrates slow fashion and sustainable practices.",
+        "image": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80",
+        "imageAlt": "Elena Petrov",
+        "craft": "Textiles",
+        "location": "Oregon, USA",
+        "yearsActive": "10+ years"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Customer Reviews",
+    "subtitle": "What our customers are saying",
+    "items": [
+      {
+        "text": "The quality is outstanding! Each piece is truly unique and you can feel the care that went into making it. The packaging was beautiful too. Will definitely order again!",
+        "author": "Jennifer Park",
+        "location": "Verified Buyer",
+        "rating": 5,
+        "date": "1 week ago",
+        "product": "Ceramic Dinner Set",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&q=80",
+        "imageAlt": "Jennifer Park"
+      },
+      {
+        "text": "I love supporting independent artisans and this shop makes it easy. The curation is excellent and customer service is top-notch. These pieces are conversation starters!",
+        "author": "David Thompson",
+        "location": "Verified Buyer",
+        "rating": 5,
+        "date": "2 weeks ago",
+        "product": "Home Collection",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "imageAlt": "David Thompson"
+      },
+      {
+        "text": "Bought several pieces as gifts and everyone was thrilled! The quality and craftsmanship are exceptional. Worth every penny for truly unique, handmade items.",
+        "author": "Maria Gonzalez",
+        "location": "Verified Buyer",
+        "rating": 5,
+        "date": "3 weeks ago",
+        "product": "Jewelry & Accessories",
+        "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
+        "imageAlt": "Maria Gonzalez"
+      }
+    ],
+    "stats": {
+      "averageRating": 4.9,
+      "totalReviews": 456,
+      "repeatCustomers": "78%",
+      "satisfaction": "98%"
+    }
+  },
+  "process": {
+    "title": "How It Works",
+    "subtitle": "From artisan to your home",
+    "steps": [
+      {
+        "number": 1,
+        "title": "Browse & Select",
+        "description": "Explore our curated collection of handmade goods from talented artisans.",
+        "duration": ""
+      },
+      {
+        "number": 2,
+        "title": "Contact for Details",
+        "description": "Reach out with questions or to request our full catalog and custom options.",
+        "duration": ""
+      },
+      {
+        "number": 3,
+        "title": "Crafted with Care",
+        "description": "Your order is handmade or prepared by our artisan partners with attention to detail.",
+        "duration": "1-3 weeks"
+      },
+      {
+        "number": 4,
+        "title": "Thoughtfully Packaged",
+        "description": "Each item is carefully wrapped and packaged to arrive in perfect condition.",
+        "duration": ""
+      },
+      {
+        "number": 5,
+        "title": "Delivered to You",
+        "description": "Enjoy your unique, handcrafted pieces and support independent makers!",
+        "duration": "3-5 days shipping"
+      }
+    ]
+  },
+  "contact": {
+    "title": "Get In Touch",
+    "subtitle": "Questions? Custom orders? We'd love to hear from you",
+    "phone": "(555) 890-1234",
+    "email": "hello@artisancollective.com",
+    "address": "123 Maker's Market, Suite 45, Seattle, WA 98101",
+    "coordinates": {
+      "lat": 47.6062,
+      "lng": -122.3321
+    },
+    "hours": {
+      "title": "Showroom Hours",
+      "items": [
+        "Wednesday - Saturday: 11:00 AM - 6:00 PM",
+        "Sunday - Tuesday: By appointment"
+      ],
+      "note": "Visit our showroom to see products in person"
+    }
+  },
+  "social": {
+    "instagram": "https://instagram.com/artisancollective",
+    "pinterest": "https://pinterest.com/artisancollective",
+    "facebook": "https://facebook.com/artisancollective",
+    "etsy": "https://etsy.com/shop/artisancollective"
+  },
+  "stats": {
+    "items": [
+      {"number": "4.9", "label": "Star Rating"},
+      {"number": "50+", "label": "Artisan Partners"},
+      {"number": "100%", "label": "Handmade"},
+      {"number": "Eco", "label": "Friendly"}
+    ]
+  },
+  "credentials": {
+    "title": "Trust & Values",
+    "items": [
+      {"icon": "🏆", "name": "Curated Selection", "description": "Hand-picked quality goods"},
+      {"icon": "⭐", "name": "Top Rated", "description": "4.9 Stars from customers"},
+      {"icon": "🌱", "name": "Sustainable", "description": "Eco-friendly materials"},
+      {"icon": "🤝", "name": "Fair Trade", "description": "Ethical sourcing & wages"}
+    ]
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "items": [
+      {"question": "How do I place an order?", "answer": "Browse our collection and contact us via email or phone with the items you're interested in. We'll provide detailed information, confirm availability, and arrange payment and shipping."},
+      {"question": "Do you ship internationally?", "answer": "Yes! We ship worldwide. Shipping costs and delivery times vary by location. Contact us for a shipping quote to your country."},
+      {"question": "Are items exactly as shown in photos?", "answer": "Because each piece is handmade, there may be slight variations in color, size, or pattern. This makes your item unique! Photos are representative of the artisan's work."},
+      {"question": "What is your return policy?", "answer": "We accept returns within 14 days of delivery for items in original condition. Custom or personalized items are final sale. Please contact us before returning any item."},
+      {"question": "Do you offer gift wrapping?", "answer": "Yes! We offer beautiful gift wrapping for $10 per item. Each package includes a handwritten gift note if you provide a message."},
+      {"question": "Can I request custom pieces?", "answer": "Many of our artisans accept custom commissions! Contact us with your idea and we'll connect you with the appropriate maker to discuss possibilities."},
+      {"question": "How do I care for handmade items?", "answer": "Each product includes specific care instructions from the artisan. Generally, handmade items require gentle care - hand wash ceramics, spot clean textiles, and store jewelry properly."},
+      {"question": "Do you have a physical store?", "answer": "Yes! Our showroom in Seattle is open Wednesday-Saturday. Visit to see products in person, meet some of our local artisans, and discover new makers."}
+    ]
+  },
+  "footer": {
+    "text": "✨ Artisan Collective • Supporting Makers Since 2016",
+    "links": [
+      {"label": "Shop", "href": "#products"},
+      {"label": "Collections", "href": "#collections"},
+      {"label": "Artisans", "href": "#artisans"},
+      {"label": "Contact", "href": "#contact"}
+    ],
+    "awards": [
+      "Curated Quality",
+      "50+ Artisan Partners",
+      "Sustainable & Ethical",
+      "Handmade in USA"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": false,
+    "bookingEnabled": false,
+    "tier": "Pro"
+  }
+}
+
