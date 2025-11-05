@@ -4302,6 +4302,21 @@ function generateSiteHTML(siteData) {
 </html>`;
 }
 
+// Get all templates (used by React app)
+app.get('/api/templates', async (req, res) => {
+  try {
+    const indexPath = path.join(templatesDir, 'index.json');
+    const indexData = await fs.readFile(indexPath, 'utf-8');
+    const index = JSON.parse(indexData);
+    
+    // Return the templates array
+    res.json(index.templates || []);
+  } catch (error) {
+    console.error('Failed to load templates index:', error);
+    res.status(500).json({ error: 'Failed to load templates' });
+  }
+});
+
 // Preview endpoint for templates (used in setup.html preview)
 app.get('/api/preview-template/:templateId', async (req, res) => {
   try {

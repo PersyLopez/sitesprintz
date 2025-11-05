@@ -1,0 +1,242 @@
+.order-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border-dark);
+  border-radius: 16px;
+  padding: var(--spacing-xl);
+  transition: all 0.3s ease;
+  animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.order-card:hover {
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.order-card.selected {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2);
+}
+
+.order-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.order-select {
+  flex-shrink: 0;
+}
+
+.order-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
+
+.order-info {
+  flex: 1;
+}
+
+.order-id {
+  font-size: 1.2rem;
+  color: var(--text-light);
+  margin-bottom: var(--spacing-xs);
+}
+
+.order-date {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.order-status {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  text-transform: capitalize;
+}
+
+.order-status.status-new {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.order-status.status-completed {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.order-status.status-cancelled {
+  background: rgba(100, 116, 139, 0.2);
+  color: #94a3b8;
+}
+
+.order-card-body {
+  margin-bottom: var(--spacing-lg);
+}
+
+.customer-info {
+  background: var(--bg-darker);
+  padding: var(--spacing-md);
+  border-radius: 8px;
+  margin-bottom: var(--spacing-md);
+}
+
+.customer-info > div {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.customer-info > div:last-child {
+  margin-bottom: 0;
+}
+
+.customer-info .label {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  min-width: 80px;
+}
+
+.customer-info strong {
+  color: var(--text-light);
+}
+
+.customer-info a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.customer-info a:hover {
+  text-decoration: underline;
+}
+
+.order-items {
+  margin-bottom: var(--spacing-md);
+}
+
+.order-items > strong {
+  display: block;
+  color: var(--text-light);
+  margin-bottom: var(--spacing-sm);
+}
+
+.items-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.order-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) 0;
+  color: var(--text-muted);
+}
+
+.item-name {
+  flex: 1;
+  color: var(--text-light);
+}
+
+.item-quantity {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.item-price {
+  color: var(--primary-color);
+  font-weight: 600;
+  min-width: 80px;
+  text-align: right;
+}
+
+.order-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  background: var(--bg-darker);
+  border-radius: 8px;
+  font-size: 1.1rem;
+}
+
+.order-total strong {
+  color: var(--text-light);
+}
+
+.total-amount {
+  color: var(--primary-color);
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.order-card-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.order-card-actions .btn {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .order-card {
+    padding: var(--spacing-md);
+  }
+
+  .order-card-header {
+    flex-wrap: wrap;
+  }
+
+  .order-status {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .customer-info .label {
+    min-width: 60px;
+    font-size: 0.8rem;
+  }
+
+  .order-card-actions {
+    flex-direction: column;
+  }
+
+  .order-card-actions .btn {
+    width: 100%;
+  }
+
+  .order-total {
+    font-size: 1rem;
+  }
+
+  .total-amount {
+    font-size: 1.2rem;
+  }
+}
+

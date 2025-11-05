@@ -44,16 +44,59 @@ function PublishModal({ siteData, onClose }) {
     setLoading(true);
 
     try {
-      await draftsService.publishDraft(siteData.draftId, {
-        subdomain: formData.subdomain,
-        plan: formData.plan,
-        siteData,
+      let draftId = siteData.draftId;
+      
+      // If no draft exists, save one first
+      if (!draftId) {
+        const draftResponse = await fetch('/api/drafts', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            data: siteData,
+            template: siteData.template
+          })
+        });
+
+        if (!draftResponse.ok) {
+          throw new Error('Failed to save draft before publishing');
+        }
+
+        const draftData = await draftResponse.json();
+        draftId = draftData.draftId || draftData.id;
+      }
+
+      // Now publish the draft
+      const publishResponse = await fetch(`/api/drafts/${draftId}/publish`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          plan: formData.plan,
+          subdomain: formData.subdomain,
+        })
       });
 
-      showSuccess('Site published successfully!');
-      navigate('/dashboard');
+      if (!publishResponse.ok) {
+        const error = await publishResponse.json();
+        throw new Error(error.error || error.message || 'Failed to publish site');
+      }
+
+      const result = await publishResponse.json();
+      
+      showSuccess(`🎉 Site published successfully at ${formData.subdomain}.sitesprintz.com!`);
+      
+      // Redirect to dashboard after a brief delay
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1500);
     } catch (error) {
-      showError(error.message || 'Failed to publish site');
+      console.error('Publish error:', error);
+      showError(error.message || 'Failed to publish site. Please try again.');
     } finally {
       setLoading(false);
     }

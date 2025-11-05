@@ -7,6 +7,8 @@ import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import SiteCard from '../components/dashboard/SiteCard';
 import WelcomeModal from '../components/dashboard/WelcomeModal';
+import StripeConnectSection from '../components/dashboard/StripeConnectSection';
+import TrialBanner from '../components/dashboard/TrialBanner';
 import './Dashboard.css';
 
 function Dashboard() {
@@ -17,10 +19,14 @@ function Dashboard() {
   const [sites, setSites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [stripeConnected, setStripeConnected] = useState(false);
+  const [pendingOrders, setPendingOrders] = useState(0);
 
   useEffect(() => {
     loadUserSites();
     checkFirstTimeUser();
+    checkStripeConnection();
+    loadPendingOrders();
   }, []);
 
   const checkFirstTimeUser = () => {
@@ -45,6 +51,38 @@ function Dashboard() {
     }
   };
 
+  const checkStripeConnection = async () => {
+    try {
+      const response = await fetch('/api/stripe/status', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setStripeConnected(data.connected || false);
+      }
+    } catch (error) {
+      console.error('Failed to check Stripe status:', error);
+    }
+  };
+
+  const loadPendingOrders = async () => {
+    try {
+      const response = await fetch('/api/orders/pending-count', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setPendingOrders(data.count || 0);
+      }
+    } catch (error) {
+      console.error('Failed to load pending orders:', error);
+    }
+  };
+
   const handleDeleteSite = async (siteId) => {
     if (!confirm('Are you sure you want to delete this site? This action cannot be undone.')) {
       return;
@@ -59,21 +97,89 @@ function Dashboard() {
     }
   };
 
+  const handleDuplicateSite = async (siteId) => {
+    try {
+      const response = await fetch(`/api/sites/${siteId}/duplicate`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const newSite = await response.json();
+        setSites([...sites, newSite]);
+        showSuccess('Site duplicated successfully');
+      } else {
+        throw new Error('Failed to duplicate site');
+      }
+    } catch (error) {
+      showError('Failed to duplicate site');
+    }
+  };
+
+  const isProOrCheckoutPlan = user?.subscription_plan === 'pro' || user?.subscription_plan === 'checkout';
+  const hasProSites = sites.some(site => site.plan === 'pro' || site.plan === 'checkout');
+
   return (
     <div className="dashboard-page">
       <Header />
       
       <main className="dashboard-container">
+        {/* Trial Banner */}
+        {user?.subscription_status === 'trial' && (
+          <TrialBanner user={user} />
+        )}
+
         <div className="dashboard-header">
           <div className="user-greeting">
-            <h1>Welcome back, {user?.email?.split('@')[0] || 'there'}!</h1>
+            <h1>Welcome back, {user?.name || user?.email?.split('@')[0] || 'there'}!</h1>
             <p>Manage your websites and create new ones</p>
           </div>
           
-          <Link to="/setup" className="btn btn-primary">
-            <span>+</span> Create New Site
-          </Link>
+          <div className="dashboard-header-actions">
+            {/* Analytics Button */}
+            <Link to="/analytics" className="btn btn-secondary btn-icon">
+              <span>📊</span> Analytics
+            </Link>
+
+            {/* Orders Button (only for Pro/Checkout sites) */}
+            {hasProSites && (
+              <Link to="/orders" className="btn btn-secondary btn-icon badge-container">
+                <span>📦</span> Orders
+                {pendingOrders > 0 && (
+                  <span className="notification-badge">{pendingOrders}</span>
+                )}
+              </Link>
+            )}
+
+            {/* Admin Buttons */}
+            {user?.role === 'admin' && (
+              <>
+                <Link to="/admin" className="btn btn-secondary btn-icon">
+                  <span>👑</span> Admin
+                </Link>
+                <Link to="/users" className="btn btn-secondary btn-icon">
+                  <span>👥</span> Users
+                </Link>
+              </>
+            )}
+
+            {/* Create New Site */}
+            <Link to="/setup" className="btn btn-primary">
+              <span>+</span> Create New Site
+            </Link>
+          </div>
         </div>
+
+        {/* Stripe Connect Section */}
+        {isProOrCheckoutPlan && (
+          <StripeConnectSection 
+            connected={stripeConnected}
+            onConnect={() => checkStripeConnection()}
+          />
+        )}
 
         {loading ? (
           <div className="loading-container">
@@ -125,6 +231,7 @@ function Dashboard() {
                     key={site.id}
                     site={site}
                     onDelete={() => handleDeleteSite(site.id)}
+                    onDuplicate={() => handleDuplicateSite(site.id)}
                   />
                 ))}
               </div>

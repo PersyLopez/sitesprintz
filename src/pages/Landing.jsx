@@ -1,10 +1,49 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import './Landing.css';
 
 function Landing() {
+  const showcaseRef = useRef(null);
+  
+  useEffect(() => {
+    // Auto-rotate template showcase
+    const track = showcaseRef.current;
+    if (!track) return;
+    
+    let currentIndex = 0;
+    const slides = track.querySelectorAll('.showcase-slide');
+    const dots = track.querySelectorAll('.dot');
+    const totalSlides = slides.length;
+    
+    const showSlide = (index) => {
+      slides.forEach(slide => slide.classList.remove('active'));
+      dots.forEach(dot => dot.classList.remove('active'));
+      slides[index].classList.add('active');
+      dots[index].classList.add('active');
+    };
+    
+    const nextSlide = () => {
+      currentIndex = (currentIndex + 1) % totalSlides;
+      showSlide(currentIndex);
+    };
+    
+    // Auto-advance every 5 seconds
+    const interval = setInterval(nextSlide, 5000);
+    
+    // Manual control
+    dots.forEach((dot, index) => {
+      dot.addEventListener('click', () => {
+        currentIndex = index;
+        showSlide(currentIndex);
+        clearInterval(interval);
+      });
+    });
+    
+    return () => clearInterval(interval);
+  }, []);
+  
   return (
     <div className="landing-page">
       <Header />
@@ -26,15 +65,235 @@ function Landing() {
               <Link to="/register" className="btn-primary-large">
                 Get Started Free →
               </Link>
-              <Link to="/login" className="btn-secondary-large">
+              <a href="#templates" className="btn-secondary-large">
                 View Templates
-              </Link>
+              </a>
             </div>
           </div>
         </section>
 
+        {/* Template Showcase Carousel */}
+        <section className="template-showcase-section" ref={showcaseRef}>
+          <div className="showcase-container">
+            <div className="showcase-track">
+              <div className="showcase-slide active" data-site="restaurant">
+                <div className="showcase-browser">
+                  <div className="browser-bar">
+                    <span className="browser-dots">
+                      <i></i><i></i><i></i>
+                    </span>
+                    <span className="browser-url">🍽️ sitesprintz.com/bistro-delight</span>
+                  </div>
+                  <iframe src="/sites/bistro-delight-mheg6c3h/" loading="lazy" title="Restaurant template"></iframe>
+                </div>
+                <div className="showcase-label">
+                  <strong>🍽️ Restaurant Template</strong>
+                  <span>Fine dining • Casual • Fast casual layouts</span>
+                </div>
+              </div>
+              
+              <div className="showcase-slide" data-site="salon">
+                <div className="showcase-browser">
+                  <div className="browser-bar">
+                    <span className="browser-dots">
+                      <i></i><i></i><i></i>
+                    </span>
+                    <span className="browser-url">💇 sitesprintz.com/glow-studio</span>
+                  </div>
+                  <iframe src="/sites/glow-studio-mheg8mxo/" loading="lazy" title="Salon template"></iframe>
+                </div>
+                <div className="showcase-label">
+                  <strong>💇 Salon & Spa Template</strong>
+                  <span>Luxury spa • Modern studio • Neighborhood salon</span>
+                </div>
+              </div>
+              
+              <div className="showcase-slide" data-site="consultant">
+                <div className="showcase-browser">
+                  <div className="browser-bar">
+                    <span className="browser-dots">
+                      <i></i><i></i><i></i>
+                    </span>
+                    <span className="browser-url">💼 sitesprintz.com/strategic-solutions</span>
+                  </div>
+                  <iframe src="/sites/strategic-solutions-mheg7o4n/" loading="lazy" title="Consultant template"></iframe>
+                </div>
+                <div className="showcase-label">
+                  <strong>💼 Consultant Template</strong>
+                  <span>Strategic • Creative • Executive coaching</span>
+                </div>
+              </div>
+              
+              <div className="showcase-slide" data-site="gym">
+                <div className="showcase-browser">
+                  <div className="browser-bar">
+                    <span className="browser-dots">
+                      <i></i><i></i><i></i>
+                    </span>
+                    <span className="browser-url">💪 sitesprintz.com/powerhouse-gym</span>
+                  </div>
+                  <iframe src="/sites/powerhouse-gym-mheg7ywu/" loading="lazy" title="Gym template"></iframe>
+                </div>
+                <div className="showcase-label">
+                  <strong>💪 Fitness Template</strong>
+                  <span>CrossFit • Boutique • Personal training studios</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="showcase-dots">
+              <button className="dot active" data-index="0" aria-label="Restaurant template"></button>
+              <button className="dot" data-index="1" aria-label="Salon template"></button>
+              <button className="dot" data-index="2" aria-label="Consultant template"></button>
+              <button className="dot" data-index="3" aria-label="Gym template"></button>
+            </div>
+          </div>
+        </section>
+
+        {/* Trust Indicators */}
+        <section className="trust-indicators">
+          <div className="trust-grid">
+            <div className="trust-item">
+              <span>✓</span>
+              <span>No credit card required</span>
+            </div>
+            <div className="trust-item">
+              <span>✓</span>
+              <span>Free to customize</span>
+            </div>
+            <div className="trust-item">
+              <span>✓</span>
+              <span>Launch in 10 minutes</span>
+            </div>
+            <div className="trust-item">
+              <span>✓</span>
+              <span>Cancel anytime</span>
+            </div>
+          </div>
+        </section>
+
+        {/* All Templates Section */}
+        <section id="templates" className="all-templates-section">
+          <div className="section-header-compact">
+            <h2>Choose Your Template</h2>
+            <p>All templates included - pick the perfect one for your business</p>
+          </div>
+          
+          <div className="quick-templates">
+            <Link to="/register" className="quick-template-card">
+              <span className="template-emoji">🍽️</span>
+              <h3>Restaurant</h3>
+              <p>Menu, reservations, contact</p>
+              <div className="template-tags">
+                <span>Fine Dining</span>
+                <span>Casual</span>
+                <span>Fast Food</span>
+              </div>
+            </Link>
+            
+            <Link to="/register" className="quick-template-card">
+              <span className="template-emoji">💇</span>
+              <h3>Salon & Spa</h3>
+              <p>Services, booking, gallery</p>
+              <div className="template-tags">
+                <span>Hair Salon</span>
+                <span>Spa</span>
+                <span>Nails</span>
+              </div>
+            </Link>
+            
+            <Link to="/register" className="quick-template-card">
+              <span className="template-emoji">💪</span>
+              <h3>Fitness & Gym</h3>
+              <p>Classes, pricing, testimonials</p>
+              <div className="template-tags">
+                <span>CrossFit</span>
+                <span>Yoga</span>
+                <span>Personal Training</span>
+              </div>
+            </Link>
+            
+            <Link to="/register" className="quick-template-card">
+              <span className="template-emoji">💼</span>
+              <h3>Consultant</h3>
+              <p>About, services, contact</p>
+              <div className="template-tags">
+                <span>Business</span>
+                <span>Strategy</span>
+                <span>Coaching</span>
+              </div>
+            </Link>
+            
+            <Link to="/register" className="quick-template-card">
+              <span className="template-emoji">👔</span>
+              <h3>Freelancer</h3>
+              <p>Portfolio, services, booking</p>
+              <div className="template-tags">
+                <span>Designer</span>
+                <span>Developer</span>
+                <span>Writer</span>
+              </div>
+            </Link>
+            
+            <Link to="/register" className="quick-template-card">
+              <span className="template-emoji">💻</span>
+              <h3>Tech Repair</h3>
+              <p>Services, pricing, booking</p>
+              <div className="template-tags">
+                <span>Phone Repair</span>
+                <span>Computer</span>
+                <span>Gaming</span>
+              </div>
+            </Link>
+            
+            <Link to="/register" className="quick-template-card">
+              <span className="template-emoji">🧹</span>
+              <h3>Cleaning Services</h3>
+              <p>Services, pricing, booking</p>
+              <div className="template-tags">
+                <span>Residential</span>
+                <span>Commercial</span>
+                <span>Eco-Friendly</span>
+              </div>
+            </Link>
+            
+            <Link to="/register" className="quick-template-card">
+              <span className="template-emoji">🐾</span>
+              <h3>Pet Care</h3>
+              <p>Services, gallery, booking</p>
+              <div className="template-tags">
+                <span>Dog Grooming</span>
+                <span>Full Service</span>
+                <span>Mobile</span>
+              </div>
+            </Link>
+            
+            <Link to="/register" className="quick-template-card">
+              <span className="template-emoji">⚡</span>
+              <h3>Electrician</h3>
+              <p>Services, emergency, booking</p>
+              <div className="template-tags">
+                <span>Residential</span>
+                <span>Commercial</span>
+                <span>Industrial</span>
+              </div>
+            </Link>
+            
+            <Link to="/register" className="quick-template-card">
+              <span className="template-emoji">🚗</span>
+              <h3>Auto Repair</h3>
+              <p>Services, booking, pricing</p>
+              <div className="template-tags">
+                <span>Quick Service</span>
+                <span>Full Service</span>
+                <span>Performance</span>
+              </div>
+            </Link>
+          </div>
+        </section>
+
         {/* How It Works */}
-        <section className="compact-section">
+        <section className="compact-section how-it-works">
           <div className="section-header-compact">
             <h2>How It Works</h2>
             <p>Three simple steps to your perfect website</p>
@@ -44,7 +303,7 @@ function Landing() {
             <div className="step-compact">
               <span className="step-icon">🎨</span>
               <h3>Choose a Template</h3>
-              <p>Select from 13+ professionally designed templates for your business type</p>
+              <p>Select from 10+ professionally designed templates for your business type</p>
             </div>
             
             <div className="step-compact">

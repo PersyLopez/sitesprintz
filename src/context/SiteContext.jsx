@@ -137,11 +137,40 @@ export function SiteProvider({ children }) {
   };
 
   const loadTemplate = useCallback((templateData) => {
-    setSiteData(prev => ({
-      ...prev,
+    // When loading a template, preserve ALL its demo content
+    // This ensures sites show their full potential
+    const fullTemplateData = {
+      // Spread all template data first (includes demo content)
       ...templateData,
+      // Then add/override with essentials
       template: templateData.id || templateData.template,
-    }));
+      businessName: templateData.brand?.name || templateData.businessName || '',
+      // Preserve hero data from template
+      heroTitle: templateData.hero?.title || '',
+      heroSubtitle: templateData.hero?.subtitle || '',
+      heroImage: templateData.hero?.image || '',
+      // Preserve contact data
+      contactEmail: templateData.brand?.email || templateData.contact?.email || '',
+      contactPhone: templateData.brand?.phone || templateData.contact?.phone || '',
+      contactAddress: templateData.contact?.address || '',
+      businessHours: templateData.contact?.hours || '',
+      // Preserve social links
+      websiteUrl: templateData.social?.website || '',
+      facebookUrl: templateData.social?.facebook || '',
+      instagramUrl: templateData.social?.instagram || '',
+      googleMapsUrl: templateData.social?.maps || '',
+      // Preserve services/products from template
+      services: templateData.services || templateData.products || [],
+      // Preserve colors from template
+      colors: {
+        primary: templateData.themeVars?.['color-primary'] || templateData.colors?.primary || '#06b6d4',
+        secondary: templateData.themeVars?.['color-accent'] || templateData.colors?.secondary || '#14b8a6',
+      },
+      // Preserve any custom data
+      custom: templateData.custom || {},
+    };
+    
+    setSiteData(fullTemplateData);
   }, []);
 
   const reset = useCallback(() => {

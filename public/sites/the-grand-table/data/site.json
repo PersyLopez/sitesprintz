@@ -13,10 +13,32 @@
   "contact": {
     "email": "reservations@thegrandtable.com",
     "phone": "(555) 789-0123",
-    "address": "Reservations recommended"
+    "address": "425 Grand Avenue, Downtown, San Francisco, CA 94102"
   },
   "services": {
     "title": "Our Services",
-    "items": []
+    "items": [
+      {
+        "title": "Tuna Tartare",
+        "name": "Tuna Tartare",
+        "description": "Fresh ahi tuna, avocado, sesame, wonton crisps, yuzu aioli",
+        "price": "$18",
+        "image": "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&q=80"
+      },
+      {
+        "title": "Burrata & Heirloom Tomatoes",
+        "name": "Burrata & Heirloom Tomatoes",
+        "description": "Creamy burrata, heirloom tomatoes, basil, aged balsamic, sourdough",
+        "price": "$16",
+        "image": "https://images.unsplash.com/photo-1608897013039-887f21d8c804?w=600&q=80"
+      },
+      {
+        "title": "Wagyu Beef Carpaccio",
+        "name": "Wagyu Beef Carpaccio",
+        "description": "Thinly sliced wagyu, arugula, truffle aioli, parmesan, capers",
+        "price": "$22",
+        "image": "https://images.unsplash.com/photo-1544025162-d76694265947?w=600&q=80"
+      }
+    ]
   }
 }

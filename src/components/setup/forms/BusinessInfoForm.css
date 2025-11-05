@@ -1,0 +1,119 @@
+.business-info-form {
+  padding: var(--spacing-lg);
+  max-width: 800px;
+}
+
+.form-section {
+  margin-bottom: var(--spacing-2xl);
+  padding-bottom: var(--spacing-xl);
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.form-section:last-of-type {
+  border-bottom: none;
+}
+
+.form-section h3 {
+  color: var(--text-light);
+  font-size: 1.3rem;
+  margin: 0 0 var(--spacing-lg);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.form-group {
+  margin-bottom: var(--spacing-xl);
+}
+
+.form-group label {
+  display: block;
+  color: var(--text-light);
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+  font-size: 0.95rem;
+}
+
+.field-hint {
+  display: block;
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: var(--spacing-xs);
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="tel"],
+.form-group input[type="url"],
+.form-group textarea {
+  width: 100%;
+  padding: var(--spacing-md);
+  background: var(--bg-darker);
+  border: 1px solid var(--border-dark);
+  border-radius: 8px;
+  color: var(--text-light);
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.color-picker-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.form-help {
+  background: rgba(6, 182, 212, 0.1);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  border-radius: 12px;
+  padding: var(--spacing-lg);
+  margin-top: var(--spacing-2xl);
+}
+
+.form-help p {
+  margin: 0;
+  color: var(--text-light);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.form-help strong {
+  color: var(--primary-color);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .business-info-form {
+    padding: var(--spacing-md);
+  }
+
+  .form-section h3 {
+    font-size: 1.1rem;
+  }
+
+  .color-picker-group {
+    grid-template-columns: 1fr;
+  }
+}
+

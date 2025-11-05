@@ -53,7 +53,11 @@ function Register() {
   };
 
   const handleGoogleSignup = () => {
-    window.location.href = '/api/auth/google';
+    // Google OAuth routes are on the backend server
+    const apiUrl = import.meta.env.DEV 
+      ? 'http://localhost:3000/auth/google'
+      : '/auth/google';
+    window.location.href = apiUrl;
   };
 
   return (

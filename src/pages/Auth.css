@@ -169,3 +169,62 @@
   }
 }
 
+/* Success/Error Messages */
+.success-message,
+.error-message {
+  text-align: center;
+  padding: var(--spacing-xl);
+}
+
+.success-icon,
+.error-icon {
+  font-size: 4rem;
+  margin-bottom: var(--spacing-lg);
+}
+
+.success-message h2,
+.error-message h2 {
+  margin: 0 0 var(--spacing-md);
+  color: var(--text-light);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.success-message p,
+.error-message p {
+  margin: 0 0 var(--spacing-md);
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.success-message p:last-of-type,
+.error-message p:last-of-type {
+  margin-bottom: var(--spacing-xl);
+}
+
+.text-muted {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: inherit;
+  padding: 0;
+}
+
+.link-button:hover {
+  color: var(--text-light);
+}
+
+.form-hint {
+  display: block;
+  margin-top: var(--spacing-xs);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+

@@ -10,12 +10,18 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Setup from './pages/Setup';
+import Orders from './pages/Orders';
+import Analytics from './pages/Analytics';
+import Admin from './pages/Admin';
+import AdminUsers from './pages/AdminUsers';
+import Products from './pages/Products';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import NotFound from './pages/NotFound';
 
 // Components
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import AdminRoute from './components/auth/AdminRoute';
 
 function App() {
   return (
@@ -47,6 +53,48 @@ function App() {
                     <Setup />
                   </SiteProvider>
                 </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/orders" 
+              element={
+                <ProtectedRoute>
+                  <Orders />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/analytics" 
+              element={
+                <ProtectedRoute>
+                  <Analytics />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/products" 
+              element={
+                <ProtectedRoute>
+                  <Products />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Admin routes */}
+            <Route 
+              path="/admin" 
+              element={
+                <AdminRoute>
+                  <Admin />
+                </AdminRoute>
+              } 
+            />
+            <Route 
+              path="/admin/users" 
+              element={
+                <AdminRoute>
+                  <AdminUsers />
+                </AdminRoute>
               } 
             />
             
