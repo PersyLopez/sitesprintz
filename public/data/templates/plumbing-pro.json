@@ -1,0 +1,446 @@
+{
+  "brand": {
+    "name": "Blue Wave Plumbing",
+    "logo": "assets/logo.svg",
+    "tagline": "Licensed Plumbers • 24/7 Emergency Service",
+    "phone": "(555) 123-4567",
+    "email": "service@bluewaveplumbing.com"
+  },
+  "themeVars": {
+    "color-primary": "#3b82f6",
+    "color-accent": "#2563eb",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#services"},
+    {"label": "Emergency", "href": "#emergency"},
+    {"label": "Membership", "href": "#membership"},
+    {"label": "Team", "href": "#team"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "💧 24/7 Emergency Plumbing Service",
+    "title": "Expert Plumbing Solutions You Can Trust",
+    "subtitle": "Licensed master plumbers providing residential and commercial plumbing services. From emergency repairs to complete remodels, water heater installations to drain cleaning—we handle it all with professionalism, quality workmanship, and upfront pricing.",
+    "cta": [
+      {"label": "📞 Emergency Service", "href": "tel:5551234567"},
+      {"label": "📅 Schedule Service", "href": "#booking", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=1200&q=80",
+    "imageAlt": "Professional plumber at work"
+  },
+  "features": {
+    "bookingWidget": {
+      "enabled": true,
+      "provider": "calendly",
+      "url": "https://calendly.com/bluewaveplumbing"
+    },
+    "emergency247": true,
+    "membershipPlans": true,
+    "teamProfiles": true,
+    "ownerDashboard": true,
+    "analytics": true,
+    "testimonials": {
+      "enabled": true,
+      "ratings": true
+    }
+  },
+  "menu": {
+    "sections": [
+      {
+        "id": "residential",
+        "name": "Residential Plumbing",
+        "description": "Complete home plumbing services",
+        "items": [
+          {
+            "name": "Water Heater Installation",
+            "price": 1800,
+            "description": "50-gallon water heater installation including removal of old unit, permits, and code compliance",
+            "image": "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=600&q=80",
+            "imageAlt": "Water heater installation",
+            "duration": "4-6 hours",
+            "warranty": "10 years tank, 6 years parts",
+            "popular": true
+          },
+          {
+            "name": "Drain Cleaning",
+            "price": 149,
+            "description": "Professional drain cleaning with camera inspection. Clears clogs in sinks, tubs, and toilets.",
+            "image": "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?w=600&q=80",
+            "imageAlt": "Drain cleaning",
+            "duration": "1-2 hours",
+            "warranty": "90 days",
+            "popular": true
+          },
+          {
+            "name": "Toilet Repair/Replacement",
+            "price": 350,
+            "description": "Complete toilet replacement including removal, new wax ring, supply line, and disposal",
+            "duration": "2-3 hours",
+            "warranty": "2 years"
+          },
+          {
+            "name": "Faucet Installation",
+            "price": 195,
+            "description": "Kitchen or bathroom faucet installation with new supply lines and drain assembly",
+            "duration": "1-2 hours",
+            "warranty": "2 years"
+          },
+          {
+            "name": "Garbage Disposal Installation",
+            "price": 275,
+            "description": "New disposal unit with electrical connection, drain hookup, and removal of old unit",
+            "duration": "2 hours",
+            "warranty": "2 years"
+          }
+        ]
+      },
+      {
+        "id": "emergency",
+        "name": "Emergency Services",
+        "description": "24/7 emergency plumbing repairs",
+        "items": [
+          {
+            "name": "Emergency Service Call",
+            "price": 195,
+            "description": "24/7 emergency response. Includes trip charge and first hour of labor. No overtime fees!",
+            "image": "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=600&q=80",
+            "imageAlt": "Emergency plumbing",
+            "duration": "ASAP",
+            "popular": true
+          },
+          {
+            "name": "Burst Pipe Repair",
+            "price": 350,
+            "description": "Emergency burst pipe repair including leak location, pipe replacement, and cleanup",
+            "duration": "2-4 hours",
+            "warranty": "1 year"
+          },
+          {
+            "name": "Sewer Line Backup",
+            "price": 295,
+            "description": "Emergency sewer line clearing with hydro-jetting. Camera inspection included.",
+            "duration": "2-3 hours",
+            "warranty": "90 days"
+          },
+          {
+            "name": "Water Main Shut-Off",
+            "price": 150,
+            "description": "Emergency water main location and shut-off to prevent flooding damage",
+            "duration": "30-60 min"
+          }
+        ]
+      },
+      {
+        "id": "commercial",
+        "name": "Commercial Plumbing",
+        "description": "Business and commercial services",
+        "items": [
+          {
+            "name": "Commercial Plumbing Maintenance",
+            "price": 499,
+            "description": "Quarterly maintenance for commercial properties. Priority scheduling and discounted rates.",
+            "image": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80",
+            "imageAlt": "Commercial plumbing",
+            "duration": "Varies",
+            "popular": true
+          },
+          {
+            "name": "Backflow Testing",
+            "price": 125,
+            "description": "Annual backflow prevention testing and certification. Required for commercial properties.",
+            "duration": "1 hour",
+            "warranty": "1 year"
+          },
+          {
+            "name": "Restaurant Plumbing",
+            "price": 0,
+            "description": "Specialized services for restaurants: grease traps, commercial fixtures, health code compliance. Call for quote.",
+            "duration": "Varies"
+          }
+        ]
+      },
+      {
+        "id": "specialty",
+        "name": "Specialty Services",
+        "description": "Advanced plumbing solutions",
+        "items": [
+          {
+            "name": "Tankless Water Heater",
+            "price": 3200,
+            "description": "On-demand tankless water heater installation. Never run out of hot water! Energy efficient.",
+            "duration": "6-8 hours",
+            "warranty": "10 years",
+            "popular": true
+          },
+          {
+            "name": "Sewer Line Camera Inspection",
+            "price": 199,
+            "description": "Video camera inspection of sewer lines to identify blockages, damage, or root intrusion",
+            "duration": "1-2 hours"
+          },
+          {
+            "name": "Water Filtration System",
+            "price": 1200,
+            "description": "Whole-home water filtration system installation for clean, great-tasting water",
+            "duration": "4-6 hours",
+            "warranty": "5 years"
+          },
+          {
+            "name": "Bathroom Remodel Plumbing",
+            "price": 2500,
+            "description": "Complete bathroom plumbing for remodels. Includes new fixtures, drains, supply lines, and testing.",
+            "duration": "2-3 days",
+            "warranty": "5 years"
+          },
+          {
+            "name": "Sump Pump Installation",
+            "price": 850,
+            "description": "Sump pump installation with basin, discharge line, and backup battery system",
+            "duration": "4-6 hours",
+            "warranty": "3 years"
+          }
+        ]
+      }
+    ]
+  },
+  "about": {
+    "title": "About Blue Wave Plumbing",
+    "body": "Family-owned since 2009, Blue Wave Plumbing has built a reputation for honest, reliable plumbing services. Our team of licensed master plumbers brings decades of combined experience and a commitment to quality workmanship. We're available 24/7 for emergencies, and we stand behind every job with industry-leading warranties and a 100% satisfaction guarantee.",
+    "subtitle": "Why choose us",
+    "features": [
+      "💧 Licensed Master Plumbers",
+      "🛡️ Fully Licensed & Insured",
+      "📞 24/7 Emergency Service",
+      "✅ Upfront Pricing",
+      "🏆 Satisfaction Guaranteed",
+      "⚡ Same-Day Service Available"
+    ]
+  },
+  "memberships": {
+    "title": "Membership Plans",
+    "subtitle": "Priority service and exclusive savings",
+    "tiers": [
+      {
+        "name": "Basic Care",
+        "price": 19,
+        "billingCycle": "month",
+        "description": "Annual maintenance and member perks",
+        "features": [
+          "Annual plumbing inspection",
+          "15% off all repairs",
+          "Priority scheduling",
+          "No trip charges",
+          "Transferable membership"
+        ]
+      },
+      {
+        "name": "Total Protection",
+        "price": 39,
+        "billingCycle": "month",
+        "description": "Comprehensive coverage and VIP service",
+        "features": [
+          "2 annual inspections",
+          "20% off all repairs",
+          "Priority emergency service",
+          "Free drain cleaning (1x/year)",
+          "No trip charges ever",
+          "Transferable membership",
+          "Water heater flush included"
+        ],
+        "popular": true
+      },
+      {
+        "name": "Commercial Plan",
+        "price": 99,
+        "billingCycle": "month",
+        "description": "Business plumbing protection",
+        "features": [
+          "Quarterly inspections",
+          "25% off all commercial work",
+          "24/7 priority emergency",
+          "Preventative maintenance",
+          "Backflow testing included",
+          "Dedicated account manager"
+        ]
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Customer Reviews",
+    "subtitle": "What our customers say",
+    "items": [
+      {
+        "text": "Had a burst pipe at 2am and Blue Wave was here within an hour! Professional, efficient, and fixed it perfectly. Their no-overtime policy saved me a fortune. Highly recommend!",
+        "author": "Sarah Johnson",
+        "location": "Homeowner",
+        "rating": 5,
+        "date": "1 week ago",
+        "service": "Emergency Repair",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&q=80",
+        "imageAlt": "Sarah Johnson"
+      },
+      {
+        "text": "We've been members for 3 years and love the peace of mind. The annual inspections caught small issues before they became expensive problems. Great value and excellent service!",
+        "author": "Michael Chen",
+        "location": "Homeowner",
+        "rating": 5,
+        "date": "2 weeks ago",
+        "service": "Membership Plan",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80",
+        "imageAlt": "Michael Chen"
+      },
+      {
+        "text": "Installed a tankless water heater and couldn't be happier! The team was professional, clean, and thorough. Explained everything and the price was very fair. Excellent work!",
+        "author": "Jennifer Martinez",
+        "location": "Homeowner",
+        "rating": 5,
+        "date": "3 weeks ago",
+        "service": "Water Heater Installation",
+        "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
+        "imageAlt": "Jennifer Martinez"
+      }
+    ],
+    "stats": {
+      "averageRating": 4.9,
+      "totalReviews": 687,
+      "googleRating": 4.9,
+      "responseTime": "< 60 min"
+    }
+  },
+  "team": {
+    "title": "Meet Our Plumbers",
+    "subtitle": "Licensed professionals you can trust",
+    "members": [
+      {
+        "name": "John Williams",
+        "title": "Owner & Master Plumber",
+        "bio": "John founded Blue Wave with a vision for honest, reliable plumbing services. With 22 years of experience and a master plumber license, he leads our team with expertise and integrity.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "John Williams",
+        "credentials": ["Master Plumber License", "22+ Years Experience", "Business Owner"]
+      },
+      {
+        "name": "David Martinez",
+        "title": "Lead Plumber",
+        "bio": "David specializes in complex repairs and commercial plumbing. His problem-solving skills and attention to detail ensure every job is done right.",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+        "imageAlt": "David Martinez",
+        "credentials": ["Licensed Plumber", "Commercial Specialist", "15+ Years Experience"]
+      },
+      {
+        "name": "Tom Anderson",
+        "title": "Service Plumber",
+        "bio": "Tom handles residential service and repairs with a focus on customer satisfaction. His friendly demeanor and expertise make him a customer favorite.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "Tom Anderson",
+        "credentials": ["Licensed Plumber", "Residential Expert", "12+ Years Experience"]
+      }
+    ]
+  },
+  "emergency": {
+    "title": "24/7 Emergency Plumbing",
+    "subtitle": "We're here when you need us most",
+    "description": "Plumbing emergencies don't wait for business hours. Our emergency team is available 24/7/365 with no overtime charges! We guarantee response within 60 minutes for all emergency calls.",
+    "features": [
+      "💧 60-minute response guarantee",
+      "📞 Available 24/7/365",
+      "🚫 No overtime charges",
+      "🔧 Fully stocked trucks",
+      "💯 Upfront emergency pricing"
+    ],
+    "emergencyPhone": "(555) 123-4567"
+  },
+  "serviceAreas": {
+    "title": "Service Areas",
+    "subtitle": "Serving the greater metro area",
+    "areas": [
+      "Central City & Downtown",
+      "North Metro",
+      "South Metro",
+      "East Valley",
+      "West Valley",
+      "All Surrounding Communities"
+    ]
+  },
+  "contact": {
+    "title": "Schedule Service Today",
+    "subtitle": "Free estimates on all non-emergency work",
+    "phone": "(555) 123-4567",
+    "email": "service@bluewaveplumbing.com",
+    "address": "890 Industrial Parkway, Unit 12, Chicago, IL 60601",
+    "coordinates": {
+      "lat": 41.8781,
+      "lng": -87.6298
+    },
+    "hours": {
+      "title": "Office Hours",
+      "items": [
+        "Monday - Friday: 7:00 AM - 6:00 PM",
+        "Saturday: 8:00 AM - 4:00 PM",
+        "Sunday: Emergency service only"
+      ],
+      "note": "24/7 emergency service always available"
+    }
+  },
+  "social": {
+    "facebook": "https://facebook.com/bluewaveplumbing",
+    "instagram": "https://instagram.com/bluewaveplumbing",
+    "yelp": "https://yelp.com/biz/bluewaveplumbing",
+    "googleMaps": "https://maps.google.com/bluewaveplumbing"
+  },
+  "stats": {
+    "items": [
+      {"number": "4.9", "label": "Star Rating"},
+      {"number": "14+", "label": "Years Trusted"},
+      {"number": "24/7", "label": "Emergency"},
+      {"number": "Licensed", "label": "& Insured"}
+    ]
+  },
+  "credentials": {
+    "title": "Certifications & Trust",
+    "items": [
+      {"icon": "💧", "name": "Master Plumber", "description": "State Licensed #PL-98765"},
+      {"icon": "🛡️", "name": "Fully Insured", "description": "$2M Liability Coverage"},
+      {"icon": "⭐", "name": "Top Rated", "description": "4.9 Stars on Google & Yelp"},
+      {"icon": "🏆", "name": "Award Winning", "description": "Best Plumber 2023"}
+    ]
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "items": [
+      {"question": "Do you offer 24/7 emergency service?", "answer": "Yes! We provide 24/7/365 emergency plumbing service with guaranteed response within 60 minutes. Best of all, we don't charge overtime fees—emergency rates are the same as regular rates!"},
+      {"question": "Are you licensed and insured?", "answer": "Absolutely. All our plumbers are licensed (Master Plumber License #PL-98765), and we carry $2M in liability insurance and workers' compensation coverage."},
+      {"question": "Do you provide free estimates?", "answer": "Yes, we provide free estimates for all non-emergency work. For emergency service calls, there's a $195 service call fee that includes diagnosis and the first hour of labor."},
+      {"question": "What's included in your membership plans?", "answer": "Our membership plans include annual inspections, discounts on all repairs, priority scheduling, and more. The Total Protection plan is our most popular with 2 inspections per year, 20% off repairs, and free annual drain cleaning."},
+      {"question": "How quickly can you schedule non-emergency service?", "answer": "We typically can schedule non-emergency work within 1-2 business days. For urgent (but non-emergency) issues, we often have same-day availability."},
+      {"question": "What areas do you serve?", "answer": "We serve the entire metro area and surrounding communities. Check our service areas section or call to confirm we service your location."},
+      {"question": "Do you warranty your work?", "answer": "Yes! We provide warranties on all our work ranging from 90 days to 10 years depending on the service. All warranties are clearly explained before work begins."},
+      {"question": "Can you help with permits and inspections?", "answer": "Absolutely. We handle all necessary permits and coordinate inspections. Our work is always done to code, and we manage the entire permit process for you."}
+    ]
+  },
+  "footer": {
+    "text": "💧 Blue Wave Plumbing • Licensed & Trusted Since 2009",
+    "links": [
+      {"label": "Emergency Service", "href": "#emergency"},
+      {"label": "Services", "href": "#services"},
+      {"label": "Membership", "href": "#membership"},
+      {"label": "Contact", "href": "#contact"}
+    ],
+    "awards": [
+      "Licensed Master Plumber",
+      "24/7 Emergency Service",
+      "$2M Insured",
+      "14+ Years Excellence"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": false,
+    "bookingEnabled": true,
+    "bookingWidget": "calendly",
+    "tier": "Pro"
+  }
+}

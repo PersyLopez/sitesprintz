@@ -1,0 +1,605 @@
+{
+  "brand": {
+    "name": "Creative Studios",
+    "logo": "assets/logo.svg",
+    "tagline": "Award-Winning Design & Development • Premium Digital Solutions",
+    "phone": "(555) 345-6789",
+    "email": "hello@creativestudios.co"
+  },
+  "themeVars": {
+    "color-primary": "#0ea5e9",
+    "color-accent": "#0284c7",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Portfolio", "href": "#portfolio"},
+    {"label": "Services", "href": "#services"},
+    {"label": "Case Studies", "href": "#case-studies"},
+    {"label": "Testimonials", "href": "#testimonials"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "✨ Premium Digital Solutions",
+    "title": "Transform Your Vision Into Reality",
+    "subtitle": "Award-winning design and development services for businesses that want to stand out. From branding to full-stack applications, we create digital experiences that drive results and captivate audiences.",
+    "cta": [
+      {"label": "📅 Schedule Consultation", "href": "#booking"},
+      {"label": "📂 View Portfolio", "href": "#portfolio", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&q=80",
+    "imageAlt": "Designer workspace with laptop and creative tools"
+  },
+  "features": {
+    "bookingWidget": {
+      "enabled": true,
+      "provider": "calendly",
+      "url": "https://calendly.com/creativestudios"
+    },
+    "portfolioGallery": true,
+    "caseStudies": true,
+    "ownerDashboard": true,
+    "analytics": true,
+    "testimonials": {
+      "enabled": true,
+      "ratings": true
+    }
+  },
+  "menu": {
+    "sections": [
+      {
+        "id": "design",
+        "name": "Design Services",
+        "description": "Visual identity and user experience design",
+        "items": [
+          {
+            "name": "Brand Identity Design",
+            "price": 3500,
+            "description": "Complete brand package: logo, color palette, typography, brand guidelines, and collateral",
+            "image": "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600&q=80",
+            "imageAlt": "Brand identity design",
+            "duration": "2-3 weeks",
+            "deliverables": ["Logo suite", "Brand guidelines", "Business cards", "Social media templates"],
+            "popular": true
+          },
+          {
+            "name": "UI/UX Design",
+            "price": 5000,
+            "description": "User-centered interface design with wireframes, prototypes, and design systems",
+            "image": "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=600&q=80",
+            "imageAlt": "UI/UX design mockups",
+            "duration": "3-4 weeks",
+            "deliverables": ["Wireframes", "Interactive prototypes", "Design system", "Developer handoff"],
+            "popular": true
+          },
+          {
+            "name": "Web Design",
+            "price": 2500,
+            "description": "Custom website design with responsive layouts and modern aesthetics",
+            "image": "https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=600&q=80",
+            "imageAlt": "Website design mockup",
+            "duration": "2 weeks",
+            "deliverables": ["Homepage design", "2-3 internal pages", "Mobile responsive", "Style guide"]
+          },
+          {
+            "name": "Marketing Materials",
+            "price": 1200,
+            "description": "Brochures, flyers, presentations, and digital marketing assets",
+            "image": "https://images.unsplash.com/photo-1542744094-3a31f272c490?w=600&q=80",
+            "imageAlt": "Marketing materials",
+            "duration": "1 week",
+            "deliverables": ["Print-ready files", "Digital versions", "Editable templates"]
+          }
+        ]
+      },
+      {
+        "id": "development",
+        "name": "Development Services",
+        "description": "Full-stack web and app development",
+        "items": [
+          {
+            "name": "Custom Web Application",
+            "price": 12000,
+            "description": "Full-stack web application with custom features, database, and admin dashboard",
+            "image": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&q=80",
+            "imageAlt": "Web development",
+            "duration": "8-12 weeks",
+            "deliverables": ["Custom application", "Admin panel", "Documentation", "Hosting setup", "Training"],
+            "popular": true
+          },
+          {
+            "name": "E-commerce Website",
+            "price": 8000,
+            "description": "Complete online store with payment processing, inventory management, and order tracking",
+            "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80",
+            "imageAlt": "E-commerce development",
+            "duration": "6-8 weeks",
+            "deliverables": ["Product catalog", "Shopping cart", "Payment integration", "Admin dashboard"],
+            "popular": true
+          },
+          {
+            "name": "WordPress Development",
+            "price": 4500,
+            "description": "Custom WordPress theme with plugins, SEO optimization, and content management",
+            "image": "https://images.unsplash.com/photo-1504691342899-4d92b50853e1?w=600&q=80",
+            "imageAlt": "WordPress development",
+            "duration": "3-4 weeks",
+            "deliverables": ["Custom theme", "Plugin setup", "SEO optimization", "Training"]
+          },
+          {
+            "name": "API Integration",
+            "price": 3000,
+            "description": "Third-party API integration and custom API development for your applications",
+            "duration": "2-3 weeks",
+            "deliverables": ["API integration", "Documentation", "Testing"]
+          }
+        ]
+      },
+      {
+        "id": "strategy",
+        "name": "Strategy & Consulting",
+        "description": "Digital strategy and technical consulting",
+        "items": [
+          {
+            "name": "Digital Strategy Session",
+            "price": 500,
+            "description": "2-hour consultation to define your digital roadmap and technical requirements",
+            "duration": "2 hours",
+            "deliverables": ["Strategy document", "Technical recommendations", "Roadmap"]
+          },
+          {
+            "name": "UX Audit",
+            "price": 1500,
+            "description": "Comprehensive analysis of your website or app with actionable improvements",
+            "duration": "1 week",
+            "deliverables": ["Audit report", "Heuristic analysis", "Recommendations", "Priority matrix"]
+          },
+          {
+            "name": "Tech Stack Consulting",
+            "price": 800,
+            "description": "Expert advice on choosing the right technologies for your project",
+            "duration": "3-5 days",
+            "deliverables": ["Technology recommendations", "Cost analysis", "Implementation plan"]
+          }
+        ]
+      },
+      {
+        "id": "maintenance",
+        "name": "Ongoing Support",
+        "description": "Monthly maintenance and support plans",
+        "items": [
+          {
+            "name": "Basic Support",
+            "price": 500,
+            "description": "Monthly website maintenance, updates, and support (5 hours/month)",
+            "popular": true
+          },
+          {
+            "name": "Professional Support",
+            "price": 1200,
+            "description": "Priority support with faster response times (15 hours/month)",
+            "popular": true
+          },
+          {
+            "name": "Enterprise Support",
+            "price": 3000,
+            "description": "Dedicated support team with 24/7 monitoring (40 hours/month)"
+          }
+        ]
+      }
+    ]
+  },
+  "about": {
+    "title": "About Creative Studios",
+    "body": "Founded in 2017, Creative Studios has grown from a one-person operation to a full-service digital agency trusted by Fortune 500 companies and innovative startups alike. Our mission is simple: create exceptional digital experiences that drive real business results. With expertise in design, development, and strategy, we're your end-to-end partner for digital transformation.",
+    "subtitle": "Why work with us",
+    "features": [
+      "🏆 Award-winning work",
+      "⚡ Fast turnaround times",
+      "🎨 Unlimited revisions",
+      "💼 8+ years experience",
+      "🌟 100+ satisfied clients",
+      "🔒 NDA & IP protection"
+    ]
+  },
+  "featuredWork": {
+    "title": "Featured Projects",
+    "subtitle": "Highlighting our best work",
+    "items": [
+      {
+        "name": "FinTech Dashboard",
+        "client": "TechStart Financial",
+        "category": "UI/UX Design + Development",
+        "description": "Complete redesign and development of a financial analytics platform serving 50K+ users",
+        "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80",
+        "imageAlt": "FinTech dashboard interface",
+        "results": ["40% increase in user engagement", "60% faster load times", "Award-winning design"],
+        "tags": ["React", "Node.js", "UI/UX"],
+        "featured": true
+      },
+      {
+        "name": "E-commerce Rebrand",
+        "client": "StyleHub Boutique",
+        "category": "Branding + E-commerce",
+        "description": "Full brand refresh and custom Shopify store for fashion retailer",
+        "image": "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=800&q=80",
+        "imageAlt": "E-commerce website",
+        "results": ["3x increase in online sales", "50% lower bounce rate", "Featured in design magazines"],
+        "tags": ["Branding", "Shopify", "E-commerce"],
+        "featured": true
+      }
+    ]
+  },
+  "caseStudies": {
+    "title": "Case Studies",
+    "subtitle": "Deep dives into our process and results",
+    "items": [
+      {
+        "title": "How We Increased Conversion by 215%",
+        "client": "GrowthCo SaaS",
+        "industry": "B2B SaaS",
+        "challenge": "GrowthCo's landing page had a 2% conversion rate and high bounce rate. They needed a complete redesign to attract enterprise clients.",
+        "solution": "We conducted user research, redesigned the entire user journey, and implemented A/B testing. The new design focused on social proof, clear value propositions, and simplified navigation.",
+        "results": [
+          "215% increase in conversion rate",
+          "65% reduction in bounce rate",
+          "45% increase in demo requests",
+          "ROI achieved in 3 months"
+        ],
+        "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80",
+        "imageAlt": "SaaS dashboard",
+        "testimonial": {
+          "text": "Creative Studios transformed our digital presence. The results speak for themselves - our pipeline has never been stronger.",
+          "author": "Sarah Johnson",
+          "title": "VP of Marketing, GrowthCo"
+        },
+        "duration": "8 weeks",
+        "services": ["UX Research", "UI Design", "Development", "A/B Testing"]
+      },
+      {
+        "title": "Rebranding a Legacy Business for the Digital Age",
+        "client": "Heritage Furniture Co.",
+        "industry": "Retail",
+        "challenge": "A 50-year-old furniture company needed to modernize their brand and move their business online without losing their heritage appeal.",
+        "solution": "We developed a brand strategy that honored their history while appealing to modern consumers. Created a new visual identity and a comprehensive e-commerce platform.",
+        "results": [
+          "500% increase in online revenue",
+          "Expanded to 3 new markets",
+          "20K social media followers in 6 months",
+          "Featured in design publications"
+        ],
+        "image": "https://images.unsplash.com/photo-1538688525198-9b88f6f53126?w=800&q=80",
+        "imageAlt": "Furniture e-commerce site",
+        "testimonial": {
+          "text": "They understood our vision perfectly. The new brand feels fresh but still authentic to who we are.",
+          "author": "Michael Chen",
+          "title": "Owner, Heritage Furniture Co."
+        },
+        "duration": "12 weeks",
+        "services": ["Brand Strategy", "Visual Identity", "E-commerce Development", "Photography"]
+      },
+      {
+        "title": "Building a Mobile App from Concept to Launch",
+        "client": "FitTrack Health",
+        "industry": "Health & Wellness",
+        "challenge": "First-time founder with an idea for a fitness tracking app needed end-to-end support from concept validation to launch.",
+        "solution": "We guided them through user research, MVP definition, design, development, and go-to-market strategy. Built a native iOS and Android app with backend infrastructure.",
+        "results": [
+          "100K downloads in first 3 months",
+          "4.8 star rating on app stores",
+          "Secured Series A funding",
+          "Featured by Apple"
+        ],
+        "image": "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&q=80",
+        "imageAlt": "Mobile app design",
+        "testimonial": {
+          "text": "I couldn't have launched without Creative Studios. They were true partners in bringing my vision to life.",
+          "author": "Emily Rodriguez",
+          "title": "Founder, FitTrack Health"
+        },
+        "duration": "16 weeks",
+        "services": ["Product Strategy", "UI/UX Design", "iOS Development", "Android Development", "Backend"]
+      }
+    ]
+  },
+  "portfolio": {
+    "title": "Portfolio",
+    "subtitle": "A selection of our recent work",
+    "categories": [
+      {
+        "name": "Web Design",
+        "projects": [
+          {
+            "name": "Restaurant Website",
+            "image": "https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=600&q=80",
+            "tags": ["Design", "Development"]
+          },
+          {
+            "name": "Law Firm Rebrand",
+            "image": "https://images.unsplash.com/photo-1542744094-3a31f272c490?w=600&q=80",
+            "tags": ["Branding", "Web Design"]
+          },
+          {
+            "name": "SaaS Landing Page",
+            "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80",
+            "tags": ["UI/UX", "Development"]
+          }
+        ]
+      },
+      {
+        "name": "Branding",
+        "projects": [
+          {
+            "name": "Coffee Shop Brand",
+            "image": "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600&q=80",
+            "tags": ["Brand Identity", "Packaging"]
+          },
+          {
+            "name": "Tech Startup Logo",
+            "image": "https://images.unsplash.com/photo-1572044162444-ad60f128bdea?w=600&q=80",
+            "tags": ["Logo Design", "Brand Guidelines"]
+          }
+        ]
+      },
+      {
+        "name": "Applications",
+        "projects": [
+          {
+            "name": "Fitness Tracking App",
+            "image": "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=600&q=80",
+            "tags": ["Mobile App", "UI/UX"]
+          },
+          {
+            "name": "E-commerce Platform",
+            "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80",
+            "tags": ["Full Stack", "E-commerce"]
+          }
+        ]
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Client Testimonials",
+    "subtitle": "What our clients say about working with us",
+    "items": [
+      {
+        "text": "Creative Studios delivered beyond our expectations. They took the time to understand our business, and the website they built has been a game-changer for lead generation. Professional, responsive, and incredibly talented.",
+        "author": "Jessica Park",
+        "location": "CEO, TechVenture Inc.",
+        "rating": 5,
+        "date": "2 weeks ago",
+        "project": "Corporate Website Redesign",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&q=80",
+        "imageAlt": "Jessica Park"
+      },
+      {
+        "text": "Working with Creative Studios was a pleasure from start to finish. They managed the entire project seamlessly, communicated clearly, and delivered on time. Our new brand identity has positioned us perfectly for growth.",
+        "author": "David Martinez",
+        "location": "Founder, EcoLiving Products",
+        "rating": 5,
+        "date": "1 month ago",
+        "project": "Brand Identity + E-commerce Site",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80",
+        "imageAlt": "David Martinez"
+      },
+      {
+        "text": "I've worked with many agencies over the years, and Creative Studios stands out. Their technical expertise is matched by their creative vision. The app they built is beautiful, fast, and exactly what we needed.",
+        "author": "Amanda Lee",
+        "location": "Product Manager, HealthFirst",
+        "rating": 5,
+        "date": "3 months ago",
+        "project": "Mobile App Development",
+        "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
+        "imageAlt": "Amanda Lee"
+      }
+    ],
+    "stats": {
+      "averageRating": 5.0,
+      "totalReviews": 127,
+      "repeatClientRate": "85%",
+      "projectSuccessRate": "100%"
+    }
+  },
+  "team": {
+    "title": "Meet the Team",
+    "subtitle": "Experienced professionals passionate about digital excellence",
+    "members": [
+      {
+        "name": "Alex Thompson",
+        "title": "Founder & Creative Director",
+        "bio": "With 12 years in design and digital strategy, Alex leads our creative vision and ensures every project exceeds expectations. Previously at top agencies in NYC and SF.",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+        "imageAlt": "Alex Thompson",
+        "credentials": ["Adobe Certified Expert", "Google UX Design Certificate", "Webby Award Winner"],
+        "specialties": ["Brand Strategy", "UI/UX Design", "Creative Direction"]
+      },
+      {
+        "name": "Maya Chen",
+        "title": "Lead Developer",
+        "bio": "Full-stack developer with expertise in React, Node.js, and cloud architecture. Maya turns designs into robust, scalable applications that delight users.",
+        "image": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80",
+        "imageAlt": "Maya Chen",
+        "credentials": ["AWS Certified", "React Expert", "Computer Science MS"],
+        "specialties": ["Full Stack Development", "Cloud Architecture", "Performance Optimization"]
+      },
+      {
+        "name": "Jordan Smith",
+        "title": "Senior Designer",
+        "bio": "Jordan specializes in creating beautiful, user-centered interfaces. With a background in psychology and design, Jordan crafts experiences that convert.",
+        "image": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80",
+        "imageAlt": "Jordan Smith",
+        "credentials": ["UI/UX Certified", "Figma Expert", "Design Systems Specialist"],
+        "specialties": ["UI Design", "Design Systems", "Prototyping"]
+      }
+    ]
+  },
+  "pricing": {
+    "title": "Transparent Pricing",
+    "subtitle": "Clear packages for common project types",
+    "tiers": [
+      {
+        "name": "Starter Package",
+        "price": 5000,
+        "description": "Perfect for small businesses and startups",
+        "features": [
+          "5-page custom website",
+          "Mobile responsive design",
+          "Basic SEO optimization",
+          "Contact form integration",
+          "2 rounds of revisions",
+          "30 days of support"
+        ],
+        "popular": false
+      },
+      {
+        "name": "Professional Package",
+        "price": 12000,
+        "description": "Ideal for growing businesses needing more features",
+        "features": [
+          "Custom web application",
+          "10+ pages or features",
+          "Advanced functionality",
+          "CMS integration",
+          "SEO & analytics setup",
+          "Unlimited revisions",
+          "90 days of support",
+          "Training included"
+        ],
+        "popular": true
+      },
+      {
+        "name": "Enterprise Package",
+        "price": 25000,
+        "description": "Comprehensive solution for established businesses",
+        "features": [
+          "Complete digital ecosystem",
+          "Custom application development",
+          "Brand identity (if needed)",
+          "Advanced integrations",
+          "Priority support",
+          "Unlimited revisions",
+          "6 months of support",
+          "Dedicated project manager"
+        ],
+        "popular": false
+      }
+    ]
+  },
+  "process": {
+    "title": "Our Process",
+    "subtitle": "A proven approach to digital success",
+    "steps": [
+      {
+        "number": 1,
+        "title": "Discovery",
+        "description": "We start by understanding your business, goals, users, and competition through research and stakeholder interviews.",
+        "duration": "1 week"
+      },
+      {
+        "number": 2,
+        "title": "Strategy & Planning",
+        "description": "Define the project scope, create user personas, map user journeys, and establish success metrics.",
+        "duration": "1 week"
+      },
+      {
+        "number": 3,
+        "title": "Design",
+        "description": "Create wireframes, prototypes, and high-fidelity designs. Iterate based on feedback and usability testing.",
+        "duration": "2-4 weeks"
+      },
+      {
+        "number": 4,
+        "title": "Development",
+        "description": "Build the solution using modern technologies, best practices, and rigorous quality assurance.",
+        "duration": "4-8 weeks"
+      },
+      {
+        "number": 5,
+        "title": "Launch & Support",
+        "description": "Deploy to production, monitor performance, provide training, and offer ongoing support and optimization.",
+        "duration": "Ongoing"
+      }
+    ]
+  },
+  "contact": {
+    "title": "Let's Work Together",
+    "subtitle": "Schedule a free consultation to discuss your project",
+    "phone": "(555) 345-6789",
+    "email": "hello@creativestudios.co",
+    "address": "456 Innovation Drive, Suite 300, San Francisco, CA 94103",
+    "coordinates": {
+      "lat": 37.7749,
+      "lng": -122.4194
+    },
+    "hours": {
+      "title": "Availability",
+      "items": [
+        "Monday - Friday: 9:00 AM - 6:00 PM PST",
+        "Saturday: By appointment",
+        "Sunday: Closed"
+      ],
+      "note": "Free 30-minute consultation available"
+    }
+  },
+  "social": {
+    "dribbble": "https://dribbble.com/creativestudios",
+    "behance": "https://behance.net/creativestudios",
+    "github": "https://github.com/creativestudios",
+    "linkedin": "https://linkedin.com/company/creativestudios",
+    "instagram": "https://instagram.com/creativestudios"
+  },
+  "stats": {
+    "items": [
+      {"number": "127", "label": "Projects Delivered"},
+      {"number": "8+", "label": "Years Experience"},
+      {"number": "100%", "label": "Client Satisfaction"},
+      {"number": "50+", "label": "Happy Clients"}
+    ]
+  },
+  "credentials": {
+    "title": "Awards & Recognition",
+    "items": [
+      {"icon": "🏆", "name": "Webby Award", "description": "Best Website 2023"},
+      {"icon": "⭐", "name": "Awwwards", "description": "Site of the Day"},
+      {"icon": "💎", "name": "CSS Design Awards", "description": "UI Design Award"},
+      {"icon": "📰", "name": "Featured In", "description": "Design Milk, Smashing Magazine"}
+    ]
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "items": [
+      {"question": "How long does a typical project take?", "answer": "Project timelines vary based on scope. A simple website takes 2-4 weeks, while custom applications can take 8-16 weeks. We'll provide a detailed timeline during our consultation."},
+      {"question": "What's included in your pricing?", "answer": "Our packages include all design and development work, revisions, testing, deployment, and post-launch support. Additional services like ongoing maintenance can be added as needed."},
+      {"question": "Do you work with startups?", "answer": "Absolutely! We love working with startups and offer flexible payment plans. Many of our clients are early-stage companies looking to establish their digital presence."},
+      {"question": "Can you maintain my existing website?", "answer": "Yes! We offer monthly maintenance packages starting at $500/month. This includes updates, security patches, content changes, and technical support."},
+      {"question": "Do you sign NDAs?", "answer": "Yes, we're happy to sign NDAs and confidentiality agreements. We take client privacy and intellectual property protection seriously."},
+      {"question": "What if I'm not satisfied with the work?", "answer": "We offer unlimited revisions within the project scope to ensure you're completely satisfied. Our 100% client satisfaction rate speaks to our commitment to getting it right."},
+      {"question": "Do you provide training?", "answer": "Yes! All our packages include training on how to use and maintain your new website or application. We provide documentation and video tutorials as well."},
+      {"question": "What technologies do you use?", "answer": "We use modern, proven technologies including React, Next.js, Node.js, WordPress, and more. We choose the best stack for each project's specific needs."}
+    ]
+  },
+  "footer": {
+    "text": "✨ Creative Studios • Transforming Ideas Into Digital Reality Since 2017",
+    "links": [
+      {"label": "Portfolio", "href": "#portfolio"},
+      {"label": "Services", "href": "#services"},
+      {"label": "Case Studies", "href": "#case-studies"},
+      {"label": "Contact", "href": "#contact"}
+    ],
+    "awards": [
+      "Webby Award Winner",
+      "Awwwards Featured",
+      "100+ Projects Delivered",
+      "5-Star Rated"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": false,
+    "bookingEnabled": true,
+    "bookingWidget": "calendly",
+    "tier": "Pro"
+  }
+}
+

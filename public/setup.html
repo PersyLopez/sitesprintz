@@ -1232,10 +1232,92 @@
   </div>
 
   <script>
-    let currentStep = 2; // Start at customization step
+    let currentStep = 1;
     let selectedTemplate = null;
+    let currentTheme = 'ocean'; // Default theme
     let uploadedImages = [];
     let ADMIN_TOKEN = null;
+
+    // Theme definitions
+    const THEMES = {
+      ocean: {
+        name: 'Ocean Blue',
+        emoji: '🌊',
+        primary: '#06b6d4',
+        primaryDark: '#0891b2',
+        accent: '#14b8a6',
+        success: '#10b981',
+        warning: '#f59e0b',
+        danger: '#ef4444'
+      },
+      forest: {
+        name: 'Forest Green',
+        emoji: '🌲',
+        primary: '#10b981',
+        primaryDark: '#059669',
+        accent: '#14b8a6',
+        success: '#22c55e',
+        warning: '#f59e0b',
+        danger: '#ef4444'
+      },
+      sunset: {
+        name: 'Sunset Orange',
+        emoji: '🌅',
+        primary: '#f59e0b',
+        primaryDark: '#d97706',
+        accent: '#fb923c',
+        success: '#10b981',
+        warning: '#eab308',
+        danger: '#ef4444'
+      },
+      purple: {
+        name: 'Royal Purple',
+        emoji: '👑',
+        primary: '#8b5cf6',
+        primaryDark: '#7c3aed',
+        accent: '#a78bfa',
+        success: '#10b981',
+        warning: '#f59e0b',
+        danger: '#ef4444'
+      },
+      midnight: {
+        name: 'Midnight Dark',
+        emoji: '🌙',
+        primary: '#6366f1',
+        primaryDark: '#4f46e5',
+        accent: '#818cf8',
+        success: '#10b981',
+        warning: '#f59e0b',
+        danger: '#ef4444'
+      }
+    };
+
+    const PLAN_METADATA = {
+      Starter: {
+        title: '🎯 Starter Templates (Display Only)',
+        description: 'Perfect for service businesses. Show pricing, hours, and contact info with offline CTAs (call, email, visit, external booking). No payment processing included.',
+        badge: 'View-Only',
+        empty: 'Starter templates will appear here.'
+      },
+      Pro: {
+        title: '⭐ Pro Templates (Enhanced Features)',
+        description: 'Everything in Starter, plus booking widgets, tabbed content, interactive galleries, owner dashboard, and email notifications. More sophisticated layouts with depth and interactivity.',
+        badge: 'Enhanced',
+        empty: 'Pro templates will appear here soon.'
+      },
+      Checkout: {
+        title: '💳 Checkout Templates (Stripe Payments)',
+        description: 'Accept payments online with Stripe. Includes shopping cart, checkout flow, and order management. Perfect for selling products or taking deposits.',
+        badge: 'Payment-Ready',
+        empty: 'Checkout templates coming soon.'
+      },
+      Premium: {
+        title: '🌟 Premium Templates (Full Suite)',
+        description: 'Everything included: payments, booking, custom forms, analytics dashboard, priority support. Enterprise-grade features for growing businesses.',
+        badge: 'Enterprise',
+        empty: 'Premium templates coming soon.'
+      }
+    };
 
     // Fetch admin token from server
     async function getAdminToken() {
@@ -1487,33 +1569,6 @@
       });
     });
 
-    const PLAN_METADATA = {
-      Starter: {
-        title: '🎯 Starter Templates (Display Only)',
-        description: 'Perfect for service businesses. Show pricing, hours, and contact info with offline CTAs (call, email, visit, external booking). No payment processing included.',
-        badge: 'View-Only',
-        empty: 'Starter templates will appear here.'
-      },
-      Pro: {
-        title: '⭐ Pro Templates (Enhanced Features)',
-        description: 'Everything in Starter, plus booking widgets, tabbed content, interactive galleries, owner dashboard, and email notifications. More sophisticated layouts with depth and interactivity.',
-        badge: 'Enhanced',
-        empty: 'Pro templates will appear here soon.'
-      },
-      Checkout: {
-        title: '💳 Checkout Templates (Payment Enabled)',
-        description: 'Everything in Pro, plus Stripe checkout integration. Accept payments online, send automated order confirmations, and manage orders from the admin dashboard.',
-        badge: 'Payment Processing',
-        empty: 'Checkout templates will appear here soon.'
-      },
-      Premium: {
-        title: '🚀 Premium Suite (Coming Soon)',
-        description: 'Everything in Checkout, plus multi-page layouts, blog, scheduling integrations, CRM automation, and advanced analytics. Currently in development.',
-        badge: 'Full-Site',
-        comingSoonMessage: 'Premium Suite is in development. Join the waitlist to get early access and influence the roadmap.'
-      }
-    };
-
     // Layout configuration for all templates with multiple variants
     // Helper function to normalize template IDs (remove hyphens for lookup)
     function normalizeTemplateId(id) {
@@ -1719,7 +1774,9 @@
         return;
       }
 
-      const planLabel = template.plan === 'Checkout'
+      const planLabel = template.plan === 'Pro'
+        ? '⭐ Pro Template'
+        : template.plan === 'Checkout'
         ? 'Checkout Ready'
         : template.plan === 'Premium'
           ? 'Premium Suite'
@@ -1729,18 +1786,21 @@
       const features = resolveTemplateFeatures(template);
       
       // Check if this template has multiple layouts
-      // Find which base template this ID belongs to
+      // Only Starter templates have layout variations
       let baseId = null;
       let layoutConfig = null;
       
-      // Try to find config by normalizing the template ID
-      const normalizedId = normalizeTemplateId(template.id);
-      for (const [key, config] of Object.entries(TEMPLATE_LAYOUTS)) {
-        const normalizedKey = normalizeTemplateId(key);
-        if (normalizedId === normalizedKey || normalizedId.startsWith(normalizedKey)) {
-          baseId = getHyphenatedId(key);
-          layoutConfig = config;
-          break;
+      // Skip layout logic for Pro, Checkout, and Premium templates
+      if (template.plan === 'Starter') {
+        // Try to find config by normalizing the template ID
+        const normalizedId = normalizeTemplateId(template.id);
+        for (const [key, config] of Object.entries(TEMPLATE_LAYOUTS)) {
+          const normalizedKey = normalizeTemplateId(key);
+          if (normalizedId === normalizedKey || normalizedId.startsWith(normalizedKey)) {
+            baseId = getHyphenatedId(key);
+            layoutConfig = config;
+            break;
+          }
         }
       }
       
@@ -1775,6 +1835,33 @@
         `;
       }
 
+      // Theme picker
+      const themeButtons = Object.entries(THEMES).map(([key, theme]) => {
+        const isSelected = currentTheme === key;
+        return `
+          <button type="button" class="theme-btn" data-theme="${key}" onclick="switchTheme('${key}')" style="flex: 1; min-width: 80px; padding: 12px 8px; border: 2px solid ${isSelected ? theme.primary : 'rgba(255,255,255,0.15)'}; background: ${isSelected ? `${theme.primary}15` : 'rgba(255,255,255,0.05)'}; border-radius: 10px; cursor: pointer; transition: all 0.2s; text-align: center;">
+            <div style="font-size: 1.8rem; margin-bottom: 6px;">${theme.emoji}</div>
+            <div style="font-weight: 600; font-size: 0.75rem; color: ${isSelected ? theme.primary : 'var(--color-muted)'};">${theme.name}</div>
+            ${isSelected ? `<div style="margin-top: 6px; width: 24px; height: 24px; border-radius: 50%; background: ${theme.primary}; margin-left: auto; margin-right: auto; box-shadow: 0 0 10px ${theme.primary}50;"></div>` : `<div style="margin-top: 6px; width: 24px; height: 24px; border-radius: 50%; background: ${theme.primary}; margin-left: auto; margin-right: auto;"></div>`}
+          </button>
+        `;
+      }).join('');
+      
+      const themeSelectorHtml = `
+        <div style="margin: 20px 0; padding: 20px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.08)); border: 2px solid rgba(99, 102, 241, 0.2); border-radius: 16px;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+            <span style="font-size: 1.5rem;">🎨</span>
+            <div>
+              <div style="font-weight: 700; font-size: 0.95rem; color: var(--color-text); margin-bottom: 4px;">Choose Your Color Theme</div>
+              <div style="font-size: 0.85rem; color: var(--color-muted);">Select a color scheme that matches your brand</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            ${themeButtons}
+          </div>
+        </div>
+      `;
+
       summary.style.display = 'block';
       summary.innerHTML = `
         <div class="summary-header">
@@ -1785,6 +1872,7 @@
           </div>
         </div>
         ${layoutSelectorHtml}
+        ${themeSelectorHtml}
         <div class="summary-actions">
           <button type="button" class="btn btn-secondary" onclick="returnToTemplateSelection()">Change template</button>
           <button type="button" class="btn btn-primary" onclick="ensurePreviewVisible()">View Live Preview</button>
@@ -2157,6 +2245,88 @@
       // Reload template data
       await setupCustomize();
       
+      // Update preview to show new layout
+      updatePreview();
+    }
+
+    // Switch theme and update preview
+    function switchTheme(themeKey) {
+      if (!THEMES[themeKey]) return;
+      
+      currentTheme = themeKey;
+      
+      // Re-render the template summary to update theme button states
+      if (selectedTemplate) {
+        renderTemplateSummary(selectedTemplate);
+      }
+      
+      // Update the preview with new theme colors
+      updatePreviewWithTheme();
+    }
+
+    // Apply theme colors to preview
+    function updatePreviewWithTheme() {
+      if (!currentTheme || !THEMES[currentTheme]) return;
+      
+      const theme = THEMES[currentTheme];
+      const previewFrame = document.getElementById('previewIframe');
+      
+      if (previewFrame && previewFrame.contentWindow) {
+        try {
+          const previewDoc = previewFrame.contentWindow.document;
+          if (previewDoc) {
+            // Inject theme CSS variables into the preview iframe
+            let themeStyle = previewDoc.getElementById('dynamic-theme-style');
+            if (!themeStyle) {
+              themeStyle = previewDoc.createElement('style');
+              themeStyle.id = 'dynamic-theme-style';
+              previewDoc.head.appendChild(themeStyle);
+            }
+            
+            themeStyle.textContent = `
+              :root {
+                --color-primary: ${theme.primary} !important;
+                --color-primary-600: ${theme.primaryDark} !important;
+                --color-accent: ${theme.accent} !important;
+                --color-success: ${theme.success} !important;
+                --color-warning: ${theme.warning} !important;
+                --color-danger: ${theme.danger} !important;
+              }
+            `;
+          }
+        } catch (e) {
+          console.log('Cannot access iframe (cross-origin):', e.message);
+        }
+      }
+      
+      // Also update the main preview panel
+      updatePreview();
+    }
+    
+    async function switchLayout(baseId, layoutKey) {
+      const layoutConfig = TEMPLATE_LAYOUTS[baseId];
+      if (!layoutConfig) return;
+      
+      const layoutInfo = layoutConfig.layouts[layoutKey];
+      if (!layoutInfo) return;
+      
+      const templateId = `${baseId}-${layoutKey}`;
+      
+      // Update selected template
+      selectedTemplate = {
+        id: templateId,
+        name: `${baseId.charAt(0).toUpperCase() + baseId.slice(1)} (${layoutInfo.name})`,
+        category: layoutConfig.category,
+        color: layoutConfig.color,
+        plan: 'Starter'
+      };
+      
+      // Update the template summary to reflect new selection
+      renderTemplateSummary(selectedTemplate);
+      
+      // Reload template data
+      await setupCustomize();
+      
       // Update preview
       updatePreview();
       
@@ -2306,7 +2476,7 @@
         document.getElementById('heroImage').value = templateData.hero?.image || '';
         document.getElementById('contactEmail').value = templateData.contact?.email || '';
         document.getElementById('contactPhone').value = templateData.contact?.phone || '';
-        document.getElementById('contactAddress').value = templateData.contact?.subtitle || '';
+        document.getElementById('contactAddress').value = templateData.contact?.address || '';
         
         // Populate services/products
         populateServices(templateData);
@@ -2331,6 +2501,42 @@
       if (!titleEl || !contentEl || !sectionEl) return;
       contentEl.innerHTML = '';
       sectionEl.hidden = true;
+      
+      // Check if this is a Pro template
+      if (selectedTemplate.id.includes('-pro')) {
+        titleEl.textContent = 'Pro Template Features';
+        contentEl.innerHTML = `
+          <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.1)); border: 2px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+              <span style="font-size: 2rem;">⭐</span>
+              <div>
+                <h4 style="margin: 0 0 4px 0; color: var(--color-text);">Pro Template Loaded</h4>
+                <p style="margin: 0; font-size: 0.9rem; color: var(--color-muted);">This template includes advanced features and demo content</p>
+              </div>
+            </div>
+            <div style="background: rgba(255,255,255,0.5); backdrop-filter: blur(10px); border-radius: 8px; padding: 16px;">
+              <p style="margin: 0 0 12px 0; font-weight: 600; color: var(--color-text);">✨ Pro Features Included:</p>
+              <ul style="margin: 0; padding-left: 20px; color: var(--color-muted); line-height: 1.8;">
+                ${templateData.features?.tabbedMenu ? '<li>Tabbed menu navigation</li>' : ''}
+                ${templateData.features?.bookingWidget?.enabled ? '<li>Integrated booking widget (Calendly)</li>' : ''}
+                ${templateData.features?.subscriptions?.enabled ? '<li>Subscription tiers display</li>' : ''}
+                ${templateData.features?.gallery?.beforeAfter ? '<li>Before/after transformation gallery</li>' : ''}
+                ${templateData.features?.gallery?.filterable ? '<li>Filterable photo gallery</li>' : ''}
+                ${templateData.features?.privateEvents?.enabled ? '<li>Private events with modals</li>' : ''}
+                ${templateData.features?.ownerDashboard ? '<li>Owner dashboard access</li>' : ''}
+                ${templateData.features?.analytics ? '<li>Analytics and insights</li>' : ''}
+              </ul>
+            </div>
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(139, 92, 246, 0.2);">
+              <p style="margin: 0; font-size: 0.85rem; color: var(--color-muted);">
+                💡 <strong>Tip:</strong> All demo content is pre-loaded. Customize the fields below to make it yours!
+              </p>
+            </div>
+          </div>
+        `;
+        sectionEl.hidden = false;
+        return; // Exit early for Pro templates
+      }
       
       switch(selectedTemplate.id) {
         case 'restaurant':
@@ -2465,6 +2671,15 @@
         return;
       }
       
+      // For Pro templates, show full iframe preview with all features
+      if (selectedTemplate && selectedTemplate.id.includes('-pro')) {
+        updateProPreview();
+        return;
+      }
+      
+      // Get current theme
+      const theme = THEMES[currentTheme] || THEMES.ocean;
+      
       const businessName = document.getElementById('businessName').value || 'Your Business';
       const heroTitle = document.getElementById('heroTitle').value || 'Welcome to Our Business';
       const heroSubtitle = document.getElementById('heroSubtitle').value || 'We provide excellent service';
@@ -2485,7 +2700,7 @@
         </div>
         
         <div style="font-family: system-ui, -apple-system, sans-serif; color: #1f2937;">
-          <div style="background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 40px 20px; text-align: center; border-radius: 8px; margin-bottom: 20px;">
+          <div style="background: linear-gradient(135deg, ${theme.primary}, ${theme.primaryDark}); color: white; padding: 40px 20px; text-align: center; border-radius: 8px; margin-bottom: 20px;">
             <h1 style="margin: 0 0 10px 0; font-size: 2rem;">${businessName}</h1>
             <h2 style="margin: 0 0 15px 0; font-size: 1.25rem; opacity: 0.9;">${heroTitle}</h2>
             <p style="margin: 0; opacity: 0.8;">${heroSubtitle}</p>
@@ -2508,10 +2723,90 @@
       // Update services preview
       updateServicesPreview();
     }
+    
+    function updateProPreview() {
+      const previewContent = document.getElementById('previewContent');
+      if (!previewContent || !window.currentTemplateData) return;
+      
+      // Get the demo URL for this Pro template
+      const demoUrls = {
+        'restaurant-pro': '/sites/grandtable-demo/',
+        'gym-pro': '/sites/fitlife-demo/'
+      };
+      
+      const demoUrl = demoUrls[selectedTemplate.id] || '/sites/grandtable-demo/';
+      
+      // Show a Pro template preview with link to full demo
+      previewContent.innerHTML = `
+        <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.1)); border: 2px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 24px; margin-bottom: 20px;">
+          <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
+            <span style="font-size: 2.5rem;">⭐</span>
+            <div style="flex: 1;">
+              <h4 style="margin: 0 0 8px 0; color: var(--color-text); font-size: 1.25rem;">Pro Template Full Preview</h4>
+              <p style="margin: 0 0 16px 0; font-size: 0.95rem; color: var(--color-muted); line-height: 1.6;">
+                This Pro template includes advanced features like tabbed menus, booking widgets, image galleries, and more. 
+                Customize your business details here, and see the full template in action.
+              </p>
+              <a 
+                href="${demoUrl}" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style="display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);"
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(139, 92, 246, 0.4)';"
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(139, 92, 246, 0.3)';"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+                View Full Template Demo
+              </a>
+            </div>
+          </div>
+          
+          <div style="background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 16px; margin-top: 16px;">
+            <h5 style="margin: 0 0 8px 0; color: var(--color-text); font-size: 0.9rem; font-weight: 600;">✨ What's Included:</h5>
+            <ul style="margin: 0; padding-left: 20px; font-size: 0.875rem; color: var(--color-muted); line-height: 1.8;">
+              ${selectedTemplate.id === 'restaurant-pro' ? `
+                <li>🍽️ Tabbed menu system with multiple categories</li>
+                <li>📅 Integrated booking widget (Calendly)</li>
+                <li>🎉 Private events showcase with modal details</li>
+                <li>📸 Filterable image gallery</li>
+                <li>👨‍🍳 Team member profiles</li>
+                <li>📊 Stats dashboard & credentials</li>
+              ` : selectedTemplate.id === 'gym-pro' ? `
+                <li>💪 Membership tier showcase</li>
+                <li>📅 Class scheduling with booking</li>
+                <li>📸 Transformation gallery with before/after</li>
+                <li>🏋️ Trainer profiles & credentials</li>
+                <li>📊 Member stats & testimonials</li>
+                <li>💳 Subscription management ready</li>
+              ` : `
+                <li>Advanced features & interactive elements</li>
+                <li>Professional design & layout</li>
+                <li>Booking & scheduling integration</li>
+                <li>Rich media galleries</li>
+                <li>Team & credentials showcase</li>
+              `}
+            </ul>
+          </div>
+        </div>
+        
+        <div style="background: var(--color-card); border-radius: 12px; padding: 20px; text-align: center; color: var(--color-muted);">
+          <p style="margin: 0; font-size: 0.9rem;">
+            💡 <strong>Tip:</strong> Fill out your business details above, then publish to see your customized version with all Pro features!
+          </p>
+        </div>
+      `;
+    }
 
     function updateServicesPreview() {
       const previewServices = document.getElementById('previewServices');
       if (!previewServices) return;
+      
+      // Get current theme
+      const theme = THEMES[currentTheme] || THEMES.ocean;
       
       const serviceFields = document.querySelectorAll('#servicesContainer > .service-card');
       let servicesHtml = '';
@@ -2526,7 +2821,7 @@
             <div style="border-bottom: 1px solid #e5e7eb; padding: 10px 0;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <h4 style="margin: 0; color: #1f2937;">${name}</h4>
-                ${price ? `<span style="color: #f97316; font-weight: bold;">${price}</span>` : ''}
+                ${price ? `<span style="color: ${theme.primary}; font-weight: bold;">${price}</span>` : ''}
               </div>
               ${description ? `<p style="margin: 5px 0 0 0; color: #6b7280; font-size: 0.9rem;">${description}</p>` : ''}
             </div>
@@ -2640,8 +2935,33 @@
       const container = document.getElementById('servicesContainer');
       container.innerHTML = '';
       
-      // Get services from template (could be 'services' or 'products')
-      const services = templateData.services?.items || templateData.products || [];
+      let services = [];
+      
+      // Handle Pro templates with special structures
+      if (selectedTemplate.id.includes('-pro')) {
+        // For Pro templates, extract representative items from their rich data
+        if (templateData.menu?.sections) {
+          // Restaurant Pro - get first few menu items from first section
+          const firstSection = templateData.menu.sections[0];
+          services = (firstSection?.items || []).slice(0, 3).map(item => ({
+            name: item.name,
+            description: item.description,
+            price: item.price ? `$${item.price}` : '',
+            image: item.image || ''
+          }));
+        } else if (templateData.memberships?.tiers) {
+          // Gym Pro - get membership tiers as services
+          services = templateData.memberships.tiers.map(tier => ({
+            name: tier.name,
+            description: tier.description,
+            price: tier.price ? `$${tier.price}/${tier.billingCycle}` : '',
+            image: ''
+          }));
+        }
+      } else {
+        // Regular Starter templates
+        services = templateData.services?.items || templateData.products || [];
+      }
       
       services.forEach((service, index) => {
         container.appendChild(createServiceField(service, index));

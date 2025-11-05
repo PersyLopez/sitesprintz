@@ -163,6 +163,166 @@
       ]
     },
     {
+      "id": "salon-pro",
+      "name": "Salon Pro",
+      "description": "Premium salon with booking, gallery, and private events",
+      "category": "Beauty & Wellness",
+      "color": "#a855f7",
+      "plan": "Pro",
+      "features": [
+        "Tabbed service categories (Hair/Color/Extensions/Bridal)",
+        "Integrated booking widget",
+        "Featured services & specials",
+        "Private events & group packages",
+        "Before/after transformation gallery",
+        "Team profiles with specialties"
+      ]
+    },
+    {
+      "id": "freelancer-pro",
+      "name": "Freelancer Pro",
+      "description": "Professional portfolio with case studies and testimonials",
+      "category": "Professional Services",
+      "color": "#0ea5e9",
+      "plan": "Pro",
+      "features": [
+        "Portfolio gallery with categories",
+        "In-depth case studies",
+        "Client testimonials with ratings",
+        "Pricing tiers and packages",
+        "Process framework showcase",
+        "Team member profiles"
+      ]
+    },
+    {
+      "id": "consultant-pro",
+      "name": "Consultant Pro",
+      "description": "Elite consulting services with case studies and results",
+      "category": "Professional Services",
+      "color": "#1e40af",
+      "plan": "Pro",
+      "features": [
+        "Service categories with deliverables",
+        "Client results & metrics",
+        "Detailed case studies",
+        "Industry expertise showcase",
+        "Team credentials & backgrounds",
+        "Process methodology display"
+      ]
+    },
+    {
+      "id": "tech-repair-pro",
+      "name": "Tech Repair Pro",
+      "description": "Advanced repair services with warranty and before/after gallery",
+      "category": "Technology",
+      "color": "#059669",
+      "plan": "Pro",
+      "features": [
+        "Service categories (Phone/Computer/Tablet/Gaming)",
+        "Before/after repair gallery",
+        "Warranty tiers explained",
+        "Featured repair specials",
+        "Process transparency",
+        "Team certifications"
+      ]
+    },
+    {
+      "id": "cleaning-pro",
+      "name": "Cleaning Pro",
+      "description": "Premium cleaning with packages and before/after showcase",
+      "category": "Home Services",
+      "color": "#0891b2",
+      "plan": "Pro",
+      "features": [
+        "Residential & commercial services",
+        "Service packages & subscriptions",
+        "Before/after gallery",
+        "Team member profiles",
+        "Service area coverage",
+        "Add-on services"
+      ]
+    },
+    {
+      "id": "pet-care-pro",
+      "name": "Pet Care Pro",
+      "description": "Premium pet grooming with gallery and team profiles",
+      "category": "Pet Services",
+      "color": "#7c3aed",
+      "plan": "Pro",
+      "features": [
+        "Service categories (Dog/Cat/Specialty)",
+        "Filterable photo gallery",
+        "Team groomer profiles",
+        "Before/after transformations",
+        "Add-on services menu",
+        "Process explanation"
+      ]
+    },
+    {
+      "id": "product-showcase-pro",
+      "name": "Product Showcase Pro",
+      "description": "Artisan product catalog with collections and maker profiles",
+      "category": "Retail",
+      "color": "#f97316",
+      "plan": "Pro",
+      "features": [
+        "Product categories & collections",
+        "Featured products showcase",
+        "Artisan/maker profiles",
+        "Customer testimonials with ratings",
+        "Curated collections",
+        "Brand story & values"
+      ]
+    },
+    {
+      "id": "electrician-pro",
+      "name": "Electrician Pro",
+      "description": "24/7 emergency electrical services with certifications",
+      "category": "Home Services",
+      "color": "#f59e0b",
+      "plan": "Pro",
+      "features": [
+        "Residential & commercial services",
+        "24/7 emergency service section",
+        "Certifications & licenses displayed",
+        "Team member profiles",
+        "Service area coverage",
+        "Specialty services (Solar/EV/Smart Home)"
+      ]
+    },
+    {
+      "id": "auto-repair-pro",
+      "name": "Auto Repair Pro",
+      "description": "ASE-certified auto repair with service packages and warranty",
+      "category": "Automotive",
+      "color": "#ef4444",
+      "plan": "Pro",
+      "features": [
+        "Service categories (Maintenance/Repair/Specialty)",
+        "Service packages (30K/60K/90K mile)",
+        "Current specials showcase",
+        "ASE-certified team profiles",
+        "Warranty information",
+        "Customer testimonials with ratings"
+      ]
+    },
+    {
+      "id": "plumbing-pro",
+      "name": "Plumbing Pro",
+      "description": "24/7 plumbing with membership plans and emergency service",
+      "category": "Home Services",
+      "color": "#3b82f6",
+      "plan": "Pro",
+      "features": [
+        "Residential & commercial services",
+        "24/7 emergency service section",
+        "Membership plans with pricing",
+        "Licensed team profiles",
+        "Service area coverage",
+        "Specialty services (Tankless/Filtration/Remodel)"
+      ]
+    },
+    {
       "id": "electrician",
       "name": "Electrician Service",
       "description": "Emergency response, service areas, certifications",
