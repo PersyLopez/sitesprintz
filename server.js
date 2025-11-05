@@ -5360,6 +5360,66 @@ app.post('/api/stripe/disconnect', requireAuth, async (req, res) => {
   }
 });
 
+// ====================================
+// REACT SPA SUPPORT
+// ====================================
+
+// Serve React production build
+const distPath = path.join(__dirname, 'dist');
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath, {
+    index: false, // Don't serve index.html automatically
+    setHeaders: (res, filePath) => {
+      // Cache static assets aggressively
+      if (filePath.match(/\.(js|css|woff2?|ttf|eot|svg|png|jpg|jpeg|gif|ico)$/)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000');
+      }
+    }
+  }));
+}
+
+// Serve published sites (must come before SPA fallback)
+app.use('/sites', express.static(path.join(publicDir, 'sites')));
+
+// SPA fallback - serve index.html for all non-API, non-asset routes
+app.get('*', (req, res, next) => {
+  // Skip SPA fallback for these routes
+  if (
+    req.path.startsWith('/api/') ||           // API routes
+    req.path.startsWith('/sites/') ||         // Published sites
+    req.path.startsWith('/uploads/') ||       // Uploaded images
+    req.path.startsWith('/data/') ||          // Template data
+    req.path.startsWith('/assets/') ||        // Static assets
+    req.path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|json|woff2?|ttf|eot)$/) // File extensions
+  ) {
+    return next();
+  }
+
+  // Serve React app for all other routes
+  const indexPath = path.join(distPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    // Development mode - React is on port 5173
+    res.status(404).send(`
+      <html>
+        <body style="font-family: system-ui; padding: 40px; text-align: center;">
+          <h1>🚀 SiteSprintz - Development Mode</h1>
+          <p>The React app is running on <a href="http://localhost:5173">http://localhost:5173</a></p>
+          <p>The backend API is running on this port (${PORT})</p>
+          <p>To build for production: <code>npm run build</code></p>
+        </body>
+      </html>
+    `);
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+  if (fs.existsSync(distPath)) {
+    console.log('✅ Serving React production build from /dist');
+  } else {
+    console.log('⚠️  No production build found. Run "npm run build" to create one.');
+    console.log('💡 For development, run React dev server: npm run dev');
+  }
 });

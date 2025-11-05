@@ -1,0 +1,4021 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Setup Your Site | SiteSprintz</title>
+  <link rel="stylesheet" href="theme.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    /* Beautiful Animations */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    @keyframes slideInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .setup-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: var(--spacing-xl);
+    }
+    
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: rgba(0,0,0,0.08);
+      border-radius: 2px;
+      margin: var(--spacing-xl) 0;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-primary-600));
+      border-radius: 2px;
+      transition: width 0.3s ease;
+      width: 50%;
+    }
+    
+    .step-header {
+      text-align: center;
+      margin: var(--spacing-2xl) 0 var(--spacing-xl);
+      animation: slideInUp 0.6s ease-out;
+    }
+    
+    .step-title {
+      font-size: clamp(2.2rem, 4vw + 1rem, 3rem);
+      margin: 0 0 var(--spacing-md);
+      background: linear-gradient(135deg, #ffffff 0%, var(--color-primary) 50%, var(--color-accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    
+    .step-subtitle {
+      font-size: 1.2rem;
+      color: var(--color-muted);
+      margin: 0;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    
+    .template-grid {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-2xl);
+      margin: var(--spacing-2xl) 0;
+    }
+
+    .template-tier-card {
+      background: linear-gradient(180deg, 
+        rgba(15,27,45,0.6) 0%, 
+        rgba(26,15,46,0.4) 50%, 
+        rgba(15,27,45,0.6) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      border-radius: 20px;
+      padding: var(--spacing-2xl);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+      animation: slideInUp 0.6s ease-out;
+    }
+
+    .template-tier-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.15), transparent);
+      animation: shimmer 3s infinite;
+    }
+
+    .template-tier-header {
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .template-tier-header h3 {
+      margin: 0 0 var(--spacing-sm);
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 0%, var(--color-primary-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .template-tier-header p {
+      margin: 0;
+      color: rgba(226,232,240,0.9);
+      font-size: 1.05rem;
+    }
+
+    .template-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: var(--spacing-xl);
+      margin-top: var(--spacing-lg);
+    }
+    
+    .template-card {
+      background: var(--color-surface);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 20px;
+      padding: var(--spacing-xl);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      animation: slideInUp 0.6s ease-out;
+    }
+
+    .template-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+      transform: scaleX(0);
+      transition: transform 0.3s;
+    }
+    
+    .template-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(37,99,235,0.1), transparent);
+      transition: left 0.6s;
+    }
+    
+    .template-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(37,99,235,0.15);
+      border-color: var(--color-primary);
+    }
+    
+    .template-card:hover::before {
+      transform: scaleX(1);
+    }
+    
+    .template-card:hover::after {
+      left: 100%;
+    }
+
+    /* Template Preview Modal */
+    .template-preview-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(4px);
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .template-preview-modal.active {
+      display: flex;
+    }
+
+    .preview-container {
+      background: white;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 1200px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .preview-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .preview-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin: 0;
+    }
+
+    .preview-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn-preview-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #64748b;
+      padding: 4px 8px;
+      transition: color 0.2s;
+    }
+
+    .btn-preview-close:hover {
+      color: #1f2937;
+    }
+
+    .btn-use-template {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+      color: white;
+      padding: 12px 32px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.9rem;
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-use-template::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn-use-template:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 16px 48px rgba(99, 102, 241, 0.6);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .btn-use-template:hover::before {
+      left: 100%;
+    }
+
+    .preview-iframe-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+    }
+
+    .preview-loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #64748b;
+      font-size: 1.1rem;
+    }
+
+    .template-card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .btn-preview-template {
+      flex: 1;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.1));
+      color: var(--color-primary-light);
+      padding: 10px 20px;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-preview-template::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn-preview-template:hover {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(139, 92, 246, 0.2));
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+      border-color: rgba(99, 102, 241, 0.5);
+    }
+
+    .btn-preview-template:hover::before {
+      left: 100%;
+    }
+
+    .template-plan-badge {
+      position: absolute;
+      top: var(--spacing-md);
+      right: var(--spacing-md);
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: var(--color-primary-light);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 999px;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+      animation: pulse 3s ease-in-out infinite;
+    }
+    
+    .template-card.selected {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3), 0 20px 40px rgba(37,99,235,0.2);
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.05));
+    }
+    
+    .template-card.selected::before {
+      transform: scaleX(1);
+    }
+
+    .template-card.disabled {
+      cursor: default;
+      opacity: 0.5;
+      pointer-events: none;
+      filter: grayscale(0.5);
+    }
+
+    .template-card.disabled:hover {
+      transform: none;
+      box-shadow: var(--shadow-sm);
+      border-color: rgba(0,0,0,0.08);
+    }
+    
+    .template-icon {
+      font-size: 3rem;
+      margin-bottom: var(--spacing-md);
+      display: block;
+      animation: float 3s ease-in-out infinite;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+    }
+
+    .template-card:hover .template-icon {
+      animation: pulse 0.6s ease-in-out;
+    }
+    
+    .template-name {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin: 0 0 var(--spacing-sm);
+      color: #ffffff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .template-desc {
+      color: rgba(226,232,240,0.8);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin: 0 0 var(--spacing-md);
+    }
+    
+    .template-features {
+      font-size: 0.85rem;
+      color: rgba(148,163,184,0.9);
+      line-height: 1.5;
+    }
+
+    .template-card-actions {
+      display: flex;
+      gap: var(--spacing-sm);
+      flex-wrap: wrap;
+      margin-top: var(--spacing-md);
+    }
+
+    .template-card-actions .btn {
+      flex: 1 1 48%;
+      min-width: 120px;
+      justify-content: center;
+    }
+
+    .template-summary {
+      background: linear-gradient(180deg, rgba(37,99,235,0.12), rgba(30,64,175,0.1));
+      border: 1px solid rgba(59,130,246,0.25);
+      border-radius: calc(var(--radius) + 4px);
+      padding: var(--spacing-xl);
+      margin-bottom: var(--spacing-xl);
+      box-shadow: var(--shadow-sm);
+      display: none;
+    }
+
+    .template-summary h2 {
+      margin: 0;
+      font-size: 1.6rem;
+      color: #0f172a;
+    }
+
+    .summary-header {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--spacing-lg);
+      align-items: flex-start;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .summary-plan-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(37,99,235,0.15);
+      color: var(--color-primary);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .summary-description {
+      color: var(--color-muted);
+      margin: 0;
+    }
+
+    .summary-features {
+      list-style: none;
+      margin: var(--spacing-md) 0 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .summary-features li {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      background: rgba(148,163,184,0.12);
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      color: var(--color-text);
+      font-size: 0.95rem;
+    }
+
+    .summary-features li span:first-child {
+      color: var(--color-primary);
+      font-weight: 600;
+    }
+
+    .summary-actions {
+      display: flex;
+      gap: var(--spacing-sm);
+      flex-wrap: wrap;
+      margin-top: var(--spacing-md);
+    }
+
+    .summary-actions .btn {
+      flex: 1 1 160px;
+      justify-content: center;
+    }
+
+    .customize-section {
+      background: var(--color-surface);
+      border: 1px solid rgba(15,23,42,0.08);
+      border-radius: var(--radius);
+      padding: var(--spacing-xl);
+      box-shadow: var(--shadow-sm);
+      margin-top: var(--spacing-xl);
+    }
+
+    .option-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .option-grid label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .section-icon {
+      font-size: 1.6rem;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 1.25rem;
+      color: var(--color-text);
+    }
+
+    .section-body {
+      display: grid;
+      gap: var(--spacing-md);
+    }
+
+    .media-button-grid {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .service-card {
+      border: 2px solid #334155;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      background: rgba(15,27,45,0.18);
+    }
+
+    .service-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .service-card-title {
+      margin: 0;
+      font-size: 1.05rem;
+      color: white;
+    }
+
+    .remove-service-btn {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 6px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.2s ease;
+    }
+
+    .remove-service-btn:hover {
+      background: #dc2626;
+    }
+
+    .service-card .form-group {
+      margin-bottom: 15px;
+    }
+
+    .service-card textarea {
+      min-height: 80px;
+    }
+
+    .service-card .media-button-grid button {
+      flex: 1 1 120px;
+    }
+
+    .service-card .service-image {
+      margin-top: 10px;
+    }
+
+    .add-service-btn {
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .upload-zone {
+      border: 3px dashed #334155;
+      border-radius: 16px;
+      padding: 60px 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: linear-gradient(135deg, rgba(249,115,22,0.02), rgba(234,88,12,0.02));
+    }
+    
+    .upload-zone:hover {
+      border-color: var(--color-primary);
+      background: linear-gradient(135deg, rgba(249,115,22,0.05), rgba(234,88,12,0.05));
+      transform: scale(1.02);
+    }
+    
+    .upload-zone.dragover {
+      border-color: var(--color-primary);
+      background: linear-gradient(135deg, rgba(249,115,22,0.1), rgba(234,88,12,0.1));
+      transform: scale(1.05);
+    }
+    
+    .upload-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      opacity: 0.7;
+    }
+    
+    .image-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin: 30px 0;
+    }
+    
+    .preview-item {
+      background: var(--color-card);
+      border-radius: 12px;
+      padding: 15px;
+      text-align: center;
+      border: 2px solid transparent;
+      transition: all 0.2s ease;
+    }
+    
+    .preview-item:hover {
+      border-color: var(--color-primary);
+    }
+    
+    .preview-image {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    
+    .form-group {
+      margin: 25px 0;
+    }
+    
+    .form-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--color-text);
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 15px;
+      border-radius: 10px;
+      background: var(--color-bg);
+      border: 2px solid #334155;
+      color: var(--color-text);
+      font-size: 16px;
+      transition: all 0.2s ease;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+    }
+    
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .btn-primary-large {
+      background: linear-gradient(135deg, var(--color-primary), #ea580c);
+      color: white;
+      border: none;
+      padding: 18px 40px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
+    }
+    
+    .btn-primary-large:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+    }
+    
+    .btn-secondary-large {
+      background: transparent;
+      color: var(--color-text);
+      border: 2px solid #334155;
+      padding: 18px 40px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-secondary-large:hover {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+    
+    .navigation {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 50px;
+      padding-top: 30px;
+      border-top: 1px solid rgba(148,163,184,0.1);
+    }
+    
+    .step-content {
+      min-height: 500px;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .success-message {
+      text-align: center;
+      padding: 40px;
+      background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(22,163,74,0.1));
+      border-radius: 16px;
+      border: 2px solid rgba(34,197,94,0.2);
+    }
+    
+    .success-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+    }
+
+    /* Customize Layout */
+    .customize-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .customize-panel {
+      width: 100%;
+    }
+
+    .preview-toggle {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .preview-panel {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 20px;
+      border: 2px solid #334155;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #334155;
+    }
+
+    .preview-content {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      min-height: 400px;
+    }
+
+    /* Mobile Responsive */
+    @media (min-width: 768px) {
+      .customize-layout {
+        grid-template-columns: 1fr 400px;
+        gap: 20px;
+      }
+      
+      .preview-panel {
+        position: sticky;
+        top: 20px;
+        max-height: calc(100vh - 40px);
+      }
+    }
+
+    @media (max-width: 767px) {
+      .customize-layout {
+        grid-template-columns: 1fr;
+      }
+      
+      .preview-panel {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1000;
+        max-height: 100vh;
+        border-radius: 0;
+      }
+      
+      .preview-content {
+        min-height: calc(100vh - 100px);
+      }
+    }
+
+    /* Form Validation */
+    .form-input.error {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+
+    .error-message {
+      color: #ef4444;
+      font-size: 0.875rem;
+      margin-top: 5px;
+    }
+
+    .form-group.required label::after {
+      content: " *";
+      color: #ef4444;
+    }
+    
+    @media (max-width: 768px) {
+      .setup-container {
+        padding: 10px;
+      }
+      
+      .upload-zone {
+        padding: 40px 20px;
+      }
+      
+      .step-title {
+        font-size: 2rem;
+      }
+
+      .template-card-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Template Preview Modal -->
+  <div class="template-preview-modal" id="templatePreviewModal">
+    <div class="preview-container">
+      <div class="preview-header">
+        <h3 class="preview-title" id="previewTemplateName">Template Preview</h3>
+        <div class="preview-actions">
+          <button class="btn-use-template" onclick="selectFromPreview()">Use This Template</button>
+          <button class="btn-preview-close" onclick="closeTemplatePreview()">✕</button>
+        </div>
+      </div>
+      <div class="preview-iframe-container">
+        <div class="preview-loading" id="previewLoading">Loading preview...</div>
+        <iframe id="previewIframe" class="preview-iframe" style="display: none;"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <div class="setup-container">
+    <!-- Progress Bar -->
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <!-- Step 1: Choose Template -->
+    <div id="step1" class="step-content">
+      <div class="step-header">
+        <h1 class="step-title">Choose Your Template</h1>
+        <p class="step-subtitle">Browse tiers below. Starter sites publish instantly, Checkout enables payments, and Premium is on the way.</p>
+      </div>
+      
+      <div class="template-grid" id="templateGrid"></div>
+      
+      <div class="navigation">
+        <div></div>
+        <p class="muted" id="autoAdvanceText" style="text-align: center; font-size: 0.9rem; opacity: 0;">Select any Starter or Checkout template to continue.</p>
+      </div>
+    </div>
+
+    <!-- Step 2: Customize -->
+    <div id="step2" class="step-content" style="display: none;">
+      <div class="step-header">
+        <h1 class="step-title">Customize Your Site</h1>
+        <p class="step-subtitle">Edit all the details that matter</p>
+      </div>
+      
+      <div class="customize-layout">
+        <div class="customize-panel">
+          <div class="template-summary" id="templateSummary" aria-live="polite"></div>
+          <div class="preview-toggle">
+            <button class="btn btn-secondary" id="previewToggle" onclick="togglePreview()">✕ Close Preview</button>
+          </div>
+          
+          <!-- Demo Data Toggle - Positioned with forms -->
+          <div style="background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 2px solid #fecaca; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px;">
+              <div>
+                <div style="font-weight: 700; color: #991b1b; margin-bottom: 4px;">📝 Template Demo Data</div>
+                <div style="font-size: 0.9rem; color: #7f1d1d;" id="demoDataDescription">Demo data is currently loaded. Toggle off to start with blank fields.</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span id="toggleLabel" style="font-size: 0.9rem; font-weight: 600; color: #991b1b;">Demo ON</span>
+                <label class="demo-toggle-switch">
+                  <input type="checkbox" id="demoDataToggle" checked onchange="handleDemoToggle()">
+                  <span class="demo-toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+      
+      <section class="customize-section" aria-labelledby="section-business">
+        <div class="section-header">
+          <span class="section-icon" aria-hidden="true">🏢</span>
+          <h3 id="section-business" class="section-title">Business Information</h3>
+        </div>
+        <div class="section-body">
+          <div class="form-group">
+            <label class="form-label">Business Name</label>
+            <input type="text" class="form-input" id="businessName" placeholder="Enter your business name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tagline / Hero Title</label>
+            <input type="text" class="form-input" id="heroTitle" placeholder="What makes you special?">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Subtitle / Description</label>
+            <textarea class="form-input form-textarea" id="heroSubtitle" placeholder="Tell visitors what you do..."></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="customize-section" aria-labelledby="section-cover">
+        <div class="section-header">
+          <span class="section-icon" aria-hidden="true">📸</span>
+          <h3 id="section-cover" class="section-title">Cover Photo</h3>
+        </div>
+        <div class="section-body">
+          <div class="form-group">
+            <label class="form-label">Hero/Cover Image</label>
+            <div class="media-button-grid">
+              <button class="btn btn-secondary" onclick="pickHeroImage('camera')">📸 Camera</button>
+              <button class="btn btn-secondary" onclick="pickHeroImage('gallery')">🖼️ Gallery</button>
+              <button class="btn btn-secondary" onclick="pickHeroImage('url')">🔗 URL</button>
+            </div>
+            <input type="file" id="heroImageFile" accept="image/*" capture="environment" style="display: none;">
+            <input type="text" class="form-input" id="heroImage" placeholder="Or paste image URL here">
+          </div>
+        </div>
+      </section>
+
+      <section class="customize-section" aria-labelledby="section-services">
+        <div class="section-header">
+          <span class="section-icon" aria-hidden="true">⚙️</span>
+          <h3 id="section-services" class="section-title">Services &amp; Products</h3>
+        </div>
+        <div class="section-body">
+          <p class="muted">Add the offerings you want to highlight on your site. You can change or reorder them anytime.</p>
+          <div id="servicesContainer"></div>
+          <button class="btn btn-secondary add-service-btn" onclick="addService()">+ Add Service</button>
+        </div>
+      </section>
+
+      <section class="customize-section" id="templateSpecificFields" aria-labelledby="section-template-fields" hidden>
+        <div class="section-header">
+          <span class="section-icon" aria-hidden="true">🎯</span>
+          <h3 id="section-template-fields" class="section-title">
+            <span id="templateSpecificTitle">Template-Specific Fields</span>
+          </h3>
+        </div>
+        <div class="section-body" id="templateSpecificContent">
+          <!-- Dynamic content based on template -->
+        </div>
+      </section>
+
+      <section class="customize-section" aria-labelledby="section-contact">
+        <div class="section-header">
+          <span class="section-icon" aria-hidden="true">📞</span>
+          <h3 id="section-contact" class="section-title">Contact Information</h3>
+        </div>
+        <div class="section-body">
+          <div class="form-group required">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" id="contactEmail" placeholder="your@email.com" required>
+            <div class="error-message" id="emailError"></div>
+          </div>
+          <div class="form-group required">
+            <label class="form-label">Phone</label>
+            <input type="tel" class="form-input" id="contactPhone" placeholder="(555) 123-4567" required>
+            <div class="error-message" id="phoneError"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Address</label>
+            <input type="text" class="form-input" id="contactAddress" placeholder="123 Main St, Your City">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Business Hours</label>
+            <input type="text" class="form-input" id="businessHours" placeholder="Mon-Fri 9AM-5PM">
+          </div>
+        </div>
+      </section>
+
+      <section class="customize-section" aria-labelledby="section-social">
+        <div class="section-header">
+          <span class="section-icon" aria-hidden="true">🌐</span>
+          <h3 id="section-social" class="section-title">Social Media &amp; Links</h3>
+        </div>
+        <div class="section-body">
+          <div class="form-group">
+            <label class="form-label">Website URL</label>
+            <input type="url" class="form-input" id="websiteUrl" placeholder="https://yourwebsite.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Facebook</label>
+            <input type="url" class="form-input" id="facebookUrl" placeholder="https://facebook.com/yourpage">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Instagram</label>
+            <input type="url" class="form-input" id="instagramUrl" placeholder="https://instagram.com/yourpage">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Google Maps</label>
+            <input type="url" class="form-input" id="googleMapsUrl" placeholder="https://maps.google.com/...">
+          </div>
+        </div>
+      </section>
+      
+      </div>
+      
+      <div class="preview-panel" id="previewPanel">
+        <div class="preview-header">
+          <h3>Live Preview</h3>
+          <button class="btn btn-secondary" onclick="togglePreview()">✕</button>
+        </div>
+        <div class="preview-content" id="previewContent">
+          <!-- Live preview will be rendered here -->
+        </div>
+      </div>
+    </div>
+      
+      <div class="navigation">
+        <button class="btn-secondary-large" onclick="prevStep()">← Back</button>
+        <button class="btn-primary-large" onclick="publishNow()">🚀 Publish Site</button>
+      </div>
+    </div>
+
+    <!-- Success Step -->
+    <div id="success" class="step-content" style="display: none;">
+      <div class="success-message">
+        <div class="success-icon">🎉</div>
+        <h2>Your Site is Ready!</h2>
+        <p class="muted">Redirecting you to customize and publish...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Template Preview Modal -->
+  <div id="templatePreviewModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1001; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: white; border-radius: 16px; width: 100%; max-width: 1200px; height: 90vh; display: flex; flex-direction: column; overflow: hidden;">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #e5e7eb;">
+        <h2 style="margin: 0; font-size: 1.5rem;" id="previewModalTitle">Template Preview</h2>
+        <button onclick="closeTemplatePreview()" style="background: #f1f5f9; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 1.2rem;">✕</button>
+      </div>
+      <div style="flex: 1; overflow: hidden; background: #f8fafc;">
+        <iframe id="previewIframe" style="width: 100%; height: 100%; border: none;" sandbox="allow-scripts allow-same-origin"></iframe>
+      </div>
+      <div style="padding: 20px; border-top: 1px solid #e5e7eb; display: flex; gap: 12px; justify-content: flex-end;">
+        <button onclick="closeTemplatePreview()" class="btn btn-secondary">Close Preview</button>
+        <button onclick="useTemplateFromPreview()" class="btn btn-primary" id="usePreviewTemplateBtn">Use This Template</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Modal -->
+  <div id="paymentModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 16px; padding: 30px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <h2 style="margin: 0; font-size: 1.8rem;">Publish Your Site</h2>
+        <button onclick="closePaymentModal()" style="background: #f1f5f9; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 1.2rem;">✕</button>
+      </div>
+      
+      <p style="color: #64748b; margin-bottom: 25px;">Choose a plan to make your site live and accessible to the world.</p>
+      
+      <div id="planSelection" style="margin-bottom: 25px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+          <label style="border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.2s;">
+            <input type="radio" name="plan" value="starter" checked style="margin-right: 10px;">
+            <div>
+              <strong>Starter</strong>
+              <div style="font-size: 1.5rem; color: #f97316; margin: 5px 0;">$9<span style="font-size: 0.9rem;">/mo</span></div>
+            </div>
+          </label>
+          <label style="border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.2s;">
+            <input type="radio" name="plan" value="business" style="margin-right: 10px;">
+            <div>
+              <strong>Business</strong>
+              <div style="font-size: 1.5rem; color: #f97316; margin: 5px 0;">$19<span style="font-size: 0.9rem;">/mo</span></div>
+            </div>
+          </label>
+          <label style="border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.2s;">
+            <input type="radio" name="plan" value="pro" style="margin-right: 10px;">
+            <div>
+              <strong>Pro</strong>
+              <div style="font-size: 1.5rem; color: #f97316; margin: 5px 0;">$39<span style="font-size: 0.9rem;">/mo</span></div>
+            </div>
+          </label>
+        </div>
+      </div>
+      
+      <div style="background: #f8fafc; border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+        <h3 style="margin: 0 0 15px 0; font-size: 1.1rem;">What You'll Get:</h3>
+        <div id="planFeatures">
+          <div style="margin: 8px 0; display: flex; align-items: center;">
+            <span style="margin-right: 10px;">✓</span>
+            <span>Your site goes live with a unique URL</span>
+          </div>
+          <div style="margin: 8px 0; display: flex; align-items: center;">
+            <span style="margin-right: 10px;">✓</span>
+            <span>Mobile-responsive design</span>
+          </div>
+          <div style="margin: 8px 0; display: flex; align-items: center;">
+            <span style="margin-right: 10px;">✓</span>
+            <span>Unlimited updates</span>
+          </div>
+        </div>
+      </div>
+      
+      <div style="margin-bottom: 25px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 500;">📧 Email Address <span style="color: #ef4444;">*</span></label>
+        <input type="email" id="paymentEmail" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1rem;" placeholder="your@email.com" required>
+        
+        <!-- Important Notice -->
+        <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin-top: 15px; border-radius: 8px;">
+          <p style="margin: 0; font-size: 0.9rem; color: #92400e; line-height: 1.6;">
+            <strong>⚠️ Required:</strong> Your email is used to send you:<br>
+            • Your site's login credentials<br>
+            • The website URL<br>
+            • Important information about your account<br>
+            <span style="display: block; margin-top: 8px; font-size: 0.85rem;">💡 You can change these credentials anytime after publishing.</span>
+          </p>
+        </div>
+      </div>
+      
+      <button onclick="processPayment()" class="btn btn-primary-large" style="width: 100%;">
+        💳 Pay & Publish
+      </button>
+      
+      <p style="text-align: center; font-size: 0.85rem; color: #64748b; margin-top: 15px;">
+        Secure payment by Stripe. Cancel anytime.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    let currentStep = 1;
+    let selectedTemplate = null;
+    let currentTheme = 'ocean'; // Default theme
+    let uploadedImages = [];
+    let ADMIN_TOKEN = null;
+
+    // Theme definitions
+    const THEMES = {
+      ocean: {
+        name: 'Ocean Blue',
+        emoji: '🌊',
+        primary: '#06b6d4',
+        primaryDark: '#0891b2',
+        accent: '#14b8a6',
+        success: '#10b981',
+        warning: '#f59e0b',
+        danger: '#ef4444'
+      },
+      forest: {
+        name: 'Forest Green',
+        emoji: '🌲',
+        primary: '#10b981',
+        primaryDark: '#059669',
+        accent: '#14b8a6',
+        success: '#22c55e',
+        warning: '#f59e0b',
+        danger: '#ef4444'
+      },
+      sunset: {
+        name: 'Sunset Orange',
+        emoji: '🌅',
+        primary: '#f59e0b',
+        primaryDark: '#d97706',
+        accent: '#fb923c',
+        success: '#10b981',
+        warning: '#eab308',
+        danger: '#ef4444'
+      },
+      purple: {
+        name: 'Royal Purple',
+        emoji: '👑',
+        primary: '#8b5cf6',
+        primaryDark: '#7c3aed',
+        accent: '#a78bfa',
+        success: '#10b981',
+        warning: '#f59e0b',
+        danger: '#ef4444'
+      },
+      midnight: {
+        name: 'Midnight Dark',
+        emoji: '🌙',
+        primary: '#6366f1',
+        primaryDark: '#4f46e5',
+        accent: '#818cf8',
+        success: '#10b981',
+        warning: '#f59e0b',
+        danger: '#ef4444'
+      }
+    };
+
+    const PLAN_METADATA = {
+      Starter: {
+        title: '🎯 Starter Templates (Display Only)',
+        description: 'Perfect for service businesses. Show pricing, hours, and contact info with offline CTAs (call, email, visit, external booking). No payment processing included.',
+        badge: 'View-Only',
+        empty: 'Starter templates will appear here.'
+      },
+      Pro: {
+        title: '⭐ Pro Templates (Enhanced Features)',
+        description: 'Everything in Starter, plus booking widgets, tabbed content, interactive galleries, owner dashboard, and email notifications. More sophisticated layouts with depth and interactivity.',
+        badge: 'Enhanced',
+        empty: 'Pro templates will appear here soon.'
+      },
+      Checkout: {
+        title: '💳 Checkout Templates (Stripe Payments)',
+        description: 'Accept payments online with Stripe. Includes shopping cart, checkout flow, and order management. Perfect for selling products or taking deposits.',
+        badge: 'Payment-Ready',
+        empty: 'Checkout templates coming soon.'
+      },
+      Premium: {
+        title: '🌟 Premium Templates (Full Suite)',
+        description: 'Everything included: payments, booking, custom forms, analytics dashboard, priority support. Enterprise-grade features for growing businesses.',
+        badge: 'Enterprise',
+        empty: 'Premium templates coming soon.'
+      }
+    };
+
+    // Fetch admin token from server
+    async function getAdminToken() {
+      if (ADMIN_TOKEN) return ADMIN_TOKEN;
+      try {
+        const response = await fetch('/api/admin-token');
+        const data = await response.json();
+        ADMIN_TOKEN = data.token;
+        return ADMIN_TOKEN;
+      } catch (error) {
+        console.error('Failed to get admin token:', error);
+        return null;
+      }
+    }
+
+    // Load site data into form fields for editing
+    async function loadSiteDataIntoForm(site) {
+      try {
+        // Basic business info
+        if (document.getElementById('businessName')) {
+          document.getElementById('businessName').value = site.brand?.name || '';
+        }
+        if (document.getElementById('heroTitle')) {
+          document.getElementById('heroTitle').value = site.hero?.title || '';
+        }
+        if (document.getElementById('heroSubtitle')) {
+          document.getElementById('heroSubtitle').value = site.hero?.subtitle || '';
+        }
+        if (document.getElementById('heroImage')) {
+          document.getElementById('heroImage').value = site.hero?.image || '';
+        }
+        
+        // Contact info
+        if (document.getElementById('email')) {
+          document.getElementById('email').value = site.contact?.email || '';
+        }
+        if (document.getElementById('phone')) {
+          document.getElementById('phone').value = site.contact?.phone || '';
+        }
+        if (document.getElementById('address')) {
+          document.getElementById('address').value = site.contact?.address || '';
+        }
+        if (document.getElementById('hours')) {
+          document.getElementById('hours').value = site.contact?.hours || '';
+        }
+        
+        // Social links
+        if (document.getElementById('website')) {
+          document.getElementById('website').value = site.social?.website || '';
+        }
+        if (document.getElementById('facebook')) {
+          document.getElementById('facebook').value = site.social?.facebook || '';
+        }
+        if (document.getElementById('instagram')) {
+          document.getElementById('instagram').value = site.social?.instagram || '';
+        }
+        if (document.getElementById('maps')) {
+          document.getElementById('maps').value = site.social?.maps || '';
+        }
+        
+        // Services/Products
+        const servicesList = document.getElementById('servicesList');
+        if (servicesList && site.services) {
+          servicesList.innerHTML = ''; // Clear existing
+          const servicesArray = site.services.items || site.services || [];
+          servicesArray.forEach((service, index) => {
+            addServiceField(
+              service.title || service.name || '',
+              service.description || '',
+              service.price || '',
+              service.image || ''
+            );
+          });
+        }
+        
+        // For product-based templates
+        if (site.products && Array.isArray(site.products)) {
+          site.products.forEach((product, index) => {
+            const nameInput = document.getElementById(`product${index}Name`);
+            const priceInput = document.getElementById(`product${index}Price`);
+            const descInput = document.getElementById(`product${index}Description`);
+            const imageInput = document.getElementById(`product${index}Image`);
+            
+            if (nameInput) nameInput.value = product.name || '';
+            if (priceInput) priceInput.value = product.price || '';
+            if (descInput) descInput.value = product.description || '';
+            if (imageInput) imageInput.value = product.image || '';
+          });
+        }
+        
+        // Template-specific fields
+        if (site.custom) {
+          Object.keys(site.custom).forEach(key => {
+            const field = document.getElementById(key);
+            if (field) {
+              if (field.type === 'checkbox') {
+                field.checked = site.custom[key];
+              } else {
+                field.value = site.custom[key];
+              }
+            }
+          });
+        }
+        
+        // Trigger preview update
+        updatePreview();
+        
+        console.log('Site data loaded into form successfully');
+      } catch (error) {
+        console.error('Error loading site data into form:', error);
+      }
+    }
+
+    // Initialize - load template from URL parameter or edit mode
+    window.addEventListener('DOMContentLoaded', async () => {
+      renderTemplateSummary(null);
+      const params = new URLSearchParams(window.location.search);
+      const templateId = params.get('template');
+      const editSubdomain = params.get('edit');
+      
+      // Check if we're in edit mode
+      if (editSubdomain) {
+        try {
+          const token = localStorage.getItem('token');
+          if (!token) {
+            alert('Please log in to edit your site');
+            window.location.href = '/login.html';
+            return;
+          }
+          
+          // Fetch the published site data
+          const response = await fetch(`/api/sites/${editSubdomain}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (!response.ok) {
+            const error = await response.json();
+            alert(`Failed to load site: ${error.error}`);
+            window.location.href = '/dashboard.html';
+            return;
+          }
+          
+          const { site, subdomain } = await response.json();
+          
+          // Load the template for this site
+          const templatesResponse = await fetch('/data/templates/index.json');
+          const templatesData = await templatesResponse.json();
+          const template = templatesData.templates.find(t => t.id === site.templateId);
+          
+          if (!template) {
+            alert('Template not found for this site');
+            window.location.href = '/dashboard.html';
+            return;
+          }
+          
+          selectedTemplate = template;
+          renderTemplateSummary(template);
+          
+          // Hide step 1, show step 2
+          document.getElementById('step1').style.display = 'none';
+          document.getElementById('step2').style.display = 'block';
+          document.querySelector('.progress-bar').style.display = 'none';
+          
+          // Setup customization
+          await setupCustomize();
+          
+          // Pre-populate form with existing site data
+          await loadSiteDataIntoForm(site);
+          
+          // Mark as edit mode
+          const publishBtn = document.querySelector('.publish-btn');
+          if (publishBtn) {
+            publishBtn.textContent = '📝 Update Site';
+            publishBtn.dataset.editMode = 'true';
+            publishBtn.dataset.subdomain = subdomain;
+          }
+          
+          // Show edit notification
+          const notification = document.createElement('div');
+          notification.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 15px 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000; font-weight: 600;';
+          notification.textContent = '✏️ Editing Mode: Make changes and click "Update Site" to save';
+          document.body.appendChild(notification);
+          setTimeout(() => notification.remove(), 5000);
+          
+          // Show preview
+          const panel = document.getElementById('previewPanel');
+          const toggle = document.getElementById('previewToggle');
+          if (panel && toggle) {
+            panel.style.display = 'block';
+            toggle.textContent = '✕ Close Preview';
+          }
+          updatePreview();
+          
+        } catch (error) {
+          console.error('Failed to load site for editing:', error);
+          alert('Failed to load site. Please try again.');
+          window.location.href = '/dashboard.html';
+        }
+      } else if (templateId) {
+        // Load template from URL
+        try {
+          const response = await fetch('/data/templates/index.json');
+          const data = await response.json();
+          const template = data.templates.find(t => t.id === templateId);
+          
+          if (template) {
+            selectedTemplate = template;
+            renderTemplateSummary(template);
+            // Hide step 1 (template selection), show step 2 (customization)
+            document.getElementById('step1').style.display = 'none';
+            document.getElementById('step2').style.display = 'block';
+            
+            // Hide progress bar since we're skipping step 1
+            document.querySelector('.progress-bar').style.display = 'none';
+            
+            // Setup customization
+            await setupCustomize();
+            
+            // Show preview panel automatically
+            const panel = document.getElementById('previewPanel');
+            const toggle = document.getElementById('previewToggle');
+            if (panel && toggle) {
+              panel.style.display = 'block';
+              toggle.textContent = '✕ Close Preview';
+            }
+            updatePreview();
+          }
+        } catch (error) {
+          console.error('Failed to load template:', error);
+        }
+      } else {
+        // No template selected, show step 1
+        currentStep = 1;
+        loadTemplates();
+      }
+      
+      setupDragAndDrop();
+      
+      // Add keyboard support for modal
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          const previewModal = document.getElementById('templatePreviewModal');
+          if (previewModal && previewModal.style.display === 'flex') {
+            closeTemplatePreview();
+          }
+        }
+      });
+    });
+
+    // Layout configuration for all templates with multiple variants
+    // Helper function to normalize template IDs (remove hyphens for lookup)
+    function normalizeTemplateId(id) {
+      return id.replace(/-/g, '');
+    }
+    
+    // Helper function to restore hyphens (for file paths)
+    function getHyphenatedId(normalizedId) {
+      const map = {
+        'techrepair': 'tech-repair',
+        'petcare': 'pet-care',
+        'autorepair': 'auto-repair',
+        'productshowcase': 'product-showcase'
+      };
+      return map[normalizedId] || normalizedId;
+    }
+    
+    const TEMPLATE_LAYOUTS = {
+      restaurant: {
+        emoji: '🍽️',
+        title: 'Restaurant Layout Style',
+        subtitle: 'Choose the layout that matches your restaurant type',
+        category: 'Food & Dining',
+        color: '#ef4444',
+        defaultLayout: 'casual',
+        layouts: {
+          'fine-dining': { emoji: '🍷', name: 'Fine Dining', desc: 'Upscale, tasting menus' },
+          'casual': { emoji: '🍔', name: 'Casual Dining', desc: 'Family-friendly' },
+          'fast-casual': { emoji: '🥗', name: 'Fast Casual', desc: 'Modern, healthy' }
+        }
+      },
+      salon: {
+        emoji: '💇',
+        title: 'Salon Layout Style',
+        subtitle: 'Choose the layout that matches your salon type',
+        category: 'Beauty & Wellness',
+        color: '#ec4899',
+        defaultLayout: 'modern-studio',
+        layouts: {
+          'luxury-spa': { emoji: '✨', name: 'Luxury Spa', desc: 'High-end, premium' },
+          'modern-studio': { emoji: '💅', name: 'Modern Studio', desc: 'Trendy, contemporary' },
+          'neighborhood': { emoji: '🏘️', name: 'Neighborhood', desc: 'Family-friendly' }
+        }
+      },
+      gym: {
+        emoji: '💪',
+        title: 'Gym Layout Style',
+        subtitle: 'Choose the layout that matches your fitness business',
+        category: 'Fitness & Health',
+        color: '#f59e0b',
+        defaultLayout: 'boutique',
+        layouts: {
+          'boutique': { emoji: '🧘', name: 'Boutique Fitness', desc: 'Specialized classes' },
+          'strength': { emoji: '🏋️', name: 'Strength Gym', desc: 'Powerlifting focused' },
+          'family': { emoji: '👨‍👩‍👧', name: 'Family Center', desc: 'All ages welcome' }
+        }
+      },
+      consultant: {
+        emoji: '📊',
+        title: 'Consultant Layout Style',
+        subtitle: 'Choose the layout that matches your consulting focus',
+        category: 'Professional Services',
+        color: '#3b82f6',
+        defaultLayout: 'small-business',
+        layouts: {
+          'corporate': { emoji: '🏢', name: 'Corporate Strategy', desc: 'Enterprise clients' },
+          'small-business': { emoji: '💼', name: 'Small Business', desc: 'SME focused' },
+          'executive-coach': { emoji: '🎯', name: 'Executive Coach', desc: 'Leadership dev' }
+        }
+      },
+      freelancer: {
+        emoji: '💻',
+        title: 'Freelancer Layout Style',
+        subtitle: 'Choose the layout that matches your specialty',
+        category: 'Freelance Services',
+        color: '#8b5cf6',
+        defaultLayout: 'developer',
+        layouts: {
+          'designer': { emoji: '🎨', name: 'Designer', desc: 'Visual design work' },
+          'developer': { emoji: '⚡', name: 'Developer', desc: 'Code & technical' },
+          'writer': { emoji: '✍️', name: 'Writer', desc: 'Content & copy' }
+        }
+      },
+      techrepair: {
+        emoji: '🔧',
+        title: 'Tech Repair Layout Style',
+        subtitle: 'Choose the layout that matches your repair specialty',
+        category: 'Technical Services',
+        color: '#10b981',
+        defaultLayout: 'phone-repair',
+        layouts: {
+          'phone-repair': { emoji: '📱', name: 'Phone Repair', desc: 'Mobile devices' },
+          'computer': { emoji: '💻', name: 'Computer Service', desc: 'PCs & laptops' },
+          'gaming': { emoji: '🎮', name: 'Gaming Repair', desc: 'Console & PC gaming' }
+        }
+      },
+      cleaning: {
+        emoji: '🧹',
+        title: 'Cleaning Layout Style',
+        subtitle: 'Choose the layout that matches your cleaning business',
+        category: 'Home Services',
+        color: '#06b6d4',
+        defaultLayout: 'residential',
+        layouts: {
+          'residential': { emoji: '🏠', name: 'Residential', desc: 'Home cleaning' },
+          'commercial': { emoji: '🏢', name: 'Commercial', desc: 'Office & business' },
+          'eco-friendly': { emoji: '🌱', name: 'Eco-Friendly', desc: 'Green cleaning' }
+        }
+      },
+      petcare: {
+        emoji: '🐾',
+        title: 'Pet Care Layout Style',
+        subtitle: 'Choose the layout that matches your pet services',
+        category: 'Pet Services',
+        color: '#f97316',
+        defaultLayout: 'full-service',
+        layouts: {
+          'dog-grooming': { emoji: '🐕', name: 'Dog Grooming', desc: 'Grooming specialist' },
+          'full-service': { emoji: '🐾', name: 'Full Service', desc: 'All pet services' },
+          'mobile': { emoji: '🚐', name: 'Mobile Grooming', desc: 'On-location service' }
+        }
+      },
+      electrician: {
+        emoji: '⚡',
+        title: 'Electrician Layout Style',
+        subtitle: 'Choose the layout that matches your electrical services',
+        category: 'Home Services',
+        color: '#eab308',
+        defaultLayout: 'residential',
+        layouts: {
+          'residential': { emoji: '🏠', name: 'Residential', desc: 'Home electrical' },
+          'commercial': { emoji: '🏢', name: 'Commercial', desc: 'Business electrical' },
+          'smart-home': { emoji: '🤖', name: 'Smart Home', desc: 'Home automation' }
+        }
+      },
+      autorepair: {
+        emoji: '🚗',
+        title: 'Auto Repair Layout Style',
+        subtitle: 'Choose the layout that matches your auto services',
+        category: 'Automotive',
+        color: '#dc2626',
+        defaultLayout: 'full-service',
+        layouts: {
+          'quick-service': { emoji: '⚡', name: 'Quick Service', desc: 'Oil & tires' },
+          'full-service': { emoji: '🔧', name: 'Full Service', desc: 'Complete repair' },
+          'performance': { emoji: '🏁', name: 'Performance', desc: 'Tuning & upgrades' }
+        }
+      },
+      plumbing: {
+        emoji: '🔧',
+        title: 'Plumbing Layout Style',
+        subtitle: 'Choose the layout that matches your plumbing services',
+        category: 'Home Services',
+        color: '#0ea5e9',
+        defaultLayout: 'emergency',
+        layouts: {
+          'emergency': { emoji: '🚨', name: 'Emergency', desc: '24/7 service' },
+          'renovation': { emoji: '🛁', name: 'Renovation', desc: 'Remodeling focus' },
+          'commercial': { emoji: '🏢', name: 'Commercial', desc: 'Business plumbing' }
+        }
+      },
+      productshowcase: {
+        emoji: '🛍️',
+        title: 'Showcase Layout Style',
+        subtitle: 'Choose the layout that matches your product type',
+        category: 'Retail',
+        color: '#a855f7',
+        defaultLayout: 'fashion',
+        layouts: {
+          'fashion': { emoji: '👗', name: 'Fashion Boutique', desc: 'Clothing & accessories' },
+          'home-goods': { emoji: '🏡', name: 'Home Goods', desc: 'Home essentials' },
+          'artisan': { emoji: '🎨', name: 'Artisan Crafts', desc: 'Handmade goods' }
+        }
+      }
+    };
+
+    function resolveTemplateFeatures(template) {
+      if (!template) return [];
+      if (Array.isArray(template.features) && template.features.length) {
+        return template.features;
+      }
+      if (template.plan === 'Checkout') {
+        return [
+          'Stripe Checkout built-in',
+          'Idempotent payment requests',
+          'Order metadata captured automatically'
+        ];
+      }
+      return [
+        'Responsive sections for hero, services, and testimonials',
+        'Simple content editing from the dashboard',
+        'SEO-friendly structure with sharing metadata'
+      ];
+    }
+
+    function renderTemplateSummary(template) {
+      const summary = document.getElementById('templateSummary');
+      if (!summary) return;
+
+      if (!template) {
+        summary.style.display = 'none';
+        summary.innerHTML = '';
+        return;
+      }
+
+      const planLabel = template.plan === 'Pro'
+        ? '⭐ Pro Template'
+        : template.plan === 'Checkout'
+        ? 'Checkout Ready'
+        : template.plan === 'Premium'
+          ? 'Premium Suite'
+          : 'Starter Catalog';
+
+      const description = template.description || 'Customize this template to match your brand.';
+      const features = resolveTemplateFeatures(template);
+      
+      // Check if this template has multiple layouts
+      // Only Starter templates have layout variations
+      let baseId = null;
+      let layoutConfig = null;
+      
+      // Skip layout logic for Pro, Checkout, and Premium templates
+      if (template.plan === 'Starter') {
+        // Try to find config by normalizing the template ID
+        const normalizedId = normalizeTemplateId(template.id);
+        for (const [key, config] of Object.entries(TEMPLATE_LAYOUTS)) {
+          const normalizedKey = normalizeTemplateId(key);
+          if (normalizedId === normalizedKey || normalizedId.startsWith(normalizedKey)) {
+            baseId = getHyphenatedId(key);
+            layoutConfig = config;
+            break;
+          }
+        }
+      }
+      
+      let layoutSelectorHtml = '';
+      
+      if (layoutConfig) {
+        const layoutButtons = Object.entries(layoutConfig.layouts).map(([key, layout]) => {
+          const fullId = `${baseId}-${key}`;
+          const isSelected = template.id === fullId;
+          return `
+            <button type="button" class="layout-btn" data-layout="${key}" onclick="switchLayout('${baseId}', '${key}')" style="padding: 14px; border: 2px solid ${isSelected ? 'var(--color-primary)' : 'rgba(255,255,255,0.15)'}; background: ${isSelected ? 'rgba(99, 102, 241, 0.15)' : 'rgba(255,255,255,0.05)'}; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-align: left;">
+              <div style="font-size: 1.5rem; margin-bottom: 6px;">${layout.emoji}</div>
+              <div style="font-weight: 700; font-size: 0.9rem; color: var(--color-text); margin-bottom: 4px;">${layout.name}</div>
+              <div style="font-size: 0.75rem; color: var(--color-muted); line-height: 1.4;">${layout.desc}</div>
+            </button>
+          `;
+        }).join('');
+        
+        layoutSelectorHtml = `
+          <div style="margin: 20px 0; padding: 20px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.08)); border: 2px solid rgba(99, 102, 241, 0.2); border-radius: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+              <span style="font-size: 1.5rem;">${layoutConfig.emoji}</span>
+              <div>
+                <div style="font-weight: 700; font-size: 0.95rem; color: var(--color-text); margin-bottom: 4px;">${layoutConfig.title}</div>
+                <div style="font-size: 0.85rem; color: var(--color-muted);">${layoutConfig.subtitle}</div>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
+              ${layoutButtons}
+            </div>
+          </div>
+        `;
+      }
+
+      // Theme picker
+      const themeButtons = Object.entries(THEMES).map(([key, theme]) => {
+        const isSelected = currentTheme === key;
+        return `
+          <button type="button" class="theme-btn" data-theme="${key}" onclick="switchTheme('${key}')" style="flex: 1; min-width: 80px; padding: 12px 8px; border: 2px solid ${isSelected ? theme.primary : 'rgba(255,255,255,0.15)'}; background: ${isSelected ? `${theme.primary}15` : 'rgba(255,255,255,0.05)'}; border-radius: 10px; cursor: pointer; transition: all 0.2s; text-align: center;">
+            <div style="font-size: 1.8rem; margin-bottom: 6px;">${theme.emoji}</div>
+            <div style="font-weight: 600; font-size: 0.75rem; color: ${isSelected ? theme.primary : 'var(--color-muted)'};">${theme.name}</div>
+            ${isSelected ? `<div style="margin-top: 6px; width: 24px; height: 24px; border-radius: 50%; background: ${theme.primary}; margin-left: auto; margin-right: auto; box-shadow: 0 0 10px ${theme.primary}50;"></div>` : `<div style="margin-top: 6px; width: 24px; height: 24px; border-radius: 50%; background: ${theme.primary}; margin-left: auto; margin-right: auto;"></div>`}
+          </button>
+        `;
+      }).join('');
+      
+      const themeSelectorHtml = `
+        <div style="margin: 20px 0; padding: 20px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.08)); border: 2px solid rgba(99, 102, 241, 0.2); border-radius: 16px;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+            <span style="font-size: 1.5rem;">🎨</span>
+            <div>
+              <div style="font-weight: 700; font-size: 0.95rem; color: var(--color-text); margin-bottom: 4px;">Choose Your Color Theme</div>
+              <div style="font-size: 0.85rem; color: var(--color-muted);">Select a color scheme that matches your brand</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            ${themeButtons}
+          </div>
+        </div>
+      `;
+
+      summary.style.display = 'block';
+      summary.innerHTML = `
+        <div class="summary-header">
+          <div>
+            <span class="summary-plan-pill">${planLabel}</span>
+            <h2>${template.name}</h2>
+            <p class="summary-description">${description}</p>
+          </div>
+        </div>
+        ${layoutSelectorHtml}
+        ${themeSelectorHtml}
+        <div class="summary-actions">
+          <button type="button" class="btn btn-secondary" onclick="returnToTemplateSelection()">Change template</button>
+          <button type="button" class="btn btn-primary" onclick="ensurePreviewVisible()">View Live Preview</button>
+        </div>
+        <ul class="summary-features">
+          ${features.map(feature => `<li><span aria-hidden="true">✔</span><span>${feature}</span></li>`).join('')}
+        </ul>
+      `;
+      
+      // Add hover effects to layout buttons
+      if (layoutConfig) {
+        const layoutBtns = summary.querySelectorAll('.layout-btn');
+        layoutBtns.forEach(btn => {
+          btn.addEventListener('mouseenter', function() {
+            if (this.style.borderColor !== 'var(--color-primary)') {
+              this.style.borderColor = 'rgba(99, 102, 241, 0.4)';
+              this.style.transform = 'translateY(-2px)';
+            }
+          });
+          btn.addEventListener('mouseleave', function() {
+            if (this.style.borderColor !== 'var(--color-primary)') {
+              this.style.borderColor = 'rgba(255,255,255,0.15)';
+              this.style.transform = 'translateY(0)';
+            }
+          });
+        });
+      }
+    }
+
+    let previewingTemplate = null;
+
+    function openTemplatePreview(template) {
+      previewingTemplate = template;
+      const modal = document.getElementById('templatePreviewModal');
+      const iframe = document.getElementById('previewIframe');
+      const title = document.getElementById('previewModalTitle');
+      
+      if (modal && iframe && title) {
+        title.textContent = `Preview: ${template.name}`;
+        // Use preview.html which includes app.js to render templates dynamically
+        const previewUrl = `/preview.html?template=${encodeURIComponent(template.id)}`;
+        iframe.src = previewUrl;
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeTemplatePreview() {
+      const modal = document.getElementById('templatePreviewModal');
+      const iframe = document.getElementById('previewIframe');
+      
+      if (modal && iframe) {
+        modal.style.display = 'none';
+        iframe.src = '';
+        document.body.style.overflow = '';
+      }
+      previewingTemplate = null;
+    }
+
+    function useTemplateFromPreview() {
+      if (previewingTemplate) {
+        closeTemplatePreview();
+        // Find the template card and select it
+        const cards = document.querySelectorAll('.template-card');
+        cards.forEach(card => {
+          const name = card.querySelector('.template-name');
+          if (name && name.textContent === previewingTemplate.name) {
+            selectTemplate(previewingTemplate, card);
+          }
+        });
+      }
+    }
+
+    function returnToTemplateSelection() {
+      selectedTemplate = null;
+      currentStep = 1;
+      renderTemplateSummary(null);
+      const step1 = document.getElementById('step1');
+      const step2 = document.getElementById('step2');
+      if (step1 && step2) {
+        step1.style.display = 'block';
+        step2.style.display = 'none';
+      }
+      const progressBar = document.querySelector('.progress-bar');
+      if (progressBar) progressBar.style.display = '';
+      updateProgress();
+      loadTemplates();
+    }
+
+    async function loadTemplates() {
+      try {
+        const response = await fetch('/data/templates/index.json');
+        const data = await response.json();
+
+        renderTemplateSummary(null);
+        const grid = document.getElementById('templateGrid');
+        const guide = document.getElementById('autoAdvanceText');
+        if (!grid) return;
+        grid.innerHTML = '';
+        if (guide) {
+          guide.textContent = 'Select any template to continue. Premium templates include advanced features!';
+          guide.style.opacity = 1;
+        }
+
+        ['Starter', 'Pro', 'Checkout', 'Premium'].forEach(plan => {
+          const meta = PLAN_METADATA[plan];
+          if (!meta) return;
+
+          const tierSection = document.createElement('section');
+          tierSection.className = 'template-tier-card';
+
+          const header = document.createElement('div');
+          header.className = 'template-tier-header';
+          header.innerHTML = `<h3>${meta.title}</h3><p>${meta.description}</p>`;
+          tierSection.appendChild(header);
+
+          const templatesForPlan = data.templates.filter(t => t.plan === plan);
+
+          if (plan === 'Premium') {
+            if (templatesForPlan.length) {
+              const cardGrid = document.createElement('div');
+              cardGrid.className = 'template-card-grid';
+              templatesForPlan.forEach(template => {
+                cardGrid.appendChild(createTemplateCard(template, {
+                  disabled: false  // Premium templates are now available!
+                }));
+              });
+              tierSection.appendChild(cardGrid);
+            } else {
+              const message = document.createElement('p');
+              message.className = 'muted';
+              message.style.marginTop = 'var(--spacing-md)';
+              message.textContent = 'No premium templates available yet.';
+              tierSection.appendChild(message);
+            }
+          } else if (plan === 'Pro') {
+            // Pro templates - show them as available
+            if (templatesForPlan.length) {
+              const cardGrid = document.createElement('div');
+              cardGrid.className = 'template-card-grid';
+              templatesForPlan.forEach(template => {
+                cardGrid.appendChild(createTemplateCard(template, {
+                  disabled: false,
+                  requiresUpgrade: false  // Pro templates are available to select
+                }));
+              });
+              tierSection.appendChild(cardGrid);
+            } else {
+              const emptyState = document.createElement('p');
+              emptyState.className = 'muted';
+              emptyState.style.marginTop = 'var(--spacing-md)';
+              emptyState.textContent = meta.empty;
+              tierSection.appendChild(emptyState);
+            }
+          } else {
+            if (templatesForPlan.length) {
+              const cardGrid = document.createElement('div');
+              cardGrid.className = 'template-card-grid';
+              templatesForPlan.forEach(template => {
+                cardGrid.appendChild(createTemplateCard(template));
+              });
+              tierSection.appendChild(cardGrid);
+            } else {
+              const emptyState = document.createElement('p');
+              emptyState.className = 'muted';
+              emptyState.style.marginTop = 'var(--spacing-md)';
+              emptyState.textContent = meta.empty;
+              tierSection.appendChild(emptyState);
+            }
+          }
+
+          grid.appendChild(tierSection);
+        });
+      } catch (error) {
+        console.error('Failed to load templates:', error);
+      }
+    }
+
+    function getTemplateIcon(id) {
+      const icons = {
+        'restaurant': '🍽️',
+        'salon': '💇‍♀️',
+        'gym': '💪',
+        'consultant': '💼',
+        'tech-repair': '🔧',
+        'cleaning': '🧽',
+        'pet-care': '🐕',
+        'freelancer': '🎨',
+        'starter': '🚀',
+        'product-showcase': '🛍️',
+        'product-ordering': '🛒'
+      };
+      return icons[id] || '📋';
+    }
+
+    function createTemplateCard(template, options = {}) {
+      const card = document.createElement('div');
+      card.className = 'template-card';
+      card.style.setProperty('--template-color', template.color || 'var(--color-primary)');
+
+      const isDisabled = Boolean(options.disabled || template.status === 'coming-soon');
+      if (isDisabled) {
+        card.classList.add('disabled');
+      }
+
+      const badge = document.createElement('span');
+      badge.className = 'template-plan-badge';
+      badge.textContent = template.plan === 'Checkout' ? 'Checkout tier' : template.plan === 'Premium' ? 'Premium tier' : 'Starter tier';
+      card.appendChild(badge);
+
+      const icon = document.createElement('div');
+      icon.className = 'template-icon';
+      icon.textContent = getTemplateIcon(template.id);
+      card.appendChild(icon);
+
+      const name = document.createElement('h3');
+      name.className = 'template-name';
+      name.textContent = template.name;
+      card.appendChild(name);
+
+      if (template.description) {
+        const desc = document.createElement('p');
+        desc.className = 'template-desc';
+        desc.textContent = template.description;
+        card.appendChild(desc);
+      }
+
+      const features = resolveTemplateFeatures(template);
+
+      if (features.length) {
+        const list = document.createElement('ul');
+        list.className = 'feature-list';
+        features.forEach(feature => {
+          const li = document.createElement('li');
+          li.textContent = feature;
+          list.appendChild(li);
+        });
+        card.appendChild(list);
+      }
+
+      if (isDisabled) {
+        const message = document.createElement('p');
+        message.className = 'muted';
+        message.style.marginTop = 'var(--spacing-md)';
+        message.textContent = options.disabledMessage || 'Coming soon.';
+        card.appendChild(message);
+      } else {
+        const actions = document.createElement('div');
+        actions.className = 'template-card-actions';
+
+        const selectBtn = document.createElement('button');
+        selectBtn.type = 'button';
+        selectBtn.className = 'btn btn-primary';
+        selectBtn.textContent = 'Use Template';
+        selectBtn.onclick = (event) => {
+          event.stopPropagation();
+          selectTemplate(template, card);
+        };
+
+        const preview = document.createElement('button');
+        preview.type = 'button';
+        preview.className = 'btn btn-secondary';
+        preview.textContent = 'Quick Preview';
+        preview.title = 'Preview template in modal';
+        preview.onclick = (event) => {
+          event.stopPropagation();
+          openTemplatePreview(template.id, template.name);
+        };
+
+        actions.appendChild(selectBtn);
+        actions.appendChild(preview);
+        card.appendChild(actions);
+
+        card.addEventListener('click', () => {
+          if (!isDisabled) {
+            selectTemplate(template, card);
+          }
+        });
+      }
+
+      return card;
+    }
+
+    function selectTemplate(template, element) {
+      // Check if this template has multiple layouts and default to the default layout
+      // Normalize ID by removing hyphens for lookup (tech-repair -> techrepair)
+      const normalizedId = template.id.replace(/-/g, '');
+      const layoutConfig = TEMPLATE_LAYOUTS[normalizedId];
+      
+      if (layoutConfig) {
+        // This is a base template with layouts, default to the default layout
+        const defaultLayoutKey = layoutConfig.defaultLayout;
+        const defaultLayoutInfo = layoutConfig.layouts[defaultLayoutKey];
+        template = {
+          ...template,
+          id: `${template.id}-${defaultLayoutKey}`,
+          name: `${template.name} (${defaultLayoutInfo.name})`
+        };
+      }
+      
+      // Premium templates are now available!
+      selectedTemplate = template;
+      
+      // Update UI to show selection
+      document.querySelectorAll('.template-card').forEach(card => card.classList.remove('selected'));
+      if (element) {
+        element.classList.add('selected');
+      } else {
+        // If no element provided (from preview modal), find and select the card
+        const cards = document.querySelectorAll('.template-card');
+        cards.forEach(card => {
+          if (card.dataset.template === template) {
+            card.classList.add('selected');
+          }
+        });
+      }
+      
+      // Show visual feedback
+      const guide = document.getElementById('autoAdvanceText');
+      if (guide) {
+        guide.textContent = '✨ Loading visual builder...';
+        guide.style.opacity = 1;
+      }
+      
+      // Show loading animation then proceed to customization
+      setTimeout(() => {
+        currentStep = 2;
+        updateProgress();
+        setupCustomize();
+        document.getElementById('step1').style.display = 'none';
+        document.getElementById('step2').style.display = 'block';
+        const progressBar = document.querySelector('.progress-bar');
+        if (progressBar) progressBar.style.display = 'none';
+        
+        // Show preview by default
+        setTimeout(() => {
+          const panel = document.getElementById('previewPanel');
+          const toggle = document.getElementById('previewToggle');
+          if (panel && toggle) {
+            panel.style.display = 'block';
+            toggle.textContent = '✕ Close Preview';
+          }
+          updatePreview();
+        }, 100);
+      }, 800);
+    }
+
+    
+    async function switchLayout(baseId, layoutKey) {
+      const layoutConfig = TEMPLATE_LAYOUTS[baseId];
+      if (!layoutConfig) return;
+      
+      const layoutInfo = layoutConfig.layouts[layoutKey];
+      if (!layoutInfo) return;
+      
+      const templateId = `${baseId}-${layoutKey}`;
+      
+      // Update selected template
+      selectedTemplate = {
+        id: templateId,
+        name: `${baseId.charAt(0).toUpperCase() + baseId.slice(1)} (${layoutInfo.name})`,
+        category: layoutConfig.category,
+        color: layoutConfig.color,
+        plan: 'Starter'
+      };
+      
+      // Update the template summary to reflect new selection
+      renderTemplateSummary(selectedTemplate);
+      
+      // Reload template data
+      await setupCustomize();
+      
+      // Update preview to show new layout
+      updatePreview();
+    }
+
+    // Switch theme and update preview
+    function switchTheme(themeKey) {
+      if (!THEMES[themeKey]) return;
+      
+      currentTheme = themeKey;
+      
+      // Re-render the template summary to update theme button states
+      if (selectedTemplate) {
+        renderTemplateSummary(selectedTemplate);
+      }
+      
+      // Update the preview with new theme colors
+      updatePreviewWithTheme();
+    }
+
+    // Apply theme colors to preview
+    function updatePreviewWithTheme() {
+      if (!currentTheme || !THEMES[currentTheme]) return;
+      
+      const theme = THEMES[currentTheme];
+      const previewFrame = document.getElementById('previewIframe');
+      
+      if (previewFrame && previewFrame.contentWindow) {
+        try {
+          const previewDoc = previewFrame.contentWindow.document;
+          if (previewDoc) {
+            // Inject theme CSS variables into the preview iframe
+            let themeStyle = previewDoc.getElementById('dynamic-theme-style');
+            if (!themeStyle) {
+              themeStyle = previewDoc.createElement('style');
+              themeStyle.id = 'dynamic-theme-style';
+              previewDoc.head.appendChild(themeStyle);
+            }
+            
+            themeStyle.textContent = `
+              :root {
+                --color-primary: ${theme.primary} !important;
+                --color-primary-600: ${theme.primaryDark} !important;
+                --color-accent: ${theme.accent} !important;
+                --color-success: ${theme.success} !important;
+                --color-warning: ${theme.warning} !important;
+                --color-danger: ${theme.danger} !important;
+              }
+            `;
+          }
+        } catch (e) {
+          console.log('Cannot access iframe (cross-origin):', e.message);
+        }
+      }
+      
+      // Also update the main preview panel
+      updatePreview();
+    }
+    
+    async function switchLayout(baseId, layoutKey) {
+      const layoutConfig = TEMPLATE_LAYOUTS[baseId];
+      if (!layoutConfig) return;
+      
+      const layoutInfo = layoutConfig.layouts[layoutKey];
+      if (!layoutInfo) return;
+      
+      const templateId = `${baseId}-${layoutKey}`;
+      
+      // Update selected template
+      selectedTemplate = {
+        id: templateId,
+        name: `${baseId.charAt(0).toUpperCase() + baseId.slice(1)} (${layoutInfo.name})`,
+        category: layoutConfig.category,
+        color: layoutConfig.color,
+        plan: 'Starter'
+      };
+      
+      // Update the template summary to reflect new selection
+      renderTemplateSummary(selectedTemplate);
+      
+      // Reload template data
+      await setupCustomize();
+      
+      // Update preview
+      updatePreview();
+      
+      // Show a subtle notification
+      const notification = document.createElement('div');
+      notification.style.cssText = 'position: fixed; top: 80px; right: 20px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 12px 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000; font-weight: 600; animation: slideInRight 0.3s ease;';
+      notification.innerHTML = `✨ Switched to ${layoutInfo.name}`;
+      document.body.appendChild(notification);
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.3s';
+        setTimeout(() => notification.remove(), 300);
+      }, 2000);
+    }
+
+    function nextStep() {
+      if (currentStep === 1 && !selectedTemplate) {
+        alert('Please select a template first');
+        return;
+      }
+      
+      // Hide current step
+      document.getElementById(`step${currentStep}`).style.display = 'none';
+      
+      // Show next step
+      currentStep++;
+      document.getElementById(`step${currentStep}`).style.display = 'block';
+      
+      // Update progress
+      updateProgress();
+      
+      // Setup step-specific functionality
+      if (currentStep === 2) {
+        setupImageUpload();
+      } else if (currentStep === 3) {
+        setupCustomize();
+      }
+    }
+
+    function prevStep() {
+      // Hide current step
+      document.getElementById(`step${currentStep}`).style.display = 'none';
+      
+      // Show previous step
+      currentStep--;
+      document.getElementById(`step${currentStep}`).style.display = 'block';
+      
+      // Update progress
+      updateProgress();
+
+       if (currentStep === 1) {
+         const progressBar = document.querySelector('.progress-bar');
+         if (progressBar) progressBar.style.display = '';
+         renderTemplateSummary(null);
+         loadTemplates();
+       }
+    }
+
+    function updateProgress() {
+      const progress = (currentStep / 2) * 100;
+      document.getElementById('progressFill').style.width = `${progress}%`;
+    }
+
+    function setupImageUpload() {
+      // Already handled by drag and drop setup
+    }
+
+    function setupDragAndDrop() {
+      const uploadZone = document.getElementById('uploadZone');
+      
+      uploadZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadZone.classList.add('dragover');
+      });
+      
+      uploadZone.addEventListener('dragleave', () => {
+        uploadZone.classList.remove('dragover');
+      });
+      
+      uploadZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+      });
+    }
+
+    function handleFileUpload(event) {
+      handleFiles(event.target.files);
+    }
+
+    function handleFiles(files) {
+      const preview = document.getElementById('imagePreview');
+      
+      Array.from(files).forEach(file => {
+        if (file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            uploadedImages.push({
+              file: file,
+              url: e.target.result,
+              name: file.name
+            });
+            
+            updateImagePreview();
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    function updateImagePreview() {
+      const preview = document.getElementById('imagePreview');
+      preview.innerHTML = '';
+      
+      uploadedImages.forEach((img, index) => {
+        const item = document.createElement('div');
+        item.className = 'preview-item';
+        item.innerHTML = `
+          <img src="${img.url}" class="preview-image" alt="${img.name}">
+          <p style="font-size: 0.85rem; color: var(--color-muted); margin: 5px 0;">${img.name}</p>
+          <button onclick="removeImage(${index})" style="background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 6px; font-size: 0.8rem; cursor: pointer;">Remove</button>
+        `;
+        preview.appendChild(item);
+      });
+    }
+
+    function removeImage(index) {
+      uploadedImages.splice(index, 1);
+      updateImagePreview();
+    }
+
+    async function setupCustomize() {
+      if (!selectedTemplate) return;
+      
+      // Load template data
+      try {
+        const response = await fetch(`/data/templates/${selectedTemplate.id}.json`);
+        const templateData = await response.json();
+        
+        // Store globally for publishNow function
+        window.currentTemplateData = templateData;
+        
+        // Populate basic info
+        document.getElementById('businessName').value = templateData.brand?.name || '';
+        document.getElementById('heroTitle').value = templateData.hero?.title || '';
+        document.getElementById('heroSubtitle').value = templateData.hero?.subtitle || '';
+        document.getElementById('heroImage').value = templateData.hero?.image || '';
+        document.getElementById('contactEmail').value = templateData.contact?.email || '';
+        document.getElementById('contactPhone').value = templateData.contact?.phone || '';
+        document.getElementById('contactAddress').value = templateData.contact?.address || '';
+        
+        // Populate services/products
+        populateServices(templateData);
+        
+        // Populate template-specific fields
+        populateTemplateSpecificFields(templateData);
+        
+        // Add real-time preview listeners
+        addPreviewListeners();
+        
+        // Add validation listeners
+        addValidationListeners();
+      } catch (error) {
+        console.error('Failed to load template data:', error);
+      }
+    }
+
+    function populateTemplateSpecificFields(templateData) {
+      const titleEl = document.getElementById('templateSpecificTitle');
+      const contentEl = document.getElementById('templateSpecificContent');
+      const sectionEl = document.getElementById('templateSpecificFields');
+      if (!titleEl || !contentEl || !sectionEl) return;
+      contentEl.innerHTML = '';
+      sectionEl.hidden = true;
+      
+      // Check if this is a Pro template
+      if (selectedTemplate.id.includes('-pro')) {
+        titleEl.textContent = 'Pro Template Features';
+        contentEl.innerHTML = `
+          <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.1)); border: 2px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+              <span style="font-size: 2rem;">⭐</span>
+              <div>
+                <h4 style="margin: 0 0 4px 0; color: var(--color-text);">Pro Template Loaded</h4>
+                <p style="margin: 0; font-size: 0.9rem; color: var(--color-muted);">This template includes advanced features and demo content</p>
+              </div>
+            </div>
+            <div style="background: rgba(255,255,255,0.5); backdrop-filter: blur(10px); border-radius: 8px; padding: 16px;">
+              <p style="margin: 0 0 12px 0; font-weight: 600; color: var(--color-text);">✨ Pro Features Included:</p>
+              <ul style="margin: 0; padding-left: 20px; color: var(--color-muted); line-height: 1.8;">
+                ${templateData.features?.tabbedMenu ? '<li>Tabbed menu navigation</li>' : ''}
+                ${templateData.features?.bookingWidget?.enabled ? '<li>Integrated booking widget (Calendly)</li>' : ''}
+                ${templateData.features?.subscriptions?.enabled ? '<li>Subscription tiers display</li>' : ''}
+                ${templateData.features?.gallery?.beforeAfter ? '<li>Before/after transformation gallery</li>' : ''}
+                ${templateData.features?.gallery?.filterable ? '<li>Filterable photo gallery</li>' : ''}
+                ${templateData.features?.privateEvents?.enabled ? '<li>Private events with modals</li>' : ''}
+                ${templateData.features?.ownerDashboard ? '<li>Owner dashboard access</li>' : ''}
+                ${templateData.features?.analytics ? '<li>Analytics and insights</li>' : ''}
+              </ul>
+            </div>
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(139, 92, 246, 0.2);">
+              <p style="margin: 0; font-size: 0.85rem; color: var(--color-muted);">
+                💡 <strong>Tip:</strong> All demo content is pre-loaded. Customize the fields below to make it yours!
+              </p>
+            </div>
+          </div>
+        `;
+        sectionEl.hidden = false;
+        return; // Exit early for Pro templates
+      }
+      
+      switch(selectedTemplate.id) {
+        case 'restaurant':
+          titleEl.textContent = 'Restaurant Details';
+          contentEl.innerHTML = `
+            <div class="form-group">
+              <label class="form-label">Cuisine Type</label>
+              <select class="form-input" id="cuisineType">
+                <option value="">Select cuisine type</option>
+                <option value="italian">Italian</option>
+                <option value="mexican">Mexican</option>
+                <option value="asian">Asian</option>
+                <option value="american">American</option>
+                <option value="mediterranean">Mediterranean</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Average Price Range</label>
+              <select class="form-input" id="priceRange">
+                <option value="">Select price range</option>
+                <option value="$">$ (Budget-friendly)</option>
+                <option value="$$">$$ (Moderate)</option>
+                <option value="$$$">$$$ (Upscale)</option>
+                <option value="$$$$">$$$$ (Fine dining)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Special Features</label>
+              <div class="option-grid">
+                <label><input type="checkbox" id="delivery"> Delivery</label>
+                <label><input type="checkbox" id="takeout"> Takeout</label>
+                <label><input type="checkbox" id="reservations"> Reservations</label>
+                <label><input type="checkbox" id="outdoor"> Outdoor Seating</label>
+                <label><input type="checkbox" id="bar"> Full Bar</label>
+                <label><input type="checkbox" id="kids"> Kid-Friendly</label>
+              </div>
+            </div>
+          `;
+          sectionEl.hidden = false;
+          break;
+          
+        case 'salon':
+          titleEl.textContent = 'Salon Details';
+          contentEl.innerHTML = `
+            <div class="form-group">
+              <label class="form-label">Services Offered</label>
+              <div class="option-grid">
+                <label><input type="checkbox" id="haircuts"> Haircuts</label>
+                <label><input type="checkbox" id="coloring"> Hair Coloring</label>
+                <label><input type="checkbox" id="styling"> Hair Styling</label>
+                <label><input type="checkbox" id="manicures"> Manicures</label>
+                <label><input type="checkbox" id="pedicures"> Pedicures</label>
+                <label><input type="checkbox" id="facials"> Facials</label>
+                <label><input type="checkbox" id="massage"> Massage</label>
+                <label><input type="checkbox" id="eyebrows"> Eyebrows</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Appointment Booking</label>
+              <select class="form-input" id="bookingType">
+                <option value="">Select booking method</option>
+                <option value="phone">Phone Only</option>
+                <option value="online">Online Booking</option>
+                <option value="walkin">Walk-ins Welcome</option>
+                <option value="both">Phone + Online</option>
+              </select>
+            </div>
+          `;
+          sectionEl.hidden = false;
+          break;
+          
+        case 'gym':
+          titleEl.textContent = 'Gym Details';
+          contentEl.innerHTML = `
+            <div class="form-group">
+              <label class="form-label">Facility Features</label>
+              <div class="option-grid">
+                <label><input type="checkbox" id="cardio"> Cardio Equipment</label>
+                <label><input type="checkbox" id="weights"> Free Weights</label>
+                <label><input type="checkbox" id="machines"> Weight Machines</label>
+                <label><input type="checkbox" id="classes"> Group Classes</label>
+                <label><input type="checkbox" id="pool"> Swimming Pool</label>
+                <label><input type="checkbox" id="sauna"> Sauna</label>
+                <label><input type="checkbox" id="trainer"> Personal Training</label>
+                <label><input type="checkbox" id="parking"> Free Parking</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Membership Types</label>
+              <div class="option-grid">
+                <label><input type="checkbox" id="monthly"> Monthly</label>
+                <label><input type="checkbox" id="yearly"> Yearly</label>
+                <label><input type="checkbox" id="daypass"> Day Pass</label>
+                <label><input type="checkbox" id="student"> Student Discount</label>
+                <label><input type="checkbox" id="senior"> Senior Discount</label>
+                <label><input type="checkbox" id="family"> Family Plans</label>
+              </div>
+            </div>
+          `;
+          sectionEl.hidden = false;
+          break;
+          
+        default:
+          titleEl.textContent = 'Additional Information';
+          contentEl.innerHTML = `
+            <div class="form-group">
+              <label class="form-label">Business Description</label>
+              <textarea class="form-input form-textarea" id="businessDescription" placeholder="Tell us more about your business..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Special Offers</label>
+              <input type="text" class="form-input" id="specialOffers" placeholder="Any current promotions or offers?">
+            </div>
+          `;
+          sectionEl.hidden = false;
+      }
+    }
+
+    function addPreviewListeners() {
+      const inputs = document.querySelectorAll('#step2 input, #step2 textarea, #step2 select');
+      inputs.forEach(input => {
+        input.addEventListener('input', updatePreview);
+        input.addEventListener('change', updatePreview);
+      });
+    }
+
+    function updatePreview() {
+      const previewContent = document.getElementById('previewContent');
+      
+      if (!previewContent) {
+        return;
+      }
+      
+      // For Pro templates, show full iframe preview with all features
+      if (selectedTemplate && selectedTemplate.id.includes('-pro')) {
+        updateProPreview();
+        return;
+      }
+      
+      // Get current theme
+      const theme = THEMES[currentTheme] || THEMES.ocean;
+      
+      const businessName = document.getElementById('businessName').value || 'Your Business';
+      const heroTitle = document.getElementById('heroTitle').value || 'Welcome to Our Business';
+      const heroSubtitle = document.getElementById('heroSubtitle').value || 'We provide excellent service';
+      const heroImage = document.getElementById('heroImage').value || '/uploads/default-hero.jpg';
+      
+      previewContent.innerHTML = `
+        <!-- Social Share Preview -->
+        <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+          <h4 style="margin: 0 0 10px 0; font-size: 0.875rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Share Preview</h4>
+          <div style="border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; background: white;">
+            ${heroImage && heroImage.startsWith('http') ? `<img src="${heroImage}" style="width: 100%; height: 200px; object-fit: cover; display: block;" />` : ''}
+            <div style="padding: 12px;">
+              <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 4px;">${new URL(window.location.origin).hostname}</div>
+              <div style="font-weight: 600; color: #1e293b; font-size: 0.9rem; margin-bottom: 2px;">${businessName}</div>
+              <div style="color: #64748b; font-size: 0.8rem;">${heroSubtitle}</div>
+            </div>
+          </div>
+        </div>
+        
+        <div style="font-family: system-ui, -apple-system, sans-serif; color: #1f2937;">
+          <div style="background: linear-gradient(135deg, ${theme.primary}, ${theme.primaryDark}); color: white; padding: 40px 20px; text-align: center; border-radius: 8px; margin-bottom: 20px;">
+            <h1 style="margin: 0 0 10px 0; font-size: 2rem;">${businessName}</h1>
+            <h2 style="margin: 0 0 15px 0; font-size: 1.25rem; opacity: 0.9;">${heroTitle}</h2>
+            <p style="margin: 0; opacity: 0.8;">${heroSubtitle}</p>
+          </div>
+          
+          <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="margin: 0 0 15px 0; color: #1f2937;">Services</h3>
+            <div id="previewServices"></div>
+          </div>
+          
+          <div style="background: #f8fafc; padding: 20px; border-radius: 8px;">
+            <h3 style="margin: 0 0 15px 0; color: #1f2937;">Contact</h3>
+            <p style="margin: 5px 0;"><strong>Email:</strong> ${document.getElementById('contactEmail').value || 'your@email.com'}</p>
+            <p style="margin: 5px 0;"><strong>Phone:</strong> ${document.getElementById('contactPhone').value || '(555) 123-4567'}</p>
+            <p style="margin: 5px 0;"><strong>Address:</strong> ${document.getElementById('contactAddress').value || '123 Main St'}</p>
+          </div>
+        </div>
+      `;
+      
+      // Update services preview
+      updateServicesPreview();
+    }
+    
+    function updateProPreview() {
+      const previewContent = document.getElementById('previewContent');
+      if (!previewContent || !window.currentTemplateData) return;
+      
+      // Get the demo URL for this Pro template
+      const demoUrls = {
+        'restaurant-pro': '/sites/grandtable-demo/',
+        'gym-pro': '/sites/fitlife-demo/'
+      };
+      
+      const demoUrl = demoUrls[selectedTemplate.id] || '/sites/grandtable-demo/';
+      
+      // Show a Pro template preview with link to full demo
+      previewContent.innerHTML = `
+        <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.1)); border: 2px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 24px; margin-bottom: 20px;">
+          <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
+            <span style="font-size: 2.5rem;">⭐</span>
+            <div style="flex: 1;">
+              <h4 style="margin: 0 0 8px 0; color: var(--color-text); font-size: 1.25rem;">Pro Template Full Preview</h4>
+              <p style="margin: 0 0 16px 0; font-size: 0.95rem; color: var(--color-muted); line-height: 1.6;">
+                This Pro template includes advanced features like tabbed menus, booking widgets, image galleries, and more. 
+                Customize your business details here, and see the full template in action.
+              </p>
+              <a 
+                href="${demoUrl}" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style="display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);"
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(139, 92, 246, 0.4)';"
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(139, 92, 246, 0.3)';"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+                View Full Template Demo
+              </a>
+            </div>
+          </div>
+          
+          <div style="background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 16px; margin-top: 16px;">
+            <h5 style="margin: 0 0 8px 0; color: var(--color-text); font-size: 0.9rem; font-weight: 600;">✨ What's Included:</h5>
+            <ul style="margin: 0; padding-left: 20px; font-size: 0.875rem; color: var(--color-muted); line-height: 1.8;">
+              ${selectedTemplate.id === 'restaurant-pro' ? `
+                <li>🍽️ Tabbed menu system with multiple categories</li>
+                <li>📅 Integrated booking widget (Calendly)</li>
+                <li>🎉 Private events showcase with modal details</li>
+                <li>📸 Filterable image gallery</li>
+                <li>👨‍🍳 Team member profiles</li>
+                <li>📊 Stats dashboard & credentials</li>
+              ` : selectedTemplate.id === 'gym-pro' ? `
+                <li>💪 Membership tier showcase</li>
+                <li>📅 Class scheduling with booking</li>
+                <li>📸 Transformation gallery with before/after</li>
+                <li>🏋️ Trainer profiles & credentials</li>
+                <li>📊 Member stats & testimonials</li>
+                <li>💳 Subscription management ready</li>
+              ` : `
+                <li>Advanced features & interactive elements</li>
+                <li>Professional design & layout</li>
+                <li>Booking & scheduling integration</li>
+                <li>Rich media galleries</li>
+                <li>Team & credentials showcase</li>
+              `}
+            </ul>
+          </div>
+        </div>
+        
+        <div style="background: var(--color-card); border-radius: 12px; padding: 20px; text-align: center; color: var(--color-muted);">
+          <p style="margin: 0; font-size: 0.9rem;">
+            💡 <strong>Tip:</strong> Fill out your business details above, then publish to see your customized version with all Pro features!
+          </p>
+        </div>
+      `;
+    }
+
+    function updateServicesPreview() {
+      const previewServices = document.getElementById('previewServices');
+      if (!previewServices) return;
+      
+      // Get current theme
+      const theme = THEMES[currentTheme] || THEMES.ocean;
+      
+      const serviceFields = document.querySelectorAll('#servicesContainer > .service-card');
+      let servicesHtml = '';
+      
+      serviceFields.forEach(field => {
+        const name = field.querySelector('.service-name')?.value;
+        const description = field.querySelector('.service-description')?.value;
+        const price = field.querySelector('.service-price')?.value;
+        
+        if (name) {
+          servicesHtml += `
+            <div style="border-bottom: 1px solid #e5e7eb; padding: 10px 0;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h4 style="margin: 0; color: #1f2937;">${name}</h4>
+                ${price ? `<span style="color: ${theme.primary}; font-weight: bold;">${price}</span>` : ''}
+              </div>
+              ${description ? `<p style="margin: 5px 0 0 0; color: #6b7280; font-size: 0.9rem;">${description}</p>` : ''}
+            </div>
+          `;
+        }
+      });
+      
+      previewServices.innerHTML = servicesHtml || '<p style="color: #9ca3af;">No services added yet</p>';
+    }
+
+    function addValidationListeners() {
+      const emailInput = document.getElementById('contactEmail');
+      const phoneInput = document.getElementById('contactPhone');
+      
+      emailInput.addEventListener('blur', validateEmail);
+      phoneInput.addEventListener('blur', validatePhone);
+    }
+
+    function validateEmail() {
+      const email = document.getElementById('contactEmail').value;
+      const errorEl = document.getElementById('emailError');
+      const inputEl = document.getElementById('contactEmail');
+      
+      if (!email) {
+        showError(inputEl, errorEl, 'Email is required');
+        return false;
+      }
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        showError(inputEl, errorEl, 'Please enter a valid email address');
+        return false;
+      }
+      
+      clearError(inputEl, errorEl);
+      return true;
+    }
+
+    function validatePhone() {
+      const phone = document.getElementById('contactPhone').value;
+      const errorEl = document.getElementById('phoneError');
+      const inputEl = document.getElementById('contactPhone');
+      
+      if (!phone) {
+        showError(inputEl, errorEl, 'Phone number is required');
+        return false;
+      }
+      
+      const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+      if (!phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''))) {
+        showError(inputEl, errorEl, 'Please enter a valid phone number');
+        return false;
+      }
+      
+      clearError(inputEl, errorEl);
+      return true;
+    }
+
+    function showError(inputEl, errorEl, message) {
+      inputEl.classList.add('error');
+      errorEl.textContent = message;
+    }
+
+    function clearError(inputEl, errorEl) {
+      inputEl.classList.remove('error');
+      errorEl.textContent = '';
+    }
+
+    function ensurePreviewVisible() {
+      const panel = document.getElementById('previewPanel');
+      const toggle = document.getElementById('previewToggle');
+      
+      if (!panel || !toggle) {
+        console.error('Preview elements not found');
+        return;
+      }
+      
+      // Always show the preview and update content
+      updatePreview();
+      panel.style.display = 'block';
+      toggle.textContent = '✕ Close Preview';
+      
+      // On mobile, scroll to preview
+      if (window.innerWidth < 768) {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function togglePreview() {
+      const panel = document.getElementById('previewPanel');
+      const toggle = document.getElementById('previewToggle');
+      
+      if (!panel || !toggle) {
+        console.error('Preview elements not found');
+        return;
+      }
+      
+      // Ensure preview content is populated before showing
+      updatePreview();
+      
+      if (panel.style.display === 'none' || panel.style.display === '') {
+        panel.style.display = 'block';
+        toggle.textContent = '✕ Close Preview';
+      } else {
+        panel.style.display = 'none';
+        toggle.textContent = '👁️ Live Preview';
+      }
+    }
+
+    function populateServices(templateData) {
+      const container = document.getElementById('servicesContainer');
+      container.innerHTML = '';
+      
+      let services = [];
+      
+      // Handle Pro templates with special structures
+      if (selectedTemplate.id.includes('-pro')) {
+        // For Pro templates, extract representative items from their rich data
+        if (templateData.menu?.sections) {
+          // Restaurant Pro - get first few menu items from first section
+          const firstSection = templateData.menu.sections[0];
+          services = (firstSection?.items || []).slice(0, 3).map(item => ({
+            name: item.name,
+            description: item.description,
+            price: item.price ? `$${item.price}` : '',
+            image: item.image || ''
+          }));
+        } else if (templateData.memberships?.tiers) {
+          // Gym Pro - get membership tiers as services
+          services = templateData.memberships.tiers.map(tier => ({
+            name: tier.name,
+            description: tier.description,
+            price: tier.price ? `$${tier.price}/${tier.billingCycle}` : '',
+            image: ''
+          }));
+        }
+      } else {
+        // Regular Starter templates
+        services = templateData.services?.items || templateData.products || [];
+      }
+      
+      services.forEach((service, index) => {
+        container.appendChild(createServiceField(service, index));
+      });
+      
+      if (services.length === 0) {
+        // Add empty service if none exist
+        container.appendChild(createServiceField({name: '', description: '', price: '', image: ''}, 0));
+      }
+
+      refreshServiceNumbers();
+    }
+
+    function createServiceField(service, index) {
+      const div = document.createElement('div');
+      div.className = 'service-card';
+      div.innerHTML = `
+        <div class="service-card-header">
+          <h4 class="service-card-title">Service ${index + 1}</h4>
+          <button type="button" class="remove-service-btn" onclick="removeService(this)">Remove</button>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Service Name</label>
+          <input type="text" class="form-input service-name" placeholder="e.g., Haircut, Pizza, Training" value="${service.name || service.title || ''}">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-input form-textarea service-description" placeholder="Describe this service...">${service.description || ''}</textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Price (optional)</label>
+          <input type="text" class="form-input service-price" placeholder="$0" value="${service.price || ''}">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Service Image</label>
+          <div class="media-button-grid">
+            <button type="button" class="btn btn-secondary" onclick="openImagePicker(this, 'camera')">📸 Camera</button>
+            <button type="button" class="btn btn-secondary" onclick="openImagePicker(this, 'gallery')">🖼️ Gallery</button>
+            <button type="button" class="btn btn-secondary" onclick="openImagePicker(this, 'url')">🔗 URL</button>
+          </div>
+          <input type="file" class="service-image-file" accept="image/*" capture="environment" style="display: none;">
+          <input type="text" class="form-input service-image" placeholder="Or paste image URL here" value="${service.image || ''}">
+        </div>
+      `;
+      
+      return div;
+    }
+
+    function refreshServiceNumbers() {
+      const titles = document.querySelectorAll('#servicesContainer .service-card-title');
+      titles.forEach((title, idx) => {
+        title.textContent = `Service ${idx + 1}`;
+      });
+    }
+
+    async function openImagePicker(element, type) {
+      const card = element.closest('.service-card');
+      const fileInput = card.querySelector('.service-image-file');
+      const imageInput = card.querySelector('.service-image');
+      
+      if (type === 'camera' || type === 'gallery') {
+        fileInput.setAttribute('capture', type === 'camera' ? 'environment' : 'user');
+        fileInput.click();
+        fileInput.onchange = async (e) => {
+          const file = e.target.files[0];
+          if (file) {
+            // Show uploading status
+            imageInput.value = `[Uploading ${file.name}...]`;
+            imageInput.style.color = '#94a3b8';
+            
+            try {
+              // Upload to server
+              const formData = new FormData();
+              formData.append('image', file);
+              
+              const token = await getAdminToken();
+              const response = await fetch('/api/upload', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                },
+                body: formData
+              });
+              
+              if (!response.ok) {
+                throw new Error('Upload failed');
+              }
+              
+              const result = await response.json();
+              
+              // Update image input with server URL
+              imageInput.value = result.url;
+              imageInput.style.color = '#1f2937';
+              
+              // Trigger preview update
+              updatePreview();
+              
+            } catch (error) {
+              console.error('Upload error:', error);
+              imageInput.value = '';
+              imageInput.style.color = '#ef4444';
+              alert('Failed to upload image. Please try again or use a URL.');
+            }
+          }
+        };
+      } else if (type === 'url') {
+        imageInput.focus();
+      }
+    }
+
+    function addService() {
+      const container = document.getElementById('servicesContainer');
+      const index = container.children.length;
+      container.appendChild(createServiceField({name: '', description: '', price: '', image: ''}, index));
+      refreshServiceNumbers();
+    }
+
+    function removeService(button) {
+      if (document.getElementById('servicesContainer').children.length <= 1) {
+        alert('You need at least one service!');
+        return;
+      }
+      button.closest('.service-card').remove();
+      refreshServiceNumbers();
+    }
+
+    async function pickHeroImage(type) {
+      const fileInput = document.getElementById('heroImageFile');
+      const imageInput = document.getElementById('heroImage');
+      
+      if (type === 'camera' || type === 'gallery') {
+        fileInput.setAttribute('capture', type === 'camera' ? 'environment' : 'user');
+        fileInput.click();
+        fileInput.onchange = async (e) => {
+          const file = e.target.files[0];
+          if (file) {
+            // Show uploading status
+            imageInput.value = `[Uploading ${file.name}...]`;
+            imageInput.style.color = '#94a3b8';
+            
+            try {
+              // Upload to server
+              const formData = new FormData();
+              formData.append('image', file);
+              
+              const token = await getAdminToken();
+              const response = await fetch('/api/upload', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                },
+                body: formData
+              });
+              
+              if (!response.ok) {
+                throw new Error('Upload failed');
+              }
+              
+              const result = await response.json();
+              
+              // Update image input with server URL
+              imageInput.value = result.url;
+              imageInput.style.color = '#1f2937';
+              
+              // Trigger preview update
+              updatePreview();
+              
+            } catch (error) {
+              console.error('Upload error:', error);
+              imageInput.value = '';
+              imageInput.style.color = '#ef4444';
+              alert('Failed to upload image. Please try again or use a URL.');
+            }
+          }
+        };
+      } else if (type === 'url') {
+        imageInput.focus();
+      }
+    }
+
+    function openImageUpload() {
+      // Legacy function - can be removed
+      pickHeroImage('url');
+    }
+
+    async function finishSetup() {
+      // Collect all data (no validation required - user can change everything after launch)
+      const businessData = {
+        businessName: document.getElementById('businessName').value,
+        heroTitle: document.getElementById('heroTitle').value,
+        heroSubtitle: document.getElementById('heroSubtitle').value,
+        heroImage: document.getElementById('heroImage').value,
+        email: document.getElementById('contactEmail').value,
+        phone: document.getElementById('contactPhone').value,
+        address: document.getElementById('contactAddress').value,
+        businessHours: document.getElementById('businessHours').value,
+        websiteUrl: document.getElementById('websiteUrl').value,
+        facebookUrl: document.getElementById('facebookUrl').value,
+        instagramUrl: document.getElementById('instagramUrl').value,
+        googleMapsUrl: document.getElementById('googleMapsUrl').value,
+        services: [],
+        templateSpecific: {}
+      };
+      
+      // Collect services
+      const serviceFields = document.querySelectorAll('#servicesContainer > .form-group');
+      serviceFields.forEach(field => {
+        const service = {
+          name: field.querySelector('.service-name').value,
+          description: field.querySelector('.service-description').value,
+          price: field.querySelector('.service-price').value,
+          image: field.querySelector('.service-image').value
+        };
+        
+        if (service.name) {
+          businessData.services.push(service);
+        }
+      });
+      
+      // Collect template-specific data
+      const templateSpecificFields = document.querySelectorAll('#templateSpecificContent input, #templateSpecificContent select, #templateSpecificContent textarea');
+      templateSpecificFields.forEach(field => {
+        if (field.type === 'checkbox') {
+          businessData.templateSpecific[field.id] = field.checked;
+        } else {
+          businessData.templateSpecific[field.id] = field.value;
+        }
+      });
+      
+      console.log('Business data collected:', businessData);
+      
+      // Send data to server as draft (no payment required)
+      try {
+        console.log('Saving draft...', { templateId: selectedTemplate.id, businessData });
+        
+        const response = await fetch('/api/drafts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            templateId: selectedTemplate.id,
+            businessData: businessData
+          })
+        });
+        
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Error response:', errorText);
+          throw new Error(`Server error: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('Draft saved:', result);
+        
+        if (result.success) {
+          // Show success message with preview link
+          document.getElementById('step2').style.display = 'none';
+          
+          // Create success message HTML dynamically
+          const successDiv = document.getElementById('success');
+          successDiv.innerHTML = `
+            <div class="success-message">
+              <div class="success-icon">✅</div>
+              <h2>Draft Saved!</h2>
+              <p class="muted">Your site has been saved as a draft. You can preview it or publish it anytime.</p>
+              <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <a href="${result.previewUrl}" target="_blank" class="btn btn-secondary-large">👁️ Preview Draft</a>
+                <button onclick="showPaymentModal()" class="btn btn-primary-large">🚀 Publish Now</button>
+              </div>
+              <p style="margin-top: 20px; font-size: 0.9rem; color: #64748b;">Draft expires: ${new Date(result.expiresAt).toLocaleDateString()}</p>
+            </div>
+          `;
+          successDiv.style.display = 'block';
+          
+          // Store draft ID for payment modal
+          window.currentDraftId = result.draftId;
+        } else {
+          alert('Failed to save your draft. Please try again.');
+        }
+      } catch (error) {
+        console.error('Save error:', error);
+        alert('Failed to save your draft: ' + error.message);
+      }
+    }
+
+    function showPaymentModal() {
+      const modal = document.getElementById('paymentModal');
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePaymentModal() {
+      const modal = document.getElementById('paymentModal');
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+
+    // Update existing site (edit mode)
+    async function updateExistingSite(subdomain) {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert('Please log in to update your site');
+          window.location.href = '/login.html';
+          return;
+        }
+        
+        // Close payment modal if open
+        closePaymentModal();
+        
+        // Show loading message
+        const successDiv = document.getElementById('success');
+        successDiv.style.display = 'block';
+        successDiv.innerHTML = `
+          <div class="success-message">
+            <div class="success-icon">⏳</div>
+            <h2>Updating Your Site...</h2>
+            <p class="muted">Please wait while we save your changes.</p>
+          </div>
+        `;
+        successDiv.scrollIntoView({ behavior: 'smooth' });
+        
+        // Collect current form data (similar to draft saving logic)
+        const businessData = {};
+        businessData.businessName = document.getElementById('businessName')?.value || '';
+        businessData.heroTitle = document.getElementById('heroTitle')?.value || '';
+        businessData.heroSubtitle = document.getElementById('heroSubtitle')?.value || '';
+        businessData.heroImage = document.getElementById('heroImage')?.value || '';
+        businessData.email = document.getElementById('email')?.value || '';
+        businessData.phone = document.getElementById('phone')?.value || '';
+        businessData.address = document.getElementById('address')?.value || '';
+        businessData.hours = document.getElementById('hours')?.value || '';
+        businessData.website = document.getElementById('website')?.value || '';
+        businessData.facebook = document.getElementById('facebook')?.value || '';
+        businessData.instagram = document.getElementById('instagram')?.value || '';
+        businessData.maps = document.getElementById('maps')?.value || '';
+        
+        // Collect services
+        const services = [];
+        const serviceItems = document.querySelectorAll('#servicesList .service-item');
+        serviceItems.forEach(item => {
+          const name = item.querySelector('input[placeholder="Service name"]')?.value;
+          const description = item.querySelector('input[placeholder="Description"]')?.value;
+          const price = item.querySelector('input[placeholder="Price"]')?.value;
+          const image = item.querySelector('input[placeholder="Image URL"]')?.value;
+          if (name) {
+            services.push({ name, description, price, image });
+          }
+        });
+        businessData.services = services;
+        
+        // Collect template-specific data
+        businessData.templateSpecific = {};
+        const templateSpecificFields = document.querySelectorAll('#templateSpecificContent input, #templateSpecificContent select, #templateSpecificContent textarea');
+        templateSpecificFields.forEach(field => {
+          if (field.type === 'checkbox') {
+            businessData.templateSpecific[field.id] = field.checked;
+          } else {
+            businessData.templateSpecific[field.id] = field.value;
+          }
+        });
+        
+        // Build the updated site structure (this mimics the publish endpoint logic)
+        // Load the template to get the base structure
+        const templateResponse = await fetch(`/data/templates/${selectedTemplate.id}.json`);
+        const templateData = await templateResponse.json();
+        
+        const updatedSite = {
+          templateId: selectedTemplate.id,
+          brand: {
+            name: businessData.businessName,
+            logo: businessData.heroImage || templateData.brand?.logo
+          },
+          hero: {
+            title: businessData.heroTitle,
+            subtitle: businessData.heroSubtitle,
+            image: businessData.heroImage,
+            cta: templateData.hero?.cta || { text: 'Get Started', link: '#contact' }
+          },
+          contact: {
+            email: businessData.email,
+            phone: businessData.phone,
+            address: businessData.address,
+            hours: businessData.hours
+          },
+          social: {
+            website: businessData.website,
+            facebook: businessData.facebook,
+            instagram: businessData.instagram,
+            maps: businessData.maps
+          },
+          ...templateData
+        };
+        
+        // Add services
+        if (businessData.services && businessData.services.length > 0) {
+          if (updatedSite.products) {
+            updatedSite.products = businessData.services.map(s => ({
+              name: s.name,
+              price: parseFloat(s.price) || 0,
+              description: s.description || '',
+              ...(s.image && { image: s.image })
+            }));
+          } else if (updatedSite.services) {
+            updatedSite.services.items = businessData.services.map(s => ({
+              title: s.name,
+              description: s.description || '',
+              ...(s.price && { price: s.price }),
+              ...(s.image && { image: s.image })
+            }));
+          }
+        }
+        
+        // Add custom fields
+        updatedSite.custom = businessData.templateSpecific;
+        
+        // Call the update endpoint
+        const response = await fetch(`/api/sites/${subdomain}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(updatedSite)
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to update site');
+        }
+        
+        // Show success message
+        successDiv.innerHTML = `
+          <div class="success-message">
+            <div class="success-icon">✅</div>
+            <h2>Site Updated Successfully!</h2>
+            <p class="muted">Your changes are now live.</p>
+            
+            <div style="margin-top: 30px; padding: 20px; background: #f8fafc; border-radius: 12px;">
+              <p style="margin-bottom: 10px;"><strong>🌐 Your Site URL:</strong></p>
+              <input type="text" id="siteUrl" value="${window.location.origin}/sites/${subdomain}/" readonly style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1.1rem; text-align: center; background: white; color: #1f2937;">
+              <button onclick="copyUrl()" style="margin-top: 15px; padding: 12px 24px; background: linear-gradient(135deg, #06b6d4, #0891b2); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                📋 Copy URL
+              </button>
+            </div>
+            
+            <div style="margin-top: 30px;">
+              <a href="/sites/${subdomain}/" target="_blank" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #10b981, #059669); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; margin-right: 10px;">
+                🌐 View Your Site
+              </a>
+              <a href="/dashboard.html" style="display: inline-block; padding: 14px 32px; background: #f1f5f9; color: #475569; text-decoration: none; border-radius: 10px; font-weight: 600;">
+                📊 Go to Dashboard
+              </a>
+            </div>
+          </div>
+        `;
+        
+        console.log('Site updated successfully:', result);
+        
+      } catch (error) {
+        console.error('Update error:', error);
+        const successDiv = document.getElementById('success');
+        successDiv.style.display = 'block';
+        successDiv.innerHTML = `
+          <div class="success-message" style="border-left: 4px solid #ef4444;">
+            <div class="success-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">❌</div>
+            <h2 style="color: #dc2626;">Update Failed</h2>
+            <p class="muted">${error.message || 'Failed to update your site. Please try again.'}</p>
+            <button onclick="location.reload()" style="margin-top: 20px; padding: 12px 24px; background: #ef4444; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+              Try Again
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    async function processPayment() {
+      // Check if we're in edit mode
+      const publishBtn = document.querySelector('.publish-btn');
+      const isEditMode = publishBtn?.dataset.editMode === 'true';
+      const subdomain = publishBtn?.dataset.subdomain;
+      
+      if (isEditMode && subdomain) {
+        // Update existing site instead of publishing
+        return await updateExistingSite(subdomain);
+      }
+      
+      const email = document.getElementById('paymentEmail').value;
+      const plan = document.querySelector('input[name="plan"]:checked').value;
+      const draftId = window.currentDraftId;
+      
+      if (!email) {
+        alert('Please enter your email address.');
+        return;
+      }
+      
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        alert('Please enter a valid email address.');
+        return;
+      }
+      
+      console.log('Processing payment for draft:', draftId, 'plan:', plan);
+      
+      // Show loading state
+      const payButton = document.querySelector('#paymentModal button[onclick="processPayment()"]');
+      const originalText = payButton.textContent;
+      payButton.textContent = 'Processing...';
+      payButton.disabled = true;
+      
+      try {
+        // If it's a paid plan (starter or pro), redirect to Stripe Checkout
+        if (plan.toLowerCase() === 'starter' || plan.toLowerCase() === 'pro') {
+          const token = localStorage.getItem('token');
+          if (!token) {
+            alert('Please log in to subscribe to a paid plan.');
+            payButton.textContent = originalText;
+            payButton.disabled = false;
+            return;
+          }
+          
+          // Create Stripe checkout session
+          const checkoutResponse = await fetch('/api/create-subscription-checkout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              plan: plan.toLowerCase(),
+              draftId: draftId
+            })
+          });
+          
+          const checkoutResult = await checkoutResponse.json();
+          
+          if (!checkoutResponse.ok) {
+            throw new Error(checkoutResult.error || 'Failed to create checkout session');
+          }
+          
+          // Store draft ID and email in localStorage for post-checkout processing
+          localStorage.setItem('pendingPublish', JSON.stringify({
+            draftId,
+            email,
+            plan
+          }));
+          
+          // Redirect to Stripe Checkout
+          console.log('Redirecting to Stripe Checkout...');
+          window.location.href = checkoutResult.url;
+          return;
+        }
+        
+        // For free plan, proceed directly to publishing
+        console.log('Publishing site for plan:', plan);
+        
+        // Call publish endpoint
+        const response = await fetch(`/api/drafts/${draftId}/publish`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            plan: plan,
+            email: email
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+          // Close payment modal
+          closePaymentModal();
+          
+          // Show success message
+          const successDiv = document.getElementById('success');
+          successDiv.innerHTML = `
+            <div class="success-message">
+              <div class="success-icon">🎉</div>
+              <h2>Your Site is Live!</h2>
+              <p class="muted">Congratulations, ${result.businessName}! Your website has been published successfully.</p>
+              
+              <div style="margin-top: 30px; padding: 20px; background: #f8fafc; border-radius: 12px;">
+                <p style="margin-bottom: 10px;"><strong>🌐 Your Site URL:</strong></p>
+                <input type="text" id="siteUrl" value="${result.url}" readonly style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1.1rem; text-align: center; background: white; color: #1f2937;">
+                <button onclick="copySuccessUrl()" style="margin-top: 10px; width: 100%; padding: 10px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                  📋 Copy URL
+                </button>
+              </div>
+              
+              <div style="margin-top: 25px; padding: 20px; background: #dbeafe; border-radius: 12px; border-left: 4px solid #3b82f6;">
+                <p style="margin: 0 0 10px 0; font-weight: 600; color: #1e40af;"><strong>✓ What's Included:</strong></p>
+                <ul style="margin: 0; padding-left: 20px; color: #1e40af;">
+                  ${result.whatsIncluded.map(f => `<li>${f}</li>`).join('')}
+                </ul>
+              </div>
+              
+              <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <a href="${result.url}" target="_blank" class="btn btn-primary-large">🔗 Visit Your Site</a>
+                <button onclick="shareSuccess()" class="btn btn-secondary-large">📤 Share Your Site</button>
+                <a href="/dashboard.html" class="btn btn-secondary-large">📊 Dashboard</a>
+              </div>
+              
+              <p style="margin-top: 25px; font-size: 0.85rem; color: #64748b; text-align: center;">
+                💡 <strong>Tip:</strong> Add your business hours, social media links, and more by editing your site!
+              </p>
+            </div>
+          `;
+          successDiv.style.display = 'block';
+          
+          // Store URL for copy/share functions
+          window.publishedSiteUrl = result.url;
+          window.publishedBusinessName = result.businessName;
+          
+        } else {
+          alert('Failed to publish your site. Please try again.');
+          payButton.textContent = originalText;
+          payButton.disabled = false;
+        }
+        
+      } catch (error) {
+        console.error('Publish error:', error);
+        alert('Failed to publish your site: ' + error.message);
+        payButton.textContent = originalText;
+        payButton.disabled = false;
+      }
+    }
+
+    // Success screen helper functions
+    function copySuccessUrl() {
+      const urlInput = document.getElementById('siteUrl');
+      urlInput.select();
+      urlInput.setSelectionRange(0, 99999); // For mobile
+      
+      navigator.clipboard.writeText(urlInput.value).then(() => {
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = '✓ Copied!';
+        btn.style.background = '#10b981';
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.style.background = '#10b981';
+        }, 2000);
+      }).catch(() => {
+        // Fallback
+        urlInput.select();
+        document.execCommand('copy');
+        alert('URL copied to clipboard!');
+      });
+    }
+
+    function shareSuccess() {
+      const url = window.publishedSiteUrl;
+      const title = `Check out ${window.publishedBusinessName} website!`;
+      
+      if (navigator.share) {
+        navigator.share({
+          title: title,
+          text: `Check out this website!`,
+          url: url,
+        }).catch(err => {
+          if (err.name !== 'AbortError') {
+            console.error('Share error:', err);
+          }
+        });
+      } else {
+        // Fallback to copy
+        copySuccessUrl();
+      }
+    }
+
+    // Template Preview System
+    let currentPreviewTemplate = null;
+
+    function openTemplatePreview(templateId, templateName) {
+      currentPreviewTemplate = templateId;
+      const modal = document.getElementById('templatePreviewModal');
+      const iframe = document.getElementById('previewIframe');
+      const loading = document.getElementById('previewLoading');
+      const titleElement = document.getElementById('previewTemplateName');
+
+      // Show modal
+      modal.classList.add('active');
+      
+      // Update title
+      titleElement.textContent = templateName;
+
+      // Reset iframe
+      iframe.style.display = 'none';
+      loading.style.display = 'block';
+
+      // Load template preview
+      iframe.src = `/demo.html?template=${templateId}`;
+      
+      iframe.onload = function() {
+        loading.style.display = 'none';
+        iframe.style.display = 'block';
+      };
+
+      // Close on escape key
+      document.addEventListener('keydown', handlePreviewEscape);
+    }
+
+    function closeTemplatePreview() {
+      const modal = document.getElementById('templatePreviewModal');
+      modal.classList.remove('active');
+      currentPreviewTemplate = null;
+      document.removeEventListener('keydown', handlePreviewEscape);
+    }
+
+    function handlePreviewEscape(e) {
+      if (e.key === 'Escape') {
+        closeTemplatePreview();
+      }
+    }
+
+    function selectFromPreview() {
+      if (currentPreviewTemplate) {
+        selectTemplate(currentPreviewTemplate);
+        closeTemplatePreview();
+      }
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('templatePreviewModal')?.addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeTemplatePreview();
+      }
+    });
+
+    // Publish Now - Skip old draft system and go directly to publish
+    function publishNow() {
+      // Collect all form data in the format expected by site-template.html
+      const formData = {
+        template: selectedTemplate?.id,
+        templateId: selectedTemplate?.id,
+        brand: {
+          name: document.getElementById('businessName')?.value || 'My Business'
+        },
+        hero: {
+          title: document.getElementById('heroTitle')?.value || 'Welcome',
+          subtitle: document.getElementById('heroSubtitle')?.value || 'Learn more about our services',
+          image: document.getElementById('heroImage')?.value || '',
+          cta: 'Get Started'
+        },
+        contact: {
+          email: document.getElementById('contactEmail')?.value || '',
+          phone: document.getElementById('contactPhone')?.value || '',
+          address: document.getElementById('contactAddress')?.value || ''
+        },
+        services: {
+          title: selectedTemplate?.id.includes('product') ? 'Our Products' : 'Our Services',
+          items: []
+        }
+      };
+      
+      // Collect services/products from service cards
+      const serviceCards = document.querySelectorAll('.service-card');
+      serviceCards.forEach((card) => {
+        const title = card.querySelector('.service-name')?.value || '';
+        const description = card.querySelector('.service-description')?.value || '';
+        const price = card.querySelector('.service-price')?.value || '';
+        const image = card.querySelector('.service-image')?.value || '';
+        
+        if (title) {
+          formData.services.items.push({
+            title: title,
+            name: title,
+            description: description,
+            price: price,
+            image: image
+          });
+        }
+      });
+      
+      // If no services were collected, add the defaults from the template
+      if (formData.services.items.length === 0 && selectedTemplate) {
+        // Use the template data that's already loaded
+        const templateData = window.currentTemplateData || {};
+        if (templateData.services?.items) {
+          formData.services.items = templateData.services.items;
+        } else if (templateData.products) {
+          formData.services.items = templateData.products;
+        }
+      }
+      
+      console.log('Publishing with data:', formData); // Debug log
+      
+      localStorage.setItem('guestEditorProgress', JSON.stringify({
+        data: formData,
+        timestamp: Date.now(),
+        template: selectedTemplate?.id
+      }));
+      
+      // Redirect to quick publish
+      window.location.href = '/quick-publish.html';
+    }
+
+    // Demo Data Toggle Functions
+    let demoDataBackup = null; // Store original demo data
+    let isDemoDataActive = true;
+
+    function handleDemoToggle() {
+      const toggle = document.getElementById('demoDataToggle');
+      const label = document.getElementById('toggleLabel');
+      const description = document.getElementById('demoDataDescription');
+      
+      if (toggle.checked) {
+        // Restore demo data
+        label.textContent = 'Demo ON';
+        label.style.color = '#10b981';
+        description.textContent = 'Demo data is loaded. Toggle off to start with blank fields.';
+        restoreDemoData();
+        isDemoDataActive = true;
+        showToast('✓ Demo data restored!');
+      } else {
+        // Clear to blank
+        label.textContent = 'Demo OFF';
+        label.style.color = '#dc2626';
+        description.textContent = 'Blank fields active. Toggle on to restore demo data.';
+        clearDemoData();
+        isDemoDataActive = false;
+        showToast('✓ Switched to blank fields!');
+      }
+    }
+
+    function clearDemoData() {
+      // Backup current data before clearing (if not already backed up)
+      if (!demoDataBackup) {
+        demoDataBackup = backupCurrentData();
+      }
+      
+      // Clear all main input fields
+      const fieldsToReset = [
+        'businessName',
+        'heroTitle', 
+        'heroSubtitle',
+        'heroImage',
+        'contactEmail',
+        'contactPhone',
+        'contactAddress',
+        'businessHours',
+        'websiteUrl',
+        'facebookUrl',
+        'instagramUrl',
+        'googleMapsUrl'
+      ];
+      
+      fieldsToReset.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+          field.value = '';
+        }
+      });
+      
+      // Clear services
+      const servicesContainer = document.getElementById('servicesContainer');
+      if (servicesContainer) {
+        servicesContainer.innerHTML = '<p class="muted">No services added yet. Click "Add Service" below.</p>';
+      }
+      
+      if (typeof services !== 'undefined') {
+        services = [];
+      }
+      
+      // Clear uploaded images
+      if (typeof uploadedImages !== 'undefined') {
+        uploadedImages = [];
+        updateImagePreview();
+      }
+      
+      // Clear template-specific fields
+      const templateSpecific = document.getElementById('templateSpecificContent');
+      if (templateSpecific) {
+        const inputs = templateSpecific.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+          if (input.type === 'checkbox' || input.type === 'radio') {
+            input.checked = false;
+          } else {
+            input.value = '';
+          }
+        });
+      }
+      
+      // Clear all textareas
+      document.querySelectorAll('textarea').forEach(textarea => {
+        if (textarea.id && !textarea.id.includes('prodDesc')) {
+          textarea.value = '';
+        }
+      });
+      
+      // Update preview
+      if (typeof updatePreview === 'function') {
+        updatePreview();
+      }
+    }
+
+    function backupCurrentData() {
+      const backup = {};
+      const fieldsToBackup = [
+        'businessName', 'heroTitle', 'heroSubtitle', 'heroImage',
+        'contactEmail', 'contactPhone', 'contactAddress', 'businessHours',
+        'websiteUrl', 'facebookUrl', 'instagramUrl', 'googleMapsUrl'
+      ];
+      
+      fieldsToBackup.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+          backup[fieldId] = field.value;
+        }
+      });
+      
+      // Backup services HTML
+      const servicesContainer = document.getElementById('servicesContainer');
+      if (servicesContainer) {
+        backup.servicesHTML = servicesContainer.innerHTML;
+      }
+      
+      return backup;
+    }
+
+    function restoreDemoData() {
+      if (!demoDataBackup) return;
+      
+      // Restore all fields
+      Object.keys(demoDataBackup).forEach(fieldId => {
+        if (fieldId === 'servicesHTML') {
+          const servicesContainer = document.getElementById('servicesContainer');
+          if (servicesContainer) {
+            servicesContainer.innerHTML = demoDataBackup.servicesHTML;
+          }
+        } else {
+          const field = document.getElementById(fieldId);
+          if (field) {
+            field.value = demoDataBackup[fieldId];
+          }
+        }
+      });
+      
+      // Update preview
+      if (typeof updatePreview === 'function') {
+        updatePreview();
+      }
+    }
+
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #1f2937;
+        color: white;
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        z-index: 10002;
+        font-weight: 600;
+        animation: slideInRight 0.3s ease-out;
+      `;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.3s ease-out';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Functions are now global since script is not a module
+  </script>
+  
+  <style>
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideOutRight {
+      from {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+    }
+
+    /* Toggle Switch Styles */
+    .demo-toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+
+    .demo-toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .demo-toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #dc2626;
+      transition: 0.4s;
+      border-radius: 34px;
+    }
+
+    .demo-toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    input:checked + .demo-toggle-slider {
+      background-color: #10b981;
+    }
+
+    input:checked + .demo-toggle-slider:before {
+      transform: translateX(26px);
+    }
+
+    .demo-toggle-slider:hover {
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+    }
+  </style>
+</body>
+</html>
