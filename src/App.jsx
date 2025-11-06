@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { SiteProvider } from './context/SiteContext';
+import { CartProvider } from './context/CartContext';
 
 // Pages
 import Landing from './pages/Landing';
@@ -28,7 +29,8 @@ function App() {
     <Router>
       <AuthProvider>
         <ToastProvider>
-          <Routes>
+          <CartProvider>
+            <Routes>
             {/* Public routes */}
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
@@ -98,9 +100,10 @@ function App() {
               } 
             />
             
-            {/* 404 */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              {/* 404 */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </CartProvider>
         </ToastProvider>
       </AuthProvider>
     </Router>

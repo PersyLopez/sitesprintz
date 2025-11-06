@@ -2240,3 +2240,235 @@ Query executed: {
   duration: 17,
   rows: 0
 }
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 709,
+  rows: 1
+}
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 1136,
+  rows: 1
+}
+✅ Database connected successfully
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 631,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 635,
+  rows: 1
+}
+✅ Database connected successfully
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 663,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 669,
+  rows: 1
+}
+🚀 Initiating Google OAuth...
+Callback URL: https://tenurial-subemarginate-fay.ngrok-free.dev/auth/google/callback
+🎯 CALLBACK HIT - Starting passport authentication...
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT * FROM users WHERE email = $1',
+  duration: 3753,
+  rows: 1
+}
+Query executed: {
+  text: 'UPDATE users SET last_login = NOW() WHERE email = $1',
+  duration: 33,
+  rows: 1
+}
+🎯 Passport authenticate callback fired
+Error: null
+User: persylopez9@gmail.com
+Info: {}
+🔥🔥🔥 OAUTH CALLBACK FIRED 🔥🔥🔥
+User email: persylopez9@gmail.com
+User ID: c9ff275b-45f0-4d4b-90c8-55ac98819e43
+User role: user
+Token generated: eyJhbGciOiJIUzI1NiIs...
+🔍 Checking redirect logic...
+Pending intent: undefined
+Pending plan: undefined
+✅ REDIRECTING TO: /dashboard.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjOWZmMjc1Yi00NWYwLTRkNGItOTBjOC01NWFjOTg4MTllNDMiLCJlbWFpbCI6InBlcnN5bG9wZXo5QGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzYyMzc3NTkxLCJleHAiOjE3NjI5ODIzOTF9.1NVgHssoCVyNT5d7hk1AlRe-t-LYWCLvoRJI7cWUTWU
+🚀 User should now land on dashboard!
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 24,
+  rows: 1
+}
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 141,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 19,
+  rows: 1
+}
+Query executed: {
+  text: '\n' +
+    '      SELECT \n' +
+    '        id, subdomain, template_id, status, plan, \n' +
+    '        published_at, created_at, ',
+  duration: 53,
+  rows: 4
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 20,
+  rows: 1
+}
+Query executed: {
+  text: '\n' +
+    '      SELECT \n' +
+    '        id, subdomain, template_id, status, plan, \n' +
+    '        published_at, created_at, ',
+  duration: 21,
+  rows: 4
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 19,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 18,
+  rows: 1
+}
+Query executed: { text: 'SELECT * FROM users WHERE email = $1', duration: 19, rows: 1 }
+Query executed: {
+  text: 'UPDATE users SET last_login = NOW() WHERE id = $1',
+  duration: 21,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 148,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 151,
+  rows: 1
+}
+Query executed: {
+  text: '\n' +
+    '      SELECT \n' +
+    '        id, subdomain, template_id, status, plan, \n' +
+    '        published_at, created_at, ',
+  duration: 151,
+  rows: 0
+}
+Query executed: {
+  text: '\n' +
+    '      SELECT \n' +
+    '        id, subdomain, template_id, status, plan, \n' +
+    '        published_at, created_at, ',
+  duration: 154,
+  rows: 0
+}
+✅ Database connected successfully
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 166,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 169,
+  rows: 1
+}
+❌ Unexpected database error: Error: Connection terminated unexpectedly
+    at Connection.<anonymous> (/Users/admin/active-directory-website/node_modules/pg/lib/client.js:136:73)
+    at Object.onceWrapper (node:events:621:28)
+    at Connection.emit (node:events:507:28)
+    at Socket.<anonymous> (/Users/admin/active-directory-website/node_modules/pg/lib/connection.js:62:12)
+    at Socket.emit (node:events:519:35)
+    at TCP.<anonymous> (node:net:346:12) {
+  client: Client {
+    _events: [Object: null prototype] { error: [Function (anonymous)] },
+    _eventsCount: 1,
+    _maxListeners: undefined,
+    connectionParameters: ConnectionParameters {
+      user: 'neondb_owner',
+      database: 'neondb',
+      port: 5432,
+      host: 'ep-noisy-truth-ahtau3k1-pooler.c-3.us-east-1.aws.neon.tech',
+      binary: false,
+      options: undefined,
+      ssl: {},
+      client_encoding: '',
+      replication: undefined,
+      isDomainSocket: false,
+      application_name: undefined,
+      fallback_application_name: undefined,
+      statement_timeout: false,
+      lock_timeout: false,
+      idle_in_transaction_session_timeout: false,
+      query_timeout: false,
+      connect_timeout: 0
+    },
+    user: 'neondb_owner',
+    database: 'neondb',
+    port: 5432,
+    host: 'ep-noisy-truth-ahtau3k1-pooler.c-3.us-east-1.aws.neon.tech',
+    replication: undefined,
+    _Promise: [Function: Promise],
+    _types: TypeOverrides { _types: [Object], text: {}, binary: {} },
+    _ending: true,
+    _ended: true,
+    _connecting: false,
+    _connected: true,
+    _connectionError: false,
+    _queryable: false,
+    enableChannelBinding: false,
+    connection: Connection {
+      _events: [Object: null prototype],
+      _eventsCount: 23,
+      _maxListeners: undefined,
+      stream: [TLSSocket],
+      _keepAlive: false,
+      _keepAliveInitialDelayMillis: 0,
+      lastBuffer: false,
+      parsedStatements: {},
+      ssl: {},
+      _ending: true,
+      _emitMessage: false,
+      _connecting: true,
+      Symbol(shapeMode): false,
+      Symbol(kCapture): false
+    },
+    queryQueue: [],
+    binary: false,
+    processID: 454595777,
+    secretKey: 415071494,
+    ssl: {},
+    _connectionTimeoutMillis: 0,
+    _connectionCallback: null,
+    saslSession: null,
+    release: [Function (anonymous)],
+    activeQuery: null,
+    readyForQuery: true,
+    hasExecuted: true,
+    _poolUseCount: 1,
+    Symbol(shapeMode): false,
+    Symbol(kCapture): false
+  }
+}

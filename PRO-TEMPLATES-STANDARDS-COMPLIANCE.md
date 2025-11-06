@@ -1,13 +1,14 @@
 
 # ✅ PRO TEMPLATES STANDARDS COMPLIANCE REPORT
 
-**Date:** November 4, 2024  
-**Status:** All Pro Templates Meet Standards
+**Date:** November 5, 2025  
+**Status:** Standards Updated - Feature Requirements Refined
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ## Pro Template Standards (Summary)
 
+### Core Standards
 1. ✅ **Rich Default Content** - Show maximum potential
 2. ✅ **Advanced Features** - Tabs, modals, galleries, widgets
 3. ✅ **Team Sections** - Members with bios and credentials
@@ -16,6 +17,61 @@
 6. ✅ **Stats Dashboard** - Key metrics
 7. ✅ **Image Alt Text** - All images accessible
 8. ✅ **Pro Features Enabled** - Dashboard, analytics, booking
+
+### Pro Tier Feature Requirements (UPDATED Nov 5, 2025)
+
+**Philosophy:** "Everything in Starter + Online Sales & Better UX"
+
+#### Must Include All Starter Features (6):
+- ✅ Service/Product Filters
+- ✅ Basic Booking Widget (external embed - Calendly link)
+- ✅ Before/After Gallery
+- ✅ Staff Profiles (basic: name, title, bio, 1 photo)
+- ✅ FAQ Accordion
+- ✅ Contact Forms (basic)
+
+#### Must Add Pro-Exclusive Features (4):
+
+**1. ✅ Stripe Checkout Integration**
+- Full Stripe payment processing
+- "Buy Now" or "Add to Cart" buttons on products/services
+- Shopping cart functionality for multi-item purchases
+- Secure checkout flow
+- Order confirmation pages
+- Email confirmations after purchase
+
+**2. ✅ Order Management Dashboard**
+- Admin dashboard for business owner
+- View all orders
+- Update order status (new, completed, cancelled)
+- Customer information and order history
+- Sales tracking
+
+**3. ✅ Embedded Booking Widget (Advanced)**
+- Inline booking (not just external links)
+- Stays on site (better UX than Starter's external link)
+- Providers: Calendly, Acuity, Square, Crisp
+- Inline or popup styles
+- Higher conversion rates
+
+**4. ✅ Subscription/Recurring Display**
+- Display recurring service options
+- Show "per month" or "per week" pricing
+- Subscription tier comparison
+- Recurring payment UI components
+- Use cases: gym memberships, service subscriptions
+
+#### Must NOT Include (Premium-Only):
+- ❌ Live Chat Widget
+- ❌ Interactive Price Calculator
+- ❌ Multi-Step Lead Forms
+- ❌ Blog/Resources Section
+- ❌ Client Portal / Status Tracking
+- ❌ Email Automation
+- ❌ Service Area Mapping
+- ❌ Enhanced Provider Profiles (with video)
+- ❌ Review Management Integration
+- ❌ Advanced Analytics Dashboard
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -153,6 +209,93 @@ Both `restaurant-pro` and `gym-pro` templates meet all Pro standards with:
 - Stats dashboards
 - Integration with booking widgets
 - Owner dashboard and analytics enabled
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## Technical Implementation Requirements
+
+### Pro Template JSON Structure
+
+**Required fields in template JSON:**
+```json
+{
+  "plan": "Pro",
+  "products": [
+    {
+      "id": "prod_1",
+      "name": "Product Name",
+      "price": 49.99,
+      "stripePriceId": "price_xxx",
+      "buyButton": true,
+      "addToCart": true
+    }
+  ],
+  "booking": {
+    "enabled": true,
+    "provider": "calendly",
+    "style": "inline",  // Pro has "inline", Starter has "link"
+    "url": "https://calendly.com/business"
+  },
+  "subscriptions": [
+    {
+      "name": "Monthly Membership",
+      "price": 99,
+      "interval": "month",
+      "stripePriceId": "price_monthly"
+    }
+  ],
+  "features": {
+    "bookingWidget": { "enabled": true, "provider": "calendly" },
+    "ownerDashboard": true,
+    "analytics": true,
+    "stripeCheckout": true,
+    "orderManagement": true
+  }
+}
+```
+
+### Backend Requirements
+
+Pro templates must integrate with:
+- ✅ Stripe checkout sessions API
+- ✅ Webhook event handlers
+- ✅ Order management database
+- ✅ Email confirmation system
+- ✅ Payment processing logic
+
+### Frontend Requirements
+
+Pro templates must include:
+- ✅ "Add to Cart" or "Buy Now" buttons with Stripe integration
+- ✅ Shopping cart UI (for multi-item purchases)
+- ✅ Checkout flow with Stripe Elements
+- ✅ Order confirmation pages
+- ✅ Embedded booking widget (not just external links)
+- ✅ Subscription tier display with pricing
+
+### Key Distinctions from Starter
+
+| Feature | Starter | Pro |
+|---------|---------|-----|
+| **Display Products** | ✅ View only | ✅ View + Buy |
+| **Payments** | ❌ None | ✅ Stripe |
+| **Booking** | 🔗 External link | 🎯 Embedded widget |
+| **Orders** | ❌ None | ✅ Dashboard |
+| **Price Display** | ✅ "Call for quote" | ✅ Exact prices + checkout |
+| **Subscription Display** | ❌ No | ✅ Yes |
+
+### Key Distinctions from Premium
+
+| Feature | Pro | Premium |
+|---------|-----|---------|
+| **Payments** | ✅ Stripe | ✅ Stripe + POS |
+| **Booking** | ✅ Embedded | ✅ Advanced System |
+| **Forms** | ✅ Basic | ✅ Multi-step |
+| **Chat** | ❌ No | ✅ Live Chat |
+| **Automation** | ❌ No | ✅ Email sequences |
+| **Portal** | ❌ No | ✅ Client portal |
+| **Calculator** | ❌ No | ✅ Interactive |
+| **Blog** | ❌ No | ✅ CMS |
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 

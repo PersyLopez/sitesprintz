@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import { draftsService } from '../services/drafts';
 import { useToast } from '../hooks/useToast';
 
@@ -30,26 +30,66 @@ export function SiteProvider({ children }) {
   
   const [draftId, setDraftId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
   const [lastSaved, setLastSaved] = useState(null);
+  const [previewKey, setPreviewKey] = useState(0); // For triggering preview updates
+
+  const previewTimerRef = useRef(null);
+  const autoSaveTimerRef = useRef(null);
+
+  // Debounced preview update (300ms delay)
+  const triggerPreviewUpdate = useCallback(() => {
+    if (previewTimerRef.current) {
+      clearTimeout(previewTimerRef.current);
+    }
+    
+    previewTimerRef.current = setTimeout(() => {
+      setPreviewKey(prev => prev + 1);
+      console.log('🔄 Preview updated');
+    }, 300); // 300ms debounce
+  }, []);
 
   // Auto-save every 30 seconds
   useEffect(() => {
-    if (!autoSaveEnabled || !siteData.template) return;
+    if (!autoSaveEnabled || !siteData.template || !draftId) return;
     
-    const interval = setInterval(() => {
+    if (autoSaveTimerRef.current) {
+      clearInterval(autoSaveTimerRef.current);
+    }
+    
+    autoSaveTimerRef.current = setInterval(() => {
       saveDraft(true); // silent save
-    }, 30000);
+    }, 30000); // 30 seconds
     
-    return () => clearInterval(interval);
-  }, [siteData, autoSaveEnabled]);
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearInterval(autoSaveTimerRef.current);
+      }
+    };
+  }, [siteData, autoSaveEnabled, draftId]);
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (previewTimerRef.current) {
+        clearTimeout(previewTimerRef.current);
+      }
+      if (autoSaveTimerRef.current) {
+        clearInterval(autoSaveTimerRef.current);
+      }
+    };
+  }, []);
 
   const updateField = useCallback((field, value) => {
     setSiteData(prev => ({
       ...prev,
       [field]: value,
     }));
-  }, []);
+    
+    // Trigger preview update
+    triggerPreviewUpdate();
+  }, [triggerPreviewUpdate]);
 
   const updateNestedField = useCallback((path, value) => {
     setSiteData(prev => {
@@ -65,14 +105,18 @@ export function SiteProvider({ children }) {
       current[keys[keys.length - 1]] = value;
       return newData;
     });
-  }, []);
+    
+    // Trigger preview update
+    triggerPreviewUpdate();
+  }, [triggerPreviewUpdate]);
 
   const addService = useCallback((service) => {
     setSiteData(prev => ({
       ...prev,
       services: [...prev.services, { id: Date.now(), ...service }],
     }));
-  }, []);
+    triggerPreviewUpdate();
+  }, [triggerPreviewUpdate]);
 
   const updateService = useCallback((id, updates) => {
     setSiteData(prev => ({
@@ -81,17 +125,20 @@ export function SiteProvider({ children }) {
         s.id === id ? { ...s, ...updates } : s
       ),
     }));
-  }, []);
+    triggerPreviewUpdate();
+  }, [triggerPreviewUpdate]);
 
   const deleteService = useCallback((id) => {
     setSiteData(prev => ({
       ...prev,
       services: prev.services.filter(s => s.id !== id),
     }));
-  }, []);
+    triggerPreviewUpdate();
+  }, [triggerPreviewUpdate]);
 
   const saveDraft = async (silent = false) => {
-    setLoading(true);
+    if (!silent) setLoading(true);
+    setIsSaving(true);
     
     try {
       const response = await draftsService.saveDraft({
@@ -116,7 +163,8 @@ export function SiteProvider({ children }) {
       }
       throw error;
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -202,8 +250,10 @@ export function SiteProvider({ children }) {
     siteData,
     draftId,
     loading,
+    isSaving,
     lastSaved,
     autoSaveEnabled,
+    previewKey, // For PreviewFrame to watch
     setAutoSaveEnabled,
     updateField,
     updateNestedField,

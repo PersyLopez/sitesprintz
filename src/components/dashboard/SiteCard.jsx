@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import './SiteCard.css';
 
 function SiteCard({ site, onDelete, onDuplicate }) {
+  // In development, sites are served from Express (port 3000), not Vite (port 5173)
+  const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
   const siteUrl = site.subdomain 
-    ? `${window.location.protocol}//${window.location.host}/sites/${site.subdomain}`
+    ? `${backendUrl}/sites/${site.subdomain}/`
     : null;
 
   const formatDate = (dateString) => {
@@ -81,13 +83,23 @@ function SiteCard({ site, onDelete, onDuplicate }) {
           </button>
         )}
         
-        <Link 
-          to={`/setup?site=${site.id}`}
-          className="btn btn-primary btn-sm"
-          title="Edit site"
-        >
-          <span>✏️</span> Edit
-        </Link>
+        {site.status === 'published' && site.subdomain ? (
+          <a 
+            href={`${backendUrl}/sites/${site.subdomain}/?edit=true&token=${localStorage.getItem('token')}`}
+            className="btn btn-primary btn-sm"
+            title="Edit site with visual editor"
+          >
+            <span>✏️</span> Edit
+          </a>
+        ) : (
+          <Link 
+            to={`/setup?site=${site.id}`}
+            className="btn btn-primary btn-sm"
+            title="Edit draft in setup"
+          >
+            <span>✏️</span> Edit
+          </Link>
+        )}
         
         {onDuplicate && (
           <button 

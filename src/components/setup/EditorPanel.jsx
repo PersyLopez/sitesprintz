@@ -1,17 +1,28 @@
 import React, { useState } from 'react';
 import { useSite } from '../../hooks/useSite';
+import { useAuth } from '../../hooks/useAuth';
 import BusinessInfoForm from './forms/BusinessInfoForm';
+import ProductsEditor from './forms/ProductsEditor';
+import BookingEditor from './forms/BookingEditor';
+import PaymentSettings from './forms/PaymentSettings';
 import './EditorPanel.css';
 
 function EditorPanel() {
   const { siteData, updateField, addService, updateService, deleteService } = useSite();
+  const { user } = useAuth();
   const [activeSection, setActiveSection] = useState('business');
 
+  // Check if user has Pro plan for advanced features
+  const isPro = user?.plan === 'pro' || user?.plan === 'business';
+
   const sections = [
-    { id: 'business', label: 'Business Info', icon: '🏢' },
-    { id: 'services', label: 'Services', icon: '✨' },
-    { id: 'contact', label: 'Contact', icon: '📞' },
-    { id: 'colors', label: 'Colors', icon: '🎨' },
+    { id: 'business', label: 'Business Info', icon: '🏢', free: true },
+    { id: 'services', label: 'Services', icon: '✨', free: true },
+    { id: 'contact', label: 'Contact', icon: '📞', free: true },
+    { id: 'colors', label: 'Colors', icon: '🎨', free: true },
+    { id: 'products', label: 'Products', icon: '🛍️', pro: true },
+    { id: 'booking', label: 'Booking', icon: '📅', pro: true },
+    { id: 'payments', label: 'Payments', icon: '💳', pro: true },
   ];
 
   const renderServices = () => (
@@ -147,6 +158,17 @@ function EditorPanel() {
           placeholder="https://instagram.com/yourbusiness"
         />
       </div>
+
+      <div className="form-group">
+        <label htmlFor="googleMapsUrl">Google Maps URL</label>
+        <input
+          type="url"
+          id="googleMapsUrl"
+          value={siteData.social?.maps || siteData.googleMapsUrl || ''}
+          onChange={(e) => updateField('social.maps', e.target.value)}
+          placeholder="https://maps.google.com/..."
+        />
+      </div>
     </div>
   );
 
@@ -190,17 +212,28 @@ function EditorPanel() {
     </div>
   );
 
+  const handleTabClick = (sectionId, isPro) => {
+    if (isPro && !isPro) {
+      // Show upgrade prompt
+      alert('This is a Pro feature. Upgrade your plan to access it!');
+      return;
+    }
+    setActiveSection(sectionId);
+  };
+
   return (
     <div className="editor-panel-container">
       <div className="editor-tabs">
         {sections.map((section) => (
           <button
             key={section.id}
-            className={`editor-tab ${activeSection === section.id ? 'active' : ''}`}
-            onClick={() => setActiveSection(section.id)}
+            className={`editor-tab ${activeSection === section.id ? 'active' : ''} ${section.pro && !isPro ? 'locked' : ''}`}
+            onClick={() => handleTabClick(section.id, section.pro)}
+            disabled={section.pro && !isPro}
           >
             <span className="tab-icon">{section.icon}</span>
             <span className="tab-label">{section.label}</span>
+            {section.pro && !isPro && <span className="pro-badge">PRO</span>}
           </button>
         ))}
       </div>
@@ -210,7 +243,29 @@ function EditorPanel() {
         {activeSection === 'services' && renderServices()}
         {activeSection === 'contact' && renderContact()}
         {activeSection === 'colors' && renderColors()}
+        {activeSection === 'products' && (isPro ? <ProductsEditor /> : renderUpgradePrompt())}
+        {activeSection === 'booking' && (isPro ? <BookingEditor /> : renderUpgradePrompt())}
+        {activeSection === 'payments' && (isPro ? <PaymentSettings /> : renderUpgradePrompt())}
       </div>
+    </div>
+  );
+}
+
+function renderUpgradePrompt() {
+  return (
+    <div className="upgrade-prompt">
+      <div className="upgrade-icon">⭐</div>
+      <h3>Upgrade to Pro</h3>
+      <p>This feature is available on Pro and Business plans.</p>
+      <ul className="upgrade-benefits">
+        <li>✓ Product catalog & shopping cart</li>
+        <li>✓ Embedded booking widgets</li>
+        <li>✓ Secure payment processing</li>
+        <li>✓ Advanced customization</li>
+      </ul>
+      <a href="/dashboard" className="btn btn-primary">
+        Upgrade Now
+      </a>
     </div>
   );
 }

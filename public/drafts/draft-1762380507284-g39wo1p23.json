@@ -1,0 +1,47 @@
+{
+  "draftId": "draft-1762380507284-g39wo1p23",
+  "templateId": "auto-repair-quick-service",
+  "businessData": {
+    "businessName": "QuickLube Express Auto",
+    "heroTitle": "In and out in 20 minutes",
+    "heroSubtitle": "Fast oil changes, tire rotations, and essential maintenance - no appointment needed. Stay in your car service. Certified technicians. Quality products. Fair prices. Drive-in anytime during business hours!",
+    "heroImage": "https://images.unsplash.com/photo-1632823470675-7b0c98d85a93?w=1200&q=80",
+    "email": "service@quicklube.auto",
+    "address": "456 Highway Drive, Auto District, Houston, TX 77002",
+    "businessHours": "",
+    "websiteUrl": "",
+    "facebookUrl": "",
+    "instagramUrl": "",
+    "googleMapsUrl": "",
+    "services": {
+      "title": "Quick Services",
+      "subtitle": "Fast service without sacrificing quality",
+      "items": [
+        {
+          "title": "🛢️ Oil Changes",
+          "description": "Conventional and synthetic oil changes. Drive-through convenience"
+        },
+        {
+          "title": "🔧 Basic Maintenance",
+          "description": "Air filters, wipers, fluids, and light bulbs while you wait"
+        },
+        {
+          "title": "🔋 Batteries & Tires",
+          "description": "Battery testing and replacement, tire rotation and air pressure"
+        },
+        {
+          "title": "⚡ No Appointment",
+          "description": "Drive in anytime. Most services done in 15-20 minutes"
+        }
+      ]
+    },
+    "colors": {
+      "primary": "#dc2626",
+      "secondary": "#ef4444"
+    },
+    "templateSpecific": {}
+  },
+  "createdAt": "2025-11-05T22:08:27.284Z",
+  "expiresAt": "2025-11-12T22:08:27.284Z",
+  "status": "draft"
+}

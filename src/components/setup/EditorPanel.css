@@ -37,6 +37,30 @@
   border-bottom-color: var(--primary-color);
 }
 
+.editor-tab.locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+  position: relative;
+}
+
+.editor-tab.locked:hover {
+  background: none;
+}
+
+.pro-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 8px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
+}
+
 .tab-icon {
   font-size: 1.2rem;
 }
@@ -124,6 +148,55 @@
 
 .empty-services p {
   margin: 0;
+}
+
+/* Upgrade Prompt */
+.upgrade-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2xl);
+  text-align: center;
+  min-height: 400px;
+}
+
+.upgrade-icon {
+  font-size: 5rem;
+  margin-bottom: var(--spacing-lg);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.upgrade-prompt h3 {
+  margin: 0 0 var(--spacing-md);
+  color: var(--text-light);
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.upgrade-prompt p {
+  margin: 0 0 var(--spacing-xl);
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.upgrade-benefits {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--spacing-2xl);
+  text-align: left;
+}
+
+.upgrade-benefits li {
+  padding: var(--spacing-sm) 0;
+  color: var(--text-light);
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 @media (max-width: 640px) {

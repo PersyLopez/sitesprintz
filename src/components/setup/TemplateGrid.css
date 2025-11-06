@@ -378,6 +378,49 @@
   font-size: 0.9rem;
 }
 
+/* Template Action Buttons */
+.template-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+}
+
+.btn-preview,
+.btn-select {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.btn-preview {
+  background: rgba(100, 116, 139, 0.2);
+  color: var(--text-light);
+  border: 2px solid var(--border-dark);
+}
+
+.btn-preview:hover {
+  background: rgba(100, 116, 139, 0.3);
+  border-color: var(--text-light);
+  transform: translateY(-2px);
+}
+
+.btn-select {
+  background: linear-gradient(135deg, var(--primary-color), #0891b2);
+  color: white;
+  border: 2px solid transparent;
+}
+
+.btn-select:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.4);
+}
+
 /* ============================================
    RESPONSIVE DESIGN
    ============================================ */

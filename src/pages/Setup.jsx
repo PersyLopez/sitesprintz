@@ -3,22 +3,26 @@ import { useSearchParams } from 'react-router-dom';
 import { useSite } from '../hooks/useSite';
 import { templatesService } from '../services/templates';
 import { useToast } from '../hooks/useToast';
+import { hasLayouts, getLayoutsForTemplate } from '../config/templateLayouts';
 import Header from '../components/layout/Header';
 import TemplateGrid from '../components/setup/TemplateGrid';
 import EditorPanel from '../components/setup/EditorPanel';
 import PreviewFrame from '../components/setup/PreviewFrame';
 import PublishModal from '../components/setup/PublishModal';
+import LayoutSelector from '../components/setup/LayoutSelector';
 import './Setup.css';
 
 function Setup() {
   const [searchParams] = useSearchParams();
   const { siteData, loadTemplate, saveDraft, lastSaved } = useSite();
-  const { showError } = useToast();
+  const { showError, showSuccess } = useToast();
   
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [activeTab, setActiveTab] = useState('templates'); // templates, editor, preview
+  const [selectedLayout, setSelectedLayout] = useState(null);
+  const [baseTemplate, setBaseTemplate] = useState(null);
 
   useEffect(() => {
     loadTemplates();
@@ -41,9 +45,43 @@ function Setup() {
     }
   };
 
-  const handleTemplateSelect = (template) => {
-    loadTemplate(template);
+  const handleTemplateSelect = async (template) => {
+    const templateId = template.id || template.template;
+    
+    // Check if this template has layout variations
+    if (hasLayouts(templateId)) {
+      // Set base template and show layout selector
+      setBaseTemplate(templateId);
+      const layoutConfig = getLayoutsForTemplate(templateId);
+      setSelectedLayout(layoutConfig.defaultLayout);
+      
+      // Load the default layout
+      const fullTemplateId = `${templateId}-${layoutConfig.defaultLayout}`;
+      const layoutTemplate = await templatesService.getTemplate(fullTemplateId);
+      loadTemplate(layoutTemplate);
+    } else {
+      // No layouts, load template directly
+      setBaseTemplate(null);
+      setSelectedLayout(null);
+      loadTemplate(template);
+    }
+    
     setActiveTab('editor');
+  };
+  
+  const handleLayoutChange = async (layoutKey) => {
+    if (!baseTemplate) return;
+    
+    setSelectedLayout(layoutKey);
+    const fullTemplateId = `${baseTemplate}-${layoutKey}`;
+    
+    try {
+      const layoutTemplate = await templatesService.getTemplate(fullTemplateId);
+      loadTemplate(layoutTemplate);
+      showSuccess(`Switched to ${layoutKey.replace('-', ' ')} layout`);
+    } catch (error) {
+      showError('Failed to load layout');
+    }
   };
 
   const handlePublish = () => {
@@ -141,7 +179,17 @@ function Setup() {
             </div>
             <div className="panel-content">
               {siteData.template ? (
-                <EditorPanel />
+                <>
+                  {/* Show layout selector if template has layouts */}
+                  {baseTemplate && hasLayouts(baseTemplate) && (
+                    <LayoutSelector
+                      baseTemplate={baseTemplate}
+                      currentLayout={selectedLayout}
+                      onLayoutChange={handleLayoutChange}
+                    />
+                  )}
+                  <EditorPanel />
+                </>
               ) : (
                 <div className="panel-empty">
                   <p>👈 Select a template to start editing</p>

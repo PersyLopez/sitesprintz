@@ -1,0 +1,34 @@
+{
+  "draftId": "draft-1762377627046-vnim7f5sh",
+  "templateId": "electrician-pro",
+  "businessData": {
+    "businessName": "Apex Electric Solutions",
+    "heroTitle": "Expert Electrical Services You Can Trust",
+    "heroSubtitle": "Licensed master electricians providing residential and commercial electrical services. From emergency repairs to complete rewiring, solar installation to EV charging stations—we do it all with safety, quality, and professionalism.",
+    "heroImage": "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=1200&q=80",
+    "email": "service@apexelectric.com",
+    "address": "456 Industrial Way, Suite 200, Phoenix, AZ 85001",
+    "businessHours": {
+      "title": "Office Hours",
+      "items": [
+        "Monday - Friday: 7:00 AM - 6:00 PM",
+        "Saturday: 8:00 AM - 4:00 PM",
+        "Sunday: Emergency service only"
+      ],
+      "note": "24/7 emergency service always available"
+    },
+    "websiteUrl": "",
+    "facebookUrl": "https://facebook.com/apexelectric",
+    "instagramUrl": "https://instagram.com/apexelectric",
+    "googleMapsUrl": "",
+    "services": [],
+    "colors": {
+      "primary": "#f59e0b",
+      "secondary": "#d97706"
+    },
+    "templateSpecific": {}
+  },
+  "createdAt": "2025-11-05T21:20:27.046Z",
+  "expiresAt": "2025-11-12T21:20:27.046Z",
+  "status": "draft"
+}

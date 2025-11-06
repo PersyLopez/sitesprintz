@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from 'react';
+import TemplatePreviewModal from './TemplatePreviewModal';
 import './TemplateGrid.css';
 
 function TemplateGrid({ templates, selectedTemplate, onSelect }) {
   const [groupBy, setGroupBy] = useState('category'); // 'tier', 'category', 'all'
   const [filterTier, setFilterTier] = useState('all'); // 'all', 'Pro', 'Checkout', 'Starter'
   const [searchQuery, setSearchQuery] = useState('');
+  const [previewTemplate, setPreviewTemplate] = useState(null);
 
   // Filter and group templates
   const { groupedTemplates, categories, tiers } = useMemo(() => {
@@ -260,6 +262,28 @@ function TemplateGrid({ templates, selectedTemplate, onSelect }) {
                             </span>
                           </div>
                         )}
+                        
+                        {/* Action Buttons */}
+                        <div className="template-actions">
+                          <button
+                            className="btn-preview"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPreviewTemplate(template);
+                            }}
+                          >
+                            👁️ Preview
+                          </button>
+                          <button
+                            className="btn-select"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSelect(template);
+                            }}
+                          >
+                            Use Template →
+                          </button>
+                        </div>
                       </div>
 
                       {/* Selected Indicator */}
@@ -275,6 +299,15 @@ function TemplateGrid({ templates, selectedTemplate, onSelect }) {
             </div>
           );
         })
+      )}
+      
+      {/* Preview Modal */}
+      {previewTemplate && (
+        <TemplatePreviewModal
+          template={previewTemplate}
+          onClose={() => setPreviewTemplate(null)}
+          onSelect={onSelect}
+        />
       )}
     </div>
   );
