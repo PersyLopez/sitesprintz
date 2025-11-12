@@ -1,0 +1,186 @@
+{
+  "brand": {
+    "name": "RapidFlow Emergency Plumbing",
+    "logo": "assets/logo.svg",
+    "tagline": "24/7 Emergency Service • Fast Response",
+    "phone": "(555) 911-7777",
+    "email": "emergency@rapidflow.plumbing"
+  },
+  "themeVars": {
+    "color-primary": "#dc2626",
+    "color-accent": "#ef4444",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Emergency", "href": "#contact"},
+    {"label": "Services", "href": "#products"},
+    {"label": "Coverage", "href": "#about"},
+    {"label": "Call Now", "href": "tel:+15559117777"}
+  ],
+  "hero": {
+    "eyebrow": "🚨 24/7 Emergency Plumbing",
+    "title": "Fast response when you need it most",
+    "subtitle": "Burst pipe? No hot water? Backed-up sewer? We're available 24/7 for plumbing emergencies. Licensed plumbers arrive fast with fully-stocked trucks. Stop the damage. Fix the problem. Get back to normal.",
+    "cta": [
+      {"label": "🚨 Call Now: (555) 911-7777", "href": "tel:+15559117777"},
+      {"label": "Our Services", "href": "#products", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=1200&q=80",
+    "imageAlt": "Emergency plumber fixing leak"
+  },
+  "about": {
+    "title": "Emergency Plumbing Experts",
+    "subtitle": "Available 24/7/365",
+    "content": "RapidFlow specializes in emergency plumbing service. Our licensed plumbers respond fast with fully-stocked trucks to handle any plumbing emergency. Burst pipes, water heater failures, clogged drains, sewer backups - we fix it all, day or night."
+  },
+  "products": [
+    {
+      "name": "Emergency Service Call",
+      "price": 149,
+      "description": "24/7 emergency response. Licensed plumber dispatched immediately. Diagnosis and quote on-site. Price applied to repair.",
+      "category": "Emergency",
+      "duration": "Within 1 hour",
+      "popular": true
+    },
+    {
+      "name": "Burst Pipe Repair",
+      "price": 299,
+      "description": "Emergency pipe repair or replacement. Stop the flooding fast. Restore water service. Available 24/7.",
+      "category": "Emergency",
+      "duration": "1-2 hours",
+      "popular": true
+    },
+    {
+      "name": "Water Heater Emergency",
+      "price": 250,
+      "description": "Emergency water heater repair or same-day replacement. Get hot water back today. No cold showers!",
+      "category": "Water Heater",
+      "duration": "2-4 hours",
+      "popular": true
+    },
+    {
+      "name": "Sewer Line Emergency",
+      "price": 450,
+      "description": "Emergency sewer line clearing or repair. Hydro-jetting available. Stop backups immediately.",
+      "category": "Sewer",
+      "duration": "2-3 hours"
+    },
+    {
+      "name": "Gas Line Emergency",
+      "price": 199,
+      "description": "Emergency gas line repair for safety. Smell gas? Call immediately. Licensed for gas work.",
+      "category": "Gas",
+      "duration": "1-2 hours"
+    },
+    {
+      "name": "Drain Emergency",
+      "price": 175,
+      "description": "Emergency drain clearing for backed-up sinks, tubs, or toilets. Available 24/7.",
+      "category": "Drains",
+      "duration": "1 hour"
+    }
+  ],
+  "services": {
+    "title": "Emergency Services",
+    "subtitle": "Fast response for urgent problems",
+    "items": [
+      {
+        "title": "💧 Burst Pipes & Leaks",
+        "description": "Stop flooding and water damage with emergency pipe repairs"
+      },
+      {
+        "title": "🚽 Sewer Backups",
+        "description": "Emergency sewer line clearing and repair. Available now"
+      },
+      {
+        "title": "🔥 Water Heaters",
+        "description": "Emergency repair or same-day replacement. Hot water today"
+      },
+      {
+        "title": "⚠️ Gas Lines",
+        "description": "Emergency gas line repair for your safety. Licensed gas work"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Emergency Response Stories",
+    "subtitle": "When seconds count",
+    "items": [
+      {
+        "text": "Burst pipe at 2AM flooding our basement. They arrived in 45 minutes and had it fixed in an hour. Saved us from major damage. Thank you!",
+        "author": "Jennifer Wilson",
+        "title": "Emergency Call"
+      },
+      {
+        "text": "Water heater died on Saturday morning. They came out same day and installed a new one by afternoon. Back to hot showers! Excellent service!",
+        "author": "Michael Chen",
+        "title": "Weekend Emergency"
+      },
+      {
+        "text": "Sewer backed up into our house. Horrible situation. They responded immediately and fixed it fast. Professional, clean, and fair pricing. Highly recommend!",
+        "author": "Sarah Thompson",
+        "title": "Satisfied Customer"
+      }
+    ]
+  },
+  "team": {
+    "title": "Emergency Response Team",
+    "subtitle": "Licensed, experienced, ready",
+    "members": [
+      {
+        "name": "Steve Patterson",
+        "title": "Owner & Master Plumber",
+        "bio": "Licensed Master Plumber with 20+ years experience. Founded RapidFlow to provide fast, reliable emergency service when people need it most. Available 24/7.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "Steve Patterson",
+        "credentials": ["Master Plumber License", "20+ Years Experience", "24/7 Available"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Emergency Process",
+    "subtitle": "Fast response when minutes matter",
+    "steps": [
+      {"title": "Call Immediately", "description": "24/7 live answer. Describe your emergency"},
+      {"title": "Plumber Dispatched", "description": "Licensed plumber with stocked truck sent right away"},
+      {"title": "Stop the Damage", "description": "Assess situation and stop immediate problem"},
+      {"title": "Complete Repair", "description": "Fix properly and restore normal function"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "24/7", "label": "Always Available"},
+      {"number": "<1HR", "label": "Average Response"},
+      {"number": "4.9", "label": "Emergency Rating"},
+      {"number": "Licensed", "label": "& Insured"}
+    ]
+  },
+  "contact": {
+    "title": "Emergency? Call Now!",
+    "subtitle": "24/7 emergency dispatch",
+    "phone": "(555) 911-7777",
+    "email": "emergency@rapidflow.plumbing",
+    "address": "Serving 30-mile radius of Metro Phoenix, AZ"
+  },
+  "footer": {
+    "text": "🚨 RapidFlow Emergency Plumbing • 24/7 Fast Response",
+    "awards": [
+      "Licensed Master Plumber",
+      "24/7 Emergency Service",
+      "Fast Response Guarantee"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "emergency@rapidflow.plumbing",
+    "productCta": "Call Emergency Line",
+    "productCtaHref": "tel:+15559117777",
+    "productNote": "For plumbing emergencies, call our 24/7 emergency line immediately: (555) 911-7777"
+  },
+  "productsTitle": "Emergency Services",
+  "productsSubtitle": "24/7 fast response"
+}
+

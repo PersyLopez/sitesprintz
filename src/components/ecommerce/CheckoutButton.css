@@ -1,0 +1,63 @@
+/* Checkout Button Styles */
+
+.checkout-button-container {
+  width: 100%;
+}
+
+.btn-checkout {
+  width: 100%;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  font-size: 1.1rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  position: relative;
+}
+
+.btn-checkout:disabled {
+  background: rgba(100, 116, 139, 0.3);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.checkout-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.checkout-error {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: rgba(239, 68, 68, 0.2);
+  border: 2px solid rgba(239, 68, 68, 0.4);
+  border-radius: 8px;
+  color: #ef4444;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.checkout-warning {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: rgba(245, 158, 11, 0.2);
+  border: 2px solid rgba(245, 158, 11, 0.4);
+  border-radius: 8px;
+  color: #f59e0b;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+}
+

@@ -1,0 +1,135 @@
+{
+  "brand": {
+    "name": "BrightShelf Boutique",
+    "logo": "assets/logo.svg",
+    "alt": "BrightShelf logo",
+    "phone": "+1-212-555-0148",
+    "email": "hello@brightshelf.com"
+  },
+  "themeVars": {
+    "color-primary": "#f97316",
+    "color-primary-600": "#ea580c",
+    "color-accent": "#fb923c",
+    "color-success": "#22c55e",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    { "label": "Home", "href": "#hero" },
+    { "label": "Collections", "href": "#products" },
+    { "label": "About", "href": "#about" },
+    { "label": "Contact", "href": "#contact" }
+  ],
+  "hero": {
+    "eyebrow": "New arrivals in store",
+    "title": "Showcase your products without the complexity",
+    "subtitle": "Perfect for boutiques that want to highlight pricing while taking orders offline.",
+    "image": "assets/hero-placeholder.jpg",
+    "imageAlt": "Boutique interior",
+    "cta": [
+      { "label": "View Collections", "href": "#products" },
+      { "label": "Contact Us", "href": "#contact", "variant": "secondary" }
+    ]
+  },
+  "about": {
+    "title": "Tailored for in-person experiences",
+    "body": "BrightShelf Boutique offers curated home goods and accessories. Use this template to highlight pricing, share your story, and invite shoppers to reach out by phone or visit your location."
+  },
+  "testimonials": {
+    "title": "Customers love the experience",
+    "items": [
+      {
+        "text": "Our customers love browsing online before visiting in person!",
+        "author": "Morgan",
+        "title": "Owner"
+      },
+      {
+        "text": "The template makes sharing new arrivals simple and fast.",
+        "author": "Jules",
+        "title": "Store Manager"
+      }
+    ]
+  },
+  "products": [
+    {
+      "name": "Hand-crafted Stoneware Mug",
+      "price": 28,
+      "description": "Heirloom-quality mug with a matte finish and ergonomic handle. Perfect for your morning coffee or evening tea. Each piece is unique."
+    },
+    {
+      "name": "Warm Cedar Candle",
+      "price": 36,
+      "description": "Slow-burning soy candle with notes of cedarwood, amber, and sage. 60-hour burn time. Hand-poured in small batches."
+    },
+    {
+      "name": "Linen Throw Blanket",
+      "price": 74,
+      "description": "Soft, breathable linen throw available in oat, slate, and moss. Perfect for any season. Size: 50x60 inches."
+    },
+    {
+      "name": "Ceramic Dinner Plate Set",
+      "price": 98,
+      "description": "Set of 4 hand-glazed dinner plates in a soft cream finish. Microwave and dishwasher safe. 11-inch diameter."
+    },
+    {
+      "name": "Organic Cotton Table Runner",
+      "price": 45,
+      "description": "Hand-woven table runner from 100% organic cotton. Available in natural, charcoal, and terracotta. 72 inches long."
+    },
+    {
+      "name": "Brass & Walnut Serving Board",
+      "price": 89,
+      "description": "Beautiful serving board combining American walnut with brass handles. Perfect for charcuterie. 18x12 inches."
+    },
+    {
+      "name": "Lavender & Honey Soap Bar",
+      "price": 12,
+      "description": "Handmade cold-process soap with organic lavender and local honey. Gentle on sensitive skin. 4 oz bar."
+    },
+    {
+      "name": "Woven Basket Set",
+      "price": 65,
+      "description": "Set of 3 handwoven seagrass baskets in graduated sizes. Perfect for storage or display. Fair trade certified."
+    },
+    {
+      "name": "Vintage-Style Enamel Pitcher",
+      "price": 42,
+      "description": "Classic white enamel pitcher with black rim. Perfect for flowers or serving beverages. Holds 2 quarts."
+    }
+  ],
+  "pricing": {
+    "title": "Signature collections",
+    "plans": [
+      {
+        "name": "Home Essentials",
+        "description": "Everyday pieces curated for easy styling.",
+        "price": 59,
+        "cta": { "label": "Call to order", "href": "#contact" }
+      },
+      {
+        "name": "Gifting Suite",
+        "description": "Ready-to-wrap gifts for every occasion.",
+        "price": 95,
+        "cta": { "label": "Email for details", "href": "mailto:hello@brightshelf.com" }
+      }
+    ]
+  },
+  "contact": {
+    "title": "Visit or reach out",
+    "subtitle": "Call, email, or stop by our boutique to reserve your favorites.",
+    "email": "hello@brightshelf.com",
+    "phone": "+1-212-555-0148"
+  },
+  "footer": {
+    "text": "© BrightShelf Boutique — Custom collections with personal service."
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "hello@brightshelf.com",
+    "productCta": "Call us to reserve",
+    "productCtaHref": "tel:+12125550148",
+    "productNote": "Submit your order inquiry and we'll contact you to arrange pickup or delivery."
+  }
+}
+

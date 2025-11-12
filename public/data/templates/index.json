@@ -1,0 +1,458 @@
+{
+  "templates": [
+    {
+      "id": "starter",
+      "name": "Starter",
+      "description": "Simple one-page template",
+      "category": "Basic",
+      "color": "#22c55e",
+      "plan": "Starter",
+      "features": [
+        "Hero, services, and contact sections",
+        "Mobile-responsive navigation",
+        "Offline CTAs (call, email, visit)"
+      ]
+    },
+    {
+      "id": "restaurant",
+      "name": "Restaurant",
+      "description": "Menu display and reservation CTAs",
+      "category": "Food & Dining",
+      "color": "#ef4444",
+      "plan": "Starter",
+      "features": [
+        "Menu pricing display (no ordering)",
+        "External reservation links (OpenTable, Resy)",
+        "Hours, location, and contact info"
+      ]
+    },
+    {
+      "id": "salon",
+      "name": "Salon",
+      "description": "Services and booking links",
+      "category": "Beauty & Wellness",
+      "color": "#a855f7",
+      "plan": "Starter",
+      "features": [
+        "Service pricing display (view-only)",
+        "External booking CTAs (Calendly, phone)",
+        "Testimonials and gallery sections"
+      ]
+    },
+    {
+      "id": "freelancer",
+      "name": "Freelancer",
+      "description": "Portfolio and contact",
+      "category": "Professional Services",
+      "color": "#0ea5e9",
+      "plan": "Starter",
+      "features": [
+        "Project showcase and case studies",
+        "Pricing table display (no checkout)",
+        "Contact form and consultation CTAs"
+      ]
+    },
+    {
+      "id": "consultant",
+      "name": "Business Consultant",
+      "description": "Services and lead capture",
+      "category": "Professional Services",
+      "color": "#1e40af",
+      "plan": "Starter",
+      "features": [
+        "Service descriptions with outcomes",
+        "Testimonials and client logos",
+        "Consultation request CTAs (no payment)"
+      ]
+    },
+    {
+      "id": "gym",
+      "name": "Gym & Fitness",
+      "description": "Classes and membership info",
+      "category": "Fitness & Health",
+      "color": "#dc2626",
+      "plan": "Starter",
+      "features": [
+        "Membership tier display (no signup)",
+        "Class schedule and trainer bios",
+        "Visit or call CTAs (offline signup)"
+      ]
+    },
+    {
+      "id": "tech-repair",
+      "name": "Tech Repair",
+      "description": "Services and contact info",
+      "category": "Technology",
+      "color": "#059669",
+      "plan": "Starter",
+      "features": [
+        "Service pricing display (no booking)",
+        "Device categories and repair FAQs",
+        "Phone and walk-in CTAs"
+      ]
+    },
+    {
+      "id": "cleaning",
+      "name": "Cleaning Service",
+      "description": "Service packages and quotes",
+      "category": "Home Services",
+      "color": "#0891b2",
+      "plan": "Starter",
+      "features": [
+        "Package pricing display (no booking)",
+        "Service area and availability info",
+        "Call or email for quote CTAs"
+      ]
+    },
+    {
+      "id": "pet-care",
+      "name": "Pet Care",
+      "description": "Services and contact",
+      "category": "Pet Services",
+      "color": "#7c3aed",
+      "plan": "Starter",
+      "features": [
+        "Service pricing display (view-only)",
+        "Photo gallery and testimonials",
+        "Phone or form CTAs (no online booking)"
+      ]
+    },
+    {
+      "id": "product-showcase",
+      "name": "Product Showcase",
+      "description": "Catalog display with offline ordering",
+      "category": "Retail",
+      "color": "#f97316",
+      "plan": "Starter",
+      "features": [
+        "Product catalog with pricing (view-only)",
+        "Custom offline CTAs (call, email, visit)",
+        "No payment processing or cart"
+      ]
+    },
+    {
+      "id": "restaurant-pro",
+      "name": "Restaurant Pro",
+      "description": "Advanced restaurant with booking and interactive features",
+      "category": "Food & Dining",
+      "color": "#d4af37",
+      "plan": "Pro",
+      "features": [
+        "Tabbed menu navigation (Appetizers/Entrées/Desserts/Drinks)",
+        "Integrated booking widget (Calendly)",
+        "Chef's specials carousel",
+        "Private dining room showcases",
+        "Filterable photo gallery",
+        "Owner dashboard access"
+      ]
+    },
+    {
+      "id": "gym-pro",
+      "name": "FitLife Gym (Pro)",
+      "description": "Membership subscriptions with before/after gallery",
+      "category": "Fitness & Health",
+      "color": "#dc2626",
+      "plan": "Pro",
+      "features": [
+        "Recurring subscription display (monthly/yearly)",
+        "Before/after transformation gallery",
+        "Inline booking widget",
+        "Member testimonials with ratings",
+        "Detailed pricing with features list",
+        "Service filters"
+      ]
+    },
+    {
+      "id": "salon-pro",
+      "name": "Salon Pro",
+      "description": "Premium salon with booking, gallery, and private events",
+      "category": "Beauty & Wellness",
+      "color": "#a855f7",
+      "plan": "Pro",
+      "features": [
+        "Tabbed service categories (Hair/Color/Extensions/Bridal)",
+        "Integrated booking widget",
+        "Featured services & specials",
+        "Private events & group packages",
+        "Before/after transformation gallery",
+        "Team profiles with specialties"
+      ]
+    },
+    {
+      "id": "freelancer-pro",
+      "name": "Freelancer Pro",
+      "description": "Professional portfolio with case studies and testimonials",
+      "category": "Professional Services",
+      "color": "#0ea5e9",
+      "plan": "Pro",
+      "features": [
+        "Portfolio gallery with categories",
+        "In-depth case studies",
+        "Client testimonials with ratings",
+        "Pricing tiers and packages",
+        "Process framework showcase",
+        "Team member profiles"
+      ]
+    },
+    {
+      "id": "consultant-pro",
+      "name": "Consultant Pro",
+      "description": "Elite consulting services with case studies and results",
+      "category": "Professional Services",
+      "color": "#1e40af",
+      "plan": "Pro",
+      "features": [
+        "Service categories with deliverables",
+        "Client results & metrics",
+        "Detailed case studies",
+        "Industry expertise showcase",
+        "Team credentials & backgrounds",
+        "Process methodology display"
+      ]
+    },
+    {
+      "id": "tech-repair-pro",
+      "name": "Tech Repair Pro",
+      "description": "Advanced repair services with warranty and before/after gallery",
+      "category": "Technology",
+      "color": "#059669",
+      "plan": "Pro",
+      "features": [
+        "Service categories (Phone/Computer/Tablet/Gaming)",
+        "Before/after repair gallery",
+        "Warranty tiers explained",
+        "Featured repair specials",
+        "Process transparency",
+        "Team certifications"
+      ]
+    },
+    {
+      "id": "cleaning-pro",
+      "name": "Cleaning Pro",
+      "description": "Premium cleaning with packages and before/after showcase",
+      "category": "Home Services",
+      "color": "#0891b2",
+      "plan": "Pro",
+      "features": [
+        "Residential & commercial services",
+        "Service packages & subscriptions",
+        "Before/after gallery",
+        "Team member profiles",
+        "Service area coverage",
+        "Add-on services"
+      ]
+    },
+    {
+      "id": "pet-care-pro",
+      "name": "Pet Care Pro",
+      "description": "Premium pet grooming with gallery and team profiles",
+      "category": "Pet Services",
+      "color": "#7c3aed",
+      "plan": "Pro",
+      "features": [
+        "Service categories (Dog/Cat/Specialty)",
+        "Filterable photo gallery",
+        "Team groomer profiles",
+        "Before/after transformations",
+        "Add-on services menu",
+        "Process explanation"
+      ]
+    },
+    {
+      "id": "product-showcase-pro",
+      "name": "Product Showcase Pro",
+      "description": "Artisan product catalog with collections and maker profiles",
+      "category": "Retail",
+      "color": "#f97316",
+      "plan": "Pro",
+      "features": [
+        "Product categories & collections",
+        "Featured products showcase",
+        "Artisan/maker profiles",
+        "Customer testimonials with ratings",
+        "Curated collections",
+        "Brand story & values"
+      ]
+    },
+    {
+      "id": "electrician-pro",
+      "name": "Electrician Pro",
+      "description": "24/7 emergency electrical services with certifications",
+      "category": "Home Services",
+      "color": "#f59e0b",
+      "plan": "Pro",
+      "features": [
+        "Residential & commercial services",
+        "24/7 emergency service section",
+        "Certifications & licenses displayed",
+        "Team member profiles",
+        "Service area coverage",
+        "Specialty services (Solar/EV/Smart Home)"
+      ]
+    },
+    {
+      "id": "auto-repair-pro",
+      "name": "Auto Repair Pro",
+      "description": "ASE-certified auto repair with service packages and warranty",
+      "category": "Automotive",
+      "color": "#ef4444",
+      "plan": "Pro",
+      "features": [
+        "Service categories (Maintenance/Repair/Specialty)",
+        "Service packages (30K/60K/90K mile)",
+        "Current specials showcase",
+        "ASE-certified team profiles",
+        "Warranty information",
+        "Customer testimonials with ratings"
+      ]
+    },
+    {
+      "id": "plumbing-pro",
+      "name": "Plumbing Pro",
+      "description": "24/7 plumbing with membership plans and emergency service",
+      "category": "Home Services",
+      "color": "#3b82f6",
+      "plan": "Pro",
+      "features": [
+        "Residential & commercial services",
+        "24/7 emergency service section",
+        "Membership plans with pricing",
+        "Licensed team profiles",
+        "Service area coverage",
+        "Specialty services (Tankless/Filtration/Remodel)"
+      ]
+    },
+    {
+      "id": "electrician",
+      "name": "Electrician Service",
+      "description": "Emergency response, service areas, certifications",
+      "category": "Home Services",
+      "color": "#f59e0b",
+      "plan": "Starter",
+      "features": [
+        "Emergency service emphasis",
+        "Service area coverage",
+        "Certifications and licenses",
+        "Maintenance plans"
+      ]
+    },
+    {
+      "id": "auto-repair",
+      "name": "Auto Repair Shop",
+      "description": "ASE-certified team, diagnostics, fleet program",
+      "category": "Automotive",
+      "color": "#ef4444",
+      "plan": "Starter",
+      "features": [
+        "ASE-certified technicians",
+        "Digital vehicle inspections",
+        "Fleet maintenance programs",
+        "Diagnostic services"
+      ]
+    },
+    {
+      "id": "plumbing",
+      "name": "Plumbing Company",
+      "description": "On-call plumbers, service guarantees, membership plans",
+      "category": "Home Services",
+      "color": "#3b82f6",
+      "plan": "Starter",
+      "features": [
+        "24/7 emergency service",
+        "Service guarantees",
+        "Membership plans",
+        "Commercial work"
+      ]
+    },
+    {
+      "id": "product-ordering",
+      "name": "Product Ordering",
+      "description": "Full e-commerce with Stripe checkout",
+      "category": "Retail",
+      "color": "#2563eb",
+      "plan": "Pro",
+      "features": [
+        "Stripe checkout with secure payments",
+        "Automatic order confirmations via email",
+        "Admin dashboard for order management"
+      ]
+    },
+    {
+      "id": "restaurant-ordering",
+      "name": "Restaurant (Online Ordering)",
+      "description": "Menu with Stripe checkout for takeout/delivery",
+      "category": "Food & Dining",
+      "color": "#dc2626",
+      "plan": "Pro",
+      "features": [
+        "Accept online orders with Stripe checkout",
+        "Menu display with secure payment processing",
+        "Automated order confirmations and tracking"
+      ]
+    },
+    {
+      "id": "home-services-premium",
+      "name": "Home Services Pro",
+      "description": "Premium template for contractors, HVAC, plumbing, and trade businesses",
+      "category": "Home Services",
+      "color": "#1e40af",
+      "plan": "Premium",
+      "features": [
+        "Multi-step quote form with file upload",
+        "Before/after project galleries",
+        "Service area coverage map",
+        "Credentials and trust badges",
+        "Emergency service emphasis",
+        "Testimonials with star ratings"
+      ]
+    },
+    {
+      "id": "medical-premium",
+      "name": "Medical & Wellness Premium",
+      "description": "Premium template for medical, dental, and wellness practices",
+      "category": "Healthcare",
+      "color": "#0369a1",
+      "plan": "Premium",
+      "features": [
+        "Advanced appointment booking form",
+        "Provider profiles with credentials",
+        "Insurance acceptance showcase",
+        "Patient testimonials and journey",
+        "Office hours and location details",
+        "HIPAA-focused content blocks"
+      ]
+    },
+    {
+      "id": "legal-premium",
+      "name": "Legal Services Premium",
+      "description": "Premium template for law firms and attorneys",
+      "category": "Legal",
+      "color": "#1e3a8a",
+      "plan": "Premium",
+      "features": [
+        "Free consultation form",
+        "Practice areas and case results",
+        "Attorney team showcase",
+        "Process timeline and FAQs",
+        "Credentials and awards",
+        "24/7 urgency CTAs"
+      ]
+    },
+    {
+      "id": "real-estate-premium",
+      "name": "Real Estate Premium",
+      "description": "Premium template for real estate agents and teams",
+      "category": "Real Estate",
+      "color": "#2563eb",
+      "plan": "Premium",
+      "features": [
+        "Featured listings showcase",
+        "Home valuation lead capture",
+        "Agent bio and stats",
+        "Market insights and testimonials",
+        "Buyer and seller journeys",
+        "Resource library and contact CTAs"
+      ]
+    }
+  ]
+}

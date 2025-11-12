@@ -1,0 +1,81 @@
+{
+  "brand": {
+    "name": "Summit Solutions",
+    "logo": "assets/logo.svg",
+    "tagline": "Business Growth Consulting • Since 2012",
+    "phone": "(555) 789-0123",
+    "email": "hello@summitsolutions.com"
+  },
+  "themeVars": {
+    "color-primary": "#22c55e",
+    "color-accent": "#38bdf8",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Home", "href": "#top"},
+    {"label": "Services", "href": "#products"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "Welcome",
+    "title": "We help your business grow",
+    "subtitle": "Modern solutions tailored for small businesses.",
+    "cta": [
+      {"label": "Get Started", "href": "#contact"},
+      {"label": "Our Services", "href": "#services", "variant": "secondary"}
+    ],
+    "image": "assets/hero-placeholder.svg",
+    "imageAlt": "Hero"
+  },
+  "services": {
+    "title": "Our Services",
+    "subtitle": "What we do best",
+    "items": [
+      {"title": "Business Consulting", "description": "Expert strategic advice to help your business grow and thrive. We analyze your operations and create actionable plans."},
+      {"title": "Custom Design", "description": "Beautiful and functional design solutions for your brand. From logos to full brand identities, we bring your vision to life."},
+      {"title": "Web Development", "description": "Fast, reliable, and modern web solutions. We build responsive websites that convert visitors into customers."},
+      {"title": "Digital Marketing", "description": "Comprehensive digital marketing strategies including SEO, social media, and email campaigns to grow your reach."},
+      {"title": "Content Creation", "description": "Professional photography, videography, and copywriting that tells your brand's story and engages your audience."},
+      {"title": "Analytics & Reporting", "description": "Data-driven insights to track your success. We help you understand your metrics and make informed decisions."}
+    ]
+  },
+  "testimonials": {
+    "title": "What Our Clients Say",
+    "items": [
+      {
+        "text": "Summit Solutions transformed our business completely. Their strategic advice increased our revenue by 40% in just 6 months!",
+        "author": "Sarah Johnson",
+        "location": "CEO of TechStart",
+        "rating": 5
+      },
+      {
+        "text": "The team's attention to detail and professionalism is unmatched. They delivered beyond our expectations every time.",
+        "author": "Mike Chen",
+        "location": "Owner of Local Bakery",
+        "rating": 5
+      },
+      {
+        "text": "Working with Summit Solutions was the best decision we made. They truly understand small business needs.",
+        "author": "Jennifer Martinez",
+        "location": "Director of Operations",
+        "rating": 5
+      }
+    ]
+  },
+  "about": {"title": "About Us", "body": "We are a friendly neighborhood business dedicated to helping small and medium-sized companies reach their full potential. Since 2012, we've partnered with over 500 businesses to deliver strategic solutions that drive real results. Our team combines decades of experience with fresh, innovative thinking to solve your toughest challenges."},
+  "contact": {"title": "Get in touch", "subtitle": "We'd love to hear from you", "email": "hello@example.com", "phone": "+1 555 123 4567"},
+  "footer": {"text": "Proudly serving our community."},
+  "pages": [
+    {"slug": "about", "title": "About", "body": "# Our Story\nWe started in 2012..."}
+  ],
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "hello@summitsolutions.com",
+    "productCta": "Request Consultation",
+    "productCtaHref": "mailto:hello@summitsolutions.com",
+    "productNote": "Submit your request and we'll contact you within 24 hours to discuss your needs and provide a custom quote."
+  }
+}

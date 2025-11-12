@@ -1,0 +1,367 @@
+{
+  "brand": {
+    "name": "FitLife Gym", 
+    "logo": "assets/logo.svg",
+    "tagline": "Transform Your Body • Since 2012",
+    "phone": "(555) 345-6789",
+    "email": "info@fitlifegym.com"
+  },
+  "themeVars": {
+    "color-primary": "#dc2626", 
+    "color-accent": "#f59e0b",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Classes", "href": "#products"},
+    {"label": "Trainers", "href": "#team"},
+    {"label": "Membership", "href": "#pricing"},
+    {"label": "Reviews", "href": "#reviews"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "💪 Transform Your Body",
+    "title": "Achieve your fitness goals with expert guidance",
+    "subtitle": "Join our community of dedicated athletes and fitness enthusiasts. With state-of-the-art equipment, expert trainers, and diverse classes, we'll help you reach your peak performance.",
+    "cta": [
+      {"label": "🏋️ Join Now", "href": "#membership"},
+      {"label": "🆓 Free Trial", "href": "#contact", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80",
+    "imageAlt": "Modern gym with state-of-the-art equipment and professional training"
+  },
+  "about": {
+    "title": "Our Story", 
+    "body": "Founded in 2012 by former professional athlete Marcus Johnson, FitLife Gym has grown into the premier fitness destination in our community. Our mission is to provide world-class facilities and expert guidance to help every member achieve their fitness goals.",
+    "subtitle": "Why choose FitLife Gym",
+    "features": [
+      "🏋️ State-of-the-art equipment",
+      "👨‍💼 Certified personal trainers",
+      "📊 Progress tracking technology",
+      "🌱 Clean, spacious facility",
+      "📱 Mobile app integration",
+      "🏆 Proven results"
+    ],
+    "owner": {
+      "name": "Marcus Johnson",
+      "title": "Owner & Head Trainer",
+      "bio": "Former NFL linebacker with 10+ years of professional training experience. Marcus specializes in strength training and athletic performance, helping clients achieve peak physical condition.",
+      "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+      "imageAlt": "Marcus Johnson, Owner"
+    }
+  },
+  "products": [
+    {
+      "name": "Personal Training",
+      "price": 80,
+      "description": "One-on-one training sessions with certified trainers. Customized workout plans and nutrition guidance.",
+      "image": "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=600&q=80",
+      "imageAlt": "Personal training session",
+      "category": "Training",
+      "duration": "60 minutes",
+      "popular": true
+    },
+    {
+      "name": "HIIT Bootcamp",
+      "price": 25,
+      "description": "High-intensity interval training combining cardio and strength for maximum calorie burn",
+      "image": "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&q=80",
+      "imageAlt": "HIIT bootcamp class",
+      "category": "Group Classes",
+      "duration": "45 minutes",
+      "difficulty": "High",
+      "popular": true
+    },
+    {
+      "name": "Yoga Flow",
+      "price": 20,
+      "description": "Vinyasa yoga combining movement and breath for strength and flexibility",
+      "image": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&q=80",
+      "imageAlt": "Yoga flow class",
+      "category": "Mind & Body",
+      "duration": "60 minutes",
+      "difficulty": "Low",
+      "popular": true
+    },
+    {
+      "name": "CrossFit",
+      "price": 30,
+      "description": "Functional fitness combining weightlifting, cardio, and gymnastics movements",
+      "image": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80",
+      "imageAlt": "CrossFit workout",
+      "category": "Group Classes",
+      "duration": "60 minutes",
+      "difficulty": "High"
+    },
+    {
+      "name": "Nutrition Plan",
+      "price": 150,
+      "description": "Custom meal plans and nutrition guidance tailored to your fitness goals",
+      "image": "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600&q=80",
+      "imageAlt": "Nutrition coaching",
+      "category": "Wellness",
+      "duration": "Consultation + Plan"
+    },
+    {
+      "name": "Monthly Pass",
+      "price": 99,
+      "description": "Unlimited access to gym, all group classes, and basic amenities",
+      "image": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=80",
+      "imageAlt": "Gym membership",
+      "category": "Membership",
+      "duration": "Monthly",
+      "popular": true
+    }
+  ],
+  "stats": {
+    "items": [
+      {"number": "500+", "label": "Active Members"},
+      {"number": "10+", "label": "Years Experience"},
+      {"number": "4.8", "label": "Star Rating"},
+      {"number": "40+", "label": "Classes per Week"}
+    ]
+  },
+  "process": {
+    "title": "Getting Started is Easy",
+    "subtitle": "Your fitness journey begins here",
+    "steps": [
+      {"title": "Free Trial", "description": "Try us for 3 days with full access, no commitment required"},
+      {"title": "Choose Your Plan", "description": "Pick Basic, Premium, or Elite based on your goals"},
+      {"title": "Start Training", "description": "Access gym, classes, and trainers immediately"},
+      {"title": "See Results", "description": "Track progress with our app and trainer support"}
+    ]
+  },
+  "credentials": {
+    "title": "Why FitLife Gym",
+    "subtitle": "The best equipment, trainers, and community",
+    "items": [
+      {"icon": "🏋️", "name": "Certified Trainers", "description": "NSCA & NASM certified"},
+      {"icon": "⭐", "name": "Best Gym 2023", "description": "Community Choice Award"},
+      {"icon": "🏗️", "name": "State-of-the-Art", "description": "Latest equipment"},
+      {"icon": "💯", "name": "Money-Back Guarantee", "description": "30-day satisfaction"}
+    ]
+  },
+  "team": {
+    "title": "Meet Our Trainers",
+    "subtitle": "Expert guidance from certified professionals",
+    "members": [
+      {
+        "name": "Marcus Johnson",
+        "title": "Head Trainer & Owner",
+        "bio": "Former NFL linebacker with 10+ years of professional training experience. Marcus specializes in strength training and athletic performance.",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+        "imageAlt": "Marcus Johnson",
+        "credentials": ["NSCA-CSCS", "NASM-CPT", "USAW Level 1"]
+      },
+      {
+        "name": "Sarah Williams",
+        "title": "Group Fitness Director",
+        "bio": "8+ years leading HIIT, yoga, and specialty classes. Certified nutrition coach passionate about holistic wellness.",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
+        "imageAlt": "Sarah Williams",
+        "credentials": ["ACE-CPT", "RYT-200", "Precision Nutrition L1"]
+      },
+      {
+        "name": "David Chen",
+        "title": "Personal Training Specialist",
+        "bio": "Specializes in weight loss, bodybuilding, and injury rehabilitation. Helped 100+ clients achieve their goals.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "David Chen",
+        "credentials": ["NASM-CPT", "ACSM-CPT", "FMS Level 1"]
+      }
+    ]
+  },
+  "membership": {
+    "title": "Membership Plans",
+    "subtitle": "Choose the plan that fits your fitness goals",
+    "plans": [
+      {
+        "name": "Basic",
+        "description": "Gym access and basic amenities",
+        "price": 49,
+        "features": [
+          "24/7 gym access",
+          "Cardio equipment",
+          "Weight training area",
+          "Locker rooms",
+          "Free parking"
+        ],
+        "cta": {"label": "Join Basic", "href": "#contact"}
+      },
+      {
+        "name": "Premium",
+        "description": "Gym access + unlimited classes",
+        "price": 79,
+        "features": [
+          "Everything in Basic",
+          "Unlimited group classes",
+          "Sauna access",
+          "Guest privileges",
+          "Nutrition consultation"
+        ],
+        "popular": true,
+        "cta": {"label": "Join Premium", "href": "#contact"}
+      },
+      {
+        "name": "Elite",
+        "description": "All access + personal training",
+        "price": 149,
+        "features": [
+          "Everything in Premium",
+          "2 personal training sessions/month",
+          "Priority class booking",
+          "Towel service",
+          "Supplement discounts"
+        ],
+        "cta": {"label": "Join Elite", "href": "#contact"}
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Member Success Stories",
+    "subtitle": "Real transformations from our community",
+    "items": [
+      {
+        "text": "I lost 40 pounds in 6 months with Marcus's guidance. The personal training made all the difference!",
+        "author": "Jessica Martinez",
+        "location": "Elite Member",
+        "rating": 5,
+        "date": "2 weeks ago",
+        "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
+        "imageAlt": "Jessica Martinez"
+      },
+      {
+        "text": "The HIIT classes are incredible! I've never been in better shape and the community is so supportive.",
+        "author": "Michael Rodriguez",
+        "location": "Premium Member",
+        "rating": 5,
+        "date": "1 week ago",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "imageAlt": "Michael Rodriguez"
+      },
+      {
+        "text": "Best gym in the city! Clean facilities, great equipment, and amazing trainers. Worth every penny.",
+        "author": "Amanda Thompson",
+        "location": "Basic Member",
+        "rating": 5,
+        "date": "3 days ago",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&q=80",
+        "imageAlt": "Amanda Thompson"
+      },
+      {
+        "text": "The yoga classes helped me recover from my injury. Sarah is an amazing instructor!",
+        "author": "David Chen",
+        "location": "Premium Member",
+        "rating": 5,
+        "date": "5 days ago",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80",
+        "imageAlt": "David Chen"
+      }
+    ],
+    "stats": {
+      "averageRating": 4.8,
+      "totalReviews": 324,
+      "googleRating": 4.7,
+      "yelpRating": 4.8
+    }
+  },
+  "contact": {
+    "title": "Visit Us", 
+    "subtitle": "Start your fitness journey today",
+    "phone": "(555) 345-6789",
+    "email": "info@fitlifegym.com",
+    "address": "456 Fitness Avenue, Sports District, Springfield, IL 62701",
+    "coordinates": {
+      "lat": 39.7817,
+      "lng": -89.6501
+    },
+    "parking": "Free parking available • Large parking lot • Electric vehicle charging",
+    "accessibility": "Wheelchair accessible • Elevator access • Accessible equipment",
+    "hours": {
+      "title": "Gym Hours",
+      "items": [
+        "Monday - Friday: 5:00 AM - 11:00 PM",
+        "Saturday: 6:00 AM - 10:00 PM",
+        "Sunday: 7:00 AM - 9:00 PM"
+      ],
+      "note": "24/7 access for Premium and Elite members"
+    },
+    "trial": {
+      "phone": "(555) 345-6789",
+      "online": "https://fitlifegym.com/free-trial",
+      "note": "Free 3-day trial available for new members"
+    }
+  },
+  "social": {
+    "facebook": "https://facebook.com/fitlifegym",
+    "instagram": "https://instagram.com/fitlifegym_official",
+    "googleMaps": "https://maps.google.com/fitlifegym",
+    "yelp": "https://yelp.com/biz/fitlifegym-springfield",
+    "tiktok": "https://tiktok.com/@fitlifegym"
+  },
+  "events": {
+    "title": "Special Programs",
+    "subtitle": "Take your fitness to the next level",
+    "items": [
+      {
+        "title": "Transformation Challenge",
+        "description": "12-week program with nutrition guidance and group support",
+        "schedule": "Starting monthly",
+        "price": "$199 program fee"
+      },
+      {
+        "title": "Nutrition Workshop",
+        "description": "Learn proper nutrition for your fitness goals",
+        "schedule": "First Saturday of each month",
+        "price": "Free for members"
+      },
+      {
+        "title": "Competition Prep",
+        "description": "Specialized training for powerlifting and bodybuilding competitions",
+        "schedule": "Available by appointment",
+        "price": "$150/month"
+      }
+    ]
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know about FitLife Gym",
+    "items": [
+      {"question": "Can I try before I join?", "answer": "Yes! We offer a free 3-day trial with full access to the gym, classes, and amenities. No credit card required to start your trial."},
+      {"question": "What's included in membership?", "answer": "All plans include 24/7 gym access, cardio and weight equipment, locker rooms, and parking. Premium and Elite add unlimited classes, sauna, and more perks."},
+      {"question": "Are personal trainers included?", "answer": "Personal training is available as an add-on for Basic and Premium members. Elite members get 2 sessions per month included in their membership."},
+      {"question": "Do you have group classes?", "answer": "Yes! We offer 40+ classes per week including HIIT, yoga, CrossFit, spin, and more. Premium and Elite members have unlimited class access."},
+      {"question": "What are your hours?", "answer": "Our facility is open Monday-Friday 5 AM-11 PM, Saturday 6 AM-10 PM, and Sunday 7 AM-9 PM. Premium and Elite members have 24/7 keycard access."},
+      {"question": "Can I bring a guest?", "answer": "Premium and Elite members can bring guests. Basic members can purchase guest passes for $10 per visit."},
+      {"question": "What if I need to cancel?", "answer": "Memberships are month-to-month with no long-term contracts. Cancel anytime with 30 days notice. We also offer freeze options for vacations or injuries."},
+      {"question": "Do you offer nutrition guidance?", "answer": "Yes! Premium members get one free nutrition consultation. We also offer custom meal plans and ongoing coaching for an additional fee."},
+      {"question": "Is there parking?", "answer": "Yes, we have a large free parking lot with ample spaces, including electric vehicle charging stations."},
+      {"question": "Are showers and lockers available?", "answer": "Yes! We have clean, spacious locker rooms with showers, changing areas, and complimentary towels (Elite members only for towels)."}
+    ]
+  },
+  "footer": {
+    "text": "💪 FitLife Gym • Transform Your Body Since 2012",
+    "links": [
+      {"label": "Privacy Policy", "href": "#privacy"},
+      {"label": "Terms of Service", "href": "#terms"},
+      {"label": "Careers", "href": "#careers"},
+      {"label": "Gift Cards", "href": "#giftcards"}
+    ],
+    "awards": [
+      "Best Gym 2023",
+      "Community Choice Award",
+      "Excellence in Fitness"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "membership@irontemple.com",
+    "productCta": "Visit to Join",
+    "productCtaHref": "tel:+15555551234",
+    "productNote": "Submit your membership inquiry and we'll contact you to set up your first week free trial!"
+  },
+  "productsTitle": "Classes & Training",
+  "productsSubtitle": "Diverse fitness options for every goal and fitness level"
+}

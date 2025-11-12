@@ -1,0 +1,26 @@
+{
+  "draftId": "draft-1761947015741-7p2295p1g",
+  "templateId": "electrician",
+  "businessData": {
+    "businessName": "BrightSpark Electric",
+    "heroTitle": "Powering homes and businesses since 1998",
+    "heroSubtitle": "Same-day appointments, 24/7 emergency support, and workmanship you can trust.",
+    "heroImage": "assets/hero-placeholder.svg",
+    "email": "service@brightsparkelectric.com",
+    "phone": "+1-555-432-7890",
+    "address": "Call 24/7 for emergencies or send a note for next-day appointments.",
+    "businessHours": "",
+    "websiteUrl": "",
+    "facebookUrl": "",
+    "instagramUrl": "",
+    "googleMapsUrl": "",
+    "services": [],
+    "templateSpecific": {
+      "businessDescription": "",
+      "specialOffers": ""
+    }
+  },
+  "createdAt": "2025-10-31T21:43:35.741Z",
+  "expiresAt": "2025-11-07T21:43:35.741Z",
+  "status": "draft"
+}

@@ -1,0 +1,187 @@
+{
+  "brand": {
+    "name": "Strategic Solutions Group",
+    "logo": "assets/logo.svg",
+    "tagline": "Enterprise Consulting • Global Reach",
+    "phone": "(555) 900-1100",
+    "email": "contact@strategicsg.com"
+  },
+  "themeVars": {
+    "color-primary": "#1e40af",
+    "color-accent": "#3b82f6",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "Industries", "href": "#about"},
+    {"label": "Team", "href": "#team"},
+    {"label": "Case Studies", "href": "#testimonials"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "💼 Enterprise Strategy Consulting",
+    "title": "Drive transformational change",
+    "subtitle": "We partner with Fortune 500 companies and global enterprises to solve complex business challenges. From digital transformation to operational excellence, our consultants deliver measurable results that drive sustainable growth.",
+    "cta": [
+      {"label": "Schedule Consultation", "href": "#contact"},
+      {"label": "Our Services", "href": "#products", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&q=80",
+    "imageAlt": "Corporate business strategy meeting"
+  },
+  "about": {
+    "title": "Strategic Excellence",
+    "subtitle": "Trusted by global leaders",
+    "content": "With 20+ years of experience across industries, Strategic Solutions Group brings deep expertise in corporate strategy, digital transformation, and organizational change. Our team of former C-suite executives and industry specialists delivers insights that move markets."
+  },
+  "products": [
+    {
+      "name": "Digital Transformation",
+      "price": 25000,
+      "description": "End-to-end digital strategy including technology roadmap, organizational change, and implementation support. 12-week engagement.",
+      "category": "Strategy",
+      "duration": "12 weeks",
+      "popular": true
+    },
+    {
+      "name": "M&A Due Diligence",
+      "price": 35000,
+      "description": "Comprehensive acquisition analysis including market assessment, synergy identification, and integration planning.",
+      "category": "Transactions",
+      "duration": "6-8 weeks",
+      "popular": true
+    },
+    {
+      "name": "Operational Excellence",
+      "price": 28000,
+      "description": "Process optimization, cost reduction, and performance improvement programs. Data-driven recommendations.",
+      "category": "Operations",
+      "duration": "10 weeks"
+    },
+    {
+      "name": "Growth Strategy",
+      "price": 22000,
+      "description": "Market entry, product strategy, and revenue acceleration. Includes competitive analysis and go-to-market plan.",
+      "category": "Growth",
+      "duration": "8 weeks"
+    },
+    {
+      "name": "Change Management",
+      "price": 18000,
+      "description": "Organizational transformation support including stakeholder engagement and implementation roadmap.",
+      "category": "Organization",
+      "duration": "12 weeks",
+      "popular": true
+    },
+    {
+      "name": "Executive Advisory",
+      "price": 15000,
+      "description": "Monthly retainer for ongoing strategic counsel. Direct access to senior partners.",
+      "category": "Advisory",
+      "duration": "Monthly"
+    }
+  ],
+  "services": {
+    "title": "Consulting Services",
+    "subtitle": "Comprehensive solutions for enterprise clients",
+    "items": [
+      {
+        "title": "📊 Strategy & Planning",
+        "description": "Corporate strategy, market entry, and long-term planning for sustainable competitive advantage"
+      },
+      {
+        "title": "💻 Digital Transformation",
+        "description": "Technology enablement, digital operating models, and innovation programs"
+      },
+      {
+        "title": "🔄 Operations",
+        "description": "Process optimization, supply chain, and operational efficiency improvements"
+      },
+      {
+        "title": "👥 Organization",
+        "description": "Change management, organizational design, and leadership development"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Client Success",
+    "subtitle": "Proven results with industry leaders",
+    "items": [
+      {
+        "text": "Strategic Solutions Group led our digital transformation with precision and insight. Their team delivered beyond expectations, and the results speak for themselves - 40% efficiency gain in 12 months.",
+        "author": "James Richardson",
+        "title": "CTO, Fortune 500 Retailer"
+      },
+      {
+        "text": "The M&A due diligence they conducted was thorough and insightful. Their analysis uncovered key synergies that made the acquisition highly successful.",
+        "author": "Maria Santos",
+        "title": "VP Corporate Development"
+      },
+      {
+        "text": "Working with SSG transformed our approach to growth strategy. Their market insights and strategic framework drove a 25% revenue increase year-over-year.",
+        "author": "David Chang",
+        "title": "CEO, Tech Company"
+      }
+    ]
+  },
+  "team": {
+    "title": "Leadership Team",
+    "subtitle": "Former executives and industry experts",
+    "members": [
+      {
+        "name": "Dr. Michael Bradford",
+        "title": "Managing Partner",
+        "bio": "Former Chief Strategy Officer at a Fortune 100 company. PhD in Business Strategy from Stanford. 25+ years advising C-suite executives on transformational initiatives.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "Dr. Michael Bradford",
+        "credentials": ["PhD Stanford GSB", "Former Fortune 100 CSO", "Board Director"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Our Approach",
+    "subtitle": "Rigorous methodology, measurable results",
+    "steps": [
+      {"title": "Discovery & Assessment", "description": "Deep dive into your organization, challenges, and objectives"},
+      {"title": "Strategic Analysis", "description": "Data-driven insights and strategic recommendations"},
+      {"title": "Implementation Planning", "description": "Detailed roadmap with clear milestones and KPIs"},
+      {"title": "Execution Support", "description": "Hands-on guidance to ensure successful implementation"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "20+", "label": "Years Experience"},
+      {"number": "150+", "label": "Enterprise Clients"},
+      {"number": "$2B+", "label": "Value Created"},
+      {"number": "30", "label": "Senior Consultants"}
+    ]
+  },
+  "contact": {
+    "title": "Start the Conversation",
+    "subtitle": "Schedule a confidential consultation",
+    "phone": "(555) 900-1100",
+    "email": "contact@strategicsg.com",
+    "address": "1200 Corporate Plaza, Financial District, New York, NY 10004"
+  },
+  "footer": {
+    "text": "💼 Strategic Solutions Group • Enterprise Excellence Since 2003",
+    "awards": [
+      "Top Strategy Firm 2023",
+      "Consulting Excellence Award",
+      "Global 100 Consultancies"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "contact@strategicsg.com",
+    "productCta": "Request Proposal",
+    "productCtaHref": "tel:+15559001100",
+    "productNote": "Submit your inquiry and a senior partner will contact you within 24 hours to discuss your needs."
+  },
+  "productsTitle": "Consulting Services",
+  "productsSubtitle": "Enterprise solutions that drive results"
+}
+

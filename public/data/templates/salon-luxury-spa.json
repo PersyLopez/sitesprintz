@@ -1,0 +1,199 @@
+{
+  "brand": {
+    "name": "Serenity Spa & Salon", 
+    "logo": "assets/logo.svg",
+    "tagline": "Luxury Wellness Retreat • Est. 2010",
+    "phone": "(555) 888-7700",
+    "email": "concierge@serenityspa.com"
+  },
+  "themeVars": {
+    "color-primary": "#8b5cf6", 
+    "color-accent": "#c084fc",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "Spa Menu", "href": "#about"},
+    {"label": "Team", "href": "#team"},
+    {"label": "Testimonials", "href": "#testimonials"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "✨ Luxury Spa & Wellness Experience",
+    "title": "Indulge in extraordinary care",
+    "subtitle": "Experience the pinnacle of beauty and relaxation at our award-winning spa. From signature treatments to bespoke styling, every service is designed to transport you to a world of serenity and transformation.",
+    "cta": [
+      {"label": "🗓️ Book Experience", "href": "#contact"},
+      {"label": "💎 View Treatments", "href": "#products", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=1200&q=80",
+    "imageAlt": "Luxurious spa interior with elegant treatment rooms"
+  },
+  "about": {
+    "title": "A Sanctuary of Beauty", 
+    "subtitle": "Where luxury meets wellness",
+    "content": "Since 2010, Serenity Spa & Salon has been the premier destination for discerning clients seeking the finest in beauty and wellness. Our 5,000 sq ft retreat features private treatment suites, organic product lines, and master aestheticians trained in the latest European techniques."
+  },
+  "products": [
+    {
+      "name": "Signature Facial Experience",
+      "price": 185,
+      "description": "90-minute bespoke facial with LED therapy, lymphatic drainage, and customized mask. Includes scalp and décolleté massage.",
+      "image": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&q=80",
+      "imageAlt": "Luxury facial treatment",
+      "category": "Spa Services",
+      "duration": "90 minutes",
+      "popular": true
+    },
+    {
+      "name": "Master Stylist Cut & Finish",
+      "price": 125,
+      "description": "Precision cutting with our award-winning master stylists. Includes scalp treatment, blow dry, and style.",
+      "image": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&q=80",
+      "imageAlt": "Expert haircut service",
+      "category": "Hair Artistry",
+      "duration": "75 minutes"
+    },
+    {
+      "name": "Balayage Color Artistry",
+      "price": 295,
+      "description": "Hand-painted highlights by color specialists. Includes Olaplex treatment, toner, and signature blow out.",
+      "image": "https://images.unsplash.com/photo-1560066984-4173d6fe64e2?w=600&q=80",
+      "imageAlt": "Balayage hair coloring",
+      "category": "Hair Artistry",
+      "duration": "3.5 hours",
+      "popular": true
+    },
+    {
+      "name": "Aromatherapy Body Treatment",
+      "price": 165,
+      "description": "Full body exfoliation, wrap, and massage with essential oils. Pure bliss.",
+      "image": "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=600&q=80",
+      "imageAlt": "Body treatment massage",
+      "category": "Spa Services",
+      "duration": "90 minutes"
+    },
+    {
+      "name": "Luxury Manicure & Pedicure",
+      "price": 145,
+      "description": "Indulgent nail service with paraffin treatment, massage, and gel polish. Pure perfection.",
+      "image": "https://images.unsplash.com/photo-1519415510236-718bdfcd89c8?w=600&q=80",
+      "imageAlt": "Luxury nail service",
+      "category": "Nail Artistry",
+      "duration": "120 minutes"
+    },
+    {
+      "name": "Bridal Luxury Package",
+      "price": 650,
+      "description": "Complete wedding day experience with trial, hair, makeup, lash extensions, and spa treatment.",
+      "image": "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80",
+      "imageAlt": "Bridal beauty package",
+      "category": "Special Events",
+      "duration": "5 hours",
+      "popular": true
+    }
+  ],
+  "services": {
+    "title": "Curated Experiences",
+    "subtitle": "Transformative treatments for body, mind, and spirit",
+    "items": [
+      {
+        "title": "💆 Spa Rituals",
+        "description": "Signature facials, body treatments, and massage therapy designed to restore and rejuvenate"
+      },
+      {
+        "title": "💇 Hair Artistry",
+        "description": "Master styling, precision cutting, and advanced color techniques with luxury product lines"
+      },
+      {
+        "title": "💅 Nail Couture",
+        "description": "Meticulous nail artistry with organic products and the latest design trends"
+      },
+      {
+        "title": "✨ Special Events",
+        "description": "Bespoke bridal packages and group experiences in our private suite"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Client Testimonials",
+    "subtitle": "Trusted by discerning clients",
+    "items": [
+      {
+        "text": "Serenity is my sanctuary. The attention to detail and level of service is unmatched. Every visit feels like a mini vacation.",
+        "author": "Victoria Sterling",
+        "title": "Executive Client"
+      },
+      {
+        "text": "The bridal package was extraordinary. My entire party was pampered beyond belief. Worth every penny for the most important day of my life.",
+        "author": "Sophia Laurent",
+        "title": "Bride"
+      },
+      {
+        "text": "I've visited spas around the world, and Serenity ranks among the absolute finest. The aestheticians are true artists.",
+        "author": "Catherine Moore",
+        "title": "VIP Member"
+      }
+    ]
+  },
+  "team": {
+    "title": "Master Artists",
+    "subtitle": "Internationally trained beauty experts",
+    "members": [
+      {
+        "name": "Isabella Rousseau",
+        "title": "Spa Director & Master Aesthetician",
+        "bio": "20+ years experience training under masters in Paris and Switzerland. Specializes in advanced skincare and anti-aging treatments.",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
+        "imageAlt": "Isabella Rousseau",
+        "credentials": ["CIDESCO Certified", "Guinot Paris Master", "Featured in Vogue"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Your Journey",
+    "subtitle": "A curated experience from arrival to departure",
+    "steps": [
+      {"title": "Arrival & Welcome", "description": "Greeted with champagne and escorted to your private changing suite"},
+      {"title": "Consultation", "description": "Detailed assessment with your specialist to customize your treatment"},
+      {"title": "Treatment Experience", "description": "Luxuriate in your service using only the finest products"},
+      {"title": "Refresh & Depart", "description": "Enjoy our relaxation lounge with refreshments before your departure"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "15+", "label": "Years Excellence"},
+      {"number": "5", "label": "Star Rating"},
+      {"number": "2000+", "label": "VIP Clients"},
+      {"number": "8", "label": "Master Artists"}
+    ]
+  },
+  "contact": {
+    "title": "Visit Our Sanctuary", 
+    "subtitle": "Schedule your transformative experience",
+    "phone": "(555) 888-7700",
+    "email": "concierge@serenityspa.com",
+    "address": "456 Luxury Lane, Uptown District, Beverly Heights, CA 90210"
+  },
+  "footer": {
+    "text": "✨ Serenity Spa & Salon • Luxury Wellness Since 2010",
+    "awards": [
+      "Best Luxury Spa 2023",
+      "Forbes 5-Star Rating",
+      "Conde Nast Reader's Choice"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "concierge@serenityspa.com",
+    "productCta": "Book Experience",
+    "productCtaHref": "tel:+15558887700",
+    "productNote": "Submit your booking request and our concierge will contact you to arrange your personalized experience."
+  },
+  "productsTitle": "Spa & Salon Services",
+  "productsSubtitle": "Curated treatments for the discerning client"
+}
+

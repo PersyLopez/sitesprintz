@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Success | SiteSprintz</title>
+  <link rel="stylesheet" href="theme.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .success-container {
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 450px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(6, 182, 212, 0.2);
+      border-top-color: var(--color-primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 24px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin: 0 0 12px 0;
+      color: var(--color-text);
+    }
+
+    p {
+      color: var(--color-muted);
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="success-container">
+    <div class="spinner"></div>
+    <h1>Setting up your account...</h1>
+    <p id="status">Please wait a moment</p>
+  </div>
+
+  <script>
+    (async function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+      const plan = urlParams.get('plan');
+      const statusEl = document.getElementById('status');
+
+      if (!token) {
+        statusEl.textContent = 'Authentication failed. Redirecting...';
+        setTimeout(() => window.location.href = '/register.html?error=no_token', 2000);
+        return;
+      }
+
+      // Store the auth token
+      localStorage.setItem('authToken', token);
+
+      // If there's a paid plan, redirect to Stripe checkout
+      if (plan && (plan === 'starter' || plan === 'pro')) {
+        statusEl.textContent = 'Redirecting to checkout...';
+        
+        try {
+          const response = await fetch('/api/payments/create-subscription-checkout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ plan })
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.url) {
+            window.location.href = data.url;
+          } else {
+            throw new Error(data.error || 'Checkout failed');
+          }
+        } catch (error) {
+          console.error('Checkout error:', error);
+          statusEl.textContent = 'Error creating checkout. Redirecting to dashboard...';
+          setTimeout(() => window.location.href = '/dashboard.html', 2000);
+        }
+      } else {
+        // Free trial - redirect to dashboard
+        statusEl.textContent = 'Success! Redirecting to dashboard...';
+        setTimeout(() => window.location.href = '/dashboard.html', 1500);
+      }
+    })();
+  </script>
+</body>
+</html>
+
+
+

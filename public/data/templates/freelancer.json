@@ -1,0 +1,115 @@
+{
+  "brand": {"name": "Jane Doe", "logo": "assets/logo.svg", "phone": "(555) 123-4567", "email": "jane@janedoedesign.com"},
+  "themeVars": {
+    "color-primary": "#0ea5e9",
+    "color-accent": "#22c55e",
+    "color-success": "#22c55e",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Work", "href": "#pages"},
+    {"label": "Packages", "href": "#pricing"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "Independent Designer",
+    "title": "Websites that win clients",
+    "subtitle": "I help small businesses stand out.",
+    "cta": [
+      {"label": "See Work", "href": "#pages"},
+      {"label": "Hire Me", "href": "#contact", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&q=80",
+    "imageAlt": "Laptop"
+  },
+  "pages": [
+    {"slug": "project-a", "title": "Project A", "body": "## Redesign for Cafe\nIncreased conversions by 35%."},
+    {"slug": "project-b", "title": "Project B", "body": "## Branding for Salon\nGrew bookings 2x."}
+  ],
+  "pricing": {
+    "title": "Packages",
+    "plans": [
+      {"name": "Starter", "description": "Single page site", "price": 800, "cta": {"label": "Start", "href": "#contact"}},
+      {"name": "Pro", "description": "Multi-page site", "price": 2000, "cta": {"label": "Start", "href": "#contact"}}
+    ]
+  },
+  "contact": {
+    "title": "Let's Work Together",
+    "subtitle": "Ready to elevate your brand?",
+    "email": "jane@janedoedesign.com",
+    "phone": "(555) 123-4567",
+    "address": "Los Angeles, CA"
+  },
+  "footer": {"text": "© Jane Doe"},
+  "services": {
+    "title": "Design Services",
+    "subtitle": "Professional web design solutions for small businesses",
+    "items": [
+      {
+        "title": "🎨 Brand Identity",
+        "description": "Complete brand strategy including logo design, color palette, and style guide"
+      },
+      {
+        "title": "💻 Website Design",
+        "description": "Custom responsive websites that convert visitors into customers"
+      },
+      {
+        "title": "📱 Mobile Apps",
+        "description": "User-friendly mobile app design for iOS and Android"
+      }
+    ]
+  },
+  "about": {
+    "title": "About Jane",
+    "subtitle": "Independent designer helping small businesses succeed",
+    "content": "With 8+ years of experience in web design and branding, I specialize in creating beautiful, conversion-focused websites for small businesses. My approach combines strategic thinking with creative design to deliver results that matter."
+  },
+  "team": {
+    "title": "Your Designer",
+    "subtitle": "Experienced professional dedicated to your success",
+    "members": [
+      {
+        "name": "Jane Doe",
+        "title": "Freelance Designer & Founder",
+        "bio": "8+ years creating high-converting websites for small businesses. Specializes in modern, user-friendly design that drives results.",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
+        "imageAlt": "Jane Doe",
+        "credentials": ["Google UX Certified", "Adobe Certified Expert", "Featured in Design Weekly"]
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Client Success Stories",
+    "subtitle": "Hear from businesses I've helped grow",
+    "items": [
+      {
+        "text": "Jane transformed our website and our business! Conversions are up 40% and we finally have a site we're proud to share.",
+        "author": "Michael Chen",
+        "title": "Owner, Harbor Cafe"
+      },
+      {
+        "text": "Professional, creative, and easy to work with. Jane delivered exactly what we needed on time and on budget.",
+        "author": "Sarah Martinez",
+        "title": "Founder, Glow Beauty"
+      }
+    ]
+  },
+  "process": {
+    "title": "How We'll Work Together",
+    "steps": [
+      {"title": "Discovery Call", "description": "We'll discuss your goals, audience, and project needs"},
+      {"title": "Design & Feedback", "description": "I'll create mockups and refine based on your input"},
+      {"title": "Development", "description": "Your site is built, tested, and optimized"},
+      {"title": "Launch & Support", "description": "Go live with confidence and ongoing support"}
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "jane@janedoedesign.com",
+    "productCta": "Request Quote",
+    "productCtaHref": "mailto:jane@janedoedesign.com",
+    "productNote": "Submit your project inquiry and I'll get back to you within 24 hours with a custom quote."
+  }
+}

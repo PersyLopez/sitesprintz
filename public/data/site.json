@@ -1,91 +1,126 @@
 {
   "brand": {
-    "name": "GreenLeaf Services",
+    "name": "SiteSprintz",
     "logo": "assets/logo.svg",
-    "alt": "GreenLeaf logo"
+    "alt": "SiteSprintz logo"
+  },
+  "themeVars": {
+    "color-primary": "#2563eb",
+    "color-accent": "#38bdf8"
   },
   "nav": [
-    { "label": "Home", "href": "#hero" },
-    { "label": "Services", "href": "#services" },
-    { "label": "About", "href": "#about" },
-    { "label": "Testimonials", "href": "#testimonials" },
-    { "label": "Pricing", "href": "#pricing" },
-    { "label": "Contact", "href": "#contact" }
+    {
+      "label": "Templates",
+      "href": "#templates"
+    },
+    {
+      "label": "Features",
+      "href": "#services"
+    },
+    {
+      "label": "Plans",
+      "href": "#pricing"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
-  "themeVars": {
-    "color-primary": "#22c55e",
-    "color-primary-600": "#16a34a"
-  },
   "hero": {
-    "eyebrow": "Eco-friendly solutions",
-    "title": "Grow your small business with confidence",
-    "subtitle": "A modern, fast template you can customize in minutes.",
-    "image": "assets/hero-placeholder.svg",
-    "imageAlt": "Happy small business owner",
+    "eyebrow": "Three tiers, built for growth",
+    "title": "Start with display, upgrade to checkout",
+    "subtitle": "Starter templates show pricing and collect leads (no payment processing). Checkout templates add Stripe integration for online sales. Premium Suite (coming soon) brings multi-page sites with CRM and scheduling.",
     "cta": [
-      { "label": "Get Started", "href": "#contact" },
-      { "label": "See Pricing", "href": "#pricing", "variant": "secondary" }
-    ]
+      {
+        "label": "Compare Plans",
+        "href": "#pricing"
+      },
+      {
+        "label": "Preview Templates",
+        "href": "#services",
+        "variant": "secondary"
+      }
+    ],
+    "image": "https://images.unsplash.com/photo-1523475472560-d2df97ec485c?w=1200&q=80",
+    "imageAlt": "Designer reviewing website templates on a laptop"
   },
   "services": {
-    "title": "What we do",
-    "subtitle": "Flexible offerings to fit your business",
+    "title": "What's included in each tier",
+    "subtitle": "All tiers share the same mobile-first foundation and intuitive admin panel.",
     "items": [
-      { "title": "Consulting", "description": "Hands-on guidance for strategy and operations." },
-      { "title": "Web Design", "description": "Clean, responsive websites that convert." },
-      { "title": "Marketing", "description": "Campaigns that reach your ideal customers." }
-    ]
-  },
-  "about": {
-    "title": "About GreenLeaf",
-    "body": "We help small businesses thrive with practical, sustainable solutions. Our team brings decades of combined experience in design, operations, and growth."
-  },
-  "testimonials": {
-    "title": "What clients say",
-    "items": [
-      { "quote": "They transformed our online presence—sales up 40%.", "author": "Amira, Shop Owner" },
-      { "quote": "Professional, friendly, and fast.", "author": "Luis, Contractor" },
-      { "quote": "The best investment we made this year.", "author": "Priya, Consultant" }
-    ]
-  },
-  "pricing": {
-    "title": "Simple pricing",
-    "plans": [
       {
-        "name": "Starter",
-        "description": "Great for new businesses",
-        "price": 199,
-        "cta": { "label": "Choose Starter", "href": "#contact" }
+        "title": "🎯 Starter Templates",
+        "description": "Display-only templates for service businesses. Show pricing, hours, and contact info. All CTAs lead to phone, email, or external booking (no payment processing). Perfect for restaurants, salons, consultants, and local services."
       },
       {
-        "name": "Growth",
-        "description": "For growing teams",
-        "price": 499,
-        "cta": { "label": "Choose Growth", "href": "#contact" }
+        "title": "💳 Checkout Templates",
+        "description": "Everything in Starter, plus Stripe checkout integration. Accept payments online, send automated order confirmations, and manage orders from the admin dashboard. Built for retail and online sales."
       },
       {
-        "name": "Pro",
-        "description": "For established brands",
-        "price": 999,
-        "cta": { "label": "Choose Pro", "href": "#contact" }
+        "title": "🚀 Premium Suite (Coming Soon)",
+        "description": "Multi-page websites with blog, scheduling integrations, gated content, and CRM automation. Designed for businesses ready to scale beyond a single landing page."
       }
     ]
   },
-  "contact": {
-    "title": "Get in touch",
-    "subtitle": "We usually reply within one business day.",
-    "email": "hello@example.com",
-    "phone": "+1-555-123-4567"
+  "about": {
+    "title": "Built for growth",
+    "body": "Start with a Starter template to display your services and pricing with offline CTAs (call, email, visit). When you're ready to accept payments online, upgrade to a Checkout template to enable Stripe integration. Premium Suite (coming soon) will offer multi-page sites with advanced features."
   },
-  "footer": { "text": "© GreenLeaf Services. All rights reserved." }
-  ,
+  "pricing": {
+    "title": "Choose your plan",
+    "plans": [
+      {
+        "name": "Starter Templates",
+        "description": "✓ Display pricing and services ✓ Contact forms and offline CTAs ✓ Mobile-responsive design ✓ Admin content editor ✗ No payment processing",
+        "price": 0,
+        "cta": {
+          "label": "Browse Starter Templates",
+          "href": "#templates"
+        }
+      },
+      {
+        "name": "Checkout Templates",
+        "description": "✓ Everything in Starter ✓ Stripe checkout integration ✓ Automated order confirmations ✓ Admin order dashboard ✓ Secure payment processing",
+        "price": 29,
+        "cta": {
+          "label": "Preview Checkout Template",
+          "href": "/?template=product-ordering"
+        }
+      },
+      {
+        "name": "Premium Suite",
+        "description": "✓ Everything in Checkout ✓ Multi-page layouts with blog ✓ Scheduling and calendar integrations ✓ CRM and lead automation ✓ Custom domains and analytics",
+        "cta": {
+          "label": "Join Waitlist",
+          "href": "#contact"
+        }
+      }
+    ]
+  },
   "pages": [
-    { "slug": "about-us", "title": "About Us", "body": "We started in 2018 with a mission to help local businesses." },
-    { "slug": "faq", "title": "FAQ", "body": "Q: How fast?\nA: Usually within 1-2 weeks." }
+    {
+      "slug": "starter-templates",
+      "title": "Starter Templates (Display Only)",
+      "body": "### Who it's for\nService businesses and local shops that want to showcase pricing and services without payment processing.\n\n### What's included\n- **Display:** Show services, pricing, hours, and contact info\n- **Offline CTAs:** Call, email, visit, or link to external booking (OpenTable, Calendly, etc.)\n- **Admin Panel:** Edit content, update pricing, and manage site settings\n- **Mobile-First:** Responsive design that works on all devices\n\n### What's NOT included\n- ✗ No Stripe checkout or payment processing\n- ✗ No shopping cart or online ordering\n- ✗ No automated order confirmations\n\n### Available templates\nStarter, Restaurant, Salon, Freelancer, Consultant, Gym, Tech Repair, Cleaning, Pet Care, Product Showcase"
+    },
+    {
+      "slug": "checkout-template",
+      "title": "Checkout Templates (Payment Enabled)",
+      "body": "### Who it's for\nRetail shops and online sellers ready to accept payments through Stripe.\n\n### What's included\n- **Everything in Starter** (display, offline CTAs, admin panel, mobile-first)\n- **Stripe Checkout:** Secure payment processing with PCI compliance\n- **Order Management:** Admin dashboard to view and manage orders\n- **Automated Emails:** Order confirmations sent automatically to customers\n- **Webhook Support:** Real-time payment status updates\n\n### What's NOT included\n- ✗ Multi-page layouts (coming in Premium)\n- ✗ Blog or CMS (coming in Premium)\n- ✗ Scheduling or CRM integrations (coming in Premium)\n\n### Available templates\nProduct Ordering (more checkout variants coming soon)"
+    },
+    {
+      "slug": "premium-suite",
+      "title": "Premium Suite (Coming Soon)",
+      "body": "### Who it's for\nEstablished businesses ready for a full marketing site with advanced features.\n\n### Planned features\n- **Everything in Checkout** (payment processing, order management, etc.)\n- **Multi-Page Layouts:** Separate pages for blog, about, services, resources\n- **Blog & CMS:** Built-in content management for SEO and storytelling\n- **Scheduling:** Calendar integrations (Calendly, Cal.com, Google Calendar)\n- **CRM Integration:** Automated lead capture and email marketing\n- **Advanced Analytics:** Traffic tracking, conversion metrics, A/B testing\n- **Custom Domains:** Bring your own domain and SSL certificates\n\n### Timeline\nCurrently in development. Join the waitlist to influence the roadmap and get early access."
+    }
   ],
-  "products": [
-    { "name": "Starter Website", "price": 399, "description": "A one-page site tailored to your brand." },
-    { "name": "SEO Boost", "price": 249, "description": "On-page SEO setup and optimization." },
-    { "name": "Growth Package", "price": 799, "description": "Website + marketing setup for 3 months." }
-  ]
+  "contact": {
+    "title": "Questions about tiers?",
+    "subtitle": "Not sure which tier fits your business? We'll help you choose the right starting point and explain upgrade paths.",
+    "email": "hello@sitesprintz.com",
+    "phone": "+1 888 555 0199"
+  },
+  "footer": {
+    "text": "© SiteSprintz — Launch your business online in minutes."
+  }
 }

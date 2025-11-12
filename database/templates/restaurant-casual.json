@@ -1,0 +1,302 @@
+{
+  "id": "restaurant-casual",
+  "name": "Casual Dining Restaurant",
+  "category": "restaurant",
+  "layoutVariant": "casual",
+  "description": "Family-friendly restaurant template for casual dining, neighborhood bistros, and comfort food establishments",
+  "suitableFor": ["Casual Dining", "Family Restaurant", "Neighborhood Bistro", "American Cuisine", "Comfort Food"],
+  "heroStyle": "split-layout",
+  "menuStyle": "card-grid-photos",
+  "brand": {
+    "name": "The Corner Bistro",
+    "tagline": "Where friends become family",
+    "phone": "(555) 987-6543",
+    "email": "hello@cornerbistro.com"
+  },
+  "themeVars": {
+    "color-primary": "#d4512",
+    "color-accent": "#8b4513",
+    "color-success": "#228b22",
+    "layout-style": "casual"
+  },
+  "nav": [
+    { "label": "Menu", "href": "#menu" },
+    { "label": "Specials", "href": "#specials" },
+    { "label": "About", "href": "#about" },
+    { "label": "Order Online", "href": "#order" },
+    { "label": "Contact", "href": "#contact" }
+  ],
+  "hero": {
+    "style": "split-image-content",
+    "eyebrow": "Family Owned Since 2008",
+    "title": "Delicious Food, Warm Atmosphere",
+    "subtitle": "Join us for breakfast, lunch, or dinner. Fresh ingredients, generous portions, and a welcoming smile every time you visit.",
+    "cta": [
+      { "label": "View Full Menu", "href": "#menu" },
+      { "label": "Order Takeout", "href": "#order", "variant": "secondary" }
+    ],
+    "image": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=80",
+    "imageAlt": "Cozy restaurant interior with families dining",
+    "features": [
+      "🍽️ Dine-In",
+      "📦 Takeout",
+      "🚚 Delivery",
+      "👨‍👩‍👧‍👦 Family Friendly"
+    ]
+  },
+  "popularItems": {
+    "title": "Customer Favorites",
+    "subtitle": "Our most-ordered dishes",
+    "items": [
+      {
+        "name": "Classic Burger",
+        "price": 14.99,
+        "description": "Half-pound Angus beef, lettuce, tomato, onion, pickles. Served with fries.",
+        "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&q=80",
+        "popular": true,
+        "tags": ["Bestseller"]
+      },
+      {
+        "name": "BBQ Ribs",
+        "price": 24.99,
+        "description": "Full rack of slow-cooked ribs with our house BBQ sauce. Comes with coleslaw and cornbread.",
+        "image": "https://images.unsplash.com/photo-1544025162-d76694265947?w=600&q=80",
+        "popular": true,
+        "tags": ["Gluten-Free Option"]
+      },
+      {
+        "name": "Chicken Alfredo",
+        "price": 17.99,
+        "description": "Grilled chicken breast over fettuccine in creamy Alfredo sauce with garlic bread.",
+        "image": "https://images.unsplash.com/photo-1645112411341-6c4fd023714a?w=600&q=80",
+        "popular": true
+      }
+    ]
+  },
+  "menu": {
+    "title": "Full Menu",
+    "subtitle": "Something for everyone",
+    "categories": [
+      {
+        "name": "Appetizers",
+        "items": [
+          {
+            "name": "Loaded Nachos",
+            "price": 12.99,
+            "description": "Tortilla chips, melted cheese, jalapeños, sour cream, guacamole",
+            "tags": ["Vegetarian Option"]
+          },
+          {
+            "name": "Buffalo Wings",
+            "price": 13.99,
+            "description": "Ten crispy wings tossed in your choice of sauce. Served with celery and ranch.",
+            "tags": ["Spicy", "Gluten-Free"]
+          },
+          {
+            "name": "Mozzarella Sticks",
+            "price": 9.99,
+            "description": "Six golden-fried mozzarella sticks with marinara sauce"
+          }
+        ]
+      },
+      {
+        "name": "Salads",
+        "items": [
+          {
+            "name": "Caesar Salad",
+            "price": 11.99,
+            "description": "Romaine lettuce, parmesan, croutons, Caesar dressing",
+            "addOns": "Add chicken $4, Add shrimp $6",
+            "tags": ["Vegetarian"]
+          },
+          {
+            "name": "House Salad",
+            "price": 9.99,
+            "description": "Mixed greens, tomatoes, cucumbers, onions, choice of dressing",
+            "tags": ["Vegan Option", "Gluten-Free"]
+          }
+        ]
+      },
+      {
+        "name": "Burgers & Sandwiches",
+        "note": "All burgers and sandwiches served with french fries. Substitute sweet potato fries or onion rings for $2.",
+        "items": [
+          {
+            "name": "Classic Burger",
+            "price": 14.99,
+            "description": "Half-pound Angus beef, lettuce, tomato, onion, pickles",
+            "popular": true
+          },
+          {
+            "name": "Bacon Cheeseburger",
+            "price": 16.99,
+            "description": "Classic burger with bacon and cheddar cheese"
+          },
+          {
+            "name": "Veggie Burger",
+            "price": 13.99,
+            "description": "House-made veggie patty with all the fixings",
+            "tags": ["Vegetarian", "Vegan Option"]
+          },
+          {
+            "name": "Philly Cheesesteak",
+            "price": 15.99,
+            "description": "Thinly sliced ribeye, peppers, onions, provolone cheese on a hoagie"
+          },
+          {
+            "name": "Club Sandwich",
+            "price": 14.99,
+            "description": "Turkey, bacon, lettuce, tomato, mayo on toasted bread"
+          }
+        ]
+      },
+      {
+        "name": "Entrées",
+        "items": [
+          {
+            "name": "BBQ Ribs",
+            "price": 24.99,
+            "description": "Full rack of slow-cooked ribs with house BBQ sauce, coleslaw, cornbread",
+            "popular": true
+          },
+          {
+            "name": "Chicken Alfredo",
+            "price": 17.99,
+            "description": "Grilled chicken over fettuccine in creamy Alfredo sauce with garlic bread"
+          },
+          {
+            "name": "Fish & Chips",
+            "price": 18.99,
+            "description": "Beer-battered cod with french fries, coleslaw, tartar sauce"
+          },
+          {
+            "name": "Meatloaf Dinner",
+            "price": 16.99,
+            "description": "Homemade meatloaf with mashed potatoes, gravy, and vegetables"
+          },
+          {
+            "name": "Grilled Salmon",
+            "price": 22.99,
+            "description": "8oz salmon fillet with rice pilaf and seasonal vegetables",
+            "tags": ["Gluten-Free", "Heart Healthy"]
+          }
+        ]
+      },
+      {
+        "name": "Kids Menu",
+        "note": "For children 12 and under. Includes choice of side and drink.",
+        "price": "$7.99 each",
+        "items": [
+          { "name": "Chicken Tenders", "description": "With fries or veggies" },
+          { "name": "Mac & Cheese", "description": "Creamy and delicious" },
+          { "name": "Mini Burgers", "description": "Two sliders with cheese" },
+          { "name": "Grilled Cheese", "description": "On white or wheat bread" },
+          { "name": "Spaghetti", "description": "With marinara or butter" }
+        ]
+      },
+      {
+        "name": "Desserts",
+        "items": [
+          {
+            "name": "Chocolate Cake",
+            "price": 7.99,
+            "description": "Three-layer chocolate cake with chocolate frosting"
+          },
+          {
+            "name": "Apple Pie",
+            "price": 6.99,
+            "description": "Served warm with vanilla ice cream"
+          },
+          {
+            "name": "Cheesecake",
+            "price": 7.99,
+            "description": "New York style with choice of topping"
+          }
+        ]
+      }
+    ]
+  },
+  "specials": {
+    "title": "Daily Specials",
+    "subtitle": "Check back every day for new deals!",
+    "items": [
+      { "day": "Monday", "special": "Kids Eat Free", "description": "One free kids meal with adult entrée purchase" },
+      { "day": "Tuesday", "special": "Taco Tuesday", "description": "$2 tacos all day, dine-in only" },
+      { "day": "Wednesday", "special": "Wing Wednesday", "description": "50¢ wings, minimum 10" },
+      { "day": "Thursday", "special": "Pasta Night", "description": "$12.99 any pasta dish" },
+      { "day": "Friday", "special": "Fish Fry", "description": "$14.99 fish & chips with a beer" },
+      { "day": "Weekend", "special": "Breakfast All Day", "description": "Full breakfast menu Saturday & Sunday" }
+    ]
+  },
+  "about": {
+    "title": "Our Story",
+    "subtitle": "A neighborhood tradition since 2008",
+    "story": "What started as a small family kitchen has grown into your neighborhood gathering place. We're proud to serve generous portions of homestyle cooking made with fresh, quality ingredients. Whether you're stopping by for a quick lunch, bringing the family for dinner, or grabbing takeout on your way home, we treat everyone like family.",
+    "values": [
+      { "icon": "👨‍👩‍👧", "title": "Family Owned", "description": "Locally owned and operated" },
+      { "icon": "🥬", "title": "Fresh Ingredients", "description": "Quality ingredients, made daily" },
+      { "icon": "😊", "title": "Friendly Service", "description": "Welcoming smiles every visit" },
+      { "icon": "🏘️", "title": "Community Focused", "description": "Supporting local causes" }
+    ]
+  },
+  "ordering": {
+    "title": "Order Online",
+    "subtitle": "Easy pickup or delivery",
+    "options": [
+      {
+        "method": "Pickup",
+        "description": "Order ahead and pick up at our takeout counter",
+        "time": "Ready in 20-30 minutes",
+        "cta": "Order for Pickup"
+      },
+      {
+        "method": "Delivery",
+        "description": "We deliver within 5 miles",
+        "time": "30-45 minute delivery",
+        "fee": "$3.99 delivery fee",
+        "cta": "Order Delivery"
+      },
+      {
+        "method": "Catering",
+        "description": "Let us cater your next event",
+        "note": "Order at least 48 hours in advance",
+        "cta": "Catering Menu"
+      }
+    ]
+  },
+  "contact": {
+    "title": "Visit Us",
+    "phone": "(555) 987-6543",
+    "email": "hello@cornerbistro.com",
+    "address": "456 Main Street, Your Town, ST 12345",
+    "hours": {
+      "weekday": "Monday - Friday: 11:00 AM - 9:00 PM",
+      "weekend": "Saturday - Sunday: 9:00 AM - 10:00 PM"
+    },
+    "parking": "Free parking lot behind restaurant",
+    "accessibility": "Wheelchair accessible, high chairs available"
+  },
+  "social": {
+    "title": "Follow Us",
+    "facebook": "facebook.com/cornerbistro",
+    "instagram": "@cornerbistro",
+    "note": "Follow us for daily specials and updates!"
+  },
+  "footer": {
+    "text": "The Corner Bistro - Where friends become family",
+    "links": [
+      { "label": "Nutrition Info", "href": "#nutrition" },
+      { "label": "Allergen Info", "href": "#allergens" },
+      { "label": "Jobs", "href": "#jobs" },
+      { "label": "Gift Cards", "href": "#gifts" }
+    ]
+  },
+  "settings": {
+    "allowCheckout": true,
+    "enableDelivery": true,
+    "enablePickup": true,
+    "kidsMenu": true,
+    "casualDining": true
+  }
+}
+

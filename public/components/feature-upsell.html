@@ -1,0 +1,496 @@
+<!-- Feature Upsell Component -->
+<style>
+  /* Feature Upsell Toast Styles */
+  .feature-upsell-toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 400px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    border: 2px solid #06b6d4;
+    z-index: 9999;
+    animation: slideInRight 0.4s ease-out;
+    display: none;
+  }
+
+  .feature-upsell-toast.active {
+    display: block;
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(100px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .upsell-header {
+    display: flex;
+    align-items: start;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .upsell-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+  }
+
+  .upsell-content {
+    flex: 1;
+  }
+
+  .upsell-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 6px 0;
+  }
+
+  .upsell-description {
+    color: #64748b;
+    font-size: 0.95rem;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .upsell-features {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0;
+  }
+
+  .upsell-features li {
+    padding: 8px 0;
+    color: #475569;
+    display: flex;
+    align-items: start;
+    gap: 8px;
+    font-size: 0.9rem;
+  }
+
+  .upsell-features li::before {
+    content: '✓';
+    color: #10b981;
+    font-weight: 700;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .upsell-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .btn-upsell-upgrade {
+    flex: 1;
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .btn-upsell-upgrade:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(6, 182, 212, 0.3);
+  }
+
+  .btn-upsell-dismiss {
+    background: #f1f5f9;
+    color: #64748b;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-upsell-dismiss:hover {
+    background: #e2e8f0;
+  }
+
+  /* Feature Lock Overlay */
+  .feature-lock-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(4px);
+  }
+
+  .feature-lock-modal.active {
+    display: flex;
+  }
+
+  .feature-lock-content {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 500px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    animation: zoomIn 0.3s ease-out;
+  }
+
+  @keyframes zoomIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .lock-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+  }
+
+  .lock-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #1f2937;
+    margin: 0 0 12px 0;
+  }
+
+  .lock-description {
+    color: #64748b;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin: 0 0 24px 0;
+  }
+
+  .lock-benefits {
+    background: #f0f9ff;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 24px 0;
+    text-align: left;
+  }
+
+  .lock-benefits h4 {
+    margin: 0 0 12px 0;
+    color: #0891b2;
+    font-size: 1.1rem;
+  }
+
+  .lock-benefits ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .lock-benefits li {
+    padding: 8px 0;
+    color: #475569;
+    display: flex;
+    align-items: start;
+    gap: 8px;
+  }
+
+  .lock-benefits li::before {
+    content: '✓';
+    color: #06b6d4;
+    font-weight: 700;
+  }
+
+  .lock-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .btn-lock-upgrade {
+    flex: 1;
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .btn-lock-upgrade:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(6, 182, 212, 0.3);
+  }
+
+  .btn-lock-cancel {
+    flex: 1;
+    background: #f1f5f9;
+    color: #64748b;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-lock-cancel:hover {
+    background: #e2e8f0;
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    .feature-upsell-toast {
+      left: 20px;
+      right: 20px;
+      bottom: 20px;
+      max-width: none;
+    }
+
+    .feature-lock-content {
+      padding: 32px 24px;
+      margin: 20px;
+    }
+
+    .upsell-actions,
+    .lock-actions {
+      flex-direction: column;
+    }
+  }
+</style>
+
+<!-- Feature Upsell Toast -->
+<div class="feature-upsell-toast" id="featureUpsellToast">
+  <div class="upsell-header">
+    <div class="upsell-icon" id="upsellIcon">🔒</div>
+    <div class="upsell-content">
+      <h3 class="upsell-title" id="upsellTitle">Unlock This Feature</h3>
+      <p class="upsell-description" id="upsellDescription">
+        Upgrade to access this feature
+      </p>
+    </div>
+  </div>
+  <ul class="upsell-features" id="upsellFeatures"></ul>
+  <div class="upsell-actions">
+    <button class="btn-upsell-upgrade" id="btnUpsellUpgrade">
+      Upgrade Now →
+    </button>
+    <button class="btn-upsell-dismiss" onclick="dismissUpsell()">
+      Maybe Later
+    </button>
+  </div>
+</div>
+
+<!-- Feature Lock Modal -->
+<div class="feature-lock-modal" id="featureLockModal">
+  <div class="feature-lock-content">
+    <div class="lock-icon">🔐</div>
+    <h2 class="lock-title" id="lockTitle">This Feature Requires Pro</h2>
+    <p class="lock-description" id="lockDescription">
+      Upgrade to Pro to unlock online payments and start selling!
+    </p>
+    <div class="lock-benefits" id="lockBenefits">
+      <h4>With Pro, you get:</h4>
+      <ul id="lockFeatureList"></ul>
+    </div>
+    <div class="lock-actions">
+      <button class="btn-lock-upgrade" id="btnLockUpgrade">
+        Upgrade to Pro →
+      </button>
+      <button class="btn-lock-cancel" onclick="closeFeatureLock()">
+        Not Now
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Feature Upsell System
+  const featureUpsells = {
+    payments: {
+      icon: '💳',
+      title: 'Accept Online Payments',
+      description: 'Upgrade to Pro to accept payments and sell online',
+      plan: 'pro',
+      features: [
+        'Stripe payment integration',
+        'Shopping cart system',
+        'Order management dashboard',
+        'Sales analytics & reports',
+        'Automated email receipts'
+      ]
+    },
+    products: {
+      icon: '🛍️',
+      title: 'Sell Products Online',
+      description: 'Upgrade to Pro to add products and start selling',
+      plan: 'pro',
+      features: [
+        'Unlimited products',
+        'Product images & descriptions',
+        'Inventory management',
+        'Order tracking',
+        'Customer management'
+      ]
+    },
+    customDomain: {
+      icon: '🌐',
+      title: 'Connect Custom Domain',
+      description: 'Upgrade to Business to use your own domain name',
+      plan: 'business',
+      features: [
+        'Use your own domain (yourbusiness.com)',
+        'Professional email addresses',
+        'SSL certificate included',
+        'SEO benefits',
+        'Brand credibility'
+      ]
+    },
+    analytics: {
+      icon: '📊',
+      title: 'Advanced Analytics',
+      description: 'Upgrade to Pro for detailed visitor and sales analytics',
+      plan: 'pro',
+      features: [
+        'Visitor tracking',
+        'Sales reports',
+        'Conversion analytics',
+        'Traffic sources',
+        'Customer insights'
+      ]
+    },
+    multiSite: {
+      icon: '🏢',
+      title: 'Multiple Websites',
+      description: 'Upgrade to add more websites to your account',
+      plan: 'starter',
+      features: [
+        'Create multiple sites',
+        '50% discount on additional sites',
+        'Centralized dashboard',
+        'Manage all sites in one place'
+      ]
+    }
+  };
+
+  function showFeatureUpsell(featureName) {
+    const upsell = featureUpsells[featureName];
+    if (!upsell) return;
+
+    const toast = document.getElementById('featureUpsellToast');
+    document.getElementById('upsellIcon').textContent = upsell.icon;
+    document.getElementById('upsellTitle').textContent = upsell.title;
+    document.getElementById('upsellDescription').textContent = upsell.description;
+
+    // Populate features
+    const featuresEl = document.getElementById('upsellFeatures');
+    featuresEl.innerHTML = upsell.features.map(f => `<li>${f}</li>`).join('');
+
+    // Set upgrade action
+    document.getElementById('btnUpsellUpgrade').onclick = () => {
+      upgradeNow(upsell.plan);
+      dismissUpsell();
+    };
+
+    toast.classList.add('active');
+
+    // Auto-dismiss after 10 seconds
+    setTimeout(dismissUpsell, 10000);
+  }
+
+  function dismissUpsell() {
+    document.getElementById('featureUpsellToast').classList.remove('active');
+  }
+
+  function showFeatureLock(featureName) {
+    const upsell = featureUpsells[featureName];
+    if (!upsell) return;
+
+    const modal = document.getElementById('featureLockModal');
+    document.getElementById('lockTitle').textContent = upsell.title;
+    document.getElementById('lockDescription').textContent = upsell.description;
+
+    // Populate benefits
+    const featuresEl = document.getElementById('lockFeatureList');
+    featuresEl.innerHTML = upsell.features.map(f => `<li>${f}</li>`).join('');
+
+    // Set upgrade action
+    document.getElementById('btnLockUpgrade').onclick = () => {
+      upgradeNow(upsell.plan);
+    };
+
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeFeatureLock() {
+    document.getElementById('featureLockModal').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  // Contextual triggers
+  function checkFeatureAccess(feature, currentPlan) {
+    const requiredPlans = {
+      payments: ['pro'],
+      products: ['pro'],
+      customDomain: ['business', 'pro'],
+      analytics: ['pro'],
+      multiSite: ['starter', 'business', 'pro']
+    };
+
+    const required = requiredPlans[feature] || [];
+    return required.includes(currentPlan);
+  }
+
+  // Auto-trigger upsells on feature access attempts
+  function handleFeatureAttempt(feature) {
+    const userData = getUserData();
+    const currentPlan = userData?.subscription?.plan || 'free';
+
+    if (!checkFeatureAccess(feature, currentPlan)) {
+      showFeatureLock(feature);
+      return false;
+    }
+    return true;
+  }
+
+  // Helper to get user data (implement based on your auth system)
+  function getUserData() {
+    // This should fetch from your actual user data source
+    return window.currentUser || null;
+  }
+
+  // Close modal on ESC
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeFeatureLock();
+      dismissUpsell();
+    }
+  });
+
+  // Close on outside click
+  document.getElementById('featureLockModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'featureLockModal') {
+      closeFeatureLock();
+    }
+  });
+</script>
+

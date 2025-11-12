@@ -1,0 +1,186 @@
+{
+  "brand": {
+    "name": "Pawfect Care Pet Services",
+    "logo": "assets/logo.svg",
+    "tagline": "Grooming • Walking • Sitting",
+    "phone": "(555) 888-1122",
+    "email": "care@pawfectcare.pet"
+  },
+  "themeVars": {
+    "color-primary": "#8b5cf6",
+    "color-accent": "#a78bfa",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "About", "href": "#about"},
+    {"label": "Meet Team", "href": "#team"},
+    {"label": "Book", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "🐾 Full-Service Pet Care",
+    "title": "Complete care for your furry family",
+    "subtitle": "From grooming to dog walking to pet sitting - we provide all the care your pets need. Trusted, insured, and passionate about keeping tails wagging. One-stop pet care you can count on.",
+    "cta": [
+      {"label": "Book Service", "href": "#contact"},
+      {"label": "All Services", "href": "#products", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=1200&q=80",
+    "imageAlt": "Happy dog with pet sitter"
+  },
+  "about": {
+    "title": "Your Pet Care Partners",
+    "subtitle": "Trusted by pet parents since 2015",
+    "content": "Pawfect Care offers comprehensive pet services so you have one trusted provider for all your pet's needs. Our team is insured, bonded, and certified in pet first aid. We treat every pet like our own."
+  },
+  "products": [
+    {
+      "name": "Full Grooming",
+      "price": 65,
+      "description": "Complete grooming including bath, haircut, nail trim, ear cleaning. For dogs and cats. Premium products.",
+      "category": "Grooming",
+      "duration": "2-3 hours",
+      "popular": true
+    },
+    {
+      "name": "Dog Walking",
+      "price": 25,
+      "description": "30-minute neighborhood walk. Perfect for busy days. GPS tracking included. Single or pack walks available.",
+      "category": "Walking",
+      "duration": "30 minutes",
+      "popular": true
+    },
+    {
+      "name": "Pet Sitting (Overnight)",
+      "price": 75,
+      "description": "Overnight care in your home. Feeding, walks, playtime, and company. Stay-at-home pet care.",
+      "category": "Sitting",
+      "duration": "Overnight",
+      "popular": true
+    },
+    {
+      "name": "Drop-In Visits",
+      "price": 20,
+      "description": "30-minute home visit for feeding, walks, litter box cleaning. Perfect for cats or quick check-ins.",
+      "category": "Sitting",
+      "duration": "30 minutes"
+    },
+    {
+      "name": "Doggy Daycare",
+      "price": 45,
+      "description": "Full day of supervised play and socialization. Exercise and mental stimulation. Pick-up and drop-off available.",
+      "category": "Daycare",
+      "duration": "Full day"
+    },
+    {
+      "name": "Monthly Care Package",
+      "price": 250,
+      "description": "4 walks + 1 grooming + 2 drop-in visits per month. Best value for regular pet care needs.",
+      "category": "Package",
+      "duration": "Monthly"
+    }
+  ],
+  "services": {
+    "title": "Pet Services",
+    "subtitle": "Everything your pet needs under one roof",
+    "items": [
+      {
+        "title": "✂️ Professional Grooming",
+        "description": "Expert grooming for dogs and cats. Bath, haircut, nails, and more"
+      },
+      {
+        "title": "🚶 Dog Walking",
+        "description": "Daily walks with GPS tracking. Exercise and potty breaks"
+      },
+      {
+        "title": "🏠 Pet Sitting",
+        "description": "In-home care while you're away. Overnight or drop-in visits"
+      },
+      {
+        "title": "🎉 Daycare & Boarding",
+        "description": "Supervised play, socialization, and care in our facility"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Happy Pets & Parents",
+    "subtitle": "Trusted with precious pets",
+    "items": [
+      {
+        "text": "Use them for everything - grooming, walking, and sitting when we travel. Having one trusted provider is so convenient. Our dog LOVES everyone on the team!",
+        "author": "Maria Rodriguez",
+        "title": "Dog & Cat Parent"
+      },
+      {
+        "text": "The dog walkers are reliable and send great photos. The groomer is gentle with my anxious poodle. Best decision we made!",
+        "author": "David Chen",
+        "title": "Poodle Dad"
+      },
+      {
+        "text": "They watched our two cats for a week and treated them like royalty. Photos every day, house was spotless. We travel worry-free now!",
+        "author": "Jennifer Wilson",
+        "title": "Cat Mom"
+      }
+    ]
+  },
+  "team": {
+    "title": "Our Pet Care Team",
+    "subtitle": "Certified and passionate",
+    "members": [
+      {
+        "name": "Amanda Foster",
+        "title": "Owner & Lead Pet Care Specialist",
+        "bio": "Founded Pawfect Care after years as a vet tech. Certified in pet first aid and CPR. Passionate about providing complete, convenient pet care that pet parents can trust.",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
+        "imageAlt": "Amanda Foster",
+        "credentials": ["Pet First Aid Certified", "Former Vet Tech", "Insured & Bonded"]
+      }
+    ]
+  },
+  "process": {
+    "title": "How It Works",
+    "subtitle": "Easy pet care booking",
+    "steps": [
+      {"title": "Free Meet & Greet", "description": "We'll meet you and your pets to ensure a good fit"},
+      {"title": "Create Care Plan", "description": "Choose services and schedule that works for you"},
+      {"title": "Service Begins", "description": "Reliable care from the same trusted team"},
+      {"title": "Updates & Photos", "description": "Regular communication so you're always in the loop"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "9+", "label": "Years Caring"},
+      {"number": "500+", "label": "Happy Pets"},
+      {"number": "4.9", "label": "Star Rating"},
+      {"number": "100%", "label": "Insured"}
+    ]
+  },
+  "contact": {
+    "title": "Book Pet Care",
+    "subtitle": "Free meet & greet available",
+    "phone": "(555) 888-1122",
+    "email": "care@pawfectcare.pet",
+    "address": "Serving Metro Boston, MA"
+  },
+  "footer": {
+    "text": "🐾 Pawfect Care Pet Services • Complete Pet Care Since 2015",
+    "awards": [
+      "Best Pet Care 2023",
+      "Insured & Bonded",
+      "5-Star Service"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "care@pawfectcare.pet",
+    "productCta": "Book Service",
+    "productCtaHref": "tel:+15558881122",
+    "productNote": "Submit your pet care request and we'll schedule a free meet & greet to get started."
+  },
+  "productsTitle": "Pet Care Services",
+  "productsSubtitle": "Complete care for dogs, cats, and more"
+}
+

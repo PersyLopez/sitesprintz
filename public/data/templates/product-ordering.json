@@ -1,0 +1,122 @@
+{
+  "brand": {
+    "name": "QuickCart Electronics",
+    "logo": "assets/logo.svg",
+    "alt": "QuickCart logo"
+  },
+  "themeVars": {
+    "color-primary": "#2563eb",
+    "color-primary-600": "#1d4ed8",
+    "color-accent": "#38bdf8"
+  },
+  "nav": [
+    { "label": "Home", "href": "#hero" },
+    { "label": "Products", "href": "#products" },
+    { "label": "Support", "href": "#support" },
+    { "label": "Contact", "href": "#contact" }
+  ],
+  "hero": {
+    "eyebrow": "Premium ordering experience",
+    "title": "Sell online with integrated checkout",
+    "subtitle": "Perfect for shops ready to accept payment through Stripe checkout in minutes.",
+    "image": "assets/hero-placeholder.svg",
+    "imageAlt": "Team packaging products",
+    "cta": [
+      { "label": "Shop Products", "href": "#products" },
+      { "label": "Learn More", "href": "#support", "variant": "secondary" }
+    ]
+  },
+  "services": {
+    "title": "Why customers choose us",
+    "subtitle": "Every template includes secure payments, receipts, and order tracking.",
+    "items": [
+      { "title": "Secure checkout", "description": "Powered by Stripe with fraud detection built in." },
+      { "title": "Fast fulfillment", "description": "Automated email confirmations with every order." },
+      { "title": "Mobile optimized", "description": "Beautiful on any device for higher conversions." }
+    ]
+  },
+  "products": [
+    {
+      "name": "Wireless Earbuds Pro",
+      "price": 129,
+      "description": "Active noise cancellation, 24-hour battery life, and Qi charging. Sweat-resistant with 6 different ear tip sizes. Perfect sound quality."
+    },
+    {
+      "name": "Smart Home Hub",
+      "price": 189,
+      "description": "Control lights, climate, and security from one sleek hub. Works with Alexa, Google, and HomeKit. Voice control included."
+    },
+    {
+      "name": "Portable Solar Charger",
+      "price": 89,
+      "description": "Fast USB-C charging with rugged, water-resistant design. 20,000mAh capacity. Charge 3 devices simultaneously. Perfect for camping."
+    },
+    {
+      "name": "4K Streaming Stick",
+      "price": 59,
+      "description": "Ultra HD streaming with Dolby Vision and Atmos. Works with all major streaming apps. Voice remote included. Easy setup."
+    },
+    {
+      "name": "Wireless Mechanical Keyboard",
+      "price": 149,
+      "description": "Premium mechanical switches with RGB lighting. Connects via Bluetooth or USB-C. Hot-swappable keys. Aluminum frame."
+    },
+    {
+      "name": "Smart LED Light Bulbs (4-Pack)",
+      "price": 79,
+      "description": "16 million colors, dimmable, and voice-controlled. Works with your smart home hub. Set schedules and scenes. Energy efficient."
+    },
+    {
+      "name": "Wireless Charging Pad",
+      "price": 39,
+      "description": "Fast 15W charging for all Qi-enabled devices. Non-slip surface with LED indicator. Includes wall adapter. Slim aluminum design."
+    },
+    {
+      "name": "HD Security Camera",
+      "price": 119,
+      "description": "1080p HD video with night vision and motion detection. Two-way audio. Free cloud storage. Weather-resistant for indoor/outdoor use."
+    },
+    {
+      "name": "Bluetooth Speaker",
+      "price": 99,
+      "description": "360° sound with deep bass. 20-hour battery life. IPX7 waterproof. Perfect for parties, pool, or travel. Connects to 2 devices."
+    },
+    {
+      "name": "Fitness Tracker Watch",
+      "price": 159,
+      "description": "Heart rate monitoring, sleep tracking, GPS, and 50+ workout modes. 7-day battery. Water resistant to 50m. iOS & Android compatible."
+    }
+  ],
+  "pricing": {
+    "title": "Flexible bundles",
+    "plans": [
+      {
+        "name": "Starter Kit",
+        "description": "Best-selling devices and priority setup support.",
+        "price": 249,
+        "cta": { "label": "Buy Now", "href": "#products" }
+      },
+      {
+        "name": "Smart Home Pro",
+        "description": "Advanced automations, installation, and training.",
+        "price": 449,
+        "cta": { "label": "Buy Now", "href": "#products" }
+      }
+    ]
+  },
+  "contact": {
+    "title": "Need a custom quote?",
+    "subtitle": "Talk with our team for enterprise pricing and integrations.",
+    "email": "sales@quickcart.io",
+    "phone": "+1-415-555-0199"
+  },
+  "footer": {
+    "text": "© QuickCart Electronics — Built for modern online retail."
+  },
+  "settings": {
+    "allowCheckout": true,
+    "productCta": "Buy Now",
+    "productNote": "Checkout buttons are active. Configure your Stripe keys to begin accepting payments."
+  }
+}
+

@@ -1,0 +1,526 @@
+{
+  "brand": {
+    "name": "Luxe Beauty Studio",
+    "logo": "assets/logo.svg",
+    "tagline": "Premium Hair & Beauty Services • Transformative Experiences",
+    "phone": "(555) 234-5678",
+    "email": "hello@luxebeautystudio.com"
+  },
+  "themeVars": {
+    "color-primary": "#a855f7",
+    "color-accent": "#9333ea",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#services"},
+    {"label": "Gallery", "href": "#gallery"},
+    {"label": "Team", "href": "#team"},
+    {"label": "Book Now", "href": "#booking"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "✨ Award-Winning Salon",
+    "title": "Where Beauty Meets Artistry",
+    "subtitle": "Experience transformative hair and beauty services in our modern, luxurious studio. Our expert stylists and aestheticians bring your vision to life with precision, creativity, and personalized care.",
+    "cta": [
+      {"label": "📅 Book Your Appointment", "href": "#booking"},
+      {"label": "💇 View Services", "href": "#services", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&q=80",
+    "imageAlt": "Modern luxury salon interior"
+  },
+  "features": {
+    "bookingWidget": {
+      "enabled": true,
+      "provider": "calendly",
+      "url": "https://calendly.com/luxebeautystudio"
+    },
+    "tabbedServices": true,
+    "ownerDashboard": true,
+    "analytics": true,
+    "gallery": {
+      "filterable": true,
+      "categories": ["Hair", "Color", "Bridal", "Extensions"]
+    },
+    "teamProfiles": {
+      "enabled": true,
+      "bookable": true
+    }
+  },
+  "menu": {
+    "sections": [
+      {
+        "id": "hair-styling",
+        "name": "Hair Styling",
+        "description": "Expert cuts and styling for all hair types",
+        "items": [
+          {
+            "name": "Signature Haircut",
+            "price": 85,
+            "description": "Precision cut with consultation, shampoo, style, and finishing products",
+            "image": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&q=80",
+            "imageAlt": "Professional haircut",
+            "duration": "60 min",
+            "popular": true
+          },
+          {
+            "name": "Blowout & Style",
+            "price": 55,
+            "description": "Luxurious shampoo, conditioning treatment, and professional blowout",
+            "image": "https://images.unsplash.com/photo-1522337094846-8a818192de1f?w=600&q=80",
+            "imageAlt": "Blowout styling",
+            "duration": "45 min",
+            "popular": true
+          },
+          {
+            "name": "Keratin Treatment",
+            "price": 250,
+            "description": "Smoothing keratin treatment for frizz-free, manageable hair (lasts 3-5 months)",
+            "image": "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=600&q=80",
+            "imageAlt": "Keratin treatment",
+            "duration": "3 hours"
+          },
+          {
+            "name": "Updo Styling",
+            "price": 95,
+            "description": "Elegant updo for special occasions, includes consultation and trial",
+            "image": "https://images.unsplash.com/photo-1487412912498-0447578fcca8?w=600&q=80",
+            "imageAlt": "Updo hairstyle",
+            "duration": "90 min"
+          }
+        ]
+      },
+      {
+        "id": "color-services",
+        "name": "Color Services",
+        "description": "Custom color treatments by certified colorists",
+        "items": [
+          {
+            "name": "Full Color",
+            "price": 125,
+            "description": "All-over color with premium products, includes toner and gloss",
+            "image": "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=600&q=80",
+            "imageAlt": "Hair coloring",
+            "duration": "2 hours",
+            "popular": true
+          },
+          {
+            "name": "Balayage Highlights",
+            "price": 195,
+            "description": "Hand-painted highlights for natural, sun-kissed dimension",
+            "image": "https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?w=600&q=80",
+            "imageAlt": "Balayage highlights",
+            "duration": "3 hours",
+            "popular": true
+          },
+          {
+            "name": "Ombré/Sombré",
+            "price": 215,
+            "description": "Gradient color technique with seamless transitions",
+            "image": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&q=80",
+            "imageAlt": "Ombre hair color",
+            "duration": "3.5 hours"
+          },
+          {
+            "name": "Color Correction",
+            "price": 300,
+            "description": "Expert correction for previous color mishaps (price varies, consultation required)",
+            "image": "https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=600&q=80",
+            "imageAlt": "Color correction",
+            "duration": "4-6 hours"
+          }
+        ]
+      },
+      {
+        "id": "extensions",
+        "name": "Extensions & Enhancements",
+        "description": "Premium hair extensions and volumizing services",
+        "items": [
+          {
+            "name": "Tape-In Extensions",
+            "price": 650,
+            "description": "100g of premium Remy hair, includes installation and styling",
+            "image": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&q=80",
+            "imageAlt": "Hair extensions",
+            "duration": "2-3 hours"
+          },
+          {
+            "name": "K-Tip Extensions",
+            "price": 850,
+            "description": "Individual keratin bond extensions for maximum natural look",
+            "image": "https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=600&q=80",
+            "imageAlt": "Keratin extensions",
+            "duration": "4 hours"
+          },
+          {
+            "name": "Extension Maintenance",
+            "price": 125,
+            "description": "Move-up service for tape-ins (every 6-8 weeks)",
+            "duration": "90 min"
+          }
+        ]
+      },
+      {
+        "id": "bridal",
+        "name": "Bridal Services",
+        "description": "Complete bridal beauty packages for your special day",
+        "items": [
+          {
+            "name": "Bridal Hair Trial",
+            "price": 125,
+            "description": "Pre-wedding trial with consultation and style testing",
+            "image": "https://images.unsplash.com/photo-1487412912498-0447578fcca8?w=600&q=80",
+            "imageAlt": "Bridal hair",
+            "duration": "2 hours",
+            "popular": true
+          },
+          {
+            "name": "Bridal Day Hair",
+            "price": 185,
+            "description": "Wedding day styling with touch-ups and veil placement",
+            "image": "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&q=80",
+            "imageAlt": "Wedding hair",
+            "duration": "90 min"
+          },
+          {
+            "name": "Bridal Party Hair",
+            "price": 95,
+            "description": "Styling for bridesmaids and family (per person)",
+            "duration": "60 min"
+          },
+          {
+            "name": "Complete Bridal Package",
+            "price": 450,
+            "description": "Trial + Wedding Day + Touch-up Kit + Bride's gift",
+            "popular": true
+          }
+        ]
+      }
+    ]
+  },
+  "about": {
+    "title": "Our Story",
+    "body": "Luxe Beauty Studio opened in 2018 with a passion for empowering people through transformative beauty services. Our team of award-winning stylists brings together cutting-edge techniques, premium products, and personalized care to create stunning results. We believe beauty is personal, and every client deserves a customized experience that enhances their unique features and style.",
+    "subtitle": "Why choose Luxe",
+    "features": [
+      "🏆 Award-Winning Stylists",
+      "💎 Premium Product Lines",
+      "🎨 Custom Color Expertise",
+      "👑 Bridal Specialists",
+      "✨ Luxurious Environment",
+      "📚 Ongoing Education"
+    ]
+  },
+  "gallery": {
+    "title": "Our Work",
+    "subtitle": "Transformations that inspire",
+    "categories": [
+      {
+        "name": "Hair",
+        "images": [
+          {"url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=800&q=80", "alt": "Haircut transformation"},
+          {"url": "https://images.unsplash.com/photo-1522337094846-8a818192de1f?w=800&q=80", "alt": "Styled hair"},
+          {"url": "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=800&q=80", "alt": "Long hair styling"}
+        ]
+      },
+      {
+        "name": "Color",
+        "images": [
+          {"url": "https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?w=800&q=80", "alt": "Balayage highlights"},
+          {"url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=800&q=80", "alt": "Ombre coloring"},
+          {"url": "https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=800&q=80", "alt": "Color transformation"}
+        ]
+      },
+      {
+        "name": "Bridal",
+        "images": [
+          {"url": "https://images.unsplash.com/photo-1487412912498-0447578fcca8?w=800&q=80", "alt": "Bridal updo"},
+          {"url": "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=80", "alt": "Wedding hair"},
+          {"url": "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80", "alt": "Bridal styling"}
+        ]
+      },
+      {
+        "name": "Extensions",
+        "images": [
+          {"url": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=800&q=80", "alt": "Hair extensions"},
+          {"url": "https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=800&q=80", "alt": "Extension styling"},
+          {"url": "https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?w=800&q=80", "alt": "Long extensions"}
+        ]
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Client Reviews",
+    "subtitle": "What our clients are saying",
+    "items": [
+      {
+        "text": "I've been going to Luxe for 2 years and wouldn't trust my hair to anyone else! Sarah is a color genius - my balayage always looks incredible. The salon is beautiful and everyone is so welcoming.",
+        "author": "Emily Martinez",
+        "location": "Regular Client",
+        "rating": 5,
+        "date": "3 days ago",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&q=80",
+        "imageAlt": "Emily Martinez"
+      },
+      {
+        "text": "Had my bridal hair trial and wedding day styling here - absolutely perfect! They made me feel like a princess. The team is professional, talented, and so much fun. Highly recommend!",
+        "author": "Jessica Park",
+        "location": "Bride",
+        "rating": 5,
+        "date": "1 week ago",
+        "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
+        "imageAlt": "Jessica Park"
+      },
+      {
+        "text": "Best haircut I've ever had! The consultation was thorough and Alex really listened to what I wanted. The salon is gorgeous and the service is top-notch. Worth every penny!",
+        "author": "Michael Chen",
+        "location": "New Client",
+        "rating": 5,
+        "date": "2 weeks ago",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "imageAlt": "Michael Chen"
+      }
+    ],
+    "stats": {
+      "averageRating": 4.9,
+      "totalReviews": 523,
+      "googleRating": 4.9,
+      "instagramFollowers": "12.5K"
+    }
+  },
+  "team": {
+    "title": "Meet Our Stylists",
+    "subtitle": "Expert professionals dedicated to your beauty",
+    "members": [
+      {
+        "name": "Sarah Williams",
+        "title": "Master Colorist & Owner",
+        "bio": "With 15 years of experience and advanced color certifications, Sarah specializes in balayage, color correction, and custom color formulations. Her work has been featured in beauty magazines and she's passionate about ongoing education.",
+        "image": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80",
+        "imageAlt": "Sarah Williams",
+        "credentials": ["Redken Certified Colorist", "Balayage Specialist", "Salon Owner"],
+        "specialties": ["Balayage", "Color Correction", "Bridal"]
+      },
+      {
+        "name": "Alex Rodriguez",
+        "title": "Lead Stylist",
+        "bio": "Alex is a precision cutting expert known for creating beautiful, wearable styles that fit each client's lifestyle. Specializing in curly hair, men's cuts, and modern styling techniques.",
+        "image": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80",
+        "imageAlt": "Alex Rodriguez",
+        "credentials": ["Vidal Sassoon Trained", "Curly Hair Specialist"],
+        "specialties": ["Precision Cuts", "Curly Hair", "Men's Styling"]
+      },
+      {
+        "name": "Maya Patel",
+        "title": "Extension & Bridal Specialist",
+        "bio": "Maya is our go-to expert for extensions and bridal styling. With certifications in multiple extension methods and years of bridal experience, she creates stunning, long-lasting results.",
+        "image": "https://images.unsplash.com/photo-1598550874175-4d0ef436c909?w=400&q=80",
+        "imageAlt": "Maya Patel",
+        "credentials": ["Extension Certified", "Bridal Specialist", "Updo Expert"],
+        "specialties": ["Extensions", "Bridal Hair", "Special Occasions"]
+      },
+      {
+        "name": "Jordan Lee",
+        "title": "Senior Stylist",
+        "bio": "Jordan brings creative energy and technical skill to every appointment. Specializing in modern color techniques, blondes, and lived-in color that grows out beautifully.",
+        "image": "https://images.unsplash.com/photo-1595152772835-219674b2a8a6?w=400&q=80",
+        "imageAlt": "Jordan Lee",
+        "credentials": ["Advanced Colorist", "Blonde Specialist"],
+        "specialties": ["Lived-In Color", "Blondes", "Dimensional Color"]
+      }
+    ]
+  },
+  "featuredServices": {
+    "title": "This Month's Specials",
+    "subtitle": "Limited-time offers and seasonal services",
+    "items": [
+      {
+        "name": "Spring Refresh Package",
+        "price": 299,
+        "description": "Haircut, glossing treatment, and scalp massage - perfect for the new season",
+        "availability": "This Month Only",
+        "image": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&q=80",
+        "imageAlt": "Spring hair refresh",
+        "savings": "Save $65"
+      },
+      {
+        "name": "Olaplex Intensive Treatment",
+        "price": 75,
+        "description": "Repair and strengthen damaged hair with this salon-exclusive treatment",
+        "availability": "New Service",
+        "image": "https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=600&q=80",
+        "imageAlt": "Hair treatment",
+        "popular": true
+      }
+    ]
+  },
+  "packages": {
+    "title": "Special Packages",
+    "subtitle": "Comprehensive beauty experiences",
+    "items": [
+      {
+        "name": "Total Transformation",
+        "price": 425,
+        "description": "Cut, full color or balayage, treatment, and style",
+        "features": ["Consultation", "Color service", "Haircut", "Treatment", "Style"],
+        "savings": "Save $50",
+        "popular": true
+      },
+      {
+        "name": "Bridal Beauty Package",
+        "price": 650,
+        "description": "Complete bridal preparation with trial and wedding day services",
+        "features": ["Hair trial", "Wedding day styling", "Touch-up kit", "Bride's gift", "Priority scheduling"],
+        "savings": "Save $100"
+      },
+      {
+        "name": "Extension Experience",
+        "price": 950,
+        "description": "Full extension installation with custom color matching",
+        "features": ["Consultation", "Custom color match", "100g extensions", "Cut & style", "Care kit"],
+        "savings": "Save $75"
+      }
+    ]
+  },
+  "privateEvents": {
+    "title": "Private Events & Group Services",
+    "subtitle": "Book our salon for your special celebration",
+    "rooms": [
+      {
+        "name": "Bridal Party Package",
+        "capacity": "4-8 guests",
+        "description": "Reserve the salon for your bridal party with champagne, music, and dedicated stylists for everyone.",
+        "features": ["Private salon access", "Champagne & refreshments", "Dedicated stylists", "Photography welcome"],
+        "image": "https://images.unsplash.com/photo-1487412912498-0447578fcca8?w=600&q=80",
+        "imageAlt": "Bridal party styling"
+      },
+      {
+        "name": "Girls' Day Out",
+        "capacity": "3-6 guests",
+        "description": "Celebrate with your squad! Group bookings include exclusive perks and special pricing.",
+        "features": ["Group discounts", "Complimentary refreshments", "Photo opportunities", "Gift bags"],
+        "image": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&q=80",
+        "imageAlt": "Group styling session"
+      },
+      {
+        "name": "Corporate Events",
+        "capacity": "8-12 guests",
+        "description": "Pamper your team or clients with an exclusive salon experience for corporate events or client appreciation.",
+        "features": ["After-hours availability", "Custom packages", "Corporate billing", "Catering options"],
+        "image": "https://images.unsplash.com/photo-1522337094846-8a818192de1f?w=600&q=80",
+        "imageAlt": "Corporate event styling"
+      }
+    ]
+  },
+  "beforeAfter": {
+    "title": "Transformation Gallery",
+    "subtitle": "Real clients, real results",
+    "items": [
+      {
+        "service": "Balayage Transformation",
+        "stylist": "Sarah Williams",
+        "before": "https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=600&q=80",
+        "after": "https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?w=600&q=80",
+        "description": "From flat brunette to dimensional balayage with warm caramel tones"
+      },
+      {
+        "service": "Color Correction",
+        "stylist": "Sarah Williams",
+        "before": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&q=80",
+        "after": "https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=600&q=80",
+        "description": "Fixed brassy box color to rich, natural-looking brunette"
+      },
+      {
+        "service": "Haircut & Style",
+        "stylist": "Alex Rodriguez",
+        "before": "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=600&q=80",
+        "after": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&q=80",
+        "description": "Modern layered cut with movement and texture"
+      }
+    ]
+  },
+  "contact": {
+    "title": "Visit Our Studio",
+    "subtitle": "Book your appointment today",
+    "phone": "(555) 234-5678",
+    "email": "hello@luxebeautystudio.com",
+    "address": "789 Fashion Boulevard, Suite 200, Beverly Hills, CA 90210",
+    "coordinates": {
+      "lat": 34.0736,
+      "lng": -118.4004
+    },
+    "parking": "Complimentary valet parking • Underground garage",
+    "accessibility": "Fully wheelchair accessible • Elevator to 2nd floor",
+    "hours": {
+      "title": "Hours",
+      "items": [
+        "Monday: Closed",
+        "Tuesday - Friday: 9:00 AM - 8:00 PM",
+        "Saturday: 8:00 AM - 6:00 PM",
+        "Sunday: 10:00 AM - 5:00 PM"
+      ],
+      "note": "Appointments required • Walk-ins accepted based on availability"
+    }
+  },
+  "social": {
+    "facebook": "https://facebook.com/luxebeautystudio",
+    "instagram": "https://instagram.com/luxebeautystudio",
+    "pinterest": "https://pinterest.com/luxebeautystudio",
+    "googleMaps": "https://maps.google.com/luxebeautystudio"
+  },
+  "stats": {
+    "items": [
+      {"number": "4.9", "label": "Star Rating"},
+      {"number": "6+", "label": "Years Excellence"},
+      {"number": "12.5K", "label": "Instagram Fans"},
+      {"number": "Award", "label": "Winning"}
+    ]
+  },
+  "credentials": {
+    "title": "Awards & Recognition",
+    "items": [
+      {"icon": "🏆", "name": "Best Salon 2023", "description": "Local Magazine"},
+      {"icon": "⭐", "name": "Top Rated", "description": "Google & Yelp"},
+      {"icon": "💎", "name": "Premium Products", "description": "Redken & Olaplex"},
+      {"icon": "📰", "name": "Featured In", "description": "Beauty Publications"}
+    ]
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "items": [
+      {"question": "Do I need an appointment?", "answer": "Yes, we operate by appointment only to ensure each client receives dedicated attention. Walk-ins are welcome if stylists are available, but we recommend booking in advance."},
+      {"question": "What products do you use?", "answer": "We use premium professional lines including Redken, Olaplex, Kevin Murphy, and R+Co. All our color products are gentle and long-lasting."},
+      {"question": "How often should I get my color touched up?", "answer": "It depends on the service! Root touch-ups are typically every 4-6 weeks, while balayage and lived-in color can last 3-4 months. We'll recommend a maintenance schedule during your appointment."},
+      {"question": "Do you offer consultations?", "answer": "Yes! Free consultations are included with every appointment. For major transformations or color corrections, we recommend scheduling a separate consultation appointment."},
+      {"question": "What's your cancellation policy?", "answer": "We require 24-hour notice for cancellations or rescheduling. Late cancellations or no-shows may incur a fee equal to 50% of the service cost."},
+      {"question": "Can you match my hair to a photo?", "answer": "We love inspiration photos! Bring them to your consultation. We'll discuss what's achievable with your hair type and current condition."},
+      {"question": "Do you do men's haircuts?", "answer": "Absolutely! Our stylists are experienced with all types of cuts, including classic men's styles and modern trends."},
+      {"question": "How long does a balayage take?", "answer": "Balayage typically takes 3-4 hours depending on your hair length and desired result. We'll give you an accurate time estimate during your consultation."}
+    ]
+  },
+  "footer": {
+    "text": "✨ Luxe Beauty Studio • Transforming Beauty Since 2018",
+    "links": [
+      {"label": "Book Now", "href": "#booking"},
+      {"label": "Services", "href": "#services"},
+      {"label": "Gallery", "href": "#gallery"},
+      {"label": "Contact", "href": "#contact"}
+    ],
+    "awards": [
+      "Best Salon 2023",
+      "Top Rated on Google",
+      "Premium Products",
+      "Expert Team"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": false,
+    "bookingEnabled": true,
+    "bookingWidget": "calendly",
+    "tier": "Pro"
+  }
+}
+

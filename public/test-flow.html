@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Builder Flow</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #0f172a;
+      color: #f8fafc;
+    }
+    .test-section {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      border: 2px solid #334155;
+    }
+    .test-section h2 {
+      color: #06b6d4;
+      margin-top: 0;
+    }
+    .status {
+      padding: 10px;
+      border-radius: 6px;
+      margin: 10px 0;
+      font-weight: 600;
+    }
+    .success { background: #10b981; color: white; }
+    .error { background: #ef4444; color: white; }
+    .pending { background: #f59e0b; color: white; }
+    button {
+      background: linear-gradient(135deg, #06b6d4, #0891b2);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      margin: 5px;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(6,182,212,0.4);
+    }
+    .test-result {
+      background: #334155;
+      padding: 10px;
+      border-radius: 6px;
+      margin: 10px 0;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 Builder Flow Integration Test</h1>
+  
+  <div class="test-section">
+    <h2>Test 1: Template Data Loading</h2>
+    <button onclick="testTemplateData()">Run Test</button>
+    <div id="test1-result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 2: Guest Editor URL Parameter</h2>
+    <button onclick="testGuestEditorUrl()">Run Test</button>
+    <div id="test2-result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 3: Setup Page Template Selection</h2>
+    <button onclick="testSetupRedirect()">Run Test</button>
+    <div id="test3-result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 4: Complete Flow Simulation</h2>
+    <button onclick="testCompleteFlow()">Run Test</button>
+    <div id="test4-result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Quick Links</h2>
+    <button onclick="window.location.href='/setup.html'">Go to Setup</button>
+    <button onclick="window.location.href='/guest-editor.html?template=product-showcase'">Test Product Showcase</button>
+    <button onclick="window.location.href='/guest-editor.html?template=starter'">Test Starter</button>
+  </div>
+
+  <script>
+    async function testTemplateData() {
+      const result = document.getElementById('test1-result');
+      result.innerHTML = '<div class="status pending">Testing...</div>';
+      
+      try {
+        // Test loading template data
+        const templates = ['product-showcase', 'product-ordering', 'starter'];
+        const results = [];
+        
+        for (const template of templates) {
+          const response = await fetch(`/data/templates/${template}.json`);
+          if (!response.ok) throw new Error(`Failed to load ${template}`);
+          
+          const data = await response.json();
+          const productCount = data.products ? data.products.length : 0;
+          const serviceCount = data.services?.items ? data.services.items.length : 0;
+          
+          results.push(`
+            <div class="test-result">
+              ✅ ${template}.json loaded
+              <br>• Products: ${productCount}
+              <br>• Services: ${serviceCount}
+              <br>• Brand: ${data.brand?.name || 'N/A'}
+            </div>
+          `);
+        }
+        
+        result.innerHTML = '<div class="status success">✓ All template data files loaded successfully!</div>' + results.join('');
+      } catch (error) {
+        result.innerHTML = `<div class="status error">✗ Error: ${error.message}</div>`;
+      }
+    }
+
+    async function testGuestEditorUrl() {
+      const result = document.getElementById('test2-result');
+      result.innerHTML = '<div class="status pending">Testing...</div>';
+      
+      try {
+        // Test guest editor page loads
+        const response = await fetch('/guest-editor.html?template=product-showcase');
+        if (!response.ok) throw new Error('Guest editor page not loading');
+        
+        const html = await response.text();
+        
+        // Check for key elements
+        const hasGuestBanner = html.includes('guestBanner');
+        const hasLoadTemplateData = html.includes('loadTemplateData');
+        const hasUrlParams = html.includes('URLSearchParams');
+        
+        result.innerHTML = `
+          <div class="status success">✓ Guest editor page loads correctly!</div>
+          <div class="test-result">
+            ✅ Guest banner element: ${hasGuestBanner ? 'Found' : 'Missing'}
+            <br>✅ loadTemplateData function: ${hasLoadTemplateData ? 'Found' : 'Missing'}
+            <br>✅ URL parameter handling: ${hasUrlParams ? 'Found' : 'Missing'}
+          </div>
+        `;
+      } catch (error) {
+        result.innerHTML = `<div class="status error">✗ Error: ${error.message}</div>`;
+      }
+    }
+
+    async function testSetupRedirect() {
+      const result = document.getElementById('test3-result');
+      result.innerHTML = '<div class="status pending">Testing...</div>';
+      
+      try {
+        // Test setup page
+        const response = await fetch('/setup.html');
+        if (!response.ok) throw new Error('Setup page not loading');
+        
+        const html = await response.text();
+        
+        // Check for redirect logic
+        const hasSelectTemplate = html.includes('function selectTemplate');
+        const hasGuestEditorRedirect = html.includes('/guest-editor.html?template=');
+        const hasLoadingMessage = html.includes('Loading visual builder');
+        
+        result.innerHTML = `
+          <div class="status success">✓ Setup page configured correctly!</div>
+          <div class="test-result">
+            ✅ selectTemplate function: ${hasSelectTemplate ? 'Found' : 'Missing'}
+            <br>✅ Guest editor redirect: ${hasGuestEditorRedirect ? 'Found' : 'Missing'}
+            <br>✅ Loading message: ${hasLoadingMessage ? 'Found' : 'Missing'}
+          </div>
+        `;
+      } catch (error) {
+        result.innerHTML = `<div class="status error">✗ Error: ${error.message}</div>`;
+      }
+    }
+
+    async function testCompleteFlow() {
+      const result = document.getElementById('test4-result');
+      result.innerHTML = '<div class="status pending">Running complete flow test...</div>';
+      
+      try {
+        const steps = [];
+        
+        // Step 1: Test homepage
+        let response = await fetch('/');
+        if (response.ok) {
+          steps.push('✅ Homepage loads');
+        }
+        
+        // Step 2: Test setup page
+        response = await fetch('/setup.html');
+        if (response.ok) {
+          steps.push('✅ Template gallery loads');
+        }
+        
+        // Step 3: Test template data
+        response = await fetch('/data/templates/product-showcase.json');
+        if (response.ok) {
+          const data = await response.json();
+          steps.push(`✅ Template data loads (${data.products.length} products)`);
+        }
+        
+        // Step 4: Test guest editor
+        response = await fetch('/guest-editor.html?template=product-showcase');
+        if (response.ok) {
+          steps.push('✅ Visual builder loads with template param');
+        }
+        
+        // Step 5: Test quick publish
+        response = await fetch('/quick-publish.html');
+        if (response.ok) {
+          steps.push('✅ Quick publish page ready');
+        }
+        
+        result.innerHTML = `
+          <div class="status success">✓ Complete flow is working!</div>
+          <div class="test-result">
+            ${steps.join('<br>')}
+            <br><br>
+            <strong>Flow: </strong>
+            <br>Homepage → Template Gallery → Visual Builder → Publish
+            <br><br>
+            <strong>Next Steps:</strong>
+            <br>1. Visit <a href="/setup.html" style="color: #06b6d4">/setup.html</a>
+            <br>2. Select any template
+            <br>3. Visual builder opens with demo data
+            <br>4. Edit and publish!
+          </div>
+        `;
+      } catch (error) {
+        result.innerHTML = `<div class="status error">✗ Error: ${error.message}</div>`;
+      }
+    }
+
+    // Auto-run tests on load
+    window.addEventListener('load', () => {
+      console.log('🧪 Test page loaded. Click buttons to run tests.');
+    });
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,433 @@
+{
+  "brand": {
+    "name": "Pawsitive Pet Spa",
+    "logo": "assets/logo.svg",
+    "tagline": "Premium Pet Grooming & Care • Where Pets Come First",
+    "phone": "(555) 789-0123",
+    "email": "hello@pawsitivepetspa.com"
+  },
+  "themeVars": {
+    "color-primary": "#7c3aed",
+    "color-accent": "#6d28d9",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#services"},
+    {"label": "Gallery", "href": "#gallery"},
+    {"label": "Team", "href": "#team"},
+    {"label": "Book Now", "href": "#booking"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "✨ Award-Winning Pet Care",
+    "title": "Pamper Your Pet with Premium Grooming",
+    "subtitle": "Professional grooming services where safety, comfort, and style meet. Our certified groomers treat every pet like family, using gentle techniques and premium products. From baths to breed-specific styling, your pet will leave looking and feeling amazing.",
+    "cta": [
+      {"label": "📅 Book Appointment", "href": "#booking"},
+      {"label": "💇 View Services", "href": "#services", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1560807707-8cc77767d783?w=1200&q=80",
+    "imageAlt": "Happy dog after grooming"
+  },
+  "features": {
+    "bookingWidget": {
+      "enabled": true,
+      "provider": "calendly",
+      "url": "https://calendly.com/pawsitivepetspa"
+    },
+    "gallery": {
+      "filterable": true,
+      "categories": ["Dogs", "Cats", "Before & After"]
+    },
+    "teamProfiles": true,
+    "ownerDashboard": true,
+    "analytics": true,
+    "testimonials": {
+      "enabled": true,
+      "ratings": true
+    }
+  },
+  "menu": {
+    "sections": [
+      {
+        "id": "dog-grooming",
+        "name": "Dog Grooming",
+        "description": "Complete grooming services for all breeds",
+        "items": [
+          {
+            "name": "Full-Service Groom",
+            "price": 75,
+            "description": "Bath, blow dry, brush out, nail trim, ear cleaning, breed-specific haircut, and cologne",
+            "image": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=600&q=80",
+            "imageAlt": "Groomed dog",
+            "duration": "2-3 hours",
+            "popular": true
+          },
+          {
+            "name": "Bath & Brush Package",
+            "price": 45,
+            "description": "Relaxing bath, conditioning treatment, blow dry, brush out, nail trim, and ear cleaning",
+            "image": "https://images.unsplash.com/photo-1541599468348-e96984315921?w=600&q=80",
+            "imageAlt": "Dog bath",
+            "duration": "1-1.5 hours",
+            "popular": true
+          },
+          {
+            "name": "Puppy's First Groom",
+            "price": 50,
+            "description": "Gentle introduction to grooming for puppies under 6 months. Bath, trim, and socialization.",
+            "duration": "1 hour"
+          },
+          {
+            "name": "De-Shedding Treatment",
+            "price": 65,
+            "description": "Reduce shedding by up to 90%! Special shampoo, conditioning, and FURminator treatment.",
+            "duration": "1.5-2 hours"
+          },
+          {
+            "name": "Breed-Specific Styling",
+            "price": 85,
+            "description": "Expert breed-standard cuts for show dogs or specific breed styles (Poodles, Schnauzers, etc.)",
+            "duration": "2.5-3 hours"
+          }
+        ]
+      },
+      {
+        "id": "cat-grooming",
+        "name": "Cat Grooming",
+        "description": "Stress-free grooming for felines",
+        "items": [
+          {
+            "name": "Cat Full Groom",
+            "price": 65,
+            "description": "Bath, blow dry, brush out, nail trim, ear cleaning, and sanitary trim",
+            "image": "https://images.unsplash.com/photo-1573865526739-10c1d3a1f0cc?w=600&q=80",
+            "imageAlt": "Groomed cat",
+            "duration": "1.5-2 hours",
+            "popular": true
+          },
+          {
+            "name": "Lion Cut",
+            "price": 75,
+            "description": "Full body shave with mane, tail tip, and leg puffs. Perfect for long-haired cats in summer.",
+            "duration": "2 hours"
+          },
+          {
+            "name": "Cat Bath & Brush",
+            "price": 50,
+            "description": "Gentle bath, conditioning, blow dry, and thorough brushing",
+            "duration": "1 hour"
+          },
+          {
+            "name": "Mat Removal",
+            "price": 40,
+            "description": "Careful removal of mats and tangles. Price varies by severity.",
+            "duration": "30-60 min"
+          }
+        ]
+      },
+      {
+        "id": "add-on-services",
+        "name": "Add-On Services",
+        "description": "Enhance your pet's grooming experience",
+        "items": [
+          {
+            "name": "Teeth Brushing",
+            "price": 15,
+            "description": "Pet-safe toothpaste and gentle brushing for dental health"
+          },
+          {
+            "name": "Flea & Tick Treatment",
+            "price": 25,
+            "description": "Medicated shampoo and treatment to eliminate pests"
+          },
+          {
+            "name": "Nail Grinding",
+            "price": 10,
+            "description": "Smooth nail edges with Dremel tool for comfort"
+          },
+          {
+            "name": "Paw Pad Moisturizing",
+            "price": 10,
+            "description": "Soothing balm for dry or cracked paw pads"
+          },
+          {
+            "name": "Blueberry Facial",
+            "price": 15,
+            "description": "Gentle facial cleanse with blueberry-infused products"
+          },
+          {
+            "name": "Anal Gland Expression",
+            "price": 20,
+            "description": "Professional expression for comfort and health"
+          }
+        ]
+      },
+      {
+        "id": "specialty-services",
+        "name": "Specialty Services",
+        "description": "Unique offerings for special occasions",
+        "items": [
+          {
+            "name": "Creative Color & Design",
+            "price": 50,
+            "description": "Pet-safe temporary color, patterns, or designs. Perfect for photoshoots!",
+            "image": "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&q=80",
+            "imageAlt": "Pet with creative styling",
+            "duration": "1-2 hours"
+          },
+          {
+            "name": "Spa Day Package",
+            "price": 120,
+            "description": "Ultimate pampering: full groom, massage, pawdicure, facial, and specialty treatment",
+            "duration": "3-4 hours",
+            "popular": true
+          },
+          {
+            "name": "Mobile Grooming",
+            "price": 95,
+            "description": "We come to you! Full grooming service in our mobile spa van",
+            "duration": "2-3 hours"
+          }
+        ]
+      }
+    ]
+  },
+  "about": {
+    "title": "About Pawsitive Pet Spa",
+    "body": "Founded in 2017, Pawsitive Pet Spa is a family-owned business dedicated to providing the highest quality grooming with love and care. Our certified groomers have extensive training in breed-specific cuts, safe handling techniques, and stress-reduction methods. We use only premium, pet-safe products and maintain the highest standards of cleanliness and safety. Your pet's comfort and well-being are our top priorities.",
+    "subtitle": "Why pets love us",
+    "features": [
+      "🏆 Certified Professional Groomers",
+      "💝 Fear-free handling techniques",
+      "🌱 Premium organic products",
+      "⚡ Cage-free environment",
+      "💎 One pet at a time focus",
+      "✨ 8+ years of excellence"
+    ]
+  },
+  "gallery": {
+    "title": "Our Work",
+    "subtitle": "Beautiful transformations",
+    "categories": [
+      {
+        "name": "Dogs",
+        "images": [
+          {"url": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&q=80", "alt": "Groomed poodle"},
+          {"url": "https://images.unsplash.com/photo-1541599468348-e96984315921?w=800&q=80", "alt": "Happy groomed dog"},
+          {"url": "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=800&q=80", "alt": "Stylish dog"}
+        ]
+      },
+      {
+        "name": "Cats",
+        "images": [
+          {"url": "https://images.unsplash.com/photo-1573865526739-10c1d3a1f0cc?w=800&q=80", "alt": "Groomed cat"},
+          {"url": "https://images.unsplash.com/photo-1513360371669-4adf3dd7dff8?w=800&q=80", "alt": "Cat after grooming"},
+          {"url": "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=800&q=80", "alt": "Beautiful cat"}
+        ]
+      },
+      {
+        "name": "Before & After",
+        "images": [
+          {"url": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&q=80", "alt": "Transformation"},
+          {"url": "https://images.unsplash.com/photo-1541599468348-e96984315921?w=800&q=80", "alt": "Before after grooming"},
+          {"url": "https://images.unsplash.com/photo-1560807707-8cc77767d783?w=800&q=80", "alt": "Amazing transformation"}
+        ]
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Happy Pet Parents",
+    "subtitle": "What our clients are saying",
+    "items": [
+      {
+        "text": "My poodle looks amazing every time! The groomers are so gentle and patient with her. She actually gets excited when we pull up to the spa now. Highly recommend!",
+        "author": "Sarah Johnson",
+        "location": "Dog Mom",
+        "rating": 5,
+        "date": "1 week ago",
+        "pet": "Bella the Poodle",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&q=80",
+        "imageAlt": "Sarah Johnson"
+      },
+      {
+        "text": "Our cat hates baths, but the team here is incredible. They're patient, gentle, and know exactly how to handle anxious cats. Our kitty came home calm and beautiful!",
+        "author": "Michael Chen",
+        "location": "Cat Dad",
+        "rating": 5,
+        "date": "2 weeks ago",
+        "pet": "Whiskers",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "imageAlt": "Michael Chen"
+      },
+      {
+        "text": "Best grooming experience ever! They listen to what you want and deliver perfect results. The spa day package is worth every penny. My dog was so relaxed and happy!",
+        "author": "Amanda Rodriguez",
+        "location": "Pet Parent",
+        "rating": 5,
+        "date": "3 weeks ago",
+        "pet": "Max the Golden",
+        "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
+        "imageAlt": "Amanda Rodriguez"
+      }
+    ],
+    "stats": {
+      "averageRating": 4.9,
+      "totalReviews": 892,
+      "googleRating": 4.9,
+      "repeatClients": "93%"
+    }
+  },
+  "team": {
+    "title": "Meet Our Groomers",
+    "subtitle": "Certified professionals who love pets",
+    "members": [
+      {
+        "name": "Rachel Thompson",
+        "title": "Master Groomer & Owner",
+        "bio": "With 15 years of grooming experience and certifications in multiple breed-specific cuts, Rachel founded Pawsitive to create a stress-free grooming environment where every pet is treated with love and respect.",
+        "image": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80",
+        "imageAlt": "Rachel Thompson",
+        "credentials": ["Certified Master Groomer", "Fear-Free Certified", "15+ Years Experience"],
+        "specialties": ["Breed-Specific Cuts", "Show Grooming", "Behavior Management"]
+      },
+      {
+        "name": "David Martinez",
+        "title": "Senior Groomer",
+        "bio": "David specializes in large breeds and dogs with special needs. His calm demeanor and expert handling make him a favorite among anxious pets and their owners.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "David Martinez",
+        "credentials": ["Certified Professional Groomer", "Large Breed Specialist", "10+ Years Experience"],
+        "specialties": ["Large Breeds", "Anxious Pets", "De-Shedding"]
+      },
+      {
+        "name": "Emily Park",
+        "title": "Cat Grooming Specialist",
+        "bio": "Emily is our feline expert, trained in low-stress handling techniques that make grooming a positive experience for even the most reluctant cats.",
+        "image": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80",
+        "imageAlt": "Emily Park",
+        "credentials": ["Certified Cat Groomer", "Feline Behavior Specialist", "8+ Years Experience"],
+        "specialties": ["Cat Grooming", "Lion Cuts", "Stress-Free Handling"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Our Grooming Process",
+    "subtitle": "Safe, gentle, and stress-free",
+    "steps": [
+      {
+        "number": 1,
+        "title": "Check-In & Consultation",
+        "description": "We meet your pet, discuss your preferences, and assess any special needs or concerns.",
+        "duration": "10 minutes"
+      },
+      {
+        "number": 2,
+        "title": "Stress-Free Assessment",
+        "description": "We let your pet explore and get comfortable in our spa environment at their own pace.",
+        "duration": "5-10 minutes"
+      },
+      {
+        "number": 3,
+        "title": "Gentle Grooming",
+        "description": "One pet at a time, we provide gentle, professional grooming with breaks as needed.",
+        "duration": "1-3 hours"
+      },
+      {
+        "number": 4,
+        "title": "Final Touches & Photos",
+        "description": "We add finishing touches and capture photos of your freshly groomed pet.",
+        "duration": "15 minutes"
+      },
+      {
+        "number": 5,
+        "title": "Happy Pickup",
+        "description": "Your pet leaves looking and feeling amazing! We provide aftercare instructions.",
+        "duration": "10 minutes"
+      }
+    ]
+  },
+  "contact": {
+    "title": "Visit Our Pet Spa",
+    "subtitle": "Book your pet's pampering session",
+    "phone": "(555) 789-0123",
+    "email": "hello@pawsitivepetspa.com",
+    "address": "890 Pet Paradise Lane, Suite 100, Portland, OR 97201",
+    "coordinates": {
+      "lat": 45.5152,
+      "lng": -122.6784
+    },
+    "parking": "Free parking available • Easy drop-off area",
+    "accessibility": "Ground level access • Pet-friendly waiting area",
+    "hours": {
+      "title": "Hours",
+      "items": [
+        "Tuesday - Friday: 8:00 AM - 6:00 PM",
+        "Saturday: 9:00 AM - 5:00 PM",
+        "Sunday - Monday: Closed"
+      ],
+      "note": "Appointments required • Drop-off between 8-10 AM"
+    }
+  },
+  "social": {
+    "facebook": "https://facebook.com/pawsitivepetspa",
+    "instagram": "https://instagram.com/pawsitivepetspa",
+    "yelp": "https://yelp.com/biz/pawsitivepetspa",
+    "googleMaps": "https://maps.google.com/pawsitivepetspa"
+  },
+  "stats": {
+    "items": [
+      {"number": "4.9", "label": "Star Rating"},
+      {"number": "5,000+", "label": "Happy Pets"},
+      {"number": "Cage", "label": "Free"},
+      {"number": "Fear", "label": "Free Certified"}
+    ]
+  },
+  "credentials": {
+    "title": "Awards & Certifications",
+    "items": [
+      {"icon": "🏆", "name": "Best Pet Groomer", "description": "Local Magazine 2023"},
+      {"icon": "⭐", "name": "Top Rated", "description": "4.9 Stars on Google & Yelp"},
+      {"icon": "💝", "name": "Fear-Free Certified", "description": "Stress-Free Handling"},
+      {"icon": "🎓", "name": "Certified Groomers", "description": "Professional Training"}
+    ]
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "items": [
+      {"question": "Do I need to stay during grooming?", "answer": "No need! Most pets are calmer without their owners present. We'll call when your pet is ready for pickup, usually 2-3 hours later."},
+      {"question": "What if my pet is anxious or aggressive?", "answer": "We're experienced with anxious and reactive pets. We use fear-free handling techniques and take breaks as needed. For extremely anxious pets, we may recommend shorter sessions or discuss alternative options."},
+      {"question": "What should I bring to the appointment?", "answer": "Just bring your pet on a leash or in a carrier! We provide everything else. If your pet has special dietary needs or medical conditions, please let us know in advance."},
+      {"question": "How often should my pet be groomed?", "answer": "It depends on breed and coat type. Most dogs benefit from grooming every 4-8 weeks. We'll provide a personalized recommendation based on your pet's needs."},
+      {"question": "Do you groom senior pets?", "answer": "Yes! We take extra care with senior pets, providing frequent breaks, gentle handling, and accommodations for mobility issues or health concerns."},
+      {"question": "What if my pet's coat is matted?", "answer": "We can carefully remove mats when possible. Severe matting may require shaving for your pet's comfort and safety. There may be an additional charge depending on severity."},
+      {"question": "Do you offer puppy/kitten grooming?", "answer": "Absolutely! We offer special introductory grooming for puppies and kittens to create positive associations with grooming from an early age."},
+      {"question": "What products do you use?", "answer": "We use premium, pet-safe products including organic shampoos and conditioners. We can accommodate sensitive skin and allergies with hypoallergenic options."}
+    ]
+  },
+  "footer": {
+    "text": "✨ Pawsitive Pet Spa • Where Pets Come First Since 2017",
+    "links": [
+      {"label": "Book Now", "href": "#booking"},
+      {"label": "Services", "href": "#services"},
+      {"label": "Gallery", "href": "#gallery"},
+      {"label": "Contact", "href": "#contact"}
+    ],
+    "awards": [
+      "Best Pet Groomer 2023",
+      "5,000+ Happy Pets",
+      "Fear-Free Certified",
+      "Top Rated"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": false,
+    "bookingEnabled": true,
+    "bookingWidget": "calendly",
+    "tier": "Pro"
+  }
+}
+

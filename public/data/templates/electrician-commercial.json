@@ -1,0 +1,186 @@
+{
+  "brand": {
+    "name": "ProVolt Commercial Electric",
+    "logo": "assets/logo.svg",
+    "tagline": "Commercial & Industrial Electrical",
+    "phone": "(555) 777-8899",
+    "email": "service@provolt.biz"
+  },
+  "themeVars": {
+    "color-primary": "#1e40af",
+    "color-accent": "#3b82f6",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "Industries", "href": "#about"},
+    {"label": "Projects", "href": "#testimonials"},
+    {"label": "Quote", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "⚡ Commercial Electrical Services",
+    "title": "Powering businesses safely & efficiently",
+    "subtitle": "Licensed commercial electricians for offices, retail, warehouses, and industrial facilities. Electrical maintenance, repairs, installations, and emergency service. Minimize downtime. Keep your business running.",
+    "cta": [
+      {"label": "Request Quote", "href": "#contact"},
+      {"label": "Our Services", "href": "#products", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=1200&q=80",
+    "imageAlt": "Commercial electrical work"
+  },
+  "about": {
+    "title": "Commercial Electrical Experts",
+    "subtitle": "Trusted by businesses since 2005",
+    "content": "ProVolt specializes in commercial and industrial electrical services. Our licensed electricians handle everything from routine maintenance to complete electrical systems for new construction. Available 24/7 for emergencies."
+  },
+  "products": [
+    {
+      "name": "Commercial Electrical Maintenance",
+      "price": 300,
+      "description": "Regular maintenance contracts to keep your electrical systems running smoothly. Prevent problems before they cause downtime.",
+      "category": "Maintenance",
+      "duration": "Monthly",
+      "popular": true
+    },
+    {
+      "name": "Lighting Retrofit",
+      "price": 2500,
+      "description": "Upgrade to energy-efficient LED lighting. Reduce energy costs by 50%+. Quick ROI. Includes rebate assistance.",
+      "category": "Upgrade",
+      "duration": "2-3 days",
+      "popular": true
+    },
+    {
+      "name": "Panel & Distribution Upgrade",
+      "price": 5000,
+      "description": "Upgrade electrical panels and distribution systems for expanding businesses. Permits and inspections included.",
+      "category": "Upgrade",
+      "duration": "1 week"
+    },
+    {
+      "name": "Emergency Electrical Service",
+      "price": 200,
+      "description": "24/7 emergency response for power outages, electrical failures, and urgent repairs. Minimize business downtime.",
+      "category": "Emergency",
+      "duration": "Same day",
+      "popular": true
+    },
+    {
+      "name": "Tenant Improvement",
+      "price": 3500,
+      "description": "Complete electrical for office build-outs and tenant improvements. Code-compliant and timely completion.",
+      "category": "Construction",
+      "duration": "2-4 weeks"
+    },
+    {
+      "name": "Industrial Motor & Control",
+      "price": 450,
+      "description": "Motor installation, repair, and control system work for industrial facilities. Minimize production downtime.",
+      "category": "Industrial",
+      "duration": "Per hour"
+    }
+  ],
+  "services": {
+    "title": "Commercial Services",
+    "subtitle": "Complete electrical solutions for business",
+    "items": [
+      {
+        "title": "🏢 Commercial Maintenance",
+        "description": "Preventive maintenance programs to keep your business powered"
+      },
+      {
+        "title": "💡 Energy Efficiency",
+        "description": "LED retrofits and upgrades that reduce operating costs"
+      },
+      {
+        "title": "🏗️ Construction",
+        "description": "New construction and tenant improvement electrical systems"
+      },
+      {
+        "title": "🚨 24/7 Emergency",
+        "description": "Round-the-clock emergency service to minimize downtime"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Client Projects",
+    "subtitle": "Trusted by local businesses",
+    "items": [
+      {
+        "text": "ProVolt handles all electrical for our three retail locations. Responsive, reliable, and always professional. The LED retrofit they did is saving us thousands annually.",
+        "author": "Jennifer Martinez",
+        "title": "Retail Chain Owner"
+      },
+      {
+        "text": "When our warehouse had an electrical emergency, they responded within an hour and got us back online quickly. Now use them for all our electrical needs.",
+        "author": "David Chen",
+        "title": "Warehouse Manager"
+      },
+      {
+        "text": "Completed our office build-out on time and on budget. Clean work, professional team, and passed all inspections first time. Highly recommend!",
+        "author": "Sarah Thompson",
+        "title": "Property Developer"
+      }
+    ]
+  },
+  "team": {
+    "title": "Project Management",
+    "subtitle": "Licensed commercial electricians",
+    "members": [
+      {
+        "name": "James Rodriguez",
+        "title": "Master Electrician & Operations Manager",
+        "bio": "Licensed Master Electrician with 18+ years in commercial and industrial electrical work. Specializes in large-scale projects, maintenance contracts, and emergency service.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "James Rodriguez",
+        "credentials": ["Master Electrician", "18+ Years Commercial", "Fully Insured"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Project Process",
+    "subtitle": "Professional commercial electrical service",
+    "steps": [
+      {"title": "Site Assessment", "description": "Visit your facility to understand needs and scope"},
+      {"title": "Detailed Proposal", "description": "Clear quote with timeline and specifications"},
+      {"title": "Professional Work", "description": "Licensed electricians complete work to code"},
+      {"title": "Inspection & Testing", "description": "Verify all work meets standards and your satisfaction"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "19+", "label": "Years Serving Business"},
+      {"number": "500+", "label": "Commercial Clients"},
+      {"number": "24/7", "label": "Emergency Service"},
+      {"number": "$5M", "label": "Liability Coverage"}
+    ]
+  },
+  "contact": {
+    "title": "Request Quote",
+    "subtitle": "Commercial electrical services",
+    "phone": "(555) 777-8899",
+    "email": "service@provolt.biz",
+    "address": "Serving Metro Chicago, IL"
+  },
+  "footer": {
+    "text": "⚡ ProVolt Commercial Electric • Powering Business Since 2005",
+    "awards": [
+      "Licensed & Insured",
+      "Best Commercial Electric 2023",
+      "24/7 Emergency Service"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "service@provolt.biz",
+    "productCta": "Request Quote",
+    "productCtaHref": "tel:+15557778899",
+    "productNote": "Submit your project details and we'll provide a detailed quote within 24 hours. Emergency service available 24/7."
+  },
+  "productsTitle": "Commercial Electrical Services",
+  "productsSubtitle": "Professional electrical solutions for business"
+}
+

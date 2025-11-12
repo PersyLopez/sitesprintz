@@ -1,0 +1,507 @@
+{
+  "_comment": "Complete Template Schema - All tiers (Starter, Pro, Premium)",
+  "_version": "2.0",
+  "_description": "This schema includes all planned features. Some are placeholders for future implementation.",
+  
+  "brand": {
+    "name": "Business Name",
+    "logo": "assets/logo.svg",
+    "tagline": "Your Tagline • Since 2020",
+    "phone": "(555) 123-4567",
+    "email": "hello@business.com",
+    "address": "123 Main St, City, ST 12345"
+  },
+
+  "themeVars": {
+    "color-primary": "#3b82f6",
+    "color-accent": "#10b981",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "About", "href": "#about"},
+    {"label": "Reviews", "href": "#reviews"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+
+  "_tierInfo": {
+    "plan": "Starter | Pro | Premium",
+    "description": "Set plan to determine which features are enabled"
+  },
+
+  "hero": {
+    "eyebrow": "Welcome Message",
+    "title": "Main Headline",
+    "subtitle": "Supporting description text",
+    "cta": [
+      {"label": "Primary Action", "href": "#contact"},
+      {"label": "Secondary Action", "href": "#products", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-example?w=1200&q=80",
+    "imageAlt": "Hero image description"
+  },
+
+  "_features_all_tiers": "=== STARTER TIER FEATURES (All Templates) ===",
+
+  "stats": {
+    "_tier": "Starter",
+    "_status": "✅ Implemented",
+    "items": [
+      {"number": "100+", "label": "Happy Clients"},
+      {"number": "5+", "label": "Years Experience"},
+      {"number": "4.9", "label": "Star Rating"},
+      {"number": "100%", "label": "Satisfaction"}
+    ]
+  },
+
+  "about": {
+    "_tier": "Starter",
+    "_status": "✅ Implemented",
+    "title": "Our Story",
+    "body": "Business description...",
+    "subtitle": "Why choose us",
+    "features": [
+      "Feature 1",
+      "Feature 2",
+      "Feature 3"
+    ]
+  },
+
+  "products": [
+    {
+      "_tier": "Starter",
+      "_status": "✅ Implemented",
+      "name": "Service Name",
+      "price": 99,
+      "description": "Service description",
+      "image": "https://images.unsplash.com/photo?w=600&q=80",
+      "imageAlt": "Service image",
+      "category": "Category Name",
+      "duration": "1-2 hours",
+      "popular": false,
+      "_filters": {
+        "_tier": "Starter",
+        "_status": "⚠️ Partial - Need to add to all templates",
+        "enabled": true,
+        "categories": ["Category 1", "Category 2"]
+      }
+    }
+  ],
+
+  "productsTitle": "Our Services",
+  "productsSubtitle": "Professional services for your needs",
+
+  "process": {
+    "_tier": "Starter",
+    "_status": "✅ Implemented",
+    "title": "How It Works",
+    "subtitle": "Simple and straightforward",
+    "steps": [
+      {"title": "Step 1", "description": "Description"},
+      {"title": "Step 2", "description": "Description"},
+      {"title": "Step 3", "description": "Description"},
+      {"title": "Step 4", "description": "Description"}
+    ]
+  },
+
+  "credentials": {
+    "_tier": "Starter",
+    "_status": "✅ Implemented",
+    "title": "Why Trust Us",
+    "subtitle": "Certified and professional",
+    "items": [
+      {"icon": "✅", "name": "Licensed", "description": "Fully licensed"},
+      {"icon": "🛡️", "name": "Insured", "description": "Full coverage"},
+      {"icon": "⭐", "name": "Top Rated", "description": "4.9 stars"},
+      {"icon": "🏆", "name": "Award Winner", "description": "Best of 2024"}
+    ]
+  },
+
+  "team": {
+    "_tier": "Starter (basic) / Premium (enhanced)",
+    "_status": "✅ Implemented (basic)",
+    "title": "Meet Our Team",
+    "subtitle": "Experienced professionals",
+    "members": [
+      {
+        "name": "Jane Doe",
+        "title": "Owner & Lead Professional",
+        "bio": "15+ years experience...",
+        "image": "https://images.unsplash.com/photo?w=400&q=80",
+        "imageAlt": "Jane Doe",
+        "credentials": ["Certification 1", "Certification 2"],
+        "_premium_fields": {
+          "_tier": "Premium Only",
+          "_status": "📋 Planned",
+          "video": "https://youtube.com/embed/video-id",
+          "specialties": ["Specialty 1", "Specialty 2"],
+          "education": ["Degree 1", "Degree 2"],
+          "languages": ["English", "Spanish"],
+          "availability": "Mon, Wed, Fri",
+          "bookingUrl": "https://calendly.com/jane"
+        }
+      }
+    ]
+  },
+
+  "testimonials": {
+    "_tier": "Starter",
+    "_status": "✅ Implemented",
+    "title": "What Clients Say",
+    "subtitle": "Real reviews from satisfied customers",
+    "items": [
+      {
+        "text": "Amazing service! Highly recommend.",
+        "author": "John Smith",
+        "location": "Business Owner",
+        "rating": 5,
+        "date": "1 week ago",
+        "image": "https://images.unsplash.com/photo?w=100&q=80",
+        "imageAlt": "John Smith"
+      }
+    ]
+  },
+
+  "faq": {
+    "_tier": "Starter",
+    "_status": "✅ Implemented",
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know",
+    "items": [
+      {
+        "question": "Question here?",
+        "answer": "Answer here."
+      }
+    ]
+  },
+
+  "contact": {
+    "_tier": "Starter",
+    "_status": "✅ Implemented",
+    "title": "Get In Touch",
+    "subtitle": "We'd love to hear from you",
+    "phone": "(555) 123-4567",
+    "email": "hello@business.com",
+    "address": "123 Main St, City, ST 12345",
+    "hours": {
+      "title": "Business Hours",
+      "items": [
+        "Monday - Friday: 9:00 AM - 5:00 PM",
+        "Saturday: 10:00 AM - 2:00 PM",
+        "Sunday: Closed"
+      ]
+    }
+  },
+
+  "beforeAfter": {
+    "_tier": "Starter",
+    "_status": "📋 Planned",
+    "_implementation": "Week 1-2",
+    "title": "Our Work",
+    "subtitle": "See the transformation",
+    "items": [
+      {
+        "title": "Project Name",
+        "category": "Category",
+        "beforeImage": "https://images.unsplash.com/before?w=600&q=80",
+        "afterImage": "https://images.unsplash.com/after?w=600&q=80",
+        "description": "Project description"
+      }
+    ]
+  },
+
+  "booking": {
+    "_tier": "Starter (basic) / Premium (advanced)",
+    "_status": "📋 Planned",
+    "_implementation": "Week 1",
+    "provider": "calendly | acuity | square | custom",
+    "url": "https://calendly.com/username/30min",
+    "style": "inline | popup | button",
+    "buttonText": "Book Appointment",
+    "_premium_features": {
+      "_tier": "Premium Only",
+      "_status": "📋 Planned - Phase 3",
+      "staffSelection": true,
+      "serviceSelection": true,
+      "realTimeAvailability": true,
+      "resourceManagement": true
+    }
+  },
+
+  "_features_pro_tier": "=== PRO TIER FEATURES ===",
+
+  "settings": {
+    "_tier": "Pro",
+    "_status": "✅ Implemented",
+    "allowCheckout": false,
+    "productCta": "Contact Us",
+    "productCtaHref": "tel:+15551234567",
+    "productNote": "Call or email to learn more",
+    "_pro_checkout": {
+      "_tier": "Pro",
+      "_status": "✅ Implemented",
+      "allowCheckout": true,
+      "productCta": "Buy Now",
+      "stripePublishableKey": "pk_test_...",
+      "successUrl": "/success",
+      "cancelUrl": "/cancel"
+    }
+  },
+
+  "subscriptions": {
+    "_tier": "Pro",
+    "_status": "📋 Planned",
+    "_implementation": "Week 2-3",
+    "title": "Subscription Plans",
+    "subtitle": "Save with recurring services",
+    "plans": [
+      {
+        "name": "Weekly Service",
+        "price": 99,
+        "interval": "week",
+        "savings": "15%",
+        "description": "Service every week",
+        "popular": true
+      }
+    ]
+  },
+
+  "_features_premium_tier": "=== PREMIUM TIER FEATURES ===",
+
+  "chat": {
+    "_tier": "Premium",
+    "_status": "📋 Planned",
+    "_implementation": "Week 1 (Quick Win)",
+    "provider": "intercom | drift | tidio | tawk",
+    "enabled": true,
+    "appId": "your-app-id",
+    "position": "bottom-right",
+    "greeting": "Hi! How can we help you today?"
+  },
+
+  "priceCalculator": {
+    "_tier": "Premium",
+    "_status": "📋 Planned",
+    "_implementation": "Week 3-4",
+    "enabled": true,
+    "title": "Get Instant Quote",
+    "subtitle": "Configure your service and see pricing immediately",
+    "steps": [
+      {
+        "id": "service-type",
+        "title": "Select Service",
+        "type": "radio",
+        "options": [
+          {"label": "Basic", "value": "basic", "price": 50},
+          {"label": "Standard", "value": "standard", "price": 100},
+          {"label": "Premium", "value": "premium", "price": 150}
+        ]
+      },
+      {
+        "id": "add-ons",
+        "title": "Add Extra Services",
+        "type": "checkbox",
+        "options": [
+          {"label": "Express Service", "value": "express", "price": 25},
+          {"label": "Weekend Appointment", "value": "weekend", "price": 15}
+        ]
+      }
+    ],
+    "submitAction": "Show results | Request quote | Book now"
+  },
+
+  "multiStepForm": {
+    "_tier": "Premium",
+    "_status": "📋 Planned",
+    "_implementation": "Week 4-5",
+    "enabled": true,
+    "title": "Get Started",
+    "subtitle": "Tell us about your needs",
+    "steps": [
+      {
+        "id": "step1",
+        "title": "Your Information",
+        "fields": [
+          {"name": "name", "label": "Full Name", "type": "text", "required": true},
+          {"name": "email", "label": "Email", "type": "email", "required": true}
+        ]
+      },
+      {
+        "id": "step2",
+        "title": "Service Needs",
+        "fields": [
+          {"name": "service", "label": "What do you need?", "type": "select", "options": ["Option 1", "Option 2"]}
+        ],
+        "conditionalLogic": {
+          "showIf": "service === 'Option 1'",
+          "fields": [
+            {"name": "details", "label": "Tell us more", "type": "textarea"}
+          ]
+        }
+      }
+    ],
+    "leadScoring": true,
+    "automatedFollowup": true
+  },
+
+  "blog": {
+    "_tier": "Premium",
+    "_status": "📋 Planned",
+    "_implementation": "Week 5-6",
+    "enabled": true,
+    "title": "Resources & Tips",
+    "subtitle": "Expert advice and insights",
+    "posts": [
+      {
+        "slug": "post-slug",
+        "title": "Post Title",
+        "excerpt": "Short description...",
+        "content": "Full post content in markdown",
+        "author": "Author Name",
+        "date": "2024-01-01",
+        "category": "Tips",
+        "tags": ["tag1", "tag2"],
+        "image": "https://images.unsplash.com/photo?w=800&q=80",
+        "readTime": "5 min"
+      }
+    ],
+    "categories": ["Tips", "Guides", "News"],
+    "rss": true,
+    "searchEnabled": true
+  },
+
+  "clientPortal": {
+    "_tier": "Premium",
+    "_status": "📋 Planned",
+    "_implementation": "Week 7-9 (Phase 3)",
+    "enabled": true,
+    "title": "Client Portal",
+    "features": {
+      "orderHistory": true,
+      "appointmentTracking": true,
+      "statusUpdates": true,
+      "documentAccess": true,
+      "messaging": true
+    },
+    "loginUrl": "/portal/login",
+    "signupUrl": "/portal/signup"
+  },
+
+  "emailAutomation": {
+    "_tier": "Premium",
+    "_status": "📋 Planned",
+    "_implementation": "Week 9-10",
+    "provider": "mailchimp | convertkit | sendgrid",
+    "enabled": true,
+    "sequences": [
+      {
+        "name": "Welcome Series",
+        "trigger": "new_signup",
+        "emails": [
+          {"delay": "0 days", "subject": "Welcome!", "template": "welcome"},
+          {"delay": "3 days", "subject": "Getting Started", "template": "onboarding"},
+          {"delay": "7 days", "subject": "Special Offer", "template": "offer"}
+        ]
+      }
+    ]
+  },
+
+  "serviceAreaMap": {
+    "_tier": "Premium",
+    "_status": "📋 Planned",
+    "_implementation": "Week 10-11",
+    "enabled": true,
+    "title": "We Serve Your Area",
+    "centerLat": 40.7128,
+    "centerLng": -74.0060,
+    "radius": 25,
+    "radiusUnit": "miles",
+    "zipCodes": ["10001", "10002", "10003"],
+    "cities": ["New York", "Brooklyn"],
+    "zipChecker": {
+      "enabled": true,
+      "placeholder": "Enter your ZIP code",
+      "successMessage": "Yes! We serve your area.",
+      "failureMessage": "Not in our service area yet, but contact us!"
+    }
+  },
+
+  "reviewManagement": {
+    "_tier": "Premium",
+    "_status": "📋 Planned",
+    "_implementation": "Week 11-12",
+    "provider": "google | yelp | facebook | custom",
+    "enabled": true,
+    "autoRequest": true,
+    "requestDelay": "7 days after service",
+    "liveFeed": {
+      "enabled": true,
+      "source": "google",
+      "limit": 10,
+      "minRating": 4
+    }
+  },
+
+  "_future_features": "=== PREMIUM TIER - PHASE 4 (Future) ===",
+
+  "crmIntegration": {
+    "_tier": "Premium",
+    "_status": "📋 Future - Phase 4",
+    "provider": "hubspot | salesforce | pipedrive",
+    "enabled": false,
+    "syncEnabled": true,
+    "webhookUrl": "https://your-crm.com/webhook"
+  },
+
+  "analytics": {
+    "_tier": "Premium",
+    "_status": "📋 Future - Phase 4",
+    "provider": "ga4 | plausible | custom",
+    "enabled": false,
+    "trackingId": "G-XXXXXXXXXX",
+    "goals": ["contact_form", "booking", "purchase"],
+    "dashboardEnabled": true
+  },
+
+  "abTesting": {
+    "_tier": "Premium",
+    "_status": "📋 Future - Phase 4",
+    "enabled": false,
+    "tests": [
+      {
+        "name": "Hero CTA Test",
+        "variants": ["Book Now", "Get Started", "Schedule Free Consultation"],
+        "targetSection": "hero",
+        "metric": "conversion_rate"
+      }
+    ]
+  },
+
+  "multiLanguage": {
+    "_tier": "Premium",
+    "_status": "📋 Future - Phase 4",
+    "enabled": false,
+    "defaultLanguage": "en",
+    "supportedLanguages": ["en", "es", "fr"],
+    "translations": {
+      "es": {
+        "hero.title": "Spanish translation",
+        "hero.subtitle": "Spanish translation"
+      }
+    }
+  },
+
+  "footer": {
+    "_tier": "Starter",
+    "_status": "✅ Implemented",
+    "text": "© 2024 Business Name. All rights reserved.",
+    "links": [
+      {"label": "Privacy Policy", "href": "#privacy"},
+      {"label": "Terms of Service", "href": "#terms"}
+    ]
+  }
+}
+

@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orders - SiteSprintz</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .orders-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .page-header h1 {
+      font-size: 2rem;
+      color: #1e293b;
+      margin: 0;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 10px 20px;
+      border: 2px solid #e2e8f0;
+      background: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+      color: #64748b;
+    }
+
+    .filter-btn:hover {
+      border-color: #cbd5e1;
+      background: #f8fafc;
+    }
+
+    .filter-btn.active {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+    }
+
+    .orders-grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    .order-card {
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.2s;
+    }
+
+    .order-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-color: #cbd5e1;
+    }
+
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .order-id {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .order-date {
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status-new {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-completed {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-cancelled {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .customer-info {
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+
+    .customer-info h4 {
+      margin: 0 0 10px 0;
+      color: #1e293b;
+      font-size: 0.95rem;
+    }
+
+    .customer-info p {
+      margin: 5px 0;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+
+    .customer-info a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+
+    .customer-info a:hover {
+      text-decoration: underline;
+    }
+
+    .order-items {
+      margin-bottom: 15px;
+    }
+
+    .order-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background: #f8fafc;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+
+    .item-name {
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .item-quantity {
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+
+    .item-price {
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .order-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 15px;
+      border-top: 2px solid #e2e8f0;
+      margin-bottom: 15px;
+    }
+
+    .total-label {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .total-amount {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #f59e0b;
+    }
+
+    .order-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+    }
+
+    .btn-success {
+      background: #10b981;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #059669;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn-secondary {
+      background: #f1f5f9;
+      color: #475569;
+    }
+
+    .btn-secondary:hover {
+      background: #e2e8f0;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #94a3b8;
+    }
+
+    .empty-state-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+      color: #64748b;
+      margin-bottom: 10px;
+    }
+
+    .empty-state p {
+      color: #94a3b8;
+    }
+
+    /* Bulk Actions */
+    .bulk-actions-bar {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .bulk-actions-bar.visible {
+      display: flex;
+    }
+
+    .bulk-info {
+      font-weight: 600;
+    }
+
+    .bulk-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .bulk-btn {
+      padding: 8px 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .bulk-btn:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-1px);
+    }
+
+    .order-checkbox {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #64748b;
+    }
+
+    .error {
+      background: #fee2e2;
+      border: 2px solid #fca5a5;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 0;
+      color: #991b1b;
+    }
+
+    @media (max-width: 768px) {
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .filters {
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+
+      .order-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .order-actions {
+        width: 100%;
+      }
+
+      .btn {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="orders-container">
+    <div class="page-header">
+      <h1>📦 Orders</h1>
+      <div class="header-actions">
+        <button class="btn btn-secondary" onclick="window.location.href='/dashboard.html'">
+          ← Back to Dashboard
+        </button>
+      </div>
+    </div>
+
+    <div class="filters">
+      <button class="filter-btn active" data-status="all" onclick="filterOrders('all')">
+        All Orders
+      </button>
+      <button class="filter-btn" data-status="new" onclick="filterOrders('new')">
+        New Orders
+      </button>
+      <button class="filter-btn" data-status="completed" onclick="filterOrders('completed')">
+        Completed
+      </button>
+      <button class="filter-btn" data-status="cancelled" onclick="filterOrders('cancelled')">
+        Cancelled
+      </button>
+    </div>
+
+    <!-- Bulk Actions Bar -->
+    <div class="bulk-actions-bar" id="bulkActionsBar">
+      <div class="bulk-info">
+        <span id="selectedCount">0</span> orders selected
+      </div>
+      <div class="bulk-actions">
+        <button class="bulk-btn" onclick="bulkMarkCompleted()">✓ Mark Completed</button>
+        <button class="bulk-btn" onclick="bulkMarkCancelled()">✕ Cancel Orders</button>
+        <button class="bulk-btn" onclick="clearSelection()">Clear Selection</button>
+      </div>
+    </div>
+
+    <div id="error-message"></div>
+    <div id="orders-list">
+      <div class="loading">Loading orders...</div>
+    </div>
+  </div>
+
+  <script>
+    let allOrders = [];
+    let currentFilter = 'all';
+    let currentSiteId = null;
+    let authToken = null;
+
+    // Get auth token from localStorage
+    function getAuthToken() {
+      return localStorage.getItem('token');
+    }
+
+    // Get authenticated user
+    async function getUser() {
+      const token = getAuthToken();
+      if (!token) {
+        window.location.href = '/login.html';
+        return null;
+      }
+
+      try {
+        const response = await fetch('/api/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          window.location.href = '/login.html';
+          return null;
+        }
+
+        return await response.json();
+      } catch (error) {
+        console.error('Auth error:', error);
+        window.location.href = '/login.html';
+        return null;
+      }
+    }
+
+    // Get siteId from URL parameter
+    function getSiteIdFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('siteId');
+    }
+
+    // Load orders from API
+    async function loadOrders() {
+      const token = getAuthToken();
+      if (!token) return;
+
+      currentSiteId = getSiteIdFromUrl();
+      if (!currentSiteId) {
+        showError('No site selected. Please select a site from your dashboard.');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/sites/${currentSiteId}/orders`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load orders');
+        }
+
+        const data = await response.json();
+        allOrders = data.orders || [];
+        renderOrders();
+      } catch (error) {
+        console.error('Load orders error:', error);
+        showError('Failed to load orders. Please try again.');
+      }
+    }
+
+    // Filter orders
+    function filterOrders(status) {
+      currentFilter = status;
+
+      // Update active button
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.status === status) {
+          btn.classList.add('active');
+        }
+      });
+
+      renderOrders();
+    }
+
+    // Render orders
+    function renderOrders() {
+      const container = document.getElementById('orders-list');
+
+      let orders = allOrders;
+      if (currentFilter !== 'all') {
+        orders = allOrders.filter(o => o.status === currentFilter);
+      }
+
+      if (orders.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📦</div>
+            <h3>No orders ${currentFilter !== 'all' ? 'with this status' : 'yet'}</h3>
+            <p>${currentFilter === 'all' ? 'Orders will appear here when customers make purchases.' : `No orders are currently ${currentFilter}.`}</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="orders-grid">
+          ${orders.map(order => renderOrderCard(order)).join('')}
+        </div>
+      `;
+    }
+
+    // Render single order card
+    function renderOrderCard(order) {
+      const date = new Date(order.createdAt);
+      const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const currencySymbol = order.currency === 'usd' ? '$' : order.currency.toUpperCase();
+
+      return `
+        <div class="order-card">
+          <div class="order-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <input type="checkbox" class="order-checkbox" data-order-id="${order.orderId}" onchange="updateBulkSelection()">
+              <div>
+                <div class="order-id">Order #${order.orderId}</div>
+                <div class="order-date">${formattedDate}</div>
+              </div>
+            </div>
+            <span class="status-badge status-${order.status}">${order.status}</span>
+          </div>
+
+          <div class="customer-info">
+            <h4>👤 Customer Information</h4>
+            <p><strong>Name:</strong> ${order.customer.name}</p>
+            <p><strong>Email:</strong> <a href="mailto:${order.customer.email}">${order.customer.email}</a></p>
+            ${order.customer.phone ? `<p><strong>Phone:</strong> <a href="tel:${order.customer.phone}">${order.customer.phone}</a></p>` : ''}
+          </div>
+
+          <div class="order-items">
+            ${order.items.map(item => `
+              <div class="order-item">
+                <div>
+                  <div class="item-name">${item.name}</div>
+                  <div class="item-quantity">Qty: ${item.quantity}</div>
+                </div>
+                <div class="item-price">${currencySymbol}${item.price.toFixed(2)}</div>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="order-total">
+            <span class="total-label">Total:</span>
+            <span class="total-amount">${currencySymbol}${order.amount.toFixed(2)}</span>
+          </div>
+
+          <div class="order-actions">
+            ${order.status === 'new' ? `
+              <button class="btn btn-success" onclick="updateOrderStatus('${order.orderId}', 'completed')">
+                ✅ Mark Completed
+              </button>
+              <button class="btn btn-danger" onclick="updateOrderStatus('${order.orderId}', 'cancelled')">
+                ❌ Cancel Order
+              </button>
+            ` : ''}
+            <a href="mailto:${order.customer.email}" class="btn btn-primary">
+              📧 Email Customer
+            </a>
+            ${order.customer.phone ? `
+              <a href="tel:${order.customer.phone}" class="btn btn-secondary">
+                📞 Call Customer
+              </a>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    // Update order status
+    async function updateOrderStatus(orderId, newStatus) {
+      const token = getAuthToken();
+      if (!token) return;
+
+      try {
+        const response = await fetch(`/api/sites/${currentSiteId}/orders/${orderId}`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update order');
+        }
+
+        const data = await response.json();
+
+        // Update local order
+        const index = allOrders.findIndex(o => o.orderId === orderId);
+        if (index !== -1) {
+          allOrders[index] = data.order;
+        }
+
+        // Re-render
+        renderOrders();
+
+        // Show success message
+        showSuccess(`Order ${orderId} marked as ${newStatus}!`);
+      } catch (error) {
+        console.error('Update order error:', error);
+        showError('Failed to update order. Please try again.');
+      }
+    }
+
+    // Show error message
+    function showError(message) {
+      const container = document.getElementById('error-message');
+      container.innerHTML = `<div class="error">${message}</div>`;
+      setTimeout(() => {
+        container.innerHTML = '';
+      }, 5000);
+    }
+
+    // Show success message
+    function showSuccess(message) {
+      const container = document.getElementById('error-message');
+      container.innerHTML = `<div style="background: #d1fae5; border: 2px solid #86efac; border-radius: 8px; padding: 15px; margin: 20px 0; color: #065f46;">${message}</div>`;
+      setTimeout(() => {
+        container.innerHTML = '';
+      }, 3000);
+    }
+
+    // Bulk Actions
+    function getSelectedOrders() {
+      const checkboxes = document.querySelectorAll('.order-checkbox:checked');
+      return Array.from(checkboxes).map(cb => cb.dataset.orderId);
+    }
+
+    function updateBulkSelection() {
+      const selected = getSelectedOrders();
+      const bulkBar = document.getElementById('bulkActionsBar');
+      const countSpan = document.getElementById('selectedCount');
+      
+      countSpan.textContent = selected.length;
+      
+      if (selected.length > 0) {
+        bulkBar.classList.add('visible');
+      } else {
+        bulkBar.classList.remove('visible');
+      }
+    }
+
+    function clearSelection() {
+      document.querySelectorAll('.order-checkbox:checked').forEach(cb => {
+        cb.checked = false;
+      });
+      updateBulkSelection();
+    }
+
+    async function bulkMarkCompleted() {
+      const selected = getSelectedOrders();
+      if (selected.length === 0) return;
+      
+      if (!confirm(`Mark ${selected.length} order(s) as completed?`)) return;
+      
+      const token = getAuthToken();
+      let successCount = 0;
+      
+      for (const orderId of selected) {
+        try {
+          const response = await fetch(`/api/sites/${currentSiteId}/orders/${orderId}`, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status: 'completed' })
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            const index = allOrders.findIndex(o => o.orderId === orderId);
+            if (index !== -1) {
+              allOrders[index] = data.order;
+            }
+            successCount++;
+          }
+        } catch (error) {
+          console.error(`Failed to update order ${orderId}:`, error);
+        }
+      }
+      
+      // Re-render and clear selection
+      renderOrders();
+      clearSelection();
+      showSuccess(`${successCount} order(s) marked as completed!`);
+    }
+
+    async function bulkMarkCancelled() {
+      const selected = getSelectedOrders();
+      if (selected.length === 0) return;
+      
+      if (!confirm(`Cancel ${selected.length} order(s)?`)) return;
+      
+      const token = getAuthToken();
+      let successCount = 0;
+      
+      for (const orderId of selected) {
+        try {
+          const response = await fetch(`/api/sites/${currentSiteId}/orders/${orderId}`, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status: 'cancelled' })
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            const index = allOrders.findIndex(o => o.orderId === orderId);
+            if (index !== -1) {
+              allOrders[index] = data.order;
+            }
+            successCount++;
+          }
+        } catch (error) {
+          console.error(`Failed to update order ${orderId}:`, error);
+        }
+      }
+      
+      // Re-render and clear selection
+      renderOrders();
+      clearSelection();
+      showSuccess(`${successCount} order(s) cancelled!`);
+    }
+
+    // Initialize
+    async function init() {
+      const user = await getUser();
+      if (!user) return;
+
+      authToken = getAuthToken();
+      await loadOrders();
+    }
+
+    // Load on page load
+    init();
+  </script>
+</body>
+</html>
+

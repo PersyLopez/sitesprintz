@@ -1,0 +1,152 @@
+{
+  "brand": {
+    "name": "BrightSpark Electric",
+    "logo": "assets/logo.svg",
+    "alt": "BrightSpark Electric logo",
+    "phone": "+1-555-432-7890",
+    "email": "service@brightsparkelectric.com"
+  },
+  "themeVars": {
+    "color-primary": "#f59e0b",
+    "color-primary-600": "#d97706",
+    "color-accent": "#2563eb",
+    "color-success": "#22c55e",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    { "label": "Services", "href": "#services" },
+    { "label": "Why Us", "href": "#about" },
+    { "label": "Testimonials", "href": "#testimonials" },
+    { "label": "Service Areas", "href": "#pages" },
+    { "label": "Contact", "href": "#contact" }
+  ],
+  "hero": {
+    "eyebrow": "Licensed and insured electricians",
+    "title": "Powering homes and businesses since 1998",
+    "subtitle": "Same-day appointments, 24/7 emergency support, and workmanship you can trust.",
+    "image": "assets/hero-placeholder.svg",
+    "imageAlt": "Electrician working on a breaker panel",
+    "cta": [
+      { "label": "Call for Service", "href": "tel:+15554327890" },
+      { "label": "Request a Quote", "href": "#contact", "variant": "secondary" }
+    ]
+  },
+  "services": {
+    "title": "Electrical services",
+    "subtitle": "Professional service for every project",
+    "items": [
+      {
+        "title": "Panel upgrades",
+        "description": "Modernize outdated panels to handle today's electrical loads safely."
+      },
+      {
+        "title": "Emergency repairs",
+        "description": "On-call electricians for outages, shorts, and urgent troubleshooting."
+      },
+      {
+        "title": "Lighting and wiring",
+        "description": "Interior, exterior, and landscape lighting installs with clean wiring."
+      },
+      {
+        "title": "EV charger installs",
+        "description": "Certified installation for Level 2 home and commercial charging stations."
+      }
+    ]
+  },
+  "about": {
+    "title": "Certified electricians who show up on time",
+    "body": "BrightSpark Electric has supported local homeowners, builders, and facility managers for over two decades. Our master electricians are OSHA trained, background checked, and committed to clear communication from the first call through final inspection."
+  },
+  "testimonials": {
+    "title": "Trusted by our community",
+    "items": [
+      {
+        "text": "They rewired our historic home and kept us informed every step of the way.",
+        "author": "Lena K.",
+        "title": "Homeowner"
+      },
+      {
+        "text": "Fast response and professional repairs when our storefront lost power.",
+        "author": "Marcos R.",
+        "title": "Retail Owner"
+      },
+      {
+        "text": "Inspection passed on the first visit. Their team is top-notch.",
+        "author": "Dana W.",
+        "title": "General Contractor"
+      }
+    ]
+  },
+  "pricing": {
+    "title": "Popular service bundles",
+    "plans": [
+      {
+        "name": "Home Safety Check",
+        "description": "Full inspection, load test, and smoke detector replacement.",
+        "price": 149,
+        "cta": { "label": "Book inspection", "href": "#contact" }
+      },
+      {
+        "name": "LED Lighting Package",
+        "description": "Design consult plus installation of up to 12 fixtures.",
+        "price": 689,
+        "cta": { "label": "Schedule install", "href": "#contact" }
+      },
+      {
+        "name": "Commercial Service Plan",
+        "description": "Quarterly maintenance with priority dispatch and reporting.",
+        "price": 129,
+        "cta": { "label": "Join plan", "href": "#contact" }
+      }
+    ]
+  },
+  "contact": {
+    "title": "Schedule your service",
+    "subtitle": "Call 24/7 for emergencies or send a note for next-day appointments.",
+    "email": "service@brightsparkelectric.com",
+    "phone": "+1-555-432-7890"
+  },
+  "footer": {
+    "text": "BrightSpark Electric. Licensed, bonded, and insured EC#01234."
+  },
+  "pages": [
+    {
+      "slug": "service-areas",
+      "title": "Service Areas",
+      "body": "# Neighborhoods we cover\nDowntown\nMidtown\nRiverside\nHillcrest\nSurrounding suburbs within 30 miles."
+    },
+    {
+      "slug": "certifications",
+      "title": "Certifications",
+      "body": "# Credentials\n- Licensed Master Electricians\n- OSHA 30 certified\n- EVITP installer\n- NFPA 70E compliant"
+    }
+  ],
+  "products": [
+    {
+      "name": "Surge Protection Upgrade",
+      "price": 349,
+      "description": "Whole-home surge protection with warranty and same-day install."
+    },
+    {
+      "name": "Generator Interlock Kit",
+      "price": 279,
+      "description": "Keep critical circuits powered during outages with professional installation."
+    },
+    {
+      "name": "Panel Thermal Scan",
+      "price": 199,
+      "description": "Thermal imaging report to prevent overloads and unexpected downtime."
+    }
+  ],
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "service@brightsparkelectric.com",
+    "productCta": "Request Service",
+    "productCtaHref": "tel:+15554327890",
+    "productNote": "Submit your service request and we'll contact you within 24 hours to schedule. Emergency calls available 24/7."
+  },
+  "productsTitle": "Featured Services",
+  "productsSubtitle": "Professional electrical solutions with transparent pricing"
+}

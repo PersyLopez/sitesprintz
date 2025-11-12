@@ -1,0 +1,152 @@
+{
+  "brand": {
+    "name": "Precision Auto Care",
+    "logo": "assets/logo.svg",
+    "alt": "Precision Auto Care badge",
+    "phone": "+1-555-987-1234",
+    "email": "service@precisionautocare.com"
+  },
+  "themeVars": {
+    "color-primary": "#2563eb",
+    "color-primary-600": "#1d4ed8",
+    "color-accent": "#f97316",
+    "color-success": "#22c55e",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    { "label": "Services", "href": "#services" },
+    { "label": "Diagnostics", "href": "#pricing" },
+    { "label": "Fleet", "href": "#pages" },
+    { "label": "Testimonials", "href": "#testimonials" },
+    { "label": "Contact", "href": "#contact" }
+  ],
+  "hero": {
+    "eyebrow": "ASE-certified mechanics",
+    "title": "Honest repairs and maintenance you can rely on",
+    "subtitle": "Family owned since 1985. Same-day service on most repairs with nationwide warranty.",
+    "image": "assets/hero-placeholder.jpg",
+    "imageAlt": "Mechanic inspecting a vehicle",
+    "cta": [
+      { "label": "Schedule service", "href": "https://cal.com/precision-auto" },
+      { "label": "Call the shop", "href": "tel:+15559871234", "variant": "secondary" }
+    ]
+  },
+  "services": {
+    "title": "Complete auto repair",
+    "subtitle": "Maintenance for every make and model",
+    "items": [
+      {
+        "title": "Advanced diagnostics",
+        "description": "Check engine lights, electrical issues, and drivability problems solved fast."
+      },
+      {
+        "title": "Brakes and suspension",
+        "description": "OEM or OEM-equivalent parts with lifetime pad warranty."
+      },
+      {
+        "title": "Engine and transmission",
+        "description": "Rebuilds, replacements, and preventative maintenance backed by warranty."
+      },
+      {
+        "title": "Fleet maintenance",
+        "description": "Customized service schedules and pickup and delivery for commercial fleets."
+      }
+    ]
+  },
+  "about": {
+    "title": "Your neighborhood service center",
+    "body": "Precision Auto Care combines dealership-level diagnostics with the personal attention of a family-run shop. Every technician is ASE certified, we use digital inspections to show you exactly what we see, and we never recommend a repair you do not need."
+  },
+  "testimonials": {
+    "title": "Drivers who trust us",
+    "items": [
+      {
+        "text": "Transparent pricing and they texted photos of everything before doing the work.",
+        "author": "Jared P.",
+        "title": "Honda Owner"
+      },
+      {
+        "text": "Our delivery vans stay on the road thanks to their fleet maintenance program.",
+        "author": "Monique L.",
+        "title": "Operations Manager"
+      },
+      {
+        "text": "Finally a shop that listens. Repairs were finished the same day.",
+        "author": "Henry C.",
+        "title": "BMW Owner"
+      }
+    ]
+  },
+  "pricing": {
+    "title": "Popular service specials",
+    "plans": [
+      {
+        "name": "Digital Inspection + Oil Change",
+        "description": "Full synthetic oil, filter, and 40-point inspection with photos.",
+        "price": 89,
+        "cta": { "label": "Book now", "href": "https://cal.com/precision-auto" }
+      },
+      {
+        "name": "Brake Package",
+        "description": "Pads, rotors, and fluid flush for most sedans and SUVs.",
+        "price": 279,
+        "cta": { "label": "Check availability", "href": "#contact" }
+      },
+      {
+        "name": "Fleet PM Plan",
+        "description": "Monthly maintenance for up to 10 vehicles with priority scheduling.",
+        "price": 129,
+        "cta": { "label": "Enroll fleet", "href": "#contact" }
+      }
+    ]
+  },
+  "contact": {
+    "title": "Ready to keep you moving",
+    "subtitle": "Open Monday through Saturday with early bird drop-off and after-hours pickup.",
+    "email": "service@precisionautocare.com",
+    "phone": "+1-555-987-1234"
+  },
+  "footer": {
+    "text": "Precision Auto Care. Nationwide warranty through TechNet."
+  },
+  "pages": [
+    {
+      "slug": "fleet-program",
+      "title": "Fleet Program",
+      "body": "# Fleet maintenance\nPriority scheduling\nMonthly reporting\nPickup and delivery\nCustom maintenance plans"
+    },
+    {
+      "slug": "warranty",
+      "title": "Warranty",
+      "body": "# Peace of mind\n24-month/24,000 mile nationwide warranty\nRoadside assistance included\nDigital service history archived for every vehicle"
+    }
+  ],
+  "products": [
+    {
+      "name": "Battery and Charging Test",
+      "price": 49,
+      "description": "Computerized load test with printout and terminal cleaning."
+    },
+    {
+      "name": "AC Performance Service",
+      "price": 169,
+      "description": "Evacuation, recharge, dye, and leak test for most systems."
+    },
+    {
+      "name": "Alignment and Tire Health",
+      "price": 109,
+      "description": "Four-wheel alignment with tire rotation and tread depth report."
+    }
+  ],
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "service@precisionautocare.com",
+    "productCta": "Schedule Service",
+    "productCtaHref": "tel:+15559871234",
+    "productNote": "Submit your service request and we'll contact you within 24 hours to schedule your appointment."
+  },
+  "productsTitle": "Featured Services",
+  "productsSubtitle": "Professional auto care with transparent pricing"
+}

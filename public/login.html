@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login | SiteSprintz</title>
+  <link rel="stylesheet" href="theme.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      padding: 20px;
+    }
+
+    .auth-container {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 450px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .auth-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .auth-logo {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+
+    .auth-title {
+      font-size: 2rem;
+      margin: 0 0 10px 0;
+      color: #1f2937;
+    }
+
+    .auth-subtitle {
+      color: #64748b;
+      margin: 0;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #f97316;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+    }
+
+    .auth-footer {
+      text-align: center;
+      margin-top: 25px;
+      padding-top: 25px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .auth-footer a {
+      color: #f97316;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .error-message {
+      color: #ef4444;
+      font-size: 0.9rem;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .error-message.show {
+      display: block;
+    }
+
+    .success-message {
+      color: #10b981;
+      font-size: 0.9rem;
+      margin-top: 8px;
+      display: none;
+      text-align: center;
+    }
+
+    .success-message.show {
+      display: block;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.6s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Social Auth Buttons */
+    .social-auth-section {
+      margin-bottom: 25px;
+    }
+
+    .social-auth-btn {
+      width: 100%;
+      padding: 12px 24px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      text-decoration: none;
+    }
+
+    .google-btn {
+      background: white;
+      color: #3c4043;
+    }
+
+    .google-btn:hover {
+      background: #f8f9fa;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transform: translateY(-1px);
+    }
+
+    .divider {
+      text-align: center;
+      margin: 20px 0;
+      position: relative;
+    }
+
+    .divider::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 100%;
+      height: 1px;
+      background: #e5e7eb;
+    }
+
+    .divider span {
+      background: white;
+      padding: 0 15px;
+      position: relative;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-header">
+      <div class="auth-logo">🚀</div>
+      <h1 class="auth-title">Welcome Back</h1>
+      <p class="auth-subtitle">Sign in to manage your sites</p>
+    </div>
+
+    <!-- Social Auth Section -->
+    <div class="social-auth-section">
+      <a href="/auth/google" class="social-auth-btn google-btn">
+        <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        Continue with Google
+      </a>
+    </div>
+
+    <div class="divider">
+      <span>or sign in with email</span>
+    </div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="email" placeholder="your@email.com" required>
+        <div class="error-message" id="emailError"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-input" id="password" placeholder="Enter your password" required>
+        <div class="error-message" id="passwordError"></div>
+      </div>
+
+      <div class="success-message" id="successMessage">✓ Login successful! Redirecting...</div>
+
+      <button type="submit" class="btn-primary" id="loginButton">Sign In</button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Don't have an account? <a href="/register.html">Create one</a></p>
+      <p style="margin-top: 10px;"><a href="/forgot-password.html">Forgot your password?</a></p>
+      <p style="margin-top: 15px;"><a href="/">← Back to Home</a></p>
+    </div>
+  </div>
+
+  <script>
+    async function handleLogin(event) {
+      event.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      
+      const emailError = document.getElementById('emailError');
+      const passwordError = document.getElementById('passwordError');
+      const successMessage = document.getElementById('successMessage');
+      const loginButton = document.getElementById('loginButton');
+      
+      // Reset messages
+      emailError.classList.remove('show');
+      passwordError.classList.remove('show');
+      successMessage.classList.remove('show');
+      
+      // Disable button and show loading
+      loginButton.disabled = true;
+      loginButton.innerHTML = '<span class="loading-spinner"></span>Signing in...';
+      
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+          // Store token
+          localStorage.setItem('authToken', result.token);
+          
+          // Show success message
+          successMessage.classList.add('show');
+          loginButton.innerHTML = '<span class="loading-spinner"></span>Redirecting...';
+          
+          // Smooth redirect after brief delay
+          setTimeout(() => {
+            window.location.href = '/dashboard.html';
+          }, 800);
+        } else {
+          // Show error
+          passwordError.textContent = result.error || 'Invalid email or password';
+          passwordError.classList.add('show');
+          
+          // Re-enable button
+          loginButton.disabled = false;
+          loginButton.innerHTML = 'Sign In';
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        passwordError.textContent = 'Connection error. Please check your internet and try again.';
+        passwordError.classList.add('show');
+        
+        // Re-enable button
+        loginButton.disabled = false;
+        loginButton.innerHTML = 'Sign In';
+      }
+    }
+  </script>
+</body>
+</html>
+

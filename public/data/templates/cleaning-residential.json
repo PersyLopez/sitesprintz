@@ -1,0 +1,186 @@
+{
+  "brand": {
+    "name": "Sparkle Home Cleaning",
+    "logo": "assets/logo.svg",
+    "tagline": "Residential Cleaning • Trusted & Reliable",
+    "phone": "(555) 444-7788",
+    "email": "hello@sparklehome.com"
+  },
+  "themeVars": {
+    "color-primary": "#10b981",
+    "color-accent": "#34d399",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "Why Us", "href": "#about"},
+    {"label": "Reviews", "href": "#testimonials"},
+    {"label": "Book Now", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "🏠 Residential Cleaning Services",
+    "title": "Come home to sparkle",
+    "subtitle": "Professional house cleaning you can trust. Weekly, bi-weekly, or monthly service. Background-checked cleaners, eco-friendly products, and satisfaction guaranteed. Enjoy more free time and a spotless home.",
+    "cta": [
+      {"label": "Get Free Quote", "href": "#contact"},
+      {"label": "Our Services", "href": "#products", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&q=80",
+    "imageAlt": "Clean modern living room"
+  },
+  "about": {
+    "title": "Trusted Home Cleaning",
+    "subtitle": "Your home deserves the best",
+    "content": "Sparkle Home Cleaning has been making homes shine since 2012. Our trained, insured cleaners use eco-friendly products and proven methods to deliver consistently excellent results. Same team every visit, 100% satisfaction guarantee."
+  },
+  "products": [
+    {
+      "name": "Standard Cleaning",
+      "price": 129,
+      "description": "Regular maintenance cleaning including kitchen, bathrooms, vacuuming, dusting, and mopping. Perfect for weekly or bi-weekly service.",
+      "category": "Recurring",
+      "duration": "2-3 hours",
+      "popular": true
+    },
+    {
+      "name": "Deep Cleaning",
+      "price": 249,
+      "description": "Thorough top-to-bottom cleaning. Inside appliances, baseboards, windows, and more. Great for move-ins or seasonal refresh.",
+      "category": "One-Time",
+      "duration": "4-6 hours",
+      "popular": true
+    },
+    {
+      "name": "Move In/Out Cleaning",
+      "price": 299,
+      "description": "Complete cleaning for moving. Inside cabinets, closets, appliances. Make your new home ready or get deposit back.",
+      "category": "One-Time",
+      "duration": "5-7 hours"
+    },
+    {
+      "name": "Post-Construction Cleaning",
+      "price": 399,
+      "description": "Remove construction dust and debris. Polish surfaces, clean windows, and make your renovated space move-in ready.",
+      "category": "Specialty",
+      "duration": "Full day"
+    },
+    {
+      "name": "Laundry Service Add-On",
+      "price": 35,
+      "description": "Wash, dry, and fold laundry. Available with any cleaning service. Up to 3 loads.",
+      "category": "Add-On",
+      "duration": "Included",
+      "popular": true
+    },
+    {
+      "name": "Weekly Cleaning Plan",
+      "price": 499,
+      "description": "Four weekly cleanings per month. Best value! Same team, consistent quality. Lock in this rate.",
+      "category": "Recurring",
+      "duration": "Monthly"
+    }
+  ],
+  "services": {
+    "title": "Cleaning Services",
+    "subtitle": "Flexible options for every home",
+    "items": [
+      {
+        "title": "🏠 Regular Cleaning",
+        "description": "Weekly or bi-weekly maintenance to keep your home consistently clean"
+      },
+      {
+        "title": "💎 Deep Cleaning",
+        "description": "Intensive cleaning for spring cleaning, holidays, or special occasions"
+      },
+      {
+        "title": "📦 Move In/Out",
+        "description": "Complete cleaning for moves. Perfect for getting deposits back"
+      },
+      {
+        "title": "✨ Custom Plans",
+        "description": "Tailored cleaning plans to fit your schedule and budget"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Happy Customers",
+    "subtitle": "See why families trust us",
+    "items": [
+      {
+        "text": "Sparkle has been cleaning our home for 2 years. Same great team every time, always thorough. Best decision we made! Worth every penny.",
+        "author": "Jennifer Taylor",
+        "title": "Regular Customer"
+      },
+      {
+        "text": "The deep cleaning before our baby arrived was amazing! They cleaned things I didn't even think about. House was spotless. Highly recommend!",
+        "author": "Marcus Johnson",
+        "title": "New Parents"
+      },
+      {
+        "text": "Used them for move-out cleaning and got our full deposit back! Saved me hours of work. Professional, thorough, and reasonably priced.",
+        "author": "Sarah Kim",
+        "title": "Moving Customer"
+      }
+    ]
+  },
+  "team": {
+    "title": "Our Team",
+    "subtitle": "Professional, trusted cleaners",
+    "members": [
+      {
+        "name": "Maria Santos",
+        "title": "Owner & Quality Manager",
+        "bio": "Founded Sparkle in 2012 with a commitment to quality and reliability. All our cleaners are background-checked, insured, and trained in our proven cleaning methods.",
+        "image": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80",
+        "imageAlt": "Maria Santos",
+        "credentials": ["12+ Years Experience", "Insured & Bonded", "Eco-Friendly Certified"]
+      }
+    ]
+  },
+  "process": {
+    "title": "How It Works",
+    "subtitle": "Simple booking, excellent results",
+    "steps": [
+      {"title": "Free Quote", "description": "Tell us about your home and cleaning needs"},
+      {"title": "Schedule Service", "description": "Choose your date and time. Recurring or one-time"},
+      {"title": "Professional Cleaning", "description": "Trained team arrives with all supplies"},
+      {"title": "Enjoy Your Clean Home", "description": "100% satisfaction guaranteed or we'll re-clean free"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "12+", "label": "Years Trusted"},
+      {"number": "500+", "label": "Happy Homes"},
+      {"number": "4.9", "label": "Star Rating"},
+      {"number": "100%", "label": "Satisfaction Guaranteed"}
+    ]
+  },
+  "contact": {
+    "title": "Get Your Free Quote",
+    "subtitle": "Same-day service available",
+    "phone": "(555) 444-7788",
+    "email": "hello@sparklehome.com",
+    "address": "Serving all of Metro Phoenix, AZ"
+  },
+  "footer": {
+    "text": "🏠 Sparkle Home Cleaning • Trusted Since 2012",
+    "awards": [
+      "Best Home Cleaning 2023",
+      "Customer Choice Award",
+      "Eco-Friendly Business"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "hello@sparklehome.com",
+    "productCta": "Get Free Quote",
+    "productCtaHref": "tel:+15554447788",
+    "productNote": "Submit your quote request and we'll contact you within 4 hours with pricing. Same-day service available!"
+  },
+  "productsTitle": "Cleaning Services",
+  "productsSubtitle": "Professional cleaning for every need"
+}
+

@@ -1,0 +1,291 @@
+{
+  "brand": {
+    "name": "TechFix Pro", 
+    "logo": "assets/logo.svg",
+    "tagline": "Device Repair Experts • Since 2018",
+    "phone": "(555) 567-8901",
+    "email": "info@techfixpro.com"
+  },
+  "themeVars": {
+    "color-primary": "#059669", 
+    "color-accent": "#10b981",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "About", "href": "#about"},
+    {"label": "Reviews", "href": "#reviews"},
+    {"label": "FAQ", "href": "#faq"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "🔧 Device Repair Experts",
+    "title": "Fast, reliable tech solutions",
+    "subtitle": "From cracked screens to software issues, we fix it all with professional service and honest pricing. Same-day repairs available for most devices.",
+    "cta": [
+      {"label": "🔧 Get Quote", "href": "#contact"},
+      {"label": "📱 Track Repair", "href": "#track", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1587825147138-2a4aa9c9f4ef?w=1200&q=80",
+    "imageAlt": "Professional tech repair shop with modern equipment and skilled technicians"
+  },
+  "about": {
+    "title": "Our Story", 
+    "body": "Founded in 2018 by certified technician Alex Chen, TechFix Pro has become the trusted name for device repair in our community. Our team combines technical expertise with exceptional customer service to get your devices working like new.",
+    "subtitle": "Why choose TechFix Pro",
+    "features": [
+      "🔧 Certified technicians",
+      "⚡ Same-day repairs",
+      "🛡️ Warranty on all work",
+      "💰 Honest, transparent pricing",
+      "📱 Latest repair equipment",
+      "🏆 5-star customer service"
+    ],
+    "owner": {
+      "name": "Alex Chen",
+      "title": "Owner & Lead Technician",
+      "bio": "Certified Apple and Samsung technician with 8+ years of experience. Alex specializes in complex repairs and has trained technicians across multiple locations.",
+      "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+      "imageAlt": "Alex Chen, Owner"
+    }
+  },
+  "products": [
+    {
+      "name": "Screen Replacement",
+      "price": 120,
+      "description": "Professional screen replacement for iPhone and Android devices with OEM-quality parts",
+      "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
+      "imageAlt": "Phone screen replacement",
+      "category": "Phone Repairs",
+      "duration": "1-2 hours",
+      "warranty": "90 days",
+      "popular": true
+    },
+    {
+      "name": "Battery Replacement",
+      "price": 80,
+      "description": "Replace your old battery with a new one to restore full performance and battery life",
+      "image": "https://images.unsplash.com/photo-1601972602288-526d0c4d2a0a?w=600&q=80",
+      "imageAlt": "Phone battery replacement",
+      "category": "Phone Repairs",
+      "duration": "30-45 minutes",
+      "warranty": "6 months"
+    },
+    {
+      "name": "Data Recovery",
+      "price": 150,
+      "description": "Professional data recovery from damaged drives and devices",
+      "image": "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&q=80",
+      "imageAlt": "Data recovery service",
+      "category": "Data Services",
+      "duration": "1-5 days",
+      "warranty": "No charge if unsuccessful"
+    },
+    {
+      "name": "Hardware Repair",
+      "price": 149,
+      "description": "Fix hardware issues including motherboard, RAM, and hard drive problems",
+      "image": "https://images.unsplash.com/photo-1518432031352-d6fc5c10da5a?w=600&q=80",
+      "imageAlt": "Computer hardware repair",
+      "category": "Computer Repairs",
+      "duration": "1-3 days",
+      "warranty": "6 months"
+    },
+    {
+      "name": "Software Issues",
+      "price": 89,
+      "description": "Virus removal, OS reinstallation, and software troubleshooting",
+      "image": "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&q=80",
+      "imageAlt": "Computer software repair",
+      "category": "Computer Repairs",
+      "duration": "2-4 hours",
+      "warranty": "30 days"
+    },
+    {
+      "name": "Water Damage Repair",
+      "price": 200,
+      "description": "Professional water damage assessment and repair with ultrasonic cleaning",
+      "image": "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&q=80",
+      "imageAlt": "Water damage repair",
+      "category": "Phone Repairs",
+      "duration": "2-3 days",
+      "warranty": "30 days"
+    }
+  ],
+  "testimonials": {
+    "title": "Customer Reviews",
+    "subtitle": "What our customers say about our service",
+    "items": [
+      {
+        "text": "Fixed my iPhone screen in just 2 hours! Professional service and honest pricing. Highly recommend!",
+        "author": "Maria Rodriguez",
+        "location": "Regular Customer",
+        "rating": 5,
+        "date": "1 week ago",
+        "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
+        "imageAlt": "Maria Rodriguez"
+      },
+      {
+        "text": "My laptop was completely dead, but TechFix Pro recovered all my important files. Lifesavers!",
+        "author": "John Smith",
+        "location": "Business Owner",
+        "rating": 5,
+        "date": "2 weeks ago",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "imageAlt": "John Smith"
+      },
+      {
+        "text": "Fast, reliable, and affordable. They fixed my water-damaged phone when others said it was impossible.",
+        "author": "Sarah Johnson",
+        "location": "Student",
+        "rating": 5,
+        "date": "3 days ago",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&q=80",
+        "imageAlt": "Sarah Johnson"
+      },
+      {
+        "text": "Excellent customer service and quality work. My iPad is working perfectly after their repair.",
+        "author": "David Chen",
+        "location": "Teacher",
+        "rating": 5,
+        "date": "5 days ago",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80",
+        "imageAlt": "David Chen"
+      }
+    ],
+    "stats": {
+      "averageRating": 4.9,
+      "totalReviews": 156,
+      "googleRating": 4.8,
+      "yelpRating": 4.9
+    }
+  },
+  "contact": {
+    "title": "Get Your Device Fixed", 
+    "subtitle": "Walk-ins welcome or call ahead for faster service",
+    "phone": "(555) 567-8901",
+    "email": "info@techfixpro.com",
+    "address": "234 Tech Street, Electronics District, Springfield, IL 62701",
+    "coordinates": {
+      "lat": 39.7817,
+      "lng": -89.6501
+    },
+    "parking": "Free parking available • Street parking • Easy access",
+    "accessibility": "Wheelchair accessible • Ground floor location • Accessible workstations",
+    "hours": {
+      "title": "Repair Center Hours",
+      "items": [
+        "Monday - Friday: 8:00 AM - 7:00 PM",
+        "Saturday: 9:00 AM - 6:00 PM",
+        "Sunday: 10:00 AM - 4:00 PM"
+      ],
+      "note": "Emergency repairs available outside hours"
+    },
+    "tracking": {
+      "phone": "(555) 567-8901",
+      "online": "https://techfixpro.com/track",
+      "note": "Track your repair status online or call for updates"
+    }
+  },
+  "social": {
+    "facebook": "https://facebook.com/techfixpro",
+    "instagram": "https://instagram.com/techfixpro_repairs",
+    "googleMaps": "https://maps.google.com/techfixpro",
+    "yelp": "https://yelp.com/biz/techfixpro-springfield",
+    "twitter": "https://twitter.com/techfixpro"
+  },
+  "events": {
+    "title": "Special Services",
+    "subtitle": "Additional services to help you stay connected",
+    "items": [
+      {
+        "title": "Free Diagnostic",
+        "description": "Complimentary assessment of your device issues with no obligation",
+        "schedule": "Available during business hours",
+        "price": "Always free"
+      },
+      {
+        "title": "Warranty Service",
+        "description": "Repair services covered under manufacturer warranty",
+        "schedule": "By appointment",
+        "price": "Covered by warranty"
+      },
+      {
+        "title": "Bulk Repairs",
+        "description": "Special rates for businesses and schools with multiple devices",
+        "schedule": "Available by arrangement",
+        "price": "Volume discounts available"
+      }
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "3000+", "label": "Repairs Completed"},
+      {"number": "6+", "label": "Years Experience"},
+      {"number": "4.9", "label": "Star Rating"},
+      {"number": "90%", "label": "Same-Day Service"}
+    ]
+  },
+  "process": {
+    "title": "Repair Process",
+    "subtitle": "Fast, transparent, and guaranteed",
+    "steps": [
+      {"title": "Free Diagnostic", "description": "We assess the issue at no charge within 15 minutes"},
+      {"title": "Get Quote", "description": "Transparent pricing with no hidden fees or surprises"},
+      {"title": "We Repair", "description": "Expert service with quality parts, usually same-day"},
+      {"title": "90-Day Warranty", "description": "All work guaranteed with comprehensive warranty"}
+    ]
+  },
+  "credentials": {
+    "title": "Why Trust TechFix Pro",
+    "subtitle": "Certified experts with guaranteed results",
+    "items": [
+      {"icon": "🏅", "name": "Certified Techs", "description": "Apple & Samsung certified"},
+      {"icon": "🛡️", "name": "90-Day Warranty", "description": "All repairs guaranteed"},
+      {"icon": "⚡", "name": "Same-Day Service", "description": "Most repairs done today"},
+      {"icon": "⭐", "name": "4.9 Star Rating", "description": "156+ verified reviews"}
+    ]
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know about our repair services",
+    "items": [
+      {"question": "How long does a typical repair take?", "answer": "Most repairs like screen replacements and battery changes are completed same-day, usually within 1-2 hours. More complex repairs like motherboard or water damage may take 2-3 business days."},
+      {"question": "Do you offer a warranty?", "answer": "Yes! All repairs come with a 90-day warranty on parts and labor. If you have any issues with your repair, bring it back and we'll fix it free of charge."},
+      {"question": "What if my device can't be fixed?", "answer": "You pay nothing. If we can't fix your device, there's no charge for the diagnostic. We'll explain what's wrong and discuss your options."},
+      {"question": "Do you use original parts?", "answer": "We use high-quality OEM (Original Equipment Manufacturer) equivalent parts that meet or exceed original specifications. Original Apple and Samsung parts are available upon request for an additional fee."},
+      {"question": "Can you fix water-damaged devices?", "answer": "Yes! We specialize in water damage repair using ultrasonic cleaning and specialized drying techniques. Success rates vary by damage severity, but we've saved many devices others couldn't."},
+      {"question": "Will I lose my data during repair?", "answer": "No. We don't erase data during most repairs. However, we always recommend backing up your data before any repair as a safety precaution."},
+      {"question": "Do you repair all phone brands?", "answer": "Yes! We repair iPhone, Samsung, Google Pixel, LG, Motorola, and most other major brands. We also fix tablets, laptops, and computers."},
+      {"question": "How much does a screen replacement cost?", "answer": "Prices vary by device model. iPhone screens typically range from $99-$179, Android from $79-$149. Call or visit for a free quote for your specific device."},
+      {"question": "Do you offer mail-in repairs?", "answer": "Yes! For customers outside our area, we offer secure mail-in repair service. Contact us for details and a prepaid shipping label."},
+      {"question": "What if I just need a diagnostic?", "answer": "Diagnostics are always free! Bring your device in and we'll assess the issue at no charge, usually within 15 minutes."}
+    ]
+  },
+  "footer": {
+    "text": "🔧 TechFix Pro • Device Repair Experts Since 2018",
+    "links": [
+      {"label": "Privacy Policy", "href": "#privacy"},
+      {"label": "Terms of Service", "href": "#terms"},
+      {"label": "Careers", "href": "#careers"},
+      {"label": "Warranty", "href": "#warranty"}
+    ],
+    "awards": [
+      "Best Repair Shop 2023",
+      "Customer Service Excellence",
+      "Trusted Business Award"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "repairs@techrescue.com",
+    "productCta": "Get a Quote",
+    "productCtaHref": "tel:+15555556789",
+    "productNote": "Submit your repair request and we'll contact you for a free diagnostic. Most repairs completed same-day!"
+  },
+  "productsTitle": "Repair Services",
+  "productsSubtitle": "Fast, affordable repairs for all your devices"
+}

@@ -1,0 +1,217 @@
+{
+  "id": "restaurant-fine-dining",
+  "name": "Fine Dining Restaurant",
+  "category": "restaurant",
+  "layoutVariant": "fine-dining",
+  "description": "Elegant upscale restaurant template for fine dining establishments, chef-driven restaurants, and high-end culinary experiences",
+  "suitableFor": ["Fine Dining", "Michelin Restaurants", "Chef-Driven", "Tasting Menu", "Wine Focused"],
+  "heroStyle": "fullscreen-overlay",
+  "menuStyle": "elegant-grid",
+  "brand": {
+    "name": "Bella Vista",
+    "tagline": "A Culinary Journey",
+    "phone": "(555) 123-4567",
+    "email": "reservations@bellavista.com"
+  },
+  "themeVars": {
+    "color-primary": "#c9a76f",
+    "color-accent": "#8b7355",
+    "color-success": "#6b8e23",
+    "layout-style": "fine-dining"
+  },
+  "nav": [
+    { "label": "Experience", "href": "#experience" },
+    { "label": "Menu", "href": "#menu" },
+    { "label": "Chef", "href": "#chef" },
+    { "label": "Wine", "href": "#wine" },
+    { "label": "Private Dining", "href": "#private" },
+    { "label": "Reservations", "href": "#reservations" }
+  ],
+  "hero": {
+    "style": "fullscreen-immersive",
+    "eyebrow": "Michelin-Recognized Dining",
+    "title": "An Unforgettable Culinary Journey",
+    "subtitle": "Experience the art of fine dining with our seasonal tasting menu, crafted from the finest ingredients and presented with impeccable service.",
+    "cta": [
+      { "label": "Reserve Your Table", "href": "#reservations" },
+      { "label": "View Tasting Menu", "href": "#menu", "variant": "secondary" }
+    ],
+    "image": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1920&q=90",
+    "imageAlt": "Elegant fine dining restaurant interior",
+    "overlay": true
+  },
+  "experience": {
+    "title": "The Bella Vista Experience",
+    "subtitle": "Where culinary artistry meets exceptional service",
+    "description": "Our commitment to excellence is reflected in every detail, from the carefully curated wine list to the artfully plated dishes that tell a story with each course.",
+    "features": [
+      { "icon": "👨‍🍳", "title": "Chef's Table", "description": "Intimate 6-seat experience in our kitchen" },
+      { "icon": "🍷", "title": "Sommelier Pairings", "description": "Expert wine selections for each course" },
+      { "icon": "🌟", "title": "Seasonal Menu", "description": "Menu changes with the finest seasonal ingredients" },
+      { "icon": "🎭", "title": "Private Events", "description": "Exclusive venue for special occasions" }
+    ]
+  },
+  "menu": {
+    "title": "Tasting Menu",
+    "subtitle": "A seven-course journey through seasonal flavors",
+    "style": "prix-fixe",
+    "note": "Menu changes seasonally. Dietary accommodations available with advance notice.",
+    "courses": [
+      {
+        "number": "I",
+        "name": "Amuse-Bouche",
+        "description": "Chef's selection of palate awakening bites",
+        "note": "Complimentary"
+      },
+      {
+        "number": "II",
+        "name": "Oysters & Caviar",
+        "description": "Local oysters with champagne mignonette, served with Osetra caviar and brioche",
+        "wine": "Champagne, Blanc de Blancs"
+      },
+      {
+        "number": "III",
+        "name": "Foie Gras Terrine",
+        "description": "Hudson Valley foie gras with fig compote, toasted hazelnuts, and microgreens",
+        "wine": "Sauternes"
+      },
+      {
+        "number": "IV",
+        "name": "Day Boat Scallops",
+        "description": "Pan-seared scallops, cauliflower purée, brown butter, and black truffle",
+        "wine": "White Burgundy"
+      },
+      {
+        "number": "V",
+        "name": "Wagyu Beef",
+        "description": "A5 Japanese Wagyu, roasted vegetables, red wine reduction",
+        "wine": "Bordeaux or Barolo"
+      },
+      {
+        "number": "VI",
+        "name": "Artisanal Cheese",
+        "description": "Selection of three cheeses with house-made preserves and crackers",
+        "wine": "Port or Late Harvest"
+      },
+      {
+        "number": "VII",
+        "name": "Dessert",
+        "description": "Pastry Chef's seasonal creation",
+        "wine": "Dessert Wine"
+      }
+    ],
+    "pricing": {
+      "tastingMenu": "$185 per person",
+      "winePairing": "$95 per person",
+      "nonAlcoholicPairing": "$45 per person"
+    }
+  },
+  "chef": {
+    "title": "Meet Our Chef",
+    "name": "Chef Marco Rossi",
+    "title": "Executive Chef & Owner",
+    "bio": "With over two decades of experience in Michelin-starred kitchens across Europe, Chef Marco brings a refined approach to seasonal American cuisine. His philosophy centers on sourcing the finest ingredients and allowing their natural flavors to shine through precise technique and elegant presentation.",
+    "image": "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=800&q=80",
+    "credentials": [
+      "Trained at Le Cordon Bleu, Paris",
+      "Former Sous Chef at three-Michelin-star restaurant",
+      "James Beard Award Nominee 2023",
+      "Wine Spectator Grand Award Winner"
+    ],
+    "philosophy": "Cooking is about more than ingredients—it's about creating moments that guests will remember long after they leave the table."
+  },
+  "wine": {
+    "title": "Wine Program",
+    "subtitle": "Award-winning selection curated by our Master Sommelier",
+    "description": "Our 500+ bottle wine list features rare vintages and exclusive allocations from the world's finest wine regions.",
+    "awards": [
+      "Wine Spectator Grand Award",
+      "World of Fine Wine Excellence Award",
+      "Decanter Wine List of the Year"
+    ],
+    "highlights": [
+      { "region": "Burgundy", "bottles": "150+", "note": "Extensive Premier & Grand Cru selection" },
+      { "region": "Bordeaux", "bottles": "120+", "note": "Classified growth from top châteaux" },
+      { "region": "California", "bottles": "80+", "note": "Cult wines and boutique producers" },
+      { "region": "Italy", "bottles": "90+", "note": "Barolo, Brunello, and Super Tuscans" }
+    ]
+  },
+  "privateDining": {
+    "title": "Private Dining",
+    "subtitle": "An intimate setting for life's most important moments",
+    "description": "Our private dining room accommodates up to 14 guests for an exclusive culinary experience. Work with Chef Marco to create a custom menu for your special occasion.",
+    "features": [
+      "Dedicated private dining room",
+      "Custom menu creation with the chef",
+      "Personal sommelier for the evening",
+      "Flexible seating arrangements",
+      "Audio/visual equipment available"
+    ],
+    "minimums": {
+      "dinner": "$3,500 food & beverage minimum",
+      "lunch": "$2,000 food & beverage minimum"
+    },
+    "bookingNote": "Private dining requests must be made at least 2 weeks in advance"
+  },
+  "press": {
+    "title": "Press & Accolades",
+    "items": [
+      {
+        "publication": "The New York Times",
+        "quote": "A masterclass in modern fine dining. Chef Rossi's tasting menu is a revelation.",
+        "rating": "★★★★"
+      },
+      {
+        "publication": "Michelin Guide",
+        "quote": "Outstanding cuisine, worth a detour. Exceptional wine program.",
+        "award": "One Michelin Star"
+      },
+      {
+        "publication": "Food & Wine Magazine",
+        "quote": "One of the country's most exciting dining destinations.",
+        "year": "2024"
+      }
+    ]
+  },
+  "reservations": {
+    "title": "Reservations",
+    "subtitle": "We look forward to welcoming you",
+    "note": "Reservations are strongly recommended and can be made up to 60 days in advance.",
+    "policies": [
+      "Dress code: Business casual to formal attire requested",
+      "Children 12 and over welcome",
+      "Cancellation policy: 48 hours notice required",
+      "Late arrivals: Please call if running more than 15 minutes late"
+    ],
+    "phone": "(555) 123-4567",
+    "online": "Book via OpenTable or Resy",
+    "hours": {
+      "dinner": "Tuesday - Saturday: 5:30 PM - 10:00 PM",
+      "closed": "Sunday & Monday"
+    }
+  },
+  "contact": {
+    "title": "Visit Us",
+    "phone": "(555) 123-4567",
+    "email": "reservations@bellavista.com",
+    "address": "1247 Oak Street, Downtown District",
+    "parking": "Complimentary valet parking available",
+    "accessibility": "Wheelchair accessible entrance and restroom",
+    "note": "For private events, catering inquiries, or press: events@bellavista.com"
+  },
+  "footer": {
+    "text": "© 2024 Bella Vista. A Culinary Journey.",
+    "links": [
+      { "label": "Press Kit", "href": "#press" },
+      { "label": "Gift Certificates", "href": "#gifts" },
+      { "label": "Careers", "href": "#careers" },
+      { "label": "Privacy Policy", "href": "#privacy" }
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "reservationRequired": true,
+    "dressCode": "business-casual"
+  }
+}
+

@@ -1,0 +1,346 @@
+{
+  "brand": {
+    "name": "Strategic Solutions",
+    "logo": "assets/logo.svg",
+    "tagline": "Business Consulting • Since 2010",
+    "phone": "(555) 456-7890",
+    "email": "hello@strategicsolutions.com"
+  },
+  "themeVars": {
+    "color-primary": "#1e40af",
+    "color-accent": "#3b82f6",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {
+      "label": "Services",
+      "href": "#services"
+    },
+    {
+      "label": "Case Studies",
+      "href": "#casestudies"
+    },
+    {
+      "label": "About",
+      "href": "#about"
+    },
+    {
+      "label": "Resources",
+      "href": "#resources"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
+  ],
+  "hero": {
+    "eyebrow": "💼 Strategic Business Consulting",
+    "title": "Transform your business with expert guidance",
+    "subtitle": "From startups to established enterprises, we provide strategic solutions that drive growth, optimize operations, and maximize profitability. Partner with us to unlock your business's full potential.",
+    "cta": [
+      {
+        "label": "📞 Get Quote",
+        "href": "#contact"
+      },
+      {
+        "label": "📋 Schedule Call",
+        "href": "#contact",
+        "variant": "secondary"
+      }
+    ],
+    "image": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1200&q=80",
+    "imageAlt": "Professional business consulting meeting with strategic planning"
+  },
+  "about": {
+    "title": "Our Story",
+    "body": "Founded in 2010 by Dr. Jennifer Walsh, Strategic Solutions has helped over 200 businesses achieve their growth objectives. Our team combines deep industry expertise with proven methodologies to deliver measurable results.",
+    "subtitle": "Why choose Strategic Solutions",
+    "features": [
+      "📊 Data-driven insights",
+      "🎯 Proven methodologies",
+      "👥 Expert team of consultants",
+      "📈 Measurable results",
+      "🔄 Ongoing support",
+      "🏆 Industry recognition"
+    ],
+    "founder": {
+      "name": "Dr. Jennifer Walsh",
+      "title": "Founder & Principal Consultant",
+      "bio": "Former McKinsey consultant with 20+ years of experience helping businesses scale. PhD in Business Strategy from Wharton, specializing in operational excellence and growth strategy.",
+      "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
+      "imageAlt": "Dr. Jennifer Walsh"
+    }
+  },
+  "products": [
+    {
+      "name": "Strategic Planning",
+      "price": 2500,
+      "description": "Comprehensive business strategy development with 3-year roadmap and implementation plan",
+      "image": "https://images.unsplash.com/photo-1559149811-ff2a4e2d3ded?w=600&q=80",
+      "imageAlt": "Strategic planning session",
+      "category": "Strategy & Planning",
+      "duration": "4-6 weeks",
+      "deliverables": [
+        "Strategic plan",
+        "Implementation roadmap",
+        "KPI framework"
+      ],
+      "popular": true
+    },
+    {
+      "name": "Process Optimization",
+      "price": 2000,
+      "description": "Analyze and improve business processes to increase efficiency and reduce costs",
+      "image": "https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&q=80",
+      "imageAlt": "Process optimization workflow",
+      "category": "Operations Excellence",
+      "duration": "4-6 weeks",
+      "deliverables": [
+        "Process maps",
+        "Efficiency improvements",
+        "Cost reduction plan"
+      ]
+    },
+    {
+      "name": "Market Analysis",
+      "price": 1800,
+      "description": "In-depth market research and competitive analysis to identify growth opportunities",
+      "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80",
+      "imageAlt": "Market analysis presentation",
+      "category": "Strategy & Planning",
+      "duration": "3-4 weeks",
+      "deliverables": [
+        "Market report",
+        "Competitive analysis",
+        "Opportunity assessment"
+      ]
+    },
+    {
+      "name": "Team Development",
+      "price": 1200,
+      "description": "Build high-performing teams through leadership development and organizational design",
+      "image": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80",
+      "imageAlt": "Team development workshop",
+      "category": "Growth & Development",
+      "duration": "3-4 weeks",
+      "deliverables": [
+        "Team assessment",
+        "Development plan",
+        "Training program"
+      ]
+    },
+    {
+      "name": "Sales Strategy",
+      "price": 1800,
+      "description": "Develop and implement sales strategies to accelerate revenue growth",
+      "image": "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80",
+      "imageAlt": "Sales strategy planning",
+      "category": "Growth & Development",
+      "duration": "4-5 weeks",
+      "deliverables": [
+        "Sales strategy",
+        "Process improvements",
+        "Training materials"
+      ]
+    },
+    {
+      "name": "Financial Planning",
+      "price": 1500,
+      "description": "Develop financial models and planning frameworks for sustainable growth",
+      "image": "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&q=80",
+      "imageAlt": "Financial planning",
+      "category": "Growth & Development",
+      "duration": "3-4 weeks",
+      "deliverables": [
+        "Financial models",
+        "Planning framework",
+        "Budget templates"
+      ]
+    }
+  ],
+  "casestudies": {
+    "title": "Success Stories",
+    "subtitle": "Real results from our client partnerships",
+    "items": [
+      {
+        "title": "Manufacturing Company Growth",
+        "client": "Midwest Manufacturing Co.",
+        "challenge": "Struggling with operational inefficiencies and declining margins",
+        "solution": "Process optimization and supply chain restructuring",
+        "results": "40% increase in efficiency, 25% cost reduction, $2M annual savings",
+        "duration": "6 months",
+        "image": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=600&q=80",
+        "imageAlt": "Manufacturing facility"
+      },
+      {
+        "title": "Tech Startup Scaling",
+        "client": "InnovateTech Solutions",
+        "challenge": "Rapid growth causing operational chaos and team burnout",
+        "solution": "Organizational design and process standardization",
+        "results": "300% team productivity increase, 50% reduction in operational costs",
+        "duration": "4 months",
+        "image": "https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=600&q=80",
+        "imageAlt": "Tech startup office"
+      },
+      {
+        "title": "Retail Chain Expansion",
+        "client": "Urban Retail Group",
+        "challenge": "Planning expansion into new markets without clear strategy",
+        "solution": "Market analysis and strategic planning",
+        "results": "Successful expansion to 5 new markets, 150% revenue growth",
+        "duration": "8 months",
+        "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80",
+        "imageAlt": "Retail store expansion"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Client Testimonials",
+    "subtitle": "What our clients say about working with us",
+    "items": [
+      {
+        "text": "Strategic Solutions transformed our business completely. The process optimization alone saved us $2M annually.",
+        "author": "Sarah Mitchell",
+        "location": "CEO, Midwest Manufacturing",
+        "rating": 5,
+        "date": "2 months ago",
+        "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
+        "imageAlt": "Sarah Mitchell"
+      },
+      {
+        "text": "Dr. Walsh's strategic guidance helped us scale from startup to market leader in just 18 months.",
+        "author": "Michael Rodriguez",
+        "location": "Founder, InnovateTech",
+        "rating": 5,
+        "date": "1 month ago",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "imageAlt": "Michael Rodriguez"
+      },
+      {
+        "text": "The best investment we made. The team development program transformed our culture and performance.",
+        "author": "Amanda Thompson",
+        "location": "VP Operations, Urban Retail",
+        "rating": 5,
+        "date": "3 weeks ago",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&q=80",
+        "imageAlt": "Amanda Thompson"
+      },
+      {
+        "text": "Professional, insightful, and results-driven. Strategic Solutions exceeded all our expectations.",
+        "author": "David Chen",
+        "location": "President, Global Logistics",
+        "rating": 5,
+        "date": "1 week ago",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80",
+        "imageAlt": "David Chen"
+      }
+    ],
+    "stats": {
+      "averageRating": 4.9,
+      "totalReviews": 89,
+      "googleRating": 4.8,
+      "linkedinRating": 4.9
+    }
+  },
+  "contact": {
+    "title": "Let's Discuss Your Project",
+    "subtitle": "Schedule a free consultation to explore how we can help",
+    "phone": "(555) 456-7890",
+    "email": "hello@strategicsolutions.com",
+    "address": "789 Business Plaza, Suite 400, Downtown District, Springfield, IL 62701",
+    "coordinates": {
+      "lat": 39.7817,
+      "lng": -89.6501
+    },
+    "parking": "Valet parking available • Garage parking • Street parking",
+    "accessibility": "Wheelchair accessible • Elevator access • Accessible meeting rooms",
+    "hours": {
+      "title": "Office Hours",
+      "items": [
+        "Monday - Friday: 8:00 AM - 6:00 PM",
+        "Saturday: 9:00 AM - 2:00 PM",
+        "Sunday: Closed"
+      ],
+      "note": "Evening consultations available by appointment"
+    },
+    "consultation": {
+      "phone": "(555) 456-7890",
+      "online": "https://strategicsolutions.com/schedule",
+      "note": "Free 30-minute consultation to discuss your needs"
+    }
+  },
+  "social": {
+    "facebook": "https://facebook.com/strategicsolutionsconsulting",
+    "linkedin": "https://linkedin.com/company/strategic-solutions-consulting",
+    "googleMaps": "https://maps.google.com/strategicsolutions",
+    "twitter": "https://twitter.com/strategicsol"
+  },
+  "resources": {
+    "title": "Resources & Insights",
+    "subtitle": "Stay informed with our latest business insights",
+    "items": [
+      {
+        "title": "Strategic Planning Guide",
+        "description": "Free comprehensive guide to business strategic planning",
+        "type": "Download",
+        "price": "Free"
+      },
+      {
+        "title": "Monthly Webinar Series",
+        "description": "Expert insights on business growth and optimization",
+        "type": "Event",
+        "price": "Free"
+      },
+      {
+        "title": "Business Assessment Tool",
+        "description": "Self-assessment tool to identify improvement opportunities",
+        "type": "Tool",
+        "price": "Free"
+      }
+    ]
+  },
+  "footer": {
+    "text": "💼 Strategic Solutions • Business Consulting Since 2010",
+    "links": [
+      {
+        "label": "Privacy Policy",
+        "href": "#privacy"
+      },
+      {
+        "label": "Terms of Service",
+        "href": "#terms"
+      },
+      {
+        "label": "Careers",
+        "href": "#careers"
+      },
+      {
+        "label": "Resources",
+        "href": "#resources"
+      }
+    ],
+    "awards": [
+      "Best Consulting Firm 2023",
+      "Excellence in Business Strategy",
+      "Client Satisfaction Award"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "productCta": "Schedule Consultation",
+    "productCtaHref": "https://calendly.com/strategicsolutions",
+    "productNote": "Book a free 30-minute consultation to discuss your business needs. Custom proposals provided after initial meeting."
+  },
+  "custom": {
+    "businessDescription": "",
+    "specialOffers": ""
+  },
+  "published": {
+    "at": "2025-10-31T06:04:28.007Z",
+    "plan": "starter",
+    "email": "persylopez@gmail.com",
+    "subdomain": "strategic-solutions-mheg7o4n"
+  }
+}

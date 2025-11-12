@@ -1,0 +1,397 @@
+/**
+ * Product Importer Module Styles
+ */
+
+/* Import Modal */
+.import-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(4px);
+  padding: 20px;
+}
+
+.import-modal-content {
+  background: white;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.import-modal-content.large {
+  max-width: 900px;
+}
+
+.import-modal-header {
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.import-modal-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #1f2937;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background: #f3f4f6;
+  color: #1f2937;
+}
+
+.import-modal-body {
+  padding: 24px;
+}
+
+.import-instructions {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.import-instructions p {
+  margin: 8px 0;
+  color: #6b7280;
+}
+
+.import-instructions .muted {
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+/* Upload Area */
+.import-upload-area {
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 48px 24px;
+  text-align: center;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.import-upload-area:hover {
+  border-color: #3b82f6;
+  background: #f9fafb;
+}
+
+.import-upload-area.drag-over {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.upload-label {
+  cursor: pointer;
+  display: block;
+}
+
+.upload-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.upload-text {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+
+.upload-text strong {
+  color: #3b82f6;
+}
+
+.upload-hint {
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+.import-actions {
+  margin-top: 24px;
+  text-align: center;
+}
+
+/* Preview Table */
+.preview-table-container {
+  overflow-x: auto;
+  margin-bottom: 24px;
+}
+
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.preview-table thead th {
+  background: #f9fafb;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.preview-table tbody td {
+  padding: 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.preview-table .more-row td {
+  text-align: center;
+  color: #6b7280;
+  font-style: italic;
+  padding: 16px;
+}
+
+/* Import Options */
+.import-options {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 24px 0;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.radio-option:hover {
+  background: #f3f4f6;
+}
+
+.radio-option input[type="radio"] {
+  margin-right: 12px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.radio-option span {
+  font-size: 0.95rem;
+  color: #374151;
+}
+
+/* Modal Footer */
+.import-modal-footer {
+  padding: 24px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Buttons */
+.btn-primary,
+.btn-secondary {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+/* Loader */
+.import-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  backdrop-filter: blur(4px);
+}
+
+.loader-content {
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.loader-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f4f6;
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .import-modal {
+    padding: 10px;
+  }
+  
+  .import-modal-content {
+    border-radius: 12px;
+  }
+  
+  .import-modal-header,
+  .import-modal-body,
+  .import-modal-footer {
+    padding: 16px;
+  }
+  
+  .import-upload-area {
+    padding: 32px 16px;
+  }
+  
+  .preview-table {
+    font-size: 0.8rem;
+  }
+  
+  .preview-table thead th,
+  .preview-table tbody td {
+    padding: 8px;
+  }
+  
+  .import-modal-footer {
+    flex-direction: column;
+  }
+  
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+  }
+}
+
+/* Dark Theme */
+@media (prefers-color-scheme: dark) {
+  .import-modal-content {
+    background: #1f2937;
+  }
+  
+  .import-modal-header {
+    border-bottom-color: #374151;
+  }
+  
+  .import-modal-header h3 {
+    color: #f9fafb;
+  }
+  
+  .close-btn:hover {
+    background: #374151;
+    color: #f9fafb;
+  }
+  
+  .import-instructions p {
+    color: #d1d5db;
+  }
+  
+  .import-upload-area {
+    border-color: #4b5563;
+    background: #111827;
+  }
+  
+  .import-upload-area:hover,
+  .import-upload-area.drag-over {
+    border-color: #3b82f6;
+    background: #1e3a5f;
+  }
+  
+  .preview-table thead th {
+    background: #374151;
+    color: #f9fafb;
+    border-bottom-color: #4b5563;
+  }
+  
+  .preview-table tbody td {
+    color: #d1d5db;
+    border-bottom-color: #374151;
+  }
+  
+  .import-options {
+    background: #374151;
+  }
+  
+  .radio-option:hover {
+    background: #4b5563;
+  }
+  
+  .radio-option span {
+    color: #f9fafb;
+  }
+  
+  .import-modal-footer {
+    border-top-color: #374151;
+  }
+  
+  .btn-secondary {
+    background: #374151;
+    color: #f9fafb;
+  }
+  
+  .btn-secondary:hover {
+    background: #4b5563;
+  }
+  
+  .loader-content {
+    background: #1f2937;
+    color: #f9fafb;
+  }
+}
+

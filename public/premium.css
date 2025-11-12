@@ -1,0 +1,465 @@
+/* ==========================================
+   PREMIUM TEMPLATE ENHANCEMENTS
+   Visual upgrades that distinguish Premium from Pro/Starter
+   ========================================== */
+
+/* Premium Root Variables - Enhanced colors and effects */
+body.premium-template {
+  --premium-gradient-start: #667eea;
+  --premium-gradient-end: #764ba2;
+  --premium-shadow-sm: 0 2px 8px rgba(102, 126, 234, 0.08);
+  --premium-shadow-md: 0 8px 30px rgba(102, 126, 234, 0.12);
+  --premium-shadow-lg: 0 20px 60px rgba(102, 126, 234, 0.15);
+  --premium-shadow-xl: 0 30px 80px rgba(102, 126, 234, 0.2);
+  --premium-glow: 0 0 40px rgba(102, 126, 234, 0.3);
+  --premium-transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  font-smooth: always;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Premium Badge/Indicator - Visible marker */
+body.premium-template .site-header::before {
+  content: "PREMIUM";
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  background: linear-gradient(135deg, var(--premium-gradient-start), var(--premium-gradient-end));
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  z-index: 1000;
+  animation: premiumPulse 3s ease-in-out infinite;
+}
+
+@keyframes premiumPulse {
+  0%, 100% { box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); }
+  50% { box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5); }
+}
+
+/* Enhanced Header - Glassmorphism effect */
+body.premium-template .site-header {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 40px rgba(102, 126, 234, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Premium Button Upgrades - Gradient + Animation */
+body.premium-template .btn.btn-primary {
+  background: linear-gradient(135deg, var(--premium-primary, #2563eb), var(--premium-gradient-end));
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+  position: relative;
+  overflow: hidden;
+  transition: var(--premium-transition);
+  transform: translateY(0);
+}
+
+body.premium-template .btn.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.6s;
+}
+
+body.premium-template .btn.btn-primary:hover::before {
+  left: 100%;
+}
+
+body.premium-template .btn.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(37, 99, 235, 0.4);
+}
+
+body.premium-template .btn.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.3);
+}
+
+/* Premium Hero Section - Enhanced visual hierarchy */
+body.premium-template .hero-block {
+  position: relative;
+  overflow: hidden;
+}
+
+body.premium-template .hero-block::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 100%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(102, 126, 234, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+  animation: premiumFloat 20s ease-in-out infinite;
+}
+
+@keyframes premiumFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-10%, -10%) scale(1.1); }
+}
+
+body.premium-template .hero-badge {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--premium-shadow-sm);
+}
+
+/* Premium Card Effects - Depth and elegance */
+body.premium-template .service-card,
+body.premium-template .testimonial-card,
+body.premium-template .premium-card,
+body.premium-template .case-card {
+  position: relative;
+  transition: var(--premium-transition);
+  transform: translateY(0);
+  background: linear-gradient(145deg, #ffffff, #fefefe);
+  border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+body.premium-template .service-card::before,
+body.premium-template .testimonial-card::before,
+body.premium-template .premium-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.02), transparent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+body.premium-template .service-card:hover,
+body.premium-template .testimonial-card:hover,
+body.premium-template .premium-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--premium-shadow-lg);
+  border-color: rgba(102, 126, 234, 0.2);
+}
+
+body.premium-template .service-card:hover::before,
+body.premium-template .testimonial-card:hover::before,
+body.premium-template .premium-card:hover::before {
+  opacity: 1;
+}
+
+/* Premium Icon Enhancement - Gradient backgrounds */
+body.premium-template .service-card .service-icon {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  transition: var(--premium-transition);
+}
+
+body.premium-template .service-card:hover .service-icon {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
+/* Premium Stats - Animated counters */
+body.premium-template .hero-stats .stat,
+body.premium-template .stat-item,
+body.premium-template .stat-card {
+  background: linear-gradient(145deg, #ffffff, #fafafa);
+  border: 1px solid rgba(102, 126, 234, 0.15);
+  transition: var(--premium-transition);
+  cursor: default;
+}
+
+body.premium-template .hero-stats .stat:hover,
+body.premium-template .stat-item:hover,
+body.premium-template .stat-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--premium-shadow-md);
+  border-color: rgba(102, 126, 234, 0.25);
+}
+
+body.premium-template .stat-value,
+body.premium-template .stat-number,
+body.premium-template .hero-stats .stat-value {
+  color: #1e40af;
+  font-weight: 900;
+}
+
+/* Premium Section Headers - Enhanced typography */
+body.premium-template .section-title,
+body.premium-template h2 {
+  color: #0f172a;
+  font-weight: 800;
+  position: relative;
+  padding-bottom: 20px;
+}
+
+body.premium-template .section-title::after,
+body.premium-template h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--premium-gradient-start), var(--premium-gradient-end));
+  border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Premium Forms - Sophisticated styling */
+body.premium-template input[type="text"],
+body.premium-template input[type="email"],
+body.premium-template input[type="tel"],
+body.premium-template textarea,
+body.premium-template select {
+  border: 2px solid rgba(102, 126, 234, 0.15);
+  background: linear-gradient(145deg, #ffffff, #fefefe);
+  transition: var(--premium-transition);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+body.premium-template input:focus,
+body.premium-template textarea:focus,
+body.premium-template select:focus {
+  border-color: var(--premium-primary, #2563eb);
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1), inset 0 1px 3px rgba(0, 0, 0, 0.02);
+  outline: none;
+}
+
+/* Premium Badges - Special indicators */
+body.premium-template .badge,
+body.premium-template .service-card .badge {
+  background: #1e40af;
+  color: #fff;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(30, 64, 175, 0.4);
+  text-transform: uppercase;
+}
+
+/* Premium Testimonials - Enhanced cards */
+body.premium-template .testimonial-card {
+  position: relative;
+  overflow: hidden;
+}
+
+body.premium-template .testimonial-card::after {
+  content: '"';
+  position: absolute;
+  top: -20px;
+  right: 20px;
+  font-size: 120px;
+  font-family: Georgia, serif;
+  color: rgba(102, 126, 234, 0.05);
+  line-height: 1;
+  pointer-events: none;
+}
+
+body.premium-template .testimonial-stars .star-filled {
+  color: #fbbf24;
+  filter: drop-shadow(0 2px 4px rgba(251, 191, 36, 0.3));
+}
+
+/* Premium Image Effects */
+body.premium-template .hero-visual img,
+body.premium-template .team-photo,
+body.premium-template img {
+  transition: var(--premium-transition);
+}
+
+body.premium-template .hero-visual img:hover,
+body.premium-template .team-photo:hover {
+  transform: scale(1.02);
+  box-shadow: var(--premium-shadow-xl);
+}
+
+/* Premium Process Timeline - Enhanced */
+body.premium-template .process-step {
+  position: relative;
+  transition: var(--premium-transition);
+}
+
+body.premium-template .process-step:hover {
+  transform: translateX(10px);
+}
+
+body.premium-template .process-number {
+  background: #1e40af;
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(30, 64, 175, 0.4);
+  transition: var(--premium-transition);
+  font-weight: 900;
+}
+
+body.premium-template .process-step:hover .process-number {
+  transform: scale(1.15) rotate(10deg);
+  box-shadow: var(--premium-glow);
+}
+
+/* Premium Credentials Grid - Enhanced badges */
+body.premium-template .credential-badge {
+  transition: var(--premium-transition);
+  cursor: default;
+  background: linear-gradient(145deg, #ffffff, #fafafa);
+  border: 1px solid rgba(102, 126, 234, 0.15);
+}
+
+body.premium-template .credential-badge:hover {
+  transform: translateY(-6px) scale(1.05);
+  box-shadow: var(--premium-shadow-lg);
+  border-color: rgba(102, 126, 234, 0.3);
+}
+
+body.premium-template .credential-icon {
+  font-size: 2.5rem;
+  filter: drop-shadow(0 2px 6px rgba(102, 126, 234, 0.2));
+  transition: var(--premium-transition);
+}
+
+body.premium-template .credential-badge:hover .credential-icon {
+  transform: scale(1.2) rotate(5deg);
+}
+
+/* Premium FAQ Accordion - Smooth animations */
+body.premium-template .accordion-item {
+  border: 1px solid rgba(102, 126, 234, 0.15);
+  transition: var(--premium-transition);
+  background: linear-gradient(145deg, #ffffff, #fefefe);
+}
+
+body.premium-template .accordion-item.active,
+body.premium-template .accordion-item:hover {
+  border-color: rgba(102, 126, 234, 0.3);
+  box-shadow: var(--premium-shadow-md);
+}
+
+body.premium-template .accordion-header {
+  transition: var(--premium-transition);
+}
+
+body.premium-template .accordion-header:hover {
+  background: rgba(30, 64, 175, 0.05);
+}
+
+body.premium-template .accordion-icon {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #1e40af;
+  font-weight: bold;
+}
+
+body.premium-template .accordion-item.active .accordion-icon {
+  transform: rotate(180deg);
+}
+
+/* Premium Loading States - Skeleton shimmer */
+@keyframes premiumShimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+body.premium-template .loading {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 1000px 100%;
+  animation: premiumShimmer 2s infinite;
+}
+
+/* Premium Scroll Effects - Smooth reveal */
+body.premium-template [data-animate] {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+body.premium-template [data-animate].visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Premium Contact Section - Enhanced CTA */
+body.premium-template #cta-conversion,
+body.premium-template #cta-appointment,
+body.premium-template .contact-section {
+  position: relative;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.03), rgba(118, 75, 162, 0.03));
+  border: 1px solid rgba(102, 126, 234, 0.15);
+  border-radius: var(--premium-radius, 20px);
+  overflow: hidden;
+}
+
+body.premium-template #cta-conversion::before,
+body.premium-template .contact-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(102, 126, 234, 0.08) 0%, transparent 50%);
+  animation: premiumRotate 30s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes premiumRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Premium Footer - Elevated design */
+body.premium-template .footer-content {
+  border-top: 1px solid rgba(102, 126, 234, 0.15);
+  background: linear-gradient(180deg, rgba(255,255,255,0.5), rgba(248,250,252,0.8));
+}
+
+/* Premium Mobile Enhancements */
+@media (max-width: 720px) {
+  body.premium-template .site-header::before {
+    top: 8px;
+    right: 10px;
+    font-size: 0.6rem;
+    padding: 3px 8px;
+  }
+  
+  body.premium-template .btn.btn-primary:hover {
+    transform: none; /* Disable hover lift on mobile */
+  }
+  
+  body.premium-template .service-card:hover,
+  body.premium-template .testimonial-card:hover {
+    transform: none; /* Disable hover effects on mobile */
+  }
+}
+
+/* Premium Print Styles */
+@media print {
+  body.premium-template .site-header::before {
+    display: none;
+  }
+}
+
+/* Premium Dark Mode Support (future) */
+@media (prefers-color-scheme: dark) {
+  body.premium-template.dark-mode {
+    --premium-background: #0f172a;
+    --premium-text: #f1f5f9;
+    --premium-surface: rgba(30, 41, 59, 0.9);
+  }
+  
+  body.premium-template.dark-mode .service-card,
+  body.premium-template.dark-mode .testimonial-card {
+    background: linear-gradient(145deg, #1e293b, #0f172a);
+  }
+}
+

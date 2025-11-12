@@ -1,0 +1,186 @@
+{
+  "brand": {
+    "name": "Pencraft Content Studio",
+    "logo": "assets/logo.svg",
+    "tagline": "Content Writing & Copywriting",
+    "phone": "(555) 345-6789",
+    "email": "words@pencraft.co"
+  },
+  "themeVars": {
+    "color-primary": "#8b5cf6",
+    "color-accent": "#a78bfa",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "Portfolio", "href": "#about"},
+    {"label": "About", "href": "#team"},
+    {"label": "Testimonials", "href": "#testimonials"},
+    {"label": "Hire Me", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "✍️ Content Writer & Copywriter",
+    "title": "Words that work for your business",
+    "subtitle": "I write compelling content that engages your audience and drives results. From website copy to blog posts to email campaigns - clear, persuasive writing that converts readers into customers.",
+    "cta": [
+      {"label": "View Samples", "href": "#about"},
+      {"label": "Get Started", "href": "#contact", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=1200&q=80",
+    "imageAlt": "Writer workspace with laptop and coffee"
+  },
+  "about": {
+    "title": "Professional Writing Services",
+    "subtitle": "Crafting content that connects",
+    "content": "I'm Jordan, a freelance writer specializing in content marketing and conversion copywriting. With 7+ years experience across SaaS, e-commerce, and professional services, I help businesses communicate clearly and compellingly."
+  },
+  "products": [
+    {
+      "name": "Website Copy Package",
+      "price": 1500,
+      "description": "Complete website copy for 5 pages. Includes headlines, body copy, and CTAs. SEO-optimized and conversion-focused.",
+      "category": "Copywriting",
+      "duration": "1 week",
+      "popular": true
+    },
+    {
+      "name": "Blog Post Writing",
+      "price": 300,
+      "description": "1500-word SEO-optimized blog post with research, original writing, and meta descriptions. Bulk pricing available.",
+      "category": "Content",
+      "duration": "3 days",
+      "popular": true
+    },
+    {
+      "name": "Email Campaign",
+      "price": 800,
+      "description": "5-email sequence for product launch, nurture, or sales. Strategic messaging that drives opens and clicks.",
+      "category": "Email",
+      "duration": "5 days"
+    },
+    {
+      "name": "Product Descriptions",
+      "price": 50,
+      "description": "Compelling product descriptions that sell. Per product pricing. Minimum order of 10 products.",
+      "category": "E-commerce",
+      "duration": "Per product",
+      "popular": true
+    },
+    {
+      "name": "Case Study",
+      "price": 600,
+      "description": "Professional case study with customer interview, data, and results. Builds credibility and trust.",
+      "category": "Marketing",
+      "duration": "1 week"
+    },
+    {
+      "name": "Monthly Retainer",
+      "price": 2000,
+      "description": "Ongoing content support with 4 blog posts + 2 emails per month. Priority scheduling.",
+      "category": "Retainer",
+      "duration": "Monthly"
+    }
+  ],
+  "services": {
+    "title": "Writing Services",
+    "subtitle": "Content that engages and converts",
+    "items": [
+      {
+        "title": "✍️ Website Copy",
+        "description": "Clear, compelling copy for homepages, landing pages, and service pages"
+      },
+      {
+        "title": "📝 Blog Writing",
+        "description": "SEO-optimized blog posts and articles that drive organic traffic"
+      },
+      {
+        "title": "📧 Email Marketing",
+        "description": "Engaging email campaigns, newsletters, and automated sequences"
+      },
+      {
+        "title": "📊 Content Strategy",
+        "description": "Content planning, topic research, and editorial calendars"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Client Testimonials",
+    "subtitle": "Happy clients, great results",
+    "items": [
+      {
+        "text": "Jordan transformed our website copy and we immediately saw a 35% increase in conversions. The writing is clear, compelling, and perfectly captures our brand voice.",
+        "author": "Emily Chen",
+        "title": "Marketing Director, SaaS Company"
+      },
+      {
+        "text": "Working with Jordan is a breeze. Always on time, understands SEO, and the blog posts consistently rank on page 1. Best writing investment we've made!",
+        "author": "Marcus Rivera",
+        "title": "Founder, E-commerce Store"
+      },
+      {
+        "text": "The email campaign Jordan wrote for our product launch generated $50K in sales in the first week. Amazing ROI and the copy truly resonated with our audience.",
+        "author": "Sophia Park",
+        "title": "Product Manager"
+      }
+    ]
+  },
+  "team": {
+    "title": "About Jordan",
+    "subtitle": "Your dedicated writer",
+    "members": [
+      {
+        "name": "Jordan Blake",
+        "title": "Content Writer & Copywriter",
+        "bio": "BA in English from Columbia. 7+ years writing for tech startups, e-commerce brands, and professional services. Certified in content marketing and conversion copywriting. Featured in Content Marketing Institute.",
+        "image": "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=400&q=80",
+        "imageAlt": "Jordan Blake",
+        "credentials": ["BA Columbia", "Content Marketing Certified", "Published Author"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Writing Process",
+    "subtitle": "From brief to final draft",
+    "steps": [
+      {"title": "Discovery", "description": "Understand your brand, audience, and goals through a detailed brief"},
+      {"title": "Research", "description": "Industry research, competitor analysis, and topic exploration"},
+      {"title": "Writing", "description": "First draft delivered for your review and feedback"},
+      {"title": "Revisions", "description": "Refine and polish until it's perfect (2 rounds included)"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "7+", "label": "Years Writing"},
+      {"number": "500+", "label": "Pieces Published"},
+      {"number": "50+", "label": "Happy Clients"},
+      {"number": "98%", "label": "Client Retention"}
+    ]
+  },
+  "contact": {
+    "title": "Let's Work Together",
+    "subtitle": "Ready for great content?",
+    "phone": "(555) 345-6789",
+    "email": "words@pencraft.co",
+    "address": "Remote • Working with clients worldwide"
+  },
+  "footer": {
+    "text": "✍️ Pencraft Content Studio • Words That Work",
+    "awards": [
+      "Top Content Writer 2023",
+      "Featured in CMI",
+      "5-Star Rated"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "words@pencraft.co",
+    "productCta": "Request Quote",
+    "productCtaHref": "mailto:words@pencraft.co",
+    "productNote": "Submit your project details and I'll send you a custom quote within 24 hours."
+  },
+  "productsTitle": "Writing Services",
+  "productsSubtitle": "Clear pricing for quality content"
+}

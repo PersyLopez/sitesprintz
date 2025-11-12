@@ -1,0 +1,31 @@
+.analytics-chart {
+  background: var(--bg-card);
+  border: 2px solid var(--border-dark);
+  border-radius: 16px;
+  padding: var(--spacing-xl);
+  transition: all 0.3s ease;
+}
+
+.analytics-chart:hover {
+  border-color: var(--primary-color);
+}
+
+.chart-title {
+  margin: 0 0 var(--spacing-lg);
+  color: var(--text-light);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.chart-container {
+  position: relative;
+  height: 300px;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .chart-container {
+    height: 250px;
+  }
+}
+

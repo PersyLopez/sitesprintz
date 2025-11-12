@@ -1,0 +1,35 @@
+{
+  "draftId": "draft-1762376642268-h9sxwlapf",
+  "templateId": "restaurant-pro",
+  "businessData": {
+    "businessName": "The Grand Table",
+    "heroTitle": "An Unforgettable Culinary Journey",
+    "heroSubtitle": "Experience modern American cuisine crafted with passion and presented with artistry. Our seasonal menus showcase the finest local ingredients, complemented by an extensive wine collection and impeccable service.",
+    "heroImage": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=80",
+    "email": "reservations@thegrandtable.com",
+    "address": "425 Grand Avenue, Downtown, San Francisco, CA 94102",
+    "businessHours": {
+      "title": "Hours",
+      "items": [
+        "Tuesday - Thursday: 5:30 PM - 10:00 PM",
+        "Friday - Saturday: 5:30 PM - 11:00 PM",
+        "Sunday: 5:00 PM - 9:00 PM",
+        "Monday: Closed"
+      ],
+      "note": "Reservations strongly recommended"
+    },
+    "websiteUrl": "",
+    "facebookUrl": "https://facebook.com/thegrandtable",
+    "instagramUrl": "https://instagram.com/thegrandtable",
+    "googleMapsUrl": "",
+    "services": [],
+    "colors": {
+      "primary": "#d4af37",
+      "secondary": "#b8941e"
+    },
+    "templateSpecific": {}
+  },
+  "createdAt": "2025-11-05T21:04:02.268Z",
+  "expiresAt": "2025-11-12T21:04:02.268Z",
+  "status": "draft"
+}

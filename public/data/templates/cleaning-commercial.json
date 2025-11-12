@@ -1,0 +1,186 @@
+{
+  "brand": {
+    "name": "ProClean Commercial Services",
+    "logo": "assets/logo.svg",
+    "tagline": "Commercial Cleaning • Office & Retail",
+    "phone": "(555) 777-2233",
+    "email": "services@proclean.biz"
+  },
+  "themeVars": {
+    "color-primary": "#1e40af",
+    "color-accent": "#3b82f6",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "Industries", "href": "#about"},
+    {"label": "References", "href": "#testimonials"},
+    {"label": "Get Quote", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "🏢 Commercial Cleaning Services",
+    "title": "Professional spaces, professionally cleaned",
+    "subtitle": "Reliable janitorial services for offices, retail, medical, and industrial facilities. Nightly, weekly, or custom schedules. Insured, bonded, and trusted by businesses since 2008. Keep your workplace spotless.",
+    "cta": [
+      {"label": "Request Quote", "href": "#contact"},
+      {"label": "Our Services", "href": "#products", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=1200&q=80",
+    "imageAlt": "Professional office space"
+  },
+  "about": {
+    "title": "Commercial Cleaning Experts",
+    "subtitle": "Serving businesses since 2008",
+    "content": "ProClean provides comprehensive janitorial services to businesses across all industries. Our trained cleaning crews work on your schedule using commercial-grade equipment and products. Fully insured, bonded, and COVID-19 certified."
+  },
+  "products": [
+    {
+      "name": "Office Cleaning",
+      "price": 500,
+      "description": "Complete office janitorial service. Trash, vacuuming, bathrooms, break rooms, and dusting. Nightly or weekly schedules.",
+      "category": "Office",
+      "duration": "Per month",
+      "popular": true
+    },
+    {
+      "name": "Medical Facility Cleaning",
+      "price": 850,
+      "description": "Hospital-grade disinfection for medical offices, clinics, and dental practices. OSHA compliant cleaning protocols.",
+      "category": "Medical",
+      "duration": "Per month",
+      "popular": true
+    },
+    {
+      "name": "Retail Cleaning",
+      "price": 600,
+      "description": "Keep your store looking great for customers. Floors, windows, bathrooms, and fitting rooms. Flexible scheduling.",
+      "category": "Retail",
+      "duration": "Per month"
+    },
+    {
+      "name": "Floor Care Services",
+      "price": 350,
+      "description": "Professional floor stripping, waxing, and buffing. Carpet cleaning and tile maintenance. Quarterly or as needed.",
+      "category": "Specialty",
+      "duration": "Per service"
+    },
+    {
+      "name": "Window Cleaning",
+      "price": 200,
+      "description": "Interior and exterior window cleaning for commercial buildings. Monthly or quarterly service available.",
+      "category": "Specialty",
+      "duration": "Per service",
+      "popular": true
+    },
+    {
+      "name": "Deep Cleaning Service",
+      "price": 1200,
+      "description": "Intensive top-to-bottom cleaning for offices, warehouses, or facilities. Perfect for quarterly maintenance.",
+      "category": "One-Time",
+      "duration": "One-time"
+    }
+  ],
+  "services": {
+    "title": "Commercial Services",
+    "subtitle": "Complete facility maintenance",
+    "items": [
+      {
+        "title": "🏢 Office Cleaning",
+        "description": "Daily or nightly janitorial service for professional offices"
+      },
+      {
+        "title": "🏥 Medical Cleaning",
+        "description": "Hospital-grade disinfection and OSHA-compliant protocols"
+      },
+      {
+        "title": "🏬 Retail Cleaning",
+        "description": "Keep stores spotless for customers. Flexible scheduling"
+      },
+      {
+        "title": "🏭 Industrial Cleaning",
+        "description": "Warehouse, factory, and facility cleaning with commercial equipment"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Client References",
+    "subtitle": "Trusted by businesses",
+    "items": [
+      {
+        "text": "ProClean has serviced our 10,000 sq ft office for 3 years. Reliable, professional, and always thorough. Our employees appreciate coming to a clean workplace every morning.",
+        "author": "Michael Bradford",
+        "title": "Facilities Manager, Tech Company"
+      },
+      {
+        "text": "As a medical practice, cleanliness is critical. ProClean's staff is trained in proper disinfection protocols. They're reliable and detail-oriented. Highly recommend!",
+        "author": "Dr. Sarah Kim",
+        "title": "Medical Director"
+      },
+      {
+        "text": "We switched to ProClean last year and couldn't be happier. Better service at a lower cost. Their communication is excellent and the cleaning is consistently great.",
+        "author": "Robert Chen",
+        "title": "Store Manager, Retail Chain"
+      }
+    ]
+  },
+  "team": {
+    "title": "Management Team",
+    "subtitle": "Professional facility services",
+    "members": [
+      {
+        "name": "James Martinez",
+        "title": "Operations Manager",
+        "bio": "15+ years in commercial cleaning management. Oversees all cleaning crews, quality control, and client relationships. Committed to exceeding expectations.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "James Martinez",
+        "credentials": ["ISSA Certified", "15+ Years Experience", "Fully Insured & Bonded"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Our Process",
+    "subtitle": "Professional service, every time",
+    "steps": [
+      {"title": "Site Walk-Through", "description": "We visit your facility to understand your needs"},
+      {"title": "Custom Proposal", "description": "Detailed quote based on your specific requirements"},
+      {"title": "Scheduled Service", "description": "Trained crew arrives on schedule with all equipment"},
+      {"title": "Quality Assurance", "description": "Regular inspections and open communication"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "16+", "label": "Years Serving Businesses"},
+      {"number": "150+", "label": "Commercial Clients"},
+      {"number": "50+", "label": "Trained Staff"},
+      {"number": "$5M", "label": "Liability Coverage"}
+    ]
+  },
+  "contact": {
+    "title": "Request a Quote",
+    "subtitle": "Free consultation and estimate",
+    "phone": "(555) 777-2233",
+    "email": "services@proclean.biz",
+    "address": "Serving Metro Chicago, IL and suburbs"
+  },
+  "footer": {
+    "text": "🏢 ProClean Commercial Services • Trusted Since 2008",
+    "awards": [
+      "ISSA Certified",
+      "Top Commercial Cleaner 2023",
+      "Insured & Bonded"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "services@proclean.biz",
+    "productCta": "Request Quote",
+    "productCtaHref": "tel:+15557772233",
+    "productNote": "Submit your facility details and we'll provide a detailed quote within 24 hours."
+  },
+  "productsTitle": "Commercial Cleaning Services",
+  "productsSubtitle": "Professional facility maintenance"
+}
+

@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connect Stripe - SiteSprintz</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .connect-container {
+      max-width: 600px;
+      width: 100%;
+      background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .connect-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .connect-logo {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 16px;
+      background: linear-gradient(135deg, #06b6d4, #3b82f6);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+    }
+
+    .connect-header h1 {
+      font-size: 28px;
+      margin: 0 0 8px 0;
+      background: linear-gradient(135deg, #06b6d4, #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .connect-header p {
+      color: #94a3b8;
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .connect-status {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(6, 182, 212, 0.2);
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .status-row:last-child {
+      border-bottom: none;
+    }
+
+    .status-label {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    .status-value {
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .status-badge.active {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+    }
+
+    .status-badge.pending {
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
+    }
+
+    .status-badge.disconnected {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+
+    .connect-benefits {
+      background: rgba(6, 182, 212, 0.1);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .connect-benefits h3 {
+      margin: 0 0 16px 0;
+      font-size: 18px;
+      color: #06b6d4;
+    }
+
+    .benefit-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .benefit-list li {
+      padding: 8px 0;
+      color: #cbd5e1;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+    }
+
+    .benefit-list li:before {
+      content: "✓";
+      color: #22c55e;
+      font-weight: bold;
+      margin-right: 12px;
+      font-size: 18px;
+    }
+
+    .connect-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #06b6d4, #3b82f6);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(6, 182, 212, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: #cbd5e1;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.3);
+    }
+
+    .alert {
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .alert.show {
+      display: block;
+    }
+
+    .alert-success {
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .alert-error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .alert-warning {
+      background: rgba(251, 191, 36, 0.2);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      color: #fbbf24;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .back-link {
+      text-align: center;
+      margin-top: 24px;
+    }
+
+    .back-link a {
+      color: #06b6d4;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .back-link a:hover {
+      text-decoration: underline;
+    }
+
+    .upgrade-notice {
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .upgrade-notice h3 {
+      margin: 0 0 8px 0;
+      color: #fbbf24;
+      font-size: 18px;
+    }
+
+    .upgrade-notice p {
+      margin: 0 0 16px 0;
+      color: #cbd5e1;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="connect-container">
+    <div class="connect-header">
+      <div class="connect-logo">💳</div>
+      <h1>Connect Your Stripe Account</h1>
+      <p>Start accepting payments from your customers</p>
+    </div>
+
+    <div id="alertContainer"></div>
+
+    <!-- Upgrade Notice (shown if not Pro/Premium) -->
+    <div id="upgradeNotice" class="upgrade-notice" style="display: none;">
+      <h3>⚡ Pro or Premium Required</h3>
+      <p>Payment processing requires a Pro or Premium subscription</p>
+      <a href="/index.html#pricing" class="btn btn-primary">Upgrade Now</a>
+    </div>
+
+    <!-- Connect Status -->
+    <div id="connectStatus" class="connect-status" style="display: none;">
+      <div class="status-row">
+        <span class="status-label">Status</span>
+        <span class="status-badge" id="statusBadge">Checking...</span>
+      </div>
+      <div class="status-row" id="accountIdRow" style="display: none;">
+        <span class="status-label">Account ID</span>
+        <span class="status-value" id="accountId">-</span>
+      </div>
+      <div class="status-row" id="emailRow" style="display: none;">
+        <span class="status-label">Email</span>
+        <span class="status-value" id="accountEmail">-</span>
+      </div>
+      <div class="status-row" id="businessNameRow" style="display: none;">
+        <span class="status-label">Business Name</span>
+        <span class="status-value" id="businessName">-</span>
+      </div>
+    </div>
+
+    <!-- Benefits -->
+    <div id="benefitsSection" class="connect-benefits">
+      <h3>What you'll get:</h3>
+      <ul class="benefit-list">
+        <li>Accept credit card payments directly on your site</li>
+        <li>Funds deposited directly to your bank account</li>
+        <li>Full control over pricing and products</li>
+        <li>Real-time payment notifications</li>
+        <li>Secure PCI-compliant processing</li>
+        <li>Platform fee: Only 1% per transaction</li>
+      </ul>
+    </div>
+
+    <!-- Actions -->
+    <div class="connect-actions">
+      <button id="connectBtn" class="btn btn-primary" style="display: none;">
+        <span id="connectBtnText">Connect with Stripe</span>
+        <span id="connectBtnLoading" class="loading" style="display: none;"></span>
+      </button>
+      
+      <button id="refreshBtn" class="btn btn-secondary" style="display: none;">
+        <span id="refreshBtnText">Continue Onboarding</span>
+        <span id="refreshBtnLoading" class="loading" style="display: none;"></span>
+      </button>
+      
+      <button id="dashboardBtn" class="btn btn-secondary" style="display: none;">
+        View Dashboard
+      </button>
+      
+      <button id="disconnectBtn" class="btn btn-danger" style="display: none;">
+        Disconnect Account
+      </button>
+    </div>
+
+    <div class="back-link">
+      <a href="/dashboard.html">← Back to Dashboard</a>
+    </div>
+  </div>
+
+  <script>
+    // Check authentication
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
+    }
+
+    let connectData = null;
+    let isProOrPremium = false;
+
+    // Check URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('connect') === 'success') {
+      showAlert('success', '✓ Stripe Connect setup successful! Checking status...');
+    } else if (urlParams.get('connect') === 'refresh') {
+      showAlert('warning', 'Please complete your Stripe onboarding to accept payments.');
+    }
+
+    // Initialize
+    async function init() {
+      try {
+        // Check subscription status first
+        const subResponse = await fetch('/api/subscription/status', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (subResponse.ok) {
+          const subData = await subResponse.json();
+          const plan = (subData.plan || '').toLowerCase();
+          isProOrPremium = plan === 'pro' || plan === 'premium';
+          
+          if (!isProOrPremium) {
+            document.getElementById('upgradeNotice').style.display = 'block';
+            document.getElementById('benefitsSection').style.display = 'none';
+            return;
+          }
+        }
+
+        // Check Connect status
+        await checkConnectStatus();
+        
+      } catch (error) {
+        console.error('Init error:', error);
+        showAlert('error', 'Failed to load Connect status: ' + error.message);
+      }
+    }
+
+    async function checkConnectStatus() {
+      try {
+        const response = await fetch('/api/connect/status', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to check status');
+        }
+
+        connectData = await response.json();
+        updateUI();
+
+      } catch (error) {
+        console.error('Status check error:', error);
+        showAlert('error', 'Failed to check Connect status: ' + error.message);
+        
+        // Show connect button as fallback
+        document.getElementById('connectBtn').style.display = 'flex';
+      }
+    }
+
+    function updateUI() {
+      const statusSection = document.getElementById('connectStatus');
+      const statusBadge = document.getElementById('statusBadge');
+      const connectBtn = document.getElementById('connectBtn');
+      const refreshBtn = document.getElementById('refreshBtn');
+      const dashboardBtn = document.getElementById('dashboardBtn');
+      const disconnectBtn = document.getElementById('disconnectBtn');
+      const benefitsSection = document.getElementById('benefitsSection');
+
+      statusSection.style.display = 'block';
+
+      if (connectData.connected) {
+        // Connected and active
+        statusBadge.textContent = 'Active';
+        statusBadge.className = 'status-badge active';
+        
+        // Show account details
+        document.getElementById('accountIdRow').style.display = 'flex';
+        document.getElementById('accountId').textContent = connectData.accountId;
+        
+        if (connectData.email) {
+          document.getElementById('emailRow').style.display = 'flex';
+          document.getElementById('accountEmail').textContent = connectData.email;
+        }
+        
+        if (connectData.businessProfile?.name) {
+          document.getElementById('businessNameRow').style.display = 'flex';
+          document.getElementById('businessName').textContent = connectData.businessProfile.name;
+        }
+
+        dashboardBtn.style.display = 'flex';
+        disconnectBtn.style.display = 'flex';
+        benefitsSection.style.display = 'none';
+        
+        showAlert('success', '✓ Your Stripe account is connected and ready to accept payments!');
+
+      } else if (connectData.accountId) {
+        // Account created but onboarding incomplete
+        statusBadge.textContent = 'Onboarding Incomplete';
+        statusBadge.className = 'status-badge pending';
+        
+        document.getElementById('accountIdRow').style.display = 'flex';
+        document.getElementById('accountId').textContent = connectData.accountId;
+
+        refreshBtn.style.display = 'flex';
+        
+        showAlert('warning', '⚠ Please complete your Stripe onboarding to start accepting payments.');
+
+      } else {
+        // Not connected
+        statusBadge.textContent = 'Not Connected';
+        statusBadge.className = 'status-badge disconnected';
+        
+        connectBtn.style.display = 'flex';
+      }
+    }
+
+    // Connect button handler
+    document.getElementById('connectBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('connectBtn');
+      const btnText = document.getElementById('connectBtnText');
+      const btnLoading = document.getElementById('connectBtnLoading');
+      
+      try {
+        btn.disabled = true;
+        btnText.style.display = 'none';
+        btnLoading.style.display = 'inline-block';
+
+        const response = await fetch('/api/connect/onboard', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to start onboarding');
+        }
+
+        const data = await response.json();
+        
+        // Redirect to Stripe onboarding
+        window.location.href = data.url;
+
+      } catch (error) {
+        console.error('Connect error:', error);
+        showAlert('error', error.message);
+        btn.disabled = false;
+        btnText.style.display = 'inline';
+        btnLoading.style.display = 'none';
+      }
+    });
+
+    // Refresh button handler
+    document.getElementById('refreshBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('refreshBtn');
+      const btnText = document.getElementById('refreshBtnText');
+      const btnLoading = document.getElementById('refreshBtnLoading');
+      
+      try {
+        btn.disabled = true;
+        btnText.style.display = 'none';
+        btnLoading.style.display = 'inline-block';
+
+        const response = await fetch('/api/connect/refresh', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to refresh link');
+        }
+
+        const data = await response.json();
+        window.location.href = data.url;
+
+      } catch (error) {
+        console.error('Refresh error:', error);
+        showAlert('error', error.message);
+        btn.disabled = false;
+        btnText.style.display = 'inline';
+        btnLoading.style.display = 'none';
+      }
+    });
+
+    // Dashboard button handler
+    document.getElementById('dashboardBtn').addEventListener('click', () => {
+      window.location.href = '/dashboard.html';
+    });
+
+    // Disconnect button handler
+    document.getElementById('disconnectBtn').addEventListener('click', async () => {
+      if (!confirm('Are you sure you want to disconnect your Stripe account? You will no longer be able to accept payments.')) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/connect/disconnect', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to disconnect');
+        }
+
+        showAlert('success', 'Account disconnected successfully');
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+
+      } catch (error) {
+        console.error('Disconnect error:', error);
+        showAlert('error', error.message);
+      }
+    });
+
+    function showAlert(type, message) {
+      const container = document.getElementById('alertContainer');
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type} show`;
+      alert.textContent = message;
+      container.innerHTML = '';
+      container.appendChild(alert);
+    }
+
+    // Initialize on load
+    init();
+  </script>
+</body>
+</html>
+
+

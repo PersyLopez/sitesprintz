@@ -1,0 +1,1800 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SiteSprintz - Create Your Business Website in Minutes</title>
+  <meta name="description" content="Create a professional website for your small business in minutes. Choose a template, customize it free, and launch when ready." />
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="SiteSprintz - Create Your Business Website in Minutes" />
+  <meta property="og:description" content="Create a professional website for your small business in minutes. Choose a template, customize it free, and launch when ready." />
+  <meta property="og:image" content="/assets/og-image.jpg" />
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="SiteSprintz - Create Your Business Website in Minutes" />
+  <meta name="twitter:description" content="Create a professional website for your small business in minutes. Choose a template, customize it free, and launch when ready." />
+  <meta name="twitter:image" content="/assets/og-image.jpg" />
+
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="premium.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        /* Modern Dark Theme with Imagery */
+        --primary-gradient: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        --secondary-gradient: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+        --dark-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        --warm-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+
+        /* Solid Colors */
+        --primary-color: #06b6d4;
+        --primary-dark: #0891b2;
+        --primary-light: #22d3ee;
+
+        /* Dark Theme Colors */
+        --bg-dark: #0f172a;
+        --bg-darker: #020617;
+        --bg-card: #1e293b;
+        --bg-elevated: #334155;
+
+        /* Text Colors for Dark Theme */
+        --text-light: #f8fafc;
+        --text-medium: #cbd5e1;
+        --text-muted: #94a3b8;
+        --border-dark: #334155;
+
+        /* Shadow System - Dark with cyan glow */
+        --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+        --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.6);
+        --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.7);
+        --shadow-glow: 0 0 40px rgba(6, 182, 212, 0.4);
+        --shadow-glow-sm: 0 0 20px rgba(6, 182, 212, 0.3);
+      }
+      
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        color: var(--text-light);
+        background: var(--bg-dark);
+        background-image:
+          radial-gradient(at 20% 30%, rgba(6, 182, 212, 0.15) 0px, transparent 50%),
+          radial-gradient(at 80% 70%, rgba(20, 184, 166, 0.15) 0px, transparent 50%),
+          url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        min-height: 100vh;
+      }
+      
+      @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+      }
+      
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+      
+      @keyframes slideInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      .landing-hero {
+        background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e293b 100%);
+        background-image:
+          linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
+          url('data:image/svg+xml,<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="rgba(6,182,212,0.2)"/></pattern></defs><rect width="200" height="200" fill="url(%23dots)"/></svg>');
+        color: var(--text-light);
+        padding: 100px 20px 120px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        border-bottom: 1px solid rgba(6, 182, 212, 0.2);
+      }
+      
+      .landing-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 50%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, transparent 70%);
+        animation: float 8s ease-in-out infinite;
+        pointer-events: none;
+      }
+      
+      .landing-hero::after {
+        content: '';
+        position: absolute;
+        bottom: -50%;
+        left: -10%;
+        width: 50%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(6, 182, 212, 0.1) 0%, transparent 70%);
+        animation: float 10s ease-in-out infinite reverse;
+        pointer-events: none;
+      }
+      
+      .hero-content {
+        max-width: 800px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+      }
+      
+      .landing-hero h1 {
+        font-size: clamp(2.5rem, 5vw + 1rem, 4rem);
+        margin: 0 0 24px 0;
+        font-weight: 800;
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+        text-shadow: 0 2px 20px rgba(0,0,0,0.2);
+      }
+      
+      .landing-hero p {
+        font-size: 1.25rem;
+        margin: 0 0 40px 0;
+        opacity: 0.95;
+        line-height: 1.6;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        font-weight: 400;
+      }
+      
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(6, 182, 212, 0.2);
+        backdrop-filter: blur(20px);
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 24px;
+        border: 1px solid rgba(255,255,255,0.3);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        animation: slideInUp 0.6s ease 0.2s backwards;
+      }
+      
+      .cta-buttons {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        flex-wrap: wrap;
+        animation: slideInUp 0.6s ease 0.4s backwards;
+      }
+      
+      .btn-primary-large {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        padding: 16px 40px;
+        border: none;
+        border-radius: 14px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .btn-primary-large::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(95, 158, 160, 0.25), transparent);
+        transition: left 0.5s;
+      }
+      
+      .btn-primary-large:hover::before {
+        left: 100%;
+      }
+      
+      .btn-primary-large:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 0 30px rgba(6, 182, 212, 0.5), 0 15px 50px rgba(0,0,0,0.5);
+      }
+      
+      .btn-primary-large:active {
+        transform: translateY(-1px);
+      }
+      
+      .btn-secondary-large {
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+        color: white;
+        padding: 16px 40px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 14px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      
+      .btn-secondary-large:hover {
+        background: rgba(255,255,255,0.2);
+        border-color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      }
+      
+      .btn-secondary-large:active {
+        transform: translateY(-1px);
+      }
+      
+      .btn-text-link {
+        color: #2563eb;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+      }
+      
+      .btn-text-link:hover {
+        color: #1d4ed8;
+      }
+      
+      .compact-section {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 80px 20px;
+      }
+      
+      .section-header-compact {
+        text-align: center;
+        margin-bottom: 56px;
+      }
+      
+      .section-header-compact h2 {
+        font-size: 2.5rem;
+        margin: 0 0 16px 0;
+        color: var(--text-light);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      
+      .section-header-compact p {
+        color: var(--text-muted);
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 400;
+      }
+      
+      .steps-compact {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 32px;
+      }
+      
+      .step-compact {
+        text-align: center;
+        padding: 40px 32px;
+        background: white;
+        border: 2px solid var(--border-light);
+        border-radius: 24px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .step-compact::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: var(--primary-gradient);
+        transform: scaleX(0);
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      
+      .step-compact:hover::before {
+        transform: scaleX(1);
+      }
+      
+      .step-compact:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-xl);
+        border-color: transparent;
+      }
+      
+      .step-icon {
+        font-size: 3.5rem;
+        display: block;
+        margin-bottom: 20px;
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      
+      .step-compact:hover .step-icon {
+        transform: scale(1.1) rotate(-5deg);
+      }
+      
+      .step-compact h3 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin: 0 0 12px 0;
+        color: var(--text-dark);
+      }
+      
+      .step-compact p {
+        color: var(--text-medium);
+        font-size: 1rem;
+        margin: 0;
+        line-height: 1.6;
+      }
+      
+      .social-proof-compact {
+        background: #f8fafc;
+        padding: 40px 0;
+      }
+      
+      .testimonials-compact {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+      }
+      
+      .testimonial-compact {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid rgba(0,0,0,0.08);
+        transition: all 0.2s;
+      }
+      
+      .testimonial-compact:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(37,99,235,0.08);
+      }
+      
+      .testimonial-compact p {
+        color: #1e293b;
+        font-size: 0.95rem;
+        margin: 0 0 12px 0;
+        line-height: 1.5;
+      }
+      
+      .testimonial-compact cite {
+        color: #64748b;
+        font-size: 0.85rem;
+        font-style: normal;
+      }
+      
+      .templates-highlight {
+        background: var(--bg-darker);
+        background-image: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="hexagons" width="50" height="43.4" patternUnits="userSpaceOnUse" patternTransform="scale(2)"><path d="M25 0 L50 14.43 L50 28.87 L25 43.3 L0 28.87 L0 14.43 Z" fill="none" stroke="rgba(6,182,212,0.05)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23hexagons)"/></svg>');
+        border-top: 1px solid var(--border-dark);
+        border-bottom: 1px solid var(--border-dark);
+      }
+      
+      .quick-templates {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 24px;
+      }
+      
+      .quick-template-card {
+        background: var(--bg-card);
+        background-image: linear-gradient(135deg, rgba(6, 182, 212, 0.05) 0%, transparent 100%);
+        border: 1px solid var(--border-dark);
+        border-radius: 20px;
+        padding: 32px 24px;
+        text-align: center;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .quick-template-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--primary-gradient);
+        opacity: 0;
+        transition: opacity 0.4s;
+        z-index: 0;
+      }
+      
+      .quick-template-card:hover::before {
+        opacity: 0.05;
+      }
+      
+      .quick-template-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 0 20px rgba(6, 182, 212, 0.3), var(--shadow-xl);
+        border-color: var(--primary-color);
+      }
+      
+      .template-emoji {
+        font-size: 3.5rem;
+        display: block;
+        margin-bottom: 16px;
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        z-index: 1;
+      }
+      
+      .quick-template-card:hover .template-emoji {
+        transform: scale(1.2) rotate(-10deg);
+      }
+      
+      .quick-template-card h3 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin: 0 0 8px 0;
+        color: var(--text-light);
+        position: relative;
+        z-index: 1;
+      }
+      
+      .quick-template-card p {
+        font-size: 0.95rem;
+        color: var(--text-muted);
+        margin: 0;
+        position: relative;
+        z-index: 1;
+      }
+      
+      .cta-footer {
+        background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+        background-image:
+          linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, transparent 100%),
+          url('data:image/svg+xml,<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="circuit" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="2" fill="rgba(6,182,212,0.3)"/><circle cx="90" cy="90" r="2" fill="rgba(6,182,212,0.3)"/><line x1="10" y1="10" x2="90" y2="90" stroke="rgba(6,182,212,0.1)" stroke-width="1"/></pattern></defs><rect width="200" height="200" fill="url(%23circuit)"/></svg>');
+        border-top: 1px solid rgba(6, 182, 212, 0.3);
+        padding: 80px 20px;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .cta-footer::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 60%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, transparent 60%);
+        pointer-events: none;
+      }
+      
+      .cta-box {
+        text-align: center;
+        color: white;
+        max-width: 700px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+      }
+      
+      .cta-box h2 {
+        font-size: 2.8rem;
+        margin: 0 0 16px 0;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+      
+      .cta-box p {
+        font-size: 1.25rem;
+        margin: 0 0 32px 0;
+        opacity: 0.95;
+        line-height: 1.6;
+      }
+      
+      .site-footer-compact {
+        background: var(--bg-darker);
+        color: var(--text-muted);
+        border-top: 1px solid var(--border-dark);
+        padding: 48px 20px;
+        text-align: center;
+      }
+      
+      .site-footer-compact p {
+        margin: 0 0 20px 0;
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--text-muted);
+      }
+      
+      .footer-links {
+        display: flex;
+        gap: 32px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      
+      .footer-links a {
+        color: white;
+        text-decoration: none;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: all 0.3s;
+        position: relative;
+      }
+      
+      .footer-links a::after {
+        content: '';
+        position: absolute;
+        bottom: -4px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: var(--accent-gradient);
+        transition: width 0.3s;
+      }
+      
+      .footer-links a:hover::after {
+        width: 100%;
+      }
+      
+      .footer-links a:hover {
+        color: #fff;
+      }
+      
+      /* Hero Showcase Carousel */
+      .hero-showcase {
+        max-width: 1000px;
+        margin: 60px auto 0;
+        position: relative;
+        animation: slideInUp 0.6s ease 0.6s backwards;
+      }
+      
+      .showcase-container {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 10;
+        border-radius: 24px;
+        overflow: hidden;
+      }
+      
+      .showcase-slide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transform: translateX(30px) scale(0.95);
+        transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: none;
+      }
+      
+      .showcase-slide.active {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+        pointer-events: auto;
+      }
+      
+      .showcase-browser {
+        background: var(--bg-card);
+        border: 1px solid var(--border-dark);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 30px rgba(6, 182, 212, 0.2);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .browser-bar {
+        background: linear-gradient(180deg, rgba(15, 27, 42, 0.95) 0%, rgba(15, 27, 42, 0.85) 100%);
+        border-bottom: 1px solid var(--border-dark);
+        padding: 14px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      
+      .browser-dots {
+        display: flex;
+        gap: 8px;
+      }
+      
+      .browser-dots i {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: block;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+      }
+      
+      .browser-dots i:nth-child(1) { background: #ff5f56; }
+      .browser-dots i:nth-child(2) { background: #ffbd2e; }
+      .browser-dots i:nth-child(3) { background: #27c93f; }
+      
+      .browser-url {
+        background: var(--bg-darker);
+        border: 1px solid var(--border-dark);
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        flex: 1;
+        text-align: left;
+        font-weight: 500;
+      }
+      
+      .showcase-browser iframe {
+        width: 100%;
+        flex: 1;
+        border: none;
+        background: white;
+        pointer-events: none;
+      }
+      
+      .showcase-label {
+        position: absolute;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(30, 41, 59, 0.95);
+        border: 1px solid var(--border-dark);
+        backdrop-filter: blur(20px);
+        padding: 14px 32px;
+        border-radius: 60px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 20px rgba(6, 182, 212, 0.2);
+      }
+      
+      .showcase-label strong {
+        color: var(--text-light);
+        font-size: 1.1rem;
+        font-weight: 700;
+      }
+      
+      .showcase-label span {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-top: 2px;
+        font-weight: 500;
+      }
+      
+      .showcase-dots {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 32px;
+      }
+      
+      .showcase-dots .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: rgba(6, 182, 212, 0.3);
+        border: 2px solid rgba(6, 182, 212, 0.5);
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 0;
+      }
+      
+      .showcase-dots .dot:hover {
+        background: rgba(6, 182, 212, 0.6);
+        transform: scale(1.3);
+        border-color: var(--primary-color);
+      }
+      
+      .showcase-dots .dot.active {
+        background: var(--primary-color);
+        width: 32px;
+        border-radius: 6px;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
+      }
+      
+      /* Pro Stats Sections */
+      .pro-section {
+        background: var(--bg-card);
+        border: 1px solid var(--border-dark);
+        border-radius: 16px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .pro-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--primary-gradient);
+        opacity: 0;
+        transition: opacity 0.4s;
+        z-index: 0;
+      }
+      
+      .pro-section:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 0 30px rgba(6, 182, 212, 0.3), var(--shadow-xl);
+        border-color: var(--primary-color);
+      }
+      
+      .pro-section:hover::before {
+        opacity: 0.05;
+      }
+      
+      .pro-section > * {
+        position: relative;
+        z-index: 1;
+      }
+      
+      /* Mobile responsive */
+      @media (max-width: 768px) {
+        .landing-hero {
+          padding: 60px 20px 80px;
+        }
+        
+        .landing-hero h1 {
+          font-size: 2.2rem;
+        }
+        
+        .landing-hero p {
+          font-size: 1.1rem;
+        }
+        
+        .cta-buttons {
+          flex-direction: column;
+          gap: 12px;
+        }
+        
+        .btn-primary-large,
+        .btn-secondary-large {
+          width: 100%;
+          justify-content: center;
+        }
+        
+        .hero-showcase {
+          margin-top: 48px;
+        }
+        
+        .showcase-container {
+          aspect-ratio: 4 / 5;
+        }
+        
+        .browser-bar {
+          padding: 10px 12px;
+        }
+        
+        .browser-url {
+          font-size: 0.75rem;
+          padding: 6px 12px;
+        }
+        
+        .showcase-label {
+          bottom: 16px;
+          padding: 10px 20px;
+        }
+        
+        .showcase-label strong {
+          font-size: 0.95rem;
+        }
+        
+        .showcase-label span {
+          font-size: 0.8rem;
+        }
+        
+        .compact-section {
+          padding: 60px 20px;
+        }
+        
+        .section-header-compact h2 {
+          font-size: 2rem;
+        }
+        
+        .section-header-compact p {
+          font-size: 1.05rem;
+        }
+        
+        .steps-compact {
+          grid-template-columns: 1fr;
+          gap: 24px;
+        }
+        
+        .quick-templates {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 16px;
+        }
+        
+        .quick-template-card {
+          padding: 24px 16px;
+        }
+        
+        .cta-footer {
+          padding: 60px 20px;
+        }
+        
+        .cta-box h2 {
+          font-size: 2rem;
+        }
+        
+        .cta-box p {
+          font-size: 1.1rem;
+        }
+      }
+      
+      @media (max-width: 480px) {
+        .landing-hero h1 {
+          font-size: 1.8rem;
+        }
+        
+        .landing-hero p {
+          font-size: 1rem;
+        }
+        
+        .section-header-compact h2 {
+          font-size: 1.75rem;
+        }
+        
+        .quick-templates {
+          grid-template-columns: 1fr;
+        }
+        
+        .footer-links {
+          flex-direction: column;
+          gap: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation Header -->
+    <header style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1);">
+      <div style="max-width: 1200px; margin: 0 auto; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center;">
+        <a href="/" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text-light); font-weight: 700; font-size: 1.25rem;">
+          <span style="font-size: 1.5rem;">🚀</span>
+          <span>SiteSprintz</span>
+        </a>
+        <nav style="display: flex; align-items: center; gap: 32px;">
+          <a href="#about" style="color: var(--text-medium); text-decoration: none; font-weight: 500; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-medium)'">About</a>
+          <a href="#templates" style="color: var(--text-medium); text-decoration: none; font-weight: 500; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-medium)'">Templates</a>
+          <a href="#pricing" style="color: var(--text-medium); text-decoration: none; font-weight: 500; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-medium)'">Pricing</a>
+          <a href="/login.html" style="color: var(--text-medium); text-decoration: none; font-weight: 500; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-medium)'">Login</a>
+          <a href="/setup.html" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(6,182,212,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">Start Free</a>
+        </nav>
+      </div>
+    </header>
+    
+    <!-- Full-Width Hero: Template Showcase -->
+    <div class="landing-hero" style="padding: 80px 0 0 0; min-height: 100vh; display: flex; flex-direction: column; justify-content: center;">
+      <div class="hero-content" style="padding: 40px 20px 60px;">
+        <span class="hero-badge">🚀 Professional websites in minutes</span>
+        <h1 style="max-width: 900px; margin-left: auto; margin-right: auto;">Choose Your Template. Customize It Free. Launch When Ready.</h1>
+        <p style="max-width: 700px; margin-left: auto; margin-right: auto;">Industry-specific designs with real research. No code, no credit card required to start.</p>
+        <div class="cta-buttons">
+          <a href="#templates" class="btn-primary-large" onclick="event.preventDefault(); document.getElementById('templates').scrollIntoView({behavior: 'smooth'});">Browse Templates</a>
+          <a href="/setup.html" class="btn-secondary-large">Start Building Now</a>
+        </div>
+      </div>
+      
+      <!-- Full-Width Template Showcase Carousel -->
+      <div class="hero-showcase" style="max-width: 100%; margin: 0; padding: 0 20px 80px;">
+        <div class="showcase-container" style="max-width: 1400px; margin: 0 auto; aspect-ratio: 16 / 9;">
+          <!-- Restaurant Template -->
+          <div class="showcase-slide active" data-site="restaurant">
+            <div class="showcase-browser">
+              <div class="browser-bar">
+                <span class="browser-dots">
+                  <i></i><i></i><i></i>
+                </span>
+                <span class="browser-url">🍽️ sitesprintz.com/bella-vista</span>
+              </div>
+              <iframe src="/sites/bella-vista-mhea2466/" loading="lazy"></iframe>
+            </div>
+            <div class="showcase-label">
+              <strong>🍽️ Restaurant Template</strong>
+              <span>Fine dining • Casual • Fast casual layouts</span>
+            </div>
+          </div>
+          
+          <!-- Salon Template -->
+          <div class="showcase-slide" data-site="salon">
+            <div class="showcase-browser">
+              <div class="browser-bar">
+                <span class="browser-dots">
+                  <i></i><i></i><i></i>
+                </span>
+                <span class="browser-url">💇 sitesprintz.com/glow-studio</span>
+              </div>
+              <iframe src="/sites/glow-studio-mheg8mxo/" loading="lazy"></iframe>
+            </div>
+            <div class="showcase-label">
+              <strong>💇 Salon & Spa Template</strong>
+              <span>Luxury spa • Modern studio • Neighborhood salon</span>
+            </div>
+          </div>
+          
+          <!-- Consultant Template -->
+          <div class="showcase-slide" data-site="consultant">
+            <div class="showcase-browser">
+              <div class="browser-bar">
+                <span class="browser-dots">
+                  <i></i><i></i><i></i>
+                </span>
+                <span class="browser-url">💼 sitesprintz.com/strategic-solutions</span>
+              </div>
+              <iframe src="/sites/strategic-solutions-mheg7o4n/" loading="lazy"></iframe>
+            </div>
+            <div class="showcase-label">
+              <strong>💼 Consultant Template</strong>
+              <span>Strategic • Creative • Executive coaching</span>
+            </div>
+          </div>
+          
+          <!-- Gym Template -->
+          <div class="showcase-slide" data-site="gym">
+            <div class="showcase-browser">
+              <div class="browser-bar">
+                <span class="browser-dots">
+                  <i></i><i></i><i></i>
+                </span>
+                <span class="browser-url">💪 sitesprintz.com/powerhouse-gym</span>
+              </div>
+              <iframe src="/sites/powerhouse-gym-mheg7ywu/" loading="lazy"></iframe>
+            </div>
+            <div class="showcase-label">
+              <strong>💪 Fitness Template</strong>
+              <span>CrossFit • Boutique • Personal training studios</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="showcase-dots">
+          <button class="dot active" data-index="0" aria-label="Restaurant template"></button>
+          <button class="dot" data-index="1" aria-label="Salon template"></button>
+          <button class="dot" data-index="2" aria-label="Consultant template"></button>
+          <button class="dot" data-index="3" aria-label="Gym template"></button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Trust Indicators Bar -->
+    <div style="background: rgba(6, 182, 212, 0.05); border-top: 1px solid rgba(6, 182, 212, 0.2); border-bottom: 1px solid rgba(6, 182, 212, 0.2); padding: 24px 20px;">
+      <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; text-align: center;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--text-medium);">
+          <span style="font-size: 1.5rem;">✓</span>
+          <span style="font-weight: 600;">No credit card required</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--text-medium);">
+          <span style="font-size: 1.5rem;">✓</span>
+          <span style="font-weight: 600;">Free to customize</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--text-medium);">
+          <span style="font-size: 1.5rem;">✓</span>
+          <span style="font-weight: 600;">Launch in 10 minutes</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--text-medium);">
+          <span style="font-size: 1.5rem;">✓</span>
+          <span style="font-weight: 600;">Cancel anytime</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN FOCUS: All Templates -->
+    <div id="templates" class="compact-section" style="padding: 100px 20px; background: var(--bg-darker);">
+      <div class="section-header-compact">
+        <h2>Choose Your Template</h2>
+        <p>All templates, organized by features and pricing tier</p>
+      </div>
+      
+      <div style="max-width: 1200px; margin: 0 auto;">
+        
+        <!-- STARTER TIER -->
+        <div style="margin-bottom: 64px;">
+          <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px; padding-bottom: 16px; border-bottom: 2px solid rgba(6, 182, 212, 0.3);">
+            <span style="font-size: 2.5rem;">🎯</span>
+            <div>
+              <h3 style="font-size: 1.8rem; margin: 0 0 8px 0; color: var(--text-light);">Starter Templates</h3>
+              <p style="margin: 0; color: var(--text-muted); font-size: 1rem;">Display-only templates • Email order submission • 3 layout variations each • $10/month</p>
+            </div>
+            <div style="margin-left: auto; background: rgba(34, 197, 94, 0.15); color: #22c55e; padding: 8px 20px; border-radius: 20px; font-weight: 700; font-size: 0.9rem;">13 Templates</div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 32px;">
+            
+            <a href="/setup.html?template=restaurant" class="quick-template-card" style="text-decoration: none; color: inherit;">
+              <span class="template-emoji">🍽️</span>
+              <h3>Restaurant</h3>
+              <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Menu showcase, online ordering, reservations</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Fine Dining</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Casual</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Fast Casual</span>
+              </div>
+            </a>
+            
+            <a href="/setup.html?template=salon" class="quick-template-card" style="text-decoration: none; color: inherit;">
+              <span class="template-emoji">💇</span>
+              <h3>Salon & Spa</h3>
+              <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, booking, team showcase</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Luxury Spa</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Modern</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Neighborhood</span>
+              </div>
+            </a>
+            
+            <a href="/setup.html?template=gym" class="quick-template-card" style="text-decoration: none; color: inherit;">
+              <span class="template-emoji">💪</span>
+              <h3>Fitness & Gym</h3>
+              <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Classes, memberships, trainer profiles</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">CrossFit</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Boutique</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Personal Training</span>
+              </div>
+            </a>
+            
+            <a href="/setup.html?template=consultant" class="quick-template-card" style="text-decoration: none; color: inherit;">
+              <span class="template-emoji">💼</span>
+              <h3>Consultant</h3>
+              <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, case studies, contact forms</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Strategy</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Creative</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Executive</span>
+              </div>
+            </a>
+            
+            <a href="/setup.html?template=freelancer" class="quick-template-card" style="text-decoration: none; color: inherit;">
+              <span class="template-emoji">🎨</span>
+              <h3>Freelancer</h3>
+              <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Portfolio, services, contact</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Designer</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Developer</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Writer</span>
+              </div>
+            </a>
+            
+            <a href="/setup.html?template=tech-repair" class="quick-template-card" style="text-decoration: none; color: inherit;">
+              <span class="template-emoji">🔧</span>
+              <h3>Tech Repair</h3>
+              <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, pricing, booking</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Phone Repair</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Computer</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Gaming</span>
+              </div>
+            </a>
+            
+            <a href="/setup.html?template=cleaning" class="quick-template-card" style="text-decoration: none; color: inherit;">
+              <span class="template-emoji">🧹</span>
+              <h3>Cleaning Services</h3>
+              <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, pricing, booking</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Residential</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Commercial</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Eco-Friendly</span>
+              </div>
+            </a>
+            
+            <a href="/setup.html?template=pet-care" class="quick-template-card" style="text-decoration: none; color: inherit;">
+              <span class="template-emoji">🐾</span>
+              <h3>Pet Care</h3>
+              <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, gallery, booking</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Dog Grooming</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Full Service</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Mobile</span>
+              </div>
+            </a>
+            
+            <a href="/setup.html?template=electrician" class="quick-template-card" style="text-decoration: none; color: inherit;">
+              <span class="template-emoji">⚡</span>
+              <h3>Electrician</h3>
+              <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, emergency contact, booking</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Residential</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Commercial</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Industrial</span>
+              </div>
+            </a>
+            
+            <a href="/setup.html?template=auto-repair" class="quick-template-card" style="text-decoration: none; color: inherit;">
+              <span class="template-emoji">🚗</span>
+              <h3>Auto Repair</h3>
+              <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, booking, pricing</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Quick Service</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Full Service</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Performance</span>
+              </div>
+            </a>
+            
+            <a href="/setup.html?template=plumbing" class="quick-template-card" style="text-decoration: none; color: inherit;">
+              <span class="template-emoji">🔧</span>
+              <h3>Plumbing</h3>
+              <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, emergency contact, booking</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Emergency</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Residential</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Commercial</span>
+              </div>
+            </a>
+            
+            <a href="/setup.html?template=product-showcase" class="quick-template-card" style="text-decoration: none; color: inherit;">
+              <span class="template-emoji">🛍️</span>
+              <h3>Product Showcase</h3>
+              <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Catalog, order forms, gallery</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Fashion</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Home Goods</span>
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Artisan</span>
+              </div>
+            </a>
+            
+            <a href="/setup.html?template=starter" class="quick-template-card" style="text-decoration: none; color: inherit;">
+              <span class="template-emoji">📄</span>
+              <h3>Basic Starter</h3>
+              <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Simple one-page template</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+                <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Any Business</span>
+              </div>
+            </a>
+            
+          </div>
+        </div>
+        
+        <!-- PRO TIER -->
+        <div style="margin-bottom: 64px;">
+          <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px; padding-bottom: 16px; border-bottom: 2px solid rgba(139, 92, 246, 0.3);">
+            <span style="font-size: 2.5rem;">⭐</span>
+            <div>
+              <h3 style="font-size: 1.8rem; margin: 0 0 8px 0; color: var(--text-light);">Pro Templates</h3>
+              <p style="margin: 0; color: var(--text-muted); font-size: 1rem;">Enhanced features • Booking widgets • Tabbed content • Interactive galleries • $25/month</p>
+            </div>
+            <div style="margin-left: auto; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 8px 20px; border-radius: 20px; font-weight: 700; font-size: 0.9rem;">2 Templates</div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 32px;">
+            
+            <a href="/setup.html?template=restaurant-pro" style="text-decoration: none; color: inherit; position: relative;">
+              <div class="quick-template-card" style="border: 2px solid rgba(139, 92, 246, 0.3); padding: 40px 32px;">
+                <div style="position: absolute; top: 16px; right: 16px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; padding: 6px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);">⭐ PRO</div>
+                <span class="template-emoji" style="font-size: 3rem;">🍽️</span>
+                <h3 style="font-size: 1.4rem;">Restaurant Pro</h3>
+                <p class="muted" style="margin: 12px 0; font-size: 0.95rem; line-height: 1.6;">Tabbed menu • Calendly booking • Chef's specials • Private dining • Filterable gallery</p>
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(139, 92, 246, 0.2);">
+                  <div style="font-weight: 600; font-size: 0.85rem; color: var(--primary-color); margin-bottom: 8px;">✨ Advanced Features:</div>
+                  <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.6;">
+                    • Tabbed navigation (Appetizers/Entrées/Desserts)<br>
+                    • Integrated Calendly widget<br>
+                    • Private dining showcases<br>
+                    • Filterable photo gallery
+                  </div>
+                </div>
+              </div>
+            </a>
+            
+            <a href="/setup.html?template=gym-pro" style="text-decoration: none; color: inherit; position: relative;">
+              <div class="quick-template-card" style="border: 2px solid rgba(139, 92, 246, 0.3); padding: 40px 32px;">
+                <div style="position: absolute; top: 16px; right: 16px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; padding: 6px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);">⭐ PRO</div>
+                <span class="template-emoji" style="font-size: 3rem;">💪</span>
+                <h3 style="font-size: 1.4rem;">Fitness Pro</h3>
+                <p class="muted" style="margin: 12px 0; font-size: 0.95rem; line-height: 1.6;">Recurring subscriptions • Before/after gallery • Inline booking • Member testimonials</p>
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(139, 92, 246, 0.2);">
+                  <div style="font-weight: 600; font-size: 0.85rem; color: var(--primary-color); margin-bottom: 8px;">✨ Advanced Features:</div>
+                  <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.6;">
+                    • Subscription display (monthly/yearly)<br>
+                    • Transformation gallery<br>
+                    • Inline booking widget<br>
+                    • Member testimonials with ratings
+                  </div>
+                </div>
+              </div>
+            </a>
+            
+          </div>
+        </div>
+        
+        <!-- CHECKOUT TIER -->
+        <div style="margin-bottom: 64px;">
+          <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px; padding-bottom: 16px; border-bottom: 2px solid rgba(37, 99, 235, 0.3);">
+            <span style="font-size: 2.5rem;">💳</span>
+            <div>
+              <h3 style="font-size: 1.8rem; margin: 0 0 8px 0; color: var(--text-light);">Checkout Templates</h3>
+              <p style="margin: 0; color: var(--text-muted); font-size: 1rem;">Everything in Pro • Stripe payments • Shopping cart • Order management • Coming Soon</p>
+            </div>
+            <div style="margin-left: auto; background: rgba(37, 99, 235, 0.15); color: #2563eb; padding: 8px 20px; border-radius: 20px; font-weight: 700; font-size: 0.9rem;">Coming Soon</div>
+          </div>
+          
+          <div style="text-align: center; padding: 48px; background: rgba(37, 99, 235, 0.05); border: 2px dashed rgba(37, 99, 235, 0.3); border-radius: 16px;">
+            <div style="font-size: 3rem; margin-bottom: 16px;">🚧</div>
+            <h4 style="font-size: 1.4rem; margin: 0 0 12px 0; color: var(--text-light);">Checkout Templates In Development</h4>
+            <p style="color: var(--text-muted); margin: 0; max-width: 600px; margin-left: auto; margin-right: auto;">
+              Full e-commerce templates with Stripe integration, shopping cart, and order management are coming soon. Join the waitlist to get early access!
+            </p>
+          </div>
+        </div>
+        
+        <!-- PREMIUM TIER -->
+        <div>
+          <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px; padding-bottom: 16px; border-bottom: 2px solid rgba(251, 146, 60, 0.3);">
+            <span style="font-size: 2.5rem;">🌟</span>
+            <div>
+              <h3 style="font-size: 1.8rem; margin: 0 0 8px 0; color: var(--text-light);">Premium Templates</h3>
+              <p style="margin: 0; color: var(--text-muted); font-size: 1rem;">Everything in Checkout • Multi-page layouts • Advanced integrations • Coming Soon</p>
+            </div>
+            <div style="margin-left: auto; background: rgba(251, 146, 60, 0.15); color: #fb923c; padding: 8px 20px; border-radius: 20px; font-weight: 700; font-size: 0.9rem;">Coming Soon</div>
+          </div>
+          
+          <div style="text-align: center; padding: 48px; background: rgba(251, 146, 60, 0.05); border: 2px dashed rgba(251, 146, 60, 0.3); border-radius: 16px;">
+            <div style="font-size: 3rem; margin-bottom: 16px;">🎯</div>
+            <h4 style="font-size: 1.4rem; margin: 0 0 12px 0; color: var(--text-light);">Premium Suite In Development</h4>
+            <p style="color: var(--text-muted); margin: 0; max-width: 600px; margin-left: auto; margin-right: auto;">
+              Enterprise-grade templates with multi-page layouts, CRM integrations, advanced analytics, and priority support. Influence the roadmap by joining our Premium waitlist!
+            </p>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+
+    <!-- How It Works -->
+      <div class="section-header-compact">
+        <h2>Choose Your Template</h2>
+        <p>Industry-specific designs built with real research. 36 templates, 3 layouts each.</p>
+      </div>
+      
+      <div style="max-width: 1200px; margin: 0 auto;">
+        <!-- Template Categories Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 32px;">
+          
+          <!-- Restaurant -->
+          <a href="/setup.html?template=restaurant" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">🍽️</span>
+            <h3>Restaurant</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Menu showcase, online ordering, reservations</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Fine Dining</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Casual</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Fast Casual</span>
+            </div>
+          </a>
+          
+          <!-- Salon & Spa -->
+          <a href="/setup.html?template=salon" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">💇</span>
+            <h3>Salon & Spa</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, booking, team showcase</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Luxury Spa</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Modern</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Neighborhood</span>
+            </div>
+          </a>
+          
+          <!-- Fitness -->
+          <a href="/setup.html?template=gym" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">💪</span>
+            <h3>Fitness & Gym</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Classes, memberships, trainer profiles</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">CrossFit</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Boutique</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Personal Training</span>
+            </div>
+          </a>
+          
+          <!-- Consultant -->
+          <a href="/setup.html?template=consultant" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">💼</span>
+            <h3>Consultant</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, case studies, contact forms</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Strategy</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Creative</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Executive</span>
+            </div>
+          </a>
+          
+          <!-- Freelancer -->
+          <a href="/setup.html?template=freelancer" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">🎨</span>
+            <h3>Freelancer</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Portfolio, services, contact</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Designer</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Developer</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Writer</span>
+            </div>
+          </a>
+          
+          <!-- Tech Repair -->
+          <a href="/setup.html?template=tech-repair" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">🔧</span>
+            <h3>Tech Repair</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, pricing, booking</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Phone Repair</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Computer</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Gaming</span>
+            </div>
+          </a>
+          
+          <!-- Cleaning Services -->
+          <a href="/setup.html?template=cleaning" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">🧹</span>
+            <h3>Cleaning Services</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, pricing, booking</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Residential</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Commercial</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Eco-Friendly</span>
+            </div>
+          </a>
+          
+          <!-- Pet Care -->
+          <a href="/setup.html?template=pet-care" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">🐾</span>
+            <h3>Pet Care</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, gallery, booking</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Dog Grooming</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Full Service</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Mobile</span>
+            </div>
+          </a>
+          
+          <!-- Electrician -->
+          <a href="/setup.html?template=electrician" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">⚡</span>
+            <h3>Electrician</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, emergency contact, booking</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Residential</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Commercial</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Industrial</span>
+            </div>
+          </a>
+          
+          <!-- Auto Repair -->
+          <a href="/setup.html?template=auto-repair" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">🚗</span>
+            <h3>Auto Repair</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, booking, pricing</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Quick Service</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Full Service</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Performance</span>
+            </div>
+          </a>
+          
+          <!-- Plumbing -->
+          <a href="/setup.html?template=plumbing" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">🔧</span>
+            <h3>Plumbing</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Services, emergency contact, booking</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Emergency</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Residential</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Commercial</span>
+            </div>
+          </a>
+          
+          <!-- Product Showcase -->
+          <a href="/setup.html?template=product-showcase" class="quick-template-card" style="text-decoration: none; color: inherit;">
+            <span class="template-emoji">🛍️</span>
+            <h3>Product Showcase</h3>
+            <p class="muted" style="margin: 12px 0; font-size: 0.9rem; line-height: 1.5;">Catalog, order forms, gallery</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px;">
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Fashion</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Home Goods</span>
+              <span style="background: rgba(6, 182, 212, 0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Artisan</span>
+            </div>
+          </a>
+          
+        </div>
+        
+        <!-- Pro Template Highlight -->
+        <div style="margin-top: 64px; padding: 48px; background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(20, 184, 166, 0.15) 100%); border: 2px solid var(--primary-color); border-radius: 24px; text-align: center; position: relative; overflow: hidden;">
+          <div style="position: absolute; top: 16px; right: 16px; background: var(--primary-gradient); color: white; padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; box-shadow: var(--shadow-glow-sm);">⭐ PRO</div>
+          <h3 style="font-size: 2rem; margin: 0 0 16px 0; color: var(--text-light);">✨ Restaurant Pro Template</h3>
+          <p style="color: var(--text-medium); margin: 0 0 32px 0; font-size: 1.1rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+            Advanced features: Tabbed menu navigation, integrated booking widget (Calendly), chef's specials, private dining showcases, filterable gallery, and owner dashboard.
+          </p>
+          <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+            <a href="/sites/grandtable-demo/" target="_blank" style="background: var(--primary-gradient); color: white; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: 600; box-shadow: var(--shadow-md); transition: all 0.3s;">View Live Demo</a>
+            <a href="/setup.html?template=restaurant-pro" style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); color: white; padding: 14px 32px; border: 2px solid var(--primary-color); border-radius: 10px; text-decoration: none; font-weight: 600; transition: all 0.3s;">Use This Template</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- How It Works -->
+    <div class="compact-section">
+      <div class="section-header-compact">
+        <h2>How It Works</h2>
+        <p>Three steps to your online presence</p>
+      </div>
+      <div class="steps-compact">
+        <div class="step-compact">
+          <span class="step-icon">📝</span>
+          <h3>Pick Template</h3>
+          <p>Choose from 36+ industry-specific designs</p>
+        </div>
+        <div class="step-compact">
+          <span class="step-icon">✏️</span>
+          <h3>Customize Free</h3>
+          <p>Edit everything—no payment until you publish</p>
+        </div>
+        <div class="step-compact">
+          <span class="step-icon">🚀</span>
+          <h3>Go Live</h3>
+          <p>Launch instantly and start growing</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div id="faq" class="compact-section" style="background: var(--bg-dark);">
+      <div class="section-header-compact">
+        <h2>Frequently Asked Questions</h2>
+        <p>Everything you need to know</p>
+      </div>
+      
+      <div style="max-width: 800px; margin: 0 auto;">
+        <div class="faq-item" style="background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: 12px; margin-bottom: 16px; overflow: hidden;">
+          <button class="faq-question" onclick="toggleFaq(this)" style="width: 100%; text-align: left; background: transparent; border: none; padding: 24px; color: var(--text-light); font-size: 1.1rem; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            Do I need to know code?
+            <span class="faq-icon" style="transition: transform 0.3s; font-size: 1.5rem;">+</span>
+          </button>
+          <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
+            <div style="padding: 0 24px 24px; color: var(--text-medium); line-height: 1.7;">
+              Absolutely not! SiteSprintz is built for people with zero coding experience. Just pick a template, fill in your business information, and you're done. Everything is visual and intuitive.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item" style="background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: 12px; margin-bottom: 16px; overflow: hidden;">
+          <button class="faq-question" onclick="toggleFaq(this)" style="width: 100%; text-align: left; background: transparent; border: none; padding: 24px; color: var(--text-light); font-size: 1.1rem; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            Can I try before I pay?
+            <span class="faq-icon" style="transition: transform 0.3s; font-size: 1.5rem;">+</span>
+          </button>
+          <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
+            <div style="padding: 0 24px 24px; color: var(--text-medium); line-height: 1.7;">
+              Yes! You can customize your entire site for free. You only pay when you're ready to publish. No credit card required to get started.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item" style="background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: 12px; margin-bottom: 16px; overflow: hidden;">
+          <button class="faq-question" onclick="toggleFaq(this)" style="width: 100%; text-align: left; background: transparent; border: none; padding: 24px; color: var(--text-light); font-size: 1.1rem; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            What's the difference between Starter and Pro?
+            <span class="faq-icon" style="transition: transform 0.3s; font-size: 1.5rem;">+</span>
+          </button>
+          <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
+            <div style="padding: 0 24px 24px; color: var(--text-medium); line-height: 1.7;">
+              <strong>Starter ($10/mo):</strong> Perfect for displaying your business info, services, and prices. Customers can contact you via forms.<br><br>
+              <strong>Pro ($25/mo):</strong> Everything in Starter, plus online payments via Stripe, shopping cart, order management, and sales analytics.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item" style="background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: 12px; margin-bottom: 16px; overflow: hidden;">
+          <button class="faq-question" onclick="toggleFaq(this)" style="width: 100%; text-align: left; background: transparent; border: none; padding: 24px; color: var(--text-light); font-size: 1.1rem; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            Can I use my own domain?
+            <span class="faq-icon" style="transition: transform 0.3s; font-size: 1.5rem;">+</span>
+          </button>
+          <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
+            <div style="padding: 0 24px 24px; color: var(--text-medium); line-height: 1.7;">
+              Custom domain support is coming soon! For now, your site gets a free subdomain (e.g., yourbusiness.sitesprintz.com). We'll notify you when custom domains are available.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item" style="background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: 12px; margin-bottom: 16px; overflow: hidden;">
+          <button class="faq-question" onclick="toggleFaq(this)" style="width: 100%; text-align: left; background: transparent; border: none; padding: 24px; color: var(--text-light); font-size: 1.1rem; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            How do I accept payments online?
+            <span class="faq-icon" style="transition: transform 0.3s; font-size: 1.5rem;">+</span>
+          </button>
+          <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
+            <div style="padding: 0 24px 24px; color: var(--text-medium); line-height: 1.7;">
+              Upgrade to the Pro plan ($25/mo) to enable online payments. We integrate with Stripe, so you can accept credit cards, debit cards, and digital wallets securely.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item" style="background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: 12px; margin-bottom: 16px; overflow: hidden;">
+          <button class="faq-question" onclick="toggleFaq(this)" style="width: 100%; text-align: left; background: transparent; border: none; padding: 24px; color: var(--text-light); font-size: 1.1rem; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            Can I export my site?
+            <span class="faq-icon" style="transition: transform 0.3s; font-size: 1.5rem;">+</span>
+          </button>
+          <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
+            <div style="padding: 0 24px 24px; color: var(--text-medium); line-height: 1.7;">
+              Export functionality is planned for a future update. Your site data belongs to you, and we're building tools to give you full control over it.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item" style="background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: 12px; margin-bottom: 16px; overflow: hidden;">
+          <button class="faq-question" onclick="toggleFaq(this)" style="width: 100%; text-align: left; background: transparent; border: none; padding: 24px; color: var(--text-light); font-size: 1.1rem; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            Is there a setup fee?
+            <span class="faq-icon" style="transition: transform 0.3s; font-size: 1.5rem;">+</span>
+          </button>
+          <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
+            <div style="padding: 0 24px 24px; color: var(--text-medium); line-height: 1.7;">
+              No setup fees, no hidden costs. You only pay the monthly subscription when you're ready to publish. Cancel anytime.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item" style="background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: 12px; margin-bottom: 16px; overflow: hidden;">
+          <button class="faq-question" onclick="toggleFaq(this)" style="width: 100%; text-align: left; background: transparent; border: none; padding: 24px; color: var(--text-light); font-size: 1.1rem; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            What if I need help?
+            <span class="faq-icon" style="transition: transform 0.3s; font-size: 1.5rem;">+</span>
+          </button>
+          <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
+            <div style="padding: 0 24px 24px; color: var(--text-medium); line-height: 1.7;">
+              We're here to help! Reach out via email or use the support chat in your dashboard. We typically respond within 24 hours.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pricing Section -->
+    <div id="pricing" class="compact-section" style="padding: 80px 24px; background: var(--bg-darker);">
+      <div class="section-header-compact">
+        <h2>Simple, Transparent Pricing</h2>
+        <p>Start free, upgrade when ready. No hidden fees.</p>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; max-width: 1000px; margin: 40px auto 0;">
+        <!-- Free Trial -->
+        <div style="background: var(--bg-card); border-radius: 16px; padding: 32px; border: 2px solid var(--border-dark); transition: transform 0.3s, box-shadow 0.3s;">
+          <div style="font-size: 2rem; margin-bottom: 12px;">🎁</div>
+          <h3 style="font-size: 1.5rem; margin: 0 0 8px 0; color: var(--text-light);">Free Trial</h3>
+          <div style="font-size: 2.5rem; font-weight: 700; margin: 16px 0; color: var(--primary-color);">$0</div>
+          <p style="color: var(--text-muted); margin: 0 0 24px 0;">7 days to test everything</p>
+          <ul style="list-style: none; padding: 0; margin: 0 0 24px 0; color: var(--text-medium);">
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>1 published website</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>All templates</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Contact forms</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Free subdomain</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>⏰</span><span>Expires after 7 days</span></li>
+          </ul>
+          <button onclick="handlePlanSelection('free', this)" style="display: block; width: 100%; text-align: center; background: rgba(6, 182, 212, 0.2); color: var(--primary-color); padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600; border: 1px solid rgba(6, 182, 212, 0.3); cursor: pointer;">Start Free Trial</button>
+        </div>
+        
+        <!-- Starter -->
+        <div style="background: var(--bg-card); border-radius: 16px; padding: 32px; border: 2px solid var(--primary-color); box-shadow: var(--shadow-glow-sm); transform: scale(1.05); position: relative;">
+          <div style="position: absolute; top: -12px; right: 24px; background: var(--primary-gradient); color: white; padding: 4px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">MOST POPULAR</div>
+          <div style="font-size: 2rem; margin-bottom: 12px;">💼</div>
+          <h3 style="font-size: 1.5rem; margin: 0 0 8px 0; color: var(--text-light);">Starter</h3>
+          <div style="font-size: 2.5rem; font-weight: 700; margin: 16px 0; color: var(--primary-color);">$10<span style="font-size: 1rem; font-weight: 400; color: var(--text-muted);">/mo</span></div>
+          <p style="color: var(--text-muted); margin: 0 0 24px 0;">Display-only website</p>
+          <ul style="list-style: none; padding: 0; margin: 0 0 24px 0; color: var(--text-medium);">
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>1 published website</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Display pricing & services</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Contact forms</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Unlimited edits</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>❌</span><span style="text-decoration: line-through; opacity: 0.6;">Online payments</span></li>
+          </ul>
+          <button onclick="handlePlanSelection('starter', this)" style="display: block; width: 100%; text-align: center; background: var(--primary-gradient); color: white; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600; box-shadow: 0 4px 12px rgba(6,182,212,0.3); border: none; cursor: pointer;">Subscribe Now</button>
+        </div>
+        
+        <!-- Pro -->
+        <div style="background: var(--bg-card); border-radius: 16px; padding: 32px; border: 2px solid var(--border-dark); transition: transform 0.3s, box-shadow 0.3s;">
+          <div style="font-size: 2rem; margin-bottom: 12px;">💳</div>
+          <h3 style="font-size: 1.5rem; margin: 0 0 8px 0; color: var(--text-light);">Pro</h3>
+          <div style="font-size: 2.5rem; font-weight: 700; margin: 16px 0; color: var(--primary-color);">$25<span style="font-size: 1rem; font-weight: 400; color: var(--text-muted);">/mo</span></div>
+          <p style="color: var(--text-muted); margin: 0 0 24px 0;">Accept online payments</p>
+          <ul style="list-style: none; padding: 0; margin: 0 0 24px 0; color: var(--text-medium);">
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Everything in Starter</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Online payments (Stripe)</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Shopping cart</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Order management</span></li>
+            <li style="padding: 8px 0; display: flex; align-items: start; gap: 8px;"><span>✅</span><span>Sales analytics</span></li>
+          </ul>
+          <button onclick="handlePlanSelection('pro', this)" style="display: block; width: 100%; text-align: center; background: rgba(6, 182, 212, 0.2); color: var(--primary-color); padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600; border: 1px solid rgba(6, 182, 212, 0.3); cursor: pointer;">Subscribe Now</button>
+        </div>
+      </div>
+      
+      <div style="text-align: center; margin-top: 48px; padding: 24px; background: rgba(6, 182, 212, 0.1); border-radius: 12px; max-width: 700px; margin-left: auto; margin-right: auto;">
+        <p style="color: var(--text-medium); margin: 0; line-height: 1.6;">
+          💡 <strong>Need multiple sites?</strong> Add additional sites for 50% off! ($5 for Starter, $12.50 for Pro)
+        </p>
+      </div>
+    </div>
+
+    <!-- CTA Footer -->
+    <div class="cta-footer">
+      <div class="compact-section">
+        <div class="cta-box">
+          <h2>Ready to Launch?</h2>
+          <p>Start building your professional website today—free, no credit card required.</p>
+          <a href="/setup.html" class="btn-primary-large">Start Building Free</a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="site-footer-compact">
+      <p>© 2025 SiteSprintz — Launch your business online in minutes.</p>
+      <nav class="footer-links">
+        <a href="/setup.html">Create Site</a>
+        <a href="#templates">Templates</a>
+        <a href="#pricing">Pricing</a>
+        <a href="/login.html">Login</a>
+        <a href="/dashboard.html">Dashboard</a>
+      </nav>
+    </footer>
+    
+    <script>
+      // Hero Showcase Carousel
+      (function() {
+        const slides = document.querySelectorAll('.showcase-slide');
+        const dots = document.querySelectorAll('.showcase-dots .dot');
+        let currentSlide = 0;
+        let autoPlayInterval;
+        
+        function showSlide(index) {
+          // Remove active class from all slides and dots
+          slides.forEach(slide => slide.classList.remove('active'));
+          dots.forEach(dot => dot.classList.remove('active'));
+          
+          // Add active class to current slide and dot
+          slides[index].classList.add('active');
+          dots[index].classList.add('active');
+          currentSlide = index;
+        }
+        
+        function nextSlide() {
+          const next = (currentSlide + 1) % slides.length;
+          showSlide(next);
+        }
+        
+        function startAutoPlay() {
+          autoPlayInterval = setInterval(nextSlide, 5000); // Change slide every 5 seconds
+        }
+        
+        function stopAutoPlay() {
+          clearInterval(autoPlayInterval);
+        }
+        
+        // Dot click handlers
+        dots.forEach((dot, index) => {
+          dot.addEventListener('click', () => {
+            showSlide(index);
+            stopAutoPlay();
+            startAutoPlay(); // Restart auto-play after manual interaction
+          });
+        });
+        
+        // Start auto-play on page load
+        startAutoPlay();
+        
+        // Pause on hover
+        const showcase = document.querySelector('.hero-showcase');
+        if (showcase) {
+          showcase.addEventListener('mouseenter', stopAutoPlay);
+          showcase.addEventListener('mouseleave', startAutoPlay);
+        }
+      })();
+      
+      // Payment handling
+      async function handlePlanSelection(plan, buttonElement) {
+        // If free trial, just redirect to setup
+        if (plan === 'free') {
+          window.location.href = '/setup.html';
+          return;
+        }
+        
+        // Check if user is logged in
+        const token = localStorage.getItem('authToken');
+        
+        if (!token) {
+          // Not logged in - redirect to register with plan parameter
+          window.location.href = `/register.html?plan=${plan}`;
+          return;
+        }
+        
+        // Logged in - redirect to checkout
+        try {
+          const button = buttonElement;
+          const originalText = button.textContent;
+          button.disabled = true;
+          button.textContent = 'Loading...';
+          
+          const response = await fetch('/api/payments/create-subscription-checkout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ plan })
+          });
+          
+          const data = await response.json();
+          
+          if (response.ok && data.url) {
+            // Redirect to Stripe Checkout
+            window.location.href = data.url;
+          } else {
+            alert(data.error || 'Failed to start checkout. Please try again.');
+            button.disabled = false;
+            button.textContent = originalText;
+          }
+        } catch (error) {
+          console.error('Checkout error:', error);
+          alert('Something went wrong. Please try again.');
+          buttonElement.disabled = false;
+          buttonElement.textContent = 'Subscribe Now';
+        }
+      }
+      
+      // FAQ Accordion
+      function toggleFaq(button) {
+        const faqItem = button.parentElement;
+        const answer = faqItem.querySelector('.faq-answer');
+        const icon = button.querySelector('.faq-icon');
+        const isOpen = answer.style.maxHeight && answer.style.maxHeight !== '0px';
+        
+        // Close all other FAQs
+        document.querySelectorAll('.faq-answer').forEach(item => {
+          item.style.maxHeight = '0';
+        });
+        document.querySelectorAll('.faq-icon').forEach(item => {
+          item.textContent = '+';
+          item.style.transform = 'rotate(0deg)';
+        });
+        
+        // Toggle current FAQ
+        if (!isOpen) {
+          answer.style.maxHeight = answer.scrollHeight + 'px';
+          icon.textContent = '−';
+          icon.style.transform = 'rotate(180deg)';
+        }
+      }
+    </script>
+  </body>
+</html>

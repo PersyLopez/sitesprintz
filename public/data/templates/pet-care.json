@@ -1,0 +1,357 @@
+{
+  "brand": {
+    "name": "PetCare Plus", 
+    "logo": "assets/logo.svg",
+    "tagline": "Loving Pet Care • Since 2015",
+    "phone": "(555) 345-6789",
+    "email": "care@petcareplus.com"
+  },
+  "themeVars": {
+    "color-primary": "#7c3aed", 
+    "color-accent": "#a855f7",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "About", "href": "#about"},
+    {"label": "Team", "href": "#team"},
+    {"label": "Reviews", "href": "#reviews"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "🐾 Professional Pet Care Services",
+    "title": "Your pets deserve the best care",
+    "subtitle": "Professional grooming, walking, and pet sitting services from certified, insured caregivers who love animals as much as you do. Serving loving pet parents since 2015.",
+    "cta": [
+      {"label": "📅 Book Service", "href": "#contact"},
+      {"label": "💰 View Pricing", "href": "#products", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=1200&q=80",
+    "imageAlt": "Happy dog being groomed by professional pet care specialist"
+  },
+  "stats": {
+    "items": [
+      {"number": "2000+", "label": "Pets Cared For"},
+      {"number": "8+", "label": "Years Experience"},
+      {"number": "4.9", "label": "Star Rating"},
+      {"number": "100%", "label": "Insured & Bonded"}
+    ]
+  },
+  "about": {
+    "title": "Our Story", 
+    "body": "Founded in 2015 by certified groomer Jennifer Martinez, PetCare Plus has become the trusted name for professional pet care in our community. Our team of certified, bonded, and insured pet care specialists treats every pet like family.",
+    "subtitle": "Why choose PetCare Plus",
+    "features": [
+      "🎓 Certified pet care professionals",
+      "🛡️ Fully insured and bonded",
+      "💕 Personalized care for each pet",
+      "📸 Photo updates during service",
+      "🏥 Pet first aid certified",
+      "⭐ 4.9 star rating"
+    ],
+    "owner": {
+      "name": "Jennifer Martinez",
+      "title": "Owner & Master Groomer",
+      "bio": "Certified by the National Dog Groomers Association with 15+ years of experience. Jennifer specializes in gentle handling and stress-free grooming for all breeds.",
+      "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
+      "imageAlt": "Jennifer Martinez, Owner"
+    }
+  },
+  "process": {
+    "title": "How It Works",
+    "subtitle": "Simple, safe, and stress-free pet care",
+    "steps": [
+      {"title": "Book Your Service", "description": "Choose grooming, walking, or sitting online or by phone"},
+      {"title": "Meet & Greet", "description": "We meet you and your pet to discuss needs and preferences"},
+      {"title": "Provide Loving Care", "description": "Professional service with regular photo updates"},
+      {"title": "Happy Pet, Happy You", "description": "Your pet returns clean, happy, and well-cared for"}
+    ]
+  },
+  "credentials": {
+    "title": "Safe, Certified, & Trusted",
+    "subtitle": "Your pet's safety and happiness is our priority",
+    "items": [
+      {"icon": "🛡️", "name": "Fully Insured", "description": "General liability coverage"},
+      {"icon": "✅", "name": "Background Checked", "description": "All staff thoroughly vetted"},
+      {"icon": "💼", "name": "Bonded", "description": "Your home & pets protected"},
+      {"icon": "🎓", "name": "NDGA Certified", "description": "Professional training"}
+    ]
+  },
+  "team": {
+    "title": "Meet Our Pet Care Team",
+    "subtitle": "Certified professionals who love what they do",
+    "members": [
+      {
+        "name": "Jennifer Martinez",
+        "title": "Owner & Master Groomer",
+        "bio": "15+ years grooming experience with specialization in anxious pets and senior animals. Gentle, patient, and passionate about animal welfare.",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
+        "imageAlt": "Jennifer Martinez",
+        "credentials": ["NDGA Certified", "Pet First Aid", "Fear Free Certified"]
+      },
+      {
+        "name": "Michael Chen",
+        "title": "Senior Pet Sitter",
+        "bio": "8+ years experience with dogs, cats, birds, and small animals. Specializes in medication administration and senior pet care.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "Michael Chen",
+        "credentials": ["Insured & Bonded", "Pet CPR Certified", "Medication Administration"]
+      }
+    ]
+  },
+  "products": [
+    {
+      "name": "Full Grooming Service",
+      "price": 65,
+      "description": "Complete grooming including bath, haircut, nail trim, ear cleaning, and brush out. Premium shampoo included.",
+      "image": "https://images.unsplash.com/photo-1525253086316-d0c936cf15d0?w=600&q=80",
+      "imageAlt": "Professional dog grooming",
+      "category": "Grooming",
+      "duration": "2-3 hours",
+      "includes": "Bath, cut, nails, ears, brush",
+      "popular": true
+    },
+    {
+      "name": "Bath & Brush",
+      "price": 40,
+      "description": "Refreshing bath with premium shampoo, thorough brush out, and nail trim",
+      "image": "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&q=80",
+      "imageAlt": "Dog bath service",
+      "category": "Grooming",
+      "duration": "1-1.5 hours",
+      "includes": "Bath, brush, nail trim"
+    },
+    {
+      "name": "Dog Walking (30 min)",
+      "price": 25,
+      "description": "Individual 30-minute walk with water break and treats. Perfect for daily exercise.",
+      "image": "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=600&q=80",
+      "imageAlt": "Dog walking service",
+      "category": "Walking",
+      "duration": "30 minutes",
+      "includes": "Water, treats, photo updates",
+      "popular": true
+    },
+    {
+      "name": "Dog Walking (60 min)",
+      "price": 40,
+      "description": "Extended 60-minute walk for high-energy dogs. Includes playtime and water break.",
+      "image": "https://images.unsplash.com/photo-1530281700549-e82e7bf110d6?w=600&q=80",
+      "imageAlt": "Extended dog walking",
+      "category": "Walking",
+      "duration": "60 minutes",
+      "includes": "Playtime, water, treats, photos"
+    },
+    {
+      "name": "Overnight Pet Sitting",
+      "price": 85,
+      "description": "24-hour in-home care with feeding, walking, playtime, and lots of love. Includes overnight stay.",
+      "image": "https://images.unsplash.com/photo-1544513217-93f018c2cd3e?w=600&q=80",
+      "imageAlt": "Pet sitting service",
+      "category": "Sitting",
+      "duration": "24 hours",
+      "includes": "Feeding, walks, play, updates",
+      "popular": true
+    },
+    {
+      "name": "Daily Pet Visits",
+      "price": 30,
+      "description": "30-minute home visit for feeding, playtime, and care. Perfect for cats and small pets.",
+      "image": "https://images.unsplash.com/photo-1548681528-6a5c45b66b42?w=600&q=80",
+      "imageAlt": "Pet visit service",
+      "category": "Sitting",
+      "duration": "30 minutes",
+      "includes": "Feeding, fresh water, play, litter"
+    },
+    {
+      "name": "Nail Trim Only",
+      "price": 20,
+      "description": "Quick nail trim service for dogs and cats. No appointment needed for existing clients.",
+      "image": "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=600&q=80",
+      "imageAlt": "Pet nail trimming",
+      "category": "Grooming",
+      "duration": "15 minutes",
+      "includes": "Nail trim and filing"
+    },
+    {
+      "name": "Cat Grooming",
+      "price": 55,
+      "description": "Gentle grooming for cats including bath, brush, nail trim, and mat removal if needed.",
+      "image": "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=600&q=80",
+      "imageAlt": "Cat grooming service",
+      "category": "Grooming",
+      "duration": "1.5-2 hours",
+      "includes": "Bath, brush, nails, mat removal"
+    }
+  ],
+  "testimonials": {
+    "title": "What Pet Parents Say",
+    "subtitle": "Real reviews from our satisfied clients",
+    "items": [
+      {
+        "text": "Jennifer is amazing with my anxious rescue dog! He actually gets excited when we pull up to PetCare Plus now. Her gentle approach made all the difference.",
+        "author": "Sarah Mitchell",
+        "location": "Dog Mom",
+        "rating": 5,
+        "date": "1 week ago",
+        "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
+        "imageAlt": "Sarah Mitchell"
+      },
+      {
+        "text": "Michael took care of our cat and two dogs while we were on vacation. Photo updates every day and our pets were so happy when we got home!",
+        "author": "Robert Johnson",
+        "location": "Multi-Pet Parent",
+        "rating": 5,
+        "date": "2 weeks ago",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "imageAlt": "Robert Johnson"
+      },
+      {
+        "text": "Best grooming service in town! My poodle always looks fantastic and the prices are very reasonable. Highly recommend!",
+        "author": "Amanda Rodriguez",
+        "location": "Poodle Parent",
+        "rating": 5,
+        "date": "3 days ago",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&q=80",
+        "imageAlt": "Amanda Rodriguez"
+      },
+      {
+        "text": "I trust PetCare Plus completely with my senior dog. They're gentle, patient, and really care about his comfort. Worth every penny!",
+        "author": "David Chen",
+        "location": "Senior Dog Dad",
+        "rating": 5,
+        "date": "5 days ago",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80",
+        "imageAlt": "David Chen"
+      }
+    ],
+    "stats": {
+      "averageRating": 4.9,
+      "totalReviews": 243,
+      "googleRating": 4.9,
+      "yelpRating": 4.8
+    }
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know about our services",
+    "items": [
+      {
+        "question": "Are you insured and bonded?",
+        "answer": "Yes! We carry full general liability insurance and all team members are bonded for your protection. We can provide proof of insurance upon request."
+      },
+      {
+        "question": "What pets do you care for?",
+        "answer": "We care for dogs, cats, birds, rabbits, guinea pigs, and most small animals. If you have an exotic pet, please call us to discuss their specific needs."
+      },
+      {
+        "question": "Can I meet the groomer/sitter before booking?",
+        "answer": "Absolutely! We require a meet-and-greet for all new clients. This helps us get to know your pet's personality and any special needs, and ensures you're comfortable with our team."
+      },
+      {
+        "question": "What if my pet has special needs or anxiety?",
+        "answer": "We're experienced with anxious pets, senior animals, and those with medical needs. We use gentle, fear-free techniques and can administer medications with proper instructions."
+      },
+      {
+        "question": "Do you offer photo updates?",
+        "answer": "Yes! We send photo updates during grooming appointments and multiple times per day for sitting services. You'll always know your pet is happy and safe."
+      },
+      {
+        "question": "What's your cancellation policy?",
+        "answer": "We require 24 hours notice for cancellations or rescheduling. Late cancellations may incur a 50% service fee."
+      },
+      {
+        "question": "Do you have a grooming facility or come to my home?",
+        "answer": "We have a professional grooming facility for all grooming services. For pet sitting, we come to your home so your pets can stay in their comfortable environment."
+      },
+      {
+        "question": "Are your groomers certified?",
+        "answer": "Yes! Our groomers are certified by the National Dog Groomers Association (NDGA) and all team members are Pet First Aid and CPR certified."
+      }
+    ]
+  },
+  "contact": {
+    "title": "Book Your Pet's Care", 
+    "subtitle": "Call, text, or book online today",
+    "phone": "(555) 345-6789",
+    "email": "care@petcareplus.com",
+    "address": "567 Pet Lane, Pet District, Springfield, IL 62701",
+    "coordinates": {
+      "lat": 39.7817,
+      "lng": -89.6501
+    },
+    "parking": "Free parking available • Easy drop-off • Covered waiting area",
+    "accessibility": "Wheelchair accessible • Ground floor facility • Accessible restrooms",
+    "hours": {
+      "title": "Service Hours",
+      "items": [
+        "Monday - Friday: 7:00 AM - 7:00 PM",
+        "Saturday: 8:00 AM - 6:00 PM",
+        "Sunday: 9:00 AM - 4:00 PM"
+      ],
+      "note": "Emergency pet sitting available outside hours"
+    },
+    "booking": {
+      "phone": "(555) 345-6789",
+      "online": "https://petcareplus.com/book",
+      "note": "Walk-ins welcome for nail trims! Appointments recommended for grooming."
+    }
+  },
+  "social": {
+    "facebook": "https://facebook.com/petcareplus",
+    "instagram": "https://instagram.com/petcareplus_official",
+    "googleMaps": "https://maps.google.com/petcareplus",
+    "yelp": "https://yelp.com/biz/petcareplus-springfield",
+    "tiktok": "https://tiktok.com/@petcareplus"
+  },
+  "events": {
+    "title": "Special Offers",
+    "subtitle": "Save on pet care services",
+    "items": [
+      {
+        "title": "New Client Special",
+        "description": "10% off your first grooming or sitting service",
+        "schedule": "Valid for new clients only",
+        "price": "10% discount"
+      },
+      {
+        "title": "Multi-Pet Discount",
+        "description": "Save 15% when booking services for 2+ pets",
+        "schedule": "Ongoing",
+        "price": "15% off"
+      },
+      {
+        "title": "Weekly Walking Package",
+        "description": "Book 5 walks, get the 6th free",
+        "schedule": "Available year-round",
+        "price": "Save $25-40"
+      }
+    ]
+  },
+  "footer": {
+    "text": "🐾 PetCare Plus • Loving Pet Care Since 2015",
+    "links": [
+      {"label": "Privacy Policy", "href": "#privacy"},
+      {"label": "Terms of Service", "href": "#terms"},
+      {"label": "Careers", "href": "#careers"},
+      {"label": "Pet Care Tips", "href": "#blog"}
+    ],
+    "awards": [
+      "Best Pet Care 2023",
+      "Customer Choice Award",
+      "Excellence in Animal Care"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "hello@pawsitivepetcare.com",
+    "productCta": "Book Service",
+    "productCtaHref": "tel:+15553456789",
+    "productNote": "Submit your service request and we'll contact you to schedule. First-time clients get 10% off!"
+  },
+  "productsTitle": "Our Services",
+  "productsSubtitle": "Professional pet care services for your furry family members"
+}

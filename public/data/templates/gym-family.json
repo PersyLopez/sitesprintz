@@ -1,0 +1,187 @@
+{
+  "brand": {
+    "name": "FitLife Family Fitness",
+    "logo": "assets/logo.svg",
+    "tagline": "Fitness for Everyone • Est. 2005",
+    "phone": "(555) 444-3300",
+    "email": "info@fitlifefamily.com"
+  },
+  "themeVars": {
+    "color-primary": "#3b82f6",
+    "color-accent": "#60a5fa",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Memberships", "href": "#products"},
+    {"label": "Programs", "href": "#about"},
+    {"label": "Trainers", "href": "#team"},
+    {"label": "Reviews", "href": "#testimonials"},
+    {"label": "Join", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "👨‍👩‍👧‍👦 Family Fitness Center",
+    "title": "Fitness for the whole family",
+    "subtitle": "From kids' programs to senior fitness, we offer something for everyone under one roof. State-of-the-art equipment, group classes, personal training, pool, and childcare. Get fit together at FitLife!",
+    "cta": [
+      {"label": "🎟️ Get Free Pass", "href": "#contact"},
+      {"label": "👨‍👩‍👧 Family Plans", "href": "#products", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80",
+    "imageAlt": "Modern family fitness center"
+  },
+  "about": {
+    "title": "Welcome to FitLife",
+    "subtitle": "Where families get healthy together",
+    "content": "For nearly 20 years, FitLife has been the premier family fitness destination. With 50,000 sq ft of space, we offer cardio and strength equipment, indoor pool, basketball court, group fitness studios, kids' zone, and so much more."
+  },
+  "products": [
+    {
+      "name": "Individual Adult",
+      "price": 49,
+      "description": "Full gym access, all group classes, pool, and sauna. Perfect for adults 18+.",
+      "category": "Adult",
+      "duration": "Monthly",
+      "popular": true
+    },
+    {
+      "name": "Family Plan (4 people)",
+      "price": 139,
+      "description": "Best value! Full access for up to 4 family members. Includes kids' programs and childcare.",
+      "category": "Family",
+      "duration": "Monthly",
+      "popular": true
+    },
+    {
+      "name": "Senior Membership (62+)",
+      "price": 39,
+      "description": "Special rate for seniors with access to all amenities plus senior-specific classes.",
+      "category": "Senior",
+      "duration": "Monthly"
+    },
+    {
+      "name": "Personal Training Package",
+      "price": 199,
+      "description": "Four 1-on-1 training sessions with certified personal trainers. Customized to your goals.",
+      "category": "Training",
+      "duration": "4 sessions",
+      "popular": true
+    },
+    {
+      "name": "Youth Sports Program",
+      "price": 65,
+      "description": "Basketball, swimming, and fitness classes for kids 6-16. Build skills and confidence.",
+      "category": "Youth",
+      "duration": "Monthly"
+    },
+    {
+      "name": "Day Pass",
+      "price": 15,
+      "description": "Try us out for a day. Full access to all facilities and classes.",
+      "category": "Day Pass",
+      "duration": "1 day"
+    }
+  ],
+  "services": {
+    "title": "What We Offer",
+    "subtitle": "Everything you need under one roof",
+    "items": [
+      {
+        "title": "🏋️ Fitness Equipment",
+        "description": "Cardio machines, free weights, resistance equipment, and functional training area"
+      },
+      {
+        "title": "🏊 Aquatics",
+        "description": "Indoor heated pool with lap lanes, water aerobics, and swim lessons"
+      },
+      {
+        "title": "👶 Kids' Zone",
+        "description": "Supervised childcare while you work out. Youth fitness programs available"
+      },
+      {
+        "title": "🧘 Group Classes",
+        "description": "100+ classes weekly including yoga, cycling, HIIT, dance, and more"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Member Stories",
+    "subtitle": "Families thriving together",
+    "items": [
+      {
+        "text": "My whole family has memberships and we love it! The kids take swim lessons while I do yoga. It's made fitness a family priority.",
+        "author": "Jennifer Taylor",
+        "title": "Mom of 3"
+      },
+      {
+        "text": "The senior fitness classes are perfect for my fitness level. The instructors are patient and the community is wonderful.",
+        "author": "Robert Wilson",
+        "title": "Senior Member"
+      },
+      {
+        "text": "Lost 40lbs working with a personal trainer here. The facility is always clean and the staff is incredibly supportive!",
+        "author": "David Martinez",
+        "title": "2-Year Member"
+      }
+    ]
+  },
+  "team": {
+    "title": "Our Team",
+    "subtitle": "Certified fitness professionals",
+    "members": [
+      {
+        "name": "Lisa Anderson",
+        "title": "Fitness Director",
+        "bio": "15+ years in fitness management. Certified personal trainer specializing in family fitness and creating inclusive programs for all ages and abilities.",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
+        "imageAlt": "Lisa Anderson",
+        "credentials": ["NASM-CPT", "ACE Health Coach", "Inclusive Fitness Trainer"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Join FitLife",
+    "subtitle": "Getting started is easy",
+    "steps": [
+      {"title": "Free Guest Pass", "description": "Come tour the facility and try us out for free"},
+      {"title": "Choose Your Plan", "description": "Individual, family, or senior membership options"},
+      {"title": "Get Oriented", "description": "Complimentary equipment orientation and facility tour"},
+      {"title": "Start Your Journey", "description": "Take classes, swim, lift, and achieve your goals"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "19", "label": "Years Serving Families"},
+      {"number": "50,000", "label": "Square Feet"},
+      {"number": "2,500+", "label": "Active Members"},
+      {"number": "100+", "label": "Weekly Classes"}
+    ]
+  },
+  "contact": {
+    "title": "Visit Us",
+    "subtitle": "Tour our facility",
+    "phone": "(555) 444-3300",
+    "email": "info@fitlifefamily.com",
+    "address": "890 Health Parkway, Oakwood, Columbus, OH 43201"
+  },
+  "footer": {
+    "text": "👨‍👩‍👧‍👦 FitLife Family Fitness • Serving Families Since 2005",
+    "awards": [
+      "Best Family Gym 2023",
+      "Community Fitness Award",
+      "Top Facility"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "info@fitlifefamily.com",
+    "productCta": "Get Free Pass",
+    "productCtaHref": "tel:+15554443300",
+    "productNote": "Submit your inquiry and we'll send you a free guest pass. Come see why families love FitLife!"
+  },
+  "productsTitle": "Membership Options",
+  "productsSubtitle": "Flexible plans for every family"
+}
+

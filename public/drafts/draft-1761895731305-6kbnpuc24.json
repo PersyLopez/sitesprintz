@@ -1,0 +1,38 @@
+{
+  "draftId": "draft-1761895731305-6kbnpuc24",
+  "templateId": "gym",
+  "businessData": {
+    "businessName": "FitLife Gym",
+    "heroTitle": "Achieve your fitness goals with expert guidance",
+    "heroSubtitle": "Join our community of dedicated athletes and fitness enthusiasts. With state-of-the-art equipment, expert trainers, and diverse classes, we'll help you reach your peak performance.",
+    "heroImage": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80",
+    "email": "info@fitlifegym.com",
+    "phone": "(555) 345-6789",
+    "address": "Start your fitness journey today",
+    "businessHours": "",
+    "websiteUrl": "",
+    "facebookUrl": "",
+    "instagramUrl": "",
+    "googleMapsUrl": "",
+    "services": [],
+    "templateSpecific": {
+      "cardio": false,
+      "weights": false,
+      "machines": false,
+      "classes": false,
+      "pool": false,
+      "sauna": false,
+      "trainer": false,
+      "parking": false,
+      "monthly": false,
+      "yearly": false,
+      "daypass": false,
+      "student": false,
+      "senior": false,
+      "family": false
+    }
+  },
+  "createdAt": "2025-10-31T07:28:51.305Z",
+  "expiresAt": "2025-11-07T07:28:51.305Z",
+  "status": "draft"
+}

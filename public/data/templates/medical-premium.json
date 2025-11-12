@@ -1,0 +1,363 @@
+{
+  "id": "medical-premium",
+  "name": "Medical & Wellness Premium",
+  "plan": "Premium",
+  "category": "Healthcare",
+  "meta": {
+    "businessName": "[Practice Name]",
+    "pageTitle": "[Practice Name] | Patient-Centered Care in [City]",
+    "metaDescription": "Board-certified providers offering comprehensive medical and wellness services for families throughout [City]. Accepting new patients.",
+    "logo": "assets/logo.svg",
+    "logoAlt": "[Practice Name] logo",
+    "primaryPhone": "+1-555-414-7788",
+    "primaryPhoneLabel": "Call Office: (555) 414-7788",
+    "mobileCallLabel": "Call the Office"
+  },
+  "styles": {
+    "primaryColor": "#0369a1",
+    "primaryColorDark": "#03507d",
+    "accentColor": "#059669",
+    "secondaryColor": "#f1f5f9",
+    "textColor": "#0f172a",
+    "mutedColor": "#475569",
+    "surfaceColor": "#ffffff",
+    "borderColor": "rgba(15,23,42,0.08)",
+    "backgroundColor": "#f8fafc",
+    "radius": "18px"
+  },
+  "navigation": [
+    { "label": "Services", "href": "#medical-services" },
+    { "label": "Providers", "href": "#team-showcase" },
+    { "label": "Insurance", "href": "#insurance-accepted" },
+    { "label": "Testimonials", "href": "#testimonials-medical" },
+    { "label": "New Patients", "href": "#patient-journey" },
+    { "label": "Contact", "href": "#cta-appointment" }
+  ],
+  "chat": {
+    "enabled": true,
+    "provider": "intercom",
+    "appId": "YOUR_INTERCOM_APP_ID_HERE",
+    "position": "bottom-right"
+  },
+  "serviceFilters": {
+    "enabled": true,
+    "containerId": "medical-services",
+    "filters": [
+      { "label": "All Services", "value": "all" },
+      { "label": "Primary Care", "value": "primary" },
+      { "label": "Women's Health", "value": "womens" },
+      { "label": "Physical Therapy", "value": "therapy" },
+      { "label": "Specialty Care", "value": "specialty" }
+    ]
+  },
+  "sections": [
+    {
+      "id": "healthcare-hero",
+      "type": "healthcare-hero",
+      "settings": {
+        "badge": "Accepting new patients",
+        "headline": "Compassionate care tailored to your whole health",
+        "subheadline": "From preventive wellness to specialty treatments, our board-certified providers deliver evidence-based care for every stage of life.",
+        "trustIndicators": ["Board Certified", "Insurance Accepted", "Evening Hours", "Same-Day Appointments"],
+        "primaryCta": { "label": "Book Appointment", "href": "#booking-advanced" },
+        "secondaryCta": { "label": "Call Office", "href": "tel:+15554147788" },
+        "image": "https://images.unsplash.com/photo-1527613426441-4da17471b66d?auto=format&fit=crop&w=900&q=80",
+        "imageAlt": "Medical provider greeting a patient",
+        "stats": [
+          { "value": "20+", "label": "Years serving [City]" },
+          { "value": "5,800", "label": "Patients cared for" },
+          { "value": "4.9/5", "label": "Average patient rating" }
+        ]
+      }
+    },
+    {
+      "id": "medical-services",
+      "type": "medical-services",
+      "settings": {
+        "heading": "Comprehensive services for every stage of care",
+        "subheading": "Our integrated practice brings primary, specialty, and wellness care together under one roof.",
+        "services": [
+          {
+            "icon": "PC",
+            "name": "Preventive Care",
+            "description": "Annual physicals, vaccinations, screenings, and health coaching to keep you feeling your best.",
+            "duration": "Typical visit 30-45 min",
+            "category": "primary",
+            "link": { "label": "See preventive services", "href": "#patient-journey" }
+          },
+          {
+            "icon": "WM",
+            "name": "Women's Health",
+            "description": "OB/GYN visits, prenatal care, fertility counseling, and hormone therapy guided by specialists.",
+            "duration": "Visit length varies",
+            "category": "womens",
+            "link": { "label": "Schedule consult", "href": "#booking-advanced" }
+          },
+          {
+            "icon": "PT",
+            "name": "Physical Therapy",
+            "description": "Personalized rehabilitation, mobility assessments, and injury prevention programs.",
+            "duration": "Initial evaluation 60 min",
+            "category": "therapy",
+            "link": { "label": "Request evaluation", "href": "#booking-advanced" }
+          },
+          {
+            "icon": "DERM",
+            "name": "Dermatology",
+            "description": "Skin cancer screenings, acne management, cosmetic dermatology, and chronic condition support.",
+            "duration": "Follow-up 20 min",
+            "category": "specialty",
+            "link": { "label": "Explore treatments", "href": "#medical-services" }
+          },
+          {
+            "icon": "IM",
+            "name": "Integrative Medicine",
+            "description": "Nutrition, stress reduction, IV therapy, and medically supervised wellness plans.",
+            "duration": "Consult 45 min",
+            "category": "specialty",
+            "link": { "label": "View wellness options", "href": "#insurance-accepted" }
+          },
+          {
+            "icon": "URG",
+            "name": "Same-Day & Telehealth",
+            "description": "Acute visits, virtual check-ins, e-prescribing, and after-hours triage by on-call providers.",
+            "duration": "Telehealth 20 min",
+            "category": "primary",
+            "link": { "label": "Request same-day visit", "href": "#booking-advanced" }
+          }
+        ],
+        "viewAll": { "label": "View all services", "href": "#medical-services" }
+      }
+    },
+    {
+      "id": "booking-advanced",
+      "type": "booking-advanced",
+      "settings": {
+        "heading": "Schedule your appointment",
+        "subheading": "Complete the form below and our care coordinators will confirm within one hour during business hours.",
+        "appointmentTypes": ["New Patient", "Follow-up", "Consultation", "Urgent Visit"],
+        "timeSlots": ["Morning", "Midday", "Afternoon", "Evening"],
+        "providers": [
+          { "label": "Any available provider", "value": "any" },
+          { "label": "Dr. Maria Chen, MD", "value": "chen" },
+          { "label": "Dr. Isaiah Roberts, DO", "value": "roberts" },
+          { "label": "Alex Patel, DPT", "value": "patel" }
+        ],
+        "submit": { "endpoint": "/api/appointment-request", "type": "medical-appointment", "label": "Submit Appointment Request" },
+        "successMessage": "Appointment request received! Our team will confirm within 1 hour."
+      }
+    },
+    {
+      "id": "team-showcase",
+      "type": "team-showcase",
+      "settings": {
+        "heading": "Meet your care team",
+        "subheading": "A collaborative group of physicians, specialists, and therapists focused on your long-term wellness.",
+        "providers": [
+          {
+            "name": "Dr. Maria Chen, MD",
+            "credentials": "Board Certified in Internal Medicine",
+            "specialty": "Primary Care & Lifestyle Medicine",
+            "education": ["Georgetown University School of Medicine", "Mayo Clinic Residency"],
+            "certifications": ["American Board of Internal Medicine", "Institute for Functional Medicine"],
+            "experience": "17 years of clinical experience",
+            "languages": ["English", "Spanish", "Mandarin"],
+            "specializations": ["Preventive Medicine", "Lifestyle Medicine", "Chronic Disease Management"],
+            "availability": "Monday, Wednesday, Friday 9am-5pm",
+            "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+            "statement": "I believe in partnering with patients to build sustainable habits that support long-term health.",
+            "photo": "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=400&q=80",
+            "reviews": [
+              { "rating": 5, "quote": "Dr. Chen is thorough and caring. She takes time to listen.", "reviewer": "Sarah M." },
+              { "rating": 5, "quote": "Best doctor I've ever had. Highly recommend!", "reviewer": "John K." }
+            ],
+            "cta": { "label": "Book with Dr. Chen", "href": "#booking-advanced" }
+          },
+          {
+            "name": "Dr. Isaiah Roberts, DO",
+            "credentials": "Board Certified in Sports Medicine",
+            "specialty": "Musculoskeletal Care & Ultrasound Diagnostics",
+            "education": ["University of North Texas HSC", "Cleveland Clinic Fellowship"],
+            "certifications": ["American Osteopathic Board of Family Physicians"],
+            "experience": "11 years of clinical experience",
+            "statement": "Movement is medicine. My goal is to keep every patient active, comfortable, and confident.",
+            "photo": "https://images.unsplash.com/photo-1527613426441-4da17471b66d?auto=format&fit=crop&w=400&q=80",
+            "cta": { "label": "Request sports eval", "href": "#booking-advanced" }
+          },
+          {
+            "name": "Alex Patel, DPT",
+            "credentials": "Doctor of Physical Therapy",
+            "specialty": "Rehabilitation & Performance Therapy",
+            "education": ["University of Southern California"],
+            "certifications": ["APTA Member", "Dry Needling Certified"],
+            "experience": "8 years of clinical experience",
+            "statement": "Rehab should be clear, encouraging, and tailored to how you live and work every day.",
+            "photo": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=400&q=80",
+            "cta": { "label": "Start PT program", "href": "#booking-advanced" }
+          },
+          {
+            "name": "Sofia Martinez, PA-C",
+            "credentials": "Certified Physician Assistant",
+            "specialty": "Women's Health & Preventive Care",
+            "education": ["Emory University PA Program"],
+            "certifications": ["NCCPA Certified"],
+            "experience": "9 years of clinical experience",
+            "statement": "Listening first allows us to create a care plan that aligns with your goals and lifestyle.",
+            "photo": "https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?auto=format&fit=crop&w=400&q=80",
+            "cta": { "label": "Book with Sofia", "href": "#booking-advanced" }
+          }
+        ]
+      }
+    },
+    {
+      "id": "insurance-accepted",
+      "type": "insurance-accepted",
+      "settings": {
+        "heading": "Insurance partners & payment options",
+        "subheading": "We verify benefits before every visit so there are no surprises.",
+        "insurers": [
+          { "name": "Blue Cross Blue Shield" },
+          { "name": "Aetna" },
+          { "name": "Cigna" },
+          { "name": "UnitedHealthcare" },
+          { "name": "Humana" },
+          { "name": "Medicare" },
+          { "name": "Medicaid" },
+          { "name": "Tricare" },
+          { "name": "CareCredit" },
+          { "name": "Kaiser" },
+          { "name": "Ambetter" },
+          { "name": "Health Net" }
+        ],
+        "statement": "We accept most major insurance plans. Out-of-network? We offer transparent self-pay rates and payment plans.",
+        "paymentOptions": ["Cash or credit", "HSA/FSA eligible", "CareCredit financing", "Flexible payment plans"],
+        "selfPay": "Ask about bundled self-pay pricing for annual physicals and specialty packages.",
+        "cta": { "label": "Verify your coverage", "href": "#booking-advanced" }
+      }
+    },
+    {
+      "id": "testimonials-medical",
+      "type": "testimonials-medical",
+      "settings": {
+        "heading": "Patients share their experience",
+        "subheading": "Trusted by families, athletes, and professionals across [City].",
+        "testimonials": [
+          { "rating": 5, "quote": "Dr. Chen took time to explain every result and created a plan that finally stabilized my blood pressure.", "name": "Lauren P.", "location": "Westbrook", "service": "Preventive care" },
+          { "rating": 5, "quote": "Telehealth check-ins make it so easy to stay on top of my treatment. The staff is kind and responsive.", "name": "Jason S.", "location": "Downtown", "service": "Chronic care" },
+          { "rating": 5, "quote": "Physical therapy sessions were tailored to my sport. Returned to play two weeks ahead of schedule.", "name": "Priya R.", "location": "Lakeside", "service": "Sports rehab" },
+          { "rating": 5, "quote": "Everyone is patient, thorough, and genuinely caring. The office is spotless and runs on time.", "name": "Alicia G.", "location": "North Hills", "service": "Women's health" },
+          { "rating": 5, "quote": "Insurance paperwork was handled before I arrived. The whole visit felt warm and efficient.", "name": "Michael D.", "location": "Oak Ridge", "service": "Same-day visit" },
+          { "rating": 5, "quote": "The team coordinated seamlessly with my specialist and shared records securely. Highly recommend.", "name": "Erin L.", "location": "Riverpark", "service": "Integrated care" }
+        ],
+        "cta": { "label": "Read more on Healthgrades", "href": "https://www.healthgrades.com" },
+        "disclaimer": "Testimonials shared with patient consent. Individual results may vary."
+      }
+    },
+    {
+      "id": "patient-journey",
+      "type": "patient-journey",
+      "settings": {
+        "heading": "What to expect on your first visit",
+        "steps": [
+          { "title": "Schedule appointment", "description": "Book online or call (555) 414-7788. Provide insurance details so we can verify benefits in advance." },
+          { "title": "Complete forms", "description": "Check your email for digital intake forms. Bring a photo ID, insurance card, and medication list." },
+          { "title": "Meet your provider", "description": "Enjoy a comprehensive evaluation focused on your goals, concerns, and lifestyle." },
+          { "title": "Personalized plan", "description": "Receive a clear care plan with next steps, follow-up schedule, and access to your patient portal." }
+        ],
+        "download": { "label": "Download new patient forms", "href": "/documents/new-patient-forms.pdf" },
+        "cta": { "label": "Questions? Call our care team", "href": "tel:+15554147788" }
+      }
+    },
+    {
+      "id": "faq-medical",
+      "type": "faq-medical",
+      "settings": {
+        "heading": "Frequently asked questions",
+        "items": [
+          { "question": "Do you accept my insurance?", "answer": "We accept most major plans including Blue Cross Blue Shield, Cigna, Aetna, UnitedHealthcare, Medicare, and CareCredit. Call us and we will confirm benefits before your visit." },
+          { "question": "What should I bring to my first visit?", "answer": "Bring a valid photo ID, insurance card, medication list, and any recent lab work or imaging reports." },
+          { "question": "Do you offer emergency appointments?", "answer": "We hold several urgent slots daily and offer after-hours triage. Call the office to be prioritized." },
+          { "question": "What are your office hours?", "answer": "Monday through Friday 7:30am-7:00pm, Saturday 8:00am-1:00pm. Virtual visits available outside those hours." },
+          { "question": "Do you offer telemedicine?", "answer": "Yes - secure video visits are available for most follow-ups, medication reviews, and same-day visits." },
+          { "question": "What is your cancellation policy?", "answer": "Please provide 24 hours' notice. Missed appointments may incur a modest fee so we can reserve time for other patients." },
+          { "question": "Are you accepting new patients?", "answer": "Yes - we welcome individuals, families, and employer groups. Online registration takes less than 5 minutes." },
+          { "question": "Do you provide payment plans?", "answer": "Yes - we offer CareCredit financing and in-house payment plans for elective or self-pay services." }
+        ]
+      }
+    },
+    {
+      "id": "location-hours",
+      "type": "location-hours",
+      "settings": {
+        "heading": "Visit our modern clinic",
+        "subheading": "Conveniently located near [Landmark] with ample parking and ADA-accessible entrances.",
+        "address": "845 Wellness Way, Suite 200, [City], [State] [ZIP]",
+        "phone": "+1-555-414-7788",
+        "directions": { "label": "Get directions", "href": "https://maps.google.com" },
+        "parking": "Complimentary parking in the covered garage. EV charging available on level 2.",
+        "accessibility": "Wheelchair accessible with elevator access and assistive listening devices upon request.",
+        "hours": [
+          { "day": "Mon", "time": "7:30am - 7:00pm" },
+          { "day": "Tue", "time": "7:30am - 7:00pm" },
+          { "day": "Wed", "time": "7:30am - 7:00pm" },
+          { "day": "Thu", "time": "7:30am - 7:00pm" },
+          { "day": "Fri", "time": "7:30am - 6:00pm" },
+          { "day": "Sat", "time": "8:00am - 1:00pm" },
+          { "day": "Sun", "time": "Closed" }
+        ],
+        "mapImage": "https://images.unsplash.com/photo-1529059997568-e81b1603b0fb?auto=format&fit=crop&w=900&q=80",
+        "supportCta": { "label": "We're here to help", "href": "tel:+15554147788" }
+      }
+    },
+    {
+      "id": "cta-appointment",
+      "type": "cta-appointment",
+      "settings": {
+        "heading": "Ready to take the next step?",
+        "subheading": "New patients welcome. Most insurance accepted. Telehealth and evening appointments available.",
+        "primaryCta": { "label": "Schedule appointment", "href": "#booking-advanced" },
+        "secondaryCta": { "label": "Call us: (555) 414-7788", "href": "tel:+15554147788" },
+        "trustBadges": ["Board Certified Providers", "HIPAA Compliant", "Patient Portal Access"]
+      }
+    },
+    {
+      "id": "footer-medical",
+      "type": "footer-medical",
+      "settings": {
+        "company": {
+          "name": "[Practice Name]",
+          "logo": "assets/logo.svg",
+          "tagline": "Dedicated to evidence-based, patient-centered care since 2003."
+        },
+        "quickLinks": [
+          { "label": "Services", "href": "#medical-services" },
+          { "label": "Providers", "href": "#team-showcase" },
+          { "label": "New Patients", "href": "#patient-journey" },
+          { "label": "Patient Portal", "href": "https://portal.example.com" },
+          { "label": "Contact", "href": "#cta-appointment" }
+        ],
+        "contact": {
+          "phone": "+1-555-414-7788",
+          "email": "care@[practicename].com",
+          "fax": "+1-555-414-7799",
+          "address": "845 Wellness Way, Suite 200, [City], [State] [ZIP]",
+          "hours": "Mon-Fri 7:30am-7:00pm, Sat 8:00am-1:00pm"
+        },
+        "social": [
+          { "label": "Facebook", "href": "https://facebook.com" },
+          { "label": "Instagram", "href": "https://instagram.com" },
+          { "label": "LinkedIn", "href": "https://linkedin.com" }
+        ],
+        "badges": ["American Medical Association", "American Academy of Family Physicians", "State Medical Society"],
+        "legal": "(c) [Current Year] [Practice Name]. All rights reserved.",
+        "policies": [
+          { "label": "HIPAA Privacy", "href": "/hipaa-privacy" },
+          { "label": "Notice of Privacy Practices", "href": "/notice-of-privacy" },
+          { "label": "Accessibility", "href": "/accessibility" }
+        ]
+      }
+    }
+  ],
+  "pages": [],
+  "products": []
+}

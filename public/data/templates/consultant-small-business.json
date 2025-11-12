@@ -1,0 +1,187 @@
+{
+  "brand": {
+    "name": "GrowthPath Advisors",
+    "logo": "assets/logo.svg",
+    "tagline": "Small Business Solutions • Practical Results",
+    "phone": "(555) 234-5600",
+    "email": "hello@growthpath.co"
+  },
+  "themeVars": {
+    "color-primary": "#059669",
+    "color-accent": "#10b981",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "About", "href": "#about"},
+    {"label": "Process", "href": "#process"},
+    {"label": "Reviews", "href": "#testimonials"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "🚀 Small Business Consulting",
+    "title": "Grow your business with confidence",
+    "subtitle": "Practical, affordable consulting for small business owners who want to grow but don't know where to start. We help with strategy, operations, marketing, and finance - all the pieces you need to scale successfully.",
+    "cta": [
+      {"label": "Free Consultation", "href": "#contact"},
+      {"label": "Our Services", "href": "#products", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1200&q=80",
+    "imageAlt": "Small business owner working with consultant"
+  },
+  "about": {
+    "title": "Your Growth Partner",
+    "subtitle": "We understand small business",
+    "content": "GrowthPath was founded by former small business owners who know the challenges you face. We provide hands-on, practical advice that actually works - not corporate jargon. Our mission is to help local businesses thrive and create jobs in their communities."
+  },
+  "products": [
+    {
+      "name": "Business Plan Package",
+      "price": 1500,
+      "description": "Complete business plan including market research, financial projections, and strategy. Perfect for starting or pivoting.",
+      "category": "Planning",
+      "duration": "2 weeks",
+      "popular": true
+    },
+    {
+      "name": "Marketing Roadmap",
+      "price": 1200,
+      "description": "Customer analysis, marketing strategy, and 90-day action plan. Focus on cost-effective tactics that work.",
+      "category": "Marketing",
+      "duration": "10 days",
+      "popular": true
+    },
+    {
+      "name": "Financial Health Check",
+      "price": 800,
+      "description": "Review your numbers, identify problems, and create a cash flow improvement plan. Get your finances on track.",
+      "category": "Finance",
+      "duration": "1 week"
+    },
+    {
+      "name": "Operations Optimization",
+      "price": 1400,
+      "description": "Streamline processes, reduce waste, and improve efficiency. More profit without working more hours.",
+      "category": "Operations",
+      "duration": "2 weeks"
+    },
+    {
+      "name": "Growth Strategy Session",
+      "price": 500,
+      "description": "Half-day intensive working session to solve your biggest business challenge. Actionable next steps included.",
+      "category": "Strategy",
+      "duration": "4 hours",
+      "popular": true
+    },
+    {
+      "name": "Monthly Advisory",
+      "price": 750,
+      "description": "Ongoing support with monthly check-ins, email access, and strategic guidance. Like having a business partner.",
+      "category": "Ongoing",
+      "duration": "Monthly"
+    }
+  ],
+  "services": {
+    "title": "How We Help",
+    "subtitle": "Practical solutions for real business challenges",
+    "items": [
+      {
+        "title": "📈 Growth Strategy",
+        "description": "Clear plans to increase revenue, reach new customers, and scale profitably"
+      },
+      {
+        "title": "💰 Financial Planning",
+        "description": "Budgeting, cash flow management, and pricing strategy that makes sense"
+      },
+      {
+        "title": "📣 Marketing",
+        "description": "Cost-effective marketing that actually brings in customers"
+      },
+      {
+        "title": "⚙️ Operations",
+        "description": "Streamline processes, improve efficiency, and work smarter not harder"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Success Stories",
+    "subtitle": "Real results from real business owners",
+    "items": [
+      {
+        "text": "Working with GrowthPath was the best investment I made in my business. Revenue is up 60% and I finally have systems that work. Highly recommend!",
+        "author": "Sarah Johnson",
+        "title": "Owner, Local Bakery"
+      },
+      {
+        "text": "They helped me create a marketing plan I can actually afford and execute. Already seeing more customers and my email list has tripled!",
+        "author": "Mike Chen",
+        "title": "Fitness Studio Owner"
+      },
+      {
+        "text": "The financial health check revealed problems I didn't even know I had. Fixed my cash flow issues in 60 days. Worth every penny.",
+        "author": "Jessica Martinez",
+        "title": "Retail Shop Owner"
+      }
+    ]
+  },
+  "team": {
+    "title": "Meet Your Advisor",
+    "subtitle": "Former business owner, now helping others succeed",
+    "members": [
+      {
+        "name": "Tom Reynolds",
+        "title": "Founder & Lead Consultant",
+        "bio": "Built and sold two successful small businesses. MBA from NYU. Now dedicated to helping other entrepreneurs avoid the mistakes I made and achieve their dreams faster.",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+        "imageAlt": "Tom Reynolds",
+        "credentials": ["MBA NYU", "Former Business Owner", "Certified Business Advisor"]
+      }
+    ]
+  },
+  "process": {
+    "title": "How It Works",
+    "subtitle": "Simple, straightforward process",
+    "steps": [
+      {"title": "Free Consultation", "description": "30-minute call to understand your business and biggest challenges"},
+      {"title": "Proposal", "description": "Clear scope of work, timeline, and fixed price. No surprises"},
+      {"title": "We Get to Work", "description": "Hands-on collaboration to implement solutions"},
+      {"title": "Results & Follow-up", "description": "Deliverables, action plan, and optional ongoing support"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "100+", "label": "Businesses Helped"},
+      {"number": "$5M+", "label": "Revenue Growth Generated"},
+      {"number": "4.9", "label": "Client Rating"},
+      {"number": "8", "label": "Years Experience"}
+    ]
+  },
+  "contact": {
+    "title": "Let's Talk",
+    "subtitle": "Free 30-minute consultation",
+    "phone": "(555) 234-5600",
+    "email": "hello@growthpath.co",
+    "address": "456 Main Street, Suite 200, Portland, OR 97204"
+  },
+  "footer": {
+    "text": "🚀 GrowthPath Advisors • Helping Small Businesses Thrive",
+    "awards": [
+      "Top Business Consultant 2023",
+      "Small Business Champion",
+      "5-Star Rated"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "hello@growthpath.co",
+    "productCta": "Schedule Call",
+    "productCtaHref": "tel:+15552345600",
+    "productNote": "Submit your request for a free consultation and we'll reach out within 24 hours."
+  },
+  "productsTitle": "Services & Pricing",
+  "productsSubtitle": "Fixed prices, clear value"
+}
+

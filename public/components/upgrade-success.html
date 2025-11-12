@@ -1,0 +1,455 @@
+<!-- Upgrade Success Component -->
+<style>
+  /* Upgrade Success Modal */
+  .upgrade-success-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+    backdrop-filter: blur(4px);
+  }
+
+  .upgrade-success-modal.active {
+    display: flex;
+  }
+
+  .upgrade-success-content {
+    background: white;
+    border-radius: 24px;
+    padding: 48px;
+    max-width: 550px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    animation: zoomInSuccess 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  @keyframes zoomInSuccess {
+    from {
+      opacity: 0;
+      transform: scale(0.5) rotate(-5deg);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+  }
+
+  .success-checkmark {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
+    animation: pulse 2s infinite;
+  }
+
+  .success-checkmark svg {
+    width: 50px;
+    height: 50px;
+    stroke: white;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+    animation: draw 0.8s ease-in-out;
+  }
+
+  @keyframes draw {
+    from {
+      stroke-dasharray: 100;
+      stroke-dashoffset: 100;
+    }
+    to {
+      stroke-dasharray: 100;
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .success-emoji {
+    font-size: 5rem;
+    margin-bottom: 20px;
+    animation: bounce 1s ease-in-out infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+  }
+
+  .success-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #1f2937;
+    margin: 0 0 12px 0;
+  }
+
+  .success-subtitle {
+    color: #64748b;
+    font-size: 1.1rem;
+    margin: 0 0 32px 0;
+    line-height: 1.6;
+  }
+
+  .success-plan-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    color: white;
+    padding: 8px 24px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+  }
+
+  .unlocked-features {
+    background: #f0fdf4;
+    border: 2px solid #10b981;
+    border-radius: 16px;
+    padding: 24px;
+    margin: 24px 0;
+    text-align: left;
+  }
+
+  .unlocked-features-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #065f46;
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .unlocked-features ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .unlocked-features li {
+    padding: 10px 0;
+    color: #047857;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    animation: fadeInUp 0.5s ease-out backwards;
+  }
+
+  .unlocked-features li:nth-child(1) { animation-delay: 0.1s; }
+  .unlocked-features li:nth-child(2) { animation-delay: 0.2s; }
+  .unlocked-features li:nth-child(3) { animation-delay: 0.3s; }
+  .unlocked-features li:nth-child(4) { animation-delay: 0.4s; }
+  .unlocked-features li:nth-child(5) { animation-delay: 0.5s; }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .unlocked-features li::before {
+    content: '✓';
+    background: #10b981;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .success-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+  }
+
+  .btn-success-primary {
+    flex: 1;
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .btn-success-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(6, 182, 212, 0.3);
+  }
+
+  .btn-success-secondary {
+    flex: 1;
+    background: #f1f5f9;
+    color: #475569;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-success-secondary:hover {
+    background: #e2e8f0;
+  }
+
+  /* Confetti */
+  .confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    z-index: 10002;
+    pointer-events: none;
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    .upgrade-success-content {
+      padding: 32px 24px;
+      margin: 20px;
+    }
+
+    .success-title {
+      font-size: 1.8rem;
+    }
+
+    .success-actions {
+      flex-direction: column;
+    }
+  }
+</style>
+
+<!-- Upgrade Success Modal -->
+<div class="upgrade-success-modal" id="upgradeSuccessModal">
+  <div class="upgrade-success-content">
+    <div class="success-checkmark">
+      <svg viewBox="0 0 52 52">
+        <path d="M14 27l9 9 19-19" />
+      </svg>
+    </div>
+    
+    <div class="success-emoji">🎉</div>
+    
+    <h2 class="success-title">Upgrade Successful!</h2>
+    <p class="success-subtitle">
+      Welcome to <span class="success-plan-badge" id="successPlanName">Pro Plan</span>
+    </p>
+
+    <div class="unlocked-features">
+      <div class="unlocked-features-title">
+        🔓 Features Now Available:
+      </div>
+      <ul id="successFeatureList">
+        <!-- Will be populated dynamically -->
+      </ul>
+    </div>
+
+    <p style="color: #64748b; font-size: 0.95rem; margin: 20px 0;">
+      All features are now active and ready to use!
+    </p>
+
+    <div class="success-actions">
+      <button class="btn-success-primary" onclick="closeSuccessAndExplore()">
+        Explore Features →
+      </button>
+      <button class="btn-success-secondary" onclick="closeUpgradeSuccess()">
+        Continue
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Plan Features Map
+  const planFeatures = {
+    starter: [
+      'Your site stays online forever',
+      'Display pricing & services',
+      'Unlimited site edits',
+      'Professional templates',
+      'Contact form management'
+    ],
+    business: [
+      'Everything in Starter',
+      'Custom domain support',
+      'Professional email addresses',
+      'Advanced analytics',
+      'Priority support'
+    ],
+    pro: [
+      'Everything in Starter',
+      'Accept online payments',
+      'Shopping cart & checkout',
+      'Order management dashboard',
+      'Sales analytics & reports'
+    ]
+  };
+
+  function showUpgradeSuccess(plan) {
+    const modal = document.getElementById('upgradeSuccessModal');
+    
+    // Update plan name
+    const planNames = {
+      starter: 'Starter Plan',
+      business: 'Business Plan',
+      pro: 'Pro Plan'
+    };
+    document.getElementById('successPlanName').textContent = planNames[plan] || plan;
+
+    // Populate features
+    const featureList = document.getElementById('successFeatureList');
+    const features = planFeatures[plan] || [];
+    featureList.innerHTML = features.map(f => `<li>${f}</li>`).join('');
+
+    // Show modal
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    // Trigger confetti
+    setTimeout(createConfetti, 200);
+
+    // Auto-reload user data to reflect new subscription
+    setTimeout(() => {
+      reloadUserData();
+    }, 1000);
+  }
+
+  function closeUpgradeSuccess() {
+    const modal = document.getElementById('upgradeSuccessModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+
+    // Reload dashboard to show new features
+    window.location.reload();
+  }
+
+  function closeSuccessAndExplore() {
+    closeUpgradeSuccess();
+    
+    // Navigate to appropriate feature page based on plan
+    const plan = document.getElementById('successPlanName').textContent.toLowerCase();
+    if (plan.includes('pro')) {
+      window.location.href = '/products.html';
+    } else {
+      window.location.href = '/dashboard.html';
+    }
+  }
+
+  // Confetti Animation
+  function createConfetti() {
+    const colors = ['#06b6d4', '#0891b2', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+    const confettiCount = 100;
+
+    for (let i = 0; i < confettiCount; i++) {
+      const confetti = document.createElement('div');
+      confetti.className = 'confetti';
+      confetti.style.left = Math.random() * 100 + 'vw';
+      confetti.style.top = '-10px';
+      confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+      
+      const size = Math.random() * 8 + 4;
+      confetti.style.width = size + 'px';
+      confetti.style.height = size + 'px';
+
+      document.body.appendChild(confetti);
+
+      // Animate
+      const duration = Math.random() * 3 + 2;
+      const endX = (Math.random() - 0.5) * 200;
+      const endRotation = Math.random() * 720 - 360;
+
+      confetti.animate([
+        {
+          transform: `translate(0, 0) rotate(0deg)`,
+          opacity: 1
+        },
+        {
+          transform: `translate(${endX}px, 100vh) rotate(${endRotation}deg)`,
+          opacity: 0
+        }
+      ], {
+        duration: duration * 1000,
+        easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+      });
+
+      // Remove after animation
+      setTimeout(() => confetti.remove(), duration * 1000);
+    }
+  }
+
+  // Reload user data after upgrade
+  async function reloadUserData() {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) return;
+
+      const response = await fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        window.currentUser = data.user;
+        
+        // Dispatch event for other components to update
+        window.dispatchEvent(new CustomEvent('user-upgraded', { 
+          detail: { user: data.user } 
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to reload user data:', error);
+    }
+  }
+
+  // Listen for successful payment/upgrade
+  window.addEventListener('message', (event) => {
+    if (event.data.type === 'upgrade-success') {
+      showUpgradeSuccess(event.data.plan);
+    }
+  });
+
+  // Check URL params for upgrade success
+  window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('upgraded') === 'true') {
+      const plan = urlParams.get('plan') || 'starter';
+      showUpgradeSuccess(plan);
+      
+      // Clean URL
+      const url = new URL(window.location);
+      url.searchParams.delete('upgraded');
+      url.searchParams.delete('plan');
+      window.history.replaceState({}, '', url);
+    }
+  });
+</script>
+

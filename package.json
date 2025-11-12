@@ -1,33 +1,65 @@
 {
-  "name": "fixgo-mobile-tire-service",
+  "name": "small-biz-template",
   "version": "1.0.0",
-  "description": "Fix&Go Mobile Tire Service - 24/7 Emergency Auto Repair",
-  "main": "index.html",
+  "description": "<p align=\"center\">  <img src=\"https://i.imgur.com/pU5A58S.png\" alt=\"Microsoft Active Directory Logo\"/>  </p>",
+  "main": "index.js",
   "scripts": {
-    "dev": "vercel dev",
-    "build": "echo 'No build step needed for static site'",
-    "start": "vercel dev",
-    "deploy": "vercel --prod"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "dev": "vite",
+    "dev:backend": "NODE_ENV=development node server.js",
+    "dev:all": "concurrently \"npm run dev:backend\" \"npm run dev\"",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "npx http-server public -p 5173",
+    "validate-template": "node validation/validate-template.js",
+    "validate-templates": "node validation/validate-template.js public/data/templates/"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PersyLopez/Active-Directory.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PersyLopez/Active-Directory/issues"
+  },
+  "homepage": "https://github.com/PersyLopez/Active-Directory#readme",
+  "type": "module",
   "dependencies": {
-    "nodemailer": "^6.9.7"
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1",
+    "bcryptjs": "^3.0.2",
+    "body-parser": "^2.2.0",
+    "chart.js": "^4.5.1",
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.2.0",
+    "express-session": "^1.18.2",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "node-cron": "^4.2.1",
+    "node-fetch": "^2.7.0",
+    "passport": "^0.7.0",
+    "passport-apple": "^2.0.2",
+    "passport-google-oauth20": "^2.0.0",
+    "pg": "^8.16.3",
+    "react": "^19.2.0",
+    "react-chartjs-2": "^5.3.1",
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.9.5",
+    "resend": "^6.3.0",
+    "sharp": "^0.34.4",
+    "stripe": "^19.1.0",
+    "winston": "^3.18.3"
   },
   "devDependencies": {
-    "vercel": "^32.7.2"
-  },
-  "keywords": [
-    "mobile",
-    "tire",
-    "service",
-    "emergency",
-    "auto",
-    "repair",
-    "vercel",
-    "serverless"
-  ],
-  "author": "Fix&Go Mobile Tire Service",
-  "license": "MIT",
-  "engines": {
-    "node": ">=18.0.0"
+    "@vitejs/plugin-react": "^5.1.0",
+    "concurrently": "^9.2.1",
+    "vite": "^7.2.0"
   }
 }

@@ -1,0 +1,620 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Starter Template Schema",
+  "description": "Schema for validating SiteSprintz Starter tier templates",
+  "type": "object",
+  "required": ["brand", "themeVars", "nav", "hero", "contact", "footer", "settings"],
+  "properties": {
+    "brand": {
+      "type": "object",
+      "required": ["name", "logo", "phone", "email"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Business name"
+        },
+        "logo": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Path to logo image"
+        },
+        "tagline": {
+          "type": "string",
+          "description": "Business tagline or slogan (optional)"
+        },
+        "phone": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Contact phone number"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Contact email address"
+        }
+      }
+    },
+    "themeVars": {
+      "type": "object",
+      "required": ["color-primary", "color-accent", "color-success", "color-warning", "color-danger"],
+      "properties": {
+        "color-primary": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Primary brand color (hex)"
+        },
+        "color-accent": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Accent color (hex)"
+        },
+        "color-success": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Success state color (hex)"
+        },
+        "color-warning": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Warning state color (hex)"
+        },
+        "color-danger": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Danger/error state color (hex)"
+        }
+      }
+    },
+    "nav": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["label", "href"],
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "href": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "description": "Navigation items"
+    },
+    "hero": {
+      "type": "object",
+      "required": ["title", "subtitle", "cta", "image", "imageAlt"],
+      "properties": {
+        "eyebrow": {
+          "type": "string",
+          "description": "Small text above title (optional)"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Main headline"
+        },
+        "subtitle": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Supporting text"
+        },
+        "cta": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["label", "href"],
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "href": {
+                "type": "string",
+                "minLength": 1
+              },
+              "variant": {
+                "type": "string",
+                "enum": ["primary", "secondary"]
+              }
+            }
+          },
+          "description": "Call-to-action buttons"
+        },
+        "image": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Hero image URL"
+        },
+        "imageAlt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Accessible image description"
+        }
+      }
+    },
+    "services": {
+      "type": "object",
+      "required": ["title", "items"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subtitle": {
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["title", "description"],
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "price": {
+                "type": "number",
+                "minimum": 0
+              },
+              "duration": {
+                "type": "string"
+              },
+              "features": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "orderable": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      },
+      "description": "Services section"
+    },
+    "products": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "price", "description"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "price": {
+            "type": "number",
+            "minimum": 0
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "image": {
+            "type": "string"
+          },
+          "imageAlt": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "orderable": {
+            "type": "boolean"
+          },
+          "popular": {
+            "type": "boolean"
+          },
+          "vegetarian": {
+            "type": "boolean"
+          }
+        }
+      },
+      "description": "Products array"
+    },
+    "productsTitle": {
+      "type": "string",
+      "description": "Title for products section (if using products array)"
+    },
+    "productsSubtitle": {
+      "type": "string",
+      "description": "Subtitle for products section (optional)"
+    },
+    "contact": {
+      "type": "object",
+      "required": ["title", "email", "phone"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subtitle": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string",
+          "minLength": 1
+        },
+        "address": {
+          "type": "string"
+        },
+        "hours": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "coordinates": {
+          "type": "object",
+          "properties": {
+            "lat": {
+              "type": "number"
+            },
+            "lng": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    },
+    "footer": {
+      "type": "object",
+      "required": ["text"],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["label", "href"],
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "href": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "settings": {
+      "type": "object",
+      "required": ["allowCheckout", "allowOrders"],
+      "properties": {
+        "allowCheckout": {
+          "type": "boolean",
+          "const": false,
+          "description": "Must be false for Starter tier"
+        },
+        "allowOrders": {
+          "type": "boolean",
+          "const": true,
+          "description": "Must be true for order submission"
+        },
+        "orderNotificationEmail": {
+          "type": "string",
+          "format": "email",
+          "description": "Email to receive order notifications"
+        },
+        "productCta": {
+          "type": "string",
+          "description": "CTA button text for products/services"
+        },
+        "productCtaHref": {
+          "type": "string",
+          "description": "CTA button link (tel:/mailto:/https:)"
+        },
+        "productNote": {
+          "type": "string",
+          "description": "Explanation for users about ordering process"
+        }
+      }
+    },
+    "about": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "subtitle": {
+          "type": "string"
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "About section (optional)"
+    },
+    "testimonials": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "subtitle": {
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["text", "author"],
+            "properties": {
+              "text": {
+                "type": "string"
+              },
+              "quote": {
+                "type": "string"
+              },
+              "author": {
+                "type": "string"
+              },
+              "location": {
+                "type": "string"
+              },
+              "rating": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 5
+              },
+              "image": {
+                "type": "string"
+              },
+              "imageAlt": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "description": "Testimonials section (optional)"
+    },
+    "team": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "subtitle": {
+          "type": "string"
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "title"],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "bio": {
+                "type": "string"
+              },
+              "image": {
+                "type": "string"
+              },
+              "imageAlt": {
+                "type": "string"
+              },
+              "credentials": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "description": "Team section (optional)"
+    },
+    "faq": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["question", "answer"],
+            "properties": {
+              "question": {
+                "type": "string"
+              },
+              "answer": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "description": "FAQ section (optional)"
+    },
+    "stats": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["number", "label"],
+            "properties": {
+              "number": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "description": "Stats section (optional)"
+    },
+    "social": {
+      "type": "object",
+      "properties": {
+        "facebook": {
+          "type": "string",
+          "format": "uri"
+        },
+        "instagram": {
+          "type": "string",
+          "format": "uri"
+        },
+        "twitter": {
+          "type": "string",
+          "format": "uri"
+        },
+        "linkedin": {
+          "type": "string",
+          "format": "uri"
+        },
+        "youtube": {
+          "type": "string",
+          "format": "uri"
+        },
+        "tiktok": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "description": "Social media links (optional)"
+    },
+    "credentials": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "icon": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "description": "Credentials/certifications section (optional)"
+    },
+    "process": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["title", "description"],
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "description": "Process/how it works section (optional)"
+    },
+    "gallery": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "subtitle": {
+          "type": "string"
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["url", "alt"],
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "alt": {
+                "type": "string"
+              },
+              "caption": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "description": "Gallery section (optional)"
+    }
+  },
+  "anyOf": [
+    {
+      "required": ["services"]
+    },
+    {
+      "required": ["products"]
+    }
+  ]
+}
+

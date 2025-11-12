@@ -1,0 +1,185 @@
+{
+  "brand": {
+    "name": "QuickFix Phone Repair",
+    "logo": "assets/logo.svg",
+    "tagline": "Fast Phone Repairs • Walk-Ins Welcome",
+    "phone": "(555) 777-3344",
+    "email": "help@quickfix.repair"
+  },
+  "themeVars": {
+    "color-primary": "#06b6d4",
+    "color-accent": "#22d3ee",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {"label": "Services", "href": "#products"},
+    {"label": "Devices", "href": "#about"},
+    {"label": "Reviews", "href": "#testimonials"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "📱 Fast Phone Repair",
+    "title": "Cracked screen? We'll fix it today",
+    "subtitle": "Same-day repairs for iPhone and Android. Most repairs done in 30-60 minutes while you wait. Walk-ins welcome! Lifetime warranty on all parts. Get your phone back to perfect condition.",
+    "cta": [
+      {"label": "Book Repair", "href": "#contact"},
+      {"label": "View Prices", "href": "#products", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1556656793-08538906a9f8?w=1200&q=80",
+    "imageAlt": "Technician repairing smartphone"
+  },
+  "about": {
+    "title": "Expert Phone Repair",
+    "subtitle": "Fast, affordable, guaranteed",
+    "content": "QuickFix specializes in smartphone repairs for all major brands. With certified technicians, quality parts, and fast turnaround, we're your neighborhood phone repair experts. Most repairs completed in under an hour!"
+  },
+  "products": [
+    {
+      "name": "iPhone Screen Replacement",
+      "price": 89,
+      "description": "Replace cracked or damaged iPhone screen. Premium quality glass. Done in 30-60 minutes. Lifetime warranty.",
+      "category": "iPhone",
+      "duration": "30-60 min",
+      "popular": true
+    },
+    {
+      "name": "Samsung Screen Replacement",
+      "price": 79,
+      "description": "Galaxy screen repair with OEM-quality parts. Fast service. Lifetime warranty on parts.",
+      "category": "Android",
+      "duration": "45-90 min",
+      "popular": true
+    },
+    {
+      "name": "Battery Replacement",
+      "price": 59,
+      "description": "New battery for iPhone or Android. Fix battery drain issues. Done while you wait.",
+      "category": "Repair",
+      "duration": "20-30 min"
+    },
+    {
+      "name": "Charging Port Repair",
+      "price": 65,
+      "description": "Fix charging port issues. No more wiggling the cable. Quick turnaround.",
+      "category": "Repair",
+      "duration": "30-45 min"
+    },
+    {
+      "name": "Water Damage Repair",
+      "price": 99,
+      "description": "Water damage diagnostics and repair. Bring your phone in ASAP for best results.",
+      "category": "Repair",
+      "duration": "2-4 hours",
+      "popular": true
+    },
+    {
+      "name": "Back Glass Replacement",
+      "price": 79,
+      "description": "Replace shattered back glass. Restore your phone's look. Quality replacement glass.",
+      "category": "Cosmetic",
+      "duration": "45-60 min"
+    }
+  ],
+  "services": {
+    "title": "Repair Services",
+    "subtitle": "We fix all major phone issues",
+    "items": [
+      {
+        "title": "📱 Screen Repairs",
+        "description": "Cracked, shattered, or unresponsive screens fixed fast"
+      },
+      {
+        "title": "🔋 Battery Service",
+        "description": "Replace worn-out batteries, fix charging issues"
+      },
+      {
+        "title": "💧 Water Damage",
+        "description": "Professional water damage repair and data recovery"
+      },
+      {
+        "title": "🔧 All Repairs",
+        "description": "Cameras, speakers, buttons, ports - we fix it all"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Customer Reviews",
+    "subtitle": "5-star service",
+    "items": [
+      {
+        "text": "Cracked my iPhone screen and they fixed it in 30 minutes! Looks brand new and the price was way better than the Apple Store. Highly recommend!",
+        "author": "Jessica M.",
+        "title": "Local Customer"
+      },
+      {
+        "text": "My phone fell in water and I thought it was done. They saved it! Fast service, fair price, and super friendly. My new go-to repair shop.",
+        "author": "Mike T.",
+        "title": "Satisfied Customer"
+      },
+      {
+        "text": "Best phone repair place! Fixed my charging port same day. No appointment needed. Professional service and lifetime warranty. 5 stars!",
+        "author": "Sarah L.",
+        "title": "Regular Customer"
+      }
+    ]
+  },
+  "team": {
+    "title": "Our Team",
+    "subtitle": "Certified repair technicians",
+    "members": [
+      {
+        "name": "Carlos Rodriguez",
+        "title": "Owner & Lead Technician",
+        "bio": "10+ years repairing smartphones. Certified by Apple and Samsung. Completed over 5,000 successful repairs with a 99% customer satisfaction rate.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "Carlos Rodriguez",
+        "credentials": ["Apple Certified", "Samsung Certified", "10+ Years Experience"]
+      }
+    ]
+  },
+  "process": {
+    "title": "Repair Process",
+    "subtitle": "Simple and fast",
+    "steps": [
+      {"title": "Walk In or Book", "description": "Stop by or schedule online. We're usually ready right away"},
+      {"title": "Free Diagnostic", "description": "We'll examine your device and provide a quote"},
+      {"title": "Quick Repair", "description": "Most repairs done in 30-60 minutes while you wait"},
+      {"title": "Quality Check", "description": "Test everything before returning your device"}
+    ]
+  },
+  "stats": {
+    "items": [
+      {"number": "5,000+", "label": "Phones Repaired"},
+      {"number": "30-60", "label": "Minutes Average"},
+      {"number": "4.9", "label": "Star Rating"},
+      {"number": "Lifetime", "label": "Warranty"}
+    ]
+  },
+  "contact": {
+    "title": "Visit Our Shop",
+    "subtitle": "Walk-ins welcome!",
+    "phone": "(555) 777-3344",
+    "email": "help@quickfix.repair",
+    "address": "123 Tech Plaza, Downtown, Seattle, WA 98101"
+  },
+  "footer": {
+    "text": "📱 QuickFix Phone Repair • Fast, Affordable, Guaranteed",
+    "awards": [
+      "Best Phone Repair 2023",
+      "5-Star Google Reviews",
+      "Certified Technicians"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "help@quickfix.repair",
+    "productCta": "Book Repair",
+    "productCtaHref": "tel:+15557773344",
+    "productNote": "Submit your repair request and we'll contact you to schedule. Walk-ins always welcome!"
+  },
+  "productsTitle": "Repair Services",
+  "productsSubtitle": "Transparent pricing, fast service"
+}

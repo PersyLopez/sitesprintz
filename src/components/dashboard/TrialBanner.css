@@ -1,0 +1,121 @@
+.trial-banner {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
+  animation: slideInDown 0.5s ease;
+}
+
+.trial-banner.urgent {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.trial-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.trial-icon {
+  font-size: 2.5rem;
+}
+
+.trial-text h3 {
+  margin: 0 0 0.5rem 0;
+  color: white;
+  font-size: 1.25rem;
+}
+
+.trial-text p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.95rem;
+}
+
+.trial-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.trial-banner .btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.trial-banner .btn-primary {
+  background: white;
+  color: #f97316;
+  border: none;
+}
+
+.trial-banner .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.trial-banner .btn-secondary {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.trial-banner .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.trial-banner.urgent .btn-primary {
+  background: #fef3c7;
+  color: #dc2626;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 25px rgba(220, 38, 38, 0.6);
+  }
+}
+
+@media (max-width: 768px) {
+  .trial-banner {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .trial-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .trial-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .trial-banner .btn {
+    width: 100%;
+  }
+}
+

@@ -1,0 +1,467 @@
+{
+  "brand": {
+    "name": "FitLife Performance",
+    "logo": "assets/logo.svg",
+    "tagline": "Transform Your Body • Elevate Your Life",
+    "phone": "(555) 234-5678",
+    "email": "info@fitlifeperformance.com"
+  },
+  "themeVars": {
+    "color-primary": "#dc2626",
+    "color-accent": "#ef4444",
+    "color-success": "#22c55e",
+    "color-warning": "#f59e0b",
+    "color-danger": "#dc2626"
+  },
+  "nav": [
+    {"label": "Memberships", "href": "#memberships"},
+    {"label": "Transformations", "href": "#gallery"},
+    {"label": "Trainers", "href": "#team"},
+    {"label": "Schedule", "href": "#schedule"},
+    {"label": "Contact", "href": "#contact"}
+  ],
+  "hero": {
+    "eyebrow": "💪 Results-Driven Training",
+    "title": "Your Transformation Starts Here",
+    "subtitle": "Join FitLife Performance, where cutting-edge training meets personalized coaching. Our expert trainers, state-of-the-art equipment, and supportive community will help you achieve results you never thought possible.",
+    "cta": [
+      {"label": "📅 Book Free Consultation", "href": "#booking"},
+      {"label": "💰 View Memberships", "href": "#memberships", "variant": "secondary"}
+    ],
+    "image": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80",
+    "imageAlt": "Modern gym interior with training equipment"
+  },
+  "features": {
+    "bookingWidget": {
+      "enabled": true,
+      "provider": "calendly",
+      "url": "https://calendly.com/fitlifeperformance"
+    },
+    "subscriptions": {
+      "enabled": true,
+      "tiers": ["monthly", "quarterly", "annual"]
+    },
+    "ownerDashboard": true,
+    "analytics": true,
+    "gallery": {
+      "filterable": true,
+      "beforeAfter": true,
+      "categories": ["Transformations", "Facility", "Classes", "Events"]
+    },
+    "memberTestimonials": {
+      "enabled": true,
+      "withRatings": true
+    }
+  },
+  "memberships": {
+    "title": "Choose Your Path",
+    "subtitle": "Flexible membership options to fit your goals and lifestyle",
+    "tiers": [
+      {
+        "name": "Basic",
+        "price": 49,
+        "billingCycle": "month",
+        "popular": false,
+        "description": "Perfect for self-motivated gym-goers",
+        "features": [
+          "✅ 24/7 Gym Access",
+          "✅ Cardio & Strength Equipment",
+          "✅ Locker Room Access",
+          "✅ Free WiFi",
+          "✅ Mobile App Access",
+          "❌ Group Classes",
+          "❌ Personal Training",
+          "❌ Nutrition Coaching"
+        ],
+        "cta": "Start Basic"
+      },
+      {
+        "name": "Performance",
+        "price": 89,
+        "billingCycle": "month",
+        "popular": true,
+        "description": "Our most popular option for serious results",
+        "features": [
+          "✅ Everything in Basic",
+          "✅ Unlimited Group Classes",
+          "✅ 2 Personal Training Sessions/Month",
+          "✅ Nutrition Assessment",
+          "✅ InBody Scan Monthly",
+          "✅ Member Community Access",
+          "✅ Priority Booking",
+          "❌ Unlimited Personal Training"
+        ],
+        "cta": "Go Performance"
+      },
+      {
+        "name": "Elite",
+        "price": 149,
+        "billingCycle": "month",
+        "popular": false,
+        "description": "Complete transformation package",
+        "features": [
+          "✅ Everything in Performance",
+          "✅ 8 Personal Training Sessions/Month",
+          "✅ Custom Meal Planning",
+          "✅ Weekly Check-ins",
+          "✅ Supplement Consultation",
+          "✅ Recovery Room Access",
+          "✅ VIP Events Access",
+          "✅ Guest Passes (4/month)"
+        ],
+        "cta": "Go Elite"
+      }
+    ],
+    "annualDiscount": {
+      "enabled": true,
+      "description": "Save 20% with annual membership",
+      "note": "Pay upfront and save big!"
+    }
+  },
+  "about": {
+    "title": "More Than Just a Gym",
+    "body": "FitLife Performance opened in 2018 with a mission to create a results-driven fitness community. We combine expert coaching, cutting-edge equipment, science-based training, and nutrition support to help members achieve transformations that last. Our 15,000 sq ft facility features specialized training zones, recovery areas, and a motivating atmosphere where everyone from beginners to athletes can thrive.",
+    "subtitle": "What Makes Us Different",
+    "features": [
+      "🏆 Certified Personal Trainers",
+      "📊 InBody Composition Analysis",
+      "🥗 Nutrition Coaching Included",
+      "💪 Small Group Training",
+      "🔬 Science-Based Programming",
+      "🤝 Supportive Community"
+    ]
+  },
+  "gallery": {
+    "title": "Real Transformations, Real Results",
+    "subtitle": "See what's possible with commitment and expert guidance",
+    "categories": [
+      {
+        "name": "Transformations",
+        "items": [
+          {
+            "name": "Sarah M.",
+            "description": "Lost 45 lbs in 6 months",
+            "before": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80",
+            "after": "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&q=80",
+            "beforeAlt": "Sarah before transformation",
+            "afterAlt": "Sarah after transformation",
+            "timeframe": "6 months",
+            "program": "Performance Membership"
+          },
+          {
+            "name": "Marcus T.",
+            "description": "Gained 20 lbs muscle, lost 8% body fat",
+            "before": "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&q=80",
+            "after": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=80",
+            "beforeAlt": "Marcus before transformation",
+            "afterAlt": "Marcus after transformation",
+            "timeframe": "8 months",
+            "program": "Elite Membership"
+          },
+          {
+            "name": "Jennifer L.",
+            "description": "Lost 30 lbs, ran first marathon",
+            "before": "https://images.unsplash.com/photo-1594737626072-90dc274bc2bf?w=600&q=80",
+            "after": "https://images.unsplash.com/photo-1549576490-b0b4831ef60a?w=600&q=80",
+            "beforeAlt": "Jennifer before transformation",
+            "afterAlt": "Jennifer after transformation",
+            "timeframe": "10 months",
+            "program": "Performance Membership"
+          }
+        ]
+      },
+      {
+        "name": "Facility",
+        "items": [
+          {
+            "url": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80",
+            "alt": "Main training floor with equipment"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=800&q=80",
+            "alt": "Free weights area"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&q=80",
+            "alt": "Cardio zone"
+          }
+        ]
+      },
+      {
+        "name": "Classes",
+        "items": [
+          {
+            "url": "https://images.unsplash.com/photo-1518459031867-a89b944bffe4?w=800&q=80",
+            "alt": "Group fitness class in action"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80",
+            "alt": "HIIT training session"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1599058917765-a780eda07a3e?w=800&q=80",
+            "alt": "Yoga and mobility class"
+          }
+        ]
+      },
+      {
+        "name": "Events",
+        "items": [
+          {
+            "url": "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&q=80",
+            "alt": "Member challenge event"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=800&q=80",
+            "alt": "Fitness workshop"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&q=80",
+            "alt": "Community workout"
+          }
+        ]
+      }
+    ]
+  },
+  "team": {
+    "title": "Meet Your Coaches",
+    "subtitle": "Certified professionals dedicated to your success",
+    "members": [
+      {
+        "name": "Mike Rodriguez",
+        "title": "Head Coach & Owner",
+        "bio": "Former collegiate athlete with 12+ years of coaching experience. Specializes in strength training, athletic performance, and body recomposition. Mike has helped hundreds of clients achieve their fitness goals through science-based training and personalized coaching.",
+        "image": "https://images.unsplash.com/photo-1567013477973-e4cb4e7f6f75?w=400&q=80",
+        "imageAlt": "Coach Mike Rodriguez",
+        "credentials": ["NSCA-CSCS", "Precision Nutrition L1", "USA Weightlifting L2"],
+        "specialties": ["Strength Training", "Athletic Performance", "Body Recomposition"]
+      },
+      {
+        "name": "Amanda Chen",
+        "title": "Senior Trainer & Nutrition Coach",
+        "bio": "Amanda combines her passion for fitness with nutrition science to create comprehensive transformation programs. She specializes in women's fitness, metabolic conditioning, and sustainable habit change. Her holistic approach has helped clients achieve life-changing results.",
+        "image": "https://images.unsplash.com/photo-1594737625785-a6acdee2f2b8?w=400&q=80",
+        "imageAlt": "Coach Amanda Chen",
+        "credentials": ["ACE-CPT", "Precision Nutrition L2", "CrossFit L1"],
+        "specialties": ["Women's Fitness", "Nutrition Coaching", "Habit Change"]
+      },
+      {
+        "name": "Jamal Washington",
+        "title": "Performance Coach",
+        "bio": "With a background in sports performance and physical therapy, Jamal focuses on injury prevention, functional movement, and athletic development. He works with everyone from post-rehab clients to competitive athletes, ensuring safe and effective training progressions.",
+        "image": "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=400&q=80",
+        "imageAlt": "Coach Jamal Washington",
+        "credentials": ["NASM-CPT", "FMS Certified", "TPI Golf Fitness"],
+        "specialties": ["Injury Prevention", "Functional Training", "Athletic Development"]
+      },
+      {
+        "name": "Lisa Martinez",
+        "title": "Group Fitness Director",
+        "bio": "Lisa brings energy and expertise to every class she teaches. From HIIT to yoga, she creates programming that challenges and motivates members of all fitness levels. Her inclusive teaching style makes everyone feel welcome and capable.",
+        "image": "https://images.unsplash.com/photo-1562345307-e90e42bc4c5e?w=400&q=80",
+        "imageAlt": "Coach Lisa Martinez",
+        "credentials": ["ACE Group Fitness", "RYT-200 Yoga", "Spin Certified"],
+        "specialties": ["Group Fitness", "HIIT", "Yoga & Mobility"]
+      }
+    ]
+  },
+  "schedule": {
+    "title": "Class Schedule",
+    "subtitle": "Performance & Elite members enjoy unlimited group classes",
+    "note": "Book through our app or call to reserve your spot",
+    "classes": [
+      {
+        "name": "Strength Foundations",
+        "description": "Build a solid strength base with compound movements",
+        "duration": "60 min",
+        "level": "All Levels",
+        "times": ["Monday 6am, 6pm", "Wednesday 6am, 6pm", "Friday 6am, 6pm"]
+      },
+      {
+        "name": "HIIT Burn",
+        "description": "High-intensity intervals for maximum calorie burn",
+        "duration": "45 min",
+        "level": "Intermediate",
+        "times": ["Tuesday 7am, 7pm", "Thursday 7am, 7pm"]
+      },
+      {
+        "name": "Athletic Performance",
+        "description": "Sport-specific training for power and speed",
+        "duration": "60 min",
+        "level": "Advanced",
+        "times": ["Monday 7pm", "Wednesday 7pm"]
+      },
+      {
+        "name": "Mobility & Recovery",
+        "description": "Yoga-inspired stretching and recovery work",
+        "duration": "45 min",
+        "level": "All Levels",
+        "times": ["Tuesday 5:30pm", "Thursday 5:30pm", "Sunday 10am"]
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Member Success Stories",
+    "subtitle": "Real people, real transformations",
+    "items": [
+      {
+        "text": "I've tried countless gyms and programs over the years. FitLife is different. The coaching is exceptional, the community is supportive, and the results speak for themselves. Down 45 pounds and feeling stronger than ever!",
+        "author": "Sarah Martinez",
+        "location": "6-Month Transformation",
+        "rating": 5,
+        "date": "3 days ago",
+        "image": "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=100&q=80",
+        "imageAlt": "Sarah Martinez",
+        "program": "Performance Membership"
+      },
+      {
+        "text": "As someone who was intimidated by gyms, FitLife made me feel welcome from day one. Coach Amanda helped me build confidence and taught me proper form. I'm now lifting weights I never thought possible and feel amazing!",
+        "author": "Jessica Torres",
+        "location": "4-Month Member",
+        "rating": 5,
+        "date": "1 week ago",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&q=80",
+        "imageAlt": "Jessica Torres",
+        "program": "Basic Membership"
+      },
+      {
+        "text": "The Elite membership is worth every penny. Between the personal training, nutrition coaching, and community support, I've made more progress in 8 months than I did in years of training alone. Best investment I've ever made in myself.",
+        "author": "Marcus Thompson",
+        "location": "8-Month Transformation",
+        "rating": 5,
+        "date": "2 weeks ago",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "imageAlt": "Marcus Thompson",
+        "program": "Elite Membership"
+      },
+      {
+        "text": "I joined for the facility but stayed for the people. The coaches genuinely care about your progress and the members are incredibly supportive. FitLife isn't just a gym - it's a community that pushes you to be your best.",
+        "author": "David Chen",
+        "location": "1-Year Member",
+        "rating": 5,
+        "date": "3 weeks ago",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80",
+        "imageAlt": "David Chen",
+        "program": "Performance Membership"
+      }
+    ],
+    "stats": {
+      "averageRating": 4.9,
+      "totalReviews": 524,
+      "googleRating": 4.9,
+      "memberRetention": "94%"
+    }
+  },
+  "stats": {
+    "items": [
+      {"number": "500+", "label": "Active Members"},
+      {"number": "94%", "label": "Member Retention"},
+      {"number": "15K", "label": "Sq Ft Facility"},
+      {"number": "4.9", "label": "Star Rating"}
+    ]
+  },
+  "credentials": {
+    "title": "Why Choose FitLife",
+    "items": [
+      {"icon": "🏆", "name": "Best Gym 2023", "description": "Local Fitness Awards"},
+      {"icon": "⭐", "name": "4.9 Star Rating", "description": "500+ Reviews"},
+      {"icon": "💪", "name": "Certified Coaches", "description": "All Trainers Certified"},
+      {"icon": "📊", "name": "Results Driven", "description": "94% Member Retention"}
+    ]
+  },
+  "contact": {
+    "title": "Visit Our Facility",
+    "subtitle": "Schedule a free tour and consultation",
+    "phone": "(555) 234-5678",
+    "email": "info@fitlifeperformance.com",
+    "address": "789 Performance Drive, Downtown, Austin, TX 78701",
+    "coordinates": {
+      "lat": 30.2672,
+      "lng": -97.7431
+    },
+    "parking": "Free parking lot • Street parking available",
+    "accessibility": "Fully accessible • Ground floor entrance",
+    "hours": {
+      "title": "Hours",
+      "items": [
+        "Monday - Thursday: 5:00 AM - 10:00 PM",
+        "Friday: 5:00 AM - 9:00 PM",
+        "Saturday - Sunday: 7:00 AM - 7:00 PM",
+        "24/7 Access for Performance & Elite Members"
+      ],
+      "note": "Staffed hours: 6am-9pm weekdays, 8am-6pm weekends"
+    },
+    "booking": {
+      "title": "Free Consultation",
+      "description": "Book a tour, meet the team, and get a personalized fitness assessment",
+      "url": "https://calendly.com/fitlifeperformance",
+      "phone": "(555) 234-5678"
+    }
+  },
+  "social": {
+    "facebook": "https://facebook.com/fitlifeperformance",
+    "instagram": "https://instagram.com/fitlifeperformance",
+    "youtube": "https://youtube.com/@fitlifeperformance",
+    "tiktok": "https://tiktok.com/@fitlifeperformance"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "items": [
+      {
+        "question": "What membership is right for me?",
+        "answer": "Basic is great for self-motivated members who want gym access. Performance is our most popular option, including unlimited classes and personal training. Elite is perfect if you want a comprehensive transformation with nutrition coaching and weekly check-ins. Book a free consultation and we'll help you choose!"
+      },
+      {
+        "question": "Can I try before I commit?",
+        "answer": "Absolutely! We offer a free 7-day trial for new members. You'll get full access to the facility, group classes, and a complimentary personal training session to experience everything FitLife offers."
+      },
+      {
+        "question": "Are personal training sessions included?",
+        "answer": "Performance members get 2 PT sessions per month, Elite members get 8 per month. Basic members can purchase personal training separately. All new members receive one complimentary session."
+      },
+      {
+        "question": "What if I'm a complete beginner?",
+        "answer": "We love working with beginners! Our coaches specialize in teaching proper form and building confidence. We offer beginner-friendly classes, personalized programming, and a judgment-free environment. Everyone starts somewhere!"
+      },
+      {
+        "question": "Can I pause or cancel my membership?",
+        "answer": "Yes. You can pause your membership for up to 3 months (small hold fee applies). To cancel, we require 30 days notice. No long-term contracts - you can cancel anytime."
+      },
+      {
+        "question": "Do you offer nutrition coaching?",
+        "answer": "Performance members get a nutrition assessment, and Elite members receive complete meal planning and weekly nutrition check-ins. We also offer standalone nutrition coaching packages."
+      },
+      {
+        "question": "What equipment do you have?",
+        "answer": "Our 15,000 sq ft facility includes: full range of free weights, squat racks, benches, cable machines, cardio equipment (treadmills, rowers, bikes), functional training area, recovery room with massage chairs, and dedicated class studio."
+      },
+      {
+        "question": "Can I bring a friend?",
+        "answer": "Elite members get 4 guest passes per month. Performance members get 2 per month. Basic members can purchase day passes for guests. We also run 'Bring a Friend' events monthly!"
+      }
+    ]
+  },
+  "footer": {
+    "text": "💪 FitLife Performance • Transforming Lives Since 2018",
+    "links": [
+      {"label": "Book Tour", "href": "#booking"},
+      {"label": "Memberships", "href": "#memberships"},
+      {"label": "Schedule", "href": "#schedule"},
+      {"label": "Careers", "href": "#careers"}
+    ],
+    "awards": [
+      "Best Gym 2023 - Local Fitness Awards",
+      "4.9 Star Rating - 500+ Reviews",
+      "94% Member Retention Rate",
+      "All Coaches Certified"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": false,
+    "bookingEnabled": true,
+    "bookingWidget": "calendly",
+    "tier": "Pro"
+  }
+}
+

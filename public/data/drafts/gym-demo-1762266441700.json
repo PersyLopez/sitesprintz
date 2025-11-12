@@ -1,0 +1,16 @@
+{
+  "id": "gym-demo-1762266441700",
+  "templateId": "gym-pro",
+  "businessData": {
+    "businessName": "FitLife Performance",
+    "heroTitle": "Your Transformation Starts Here",
+    "heroSubtitle": "Join FitLife Performance, where cutting-edge training meets personalized coaching. Our expert trainers, state-of-the-art equipment, and supportive community will help you achieve results you never thought possible.",
+    "heroImage": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80",
+    "contactEmail": "info@fitlifeperformance.com",
+    "contactPhone": "(555) 234-5678",
+    "contactAddress": "789 Performance Drive, Downtown, Austin, TX 78701",
+    "services": []
+  },
+  "createdAt": "2025-11-04T14:27:21.700Z",
+  "expiresAt": "2025-12-04T14:27:21.736Z"
+}

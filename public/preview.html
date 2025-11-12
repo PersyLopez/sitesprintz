@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Template Preview</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="premium.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+    #content {
+      min-height: 100vh;
+    }
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+    }
+  </style>
+</head>
+<body>
+  <a href="#content" class="skip-link">Skip to content</a>
+  
+  <header class="site-header" id="site-header">
+    <div class="container">
+      <div class="header-inner">
+        <a href="#" class="brand">
+          <img src="assets/logo.svg" alt="Logo" class="brand-logo" id="brand-logo" />
+          <span class="brand-name" id="brand-name">LaunchPad</span>
+        </a>
+        <button class="nav-toggle" id="nav-toggle" aria-expanded="false">
+          <span class="nav-toggle-bar"></span>
+          <span class="nav-toggle-bar"></span>
+          <span class="nav-toggle-bar"></span>
+        </button>
+        <nav class="site-nav" id="site-nav">
+          <ul id="nav-links"></ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main id="content"></main>
+
+  <footer class="site-footer" id="footer">
+    <div class="container" id="footer-content">
+      <p>&copy; LaunchPad Templates - Template Preview</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
+

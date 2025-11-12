@@ -1,0 +1,239 @@
+{
+  "brand": {
+    "name": "QuickLube Express Auto",
+    "logo": "assets/logo.svg",
+    "tagline": "Fast Oil Changes • No Appointment",
+    "phone": "(555) 999-2211",
+    "email": "service@quicklube.auto"
+  },
+  "themeVars": {
+    "color-primary": "#dc2626",
+    "color-accent": "#ef4444",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444"
+  },
+  "nav": [
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "Coupons",
+      "href": "#about"
+    },
+    {
+      "label": "Reviews",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Find Us",
+      "href": "#contact"
+    }
+  ],
+  "hero": {
+    "eyebrow": "🚗 Quick Auto Service",
+    "title": "In and out in 20 minutes",
+    "subtitle": "Fast oil changes, tire rotations, and essential maintenance - no appointment needed. Stay in your car service. Certified technicians. Quality products. Fair prices. Drive-in anytime during business hours!",
+    "cta": [
+      {
+        "label": "See Services",
+        "href": "#products"
+      },
+      {
+        "label": "Find Location",
+        "href": "#contact",
+        "variant": "secondary"
+      }
+    ],
+    "image": "https://images.unsplash.com/photo-1632823470675-7b0c98d85a93?w=1200&q=80",
+    "imageAlt": "Quick oil change service bay"
+  },
+  "about": {
+    "title": "Fast & Convenient",
+    "subtitle": "No appointment necessary",
+    "content": "QuickLube specializes in fast, quality service for busy people. Drive in anytime during business hours - no appointment needed. Stay in your car while certified techs perform your service. In and out in 20 minutes or less!"
+  },
+  "products": [
+    {
+      "name": "Signature Oil Change",
+      "price": 39,
+      "description": "Conventional oil change with filter. Includes fluid top-off and courtesy inspection. Done in 15-20 minutes.",
+      "category": "Maintenance",
+      "duration": "15-20 min",
+      "popular": true
+    },
+    {
+      "name": "Synthetic Oil Change",
+      "price": 69,
+      "description": "Full synthetic oil for better performance and engine protection. Premium filter included. Drive-through service.",
+      "category": "Maintenance",
+      "duration": "20 min",
+      "popular": true
+    },
+    {
+      "name": "Tire Rotation",
+      "price": 25,
+      "description": "Rotate all four tires for even wear. Extend tire life. Quick service, no appointment.",
+      "category": "Tires",
+      "duration": "15 min"
+    },
+    {
+      "name": "Air Filter Replacement",
+      "price": 29,
+      "description": "New engine air filter for better fuel economy and performance. Quality filters, fast service.",
+      "category": "Maintenance",
+      "duration": "10 min"
+    },
+    {
+      "name": "Battery Check & Replacement",
+      "price": 149,
+      "description": "Free battery test. Quality replacement batteries installed while you wait. 3-year warranty.",
+      "category": "Battery",
+      "duration": "15 min",
+      "popular": true
+    },
+    {
+      "name": "Full Service Package",
+      "price": 89,
+      "description": "Synthetic oil change + tire rotation + multi-point inspection. Best value! Done in 30 minutes.",
+      "category": "Package",
+      "duration": "30 min"
+    }
+  ],
+  "services": {
+    "title": "Quick Services",
+    "subtitle": "Fast service without sacrificing quality",
+    "items": [
+      {
+        "title": "🛢️ Oil Changes",
+        "description": "Conventional and synthetic oil changes. Drive-through convenience"
+      },
+      {
+        "title": "🔧 Basic Maintenance",
+        "description": "Air filters, wipers, fluids, and light bulbs while you wait"
+      },
+      {
+        "title": "🔋 Batteries & Tires",
+        "description": "Battery testing and replacement, tire rotation and air pressure"
+      },
+      {
+        "title": "⚡ No Appointment",
+        "description": "Drive in anytime. Most services done in 15-20 minutes"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Customer Reviews",
+    "subtitle": "Fast, friendly, reliable",
+    "items": [
+      {
+        "text": "In and out in 15 minutes! No appointment hassle, reasonable prices, and they're always friendly. My go-to for oil changes.",
+        "author": "Sarah Williams",
+        "title": "Regular Customer"
+      },
+      {
+        "text": "Finally a place that respects your time! Quick service, never pushy with add-ons. Fair prices. Highly recommend!",
+        "author": "Mike Rodriguez",
+        "title": "Satisfied Customer"
+      },
+      {
+        "text": "Great service, fast turnaround. They pointed out my battery was low and replaced it same visit. Convenient and honest!",
+        "author": "Jennifer Lee",
+        "title": "Happy Customer"
+      }
+    ]
+  },
+  "team": {
+    "title": "Our Team",
+    "subtitle": "Certified technicians",
+    "members": [
+      {
+        "name": "Danny Wilson",
+        "title": "Service Manager",
+        "bio": "ASE certified technician with 12+ years experience in quick service. Trains all team members in quality service and customer care. Believes in honest, fast service.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "Danny Wilson",
+        "credentials": [
+          "ASE Certified",
+          "12+ Years Experience",
+          "Quality Service Expert"
+        ]
+      }
+    ]
+  },
+  "process": {
+    "title": "How It Works",
+    "subtitle": "Quick and easy",
+    "steps": [
+      {
+        "title": "Drive In",
+        "description": "No appointment needed. Just drive up during business hours"
+      },
+      {
+        "title": "Stay in Your Car",
+        "description": "Relax while our technicians service your vehicle"
+      },
+      {
+        "title": "Quick Service",
+        "description": "Most services completed in 15-20 minutes"
+      },
+      {
+        "title": "Drive Away",
+        "description": "Pay and go. Next service reminder included"
+      }
+    ]
+  },
+  "stats": {
+    "items": [
+      {
+        "number": "15-20",
+        "label": "Minute Service"
+      },
+      {
+        "number": "10,000+",
+        "label": "Vehicles Serviced"
+      },
+      {
+        "number": "4.8",
+        "label": "Star Rating"
+      },
+      {
+        "number": "No",
+        "label": "Appointment Needed"
+      }
+    ]
+  },
+  "contact": {
+    "title": "Visit QuickLube",
+    "subtitle": "456 Highway Drive, Auto District, Houston, TX 77002",
+    "phone": "(555) 999-2211",
+    "email": "service@quicklube.auto",
+    "address": "456 Highway Drive, Auto District, Houston, TX 77002"
+  },
+  "footer": {
+    "text": "🚗 QuickLube Express Auto • Fast Service Since 2012",
+    "awards": [
+      "ASE Certified",
+      "Best Quick Service 2023",
+      "5-Star Rated"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "service@quicklube.auto",
+    "productCta": "Find Location",
+    "productCtaHref": "tel:+15559992211",
+    "productNote": "No online booking needed - just drive in anytime during business hours! Call with questions."
+  },
+  "productsTitle": "Quick Service Menu",
+  "productsSubtitle": "Fast service, fair prices",
+  "social": {},
+  "published": {
+    "at": "2025-11-05T22:08:27.293Z",
+    "plan": "starter",
+    "email": "persylopez@gmail.com",
+    "subdomain": null
+  }
+}

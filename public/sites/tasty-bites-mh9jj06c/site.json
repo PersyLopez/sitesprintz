@@ -1,0 +1,74 @@
+{
+  "brand": {
+    "name": "Tasty Bites",
+    "logo": "assets/logo.svg"
+  },
+  "themeVars": {
+    "color-primary": "#ef4444",
+    "color-accent": "#f59e0b"
+  },
+  "nav": [
+    {
+      "label": "Menu",
+      "href": "#products"
+    },
+    {
+      "label": "About",
+      "href": "#about"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
+  ],
+  "hero": {
+    "eyebrow": "Fresh Daily",
+    "title": "Delicious meals, made with love",
+    "subtitle": "Order online or book a table.",
+    "cta": [
+      {
+        "label": "Order Now",
+        "href": "#products"
+      },
+      {
+        "label": "Reserve",
+        "href": "https://cal.com/your-restaurant",
+        "variant": "secondary"
+      }
+    ],
+    "image": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=80",
+    "imageAlt": "Restaurant dishes and ambiance"
+  },
+  "about": {
+    "title": "Our Kitchen",
+    "body": "Locally sourced ingredients and family recipes."
+  },
+  "products": [
+    {
+      "name": "Margherita Pizza",
+      "price": 12,
+      "description": "Classic pizza with fresh basil.",
+      "image": "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=800&q=80"
+    },
+    {
+      "name": "Caesar Salad",
+      "price": 9,
+      "description": "Crisp romaine with house dressing.",
+      "image": "https://images.unsplash.com/photo-1546793665-c74683f339c1?w=800&q=80"
+    },
+    {
+      "name": "Tiramisu",
+      "price": 7,
+      "description": "Homemade dessert.",
+      "image": "https://images.unsplash.com/photo-1571115177098-24ec42ed204d?w=800&q=80"
+    }
+  ],
+  "contact": {
+    "title": "Visit Us",
+    "subtitle": "123 Main St, Springfield",
+    "phone": "+1 555 987 6543"
+  },
+  "footer": {
+    "text": "Open Tue–Sun. See you soon!"
+  }
+}
