@@ -987,3 +987,58 @@ Query executed: {
   duration: 15,
   rows: 1
 }
+[2025-11-05T14:10:08.223Z] [PID: 25921] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Nov 05 2025 09:00:00 GMT-0500 (Eastern Standard Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 669,
+  rows: 1
+}
+✅ Database connected successfully
+✅ Database connected successfully
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 162,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 159,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 19,
+  rows: 1
+}
+Query executed: {
+  text: '\n' +
+    '      SELECT \n' +
+    '        id, subdomain, template_id, status, plan, \n' +
+    '        published_at, created_at, ',
+  duration: 50,
+  rows: 6
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 19,
+  rows: 1
+}
+Query executed: {
+  text: '\n' +
+    '      SELECT \n' +
+    '        id, subdomain, template_id, status, plan, \n' +
+    '        published_at, created_at, ',
+  duration: 21,
+  rows: 6
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 36,
+  rows: 1
+}
+Query executed: {
+  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
+  duration: 20,
+  rows: 1
+}
