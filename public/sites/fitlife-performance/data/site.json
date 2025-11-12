@@ -1,0 +1,44 @@
+{
+  "template": "gym-pro",
+  "templateId": "gym-pro",
+  "brand": {
+    "name": "FitLife Performance"
+  },
+  "hero": {
+    "title": "Your Transformation Starts Here",
+    "subtitle": "Join FitLife Performance, where cutting-edge training meets personalized coaching. Our expert trainers, state-of-the-art equipment, and supportive community will help you achieve results you never thought possible.",
+    "image": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80",
+    "cta": "Get Started"
+  },
+  "contact": {
+    "email": "info@fitlifeperformance.com",
+    "phone": "(555) 234-5678",
+    "address": "789 Performance Drive, Downtown, Austin, TX 78701"
+  },
+  "services": {
+    "title": "Our Services",
+    "items": [
+      {
+        "title": "Basic",
+        "name": "Basic",
+        "description": "Perfect for self-motivated gym-goers",
+        "price": "$49/month",
+        "image": ""
+      },
+      {
+        "title": "Performance",
+        "name": "Performance",
+        "description": "Our most popular option for serious results",
+        "price": "$89/month",
+        "image": ""
+      },
+      {
+        "title": "Elite",
+        "name": "Elite",
+        "description": "Complete transformation package",
+        "price": "$149/month",
+        "image": ""
+      }
+    ]
+  }
+}

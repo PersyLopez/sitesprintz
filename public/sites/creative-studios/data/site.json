@@ -1,0 +1,44 @@
+{
+  "template": "freelancer-pro",
+  "templateId": "freelancer-pro",
+  "brand": {
+    "name": "Creative Studios"
+  },
+  "hero": {
+    "title": "Transform Your Vision Into Reality",
+    "subtitle": "Award-winning design and development services for businesses that want to stand out. From branding to full-stack applications, we create digital experiences that drive results and captivate audiences.",
+    "image": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&q=80",
+    "cta": "Get Started"
+  },
+  "contact": {
+    "email": "hello@creativestudios.co",
+    "phone": "(555) 345-6789",
+    "address": "456 Innovation Drive, Suite 300, San Francisco, CA 94103"
+  },
+  "services": {
+    "title": "Our Services",
+    "items": [
+      {
+        "title": "Brand Identity Design",
+        "name": "Brand Identity Design",
+        "description": "Complete brand package: logo, color palette, typography, brand guidelines, and collateral",
+        "price": "$3500",
+        "image": "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600&q=80"
+      },
+      {
+        "title": "UI/UX Design",
+        "name": "UI/UX Design",
+        "description": "User-centered interface design with wireframes, prototypes, and design systems",
+        "price": "$5000",
+        "image": "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=600&q=80"
+      },
+      {
+        "title": "Web Design",
+        "name": "Web Design",
+        "description": "Custom website design with responsive layouts and modern aesthetics",
+        "price": "$2500",
+        "image": "https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=600&q=80"
+      }
+    ]
+  }
+}

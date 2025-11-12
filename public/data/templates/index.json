@@ -370,7 +370,7 @@
       "description": "Full e-commerce with Stripe checkout",
       "category": "Retail",
       "color": "#2563eb",
-      "plan": "Checkout",
+      "plan": "Pro",
       "features": [
         "Stripe checkout with secure payments",
         "Automatic order confirmations via email",
@@ -383,7 +383,7 @@
       "description": "Menu with Stripe checkout for takeout/delivery",
       "category": "Food & Dining",
       "color": "#dc2626",
-      "plan": "Checkout",
+      "plan": "Pro",
       "features": [
         "Accept online orders with Stripe checkout",
         "Menu display with secure payment processing",

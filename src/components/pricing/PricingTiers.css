@@ -1,0 +1,71 @@
+/* Pricing Tiers Styles */
+
+.pricing-tiers-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--spacing-2xl);
+}
+
+/* Header */
+.pricing-tiers-header {
+  text-align: center;
+  margin-bottom: var(--spacing-2xl);
+}
+
+.pricing-tiers-header h2 {
+  margin: 0 0 var(--spacing-md);
+  color: var(--text-light);
+  font-size: 2.5rem;
+  font-weight: 900;
+}
+
+.pricing-tiers-header p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+/* Empty State */
+.pricing-tiers-empty {
+  text-align: center;
+  padding: var(--spacing-2xl);
+  background: var(--bg-card);
+  border: 2px dashed var(--border-dark);
+  border-radius: 12px;
+}
+
+.pricing-tiers-empty p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+/* Footer */
+.pricing-tiers-footer {
+  margin-top: var(--spacing-2xl);
+  padding-top: var(--spacing-xl);
+  border-top: 2px solid var(--border-dark);
+  text-align: center;
+}
+
+.pricing-tiers-footer p {
+  margin: var(--spacing-sm) 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .pricing-tiers-container {
+    padding: var(--spacing-xl) var(--spacing-md);
+  }
+
+  .pricing-tiers-header h2 {
+    font-size: 2rem;
+  }
+
+  .pricing-tiers-header p {
+    font-size: 1rem;
+  }
+}
+

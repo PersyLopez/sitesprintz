@@ -1,0 +1,114 @@
+/* Booking Widget Styles */
+
+.booking-widget {
+  width: 100%;
+  min-height: 600px;
+}
+
+/* Loading State */
+.booking-widget-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2xl);
+  background: var(--bg-card);
+  border: 2px dashed var(--border-dark);
+  border-radius: 12px;
+  min-height: 400px;
+}
+
+.booking-widget-loading .loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--border-dark);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: var(--spacing-lg);
+}
+
+.booking-widget-loading p {
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+/* Error State */
+.booking-widget-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2xl);
+  background: rgba(239, 68, 68, 0.1);
+  border: 2px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px;
+  min-height: 400px;
+  text-align: center;
+}
+
+.booking-widget-error .error-icon {
+  font-size: 4rem;
+  margin-bottom: var(--spacing-lg);
+}
+
+.booking-widget-error h3 {
+  margin: 0 0 var(--spacing-md);
+  color: #ef4444;
+  font-size: 1.5rem;
+}
+
+.booking-widget-error p {
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+/* Calendly Widget */
+.calendly-inline-widget {
+  background: var(--bg-card);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Booking Iframe */
+.booking-iframe,
+.acuity-iframe {
+  border: 2px solid var(--border-dark);
+  border-radius: 12px;
+  background: white;
+}
+
+/* Popup Trigger */
+.booking-popup-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2xl);
+  background: var(--bg-card);
+  border: 2px solid var(--border-dark);
+  border-radius: 12px;
+  min-height: 300px;
+}
+
+.booking-popup-trigger .btn-lg {
+  padding: var(--spacing-lg) var(--spacing-2xl);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .booking-widget {
+    min-height: 500px;
+  }
+
+  .calendly-inline-widget {
+    height: 600px !important;
+  }
+
+  .booking-iframe,
+  .acuity-iframe {
+    height: 700px !important;
+  }
+}
+

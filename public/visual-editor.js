@@ -49,8 +49,8 @@ class SeamlessEditor {
       
       /* Edit hints on hover */
       [data-editable]:hover {
-        outline: 2px dashed #3b82f6;
-        outline-offset: 4px;
+        outline: 2px dashed rgba(59, 130, 246, 0.5);
+        outline-offset: 2px;
         cursor: text;
         position: relative;
         transition: outline 0.2s ease;
@@ -61,14 +61,13 @@ class SeamlessEditor {
         position: absolute;
         top: -30px;
         left: 0;
-        background: #3b82f6;
+        background: rgba(59, 130, 246, 0.95);
         color: white;
-        padding: 4px 12px;
+        padding: 4px 10px;
         border-radius: 6px;
-        font-size: 12px;
-        font-weight: 600;
+        font-size: 11px;
+        font-weight: 500;
         pointer-events: none;
-        opacity: 0.95;
         white-space: nowrap;
         z-index: 1000;
         animation: fadeIn 0.2s ease;
@@ -98,16 +97,20 @@ class SeamlessEditor {
         animation: fadeIn 0.2s ease;
       }
       
-      /* Active editing state */
+      /* Active editing state - keep text formatting, just show outline */
       [data-editable][contenteditable="true"] {
-        outline: 3px solid #10b981 !important;
-        outline-offset: 4px;
-        background: rgba(16, 185, 129, 0.05);
+        outline: 2px solid #3b82f6 !important;
+        outline-offset: 2px;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
       }
       
       [data-editable][contenteditable="true"]::after {
-        content: '✓ Editing - Click away to save';
+        content: '✓ Editing - Press Enter to save';
         background: #10b981;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
       }
       
       /* Floating Toolbar */
@@ -870,6 +873,28 @@ class SeamlessEditor {
     this.isEditing = true;
     const originalValue = element.textContent;
     
+    // Preserve original styles
+    const computedStyle = window.getComputedStyle(element);
+    const originalBackground = element.style.backgroundColor || computedStyle.backgroundColor;
+    const originalColor = element.style.color || computedStyle.color;
+    const originalFontSize = element.style.fontSize || computedStyle.fontSize;
+    const originalFontWeight = element.style.fontWeight || computedStyle.fontWeight;
+    const originalFontFamily = element.style.fontFamily || computedStyle.fontFamily;
+    
+    // Add subtle editing indicator without changing text style
+    element.classList.add('is-editing');
+    element.style.outline = '2px solid #3b82f6';
+    element.style.outlineOffset = '2px';
+    element.style.boxShadow = '0 0 0 4px rgba(59, 130, 246, 0.1)';
+    element.style.transition = 'all 0.2s ease';
+    element.style.minHeight = '1em';
+    
+    // Keep original text formatting
+    element.style.color = originalColor;
+    element.style.fontSize = originalFontSize;
+    element.style.fontWeight = originalFontWeight;
+    element.style.fontFamily = originalFontFamily;
+    
     element.contentEditable = 'true';
     element.focus();
     
@@ -880,16 +905,44 @@ class SeamlessEditor {
     selection.removeAllRanges();
     selection.addRange(range);
     
+    // Prevent formatting changes while typing
+    element.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const text = e.clipboardData.getData('text/plain');
+      document.execCommand('insertText', false, text);
+    });
+    
     const finishEdit = () => {
       element.contentEditable = 'false';
       this.isEditing = false;
       
-      const newValue = element.textContent;
+      const newValue = element.textContent.trim();
       
-      if (newValue !== originalValue) {
+      // Remove editing styles - keep original formatting
+      element.classList.remove('is-editing');
+      element.style.outline = '';
+      element.style.outlineOffset = '';
+      element.style.boxShadow = '';
+      
+      // Flash green outline on save (not background)
+      element.style.outline = '2px solid #10b981';
+      element.style.outlineOffset = '2px';
+      element.style.boxShadow = '0 0 0 4px rgba(16, 185, 129, 0.15)';
+      setTimeout(() => {
+        element.style.outline = '';
+        element.style.outlineOffset = '';
+        element.style.boxShadow = '';
+      }, 1000);
+      
+      if (newValue !== originalValue.trim()) {
         const field = element.dataset.editable;
         this.recordChange(field, originalValue, newValue);
         this.queueAutoSave(field, newValue);
+        
+        // Update window.siteData immediately
+        this.updateSiteData(field, newValue);
+        
+        console.log(`✅ Updated ${field}: "${originalValue}" → "${newValue}"`);
       }
     };
     
@@ -900,7 +953,24 @@ class SeamlessEditor {
         e.preventDefault();
         element.blur();
       }
+      if (e.key === 'Escape') {
+        element.textContent = originalValue;
+        element.blur();
+      }
     }, { once: true });
+  }
+  
+  updateSiteData(field, value) {
+    // Update window.siteData with dot notation
+    const keys = field.split('.');
+    let obj = window.siteData;
+    
+    for (let i = 0; i < keys.length - 1; i++) {
+      if (!obj[keys[i]]) obj[keys[i]] = {};
+      obj = obj[keys[i]];
+    }
+    
+    obj[keys[keys.length - 1]] = value;
   }
   
   setupCardEditing() {
@@ -1093,6 +1163,8 @@ class SeamlessEditor {
     
     const indicator = document.getElementById('saveIndicator');
     
+    console.log('💾 Saving changes:', changes);
+    
     try {
       const response = await fetch(`/api/sites/${this.subdomain}`, {
         method: 'PATCH',
@@ -1103,16 +1175,28 @@ class SeamlessEditor {
         body: JSON.stringify({ changes })
       });
       
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+      
       const result = await response.json();
       
       if (result.success) {
         indicator.className = 'save-indicator';
         indicator.innerHTML = '<span>✓</span> All changes saved';
+        console.log('✅ Save successful!', result);
+        
+        // Flash success
+        indicator.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
+        setTimeout(() => {
+          indicator.style.backgroundColor = '';
+        }, 2000);
       } else {
         throw new Error(result.error || 'Save failed');
       }
     } catch (error) {
-      console.error('Save error:', error);
+      console.error('❌ Save error:', error);
       indicator.className = 'save-indicator error';
       indicator.innerHTML = '<span>⚠️</span> Save failed - will retry';
       
@@ -1225,19 +1309,36 @@ class SeamlessEditor {
   }
   
   setupImageEditing() {
-    // Find all images (hero images, service card images, etc.)
-    const images = document.querySelectorAll('img, [style*="background-image"]');
+    // Find all images with data-editable-image attribute
+    const editableImages = document.querySelectorAll('[data-editable-image]');
     
-    images.forEach(img => {
-      // Add data-editable-image attribute
-      if (!img.hasAttribute('data-editable-image')) {
-        img.setAttribute('data-editable-image', 'true');
-      }
+    console.log(`📷 Found ${editableImages.length} editable images`);
+    
+    editableImages.forEach(img => {
+      // Add visual feedback on hover
+      img.style.position = 'relative';
       
+      // Add click to edit
       img.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.openImageEditor(img);
+        if (!this.isEditing) {
+          e.preventDefault();
+          e.stopPropagation();
+          this.openImageEditor(img);
+        }
+      });
+      
+      // Add hover effect
+      img.addEventListener('mouseenter', () => {
+        if (!this.isEditing) {
+          img.style.outline = '2px dashed #3b82f6';
+          img.style.outlineOffset = '4px';
+          img.style.cursor = 'pointer';
+        }
+      });
+      
+      img.addEventListener('mouseleave', () => {
+        img.style.outline = '';
+        img.style.outlineOffset = '';
       });
     });
   }
@@ -1612,14 +1713,22 @@ class SeamlessEditor {
 
 // Initialize editor
 (function() {
-  const script = document.currentScript;
+  // Try to get the script element that loaded this file
+  const script = document.currentScript || document.querySelector('script[data-token][data-subdomain]');
+  
+  if (!script) {
+    console.error('Visual editor: Could not find script element');
+    return;
+  }
+  
   const token = script.dataset.token;
   const subdomain = script.dataset.subdomain;
   
   if (token && subdomain) {
+    console.log('🎨 Initializing visual editor...', { token: token.substring(0, 10) + '...', subdomain });
     window.seamlessEditor = new SeamlessEditor(token, subdomain);
   } else {
-    console.error('Visual editor: Missing required data (token or subdomain)');
+    console.error('Visual editor: Missing required data', { token: !!token, subdomain: !!subdomain });
   }
 })();
 

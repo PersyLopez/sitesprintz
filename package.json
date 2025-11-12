@@ -6,7 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "dev": "NODE_ENV=development node server.js",
+    "dev": "vite",
+    "dev:backend": "NODE_ENV=development node server.js",
+    "dev:all": "concurrently \"npm run dev:backend\" \"npm run dev\"",
+    "build": "vite build",
+    "preview": "vite preview",
     "serve": "npx http-server public -p 5173",
     "validate-template": "node validation/validate-template.js",
     "validate-templates": "node validation/validate-template.js public/data/templates/"
@@ -28,6 +32,7 @@
     "ajv-formats": "^2.1.1",
     "bcryptjs": "^3.0.2",
     "body-parser": "^2.2.0",
+    "chart.js": "^4.5.1",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
@@ -43,9 +48,18 @@
     "passport-apple": "^2.0.2",
     "passport-google-oauth20": "^2.0.0",
     "pg": "^8.16.3",
+    "react": "^19.2.0",
+    "react-chartjs-2": "^5.3.1",
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.9.5",
     "resend": "^6.3.0",
     "sharp": "^0.34.4",
     "stripe": "^19.1.0",
     "winston": "^3.18.3"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.0",
+    "concurrently": "^9.2.1",
+    "vite": "^7.2.0"
   }
 }

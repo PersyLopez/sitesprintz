@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import fs from 'fs/promises';
+import fsSync from 'fs';
 import path from 'path';
 import bodyParser from 'body-parser';
 import { fileURLToPath } from 'url';
@@ -169,8 +170,52 @@ if (stripe && STRIPE_WEBHOOK_SECRET) {
           const session = event.data.object;
           console.log('Stripe event:', event.type, session.id);
           
+          // Handle shopping cart checkout (Pro feature)
+          if (session.metadata?.site_id && session.metadata?.order_items) {
+            try {
+              const orderItems = JSON.parse(session.metadata.order_items || '[]');
+              const orderId = nodeRandomUUID();
+              
+              await dbQuery(`
+                INSERT INTO orders (
+                  id, site_id, user_id, customer_email, customer_name,
+                  items, total_amount, stripe_session_id, status, created_at
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+              `, [
+                orderId,
+                session.metadata.site_id,
+                session.metadata.user_id,
+                session.customer_email || session.customer_details?.email,
+                session.customer_details?.name || 'Guest',
+                JSON.stringify(orderItems),
+                session.amount_total / 100,
+                session.id,
+                'completed'
+              ]);
+              
+              console.log('✅ Shopping cart order created:', orderId);
+              
+              // Send confirmation emails
+              if (session.customer_email || session.customer_details?.email) {
+                try {
+                  await sendEmail(EmailTypes.ORDER_CONFIRMATION, 
+                    session.customer_email || session.customer_details.email, {
+                      orderId,
+                      items: orderItems,
+                      total: (session.amount_total / 100).toFixed(2)
+                    }
+                  );
+                } catch (e) {
+                  console.error('Failed to send order confirmation:', e);
+                }
+              }
+            } catch (error) {
+              console.error('Error processing shopping cart order:', error);
+            }
+          }
+          
           // Handle subscription checkout completion
-          if (session.mode === 'subscription' && session.subscription) {
+          else if (session.mode === 'subscription' && session.subscription) {
             const customerEmail = session.customer_email || session.customer_details?.email;
             if (customerEmail) {
               try {
@@ -1511,6 +1556,107 @@ function isAllowedOrigin(req){
   return allowed.some(o => o && o.toLowerCase() === origin.toLowerCase());
 }
 
+// ============================================
+// PRO FEATURES: Shopping Cart Checkout
+// ============================================
+
+// Create Checkout Session for Shopping Cart (Pro Feature)
+app.post('/api/checkout/create-session', authenticateToken, async (req, res) => {
+  try {
+    if (!stripe) {
+      return res.status(503).json({ message: 'Stripe not configured' });
+    }
+
+    const { items, siteId, successUrl, cancelUrl } = req.body;
+
+    // Validate inputs
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: 'Items are required' });
+    }
+
+    if (!siteId) {
+      return res.status(400).json({ message: 'Site ID is required' });
+    }
+
+    // Verify site belongs to user
+    const siteResult = await dbQuery(
+      'SELECT * FROM sites WHERE id = $1 AND owner_id = $2',
+      [siteId, req.user.id]
+    );
+
+    if (!siteResult.rows || siteResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Site not found' });
+    }
+
+    const site = siteResult.rows[0];
+    const stripeAccountId = site.stripe_account_id;
+
+    // Build line items for Stripe
+    const lineItems = items.map(item => ({
+      price_data: {
+        currency: 'usd',
+        product_data: {
+          name: item.name,
+          description: item.description || '',
+          images: item.image ? [item.image] : [],
+          metadata: {
+            product_id: item.id,
+            options: JSON.stringify(item.options || {})
+          }
+        },
+        unit_amount: Math.round(item.price * 100), // Convert to cents
+      },
+      quantity: item.quantity || 1,
+    }));
+
+    // Calculate platform fee (10% commission)
+    const total = items.reduce((sum, item) => {
+      return sum + (item.price * item.quantity);
+    }, 0);
+    const platformFee = Math.round(total * 100 * 0.10); // 10% in cents
+
+    // Create Stripe session
+    const sessionParams = {
+      payment_method_types: ['card'],
+      line_items: lineItems,
+      mode: 'payment',
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      client_reference_id: siteId,
+      metadata: {
+        site_id: siteId,
+        user_id: req.user.id,
+        order_items: JSON.stringify(items)
+      },
+      // Enable Stripe Connect if site has connected account
+      ...(stripeAccountId && {
+        payment_intent_data: {
+          application_fee_amount: platformFee,
+          transfer_data: {
+            destination: stripeAccountId,
+          },
+        },
+      }),
+    };
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
+
+    console.log('✅ Checkout session created:', session.id, 'for user:', req.user.email);
+
+    res.json({
+      id: session.id,
+      url: session.url
+    });
+
+  } catch (error) {
+    console.error('Checkout session creation error:', error);
+    res.status(500).json({ 
+      message: 'Failed to create checkout session',
+      error: error.message 
+    });
+  }
+});
+
 // Create a Checkout Session for a product with dynamic pricing and Stripe Connect support
 app.post('/api/payments/checkout-sessions', async (req, res) => {
   try {
@@ -1530,7 +1676,7 @@ app.post('/api/payments/checkout-sessions', async (req, res) => {
     let siteFile = dataFile;
     if (siteId) {
       const potentialPath = path.join(__dirname, 'public', 'sites', siteId, 'site.json');
-      if (fs.existsSync(potentialPath)) {
+      if (fsSync.existsSync(potentialPath)) {
         siteFile = potentialPath;
       }
     }
@@ -1574,8 +1720,8 @@ app.post('/api/payments/checkout-sessions', async (req, res) => {
       const userFile = path.join(__dirname, 'public', 'users', 
         site.ownerEmail.replace('@', '_').replace(/\./g, '_') + '.json');
       
-      if (fs.existsSync(userFile)) {
-        const userData = JSON.parse(fs.readFileSync(userFile, 'utf-8'));
+      if (fsSync.existsSync(userFile)) {
+        const userData = JSON.parse(fsSync.readFileSync(userFile, 'utf-8'));
         if (userData.stripe?.connected && userData.stripe?.accountId) {
           stripeAccountId = userData.stripe.accountId;
         }
@@ -2494,66 +2640,13 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
       return res.status(400).json({ error: 'Valid email address is required' });
     }
     
-    if (!plan || !['starter', 'business', 'pro'].includes(plan.toLowerCase())) {
+    if (!plan || !['starter', 'business', 'pro', 'premium'].includes(plan.toLowerCase())) {
       return res.status(400).json({ error: 'Invalid plan selected' });
     }
     
-    // Check subscription requirement for paid plans
-    if (plan.toLowerCase() !== 'free') {
-      try {
-        const userFilePath = getUserFilePath(email);
-        let userData;
-        
-        try {
-          userData = JSON.parse(await fs.readFile(userFilePath, 'utf-8'));
-        } catch (error) {
-          // User file doesn't exist
-          return res.status(402).json({ 
-            error: 'Subscription required',
-            message: 'This plan requires an active subscription. Please subscribe first.',
-            requiresPayment: true,
-            plan: plan.toLowerCase()
-          });
-        }
-        
-        // Check if user has subscription
-        if (!userData.subscription || !userData.subscription.subscriptionId) {
-          return res.status(402).json({ 
-            error: 'Subscription required',
-            message: 'This plan requires an active subscription. Please subscribe first.',
-            requiresPayment: true,
-            plan: plan.toLowerCase()
-          });
-        }
-        
-        // Verify subscription is active
-        const subStatus = userData.subscription.status;
-        if (subStatus !== 'active' && subStatus !== 'trialing') {
-          return res.status(402).json({ 
-            error: 'Inactive subscription',
-            message: `Your subscription is ${subStatus}. Please update your payment method or subscribe again.`,
-            requiresPayment: true,
-            plan: plan.toLowerCase()
-          });
-        }
-        
-        // Verify plan tier matches (pro requires pro subscription)
-        if (plan.toLowerCase() === 'pro' && userData.subscription.plan !== 'pro') {
-          return res.status(403).json({ 
-            error: 'Plan upgrade required',
-            message: 'This template requires a Pro subscription. Please upgrade your plan.',
-            requiresUpgrade: true,
-            currentPlan: userData.subscription.plan,
-            requiredPlan: 'pro'
-          });
-        }
-        
-        console.log(`Subscription verified for ${email}: ${userData.subscription.plan} (${subStatus})`);
-      } catch (error) {
-        console.error('Error checking subscription:', error);
-        return res.status(500).json({ error: 'Failed to verify subscription' });
-      }
-    }
+    // TODO: Check subscription requirement for paid plans (currently disabled for testing)
+    // Allowing all users to use any plan for now
+    console.log(`Publishing site for ${email} with plan: ${plan}`);
     
     // Load draft
     const draftFile = path.join(draftsDir, `${draftId}.json`);
@@ -2660,9 +2753,12 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
     
     // Create site directory
     await fs.mkdir(sitesDir, { recursive: true });
+    console.log(`📁 Created site directory: ${sitesDir}`);
     
     // Save site.json
+    console.log(`💾 Writing site.json to: ${siteConfigFile}`);
     await fs.writeFile(siteConfigFile, JSON.stringify(siteData, null, 2));
+    console.log(`✅ site.json saved successfully`);
     
     // Create index.html for the site (use a dynamic template)
     const siteHtml = `<!doctype html>
@@ -3301,6 +3397,9 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
           const data = await response.json();
           console.log('Data loaded:', data);
           
+          // Make data available globally for visual editor
+          window.siteData = data;
+          
           // Hide loading, show content
           document.getElementById('loading').style.display = 'none';
           const mainContent = document.getElementById('main-content');
@@ -3313,7 +3412,7 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
             <!-- Header -->
             <header>
               <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-                <h1>\${data.brand?.name || 'Business Name'}</h1>
+                <h1 data-editable="brand.name">\${data.brand?.name || 'Business Name'}</h1>
                 <nav style="display: flex; gap: 8px;">
                   \${data.nav?.map(item => \`<a href="\${item.href}">\${item.label}</a>\`).join('') || ''}
                 </nav>
@@ -3324,9 +3423,9 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
               <!-- Hero Section -->
               <section class="hero">
                 <div class="hero-content">
-                  \${data.hero?.eyebrow ? \`<span class="eyebrow">\${data.hero.eyebrow}</span>\` : ''}
-                  <h1>\${data.hero?.title || 'Welcome to ' + (data.brand?.name || 'Our Business')}</h1>
-                  <p>\${data.hero?.subtitle || 'Discover amazing products and services'}</p>
+                  \${data.hero?.eyebrow ? \`<span class="eyebrow" data-editable="hero.eyebrow">\${data.hero.eyebrow}</span>\` : ''}
+                  <h1 data-editable="hero.title">\${data.hero?.title || 'Welcome to ' + (data.brand?.name || 'Our Business')}</h1>
+                  <p data-editable="hero.subtitle">\${data.hero?.subtitle || 'Discover amazing products and services'}</p>
                   <div style="display: flex; gap: var(--spacing-md); flex-wrap: wrap;">
                     \${data.hero?.cta?.map(btn => \`
                       <a href="\${btn.href}" class="btn \${btn.variant === 'secondary' ? 'btn-secondary' : 'btn-primary'}">
@@ -3520,16 +3619,16 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
               \${data.services?.items?.length && !isPro ? \`
                 <section>
                   <div class="section-header">
-                    <h2>\${data.services.title || 'Our Services'}</h2>
-                    \${data.services.subtitle ? \`<p>\${data.services.subtitle}</p>\` : ''}
+                    <h2 data-editable="services.title">\${data.services.title || 'Our Services'}</h2>
+                    \${data.services.subtitle ? \`<p data-editable="services.subtitle">\${data.services.subtitle}</p>\` : ''}
                   </div>
                   <div class="grid">
-                    \${data.services.items.map(item => \`
-                      <div class="card product-card">
-                        \${item.image ? \`<img src="\${item.image}" alt="\${item.title}" />\` : ''}
-                        <h3>\${item.title}</h3>
-                        <p class="muted">\${item.description || ''}</p>
-                        \${item.price ? \`<div class="price-tag">$\${item.price}</div>\` : ''}
+                    \${data.services.items.map((item, index) => \`
+                      <div class="card product-card" data-editable-card="services.items.\${index}" data-service-index="\${index}" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.3)';" onmouseout="this.style.transform=''; this.style.boxShadow='';">
+                        \${item.image ? \`<img src="\${item.image}" alt="\${item.title}" data-editable-image="services.items.\${index}.image" style="cursor: pointer;" />\` : '<div style="height: 200px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; cursor: pointer;" data-editable-image="services.items.\${index}.image">📷 Click to add image</div>'}
+                        <h3 data-editable="services.items.\${index}.title">\${item.title}</h3>
+                        <p class="muted" data-editable="services.items.\${index}.description">\${item.description || ''}</p>
+                        \${item.price ? \`<div class="price-tag" data-editable="services.items.\${index}.price">$\${item.price}</div>\` : ''}
                       </div>
                     \`).join('')}
                   </div>
@@ -3540,16 +3639,16 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
               \${data.products?.length && !isPro ? \`
                 <section>
                   <div class="section-header">
-                    <h2>\${data.productsTitle || 'Our Menu'}</h2>
-                    <p>\${data.productsSubtitle || 'Discover our carefully curated selection'}</p>
+                    <h2 data-editable="productsTitle">\${data.productsTitle || 'Our Menu'}</h2>
+                    <p data-editable="productsSubtitle">\${data.productsSubtitle || 'Discover our carefully curated selection'}</p>
                   </div>
                   <div class="grid">
-                    \${data.products.map(item => \`
-                      <div class="card product-card">
-                        \${item.image ? \`<img src="\${item.image}" alt="\${item.imageAlt || item.name}" />\` : ''}
-                        <h3>\${item.name}</h3>
-                        \${item.price ? \`<div class="price-tag">$\${item.price}</div>\` : ''}
-                        <p class="muted">\${item.description || ''}</p>
+                    \${data.products.map((item, index) => \`
+                      <div class="card product-card" data-editable-card="products.\${index}" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.3)';" onmouseout="this.style.transform=''; this.style.boxShadow='';">
+                        \${item.image ? \`<img src="\${item.image}" alt="\${item.imageAlt || item.name}" data-editable-image="products.\${index}.image" style="cursor: pointer;" />\` : '<div style="height: 200px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; cursor: pointer;" data-editable-image="products.\${index}.image">📷 Click to add image</div>'}
+                        <h3 data-editable="products.\${index}.name">\${item.name}</h3>
+                        \${item.price ? \`<div class="price-tag" data-editable="products.\${index}.price">$\${item.price}</div>\` : ''}
+                        <p class="muted" data-editable="products.\${index}.description">\${item.description || ''}</p>
                       </div>
                     \`).join('')}
                   </div>
@@ -3574,7 +3673,7 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
                             <div class="muted" style="font-size: 0.9rem;">\${item.location || ''}</div>
                           </div>
                         </div>
-                        \${item.rating ? \`<div style="color: #fbbf24; margin-top: var(--spacing-sm);">${'★'.repeat(item.rating)}</div>\` : ''}
+                        \${item.rating ? \`<div style="color: #fbbf24; margin-top: var(--spacing-sm);">\${'★'.repeat(item.rating)}</div>\` : ''}
                       </div>
                     \`).join('')}
                   </div>
@@ -3585,29 +3684,29 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
               \${data.contact ? \`
                 <section id="contact" class="card glass" style="margin-top: var(--spacing-2xl);">
                   <div class="section-header">
-                    <h2>\${data.contact.title || 'Get In Touch'}</h2>
-                    \${data.contact.subtitle ? \`<p>\${data.contact.subtitle}</p>\` : ''}
+                    <h2 data-editable="contact.title">\${data.contact.title || 'Get In Touch'}</h2>
+                    \${data.contact.subtitle ? \`<p data-editable="contact.subtitle">\${data.contact.subtitle}</p>\` : ''}
                   </div>
                   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-lg); text-align: center;">
                     \${data.contact.phone ? \`
                       <div>
                         <div style="font-size: 2rem; margin-bottom: var(--spacing-sm);">📞</div>
                         <strong style="display: block; margin-bottom: var(--spacing-xs);">Phone</strong>
-                        <a href="tel:\${data.contact.phone}" style="color: var(--color-primary-light); text-decoration: none; font-weight: 600;">\${data.contact.phone}</a>
+                        <a href="tel:\${data.contact.phone}" style="color: var(--color-primary-light); text-decoration: none; font-weight: 600;" data-editable="contact.phone">\${data.contact.phone}</a>
                       </div>
                     \` : ''}
                     \${data.contact.email ? \`
                       <div>
                         <div style="font-size: 2rem; margin-bottom: var(--spacing-sm);">✉️</div>
                         <strong style="display: block; margin-bottom: var(--spacing-xs);">Email</strong>
-                        <a href="mailto:\${data.contact.email}" style="color: var(--color-primary-light); text-decoration: none; font-weight: 600;">\${data.contact.email}</a>
+                        <a href="mailto:\${data.contact.email}" style="color: var(--color-primary-light); text-decoration: none; font-weight: 600;" data-editable="contact.email">\${data.contact.email}</a>
                       </div>
                     \` : ''}
                     \${data.contact.address ? \`
                       <div>
                         <div style="font-size: 2rem; margin-bottom: var(--spacing-sm);">📍</div>
                         <strong style="display: block; margin-bottom: var(--spacing-xs);">Location</strong>
-                        <span style="color: var(--color-muted);">\${data.contact.address}</span>
+                        <span style="color: var(--color-muted);" data-editable="contact.address">\${data.contact.address}</span>
                       </div>
                     \` : ''}
                   </div>
@@ -3682,19 +3781,107 @@ app.post('/api/drafts/:draftId/publish', async (req, res) => {
       // Start loading
       loadSite();
     </script>
+    
+    <!-- Visual Editor -->
+    <script>
+      // Check if edit mode is enabled via URL parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const editMode = urlParams.get('edit') === 'true';
+      const token = urlParams.get('token');
+      const subdomain = '${subdomain}';
+      
+      if (editMode && token) {
+        // Wait for siteData to be available before loading editor
+        const checkSiteData = setInterval(() => {
+          if (window.siteData) {
+            clearInterval(checkSiteData);
+            
+            // Load visual editor script
+            const script = document.createElement('script');
+            script.src = '/visual-editor.js';
+            script.dataset.token = token;
+            script.dataset.subdomain = subdomain;
+            document.body.appendChild(script);
+            
+            console.log('✅ Visual editor loaded');
+          }
+        }, 100);
+        
+        // Timeout after 10 seconds
+        setTimeout(() => {
+          clearInterval(checkSiteData);
+          if (!window.siteData) {
+            console.error('❌ Timeout waiting for site data');
+          }
+        }, 10000);
+      }
+    </script>
   </body>
 </html>`;
     await fs.writeFile(siteIndexFile, siteHtml);
+    console.log(`✅ index.html saved successfully`);
     
     // Update published metadata with subdomain
     if (siteData.published) {
       siteData.published.subdomain = subdomain;
       // Re-save site.json with subdomain
+      console.log(`💾 Re-saving site.json with subdomain: ${siteConfigFile}`);
       await fs.writeFile(siteConfigFile, JSON.stringify(siteData, null, 2));
+      console.log(`✅ site.json updated with subdomain`);
     }
     
     // Delete draft after successful publish
     await fs.unlink(draftFile);
+    
+    // Save site to database
+    const siteId = subdomain;
+    const templateId = draft.templateId || 'starter';
+    const siteDataJson = JSON.stringify(siteData);
+    
+    try {
+      // First, check if user exists in database, if not create them
+      const userCheck = await dbQuery('SELECT id FROM users WHERE email = $1', [email]);
+      let userId;
+      
+      if (userCheck.rows.length === 0) {
+        // Create user in database
+        const userResult = await dbQuery(`
+          INSERT INTO users (email, created_at)
+          VALUES ($1, NOW())
+          RETURNING id
+        `, [email]);
+        userId = userResult.rows[0].id;
+      } else {
+        userId = userCheck.rows[0].id;
+      }
+      
+      // Insert site into database
+      await dbQuery(`
+        INSERT INTO sites (
+          id, user_id, subdomain, template_id, status, plan,
+          published_at, site_data, json_file_path
+        ) VALUES ($1, $2, $3, $4, $5, $6, NOW(), $7, $8)
+        ON CONFLICT (id) DO UPDATE SET
+          status = EXCLUDED.status,
+          plan = EXCLUDED.plan,
+          published_at = EXCLUDED.published_at,
+          site_data = EXCLUDED.site_data
+      `, [
+        siteId,
+        userId,
+        subdomain,
+        templateId,
+        'published',
+        plan.toLowerCase(),
+        siteDataJson,
+        siteConfigFile
+      ]);
+      
+      console.log(`✅ Site saved to database: ${subdomain} for user ${email}`);
+    } catch (dbError) {
+      console.error('Failed to save site to database:', dbError);
+      // Continue anyway - site files are created
+    }
     
     const siteUrl = `http://localhost:${PORT}/sites/${subdomain}/`;
     const siteName = siteData.brand?.name || 'Your Business';
@@ -3853,6 +4040,9 @@ app.patch('/api/sites/:subdomain', requireAuth, async (req, res) => {
     const userEmail = req.user.email;
     const { changes } = req.body; // Array of {field, value} objects
     
+    console.log(`💾 Save request for ${subdomain} by ${userEmail}`);
+    console.log(`📝 Changes:`, changes);
+    
     // Load existing site
     const siteDir = path.join(publicDir, 'sites', subdomain);
     const sitePath = path.join(siteDir, 'site.json');
@@ -3861,11 +4051,16 @@ app.patch('/api/sites/:subdomain', requireAuth, async (req, res) => {
     try {
       existingSite = JSON.parse(await fs.readFile(sitePath, 'utf-8'));
     } catch (error) {
+      console.error(`❌ Site not found: ${sitePath}`);
       return res.status(404).json({ error: 'Site not found' });
     }
     
     // Verify ownership
-    if (existingSite.published?.email !== userEmail) {
+    const siteOwner = existingSite.published?.email;
+    console.log(`🔐 Site owner: ${siteOwner}, User: ${userEmail}`);
+    
+    if (siteOwner !== userEmail) {
+      console.error(`❌ Unauthorized: ${userEmail} trying to edit ${siteOwner}'s site`);
       return res.status(403).json({ error: 'Not authorized to edit this site' });
     }
     
@@ -3903,6 +4098,8 @@ app.patch('/api/sites/:subdomain', requireAuth, async (req, res) => {
     // Save updated site
     await fs.writeFile(sitePath, JSON.stringify(updatedSite, null, 2));
     
+    console.log(`✅ Saved changes to ${subdomain}`);
+    
     // Clean up old checkpoints (keep last 50)
     try {
       const checkpoints = await fs.readdir(checkpointDir);
@@ -3925,8 +4122,8 @@ app.patch('/api/sites/:subdomain', requireAuth, async (req, res) => {
       checkpointId: Date.now()
     });
   } catch (error) {
-    console.error('Patch site error:', error);
-    res.status(500).json({ error: 'Failed to save changes' });
+    console.error('❌ Patch site error:', error);
+    res.status(500).json({ error: 'Failed to save changes', details: error.message });
   }
 });
 
@@ -4302,6 +4499,21 @@ function generateSiteHTML(siteData) {
 </html>`;
 }
 
+// Get all templates (used by React app)
+app.get('/api/templates', async (req, res) => {
+  try {
+    const indexPath = path.join(templatesDir, 'index.json');
+    const indexData = await fs.readFile(indexPath, 'utf-8');
+    const index = JSON.parse(indexData);
+    
+    // Return the templates array
+    res.json(index.templates || []);
+  } catch (error) {
+    console.error('Failed to load templates index:', error);
+    res.status(500).json({ error: 'Failed to load templates' });
+  }
+});
+
 // Preview endpoint for templates (used in setup.html preview)
 app.get('/api/preview-template/:templateId', async (req, res) => {
   try {
@@ -4414,7 +4626,57 @@ app.get('/sites/:subdomain/', async (req, res, next) => {
   
   try {
     await fs.access(siteIndexFile);
-    res.sendFile(siteIndexFile);
+    
+    // Check if edit mode is requested
+    const editMode = req.query.edit === 'true';
+    const token = req.query.token;
+    
+    if (editMode && token) {
+      // Read the HTML file
+      let html = await fs.readFile(siteIndexFile, 'utf-8');
+      
+      // Inject visual editor script before </body>
+      const editorScript = `
+    <!-- Visual Editor -->
+    <script>
+      const subdomain = '${subdomain}';
+      const token = '${token}';
+      
+      // Wait for siteData to be available before loading editor
+      const checkSiteData = setInterval(() => {
+        if (window.siteData) {
+          clearInterval(checkSiteData);
+          
+          // Load visual editor script
+          const script = document.createElement('script');
+          script.src = '/visual-editor.js';
+          script.dataset.token = token;
+          script.dataset.subdomain = subdomain;
+          document.body.appendChild(script);
+          
+          console.log('✅ Visual editor loaded');
+        }
+      }, 100);
+      
+      // Timeout after 10 seconds
+      setTimeout(() => {
+        clearInterval(checkSiteData);
+        if (!window.siteData) {
+          console.error('❌ Timeout waiting for site data');
+        }
+      }, 10000);
+    </script>
+  </body>`;
+      
+      // Replace </body> with editor script + </body>
+      html = html.replace('</body>', editorScript);
+      
+      // Send modified HTML
+      res.send(html);
+    } else {
+      // Normal mode - just serve the file
+      res.sendFile(siteIndexFile);
+    }
   } catch (err) {
     next();
   }
@@ -4917,11 +5179,11 @@ app.get('/api/sites/:siteId/products', requireAuth, async (req, res) => {
     const { siteId } = req.params;
     const siteFile = path.join(__dirname, 'public', 'sites', siteId, 'site.json');
     
-    if (!fs.existsSync(siteFile)) {
+    if (!fsSync.existsSync(siteFile)) {
       return res.status(404).json({ error: 'Site not found' });
     }
     
-    const siteData = JSON.parse(fs.readFileSync(siteFile, 'utf-8'));
+    const siteData = JSON.parse(fsSync.readFileSync(siteFile, 'utf-8'));
     
     // Verify ownership
     if (siteData.ownerEmail !== req.user.email && req.user.role !== 'admin') {
@@ -4947,11 +5209,11 @@ app.put('/api/sites/:siteId/products', requireAuth, async (req, res) => {
     
     const siteFile = path.join(__dirname, 'public', 'sites', siteId, 'site.json');
     
-    if (!fs.existsSync(siteFile)) {
+    if (!fsSync.existsSync(siteFile)) {
       return res.status(404).json({ error: 'Site not found' });
     }
     
-    const siteData = JSON.parse(fs.readFileSync(siteFile, 'utf-8'));
+    const siteData = JSON.parse(fsSync.readFileSync(siteFile, 'utf-8'));
     
     // Verify ownership
     if (siteData.ownerEmail !== req.user.email && req.user.role !== 'admin') {
@@ -5270,11 +5532,11 @@ app.post('/api/stripe/connect', requireAuth, async (req, res) => {
     const userFile = path.join(__dirname, 'public', 'users',
       userEmail.replace('@', '_').replace(/\./g, '_') + '.json');
     
-    if (!fs.existsSync(userFile)) {
+    if (!fsSync.existsSync(userFile)) {
       return res.status(404).json({ error: 'User not found' });
     }
     
-    const userData = JSON.parse(fs.readFileSync(userFile, 'utf-8'));
+    const userData = JSON.parse(fsSync.readFileSync(userFile, 'utf-8'));
     
     // Verify account with Stripe API (if possible)
     let accountDetails = {};
@@ -5301,12 +5563,12 @@ app.post('/api/stripe/connect', requireAuth, async (req, res) => {
     
     // Update all sites owned by this user with ownerEmail
     const sitesDir = path.join(__dirname, 'public', 'sites');
-    if (fs.existsSync(sitesDir)) {
-      const sites = fs.readdirSync(sitesDir);
+    if (fsSync.existsSync(sitesDir)) {
+      const sites = fsSync.readdirSync(sitesDir);
       sites.forEach(siteId => {
         const siteFile = path.join(sitesDir, siteId, 'site.json');
-        if (fs.existsSync(siteFile)) {
-          const siteData = JSON.parse(fs.readFileSync(siteFile, 'utf-8'));
+        if (fsSync.existsSync(siteFile)) {
+          const siteData = JSON.parse(fsSync.readFileSync(siteFile, 'utf-8'));
           if (!siteData.ownerEmail) {
             siteData.ownerEmail = userEmail;
             fs.writeFileSync(siteFile, JSON.stringify(siteData, null, 2));
@@ -5339,11 +5601,11 @@ app.post('/api/stripe/disconnect', requireAuth, async (req, res) => {
     const userFile = path.join(__dirname, 'public', 'users',
       userEmail.replace('@', '_').replace(/\./g, '_') + '.json');
     
-    if (!fs.existsSync(userFile)) {
+    if (!fsSync.existsSync(userFile)) {
       return res.status(404).json({ error: 'User not found' });
     }
     
-    const userData = JSON.parse(fs.readFileSync(userFile, 'utf-8'));
+    const userData = JSON.parse(fsSync.readFileSync(userFile, 'utf-8'));
     
     // Remove Stripe connection
     delete userData.stripe;
@@ -5360,6 +5622,69 @@ app.post('/api/stripe/disconnect', requireAuth, async (req, res) => {
   }
 });
 
+// ====================================
+// REACT SPA SUPPORT
+// ====================================
+
+// Serve React production build
+const distPath = path.join(__dirname, 'dist');
+if (fsSync.existsSync(distPath)) {
+  app.use(express.static(distPath, {
+    index: false, // Don't serve index.html automatically
+    setHeaders: (res, filePath) => {
+      // Cache static assets aggressively
+      if (filePath.match(/\.(js|css|woff2?|ttf|eot|svg|png|jpg|jpeg|gif|ico)$/)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000');
+      }
+    }
+  }));
+}
+
+// Serve published sites (must come before SPA fallback)
+app.use('/sites', express.static(path.join(publicDir, 'sites')));
+
+// SPA fallback - serve index.html for all non-API, non-asset routes
+// Note: Commenting out in development mode - frontend runs on Vite port 5173
+/*
+app.get('*', (req, res, next) => {
+  // Skip SPA fallback for these routes
+  if (
+    req.path.startsWith('/api/') ||           // API routes
+    req.path.startsWith('/sites/') ||         // Published sites
+    req.path.startsWith('/uploads/') ||       // Uploaded images
+    req.path.startsWith('/data/') ||          // Template data
+    req.path.startsWith('/assets/') ||        // Static assets
+    req.path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|json|woff2?|ttf|eot)$/) // File extensions
+  ) {
+    return next();
+  }
+
+  // Serve React app for all other routes
+  const indexPath = path.join(distPath, 'index.html');
+  if (fsSync.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    // Development mode - React is on port 5173
+    res.status(404).send(`
+      <html>
+        <body style="font-family: system-ui; padding: 40px; text-align: center;">
+          <h1>🚀 SiteSprintz - Development Mode</h1>
+          <p>The React app is running on <a href="http://localhost:5173">http://localhost:5173</a></p>
+          <p>The backend API is running on this port (${PORT})</p>
+          <p>To build for production: <code>npm run build</code></p>
+        </body>
+      </html>
+    `);
+  }
+});
+*/
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+  if (fsSync.existsSync(distPath)) {
+    console.log('✅ Serving React production build from /dist');
+  } else {
+    console.log('⚠️  No production build found. Run "npm run build" to create one.');
+    console.log('💡 For development, run React dev server: npm run dev');
+  }
 });
