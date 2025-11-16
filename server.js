@@ -17,6 +17,7 @@ import { query as dbQuery, transaction as dbTransaction, testConnection } from '
 import passport from 'passport';
 import session from 'express-session';
 import { configureGoogleAuth, setupGoogleRoutes } from './auth-google.js';
+import { authenticateToken, requireAuth, requireAdmin } from './server/middleware/auth.js';
 
 dotenv.config();
 
@@ -376,89 +377,7 @@ if (googleAuthConfigured) {
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user));
 
-function requireAdmin(req, res, next){
-  const header = req.headers['authorization'] || '';
-  const token = header.startsWith('Bearer ') ? header.slice(7) : header;
-  if(token === ADMIN_TOKEN) return next();
-  return res.status(401).json({ error: 'Unauthorized' });
-}
-
-// JWT Authentication middleware
-/**
- * AUTHENTICATION MIDDLEWARE
- * 
- * Purpose: Verify JWT token and load user from database
- * 
- * How it works:
- * 1. Extract JWT token from Authorization header
- * 2. Verify token is valid and not expired
- * 3. Query database to get current user data
- * 4. Check user status is 'active'
- * 5. Attach user object to request
- * 6. Continue to next middleware/route
- * 
- * Changes from JSON version:
- * - BEFORE: Decoded JWT contains all user data
- * - AFTER: Decoded JWT contains only user ID, query DB for current data
- * 
- * Benefits:
- * - Always get fresh user data (status, subscription, etc.)
- * - Can revoke access by changing status in database
- * - No need to re-issue token when user data changes
- */
-async function requireAuth(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  
-  if (!token) {
-    return res.status(401).json({ error: 'No token provided' });
-  }
-  
-  try {
-    // Step 1: Verify JWT token
-    const decoded = jwt.verify(token, JWT_SECRET);
-    
-    // Step 2: Get fresh user data from database
-    const result = await dbQuery(
-      'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-      [decoded.userId || decoded.id] // Support both old and new token formats
-    );
-    
-    if (result.rows.length === 0) {
-      return res.status(401).json({ error: 'User not found' });
-    }
-    
-    const user = result.rows[0];
-    
-    // Step 3: Check if user account is active
-    if (user.status !== 'active') {
-      return res.status(403).json({ error: 'Account is suspended' });
-    }
-    
-    // Step 4: Attach user to request
-    req.user = {
-      id: user.id,
-      userId: user.id, // For backwards compatibility
-      email: user.email,
-      role: user.role,
-      status: user.status,
-      subscriptionStatus: user.subscription_status,
-      subscriptionPlan: user.subscription_plan
-    };
-    
-    next();
-    
-  } catch (err) {
-    if (err.name === 'JsonWebTokenError') {
-      return res.status(401).json({ error: 'Invalid token' });
-    }
-    if (err.name === 'TokenExpiredError') {
-      return res.status(401).json({ error: 'Token expired' });
-    }
-    console.error('Auth middleware error:', err);
-    return res.status(500).json({ error: 'Authentication failed' });
-  }
-}
+// Auth middleware functions are imported from ./server/middleware/auth.js
 
 // Order Management Helper Functions
 const ordersDir = path.join(publicDir, 'data', 'orders');

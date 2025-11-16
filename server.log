@@ -1,1044 +1,680 @@
-[dotenv@17.2.3] injecting env (18) from .env -- tip: 📡 add observability to secrets: https://dotenvx.com/ops
-[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+[dotenv@17.2.3] injecting env (24) from .env -- tip: 🔄 add secrets lifecycle management: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
 ✅ Google OAuth configured
-📍 Callback URL: https://tenurial-subemarginate-fay.ngrok-free.dev/auth/google/callback
+📍 Callback URL: http://localhost:3000/auth/google/callback
 ✅ Google OAuth routes configured
 🚀 Running initial trial expiration check...
 🔍 Checking for trial expirations...
 Server running on http://localhost:3000
-Error processing site flow-boutique-fitness: Error: ENOENT: no such file or directory, open '/Users/admin/active-directory-website/public/sites/flow-boutique-fitness/site.json'
-    at async open (node:internal/fs/promises:640:25)
-    at async Object.readFile (node:internal/fs/promises:1277:14)
-    at async checkTrialExpirations (file:///Users/admin/active-directory-website/server.js:4493:37) {
+⚠️  No production build found. Run "npm run build" to create one.
+💡 For development, run React dev server: npm run dev
+Error processing site creative-studios: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/creative-studios/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
   errno: -2,
   code: 'ENOENT',
   syscall: 'open',
-  path: '/Users/admin/active-directory-website/public/sites/flow-boutique-fitness/site.json'
+  path: '/Users/persylopez/sitesprintz/public/sites/creative-studios/site.json'
 }
-Error processing site harbor-bistro: Error: ENOENT: no such file or directory, open '/Users/admin/active-directory-website/public/sites/harbor-bistro/site.json'
-    at async open (node:internal/fs/promises:640:25)
-    at async Object.readFile (node:internal/fs/promises:1277:14)
-    at async checkTrialExpirations (file:///Users/admin/active-directory-website/server.js:4493:37) {
+Error processing site first-site: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/first-site/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
   errno: -2,
   code: 'ENOENT',
   syscall: 'open',
-  path: '/Users/admin/active-directory-website/public/sites/harbor-bistro/site.json'
+  path: '/Users/persylopez/sitesprintz/public/sites/first-site/site.json'
 }
-Error processing site my-site: Error: ENOENT: no such file or directory, open '/Users/admin/active-directory-website/public/sites/my-site/site.json'
-    at async open (node:internal/fs/promises:640:25)
-    at async Object.readFile (node:internal/fs/promises:1277:14)
-    at async checkTrialExpirations (file:///Users/admin/active-directory-website/server.js:4493:37) {
+Error processing site first-site-0liy5le36: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/first-site-0liy5le36/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
   errno: -2,
   code: 'ENOENT',
   syscall: 'open',
-  path: '/Users/admin/active-directory-website/public/sites/my-site/site.json'
+  path: '/Users/persylopez/sitesprintz/public/sites/first-site-0liy5le36/site.json'
 }
-Error processing site my-site-0d787wo6w: Error: ENOENT: no such file or directory, open '/Users/admin/active-directory-website/public/sites/my-site-0d787wo6w/site.json'
-    at async open (node:internal/fs/promises:640:25)
-    at async Object.readFile (node:internal/fs/promises:1277:14)
-    at async checkTrialExpirations (file:///Users/admin/active-directory-website/server.js:4493:37) {
+Error processing site first-site-0rnpvfcqm: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/first-site-0rnpvfcqm/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
   errno: -2,
   code: 'ENOENT',
   syscall: 'open',
-  path: '/Users/admin/active-directory-website/public/sites/my-site-0d787wo6w/site.json'
+  path: '/Users/persylopez/sitesprintz/public/sites/first-site-0rnpvfcqm/site.json'
 }
-Error processing site sparkle-home-cleaning: Error: ENOENT: no such file or directory, open '/Users/admin/active-directory-website/public/sites/sparkle-home-cleaning/site.json'
-    at async open (node:internal/fs/promises:640:25)
-    at async Object.readFile (node:internal/fs/promises:1277:14)
-    at async checkTrialExpirations (file:///Users/admin/active-directory-website/server.js:4493:37) {
+Error processing site first-site-cex4pfz4h: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/first-site-cex4pfz4h/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
   errno: -2,
   code: 'ENOENT',
   syscall: 'open',
-  path: '/Users/admin/active-directory-website/public/sites/sparkle-home-cleaning/site.json'
+  path: '/Users/persylopez/sitesprintz/public/sites/first-site-cex4pfz4h/site.json'
 }
-Error processing site the-grand-table: Error: ENOENT: no such file or directory, open '/Users/admin/active-directory-website/public/sites/the-grand-table/site.json'
-    at async open (node:internal/fs/promises:640:25)
-    at async Object.readFile (node:internal/fs/promises:1277:14)
-    at async checkTrialExpirations (file:///Users/admin/active-directory-website/server.js:4493:37) {
+Error processing site first-site-rhpa0gjw8: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/first-site-rhpa0gjw8/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
   errno: -2,
   code: 'ENOENT',
   syscall: 'open',
-  path: '/Users/admin/active-directory-website/public/sites/the-grand-table/site.json'
+  path: '/Users/persylopez/sitesprintz/public/sites/first-site-rhpa0gjw8/site.json'
+}
+Error processing site first-site-tfwdcbbyj: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/first-site-tfwdcbbyj/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/first-site-tfwdcbbyj/site.json'
+}
+Error processing site first-site-vsvmx2f5y: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/first-site-vsvmx2f5y/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/first-site-vsvmx2f5y/site.json'
+}
+Error processing site fitlife-performance: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/fitlife-performance/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/fitlife-performance/site.json'
+}
+Error processing site flow-boutique-fitness: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/flow-boutique-fitness/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/flow-boutique-fitness/site.json'
+}
+Error processing site form-test-site: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/form-test-site/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/form-test-site/site.json'
+}
+Error processing site form-test-site-3f5x13ofh: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/form-test-site-3f5x13ofh/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/form-test-site-3f5x13ofh/site.json'
+}
+Error processing site form-test-site-9y44lvqpr: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/form-test-site-9y44lvqpr/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/form-test-site-9y44lvqpr/site.json'
+}
+Error processing site form-test-site-nv8vdywt3: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/form-test-site-nv8vdywt3/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/form-test-site-nv8vdywt3/site.json'
+}
+Error processing site form-test-site-oabqu2so3: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/form-test-site-oabqu2so3/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/form-test-site-oabqu2so3/site.json'
+}
+Error processing site form-test-site-wk4c7la5g: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/form-test-site-wk4c7la5g/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/form-test-site-wk4c7la5g/site.json'
+}
+Error processing site my-site: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/my-site/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/my-site/site.json'
+}
+Error processing site my-site-0d787wo6w: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/my-site-0d787wo6w/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/my-site-0d787wo6w/site.json'
+}
+Error processing site my-site-21yls5qzi: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/my-site-21yls5qzi/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/my-site-21yls5qzi/site.json'
+}
+Error processing site my-site-2cpf1oz3p: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/my-site-2cpf1oz3p/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/my-site-2cpf1oz3p/site.json'
+}
+Error processing site my-site-7mmafc8v0: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/my-site-7mmafc8v0/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/my-site-7mmafc8v0/site.json'
+}
+Error processing site my-site-m18caxfab: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/my-site-m18caxfab/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/my-site-m18caxfab/site.json'
+}
+Error processing site my-site-n7q0vsjcb: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/my-site-n7q0vsjcb/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/my-site-n7q0vsjcb/site.json'
+}
+Error processing site my-site-o9divta4k: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/my-site-o9divta4k/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/my-site-o9divta4k/site.json'
+}
+Error processing site my-site-zdhy2pnzw: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/my-site-zdhy2pnzw/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/my-site-zdhy2pnzw/site.json'
+}
+Error processing site original-site: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/original-site/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/original-site/site.json'
+}
+Error processing site original-site-348l0069r: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/original-site-348l0069r/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/original-site-348l0069r/site.json'
+}
+Error processing site original-site-3dvqmcldu: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/original-site-3dvqmcldu/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/original-site-3dvqmcldu/site.json'
+}
+Error processing site original-site-gjy89e8cg: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/original-site-gjy89e8cg/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/original-site-gjy89e8cg/site.json'
+}
+Error processing site original-site-hf5z13lgx: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/original-site-hf5z13lgx/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/original-site-hf5z13lgx/site.json'
+}
+Error processing site original-site-kpyed4cmi: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/original-site-kpyed4cmi/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/original-site-kpyed4cmi/site.json'
+}
+Error processing site original-site-v0rq27c8u: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/original-site-v0rq27c8u/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/original-site-v0rq27c8u/site.json'
+}
+Error processing site published-site: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/published-site/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/published-site/site.json'
+}
+Error processing site published-site-3sk8fxfdh: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/published-site-3sk8fxfdh/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/published-site-3sk8fxfdh/site.json'
+}
+Error processing site published-site-c46oosp0v: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/published-site-c46oosp0v/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/published-site-c46oosp0v/site.json'
+}
+Error processing site published-site-imw8emdj4: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/published-site-imw8emdj4/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/published-site-imw8emdj4/site.json'
+}
+Error processing site published-site-q7eopqu26: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/published-site-q7eopqu26/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/published-site-q7eopqu26/site.json'
+}
+Error processing site published-site-ryromij2i: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/published-site-ryromij2i/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/published-site-ryromij2i/site.json'
+}
+Error processing site published-site-ytsoii6di: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/published-site-ytsoii6di/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/published-site-ytsoii6di/site.json'
+}
+Error processing site schema-test-site: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/schema-test-site/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/schema-test-site/site.json'
+}
+Error processing site schema-test-site-albsz0238: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/schema-test-site-albsz0238/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/schema-test-site-albsz0238/site.json'
+}
+Error processing site schema-test-site-pqzirtzvf: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/schema-test-site-pqzirtzvf/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/schema-test-site-pqzirtzvf/site.json'
+}
+Error processing site second-site: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/second-site/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/second-site/site.json'
+}
+Error processing site second-site-a7dfnnpqv: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/second-site-a7dfnnpqv/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/second-site-a7dfnnpqv/site.json'
+}
+Error processing site second-site-cefkvl0w5: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/second-site-cefkvl0w5/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/second-site-cefkvl0w5/site.json'
+}
+Error processing site second-site-cpgwx5wc0: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/second-site-cpgwx5wc0/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/second-site-cpgwx5wc0/site.json'
+}
+Error processing site second-site-muua980nr: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/second-site-muua980nr/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/second-site-muua980nr/site.json'
+}
+Error processing site second-site-qkv88kyfn: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/second-site-qkv88kyfn/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/second-site-qkv88kyfn/site.json'
+}
+Error processing site second-site-wh8kkjv37: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/second-site-wh8kkjv37/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/second-site-wh8kkjv37/site.json'
+}
+Error processing site test-restaurant: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/test-restaurant/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/test-restaurant/site.json'
+}
+Error processing site test-site-2nyivlhqx: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/test-site-2nyivlhqx/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/test-site-2nyivlhqx/site.json'
+}
+Error processing site test-site-3u055nf0v: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/test-site-3u055nf0v/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/test-site-3u055nf0v/site.json'
+}
+Error processing site test-site-5fospusz7: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/test-site-5fospusz7/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/test-site-5fospusz7/site.json'
+}
+Error processing site test-site-dlx6n53ey: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/test-site-dlx6n53ey/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/test-site-dlx6n53ey/site.json'
+}
+Error processing site test-site-n4laou8xv: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/test-site-n4laou8xv/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/test-site-n4laou8xv/site.json'
+}
+Error processing site test-site-sil1ky20z: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/test-site-sil1ky20z/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/test-site-sil1ky20z/site.json'
+}
+Error processing site the-grand-table: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/the-grand-table/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/the-grand-table/site.json'
+}
+Error processing site the-grand-table-4q4gryzzx: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/the-grand-table-4q4gryzzx/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/the-grand-table-4q4gryzzx/site.json'
+}
+Error processing site the-grand-table-wgwnoczlg: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/the-grand-table-wgwnoczlg/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/the-grand-table-wgwnoczlg/site.json'
+}
+Error processing site trial-site: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/trial-site/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/trial-site/site.json'
+}
+Error processing site trial-site-8u3lrn1ks: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/trial-site-8u3lrn1ks/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/trial-site-8u3lrn1ks/site.json'
+}
+Error processing site trial-site-fhd29yv1t: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/trial-site-fhd29yv1t/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/trial-site-fhd29yv1t/site.json'
+}
+Error processing site trial-site-mknwgni3g: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/trial-site-mknwgni3g/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/trial-site-mknwgni3g/site.json'
+}
+Error processing site trial-site-ocvnx95dv: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/trial-site-ocvnx95dv/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/trial-site-ocvnx95dv/site.json'
+}
+Error processing site trial-site-yc2sbwait: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/trial-site-yc2sbwait/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/trial-site-yc2sbwait/site.json'
+}
+Error processing site trial-site-zlt3vbjew: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/trial-site-zlt3vbjew/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/trial-site-zlt3vbjew/site.json'
+}
+Error processing site type-test-site: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/type-test-site/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/type-test-site/site.json'
+}
+Error processing site type-test-site-3v2i6egz1: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/type-test-site-3v2i6egz1/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/type-test-site-3v2i6egz1/site.json'
+}
+Error processing site type-test-site-i78343jd3: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/type-test-site-i78343jd3/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/type-test-site-i78343jd3/site.json'
+}
+Error processing site type-test-site-ku0szqk3j: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/type-test-site-ku0szqk3j/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/type-test-site-ku0szqk3j/site.json'
+}
+Error processing site type-test-site-vuwbfnduo: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/type-test-site-vuwbfnduo/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/type-test-site-vuwbfnduo/site.json'
+}
+Error processing site type-test-site-xdbap4d27: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/type-test-site-xdbap4d27/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/type-test-site-xdbap4d27/site.json'
+}
+Error processing site type-test-site-xwpd7wbxv: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/type-test-site-xwpd7wbxv/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/type-test-site-xwpd7wbxv/site.json'
+}
+Error processing site type-test-site-yr429q01d: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/type-test-site-yr429q01d/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4869:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/type-test-site-yr429q01d/site.json'
 }
 ✅ Trial expiration check complete
 ✅ Database connected successfully
-Query executed: { text: 'SELECT NOW()', duration: 3031, rows: 1 }
-✅ Database connection test successful: { now: 2025-11-04T12:11:23.531Z }
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 172,
-  rows: 1
-}
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 748,
-  rows: 1
-}
-Created subscription checkout session for persylopez9@gmail.com, plan: pro, session: cs_test_b18I3WTGnZdn4ZbSHOJb8XMMzMqTubCeLv0kvDL4jR7sM272S36dXvfkJd
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 654,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id FROM users WHERE email = $1',
-  duration: 29,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      INSERT INTO sites (\n' +
-    '        id, user_id, subdomain, template_id, status, plan,\n' +
-    '        publis',
-  duration: 38,
-  rows: 1
-}
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 158,
-  rows: 1
-}
-Created subscription checkout session for persylopez9@gmail.com, plan: pro, session: cs_test_b1apbnAD6EUAWetuqy6kWIFdG7L8UuzmVkDL0FEOGnibgvYHaPNsTsKf3L
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 626,
-  rows: 0
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 31,
-  rows: 0
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 19,
-  rows: 0
-}
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 164,
-  rows: 0
-}
-🚀 Initiating Google OAuth...
-Callback URL: https://tenurial-subemarginate-fay.ngrok-free.dev/auth/google/callback
-🎯 CALLBACK HIT - Starting passport authentication...
-Query executed: { text: 'SELECT * FROM users WHERE email = $1', duration: 36, rows: 1 }
-Query executed: {
-  text: 'UPDATE users SET last_login = NOW() WHERE email = $1',
-  duration: 36,
-  rows: 1
-}
-🎯 Passport authenticate callback fired
-Error: null
-User: persylopez9@gmail.com
-Info: {}
-🔥🔥🔥 OAUTH CALLBACK FIRED 🔥🔥🔥
-User email: persylopez9@gmail.com
-User ID: c9ff275b-45f0-4d4b-90c8-55ac98819e43
-User role: user
-Token generated: eyJhbGciOiJIUzI1NiIs...
-🔍 Checking redirect logic...
-Pending intent: undefined
-Pending plan: undefined
-✅ REDIRECTING TO: /dashboard.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjOWZmMjc1Yi00NWYwLTRkNGItOTBjOC01NWFjOTg4MTllNDMiLCJlbWFpbCI6InBlcnN5bG9wZXo5QGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzYyMjYzODQ1LCJleHAiOjE3NjI4Njg2NDV9.EFUL6nkxLThSL8g2SvDXqNlb8ejnMFYbgD0-0m1Ftds
-🚀 User should now land on dashboard!
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 19,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 21,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 20,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 48,
-  rows: 5
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 19,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 21,
-  rows: 5
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 18,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 20,
-  rows: 1
-}
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 128,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id FROM users WHERE email = $1',
-  duration: 17,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      INSERT INTO sites (\n' +
-    '        id, user_id, subdomain, template_id, status, plan,\n' +
-    '        publis',
-  duration: 28,
-  rows: 1
-}
-✅ Database connected successfully
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 138,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 146,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 17,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 54,
-  rows: 6
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 15,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 18,
-  rows: 6
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 17,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 16,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 18,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT subdomain FROM sites WHERE id = $1 AND user_id = $2',
-  duration: 20,
-  rows: 1
-}
-Query executed: {
-  text: 'DELETE FROM sites WHERE id = $1 AND user_id = $2',
-  duration: 38,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 27,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 168,
-  rows: 5
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 30,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 148,
-  rows: 5
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 18,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT subdomain FROM sites WHERE id = $1 AND user_id = $2',
-  duration: 16,
-  rows: 1
-}
-Query executed: {
-  text: 'DELETE FROM sites WHERE id = $1 AND user_id = $2',
-  duration: 19,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 16,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 18,
-  rows: 4
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 18,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 20,
-  rows: 4
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 19,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT subdomain FROM sites WHERE id = $1 AND user_id = $2',
-  duration: 16,
-  rows: 1
-}
-Query executed: {
-  text: 'DELETE FROM sites WHERE id = $1 AND user_id = $2',
-  duration: 18,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 116,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 158,
-  rows: 3
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 15,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 16,
-  rows: 3
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 18,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT subdomain FROM sites WHERE id = $1 AND user_id = $2',
-  duration: 17,
-  rows: 1
-}
-Query executed: {
-  text: 'DELETE FROM sites WHERE id = $1 AND user_id = $2',
-  duration: 18,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 19,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 21,
-  rows: 2
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 17,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 18,
-  rows: 2
-}
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 1885,
-  rows: 0
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 29,
-  rows: 0
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 18,
-  rows: 0
-}
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 152,
-  rows: 0
-}
-🚀 Initiating Google OAuth...
-Callback URL: https://tenurial-subemarginate-fay.ngrok-free.dev/auth/google/callback
-🎯 CALLBACK HIT - Starting passport authentication...
-Query executed: { text: 'SELECT * FROM users WHERE email = $1', duration: 39, rows: 1 }
-Query executed: {
-  text: 'UPDATE users SET last_login = NOW() WHERE email = $1',
-  duration: 37,
-  rows: 1
-}
-🎯 Passport authenticate callback fired
-Error: null
-User: persylopez9@gmail.com
-Info: {}
-🔥🔥🔥 OAUTH CALLBACK FIRED 🔥🔥🔥
-User email: persylopez9@gmail.com
-User ID: c9ff275b-45f0-4d4b-90c8-55ac98819e43
-User role: user
-Token generated: eyJhbGciOiJIUzI1NiIs...
-🔍 Checking redirect logic...
-Pending intent: undefined
-Pending plan: undefined
-✅ REDIRECTING TO: /dashboard.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjOWZmMjc1Yi00NWYwLTRkNGItOTBjOC01NWFjOTg4MTllNDMiLCJlbWFpbCI6InBlcnN5bG9wZXo5QGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzYyMjY0NDYwLCJleHAiOjE3NjI4NjkyNjB9.Ctyp0Um-z9eLckgI5cbEglZCdaCeJsDqmOuyr7IK-DA
-🚀 User should now land on dashboard!
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 17,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 19,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 20,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 42,
-  rows: 2
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 17,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 19,
-  rows: 2
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 18,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 19,
-  rows: 1
-}
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 137,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id FROM users WHERE email = $1',
-  duration: 18,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      INSERT INTO sites (\n' +
-    '        id, user_id, subdomain, template_id, status, plan,\n' +
-    '        publis',
-  duration: 29,
-  rows: 1
-}
-✅ Database connected successfully
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 134,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 141,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 17,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 18,
-  rows: 3
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 16,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 18,
-  rows: 3
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 17,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 16,
-  rows: 1
-}
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 168,
-  rows: 0
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 19,
-  rows: 0
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 17,
-  rows: 0
-}
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 137,
-  rows: 0
-}
-⏰ Running scheduled trial expiration check...
-🔍 Checking for trial expirations...
-Error processing site flow-boutique-fitness: Error: ENOENT: no such file or directory, open '/Users/admin/active-directory-website/public/sites/flow-boutique-fitness/site.json'
-    at async open (node:internal/fs/promises:640:25)
-    at async Object.readFile (node:internal/fs/promises:1277:14)
-    at async checkTrialExpirations (file:///Users/admin/active-directory-website/server.js:4493:37) {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/Users/admin/active-directory-website/public/sites/flow-boutique-fitness/site.json'
-}
-Error processing site freshbowl: Error: ENOENT: no such file or directory, open '/Users/admin/active-directory-website/public/sites/freshbowl/site.json'
-    at async open (node:internal/fs/promises:640:25)
-    at async Object.readFile (node:internal/fs/promises:1277:14)
-    at async checkTrialExpirations (file:///Users/admin/active-directory-website/server.js:4493:37) {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/Users/admin/active-directory-website/public/sites/freshbowl/site.json'
-}
-Error processing site my-site: Error: ENOENT: no such file or directory, open '/Users/admin/active-directory-website/public/sites/my-site/site.json'
-    at async open (node:internal/fs/promises:640:25)
-    at async Object.readFile (node:internal/fs/promises:1277:14)
-    at async checkTrialExpirations (file:///Users/admin/active-directory-website/server.js:4493:37) {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/Users/admin/active-directory-website/public/sites/my-site/site.json'
-}
-Error processing site my-site-0d787wo6w: Error: ENOENT: no such file or directory, open '/Users/admin/active-directory-website/public/sites/my-site-0d787wo6w/site.json'
-    at async open (node:internal/fs/promises:640:25)
-    at async Object.readFile (node:internal/fs/promises:1277:14)
-    at async checkTrialExpirations (file:///Users/admin/active-directory-website/server.js:4493:37) {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/Users/admin/active-directory-website/public/sites/my-site-0d787wo6w/site.json'
-}
-Error processing site the-grand-table: Error: ENOENT: no such file or directory, open '/Users/admin/active-directory-website/public/sites/the-grand-table/site.json'
-    at async open (node:internal/fs/promises:640:25)
-    at async Object.readFile (node:internal/fs/promises:1277:14)
-    at async checkTrialExpirations (file:///Users/admin/active-directory-website/server.js:4493:37) {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/Users/admin/active-directory-website/public/sites/the-grand-table/site.json'
-}
-✅ Trial expiration check complete
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 162,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id FROM users WHERE email = $1',
-  duration: 17,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      INSERT INTO sites (\n' +
-    '        id, user_id, subdomain, template_id, status, plan,\n' +
-    '        publis',
-  duration: 18,
-  rows: 1
-}
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 137,
-  rows: 1
-}
-🚀 Initiating Google OAuth...
-Callback URL: https://tenurial-subemarginate-fay.ngrok-free.dev/auth/google/callback
-🎯 CALLBACK HIT - Starting passport authentication...
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT * FROM users WHERE email = $1',
-  duration: 134,
-  rows: 1
-}
-Query executed: {
-  text: 'UPDATE users SET last_login = NOW() WHERE email = $1',
-  duration: 19,
-  rows: 1
-}
-🎯 Passport authenticate callback fired
-Error: null
-User: persylopez9@gmail.com
-Info: {}
-🔥🔥🔥 OAUTH CALLBACK FIRED 🔥🔥🔥
-User email: persylopez9@gmail.com
-User ID: c9ff275b-45f0-4d4b-90c8-55ac98819e43
-User role: user
-Token generated: eyJhbGciOiJIUzI1NiIs...
-🔍 Checking redirect logic...
-Pending intent: undefined
-Pending plan: undefined
-✅ REDIRECTING TO: /dashboard.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjOWZmMjc1Yi00NWYwLTRkNGItOTBjOC01NWFjOTg4MTllNDMiLCJlbWFpbCI6InBlcnN5bG9wZXo5QGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzYyMjY1MDE4LCJleHAiOjE3NjI4Njk4MTh9.rSK6zb5rDe9MMStYvZQppXMKelQIJtg5fEiD605T7FI
-🚀 User should now land on dashboard!
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 17,
-  rows: 1
-}
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 143,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 18,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 19,
-  rows: 4
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 19,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 20,
-  rows: 4
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 18,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 19,
-  rows: 1
-}
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 148,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id FROM users WHERE email = $1',
-  duration: 19,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      INSERT INTO sites (\n' +
-    '        id, user_id, subdomain, template_id, status, plan,\n' +
-    '        publis',
-  duration: 19,
-  rows: 1
-}
-🚀 Initiating Google OAuth...
-Callback URL: https://tenurial-subemarginate-fay.ngrok-free.dev/auth/google/callback
-🎯 CALLBACK HIT - Starting passport authentication...
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT * FROM users WHERE email = $1',
-  duration: 154,
-  rows: 1
-}
-Query executed: {
-  text: 'UPDATE users SET last_login = NOW() WHERE email = $1',
-  duration: 19,
-  rows: 1
-}
-🎯 Passport authenticate callback fired
-Error: null
-User: persylopez9@gmail.com
-Info: {}
-🔥🔥🔥 OAUTH CALLBACK FIRED 🔥🔥🔥
-User email: persylopez9@gmail.com
-User ID: c9ff275b-45f0-4d4b-90c8-55ac98819e43
-User role: user
-Token generated: eyJhbGciOiJIUzI1NiIs...
-🔍 Checking redirect logic...
-Pending intent: publish
-Pending plan: undefined
-✅ REDIRECTING TO: /auto-publish.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjOWZmMjc1Yi00NWYwLTRkNGItOTBjOC01NWFjOTg4MTllNDMiLCJlbWFpbCI6InBlcnN5bG9wZXo5QGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzYyMjY1MTk4LCJleHAiOjE3NjI4Njk5OTh9.c3emu-sQ6F24YwqVPgKniQJqIGonHZ9orFLMINv2THU
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 17,
-  rows: 1
-}
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 134,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 17,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 32,
-  rows: 5
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 17,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 17,
-  rows: 5
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 17,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 18,
-  rows: 1
-}
-✅ Database connected successfully
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 3316,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 3324,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 21,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 38,
-  rows: 5
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 20,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 22,
-  rows: 5
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 21,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 20,
-  rows: 1
-}
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 144,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id FROM users WHERE email = $1',
-  duration: 19,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      INSERT INTO sites (\n' +
-    '        id, user_id, subdomain, template_id, status, plan,\n' +
-    '        publis',
-  duration: 21,
-  rows: 1
-}
-🚀 Initiating Google OAuth...
-Callback URL: https://tenurial-subemarginate-fay.ngrok-free.dev/auth/google/callback
-🎯 CALLBACK HIT - Starting passport authentication...
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT * FROM users WHERE email = $1',
-  duration: 6142,
-  rows: 1
-}
-Query executed: {
-  text: 'UPDATE users SET last_login = NOW() WHERE email = $1',
-  duration: 170,
-  rows: 1
-}
-🎯 Passport authenticate callback fired
-Error: null
-User: persylopez9@gmail.com
-Info: {}
-🔥🔥🔥 OAUTH CALLBACK FIRED 🔥🔥🔥
-User email: persylopez9@gmail.com
-User ID: c9ff275b-45f0-4d4b-90c8-55ac98819e43
-User role: user
-Token generated: eyJhbGciOiJIUzI1NiIs...
-🔍 Checking redirect logic...
-Pending intent: publish
-Pending plan: undefined
-✅ REDIRECTING TO: /auto-publish.html?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjOWZmMjc1Yi00NWYwLTRkNGItOTBjOC01NWFjOTg4MTllNDMiLCJlbWFpbCI6InBlcnN5bG9wZXo5QGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzYyMjY2NDkyLCJleHAiOjE3NjI4NzEyOTJ9.wmWEnfse2VYOBx2My_djLhiNBddk92ZRktWwO26UrwY
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 31,
-  rows: 1
-}
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 163,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 17,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 47,
-  rows: 6
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 18,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 18,
-  rows: 6
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 16,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 15,
-  rows: 1
-}
-[2025-11-05T14:10:08.223Z] [PID: 25921] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Nov 05 2025 09:00:00 GMT-0500 (Eastern Standard Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 669,
-  rows: 1
-}
-✅ Database connected successfully
-✅ Database connected successfully
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 162,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 159,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 19,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 50,
-  rows: 6
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 19,
-  rows: 1
-}
-Query executed: {
-  text: '\n' +
-    '      SELECT \n' +
-    '        id, subdomain, template_id, status, plan, \n' +
-    '        published_at, created_at, ',
-  duration: 21,
-  rows: 6
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 36,
-  rows: 1
-}
-Query executed: {
-  text: 'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-  duration: 20,
-  rows: 1
-}
+Query executed: { text: 'SELECT NOW()', duration: 527, rows: 1 }
+✅ Database connection test successful: { now: 2025-11-16T18:54:07.503Z }
