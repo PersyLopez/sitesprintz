@@ -1,0 +1,18 @@
+{
+  "draftId": "draft-1762993812174-iftyzsrpd",
+  "id": "draft-1762993812174-iftyzsrpd",
+  "templateId": "salon-pro",
+  "template": "salon-pro",
+  "businessData": {
+    "businessName": "File Test Restaurant",
+    "template": "salon-pro"
+  },
+  "data": {
+    "businessName": "File Test Restaurant",
+    "template": "salon-pro"
+  },
+  "createdAt": "2025-11-13T00:30:12.174Z",
+  "updatedAt": "2025-11-13T00:30:12.174Z",
+  "expiresAt": "2025-11-20T00:30:12.174Z",
+  "status": "draft"
+}

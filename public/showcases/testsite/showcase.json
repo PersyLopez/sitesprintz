@@ -1,0 +1,36 @@
+{
+  "subdomain": "testsite",
+  "highlights": {
+    "sections": [
+      "hero",
+      "services",
+      "reviews",
+      "contact"
+    ],
+    "hero": {
+      "image": "/showcases/testsite/hero-1763245364185.png",
+      "width": 1920,
+      "height": 800
+    },
+    "services": [
+      {
+        "image": "/showcases/testsite/services-1763245364185.png",
+        "width": 1920
+      }
+    ],
+    "reviews": {
+      "image": "/showcases/testsite/reviews-1763245364185.png",
+      "width": 1920
+    },
+    "contact": {
+      "image": "/showcases/testsite/contact-1763245364185.png",
+      "width": 1920
+    }
+  },
+  "metadata": {
+    "businessName": "Testsite",
+    "template": "unknown"
+  },
+  "generatedAt": "2025-11-15T22:22:44.185Z",
+  "url": "/showcase/testsite"
+}

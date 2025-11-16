@@ -1,0 +1,20 @@
+{
+  "draftId": "draft-1762993862612-wcjpsf3a2",
+  "id": "draft-1762993862612-wcjpsf3a2",
+  "templateId": "salon-pro",
+  "template": "salon-pro",
+  "businessData": {
+    "businessName": "Auto-Delete Test",
+    "template": "salon-pro",
+    "subdomain": "auto-delete-1762993862611"
+  },
+  "data": {
+    "businessName": "Auto-Delete Test",
+    "template": "salon-pro",
+    "subdomain": "auto-delete-1762993862611"
+  },
+  "createdAt": "2025-11-13T00:31:02.612Z",
+  "updatedAt": "2025-11-13T00:31:02.612Z",
+  "expiresAt": "2025-11-20T00:31:02.612Z",
+  "status": "draft"
+}

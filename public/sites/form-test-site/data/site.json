@@ -1,0 +1,13 @@
+{
+  "template": "restaurant",
+  "brand": {
+    "name": "Form Test Site"
+  },
+  "meta": {
+    "businessName": "formtest1763157269216"
+  },
+  "contact": {
+    "email": "formtest1763157269216@example.com",
+    "phone": "555-1234"
+  }
+}

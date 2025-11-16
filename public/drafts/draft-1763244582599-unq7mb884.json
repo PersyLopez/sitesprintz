@@ -1,0 +1,18 @@
+{
+  "draftId": "draft-1763244582599-unq7mb884",
+  "id": "draft-1763244582599-unq7mb884",
+  "templateId": "restaurant-casual",
+  "template": "restaurant-casual",
+  "businessData": {
+    "businessName": "Initial Name",
+    "template": "restaurant-casual"
+  },
+  "data": {
+    "businessName": "Initial Name",
+    "template": "restaurant-casual"
+  },
+  "createdAt": "2025-11-15T22:09:42.599Z",
+  "updatedAt": "2025-11-15T22:09:42.599Z",
+  "expiresAt": "2025-11-22T22:09:42.599Z",
+  "status": "draft"
+}

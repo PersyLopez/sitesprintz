@@ -1,0 +1,375 @@
+[dotenv@17.2.3] injecting env (10) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+✅ Google OAuth configured
+📍 Callback URL: http://localhost:3000/auth/google/callback
+✅ Google OAuth routes configured
+🚀 Running initial trial expiration check...
+🔍 Checking for trial expirations...
+Server running on http://localhost:3000
+⚠️  No production build found. Run "npm run build" to create one.
+💡 For development, run React dev server: npm run dev
+Error processing site creative-studios: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/creative-studios/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4843:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/creative-studios/site.json'
+}
+Error processing site fitlife-performance: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/fitlife-performance/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4843:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/fitlife-performance/site.json'
+}
+Error processing site flow-boutique-fitness: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/flow-boutique-fitness/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4843:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/flow-boutique-fitness/site.json'
+}
+Error processing site my-site: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/my-site/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4843:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/my-site/site.json'
+}
+Error processing site my-site-0d787wo6w: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/my-site-0d787wo6w/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4843:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/my-site-0d787wo6w/site.json'
+}
+Error processing site test-restaurant: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/test-restaurant/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4843:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/test-restaurant/site.json'
+}
+Error processing site the-grand-table: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/the-grand-table/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4843:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/the-grand-table/site.json'
+}
+Error processing site the-grand-table-4q4gryzzx: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/the-grand-table-4q4gryzzx/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4843:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/the-grand-table-4q4gryzzx/site.json'
+}
+Error processing site the-grand-table-wgwnoczlg: Error: ENOENT: no such file or directory, open '/Users/persylopez/sitesprintz/public/sites/the-grand-table-wgwnoczlg/site.json'
+    at async open (node:internal/fs/promises:641:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async checkTrialExpirations (file:///Users/persylopez/sitesprintz/server.js:4843:37) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/persylopez/sitesprintz/public/sites/the-grand-table-wgwnoczlg/site.json'
+}
+✅ Trial expiration check complete
+🐌 Slow query (1891ms): SELECT NOW() as time, version() as version
+✅ Database connection test successful
+   Time: 2025-11-14T21:07:05.291Z
+   Version: PostgreSQL 17.5
+🚀 Initiating Google OAuth...
+State length: 156 characters
+Callback URL: http://localhost:3000/auth/google/callback
+🚀 Initiating Google OAuth...
+State length: 156 characters
+Callback URL: http://localhost:3000/auth/google/callback
+🚀 Initiating Google OAuth...
+State length: 156 characters
+Callback URL: http://localhost:3000/auth/google/callback
+🚀 Initiating Google OAuth...
+State length: 156 characters
+Callback URL: http://localhost:3000/auth/google/callback
+❌ Unexpected database error: Error: Connection terminated unexpectedly
+    at Connection.<anonymous> (/Users/persylopez/sitesprintz/node_modules/pg/lib/client.js:136:73)
+    at Object.onceWrapper (node:events:622:28)
+    at Connection.emit (node:events:508:28)
+    at Socket.<anonymous> (/Users/persylopez/sitesprintz/node_modules/pg/lib/connection.js:62:12)
+    at Socket.emit (node:events:520:35)
+    at TCP.<anonymous> (node:net:346:12) {
+  client: Client {
+    _events: [Object: null prototype] { error: [Function (anonymous)] },
+    _eventsCount: 1,
+    _maxListeners: undefined,
+    connectionParameters: ConnectionParameters {
+      user: 'neondb_owner',
+      database: 'neondb',
+      port: 5432,
+      host: 'ep-green-shape-ahiippn7-pooler.c-3.us-east-1.aws.neon.tech',
+      binary: false,
+      options: undefined,
+      ssl: {},
+      client_encoding: '',
+      replication: undefined,
+      isDomainSocket: false,
+      application_name: undefined,
+      fallback_application_name: undefined,
+      statement_timeout: 20000,
+      lock_timeout: false,
+      idle_in_transaction_session_timeout: false,
+      query_timeout: 20000,
+      connect_timeout: 3,
+      keepalives: 1,
+      keepalives_idle: 5
+    },
+    user: 'neondb_owner',
+    database: 'neondb',
+    port: 5432,
+    host: 'ep-green-shape-ahiippn7-pooler.c-3.us-east-1.aws.neon.tech',
+    replication: undefined,
+    _Promise: [Function: Promise],
+    _types: TypeOverrides { _types: [Object], text: {}, binary: {} },
+    _ending: true,
+    _ended: true,
+    _connecting: false,
+    _connected: true,
+    _connectionError: false,
+    _queryable: false,
+    enableChannelBinding: false,
+    connection: Connection {
+      _events: [Object: null prototype],
+      _eventsCount: 23,
+      _maxListeners: undefined,
+      stream: [TLSSocket],
+      _keepAlive: true,
+      _keepAliveInitialDelayMillis: 5000,
+      lastBuffer: false,
+      parsedStatements: {},
+      ssl: {},
+      _ending: false,
+      _emitMessage: false,
+      _connecting: true,
+      Symbol(shapeMode): false,
+      Symbol(kCapture): false
+    },
+    queryQueue: [],
+    binary: false,
+    processID: 1021525876,
+    secretKey: -1140557542,
+    ssl: {},
+    _connectionTimeoutMillis: 3000,
+    _connectionCallback: null,
+    connectionTimeoutHandle: Timeout {
+      _idleTimeout: -1,
+      _idlePrev: null,
+      _idleNext: null,
+      _idleStart: 516,
+      _onTimeout: null,
+      _timerArgs: undefined,
+      _repeat: null,
+      _destroyed: true,
+      Symbol(refed): false,
+      Symbol(kHasPrimitive): false,
+      Symbol(asyncId): 10,
+      Symbol(triggerId): 0,
+      Symbol(kAsyncContextFrame): undefined
+    },
+    saslSession: null,
+    release: [Function (anonymous)],
+    activeQuery: null,
+    readyForQuery: true,
+    hasExecuted: true,
+    _poolUseCount: 1,
+    Symbol(shapeMode): false,
+    Symbol(kCapture): false
+  }
+}
+Database pool error - connection may be unstable
+🚀 Initiating Google OAuth...
+State length: 156 characters
+Callback URL: http://localhost:3000/auth/google/callback
+🚀 Initiating Google OAuth...
+State length: 156 characters
+Callback URL: http://localhost:3000/auth/google/callback
+🚀 Initiating Google OAuth...
+State length: 156 characters
+Callback URL: http://localhost:3000/auth/google/callback
+🚀 Initiating Google OAuth...
+State length: 156 characters
+Callback URL: http://localhost:3000/auth/google/callback
+🚀 Initiating Google OAuth...
+State length: 156 characters
+Callback URL: http://localhost:3000/auth/google/callback
+🚀 Initiating Google OAuth...
+State length: 156 characters
+Callback URL: http://localhost:3000/auth/google/callback
+🚀 Initiating Google OAuth...
+State length: 156 characters
+Callback URL: http://localhost:3000/auth/google/callback
+🚀 Initiating Google OAuth...
+State length: 156 characters
+Callback URL: http://localhost:3000/auth/google/callback
+🚀 Initiating Google OAuth...
+State length: 156 characters
+Callback URL: http://localhost:3000/auth/google/callback
+🚀 Initiating Google OAuth...
+State length: 156 characters
+Callback URL: http://localhost:3000/auth/google/callback
+🚀 Initiating Google OAuth...
+State length: 156 characters
+Callback URL: http://localhost:3000/auth/google/callback
+🚀 Initiating Google OAuth...
+State length: 156 characters
+Callback URL: http://localhost:3000/auth/google/callback
+⚠️ RESEND_API_KEY not set. Email would be sent to: dbtest1763155421001@example.com
+📧 Template: welcome Data: { email: 'dbtest1763155421001@example.com' }
+⚠️ ADMIN_EMAIL not configured. Skipping admin notification: adminNewUser
+⚠️ RESEND_API_KEY not set. Email would be sent to: dash1763155422041@example.com
+📧 Template: welcome Data: { email: 'dash1763155422041@example.com' }
+⚠️ ADMIN_EMAIL not configured. Skipping admin notification: adminNewUser
+❌ Unexpected database error: Error: Connection terminated unexpectedly
+    at Connection.<anonymous> (/Users/persylopez/sitesprintz/node_modules/pg/lib/client.js:136:73)
+    at Object.onceWrapper (node:events:622:28)
+    at Connection.emit (node:events:508:28)
+    at Socket.<anonymous> (/Users/persylopez/sitesprintz/node_modules/pg/lib/connection.js:62:12)
+    at Socket.emit (node:events:520:35)
+    at TCP.<anonymous> (node:net:346:12) {
+  client: Client {
+    _events: [Object: null prototype] { error: [Function (anonymous)] },
+    _eventsCount: 1,
+    _maxListeners: undefined,
+    connectionParameters: ConnectionParameters {
+      user: 'neondb_owner',
+      database: 'neondb',
+      port: 5432,
+      host: 'ep-green-shape-ahiippn7-pooler.c-3.us-east-1.aws.neon.tech',
+      binary: false,
+      options: undefined,
+      ssl: {},
+      client_encoding: '',
+      replication: undefined,
+      isDomainSocket: false,
+      application_name: undefined,
+      fallback_application_name: undefined,
+      statement_timeout: 20000,
+      lock_timeout: false,
+      idle_in_transaction_session_timeout: false,
+      query_timeout: 20000,
+      connect_timeout: 3,
+      keepalives: 1,
+      keepalives_idle: 5
+    },
+    user: 'neondb_owner',
+    database: 'neondb',
+    port: 5432,
+    host: 'ep-green-shape-ahiippn7-pooler.c-3.us-east-1.aws.neon.tech',
+    replication: undefined,
+    _Promise: [Function: Promise],
+    _types: TypeOverrides { _types: [Object], text: {}, binary: {} },
+    _ending: true,
+    _ended: true,
+    _connecting: false,
+    _connected: true,
+    _connectionError: false,
+    _queryable: false,
+    enableChannelBinding: false,
+    connection: Connection {
+      _events: [Object: null prototype],
+      _eventsCount: 23,
+      _maxListeners: undefined,
+      stream: [TLSSocket],
+      _keepAlive: true,
+      _keepAliveInitialDelayMillis: 5000,
+      lastBuffer: false,
+      parsedStatements: {},
+      ssl: {},
+      _ending: true,
+      _emitMessage: false,
+      _connecting: true,
+      Symbol(shapeMode): false,
+      Symbol(kCapture): false
+    },
+    queryQueue: [],
+    binary: false,
+    processID: 763301360,
+    secretKey: -174018208,
+    ssl: {},
+    _connectionTimeoutMillis: 3000,
+    _connectionCallback: null,
+    connectionTimeoutHandle: Timeout {
+      _idleTimeout: -1,
+      _idlePrev: null,
+      _idleNext: null,
+      _idleStart: 998142,
+      _onTimeout: null,
+      _timerArgs: undefined,
+      _repeat: null,
+      _destroyed: true,
+      Symbol(refed): false,
+      Symbol(kHasPrimitive): false,
+      Symbol(asyncId): 3343,
+      Symbol(triggerId): 3338,
+      Symbol(kAsyncContextFrame): undefined
+    },
+    saslSession: null,
+    release: [Function (anonymous)],
+    activeQuery: null,
+    readyForQuery: true,
+    hasExecuted: true,
+    _poolUseCount: 6,
+    Symbol(shapeMode): false,
+    Symbol(kCapture): false
+  }
+}
+Database pool error - connection may be unstable
+🛑 SIGTERM received, closing database pool...
+✅ Database pool closed
+Registration error: Error: Cannot use a pool after calling end on the pool
+    at BoundPool.connect (/Users/persylopez/sitesprintz/node_modules/pg-pool/index.js:184:19)
+    at query (file:///Users/persylopez/sitesprintz/database/db.js:100:29)
+    at file:///Users/persylopez/sitesprintz/server.js:478:32
+    at Layer.handleRequest (/Users/persylopez/sitesprintz/node_modules/router/lib/layer.js:152:17)
+    at next (/Users/persylopez/sitesprintz/node_modules/router/lib/route.js:157:13)
+    at Route.dispatch (/Users/persylopez/sitesprintz/node_modules/router/lib/route.js:117:3)
+    at handle (/Users/persylopez/sitesprintz/node_modules/router/index.js:435:11)
+    at Layer.handleRequest (/Users/persylopez/sitesprintz/node_modules/router/lib/layer.js:152:17)
+    at /Users/persylopez/sitesprintz/node_modules/router/index.js:295:15
+    at processParams (/Users/persylopez/sitesprintz/node_modules/router/index.js:582:12)
+Registration error: Error: Cannot use a pool after calling end on the pool
+    at BoundPool.connect (/Users/persylopez/sitesprintz/node_modules/pg-pool/index.js:184:19)
+    at query (file:///Users/persylopez/sitesprintz/database/db.js:100:29)
+    at file:///Users/persylopez/sitesprintz/server.js:478:32
+    at Layer.handleRequest (/Users/persylopez/sitesprintz/node_modules/router/lib/layer.js:152:17)
+    at next (/Users/persylopez/sitesprintz/node_modules/router/lib/route.js:157:13)
+    at Route.dispatch (/Users/persylopez/sitesprintz/node_modules/router/lib/route.js:117:3)
+    at handle (/Users/persylopez/sitesprintz/node_modules/router/index.js:435:11)
+    at Layer.handleRequest (/Users/persylopez/sitesprintz/node_modules/router/lib/layer.js:152:17)
+    at /Users/persylopez/sitesprintz/node_modules/router/index.js:295:15
+    at processParams (/Users/persylopez/sitesprintz/node_modules/router/index.js:582:12)
+🛑 SIGTERM received, closing database pool...
+/Users/persylopez/sitesprintz/node_modules/pg-pool/index.js:453
+      const err = new Error('Called end on pool more than once')
+                  ^
+
+Error: Called end on pool more than once
+    at BoundPool.end (/Users/persylopez/sitesprintz/node_modules/pg-pool/index.js:453:19)
+    at process.<anonymous> (file:///Users/persylopez/sitesprintz/database/db.js:86:14)
+    at process.emit (node:events:508:28)
+
+Node.js v25.1.0

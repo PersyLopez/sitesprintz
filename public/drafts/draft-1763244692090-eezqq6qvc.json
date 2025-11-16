@@ -1,0 +1,24 @@
+{
+  "draftId": "draft-1763244692090-eezqq6qvc",
+  "id": "draft-1763244692090-eezqq6qvc",
+  "templateId": "restaurant-casual",
+  "template": "restaurant-casual",
+  "businessData": {
+    "businessName": "Publish Test Restaurant",
+    "template": "restaurant-casual",
+    "subdomain": "publish-test-1763244692090",
+    "email": "publish@test.com",
+    "phone": "555-1234"
+  },
+  "data": {
+    "businessName": "Publish Test Restaurant",
+    "template": "restaurant-casual",
+    "subdomain": "publish-test-1763244692090",
+    "email": "publish@test.com",
+    "phone": "555-1234"
+  },
+  "createdAt": "2025-11-15T22:11:32.090Z",
+  "updatedAt": "2025-11-15T22:11:32.090Z",
+  "expiresAt": "2025-11-22T22:11:32.090Z",
+  "status": "draft"
+}

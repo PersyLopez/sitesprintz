@@ -1,0 +1,18 @@
+{
+  "draftId": "draft-1763060392514-pfpboz752",
+  "id": "draft-1763060392514-pfpboz752",
+  "templateId": "gym-pro",
+  "template": "gym-pro",
+  "businessData": {
+    "businessName": "Load Test Business",
+    "template": "gym-pro"
+  },
+  "data": {
+    "businessName": "Load Test Business",
+    "template": "gym-pro"
+  },
+  "createdAt": "2025-11-13T18:59:52.514Z",
+  "updatedAt": "2025-11-13T18:59:52.514Z",
+  "expiresAt": "2025-11-20T18:59:52.514Z",
+  "status": "draft"
+}

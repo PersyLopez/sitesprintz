@@ -1,0 +1,284 @@
+{
+  "auditDate": "2025-11-14T14:35:22.917Z",
+  "totalTemplates": 12,
+  "stripeEnabled": 12,
+  "bookingOnly": 1,
+  "mixed": 11,
+  "productBased": 0,
+  "totalIssues": 0,
+  "totalRecommendations": 14,
+  "results": [
+    {
+      "template": "restaurant-pro.json",
+      "businessType": "MIXED",
+      "settings": {
+        "allowCheckout": true,
+        "allowOrders": true,
+        "bookingEnabled": true,
+        "bookingWidget": "calendly",
+        "tier": "Pro",
+        "stripeEnabled": true,
+        "productCta": "Order Now",
+        "productNote": "Secure online ordering powered by Stripe. Connect your account to start accepting payments."
+      },
+      "hasProducts": false,
+      "hasMenu": true,
+      "hasBooking": true,
+      "issues": [],
+      "recommendations": [
+        "Ensure users connect Stripe via Dashboard > Payment Settings"
+      ],
+      "stripeReady": true
+    },
+    {
+      "template": "salon-pro.json",
+      "businessType": "MIXED",
+      "settings": {
+        "allowCheckout": true,
+        "allowOrders": true,
+        "bookingEnabled": true,
+        "bookingWidget": "calendly",
+        "tier": "Pro",
+        "stripeEnabled": true,
+        "productCta": "Buy Now",
+        "productNote": "Sell products and gift cards online. Connect your Stripe account to enable checkout."
+      },
+      "hasProducts": false,
+      "hasMenu": true,
+      "hasBooking": true,
+      "issues": [],
+      "recommendations": [
+        "Ensure users connect Stripe via Dashboard > Payment Settings"
+      ],
+      "stripeReady": true
+    },
+    {
+      "template": "gym-pro.json",
+      "businessType": "SERVICE_BOOKING",
+      "settings": {
+        "allowCheckout": true,
+        "allowOrders": true,
+        "bookingEnabled": true,
+        "bookingWidget": "calendly",
+        "tier": "Pro",
+        "stripeEnabled": true,
+        "productCta": "Purchase",
+        "productNote": "Sell memberships and products online. Connect your Stripe account to enable payments."
+      },
+      "hasProducts": false,
+      "hasMenu": false,
+      "hasBooking": true,
+      "issues": [],
+      "recommendations": [
+        "Service-booking template typically has allowCheckout: false",
+        "Ensure users connect Stripe via Dashboard > Payment Settings"
+      ],
+      "stripeReady": true
+    },
+    {
+      "template": "pet-care-pro.json",
+      "businessType": "MIXED",
+      "settings": {
+        "allowCheckout": true,
+        "allowOrders": true,
+        "bookingEnabled": true,
+        "bookingWidget": "calendly",
+        "tier": "Pro",
+        "stripeEnabled": true,
+        "productCta": "Buy Now",
+        "productNote": "Sell pet products and services. Connect your Stripe account to start selling."
+      },
+      "hasProducts": false,
+      "hasMenu": true,
+      "hasBooking": true,
+      "issues": [],
+      "recommendations": [
+        "Ensure users connect Stripe via Dashboard > Payment Settings"
+      ],
+      "stripeReady": true
+    },
+    {
+      "template": "auto-repair-pro.json",
+      "businessType": "MIXED",
+      "settings": {
+        "allowCheckout": true,
+        "allowOrders": true,
+        "bookingEnabled": true,
+        "bookingWidget": "calendly",
+        "tier": "Pro",
+        "stripeEnabled": true,
+        "productCta": "Buy Now",
+        "productNote": "Sell parts and services online. Connect your Stripe account to enable checkout."
+      },
+      "hasProducts": false,
+      "hasMenu": true,
+      "hasBooking": true,
+      "issues": [],
+      "recommendations": [
+        "Ensure users connect Stripe via Dashboard > Payment Settings"
+      ],
+      "stripeReady": true
+    },
+    {
+      "template": "tech-repair-pro.json",
+      "businessType": "MIXED",
+      "settings": {
+        "allowCheckout": true,
+        "allowOrders": true,
+        "bookingEnabled": true,
+        "bookingWidget": "calendly",
+        "tier": "Pro",
+        "stripeEnabled": true,
+        "productCta": "Buy Now",
+        "productNote": "Sell devices and services. Connect your Stripe account to start accepting payments."
+      },
+      "hasProducts": false,
+      "hasMenu": true,
+      "hasBooking": true,
+      "issues": [],
+      "recommendations": [
+        "Ensure users connect Stripe via Dashboard > Payment Settings"
+      ],
+      "stripeReady": true
+    },
+    {
+      "template": "plumbing-pro.json",
+      "businessType": "MIXED",
+      "settings": {
+        "allowCheckout": true,
+        "allowOrders": true,
+        "bookingEnabled": true,
+        "bookingWidget": "calendly",
+        "tier": "Pro",
+        "stripeEnabled": true,
+        "productCta": "Buy Now",
+        "productNote": "Sell fixtures and services online. Connect your Stripe account to enable checkout."
+      },
+      "hasProducts": false,
+      "hasMenu": true,
+      "hasBooking": true,
+      "issues": [],
+      "recommendations": [
+        "Ensure users connect Stripe via Dashboard > Payment Settings"
+      ],
+      "stripeReady": true
+    },
+    {
+      "template": "electrician-pro.json",
+      "businessType": "MIXED",
+      "settings": {
+        "allowCheckout": true,
+        "allowOrders": true,
+        "bookingEnabled": true,
+        "bookingWidget": "calendly",
+        "tier": "Pro",
+        "stripeEnabled": true,
+        "productCta": "Buy Now",
+        "productNote": "Sell devices and services. Connect your Stripe account to start accepting payments."
+      },
+      "hasProducts": false,
+      "hasMenu": true,
+      "hasBooking": true,
+      "issues": [],
+      "recommendations": [
+        "Ensure users connect Stripe via Dashboard > Payment Settings"
+      ],
+      "stripeReady": true
+    },
+    {
+      "template": "cleaning-pro.json",
+      "businessType": "MIXED",
+      "settings": {
+        "allowCheckout": true,
+        "allowOrders": true,
+        "bookingEnabled": true,
+        "bookingWidget": "calendly",
+        "tier": "Pro",
+        "stripeEnabled": true,
+        "productCta": "Buy Now",
+        "productNote": "Sell products and service packages. Connect your Stripe account to enable checkout."
+      },
+      "hasProducts": false,
+      "hasMenu": true,
+      "hasBooking": true,
+      "issues": [],
+      "recommendations": [
+        "Ensure users connect Stripe via Dashboard > Payment Settings"
+      ],
+      "stripeReady": true
+    },
+    {
+      "template": "consultant-pro.json",
+      "businessType": "MIXED",
+      "settings": {
+        "allowCheckout": true,
+        "allowOrders": true,
+        "bookingEnabled": true,
+        "bookingWidget": "calendly",
+        "tier": "Pro",
+        "stripeEnabled": true,
+        "productCta": "Purchase",
+        "productNote": "Sell consulting packages and courses. Connect your Stripe account to start selling."
+      },
+      "hasProducts": false,
+      "hasMenu": true,
+      "hasBooking": true,
+      "issues": [],
+      "recommendations": [
+        "Ensure users connect Stripe via Dashboard > Payment Settings"
+      ],
+      "stripeReady": true
+    },
+    {
+      "template": "freelancer-pro.json",
+      "businessType": "MIXED",
+      "settings": {
+        "allowCheckout": true,
+        "allowOrders": true,
+        "bookingEnabled": true,
+        "bookingWidget": "calendly",
+        "tier": "Pro",
+        "stripeEnabled": true,
+        "productCta": "Hire Me",
+        "productNote": "Sell services and packages online. Connect your Stripe account to enable payments."
+      },
+      "hasProducts": false,
+      "hasMenu": true,
+      "hasBooking": true,
+      "issues": [],
+      "recommendations": [
+        "Ensure users connect Stripe via Dashboard > Payment Settings"
+      ],
+      "stripeReady": true
+    },
+    {
+      "template": "product-showcase-pro.json",
+      "businessType": "MIXED",
+      "settings": {
+        "allowCheckout": true,
+        "allowOrders": true,
+        "bookingEnabled": false,
+        "tier": "Pro",
+        "stripeEnabled": true,
+        "productCta": "Buy Now",
+        "productNote": "Sell your products online with secure checkout. Connect your Stripe account to start selling."
+      },
+      "hasProducts": false,
+      "hasMenu": true,
+      "hasBooking": true,
+      "issues": [],
+      "recommendations": [
+        "Add bookingEnabled: true",
+        "Ensure users connect Stripe via Dashboard > Payment Settings"
+      ],
+      "stripeReady": true
+    }
+  ],
+  "notes": [
+    "Stripe Connect is configured at the user level via OAuth",
+    "Templates indicate payment capability via settings.allowCheckout",
+    "Users connect their Stripe account in Dashboard > Payment Settings",
+    "Product-based templates should have allowCheckout: true",
+    "Service-based templates typically use booking only"
+  ]
+}

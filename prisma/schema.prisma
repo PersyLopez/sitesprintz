@@ -1,0 +1,230 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model appointments {
+  id                    String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenant_id             String                  @db.Uuid
+  service_id            String                  @db.Uuid
+  staff_id              String                  @db.Uuid
+  start_time            DateTime                @db.Timestamp(6)
+  end_time              DateTime                @db.Timestamp(6)
+  duration_minutes      Int
+  timezone              String                  @db.VarChar(100)
+  customer_name         String                  @db.VarChar(255)
+  customer_email        String                  @db.VarChar(255)
+  customer_phone        String?                 @db.VarChar(50)
+  customer_notes        String?
+  confirmation_code     String                  @unique @db.VarChar(50)
+  booking_source        String?                 @default("online") @db.VarChar(50)
+  status                String?                 @default("confirmed") @db.VarChar(20)
+  requires_approval     Boolean?                @default(false)
+  cancelled_at          DateTime?               @db.Timestamp(6)
+  cancellation_reason   String?
+  cancelled_by          String?                 @db.VarChar(50)
+  total_price_cents     Int                     @default(0)
+  internal_notes        String?
+  created_at            DateTime?               @default(now()) @db.Timestamp(6)
+  updated_at            DateTime?               @default(now()) @db.Timestamp(6)
+  booking_services      booking_services        @relation(fields: [service_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  booking_staff         booking_staff           @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  booking_tenants       booking_tenants         @relation(fields: [tenant_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  booking_notifications booking_notifications[]
+
+  @@index([confirmation_code], map: "idx_appointments_confirmation")
+  @@index([customer_email], map: "idx_appointments_customer_email")
+  @@index([start_time, end_time], map: "idx_appointments_date_range")
+  @@index([service_id], map: "idx_appointments_service")
+  @@index([staff_id], map: "idx_appointments_staff")
+  @@index([start_time], map: "idx_appointments_start_time")
+  @@index([status], map: "idx_appointments_status")
+  @@index([tenant_id], map: "idx_appointments_tenant")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model booking_availability_rules {
+  id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenant_id       String          @db.Uuid
+  staff_id        String          @db.Uuid
+  day_of_week     Int
+  start_time      DateTime        @db.Time(6)
+  end_time        DateTime        @db.Time(6)
+  is_available    Boolean?        @default(true)
+  created_at      DateTime?       @default(now()) @db.Timestamp(6)
+  updated_at      DateTime?       @default(now()) @db.Timestamp(6)
+  booking_staff   booking_staff   @relation(fields: [staff_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  booking_tenants booking_tenants @relation(fields: [tenant_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([day_of_week], map: "idx_availability_day")
+  @@index([staff_id], map: "idx_availability_staff")
+  @@index([tenant_id], map: "idx_availability_tenant")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model booking_notifications {
+  id                  String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenant_id           String          @db.Uuid
+  appointment_id      String?         @db.Uuid
+  type                String          @db.VarChar(50)
+  channel             String          @default("email") @db.VarChar(20)
+  recipient_email     String?         @db.VarChar(255)
+  recipient_phone     String?         @db.VarChar(50)
+  subject             String?         @db.VarChar(500)
+  message             String?
+  status              String?         @default("pending") @db.VarChar(20)
+  sent_at             DateTime?       @db.Timestamp(6)
+  error_message       String?
+  provider            String?         @db.VarChar(50)
+  provider_message_id String?         @db.VarChar(255)
+  created_at          DateTime?       @default(now()) @db.Timestamp(6)
+  appointments        appointments?   @relation(fields: [appointment_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  booking_tenants     booking_tenants @relation(fields: [tenant_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([appointment_id], map: "idx_notifications_appointment")
+  @@index([status], map: "idx_notifications_status")
+  @@index([tenant_id], map: "idx_notifications_tenant")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model booking_services {
+  id                     String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenant_id              String          @db.Uuid
+  name                   String          @db.VarChar(255)
+  description            String?
+  category               String?         @db.VarChar(100)
+  duration_minutes       Int
+  price_cents            Int             @default(0)
+  online_booking_enabled Boolean?        @default(true)
+  requires_approval      Boolean?        @default(false)
+  display_order          Int?            @default(0)
+  status                 String?         @default("active") @db.VarChar(20)
+  created_at             DateTime?       @default(now()) @db.Timestamp(6)
+  updated_at             DateTime?       @default(now()) @db.Timestamp(6)
+  appointments           appointments[]
+  booking_tenants        booking_tenants @relation(fields: [tenant_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([category], map: "idx_booking_services_category")
+  @@index([status], map: "idx_booking_services_status")
+  @@index([tenant_id], map: "idx_booking_services_tenant")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model booking_staff {
+  id                         String                       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenant_id                  String                       @db.Uuid
+  name                       String                       @db.VarChar(255)
+  email                      String?                      @db.VarChar(255)
+  phone                      String?                      @db.VarChar(50)
+  title                      String?                      @db.VarChar(255)
+  bio                        String?
+  avatar_url                 String?
+  buffer_time_after          Int?                         @default(0)
+  max_advance_booking_days   Int?                         @default(90)
+  min_advance_booking_hours  Int?                         @default(2)
+  display_order              Int?                         @default(0)
+  is_primary                 Boolean?                     @default(false)
+  status                     String?                      @default("active") @db.VarChar(20)
+  created_at                 DateTime?                    @default(now()) @db.Timestamp(6)
+  updated_at                 DateTime?                    @default(now()) @db.Timestamp(6)
+  appointments               appointments[]
+  booking_availability_rules booking_availability_rules[]
+  booking_tenants            booking_tenants              @relation(fields: [tenant_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([status], map: "idx_booking_staff_status")
+  @@index([tenant_id], map: "idx_booking_staff_tenant")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model booking_tenants {
+  id                         String                       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id                    Int?                         @unique
+  site_id                    String?                      @db.VarChar(255)
+  business_name              String                       @db.VarChar(255)
+  business_type              String?                      @db.VarChar(100)
+  phone                      String?                      @db.VarChar(50)
+  email                      String?                      @db.VarChar(255)
+  timezone                   String?                      @default("America/New_York") @db.VarChar(100)
+  currency                   String?                      @default("USD") @db.VarChar(3)
+  booking_page_enabled       Boolean?                     @default(true)
+  confirmation_email_enabled Boolean?                     @default(true)
+  reminder_email_enabled     Boolean?                     @default(true)
+  status                     String?                      @default("active") @db.VarChar(20)
+  created_at                 DateTime?                    @default(now()) @db.Timestamp(6)
+  updated_at                 DateTime?                    @default(now()) @db.Timestamp(6)
+  appointments               appointments[]
+  booking_availability_rules booking_availability_rules[]
+  booking_notifications      booking_notifications[]
+  booking_services           booking_services[]
+  booking_staff              booking_staff[]
+  sites                      sites?                       @relation(fields: [site_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users                      users?                       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([site_id], map: "idx_booking_tenants_site")
+  @@index([user_id], map: "idx_booking_tenants_user")
+}
+
+model pricing {
+  id         Int       @id @default(autoincrement())
+  tier       String    @unique @db.VarChar(50)
+  price      Decimal   @db.Decimal(10, 2)
+  features   Json?
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model sites {
+  id              String            @id @db.VarChar(255)
+  user_id         Int?
+  subdomain       String            @unique @db.VarChar(255)
+  template_id     String?           @db.VarChar(255)
+  status          String?           @default("draft") @db.VarChar(50)
+  plan            String?           @default("free") @db.VarChar(50)
+  published_at    DateTime?         @db.Timestamp(6)
+  expires_at      DateTime?         @db.Timestamp(6)
+  site_data       Json?
+  json_file_path  String?
+  created_at      DateTime?         @default(now()) @db.Timestamp(6)
+  is_public       Boolean           @default(false)
+  is_featured     Boolean?          @default(false)
+  view_count      Int?              @default(0)
+  booking_tenants booking_tenants[]
+  users           users?            @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  submissions     submissions[]
+}
+
+model submissions {
+  id         Int       @id @default(autoincrement())
+  site_id    String?   @db.VarChar(255)
+  form_type  String?   @db.VarChar(100)
+  data       Json?
+  status     String?   @default("unread") @db.VarChar(50)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  sites      sites?    @relation(fields: [site_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model users {
+  id                  Int              @id @default(autoincrement())
+  email               String           @unique @db.VarChar(255)
+  password_hash       String           @db.VarChar(255)
+  role                String?          @default("user") @db.VarChar(50)
+  status              String?          @default("active") @db.VarChar(50)
+  subscription_status String?          @db.VarChar(50)
+  subscription_plan   String?          @db.VarChar(50)
+  created_at          DateTime?        @default(now()) @db.Timestamp(6)
+  last_login          DateTime?        @db.Timestamp(6)
+  google_id           String?          @unique @db.VarChar(255)
+  picture             String?
+  booking_tenants     booking_tenants?
+  sites               sites[]
+
+  @@index([google_id], map: "idx_users_google_id")
+}

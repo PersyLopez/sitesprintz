@@ -1,0 +1,343 @@
+/**
+ * Foundation Settings Component Styles
+ */
+
+/* Main Container with Preview */
+.foundation-settings-with-preview {
+  display: flex;
+  gap: 24px;
+  height: 100%;
+  min-height: calc(100vh - 200px);
+}
+
+/* Preview Toggle (Mobile Only) */
+.preview-toggle-mobile {
+  display: none;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.preview-toggle-mobile .toggle-btn {
+  width: 100%;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--color-text, #f8fafc);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.preview-toggle-mobile .toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.preview-toggle-mobile .toggle-btn.active {
+  background: var(--color-primary, #6366f1);
+  border-color: var(--color-primary, #6366f1);
+}
+
+.foundation-settings {
+  flex: 1;
+  max-width: 900px;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.foundation-settings.with-preview {
+  max-width: 50%;
+}
+
+/* Preview Panel */
+.preview-panel {
+  flex: 1;
+  position: sticky;
+  top: 0;
+  height: calc(100vh - 200px);
+  min-width: 400px;
+}
+
+.settings-header {
+  margin-bottom: 32px;
+  position: relative;
+}
+
+.settings-header h2 {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  color: var(--color-text, #f8fafc);
+}
+
+.settings-header p {
+  color: var(--color-muted, #94a3b8);
+  font-size: 1rem;
+}
+
+/* Preview Toggle Button (Desktop) */
+.preview-toggle-desktop {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 8px 16px;
+  color: var(--color-text, #f8fafc);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.preview-toggle-desktop:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .foundation-settings-with-preview {
+    flex-direction: column;
+  }
+
+  .foundation-settings.with-preview {
+    max-width: 100%;
+  }
+
+  .preview-panel {
+    position: relative;
+    height: 600px;
+    min-width: unset;
+    width: 100%;
+  }
+
+  .preview-toggle-desktop {
+    display: none;
+  }
+
+  .preview-toggle-mobile {
+    display: block;
+  }
+}
+
+@media (max-width: 768px) {
+  .foundation-settings {
+    padding: 16px;
+  }
+
+  .preview-panel {
+    height: 500px;
+  }
+}
+
+@media (max-width: 480px) {
+  .foundation-settings-with-preview {
+    gap: 0;
+  }
+
+  .foundation-settings {
+    padding: 12px;
+  }
+
+  .preview-panel {
+    height: 400px;
+  }
+}
+
+/* Tab Navigation */
+.settings-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 32px;
+  overflow-x: auto;
+}
+
+.settings-tabs button {
+  background: none;
+  border: none;
+  padding: 12px 20px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-muted, #94a3b8);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.settings-tabs button:hover {
+  color: var(--color-text, #f8fafc);
+}
+
+.settings-tabs button.active {
+  color: var(--color-primary, #6366f1);
+  border-bottom-color: var(--color-primary, #6366f1);
+}
+
+/* Settings Panel */
+.settings-panel {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 32px;
+  margin-bottom: 24px;
+}
+
+.settings-panel h3 {
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+  color: var(--color-text, #f8fafc);
+}
+
+.panel-description {
+  color: var(--color-muted, #94a3b8);
+  margin-bottom: 24px;
+  font-size: 0.95rem;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--color-text, #f8fafc);
+  font-size: 0.9rem;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="url"],
+.form-group input[type="tel"],
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: var(--color-text, #f8fafc);
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: all 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--color-primary, #6366f1);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.form-group small {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: var(--color-muted, #94a3b8);
+}
+
+/* Toggle Labels */
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  transition: all 0.3s;
+  margin-bottom: 0 !important;
+}
+
+.toggle-label:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.toggle-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--color-primary, #6366f1);
+}
+
+.toggle-label span {
+  font-weight: 500;
+  color: var(--color-text, #f8fafc);
+}
+
+/* Settings Footer */
+.settings-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings-footer .message {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.settings-footer .message.success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.settings-footer .message.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.settings-footer .btn {
+  padding: 12px 32px;
+  font-size: 1rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .foundation-settings {
+    padding: 16px;
+  }
+
+  .settings-panel {
+    padding: 24px;
+  }
+
+  .settings-tabs {
+    gap: 4px;
+  }
+
+  .settings-tabs button {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+  }
+
+  .settings-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .settings-footer .btn {
+    width: 100%;
+  }
+}
+

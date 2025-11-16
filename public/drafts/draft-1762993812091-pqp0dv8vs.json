@@ -1,0 +1,38 @@
+{
+  "draftId": "draft-1762993812091-pqp0dv8vs",
+  "id": "draft-1762993812091-pqp0dv8vs",
+  "templateId": "restaurant-casual",
+  "template": "restaurant-casual",
+  "businessData": {
+    "businessName": "Test Restaurant",
+    "template": "restaurant-casual",
+    "colors": {
+      "primary": "#FF5722",
+      "secondary": "#FFC107"
+    },
+    "content": {
+      "hero": {
+        "title": "Welcome to Test Restaurant",
+        "subtitle": "Fresh Food Daily"
+      }
+    }
+  },
+  "data": {
+    "businessName": "Test Restaurant",
+    "template": "restaurant-casual",
+    "colors": {
+      "primary": "#FF5722",
+      "secondary": "#FFC107"
+    },
+    "content": {
+      "hero": {
+        "title": "Welcome to Test Restaurant",
+        "subtitle": "Fresh Food Daily"
+      }
+    }
+  },
+  "createdAt": "2025-11-13T00:30:12.091Z",
+  "updatedAt": "2025-11-13T00:30:12.092Z",
+  "expiresAt": "2025-11-20T00:30:12.092Z",
+  "status": "draft"
+}

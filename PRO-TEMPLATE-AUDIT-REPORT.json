@@ -1,0 +1,114 @@
+{
+  "auditDate": "2025-11-14T14:22:50.938Z",
+  "totalTemplates": 12,
+  "passed": 12,
+  "failed": 0,
+  "totalIssues": 0,
+  "totalWarnings": 0,
+  "results": [
+    {
+      "template": "restaurant-pro.json",
+      "passed": true,
+      "issues": [],
+      "warnings": []
+    },
+    {
+      "template": "salon-pro.json",
+      "passed": true,
+      "issues": [],
+      "warnings": []
+    },
+    {
+      "template": "gym-pro.json",
+      "passed": true,
+      "issues": [],
+      "warnings": []
+    },
+    {
+      "template": "pet-care-pro.json",
+      "passed": true,
+      "issues": [],
+      "warnings": []
+    },
+    {
+      "template": "auto-repair-pro.json",
+      "passed": true,
+      "issues": [],
+      "warnings": []
+    },
+    {
+      "template": "tech-repair-pro.json",
+      "passed": true,
+      "issues": [],
+      "warnings": []
+    },
+    {
+      "template": "plumbing-pro.json",
+      "passed": true,
+      "issues": [],
+      "warnings": []
+    },
+    {
+      "template": "electrician-pro.json",
+      "passed": true,
+      "issues": [],
+      "warnings": []
+    },
+    {
+      "template": "cleaning-pro.json",
+      "passed": true,
+      "issues": [],
+      "warnings": []
+    },
+    {
+      "template": "consultant-pro.json",
+      "passed": true,
+      "issues": [],
+      "warnings": []
+    },
+    {
+      "template": "freelancer-pro.json",
+      "passed": true,
+      "issues": [],
+      "warnings": []
+    },
+    {
+      "template": "product-showcase-pro.json",
+      "passed": true,
+      "issues": [],
+      "warnings": []
+    }
+  ],
+  "requiredFeatures": {
+    "features.bookingWidget": {
+      "required": true,
+      "type": "object",
+      "properties": [
+        "enabled",
+        "provider",
+        "url",
+        "embedMode"
+      ]
+    },
+    "features.reviews": {
+      "required": true,
+      "type": "object",
+      "properties": [
+        "enabled",
+        "placeId",
+        "maxReviews",
+        "showOverallRating"
+      ]
+    },
+    "features.ownerDashboard": {
+      "required": true,
+      "type": "boolean",
+      "value": true
+    },
+    "features.analytics": {
+      "required": true,
+      "type": "boolean",
+      "value": true
+    }
+  }
+}

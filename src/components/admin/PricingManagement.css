@@ -1,0 +1,414 @@
+.pricing-management {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.pricing-header {
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.pricing-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  color: #1e293b;
+}
+
+.pricing-header p {
+  color: #64748b;
+  font-size: 1.1rem;
+}
+
+.quick-update-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.quick-update-section h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: #1e293b;
+}
+
+.quick-update-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.quick-update-item label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.plan-name {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 1.1rem;
+}
+
+.price-input-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  transition: border-color 0.2s;
+}
+
+.price-input-group:focus-within {
+  border-color: #3b82f6;
+}
+
+.currency {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.price-input {
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  width: 100px;
+  padding: 0;
+}
+
+.price-input:focus {
+  outline: none;
+}
+
+.period {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.pricing-table {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+}
+
+.pricing-table h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: #1e293b;
+}
+
+.pricing-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.pricing-table th {
+  text-align: left;
+  padding: 1rem;
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.pricing-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  color: #1e293b;
+}
+
+.pricing-table tr:hover {
+  background: #f8fafc;
+}
+
+.pricing-table tr.inactive {
+  opacity: 0.5;
+}
+
+.price-cell {
+  font-weight: 600;
+  color: #0ea5e9;
+}
+
+.price-cents {
+  display: block;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 400;
+  margin-top: 0.25rem;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-badge.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-badge.inactive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.popular-badge {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.btn-small {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #1e293b;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #94a3b8;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.modal-body {
+  padding: 2rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #475569;
+  font-size: 0.875rem;
+}
+
+.optional {
+  font-weight: 400;
+  color: #94a3b8;
+  font-size: 0.75rem;
+}
+
+.form-control {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+textarea.form-control {
+  resize: vertical;
+  font-family: inherit;
+}
+
+.form-hint {
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 400 !important;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.pricing-history {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.pricing-history h3 {
+  font-size: 1.125rem;
+  margin-bottom: 1rem;
+  color: #1e293b;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+.history-date {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.history-change {
+  color: #0ea5e9;
+  font-weight: 600;
+}
+
+.history-user {
+  color: #94a3b8;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1.5rem 2rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.loading, .error-message {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.error-message h2 {
+  color: #ef4444;
+  margin-bottom: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .pricing-management {
+    padding: 1rem;
+  }
+
+  .quick-update-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pricing-table {
+    padding: 1rem;
+  }
+
+  .pricing-table table {
+    font-size: 0.875rem;
+  }
+
+  .pricing-table th,
+  .pricing-table td {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .modal-content {
+    max-height: 95vh;
+  }
+
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding: 1rem;
+  }
+}
+

@@ -1,0 +1,263 @@
+{
+  "timestamp": "2025-11-14T14:35:15.066Z",
+  "totalTemplates": 12,
+  "successCount": 12,
+  "failCount": 0,
+  "changes": [
+    {
+      "template": "restaurant-pro.json",
+      "success": true,
+      "changes": {
+        "allowCheckout": {
+          "from": false,
+          "to": true
+        },
+        "allowOrders": {
+          "from": false,
+          "to": true
+        },
+        "stripeEnabled": {
+          "to": true
+        },
+        "productCta": {
+          "to": "Order Now"
+        }
+      }
+    },
+    {
+      "template": "salon-pro.json",
+      "success": true,
+      "changes": {
+        "allowCheckout": {
+          "from": false,
+          "to": true
+        },
+        "allowOrders": {
+          "from": false,
+          "to": true
+        },
+        "stripeEnabled": {
+          "to": true
+        },
+        "productCta": {
+          "to": "Buy Now"
+        }
+      }
+    },
+    {
+      "template": "gym-pro.json",
+      "success": true,
+      "changes": {
+        "allowCheckout": {
+          "from": false,
+          "to": true
+        },
+        "allowOrders": {
+          "from": false,
+          "to": true
+        },
+        "stripeEnabled": {
+          "to": true
+        },
+        "productCta": {
+          "to": "Purchase"
+        }
+      }
+    },
+    {
+      "template": "pet-care-pro.json",
+      "success": true,
+      "changes": {
+        "allowCheckout": {
+          "from": false,
+          "to": true
+        },
+        "allowOrders": {
+          "from": false,
+          "to": true
+        },
+        "stripeEnabled": {
+          "to": true
+        },
+        "productCta": {
+          "to": "Buy Now"
+        }
+      }
+    },
+    {
+      "template": "auto-repair-pro.json",
+      "success": true,
+      "changes": {
+        "allowCheckout": {
+          "from": false,
+          "to": true
+        },
+        "allowOrders": {
+          "from": false,
+          "to": true
+        },
+        "stripeEnabled": {
+          "to": true
+        },
+        "productCta": {
+          "to": "Buy Now"
+        }
+      }
+    },
+    {
+      "template": "tech-repair-pro.json",
+      "success": true,
+      "changes": {
+        "allowCheckout": {
+          "from": false,
+          "to": true
+        },
+        "allowOrders": {
+          "from": false,
+          "to": true
+        },
+        "stripeEnabled": {
+          "to": true
+        },
+        "productCta": {
+          "to": "Buy Now"
+        }
+      }
+    },
+    {
+      "template": "plumbing-pro.json",
+      "success": true,
+      "changes": {
+        "allowCheckout": {
+          "from": false,
+          "to": true
+        },
+        "allowOrders": {
+          "from": false,
+          "to": true
+        },
+        "stripeEnabled": {
+          "to": true
+        },
+        "productCta": {
+          "to": "Buy Now"
+        }
+      }
+    },
+    {
+      "template": "electrician-pro.json",
+      "success": true,
+      "changes": {
+        "allowCheckout": {
+          "from": false,
+          "to": true
+        },
+        "allowOrders": {
+          "from": false,
+          "to": true
+        },
+        "stripeEnabled": {
+          "to": true
+        },
+        "productCta": {
+          "to": "Buy Now"
+        }
+      }
+    },
+    {
+      "template": "cleaning-pro.json",
+      "success": true,
+      "changes": {
+        "allowCheckout": {
+          "from": false,
+          "to": true
+        },
+        "allowOrders": {
+          "from": false,
+          "to": true
+        },
+        "stripeEnabled": {
+          "to": true
+        },
+        "productCta": {
+          "to": "Buy Now"
+        }
+      }
+    },
+    {
+      "template": "consultant-pro.json",
+      "success": true,
+      "changes": {
+        "allowCheckout": {
+          "from": false,
+          "to": true
+        },
+        "allowOrders": {
+          "from": false,
+          "to": true
+        },
+        "stripeEnabled": {
+          "to": true
+        },
+        "productCta": {
+          "to": "Purchase"
+        }
+      }
+    },
+    {
+      "template": "freelancer-pro.json",
+      "success": true,
+      "changes": {
+        "allowCheckout": {
+          "from": false,
+          "to": true
+        },
+        "allowOrders": {
+          "from": false,
+          "to": true
+        },
+        "stripeEnabled": {
+          "to": true
+        },
+        "productCta": {
+          "to": "Hire Me"
+        }
+      }
+    },
+    {
+      "template": "product-showcase-pro.json",
+      "success": true,
+      "changes": {
+        "allowCheckout": {
+          "from": false,
+          "to": true
+        },
+        "allowOrders": {
+          "from": false,
+          "to": true
+        },
+        "stripeEnabled": {
+          "to": true
+        },
+        "productCta": {
+          "to": "Buy Now"
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "stripeSettings": {
+    "allowCheckout": true,
+    "allowOrders": true,
+    "stripeEnabled": true,
+    "productCta": "Varies by template",
+    "productNote": "Varies by template"
+  },
+  "notes": [
+    "All Pro templates now support Stripe Connect payments",
+    "Users must connect their Stripe account via Dashboard > Payment Settings",
+    "Stripe Connect uses OAuth for secure, easy setup",
+    "No transaction fees from SiteSprintz - only Stripe's standard 2.9% + $0.30",
+    "Booking and checkout can coexist in the same template"
+  ]
+}
