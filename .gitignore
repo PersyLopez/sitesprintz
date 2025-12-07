@@ -4,3 +4,35 @@ node_modules
 dist
 backup-dependencies.txt
 backup-notes.txt
+
+# Log files
+*.log
+*.debug
+test_output*.log
+*_debug.log
+*_output.log
+
+# Test artifacts
+playwright-report/
+test-results/
+coverage/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.sublime-*
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Draft files (user-generated)
+public/drafts/*.json
+public/sites/*/
+public/showcases/*/
