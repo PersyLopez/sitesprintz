@@ -248,9 +248,22 @@ git branch -r --merged | grep -v "main\|dev\|staging" | sed 's/origin\///' | xar
 
 ## 📚 Related Documentation
 
-- [Git Strategy](./GIT-STRATEGY.md) - Original strategy document
+- [Git Strategy](./GIT-STRATEGY.md) - Quick reference guide
+- [Git Workflow Quick Start](./GIT-WORKFLOW-QUICK-START.md) - Quick reference
 - [Quick Start](./QUICK-START.md) - Deployment guide
 - [Contributing Guide](../../CONTRIBUTING.md) - Contribution guidelines
+
+---
+
+## 🔧 Fix Script
+
+If you accidentally commit to `main`, use the fix script:
+
+```bash
+./scripts/fix-git-workflow.sh
+```
+
+This will automatically move commits from `main` to `dev` properly.
 
 ---
 

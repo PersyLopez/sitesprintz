@@ -144,7 +144,7 @@ npm run start:prod
 
 ### Key Documents
 
-- **Getting Started:** [Quick Start](./docs/setup/QUICK-START.md), [Git Strategy](./docs/setup/GIT-STRATEGY.md)
+- **Getting Started:** [Quick Start](./docs/setup/QUICK-START.md), [Git Strategy](./docs/setup/GIT-STRATEGY.md), [Git Workflow Best Practices](./docs/setup/GIT-WORKFLOW-BEST-PRACTICES.md)
 - **Deployment:** [Railway Deploy](./docs/setup/RAILWAY-DEPLOY.md), [Integration Setup](./docs/setup/INTEGRATION-SETUP.md)
 - **Planning:** [Strategic Plan](./docs/plans/STRATEGIC-MASTER-PLAN.md), [Backlog](./docs/plans/BACKLOG.md)
 - **Development:** [Template Guide](./docs/TEMPLATE-CREATION-GUIDE.md), [JS Standards](./docs/JS-STANDARDS.md)
@@ -153,12 +153,17 @@ npm run start:prod
 
 ## 🤝 Contributing
 
-1. Work on `dev` branch
-2. Create `feature/*` branches
-3. Merge to `staging` → test
-4. Merge to `main` → deploys
+**Git Workflow:** `dev` → `staging` → `main`
 
-See [`GIT-STRATEGY.md`](./GIT-STRATEGY.md) for details.
+1. Work on `dev` branch
+2. Create `feature/*` branches from `dev`
+3. Merge `dev` → `staging` → test
+4. Merge `staging` → `main` → deploys
+
+**Documentation:**
+- [Git Strategy](./docs/setup/GIT-STRATEGY.md) - Quick reference
+- [Git Workflow Best Practices](./docs/setup/GIT-WORKFLOW-BEST-PRACTICES.md) - Complete guide
+- [Contributing Guide](./CONTRIBUTING.md) - Full contribution guidelines
 
 ---
 

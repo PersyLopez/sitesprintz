@@ -11,6 +11,7 @@
 | [Project README](../README.md) | Project overview & features | 3 min |
 | [Quick Start](setup/QUICK-START.md) | Deploy in 15 minutes | 5 min |
 | [Git Strategy](setup/GIT-STRATEGY.md) | Daily workflow | 3 min |
+| [Git Workflow Best Practices](setup/GIT-WORKFLOW-BEST-PRACTICES.md) | Complete workflow guide | 10 min |
 
 ---
 
@@ -20,7 +21,8 @@
 
 - [Quick Start](setup/QUICK-START.md) - 15-minute deployment guide
 - [Railway Deploy](setup/RAILWAY-DEPLOY.md) - Production deployment
-- [Git Strategy](setup/GIT-STRATEGY.md) - Branch workflow
+- [Git Strategy](setup/GIT-STRATEGY.md) - Quick workflow reference
+- [Git Workflow Best Practices](setup/GIT-WORKFLOW-BEST-PRACTICES.md) - Complete workflow guide
 - [Integration Setup](setup/INTEGRATION-SETUP.md) - API status
 - [Ngrok Setup](setup/NGROK-SETUP.md) - Local webhooks
 - [Test Credentials](setup/TEST-CREDENTIALS.md) - Test accounts
