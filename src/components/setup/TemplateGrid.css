@@ -1,26 +1,76 @@
 .template-grid-container {
-  padding: var(--spacing-lg);
-  height: 100%;
+  padding: 0; /* Remove padding to maximize space */
+  min-height: 100%; /* Minimum height, but can grow */
   display: flex;
   flex-direction: column;
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ============================================
-   CONTROLS SECTION
+   CONTROLS SECTION - COLLAPSIBLE ON HOVER
    ============================================ */
 .template-controls {
   position: sticky;
   top: 0;
   background: var(--bg-elevated);
-  border: 2px solid var(--border-dark);
-  border-radius: 12px;
-  padding: var(--spacing-lg);
-  margin-bottom: var(--spacing-xl);
+  border: none; /* Remove border */
+  border-bottom: 1px solid var(--border-dark); /* Only bottom border */
+  border-radius: 0; /* Remove radius for full width */
+  padding: var(--spacing-xs) var(--spacing-md); /* Minimal padding */
+  margin-bottom: 0; /* Remove margin */
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
-  z-index: 10;
-  box-shadow: var(--shadow-sm);
+  gap: var(--spacing-xs); /* Minimal gap */
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+  max-height: 45px; /* Collapsed height - only shows search */
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+  cursor: pointer;
+}
+
+.template-controls:hover,
+.template-controls:focus-within {
+  max-height: 300px; /* Expanded height */
+  padding: var(--spacing-sm) var(--spacing-md);
+  gap: var(--spacing-sm);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  cursor: default;
+}
+
+/* Hint for collapsible controls */
+.template-controls::after {
+  content: '▼ Hover to see filters';
+  position: absolute;
+  right: var(--spacing-md);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.template-controls:hover::after,
+.template-controls:focus-within::after {
+  opacity: 0;
 }
 
 /* Search Bar */
@@ -37,17 +87,19 @@
   font-size: 1.1rem;
   pointer-events: none;
   opacity: 0.5;
+  z-index: 1; /* Above hint text */
 }
 
 .search-input {
   width: 100%;
-  padding: 10px 40px 10px 40px;
+  padding: 8px 40px 8px 40px; /* Reduced from 10px */
   border: 2px solid var(--border-dark);
   border-radius: 8px;
   background: var(--bg-card);
   color: var(--text-light);
-  font-size: 0.95rem;
+  font-size: 0.9rem; /* Slightly smaller */
   transition: all 0.2s ease;
+  z-index: 1; /* Above hint text */
 }
 
 .search-input:focus {
@@ -79,42 +131,45 @@
   color: var(--text-light);
 }
 
-/* Group Selector & Tier Filter */
+/* Group Selector & Tier Filter - COMPACT */
 .template-group-selector,
 .template-tier-filter {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm); /* Reduced gap */
   flex-wrap: wrap;
 }
 
 .template-group-selector label,
 .template-tier-filter label {
-  font-size: 0.85rem;
+  font-size: 0.8rem; /* Smaller label */
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   white-space: nowrap;
+  margin-right: var(--spacing-xs); /* Small margin */
 }
 
 .btn-group {
   display: flex;
-  gap: 6px;
+  gap: 4px; /* OPTIMIZED: Reduced from 6px for compact spacing */
   flex-wrap: wrap;
 }
 
 .btn-group-item {
-  padding: 6px 14px;
+  padding: 4px 10px; /* OPTIMIZED: Reduced from 6px 14px */
   border: 2px solid var(--border-dark);
   background: var(--bg-card);
   color: var(--text-light);
-  border-radius: 8px;
+  border-radius: 6px; /* OPTIMIZED: Reduced from 8px */
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.8rem; /* OPTIMIZED: Reduced from 0.85rem */
   font-weight: 600;
   transition: all 0.2s ease;
   white-space: nowrap;
+  position: relative;
+  z-index: 1; /* FIXED: Ensure buttons are above shimmer effects */
 }
 
 .btn-group-item:hover {
@@ -134,9 +189,9 @@
   border-color: #d4af37;
 }
 
-.btn-group-item.tier-checkout.active {
-  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
-  border-color: #06b6d4;
+.btn-group-item.tier-premium.active {
+  background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+  border-color: #9333ea;
 }
 
 .btn-group-item.tier-starter.active {
@@ -144,13 +199,13 @@
   border-color: #22c55e;
 }
 
-/* Template Count */
+/* Template Count - COMPACT */
 .template-count {
-  font-size: 0.85rem;
+  font-size: 0.75rem; /* Smaller text */
   color: var(--text-muted);
   text-align: right;
-  padding-top: var(--spacing-sm);
-  border-top: 1px solid var(--border-dark);
+  padding-top: 0; /* Remove extra padding */
+  border-top: none; /* Remove border to save space */
 }
 
 /* ============================================
@@ -181,10 +236,34 @@
 }
 
 /* ============================================
-   TEMPLATE SECTIONS
+   TEMPLATE SECTIONS - SCROLLABLE
    ============================================ */
 .template-tier-section {
-  margin-bottom: var(--spacing-2xl);
+  margin-bottom: var(--spacing-lg); /* Reduced */
+  background: linear-gradient(180deg, 
+    rgba(15,27,45,0.6) 0%, 
+    rgba(26,15,46,0.4) 50%, 
+    rgba(15,27,45,0.6) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 16px; /* Reduced */
+  padding: var(--spacing-lg); /* Reduced */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+  animation: slideInUp 0.6s ease-out;
+}
+
+.template-tier-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.15), transparent);
+  animation: shimmer 3s infinite;
+  pointer-events: none; /* FIXED: Prevent shimmer from blocking clicks */
 }
 
 .template-tier-section:last-child {
@@ -196,17 +275,20 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--spacing-lg);
-  padding-bottom: var(--spacing-md);
-  border-bottom: 2px solid var(--border-dark);
+  position: relative;
+  z-index: 1;
 }
 
 .tier-header h3 {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--text-light);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ffffff 0%, #6366f1 50%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-transform: none;
+  letter-spacing: -0.5px;
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
@@ -225,34 +307,81 @@
   font-weight: 600;
 }
 
-/* ============================================
-   TEMPLATE CARDS
-   ============================================ */
+/* Template Cards Container - SCROLLABLE */
 .template-cards {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
+  padding: var(--spacing-md); /* Add padding back here */
+  /* Remove flex: 1 and overflow - let parent .panel-content handle scrolling */
 }
 
 .template-card {
-  background: var(--bg-card);
-  border: 2px solid var(--border-dark);
-  border-radius: 12px;
+  background: linear-gradient(135deg, 
+    rgba(30, 41, 59, 0.8) 0%, 
+    rgba(51, 65, 85, 0.6) 100%);
+  border: 2px solid rgba(99, 102, 241, 0.2);
+  border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  animation: slideInUp 0.6s ease-out;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.template-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, 
+    var(--primary-color), 
+    #8b5cf6);
+  transform: scaleX(0);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none; /* FIXED: Allow clicks through top border animation */
+}
+
+.template-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(99, 102, 241, 0.15), 
+    transparent);
+  transition: left 0.6s;
+  pointer-events: none; /* FIXED: Allow clicks through shimmer animation */
 }
 
 .template-card:hover {
   border-color: var(--primary-color);
-  transform: translateX(4px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(99, 102, 241, 0.25),
+              0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.template-card:hover::before {
+  transform: scaleX(1);
+}
+
+.template-card:hover::after {
+  left: 100%;
 }
 
 .template-card.selected {
   border-color: var(--primary-color);
-  background: rgba(6, 182, 212, 0.05);
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.15) 0%, 
+    rgba(139, 92, 246, 0.1) 100%);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3), 
+              0 20px 40px rgba(99, 102, 241, 0.2);
 }
 
 /* Template Preview */
@@ -298,18 +427,13 @@
   color: #1a1a1a;
 }
 
-.template-tier-badge.tier-checkout {
-  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+.template-tier-badge.tier-premium {
+  background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
   color: white;
 }
 
 .template-tier-badge.tier-starter {
   background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-  color: white;
-}
-
-.template-tier-badge.tier-premium {
-  background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
   color: white;
 }
 

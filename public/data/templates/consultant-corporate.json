@@ -7,29 +7,55 @@
     "email": "contact@strategicsg.com"
   },
   "themeVars": {
-    "color-primary": "#1e40af",
-    "color-accent": "#3b82f6",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#0f172a",
+    "color-primary-light": "#334155",
+    "color-accent": "#d4af37",
+    "color-surface": "rgba(255, 255, 255, 0.03)",
+    "color-card": "rgba(255, 255, 255, 0.06)",
+    "color-text": "#f8fafc",
+    "color-muted": "#94a3b8",
+    "color-bg": "#020617"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "Industries", "href": "#about"},
-    {"label": "Team", "href": "#team"},
-    {"label": "Case Studies", "href": "#testimonials"},
-    {"label": "Contact", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "Industries",
+      "href": "#about"
+    },
+    {
+      "label": "Team",
+      "href": "#team"
+    },
+    {
+      "label": "Case Studies",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "💼 Enterprise Strategy Consulting",
     "title": "Drive transformational change",
     "subtitle": "We partner with Fortune 500 companies and global enterprises to solve complex business challenges. From digital transformation to operational excellence, our consultants deliver measurable results that drive sustainable growth.",
     "cta": [
-      {"label": "Schedule Consultation", "href": "#contact"},
-      {"label": "Our Services", "href": "#products", "variant": "secondary"}
+      {
+        "label": "Schedule Consultation",
+        "href": "#contact"
+      },
+      {
+        "label": "Our Services",
+        "href": "#products",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&q=80",
-    "imageAlt": "Corporate business strategy meeting"
+    "imageAlt": "Corporate business strategy meeting",
+    "layout": "split"
   },
   "about": {
     "title": "Strategic Excellence",
@@ -136,7 +162,11 @@
         "bio": "Former Chief Strategy Officer at a Fortune 100 company. PhD in Business Strategy from Stanford. 25+ years advising C-suite executives on transformational initiatives.",
         "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
         "imageAlt": "Dr. Michael Bradford",
-        "credentials": ["PhD Stanford GSB", "Former Fortune 100 CSO", "Board Director"]
+        "credentials": [
+          "PhD Stanford GSB",
+          "Former Fortune 100 CSO",
+          "Board Director"
+        ]
       }
     ]
   },
@@ -144,18 +174,42 @@
     "title": "Our Approach",
     "subtitle": "Rigorous methodology, measurable results",
     "steps": [
-      {"title": "Discovery & Assessment", "description": "Deep dive into your organization, challenges, and objectives"},
-      {"title": "Strategic Analysis", "description": "Data-driven insights and strategic recommendations"},
-      {"title": "Implementation Planning", "description": "Detailed roadmap with clear milestones and KPIs"},
-      {"title": "Execution Support", "description": "Hands-on guidance to ensure successful implementation"}
+      {
+        "title": "Discovery & Assessment",
+        "description": "Deep dive into your organization, challenges, and objectives"
+      },
+      {
+        "title": "Strategic Analysis",
+        "description": "Data-driven insights and strategic recommendations"
+      },
+      {
+        "title": "Implementation Planning",
+        "description": "Detailed roadmap with clear milestones and KPIs"
+      },
+      {
+        "title": "Execution Support",
+        "description": "Hands-on guidance to ensure successful implementation"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "20+", "label": "Years Experience"},
-      {"number": "150+", "label": "Enterprise Clients"},
-      {"number": "$2B+", "label": "Value Created"},
-      {"number": "30", "label": "Senior Consultants"}
+      {
+        "number": "20+",
+        "label": "Years Experience"
+      },
+      {
+        "number": "150+",
+        "label": "Enterprise Clients"
+      },
+      {
+        "number": "$2B+",
+        "label": "Value Created"
+      },
+      {
+        "number": "30",
+        "label": "Senior Consultants"
+      }
     ]
   },
   "contact": {
@@ -184,4 +238,3 @@
   "productsTitle": "Consulting Services",
   "productsSubtitle": "Enterprise solutions that drive results"
 }
-

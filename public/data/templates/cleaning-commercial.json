@@ -7,28 +7,51 @@
     "email": "services@proclean.biz"
   },
   "themeVars": {
-    "color-primary": "#1e40af",
-    "color-accent": "#3b82f6",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "Industries", "href": "#about"},
-    {"label": "References", "href": "#testimonials"},
-    {"label": "Get Quote", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "Industries",
+      "href": "#about"
+    },
+    {
+      "label": "References",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Get Quote",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "🏢 Commercial Cleaning Services",
     "title": "Professional spaces, professionally cleaned",
     "subtitle": "Reliable janitorial services for offices, retail, medical, and industrial facilities. Nightly, weekly, or custom schedules. Insured, bonded, and trusted by businesses since 2008. Keep your workplace spotless.",
     "cta": [
-      {"label": "Request Quote", "href": "#contact"},
-      {"label": "Our Services", "href": "#products", "variant": "secondary"}
+      {
+        "label": "Request Quote",
+        "href": "#contact"
+      },
+      {
+        "label": "Our Services",
+        "href": "#products",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=1200&q=80",
-    "imageAlt": "Professional office space"
+    "imageAlt": "Professional office space",
+    "layout": "split"
   },
   "about": {
     "title": "Commercial Cleaning Experts",
@@ -135,7 +158,11 @@
         "bio": "15+ years in commercial cleaning management. Oversees all cleaning crews, quality control, and client relationships. Committed to exceeding expectations.",
         "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
         "imageAlt": "James Martinez",
-        "credentials": ["ISSA Certified", "15+ Years Experience", "Fully Insured & Bonded"]
+        "credentials": [
+          "ISSA Certified",
+          "15+ Years Experience",
+          "Fully Insured & Bonded"
+        ]
       }
     ]
   },
@@ -143,18 +170,42 @@
     "title": "Our Process",
     "subtitle": "Professional service, every time",
     "steps": [
-      {"title": "Site Walk-Through", "description": "We visit your facility to understand your needs"},
-      {"title": "Custom Proposal", "description": "Detailed quote based on your specific requirements"},
-      {"title": "Scheduled Service", "description": "Trained crew arrives on schedule with all equipment"},
-      {"title": "Quality Assurance", "description": "Regular inspections and open communication"}
+      {
+        "title": "Site Walk-Through",
+        "description": "We visit your facility to understand your needs"
+      },
+      {
+        "title": "Custom Proposal",
+        "description": "Detailed quote based on your specific requirements"
+      },
+      {
+        "title": "Scheduled Service",
+        "description": "Trained crew arrives on schedule with all equipment"
+      },
+      {
+        "title": "Quality Assurance",
+        "description": "Regular inspections and open communication"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "16+", "label": "Years Serving Businesses"},
-      {"number": "150+", "label": "Commercial Clients"},
-      {"number": "50+", "label": "Trained Staff"},
-      {"number": "$5M", "label": "Liability Coverage"}
+      {
+        "number": "16+",
+        "label": "Years Serving Businesses"
+      },
+      {
+        "number": "150+",
+        "label": "Commercial Clients"
+      },
+      {
+        "number": "50+",
+        "label": "Trained Staff"
+      },
+      {
+        "number": "$5M",
+        "label": "Liability Coverage"
+      }
     ]
   },
   "contact": {
@@ -183,4 +234,3 @@
   "productsTitle": "Commercial Cleaning Services",
   "productsSubtitle": "Professional facility maintenance"
 }
-

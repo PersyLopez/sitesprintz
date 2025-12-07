@@ -7,28 +7,51 @@
     "email": "hello@sparklehome.com"
   },
   "themeVars": {
-    "color-primary": "#10b981",
-    "color-accent": "#34d399",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "Why Us", "href": "#about"},
-    {"label": "Reviews", "href": "#testimonials"},
-    {"label": "Book Now", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "Why Us",
+      "href": "#about"
+    },
+    {
+      "label": "Reviews",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Book Now",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "🏠 Residential Cleaning Services",
     "title": "Come home to sparkle",
     "subtitle": "Professional house cleaning you can trust. Weekly, bi-weekly, or monthly service. Background-checked cleaners, eco-friendly products, and satisfaction guaranteed. Enjoy more free time and a spotless home.",
     "cta": [
-      {"label": "Get Free Quote", "href": "#contact"},
-      {"label": "Our Services", "href": "#products", "variant": "secondary"}
+      {
+        "label": "Get Free Quote",
+        "href": "#contact"
+      },
+      {
+        "label": "Our Services",
+        "href": "#products",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&q=80",
-    "imageAlt": "Clean modern living room"
+    "imageAlt": "Clean modern living room",
+    "layout": "split"
   },
   "about": {
     "title": "Trusted Home Cleaning",
@@ -135,7 +158,11 @@
         "bio": "Founded Sparkle in 2012 with a commitment to quality and reliability. All our cleaners are background-checked, insured, and trained in our proven cleaning methods.",
         "image": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80",
         "imageAlt": "Maria Santos",
-        "credentials": ["12+ Years Experience", "Insured & Bonded", "Eco-Friendly Certified"]
+        "credentials": [
+          "12+ Years Experience",
+          "Insured & Bonded",
+          "Eco-Friendly Certified"
+        ]
       }
     ]
   },
@@ -143,18 +170,42 @@
     "title": "How It Works",
     "subtitle": "Simple booking, excellent results",
     "steps": [
-      {"title": "Free Quote", "description": "Tell us about your home and cleaning needs"},
-      {"title": "Schedule Service", "description": "Choose your date and time. Recurring or one-time"},
-      {"title": "Professional Cleaning", "description": "Trained team arrives with all supplies"},
-      {"title": "Enjoy Your Clean Home", "description": "100% satisfaction guaranteed or we'll re-clean free"}
+      {
+        "title": "Free Quote",
+        "description": "Tell us about your home and cleaning needs"
+      },
+      {
+        "title": "Schedule Service",
+        "description": "Choose your date and time. Recurring or one-time"
+      },
+      {
+        "title": "Professional Cleaning",
+        "description": "Trained team arrives with all supplies"
+      },
+      {
+        "title": "Enjoy Your Clean Home",
+        "description": "100% satisfaction guaranteed or we'll re-clean free"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "12+", "label": "Years Trusted"},
-      {"number": "500+", "label": "Happy Homes"},
-      {"number": "4.9", "label": "Star Rating"},
-      {"number": "100%", "label": "Satisfaction Guaranteed"}
+      {
+        "number": "12+",
+        "label": "Years Trusted"
+      },
+      {
+        "number": "500+",
+        "label": "Happy Homes"
+      },
+      {
+        "number": "4.9",
+        "label": "Star Rating"
+      },
+      {
+        "number": "100%",
+        "label": "Satisfaction Guaranteed"
+      }
     ]
   },
   "contact": {
@@ -183,4 +234,3 @@
   "productsTitle": "Cleaning Services",
   "productsSubtitle": "Professional cleaning for every need"
 }
-

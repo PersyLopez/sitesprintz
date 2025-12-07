@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { sitesService } from '../services/sites';
+import api from '../services/api';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import SiteCard from '../components/dashboard/SiteCard';
@@ -15,7 +16,7 @@ function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { showSuccess, showError } = useToast();
-  
+
   const [sites, setSites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
@@ -39,7 +40,7 @@ function Dashboard() {
 
   const loadUserSites = async () => {
     if (!user?.id) return;
-    
+
     try {
       const data = await sitesService.getUserSites(user.id);
       setSites(data.sites || []);
@@ -53,33 +54,23 @@ function Dashboard() {
 
   const checkStripeConnection = async () => {
     try {
-      const response = await fetch('/api/stripe/status', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setStripeConnected(data.connected || false);
-      }
+      const data = await api.get('/api/stripe/status');
+      setStripeConnected(data.connected || false);
     } catch (error) {
-      console.error('Failed to check Stripe status:', error);
+      // Ignore error - Stripe connection is optional
+      // Endpoint may not exist, which is fine
+      setStripeConnected(false);
     }
   };
 
   const loadPendingOrders = async () => {
     try {
-      const response = await fetch('/api/orders/pending-count', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setPendingOrders(data.count || 0);
-      }
+      const data = await api.get('/api/orders/pending-count');
+      setPendingOrders(data.count || 0);
     } catch (error) {
-      console.error('Failed to load pending orders:', error);
+      // Ignore error - orders are optional for non-pro users
+      // Endpoint may not exist, which is fine
+      setPendingOrders(0);
     }
   };
 
@@ -119,16 +110,16 @@ function Dashboard() {
     }
   };
 
-  const isProOrCheckoutPlan = user?.subscription_plan === 'pro' || user?.subscription_plan === 'checkout';
+  const isProOrCheckoutPlan = user?.subscriptionPlan === 'pro' || user?.subscriptionPlan === 'checkout';
   const hasProSites = sites.some(site => site.plan === 'pro' || site.plan === 'checkout');
 
   return (
     <div className="dashboard-page">
       <Header />
-      
+
       <main className="dashboard-container">
         {/* Trial Banner */}
-        {user?.subscription_status === 'trial' && (
+        {user?.subscriptionStatus === 'trial' && (
           <TrialBanner user={user} />
         )}
 
@@ -137,7 +128,7 @@ function Dashboard() {
             <h1>Welcome back, {user?.name || user?.email?.split('@')[0] || 'there'}!</h1>
             <p>Manage your websites and create new ones</p>
           </div>
-          
+
           <div className="dashboard-header-actions">
             {/* Analytics Button */}
             <Link to="/analytics" className="btn btn-secondary btn-icon">
@@ -151,6 +142,13 @@ function Dashboard() {
                 {pendingOrders > 0 && (
                   <span className="notification-badge">{pendingOrders}</span>
                 )}
+              </Link>
+            )}
+
+            {/* Bookings Button (only for Pro/Checkout users) */}
+            {isProOrCheckoutPlan && (
+              <Link to="/booking-dashboard" className="btn btn-secondary btn-icon">
+                <span>📅</span> Bookings
               </Link>
             )}
 
@@ -175,7 +173,7 @@ function Dashboard() {
 
         {/* Stripe Connect Section */}
         {isProOrCheckoutPlan && (
-          <StripeConnectSection 
+          <StripeConnectSection
             connected={stripeConnected}
             onConnect={() => checkStripeConnection()}
           />
@@ -188,10 +186,12 @@ function Dashboard() {
           </div>
         ) : sites.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">🚀</div>
-            <h2>No sites yet</h2>
-            <p>Create your first website to get started</p>
-            <Link to="/setup" className="btn btn-primary btn-large">
+            <div className="empty-state-icon" aria-hidden="true">🚀</div>
+            <h2 className="empty-state-title">No sites yet</h2>
+            <p className="empty-state-description">
+              Create your first website to get started. Choose from beautiful templates and launch in minutes.
+            </p>
+            <Link to="/setup" className="btn btn-primary btn-lg">
               Create Your First Site
             </Link>
           </div>
@@ -205,7 +205,7 @@ function Dashboard() {
                   <div className="stat-label">Total Sites</div>
                 </div>
               </div>
-              
+
               <div className="stat-card">
                 <div className="stat-icon">✅</div>
                 <div className="stat-content">
@@ -213,7 +213,7 @@ function Dashboard() {
                   <div className="stat-label">Published</div>
                 </div>
               </div>
-              
+
               <div className="stat-card">
                 <div className="stat-icon">📝</div>
                 <div className="stat-content">
@@ -239,9 +239,9 @@ function Dashboard() {
           </>
         )}
       </main>
-      
+
       <Footer />
-      
+
       {showWelcome && (
         <WelcomeModal onClose={() => setShowWelcome(false)} />
       )}

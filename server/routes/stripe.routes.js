@@ -1,7 +1,7 @@
 import express from 'express';
 import Stripe from 'stripe';
 import { requireAuth } from '../middleware/auth.js';
-import { query as dbQuery } from '../../database/db.js';
+import { prisma } from '../../database/db.js';
 
 const router = express.Router();
 
@@ -32,10 +32,10 @@ router.post('/connect/onboard', requireAuth, async (req, res) => {
       type: 'account_onboarding'
     });
 
-    await dbQuery(
-      'UPDATE users SET stripe_account_id = $1 WHERE id = $2',
-      [account.id, req.user.id]
-    );
+    await prisma.users.update({
+      where: { id: req.user.id },
+      data: { stripe_account_id: account.id }
+    });
 
     res.json({
       accountId: account.id,
@@ -54,16 +54,16 @@ router.get('/connect/status', requireAuth, async (req, res) => {
       return res.json({ connected: false, reason: 'stripe_not_configured' });
     }
 
-    const result = await dbQuery(
-      'SELECT stripe_account_id FROM users WHERE id = $1',
-      [req.user.id]
-    );
+    const user = await prisma.users.findUnique({
+      where: { id: req.user.id },
+      select: { stripe_account_id: true }
+    });
 
-    if (!result.rows[0]?.stripe_account_id) {
+    if (!user?.stripe_account_id) {
       return res.json({ connected: false, reason: 'no_account' });
     }
 
-    const account = await stripe.accounts.retrieve(result.rows[0].stripe_account_id);
+    const account = await stripe.accounts.retrieve(user.stripe_account_id);
 
     res.json({
       connected: account.details_submitted && account.charges_enabled,
@@ -84,17 +84,17 @@ router.post('/connect/refresh', requireAuth, async (req, res) => {
       return res.status(503).json({ error: 'Stripe not configured' });
     }
 
-    const result = await dbQuery(
-      'SELECT stripe_account_id FROM users WHERE id = $1',
-      [req.user.id]
-    );
+    const user = await prisma.users.findUnique({
+      where: { id: req.user.id },
+      select: { stripe_account_id: true }
+    });
 
-    if (!result.rows[0]?.stripe_account_id) {
+    if (!user?.stripe_account_id) {
       return res.status(404).json({ error: 'No Stripe account found' });
     }
 
     const accountLink = await stripe.accountLinks.create({
-      account: result.rows[0].stripe_account_id,
+      account: user.stripe_account_id,
       refresh_url: `${req.protocol}://${req.get('host')}/dashboard/stripe?refresh=true`,
       return_url: `${req.protocol}://${req.get('host')}/dashboard/stripe?success=true`,
       type: 'account_onboarding'
@@ -112,10 +112,10 @@ router.post('/connect/refresh', requireAuth, async (req, res) => {
 // POST /api/connect/disconnect
 router.post('/connect/disconnect', requireAuth, async (req, res) => {
   try {
-    await dbQuery(
-      'UPDATE users SET stripe_account_id = NULL WHERE id = $1',
-      [req.user.id]
-    );
+    await prisma.users.update({
+      where: { id: req.user.id },
+      data: { stripe_account_id: null }
+    });
 
     res.json({ success: true, message: 'Stripe account disconnected' });
   } catch (error) {
@@ -137,12 +137,12 @@ router.post('/connect/create-checkout', async (req, res) => {
       return res.status(400).json({ error: 'Site ID and items required' });
     }
 
-    const siteResult = await dbQuery(
-      'SELECT stripe_account_id FROM sites WHERE id = $1',
-      [siteId]
-    );
+    const site = await prisma.sites.findUnique({
+      where: { id: siteId },
+      select: { stripe_account_id: true }
+    });
 
-    if (!siteResult.rows[0]?.stripe_account_id) {
+    if (!site?.stripe_account_id) {
       return res.status(400).json({ error: 'Site does not have Stripe connected' });
     }
 
@@ -164,9 +164,9 @@ router.post('/connect/create-checkout', async (req, res) => {
       payment_intent_data: {
         // Direct transfer to connected account
         // No application fee - site owner pays subscription fee instead
-        on_behalf_of: siteResult.rows[0].stripe_account_id,
+        on_behalf_of: site.stripe_account_id,
         transfer_data: {
-          destination: siteResult.rows[0].stripe_account_id
+          destination: site.stripe_account_id
         }
       },
       success_url: `${req.protocol}://${req.get('host')}/checkout/success`,

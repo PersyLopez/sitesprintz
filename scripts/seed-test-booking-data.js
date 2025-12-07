@@ -38,9 +38,13 @@ async function seedTestData() {
     });
     console.log(`✅ Tenant created: ${tenant.id}\n`);
 
+    // Clear existing appointments to prevent conflicts in tests
+    await query('DELETE FROM appointments WHERE tenant_id = $1', [tenant.id]);
+    console.log('🧹 Cleared existing appointments\n');
+
     // 3. Create test services
     console.log('3️⃣ Creating test services...');
-    
+
     const services = [
       {
         name: 'Haircut',
@@ -106,12 +110,12 @@ async function seedTestData() {
 
     // 5. Set availability rules (Mon-Fri, 9AM-5PM)
     console.log('5️⃣ Setting availability rules...');
-    
+
     // Clear existing rules for this staff
     await query('DELETE FROM booking_availability_rules WHERE staff_id = $1', [staff.id]);
-    
-    // Create rules for Monday to Friday (1-5) - need tenant_id
-    for (let day = 1; day <= 5; day++) {
+
+    // Create rules for all days (0-6) - need tenant_id
+    for (let day = 0; day <= 6; day++) {
       await query(
         `INSERT INTO booking_availability_rules (tenant_id, staff_id, day_of_week, start_time, end_time, is_available)
          VALUES ($1, $2, $3, $4, $5, $6)`,
@@ -125,7 +129,7 @@ async function seedTestData() {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(10, 0, 0, 0); // 10 AM tomorrow
-    
+
     const sampleAppointment = await bookingService.createAppointment(
       tenant.id,
       {
@@ -142,7 +146,7 @@ async function seedTestData() {
     console.log(`✅ Sample appointment created: ${sampleAppointment.confirmation_code}\n`);
 
     // Summary
-    console.log('=' .repeat(50));
+    console.log('='.repeat(50));
     console.log('🎉 Test data seeding complete!\n');
     console.log('📊 Summary:');
     console.log(`   - User ID: ${testUserId}`);

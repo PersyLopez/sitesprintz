@@ -1,12 +1,13 @@
 import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import { draftsService } from '../services/drafts';
 import { useToast } from '../hooks/useToast';
+import { generateDemoContent } from '../utils/demoContent';
 
 export const SiteContext = createContext(null);
 
 export function SiteProvider({ children }) {
   const { showSuccess, showError } = useToast();
-  
+
   const [siteData, setSiteData] = useState({
     businessName: '',
     template: '',
@@ -27,7 +28,7 @@ export function SiteProvider({ children }) {
       secondary: '#14b8a6',
     },
   });
-  
+
   const [draftId, setDraftId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -43,7 +44,7 @@ export function SiteProvider({ children }) {
     if (previewTimerRef.current) {
       clearTimeout(previewTimerRef.current);
     }
-    
+
     previewTimerRef.current = setTimeout(() => {
       setPreviewKey(prev => prev + 1);
       console.log('🔄 Preview updated');
@@ -53,15 +54,15 @@ export function SiteProvider({ children }) {
   // Auto-save every 30 seconds
   useEffect(() => {
     if (!autoSaveEnabled || !siteData.template || !draftId) return;
-    
+
     if (autoSaveTimerRef.current) {
       clearInterval(autoSaveTimerRef.current);
     }
-    
+
     autoSaveTimerRef.current = setInterval(() => {
       saveDraft(true); // silent save
     }, 30000); // 30 seconds
-    
+
     return () => {
       if (autoSaveTimerRef.current) {
         clearInterval(autoSaveTimerRef.current);
@@ -86,7 +87,7 @@ export function SiteProvider({ children }) {
       ...prev,
       [field]: value,
     }));
-    
+
     // Trigger preview update
     triggerPreviewUpdate();
   }, [triggerPreviewUpdate]);
@@ -96,16 +97,16 @@ export function SiteProvider({ children }) {
       const newData = { ...prev };
       const keys = path.split('.');
       let current = newData;
-      
+
       for (let i = 0; i < keys.length - 1; i++) {
         if (!current[keys[i]]) current[keys[i]] = {};
         current = current[keys[i]];
       }
-      
+
       current[keys[keys.length - 1]] = value;
       return newData;
     });
-    
+
     // Trigger preview update
     triggerPreviewUpdate();
   }, [triggerPreviewUpdate]);
@@ -113,7 +114,7 @@ export function SiteProvider({ children }) {
   const addService = useCallback((service) => {
     setSiteData(prev => ({
       ...prev,
-      services: [...prev.services, { id: Date.now(), ...service }],
+      services: [...prev.services, { id: Date.now() + Math.random().toString(36).substr(2, 9), ...service }],
     }));
     triggerPreviewUpdate();
   }, [triggerPreviewUpdate]);
@@ -121,7 +122,7 @@ export function SiteProvider({ children }) {
   const updateService = useCallback((id, updates) => {
     setSiteData(prev => ({
       ...prev,
-      services: prev.services.map(s => 
+      services: prev.services.map(s =>
         s.id === id ? { ...s, ...updates } : s
       ),
     }));
@@ -139,23 +140,29 @@ export function SiteProvider({ children }) {
   const saveDraft = async (silent = false) => {
     if (!silent) setLoading(true);
     setIsSaving(true);
-    
+
+    // Verify template is present before saving
+    if (!siteData.template) {
+      console.error('ERROR: saveDraft called but siteData.template is missing!', siteData);
+    } else {
+      console.log('saveDraft called with template:', siteData.template);
+    }
     try {
       const response = await draftsService.saveDraft({
         id: draftId,
         data: siteData,
       });
-      
+
       if (response.draftId && !draftId) {
         setDraftId(response.draftId);
       }
-      
+
       setLastSaved(new Date());
-      
+
       if (!silent) {
         showSuccess('Draft saved successfully');
       }
-      
+
       return response;
     } catch (error) {
       if (!silent) {
@@ -170,7 +177,7 @@ export function SiteProvider({ children }) {
 
   const loadDraft = async (id) => {
     setLoading(true);
-    
+
     try {
       const draft = await draftsService.getDraft(id);
       setSiteData(draft.data);
@@ -185,39 +192,60 @@ export function SiteProvider({ children }) {
   };
 
   const loadTemplate = useCallback((templateData) => {
-    // When loading a template, preserve ALL its demo content
-    // This ensures sites show their full potential
-    const fullTemplateData = {
-      // Spread all template data first (includes demo content)
+    // For Pro/Premium templates with existing content, use template content FIRST
+    // Only use demo content as fallback for missing fields
+    const hasRichContent = templateData.menu || templateData.team || templateData.gallery || templateData.testimonials;
+
+    const fullTemplateData = hasRichContent ? {
+      // Use actual template data as primary source for Pro templates
       ...templateData,
-      // Then add/override with essentials
+      // Ensure core IDs are set
       template: templateData.id || templateData.template,
-      businessName: templateData.brand?.name || templateData.businessName || '',
-      // Preserve hero data from template
-      heroTitle: templateData.hero?.title || '',
-      heroSubtitle: templateData.hero?.subtitle || '',
-      heroImage: templateData.hero?.image || '',
-      // Preserve contact data
-      contactEmail: templateData.brand?.email || templateData.contact?.email || '',
-      contactPhone: templateData.brand?.phone || templateData.contact?.phone || '',
-      contactAddress: templateData.contact?.address || '',
-      businessHours: templateData.contact?.hours || '',
-      // Preserve social links
-      websiteUrl: templateData.social?.website || '',
-      facebookUrl: templateData.social?.facebook || '',
-      instagramUrl: templateData.social?.instagram || '',
-      googleMapsUrl: templateData.social?.maps || '',
-      // Preserve services/products from template
-      services: templateData.services || templateData.products || [],
-      // Preserve colors from template
+      templateId: templateData.id || templateData.template,
+      id: templateData.id || templateData.template,
+      // Map brand fields to expected format
+      businessName: templateData.brand?.name || templateData.businessName,
+      heroTitle: templateData.hero?.title || templateData.heroTitle,
+      heroSubtitle: templateData.hero?.subtitle || templateData.heroSubtitle,
+      heroImage: templateData.hero?.image || templateData.heroImage,
+      tagline: templateData.brand?.tagline || templateData.tagline,
+      // Map contact fields
+      contactEmail: templateData.brand?.email || templateData.contact?.email || templateData.contactEmail,
+      contactPhone: templateData.brand?.phone || templateData.contact?.phone || templateData.contactPhone,
+      contactAddress: templateData.contact?.address || templateData.contactAddress,
+      businessHours: templateData.contact?.hours || templateData.businessHours,
+      // Map colors from themeVars
       colors: {
         primary: templateData.themeVars?.['color-primary'] || templateData.colors?.primary || '#06b6d4',
+        accent: templateData.themeVars?.['color-accent'] || templateData.colors?.accent || '#14b8a6',
         secondary: templateData.themeVars?.['color-accent'] || templateData.colors?.secondary || '#14b8a6',
+        background: templateData.colors?.background || '#0f172a'
       },
-      // Preserve any custom data
-      custom: templateData.custom || {},
+      // Keep all rich content from template
+      menu: templateData.menu,
+      team: templateData.team,
+      gallery: templateData.gallery,
+      testimonials: templateData.testimonials,
+      stats: templateData.stats,
+      credentials: templateData.credentials,
+      faq: templateData.faq,
+      about: templateData.about,
+      chefSpecials: templateData.chefSpecials,
+      privateEvents: templateData.privateEvents,
+      contact: templateData.contact,
+      social: templateData.social,
+      features: templateData.features,
+      // Keep nav and other features
+      nav: templateData.nav
+    } : {
+      // For Starter templates without rich content, use demo content
+      ...generateDemoContent(templateData.id || templateData.template),
+      ...templateData,
+      template: templateData.id || templateData.template,
+      templateId: templateData.id || templateData.template,
+      id: templateData.id || templateData.template
     };
-    
+
     setSiteData(fullTemplateData);
   }, []);
 

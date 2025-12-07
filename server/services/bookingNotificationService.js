@@ -1,11 +1,11 @@
-import { query } from '../../database/db.js';
+import { prisma } from '../../database/db.js';
 import { DateTime } from 'luxon';
 
 // Get email service
 let emailService = null;
 async function getEmailService() {
   if (!emailService) {
-    const module = await import('../../email-service.js');
+    const module = await import('../utils/email-service-wrapper.js');
     emailService = module;
   }
   return emailService;
@@ -427,30 +427,25 @@ class BookingNotificationService {
         error_message,
       } = notificationData;
 
-      const result = await query(
-        `INSERT INTO booking_notifications 
-        (tenant_id, appointment_id, type, channel, recipient_email, recipient_phone,
-         subject, message, status, provider, provider_message_id, error_message, sent_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-        RETURNING *`,
-        [
+      const notification = await prisma.booking_notifications.create({
+        data: {
           tenant_id,
           appointment_id,
           type,
           channel,
-          recipient_email || null,
-          recipient_phone || null,
+          recipient_email: recipient_email || null,
+          recipient_phone: recipient_phone || null,
           subject,
           message,
           status,
           provider,
-          provider_message_id || null,
-          error_message || null,
-          status === 'sent' ? new Date() : null,
-        ]
-      );
+          provider_message_id: provider_message_id || null,
+          error_message: error_message || null,
+          sent_at: status === 'sent' ? new Date() : null,
+        }
+      });
 
-      return result.rows[0];
+      return notification;
     } catch (error) {
       console.error('Error logging notification:', error);
       // Don't throw - logging failure shouldn't break the flow
@@ -463,14 +458,12 @@ class BookingNotificationService {
    */
   async getNotificationHistory(appointmentId) {
     try {
-      const result = await query(
-        `SELECT * FROM booking_notifications 
-         WHERE appointment_id = $1
-         ORDER BY created_at DESC`,
-        [appointmentId]
-      );
+      const notifications = await prisma.booking_notifications.findMany({
+        where: { appointment_id: appointmentId },
+        orderBy: { created_at: 'desc' }
+      });
 
-      return result.rows;
+      return notifications;
     } catch (error) {
       console.error('Error getting notification history:', error);
       return [];

@@ -7,28 +7,51 @@
     "email": "dev@codecraft.io"
   },
   "themeVars": {
-    "color-primary": "#0ea5e9",
-    "color-accent": "#38bdf8",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#3b82f6",
+    "color-primary-light": "#60a5fa",
+    "color-accent": "#ec4899",
+    "color-bg": "#0F172A",
+    "color-surface": "rgba(30, 41, 59, 0.5)",
+    "color-card": "rgba(30, 41, 59, 0.3)",
+    "color-text": "#f1f5f9",
+    "color-muted": "#94a3b8"
   },
   "nav": [
-    {"label": "Work", "href": "#about"},
-    {"label": "Services", "href": "#products"},
-    {"label": "Tech Stack", "href": "#process"},
-    {"label": "Hire Me", "href": "#contact"}
+    {
+      "label": "Work",
+      "href": "#about"
+    },
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "Tech Stack",
+      "href": "#process"
+    },
+    {
+      "label": "Hire Me",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "💻 Full-Stack Developer",
     "title": "Building web apps that scale",
     "subtitle": "I turn ideas into production-ready web applications. Specializing in React, Node.js, and modern cloud architecture. From MVP to enterprise, I build fast, secure, and maintainable code.",
     "cta": [
-      {"label": "View Projects", "href": "#about"},
-      {"label": "Get Started", "href": "#contact", "variant": "secondary"}
+      {
+        "label": "View Projects",
+        "href": "#about"
+      },
+      {
+        "label": "Get Started",
+        "href": "#contact",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&q=80",
-    "imageAlt": "Developer workspace with multiple monitors showing code"
+    "imageAlt": "Developer workspace with multiple monitors showing code",
+    "layout": "split"
   },
   "about": {
     "title": "Web Development Expertise",
@@ -135,7 +158,11 @@
         "bio": "CS degree from MIT. 8+ years building scalable web applications. Former senior engineer at a YC-backed startup. Passionate about clean code, performance, and developer experience.",
         "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
         "imageAlt": "Alex Thompson",
-        "credentials": ["CS MIT", "AWS Certified", "React Expert"]
+        "credentials": [
+          "CS MIT",
+          "AWS Certified",
+          "React Expert"
+        ]
       }
     ]
   },
@@ -143,18 +170,42 @@
     "title": "Development Process",
     "subtitle": "Agile workflow with regular updates",
     "steps": [
-      {"title": "Requirements", "description": "Detailed spec document and technical architecture planning"},
-      {"title": "Development", "description": "Iterative development with weekly demos and progress updates"},
-      {"title": "Testing", "description": "Comprehensive testing, code review, and QA"},
-      {"title": "Deployment", "description": "Production deployment with documentation and handoff"}
+      {
+        "title": "Requirements",
+        "description": "Detailed spec document and technical architecture planning"
+      },
+      {
+        "title": "Development",
+        "description": "Iterative development with weekly demos and progress updates"
+      },
+      {
+        "title": "Testing",
+        "description": "Comprehensive testing, code review, and QA"
+      },
+      {
+        "title": "Deployment",
+        "description": "Production deployment with documentation and handoff"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "8+", "label": "Years Experience"},
-      {"number": "40+", "label": "Projects Delivered"},
-      {"number": "100%", "label": "On-Time Delivery"},
-      {"number": "15+", "label": "Technologies"}
+      {
+        "number": "8+",
+        "label": "Years Experience"
+      },
+      {
+        "number": "40+",
+        "label": "Projects Delivered"
+      },
+      {
+        "number": "100%",
+        "label": "On-Time Delivery"
+      },
+      {
+        "number": "15+",
+        "label": "Technologies"
+      }
     ]
   },
   "contact": {

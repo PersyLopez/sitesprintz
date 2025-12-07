@@ -7,29 +7,55 @@
     "email": "info@ironforge.gym"
   },
   "themeVars": {
-    "color-primary": "#dc2626",
-    "color-accent": "#ef4444",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#3b82f6",
+    "color-primary-light": "#60a5fa",
+    "color-accent": "#ec4899",
+    "color-bg": "#0F172A",
+    "color-surface": "rgba(30, 41, 59, 0.5)",
+    "color-card": "rgba(30, 41, 59, 0.3)",
+    "color-text": "#f1f5f9",
+    "color-muted": "#94a3b8"
   },
   "nav": [
-    {"label": "Training", "href": "#products"},
-    {"label": "Equipment", "href": "#about"},
-    {"label": "Coaches", "href": "#team"},
-    {"label": "Testimonials", "href": "#testimonials"},
-    {"label": "Join", "href": "#contact"}
+    {
+      "label": "Training",
+      "href": "#products"
+    },
+    {
+      "label": "Equipment",
+      "href": "#about"
+    },
+    {
+      "label": "Coaches",
+      "href": "#team"
+    },
+    {
+      "label": "Testimonials",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Join",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "💪 Hardcore Strength Training",
     "title": "Built for serious lifters",
     "subtitle": "No frills. No gimmicks. Just iron, chalk, and people who are serious about getting strong. Olympic lifting platforms, competition-grade equipment, and a community of lifters who push each other to be better every day.",
     "cta": [
-      {"label": "💪 Start Training", "href": "#contact"},
-      {"label": "🏋️ See Equipment", "href": "#about", "variant": "secondary"}
+      {
+        "label": "💪 Start Training",
+        "href": "#contact"
+      },
+      {
+        "label": "🏋️ See Equipment",
+        "href": "#about",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80",
-    "imageAlt": "Hardcore gym with powerlifting equipment"
+    "imageAlt": "Hardcore gym with powerlifting equipment",
+    "layout": "split"
   },
   "about": {
     "title": "Welcome to Iron Forge",
@@ -136,7 +162,11 @@
         "bio": "Former competitive powerlifter with a 1800lb total. 15+ years coaching experience. CSCS certified and passionate about building strong athletes.",
         "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
         "imageAlt": "Marcus Steel",
-        "credentials": ["NSCA-CSCS", "USAW Sports Performance", "Elite Powerlifter"]
+        "credentials": [
+          "NSCA-CSCS",
+          "USAW Sports Performance",
+          "Elite Powerlifter"
+        ]
       }
     ]
   },
@@ -144,18 +174,42 @@
     "title": "Getting Started",
     "subtitle": "Join the Iron Forge family",
     "steps": [
-      {"title": "Tour the Gym", "description": "Stop by anytime to see our facility and meet the members"},
-      {"title": "Choose Your Path", "description": "Select open gym access, coaching, or a specific program"},
-      {"title": "Start Training", "description": "Get your access key and begin your strength journey"},
-      {"title": "Track Progress", "description": "Log lifts, hit PRs, and watch yourself get stronger"}
+      {
+        "title": "Tour the Gym",
+        "description": "Stop by anytime to see our facility and meet the members"
+      },
+      {
+        "title": "Choose Your Path",
+        "description": "Select open gym access, coaching, or a specific program"
+      },
+      {
+        "title": "Start Training",
+        "description": "Get your access key and begin your strength journey"
+      },
+      {
+        "title": "Track Progress",
+        "description": "Log lifts, hit PRs, and watch yourself get stronger"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "12", "label": "Years Strong"},
-      {"number": "24/7", "label": "Access"},
-      {"number": "300+", "label": "Active Members"},
-      {"number": "15", "label": "Olympic Platforms"}
+      {
+        "number": "12",
+        "label": "Years Strong"
+      },
+      {
+        "number": "24/7",
+        "label": "Access"
+      },
+      {
+        "number": "300+",
+        "label": "Active Members"
+      },
+      {
+        "number": "15",
+        "label": "Olympic Platforms"
+      }
     ]
   },
   "contact": {
@@ -184,4 +238,3 @@
   "productsTitle": "Memberships & Training",
   "productsSubtitle": "Options for every lifter"
 }
-

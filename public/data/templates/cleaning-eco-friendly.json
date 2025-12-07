@@ -7,28 +7,51 @@
     "email": "hello@ecospark.green"
   },
   "themeVars": {
-    "color-primary": "#059669",
-    "color-accent": "#34d399",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "Green Practices", "href": "#about"},
-    {"label": "Reviews", "href": "#testimonials"},
-    {"label": "Book", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "Green Practices",
+      "href": "#about"
+    },
+    {
+      "label": "Reviews",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Book",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "🌿 Eco-Friendly Cleaning",
     "title": "Clean home, clean conscience",
     "subtitle": "100% plant-based, non-toxic cleaning products. Safe for kids, pets, and the planet. Professional results without harsh chemicals. Breathe easier knowing your home is truly clean and healthy.",
     "cta": [
-      {"label": "Get Started", "href": "#contact"},
-      {"label": "Our Methods", "href": "#about", "variant": "secondary"}
+      {
+        "label": "Get Started",
+        "href": "#contact"
+      },
+      {
+        "label": "Our Methods",
+        "href": "#about",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=1200&q=80",
-    "imageAlt": "Natural cleaning products and supplies"
+    "imageAlt": "Natural cleaning products and supplies",
+    "layout": "split"
   },
   "about": {
     "title": "Truly Green Cleaning",
@@ -135,7 +158,11 @@
         "bio": "Founded EcoSpark after her daughter developed chemical sensitivities. Certified in green cleaning methods. Passionate about proving eco-friendly works.",
         "image": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80",
         "imageAlt": "Maya Rodriguez",
-        "credentials": ["Green Certified", "Organic Product Specialist", "EPA Safer Choice Partner"]
+        "credentials": [
+          "Green Certified",
+          "Organic Product Specialist",
+          "EPA Safer Choice Partner"
+        ]
       }
     ]
   },
@@ -143,18 +170,42 @@
     "title": "Our Green Process",
     "subtitle": "Clean without compromise",
     "steps": [
-      {"title": "Eco Assessment", "description": "Understand your needs and any sensitivities"},
-      {"title": "Product Selection", "description": "Choose plant-based products perfect for your home"},
-      {"title": "Green Cleaning", "description": "Thorough cleaning with zero toxic chemicals"},
-      {"title": "Breathe Easy", "description": "Enjoy a spotless, healthy, chemical-free home"}
+      {
+        "title": "Eco Assessment",
+        "description": "Understand your needs and any sensitivities"
+      },
+      {
+        "title": "Product Selection",
+        "description": "Choose plant-based products perfect for your home"
+      },
+      {
+        "title": "Green Cleaning",
+        "description": "Thorough cleaning with zero toxic chemicals"
+      },
+      {
+        "title": "Breathe Easy",
+        "description": "Enjoy a spotless, healthy, chemical-free home"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "100%", "label": "Plant-Based"},
-      {"number": "0", "label": "Harsh Chemicals"},
-      {"number": "4.9", "label": "Star Rating"},
-      {"number": "300+", "label": "Green Homes"}
+      {
+        "number": "100%",
+        "label": "Plant-Based"
+      },
+      {
+        "number": "0",
+        "label": "Harsh Chemicals"
+      },
+      {
+        "number": "4.9",
+        "label": "Star Rating"
+      },
+      {
+        "number": "300+",
+        "label": "Green Homes"
+      }
     ]
   },
   "contact": {
@@ -183,4 +234,3 @@
   "productsTitle": "Eco-Friendly Services",
   "productsSubtitle": "Clean home, clear conscience"
 }
-

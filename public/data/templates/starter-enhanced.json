@@ -5,34 +5,78 @@
     "tagline": "Trusted Since 2020"
   },
   "themeVars": {
-    "color-primary": "#3b82f6",
-    "color-accent": "#10b981"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Home", "href": "#top"},
-    {"label": "Services", "href": "#products"},
-    {"label": "About", "href": "#about"},
-    {"label": "Gallery", "href": "#gallery"},
-    {"label": "FAQ", "href": "#faq"},
-    {"label": "Contact", "href": "#contact"}
+    {
+      "label": "Home",
+      "href": "#top"
+    },
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "About",
+      "href": "#about"
+    },
+    {
+      "label": "Gallery",
+      "href": "#gallery"
+    },
+    {
+      "label": "FAQ",
+      "href": "#faq"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
+    "layout": "split",
     "eyebrow": "Professional Services",
     "title": "Your success is our mission",
     "subtitle": "Join 100+ satisfied clients who trust us with their business needs. Experience, quality, and results you can count on.",
     "cta": [
-      {"label": "Get Started", "href": "#contact"},
-      {"label": "Our Services", "href": "#products", "variant": "secondary"}
+      {
+        "label": "Get Started",
+        "href": "#contact"
+      },
+      {
+        "label": "Our Services",
+        "href": "#products",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&q=80",
     "imageAlt": "Professional business team"
   },
   "stats": {
     "items": [
-      {"number": "100+", "label": "Happy Clients"},
-      {"number": "4+", "label": "Years Experience"},
-      {"number": "4.8", "label": "Star Rating"},
-      {"number": "98%", "label": "Satisfaction Rate"}
+      {
+        "number": "100+",
+        "label": "Happy Clients"
+      },
+      {
+        "number": "4+",
+        "label": "Years Experience"
+      },
+      {
+        "number": "4.8",
+        "label": "Star Rating"
+      },
+      {
+        "number": "98%",
+        "label": "Satisfaction Rate"
+      }
     ]
   },
   "about": {
@@ -181,9 +225,18 @@
   "footer": {
     "text": "© 2024 Growing Business. Helping businesses succeed since 2020.",
     "links": [
-      {"label": "Privacy Policy", "href": "#privacy"},
-      {"label": "Terms of Service", "href": "#terms"},
-      {"label": "Refund Policy", "href": "#refunds"}
+      {
+        "label": "Privacy Policy",
+        "href": "#privacy"
+      },
+      {
+        "label": "Terms of Service",
+        "href": "#terms"
+      },
+      {
+        "label": "Refund Policy",
+        "href": "#refunds"
+      }
     ]
   },
   "settings": {
@@ -193,4 +246,3 @@
     "productNote": "Call or email to discuss which package is right for you. Free 30-minute consultation included!"
   }
 }
-

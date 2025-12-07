@@ -8,27 +8,27 @@ const BookingWidget = () => {
   const [step, setStep] = useState('services'); // services, date, time, form, confirmation
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+
   // Services data
   const [services, setServices] = useState([]);
   const [servicesLoading, setServicesLoading] = useState(true);
-  
+
   // Selected data
   const [selectedService, setSelectedService] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
-  
+
   // Time slots
   const [timeSlots, setTimeSlots] = useState([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
-  
+
   // Customer data
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerNotes, setCustomerNotes] = useState('');
   const [formErrors, setFormErrors] = useState({});
-  
+
   // Booking result
   const [appointment, setAppointment] = useState(null);
 
@@ -39,13 +39,15 @@ const BookingWidget = () => {
 
   const fetchServices = async () => {
     try {
+      console.log(`Fetching services for user ${userId}...`);
       setServicesLoading(true);
       setError(null);
       const response = await get(`/api/booking/tenants/${userId}/services`);
+      console.log('Services fetched:', response);
       setServices(response.services || []);
     } catch (err) {
-      setError('Failed to load services. Please try again.');
       console.error('Error fetching services:', err);
+      setError('Failed to load services. Please try again.');
     } finally {
       setServicesLoading(false);
     }
@@ -75,6 +77,7 @@ const BookingWidget = () => {
 
   const fetchTimeSlots = async (date) => {
     try {
+      console.log(`Fetching time slots for date: ${date}, service: ${selectedService.id}`);
       setSlotsLoading(true);
       const response = await get(`/api/booking/tenants/${userId}/availability`, {
         params: {
@@ -82,6 +85,7 @@ const BookingWidget = () => {
           date: date,
         },
       });
+      console.log('Time slots response:', response);
       setTimeSlots(response.slots || []);
     } catch (err) {
       console.error('Error fetching time slots:', err);
@@ -103,17 +107,17 @@ const BookingWidget = () => {
 
   const validateForm = () => {
     const errors = {};
-    
+
     if (!customerName.trim()) {
       errors.name = 'Name is required';
     }
-    
+
     if (!customerEmail.trim()) {
       errors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
       errors.email = 'Please enter a valid email address';
     }
-    
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -126,11 +130,11 @@ const BookingWidget = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const bookingData = {
         service_id: selectedService.id,
         date: selectedDate,
-        time: selectedTime,
+        start_time: selectedTime,
         customer_name: customerName,
         customer_email: customerEmail,
         customer_phone: customerPhone,
@@ -189,7 +193,7 @@ const BookingWidget = () => {
     return (
       <div className="booking-widget">
         <h2>Select a Service</h2>
-        
+
         <div data-testid="services-list" className="services-list">
           {services.map((service) => (
             <div
@@ -197,6 +201,14 @@ const BookingWidget = () => {
               data-testid={`service-card-${service.id}`}
               className={`service-card ${selectedService?.id === service.id ? 'selected' : ''}`}
               onClick={() => handleServiceSelect(service)}
+              tabIndex="0"
+              role="button"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleServiceSelect(service);
+                }
+              }}
             >
               <h3>{service.name}</h3>
               {service.description && <p>{service.description}</p>}
@@ -238,7 +250,7 @@ const BookingWidget = () => {
     return (
       <div className="booking-widget">
         <h2>Select a Date</h2>
-        
+
         <button
           data-testid="back-button"
           onClick={handleBackToServices}
@@ -260,13 +272,13 @@ const BookingWidget = () => {
             <h3>Available Times</h3>
             {timeSlots.map((slot) => (
               <button
-                key={slot.time}
-                data-testid={`time-slot-${slot.time}`}
-                className={`time-slot ${selectedTime === slot.time ? 'selected' : ''}`}
-                onClick={() => handleTimeSelect(slot.time)}
+                key={slot.start_time}
+                data-testid={`time-slot-${slot.start_time}`}
+                className={`time-slot ${selectedTime === slot.start_time ? 'selected' : ''}`}
+                onClick={() => handleTimeSelect(slot.start_time)}
                 disabled={!slot.available}
               >
-                {slot.time}
+                {slot.display_time}
               </button>
             ))}
 
@@ -377,7 +389,7 @@ const BookingWidget = () => {
       <div className="booking-widget">
         <div data-testid="confirmation-page" className="confirmation">
           <h2>✅ Booking Confirmed!</h2>
-          
+
           <div data-testid="confirmation-message" className="success-message">
             <p>Your appointment has been successfully booked.</p>
           </div>
@@ -387,7 +399,7 @@ const BookingWidget = () => {
             <p data-testid="confirmation-code" className="confirmation-code">
               {appointment?.confirmation_code}
             </p>
-            
+
             <p><strong>Service:</strong> {appointment?.service_name || selectedService?.name}</p>
             <p><strong>Date:</strong> {selectedDate}</p>
             <p><strong>Time:</strong> {selectedTime}</p>
@@ -411,9 +423,9 @@ const DatePicker = ({ selectedDate, onDateSelect }) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const monthYear = currentMonth.toLocaleString('default', { 
-    month: 'long', 
-    year: 'numeric' 
+  const monthYear = currentMonth.toLocaleString('default', {
+    month: 'long',
+    year: 'numeric'
   });
 
   const getDaysInMonth = (date) => {
@@ -421,7 +433,7 @@ const DatePicker = ({ selectedDate, onDateSelect }) => {
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
-    
+
     const days = [];
     for (let i = 1; i <= lastDay.getDate(); i++) {
       const day = new Date(year, month, i);
@@ -435,11 +447,11 @@ const DatePicker = ({ selectedDate, onDateSelect }) => {
   return (
     <div data-testid="calendar" className="calendar">
       <div className="calendar-header">
-        <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}>
+        <button data-testid="prev-month" onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}>
           ←
         </button>
         <h3>{monthYear}</h3>
-        <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}>
+        <button data-testid="next-month" onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}>
           →
         </button>
       </div>

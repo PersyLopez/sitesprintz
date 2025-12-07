@@ -1,4 +1,4 @@
-import { query, transaction } from '../../database/db.js';
+import { prisma } from '../../database/db.js';
 import { DateTime } from 'luxon';
 import BookingNotificationService from './bookingNotificationService.js';
 
@@ -16,37 +16,35 @@ class BookingService {
   async getOrCreateTenant(userId, siteId) {
     try {
       // Check if tenant exists
-      const existingTenant = await query(
-        'SELECT * FROM booking_tenants WHERE user_id = $1 LIMIT 1',
-        [userId]
-      );
+      const existingTenant = await prisma.booking_tenants.findFirst({
+        where: { user_id: userId }
+      });
 
-      if (existingTenant.rows.length > 0) {
-        return existingTenant.rows[0];
+      if (existingTenant) {
+        return existingTenant;
       }
 
       // Get user details
-      const userResult = await query(
-        'SELECT email FROM users WHERE id = $1',
-        [userId]
-      );
+      const user = await prisma.users.findUnique({
+        where: { id: userId }
+      });
 
-      if (userResult.rows.length === 0) {
+      if (!user) {
         throw new Error('User not found');
       }
 
-      const user = userResult.rows[0];
-
       // Create tenant
-      const result = await query(
-        `INSERT INTO booking_tenants 
-        (user_id, site_id, business_name, email, status)
-        VALUES ($1, $2, $3, $4, 'active')
-        RETURNING *`,
-        [userId, siteId, 'My Business', user.email]
-      );
+      const newTenant = await prisma.booking_tenants.create({
+        data: {
+          user_id: userId,
+          site_id: siteId,
+          business_name: 'My Business',
+          email: user.email,
+          status: 'active'
+        }
+      });
 
-      return result.rows[0];
+      return newTenant;
     } catch (error) {
       console.error('Error getting/creating tenant:', error);
       throw error;
@@ -81,14 +79,9 @@ class BookingService {
     }
 
     try {
-      const result = await query(
-        `INSERT INTO booking_services 
-        (tenant_id, name, description, category, duration_minutes, price_cents, 
-         online_booking_enabled, requires_approval, status)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'active')
-        RETURNING *`,
-        [
-          tenantId,
+      const result = await prisma.booking_services.create({
+        data: {
+          tenant_id: tenantId,
           name,
           description,
           category,
@@ -96,10 +89,11 @@ class BookingService {
           price_cents,
           online_booking_enabled,
           requires_approval,
-        ]
-      );
+          status: 'active'
+        }
+      });
 
-      return result.rows[0];
+      return result;
     } catch (error) {
       console.error('Error creating service:', error);
       throw error;
@@ -111,19 +105,20 @@ class BookingService {
    */
   async getServices(tenantId, includeInactive = false) {
     try {
-      const whereClause = includeInactive
-        ? 'WHERE tenant_id = $1'
-        : 'WHERE tenant_id = $1 AND status = $2';
-      const params = includeInactive ? [tenantId] : [tenantId, 'active'];
+      const where = { tenant_id: tenantId };
+      if (!includeInactive) {
+        where.status = 'active';
+      }
 
-      const result = await query(
-        `SELECT * FROM booking_services 
-         ${whereClause}
-         ORDER BY display_order ASC, created_at DESC`,
-        params
-      );
+      const services = await prisma.booking_services.findMany({
+        where,
+        orderBy: [
+          { display_order: 'asc' },
+          { created_at: 'desc' }
+        ]
+      });
 
-      return result.rows;
+      return services;
     } catch (error) {
       console.error('Error getting services:', error);
       throw error;
@@ -133,18 +128,19 @@ class BookingService {
   /**
    * Get service by ID
    */
+  /**
+   * Get service by ID
+   */
   async getService(serviceId, tenantId) {
     try {
-      const result = await query(
-        'SELECT * FROM booking_services WHERE id = $1 AND tenant_id = $2',
-        [serviceId, tenantId]
-      );
+      const service = await prisma.booking_services.findFirst({
+        where: {
+          id: serviceId,
+          tenant_id: tenantId
+        }
+      });
 
-      if (result.rows.length === 0) {
-        return null;
-      }
-
-      return result.rows[0];
+      return service || null;
     } catch (error) {
       console.error('Error getting service:', error);
       throw error;
@@ -155,10 +151,6 @@ class BookingService {
    * Update a service
    */
   async updateService(serviceId, tenantId, serviceData) {
-    const updates = [];
-    const values = [];
-    let paramCount = 1;
-
     const allowedFields = [
       'name',
       'description',
@@ -171,35 +163,35 @@ class BookingService {
       'display_order',
     ];
 
+    const dataToUpdate = {};
     for (const field of allowedFields) {
       if (serviceData.hasOwnProperty(field)) {
-        updates.push(`${field} = $${paramCount}`);
-        values.push(serviceData[field]);
-        paramCount++;
+        dataToUpdate[field] = serviceData[field];
       }
     }
 
-    if (updates.length === 0) {
+    if (Object.keys(dataToUpdate).length === 0) {
       throw new Error('No fields to update');
     }
 
-    updates.push(`updated_at = CURRENT_TIMESTAMP`);
-    values.push(serviceId, tenantId);
+    dataToUpdate.updated_at = new Date();
 
     try {
-      const result = await query(
-        `UPDATE booking_services 
-         SET ${updates.join(', ')}
-         WHERE id = $${paramCount} AND tenant_id = $${paramCount + 1}
-         RETURNING *`,
-        values
-      );
+      // Check existence and ownership first
+      const service = await prisma.booking_services.findFirst({
+        where: { id: serviceId, tenant_id: tenantId }
+      });
 
-      if (result.rows.length === 0) {
+      if (!service) {
         return null;
       }
 
-      return result.rows[0];
+      const updatedService = await prisma.booking_services.update({
+        where: { id: serviceId },
+        data: dataToUpdate
+      });
+
+      return updatedService;
     } catch (error) {
       console.error('Error updating service:', error);
       throw error;
@@ -211,15 +203,24 @@ class BookingService {
    */
   async deleteService(serviceId, tenantId) {
     try {
-      const result = await query(
-        `UPDATE booking_services 
-         SET status = 'inactive', updated_at = CURRENT_TIMESTAMP
-         WHERE id = $1 AND tenant_id = $2
-         RETURNING *`,
-        [serviceId, tenantId]
-      );
+      // Check existence and ownership first
+      const service = await prisma.booking_services.findFirst({
+        where: { id: serviceId, tenant_id: tenantId }
+      });
 
-      return result.rows.length > 0;
+      if (!service) {
+        return false;
+      }
+
+      await prisma.booking_services.update({
+        where: { id: serviceId },
+        data: {
+          status: 'inactive',
+          updated_at: new Date()
+        }
+      });
+
+      return true;
     } catch (error) {
       console.error('Error deleting service:', error);
       throw error;
@@ -232,37 +233,37 @@ class BookingService {
   async getOrCreateDefaultStaff(tenantId) {
     try {
       // Check if staff exists
-      const existingStaff = await query(
-        'SELECT * FROM booking_staff WHERE tenant_id = $1 ORDER BY created_at LIMIT 1',
-        [tenantId]
-      );
+      const existingStaff = await prisma.booking_staff.findFirst({
+        where: { tenant_id: tenantId },
+        orderBy: { created_at: 'asc' }
+      });
 
-      if (existingStaff.rows.length > 0) {
-        return existingStaff.rows[0];
+      if (existingStaff) {
+        return existingStaff;
       }
 
       // Get tenant info
-      const tenantResult = await query(
-        'SELECT business_name, email FROM booking_tenants WHERE id = $1',
-        [tenantId]
-      );
+      const tenant = await prisma.booking_tenants.findUnique({
+        where: { id: tenantId }
+      });
 
-      if (tenantResult.rows.length === 0) {
+      if (!tenant) {
         throw new Error('Tenant not found');
       }
 
-      const tenant = tenantResult.rows[0];
-
       // Create default staff
-      const result = await query(
-        `INSERT INTO booking_staff 
-        (tenant_id, name, email, title, is_primary, status)
-        VALUES ($1, $2, $3, $4, true, 'active')
-        RETURNING *`,
-        [tenantId, tenant.business_name, tenant.email, 'Service Provider']
-      );
+      const newStaff = await prisma.booking_staff.create({
+        data: {
+          tenant_id: tenantId,
+          name: tenant.business_name,
+          email: tenant.email,
+          title: 'Service Provider',
+          is_primary: true,
+          status: 'active'
+        }
+      });
 
-      return result.rows[0];
+      return newStaff;
     } catch (error) {
       console.error('Error getting/creating default staff:', error);
       throw error;
@@ -272,33 +273,42 @@ class BookingService {
   /**
    * Set availability rules for staff (weekly schedule)
    */
+  /**
+   * Set availability rules for staff (weekly schedule)
+   */
   async setAvailabilityRules(staffId, tenantId, scheduleRules) {
     try {
-      return await transaction(async (client) => {
+      return await prisma.$transaction(async (tx) => {
         // Delete existing rules for this staff
-        await client.query(
-          'DELETE FROM booking_availability_rules WHERE staff_id = $1',
-          [staffId]
-        );
+        await tx.booking_availability_rules.deleteMany({
+          where: { staff_id: staffId }
+        });
 
         // Insert new rules
         const insertedRules = [];
         for (const rule of scheduleRules) {
-          const result = await client.query(
-            `INSERT INTO booking_availability_rules 
-            (tenant_id, staff_id, day_of_week, start_time, end_time, is_available)
-            VALUES ($1, $2, $3, $4, $5, $6)
-            RETURNING *`,
-            [
-              tenantId,
-              staffId,
-              rule.day_of_week,
-              rule.start_time,
-              rule.end_time,
-              rule.is_available !== false,
-            ]
-          );
-          insertedRules.push(result.rows[0]);
+          // Prisma expects Date objects for DateTime fields (even @db.Time)
+          // We construct a dummy date with the time
+          const startTime = new Date(`1970-01-01T${rule.start_time}Z`);
+          const endTime = new Date(`1970-01-01T${rule.end_time}Z`);
+
+          const newRule = await tx.booking_availability_rules.create({
+            data: {
+              tenant_id: tenantId,
+              staff_id: staffId,
+              day_of_week: rule.day_of_week,
+              start_time: startTime,
+              end_time: endTime,
+              is_available: rule.is_available !== false,
+            }
+          });
+
+          // Convert back to strings for return value consistency
+          insertedRules.push({
+            ...newRule,
+            start_time: rule.start_time,
+            end_time: rule.end_time
+          });
         }
 
         return insertedRules;
@@ -314,14 +324,23 @@ class BookingService {
    */
   async getAvailabilityRules(staffId) {
     try {
-      const result = await query(
-        `SELECT * FROM booking_availability_rules 
-         WHERE staff_id = $1 AND is_available = true
-         ORDER BY day_of_week, start_time`,
-        [staffId]
-      );
+      const rules = await prisma.booking_availability_rules.findMany({
+        where: {
+          staff_id: staffId,
+          is_available: true
+        },
+        orderBy: [
+          { day_of_week: 'asc' },
+          { start_time: 'asc' }
+        ]
+      });
 
-      return result.rows;
+      // Convert Date objects back to HH:MM strings for compatibility
+      return rules.map(rule => ({
+        ...rule,
+        start_time: rule.start_time.toISOString().split('T')[1].substring(0, 5),
+        end_time: rule.end_time.toISOString().split('T')[1].substring(0, 5)
+      }));
     } catch (error) {
       console.error('Error getting availability rules:', error);
       throw error;
@@ -341,14 +360,13 @@ class BookingService {
       }
 
       // 2. Get staff details (buffer times)
-      const staffResult = await query(
-        'SELECT * FROM booking_staff WHERE id = $1 AND tenant_id = $2',
-        [staffId, tenantId]
-      );
-      if (staffResult.rows.length === 0) {
+      const staff = await prisma.booking_staff.findFirst({
+        where: { id: staffId, tenant_id: tenantId }
+      });
+
+      if (!staff) {
         throw new Error('Staff member not found');
       }
-      const staff = staffResult.rows[0];
 
       // 3. Parse the date in the specified timezone
       const dateObj = DateTime.fromISO(date, { zone: timezone });
@@ -359,30 +377,44 @@ class BookingService {
       const dayOfWeek = dateObj.weekday % 7; // Convert to 0=Sunday, 6=Saturday
 
       // 4. Get availability rules for this day
-      const availabilityRules = await query(
-        `SELECT * FROM booking_availability_rules 
-         WHERE staff_id = $1 AND day_of_week = $2 AND is_available = true
-         ORDER BY start_time`,
-        [staffId, dayOfWeek]
-      );
+      const availabilityRulesRaw = await prisma.booking_availability_rules.findMany({
+        where: {
+          staff_id: staffId,
+          day_of_week: dayOfWeek,
+          is_available: true
+        },
+        orderBy: { start_time: 'asc' }
+      });
 
-      if (availabilityRules.rows.length === 0) {
+      if (availabilityRulesRaw.length === 0) {
+        console.log(`No availability rules found for staff ${staffId} on day ${dayOfWeek}`);
         return []; // Staff not available on this day
       }
+      console.log(`Found ${availabilityRulesRaw.length} rules for day ${dayOfWeek}`);
+
+      // Map rules to use string times
+      const availabilityRules = availabilityRulesRaw.map(rule => ({
+        ...rule,
+        start_time: rule.start_time.toISOString().split('T')[1].substring(0, 5),
+        end_time: rule.end_time.toISOString().split('T')[1].substring(0, 5)
+      }));
 
       // 5. Get existing appointments for this day
       const dayStart = dateObj.startOf('day').toUTC().toISO();
       const dayEnd = dateObj.endOf('day').toUTC().toISO();
 
-      const existingAppointments = await query(
-        `SELECT start_time, end_time FROM appointments 
-         WHERE staff_id = $1 
-         AND status NOT IN ('cancelled')
-         AND start_time >= $2 
-         AND start_time < $3
-         ORDER BY start_time`,
-        [staffId, dayStart, dayEnd]
-      );
+      const existingAppointments = await prisma.appointments.findMany({
+        where: {
+          staff_id: staffId,
+          status: { not: 'cancelled' },
+          start_time: {
+            gte: new Date(dayStart),
+            lt: new Date(dayEnd)
+          }
+        },
+        orderBy: { start_time: 'asc' },
+        select: { start_time: true, end_time: true }
+      });
 
       // 6. Generate time slots
       const slots = [];
@@ -393,7 +425,7 @@ class BookingService {
       // Get current time
       const now = DateTime.now().setZone(timezone);
 
-      for (const rule of availabilityRules.rows) {
+      for (const rule of availabilityRules) {
         // Parse start and end times for this availability rule
         const ruleStart = DateTime.fromISO(
           `${dateObj.toISODate()}T${rule.start_time}`,
@@ -424,9 +456,10 @@ class BookingService {
           }
 
           // Check if slot conflicts with existing appointments
-          const hasConflict = existingAppointments.rows.some((appt) => {
-            const apptStart = DateTime.fromISO(appt.start_time, { zone: 'utc' }).setZone(timezone);
-            const apptEnd = DateTime.fromISO(appt.end_time, { zone: 'utc' }).setZone(timezone);
+          const hasConflict = existingAppointments.some((appt) => {
+            // Prisma returns Date objects, convert to ISO string for Luxon
+            const apptStart = DateTime.fromISO(appt.start_time.toISOString(), { zone: 'utc' }).setZone(timezone);
+            const apptEnd = DateTime.fromISO(appt.end_time.toISOString(), { zone: 'utc' }).setZone(timezone);
 
             // Check if there's any overlap
             return (
@@ -473,6 +506,9 @@ class BookingService {
   /**
    * Create an appointment
    */
+  /**
+   * Create an appointment
+   */
   async createAppointment(tenantId, appointmentData) {
     const {
       service_id,
@@ -491,50 +527,50 @@ class BookingService {
       throw new Error('Missing required appointment fields');
     }
 
+    let appointment;
     try {
-      return await transaction(async (client) => {
+      appointment = await prisma.$transaction(async (tx) => {
         // 1. Get service details
-        const serviceResult = await client.query(
-          'SELECT * FROM booking_services WHERE id = $1 AND tenant_id = $2',
-          [service_id, tenantId]
-        );
-        if (serviceResult.rows.length === 0) {
+        const service = await tx.booking_services.findFirst({
+          where: { id: service_id, tenant_id: tenantId }
+        });
+
+        if (!service) {
           throw new Error('Service not found');
         }
-        const service = serviceResult.rows[0];
 
         // 2. Calculate end time
         const startTimeUTC = DateTime.fromISO(start_time, { zone: timezone }).toUTC();
         const endTimeUTC = startTimeUTC.plus({ minutes: service.duration_minutes });
 
         // 3. Check for conflicts (pessimistic locking)
-        const conflicts = await client.query(
-          `SELECT id FROM appointments 
-           WHERE staff_id = $1 
-           AND status NOT IN ('cancelled')
-           AND ((start_time < $2 AND end_time > $2) 
-                OR (start_time < $3 AND end_time > $3)
-                OR (start_time >= $2 AND end_time <= $3))
-           FOR UPDATE`,
-          [staff_id, startTimeUTC.toISO(), endTimeUTC.toISO()]
-        );
+        // Prisma doesn't support FOR UPDATE natively in findFirst, so we use raw query
+        const conflicts = await tx.$queryRaw`
+          SELECT id FROM appointments 
+          WHERE staff_id = ${staff_id}::uuid
+          AND status NOT IN ('cancelled')
+          AND ((start_time < ${endTimeUTC.toJSDate()} AND end_time > ${startTimeUTC.toJSDate()}) 
+               OR (start_time < ${endTimeUTC.toJSDate()} AND end_time > ${endTimeUTC.toJSDate()})
+               OR (start_time >= ${startTimeUTC.toJSDate()} AND end_time <= ${endTimeUTC.toJSDate()}))
+          FOR UPDATE
+        `;
 
-        if (conflicts.rows.length > 0) {
+        if (conflicts.length > 0) {
           throw new Error('Time slot no longer available');
         }
 
         // 4. Generate confirmation code
         let confirmationCode = this.generateConfirmationCode();
-        
+
         // Ensure uniqueness
         let codeExists = true;
         let attempts = 0;
         while (codeExists && attempts < 10) {
-          const codeCheck = await client.query(
-            'SELECT id FROM appointments WHERE confirmation_code = $1',
-            [confirmationCode]
-          );
-          if (codeCheck.rows.length === 0) {
+          const codeCheck = await tx.appointments.findFirst({
+            where: { confirmation_code: confirmationCode }
+          });
+
+          if (!codeCheck) {
             codeExists = false;
           } else {
             confirmationCode = this.generateConfirmationCode();
@@ -546,43 +582,37 @@ class BookingService {
         const status = service.requires_approval ? 'pending' : 'confirmed';
 
         // 6. Create appointment
-        const result = await client.query(
-          `INSERT INTO appointments 
-          (tenant_id, service_id, staff_id, start_time, end_time, duration_minutes, timezone,
-           customer_name, customer_email, customer_phone, customer_notes,
-           confirmation_code, booking_source, status, total_price_cents, requires_approval)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
-          RETURNING *`,
-          [
-            tenantId,
-            service_id,
-            staff_id,
-            startTimeUTC.toISO(),
-            endTimeUTC.toISO(),
-            service.duration_minutes,
+        const newAppointment = await tx.appointments.create({
+          data: {
+            tenant_id: tenantId,
+            service_id: service_id,
+            staff_id: staff_id,
+            start_time: startTimeUTC.toJSDate(),
+            end_time: endTimeUTC.toJSDate(),
+            duration_minutes: service.duration_minutes,
             timezone,
             customer_name,
             customer_email,
-            customer_phone || null,
-            customer_notes || null,
-            confirmationCode,
+            customer_phone: customer_phone || null,
+            customer_notes: customer_notes || null,
+            confirmation_code: confirmationCode,
             booking_source,
             status,
-            service.price_cents,
-            service.requires_approval,
-          ]
-        );
-
-        const appointment = result.rows[0];
-
-        // Send confirmation email asynchronously (don't wait)
-        this.sendConfirmationEmail(appointment).catch((error) => {
-          console.error('Failed to send confirmation email:', error);
-          // Don't fail the booking if email fails
+            total_price_cents: service.price_cents,
+            requires_approval: service.requires_approval,
+          }
         });
 
-        return appointment;
+        return newAppointment;
       });
+
+      // Send confirmation email asynchronously (don't wait)
+      // Must be done after transaction commits so the appointment is visible to other connections
+      this.sendConfirmationEmail(appointment).catch((error) => {
+        console.error('Failed to send confirmation email:', error);
+      });
+
+      return appointment;
     } catch (error) {
       console.error('Error creating appointment:', error);
       throw error;
@@ -595,29 +625,18 @@ class BookingService {
   async sendConfirmationEmail(appointment) {
     try {
       // Get full appointment details with service and staff info
-      const details = await query(
-        `SELECT 
-          a.*,
-          s.name as service_name,
-          s.duration_minutes,
-          st.name as staff_name,
-          st.email as staff_email,
-          t.business_name,
-          t.email as business_email,
-          t.phone as business_phone
-         FROM appointments a
-         LEFT JOIN booking_services s ON a.service_id = s.id
-         LEFT JOIN booking_staff st ON a.staff_id = st.id
-         LEFT JOIN booking_tenants t ON a.tenant_id = t.id
-         WHERE a.id = $1`,
-        [appointment.id]
-      );
+      const appt = await prisma.appointments.findUnique({
+        where: { id: appointment.id },
+        include: {
+          booking_services: true,
+          booking_staff: true,
+          booking_tenants: true
+        }
+      });
 
-      if (details.rows.length === 0) {
+      if (!appt) {
         throw new Error('Appointment not found');
       }
-
-      const appt = details.rows[0];
 
       await this.notificationService.sendConfirmationEmail({
         confirmation_code: appt.confirmation_code,
@@ -626,15 +645,15 @@ class BookingService {
         start_time: appt.start_time,
         end_time: appt.end_time,
         timezone: appt.timezone,
-        service_name: appt.service_name,
-        staff_name: appt.staff_name,
+        service_name: appt.booking_services?.name,
+        staff_name: appt.booking_staff?.name,
         total_price_cents: appt.total_price_cents,
         requires_approval: appt.requires_approval,
         tenant_id: appt.tenant_id,
         appointment_id: appt.id,
-        business_name: appt.business_name,
-        business_email: appt.business_email,
-        business_phone: appt.business_phone,
+        business_name: appt.booking_tenants?.business_name,
+        business_email: appt.booking_tenants?.email,
+        business_phone: appt.booking_tenants?.phone,
       });
 
       return true;
@@ -658,59 +677,33 @@ class BookingService {
     } = filters;
 
     try {
-      let whereConditions = ['tenant_id = $1'];
-      let params = [tenantId];
-      let paramCount = 2;
+      const where = { tenant_id: tenantId };
 
-      if (start_date) {
-        whereConditions.push(`start_time >= $${paramCount}`);
-        params.push(start_date);
-        paramCount++;
-      }
-
+      if (start_date) where.start_time = { gte: new Date(start_date) };
       if (end_date) {
-        whereConditions.push(`start_time <= $${paramCount}`);
-        params.push(end_date);
-        paramCount++;
+        // If start_time is already set, merge it
+        where.start_time = { ...where.start_time, lte: new Date(end_date) };
       }
+      if (staff_id) where.staff_id = staff_id;
+      if (service_id) where.service_id = service_id;
+      if (status) where.status = status;
+      if (customer_email) where.customer_email = customer_email;
 
-      if (staff_id) {
-        whereConditions.push(`staff_id = $${paramCount}`);
-        params.push(staff_id);
-        paramCount++;
-      }
+      const appointments = await prisma.appointments.findMany({
+        where,
+        orderBy: { start_time: 'desc' },
+        include: {
+          booking_services: { select: { name: true } },
+          booking_staff: { select: { name: true } }
+        }
+      });
 
-      if (service_id) {
-        whereConditions.push(`service_id = $${paramCount}`);
-        params.push(service_id);
-        paramCount++;
-      }
-
-      if (status) {
-        whereConditions.push(`status = $${paramCount}`);
-        params.push(status);
-        paramCount++;
-      }
-
-      if (customer_email) {
-        whereConditions.push(`customer_email = $${paramCount}`);
-        params.push(customer_email);
-        paramCount++;
-      }
-
-      const result = await query(
-        `SELECT a.*, 
-                s.name as service_name,
-                st.name as staff_name
-         FROM appointments a
-         LEFT JOIN booking_services s ON a.service_id = s.id
-         LEFT JOIN booking_staff st ON a.staff_id = st.id
-         WHERE ${whereConditions.join(' AND ')}
-         ORDER BY start_time DESC`,
-        params
-      );
-
-      return result.rows;
+      // Map to flat structure expected by frontend
+      return appointments.map(appt => ({
+        ...appt,
+        service_name: appt.booking_services?.name,
+        staff_name: appt.booking_staff?.name
+      }));
     } catch (error) {
       console.error('Error getting appointments:', error);
       throw error;
@@ -725,26 +718,109 @@ class BookingService {
       // Check if identifier is UUID or confirmation code
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
 
-      const field = isUUID ? 'id' : 'confirmation_code';
+      const where = { tenant_id: tenantId };
+      if (isUUID) {
+        where.id = identifier;
+      } else {
+        where.confirmation_code = identifier;
+      }
 
-      const result = await query(
-        `SELECT a.*, 
-                s.name as service_name, s.duration_minutes, s.price_cents,
-                st.name as staff_name, st.email as staff_email
-         FROM appointments a
-         LEFT JOIN booking_services s ON a.service_id = s.id
-         LEFT JOIN booking_staff st ON a.staff_id = st.id
-         WHERE a.${field} = $1 AND a.tenant_id = $2`,
-        [identifier, tenantId]
-      );
+      const appt = await prisma.appointments.findFirst({
+        where,
+        include: {
+          booking_services: true,
+          booking_staff: true
+        }
+      });
 
-      if (result.rows.length === 0) {
+      if (!appt) {
         return null;
       }
 
-      return result.rows[0];
+      return {
+        ...appt,
+        service_name: appt.booking_services?.name,
+        duration_minutes: appt.booking_services?.duration_minutes,
+        price_cents: appt.booking_services?.price_cents,
+        staff_name: appt.booking_staff?.name,
+        staff_email: appt.booking_staff?.email
+      };
     } catch (error) {
       console.error('Error getting appointment:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get appointment by confirmation code (Global lookup)
+   */
+  async getAppointmentByCode(confirmationCode) {
+    try {
+      const appt = await prisma.appointments.findFirst({
+        where: { confirmation_code: confirmationCode },
+        include: {
+          booking_services: true,
+          booking_staff: true,
+          booking_tenants: true
+        }
+      });
+
+      if (!appt) {
+        return null;
+      }
+
+      return {
+        ...appt,
+        service_name: appt.booking_services?.name,
+        duration_minutes: appt.booking_services?.duration_minutes,
+        price_cents: appt.booking_services?.price_cents,
+        staff_name: appt.booking_staff?.name,
+        staff_email: appt.booking_staff?.email,
+        business_name: appt.booking_tenants?.business_name
+      };
+    } catch (error) {
+      console.error('Error getting appointment by code:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Cancel appointment by confirmation code (Global lookup)
+   */
+  async cancelAppointmentByCode(confirmationCode, cancelData = {}) {
+    const { reason = 'No reason provided', cancelled_by = 'customer' } = cancelData;
+
+    try {
+      const appt = await prisma.appointments.findFirst({
+        where: {
+          confirmation_code: confirmationCode,
+          status: { not: 'cancelled' }
+        }
+      });
+
+      if (!appt) {
+        return null;
+      }
+
+      const updatedAppt = await prisma.appointments.update({
+        where: { id: appt.id },
+        data: {
+          status: 'cancelled',
+          cancelled_at: new Date(),
+          cancellation_reason: reason,
+          cancelled_by: cancelled_by,
+          updated_at: new Date()
+        }
+      });
+
+      // Send cancellation email asynchronously (don't wait)
+      this.sendCancellationEmail(updatedAppt, reason, cancelled_by).catch((error) => {
+        console.error('Failed to send cancellation email:', error);
+      });
+
+      return updatedAppt;
+    } catch (error) {
+      console.error('Error cancelling appointment by code:', error);
       throw error;
     }
   }
@@ -758,33 +834,42 @@ class BookingService {
     try {
       // Check if identifier is UUID or confirmation code
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
-      const field = isUUID ? 'id' : 'confirmation_code';
 
-      const result = await query(
-        `UPDATE appointments 
-         SET status = 'cancelled',
-             cancelled_at = CURRENT_TIMESTAMP,
-             cancellation_reason = $1,
-             cancelled_by = $2,
-             updated_at = CURRENT_TIMESTAMP
-         WHERE ${field} = $3 AND tenant_id = $4 AND status != 'cancelled'
-         RETURNING *`,
-        [reason, cancelled_by, identifier, tenantId]
-      );
+      const where = {
+        tenant_id: tenantId,
+        status: { not: 'cancelled' }
+      };
 
-      if (result.rows.length === 0) {
+      if (isUUID) {
+        where.id = identifier;
+      } else {
+        where.confirmation_code = identifier;
+      }
+
+      const appt = await prisma.appointments.findFirst({ where });
+
+      if (!appt) {
         return null;
       }
 
-      const appointment = result.rows[0];
+      const updatedAppt = await prisma.appointments.update({
+        where: { id: appt.id },
+        data: {
+          status: 'cancelled',
+          cancelled_at: new Date(),
+          cancellation_reason: reason,
+          cancelled_by: cancelled_by,
+          updated_at: new Date()
+        }
+      });
 
       // Send cancellation email asynchronously (don't wait)
-      this.sendCancellationEmail(appointment, reason, cancelled_by).catch((error) => {
+      this.sendCancellationEmail(updatedAppt, reason, cancelled_by).catch((error) => {
         console.error('Failed to send cancellation email:', error);
         // Don't fail the cancellation if email fails
       });
 
-      return appointment;
+      return updatedAppt;
     } catch (error) {
       console.error('Error cancelling appointment:', error);
       throw error;
@@ -797,24 +882,17 @@ class BookingService {
   async sendCancellationEmail(appointment, reason, cancelled_by) {
     try {
       // Get full appointment details
-      const details = await query(
-        `SELECT 
-          a.*,
-          s.name as service_name,
-          t.business_name,
-          t.phone as business_phone
-         FROM appointments a
-         LEFT JOIN booking_services s ON a.service_id = s.id
-         LEFT JOIN booking_tenants t ON a.tenant_id = t.id
-         WHERE a.id = $1`,
-        [appointment.id]
-      );
+      const appt = await prisma.appointments.findUnique({
+        where: { id: appointment.id },
+        include: {
+          booking_services: true,
+          booking_tenants: true
+        }
+      });
 
-      if (details.rows.length === 0) {
+      if (!appt) {
         throw new Error('Appointment not found');
       }
-
-      const appt = details.rows[0];
 
       await this.notificationService.sendCancellationEmail({
         confirmation_code: appt.confirmation_code,
@@ -822,13 +900,13 @@ class BookingService {
         customer_email: appt.customer_email,
         start_time: appt.start_time,
         timezone: appt.timezone,
-        service_name: appt.service_name,
+        service_name: appt.booking_services?.name,
         cancellation_reason: reason,
         cancelled_by: cancelled_by,
         tenant_id: appt.tenant_id,
         appointment_id: appt.id,
-        business_name: appt.business_name,
-        business_phone: appt.business_phone,
+        business_name: appt.booking_tenants?.business_name,
+        business_phone: appt.booking_tenants?.phone,
       });
 
       return true;

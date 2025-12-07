@@ -1,27 +1,22 @@
-import pg from 'pg';
-const { Client } = pg;
-
-const client = new Client({
-  connectionString: 'postgresql://neondb_owner:npg_EuHrPY06FInJ@ep-noisy-truth-ahtau3k1-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require',
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
+import { prisma } from './db.js';
 
 async function test() {
   try {
-    console.log('🔌 Attempting to connect...');
-    await client.connect();
+    console.log('🔌 Attempting to connect to database...');
+    // Connect explicitly (optional, query will do it too)
+    await prisma.$connect();
     console.log('✅ Connected!');
-    
-    const result = await client.query('SELECT NOW()');
-    console.log('✅ Query successful:', result.rows[0]);
-    
-    await client.end();
+
+    // Test query
+    const result = await prisma.$queryRaw`SELECT NOW()`;
+    console.log('✅ Query successful:', result[0]);
+
+    await prisma.$disconnect();
     process.exit(0);
   } catch (error) {
     console.error('❌ Connection failed:', error.message);
     console.error('Full error:', error);
+    await prisma.$disconnect();
     process.exit(1);
   }
 }

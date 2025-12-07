@@ -1,38 +1,64 @@
 {
   "brand": {
-    "name": "Strategic Solutions", 
+    "name": "Strategic Solutions",
     "logo": "assets/logo.svg",
     "tagline": "Business Consulting • Since 2010",
     "phone": "(555) 456-7890",
     "email": "hello@strategicsolutions.com"
   },
   "themeVars": {
-    "color-primary": "#1e40af", 
-    "color-accent": "#3b82f6",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#0f172a",
+    "color-primary-light": "#334155",
+    "color-accent": "#d4af37",
+    "color-surface": "rgba(255, 255, 255, 0.03)",
+    "color-card": "rgba(255, 255, 255, 0.06)",
+    "color-text": "#f8fafc",
+    "color-muted": "#94a3b8",
+    "color-bg": "#020617"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "About", "href": "#about"},
-    {"label": "Results", "href": "#reviews"},
-    {"label": "FAQ", "href": "#faq"},
-    {"label": "Contact", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "About",
+      "href": "#about"
+    },
+    {
+      "label": "Results",
+      "href": "#reviews"
+    },
+    {
+      "label": "FAQ",
+      "href": "#faq"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
+    "layout": "split",
     "eyebrow": "💼 Strategic Business Consulting",
     "title": "Transform your business with expert guidance",
     "subtitle": "From startups to established enterprises, we provide strategic solutions that drive growth, optimize operations, and maximize profitability. Partner with us to unlock your business's full potential.",
     "cta": [
-      {"label": "📞 Get Quote", "href": "#contact"},
-      {"label": "📋 Schedule Call", "href": "#contact", "variant": "secondary"}
+      {
+        "label": "📞 Get Quote",
+        "href": "#contact"
+      },
+      {
+        "label": "📋 Schedule Call",
+        "href": "#contact",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1200&q=80",
     "imageAlt": "Professional business consulting meeting with strategic planning"
   },
   "about": {
-    "title": "Our Story", 
+    "title": "Our Story",
     "body": "Founded in 2010 by Dr. Jennifer Walsh, Strategic Solutions has helped over 200 businesses achieve their growth objectives. Our team combines deep industry expertise with proven methodologies to deliver measurable results.",
     "subtitle": "Why choose Strategic Solutions",
     "features": [
@@ -60,7 +86,11 @@
       "imageAlt": "Strategic planning session",
       "category": "Strategy & Planning",
       "duration": "4-6 weeks",
-      "deliverables": ["Strategic plan", "Implementation roadmap", "KPI framework"],
+      "deliverables": [
+        "Strategic plan",
+        "Implementation roadmap",
+        "KPI framework"
+      ],
       "popular": true
     },
     {
@@ -71,7 +101,11 @@
       "imageAlt": "Process optimization workflow",
       "category": "Operations Excellence",
       "duration": "4-6 weeks",
-      "deliverables": ["Process maps", "Efficiency improvements", "Cost reduction plan"]
+      "deliverables": [
+        "Process maps",
+        "Efficiency improvements",
+        "Cost reduction plan"
+      ]
     },
     {
       "name": "Market Analysis",
@@ -81,7 +115,11 @@
       "imageAlt": "Market analysis presentation",
       "category": "Strategy & Planning",
       "duration": "3-4 weeks",
-      "deliverables": ["Market report", "Competitive analysis", "Opportunity assessment"]
+      "deliverables": [
+        "Market report",
+        "Competitive analysis",
+        "Opportunity assessment"
+      ]
     },
     {
       "name": "Team Development",
@@ -91,7 +129,11 @@
       "imageAlt": "Team development workshop",
       "category": "Growth & Development",
       "duration": "3-4 weeks",
-      "deliverables": ["Team assessment", "Development plan", "Training program"]
+      "deliverables": [
+        "Team assessment",
+        "Development plan",
+        "Training program"
+      ]
     },
     {
       "name": "Sales Strategy",
@@ -101,7 +143,11 @@
       "imageAlt": "Sales strategy planning",
       "category": "Growth & Development",
       "duration": "4-5 weeks",
-      "deliverables": ["Sales strategy", "Process improvements", "Training materials"]
+      "deliverables": [
+        "Sales strategy",
+        "Process improvements",
+        "Training materials"
+      ]
     },
     {
       "name": "Financial Planning",
@@ -111,7 +157,11 @@
       "imageAlt": "Financial planning",
       "category": "Growth & Development",
       "duration": "3-4 weeks",
-      "deliverables": ["Financial models", "Planning framework", "Budget templates"]
+      "deliverables": [
+        "Financial models",
+        "Planning framework",
+        "Budget templates"
+      ]
     }
   ],
   "casestudies": {
@@ -199,7 +249,7 @@
     }
   },
   "contact": {
-    "title": "Let's Discuss Your Project", 
+    "title": "Let's Discuss Your Project",
     "subtitle": "Schedule a free consultation to explore how we can help",
     "phone": "(555) 456-7890",
     "email": "hello@strategicsolutions.com",
@@ -257,55 +307,137 @@
   },
   "stats": {
     "items": [
-      {"number": "200+", "label": "Clients Served"},
-      {"number": "13+", "label": "Years Experience"},
-      {"number": "$100M+", "label": "Client Revenue Generated"},
-      {"number": "4.9", "label": "Star Rating"}
+      {
+        "number": "200+",
+        "label": "Clients Served"
+      },
+      {
+        "number": "13+",
+        "label": "Years Experience"
+      },
+      {
+        "number": "$100M+",
+        "label": "Client Revenue Generated"
+      },
+      {
+        "number": "4.9",
+        "label": "Star Rating"
+      }
     ]
   },
   "process": {
     "title": "How We Work",
     "subtitle": "Proven methodology for measurable results",
     "steps": [
-      {"title": "Discovery Call", "description": "Free 30-minute consultation to understand your challenges"},
-      {"title": "Strategic Assessment", "description": "Deep analysis of your business, market, and opportunities"},
-      {"title": "Custom Roadmap", "description": "Actionable plan with clear milestones and timelines"},
-      {"title": "Implementation Support", "description": "Hands-on guidance to execute and achieve your goals"}
+      {
+        "title": "Discovery Call",
+        "description": "Free 30-minute consultation to understand your challenges"
+      },
+      {
+        "title": "Strategic Assessment",
+        "description": "Deep analysis of your business, market, and opportunities"
+      },
+      {
+        "title": "Custom Roadmap",
+        "description": "Actionable plan with clear milestones and timelines"
+      },
+      {
+        "title": "Implementation Support",
+        "description": "Hands-on guidance to execute and achieve your goals"
+      }
     ]
   },
   "credentials": {
     "title": "Proven Expertise",
     "subtitle": "Credentials and experience you can trust",
     "items": [
-      {"icon": "🎓", "name": "PhD, Wharton", "description": "Former McKinsey consultant"},
-      {"icon": "📈", "name": "$100M+ Generated", "description": "For client businesses"},
-      {"icon": "🏆", "name": "Best Consulting 2023", "description": "Industry recognized"},
-      {"icon": "⭐", "name": "4.9 Star Rating", "description": "200+ satisfied clients"}
+      {
+        "icon": "🎓",
+        "name": "PhD, Wharton",
+        "description": "Former McKinsey consultant"
+      },
+      {
+        "icon": "📈",
+        "name": "$100M+ Generated",
+        "description": "For client businesses"
+      },
+      {
+        "icon": "🏆",
+        "name": "Best Consulting 2023",
+        "description": "Industry recognized"
+      },
+      {
+        "icon": "⭐",
+        "name": "4.9 Star Rating",
+        "description": "200+ satisfied clients"
+      }
     ]
   },
   "faq": {
     "title": "Frequently Asked Questions",
     "subtitle": "Common questions about our consulting services",
     "items": [
-      {"question": "What industries do you specialize in?", "answer": "We work primarily with manufacturing, technology, retail, and professional services firms. Our team has experience across 15+ industries, and our methodologies adapt to any business looking to scale sustainably."},
-      {"question": "How long is a typical engagement?", "answer": "Engagements typically last 4-8 weeks for project-based work, though some clients work with us ongoing as fractional executives or strategic advisors. We'll discuss the right timeline during your discovery call."},
-      {"question": "What size companies do you work with?", "answer": "We focus on businesses with $5M-$100M in annual revenue. This allows for meaningful impact while maintaining personalized attention to your unique challenges."},
-      {"question": "How is your pricing structured?", "answer": "We offer both project-based and retainer pricing depending on scope. Projects start at $1,200 and typically range from $1,500-$2,500 depending on complexity. Retainers start at $3,000/month. All pricing is transparent and agreed upon before we begin."},
-      {"question": "Will I work directly with Dr. Walsh or a team?", "answer": "You work directly with our senior consultants, including Dr. Walsh who oversees all engagements. For larger projects, you'll have a dedicated team, but Dr. Walsh is involved in strategy development and key milestones."},
-      {"question": "What results can I expect?", "answer": "While every business is different, clients typically see 20-50% revenue growth, improved operational efficiency, stronger market positioning, and clearer strategic direction. Our case studies showcase specific results achieved with recent clients."},
-      {"question": "Do you offer ongoing support after a project ends?", "answer": "Yes! Many clients transition to an advisory retainer for ongoing strategic guidance, quarterly planning sessions, and implementation support. This ensures long-term success."},
-      {"question": "How involved will I need to be?", "answer": "We work collaboratively with you and your leadership team. Expect 3-5 hours per week of your time for meetings, feedback, and decision-making. We handle the research, analysis, and heavy lifting."},
-      {"question": "Can you help with implementation or just strategy?", "answer": "Both! We're hands-on and can support implementation, or provide a detailed roadmap for your team to execute. We'll determine the right approach based on your needs, resources, and timeline."},
-      {"question": "What if I'm not sure what I need?", "answer": "That's exactly what the free 30-minute discovery call is for! We'll discuss your challenges and goals, and provide honest feedback on whether consulting is right for you and what approach makes sense."}
+      {
+        "question": "What industries do you specialize in?",
+        "answer": "We work primarily with manufacturing, technology, retail, and professional services firms. Our team has experience across 15+ industries, and our methodologies adapt to any business looking to scale sustainably."
+      },
+      {
+        "question": "How long is a typical engagement?",
+        "answer": "Engagements typically last 4-8 weeks for project-based work, though some clients work with us ongoing as fractional executives or strategic advisors. We'll discuss the right timeline during your discovery call."
+      },
+      {
+        "question": "What size companies do you work with?",
+        "answer": "We focus on businesses with $5M-$100M in annual revenue. This allows for meaningful impact while maintaining personalized attention to your unique challenges."
+      },
+      {
+        "question": "How is your pricing structured?",
+        "answer": "We offer both project-based and retainer pricing depending on scope. Projects start at $1,200 and typically range from $1,500-$2,500 depending on complexity. Retainers start at $3,000/month. All pricing is transparent and agreed upon before we begin."
+      },
+      {
+        "question": "Will I work directly with Dr. Walsh or a team?",
+        "answer": "You work directly with our senior consultants, including Dr. Walsh who oversees all engagements. For larger projects, you'll have a dedicated team, but Dr. Walsh is involved in strategy development and key milestones."
+      },
+      {
+        "question": "What results can I expect?",
+        "answer": "While every business is different, clients typically see 20-50% revenue growth, improved operational efficiency, stronger market positioning, and clearer strategic direction. Our case studies showcase specific results achieved with recent clients."
+      },
+      {
+        "question": "Do you offer ongoing support after a project ends?",
+        "answer": "Yes! Many clients transition to an advisory retainer for ongoing strategic guidance, quarterly planning sessions, and implementation support. This ensures long-term success."
+      },
+      {
+        "question": "How involved will I need to be?",
+        "answer": "We work collaboratively with you and your leadership team. Expect 3-5 hours per week of your time for meetings, feedback, and decision-making. We handle the research, analysis, and heavy lifting."
+      },
+      {
+        "question": "Can you help with implementation or just strategy?",
+        "answer": "Both! We're hands-on and can support implementation, or provide a detailed roadmap for your team to execute. We'll determine the right approach based on your needs, resources, and timeline."
+      },
+      {
+        "question": "What if I'm not sure what I need?",
+        "answer": "That's exactly what the free 30-minute discovery call is for! We'll discuss your challenges and goals, and provide honest feedback on whether consulting is right for you and what approach makes sense."
+      }
     ]
   },
   "footer": {
     "text": "💼 Strategic Solutions • Business Consulting Since 2010",
     "links": [
-      {"label": "Privacy Policy", "href": "#privacy"},
-      {"label": "Terms of Service", "href": "#terms"},
-      {"label": "Careers", "href": "#careers"},
-      {"label": "Resources", "href": "#resources"}
+      {
+        "label": "Privacy Policy",
+        "href": "#privacy"
+      },
+      {
+        "label": "Terms of Service",
+        "href": "#terms"
+      },
+      {
+        "label": "Careers",
+        "href": "#careers"
+      },
+      {
+        "label": "Resources",
+        "href": "#resources"
+      }
     ],
     "awards": [
       "Best Consulting Firm 2023",

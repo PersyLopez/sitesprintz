@@ -6,12 +6,12 @@ export const templatesService = {
   async getTemplates() {
     try {
       // Fetch templates index from server
-      const response = await fetch('/api/templates');
+      const response = await fetch('/data/templates/index.json');
       if (response.ok) {
         const templates = await response.json();
         return templates;
       }
-      
+
       // Fallback: load known templates manually
       const templateNames = [
         // Pro templates (newly standardized)
@@ -27,7 +27,7 @@ export const templatesService = {
         'pet-care-pro',
         'tech-repair-pro',
         'product-showcase-pro',
-        
+
         // Checkout templates  
         'restaurant',
         'salon',
@@ -41,7 +41,7 @@ export const templatesService = {
         'pet-care',
         'photography',
         'tech-repair',
-        
+
         // Starter templates - variations
         'restaurant-fine-dining',
         'restaurant-casual',
@@ -71,28 +71,39 @@ export const templatesService = {
         'pet-care-daycare',
         'pet-care-mobile',
       ];
-      
+
       const templateData = await Promise.all(
         templateNames.map(async (name) => {
           try {
             const res = await fetch(`/data/templates/${name}.json`);
             if (res.ok) {
               const data = await res.json();
-              
+
               // Determine tier from name
+              // Plans: Starter, Pro, Premium
               let tier = 'Starter';
               if (name.endsWith('-pro')) {
                 tier = 'Pro';
+              } else if (name.endsWith('-premium')) {
+                tier = 'Premium';
               } else if (!name.includes('-')) {
-                tier = 'Checkout';
+                // Base templates without suffix are Pro
+                tier = 'Pro';
               }
-              
+
+              // Extract category from template name (first part before any dash)
+              const category = name.split('-')[0]
+                .split(/(?=[A-Z])/) // Split on capital letters
+                .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                .join(' ');
+
               return {
                 id: name,
                 template: name,
                 name: data.brand?.name || name.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
                 description: data.brand?.tagline || data.hero?.subtitle || `${tier} template for ${name.split('-')[0]}`,
                 tier: tier,
+                category: category, // Add category based on template type
                 icon: this.getTemplateIcon(name),
                 preview: data.hero?.image,
                 businessName: data.brand?.name,
@@ -108,7 +119,7 @@ export const templatesService = {
           }
         })
       );
-      
+
       return templateData.filter(t => t !== null);
     } catch (error) {
       console.error('Failed to load templates:', error);
@@ -144,7 +155,7 @@ export const templatesService = {
         throw new Error(`Template not found: ${templateName}`);
       }
       const data = await response.json();
-      
+
       return {
         id: templateName,
         template: templateName,

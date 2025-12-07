@@ -7,28 +7,51 @@
     "email": "book@mobilepaws.pet"
   },
   "themeVars": {
-    "color-primary": "#06b6d4",
-    "color-accent": "#22d3ee",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "Our Van", "href": "#about"},
-    {"label": "Reviews", "href": "#testimonials"},
-    {"label": "Book", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "Our Van",
+      "href": "#about"
+    },
+    {
+      "label": "Reviews",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Book",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "🚐 Mobile Dog Grooming",
     "title": "Professional grooming at your door",
     "subtitle": "Full-service dog grooming in our custom salon van. We bring everything to your driveway - no stressful car rides. One dog at a time for focused, calm grooming. Book your convenient mobile grooming today!",
     "cta": [
-      {"label": "Schedule Service", "href": "#contact"},
-      {"label": "See Van", "href": "#about", "variant": "secondary"}
+      {
+        "label": "Schedule Service",
+        "href": "#contact"
+      },
+      {
+        "label": "See Van",
+        "href": "#about",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1200&q=80",
-    "imageAlt": "Mobile pet grooming van"
+    "imageAlt": "Mobile pet grooming van",
+    "layout": "split"
   },
   "about": {
     "title": "Grooming Comes to You",
@@ -135,7 +158,11 @@
         "bio": "10+ years grooming experience. Built Mobile Paws to provide convenient, stress-free grooming for dogs who struggle with traditional salons. Every dog deserves calm, patient care.",
         "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
         "imageAlt": "Jake Morrison",
-        "credentials": ["Certified Groomer", "10+ Years Experience", "Mobile Grooming Specialist"]
+        "credentials": [
+          "Certified Groomer",
+          "10+ Years Experience",
+          "Mobile Grooming Specialist"
+        ]
       }
     ]
   },
@@ -143,18 +170,42 @@
     "title": "Mobile Grooming Process",
     "subtitle": "Easy and convenient",
     "steps": [
-      {"title": "Book Appointment", "description": "Schedule online or by phone. Choose your date and time"},
-      {"title": "We Arrive at Your Home", "description": "Our fully-equipped van pulls into your driveway"},
-      {"title": "Groom Your Pup", "description": "One-on-one grooming while you relax at home"},
-      {"title": "All Done!", "description": "Your freshly groomed dog comes back to your door"}
+      {
+        "title": "Book Appointment",
+        "description": "Schedule online or by phone. Choose your date and time"
+      },
+      {
+        "title": "We Arrive at Your Home",
+        "description": "Our fully-equipped van pulls into your driveway"
+      },
+      {
+        "title": "Groom Your Pup",
+        "description": "One-on-one grooming while you relax at home"
+      },
+      {
+        "title": "All Done!",
+        "description": "Your freshly groomed dog comes back to your door"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "1,200+", "label": "Mobile Grooms"},
-      {"number": "4.9", "label": "Star Rating"},
-      {"number": "100%", "label": "Mobile Convenience"},
-      {"number": "1:1", "label": "Attention"}
+      {
+        "number": "1,200+",
+        "label": "Mobile Grooms"
+      },
+      {
+        "number": "4.9",
+        "label": "Star Rating"
+      },
+      {
+        "number": "100%",
+        "label": "Mobile Convenience"
+      },
+      {
+        "number": "1:1",
+        "label": "Attention"
+      }
     ]
   },
   "contact": {
@@ -183,4 +234,3 @@
   "productsTitle": "Mobile Grooming Services",
   "productsSubtitle": "Full salon service at your door"
 }
-

@@ -4,7 +4,7 @@ import './TemplateGrid.css';
 
 function TemplateGrid({ templates, selectedTemplate, onSelect }) {
   const [groupBy, setGroupBy] = useState('category'); // 'tier', 'category', 'all'
-  const [filterTier, setFilterTier] = useState('all'); // 'all', 'Pro', 'Checkout', 'Starter'
+  const [filterTier, setFilterTier] = useState('all'); // 'all', 'Pro', 'Premium', 'Starter'
   const [searchQuery, setSearchQuery] = useState('');
   const [previewTemplate, setPreviewTemplate] = useState(null);
 
@@ -17,11 +17,11 @@ function TemplateGrid({ templates, selectedTemplate, onSelect }) {
       const description = (template.description || '').toLowerCase();
       const type = (template.type || '').toLowerCase();
       const category = (template.category || '').toLowerCase();
-      
-      return name.includes(searchLower) || 
-             description.includes(searchLower) || 
-             type.includes(searchLower) ||
-             category.includes(searchLower);
+
+      return name.includes(searchLower) ||
+        description.includes(searchLower) ||
+        type.includes(searchLower) ||
+        category.includes(searchLower);
     });
 
     // Filter by tier if not 'all'
@@ -32,12 +32,12 @@ function TemplateGrid({ templates, selectedTemplate, onSelect }) {
     // Get unique categories and tiers
     const cats = [...new Set(filtered.map(t => t.category || 'Other'))].sort();
     const tiersSet = [...new Set(filtered.map(t => t.tier || t.plan || 'Starter'))];
-    
+
     // Group templates
     let grouped = {};
-    
+
     if (groupBy === 'tier') {
-      // Group by tier (Pro, Checkout, Starter)
+      // Group by tier (Pro, Premium, Starter)
       grouped = filtered.reduce((acc, template) => {
         const tier = template.tier || template.plan || 'Starter';
         if (!acc[tier]) acc[tier] = [];
@@ -63,7 +63,7 @@ function TemplateGrid({ templates, selectedTemplate, onSelect }) {
   // Get group order based on groupBy type
   const getGroupOrder = () => {
     if (groupBy === 'tier') {
-      return ['Pro', 'Checkout', 'Starter', 'Premium'];
+      return ['Pro', 'Premium', 'Starter'];
     } else if (groupBy === 'category') {
       return Object.keys(groupedTemplates).sort();
     } else {
@@ -90,7 +90,7 @@ function TemplateGrid({ templates, selectedTemplate, onSelect }) {
             className="search-input"
           />
           {searchQuery && (
-            <button 
+            <button
               className="clear-search"
               onClick={() => setSearchQuery('')}
               aria-label="Clear search"
@@ -142,10 +142,10 @@ function TemplateGrid({ templates, selectedTemplate, onSelect }) {
               Pro
             </button>
             <button
-              className={`btn-group-item tier-checkout ${filterTier === 'Checkout' ? 'active' : ''}`}
-              onClick={() => setFilterTier('Checkout')}
+              className={`btn-group-item tier-premium ${filterTier === 'Premium' ? 'active' : ''}`}
+              onClick={() => setFilterTier('Premium')}
             >
-              Checkout
+              Premium
             </button>
             <button
               className={`btn-group-item tier-starter ${filterTier === 'Starter' ? 'active' : ''}`}
@@ -168,7 +168,7 @@ function TemplateGrid({ templates, selectedTemplate, onSelect }) {
           <span className="no-results-icon">🔍</span>
           <h3>No templates found</h3>
           <p>Try adjusting your search or filters</p>
-          <button 
+          <button
             className="btn btn-primary"
             onClick={() => {
               setSearchQuery('');
@@ -220,18 +220,19 @@ function TemplateGrid({ templates, selectedTemplate, onSelect }) {
                 {groupTemplates.map(template => {
                   const tier = template.tier || template.plan || 'Starter';
                   const category = template.category || 'Other';
-                  
+
                   return (
                     <div
                       key={template.id || template.template}
+                      data-template={template.id || template.template}
                       className={`template-card ${selectedTemplate === (template.id || template.template) ? 'selected' : ''}`}
                       onClick={() => onSelect(template)}
                     >
                       {/* Template Preview Image */}
                       <div className="template-preview">
                         {template.preview || template.heroImage || template.hero?.image ? (
-                          <img 
-                            src={template.preview || template.heroImage || template.hero?.image} 
+                          <img
+                            src={template.preview || template.heroImage || template.hero?.image}
                             alt={template.name || template.businessName}
                             loading="lazy"
                           />
@@ -240,7 +241,7 @@ function TemplateGrid({ templates, selectedTemplate, onSelect }) {
                             <span>{template.icon || getCategoryIcon(category)}</span>
                           </div>
                         )}
-                        
+
                         {/* Tier Badge on Image */}
                         <div className={`template-tier-badge tier-${tier.toLowerCase()}`}>
                           {tier}
@@ -253,7 +254,7 @@ function TemplateGrid({ templates, selectedTemplate, onSelect }) {
                         <p className="template-description">
                           {template.description || template.brand?.tagline || `${template.type || 'Business'} template`}
                         </p>
-                        
+
                         {/* Category Badge (when not grouping by category) */}
                         {groupBy !== 'category' && (
                           <div className="template-meta">
@@ -262,7 +263,7 @@ function TemplateGrid({ templates, selectedTemplate, onSelect }) {
                             </span>
                           </div>
                         )}
-                        
+
                         {/* Action Buttons */}
                         <div className="template-actions">
                           <button
@@ -300,7 +301,7 @@ function TemplateGrid({ templates, selectedTemplate, onSelect }) {
           );
         })
       )}
-      
+
       {/* Preview Modal */}
       {previewTemplate && (
         <TemplatePreviewModal

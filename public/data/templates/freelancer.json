@@ -1,37 +1,86 @@
 {
-  "brand": {"name": "Jane Doe", "logo": "assets/logo.svg", "phone": "(555) 123-4567", "email": "jane@janedoedesign.com"},
+  "brand": {
+    "name": "Jane Doe",
+    "logo": "assets/logo.svg",
+    "phone": "(555) 123-4567",
+    "email": "jane@janedoedesign.com"
+  },
   "themeVars": {
-    "color-primary": "#0ea5e9",
-    "color-accent": "#22c55e",
-    "color-success": "#22c55e",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Work", "href": "#pages"},
-    {"label": "Packages", "href": "#pricing"},
-    {"label": "Contact", "href": "#contact"}
+    {
+      "label": "Work",
+      "href": "#pages"
+    },
+    {
+      "label": "Packages",
+      "href": "#pricing"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "Independent Designer",
     "title": "Websites that win clients",
     "subtitle": "I help small businesses stand out.",
     "cta": [
-      {"label": "See Work", "href": "#pages"},
-      {"label": "Hire Me", "href": "#contact", "variant": "secondary"}
+      {
+        "label": "See Work",
+        "href": "#pages"
+      },
+      {
+        "label": "Hire Me",
+        "href": "#contact",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&q=80",
-    "imageAlt": "Laptop"
+    "imageAlt": "Laptop",
+    "layout": "split"
   },
   "pages": [
-    {"slug": "project-a", "title": "Project A", "body": "## Redesign for Cafe\nIncreased conversions by 35%."},
-    {"slug": "project-b", "title": "Project B", "body": "## Branding for Salon\nGrew bookings 2x."}
+    {
+      "slug": "project-a",
+      "title": "Project A",
+      "body": "## Redesign for Cafe\nIncreased conversions by 35%."
+    },
+    {
+      "slug": "project-b",
+      "title": "Project B",
+      "body": "## Branding for Salon\nGrew bookings 2x."
+    }
   ],
   "pricing": {
     "title": "Packages",
     "plans": [
-      {"name": "Starter", "description": "Single page site", "price": 800, "cta": {"label": "Start", "href": "#contact"}},
-      {"name": "Pro", "description": "Multi-page site", "price": 2000, "cta": {"label": "Start", "href": "#contact"}}
+      {
+        "name": "Starter",
+        "description": "Single page site",
+        "price": 800,
+        "cta": {
+          "label": "Start",
+          "href": "#contact"
+        }
+      },
+      {
+        "name": "Pro",
+        "description": "Multi-page site",
+        "price": 2000,
+        "cta": {
+          "label": "Start",
+          "href": "#contact"
+        }
+      }
     ]
   },
   "contact": {
@@ -41,7 +90,9 @@
     "phone": "(555) 123-4567",
     "address": "Los Angeles, CA"
   },
-  "footer": {"text": "© Jane Doe"},
+  "footer": {
+    "text": "© Jane Doe"
+  },
   "services": {
     "title": "Design Services",
     "subtitle": "Professional web design solutions for small businesses",
@@ -75,7 +126,11 @@
         "bio": "8+ years creating high-converting websites for small businesses. Specializes in modern, user-friendly design that drives results.",
         "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
         "imageAlt": "Jane Doe",
-        "credentials": ["Google UX Certified", "Adobe Certified Expert", "Featured in Design Weekly"]
+        "credentials": [
+          "Google UX Certified",
+          "Adobe Certified Expert",
+          "Featured in Design Weekly"
+        ]
       }
     ]
   },
@@ -98,10 +153,22 @@
   "process": {
     "title": "How We'll Work Together",
     "steps": [
-      {"title": "Discovery Call", "description": "We'll discuss your goals, audience, and project needs"},
-      {"title": "Design & Feedback", "description": "I'll create mockups and refine based on your input"},
-      {"title": "Development", "description": "Your site is built, tested, and optimized"},
-      {"title": "Launch & Support", "description": "Go live with confidence and ongoing support"}
+      {
+        "title": "Discovery Call",
+        "description": "We'll discuss your goals, audience, and project needs"
+      },
+      {
+        "title": "Design & Feedback",
+        "description": "I'll create mockups and refine based on your input"
+      },
+      {
+        "title": "Development",
+        "description": "Your site is built, tested, and optimized"
+      },
+      {
+        "title": "Launch & Support",
+        "description": "Go live with confidence and ongoing support"
+      }
     ]
   },
   "settings": {

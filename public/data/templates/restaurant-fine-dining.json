@@ -1,38 +1,64 @@
 {
   "brand": {
-    "name": "Le Jardin", 
+    "name": "Le Jardin",
     "logo": "assets/logo.svg",
     "tagline": "Fine Dining • Tasting Menu Experience",
     "phone": "(555) 987-6543",
     "email": "reservations@lejardin.com"
   },
   "themeVars": {
-    "color-primary": "#c9a76f", 
-    "color-accent": "#8b7355",
-    "color-success": "#556b2f",
-    "color-warning": "#cd853f",
-    "color-danger": "#8b0000"
+    "color-primary": "#0f172a",
+    "color-primary-light": "#334155",
+    "color-accent": "#d4af37",
+    "color-surface": "rgba(255, 255, 255, 0.03)",
+    "color-card": "rgba(255, 255, 255, 0.06)",
+    "color-text": "#f8fafc",
+    "color-muted": "#94a3b8",
+    "color-bg": "#020617"
   },
   "nav": [
-    {"label": "Tasting Menu", "href": "#products"},
-    {"label": "Wine Pairings", "href": "#services"},
-    {"label": "Chef's Table", "href": "#about"},
-    {"label": "Awards", "href": "#credentials"},
-    {"label": "Reservations", "href": "#contact"}
+    {
+      "label": "Tasting Menu",
+      "href": "#products"
+    },
+    {
+      "label": "Wine Pairings",
+      "href": "#services"
+    },
+    {
+      "label": "Chef's Table",
+      "href": "#about"
+    },
+    {
+      "label": "Awards",
+      "href": "#credentials"
+    },
+    {
+      "label": "Reservations",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "🍷 Michelin-Inspired Fine Dining",
     "title": "An Unforgettable Culinary Journey",
     "subtitle": "Experience our seasonal tasting menu featuring locally-sourced ingredients and innovative techniques. Each course is thoughtfully crafted to tell a story and delight your senses.",
     "cta": [
-      {"label": "🎩 Reserve Table", "href": "#contact"},
-      {"label": "📋 View Menu", "href": "#products", "variant": "secondary"}
+      {
+        "label": "🎩 Reserve Table",
+        "href": "#contact"
+      },
+      {
+        "label": "📋 View Menu",
+        "href": "#products",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=1200&q=80",
-    "imageAlt": "Elegant fine dining plated dish with wine pairing"
+    "imageAlt": "Elegant fine dining plated dish with wine pairing",
+    "layout": "split"
   },
   "about": {
-    "title": "Chef's Table Experience", 
+    "title": "Chef's Table Experience",
     "body": "Chef Alexandre Dubois brings Michelin-starred expertise to create an intimate dining experience that celebrates seasonal ingredients and modern technique. Our 8-course tasting menu changes monthly, reflecting the best of what nature provides. Each dish is a work of art, designed to surprise and delight.",
     "subtitle": "What makes our experience exceptional",
     "features": [
@@ -105,22 +131,38 @@
       {
         "title": "🌟 Tasting Menu",
         "description": "8-course seasonal journey with optional wine pairings",
-        "features": ["3.5 hour experience", "Chef's personal selection", "Dietary accommodations"]
+        "features": [
+          "3.5 hour experience",
+          "Chef's personal selection",
+          "Dietary accommodations"
+        ]
       },
       {
         "title": "👨‍🍳 Chef's Table",
         "description": "Intimate counter seating with kitchen view",
-        "features": ["Up to 6 guests", "Direct chef interaction", "Exclusive dishes"]
+        "features": [
+          "Up to 6 guests",
+          "Direct chef interaction",
+          "Exclusive dishes"
+        ]
       },
       {
         "title": "🍾 Wine Tasting Room",
         "description": "Pre-dinner wine experience in our cellar",
-        "features": ["500+ bottle collection", "Sommelier guidance", "Rare vintages"]
+        "features": [
+          "500+ bottle collection",
+          "Sommelier guidance",
+          "Rare vintages"
+        ]
       },
       {
         "title": "🎊 Private Dining",
         "description": "Exclusive room for special occasions",
-        "features": ["Up to 20 guests", "Custom menus", "Dedicated service team"]
+        "features": [
+          "Up to 20 guests",
+          "Custom menus",
+          "Dedicated service team"
+        ]
       }
     ]
   },
@@ -173,7 +215,7 @@
     }
   },
   "contact": {
-    "title": "Reservations", 
+    "title": "Reservations",
     "subtitle": "Book your extraordinary dining experience",
     "phone": "(555) 987-6543",
     "email": "reservations@lejardin.com",
@@ -233,10 +275,22 @@
   },
   "stats": {
     "items": [
-      {"number": "⭐⭐⭐", "label": "Michelin Recognition"},
-      {"number": "4.9", "label": "Guest Rating"},
-      {"number": "50+", "label": "Local Farms"},
-      {"number": "500+", "label": "Wine Selection"}
+      {
+        "number": "⭐⭐⭐",
+        "label": "Michelin Recognition"
+      },
+      {
+        "number": "4.9",
+        "label": "Guest Rating"
+      },
+      {
+        "number": "50+",
+        "label": "Local Farms"
+      },
+      {
+        "number": "500+",
+        "label": "Wine Selection"
+      }
     ]
   },
   "team": {
@@ -249,48 +303,116 @@
         "bio": "Trained under three Michelin-starred chefs in Paris and Lyon, Chef Alexandre combines classical French technique with modern innovation.",
         "image": "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=400&q=80",
         "imageAlt": "Chef Alexandre Dubois",
-        "credentials": ["Le Cordon Bleu Paris", "James Beard Award Winner", "3-Star Michelin Experience"]
+        "credentials": [
+          "Le Cordon Bleu Paris",
+          "James Beard Award Winner",
+          "3-Star Michelin Experience"
+        ]
       }
     ]
   },
   "process": {
     "title": "Your Evening at Le Jardin",
     "steps": [
-      {"title": "Reserve in Advance", "description": "Book 2-4 weeks ahead for preferred dates"},
-      {"title": "Arrive & Aperitif", "description": "Begin with champagne in our lounge"},
-      {"title": "8-Course Journey", "description": "Experience culinary artistry course by course"},
-      {"title": "After-Dinner Service", "description": "Petit fours and digestifs to conclude"}
+      {
+        "title": "Reserve in Advance",
+        "description": "Book 2-4 weeks ahead for preferred dates"
+      },
+      {
+        "title": "Arrive & Aperitif",
+        "description": "Begin with champagne in our lounge"
+      },
+      {
+        "title": "8-Course Journey",
+        "description": "Experience culinary artistry course by course"
+      },
+      {
+        "title": "After-Dinner Service",
+        "description": "Petit fours and digestifs to conclude"
+      }
     ]
   },
   "credentials": {
     "title": "Recognition & Awards",
     "items": [
-      {"icon": "⭐", "name": "Michelin Recognition", "description": "2023 Distinction"},
-      {"icon": "🏆", "name": "James Beard Award", "description": "Outstanding Chef"},
-      {"icon": "🍷", "name": "Wine Spectator", "description": "Grand Award"},
-      {"icon": "📰", "name": "NY Times", "description": "Four Stars"}
+      {
+        "icon": "⭐",
+        "name": "Michelin Recognition",
+        "description": "2023 Distinction"
+      },
+      {
+        "icon": "🏆",
+        "name": "James Beard Award",
+        "description": "Outstanding Chef"
+      },
+      {
+        "icon": "🍷",
+        "name": "Wine Spectator",
+        "description": "Grand Award"
+      },
+      {
+        "icon": "📰",
+        "name": "NY Times",
+        "description": "Four Stars"
+      }
     ]
   },
   "faq": {
     "title": "Planning Your Visit",
     "items": [
-      {"question": "How far in advance should I book?", "answer": "We recommend reserving 2-4 weeks in advance, especially for weekend evenings and special occasions. Walk-ins are rarely available."},
-      {"question": "What is the dress code?", "answer": "Business casual to formal attire. We kindly ask that guests refrain from wearing shorts, sandals, or athletic wear."},
-      {"question": "Can you accommodate dietary restrictions?", "answer": "Absolutely. Please inform us of any allergies or dietary preferences when booking. Chef Alexandre will create a personalized menu for you."},
-      {"question": "How long is the tasting menu experience?", "answer": "Plan for approximately 3.5 hours. This allows time to savor each course and enjoy the full experience at a relaxed pace."},
-      {"question": "Is there a cancellation policy?", "answer": "Yes, we require 48 hours notice for cancellations. Late cancellations or no-shows will be charged $75 per person."},
-      {"question": "Do you offer private dining?", "answer": "Yes, our private dining room accommodates up to 20 guests. Custom menus available. Please contact us at least 3 weeks in advance."},
-      {"question": "Are children welcome?", "answer": "We welcome guests of all ages who can appreciate a 3.5 hour fine dining experience. Please note our menu is designed for adult palates."},
-      {"question": "What is included in the wine pairing?", "answer": "Our sommelier selects 6-8 wines to complement each course, typically 2-3oz pours. We offer both classic and premium pairing options."}
+      {
+        "question": "How far in advance should I book?",
+        "answer": "We recommend reserving 2-4 weeks in advance, especially for weekend evenings and special occasions. Walk-ins are rarely available."
+      },
+      {
+        "question": "What is the dress code?",
+        "answer": "Business casual to formal attire. We kindly ask that guests refrain from wearing shorts, sandals, or athletic wear."
+      },
+      {
+        "question": "Can you accommodate dietary restrictions?",
+        "answer": "Absolutely. Please inform us of any allergies or dietary preferences when booking. Chef Alexandre will create a personalized menu for you."
+      },
+      {
+        "question": "How long is the tasting menu experience?",
+        "answer": "Plan for approximately 3.5 hours. This allows time to savor each course and enjoy the full experience at a relaxed pace."
+      },
+      {
+        "question": "Is there a cancellation policy?",
+        "answer": "Yes, we require 48 hours notice for cancellations. Late cancellations or no-shows will be charged $75 per person."
+      },
+      {
+        "question": "Do you offer private dining?",
+        "answer": "Yes, our private dining room accommodates up to 20 guests. Custom menus available. Please contact us at least 3 weeks in advance."
+      },
+      {
+        "question": "Are children welcome?",
+        "answer": "We welcome guests of all ages who can appreciate a 3.5 hour fine dining experience. Please note our menu is designed for adult palates."
+      },
+      {
+        "question": "What is included in the wine pairing?",
+        "answer": "Our sommelier selects 6-8 wines to complement each course, typically 2-3oz pours. We offer both classic and premium pairing options."
+      }
     ]
   },
   "footer": {
     "text": "🍷 Le Jardin • Fine Dining Excellence",
     "links": [
-      {"label": "Privacy Policy", "href": "#privacy"},
-      {"label": "Cancellation Policy", "href": "#cancellation"},
-      {"label": "Press Kit", "href": "#press"},
-      {"label": "Gift Certificates", "href": "#gifts"}
+      {
+        "label": "Privacy Policy",
+        "href": "#privacy"
+      },
+      {
+        "label": "Cancellation Policy",
+        "href": "#cancellation"
+      },
+      {
+        "label": "Press Kit",
+        "href": "#press"
+      },
+      {
+        "label": "Gift Certificates",
+        "href": "#gifts"
+      }
     ],
     "awards": [
       "Michelin Recognition 2023",
@@ -309,4 +431,3 @@
   "productsTitle": "Tasting Menus & Experiences",
   "productsSubtitle": "Curated seasonal journeys by Chef Alexandre"
 }
-

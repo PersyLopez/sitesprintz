@@ -39,8 +39,8 @@ export class EmailService {
 
     // Dependency injection for testability
     this.providers = {
-      resend: deps.resend || this.initializeResend(),
-      smtp: deps.nodemailer || this.initializeNodemailer()
+      resend: deps.resend !== undefined ? deps.resend : this.initializeResend(),
+      smtp: deps.nodemailer !== undefined ? deps.nodemailer : this.initializeNodemailer()
     };
 
     this.queue = deps.queue || null;

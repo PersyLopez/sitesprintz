@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from '../../hooks/useToast';
-import { get, post, put, delete as deleteAPI } from '../../utils/api';
+import { get, post, put, del as deleteAPI } from '../../utils/api';
 import './ServiceManager.css';
 
 const ServiceManager = ({ userId, onRefresh }) => {
   const { showSuccess, showError } = useToast();
-  
+
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // Modal states
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(false); // data-testid added to modal overlay later
   const [editingService, setEditingService] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingService, setDeletingService] = useState(null);
-  
+
   // Form state
   const [formData, setFormData] = useState({
     name: '',
@@ -51,21 +51,23 @@ const ServiceManager = ({ userId, onRefresh }) => {
   };
 
   const validateForm = () => {
+    console.log('Validating form:', formData);
     const errors = {};
-    
+
     if (!formData.name || formData.name.trim() === '') {
       errors.name = 'Service name is required';
     }
-    
+
     if (!formData.duration_minutes || formData.duration_minutes <= 0) {
       errors.duration_minutes = 'Duration must be greater than 0';
     }
-    
+
     if (!formData.price_cents || formData.price_cents < 0) {
       errors.price_cents = 'Price must be 0 or greater';
     }
-    
+
     setFormErrors(errors);
+    console.log('Validation errors:', errors);
     return Object.keys(errors).length === 0;
   };
 
@@ -82,6 +84,7 @@ const ServiceManager = ({ userId, onRefresh }) => {
     });
     setFormErrors({});
     setShowModal(true);
+    // data-testid for add service button handled in JSX
   };
 
   const handleOpenEditModal = (service) => {
@@ -115,7 +118,7 @@ const ServiceManager = ({ userId, onRefresh }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -123,7 +126,7 @@ const ServiceManager = ({ userId, onRefresh }) => {
     try {
       // Convert price from dollars to cents
       const priceInCents = Math.round(parseFloat(formData.price_cents) * 100);
-      
+
       const serviceData = {
         name: formData.name,
         description: formData.description,
@@ -200,6 +203,7 @@ const ServiceManager = ({ userId, onRefresh }) => {
           />
           <button
             className="add-service-btn"
+            data-testid="add-service-btn"
             onClick={handleOpenAddModal}
           >
             ➕ Add Service
@@ -208,7 +212,7 @@ const ServiceManager = ({ userId, onRefresh }) => {
       </div>
 
       {loading && <div className="loading">Loading services...</div>}
-      
+
       {error && <div className="error-message">{error}</div>}
 
       {!loading && !error && filteredServices.length === 0 && searchTerm === '' && (
@@ -232,15 +236,18 @@ const ServiceManager = ({ userId, onRefresh }) => {
             <div key={service.id} className="service-card">
               <div className="service-card-header">
                 <h3>{service.name}</h3>
-                <span className={`status-badge ${service.online_booking_enabled ? 'active' : 'inactive'}`}>
+                <span
+                  className={`status-badge ${service.online_booking_enabled ? 'active' : 'inactive'}`}
+                  data-testid="service-status-badge"
+                >
                   {service.online_booking_enabled ? 'Active' : 'Inactive'}
                 </span>
               </div>
-              
+
               {service.description && (
                 <p className="service-description">{service.description}</p>
               )}
-              
+
               <div className="service-details">
                 <div className="service-detail">
                   <span className="detail-label">Duration:</span>
@@ -261,6 +268,7 @@ const ServiceManager = ({ userId, onRefresh }) => {
               <div className="service-actions">
                 <button
                   className="edit-btn"
+                  data-testid="edit-btn"
                   onClick={() => handleOpenEditModal(service)}
                   aria-label="Edit"
                 >
@@ -268,6 +276,7 @@ const ServiceManager = ({ userId, onRefresh }) => {
                 </button>
                 <button
                   className="delete-btn"
+                  data-testid="delete-btn"
                   onClick={() => handleOpenDeleteConfirm(service)}
                   aria-label="Delete"
                 >
@@ -281,9 +290,9 @@ const ServiceManager = ({ userId, onRefresh }) => {
 
       {/* Add/Edit Modal */}
       {showModal && (
-        <div className="modal-overlay" onClick={handleCloseModal}>
-          <div 
-            className="modal-content" 
+        <div className="modal-overlay" data-testid="service-modal" onClick={handleCloseModal}>
+          <div
+            className="modal-content"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -300,6 +309,7 @@ const ServiceManager = ({ userId, onRefresh }) => {
                   type="text"
                   id="name"
                   name="name"
+                  data-testid="service-name"
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="e.g., Haircut, Massage, Consultation"
@@ -312,6 +322,7 @@ const ServiceManager = ({ userId, onRefresh }) => {
                 <textarea
                   id="description"
                   name="description"
+                  data-testid="service-description"
                   value={formData.description}
                   onChange={handleChange}
                   placeholder="Brief description of the service"
@@ -326,6 +337,7 @@ const ServiceManager = ({ userId, onRefresh }) => {
                     type="number"
                     id="duration_minutes"
                     name="duration_minutes"
+                    data-testid="service-duration"
                     value={formData.duration_minutes}
                     onChange={handleChange}
                     placeholder="30"
@@ -340,6 +352,7 @@ const ServiceManager = ({ userId, onRefresh }) => {
                     type="number"
                     id="price_cents"
                     name="price_cents"
+                    data-testid="service-price"
                     value={formData.price_cents}
                     onChange={handleChange}
                     placeholder="30.00"
@@ -396,7 +409,7 @@ const ServiceManager = ({ userId, onRefresh }) => {
                 <button type="button" className="cancel-btn" onClick={handleCloseModal}>
                   Cancel
                 </button>
-                <button type="submit" className="save-btn">
+                <button type="submit" className="save-btn" data-testid="save-service-button" onClick={() => console.log('Save button clicked')}>
                   Save
                 </button>
               </div>
@@ -407,9 +420,9 @@ const ServiceManager = ({ userId, onRefresh }) => {
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="modal-overlay" onClick={handleCancelDelete}>
-          <div 
-            className="modal-content small-modal" 
+        <div className="modal-overlay" data-testid="delete-confirm-modal" onClick={handleCancelDelete}>
+          <div
+            className="modal-content small-modal"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"

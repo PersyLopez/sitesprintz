@@ -46,6 +46,8 @@ model appointments {
   @@index([start_time], map: "idx_appointments_start_time")
   @@index([status], map: "idx_appointments_status")
   @@index([tenant_id], map: "idx_appointments_tenant")
+  @@index([confirmation_code], map: "idx_appointments_code")
+  @@index([staff_id, start_time], map: "idx_appointments_staff_time")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -66,6 +68,7 @@ model booking_availability_rules {
   @@index([day_of_week], map: "idx_availability_day")
   @@index([staff_id], map: "idx_availability_staff")
   @@index([tenant_id], map: "idx_availability_tenant")
+  @@index([staff_id], map: "idx_booking_availability_staff")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -145,7 +148,6 @@ model booking_staff {
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model booking_tenants {
   id                         String                       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user_id                    Int?                         @unique
   site_id                    String?                      @db.VarChar(255)
   business_name              String                       @db.VarChar(255)
   business_type              String?                      @db.VarChar(100)
@@ -159,6 +161,7 @@ model booking_tenants {
   status                     String?                      @default("active") @db.VarChar(20)
   created_at                 DateTime?                    @default(now()) @db.Timestamp(6)
   updated_at                 DateTime?                    @default(now()) @db.Timestamp(6)
+  user_id                    String?                      @db.Uuid
   appointments               appointments[]
   booking_availability_rules booking_availability_rules[]
   booking_notifications      booking_notifications[]
@@ -168,7 +171,6 @@ model booking_tenants {
   users                      users?                       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([site_id], map: "idx_booking_tenants_site")
-  @@index([user_id], map: "idx_booking_tenants_user")
 }
 
 model pricing {
@@ -183,7 +185,6 @@ model pricing {
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model sites {
   id              String            @id @db.VarChar(255)
-  user_id         Int?
   subdomain       String            @unique @db.VarChar(255)
   template_id     String?           @db.VarChar(255)
   status          String?           @default("draft") @db.VarChar(50)
@@ -196,8 +197,9 @@ model sites {
   is_public       Boolean           @default(false)
   is_featured     Boolean?          @default(false)
   view_count      Int?              @default(0)
+  user_id         String?           @db.Uuid
   booking_tenants booking_tenants[]
-  users           users?            @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users           users?            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   submissions     submissions[]
 }
 
@@ -212,19 +214,78 @@ model submissions {
 }
 
 model users {
-  id                  Int              @id @default(autoincrement())
-  email               String           @unique @db.VarChar(255)
-  password_hash       String           @db.VarChar(255)
-  role                String?          @default("user") @db.VarChar(50)
-  status              String?          @default("active") @db.VarChar(50)
-  subscription_status String?          @db.VarChar(50)
-  subscription_plan   String?          @db.VarChar(50)
-  created_at          DateTime?        @default(now()) @db.Timestamp(6)
-  last_login          DateTime?        @db.Timestamp(6)
-  google_id           String?          @unique @db.VarChar(255)
+  email               String            @unique @db.VarChar(255)
+  password_hash       String            @db.VarChar(255)
+  role                String?           @default("user") @db.VarChar(50)
+  status              String?           @default("active") @db.VarChar(50)
+  subscription_status String?           @db.VarChar(50)
+  subscription_plan   String?           @db.VarChar(50)
+  created_at          DateTime?         @default(now()) @db.Timestamp(6)
+  last_login          DateTime?         @db.Timestamp(6)
+  google_id           String?           @unique @db.VarChar(255)
   picture             String?
-  booking_tenants     booking_tenants?
+  id                  String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  booking_tenants     booking_tenants[]
   sites               sites[]
 
   @@index([google_id], map: "idx_users_google_id")
+}
+
+model menu_items {
+  id            Int       @id @default(autoincrement())
+  subdomain     String    @db.VarChar(255)
+  name          String    @db.VarChar(255)
+  description   String?
+  price         Decimal   @db.Decimal(10, 2)
+  category      String?   @default("Uncategorized") @db.VarChar(100)
+  image         String?
+  display_order Int?      @default(0)
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  updated_at    DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([subdomain], map: "idx_menu_items_subdomain")
+}
+
+model services {
+  id              Int               @id @default(autoincrement())
+  subdomain       String            @db.VarChar(255)
+  name            String            @db.VarChar(255)
+  description     String?
+  duration        Int?
+  price           Decimal?          @db.Decimal(10, 2)
+  category        String?           @default("Services") @db.VarChar(100)
+  display_order   Int?              @default(0)
+  created_at      DateTime?         @default(now()) @db.Timestamp(6)
+  updated_at      DateTime?         @default(now()) @db.Timestamp(6)
+  service_pricing service_pricing[]
+
+  @@index([subdomain], map: "idx_services_subdomain")
+}
+
+model service_pricing {
+  id          Int       @id @default(autoincrement())
+  service_id  Int
+  tier        String    @db.VarChar(50)
+  price       Decimal   @db.Decimal(10, 2)
+  duration    Int?
+  description String?
+  services    services  @relation(fields: [service_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([service_id], map: "idx_service_pricing_service")
+}
+
+model products {
+  id            Int       @id @default(autoincrement())
+  subdomain     String    @db.VarChar(255)
+  name          String    @db.VarChar(255)
+  description   String?
+  price         Decimal   @db.Decimal(10, 2)
+  inventory     Int       @default(0)
+  images        Json?
+  variants      Json?
+  display_order Int?      @default(0)
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  updated_at    DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([subdomain], map: "idx_products_subdomain")
 }

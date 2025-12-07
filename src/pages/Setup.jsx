@@ -16,7 +16,7 @@ function Setup() {
   const [searchParams] = useSearchParams();
   const { siteData, loadTemplate, saveDraft, lastSaved } = useSite();
   const { showError, showSuccess } = useToast();
-  
+
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showPublishModal, setShowPublishModal] = useState(false);
@@ -24,9 +24,17 @@ function Setup() {
   const [selectedLayout, setSelectedLayout] = useState(null);
   const [baseTemplate, setBaseTemplate] = useState(null);
 
+  // Calculate progress percentage
+  const progressPercentage = () => {
+    if (!siteData.template) return 0;
+    if (!siteData.businessName) return 33;
+    if (!siteData.tagline) return 66;
+    return 100;
+  };
+
   useEffect(() => {
     loadTemplates();
-    
+
     // Load existing site if ID provided
     const siteId = searchParams.get('site');
     if (siteId) {
@@ -37,7 +45,8 @@ function Setup() {
   const loadTemplates = async () => {
     try {
       const templateData = await templatesService.getTemplates();
-      setTemplates(templateData);
+      // content is wrapped in { templates: [...] }
+      setTemplates(templateData.templates || templateData || []);
     } catch (error) {
       showError('Failed to load templates');
     } finally {
@@ -47,14 +56,14 @@ function Setup() {
 
   const handleTemplateSelect = async (template) => {
     const templateId = template.id || template.template;
-    
+
     // Check if this template has layout variations
     if (hasLayouts(templateId)) {
       // Set base template and show layout selector
       setBaseTemplate(templateId);
       const layoutConfig = getLayoutsForTemplate(templateId);
       setSelectedLayout(layoutConfig.defaultLayout);
-      
+
       // Load the default layout
       const fullTemplateId = `${templateId}-${layoutConfig.defaultLayout}`;
       const layoutTemplate = await templatesService.getTemplate(fullTemplateId);
@@ -65,16 +74,17 @@ function Setup() {
       setSelectedLayout(null);
       loadTemplate(template);
     }
-    
+
     setActiveTab('editor');
+    showSuccess(`✨ ${template.name || template.businessName} template selected!`);
   };
-  
+
   const handleLayoutChange = async (layoutKey) => {
     if (!baseTemplate) return;
-    
+
     setSelectedLayout(layoutKey);
     const fullTemplateId = `${baseTemplate}-${layoutKey}`;
-    
+
     try {
       const layoutTemplate = await templatesService.getTemplate(fullTemplateId);
       loadTemplate(layoutTemplate);
@@ -95,31 +105,39 @@ function Setup() {
   return (
     <div className="setup-page">
       <Header />
-      
+
+      {/* Progress Bar */}
+      <div className="progress-bar">
+        <div
+          className="progress-fill"
+          style={{ width: `${progressPercentage()}%` }}
+        />
+      </div>
+
       <div className="setup-header">
         <div className="setup-title">
-          <h1>{siteData.businessName || 'Create Your Website'}</h1>
-          <p>{siteData.template ? `Template: ${siteData.template}` : 'Select a template to get started'}</p>
+          <h1>{siteData.businessName || '✨ Create Your Amazing Website'}</h1>
+          <p>{siteData.template ? `Template: ${siteData.template}` : 'Choose a stunning template to get started'}</p>
         </div>
-        
+
         <div className="setup-actions">
           {lastSaved && (
             <span className="last-saved">
-              Last saved: {lastSaved.toLocaleTimeString()}
+              💾 Last saved: {lastSaved.toLocaleTimeString()}
             </span>
           )}
-          <button 
+          <button
             onClick={() => saveDraft()}
-            className="btn btn-secondary"
+            className="btn btn-secondary btn-glow"
           >
             💾 Save Draft
           </button>
-          <button 
+          <button
             onClick={handlePublish}
-            className="btn btn-primary"
+            className="btn btn-primary btn-glow"
             disabled={!siteData.template}
           >
-            🚀 Publish
+            🚀 Publish Site
           </button>
         </div>
       </div>
@@ -127,25 +145,25 @@ function Setup() {
       <div className="setup-container">
         {/* Mobile tabs */}
         <div className="mobile-tabs">
-          <button 
+          <button
             className={`mobile-tab ${activeTab === 'templates' ? 'active' : ''}`}
             onClick={() => setActiveTab('templates')}
           >
-            Templates
+            🎨 Templates
           </button>
-          <button 
+          <button
             className={`mobile-tab ${activeTab === 'editor' ? 'active' : ''}`}
             onClick={() => setActiveTab('editor')}
             disabled={!siteData.template}
           >
-            Editor
+            ✏️ Editor
           </button>
-          <button 
+          <button
             className={`mobile-tab ${activeTab === 'preview' ? 'active' : ''}`}
             onClick={() => setActiveTab('preview')}
             disabled={!siteData.template}
           >
-            Preview
+            👀 Preview
           </button>
         </div>
 
@@ -154,16 +172,16 @@ function Setup() {
           {/* Templates Panel */}
           <div className={`setup-panel templates-panel ${activeTab === 'templates' ? 'active' : ''}`}>
             <div className="panel-header">
-              <h2>Choose Template</h2>
+              <h2>🎨 Choose Your Template</h2>
             </div>
             <div className="panel-content">
               {loading ? (
                 <div className="panel-loading">
                   <div className="loading-spinner"></div>
-                  <p>Loading templates...</p>
+                  <p>Loading amazing templates...</p>
                 </div>
               ) : (
-                <TemplateGrid 
+                <TemplateGrid
                   templates={templates}
                   selectedTemplate={siteData.template}
                   onSelect={handleTemplateSelect}
@@ -175,7 +193,7 @@ function Setup() {
           {/* Editor Panel */}
           <div className={`setup-panel editor-panel ${activeTab === 'editor' ? 'active' : ''}`}>
             <div className="panel-header">
-              <h2>Edit Content</h2>
+              <h2>✏️ Customize Your Content</h2>
             </div>
             <div className="panel-content">
               {siteData.template ? (
@@ -192,7 +210,8 @@ function Setup() {
                 </>
               ) : (
                 <div className="panel-empty">
-                  <p>👈 Select a template to start editing</p>
+                  <div className="empty-icon">🎨</div>
+                  <p>👈 Select a template from the left to start customizing your website</p>
                 </div>
               )}
             </div>
@@ -201,14 +220,15 @@ function Setup() {
           {/* Preview Panel */}
           <div className={`setup-panel preview-panel ${activeTab === 'preview' ? 'active' : ''}`}>
             <div className="panel-header">
-              <h2>Live Preview</h2>
+              <h2>👀 Live Preview</h2>
             </div>
             <div className="panel-content">
               {siteData.template ? (
                 <PreviewFrame siteData={siteData} />
               ) : (
                 <div className="panel-empty">
-                  <p>Preview will appear here</p>
+                  <div className="empty-icon">🖼️</div>
+                  <p>Your live preview will appear here once you select a template</p>
                 </div>
               )}
             </div>
@@ -217,7 +237,7 @@ function Setup() {
       </div>
 
       {showPublishModal && (
-        <PublishModal 
+        <PublishModal
           siteData={siteData}
           onClose={() => setShowPublishModal(false)}
         />

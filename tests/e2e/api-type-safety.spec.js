@@ -6,7 +6,7 @@
 import { test, expect } from '@playwright/test';
 
 const API_URL = process.env.VITE_API_URL || 'http://localhost:3000';
-const BASE_URL = process.env.VITE_APP_URL || 'http://localhost:5173';
+const BASE_URL = process.env.VITE_APP_URL || 'http://localhost:3000';
 
 test.describe('API Type Safety', () => {
   let authToken;

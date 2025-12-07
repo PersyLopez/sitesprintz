@@ -7,28 +7,51 @@
     "email": "help@quickfix.repair"
   },
   "themeVars": {
-    "color-primary": "#06b6d4",
-    "color-accent": "#22d3ee",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#3b82f6",
+    "color-primary-light": "#60a5fa",
+    "color-accent": "#ec4899",
+    "color-bg": "#0F172A",
+    "color-surface": "rgba(30, 41, 59, 0.5)",
+    "color-card": "rgba(30, 41, 59, 0.3)",
+    "color-text": "#f1f5f9",
+    "color-muted": "#94a3b8"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "Devices", "href": "#about"},
-    {"label": "Reviews", "href": "#testimonials"},
-    {"label": "Contact", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "Devices",
+      "href": "#about"
+    },
+    {
+      "label": "Reviews",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "📱 Fast Phone Repair",
     "title": "Cracked screen? We'll fix it today",
     "subtitle": "Same-day repairs for iPhone and Android. Most repairs done in 30-60 minutes while you wait. Walk-ins welcome! Lifetime warranty on all parts. Get your phone back to perfect condition.",
     "cta": [
-      {"label": "Book Repair", "href": "#contact"},
-      {"label": "View Prices", "href": "#products", "variant": "secondary"}
+      {
+        "label": "Book Repair",
+        "href": "#contact"
+      },
+      {
+        "label": "View Prices",
+        "href": "#products",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1556656793-08538906a9f8?w=1200&q=80",
-    "imageAlt": "Technician repairing smartphone"
+    "imageAlt": "Technician repairing smartphone",
+    "layout": "split"
   },
   "about": {
     "title": "Expert Phone Repair",
@@ -135,7 +158,11 @@
         "bio": "10+ years repairing smartphones. Certified by Apple and Samsung. Completed over 5,000 successful repairs with a 99% customer satisfaction rate.",
         "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
         "imageAlt": "Carlos Rodriguez",
-        "credentials": ["Apple Certified", "Samsung Certified", "10+ Years Experience"]
+        "credentials": [
+          "Apple Certified",
+          "Samsung Certified",
+          "10+ Years Experience"
+        ]
       }
     ]
   },
@@ -143,18 +170,42 @@
     "title": "Repair Process",
     "subtitle": "Simple and fast",
     "steps": [
-      {"title": "Walk In or Book", "description": "Stop by or schedule online. We're usually ready right away"},
-      {"title": "Free Diagnostic", "description": "We'll examine your device and provide a quote"},
-      {"title": "Quick Repair", "description": "Most repairs done in 30-60 minutes while you wait"},
-      {"title": "Quality Check", "description": "Test everything before returning your device"}
+      {
+        "title": "Walk In or Book",
+        "description": "Stop by or schedule online. We're usually ready right away"
+      },
+      {
+        "title": "Free Diagnostic",
+        "description": "We'll examine your device and provide a quote"
+      },
+      {
+        "title": "Quick Repair",
+        "description": "Most repairs done in 30-60 minutes while you wait"
+      },
+      {
+        "title": "Quality Check",
+        "description": "Test everything before returning your device"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "5,000+", "label": "Phones Repaired"},
-      {"number": "30-60", "label": "Minutes Average"},
-      {"number": "4.9", "label": "Star Rating"},
-      {"number": "Lifetime", "label": "Warranty"}
+      {
+        "number": "5,000+",
+        "label": "Phones Repaired"
+      },
+      {
+        "number": "30-60",
+        "label": "Minutes Average"
+      },
+      {
+        "number": "4.9",
+        "label": "Star Rating"
+      },
+      {
+        "number": "Lifetime",
+        "label": "Warranty"
+      }
     ]
   },
   "contact": {

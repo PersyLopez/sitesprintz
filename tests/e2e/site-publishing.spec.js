@@ -5,7 +5,7 @@
 
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = process.env.VITE_APP_URL || 'http://localhost:5173';
+const BASE_URL = process.env.VITE_APP_URL || 'http://localhost:3000';
 const API_URL = process.env.VITE_API_URL || 'http://localhost:3000';
 
 test.describe('Site Publishing', () => {
@@ -109,7 +109,7 @@ test.describe('Site Publishing', () => {
     });
     
     // Try to access published site
-    const publishedUrl = `http://${sub}.localhost:5173`;
+    const publishedUrl = `http://${sub}.localhost:3000`;
     await page.goto(publishedUrl).catch(() => {});
     await page.waitForTimeout(1000);
     

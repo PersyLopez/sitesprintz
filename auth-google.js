@@ -6,7 +6,7 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import jwt from 'jsonwebtoken';
-import { query as dbQuery } from './database/db.js';
+import { prisma } from './database/db.js';
 import crypto from 'crypto';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this';
@@ -31,99 +31,93 @@ export function configureGoogleAuth() {
     callbackURL: GOOGLE_CALLBACK_URL,
     passReqToCallback: true
   },
-  async function(req, accessToken, refreshToken, profile, done) {
-    try {
-      const email = profile.emails[0].value;
-      const name = profile.displayName;
-      const googleId = profile.id;
-      const picture = profile.photos[0]?.value;
+    async function (req, accessToken, refreshToken, profile, done) {
+      try {
+        const email = profile.emails[0].value;
+        const name = profile.displayName;
+        const googleId = profile.id;
+        const picture = profile.photos[0]?.value;
 
-      // Check if user exists in database
-      let result = await dbQuery(
-        'SELECT * FROM users WHERE email = $1',
-        [email]
-      );
+        // Check if user exists in database
+        let user = await prisma.users.findUnique({
+          where: { email }
+        });
 
-      let user;
-      
-      if (result.rows.length > 0) {
-        // Existing user - update Google info if needed
-        user = result.rows[0];
-        
-        if (!user.google_id) {
-          await dbQuery(
-            'UPDATE users SET google_id = $1, picture = $2, last_login = NOW() WHERE email = $3',
-            [googleId, picture, email]
-          );
-          user.google_id = googleId;
-          user.picture = picture;
+        if (user) {
+          // Existing user - update Google info if needed
+          if (!user.google_id) {
+            user = await prisma.users.update({
+              where: { email },
+              data: {
+                google_id: googleId,
+                picture: picture,
+                last_login: new Date()
+              }
+            });
+          } else {
+            // Just update last login
+            user = await prisma.users.update({
+              where: { email },
+              data: {
+                last_login: new Date()
+              }
+            });
+          }
         } else {
-          // Just update last login
-          await dbQuery(
-            'UPDATE users SET last_login = NOW() WHERE email = $1',
-            [email]
-          );
+          // New user - create account in database
+          const userId = crypto.randomUUID();
+
+          // Set trial expiration to 7 days from now
+          const trialExpiration = new Date();
+          trialExpiration.setDate(trialExpiration.getDate() + 7);
+
+          user = await prisma.users.create({
+            data: {
+              id: userId,
+              email: email,
+              name: name,
+              google_id: googleId,
+              picture: picture,
+              role: 'user',
+              status: 'active',
+              subscription_status: 'trial',
+              subscription_plan: 'free',
+              trial_expires_at: trialExpiration,
+              auth_provider: 'google',
+              email_verified: true,
+              created_at: new Date(),
+              last_login: new Date()
+            }
+          });
+
+          console.log(`✅ New user created via Google: ${email}`);
         }
-      } else {
-        // New user - create account in database
-        const userId = crypto.randomUUID();
-        
-        // Set trial expiration to 7 days from now
-        const trialExpiration = new Date();
-        trialExpiration.setDate(trialExpiration.getDate() + 7);
-        
-        result = await dbQuery(
-          `INSERT INTO users (
-            id, email, name, google_id, picture, role, status,
-            subscription_status, subscription_plan, trial_expires_at,
-            auth_provider, email_verified, created_at, last_login
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW(), NOW())
-          RETURNING *`,
-          [
-            userId,
-            email,
-            name,
-            googleId,
-            picture,
-            'user',
-            'active',
-            'trial',
-            'free',
-            trialExpiration,
-            'google',
-            true
-          ]
-        );
-        
-        user = result.rows[0];
-        console.log(`✅ New user created via Google: ${email}`);
-      }
 
-      // Parse state parameter for plan and intent
-      const state = req.query.state || '';
-      const stateParts = state.split(',');
-      const plan = stateParts[0];
-      const intentPart = stateParts.find(p => p.startsWith('intent:'));
-      const intent = intentPart ? intentPart.split(':')[1] : null;
+        // Parse state parameter for plan and intent
+        const state = req.query.state || '';
+        const stateParts = state.split(',');
+        const plan = stateParts[0];
+        const intentPart = stateParts.find(p => p.startsWith('intent:'));
+        const intent = intentPart ? intentPart.split(':')[1] : null;
 
-      // Store plan and intent temporarily (for redirect logic)
-      if (plan && (plan === 'starter' || plan === 'pro')) {
-        user.pendingPlan = plan;
-      }
-      
-      if (intent) {
-        user.pendingIntent = intent;
-      }
+        // Store plan and intent temporarily (for redirect logic)
+        if (plan && (plan === 'starter' || plan === 'pro')) {
+          user.pendingPlan = plan;
+        }
 
-      return done(null, user);
-    } catch (error) {
-      console.error('Google OAuth error:', error);
-      return done(error, null);
-    }
-  });
-  
+        if (intent) {
+          user.pendingIntent = intent;
+        }
+
+        return done(null, user);
+      } catch (error) {
+        console.error('Google OAuth error:', error);
+        return done(error, null);
+      }
+    });
+
   passport.use(strategy);
-  
+
   console.log('✅ Google OAuth configured');
   console.log('📍 Callback URL:', GOOGLE_CALLBACK_URL);
   return true;
@@ -137,16 +131,16 @@ export function setupGoogleRoutes(app) {
   app.get('/auth/google', (req, res, next) => {
     const plan = req.query.plan;
     const intent = req.query.intent;
-    
+
     // Pass both plan and intent via state (comma-separated)
     let state = plan || 'free';
     if (intent) {
       state += `,intent:${intent}`;
     }
-    
+
     console.log('🚀 Initiating Google OAuth...');
     console.log('Callback URL:', process.env.GOOGLE_CALLBACK_URL);
-    
+
     passport.authenticate('google', {
       scope: ['profile', 'email'],
       state: state,
@@ -157,77 +151,78 @@ export function setupGoogleRoutes(app) {
   // Google OAuth callback
   app.get('/auth/google/callback', (req, res, next) => {
     console.log('🎯 CALLBACK HIT - Starting passport authentication...');
-    passport.authenticate('google', { 
+    passport.authenticate('google', {
       session: false,
-      failureRedirect: '/register.html?error=oauth_failed' 
+      failureRedirect: '/register.html?error=oauth_failed'
     }, (err, user, info) => {
       console.log('🎯 Passport authenticate callback fired');
       console.log('Error:', err);
       console.log('User:', user ? user.email : 'NO USER');
       console.log('Info:', info);
-      
+
       if (err) {
         console.error('❌ Passport authentication error:', err);
         return res.redirect('/register.html?error=auth_error');
       }
-      
+
       if (!user) {
         console.error('❌ No user returned from passport');
         return res.redirect('/register.html?error=no_user');
       }
-      
+
       req.user = user;
       next();
     })(req, res, next);
   }, (req, res) => {
-      try {
-        const user = req.user;
-        
-        console.log('🔥🔥🔥 OAUTH CALLBACK FIRED 🔥🔥🔥');
-        console.log('User email:', user.email);
-        console.log('User ID:', user.id);
-        console.log('User role:', user.role);
+    try {
+      const user = req.user;
 
-        // Generate JWT token
-        const token = jwt.sign(
-          { 
-            userId: user.id, 
-            email: user.email, 
-            role: user.role 
-          },
-          JWT_SECRET,
-          { expiresIn: '7d' }
-        );
-        
-        console.log('Token generated:', token.substring(0, 20) + '...');
+      console.log('🔥🔥🔥 OAUTH CALLBACK FIRED 🔥🔥🔥');
+      console.log('User email:', user.email);
+      console.log('User ID:', user.id);
+      console.log('User role:', user.role);
 
-        console.log('🔍 Checking redirect logic...');
-        console.log('Pending intent:', user.pendingIntent);
-        console.log('Pending plan:', user.pendingPlan);
-        
-        // Check if user came from publish flow
-        if (user.pendingIntent === 'publish') {
-          const redirectUrl = `/auto-publish.html?token=${token}`;
-          console.log('✅ REDIRECTING TO:', redirectUrl);
-          return res.redirect(redirectUrl);
-        }
-        // Check if user needs to be redirected to Stripe checkout
-        else if (user.pendingPlan && (user.pendingPlan === 'starter' || user.pendingPlan === 'pro')) {
-          const redirectUrl = `/register-success.html?token=${token}&plan=${user.pendingPlan}`;
-          console.log('✅ REDIRECTING TO:', redirectUrl);
-          return res.redirect(redirectUrl);
-        } else {
-          // Free trial - redirect directly to dashboard with token
-          const redirectUrl = `/dashboard.html?token=${token}`;
-          console.log('✅ REDIRECTING TO:', redirectUrl);
-          console.log('🚀 User should now land on dashboard!');
-          return res.redirect(redirectUrl);
-        }
-      } catch (error) {
-        console.error('❌ OAuth callback error:', error);
-        res.redirect('/register.html?error=auth_failed');
+      // Generate JWT token
+      const token = jwt.sign(
+        {
+          userId: user.id,
+          email: user.email,
+          role: user.role
+        },
+        JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+
+      console.log('Token generated:', token.substring(0, 20) + '...');
+
+      console.log('🔍 Checking redirect logic...');
+      console.log('Pending intent:', user.pendingIntent);
+      console.log('Pending plan:', user.pendingPlan);
+
+      // Check if user came from publish flow
+      if (user.pendingIntent === 'publish') {
+        const redirectUrl = `/auto-publish.html?token=${token}`;
+        console.log('✅ REDIRECTING TO:', redirectUrl);
+        return res.redirect(redirectUrl);
       }
+      // Check if user needs to be redirected to Stripe checkout
+      else if (user.pendingPlan && (user.pendingPlan === 'starter' || user.pendingPlan === 'pro')) {
+        const redirectUrl = `/register-success.html?token=${token}&plan=${user.pendingPlan}`;
+        console.log('✅ REDIRECTING TO:', redirectUrl);
+        return res.redirect(redirectUrl);
+      } else {
+        // Free trial - redirect to React OAuth callback handler
+        const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+        const redirectUrl = `${clientUrl}/oauth/callback?token=${token}`;
+        console.log('✅ REDIRECTING TO:', redirectUrl);
+        console.log('🚀 User should now land on React dashboard!');
+        return res.redirect(redirectUrl);
+      }
+    } catch (error) {
+      console.error('❌ OAuth callback error:', error);
+      res.redirect('/register.html?error=auth_failed');
     }
+  }
   );
 
   console.log('✅ Google OAuth routes configured');

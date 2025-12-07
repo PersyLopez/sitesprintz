@@ -7,19 +7,36 @@
     "email": "service@precisionautocare.com"
   },
   "themeVars": {
-    "color-primary": "#2563eb",
-    "color-primary-600": "#1d4ed8",
-    "color-accent": "#f97316",
-    "color-success": "#22c55e",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    { "label": "Services", "href": "#services" },
-    { "label": "Diagnostics", "href": "#pricing" },
-    { "label": "Fleet", "href": "#pages" },
-    { "label": "Testimonials", "href": "#testimonials" },
-    { "label": "Contact", "href": "#contact" }
+    {
+      "label": "Services",
+      "href": "#services"
+    },
+    {
+      "label": "Diagnostics",
+      "href": "#pricing"
+    },
+    {
+      "label": "Fleet",
+      "href": "#pages"
+    },
+    {
+      "label": "Testimonials",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "ASE-certified mechanics",
@@ -28,9 +45,17 @@
     "image": "assets/hero-placeholder.jpg",
     "imageAlt": "Mechanic inspecting a vehicle",
     "cta": [
-      { "label": "Schedule service", "href": "https://cal.com/precision-auto" },
-      { "label": "Call the shop", "href": "tel:+15559871234", "variant": "secondary" }
-    ]
+      {
+        "label": "Schedule service",
+        "href": "https://cal.com/precision-auto"
+      },
+      {
+        "label": "Call the shop",
+        "href": "tel:+15559871234",
+        "variant": "secondary"
+      }
+    ],
+    "layout": "split"
   },
   "services": {
     "title": "Complete auto repair",
@@ -85,19 +110,28 @@
         "name": "Digital Inspection + Oil Change",
         "description": "Full synthetic oil, filter, and 40-point inspection with photos.",
         "price": 89,
-        "cta": { "label": "Book now", "href": "https://cal.com/precision-auto" }
+        "cta": {
+          "label": "Book now",
+          "href": "https://cal.com/precision-auto"
+        }
       },
       {
         "name": "Brake Package",
         "description": "Pads, rotors, and fluid flush for most sedans and SUVs.",
         "price": 279,
-        "cta": { "label": "Check availability", "href": "#contact" }
+        "cta": {
+          "label": "Check availability",
+          "href": "#contact"
+        }
       },
       {
         "name": "Fleet PM Plan",
         "description": "Monthly maintenance for up to 10 vehicles with priority scheduling.",
         "price": 129,
-        "cta": { "label": "Enroll fleet", "href": "#contact" }
+        "cta": {
+          "label": "Enroll fleet",
+          "href": "#contact"
+        }
       }
     ]
   },

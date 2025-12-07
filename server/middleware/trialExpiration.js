@@ -6,7 +6,7 @@
  * Maintains backward compatibility with existing code
  */
 import { query as dbQuery } from '../../database/db.js';
-import { sendEmail, EmailTypes } from '../../email-service.js';
+import { sendEmail, EmailTypes } from '../utils/email-service-wrapper.js';
 import { trialService } from '../services/trialService.js';
 
 /**
@@ -20,7 +20,7 @@ import { trialService } from '../services/trialService.js';
 export async function checkTrialStatus(siteId) {
   try {
     const status = await trialService.checkSiteTrialStatus(siteId);
-    
+
     // Return format compatible with legacy code
     return {
       isExpired: status.isExpired,
@@ -42,13 +42,13 @@ export function requireActiveTrial(req, res, next) {
   if (req.user?.role === 'admin') {
     return next();
   }
-  
+
   const subdomain = req.params.subdomain || req.body.subdomain;
-  
+
   if (!subdomain) {
     return res.status(400).json({ error: 'Subdomain required' });
   }
-  
+
   dbQuery(`
     SELECT id, expires_at, plan
     FROM sites
@@ -58,10 +58,10 @@ export function requireActiveTrial(req, res, next) {
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Site not found' });
       }
-      
+
       const site = result.rows[0];
       const trialStatus = await checkTrialStatus(site.id);
-      
+
       if (trialStatus.isExpired) {
         return res.status(403).json({
           error: 'Trial expired',
@@ -69,7 +69,7 @@ export function requireActiveTrial(req, res, next) {
           code: 'TRIAL_EXPIRED'
         });
       }
-      
+
       // Add trial info to request for use in route handlers
       req.trialStatus = trialStatus;
       req.siteId = site.id;
@@ -99,9 +99,9 @@ export async function sendTrialExpirationWarnings() {
  */
 export async function deactivateExpiredTrials() {
   const result = await trialService.deactivateExpiredTrials();
-  
+
   console.log(`Deactivated ${result.deactivated} expired trial sites`);
-  
+
   // Return format compatible with legacy code
   return {
     deactivated: result.deactivated,

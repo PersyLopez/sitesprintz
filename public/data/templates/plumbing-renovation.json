@@ -7,28 +7,51 @@
     "email": "renovate@renovatepro.plumbing"
   },
   "themeVars": {
-    "color-primary": "#7c3aed",
-    "color-accent": "#a78bfa",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "Projects", "href": "#about"},
-    {"label": "Gallery", "href": "#testimonials"},
-    {"label": "Quote", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "Projects",
+      "href": "#about"
+    },
+    {
+      "label": "Gallery",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Quote",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "🔧 Remodeling Plumbing Specialists",
     "title": "Expert plumbing for your renovation",
     "subtitle": "Bathroom remodels, kitchen upgrades, and whole-home renovations. We work with contractors and homeowners to deliver quality plumbing that meets code. From design to final inspection - beautiful, functional results.",
     "cta": [
-      {"label": "Get Quote", "href": "#contact"},
-      {"label": "View Projects", "href": "#testimonials", "variant": "secondary"}
+      {
+        "label": "Get Quote",
+        "href": "#contact"
+      },
+      {
+        "label": "View Projects",
+        "href": "#testimonials",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1200&q=80",
-    "imageAlt": "Modern bathroom renovation"
+    "imageAlt": "Modern bathroom renovation",
+    "layout": "split"
   },
   "about": {
     "title": "Renovation Plumbing Experts",
@@ -135,7 +158,11 @@
         "bio": "Licensed Master Plumber specializing in remodeling projects for 15+ years. Works with contractors and homeowners to deliver beautiful, code-compliant plumbing systems.",
         "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
         "imageAlt": "Brian Foster",
-        "credentials": ["Master Plumber", "15+ Years Remodeling", "Licensed & Insured"]
+        "credentials": [
+          "Master Plumber",
+          "15+ Years Remodeling",
+          "Licensed & Insured"
+        ]
       }
     ]
   },
@@ -143,18 +170,42 @@
     "title": "Renovation Process",
     "subtitle": "From design to completion",
     "steps": [
-      {"title": "Design Consultation", "description": "Review plans and discuss fixture options and layouts"},
-      {"title": "Detailed Quote", "description": "Comprehensive estimate with timeline and specifications"},
-      {"title": "Rough-In Work", "description": "Install all supply and drain lines per code"},
-      {"title": "Fixture Installation", "description": "Install fixtures and complete final inspection"}
+      {
+        "title": "Design Consultation",
+        "description": "Review plans and discuss fixture options and layouts"
+      },
+      {
+        "title": "Detailed Quote",
+        "description": "Comprehensive estimate with timeline and specifications"
+      },
+      {
+        "title": "Rough-In Work",
+        "description": "Install all supply and drain lines per code"
+      },
+      {
+        "title": "Fixture Installation",
+        "description": "Install fixtures and complete final inspection"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "200+", "label": "Remodels Completed"},
-      {"number": "15+", "label": "Years Experience"},
-      {"number": "4.9", "label": "Client Rating"},
-      {"number": "Licensed", "label": "& Insured"}
+      {
+        "number": "200+",
+        "label": "Remodels Completed"
+      },
+      {
+        "number": "15+",
+        "label": "Years Experience"
+      },
+      {
+        "number": "4.9",
+        "label": "Client Rating"
+      },
+      {
+        "number": "Licensed",
+        "label": "& Insured"
+      }
     ]
   },
   "contact": {
@@ -183,4 +234,3 @@
   "productsTitle": "Renovation Plumbing",
   "productsSubtitle": "Quality work for your remodel"
 }
-

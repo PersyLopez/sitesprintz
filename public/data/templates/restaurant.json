@@ -1,38 +1,64 @@
 {
   "brand": {
-    "name": "Bella Vista", 
+    "name": "Bella Vista",
     "logo": "assets/logo.svg",
     "tagline": "Authentic Italian • Since 2008",
     "phone": "(555) 123-4567",
     "email": "info@bellavista.com"
   },
   "themeVars": {
-    "color-primary": "#d4af37", 
-    "color-accent": "#8b4513",
-    "color-success": "#228b22",
-    "color-warning": "#ff8c00",
-    "color-danger": "#dc143c"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Menu", "href": "#products"},
-    {"label": "About", "href": "#about"},
-    {"label": "Chef", "href": "#team"},
-    {"label": "Reviews", "href": "#reviews"},
-    {"label": "Contact", "href": "#contact"}
+    {
+      "label": "Menu",
+      "href": "#products"
+    },
+    {
+      "label": "About",
+      "href": "#about"
+    },
+    {
+      "label": "Chef",
+      "href": "#team"
+    },
+    {
+      "label": "Reviews",
+      "href": "#reviews"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "🍝 Authentic Italian Cuisine",
     "title": "Experience the flavors of Italy",
     "subtitle": "From our family recipes passed down through generations, we bring you authentic Italian dishes made with the finest ingredients. Join us for an unforgettable dining experience.",
     "cta": [
-      {"label": "🍕 View Menu", "href": "#menu"},
-      {"label": "📅 Make Reservation", "href": "#reservations", "variant": "secondary"}
+      {
+        "label": "🍕 View Menu",
+        "href": "#menu"
+      },
+      {
+        "label": "📅 Make Reservation",
+        "href": "#reservations",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=80",
-    "imageAlt": "Elegant Italian restaurant interior with warm lighting and beautiful table settings"
+    "imageAlt": "Elegant Italian restaurant interior with warm lighting and beautiful table settings",
+    "layout": "split"
   },
   "about": {
-    "title": "Our Story", 
+    "title": "Our Story",
     "body": "Founded in 2008 by Chef Marco Rossi, Bella Vista brings authentic Italian cuisine to the heart of the city. Our recipes have been passed down through three generations, originating from a small trattoria in Tuscany. Every dish is prepared with the same passion and attention to detail that has made Italian cuisine world-renowned.",
     "subtitle": "What makes us special",
     "features": [
@@ -105,22 +131,38 @@
       {
         "title": "🍽️ Dine In",
         "description": "Experience our cozy atmosphere with full table service",
-        "features": ["Full menu available", "Wine pairings", "Dessert menu"]
+        "features": [
+          "Full menu available",
+          "Wine pairings",
+          "Dessert menu"
+        ]
       },
       {
         "title": "🍕 Takeout",
         "description": "Order ahead and pick up your favorite dishes",
-        "features": ["Online ordering", "Quick pickup", "Hot and fresh"]
+        "features": [
+          "Online ordering",
+          "Quick pickup",
+          "Hot and fresh"
+        ]
       },
       {
         "title": "🚚 Delivery",
         "description": "Get our food delivered to your door",
-        "features": ["30-min delivery", "Contactless delivery", "Live tracking"]
+        "features": [
+          "30-min delivery",
+          "Contactless delivery",
+          "Live tracking"
+        ]
       },
       {
         "title": "📅 Private Events",
         "description": "Host your special occasions with us",
-        "features": ["Private dining room", "Custom menus", "Event planning"]
+        "features": [
+          "Private dining room",
+          "Custom menus",
+          "Event planning"
+        ]
       }
     ]
   },
@@ -173,7 +215,7 @@
     }
   },
   "contact": {
-    "title": "Visit Us", 
+    "title": "Visit Us",
     "subtitle": "We'd love to welcome you to Bella Vista",
     "phone": "(555) 123-4567",
     "email": "info@bellavista.com",
@@ -233,10 +275,22 @@
   },
   "stats": {
     "items": [
-      {"number": "15+", "label": "Years Serving"},
-      {"number": "4.8", "label": "Star Rating"},
-      {"number": "200+", "label": "Dishes Available"},
-      {"number": "50K+", "label": "Happy Guests"}
+      {
+        "number": "15+",
+        "label": "Years Serving"
+      },
+      {
+        "number": "4.8",
+        "label": "Star Rating"
+      },
+      {
+        "number": "200+",
+        "label": "Dishes Available"
+      },
+      {
+        "number": "50K+",
+        "label": "Happy Guests"
+      }
     ]
   },
   "team": {
@@ -249,48 +303,116 @@
         "bio": "Born in Florence, Chef Marco brings 20+ years of culinary expertise to Bella Vista. Trained in traditional Italian techniques, he ensures every dish meets the highest standards of authenticity.",
         "image": "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400&q=80",
         "imageAlt": "Chef Marco Rossi",
-        "credentials": ["Culinary Institute of Florence", "James Beard Nominee", "Michelin-Trained"]
+        "credentials": [
+          "Culinary Institute of Florence",
+          "James Beard Nominee",
+          "Michelin-Trained"
+        ]
       }
     ]
   },
   "process": {
     "title": "The Bella Vista Experience",
     "steps": [
-      {"title": "Make Reservation", "description": "Book your table online or call us for availability"},
-      {"title": "Arrive & Be Seated", "description": "Enjoy our warm ambiance and Italian hospitality"},
-      {"title": "Culinary Journey", "description": "Savor authentic dishes made with imported ingredients"},
-      {"title": "Dolce Vita", "description": "Complete your meal with espresso and traditional desserts"}
+      {
+        "title": "Make Reservation",
+        "description": "Book your table online or call us for availability"
+      },
+      {
+        "title": "Arrive & Be Seated",
+        "description": "Enjoy our warm ambiance and Italian hospitality"
+      },
+      {
+        "title": "Culinary Journey",
+        "description": "Savor authentic dishes made with imported ingredients"
+      },
+      {
+        "title": "Dolce Vita",
+        "description": "Complete your meal with espresso and traditional desserts"
+      }
     ]
   },
   "credentials": {
     "title": "What Sets Us Apart",
     "items": [
-      {"icon": "🍅", "name": "Authentic Ingredients", "description": "Imported from Italy"},
-      {"icon": "👨‍🍳", "name": "Family Recipes", "description": "3 generations"},
-      {"icon": "🔥", "name": "Wood-Fired Oven", "description": "Traditional methods"},
-      {"icon": "🍷", "name": "Wine Spectator Award", "description": "Excellence in wine"}
+      {
+        "icon": "🍅",
+        "name": "Authentic Ingredients",
+        "description": "Imported from Italy"
+      },
+      {
+        "icon": "👨‍🍳",
+        "name": "Family Recipes",
+        "description": "3 generations"
+      },
+      {
+        "icon": "🔥",
+        "name": "Wood-Fired Oven",
+        "description": "Traditional methods"
+      },
+      {
+        "icon": "🍷",
+        "name": "Wine Spectator Award",
+        "description": "Excellence in wine"
+      }
     ]
   },
   "faq": {
     "title": "Common Questions",
     "items": [
-      {"question": "Do you take reservations?", "answer": "Yes, we highly recommend reservations especially for weekends and holidays. You can book online through our website or call us at (555) 123-4567."},
-      {"question": "Do you accommodate dietary restrictions?", "answer": "Absolutely! We can modify most dishes for gluten-free, vegetarian, and vegan diets. Please inform your server of any allergies or dietary needs."},
-      {"question": "Is there parking available?", "answer": "Yes, we offer complimentary valet parking Tuesday-Saturday evenings. There's also street parking and a public garage one block away."},
-      {"question": "Do you host private events?", "answer": "Yes! Our private dining room accommodates up to 20 guests with custom menus available. Contact us at least 2 weeks in advance to plan your event."},
-      {"question": "What are your hours?", "answer": "We're closed Mondays. Tuesday-Thursday 5PM-10PM, Friday-Saturday 5PM-11PM, Sunday 4PM-9PM. Kitchen closes 30 minutes before restaurant."},
-      {"question": "Do you offer takeout or delivery?", "answer": "Yes, we offer takeout for most menu items. Call ahead to place your order. For delivery, we partner with major delivery services."},
-      {"question": "What is your wine selection like?", "answer": "We have an award-winning wine list featuring over 100 Italian wines, from Tuscany to Sicily. Our sommelier is happy to help with pairings."},
-      {"question": "Is the restaurant family-friendly?", "answer": "Yes! We welcome families and have a children's menu available. We recommend earlier dining times (before 7PM) for families with young children."}
+      {
+        "question": "Do you take reservations?",
+        "answer": "Yes, we highly recommend reservations especially for weekends and holidays. You can book online through our website or call us at (555) 123-4567."
+      },
+      {
+        "question": "Do you accommodate dietary restrictions?",
+        "answer": "Absolutely! We can modify most dishes for gluten-free, vegetarian, and vegan diets. Please inform your server of any allergies or dietary needs."
+      },
+      {
+        "question": "Is there parking available?",
+        "answer": "Yes, we offer complimentary valet parking Tuesday-Saturday evenings. There's also street parking and a public garage one block away."
+      },
+      {
+        "question": "Do you host private events?",
+        "answer": "Yes! Our private dining room accommodates up to 20 guests with custom menus available. Contact us at least 2 weeks in advance to plan your event."
+      },
+      {
+        "question": "What are your hours?",
+        "answer": "We're closed Mondays. Tuesday-Thursday 5PM-10PM, Friday-Saturday 5PM-11PM, Sunday 4PM-9PM. Kitchen closes 30 minutes before restaurant."
+      },
+      {
+        "question": "Do you offer takeout or delivery?",
+        "answer": "Yes, we offer takeout for most menu items. Call ahead to place your order. For delivery, we partner with major delivery services."
+      },
+      {
+        "question": "What is your wine selection like?",
+        "answer": "We have an award-winning wine list featuring over 100 Italian wines, from Tuscany to Sicily. Our sommelier is happy to help with pairings."
+      },
+      {
+        "question": "Is the restaurant family-friendly?",
+        "answer": "Yes! We welcome families and have a children's menu available. We recommend earlier dining times (before 7PM) for families with young children."
+      }
     ]
   },
   "footer": {
     "text": "🍝 Bella Vista • Authentic Italian Cuisine Since 2008",
     "links": [
-      {"label": "Privacy Policy", "href": "#privacy"},
-      {"label": "Terms of Service", "href": "#terms"},
-      {"label": "Careers", "href": "#careers"},
-      {"label": "Gift Cards", "href": "#giftcards"}
+      {
+        "label": "Privacy Policy",
+        "href": "#privacy"
+      },
+      {
+        "label": "Terms of Service",
+        "href": "#terms"
+      },
+      {
+        "label": "Careers",
+        "href": "#careers"
+      },
+      {
+        "label": "Gift Cards",
+        "href": "#giftcards"
+      }
     ],
     "awards": [
       "Best Italian Restaurant 2023",

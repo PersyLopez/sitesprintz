@@ -7,19 +7,36 @@
     "email": "service@brightsparkelectric.com"
   },
   "themeVars": {
-    "color-primary": "#f59e0b",
-    "color-primary-600": "#d97706",
-    "color-accent": "#2563eb",
-    "color-success": "#22c55e",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    { "label": "Services", "href": "#services" },
-    { "label": "Why Us", "href": "#about" },
-    { "label": "Testimonials", "href": "#testimonials" },
-    { "label": "Service Areas", "href": "#pages" },
-    { "label": "Contact", "href": "#contact" }
+    {
+      "label": "Services",
+      "href": "#services"
+    },
+    {
+      "label": "Why Us",
+      "href": "#about"
+    },
+    {
+      "label": "Testimonials",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Service Areas",
+      "href": "#pages"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "Licensed and insured electricians",
@@ -28,9 +45,17 @@
     "image": "assets/hero-placeholder.svg",
     "imageAlt": "Electrician working on a breaker panel",
     "cta": [
-      { "label": "Call for Service", "href": "tel:+15554327890" },
-      { "label": "Request a Quote", "href": "#contact", "variant": "secondary" }
-    ]
+      {
+        "label": "Call for Service",
+        "href": "tel:+15554327890"
+      },
+      {
+        "label": "Request a Quote",
+        "href": "#contact",
+        "variant": "secondary"
+      }
+    ],
+    "layout": "split"
   },
   "services": {
     "title": "Electrical services",
@@ -85,19 +110,28 @@
         "name": "Home Safety Check",
         "description": "Full inspection, load test, and smoke detector replacement.",
         "price": 149,
-        "cta": { "label": "Book inspection", "href": "#contact" }
+        "cta": {
+          "label": "Book inspection",
+          "href": "#contact"
+        }
       },
       {
         "name": "LED Lighting Package",
         "description": "Design consult plus installation of up to 12 fixtures.",
         "price": 689,
-        "cta": { "label": "Schedule install", "href": "#contact" }
+        "cta": {
+          "label": "Schedule install",
+          "href": "#contact"
+        }
       },
       {
         "name": "Commercial Service Plan",
         "description": "Quarterly maintenance with priority dispatch and reporting.",
         "price": 129,
-        "cta": { "label": "Join plan", "href": "#contact" }
+        "cta": {
+          "label": "Join plan",
+          "href": "#contact"
+        }
       }
     ]
   },

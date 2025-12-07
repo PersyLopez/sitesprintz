@@ -8,34 +8,46 @@ import StatsCard from '../components/analytics/StatsCard';
 import './Admin.css';
 
 function Admin() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const { showError, showSuccess } = useToast();
-  
+
+  console.log('Admin component rendered');
+
   const [loading, setLoading] = useState(true);
   const [adminData, setAdminData] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [activeTab, setActiveTab] = useState('overview'); // overview, activity, system
 
   useEffect(() => {
-    loadAdminData();
-    
-    // Auto-refresh every 60 seconds
-    const interval = setInterval(loadAdminData, 60000);
-    return () => clearInterval(interval);
-  }, []);
+    if (token) {
+      loadAdminData();
+
+      // Auto-refresh every 60 seconds
+      const interval = setInterval(loadAdminData, 60000);
+      return () => clearInterval(interval);
+    }
+  }, [token]);
 
   const loadAdminData = async () => {
     setLoading(true);
-    
+
     try {
+      console.log('Admin: Token from context:', token ? `${token.substring(0, 10)}...` : 'null');
+
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
       const response = await fetch('/api/admin/analytics', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
       if (!response.ok) {
-        throw new Error('Failed to load admin data');
+        const errorText = await response.text();
+        console.log('Admin API Error:', response.status, errorText);
+        throw new Error(`Failed to load admin data: ${response.status} ${errorText}`);
       }
 
       const data = await response.json();
@@ -96,38 +108,38 @@ function Admin() {
       trial: 124
     },
     recentSignups: [
-      { 
-        id: 1, 
-        email: 'user1@example.com', 
-        name: 'John Doe', 
+      {
+        id: 1,
+        email: 'user1@example.com',
+        name: 'John Doe',
         date: '2025-01-15T10:30:00Z',
         plan: 'trial'
       },
-      { 
-        id: 2, 
-        email: 'user2@example.com', 
-        name: 'Jane Smith', 
+      {
+        id: 2,
+        email: 'user2@example.com',
+        name: 'Jane Smith',
         date: '2025-01-15T09:15:00Z',
         plan: 'starter'
       },
-      { 
-        id: 3, 
-        email: 'user3@example.com', 
-        name: 'Bob Wilson', 
+      {
+        id: 3,
+        email: 'user3@example.com',
+        name: 'Bob Wilson',
         date: '2025-01-15T08:45:00Z',
         plan: 'checkout'
       },
-      { 
-        id: 4, 
-        email: 'user4@example.com', 
-        name: 'Alice Johnson', 
+      {
+        id: 4,
+        email: 'user4@example.com',
+        name: 'Alice Johnson',
         date: '2025-01-15T07:20:00Z',
         plan: 'pro'
       },
-      { 
-        id: 5, 
-        email: 'user5@example.com', 
-        name: 'Charlie Brown', 
+      {
+        id: 5,
+        email: 'user5@example.com',
+        name: 'Charlie Brown',
         date: '2025-01-15T06:50:00Z',
         plan: 'trial'
       }
@@ -216,7 +228,7 @@ function Admin() {
     const activityDate = new Date(date);
     const diffMs = now - activityDate;
     const diffMins = Math.floor(diffMs / 60000);
-    
+
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     const diffHours = Math.floor(diffMins / 60);
@@ -237,7 +249,7 @@ function Admin() {
   return (
     <div className="admin-page">
       <Header />
-      
+
       <main className="admin-container">
         {/* Page Header */}
         <div className="admin-header">
@@ -245,7 +257,7 @@ function Admin() {
             <h1>👑 Admin Dashboard</h1>
             <p>Platform management and insights • Updated: {formatTime()}</p>
           </div>
-          
+
           <div className="header-actions">
             <Link to="/admin/users" className="btn btn-secondary">
               👥 Users
@@ -290,21 +302,21 @@ function Admin() {
                 <span className="action-icon">👥</span>
                 <span className="action-label">Manage Users</span>
               </Link>
-              <button 
+              <button
                 className="quick-action-btn"
                 onClick={() => showSuccess('Feature coming soon!')}
               >
                 <span className="action-icon">📊</span>
                 <span className="action-label">View Analytics</span>
               </button>
-              <button 
+              <button
                 className="quick-action-btn"
                 onClick={() => showSuccess('Feature coming soon!')}
               >
                 <span className="action-icon">📧</span>
                 <span className="action-label">Email Users</span>
               </button>
-              <button 
+              <button
                 className="quick-action-btn"
                 onClick={() => showSuccess('Feature coming soon!')}
               >
@@ -349,7 +361,7 @@ function Admin() {
                       change={adminData.platform.userGrowth}
                       changeLabel="this month"
                     />
-                    
+
                     <StatsCard
                       icon="🌐"
                       label="Total Sites"
@@ -357,7 +369,7 @@ function Admin() {
                       change={adminData.platform.siteGrowth}
                       changeLabel="this month"
                     />
-                    
+
                     <StatsCard
                       icon="💰"
                       label="Total Revenue"
@@ -365,7 +377,7 @@ function Admin() {
                       change={adminData.platform.revenueGrowth}
                       changeLabel="this month"
                     />
-                    
+
                     <StatsCard
                       icon="📈"
                       label="Conversion Rate"
@@ -388,7 +400,7 @@ function Admin() {
                         {adminData.growth.newUsersWeek} this week • {adminData.growth.newUsersMonth} this month
                       </div>
                     </div>
-                    
+
                     <div className="growth-card">
                       <div className="growth-icon">🌐</div>
                       <div className="growth-value">{adminData.growth.newSitesToday}</div>
@@ -397,7 +409,7 @@ function Admin() {
                         {adminData.growth.newSitesWeek} this week • {adminData.growth.newSitesMonth} this month
                       </div>
                     </div>
-                    
+
                     <div className="growth-card">
                       <div className="growth-icon">⏱️</div>
                       <div className="growth-value">{adminData.growth.activeTrials}</div>
@@ -406,7 +418,7 @@ function Admin() {
                         {adminData.growth.conversions} conversions today
                       </div>
                     </div>
-                    
+
                     <div className="growth-card">
                       <div className="growth-icon">🚀</div>
                       <div className="growth-value">{adminData.growth.publishedToday}</div>
@@ -432,7 +444,7 @@ function Admin() {
                         {((adminData.subscriptions.starter / adminData.platform.totalUsers) * 100).toFixed(1)}% of users
                       </div>
                     </div>
-                    
+
                     <div className="subscription-card">
                       <div className="sub-header">
                         <span className="sub-name">Checkout</span>
@@ -443,7 +455,7 @@ function Admin() {
                         {((adminData.subscriptions.checkout / adminData.platform.totalUsers) * 100).toFixed(1)}% of users
                       </div>
                     </div>
-                    
+
                     <div className="subscription-card">
                       <div className="sub-header">
                         <span className="sub-name">Pro</span>
@@ -454,7 +466,7 @@ function Admin() {
                         {((adminData.subscriptions.pro / adminData.platform.totalUsers) * 100).toFixed(1)}% of users
                       </div>
                     </div>
-                    
+
                     <div className="subscription-card">
                       <div className="sub-header">
                         <span className="sub-name">Trial</span>
@@ -588,29 +600,29 @@ function Admin() {
                     <div className="resource-card">
                       <div className="resource-label">CPU Usage</div>
                       <div className="resource-bar">
-                        <div 
-                          className="resource-fill" 
+                        <div
+                          className="resource-fill"
                           style={{ width: `${adminData.system.cpu}%` }}
                         ></div>
                       </div>
                       <div className="resource-value">{adminData.system.cpu}%</div>
                     </div>
-                    
+
                     <div className="resource-card">
                       <div className="resource-label">Memory Usage</div>
                       <div className="resource-bar">
-                        <div 
-                          className="resource-fill" 
+                        <div
+                          className="resource-fill"
                           style={{ width: `${adminData.system.memory}%` }}
                         ></div>
                       </div>
                       <div className="resource-value">{adminData.system.memory}%</div>
                     </div>
-                    
+
                     <div className="resource-card">
                       <div className="resource-label">Storage Usage</div>
                       <div className="resource-bar">
-                        <div 
+                        <div
                           className={`resource-fill ${adminData.system.storage > 75 ? 'warning' : ''}`}
                           style={{ width: `${adminData.system.storage}%` }}
                         ></div>
@@ -630,7 +642,7 @@ function Admin() {
           </div>
         )}
       </main>
-      
+
       <Footer />
     </div>
   );

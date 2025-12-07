@@ -9,7 +9,8 @@ export function usePlan() {
   useEffect(() => {
     if (user) {
       // Get user's plan from user object or API
-      const plan = user.plan || user.subscription?.plan || 'free';
+      // Check both camelCase (subscriptionPlan) and snake_case (subscription_plan) for compatibility
+      const plan = user.subscriptionPlan || user.subscription_plan || user.plan || user.subscription?.plan || 'free';
       setUserPlan(plan.toLowerCase());
     } else {
       setUserPlan('free');

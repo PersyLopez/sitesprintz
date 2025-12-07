@@ -18,7 +18,12 @@ beforeAll(() => {
   process.env.NODE_ENV = 'test';
   process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test';
   process.env.VITE_API_URL = 'http://localhost:3000';
-  
+  process.env.RESEND_API_KEY = 're_test_12345678';
+  process.env.SMTP_HOST = 'smtp.example.com';
+  process.env.SMTP_PORT = '587';
+  process.env.SMTP_USER = 'user';
+  process.env.SMTP_PASS = 'pass';
+
   // Only mock window-related objects if window exists (jsdom environment)
   if (typeof window !== 'undefined') {
     // Mock window.matchMedia
@@ -38,18 +43,18 @@ beforeAll(() => {
 
     // Mock IntersectionObserver
     global.IntersectionObserver = class IntersectionObserver {
-      constructor() {}
-      disconnect() {}
-      observe() {}
+      constructor() { }
+      disconnect() { }
+      observe() { }
       takeRecords() {
         return [];
       }
-      unobserve() {}
+      unobserve() { }
     };
 
     // Mock scrollTo
     window.scrollTo = vi.fn();
-    
+
     // Mock localStorage
     const localStorageMock = (() => {
       let store = {};
@@ -74,7 +79,15 @@ beforeAll(() => {
   }
 
   // Mock fetch for all tests (browser and node)
-  global.fetch = vi.fn();
+  global.fetch = vi.fn(() => Promise.resolve({
+    ok: true,
+    status: 200,
+    json: async () => ({}),
+    text: async () => '',
+    headers: {
+      get: (key) => (key === 'content-type' ? 'application/json' : null)
+    }
+  }));
 
   // Suppress console errors in tests (optional - can be useful for cleaner output)
   // vi.spyOn(console, 'error').mockImplementation(() => {});

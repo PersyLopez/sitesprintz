@@ -7,29 +7,55 @@
     "email": "hello@growthpath.co"
   },
   "themeVars": {
-    "color-primary": "#059669",
-    "color-accent": "#10b981",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#0f172a",
+    "color-primary-light": "#334155",
+    "color-accent": "#d4af37",
+    "color-surface": "rgba(255, 255, 255, 0.03)",
+    "color-card": "rgba(255, 255, 255, 0.06)",
+    "color-text": "#f8fafc",
+    "color-muted": "#94a3b8",
+    "color-bg": "#020617"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "About", "href": "#about"},
-    {"label": "Process", "href": "#process"},
-    {"label": "Reviews", "href": "#testimonials"},
-    {"label": "Contact", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "About",
+      "href": "#about"
+    },
+    {
+      "label": "Process",
+      "href": "#process"
+    },
+    {
+      "label": "Reviews",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "🚀 Small Business Consulting",
     "title": "Grow your business with confidence",
     "subtitle": "Practical, affordable consulting for small business owners who want to grow but don't know where to start. We help with strategy, operations, marketing, and finance - all the pieces you need to scale successfully.",
     "cta": [
-      {"label": "Free Consultation", "href": "#contact"},
-      {"label": "Our Services", "href": "#products", "variant": "secondary"}
+      {
+        "label": "Free Consultation",
+        "href": "#contact"
+      },
+      {
+        "label": "Our Services",
+        "href": "#products",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1200&q=80",
-    "imageAlt": "Small business owner working with consultant"
+    "imageAlt": "Small business owner working with consultant",
+    "layout": "split"
   },
   "about": {
     "title": "Your Growth Partner",
@@ -136,7 +162,11 @@
         "bio": "Built and sold two successful small businesses. MBA from NYU. Now dedicated to helping other entrepreneurs avoid the mistakes I made and achieve their dreams faster.",
         "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
         "imageAlt": "Tom Reynolds",
-        "credentials": ["MBA NYU", "Former Business Owner", "Certified Business Advisor"]
+        "credentials": [
+          "MBA NYU",
+          "Former Business Owner",
+          "Certified Business Advisor"
+        ]
       }
     ]
   },
@@ -144,18 +174,42 @@
     "title": "How It Works",
     "subtitle": "Simple, straightforward process",
     "steps": [
-      {"title": "Free Consultation", "description": "30-minute call to understand your business and biggest challenges"},
-      {"title": "Proposal", "description": "Clear scope of work, timeline, and fixed price. No surprises"},
-      {"title": "We Get to Work", "description": "Hands-on collaboration to implement solutions"},
-      {"title": "Results & Follow-up", "description": "Deliverables, action plan, and optional ongoing support"}
+      {
+        "title": "Free Consultation",
+        "description": "30-minute call to understand your business and biggest challenges"
+      },
+      {
+        "title": "Proposal",
+        "description": "Clear scope of work, timeline, and fixed price. No surprises"
+      },
+      {
+        "title": "We Get to Work",
+        "description": "Hands-on collaboration to implement solutions"
+      },
+      {
+        "title": "Results & Follow-up",
+        "description": "Deliverables, action plan, and optional ongoing support"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "100+", "label": "Businesses Helped"},
-      {"number": "$5M+", "label": "Revenue Growth Generated"},
-      {"number": "4.9", "label": "Client Rating"},
-      {"number": "8", "label": "Years Experience"}
+      {
+        "number": "100+",
+        "label": "Businesses Helped"
+      },
+      {
+        "number": "$5M+",
+        "label": "Revenue Growth Generated"
+      },
+      {
+        "number": "4.9",
+        "label": "Client Rating"
+      },
+      {
+        "number": "8",
+        "label": "Years Experience"
+      }
     ]
   },
   "contact": {
@@ -184,4 +238,3 @@
   "productsTitle": "Services & Pricing",
   "productsSubtitle": "Fixed prices, clear value"
 }
-

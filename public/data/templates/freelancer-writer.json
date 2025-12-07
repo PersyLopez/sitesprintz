@@ -7,29 +7,55 @@
     "email": "words@pencraft.co"
   },
   "themeVars": {
-    "color-primary": "#8b5cf6",
-    "color-accent": "#a78bfa",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "Portfolio", "href": "#about"},
-    {"label": "About", "href": "#team"},
-    {"label": "Testimonials", "href": "#testimonials"},
-    {"label": "Hire Me", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "Portfolio",
+      "href": "#about"
+    },
+    {
+      "label": "About",
+      "href": "#team"
+    },
+    {
+      "label": "Testimonials",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Hire Me",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "✍️ Content Writer & Copywriter",
     "title": "Words that work for your business",
     "subtitle": "I write compelling content that engages your audience and drives results. From website copy to blog posts to email campaigns - clear, persuasive writing that converts readers into customers.",
     "cta": [
-      {"label": "View Samples", "href": "#about"},
-      {"label": "Get Started", "href": "#contact", "variant": "secondary"}
+      {
+        "label": "View Samples",
+        "href": "#about"
+      },
+      {
+        "label": "Get Started",
+        "href": "#contact",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=1200&q=80",
-    "imageAlt": "Writer workspace with laptop and coffee"
+    "imageAlt": "Writer workspace with laptop and coffee",
+    "layout": "split"
   },
   "about": {
     "title": "Professional Writing Services",
@@ -136,7 +162,11 @@
         "bio": "BA in English from Columbia. 7+ years writing for tech startups, e-commerce brands, and professional services. Certified in content marketing and conversion copywriting. Featured in Content Marketing Institute.",
         "image": "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=400&q=80",
         "imageAlt": "Jordan Blake",
-        "credentials": ["BA Columbia", "Content Marketing Certified", "Published Author"]
+        "credentials": [
+          "BA Columbia",
+          "Content Marketing Certified",
+          "Published Author"
+        ]
       }
     ]
   },
@@ -144,18 +174,42 @@
     "title": "Writing Process",
     "subtitle": "From brief to final draft",
     "steps": [
-      {"title": "Discovery", "description": "Understand your brand, audience, and goals through a detailed brief"},
-      {"title": "Research", "description": "Industry research, competitor analysis, and topic exploration"},
-      {"title": "Writing", "description": "First draft delivered for your review and feedback"},
-      {"title": "Revisions", "description": "Refine and polish until it's perfect (2 rounds included)"}
+      {
+        "title": "Discovery",
+        "description": "Understand your brand, audience, and goals through a detailed brief"
+      },
+      {
+        "title": "Research",
+        "description": "Industry research, competitor analysis, and topic exploration"
+      },
+      {
+        "title": "Writing",
+        "description": "First draft delivered for your review and feedback"
+      },
+      {
+        "title": "Revisions",
+        "description": "Refine and polish until it's perfect (2 rounds included)"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "7+", "label": "Years Writing"},
-      {"number": "500+", "label": "Pieces Published"},
-      {"number": "50+", "label": "Happy Clients"},
-      {"number": "98%", "label": "Client Retention"}
+      {
+        "number": "7+",
+        "label": "Years Writing"
+      },
+      {
+        "number": "500+",
+        "label": "Pieces Published"
+      },
+      {
+        "number": "50+",
+        "label": "Happy Clients"
+      },
+      {
+        "number": "98%",
+        "label": "Client Retention"
+      }
     ]
   },
   "contact": {

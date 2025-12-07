@@ -5,7 +5,7 @@
 
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = process.env.VITE_APP_URL || 'http://localhost:5173';
+const BASE_URL = process.env.VITE_APP_URL || 'http://localhost:3000';
 
 test.describe('Google OAuth Button Visibility', () => {
   

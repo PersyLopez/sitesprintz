@@ -7,27 +7,47 @@
     "email": "hello@luxeboutique.style"
   },
   "themeVars": {
-    "color-primary": "#ec4899",
-    "color-accent": "#f472b6",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Shop", "href": "#products"},
-    {"label": "Collections", "href": "#about"},
-    {"label": "Visit Us", "href": "#contact"}
+    {
+      "label": "Shop",
+      "href": "#products"
+    },
+    {
+      "label": "Collections",
+      "href": "#about"
+    },
+    {
+      "label": "Visit Us",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "👗 Curated Fashion Boutique",
     "title": "Discover your signature style",
     "subtitle": "Carefully curated women's fashion from emerging designers and timeless brands. Browse our collection online and visit our boutique for personalized styling. New arrivals weekly.",
     "cta": [
-      {"label": "Shop Collection", "href": "#products"},
-      {"label": "Visit Store", "href": "#contact", "variant": "secondary"}
+      {
+        "label": "Shop Collection",
+        "href": "#products"
+      },
+      {
+        "label": "Visit Store",
+        "href": "#contact",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1445205170230-053b83016050?w=1200&q=80",
-    "imageAlt": "Fashion boutique interior"
+    "imageAlt": "Fashion boutique interior",
+    "layout": "split"
   },
   "about": {
     "title": "Curated with Care",
@@ -125,4 +145,3 @@
   "productsTitle": "Current Collection",
   "productsSubtitle": "Curated pieces for your wardrobe"
 }
-

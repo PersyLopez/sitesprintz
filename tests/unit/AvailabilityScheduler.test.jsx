@@ -94,8 +94,10 @@ describe('AvailabilityScheduler Component - TDD', () => {
 
       await waitFor(() => {
         // Each day should have start and end time inputs
-        const timeInputs = screen.getAllByRole('textbox', { type: 'time' });
-        expect(timeInputs.length).toBeGreaterThanOrEqual(14); // 7 days * 2 times
+        const startInputs = screen.getAllByTestId(/start-time-/);
+        const endInputs = screen.getAllByTestId(/end-time-/);
+        expect(startInputs.length).toBeGreaterThanOrEqual(7);
+        expect(endInputs.length).toBeGreaterThanOrEqual(7);
       });
     });
 
@@ -121,10 +123,10 @@ describe('AvailabilityScheduler Component - TDD', () => {
       renderWithProviders(<AvailabilityScheduler userId={mockUserId} />);
 
       await waitFor(() => {
-        expect(screen.getByDisplayValue('09:00')).toBeInTheDocument();
-        expect(screen.getByDisplayValue('17:00')).toBeInTheDocument();
-        expect(screen.getByDisplayValue('10:00')).toBeInTheDocument();
-        expect(screen.getByDisplayValue('18:00')).toBeInTheDocument();
+        expect(screen.getByTestId('start-time-monday')).toHaveValue('09:00');
+        expect(screen.getByTestId('end-time-monday')).toHaveValue('17:00');
+        expect(screen.getByTestId('start-time-tuesday')).toHaveValue('10:00');
+        expect(screen.getByTestId('end-time-tuesday')).toHaveValue('18:00');
       });
     });
   });
@@ -157,12 +159,10 @@ describe('AvailabilityScheduler Component - TDD', () => {
       renderWithProviders(<AvailabilityScheduler userId={mockUserId} />);
 
       await waitFor(() => {
-        const timeInputs = screen.getAllByRole('textbox');
-        // Initially all should be disabled (no availability set)
-        timeInputs.forEach(input => {
-          if (input.type === 'time') {
-            expect(input).toBeDisabled();
-          }
+        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        days.forEach(day => {
+          expect(screen.getByTestId(`start-time-${day}`)).toBeDisabled();
+          expect(screen.getByTestId(`end-time-${day}`)).toBeDisabled();
         });
       });
     });
@@ -183,8 +183,7 @@ describe('AvailabilityScheduler Component - TDD', () => {
       await user.click(checkboxes[0]);
 
       // Find Monday's start time input
-      const timeInputs = screen.getAllByRole('textbox');
-      const startTimeInput = timeInputs[0];
+      const startTimeInput = screen.getByTestId('start-time-monday');
 
       await user.clear(startTimeInput);
       await user.type(startTimeInput, '08:00');
@@ -198,13 +197,14 @@ describe('AvailabilityScheduler Component - TDD', () => {
       renderWithProviders(<AvailabilityScheduler userId={mockUserId} />);
 
       await waitFor(() => {
-        const checkboxes = screen.getAllByRole('checkbox');
-        user.click(checkboxes[0]);
+        expect(screen.getAllByRole('checkbox').length).toBeGreaterThan(0);
       });
 
-      const timeInputs = screen.getAllByRole('textbox');
-      const startTimeInput = timeInputs[0];
-      const endTimeInput = timeInputs[1];
+      const checkboxes = screen.getAllByRole('checkbox');
+      await user.click(checkboxes[0]);
+
+      const startTimeInput = screen.getByTestId('start-time-monday');
+      const endTimeInput = screen.getByTestId('end-time-monday');
 
       await user.clear(startTimeInput);
       await user.type(startTimeInput, '17:00');
@@ -226,7 +226,7 @@ describe('AvailabilityScheduler Component - TDD', () => {
       renderWithProviders(<AvailabilityScheduler userId={mockUserId} />);
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /save schedule/i })).toBeInTheDocument();
+        expect(screen.getByTestId('save-schedule-button')).toBeInTheDocument();
       });
     });
 
@@ -238,11 +238,13 @@ describe('AvailabilityScheduler Component - TDD', () => {
       renderWithProviders(<AvailabilityScheduler userId={mockUserId} />);
 
       await waitFor(() => {
-        const checkboxes = screen.getAllByRole('checkbox');
-        user.click(checkboxes[0]); // Enable Monday
+        expect(screen.getAllByRole('checkbox').length).toBeGreaterThan(0);
       });
 
-      fireEvent.click(screen.getByRole('button', { name: /save schedule/i }));
+      const checkboxes = screen.getAllByRole('checkbox');
+      await user.click(checkboxes[0]); // Enable Monday
+
+      fireEvent.click(screen.getByTestId('save-schedule-button'));
 
       await waitFor(() => {
         expect(api.post).toHaveBeenCalled();
@@ -256,8 +258,15 @@ describe('AvailabilityScheduler Component - TDD', () => {
       renderWithProviders(<AvailabilityScheduler userId={mockUserId} />);
 
       await waitFor(() => {
-        fireEvent.click(screen.getByRole('button', { name: /save schedule/i }));
+        expect(screen.getAllByRole('checkbox').length).toBeGreaterThan(0);
       });
+
+      // Enable Monday
+      const checkboxes = screen.getAllByRole('checkbox');
+      fireEvent.click(checkboxes[0]);
+
+      const saveButton = screen.getByTestId('save-schedule-button');
+      fireEvent.click(saveButton);
 
       await waitFor(() => {
         // Success message would be shown via toast
@@ -272,7 +281,7 @@ describe('AvailabilityScheduler Component - TDD', () => {
       renderWithProviders(<AvailabilityScheduler userId={mockUserId} />);
 
       await waitFor(() => {
-        expect(screen.getByText(/copy to all/i)).toBeInTheDocument();
+        expect(screen.getByTestId('copy-all-button')).toBeInTheDocument();
       });
     });
 
@@ -282,12 +291,15 @@ describe('AvailabilityScheduler Component - TDD', () => {
       renderWithProviders(<AvailabilityScheduler userId={mockUserId} />);
 
       await waitFor(() => {
-        const checkboxes = screen.getAllByRole('checkbox');
-        user.click(checkboxes[0]); // Enable Monday
+        expect(screen.getAllByRole('checkbox').length).toBeGreaterThan(0);
       });
 
+      const checkboxes = screen.getAllByRole('checkbox');
+      await user.click(checkboxes[0]); // Enable Monday
+
       // Click "Copy to all weekdays"
-      fireEvent.click(screen.getByText(/copy to all/i));
+      // Click "Copy to all weekdays"
+      await user.click(screen.getByTestId('copy-all-button'));
 
       await waitFor(() => {
         // All weekday checkboxes should be checked
@@ -307,19 +319,31 @@ describe('AvailabilityScheduler Component - TDD', () => {
       renderWithProviders(<AvailabilityScheduler userId={mockUserId} />);
 
       await waitFor(() => {
-        expect(screen.getByText(/failed to load/i)).toBeInTheDocument();
+        const errors = screen.getAllByText(/failed to load/i);
+        expect(errors.length).toBeGreaterThan(0);
       });
     });
 
     it('should handle save error gracefully', async () => {
       api.get.mockResolvedValue({ success: true, rules: [] });
       api.post.mockRejectedValue(new Error('Failed to save'));
+      const user = userEvent.setup();
 
       renderWithProviders(<AvailabilityScheduler userId={mockUserId} />);
 
       await waitFor(() => {
-        fireEvent.click(screen.getByRole('button', { name: /save schedule/i }));
+        expect(screen.getAllByRole('checkbox').length).toBeGreaterThan(0);
       });
+
+      const checkboxes = screen.getAllByRole('checkbox');
+      await user.click(checkboxes[0]); // Enable Monday
+
+      await waitFor(() => {
+        expect(screen.getByTestId('save-schedule-button')).toBeInTheDocument();
+      });
+
+      const saveButton = screen.getByTestId('save-schedule-button');
+      await user.click(saveButton);
 
       await waitFor(() => {
         expect(screen.getByText(/failed to save/i)).toBeInTheDocument();
@@ -334,14 +358,16 @@ describe('AvailabilityScheduler Component - TDD', () => {
       renderWithProviders(<AvailabilityScheduler userId={mockUserId} />);
 
       await waitFor(() => {
-        const checkboxes = screen.getAllByRole('checkbox');
-        user.click(checkboxes[0]); // Enable Monday
+        expect(screen.getAllByRole('checkbox').length).toBeGreaterThan(0);
       });
+
+      const checkboxes = screen.getAllByRole('checkbox');
+      await user.click(checkboxes[0]); // Enable Monday
 
       // Should default to 9:00 AM - 5:00 PM
       await waitFor(() => {
-        expect(screen.getByDisplayValue('09:00')).toBeInTheDocument();
-        expect(screen.getByDisplayValue('17:00')).toBeInTheDocument();
+        expect(screen.getByTestId('start-time-monday')).toHaveValue('09:00');
+        expect(screen.getByTestId('end-time-monday')).toHaveValue('17:00');
       });
     });
   });

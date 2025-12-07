@@ -7,29 +7,55 @@
     "email": "hello@flowfitness.co"
   },
   "themeVars": {
-    "color-primary": "#ec4899",
-    "color-accent": "#f472b6",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#3b82f6",
+    "color-primary-light": "#60a5fa",
+    "color-accent": "#ec4899",
+    "color-bg": "#0F172A",
+    "color-surface": "rgba(30, 41, 59, 0.5)",
+    "color-card": "rgba(30, 41, 59, 0.3)",
+    "color-text": "#f1f5f9",
+    "color-muted": "#94a3b8"
   },
   "nav": [
-    {"label": "Classes", "href": "#products"},
-    {"label": "Schedule", "href": "#about"},
-    {"label": "Instructors", "href": "#team"},
-    {"label": "Reviews", "href": "#testimonials"},
-    {"label": "Join", "href": "#contact"}
+    {
+      "label": "Classes",
+      "href": "#products"
+    },
+    {
+      "label": "Schedule",
+      "href": "#about"
+    },
+    {
+      "label": "Instructors",
+      "href": "#team"
+    },
+    {
+      "label": "Reviews",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Join",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "🏃‍♀️ Boutique Fitness Studio",
     "title": "Find your flow",
     "subtitle": "Boutique classes designed to challenge, inspire, and transform. From HIIT to barre to yoga sculpt, discover workouts that make you excited to move. Premium equipment, expert instructors, and a community that celebrates every win.",
     "cta": [
-      {"label": "🎯 Book Free Class", "href": "#contact"},
-      {"label": "📅 View Schedule", "href": "#products", "variant": "secondary"}
+      {
+        "label": "🎯 Book Free Class",
+        "href": "#contact"
+      },
+      {
+        "label": "📅 View Schedule",
+        "href": "#products",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80",
-    "imageAlt": "Modern boutique fitness studio with natural light"
+    "imageAlt": "Modern boutique fitness studio with natural light",
+    "layout": "split"
   },
   "about": {
     "title": "Welcome to FLOW",
@@ -137,7 +163,11 @@
         "bio": "Former dancer turned fitness entrepreneur. Certified in HIIT, barre, and yoga with a passion for creating workouts that challenge and uplift.",
         "image": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80",
         "imageAlt": "Jordan Blake",
-        "credentials": ["ACE Certified", "Barre Above Certified", "RYT-200 Yoga"]
+        "credentials": [
+          "ACE Certified",
+          "Barre Above Certified",
+          "RYT-200 Yoga"
+        ]
       }
     ]
   },
@@ -145,18 +175,42 @@
     "title": "Getting Started",
     "subtitle": "New to FLOW? Here's how it works",
     "steps": [
-      {"title": "Try a Free Class", "description": "Book your complimentary first class to experience FLOW"},
-      {"title": "Choose Your Plan", "description": "Pick from class packs or unlimited monthly membership"},
-      {"title": "Download Our App", "description": "Easy booking, schedule viewing, and community features"},
-      {"title": "Join the Community", "description": "Make friends, crush goals, and find your flow"}
+      {
+        "title": "Try a Free Class",
+        "description": "Book your complimentary first class to experience FLOW"
+      },
+      {
+        "title": "Choose Your Plan",
+        "description": "Pick from class packs or unlimited monthly membership"
+      },
+      {
+        "title": "Download Our App",
+        "description": "Easy booking, schedule viewing, and community features"
+      },
+      {
+        "title": "Join the Community",
+        "description": "Make friends, crush goals, and find your flow"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "30+", "label": "Weekly Classes"},
-      {"number": "8", "label": "Expert Instructors"},
-      {"number": "500+", "label": "Active Members"},
-      {"number": "4.9", "label": "Star Rating"}
+      {
+        "number": "30+",
+        "label": "Weekly Classes"
+      },
+      {
+        "number": "8",
+        "label": "Expert Instructors"
+      },
+      {
+        "number": "500+",
+        "label": "Active Members"
+      },
+      {
+        "number": "4.9",
+        "label": "Star Rating"
+      }
     ]
   },
   "contact": {
@@ -185,4 +239,3 @@
   "productsTitle": "Classes & Memberships",
   "productsSubtitle": "Find the perfect fit for your lifestyle"
 }
-

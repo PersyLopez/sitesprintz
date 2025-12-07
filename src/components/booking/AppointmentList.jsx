@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from '../../hooks/useToast';
-import { get, delete as deleteAPI } from '../../utils/api';
+import { get, del as deleteAPI } from '../../utils/api';
 import { DateTime } from 'luxon';
 import './AppointmentList.css';
 
 const AppointmentList = ({ userId, onRefresh }) => {
   const { showSuccess, showError } = useToast();
-  
+
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('date');
   const [dateRange, setDateRange] = useState('all');
-  
+
   // Modal states
   const [showDetails, setShowDetails] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
@@ -33,12 +33,12 @@ const AppointmentList = ({ userId, onRefresh }) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const params = {};
       if (statusFilter !== 'all') {
         params.status = statusFilter;
       }
-      
+
       const response = await get(`/api/booking/admin/${userId}/appointments`, { params });
       setAppointments(response.appointments || []);
     } catch (err) {
@@ -82,13 +82,13 @@ const AppointmentList = ({ userId, onRefresh }) => {
       await deleteAPI(
         `/api/booking/tenants/${userId}/appointments/${cancellingAppointment.confirmation_code}`,
         {
-          data: {
+          body: JSON.stringify({
             reason: 'Cancelled by admin',
             cancelled_by: 'admin',
-          },
+          }),
         }
       );
-      
+
       showSuccess('Appointment cancelled successfully');
       handleCloseCancelConfirm();
       await fetchAppointments();
@@ -121,12 +121,12 @@ const AppointmentList = ({ userId, onRefresh }) => {
     .filter(apt => {
       // Search filter
       const searchLower = searchTerm.toLowerCase();
-      const matchesSearch = 
+      const matchesSearch =
         apt.customer_name?.toLowerCase().includes(searchLower) ||
         apt.customer_email?.toLowerCase().includes(searchLower) ||
         apt.confirmation_code?.toLowerCase().includes(searchLower) ||
         apt.service_name?.toLowerCase().includes(searchLower);
-      
+
       if (!matchesSearch) return false;
 
       // Status filter
@@ -138,7 +138,7 @@ const AppointmentList = ({ userId, onRefresh }) => {
       if (dateRange !== 'all') {
         const aptDate = DateTime.fromISO(apt.start_time, { zone: 'utc' });
         const now = DateTime.now();
-        
+
         if (dateRange === 'today') {
           if (!aptDate.hasSame(now, 'day')) return false;
         } else if (dateRange === 'week') {
@@ -225,7 +225,7 @@ const AppointmentList = ({ userId, onRefresh }) => {
 
       {/* Loading & Error States */}
       {loading && <div className="loading">Loading appointments...</div>}
-      
+
       {error && <div className="error-message">{error}</div>}
 
       {/* Empty State */}
@@ -245,8 +245,8 @@ const AppointmentList = ({ userId, onRefresh }) => {
       {!loading && !error && filteredAppointments.length > 0 && (
         <div className="appointments-table">
           {filteredAppointments.map(apt => (
-            <div 
-              key={apt.id} 
+            <div
+              key={apt.id}
               className="appointment-item"
               data-testid={`appointment-item-${apt.id}`}
             >
@@ -309,8 +309,8 @@ const AppointmentList = ({ userId, onRefresh }) => {
       {/* Details Modal */}
       {showDetails && selectedAppointment && (
         <div className="modal-overlay" onClick={handleCloseDetails}>
-          <div 
-            className="modal-content" 
+          <div
+            className="modal-content"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -396,8 +396,8 @@ const AppointmentList = ({ userId, onRefresh }) => {
       {/* Cancel Confirmation Modal */}
       {showCancelConfirm && cancellingAppointment && (
         <div className="modal-overlay" onClick={handleCloseCancelConfirm}>
-          <div 
-            className="modal-content small-modal" 
+          <div
+            className="modal-content small-modal"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"

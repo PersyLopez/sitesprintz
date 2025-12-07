@@ -1,38 +1,64 @@
 {
   "brand": {
-    "name": "FreshBowl", 
+    "name": "FreshBowl",
     "logo": "assets/logo.svg",
     "tagline": "Build Your Bowl • Fresh & Fast",
     "phone": "(555) 456-7890",
     "email": "hello@freshbowl.com"
   },
   "themeVars": {
-    "color-primary": "#10b981", 
-    "color-accent": "#059669",
-    "color-success": "#34d399",
-    "color-warning": "#fbbf24",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Build a Bowl", "href": "#products"},
-    {"label": "Signature Bowls", "href": "#services"},
-    {"label": "Rewards", "href": "#about"},
-    {"label": "Order Online", "href": "#process"},
-    {"label": "Locations", "href": "#contact"}
+    {
+      "label": "Build a Bowl",
+      "href": "#products"
+    },
+    {
+      "label": "Signature Bowls",
+      "href": "#services"
+    },
+    {
+      "label": "Rewards",
+      "href": "#about"
+    },
+    {
+      "label": "Order Online",
+      "href": "#process"
+    },
+    {
+      "label": "Locations",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "🥗 Fresh • Healthy • Delicious",
     "title": "Your Bowl, Your Way",
     "subtitle": "Build the perfect bowl with premium proteins, fresh veggies, and bold flavors. Every ingredient is sourced responsibly. Every bowl is made to order. Fast, healthy eating without compromise.",
     "cta": [
-      {"label": "🛒 Order Now", "href": "#order"},
-      {"label": "🔧 Build a Bowl", "href": "#products", "variant": "secondary"}
+      {
+        "label": "🛒 Order Now",
+        "href": "#order"
+      },
+      {
+        "label": "🔧 Build a Bowl",
+        "href": "#products",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1200&q=80",
-    "imageAlt": "Fresh healthy bowl with colorful ingredients"
+    "imageAlt": "Fresh healthy bowl with colorful ingredients",
+    "layout": "split"
   },
   "about": {
-    "title": "Join FreshBowl Rewards", 
+    "title": "Join FreshBowl Rewards",
     "body": "Earn points with every purchase and unlock exclusive rewards. Download our app for easy mobile ordering, saved favorites, and special member-only offers. Join over 100,000 members enjoying fresh, healthy food their way.",
     "subtitle": "Why FreshBowl is different",
     "features": [
@@ -134,22 +160,42 @@
       {
         "title": "🔧 Build Your Bowl",
         "description": "Customize every ingredient to your preference",
-        "features": ["Choose your base", "Pick your protein", "Unlimited veggies", "Select sauce"]
+        "features": [
+          "Choose your base",
+          "Pick your protein",
+          "Unlimited veggies",
+          "Select sauce"
+        ]
       },
       {
         "title": "📱 Order Ahead",
         "description": "Skip the line with mobile ordering",
-        "features": ["Order on app", "Pay digitally", "Ready when you arrive", "Earn rewards"]
+        "features": [
+          "Order on app",
+          "Pay digitally",
+          "Ready when you arrive",
+          "Earn rewards"
+        ]
       },
       {
         "title": "🚚 Delivery",
         "description": "Fresh bowls delivered to your door",
-        "features": ["Order online", "Track in real-time", "Eco-friendly packaging", "20-30 min delivery"]
+        "features": [
+          "Order online",
+          "Track in real-time",
+          "Eco-friendly packaging",
+          "20-30 min delivery"
+        ]
       },
       {
         "title": "🎁 Catering",
         "description": "Healthy catering for offices and events",
-        "features": ["Group orders", "Custom menus", "Individual labels", "Setup included"]
+        "features": [
+          "Group orders",
+          "Custom menus",
+          "Individual labels",
+          "Setup included"
+        ]
       }
     ]
   },
@@ -202,7 +248,7 @@
     }
   },
   "contact": {
-    "title": "Find a Location", 
+    "title": "Find a Location",
     "subtitle": "FreshBowl is growing! Find one near you",
     "phone": "(555) 456-7890",
     "email": "hello@freshbowl.com",
@@ -260,10 +306,22 @@
   },
   "stats": {
     "items": [
-      {"number": "100K+", "label": "Rewards Members"},
-      {"number": "4.8", "label": "App Rating"},
-      {"number": "15", "label": "Locations"},
-      {"number": "∞", "label": "Bowl Combinations"}
+      {
+        "number": "100K+",
+        "label": "Rewards Members"
+      },
+      {
+        "number": "4.8",
+        "label": "App Rating"
+      },
+      {
+        "number": "15",
+        "label": "Locations"
+      },
+      {
+        "number": "∞",
+        "label": "Bowl Combinations"
+      }
     ]
   },
   "team": {
@@ -276,48 +334,116 @@
         "bio": "After years as a personal chef to pro athletes, Alex founded FreshBowl to make nutritious, delicious food accessible to everyone.",
         "image": "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=400&q=80",
         "imageAlt": "Alex Rivera",
-        "credentials": ["Certified Nutritionist", "Former Pro Athlete Chef", "Sustainability Advocate"]
+        "credentials": [
+          "Certified Nutritionist",
+          "Former Pro Athlete Chef",
+          "Sustainability Advocate"
+        ]
       }
     ]
   },
   "process": {
     "title": "Build Your Bowl in 4 Steps",
     "steps": [
-      {"title": "1. Choose Your Base", "description": "Brown rice, white rice, mixed greens, or quinoa"},
-      {"title": "2. Pick Your Protein", "description": "Chicken, steak, tofu, falafel, or double protein"},
-      {"title": "3. Load Up Veggies", "description": "Unlimited toppings - go crazy!"},
-      {"title": "4. Select Your Sauce", "description": "6 signature sauces to choose from"}
+      {
+        "title": "1. Choose Your Base",
+        "description": "Brown rice, white rice, mixed greens, or quinoa"
+      },
+      {
+        "title": "2. Pick Your Protein",
+        "description": "Chicken, steak, tofu, falafel, or double protein"
+      },
+      {
+        "title": "3. Load Up Veggies",
+        "description": "Unlimited toppings - go crazy!"
+      },
+      {
+        "title": "4. Select Your Sauce",
+        "description": "6 signature sauces to choose from"
+      }
     ]
   },
   "credentials": {
     "title": "The FreshBowl Difference",
     "items": [
-      {"icon": "🌱", "name": "Clean Ingredients", "description": "No artificial anything"},
-      {"icon": "📊", "name": "Full Transparency", "description": "Calories on everything"},
-      {"icon": "⚡", "name": "Lightning Fast", "description": "Under 5 minutes"},
-      {"icon": "📱", "name": "Mobile First", "description": "Order ahead app"}
+      {
+        "icon": "🌱",
+        "name": "Clean Ingredients",
+        "description": "No artificial anything"
+      },
+      {
+        "icon": "📊",
+        "name": "Full Transparency",
+        "description": "Calories on everything"
+      },
+      {
+        "icon": "⚡",
+        "name": "Lightning Fast",
+        "description": "Under 5 minutes"
+      },
+      {
+        "icon": "📱",
+        "name": "Mobile First",
+        "description": "Order ahead app"
+      }
     ]
   },
   "faq": {
     "title": "FAQ",
     "items": [
-      {"question": "How does build-your-own work?", "answer": "Start with a base (rice, greens, etc.), choose your protein, add unlimited veggie toppings, and finish with sauce. All for one price!"},
-      {"question": "Do you have nutritional information?", "answer": "Yes! Full nutrition facts are displayed for all items, including calories, protein, carbs, and allergens. The app shows real-time nutrition as you build."},
-      {"question": "Can you accommodate dietary restrictions?", "answer": "Absolutely. We have vegan, vegetarian, keto, gluten-free, and dairy-free options. Filter by diet in our app."},
-      {"question": "How do I earn rewards?", "answer": "Download our app and create an account. You'll earn 1 point per $1 spent. Redeem points for free bowls, drinks, and upgrades."},
-      {"question": "Can I order ahead?", "answer": "Yes! Download the FreshBowl app to order and pay ahead. Your bowl will be ready when you arrive - skip the line!"},
-      {"question": "Do you deliver?", "answer": "Yes, we deliver through our app, DoorDash, Uber Eats, and Grubhub. Bowls are packaged to stay fresh during delivery."},
-      {"question": "Do you cater events?", "answer": "Yes! We offer corporate catering and event catering for groups of 10+. Order online or call 24 hours in advance."},
-      {"question": "Are you opening new locations?", "answer": "Yes! Check our website for upcoming locations. Want FreshBowl in your area? Let us know through our app."}
+      {
+        "question": "How does build-your-own work?",
+        "answer": "Start with a base (rice, greens, etc.), choose your protein, add unlimited veggie toppings, and finish with sauce. All for one price!"
+      },
+      {
+        "question": "Do you have nutritional information?",
+        "answer": "Yes! Full nutrition facts are displayed for all items, including calories, protein, carbs, and allergens. The app shows real-time nutrition as you build."
+      },
+      {
+        "question": "Can you accommodate dietary restrictions?",
+        "answer": "Absolutely. We have vegan, vegetarian, keto, gluten-free, and dairy-free options. Filter by diet in our app."
+      },
+      {
+        "question": "How do I earn rewards?",
+        "answer": "Download our app and create an account. You'll earn 1 point per $1 spent. Redeem points for free bowls, drinks, and upgrades."
+      },
+      {
+        "question": "Can I order ahead?",
+        "answer": "Yes! Download the FreshBowl app to order and pay ahead. Your bowl will be ready when you arrive - skip the line!"
+      },
+      {
+        "question": "Do you deliver?",
+        "answer": "Yes, we deliver through our app, DoorDash, Uber Eats, and Grubhub. Bowls are packaged to stay fresh during delivery."
+      },
+      {
+        "question": "Do you cater events?",
+        "answer": "Yes! We offer corporate catering and event catering for groups of 10+. Order online or call 24 hours in advance."
+      },
+      {
+        "question": "Are you opening new locations?",
+        "answer": "Yes! Check our website for upcoming locations. Want FreshBowl in your area? Let us know through our app."
+      }
     ]
   },
   "footer": {
     "text": "🥗 FreshBowl • Fresh. Fast. Your Way.",
     "links": [
-      {"label": "Privacy Policy", "href": "#privacy"},
-      {"label": "Nutrition Info", "href": "#nutrition"},
-      {"label": "Careers", "href": "#careers"},
-      {"label": "Franchise", "href": "#franchise"}
+      {
+        "label": "Privacy Policy",
+        "href": "#privacy"
+      },
+      {
+        "label": "Nutrition Info",
+        "href": "#nutrition"
+      },
+      {
+        "label": "Careers",
+        "href": "#careers"
+      },
+      {
+        "label": "Franchise",
+        "href": "#franchise"
+      }
     ],
     "awards": [
       "Best Fast-Casual 2023",
@@ -336,4 +462,3 @@
   "productsTitle": "Our Menu",
   "productsSubtitle": "Build your perfect bowl or try a signature favorite"
 }
-

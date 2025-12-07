@@ -7,28 +7,51 @@
     "email": "service@homewire.electric"
   },
   "themeVars": {
-    "color-primary": "#f59e0b",
-    "color-accent": "#fbbf24",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "About", "href": "#about"},
-    {"label": "Reviews", "href": "#testimonials"},
-    {"label": "Emergency", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "About",
+      "href": "#about"
+    },
+    {
+      "label": "Reviews",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Emergency",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "⚡ Residential Electrical Services",
     "title": "Safe, reliable electrical work for your home",
     "subtitle": "Licensed electricians specializing in home electrical repairs, upgrades, and installations. From outlets to panel upgrades, we do it right. Same-day service available. Trusted by homeowners since 2010.",
     "cta": [
-      {"label": "Schedule Service", "href": "#contact"},
-      {"label": "See Services", "href": "#products", "variant": "secondary"}
+      {
+        "label": "Schedule Service",
+        "href": "#contact"
+      },
+      {
+        "label": "See Services",
+        "href": "#products",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=1200&q=80",
-    "imageAlt": "Electrician working on residential panel"
+    "imageAlt": "Electrician working on residential panel",
+    "layout": "split"
   },
   "about": {
     "title": "Your Home Electrical Experts",
@@ -135,7 +158,11 @@
         "bio": "Licensed Master Electrician with 20+ years experience in residential electrical work. Specializes in troubleshooting, panel upgrades, and whole-home electrical solutions.",
         "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
         "imageAlt": "Tom Peterson",
-        "credentials": ["Master Electrician License", "20+ Years Experience", "Fully Insured"]
+        "credentials": [
+          "Master Electrician License",
+          "20+ Years Experience",
+          "Fully Insured"
+        ]
       }
     ]
   },
@@ -143,18 +170,42 @@
     "title": "Service Process",
     "subtitle": "Professional electrical work",
     "steps": [
-      {"title": "Schedule Service", "description": "Call or book online. Describe your electrical needs"},
-      {"title": "On-Site Assessment", "description": "Licensed electrician assesses and provides clear quote"},
-      {"title": "Professional Work", "description": "Safe, code-compliant electrical work"},
-      {"title": "Final Inspection", "description": "Test everything and ensure your satisfaction"}
+      {
+        "title": "Schedule Service",
+        "description": "Call or book online. Describe your electrical needs"
+      },
+      {
+        "title": "On-Site Assessment",
+        "description": "Licensed electrician assesses and provides clear quote"
+      },
+      {
+        "title": "Professional Work",
+        "description": "Safe, code-compliant electrical work"
+      },
+      {
+        "title": "Final Inspection",
+        "description": "Test everything and ensure your satisfaction"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "14+", "label": "Years Serving Homes"},
-      {"number": "2,000+", "label": "Projects Completed"},
-      {"number": "4.9", "label": "Star Rating"},
-      {"number": "Licensed", "label": "& Insured"}
+      {
+        "number": "14+",
+        "label": "Years Serving Homes"
+      },
+      {
+        "number": "2,000+",
+        "label": "Projects Completed"
+      },
+      {
+        "number": "4.9",
+        "label": "Star Rating"
+      },
+      {
+        "number": "Licensed",
+        "label": "& Insured"
+      }
     ]
   },
   "contact": {
@@ -183,4 +234,3 @@
   "productsTitle": "Electrical Services",
   "productsSubtitle": "Licensed, safe, reliable"
 }
-

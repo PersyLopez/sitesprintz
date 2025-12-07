@@ -333,7 +333,7 @@ describe('EditorPanel Component', () => {
   });
 
   // ============================================================
-  // Pro Features (10 tests)
+  // Pro Features (14 tests - UPDATED for Trial System)
   // ============================================================
 
   describe('Pro Features', () => {
@@ -358,14 +358,14 @@ describe('EditorPanel Component', () => {
       expect(within(paymentsTab).getByText('PRO')).toBeInTheDocument();
     });
 
-    it('should disable pro tabs for non-pro users', () => {
+    it('should disable pro tabs for non-pro users without trial', () => {
       renderEditorPanel();
       
       const productsTab = screen.getByRole('button', { name: /Products/i });
       expect(productsTab).toBeDisabled();
     });
 
-    it('should show upgrade prompt for products', async () => {
+    it('should show upgrade prompt for products when not on trial', async () => {
       const user = userEvent.setup();
       renderEditorPanel();
       
@@ -375,7 +375,22 @@ describe('EditorPanel Component', () => {
     });
 
     it('should enable pro tabs for pro users', () => {
-      renderEditorPanel({ user: { id: 1, email: 'test@example.com', plan: 'pro' } });
+      renderEditorPanel({ user: { id: 1, email: 'test@example.com', plan: 'pro', subscription_status: 'active' } });
+      
+      const productsTab = screen.getByRole('button', { name: /Products/i });
+      expect(productsTab).not.toBeDisabled();
+    });
+
+    it('should enable pro tabs for users with active trial', () => {
+      renderEditorPanel({ 
+        user: { 
+          id: 1, 
+          email: 'test@example.com', 
+          plan: 'starter',
+          subscription_status: 'trial',
+          trial_expires_at: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString()
+        } 
+      });
       
       const productsTab = screen.getByRole('button', { name: /Products/i });
       expect(productsTab).not.toBeDisabled();
@@ -383,7 +398,27 @@ describe('EditorPanel Component', () => {
 
     it('should show products editor for pro users', async () => {
       const user = userEvent.setup();
-      renderEditorPanel({ user: { id: 1, email: 'test@example.com', plan: 'pro' } });
+      renderEditorPanel({ user: { id: 1, email: 'test@example.com', plan: 'pro', subscription_status: 'active' } });
+      
+      const productsTab = screen.getByRole('button', { name: /Products/i });
+      await user.click(productsTab);
+      
+      await waitFor(() => {
+        expect(screen.getByTestId('products-editor')).toBeInTheDocument();
+      });
+    });
+
+    it('should show products editor for trial users', async () => {
+      const user = userEvent.setup();
+      renderEditorPanel({ 
+        user: { 
+          id: 1, 
+          email: 'test@example.com', 
+          plan: 'starter',
+          subscription_status: 'trial',
+          trial_expires_at: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString()
+        } 
+      });
       
       const productsTab = screen.getByRole('button', { name: /Products/i });
       await user.click(productsTab);
@@ -395,7 +430,27 @@ describe('EditorPanel Component', () => {
 
     it('should show booking editor for pro users', async () => {
       const user = userEvent.setup();
-      renderEditorPanel({ user: { id: 1, email: 'test@example.com', plan: 'pro' } });
+      renderEditorPanel({ user: { id: 1, email: 'test@example.com', plan: 'pro', subscription_status: 'active' } });
+      
+      const bookingTab = screen.getByRole('button', { name: /Booking/i });
+      await user.click(bookingTab);
+      
+      await waitFor(() => {
+        expect(screen.getByTestId('booking-editor')).toBeInTheDocument();
+      });
+    });
+
+    it('should show booking editor for trial users', async () => {
+      const user = userEvent.setup();
+      renderEditorPanel({ 
+        user: { 
+          id: 1, 
+          email: 'test@example.com', 
+          plan: 'starter',
+          subscription_status: 'trial',
+          trial_expires_at: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString()
+        } 
+      });
       
       const bookingTab = screen.getByRole('button', { name: /Booking/i });
       await user.click(bookingTab);
@@ -407,7 +462,27 @@ describe('EditorPanel Component', () => {
 
     it('should show payment settings for pro users', async () => {
       const user = userEvent.setup();
-      renderEditorPanel({ user: { id: 1, email: 'test@example.com', plan: 'pro' } });
+      renderEditorPanel({ user: { id: 1, email: 'test@example.com', plan: 'pro', subscription_status: 'active' } });
+      
+      const paymentsTab = screen.getByRole('button', { name: /Payments/i });
+      await user.click(paymentsTab);
+      
+      await waitFor(() => {
+        expect(screen.getByTestId('payment-settings')).toBeInTheDocument();
+      });
+    });
+
+    it('should show payment settings for trial users', async () => {
+      const user = userEvent.setup();
+      renderEditorPanel({ 
+        user: { 
+          id: 1, 
+          email: 'test@example.com', 
+          plan: 'starter',
+          subscription_status: 'trial',
+          trial_expires_at: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString()
+        } 
+      });
       
       const paymentsTab = screen.getByRole('button', { name: /Payments/i });
       await user.click(paymentsTab);
@@ -418,7 +493,7 @@ describe('EditorPanel Component', () => {
     });
 
     it('should also enable pro features for business plan', () => {
-      renderEditorPanel({ user: { id: 1, email: 'test@example.com', plan: 'business' } });
+      renderEditorPanel({ user: { id: 1, email: 'test@example.com', plan: 'business', subscription_status: 'active' } });
       
       const productsTab = screen.getByRole('button', { name: /Products/i });
       expect(productsTab).not.toBeDisabled();

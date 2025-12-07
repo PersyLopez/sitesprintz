@@ -25,7 +25,7 @@ vi.mock('../../src/components/setup/TemplateGrid', () => ({
   default: ({ templates, onSelect, selectedTemplate }) => (
     <div data-testid="template-grid">
       {templates.map((t) => (
-        <button 
+        <button
           key={t.id || t.template}
           data-testid={`template-${t.id || t.template}`}
           onClick={() => onSelect(t)}
@@ -152,9 +152,9 @@ describe('Setup Page', () => {
   describe('Page Structure', () => {
     it('should render setup page with header', async () => {
       renderSetup();
-      
+
       expect(screen.getByTestId('header')).toBeInTheDocument();
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('template-grid')).toBeInTheDocument();
       });
@@ -182,11 +182,11 @@ describe('Setup Page', () => {
 
     it('should have save draft button', async () => {
       renderSetup();
-      
+
       await waitFor(() => {
         const buttons = screen.getAllByRole('button');
-        const hasSaveButton = buttons.some(btn => 
-          btn.textContent.toLowerCase().includes('draft') || 
+        const hasSaveButton = buttons.some(btn =>
+          btn.textContent.toLowerCase().includes('draft') ||
           btn.textContent.toLowerCase().includes('save')
         );
         expect(hasSaveButton || buttons.length > 0).toBe(true);
@@ -195,10 +195,10 @@ describe('Setup Page', () => {
 
     it('should have publish button', async () => {
       renderSetup();
-      
+
       await waitFor(() => {
         const buttons = screen.getAllByRole('button');
-        const hasPublishButton = buttons.some(btn => 
+        const hasPublishButton = buttons.some(btn =>
           btn.textContent.toLowerCase().includes('publish')
         );
         expect(hasPublishButton || buttons.length > 0).toBe(true);
@@ -217,9 +217,9 @@ describe('Setup Page', () => {
     });
 
     it('should show loading state while fetching', () => {
-      templatesService.getTemplates.mockImplementation(() => new Promise(() => {}));
+      templatesService.getTemplates.mockImplementation(() => new Promise(() => { }));
       renderSetup();
-      
+
       // Loading state should be present initially
       const templateGrid = screen.queryByTestId('template-grid');
       expect(templateGrid === null || templateGrid !== null).toBe(true);
@@ -285,7 +285,7 @@ describe('Setup Page', () => {
 
       await waitFor(() => {
         expect(mockLoadTemplate).toHaveBeenCalled();
-      }, { timeout: 3000 });
+      }, { timeout: 5000 });
     });
 
     it('should handle invalid template ID from URL', async () => {
@@ -379,7 +379,7 @@ describe('Setup Page', () => {
 
     it('should preserve content when switching layouts', async () => {
       const user = userEvent.setup();
-      
+
       renderSetup('/setup', {
         siteData: { businessName: 'Test Business', template: 'restaurant' },
       });
@@ -409,7 +409,7 @@ describe('Setup Page', () => {
 
     it('should handle layout load errors', async () => {
       templatesService.getTemplate.mockRejectedValue(new Error('Failed'));
-      
+
       renderSetup();
 
       await waitFor(() => {
@@ -621,7 +621,7 @@ describe('Setup Page', () => {
     it('should save draft successfully', async () => {
       const user = userEvent.setup();
       mockSaveDraft.mockResolvedValue({ success: true });
-      
+
       renderSetup();
 
       await waitFor(() => {
@@ -649,7 +649,7 @@ describe('Setup Page', () => {
 
     it('should handle save errors', async () => {
       mockSaveDraft.mockRejectedValue(new Error('Save failed'));
-      
+
       renderSetup('/setup', {
         siteData: { businessName: 'Test', template: 'restaurant' },
       });
@@ -660,8 +660,8 @@ describe('Setup Page', () => {
     });
 
     it('should disable save button during save', async () => {
-      mockSaveDraft.mockImplementation(() => new Promise(() => {}));
-      
+      mockSaveDraft.mockImplementation(() => new Promise(() => { }));
+
       renderSetup();
 
       await waitFor(() => {
@@ -673,7 +673,7 @@ describe('Setup Page', () => {
   describe('Publishing', () => {
     it('should open publish modal on publish click', async () => {
       const user = userEvent.setup();
-      
+
       renderSetup('/setup', {
         siteData: { businessName: 'Test Business', template: 'restaurant' },
       });

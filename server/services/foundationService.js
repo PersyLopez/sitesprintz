@@ -11,7 +11,7 @@
  * Following TDD - created to pass comprehensive test suite
  */
 
-import { query as dbQuery } from '../../database/db.js';
+import { prisma } from '../../database/db.js';
 import { SimpleCache } from '../utils/cache.js';
 
 /**
@@ -81,7 +81,7 @@ export function getDefaultFoundationConfig(tier = 'starter') {
 
 export class FoundationService {
   constructor(db = null, cache = null) {
-    this.db = db || { query: dbQuery };
+    this.db = db || prisma;
     this.cache = cache || new SimpleCache();
     this.cacheTTL = parseInt(process.env.FOUNDATION_CACHE_TTL || '300', 10); // 5 minutes default
   }
@@ -102,16 +102,18 @@ export class FoundationService {
       }
 
       // Query database
-      const result = await this.db.query(
-        'SELECT site_data, plan FROM sites WHERE subdomain = $1',
-        [subdomain]
-      );
+      const site = await this.db.sites.findUnique({
+        where: { subdomain },
+        select: {
+          site_data: true,
+          plan: true
+        }
+      });
 
-      if (result.rows.length === 0) {
+      if (!site) {
         throw new Error('Site not found');
       }
 
-      const site = result.rows[0];
       const siteData = typeof site.site_data === 'string'
         ? JSON.parse(site.site_data)
         : site.site_data;
@@ -144,16 +146,18 @@ export class FoundationService {
   async updateConfig(subdomain, newConfig) {
     try {
       // Fetch current site data
-      const result = await this.db.query(
-        'SELECT site_data, plan FROM sites WHERE subdomain = $1',
-        [subdomain]
-      );
+      const site = await this.db.sites.findUnique({
+        where: { subdomain },
+        select: {
+          site_data: true,
+          plan: true
+        }
+      });
 
-      if (result.rows.length === 0) {
+      if (!site) {
         throw new Error('Site not found');
       }
 
-      const site = result.rows[0];
       const siteData = typeof site.site_data === 'string'
         ? JSON.parse(site.site_data)
         : site.site_data;
@@ -165,10 +169,13 @@ export class FoundationService {
       siteData.foundation = newConfig;
 
       // Save back to database
-      await this.db.query(
-        'UPDATE sites SET site_data = $1, updated_at = NOW() WHERE subdomain = $2',
-        [JSON.stringify(siteData), subdomain]
-      );
+      await this.db.sites.update({
+        where: { subdomain },
+        data: {
+          site_data: JSON.stringify(siteData),
+          updated_at: new Date()
+        }
+      });
 
       // Invalidate cache
       this.clearCache(subdomain);
@@ -229,7 +236,7 @@ export class FoundationService {
     if (config.socialMedia && config.socialMedia.profiles) {
       const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
       const profiles = config.socialMedia.profiles;
-      
+
       for (const [platform, url] of Object.entries(profiles)) {
         if (url && !urlRegex.test(url)) {
           throw new Error(`Invalid social media URL for ${platform}`);

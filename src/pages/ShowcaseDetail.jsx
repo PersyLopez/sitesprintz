@@ -18,7 +18,7 @@ import './ShowcaseDetail.css';
 function ShowcaseDetail() {
   const { subdomain } = useParams();
   const navigate = useNavigate();
-  
+
   const [site, setSite] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,7 +29,7 @@ function ShowcaseDetail() {
     if (site) {
       const siteTitle = getSiteTitle(site);
       document.title = `${siteTitle} - Made with SiteSprintz`;
-      
+
       // Update meta description
       let metaDescription = document.querySelector('meta[name="description"]');
       if (!metaDescription) {
@@ -49,8 +49,8 @@ function ShowcaseDetail() {
       setError(null);
 
       try {
-        const response = await fetch(`/api/showcase/${subdomain}`);
-        
+        const response = await fetch(`/api/showcases/${subdomain}`);
+
         if (!response.ok) {
           if (response.status === 404) {
             setError('Site not found. It may be private or does not exist.');
@@ -92,6 +92,7 @@ function ShowcaseDetail() {
   };
 
   const formatCategory = (category) => {
+    if (!category || typeof category !== 'string') return 'Unknown';
     return category
       .split('-')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -100,10 +101,10 @@ function ShowcaseDetail() {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
   };
 
@@ -121,7 +122,7 @@ function ShowcaseDetail() {
   const handleShare = (platform) => {
     const url = `${window.location.origin}/showcase/${subdomain}`;
     const title = getSiteTitle(site);
-    
+
     let shareUrl = '';
     switch (platform) {
       case 'twitter':
@@ -136,7 +137,7 @@ function ShowcaseDetail() {
       default:
         return;
     }
-    
+
     window.open(shareUrl, '_blank', 'width=600,height=400');
   };
 
@@ -197,8 +198,8 @@ function ShowcaseDetail() {
       {/* Hero Section */}
       <section className="showcase-hero">
         <div className="hero-image">
-          <img 
-            src={getSiteHeroImage(site)} 
+          <img
+            src={getSiteHeroImage(site)}
             alt={`${getSiteTitle(site)} hero image`}
             style={{ maxWidth: '100%' }}
           />
@@ -217,9 +218,9 @@ function ShowcaseDetail() {
             <p className="hero-subtitle">{getSiteSubtitle(site)}</p>
           )}
           <div className="hero-actions">
-            <a 
-              href={getSiteUrl(site)} 
-              target="_blank" 
+            <a
+              href={getSiteUrl(site)}
+              target="_blank"
               rel="noopener noreferrer"
               className="btn btn-primary"
             >
@@ -289,9 +290,9 @@ function ShowcaseDetail() {
           <h2>Gallery</h2>
           <div className="gallery-grid">
             {site.site_data.images.gallery.map((image, index) => (
-              <img 
+              <img
                 key={index}
-                src={image} 
+                src={image}
                 alt={`${getSiteTitle(site)} gallery image ${index + 1}`}
                 loading="lazy"
                 style={{ maxWidth: '100%' }}
@@ -305,21 +306,21 @@ function ShowcaseDetail() {
       <section className="showcase-share">
         <h3>Share this site</h3>
         <div className="share-buttons">
-          <button 
+          <button
             onClick={() => handleShare('twitter')}
             className="share-btn share-twitter"
             aria-label="Share on Twitter"
           >
             Twitter
           </button>
-          <button 
+          <button
             onClick={() => handleShare('facebook')}
             className="share-btn share-facebook"
             aria-label="Share on Facebook"
           >
             Facebook
           </button>
-          <button 
+          <button
             onClick={() => handleShare('linkedin')}
             className="share-btn share-linkedin"
             aria-label="Share on LinkedIn"

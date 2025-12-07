@@ -1,701 +1,440 @@
 import express from 'express';
 import fs from 'fs/promises';
-import fsSync from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import bcrypt from 'bcryptjs';
+import multer from 'multer';
+import { requireAdmin, requireAuth } from '../middleware/auth.js';
 import { prisma } from '../../database/db.js';
-import { requireAuth } from '../middleware/auth.js';
-import { sendEmail, EmailTypes } from '../../email-service.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { isValidEmail, isValidPhone, sanitizeString } from '../utils/helpers.js';
 
 const router = express.Router();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const publicDir = path.join(__dirname, '../../public');
+const uploadsDir = path.join(publicDir, 'uploads');
+const draftsDir = path.join(publicDir, 'drafts');
+const dataFile = path.join(publicDir, 'data', 'site.json');
+const templatesDir = path.join(publicDir, 'data', 'templates');
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'dev-token';
 
-// Helper functions
-function isValidEmail(email) {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-}
+// Ensure directories exist
+fs.mkdir(uploadsDir, { recursive: true }).catch(() => { });
+fs.mkdir(draftsDir, { recursive: true }).catch(() => { });
 
-function generateRandomPassword(length = 16) {
-  const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
-  let password = '';
-  for (let i = 0; i < length; i++) {
-    password += charset.charAt(Math.floor(Math.random() * charset.length));
-  }
-  return password;
-}
-
-// POST /api/sites/guest-publish
-router.post('/guest-publish', async (req, res) => {
-  try {
-    const { email, data } = req.body;
-    
-    if (!email || !isValidEmail(email)) {
-      return res.status(400).json({ error: 'Valid email required' });
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadsDir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname));
     }
-    
-    if (!data) {
-      return res.status(400).json({ error: 'Site data required' });
-    }
-    
-    const existingUser = await prisma.users.findUnique({
-      where: { email: email.toLowerCase() },
-      select: { id: true }
-    });
-    
-    let userId;
-    
-    if (!existingUser) {
-      const tempPassword = generateRandomPassword();
-      const hashedPassword = await bcrypt.hash(tempPassword, 10);
-      
-      const user = await prisma.users.create({
-        data: {
-          email: email.toLowerCase(),
-          password_hash: hashedPassword,
-          role: 'user',
-          status: 'pending',
-          created_at: new Date()
+});
+
+const upload = multer({
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only image files are allowed'));
         }
-      });
-      
-      userId = user.id;
-      
-      try {
-        await sendEmail(email, EmailTypes.WELCOME, { email });
-      } catch (emailError) {
-        console.error('Failed to send welcome email:', emailError);
-      }
-    } else {
-      userId = existingUser.id;
     }
-    
-    const businessName = data.brand?.name || data.meta?.businessName || 'my-site';
-    const baseSubdomain = businessName
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-    
-    let subdomain = baseSubdomain;
-    
-    while (true) {
-      const siteDir = path.join(publicDir, 'sites', subdomain);
-      try {
-        await fs.access(siteDir);
-        subdomain = `${baseSubdomain}-${Math.random().toString(36).substr(2, 9)}`;
-      } catch {
-        break;
-      }
-    }
-    
-    const siteDir = path.join(publicDir, 'sites', subdomain);
-    await fs.mkdir(siteDir, { recursive: true });
-    await fs.mkdir(path.join(siteDir, 'data'), { recursive: true });
-    
-    await fs.writeFile(
-      path.join(siteDir, 'data', 'site.json'),
-      JSON.stringify(data, null, 2)
-    );
-    
-    const indexContent = await fs.readFile(
-      path.join(publicDir, 'site-template.html'),
-      'utf-8'
-    );
-    await fs.writeFile(path.join(siteDir, 'index.html'), indexContent);
-    
-    const trialExpiresAt = new Date();
-    trialExpiresAt.setDate(trialExpiresAt.getDate() + 7);
-    
-    const siteId = subdomain;
-    const templateId = data.template || 'starter';
-    
-    await prisma.sites.create({
-      data: {
-        id: siteId,
-        user_id: userId,
-        subdomain: subdomain,
-        template_id: templateId,
-        status: 'published',
-        plan: 'free',
-        published_at: new Date(),
-        expires_at: trialExpiresAt,
-        site_data: data,
-        json_file_path: path.join('sites', subdomain, 'data', 'site.json'),
-        created_at: new Date()
-      }
-    });
-    
-    res.json({
-      success: true,
-      subdomain,
-      url: `${req.protocol}://${req.get('host')}/sites/${subdomain}`,
-      businessName,
-      trialDays: 7
-    });
-    
-  } catch (err) {
-    console.error('Guest publish error:', err);
-    res.status(500).json({ error: 'Failed to publish site' });
-  }
 });
 
-// GET /api/sites/:subdomain - Load site for editing
-router.get('/:subdomain', requireAuth, async (req, res) => {
-  try {
-    const { subdomain } = req.params;
-    const userEmail = req.user.email;
-    
-    // Get site from database using Prisma
-    const site = await prisma.sites.findUnique({
-      where: { subdomain },
-      include: {
-        users: {
-          select: { email: true }
+// Endpoint to get admin token (for image uploads during setup)
+router.get('/admin-token', (req, res) => {
+    // Return the admin token - in production, you might want to add rate limiting here
+    res.json({ token: ADMIN_TOKEN });
+});
+
+// Get site data
+router.get('/site', async (req, res) => {
+    try {
+        const raw = await fs.readFile(dataFile, 'utf-8');
+        const json = JSON.parse(raw);
+        res.json(json);
+    } catch (err) {
+        // If no site.json yet, fall back to a sensible default template
+        if (err && (err.code === 'ENOENT' || err.message?.includes('ENOENT'))) {
+            try {
+                const fallbackRaw = await fs.readFile(path.join(templatesDir, 'starter.json'), 'utf-8');
+                const fallback = JSON.parse(fallbackRaw);
+                return res.json(fallback);
+            } catch (e) {
+                return res.status(500).json({ error: 'No site.json and failed to load default template' });
+            }
         }
-      }
-    });
-    
-    if (!site) {
-      return res.status(404).json({ error: 'Site not found' });
+        res.status(500).json({ error: 'Failed to read site.json' });
     }
-    
-    const ownerEmail = site.users?.email;
-    
-    // Check ownership
-    if (ownerEmail !== userEmail && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Not authorized to edit this site' });
-    }
-    
-    // Try to load site data from file first, then fall back to database
-    let siteData;
-    const siteDir = path.join(publicDir, 'sites', subdomain);
-    const siteJsonPath = path.join(siteDir, 'data', 'site.json');
-    
-    try {
-      const fileContent = await fs.readFile(siteJsonPath, 'utf-8');
-      siteData = JSON.parse(fileContent);
-    } catch (error) {
-      // Fall back to database
-      if (site.site_data) {
-        siteData = typeof site.site_data === 'string' 
-          ? JSON.parse(site.site_data) 
-          : site.site_data;
-      } else {
-        return res.status(500).json({ error: 'Site data not found' });
-      }
-    }
-    
-    res.json({
-      subdomain: site.subdomain,
-      templateId: site.template_id,
-      status: site.status,
-      plan: site.plan,
-      publishedAt: site.published_at,
-      expiresAt: site.expires_at,
-      siteData: siteData
-    });
-    
-  } catch (error) {
-    console.error('Load site error:', error);
-    res.status(500).json({ error: 'Failed to load site' });
-  }
 });
 
-// PUT /api/sites/:subdomain - Update published site
-router.put('/:subdomain', requireAuth, async (req, res) => {
-  try {
-    const { subdomain } = req.params;
-    const { siteData } = req.body;
-    const userEmail = req.user.email;
-    
-    if (!siteData) {
-      return res.status(400).json({ error: 'Site data required' });
-    }
-    
-    // Get site from database using Prisma
-    const site = await prisma.sites.findUnique({
-      where: { subdomain },
-      include: {
-        users: {
-          select: { email: true }
+// Update site data
+router.post('/site', requireAdmin, async (req, res) => {
+    try {
+        const incoming = req.body;
+        if (typeof incoming !== 'object' || incoming == null) {
+            return res.status(400).json({ error: 'Invalid JSON payload' });
         }
-      }
-    });
-    
-    if (!site) {
-      return res.status(404).json({ error: 'Site not found' });
+        await fs.mkdir(path.dirname(dataFile), { recursive: true });
+        await fs.writeFile(dataFile, JSON.stringify(incoming, null, 2));
+        res.json({ ok: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to write site.json' });
     }
-    
-    const ownerEmail = site.users?.email;
-    
-    // Check ownership
-    if (ownerEmail !== userEmail && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Not authorized to edit this site' });
-    }
-    
-    const siteDir = path.join(publicDir, 'sites', subdomain);
-    const siteJsonPath = path.join(siteDir, 'data', 'site.json');
-    const backupDir = path.join(siteDir, 'backups');
-    
-    // Create backup before updating
-    try {
-      await fs.mkdir(backupDir, { recursive: true });
-      
-      // Read current site data
-      let currentData;
-      try {
-        currentData = await fs.readFile(siteJsonPath, 'utf-8');
-      } catch (error) {
-        // If file doesn't exist, use database version
-        if (site.site_data) {
-          currentData = JSON.stringify(
-            typeof site.site_data === 'string' ? JSON.parse(site.site_data) : site.site_data,
-            null,
-            2
-          );
+});
+
+// Upload image endpoint
+router.post('/upload', requireAdmin, (req, res) => {
+    upload.single('image')(req, res, (err) => {
+        if (err) {
+            console.error('Upload error:', err);
+            return res.status(400).json({ error: err.message || 'Upload failed' });
         }
-      }
-      
-      if (currentData) {
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const backupPath = path.join(backupDir, `site-${timestamp}.json`);
-        await fs.writeFile(backupPath, currentData);
-        
-        // Keep only last 10 backups
-        const backups = await fs.readdir(backupDir);
-        if (backups.length > 10) {
-          const sortedBackups = backups
-            .filter(f => f.startsWith('site-'))
-            .sort()
-            .reverse();
-          
-          for (let i = 10; i < sortedBackups.length; i++) {
-            await fs.unlink(path.join(backupDir, sortedBackups[i]));
-          }
+
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
         }
-      }
-    } catch (backupError) {
-      console.error('Backup creation failed:', backupError);
-      // Continue with update even if backup fails
-    }
-    
-    // Update site data file
-    await fs.writeFile(siteJsonPath, JSON.stringify(siteData, null, 2));
-    
-    // Update database using Prisma
-    await prisma.sites.update({
-      where: { subdomain },
-      data: { site_data: siteData }
+
+        res.json({
+            success: true,
+            url: `/uploads/${req.file.filename}`,
+            filename: req.file.filename
+        });
     });
-    
-    res.json({
-      success: true,
-      message: 'Site updated successfully',
-      subdomain
-    });
-    
-  } catch (error) {
-    console.error('Update site error:', error);
-    res.status(500).json({ error: 'Failed to update site' });
-  }
 });
 
-// PATCH /api/sites/:subdomain
-router.patch('/:subdomain', requireAuth, async (req, res) => {
-  try {
-    const { subdomain } = req.params;
-    const userEmail = req.user.email;
-    const { changes } = req.body;
-    
-    const siteDir = path.join(publicDir, 'sites', subdomain);
-    const sitePath = path.join(siteDir, 'site.json');
-    let existingSite;
-    
+// Delete uploaded image
+router.delete('/uploads/:filename', requireAdmin, async (req, res) => {
     try {
-      existingSite = JSON.parse(await fs.readFile(sitePath, 'utf-8'));
-    } catch (error) {
-      return res.status(404).json({ error: 'Site not found' });
+        const filename = req.params.filename;
+        await fs.unlink(path.join(uploadsDir, filename));
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to delete file' });
     }
-    
-    if (existingSite.published?.email !== userEmail) {
-      return res.status(403).json({ error: 'Not authorized to edit this site' });
-    }
-    
-    const checkpointDir = path.join(siteDir, 'checkpoints');
-    await fs.mkdir(checkpointDir, { recursive: true });
-    const checkpointPath = path.join(checkpointDir, `checkpoint.${Date.now()}.json`);
-    await fs.writeFile(checkpointPath, JSON.stringify({
-      timestamp: Date.now(),
-      data: existingSite,
-      changes: changes
-    }, null, 2));
-    
-    const updatedSite = { ...existingSite };
-    
-    changes.forEach(({ field, value }) => {
-      const keys = field.split('.');
-      let obj = updatedSite;
-      
-      for (let i = 0; i < keys.length - 1; i++) {
-        if (!obj[keys[i]]) obj[keys[i]] = {};
-        obj = obj[keys[i]];
-      }
-      
-      obj[keys[keys.length - 1]] = value;
-    });
-    
-    updatedSite.published = {
-      ...updatedSite.published,
-      lastUpdated: new Date().toISOString()
-    };
-    
-    await fs.writeFile(sitePath, JSON.stringify(updatedSite, null, 2));
-    
-    res.json({ 
-      success: true, 
-      message: 'Changes saved',
-      checkpointId: Date.now()
-    });
-  } catch (error) {
-    console.error('Patch site error:', error);
-    res.status(500).json({ error: 'Failed to save changes', details: error.message });
-  }
 });
 
-// DELETE /api/sites/:subdomain
-router.delete('/:subdomain', requireAuth, async (req, res) => {
-  try {
-    const { subdomain } = req.params;
-    const userEmail = req.user.email;
-    
-    const siteDir = path.join(publicDir, 'sites', subdomain);
-    const sitePath = path.join(siteDir, 'site.json');
-    
-    let siteData;
+// Draft Management Endpoints
+router.post('/drafts', async (req, res) => {
     try {
-      siteData = JSON.parse(await fs.readFile(sitePath, 'utf-8'));
-    } catch (error) {
-      return res.status(404).json({ error: 'Site not found' });
-    }
-    
-    if (siteData.published?.email !== userEmail) {
-      return res.status(403).json({ error: 'Not authorized to delete this site' });
-    }
-    
-    await fs.rm(siteDir, { recursive: true, force: true });
-    
-    await prisma.sites.delete({
-      where: { subdomain }
-    });
-    
-    res.json({ success: true, message: 'Site deleted successfully' });
-  } catch (error) {
-    console.error('Delete site error:', error);
-    res.status(500).json({ error: 'Failed to delete site' });
-  }
-});
+        const draftData = req.body;
 
-// GET /api/sites/:subdomain/submissions
-router.get('/:subdomain/submissions', requireAuth, async (req, res) => {
-  try {
-    const { subdomain } = req.params;
-    const userEmail = req.user.email;
-    
-    const siteJsonPath = path.join(publicDir, 'sites', subdomain, 'site.json');
-    let siteData;
-    try {
-      siteData = JSON.parse(await fs.readFile(siteJsonPath, 'utf-8'));
-    } catch (error) {
-      return res.status(404).json({ error: 'Site not found' });
-    }
-    
-    if (siteData.published?.email !== userEmail) {
-      return res.status(403).json({ error: 'Not authorized to view submissions for this site' });
-    }
-    
-    const submissionsFile = path.join(publicDir, 'sites', subdomain, 'submissions.json');
-    let submissions = [];
-    try {
-      const data = await fs.readFile(submissionsFile, 'utf-8');
-      submissions = JSON.parse(data);
-    } catch (error) {
-      submissions = [];
-    }
-    
-    res.json({
-      success: true,
-      submissions,
-      total: submissions.length,
-      unread: submissions.filter(s => s.status === 'unread').length
-    });
-    
-  } catch (error) {
-    console.error('Get submissions error:', error);
-    res.status(500).json({ error: 'Failed to load submissions' });
-  }
-});
-
-// GET /api/sites/:subdomain/history
-router.get('/:subdomain/history', requireAuth, async (req, res) => {
-  try {
-    const { subdomain } = req.params;
-    const userEmail = req.user.email;
-    
-    const siteDir = path.join(publicDir, 'sites', subdomain);
-    const sitePath = path.join(siteDir, 'site.json');
-    let existingSite;
-    
-    try {
-      existingSite = JSON.parse(await fs.readFile(sitePath, 'utf-8'));
-    } catch (error) {
-      return res.status(404).json({ error: 'Site not found' });
-    }
-    
-    if (existingSite.published?.email !== userEmail) {
-      return res.status(403).json({ error: 'Not authorized' });
-    }
-    
-    const backupDir = path.join(siteDir, 'backups');
-    const checkpointDir = path.join(siteDir, 'checkpoints');
-    
-    let history = [];
-    
-    try {
-      const backups = await fs.readdir(backupDir);
-      for (const backup of backups) {
-        if (backup.startsWith('site.backup.')) {
-          const timestamp = parseInt(backup.split('.')[2]);
-          history.push({
-            id: `backup-${timestamp}`,
-            timestamp: timestamp,
-            type: 'backup',
-            description: 'Manual save point',
-            date: new Date(timestamp).toLocaleString()
-          });
+        if (!draftData || !draftData.templateId) {
+            return res.status(400).json({ error: 'Invalid draft data: templateId is required' });
         }
-      }
-    } catch (e) {
-      // No backups yet
-    }
-    
-    try {
-      const checkpoints = await fs.readdir(checkpointDir);
-      const sorted = checkpoints
-        .filter(f => f.startsWith('checkpoint.'))
-        .map(f => parseInt(f.split('.')[1]))
-        .sort((a, b) => b - a)
-        .slice(0, 20);
-      
-      for (const timestamp of sorted) {
-        const checkpointPath = path.join(checkpointDir, `checkpoint.${timestamp}.json`);
-        try {
-          const checkpoint = JSON.parse(await fs.readFile(checkpointPath, 'utf-8'));
-          const changeDesc = checkpoint.changes?.map(c => c.field).join(', ') || 'Multiple changes';
-          
-          history.push({
-            id: `checkpoint-${timestamp}`,
-            timestamp: timestamp,
-            type: 'checkpoint',
-            description: `Updated: ${changeDesc}`,
-            date: new Date(timestamp).toLocaleString()
-          });
-        } catch (e) {
-          // Skip corrupted checkpoint
+
+        // Validate business data if provided
+        if (draftData.businessData) {
+            const bd = draftData.businessData;
+
+            // Validate email if provided
+            if (bd.email && !isValidEmail(bd.email)) {
+                return res.status(400).json({ error: 'Invalid email address' });
+            }
+
+            // Validate phone if provided
+            if (bd.phone && !isValidPhone(bd.phone)) {
+                return res.status(400).json({ error: 'Invalid phone number format' });
+            }
+
+            // Sanitize string fields
+            if (bd.businessName) bd.businessName = sanitizeString(bd.businessName, 200);
+            if (bd.heroTitle) bd.heroTitle = sanitizeString(bd.heroTitle, 200);
+            if (bd.heroSubtitle) bd.heroSubtitle = sanitizeString(bd.heroSubtitle, 500);
+            if (bd.address) bd.address = sanitizeString(bd.address, 300);
         }
-      }
-    } catch (e) {
-      // No checkpoints yet
-    }
-    
-    history.sort((a, b) => b.timestamp - a.timestamp);
-    
-    res.json({ 
-      success: true,
-      history: history
-    });
-  } catch (error) {
-    console.error('Get history error:', error);
-    res.status(500).json({ error: 'Failed to load history' });
-  }
-});
 
-// POST /api/sites/:subdomain/restore/:versionId
-router.post('/:subdomain/restore/:versionId', requireAuth, async (req, res) => {
-  try {
-    const { subdomain, versionId } = req.params;
-    const userEmail = req.user.email;
-    
-    const siteDir = path.join(publicDir, 'sites', subdomain);
-    const sitePath = path.join(siteDir, 'site.json');
-    let currentSite;
-    
-    try {
-      currentSite = JSON.parse(await fs.readFile(sitePath, 'utf-8'));
-    } catch (error) {
-      return res.status(404).json({ error: 'Site not found' });
-    }
-    
-    if (currentSite.published?.email !== userEmail) {
-      return res.status(403).json({ error: 'Not authorized' });
-    }
-    
-    const backupDir = path.join(siteDir, 'backups');
-    await fs.mkdir(backupDir, { recursive: true });
-    const beforeRestorePath = path.join(backupDir, `site.before-restore.${Date.now()}.json`);
-    await fs.writeFile(beforeRestorePath, JSON.stringify(currentSite, null, 2));
-    
-    let restoredData;
-    
-    if (versionId.startsWith('backup-')) {
-      const timestamp = versionId.replace('backup-', '');
-      const backupPath = path.join(backupDir, `site.backup.${timestamp}.json`);
-      restoredData = JSON.parse(await fs.readFile(backupPath, 'utf-8'));
-    } else if (versionId.startsWith('checkpoint-')) {
-      const timestamp = versionId.replace('checkpoint-', '');
-      const checkpointPath = path.join(siteDir, 'checkpoints', `checkpoint.${timestamp}.json`);
-      const checkpoint = JSON.parse(await fs.readFile(checkpointPath, 'utf-8'));
-      restoredData = checkpoint.data;
-    } else {
-      return res.status(400).json({ error: 'Invalid version ID' });
-    }
-    
-    restoredData.published = {
-      ...restoredData.published,
-      lastUpdated: new Date().toISOString(),
-      restoredFrom: versionId,
-      restoredAt: new Date().toISOString()
-    };
-    
-    await fs.writeFile(sitePath, JSON.stringify(restoredData, null, 2));
-    
-    res.json({ 
-      success: true,
-      message: 'Version restored successfully',
-      restoredFrom: versionId
-    });
-  } catch (error) {
-    console.error('Restore version error:', error);
-    res.status(500).json({ error: 'Failed to restore version' });
-  }
-});
+        // Generate unique draft ID
+        const draftId = `draft-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const draftFile = path.join(draftsDir, `${draftId}.json`);
 
-// GET /api/sites/:subdomain/session
-router.get('/:subdomain/session', requireAuth, async (req, res) => {
-  try {
-    const { subdomain } = req.params;
-    const userEmail = req.user.email;
-    
-    const siteDir = path.join(publicDir, 'sites', subdomain);
-    const sitePath = path.join(siteDir, 'site.json');
-    let existingSite;
-    
-    try {
-      existingSite = JSON.parse(await fs.readFile(sitePath, 'utf-8'));
-    } catch (error) {
-      return res.status(404).json({ error: 'Site not found' });
-    }
-    
-    if (existingSite.published?.email !== userEmail) {
-      return res.status(403).json({ error: 'Not authorized' });
-    }
-    
-    const checkpointDir = path.join(siteDir, 'checkpoints');
-    let lastCheckpoint = null;
-    
-    try {
-      const checkpoints = await fs.readdir(checkpointDir);
-      if (checkpoints.length > 0) {
-        const latest = checkpoints
-          .filter(f => f.startsWith('checkpoint.'))
-          .map(f => parseInt(f.split('.')[1]))
-          .sort((a, b) => b - a)[0];
-        
-        lastCheckpoint = {
-          timestamp: latest,
-          date: new Date(latest).toLocaleString()
+        // Add expiration timestamp (7 days from now)
+        const draft = {
+            draftId: draftId,
+            templateId: draftData.templateId,
+            businessData: draftData.businessData || {},
+            createdAt: new Date().toISOString(),
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            status: 'draft'
         };
-      }
-    } catch (e) {
-      // No checkpoints
+
+        await fs.writeFile(draftFile, JSON.stringify(draft, null, 2));
+
+        res.json({
+            success: true,
+            draftId: draftId,
+            previewUrl: `/preview/${draftId}`,
+            expiresAt: draft.expiresAt
+        });
+    } catch (err) {
+        console.error('Draft save error:', err);
+        res.status(500).json({ error: 'Failed to save draft' });
     }
-    
-    res.json({
-      success: true,
-      session: {
-        subdomain: subdomain,
-        lastCheckpoint: lastCheckpoint,
-        lastUpdated: existingSite.published?.lastUpdated
-      }
-    });
-  } catch (error) {
-    console.error('Get session error:', error);
-    res.status(500).json({ error: 'Failed to get session info' });
-  }
 });
 
-// GET /api/sites/:siteId/products
-router.get('/:siteId/products', requireAuth, async (req, res) => {
-  try {
-    const { siteId } = req.params;
-    const siteFile = path.join(publicDir, 'sites', siteId, 'site.json');
-    
-    if (!fsSync.existsSync(siteFile)) {
-      return res.status(404).json({ error: 'Site not found' });
+router.get('/drafts/:draftId', async (req, res) => {
+    try {
+        const draftId = req.params.draftId;
+        const draftFile = path.join(draftsDir, `${draftId}.json`);
+
+        const draftRaw = await fs.readFile(draftFile, 'utf-8');
+        const draft = JSON.parse(draftRaw);
+
+        // Check if draft is expired
+        if (new Date(draft.expiresAt) < new Date()) {
+            await fs.unlink(draftFile);
+            return res.status(410).json({ error: 'Draft has expired' });
+        }
+
+        res.json(draft);
+    } catch (err) {
+        if (err.code === 'ENOENT') {
+            res.status(404).json({ error: 'Draft not found' });
+        } else {
+            res.status(500).json({ error: 'Failed to load draft' });
+        }
     }
-    
-    const siteData = JSON.parse(fsSync.readFileSync(siteFile, 'utf-8'));
-    
-    if (siteData.ownerEmail !== req.user.email && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-    
-    res.json({
-      products: siteData.products || [],
-      siteName: siteData.businessName || siteData.brand?.name || siteId
-    });
-    
-  } catch (error) {
-    console.error('Get products error:', error);
-    res.status(500).json({ error: 'Failed to load products' });
-  }
 });
 
-// PUT /api/sites/:siteId/products
-router.put('/:siteId/products', requireAuth, async (req, res) => {
-  try {
-    const { siteId } = req.params;
-    const { products } = req.body;
-    
-    const siteFile = path.join(publicDir, 'sites', siteId, 'site.json');
-    
-    if (!fsSync.existsSync(siteFile)) {
-      return res.status(404).json({ error: 'Site not found' });
+router.delete('/drafts/:draftId', async (req, res) => {
+    try {
+        const draftId = req.params.draftId;
+        const draftFile = path.join(draftsDir, `${draftId}.json`);
+        await fs.unlink(draftFile);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to delete draft' });
     }
-    
-    const siteData = JSON.parse(fsSync.readFileSync(siteFile, 'utf-8'));
-    
-    if (siteData.ownerEmail !== req.user.email && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Access denied' });
+});
+
+// Save site data from setup flow
+router.post('/setup', async (req, res) => {
+    try {
+        const setupData = req.body;
+        console.log('Received setup data:', JSON.stringify(setupData, null, 2));
+
+        if (!setupData) {
+            return res.status(400).json({ error: 'No data received' });
+        }
+
+        if (!setupData.templateId) {
+            return res.status(400).json({ error: 'templateId is required' });
+        }
+
+        // Load the template
+        const templateFile = path.join(templatesDir, `${setupData.templateId}.json`);
+        let siteData;
+
+        try {
+            const templateRaw = await fs.readFile(templateFile, 'utf-8');
+            siteData = JSON.parse(templateRaw);
+        } catch (err) {
+            // Fallback to starter template if template not found
+            const starterRaw = await fs.readFile(path.join(templatesDir, 'starter.json'), 'utf-8');
+            siteData = JSON.parse(starterRaw);
+        }
+
+        // Update site data with setup information
+        if (setupData.businessData && typeof setupData.businessData === 'object') {
+            if (setupData.businessData.businessName && setupData.businessData.businessName.trim()) {
+                siteData.brand.name = setupData.businessData.businessName;
+            }
+
+            if (siteData.hero) {
+                if (setupData.businessData.heroTitle && setupData.businessData.heroTitle.trim()) {
+                    siteData.hero.title = setupData.businessData.heroTitle;
+                }
+                if (setupData.businessData.heroSubtitle && setupData.businessData.heroSubtitle.trim()) {
+                    siteData.hero.subtitle = setupData.businessData.heroSubtitle;
+                }
+                if (setupData.businessData.heroImage && setupData.businessData.heroImage.trim()) {
+                    siteData.hero.image = setupData.businessData.heroImage;
+                }
+            }
+
+            if (siteData.contact) {
+                if (setupData.businessData.email && setupData.businessData.email.trim()) siteData.contact.email = setupData.businessData.email;
+                if (setupData.businessData.phone && setupData.businessData.phone.trim()) siteData.contact.phone = setupData.businessData.phone;
+                if (setupData.businessData.address && setupData.businessData.address.trim()) siteData.contact.subtitle = setupData.businessData.address;
+                if (setupData.businessData.businessHours && setupData.businessData.businessHours.trim()) siteData.contact.hours = setupData.businessData.businessHours;
+            }
+
+            // Update services/products
+            if (Array.isArray(setupData.businessData.services) && setupData.businessData.services.length > 0) {
+                // Determine if this template uses 'products' or 'services'
+                if (siteData.products) {
+                    siteData.products = setupData.businessData.services
+                        .filter(s => s.name && s.name.trim())
+                        .map(s => ({
+                            name: s.name,
+                            price: parseFloat(s.price) || 0,
+                            description: s.description || '',
+                            ...(s.image && s.image.trim() && { image: s.image }),
+                            ...(s.imageAlt && { imageAlt: s.imageAlt })
+                        }));
+                } else if (siteData.services) {
+                    siteData.services.items = setupData.businessData.services
+                        .filter(s => s.name && s.name.trim())
+                        .map(s => ({
+                            title: s.name,
+                            description: s.description || '',
+                            ...(s.price && { price: s.price }),
+                            ...(s.image && s.image.trim() && { image: s.image }),
+                            ...(s.imageAlt && { imageAlt: s.imageAlt })
+                        }));
+                }
+            }
+        }
+
+        // Create unique page ID
+        const pageId = `site-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+        // In a real app, we would save this to a database or a new file
+        // For now, we'll just return the modified site data
+
+        res.json({
+            success: true,
+            pageId: pageId,
+            siteData: siteData
+        });
+
+    } catch (err) {
+        console.error('Setup error:', err);
+        res.status(500).json({ error: 'Failed to process setup data' });
     }
-    
-    if (!Array.isArray(products)) {
-      return res.status(400).json({ error: 'Products must be an array' });
+});
+
+// Product Management Endpoints
+router.get('/sites/:siteId/products', async (req, res) => {
+    try {
+        const { siteId } = req.params;
+        console.log(`GET products for site: ${siteId}`);
+        const siteFile = path.join(publicDir, 'sites', siteId, 'data', 'site.json');
+
+        try {
+            const raw = await fs.readFile(siteFile, 'utf-8');
+            const data = JSON.parse(raw);
+
+            // Normalize products/services structure
+            let products = [];
+            if (data.products && Array.isArray(data.products)) {
+                products = data.products;
+            } else if (data.services && data.services.items && Array.isArray(data.services.items)) {
+                // Convert services to products format if needed
+                products = data.services.items.map(s => ({
+                    id: s.id || Date.now().toString() + Math.random(),
+                    name: s.title || s.name,
+                    description: s.description,
+                    price: s.price || 0,
+                    image: s.image,
+                    category: 'General'
+                }));
+            }
+            console.log(`Found ${products.length} products`);
+            res.json({ products });
+        } catch (err) {
+            console.error(`Error reading site file: ${err.message}`);
+            if (err.code === 'ENOENT') {
+                return res.status(404).json({ error: 'Site not found' });
+            }
+            throw err;
+        }
+    } catch (err) {
+        console.error('Get products error:', err);
+        res.status(500).json({ error: 'Failed to get products' });
     }
-    
-    siteData.products = products;
-    
-    fsSync.writeFileSync(siteFile, JSON.stringify(siteData, null, 2));
-    
-    res.json({ success: true, products: siteData.products });
-    
-  } catch (error) {
-    console.error('Update products error:', error);
-    res.status(500).json({ error: 'Failed to update products' });
-  }
+});
+
+router.put('/sites/:siteId/products', async (req, res) => {
+    try {
+        const { siteId } = req.params;
+        const { products } = req.body;
+        console.log(`PUT products for site: ${siteId}, count: ${products.length}`);
+
+        if (!Array.isArray(products)) {
+            return res.status(400).json({ error: 'Products must be an array' });
+        }
+
+        const siteFile = path.join(publicDir, 'sites', siteId, 'data', 'site.json');
+
+        try {
+            const raw = await fs.readFile(siteFile, 'utf-8');
+            const data = JSON.parse(raw);
+
+            // Update products
+            // If template uses services, we might need to update that too, but for now assume products
+            data.products = products;
+
+            // Also update services if they exist and map to products
+            if (data.services && data.services.items) {
+                data.services.items = products.map(p => ({
+                    title: p.name,
+                    description: p.description,
+                    price: p.price,
+                    image: p.image
+                }));
+            }
+
+            await fs.writeFile(siteFile, JSON.stringify(data, null, 2));
+            console.log('Products updated successfully');
+            res.json({ success: true });
+        } catch (err) {
+            console.error(`Error updating site file: ${err.message}`);
+            if (err.code === 'ENOENT') {
+                return res.status(404).json({ error: 'Site not found' });
+            }
+            throw err;
+        }
+    } catch (err) {
+        console.error('Update products error:', err);
+        res.status(500).json({ error: 'Failed to update products' });
+    }
+});
+
+router.put('/sites/:siteId/public', requireAuth, async (req, res) => {
+    try {
+        const { siteId } = req.params;
+        const { isPublic } = req.body;
+        const userId = req.user.userId || req.user.id; // handle both formats
+
+        if (typeof isPublic !== 'boolean') {
+            return res.status(400).json({ error: 'isPublic must be a boolean' });
+        }
+
+        const site = await prisma.sites.findUnique({
+            where: { id: siteId }
+        });
+
+        if (!site) {
+            return res.status(404).json({ error: 'Site not found' });
+        }
+
+        // Check ownership
+        if (site.user_id !== userId) {
+            return res.status(403).json({ error: 'Unauthorized' });
+        }
+
+        // Check if site is published
+        if (site.status !== 'published') {
+            return res.status(400).json({ error: 'Only published sites can be made public' });
+        }
+
+        const updated = await prisma.sites.update({
+            where: { id: siteId },
+            data: { is_public: isPublic }
+        });
+
+        res.json({
+            success: true,
+            isPublic: updated.is_public
+        });
+    } catch (err) {
+        console.error('Error toggling public status:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 export default router;

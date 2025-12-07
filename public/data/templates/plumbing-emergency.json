@@ -7,28 +7,51 @@
     "email": "emergency@rapidflow.plumbing"
   },
   "themeVars": {
-    "color-primary": "#dc2626",
-    "color-accent": "#ef4444",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Emergency", "href": "#contact"},
-    {"label": "Services", "href": "#products"},
-    {"label": "Coverage", "href": "#about"},
-    {"label": "Call Now", "href": "tel:+15559117777"}
+    {
+      "label": "Emergency",
+      "href": "#contact"
+    },
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "Coverage",
+      "href": "#about"
+    },
+    {
+      "label": "Call Now",
+      "href": "tel:+15559117777"
+    }
   ],
   "hero": {
     "eyebrow": "🚨 24/7 Emergency Plumbing",
     "title": "Fast response when you need it most",
     "subtitle": "Burst pipe? No hot water? Backed-up sewer? We're available 24/7 for plumbing emergencies. Licensed plumbers arrive fast with fully-stocked trucks. Stop the damage. Fix the problem. Get back to normal.",
     "cta": [
-      {"label": "🚨 Call Now: (555) 911-7777", "href": "tel:+15559117777"},
-      {"label": "Our Services", "href": "#products", "variant": "secondary"}
+      {
+        "label": "🚨 Call Now: (555) 911-7777",
+        "href": "tel:+15559117777"
+      },
+      {
+        "label": "Our Services",
+        "href": "#products",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=1200&q=80",
-    "imageAlt": "Emergency plumber fixing leak"
+    "imageAlt": "Emergency plumber fixing leak",
+    "layout": "split"
   },
   "about": {
     "title": "Emergency Plumbing Experts",
@@ -135,7 +158,11 @@
         "bio": "Licensed Master Plumber with 20+ years experience. Founded RapidFlow to provide fast, reliable emergency service when people need it most. Available 24/7.",
         "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
         "imageAlt": "Steve Patterson",
-        "credentials": ["Master Plumber License", "20+ Years Experience", "24/7 Available"]
+        "credentials": [
+          "Master Plumber License",
+          "20+ Years Experience",
+          "24/7 Available"
+        ]
       }
     ]
   },
@@ -143,18 +170,42 @@
     "title": "Emergency Process",
     "subtitle": "Fast response when minutes matter",
     "steps": [
-      {"title": "Call Immediately", "description": "24/7 live answer. Describe your emergency"},
-      {"title": "Plumber Dispatched", "description": "Licensed plumber with stocked truck sent right away"},
-      {"title": "Stop the Damage", "description": "Assess situation and stop immediate problem"},
-      {"title": "Complete Repair", "description": "Fix properly and restore normal function"}
+      {
+        "title": "Call Immediately",
+        "description": "24/7 live answer. Describe your emergency"
+      },
+      {
+        "title": "Plumber Dispatched",
+        "description": "Licensed plumber with stocked truck sent right away"
+      },
+      {
+        "title": "Stop the Damage",
+        "description": "Assess situation and stop immediate problem"
+      },
+      {
+        "title": "Complete Repair",
+        "description": "Fix properly and restore normal function"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "24/7", "label": "Always Available"},
-      {"number": "<1HR", "label": "Average Response"},
-      {"number": "4.9", "label": "Emergency Rating"},
-      {"number": "Licensed", "label": "& Insured"}
+      {
+        "number": "24/7",
+        "label": "Always Available"
+      },
+      {
+        "number": "<1HR",
+        "label": "Average Response"
+      },
+      {
+        "number": "4.9",
+        "label": "Emergency Rating"
+      },
+      {
+        "number": "Licensed",
+        "label": "& Insured"
+      }
     ]
   },
   "contact": {
@@ -183,4 +234,3 @@
   "productsTitle": "Emergency Services",
   "productsSubtitle": "24/7 fast response"
 }
-

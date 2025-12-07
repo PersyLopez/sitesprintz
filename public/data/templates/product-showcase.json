@@ -7,18 +7,32 @@
     "email": "hello@brightshelf.com"
   },
   "themeVars": {
-    "color-primary": "#f97316",
-    "color-primary-600": "#ea580c",
-    "color-accent": "#fb923c",
-    "color-success": "#22c55e",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    { "label": "Home", "href": "#hero" },
-    { "label": "Collections", "href": "#products" },
-    { "label": "About", "href": "#about" },
-    { "label": "Contact", "href": "#contact" }
+    {
+      "label": "Home",
+      "href": "#hero"
+    },
+    {
+      "label": "Collections",
+      "href": "#products"
+    },
+    {
+      "label": "About",
+      "href": "#about"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "New arrivals in store",
@@ -27,9 +41,17 @@
     "image": "assets/hero-placeholder.jpg",
     "imageAlt": "Boutique interior",
     "cta": [
-      { "label": "View Collections", "href": "#products" },
-      { "label": "Contact Us", "href": "#contact", "variant": "secondary" }
-    ]
+      {
+        "label": "View Collections",
+        "href": "#products"
+      },
+      {
+        "label": "Contact Us",
+        "href": "#contact",
+        "variant": "secondary"
+      }
+    ],
+    "layout": "split"
   },
   "about": {
     "title": "Tailored for in-person experiences",
@@ -104,13 +126,19 @@
         "name": "Home Essentials",
         "description": "Everyday pieces curated for easy styling.",
         "price": 59,
-        "cta": { "label": "Call to order", "href": "#contact" }
+        "cta": {
+          "label": "Call to order",
+          "href": "#contact"
+        }
       },
       {
         "name": "Gifting Suite",
         "description": "Ready-to-wrap gifts for every occasion.",
         "price": 95,
-        "cta": { "label": "Email for details", "href": "mailto:hello@brightshelf.com" }
+        "cta": {
+          "label": "Email for details",
+          "href": "mailto:hello@brightshelf.com"
+        }
       }
     ]
   },
@@ -132,4 +160,3 @@
     "productNote": "Submit your order inquiry and we'll contact you to arrange pickup or delivery."
   }
 }
-

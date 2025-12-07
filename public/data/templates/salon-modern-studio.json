@@ -1,38 +1,64 @@
 {
   "brand": {
-    "name": "EDGE Hair Studio", 
+    "name": "EDGE Hair Studio",
     "logo": "assets/logo.svg",
     "tagline": "Bold Cuts • Fresh Color • 2018",
     "phone": "(555) 432-1100",
     "email": "hello@edgestudio.co"
   },
   "themeVars": {
-    "color-primary": "#06b6d4", 
-    "color-accent": "#22d3ee",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "Portfolio", "href": "#about"},
-    {"label": "Team", "href": "#team"},
-    {"label": "Reviews", "href": "#testimonials"},
-    {"label": "Contact", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "Portfolio",
+      "href": "#about"
+    },
+    {
+      "label": "Team",
+      "href": "#team"
+    },
+    {
+      "label": "Reviews",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "✂️ Trendsetting Hair Studio",
     "title": "Bold cuts that turn heads",
     "subtitle": "We're not your average salon. At EDGE, we specialize in fashion-forward cuts, vibrant color, and styles that make a statement. Expect the unexpected and leave with confidence.",
     "cta": [
-      {"label": "Book Now", "href": "#contact"},
-      {"label": "View Work", "href": "#about", "variant": "secondary"}
+      {
+        "label": "Book Now",
+        "href": "#contact"
+      },
+      {
+        "label": "View Work",
+        "href": "#about",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1560869713-7d0a29430803?w=1200&q=80",
-    "imageAlt": "Modern industrial hair studio with exposed brick"
+    "imageAlt": "Modern industrial hair studio with exposed brick",
+    "layout": "split"
   },
   "about": {
-    "title": "The EDGE Difference", 
+    "title": "The EDGE Difference",
     "subtitle": "Where creativity meets technique",
     "content": "Founded by creative director Jamie Park in 2018, EDGE is downtown's go-to studio for clients who aren't afraid to push boundaries. We stay ahead of trends, master the latest techniques, and believe your hair is your ultimate accessory."
   },
@@ -148,7 +174,11 @@
         "bio": "10+ years pushing creative boundaries in hair. Trained in NYC, featured in editorial shoots, and obsessed with making clients feel amazing.",
         "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
         "imageAlt": "Jamie Park",
-        "credentials": ["Bumble & Bumble Certified", "Pulp Riot Color Specialist", "Featured in Allure"]
+        "credentials": [
+          "Bumble & Bumble Certified",
+          "Pulp Riot Color Specialist",
+          "Featured in Allure"
+        ]
       }
     ]
   },
@@ -156,22 +186,46 @@
     "title": "How It Works",
     "subtitle": "From booking to final look",
     "steps": [
-      {"title": "Book Online", "description": "Choose your service and stylist through our easy booking system"},
-      {"title": "Consult", "description": "We'll discuss your vision, lifestyle, and hair goals"},
-      {"title": "Create", "description": "Sit back and let us work our magic with premium products"},
-      {"title": "Style & Go", "description": "Walk out with killer hair and the confidence to match"}
+      {
+        "title": "Book Online",
+        "description": "Choose your service and stylist through our easy booking system"
+      },
+      {
+        "title": "Consult",
+        "description": "We'll discuss your vision, lifestyle, and hair goals"
+      },
+      {
+        "title": "Create",
+        "description": "Sit back and let us work our magic with premium products"
+      },
+      {
+        "title": "Style & Go",
+        "description": "Walk out with killer hair and the confidence to match"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "500+", "label": "5-Star Reviews"},
-      {"number": "5", "label": "Expert Stylists"},
-      {"number": "4.9", "label": "Rating"},
-      {"number": "2000+", "label": "Transformations"}
+      {
+        "number": "500+",
+        "label": "5-Star Reviews"
+      },
+      {
+        "number": "5",
+        "label": "Expert Stylists"
+      },
+      {
+        "number": "4.9",
+        "label": "Rating"
+      },
+      {
+        "number": "2000+",
+        "label": "Transformations"
+      }
     ]
   },
   "contact": {
-    "title": "Visit the Studio", 
+    "title": "Visit the Studio",
     "subtitle": "Ready for your transformation?",
     "phone": "(555) 432-1100",
     "email": "hello@edgestudio.co",
@@ -196,4 +250,3 @@
   "productsTitle": "Services & Pricing",
   "productsSubtitle": "Quality work at fair prices"
 }
-

@@ -3,8 +3,8 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { requireAuth } from '../middleware/auth.js';
-import { query as dbQuery } from '../../database/db.js';
-import { sendEmail, EmailTypes } from '../../email-service.js';
+import { prisma } from '../../database/db.js';
+import { sendEmail, EmailTypes } from '../utils/email-service-wrapper.js';
 import bcrypt from 'bcryptjs';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -26,13 +26,21 @@ router.get('/users', requireAuth, async (req, res) => {
       return res.status(403).json({ error: 'Admin access required' });
     }
 
-    const result = await dbQuery(`
-      SELECT id, email, role, status, created_at, last_login
-      FROM users
-      ORDER BY created_at DESC
-    `);
+    const users = await prisma.users.findMany({
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        status: true,
+        created_at: true,
+        last_login: true
+      },
+      orderBy: {
+        created_at: 'desc'
+      }
+    });
 
-    const users = result.rows.map(user => ({
+    const formattedUsers = users.map(user => ({
       id: user.id,
       email: user.email,
       role: user.role,
@@ -41,7 +49,7 @@ router.get('/users', requireAuth, async (req, res) => {
       lastLogin: user.last_login
     }));
 
-    res.json({ users });
+    res.json({ users: formattedUsers });
   } catch (error) {
     console.error('Error loading users:', error);
     res.status(500).json({ error: 'Failed to load users' });
@@ -61,25 +69,31 @@ router.post('/invite-user', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Email is required' });
     }
 
-    const existingUser = await dbQuery(
-      'SELECT id FROM users WHERE email = $1',
-      [email.toLowerCase()]
-    );
+    const existingUser = await prisma.users.findUnique({
+      where: { email: email.toLowerCase() }
+    });
 
-    if (existingUser.rows.length > 0) {
+    if (existingUser) {
       return res.status(400).json({ error: 'User with this email already exists' });
     }
 
     const tempPassword = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
-    const userResult = await dbQuery(`
-      INSERT INTO users (email, password_hash, role, status, created_at)
-      VALUES ($1, $2, $3, 'invited', NOW())
-      RETURNING id, email, role
-    `, [email.toLowerCase(), hashedPassword, role]);
-
-    const user = userResult.rows[0];
+    const user = await prisma.users.create({
+      data: {
+        email: email.toLowerCase(),
+        password_hash: hashedPassword,
+        role,
+        status: 'invited',
+        created_at: new Date()
+      },
+      select: {
+        id: true,
+        email: true,
+        role: true
+      }
+    });
 
     try {
       await sendEmail(email, EmailTypes.INVITATION, { email, tempPassword });
@@ -105,15 +119,96 @@ router.get('/analytics', requireAuth, async (req, res) => {
       return res.status(403).json({ error: 'Admin access required' });
     }
 
-    const usersResult = await dbQuery('SELECT COUNT(*) as count FROM users');
-    const sitesResult = await dbQuery('SELECT COUNT(*) as count FROM sites WHERE status = $1', ['published']);
-    const draftsResult = await dbQuery('SELECT COUNT(*) as count FROM sites WHERE status = $1', ['draft']);
+    const [usersCount, publishedSitesCount, draftsCount, totalSitesCount, recentUsers] = await Promise.all([
+      prisma.users.count(),
+      prisma.sites.count({ where: { status: 'published' } }),
+      prisma.sites.count({ where: { status: 'draft' } }),
+      prisma.sites.count(),
+      prisma.users.findMany({
+        take: 5,
+        orderBy: { created_at: 'desc' },
+        select: {
+          id: true,
+          email: true,
+          role: true,
+          created_at: true,
+          status: true,
+          subscription_plan: true
+        }
+      })
+    ]);
 
-    res.json({
-      users: parseInt(usersResult.rows[0].count),
-      publishedSites: parseInt(sitesResult.rows[0].count),
-      drafts: parseInt(draftsResult.rows[0].count)
-    });
+    // Mock system stats for now
+    const systemStats = {
+      status: 'Online',
+      uptime: '99.9%',
+      responseTime: 45,
+      activeUsers: 12,
+      totalRequests: 15420,
+      memory: 45.2,
+      cpu: 12.5,
+      storage: 65.4
+    };
+
+    // Construct the platform stats object expected by the frontend
+    const responseData = {
+      system: systemStats,
+      platform: {
+        totalUsers: usersCount,
+        activeUsers: Math.floor(usersCount * 0.8), // Mock
+        userGrowth: 5.2,
+        totalSites: totalSitesCount,
+        publishedSites: publishedSitesCount,
+        draftSites: draftsCount,
+        siteGrowth: 3.1,
+        totalRevenue: usersCount * 12, // Mock revenue interaction
+        mrr: usersCount * 12,
+        revenueGrowth: 2.5,
+        conversionRate: 4.5,
+        conversionChange: 0.2,
+        churnRate: 1.1,
+        avgRevenuePerUser: 12.00
+      },
+      growth: {
+        newUsersToday: 2,
+        newUsersWeek: 15,
+        newUsersMonth: 45,
+        newSitesToday: 5,
+        newSitesWeek: 25,
+        newSitesMonth: 89,
+        activeTrials: 5,
+        conversions: 2,
+        publishedToday: 1
+      },
+      subscriptions: {
+        starter: Math.floor(usersCount * 0.6),
+        checkout: Math.floor(usersCount * 0.3),
+        pro: Math.floor(usersCount * 0.1),
+        trial: 0
+      },
+      recentSignups: recentUsers.map(u => ({
+        id: u.id,
+        email: u.email,
+        name: u.email.split('@')[0],
+        date: u.created_at,
+        plan: u.subscription_plan || 'starter'
+      })),
+      topUsers: [
+        { id: 1, name: 'Demo User', sites: 5, revenue: 120, plan: 'pro' }
+      ],
+      recentActivity: [
+        {
+          id: 1,
+          type: 'user_signup',
+          user: 'New User',
+          description: 'Registered',
+          date: new Date().toISOString()
+        }
+      ],
+      alerts: []
+    };
+
+    res.json(responseData);
   } catch (error) {
     console.error('Error loading admin analytics:', error);
     res.status(500).json({ error: 'Failed to load analytics' });

@@ -8,28 +8,54 @@
   },
   "themeVars": {
     "color-primary": "#3b82f6",
-    "color-accent": "#60a5fa",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary-light": "#60a5fa",
+    "color-accent": "#ec4899",
+    "color-bg": "#0F172A",
+    "color-surface": "rgba(30, 41, 59, 0.5)",
+    "color-card": "rgba(30, 41, 59, 0.3)",
+    "color-text": "#f1f5f9",
+    "color-muted": "#94a3b8"
   },
   "nav": [
-    {"label": "Memberships", "href": "#products"},
-    {"label": "Programs", "href": "#about"},
-    {"label": "Trainers", "href": "#team"},
-    {"label": "Reviews", "href": "#testimonials"},
-    {"label": "Join", "href": "#contact"}
+    {
+      "label": "Memberships",
+      "href": "#products"
+    },
+    {
+      "label": "Programs",
+      "href": "#about"
+    },
+    {
+      "label": "Trainers",
+      "href": "#team"
+    },
+    {
+      "label": "Reviews",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Join",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "👨‍👩‍👧‍👦 Family Fitness Center",
     "title": "Fitness for the whole family",
     "subtitle": "From kids' programs to senior fitness, we offer something for everyone under one roof. State-of-the-art equipment, group classes, personal training, pool, and childcare. Get fit together at FitLife!",
     "cta": [
-      {"label": "🎟️ Get Free Pass", "href": "#contact"},
-      {"label": "👨‍👩‍👧 Family Plans", "href": "#products", "variant": "secondary"}
+      {
+        "label": "🎟️ Get Free Pass",
+        "href": "#contact"
+      },
+      {
+        "label": "👨‍👩‍👧 Family Plans",
+        "href": "#products",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80",
-    "imageAlt": "Modern family fitness center"
+    "imageAlt": "Modern family fitness center",
+    "layout": "split"
   },
   "about": {
     "title": "Welcome to FitLife",
@@ -136,7 +162,11 @@
         "bio": "15+ years in fitness management. Certified personal trainer specializing in family fitness and creating inclusive programs for all ages and abilities.",
         "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
         "imageAlt": "Lisa Anderson",
-        "credentials": ["NASM-CPT", "ACE Health Coach", "Inclusive Fitness Trainer"]
+        "credentials": [
+          "NASM-CPT",
+          "ACE Health Coach",
+          "Inclusive Fitness Trainer"
+        ]
       }
     ]
   },
@@ -144,18 +174,42 @@
     "title": "Join FitLife",
     "subtitle": "Getting started is easy",
     "steps": [
-      {"title": "Free Guest Pass", "description": "Come tour the facility and try us out for free"},
-      {"title": "Choose Your Plan", "description": "Individual, family, or senior membership options"},
-      {"title": "Get Oriented", "description": "Complimentary equipment orientation and facility tour"},
-      {"title": "Start Your Journey", "description": "Take classes, swim, lift, and achieve your goals"}
+      {
+        "title": "Free Guest Pass",
+        "description": "Come tour the facility and try us out for free"
+      },
+      {
+        "title": "Choose Your Plan",
+        "description": "Individual, family, or senior membership options"
+      },
+      {
+        "title": "Get Oriented",
+        "description": "Complimentary equipment orientation and facility tour"
+      },
+      {
+        "title": "Start Your Journey",
+        "description": "Take classes, swim, lift, and achieve your goals"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "19", "label": "Years Serving Families"},
-      {"number": "50,000", "label": "Square Feet"},
-      {"number": "2,500+", "label": "Active Members"},
-      {"number": "100+", "label": "Weekly Classes"}
+      {
+        "number": "19",
+        "label": "Years Serving Families"
+      },
+      {
+        "number": "50,000",
+        "label": "Square Feet"
+      },
+      {
+        "number": "2,500+",
+        "label": "Active Members"
+      },
+      {
+        "number": "100+",
+        "label": "Weekly Classes"
+      }
     ]
   },
   "contact": {
@@ -184,4 +238,3 @@
   "productsTitle": "Membership Options",
   "productsSubtitle": "Flexible plans for every family"
 }
-

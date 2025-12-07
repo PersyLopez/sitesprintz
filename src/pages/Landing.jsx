@@ -1,11 +1,23 @@
 import React, { useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import './Landing.css';
 
 function Landing() {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const showcaseRef = useRef(null);
+  
+  // Handle template/CTA clicks - redirect based on auth status
+  const handleGetStarted = (e) => {
+    if (isAuthenticated) {
+      e.preventDefault();
+      navigate('/setup');
+    }
+    // If not authenticated, Link component will handle navigation to /register
+  };
   
   useEffect(() => {
     // Auto-rotate template showcase
@@ -46,9 +58,12 @@ function Landing() {
   
   return (
     <div className="landing-page">
+      <a href="#main-content" className="skip-to-content">
+        Skip to main content
+      </a>
       <Header />
       
-      <main>
+      <main id="main-content">
         {/* Hero Section */}
         <section className="landing-hero">
           <div className="hero-content">
@@ -62,8 +77,12 @@ function Landing() {
               and launch your website instantly. No coding required.
             </p>
             <div className="cta-buttons">
-              <Link to="/register" className="btn-primary-large">
-                Get Started Free →
+              <Link 
+                to={isAuthenticated ? "/setup" : "/register"} 
+                className="btn-primary-large"
+                onClick={handleGetStarted}
+              >
+                {isAuthenticated ? "Create Your Site →" : "Get Started Free →"}
               </Link>
               <a href="#templates" className="btn-secondary-large">
                 View Templates
@@ -180,7 +199,7 @@ function Landing() {
           </div>
           
           <div className="quick-templates">
-            <Link to="/register" className="quick-template-card">
+            <Link to={isAuthenticated ? "/setup" : "/register"} className="quick-template-card" onClick={handleGetStarted}>
               <span className="template-emoji">🍽️</span>
               <h3>Restaurant</h3>
               <p>Menu, reservations, contact</p>
@@ -191,7 +210,7 @@ function Landing() {
               </div>
             </Link>
             
-            <Link to="/register" className="quick-template-card">
+            <Link to={isAuthenticated ? "/setup" : "/register"} className="quick-template-card" onClick={handleGetStarted}>
               <span className="template-emoji">💇</span>
               <h3>Salon & Spa</h3>
               <p>Services, booking, gallery</p>
@@ -202,7 +221,7 @@ function Landing() {
               </div>
             </Link>
             
-            <Link to="/register" className="quick-template-card">
+            <Link to={isAuthenticated ? "/setup" : "/register"} className="quick-template-card" onClick={handleGetStarted}>
               <span className="template-emoji">💪</span>
               <h3>Fitness & Gym</h3>
               <p>Classes, pricing, testimonials</p>
@@ -213,7 +232,7 @@ function Landing() {
               </div>
             </Link>
             
-            <Link to="/register" className="quick-template-card">
+            <Link to={isAuthenticated ? "/setup" : "/register"} className="quick-template-card" onClick={handleGetStarted}>
               <span className="template-emoji">💼</span>
               <h3>Consultant</h3>
               <p>About, services, contact</p>
@@ -224,7 +243,7 @@ function Landing() {
               </div>
             </Link>
             
-            <Link to="/register" className="quick-template-card">
+            <Link to={isAuthenticated ? "/setup" : "/register"} className="quick-template-card" onClick={handleGetStarted}>
               <span className="template-emoji">👔</span>
               <h3>Freelancer</h3>
               <p>Portfolio, services, booking</p>
@@ -235,7 +254,7 @@ function Landing() {
               </div>
             </Link>
             
-            <Link to="/register" className="quick-template-card">
+            <Link to={isAuthenticated ? "/setup" : "/register"} className="quick-template-card" onClick={handleGetStarted}>
               <span className="template-emoji">💻</span>
               <h3>Tech Repair</h3>
               <p>Services, pricing, booking</p>
@@ -246,7 +265,7 @@ function Landing() {
               </div>
             </Link>
             
-            <Link to="/register" className="quick-template-card">
+            <Link to={isAuthenticated ? "/setup" : "/register"} className="quick-template-card" onClick={handleGetStarted}>
               <span className="template-emoji">🧹</span>
               <h3>Cleaning Services</h3>
               <p>Services, pricing, booking</p>
@@ -257,7 +276,7 @@ function Landing() {
               </div>
             </Link>
             
-            <Link to="/register" className="quick-template-card">
+            <Link to={isAuthenticated ? "/setup" : "/register"} className="quick-template-card" onClick={handleGetStarted}>
               <span className="template-emoji">🐾</span>
               <h3>Pet Care</h3>
               <p>Services, gallery, booking</p>
@@ -268,7 +287,7 @@ function Landing() {
               </div>
             </Link>
             
-            <Link to="/register" className="quick-template-card">
+            <Link to={isAuthenticated ? "/setup" : "/register"} className="quick-template-card" onClick={handleGetStarted}>
               <span className="template-emoji">⚡</span>
               <h3>Electrician</h3>
               <p>Services, emergency, booking</p>
@@ -279,7 +298,7 @@ function Landing() {
               </div>
             </Link>
             
-            <Link to="/register" className="quick-template-card">
+            <Link to={isAuthenticated ? "/setup" : "/register"} className="quick-template-card" onClick={handleGetStarted}>
               <span className="template-emoji">🚗</span>
               <h3>Auto Repair</h3>
               <p>Services, booking, pricing</p>
@@ -359,8 +378,12 @@ function Landing() {
           <div className="cta-content">
             <h2>Ready to Get Started?</h2>
             <p>Join thousands of businesses already using SiteSprintz</p>
-            <Link to="/register" className="btn-primary-large">
-              Create Your Website Now →
+            <Link 
+              to={isAuthenticated ? "/setup" : "/register"} 
+              className="btn-primary-large"
+              onClick={handleGetStarted}
+            >
+              {isAuthenticated ? "Create Your Site Now →" : "Create Your Website Now →"}
             </Link>
           </div>
         </section>

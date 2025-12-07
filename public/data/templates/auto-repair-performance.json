@@ -7,28 +7,51 @@
     "email": "shop@apextuning.pro"
   },
   "themeVars": {
-    "color-primary": "#dc2626",
-    "color-accent": "#ef4444",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "Builds", "href": "#about"},
-    {"label": "Gallery", "href": "#testimonials"},
-    {"label": "Contact", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "Builds",
+      "href": "#about"
+    },
+    {
+      "label": "Gallery",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "🏁 Performance Automotive",
     "title": "Unleash your car's potential",
     "subtitle": "High-performance tuning, engine builds, forced induction, and custom fabrication. Dyno-proven results. Track-tested reliability. Whether street or strip, we build machines that perform. Passion for speed, precision in execution.",
     "cta": [
-      {"label": "Build Consultation", "href": "#contact"},
-      {"label": "View Builds", "href": "#about", "variant": "secondary"}
+      {
+        "label": "Build Consultation",
+        "href": "#contact"
+      },
+      {
+        "label": "View Builds",
+        "href": "#about",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1200&q=80",
-    "imageAlt": "Performance car engine bay"
+    "imageAlt": "Performance car engine bay",
+    "layout": "split"
   },
   "about": {
     "title": "Performance Specialists",
@@ -135,7 +158,11 @@
         "bio": "10+ years building and tuning performance cars. Certified HP Tuners and Cobb Tuning specialist. Former race team mechanic. Passionate about building fast, reliable machines.",
         "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
         "imageAlt": "Jake Daniels",
-        "credentials": ["HP Tuners Certified", "Cobb Tuning Pro", "10+ Years Performance"]
+        "credentials": [
+          "HP Tuners Certified",
+          "Cobb Tuning Pro",
+          "10+ Years Performance"
+        ]
       }
     ]
   },
@@ -143,18 +170,42 @@
     "title": "Build Process",
     "subtitle": "From consultation to completion",
     "steps": [
-      {"title": "Consultation", "description": "Discuss your goals, budget, and intended use"},
-      {"title": "Build Plan", "description": "Create detailed parts list and timeline"},
-      {"title": "Installation", "description": "Expert installation with quality parts"},
-      {"title": "Dyno Tune", "description": "Optimize on dyno for power and reliability"}
+      {
+        "title": "Consultation",
+        "description": "Discuss your goals, budget, and intended use"
+      },
+      {
+        "title": "Build Plan",
+        "description": "Create detailed parts list and timeline"
+      },
+      {
+        "title": "Installation",
+        "description": "Expert installation with quality parts"
+      },
+      {
+        "title": "Dyno Tune",
+        "description": "Optimize on dyno for power and reliability"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "300+", "label": "Performance Builds"},
-      {"number": "In-House", "label": "Dyno"},
-      {"number": "4.9", "label": "Star Rating"},
-      {"number": "Track", "label": "Tested"}
+      {
+        "number": "300+",
+        "label": "Performance Builds"
+      },
+      {
+        "number": "In-House",
+        "label": "Dyno"
+      },
+      {
+        "number": "4.9",
+        "label": "Star Rating"
+      },
+      {
+        "number": "Track",
+        "label": "Tested"
+      }
     ]
   },
   "contact": {
@@ -183,4 +234,3 @@
   "productsTitle": "Performance Services",
   "productsSubtitle": "Proven power gains"
 }
-

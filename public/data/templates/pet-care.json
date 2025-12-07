@@ -1,46 +1,84 @@
 {
   "brand": {
-    "name": "PetCare Plus", 
+    "name": "PetCare Plus",
     "logo": "assets/logo.svg",
     "tagline": "Loving Pet Care • Since 2015",
     "phone": "(555) 345-6789",
     "email": "care@petcareplus.com"
   },
   "themeVars": {
-    "color-primary": "#7c3aed", 
-    "color-accent": "#a855f7",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "About", "href": "#about"},
-    {"label": "Team", "href": "#team"},
-    {"label": "Reviews", "href": "#reviews"},
-    {"label": "Contact", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "About",
+      "href": "#about"
+    },
+    {
+      "label": "Team",
+      "href": "#team"
+    },
+    {
+      "label": "Reviews",
+      "href": "#reviews"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "🐾 Professional Pet Care Services",
     "title": "Your pets deserve the best care",
     "subtitle": "Professional grooming, walking, and pet sitting services from certified, insured caregivers who love animals as much as you do. Serving loving pet parents since 2015.",
     "cta": [
-      {"label": "📅 Book Service", "href": "#contact"},
-      {"label": "💰 View Pricing", "href": "#products", "variant": "secondary"}
+      {
+        "label": "📅 Book Service",
+        "href": "#contact"
+      },
+      {
+        "label": "💰 View Pricing",
+        "href": "#products",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=1200&q=80",
-    "imageAlt": "Happy dog being groomed by professional pet care specialist"
+    "imageAlt": "Happy dog being groomed by professional pet care specialist",
+    "layout": "split"
   },
   "stats": {
     "items": [
-      {"number": "2000+", "label": "Pets Cared For"},
-      {"number": "8+", "label": "Years Experience"},
-      {"number": "4.9", "label": "Star Rating"},
-      {"number": "100%", "label": "Insured & Bonded"}
+      {
+        "number": "2000+",
+        "label": "Pets Cared For"
+      },
+      {
+        "number": "8+",
+        "label": "Years Experience"
+      },
+      {
+        "number": "4.9",
+        "label": "Star Rating"
+      },
+      {
+        "number": "100%",
+        "label": "Insured & Bonded"
+      }
     ]
   },
   "about": {
-    "title": "Our Story", 
+    "title": "Our Story",
     "body": "Founded in 2015 by certified groomer Jennifer Martinez, PetCare Plus has become the trusted name for professional pet care in our community. Our team of certified, bonded, and insured pet care specialists treats every pet like family.",
     "subtitle": "Why choose PetCare Plus",
     "features": [
@@ -63,20 +101,48 @@
     "title": "How It Works",
     "subtitle": "Simple, safe, and stress-free pet care",
     "steps": [
-      {"title": "Book Your Service", "description": "Choose grooming, walking, or sitting online or by phone"},
-      {"title": "Meet & Greet", "description": "We meet you and your pet to discuss needs and preferences"},
-      {"title": "Provide Loving Care", "description": "Professional service with regular photo updates"},
-      {"title": "Happy Pet, Happy You", "description": "Your pet returns clean, happy, and well-cared for"}
+      {
+        "title": "Book Your Service",
+        "description": "Choose grooming, walking, or sitting online or by phone"
+      },
+      {
+        "title": "Meet & Greet",
+        "description": "We meet you and your pet to discuss needs and preferences"
+      },
+      {
+        "title": "Provide Loving Care",
+        "description": "Professional service with regular photo updates"
+      },
+      {
+        "title": "Happy Pet, Happy You",
+        "description": "Your pet returns clean, happy, and well-cared for"
+      }
     ]
   },
   "credentials": {
     "title": "Safe, Certified, & Trusted",
     "subtitle": "Your pet's safety and happiness is our priority",
     "items": [
-      {"icon": "🛡️", "name": "Fully Insured", "description": "General liability coverage"},
-      {"icon": "✅", "name": "Background Checked", "description": "All staff thoroughly vetted"},
-      {"icon": "💼", "name": "Bonded", "description": "Your home & pets protected"},
-      {"icon": "🎓", "name": "NDGA Certified", "description": "Professional training"}
+      {
+        "icon": "🛡️",
+        "name": "Fully Insured",
+        "description": "General liability coverage"
+      },
+      {
+        "icon": "✅",
+        "name": "Background Checked",
+        "description": "All staff thoroughly vetted"
+      },
+      {
+        "icon": "💼",
+        "name": "Bonded",
+        "description": "Your home & pets protected"
+      },
+      {
+        "icon": "🎓",
+        "name": "NDGA Certified",
+        "description": "Professional training"
+      }
     ]
   },
   "team": {
@@ -89,7 +155,11 @@
         "bio": "15+ years grooming experience with specialization in anxious pets and senior animals. Gentle, patient, and passionate about animal welfare.",
         "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
         "imageAlt": "Jennifer Martinez",
-        "credentials": ["NDGA Certified", "Pet First Aid", "Fear Free Certified"]
+        "credentials": [
+          "NDGA Certified",
+          "Pet First Aid",
+          "Fear Free Certified"
+        ]
       },
       {
         "name": "Michael Chen",
@@ -97,7 +167,11 @@
         "bio": "8+ years experience with dogs, cats, birds, and small animals. Specializes in medication administration and senior pet care.",
         "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
         "imageAlt": "Michael Chen",
-        "credentials": ["Insured & Bonded", "Pet CPR Certified", "Medication Administration"]
+        "credentials": [
+          "Insured & Bonded",
+          "Pet CPR Certified",
+          "Medication Administration"
+        ]
       }
     ]
   },
@@ -273,7 +347,7 @@
     ]
   },
   "contact": {
-    "title": "Book Your Pet's Care", 
+    "title": "Book Your Pet's Care",
     "subtitle": "Call, text, or book online today",
     "phone": "(555) 345-6789",
     "email": "care@petcareplus.com",
@@ -333,10 +407,22 @@
   "footer": {
     "text": "🐾 PetCare Plus • Loving Pet Care Since 2015",
     "links": [
-      {"label": "Privacy Policy", "href": "#privacy"},
-      {"label": "Terms of Service", "href": "#terms"},
-      {"label": "Careers", "href": "#careers"},
-      {"label": "Pet Care Tips", "href": "#blog"}
+      {
+        "label": "Privacy Policy",
+        "href": "#privacy"
+      },
+      {
+        "label": "Terms of Service",
+        "href": "#terms"
+      },
+      {
+        "label": "Careers",
+        "href": "#careers"
+      },
+      {
+        "label": "Pet Care Tips",
+        "href": "#blog"
+      }
     ],
     "awards": [
       "Best Pet Care 2023",

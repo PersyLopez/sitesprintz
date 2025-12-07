@@ -6,9 +6,9 @@ export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
 
   const showToast = useCallback((message, type = 'info') => {
-    const id = Date.now();
+    const id = Date.now() + Math.random().toString(36).substr(2, 9);
     setToasts(prev => [...prev, { id, message, type }]);
-    
+
     setTimeout(() => {
       setToasts(prev => prev.filter(toast => toast.id !== id));
     }, 3000);
@@ -41,6 +41,7 @@ export function ToastProvider({ children }) {
               boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
               animation: 'slideInRight 0.3s ease-out',
             }}
+            data-testid={`toast-${toast.type}`}
           >
             {toast.message}
           </div>

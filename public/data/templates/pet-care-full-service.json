@@ -7,28 +7,51 @@
     "email": "care@pawfectcare.pet"
   },
   "themeVars": {
-    "color-primary": "#8b5cf6",
-    "color-accent": "#a78bfa",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "About", "href": "#about"},
-    {"label": "Meet Team", "href": "#team"},
-    {"label": "Book", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "About",
+      "href": "#about"
+    },
+    {
+      "label": "Meet Team",
+      "href": "#team"
+    },
+    {
+      "label": "Book",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "🐾 Full-Service Pet Care",
     "title": "Complete care for your furry family",
     "subtitle": "From grooming to dog walking to pet sitting - we provide all the care your pets need. Trusted, insured, and passionate about keeping tails wagging. One-stop pet care you can count on.",
     "cta": [
-      {"label": "Book Service", "href": "#contact"},
-      {"label": "All Services", "href": "#products", "variant": "secondary"}
+      {
+        "label": "Book Service",
+        "href": "#contact"
+      },
+      {
+        "label": "All Services",
+        "href": "#products",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=1200&q=80",
-    "imageAlt": "Happy dog with pet sitter"
+    "imageAlt": "Happy dog with pet sitter",
+    "layout": "split"
   },
   "about": {
     "title": "Your Pet Care Partners",
@@ -135,7 +158,11 @@
         "bio": "Founded Pawfect Care after years as a vet tech. Certified in pet first aid and CPR. Passionate about providing complete, convenient pet care that pet parents can trust.",
         "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
         "imageAlt": "Amanda Foster",
-        "credentials": ["Pet First Aid Certified", "Former Vet Tech", "Insured & Bonded"]
+        "credentials": [
+          "Pet First Aid Certified",
+          "Former Vet Tech",
+          "Insured & Bonded"
+        ]
       }
     ]
   },
@@ -143,18 +170,42 @@
     "title": "How It Works",
     "subtitle": "Easy pet care booking",
     "steps": [
-      {"title": "Free Meet & Greet", "description": "We'll meet you and your pets to ensure a good fit"},
-      {"title": "Create Care Plan", "description": "Choose services and schedule that works for you"},
-      {"title": "Service Begins", "description": "Reliable care from the same trusted team"},
-      {"title": "Updates & Photos", "description": "Regular communication so you're always in the loop"}
+      {
+        "title": "Free Meet & Greet",
+        "description": "We'll meet you and your pets to ensure a good fit"
+      },
+      {
+        "title": "Create Care Plan",
+        "description": "Choose services and schedule that works for you"
+      },
+      {
+        "title": "Service Begins",
+        "description": "Reliable care from the same trusted team"
+      },
+      {
+        "title": "Updates & Photos",
+        "description": "Regular communication so you're always in the loop"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "9+", "label": "Years Caring"},
-      {"number": "500+", "label": "Happy Pets"},
-      {"number": "4.9", "label": "Star Rating"},
-      {"number": "100%", "label": "Insured"}
+      {
+        "number": "9+",
+        "label": "Years Caring"
+      },
+      {
+        "number": "500+",
+        "label": "Happy Pets"
+      },
+      {
+        "number": "4.9",
+        "label": "Star Rating"
+      },
+      {
+        "number": "100%",
+        "label": "Insured"
+      }
     ]
   },
   "contact": {
@@ -183,4 +234,3 @@
   "productsTitle": "Pet Care Services",
   "productsSubtitle": "Complete care for dogs, cats, and more"
 }
-

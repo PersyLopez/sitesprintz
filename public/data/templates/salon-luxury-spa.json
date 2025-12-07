@@ -1,38 +1,64 @@
 {
   "brand": {
-    "name": "Serenity Spa & Salon", 
+    "name": "Serenity Spa & Salon",
     "logo": "assets/logo.svg",
     "tagline": "Luxury Wellness Retreat • Est. 2010",
     "phone": "(555) 888-7700",
     "email": "concierge@serenityspa.com"
   },
   "themeVars": {
-    "color-primary": "#8b5cf6", 
-    "color-accent": "#c084fc",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "Spa Menu", "href": "#about"},
-    {"label": "Team", "href": "#team"},
-    {"label": "Testimonials", "href": "#testimonials"},
-    {"label": "Contact", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "Spa Menu",
+      "href": "#about"
+    },
+    {
+      "label": "Team",
+      "href": "#team"
+    },
+    {
+      "label": "Testimonials",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "✨ Luxury Spa & Wellness Experience",
     "title": "Indulge in extraordinary care",
     "subtitle": "Experience the pinnacle of beauty and relaxation at our award-winning spa. From signature treatments to bespoke styling, every service is designed to transport you to a world of serenity and transformation.",
     "cta": [
-      {"label": "🗓️ Book Experience", "href": "#contact"},
-      {"label": "💎 View Treatments", "href": "#products", "variant": "secondary"}
+      {
+        "label": "🗓️ Book Experience",
+        "href": "#contact"
+      },
+      {
+        "label": "💎 View Treatments",
+        "href": "#products",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=1200&q=80",
-    "imageAlt": "Luxurious spa interior with elegant treatment rooms"
+    "imageAlt": "Luxurious spa interior with elegant treatment rooms",
+    "layout": "split"
   },
   "about": {
-    "title": "A Sanctuary of Beauty", 
+    "title": "A Sanctuary of Beauty",
     "subtitle": "Where luxury meets wellness",
     "content": "Since 2010, Serenity Spa & Salon has been the premier destination for discerning clients seeking the finest in beauty and wellness. Our 5,000 sq ft retreat features private treatment suites, organic product lines, and master aestheticians trained in the latest European techniques."
   },
@@ -148,7 +174,11 @@
         "bio": "20+ years experience training under masters in Paris and Switzerland. Specializes in advanced skincare and anti-aging treatments.",
         "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
         "imageAlt": "Isabella Rousseau",
-        "credentials": ["CIDESCO Certified", "Guinot Paris Master", "Featured in Vogue"]
+        "credentials": [
+          "CIDESCO Certified",
+          "Guinot Paris Master",
+          "Featured in Vogue"
+        ]
       }
     ]
   },
@@ -156,22 +186,46 @@
     "title": "Your Journey",
     "subtitle": "A curated experience from arrival to departure",
     "steps": [
-      {"title": "Arrival & Welcome", "description": "Greeted with champagne and escorted to your private changing suite"},
-      {"title": "Consultation", "description": "Detailed assessment with your specialist to customize your treatment"},
-      {"title": "Treatment Experience", "description": "Luxuriate in your service using only the finest products"},
-      {"title": "Refresh & Depart", "description": "Enjoy our relaxation lounge with refreshments before your departure"}
+      {
+        "title": "Arrival & Welcome",
+        "description": "Greeted with champagne and escorted to your private changing suite"
+      },
+      {
+        "title": "Consultation",
+        "description": "Detailed assessment with your specialist to customize your treatment"
+      },
+      {
+        "title": "Treatment Experience",
+        "description": "Luxuriate in your service using only the finest products"
+      },
+      {
+        "title": "Refresh & Depart",
+        "description": "Enjoy our relaxation lounge with refreshments before your departure"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "15+", "label": "Years Excellence"},
-      {"number": "5", "label": "Star Rating"},
-      {"number": "2000+", "label": "VIP Clients"},
-      {"number": "8", "label": "Master Artists"}
+      {
+        "number": "15+",
+        "label": "Years Excellence"
+      },
+      {
+        "number": "5",
+        "label": "Star Rating"
+      },
+      {
+        "number": "2000+",
+        "label": "VIP Clients"
+      },
+      {
+        "number": "8",
+        "label": "Master Artists"
+      }
     ]
   },
   "contact": {
-    "title": "Visit Our Sanctuary", 
+    "title": "Visit Our Sanctuary",
     "subtitle": "Schedule your transformative experience",
     "phone": "(555) 888-7700",
     "email": "concierge@serenityspa.com",
@@ -196,4 +250,3 @@
   "productsTitle": "Spa & Salon Services",
   "productsSubtitle": "Curated treatments for the discerning client"
 }
-

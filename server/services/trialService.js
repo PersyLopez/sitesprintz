@@ -12,13 +12,13 @@
  * - Comprehensive audit logging
  */
 
-import { query as dbQuery, transaction as dbTransaction } from '../../database/db.js';
+import { prisma } from '../../database/db.js';
 import { emailService, EmailTemplates } from './emailService.js';
 
 export class TrialService {
   constructor(db = null, emailSvc = null) {
     // Dependency injection for testability
-    this.db = db || { query: dbQuery, transaction: dbTransaction };
+    this.db = db || prisma;
     this.emailService = emailSvc || emailService;
   }
 
@@ -131,17 +131,19 @@ export class TrialService {
    * @returns {Promise<Object>} Trial status with access info
    */
   async checkSiteTrialStatus(siteId) {
-    const result = await this.db.query(`
-      SELECT id, expires_at, plan, status
-      FROM sites
-      WHERE id = $1
-    `, [siteId]);
+    const site = await this.db.sites.findUnique({
+      where: { id: siteId },
+      select: {
+        id: true,
+        expires_at: true,
+        plan: true,
+        status: true
+      }
+    });
 
-    if (result.rows.length === 0) {
+    if (!site) {
       throw new Error('Site not found');
     }
-
-    const site = result.rows[0];
 
     // Paid plans bypass trial expiration
     if (site.plan && site.plan !== 'trial') {
@@ -194,26 +196,32 @@ export class TrialService {
 
     try {
       // Find sites expiring in 3 days or less
-      const sitesResult = await this.db.query(`
-        SELECT 
-          s.id,
-          s.subdomain,
-          s.expires_at,
-          s.site_data,
-          s.warning_sent_at,
-          u.email as owner_email,
-          u.id as user_id
-        FROM sites s
-        JOIN users u ON s.user_id = u.id
-        WHERE 
-          (s.plan IS NULL OR s.plan = 'trial')
-          AND s.expires_at IS NOT NULL
-          AND s.expires_at > NOW()
-          AND s.expires_at <= NOW() + INTERVAL '3 days'
-          AND s.status != 'expired'
-      `);
+      const threeDaysFromNow = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
 
-      for (const site of sitesResult.rows) {
+      const sites = await this.db.sites.findMany({
+        where: {
+          OR: [
+            { plan: null },
+            { plan: 'trial' }
+          ],
+          expires_at: {
+            not: null,
+            gt: new Date(),
+            lte: threeDaysFromNow
+          },
+          status: { not: 'expired' }
+        },
+        include: {
+          users: {
+            select: {
+              email: true,
+              id: true
+            }
+          }
+        }
+      });
+
+      for (const site of sites) {
         try {
           const daysRemaining = this.calculateDaysRemaining(site.expires_at);
 
@@ -233,15 +241,15 @@ export class TrialService {
           }
 
           // Parse site data
-          const siteData = typeof site.site_data === 'string' 
-            ? JSON.parse(site.site_data) 
+          const siteData = typeof site.site_data === 'string'
+            ? JSON.parse(site.site_data)
             : site.site_data;
 
           const businessName = siteData?.brand?.name || 'Your Business';
 
           // Send email
           await this.emailService.sendTrialEmail({
-            to: site.owner_email,
+            to: site.users.email,
             type: 'expiring',
             trialData: {
               businessName,
@@ -253,11 +261,13 @@ export class TrialService {
           });
 
           // Mark warning as sent
-          await this.db.query(`
-            UPDATE sites 
-            SET warning_sent_at = NOW(), updated_at = NOW()
-            WHERE id = $1
-          `, [site.id]);
+          await this.db.sites.update({
+            where: { id: site.id },
+            data: {
+              warning_sent_at: new Date(),
+              updated_at: new Date()
+            }
+          });
 
           results.sent++;
         } catch (error) {
@@ -294,9 +304,10 @@ export class TrialService {
     };
 
     try {
-      await this.db.transaction(async (tx) => {
+      await this.db.$transaction(async (tx) => {
         // Lock rows to prevent race conditions (FOR UPDATE)
-        const expiredSites = await tx.query(`
+        // Prisma doesn't support FOR UPDATE in findMany, so we use raw query
+        const expiredSites = await tx.$queryRaw`
           SELECT id, subdomain, plan, user_id
           FROM sites
           WHERE 
@@ -305,19 +316,18 @@ export class TrialService {
             AND expires_at < NOW()
             AND status != 'expired'
           FOR UPDATE
-        `);
+        `;
 
-        for (const site of expiredSites.rows) {
+        for (const site of expiredSites) {
           // Double-check: ensure user hasn't upgraded during this transaction
-          const paymentCheck = await tx.query(`
-            SELECT EXISTS(
-              SELECT 1 FROM subscriptions
-              WHERE user_id = $1 
-              AND status IN ('active', 'trialing')
-            ) as has_subscription
-          `, [site.user_id]);
+          const hasSubscription = await tx.subscriptions.findFirst({
+            where: {
+              user_id: site.user_id,
+              status: { in: ['active', 'trialing'] }
+            }
+          });
 
-          if (paymentCheck.rows[0]?.has_subscription) {
+          if (hasSubscription) {
             // User upgraded! Don't deactivate
             results.skippedDueToPayment++;
             continue;
@@ -330,31 +340,28 @@ export class TrialService {
           }
 
           // Deactivate site
-          await tx.query(`
-            UPDATE sites
-            SET status = 'expired', updated_at = NOW()
-            WHERE id = $1
-          `, [site.id]);
+          await tx.sites.update({
+            where: { id: site.id },
+            data: {
+              status: 'expired',
+              updated_at: new Date()
+            }
+          });
 
           // Create audit log entry
-          await tx.query(`
-            INSERT INTO audit_logs (
-              action,
-              entity_type,
-              entity_id,
-              metadata,
-              created_at
-            ) VALUES ($1, $2, $3, $4, NOW())
-          `, [
-            'trial_expired_deactivation',
-            'site',
-            site.id,
-            JSON.stringify({
-              subdomain: site.subdomain,
-              reason: 'trial_expired',
-              automated: true
-            })
-          ]);
+          await tx.audit_logs.create({
+            data: {
+              action: 'trial_expired_deactivation',
+              entity_type: 'site',
+              entity_id: site.id,
+              metadata: JSON.stringify({
+                subdomain: site.subdomain,
+                reason: 'trial_expired',
+                automated: true
+              }),
+              created_at: new Date()
+            }
+          });
 
           results.deactivated++;
           results.sites.push({

@@ -1,38 +1,64 @@
 {
   "brand": {
-    "name": "Friendly Cuts Family Salon", 
+    "name": "Friendly Cuts Family Salon",
     "logo": "assets/logo.svg",
     "tagline": "Your Neighborhood Salon • Since 1995",
     "phone": "(555) 678-2200",
     "email": "info@friendlycuts.com"
   },
   "themeVars": {
-    "color-primary": "#f59e0b", 
-    "color-accent": "#fbbf24",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "About Us", "href": "#about"},
-    {"label": "Our Team", "href": "#team"},
-    {"label": "Reviews", "href": "#testimonials"},
-    {"label": "Contact", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "About Us",
+      "href": "#about"
+    },
+    {
+      "label": "Our Team",
+      "href": "#team"
+    },
+    {
+      "label": "Reviews",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "👨‍👩‍👧‍👦 Family-Friendly Neighborhood Salon",
     "title": "Great hair for the whole family",
     "subtitle": "For nearly 30 years, Friendly Cuts has been the go-to salon for families in our community. From kids' first haircuts to grandma's weekly style, we treat everyone like family. Walk-ins welcome!",
     "cta": [
-      {"label": "Call to Book", "href": "tel:+15556782200"},
-      {"label": "View Services", "href": "#products", "variant": "secondary"}
+      {
+        "label": "Call to Book",
+        "href": "tel:+15556782200"
+      },
+      {
+        "label": "View Services",
+        "href": "#products",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1562004760-acfde0850d59?w=1200&q=80",
-    "imageAlt": "Welcoming family salon interior"
+    "imageAlt": "Welcoming family salon interior",
+    "layout": "split"
   },
   "about": {
-    "title": "A Family Tradition", 
+    "title": "A Family Tradition",
     "subtitle": "Serving our community since 1995",
     "content": "Started by Maria and Tom Johnson, Friendly Cuts has been cutting, styling, and coloring hair for families in our neighborhood for nearly three decades. We believe everyone deserves to look and feel great, with friendly service and affordable prices."
   },
@@ -148,7 +174,11 @@
         "bio": "Maria opened Friendly Cuts in 1995 with a vision of creating a welcoming salon for the whole family. 35+ years of experience and thousands of happy clients later, she still loves what she does.",
         "image": "https://images.unsplash.com/photo-1487412912498-0447578fcca8?w=400&q=80",
         "imageAlt": "Maria Johnson",
-        "credentials": ["35+ Years Experience", "Cosmetology Licensed", "Community Service Award"]
+        "credentials": [
+          "35+ Years Experience",
+          "Cosmetology Licensed",
+          "Community Service Award"
+        ]
       }
     ]
   },
@@ -156,22 +186,46 @@
     "title": "How We Work",
     "subtitle": "Easy, friendly service",
     "steps": [
-      {"title": "Walk In or Call", "description": "No fancy booking system needed. Just stop by or give us a call"},
-      {"title": "Quick Wait", "description": "Grab a magazine and relax. We'll call your name shortly"},
-      {"title": "Your Service", "description": "Tell us what you need and we'll take great care of you"},
-      {"title": "All Set!", "description": "Look great, feel great. We'll see you next time!"}
+      {
+        "title": "Walk In or Call",
+        "description": "No fancy booking system needed. Just stop by or give us a call"
+      },
+      {
+        "title": "Quick Wait",
+        "description": "Grab a magazine and relax. We'll call your name shortly"
+      },
+      {
+        "title": "Your Service",
+        "description": "Tell us what you need and we'll take great care of you"
+      },
+      {
+        "title": "All Set!",
+        "description": "Look great, feel great. We'll see you next time!"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "29", "label": "Years in Business"},
-      {"number": "10,000+", "label": "Satisfied Clients"},
-      {"number": "4.8", "label": "Star Rating"},
-      {"number": "6", "label": "Friendly Stylists"}
+      {
+        "number": "29",
+        "label": "Years in Business"
+      },
+      {
+        "number": "10,000+",
+        "label": "Satisfied Clients"
+      },
+      {
+        "number": "4.8",
+        "label": "Star Rating"
+      },
+      {
+        "number": "6",
+        "label": "Friendly Stylists"
+      }
     ]
   },
   "contact": {
-    "title": "Visit Us", 
+    "title": "Visit Us",
     "subtitle": "Walk-ins welcome! Or call ahead",
     "phone": "(555) 678-2200",
     "email": "info@friendlycuts.com",
@@ -196,4 +250,3 @@
   "productsTitle": "Services & Prices",
   "productsSubtitle": "Quality care for the whole family"
 }
-

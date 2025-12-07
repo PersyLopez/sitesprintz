@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -7,9 +8,11 @@
   <meta name="description" content="Professional business website" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
   <style>
     :root {
+      /* Default Theme (Modern Clean) */
       --color-bg: #0a0a0f;
       --color-surface: rgba(255, 255, 255, 0.03);
       --color-card: rgba(255, 255, 255, 0.06);
@@ -17,185 +20,342 @@
       --color-muted: #94a3b8;
       --color-primary: #6366f1;
       --color-primary-light: #818cf8;
+
       --radius: 20px;
+      --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
+
       --spacing-md: 20px;
       --spacing-lg: 32px;
       --spacing-xl: 48px;
-      --spacing-2xl: 72px;
+      --spacing-2xl: 96px;
+      /* Increased for breathing room */
+
+      --font-display: 'Inter', -apple-system, sans-serif;
+      --font-body: 'Inter', -apple-system, sans-serif;
     }
-    
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: var(--font-body);
       background: var(--color-bg);
       color: var(--color-text);
       line-height: 1.6;
       min-height: 100vh;
+      overflow-x: hidden;
+      font-size: 16px;
     }
-    
+
     .container {
-      max-width: 1200px;
+      width: 100%;
+      max-width: 1280px;
       margin: 0 auto;
-      padding: 0 20px;
+      padding: 0 24px;
     }
-    
+
+    /* Animations */
+    @media (prefers-reduced-motion: no-preference) {
+      .reveal-on-scroll {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+      }
+
+      .reveal-on-scroll.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .stagger-delay-1 {
+        transition-delay: 0.1s;
+      }
+
+      .stagger-delay-2 {
+        transition-delay: 0.2s;
+      }
+
+      .stagger-delay-3 {
+        transition-delay: 0.3s;
+      }
+    }
+
     /* Header */
     header {
       padding: 24px 0;
-      background: var(--color-surface);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      background: rgba(10, 10, 15, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
-    
+
     .header-content {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    
+
     .logo {
+      font-family: var(--font-display);
       font-size: 1.5rem;
       font-weight: 800;
+      color: var(--color-text);
+      letter-spacing: -0.02em;
+    }
+
+    .logo span {
       color: var(--color-primary-light);
     }
-    
+
     nav {
       display: flex;
-      gap: 24px;
+      gap: 32px;
     }
-    
+
     nav a {
-      color: var(--color-text);
+      color: var(--color-muted);
       text-decoration: none;
+      font-weight: 500;
       transition: color 0.2s;
     }
-    
+
     nav a:hover {
       color: var(--color-primary-light);
     }
-    
+
     /* Hero */
     .hero {
       padding: var(--spacing-2xl) 0;
-      text-align: center;
+      position: relative;
+      overflow: hidden;
     }
-    
+
+    /* Background blob effect */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80vw;
+      height: 80vh;
+      background: radial-gradient(circle, var(--color-primary) 0%, transparent 70%);
+      opacity: 0.1;
+      filter: blur(100px);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .hero-content {
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* Split Layout Variant */
+    .hero.layout-split .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+      text-align: left;
+    }
+
+    .hero.layout-split .hero-content {
+      text-align: left;
+      margin: 0;
+    }
+
+    .hero-image-container {
+      display: none;
+      /* Hidden by default */
+    }
+
+    .hero.layout-split .hero-image-container {
+      display: block;
+      position: relative;
+    }
+
+    .hero-image {
+      width: 100%;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-2xl);
+    }
+
     .hero h1 {
-      font-size: 3.5rem;
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 5vw, 4.5rem);
+      /* Responsive fluid typography */
       font-weight: 900;
+      line-height: 1.1;
       margin-bottom: 24px;
+      letter-spacing: -0.03em;
+
+      /* Gradient text */
       background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    
+
     .hero p {
       font-size: 1.25rem;
       color: var(--color-muted);
       max-width: 600px;
       margin: 0 auto 32px;
+      line-height: 1.7;
     }
-    
+
+    .hero.layout-split p {
+      margin-left: 0;
+    }
+
     .cta-button {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
       padding: 16px 32px;
       background: var(--color-primary);
       color: white;
       text-decoration: none;
       border-radius: var(--radius);
       font-weight: 600;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-glow);
     }
-    
+
     .cta-button:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+      box-shadow: 0 10px 30px -5px var(--color-primary);
+      filter: brightness(1.1);
     }
-    
-    /* Services/Products */
+
+    .cta-button.secondary {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: none;
+    }
+
+    .cta-button.secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: #fff;
+    }
+
+    /* Services/Products Cards */
     .services {
       padding: var(--spacing-2xl) 0;
     }
-    
+
     .services h2 {
-      font-size: 2.5rem;
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 3rem);
       text-align: center;
-      margin-bottom: var(--spacing-xl);
+      margin-bottom: var(--spacing-md);
+      font-weight: 800;
+      letter-spacing: -0.02em;
     }
-    
+
+    .section-subtitle {
+      text-align: center;
+      color: var(--color-muted);
+      font-size: 1.1rem;
+      margin-bottom: var(--spacing-xl);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
     .services-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 24px;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 32px;
     }
-    
+
     .service-card {
       background: var(--color-card);
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: var(--radius);
-      padding: var(--spacing-lg);
-      transition: transform 0.2s, border-color 0.2s;
+      padding: 32px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
     }
-    
+
+    /* Glassmorphism gradient overlay on hover */
+    .service-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.05), transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
     .service-card:hover {
-      transform: translateY(-4px);
+      transform: translateY(-8px);
       border-color: var(--color-primary);
+      box-shadow: var(--shadow-lg);
     }
-    
+
+    .service-card:hover::after {
+      opacity: 1;
+    }
+
     .service-card h3 {
+      font-family: var(--font-display);
       font-size: 1.5rem;
       margin-bottom: 12px;
-      color: var(--color-primary-light);
+      color: var(--color-text);
+      font-weight: 700;
     }
-    
+
     .service-card p {
       color: var(--color-muted);
-      margin-bottom: 16px;
+      margin-bottom: 24px;
+      line-height: 1.7;
     }
-    
+
     .service-price {
-      font-size: 1.25rem;
+      font-size: 1.5rem;
       font-weight: 700;
       color: var(--color-primary-light);
+      display: inline-block;
+      padding: 8px 16px;
+      background: rgba(99, 102, 241, 0.1);
+      border-radius: 100px;
     }
-    
+
     /* Contact */
     .contact {
       padding: var(--spacing-2xl) 0;
-      background: var(--color-surface);
-    }
-    
-    .contact h2 {
-      font-size: 2.5rem;
-      text-align: center;
-      margin-bottom: var(--spacing-lg);
-    }
-    
-    .contact-info {
-      text-align: center;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    
-    .contact-info p {
-      font-size: 1.1rem;
       color: var(--color-muted);
       margin: 12px 0;
     }
-    
+
     .contact-info a {
       color: var(--color-primary-light);
       text-decoration: none;
     }
-    
+
     footer {
       padding: 24px 0;
       text-align: center;
       color: var(--color-muted);
-      border-top: 1px solid rgba(255,255,255,0.1);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
-    
+
     /* Loading state */
     .loading {
       display: flex;
@@ -207,9 +367,13 @@
     }
   </style>
 </head>
+
 <body>
-  <div id="loading" class="loading">Loading your site...</div>
-  
+  <div id="loading" class="loading">
+    <div class="loading-spinner"></div>
+    <div>Loading your site...</div>
+  </div>
+
   <div id="siteContent" style="display: none;">
     <header>
       <div class="container">
@@ -219,61 +383,129 @@
         </div>
       </div>
     </header>
-    
-    <section class="hero">
+
+    <section class="hero reveal-on-scroll">
       <div class="container">
-        <h1 id="heroTitle" data-editable="hero.title"></h1>
-        <p id="heroSubtitle" data-editable="hero.subtitle"></p>
-        <a href="#contact" class="cta-button" id="heroCTA" data-editable="hero.cta"></a>
+        <div class="hero-content">
+          <h1 id="heroTitle" data-editable="hero.title"></h1>
+          <p id="heroSubtitle" data-editable="hero.subtitle"></p>
+          <a href="#contact" class="cta-button" id="heroCTA" data-editable="hero.cta"></a>
+        </div>
+
+        <div class="hero-image-container">
+          <img id="heroImage" src="" alt="" class="hero-image" />
+        </div>
       </div>
     </section>
-    
+
+    <!-- Dynamic sections will be injected here -->
+    <div id="dynamicSections"></div>
+
     <section class="services">
       <div class="container">
         <h2 id="servicesTitle" data-editable="services.title"></h2>
         <div class="services-grid" id="servicesGrid"></div>
       </div>
     </section>
-    
+
     <section class="contact" id="contact">
       <div class="container">
         <h2>Contact Us</h2>
         <div class="contact-info" id="contactInfo"></div>
+
+        <form id="contact-form" class="contact-form"
+          style="max-width: 600px; margin: 32px auto; display: grid; gap: 16px;">
+          <div>
+            <label for="name" style="display: block; margin-bottom: 8px;">Name</label>
+            <input type="text" id="name" name="name" required
+              style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white;">
+          </div>
+          <div>
+            <label for="email" style="display: block; margin-bottom: 8px;">Email</label>
+            <input type="email" id="email" name="email" required
+              style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white;">
+          </div>
+          <div>
+            <label for="phone" style="display: block; margin-bottom: 8px;">Phone (Optional)</label>
+            <input type="tel" id="phone" name="phone"
+              style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white;">
+          </div>
+          <div>
+            <label for="message" style="display: block; margin-bottom: 8px;">Message</label>
+            <textarea id="message" name="message" required rows="5"
+              style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white;"></textarea>
+          </div>
+          <button type="submit" class="cta-button" style="border: none; cursor: pointer; width: 100%;">Send
+            Message</button>
+          <div class="success-message" style="display: none; color: #4ade80; text-align: center; margin-top: 16px;">Your
+            message has been sent successfully!</div>
+          <div class="error-message" style="display: none; color: #f87171; text-align: center; margin-top: 16px;">Failed
+            to send message. Please try again.</div>
+        </form>
       </div>
     </section>
-    
+
     <footer>
       <div class="container">
         <p id="footerText"></p>
       </div>
     </footer>
   </div>
-  
+
   <script>
     let siteData = null; // Store globally for editor access
-    
+
     async function loadSite() {
       try {
         const response = await fetch('./data/site.json');
         const data = await response.json();
         siteData = data; // Store for editor
-        
+
         // Set title
         document.title = data.brand?.name || 'My Business';
         document.getElementById('siteTitle').textContent = data.brand?.name || 'My Business';
-        
+
         // Set brand
         document.getElementById('brandName').textContent = data.brand?.name || 'My Business';
-        
+
+        // Set navigation
+        const nav = document.getElementById('nav');
+        if (data.nav && data.nav.length > 0) {
+          nav.innerHTML = data.nav.map(item =>
+            `<a href="${item.href}">${item.label}</a>`
+          ).join('');
+        }
+
+        // Set hero
         // Set hero
         document.getElementById('heroTitle').textContent = data.hero?.title || 'Welcome';
         document.getElementById('heroSubtitle').textContent = data.hero?.subtitle || 'Learn more about our services';
-        document.getElementById('heroCTA').textContent = data.hero?.cta || 'Get Started';
-        
+
+        const ctaText = data.hero?.cta?.[0]?.label || data.hero?.cta || 'Get Started';
+        const ctaBtn = document.getElementById('heroCTA');
+        ctaBtn.textContent = ctaText;
+
+        // Handle Split Layout
+        if (data.hero?.layout === 'split') {
+          document.querySelector('.hero').classList.add('layout-split');
+          const heroImage = document.getElementById('heroImage');
+          if (data.hero?.image && heroImage) {
+            heroImage.src = data.hero.image;
+            heroImage.alt = data.hero.imageAlt || 'Hero image';
+            document.querySelector('.hero-image-container').style.display = 'block';
+          }
+        }
+
+        // Render dynamic sections (Pro features)
+        renderDynamicSections(data);
+
+        // Initialize scroll animations after rendering
+        setTimeout(initAnimations, 100);
+
         // Set services
         const servicesTitle = data.services?.title || data.products ? 'Our Products' : 'Our Services';
         document.getElementById('servicesTitle').textContent = servicesTitle;
-        
+
         const items = data.services?.items || data.products || [];
         const grid = document.getElementById('servicesGrid');
         grid.innerHTML = items.map((item, index) => `
@@ -283,7 +515,7 @@
             ${item.price ? `<div class="service-price" data-editable="services.items.${index}.price">$${item.price}</div>` : ''}
           </div>
         `).join('');
-        
+
         // Set contact
         const contact = data.contact || {};
         const contactInfo = document.getElementById('contactInfo');
@@ -292,36 +524,245 @@
           ${contact.phone ? `<p data-editable="contact.phone">Phone: <a href="tel:${contact.phone}">${contact.phone}</a></p>` : ''}
           ${contact.address ? `<p data-editable="contact.address">${contact.address}</p>` : ''}
         `;
-        
+
         // Set footer
         document.getElementById('footerText').textContent = `© ${new Date().getFullYear()} ${data.brand?.name || 'My Business'}. All rights reserved.`;
-        
+
         // Show content
         document.getElementById('loading').style.display = 'none';
         document.getElementById('siteContent').style.display = 'block';
-        
+
         // Check if in edit mode
         checkEditMode();
-        
+
       } catch (error) {
         console.error('Error loading site:', error);
         document.getElementById('loading').textContent = 'Error loading site. Please contact support.';
       }
     }
-    
+
+    function renderDynamicSections(data) {
+      const dynamicContainer = document.getElementById('dynamicSections');
+      let sectionsHTML = '';
+
+      // About Section
+      if (data.about) {
+        sectionsHTML += `
+          <section class="services" style="background: var(--color-surface);">
+            <div class="container">
+              <h2>${data.about.title || 'About Us'}</h2>
+              ${data.about.subtitle ? `<p style="text-align: center; max-width: 800px; margin: 0 auto 32px; color: var(--color-muted);">${data.about.subtitle}</p>` : ''}
+              <p style="max-width: 800px; margin: 0 auto; color: var(--color-muted); font-size: 1.1rem;">${data.about.body || ''}</p>
+              ${data.about.features ? `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-top: 32px;">
+                  ${data.about.features.map(f => `<div style="padding: 16px; background: var(--color-card); border-radius: 12px;">${f}</div>`).join('')}
+                </div>
+              ` : ''}
+            </div>
+          </section>
+        `;
+      }
+
+      // Menu Section (for restaurants)
+      if (data.menu?.sections) {
+        sectionsHTML += `
+          <section class="services" id="menu">
+            <div class="container">
+              <h2>${data.menu.title || 'Our Menu'}</h2>
+              ${data.menu.sections.map(section => `
+                <div style="margin: 48px 0;">
+                  <h3 style="font-size: 2rem; margin-bottom: 8px;">${section.name}</h3>
+                  ${section.description ? `<p style="color: var(--color-muted); margin-bottom: 24px;">${section.description}</p>` : ''}
+                  <div class="services-grid">
+                    ${section.items.map(item => `
+                      <div class="service-card">
+                        ${item.image ? `<img src="${item.image}" alt="${item.name}" style="width: 100%; height: 200px; object-fit: cover; border-radius: var(--radius); margin-bottom: 16px;"/>` : ''}
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                          <h3 style="margin: 0;">${item.name}</h3>
+                          <span class="service-price">$${item.price}</span>
+                        </div>
+                        <p>${item.description || ''}</p>
+                        ${item.dietary ? `<div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">${item.dietary.map(d => `<span style="font-size: 0.85rem; padding: 4px 8px; background: var(--color-surface); border-radius: 6px;">${d}</span>`).join('')}</div>` : ''}
+                        ${item.popular ? '<span style="display: inline-block; margin-top: 8px; font-size: 0.9rem; color: var(--color-primary-light);">⭐ Popular</span>' : ''}
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </section>
+        `;
+      }
+
+      // Chef's Specials
+      if (data.chefSpecials?.items) {
+        sectionsHTML += `
+          <section class="services" style="background: var(--color-surface);">
+            <div class="container">
+              <h2>${data.chefSpecials.title || "Chef's Specials"}</h2>
+              ${data.chefSpecials.subtitle ? `<p style="text-align: center; color: var(--color-muted); margin-bottom: 32px;">${data.chefSpecials.subtitle}</p>` : ''}
+              <div class="services-grid">
+                ${data.chefSpecials.items.map(item => `
+                  <div class="service-card">
+                    ${item.image ? `<img src="${item.image}" alt="${item.name}" style="width: 100%; height: 200px; object-fit: cover; border-radius: var(--radius); margin-bottom: 16px;"/>` : ''}
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                      <h3>${item.name}</h3>
+                      <span class="service-price">$${item.price}</span>
+                    </div>
+                    <p>${item.description || ''}</p>
+                    ${item.availability ? `<p style="margin-top: 8px; color: var(--color-primary-light); font-weight: 600;">${item.availability}</p>` : ''}
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      // Private Events
+      if (data.privateEvents?.rooms) {
+        sectionsHTML += `
+          <section class="services" id="private">
+            <div class="container">
+              <h2>${data.privateEvents.title || 'Private Events'}</h2>
+              ${data.privateEvents.subtitle ? `<p style="text-align: center; max-width: 800px; margin: 0 auto 32px; color: var(--color-muted);">${data.privateEvents.subtitle}</p>` : ''}
+              <div class="services-grid">
+                ${data.privateEvents.rooms.map(room => `
+                  <div class="service-card">
+                    ${room.image ? `<img src="${room.image}" alt="${room.name}" style="width: 100%; height: 200px; object-fit: cover; border-radius: var(--radius); margin-bottom: 16px;"/>` : ''}
+                    <h3>${room.name}</h3>
+                    <p style="color: var(--color-primary-light); font-weight: 600; margin-bottom: 8px;">${room.capacity}</p>
+                    <p>${room.description || ''}</p>
+                    ${room.features ? `<ul style="margin-top: 16px; color: var(--color-muted);">${room.features.map(f => `<li>${f}</li>`).join('')}</ul>` : ''}
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      // Gallery
+      if (data.gallery?.categories) {
+        sectionsHTML += `
+          <section class="services" style="background: var(--color-surface);" id="gallery">
+            <div class="container">
+              <h2>${data.gallery.title || 'Gallery'}</h2>
+              ${data.gallery.categories.map(cat => `
+                <div style="margin: 40px 0;">
+                  <h3 style="font-size: 1.5rem; margin-bottom: 24px;">${cat.name}</h3>
+                  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+                    ${cat.images.map(img => `
+                      <div style="aspect-ratio: 1; overflow: hidden; border-radius: var(--radius);">
+                        <img src="${img.url}" alt="${img.alt}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"/>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </section>
+        `;
+      }
+
+      // Team
+      if (data.team?.members) {
+        sectionsHTML += `
+          <section class="services">
+            <div class="container">
+              <h2>${data.team.title || 'Our Team'}</h2>
+              ${data.team.subtitle ? `<p style="text-align: center; max-width: 800px; margin: 0 auto 32px; color: var(--color-muted);">${data.team.subtitle}</p>` : ''}
+              <div class="services-grid">
+                ${data.team.members.map(m => `
+                  <div class="service-card" style="text-align: center;">
+                    ${m.image ? `<img src="${m.image}" alt="${m.name}" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin: 0 auto 16px;"/>` : ''}
+                    <h3>${m.name}</h3>
+                    <p style="color: var(--color-primary-light); font-weight: 600; margin-bottom: 12px;">${m.title || m.role || ''}</p>
+                    <p style="text-align: left;">${m.bio || ''}</p>
+                    ${m.credentials ? `<div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">${m.credentials.map(c => `<span style="font-size: 0.85rem; padding: 4px 8px; background: var(--color-surface); border-radius: 6px;">${c}</span>`).join('')}</div>` : ''}
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      // Testimonials
+      if (data.testimonials?.items) {
+        sectionsHTML += `
+          <section class="services" style="background: var(--color-surface);">
+            <div class="container">
+              <h2>${data.testimonials.title || 'Testimonials'}</h2>
+              ${data.testimonials.subtitle ? `<p style="text-align: center; color: var(--color-muted); margin-bottom: 32px;">${data.testimonials.subtitle}</p>` : ''}
+              <div class="services-grid">
+                ${data.testimonials.items.map(t => `
+                  <div class="service-card">
+                    <div style="color: #f59e0b; margin-bottom: 12px;">${'⭐'.repeat(t.rating || 5)}</div>
+                    <p style="font-style: italic; margin-bottom: 16px;">"${t.text}"</p>
+                    <p style="font-weight: 600;">${t.author}</p>
+                    ${t.location ? `<p style="color: var(--color-muted); font-size: 0.9rem;">${t.location}</p>` : ''}
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      // Stats
+      if (data.stats?.items) {
+        sectionsHTML += `
+          <section class="services">
+            <div class="container">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 32px; text-align: center;">
+                ${data.stats.items.map(s => `
+                  <div>
+                    <div style="font-size: 3rem; font-weight: 900; color: var(--color-primary-light); margin-bottom: 8px;">${s.number}</div>
+                    <div style="color: var(--color-muted); font-size: 1.1rem;">${s.label}</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      // FAQ
+      if (data.faq?.items) {
+        sectionsHTML += `
+          <section class="services" style="background: var(--color-surface);">
+            <div class="container">
+              <h2>${data.faq.title || 'FAQ'}</h2>
+              <div style="max-width: 800px; margin: 0 auto;">
+                ${data.faq.items.map(q => `
+                  <div style="margin-bottom: 24px; padding: 24px; background: var(--color-card); border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.1);">
+                    <h3 style="font-size: 1.25rem; margin-bottom: 12px;">${q.question}</h3>
+                    <p style="color: var(--color-muted);">${q.answer}</p>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      dynamicContainer.innerHTML = sectionsHTML;
+    }
+
     // Auto-detect and load edit mode
     async function checkEditMode() {
       const params = new URLSearchParams(window.location.search);
       const editMode = params.get('edit');
       const token = params.get('token') || localStorage.getItem('authToken');
-      
+
       if (editMode === 'true' && token) {
         // Verify token is valid
         try {
           const authCheck = await fetch('/api/auth/verify', {
             headers: { 'Authorization': `Bearer ${token}` }
           });
-          
+
           if (authCheck.ok) {
             // Load visual editor
             const script = document.createElement('script');
@@ -329,7 +770,7 @@
             script.dataset.token = token;
             script.dataset.subdomain = window.location.pathname.split('/')[2];
             document.body.appendChild(script);
-            
+
             // Store token in localStorage for future
             localStorage.setItem('authToken', token);
           } else {
@@ -340,10 +781,105 @@
         }
       }
     }
-    
+
     // Load site data on page load
     loadSite();
+
+    // Handle contact form submission
+    document.getElementById('contact-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const successMsg = form.querySelector('.success-message');
+      const errorMsg = form.querySelector('.error-message');
+
+      // Reset state
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Sending...';
+      successMsg.style.display = 'none';
+      errorMsg.style.display = 'none';
+
+      try {
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        // Get subdomain from URL
+        const subdomain = window.location.pathname.split('/')[2];
+
+        const response = await fetch('/api/submissions/contact', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            subdomain,
+            ...data
+          })
+        });
+
+        if (response.ok) {
+          successMsg.style.display = 'block';
+          form.reset();
+        } else {
+          throw new Error('Submission failed');
+        }
+      } catch (error) {
+        console.error('Submission error:', error);
+        errorMsg.style.display = 'block';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send Message';
+      }
+    });
+    // Analytics Tracking
+    function trackPageView() {
+      const url = window.location.href;
+      // Trigger window.plausible if it exists (for tests or real implementation)
+      if (window.plausible) {
+        window.plausible('pageview', { u: url });
+      }
+      // Also support legacy or other trackers
+      if (window.gtag) {
+        window.gtag('event', 'page_view', { page_location: url });
+      }
+      // For debugging
+      console.log('Analytics: Tracked page view', url);
+    }
+
+    // Track on initial load
+    window.addEventListener('load', trackPageView);
+
+    // Track on navigation (hash changes for single-page sites)
+    window.addEventListener('hashchange', trackPageView);
+
+    // Scroll Animation Observer
+    function initAnimations() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            // Optional: stop observing once visible
+            // observer.unobserve(entry.target);
+          }
+        });
+      }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      });
+
+      // Observe all sections and cards
+      document.querySelectorAll('section, .service-card').forEach((el, index) => {
+        el.classList.add('reveal-on-scroll');
+        // Add staggered delays for grid items
+        if (el.classList.contains('service-card')) {
+          const delay = (index % 3) + 1;
+          el.classList.add(`stagger-delay-${delay}`);
+        }
+        observer.observe(el);
+      });
+    }
+
   </script>
 </body>
-</html>
 
+</html>

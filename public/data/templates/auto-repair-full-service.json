@@ -7,28 +7,51 @@
     "email": "service@completeauto.care"
   },
   "themeVars": {
-    "color-primary": "#2563eb",
-    "color-accent": "#3b82f6",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "About", "href": "#about"},
-    {"label": "Reviews", "href": "#testimonials"},
-    {"label": "Schedule", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "About",
+      "href": "#about"
+    },
+    {
+      "label": "Reviews",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Schedule",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "🔧 Full-Service Auto Repair",
     "title": "Your complete auto care solution",
     "subtitle": "From routine maintenance to major repairs, we fix it all. ASE-certified technicians, state-of-the-art diagnostics, and honest service. Brakes, engines, transmissions, electrical - trust us with your vehicle.",
     "cta": [
-      {"label": "Schedule Service", "href": "#contact"},
-      {"label": "All Services", "href": "#products", "variant": "secondary"}
+      {
+        "label": "Schedule Service",
+        "href": "#contact"
+      },
+      {
+        "label": "All Services",
+        "href": "#products",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=1200&q=80",
-    "imageAlt": "Modern auto repair shop"
+    "imageAlt": "Modern auto repair shop",
+    "layout": "split"
   },
   "about": {
     "title": "Complete Auto Care",
@@ -135,7 +158,11 @@
         "bio": "ASE Master Technician with 25+ years experience. Opened Complete Auto Care to provide honest, expert service. Believes in treating every customer's car like his own.",
         "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
         "imageAlt": "Rick Martinez",
-        "credentials": ["ASE Master Technician", "25+ Years Experience", "Honest Service Advocate"]
+        "credentials": [
+          "ASE Master Technician",
+          "25+ Years Experience",
+          "Honest Service Advocate"
+        ]
       }
     ]
   },
@@ -143,18 +170,42 @@
     "title": "Service Process",
     "subtitle": "Professional auto repair",
     "steps": [
-      {"title": "Schedule Appointment", "description": "Call or book online. Describe your vehicle's symptoms"},
-      {"title": "Diagnosis", "description": "Complete inspection and diagnostic. Clear explanation of findings"},
-      {"title": "Approval & Repair", "description": "Approve estimate, then we complete quality repairs"},
-      {"title": "Test Drive & Warranty", "description": "Test vehicle and provide warranty on parts and labor"}
+      {
+        "title": "Schedule Appointment",
+        "description": "Call or book online. Describe your vehicle's symptoms"
+      },
+      {
+        "title": "Diagnosis",
+        "description": "Complete inspection and diagnostic. Clear explanation of findings"
+      },
+      {
+        "title": "Approval & Repair",
+        "description": "Approve estimate, then we complete quality repairs"
+      },
+      {
+        "title": "Test Drive & Warranty",
+        "description": "Test vehicle and provide warranty on parts and labor"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "16+", "label": "Years in Business"},
-      {"number": "5,000+", "label": "Vehicles Repaired"},
-      {"number": "4.9", "label": "Star Rating"},
-      {"number": "ASE", "label": "Certified"}
+      {
+        "number": "16+",
+        "label": "Years in Business"
+      },
+      {
+        "number": "5,000+",
+        "label": "Vehicles Repaired"
+      },
+      {
+        "number": "4.9",
+        "label": "Star Rating"
+      },
+      {
+        "number": "ASE",
+        "label": "Certified"
+      }
     ]
   },
   "contact": {
@@ -183,4 +234,3 @@
   "productsTitle": "Auto Repair Services",
   "productsSubtitle": "Expert service for all makes and models"
 }
-

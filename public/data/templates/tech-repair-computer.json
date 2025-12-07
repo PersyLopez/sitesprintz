@@ -8,27 +8,50 @@
   },
   "themeVars": {
     "color-primary": "#3b82f6",
-    "color-accent": "#60a5fa",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary-light": "#60a5fa",
+    "color-accent": "#ec4899",
+    "color-bg": "#0F172A",
+    "color-surface": "rgba(30, 41, 59, 0.5)",
+    "color-card": "rgba(30, 41, 59, 0.3)",
+    "color-text": "#f1f5f9",
+    "color-muted": "#94a3b8"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "Business", "href": "#about"},
-    {"label": "Reviews", "href": "#testimonials"},
-    {"label": "Contact", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "Business",
+      "href": "#about"
+    },
+    {
+      "label": "Reviews",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "💻 Computer Repair & IT Support",
     "title": "Expert computer repair for home & business",
     "subtitle": "From virus removal to hardware upgrades, we fix all PC and Mac issues. Onsite service available. Remote support for quick fixes. Serving homes and small businesses since 2010.",
     "cta": [
-      {"label": "Schedule Service", "href": "#contact"},
-      {"label": "View Services", "href": "#products", "variant": "secondary"}
+      {
+        "label": "Schedule Service",
+        "href": "#contact"
+      },
+      {
+        "label": "View Services",
+        "href": "#products",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=1200&q=80",
-    "imageAlt": "Computer technician working on laptop repair"
+    "imageAlt": "Computer technician working on laptop repair",
+    "layout": "split"
   },
   "about": {
     "title": "Comprehensive IT Solutions",
@@ -135,7 +158,11 @@
         "bio": "A+ and Network+ certified with 15+ years in IT. Former corporate IT manager now serving the community. Specializes in both Mac and PC systems.",
         "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
         "imageAlt": "David Martinez",
-        "credentials": ["CompTIA A+ Certified", "Network+ Certified", "15+ Years Experience"]
+        "credentials": [
+          "CompTIA A+ Certified",
+          "Network+ Certified",
+          "15+ Years Experience"
+        ]
       }
     ]
   },
@@ -143,18 +170,42 @@
     "title": "Service Process",
     "subtitle": "Simple and transparent",
     "steps": [
-      {"title": "Contact Us", "description": "Call, email, or book online. Describe your issue"},
-      {"title": "Diagnostic", "description": "We'll diagnose the problem and provide a clear quote"},
-      {"title": "Repair", "description": "Fix approved. Most repairs completed within 24-48 hours"},
-      {"title": "Follow-up", "description": "30-day warranty and free follow-up support"}
+      {
+        "title": "Contact Us",
+        "description": "Call, email, or book online. Describe your issue"
+      },
+      {
+        "title": "Diagnostic",
+        "description": "We'll diagnose the problem and provide a clear quote"
+      },
+      {
+        "title": "Repair",
+        "description": "Fix approved. Most repairs completed within 24-48 hours"
+      },
+      {
+        "title": "Follow-up",
+        "description": "30-day warranty and free follow-up support"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "14+", "label": "Years in Business"},
-      {"number": "3,000+", "label": "Computers Fixed"},
-      {"number": "4.8", "label": "Star Rating"},
-      {"number": "95%", "label": "First-Time Fix Rate"}
+      {
+        "number": "14+",
+        "label": "Years in Business"
+      },
+      {
+        "number": "3,000+",
+        "label": "Computers Fixed"
+      },
+      {
+        "number": "4.8",
+        "label": "Star Rating"
+      },
+      {
+        "number": "95%",
+        "label": "First-Time Fix Rate"
+      }
     ]
   },
   "contact": {
@@ -183,4 +234,3 @@
   "productsTitle": "Computer Services",
   "productsSubtitle": "Honest pricing, expert service"
 }
-

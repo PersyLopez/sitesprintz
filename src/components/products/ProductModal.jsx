@@ -19,7 +19,7 @@ function ProductModal({ product, onSave, onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (!formData.name || !formData.price) {
       alert('Please fill in required fields');
       return;
@@ -46,6 +46,7 @@ function ProductModal({ product, onSave, onClose }) {
             <input
               type="text"
               id="name"
+              name="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="e.g. Margherita Pizza"
@@ -57,6 +58,7 @@ function ProductModal({ product, onSave, onClose }) {
             <label htmlFor="description">Description</label>
             <textarea
               id="description"
+              name="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Describe your product..."
@@ -70,6 +72,7 @@ function ProductModal({ product, onSave, onClose }) {
               <input
                 type="number"
                 id="price"
+                name="price"
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                 placeholder="0.00"
@@ -84,6 +87,7 @@ function ProductModal({ product, onSave, onClose }) {
               <input
                 type="text"
                 id="category"
+                name="category"
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 placeholder="e.g. Pizzas, Drinks"
@@ -96,6 +100,7 @@ function ProductModal({ product, onSave, onClose }) {
             <input
               type="url"
               id="image"
+              name="image"
               value={formData.image}
               onChange={(e) => setFormData({ ...formData, image: e.target.value })}
               placeholder="https://example.com/image.jpg"

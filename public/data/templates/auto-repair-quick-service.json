@@ -7,28 +7,51 @@
     "email": "service@quicklube.auto"
   },
   "themeVars": {
-    "color-primary": "#dc2626",
-    "color-accent": "#ef4444",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "Coupons", "href": "#about"},
-    {"label": "Reviews", "href": "#testimonials"},
-    {"label": "Find Us", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "Coupons",
+      "href": "#about"
+    },
+    {
+      "label": "Reviews",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Find Us",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "🚗 Quick Auto Service",
     "title": "In and out in 20 minutes",
     "subtitle": "Fast oil changes, tire rotations, and essential maintenance - no appointment needed. Stay in your car service. Certified technicians. Quality products. Fair prices. Drive-in anytime during business hours!",
     "cta": [
-      {"label": "See Services", "href": "#products"},
-      {"label": "Find Location", "href": "#contact", "variant": "secondary"}
+      {
+        "label": "See Services",
+        "href": "#products"
+      },
+      {
+        "label": "Find Location",
+        "href": "#contact",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1632823470675-7b0c98d85a93?w=1200&q=80",
-    "imageAlt": "Quick oil change service bay"
+    "imageAlt": "Quick oil change service bay",
+    "layout": "split"
   },
   "about": {
     "title": "Fast & Convenient",
@@ -135,7 +158,11 @@
         "bio": "ASE certified technician with 12+ years experience in quick service. Trains all team members in quality service and customer care. Believes in honest, fast service.",
         "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
         "imageAlt": "Danny Wilson",
-        "credentials": ["ASE Certified", "12+ Years Experience", "Quality Service Expert"]
+        "credentials": [
+          "ASE Certified",
+          "12+ Years Experience",
+          "Quality Service Expert"
+        ]
       }
     ]
   },
@@ -143,18 +170,42 @@
     "title": "How It Works",
     "subtitle": "Quick and easy",
     "steps": [
-      {"title": "Drive In", "description": "No appointment needed. Just drive up during business hours"},
-      {"title": "Stay in Your Car", "description": "Relax while our technicians service your vehicle"},
-      {"title": "Quick Service", "description": "Most services completed in 15-20 minutes"},
-      {"title": "Drive Away", "description": "Pay and go. Next service reminder included"}
+      {
+        "title": "Drive In",
+        "description": "No appointment needed. Just drive up during business hours"
+      },
+      {
+        "title": "Stay in Your Car",
+        "description": "Relax while our technicians service your vehicle"
+      },
+      {
+        "title": "Quick Service",
+        "description": "Most services completed in 15-20 minutes"
+      },
+      {
+        "title": "Drive Away",
+        "description": "Pay and go. Next service reminder included"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "15-20", "label": "Minute Service"},
-      {"number": "10,000+", "label": "Vehicles Serviced"},
-      {"number": "4.8", "label": "Star Rating"},
-      {"number": "No", "label": "Appointment Needed"}
+      {
+        "number": "15-20",
+        "label": "Minute Service"
+      },
+      {
+        "number": "10,000+",
+        "label": "Vehicles Serviced"
+      },
+      {
+        "number": "4.8",
+        "label": "Star Rating"
+      },
+      {
+        "number": "No",
+        "label": "Appointment Needed"
+      }
     ]
   },
   "contact": {
@@ -183,4 +234,3 @@
   "productsTitle": "Quick Service Menu",
   "productsSubtitle": "Fast service, fair prices"
 }
-

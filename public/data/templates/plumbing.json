@@ -7,19 +7,36 @@
     "email": "dispatch@clearflowplumbing.com"
   },
   "themeVars": {
-    "color-primary": "#0ea5e9",
-    "color-primary-600": "#0284c7",
-    "color-accent": "#14b8a6",
-    "color-success": "#22c55e",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    { "label": "Services", "href": "#services" },
-    { "label": "About", "href": "#about" },
-    { "label": "Testimonials", "href": "#testimonials" },
-    { "label": "Plans", "href": "#pricing" },
-    { "label": "Contact", "href": "#contact" }
+    {
+      "label": "Services",
+      "href": "#services"
+    },
+    {
+      "label": "About",
+      "href": "#about"
+    },
+    {
+      "label": "Testimonials",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Plans",
+      "href": "#pricing"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "Emergency plumbers on-call",
@@ -28,9 +45,17 @@
     "image": "assets/hero-placeholder.svg",
     "imageAlt": "Plumber repairing a kitchen sink",
     "cta": [
-      { "label": "Request emergency dispatch", "href": "tel:+15557654321" },
-      { "label": "Book routine visit", "href": "#contact", "variant": "secondary" }
-    ]
+      {
+        "label": "Request emergency dispatch",
+        "href": "tel:+15557654321"
+      },
+      {
+        "label": "Book routine visit",
+        "href": "#contact",
+        "variant": "secondary"
+      }
+    ],
+    "layout": "split"
   },
   "services": {
     "title": "Full-service plumbing",
@@ -85,19 +110,28 @@
         "name": "Annual Plumbing Check",
         "description": "Whole-home inspection, water pressure test, and fixture tune-up.",
         "price": 159,
-        "cta": { "label": "Schedule", "href": "#contact" }
+        "cta": {
+          "label": "Schedule",
+          "href": "#contact"
+        }
       },
       {
         "name": "Drain Care Membership",
         "description": "Two preventive drain cleanings per year plus prorated emergency rates.",
         "price": 19,
-        "cta": { "label": "Join plan", "href": "#contact" }
+        "cta": {
+          "label": "Join plan",
+          "href": "#contact"
+        }
       },
       {
         "name": "Tankless Flush and Service",
         "description": "Annual descaling and performance check for all major brands.",
         "price": 189,
-        "cta": { "label": "Book visit", "href": "#contact" }
+        "cta": {
+          "label": "Book visit",
+          "href": "#contact"
+        }
       }
     ]
   },

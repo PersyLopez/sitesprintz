@@ -7,29 +7,55 @@
     "email": "contact@apexstrategy.com"
   },
   "themeVars": {
-    "color-primary": "#1e40af",
-    "color-accent": "#1e3a8a",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#0f172a",
+    "color-primary-light": "#334155",
+    "color-accent": "#d4af37",
+    "color-surface": "rgba(255, 255, 255, 0.03)",
+    "color-card": "rgba(255, 255, 255, 0.06)",
+    "color-text": "#f8fafc",
+    "color-muted": "#94a3b8",
+    "color-bg": "#020617"
   },
   "nav": [
-    {"label": "Services", "href": "#services"},
-    {"label": "Results", "href": "#results"},
-    {"label": "Team", "href": "#team"},
-    {"label": "Testimonials", "href": "#testimonials"},
-    {"label": "Contact", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#services"
+    },
+    {
+      "label": "Results",
+      "href": "#results"
+    },
+    {
+      "label": "Team",
+      "href": "#team"
+    },
+    {
+      "label": "Testimonials",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
+    "layout": "split",
     "eyebrow": "✨ Strategic Excellence Since 2012",
     "title": "Transform Your Business with Data-Driven Strategy",
-    "subtitle": "Apex Strategy Group partners with ambitious companies to unlock growth, optimize operations, and dominate their markets. Our proven methodologies and seasoned consultants deliver measurable results that impact your bottom line.",
+    "subtitle": "Apex Strategy Group partners with ambitious companies to unlock growth, optimize operations, and dominate their markets.",
     "cta": [
-      {"label": "📅 Schedule Strategy Session", "href": "#booking"},
-      {"label": "📊 View Case Studies", "href": "#results", "variant": "secondary"}
+      {
+        "label": "📅 Schedule Strategy Session",
+        "href": "#booking"
+      },
+      {
+        "label": "📊 View Case Studies",
+        "href": "#results",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&q=80",
-    "imageAlt": "Business strategy meeting"
+    "imageAlt": "Business strategy meeting in modern office"
   },
   "features": {
     "bookingWidget": {
@@ -60,7 +86,12 @@
             "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80",
             "imageAlt": "Strategy planning",
             "duration": "6-8 weeks",
-            "deliverables": ["Market analysis", "Growth roadmap", "Financial projections", "Implementation plan"],
+            "deliverables": [
+              "Market analysis",
+              "Growth roadmap",
+              "Financial projections",
+              "Implementation plan"
+            ],
             "popular": true
           },
           {
@@ -70,7 +101,12 @@
             "image": "https://images.unsplash.com/photo-1551836022-4c4c79ecde51?w=600&q=80",
             "imageAlt": "Market analysis",
             "duration": "4-6 weeks",
-            "deliverables": ["Market research", "Entry strategy", "Competitive analysis", "Launch plan"],
+            "deliverables": [
+              "Market research",
+              "Entry strategy",
+              "Competitive analysis",
+              "Launch plan"
+            ],
             "popular": true
           },
           {
@@ -80,14 +116,24 @@
             "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80",
             "imageAlt": "Digital transformation",
             "duration": "10-12 weeks",
-            "deliverables": ["Technology assessment", "Transformation roadmap", "Vendor selection", "Implementation support"]
+            "deliverables": [
+              "Technology assessment",
+              "Transformation roadmap",
+              "Vendor selection",
+              "Implementation support"
+            ]
           },
           {
             "name": "Strategic Planning Session",
             "price": 8000,
             "description": "Intensive 2-day workshop with your leadership team to define vision, strategy, and key initiatives",
             "duration": "2 days",
-            "deliverables": ["Strategic framework", "Priority initiatives", "Action plans", "Performance metrics"]
+            "deliverables": [
+              "Strategic framework",
+              "Priority initiatives",
+              "Action plans",
+              "Performance metrics"
+            ]
           }
         ]
       },
@@ -103,7 +149,12 @@
             "image": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&q=80",
             "imageAlt": "Operations analysis",
             "duration": "4 weeks",
-            "deliverables": ["Process audit", "Efficiency report", "Cost reduction roadmap", "Quick wins list"],
+            "deliverables": [
+              "Process audit",
+              "Efficiency report",
+              "Cost reduction roadmap",
+              "Quick wins list"
+            ],
             "popular": true
           },
           {
@@ -111,14 +162,24 @@
             "price": 18000,
             "description": "Supply chain analysis and redesign to reduce costs, improve reliability, and increase agility",
             "duration": "8 weeks",
-            "deliverables": ["Supply chain mapping", "Optimization plan", "Vendor strategy", "Cost savings model"]
+            "deliverables": [
+              "Supply chain mapping",
+              "Optimization plan",
+              "Vendor strategy",
+              "Cost savings model"
+            ]
           },
           {
             "name": "Process Reengineering",
             "price": 14000,
             "description": "Redesign critical business processes for dramatic improvements in speed, quality, and cost",
             "duration": "6 weeks",
-            "deliverables": ["Process documentation", "Redesign blueprints", "Implementation plan", "Training materials"]
+            "deliverables": [
+              "Process documentation",
+              "Redesign blueprints",
+              "Implementation plan",
+              "Training materials"
+            ]
           }
         ]
       },
@@ -134,7 +195,12 @@
             "image": "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80",
             "imageAlt": "Financial planning",
             "duration": "Monthly",
-            "deliverables": ["Financial strategy", "Budget management", "Investor relations", "Board reporting"],
+            "deliverables": [
+              "Financial strategy",
+              "Budget management",
+              "Investor relations",
+              "Board reporting"
+            ],
             "popular": true
           },
           {
@@ -142,14 +208,24 @@
             "price": 8000,
             "description": "Build robust financial models for fundraising, M&A, or strategic planning",
             "duration": "3-4 weeks",
-            "deliverables": ["Financial model", "Scenario analysis", "Sensitivity testing", "Executive dashboard"]
+            "deliverables": [
+              "Financial model",
+              "Scenario analysis",
+              "Sensitivity testing",
+              "Executive dashboard"
+            ]
           },
           {
             "name": "Fundraising Strategy",
             "price": 12000,
             "description": "Prepare for and execute successful fundraising with investor materials and pitch coaching",
             "duration": "6-8 weeks",
-            "deliverables": ["Pitch deck", "Financial projections", "Investor targeting", "Pitch coaching"]
+            "deliverables": [
+              "Pitch deck",
+              "Financial projections",
+              "Investor targeting",
+              "Pitch coaching"
+            ]
           }
         ]
       },
@@ -163,21 +239,36 @@
             "price": 3500,
             "description": "One-on-one coaching for C-suite executives (3-month engagement)",
             "duration": "3 months",
-            "deliverables": ["Assessment", "Development plan", "12 coaching sessions", "Progress tracking"]
+            "deliverables": [
+              "Assessment",
+              "Development plan",
+              "12 coaching sessions",
+              "Progress tracking"
+            ]
           },
           {
             "name": "Leadership Team Alignment",
             "price": 7500,
             "description": "Build high-performing leadership teams through alignment workshops and team development",
             "duration": "4 weeks",
-            "deliverables": ["Team assessment", "Alignment workshop", "Communication protocols", "Action plan"]
+            "deliverables": [
+              "Team assessment",
+              "Alignment workshop",
+              "Communication protocols",
+              "Action plan"
+            ]
           },
           {
             "name": "Organizational Design",
             "price": 11000,
             "description": "Restructure your organization for improved performance, clarity, and scalability",
             "duration": "5-6 weeks",
-            "deliverables": ["Org assessment", "Redesign proposal", "Role definitions", "Implementation roadmap"]
+            "deliverables": [
+              "Org assessment",
+              "Redesign proposal",
+              "Role definitions",
+              "Implementation roadmap"
+            ]
           }
         ]
       }
@@ -208,9 +299,18 @@
         "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80",
         "imageAlt": "SaaS growth",
         "metrics": [
-          {"label": "Revenue Growth", "value": "250%"},
-          {"label": "Customer Acquisition", "value": "180%"},
-          {"label": "Market Share", "value": "+15pts"}
+          {
+            "label": "Revenue Growth",
+            "value": "250%"
+          },
+          {
+            "label": "Customer Acquisition",
+            "value": "180%"
+          },
+          {
+            "label": "Market Share",
+            "value": "+15pts"
+          }
         ]
       },
       {
@@ -221,9 +321,18 @@
         "image": "https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?w=800&q=80",
         "imageAlt": "Manufacturing",
         "metrics": [
-          {"label": "Cost Reduction", "value": "22%"},
-          {"label": "Productivity", "value": "+35%"},
-          {"label": "Quality", "value": "+28%"}
+          {
+            "label": "Cost Reduction",
+            "value": "22%"
+          },
+          {
+            "label": "Productivity",
+            "value": "+35%"
+          },
+          {
+            "label": "Quality",
+            "value": "+28%"
+          }
         ]
       }
     ]
@@ -253,7 +362,12 @@
           "title": "CEO, TechScale"
         },
         "duration": "6 months",
-        "services": ["Growth Strategy", "Pricing Optimization", "Sales Process", "Customer Success"]
+        "services": [
+          "Growth Strategy",
+          "Pricing Optimization",
+          "Sales Process",
+          "Customer Success"
+        ]
       },
       {
         "title": "Digital Transformation Saves Manufacturer $4.2M Annually",
@@ -276,7 +390,12 @@
           "title": "COO, Legacy Manufacturing"
         },
         "duration": "10 months",
-        "services": ["Digital Transformation", "Process Automation", "Change Management", "Training"]
+        "services": [
+          "Digital Transformation",
+          "Process Automation",
+          "Change Management",
+          "Training"
+        ]
       },
       {
         "title": "Retail Chain Expansion: 12 to 47 Locations in 2 Years",
@@ -299,7 +418,12 @@
           "title": "Founder & CEO, FreshBowl"
         },
         "duration": "24 months (ongoing)",
-        "services": ["Growth Strategy", "Fundraising", "Operations", "Executive Recruiting"]
+        "services": [
+          "Growth Strategy",
+          "Fundraising",
+          "Operations",
+          "Executive Recruiting"
+        ]
       }
     ]
   },
@@ -355,8 +479,16 @@
         "bio": "Former McKinsey Senior Partner with 20 years advising Fortune 500 CEOs. Michael specializes in growth strategy, M&A, and digital transformation. MBA from Harvard Business School.",
         "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
         "imageAlt": "Michael Stevens",
-        "credentials": ["McKinsey Senior Partner", "Harvard MBA", "Board Member"],
-        "specialties": ["Growth Strategy", "M&A", "Digital Transformation"]
+        "credentials": [
+          "McKinsey Senior Partner",
+          "Harvard MBA",
+          "Board Member"
+        ],
+        "specialties": [
+          "Growth Strategy",
+          "M&A",
+          "Digital Transformation"
+        ]
       },
       {
         "name": "Jennifer Park",
@@ -364,8 +496,16 @@
         "bio": "Former VP of Operations at Amazon and Bain consultant. Jennifer leads operational excellence engagements across manufacturing, retail, and logistics. MIT Engineering background.",
         "image": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80",
         "imageAlt": "Jennifer Park",
-        "credentials": ["Former Amazon VP", "Bain Alum", "MIT Engineering"],
-        "specialties": ["Operations", "Supply Chain", "Process Improvement"]
+        "credentials": [
+          "Former Amazon VP",
+          "Bain Alum",
+          "MIT Engineering"
+        ],
+        "specialties": [
+          "Operations",
+          "Supply Chain",
+          "Process Improvement"
+        ]
       },
       {
         "name": "David Thompson",
@@ -373,8 +513,16 @@
         "bio": "Former Fortune 500 CFO and BCG consultant. David brings 25 years of financial leadership experience to help clients optimize capital structure, fundraising, and financial operations.",
         "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
         "imageAlt": "David Thompson",
-        "credentials": ["Former CFO", "BCG Alum", "CPA"],
-        "specialties": ["Financial Strategy", "Fundraising", "M&A"]
+        "credentials": [
+          "Former CFO",
+          "BCG Alum",
+          "CPA"
+        ],
+        "specialties": [
+          "Financial Strategy",
+          "Fundraising",
+          "M&A"
+        ]
       },
       {
         "name": "Lisa Rodriguez",
@@ -382,8 +530,15 @@
         "bio": "Former Chief People Officer at Google and organizational psychologist. Lisa helps clients build high-performing teams, develop leaders, and create winning cultures.",
         "image": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80",
         "imageAlt": "Lisa Rodriguez",
-        "credentials": ["Former Google CPO", "PhD Organizational Psychology"],
-        "specialties": ["Leadership Development", "Org Design", "Culture"]
+        "credentials": [
+          "Former Google CPO",
+          "PhD Organizational Psychology"
+        ],
+        "specialties": [
+          "Leadership Development",
+          "Org Design",
+          "Culture"
+        ]
       }
     ]
   },
@@ -391,12 +546,36 @@
     "title": "Industry Expertise",
     "subtitle": "Deep experience across key sectors",
     "items": [
-      {"name": "Technology & SaaS", "icon": "💻", "projects": "78+"},
-      {"name": "Healthcare & Life Sciences", "icon": "🏥", "projects": "34+"},
-      {"name": "Manufacturing & Industrial", "icon": "🏭", "projects": "42+"},
-      {"name": "Retail & Consumer", "icon": "🛍️", "projects": "56+"},
-      {"name": "Financial Services", "icon": "💰", "projects": "28+"},
-      {"name": "Professional Services", "icon": "💼", "projects": "31+"}
+      {
+        "name": "Technology & SaaS",
+        "icon": "💻",
+        "projects": "78+"
+      },
+      {
+        "name": "Healthcare & Life Sciences",
+        "icon": "🏥",
+        "projects": "34+"
+      },
+      {
+        "name": "Manufacturing & Industrial",
+        "icon": "🏭",
+        "projects": "42+"
+      },
+      {
+        "name": "Retail & Consumer",
+        "icon": "🛍️",
+        "projects": "56+"
+      },
+      {
+        "name": "Financial Services",
+        "icon": "💰",
+        "projects": "28+"
+      },
+      {
+        "name": "Professional Services",
+        "icon": "💼",
+        "projects": "31+"
+      }
     ]
   },
   "process": {
@@ -460,41 +639,105 @@
   },
   "stats": {
     "items": [
-      {"number": "200+", "label": "Clients Served"},
-      {"number": "3.5x", "label": "Average ROI"},
-      {"number": "92%", "label": "Retention Rate"},
-      {"number": "$500M+", "label": "Value Created"}
+      {
+        "number": "200+",
+        "label": "Clients Served"
+      },
+      {
+        "number": "3.5x",
+        "label": "Average ROI"
+      },
+      {
+        "number": "92%",
+        "label": "Retention Rate"
+      },
+      {
+        "number": "$500M+",
+        "label": "Value Created"
+      }
     ]
   },
   "credentials": {
     "title": "Credentials & Recognition",
     "items": [
-      {"icon": "🏆", "name": "Top 10 Consulting Firm", "description": "Inc. Magazine 2023"},
-      {"icon": "⭐", "name": "Former Big 3", "description": "McKinsey, Bain, BCG Alumni"},
-      {"icon": "💎", "name": "Fortune 500 Experience", "description": "Executive-Level Expertise"},
-      {"icon": "📰", "name": "Featured In", "description": "Harvard Business Review, Forbes"}
+      {
+        "icon": "🏆",
+        "name": "Top 10 Consulting Firm",
+        "description": "Inc. Magazine 2023"
+      },
+      {
+        "icon": "⭐",
+        "name": "Former Big 3",
+        "description": "McKinsey, Bain, BCG Alumni"
+      },
+      {
+        "icon": "💎",
+        "name": "Fortune 500 Experience",
+        "description": "Executive-Level Expertise"
+      },
+      {
+        "icon": "📰",
+        "name": "Featured In",
+        "description": "Harvard Business Review, Forbes"
+      }
     ]
   },
   "faq": {
     "title": "Frequently Asked Questions",
     "items": [
-      {"question": "What makes Apex different from other consulting firms?", "answer": "We combine Big 3 methodology with hands-on implementation support. Unlike traditional consultants who deliver recommendations and leave, we stay with you to drive results. Our team includes former McKinsey, Bain, and BCG consultants plus Fortune 500 executives."},
-      {"question": "What is your typical engagement length?", "answer": "Most engagements run 8-16 weeks, though some are shorter (strategy sprints) or longer (transformation programs). We tailor the timeline to your needs and can work on retainer for ongoing support."},
-      {"question": "Do you work with startups or just established companies?", "answer": "We work with companies from Series A startups to Fortune 500s. Our sweet spot is growth-stage companies ($5M-$500M revenue) that need senior-level expertise without the overhead of full-time executives."},
-      {"question": "How do you charge for your services?", "answer": "We typically work on fixed-fee project engagements or monthly retainers. For some growth engagements, we're open to performance-based fees. We'll discuss pricing during your consultation based on scope and objectives."},
-      {"question": "Can you provide references?", "answer": "Absolutely. We're happy to connect you with past clients in your industry who can speak to their experience working with us and the results achieved."},
-      {"question": "Do you sign NDAs?", "answer": "Yes, we sign NDAs and have strict confidentiality protocols. Many of our clients are working on sensitive strategic initiatives, and we take data security seriously."},
-      {"question": "What if we're not satisfied with the work?", "answer": "We have a satisfaction guarantee. If you're not satisfied within the first 2 weeks, we'll make it right or part ways amicably. In 11 years, we've never had a client invoke this—our 92% retention rate speaks for itself."},
-      {"question": "Do you implement or just provide recommendations?", "answer": "Both! Unlike traditional consultants, we provide hands-on implementation support. We work alongside your team to ensure the strategy becomes reality and delivers results."}
+      {
+        "question": "What makes Apex different from other consulting firms?",
+        "answer": "We combine Big 3 methodology with hands-on implementation support. Unlike traditional consultants who deliver recommendations and leave, we stay with you to drive results. Our team includes former McKinsey, Bain, and BCG consultants plus Fortune 500 executives."
+      },
+      {
+        "question": "What is your typical engagement length?",
+        "answer": "Most engagements run 8-16 weeks, though some are shorter (strategy sprints) or longer (transformation programs). We tailor the timeline to your needs and can work on retainer for ongoing support."
+      },
+      {
+        "question": "Do you work with startups or just established companies?",
+        "answer": "We work with companies from Series A startups to Fortune 500s. Our sweet spot is growth-stage companies ($5M-$500M revenue) that need senior-level expertise without the overhead of full-time executives."
+      },
+      {
+        "question": "How do you charge for your services?",
+        "answer": "We typically work on fixed-fee project engagements or monthly retainers. For some growth engagements, we're open to performance-based fees. We'll discuss pricing during your consultation based on scope and objectives."
+      },
+      {
+        "question": "Can you provide references?",
+        "answer": "Absolutely. We're happy to connect you with past clients in your industry who can speak to their experience working with us and the results achieved."
+      },
+      {
+        "question": "Do you sign NDAs?",
+        "answer": "Yes, we sign NDAs and have strict confidentiality protocols. Many of our clients are working on sensitive strategic initiatives, and we take data security seriously."
+      },
+      {
+        "question": "What if we're not satisfied with the work?",
+        "answer": "We have a satisfaction guarantee. If you're not satisfied within the first 2 weeks, we'll make it right or part ways amicably. In 11 years, we've never had a client invoke this—our 92% retention rate speaks for itself."
+      },
+      {
+        "question": "Do you implement or just provide recommendations?",
+        "answer": "Both! Unlike traditional consultants, we provide hands-on implementation support. We work alongside your team to ensure the strategy becomes reality and delivers results."
+      }
     ]
   },
   "footer": {
     "text": "✨ Apex Strategy Group • Transforming Businesses Since 2012",
     "links": [
-      {"label": "Services", "href": "#services"},
-      {"label": "Case Studies", "href": "#results"},
-      {"label": "Team", "href": "#team"},
-      {"label": "Contact", "href": "#contact"}
+      {
+        "label": "Services",
+        "href": "#services"
+      },
+      {
+        "label": "Case Studies",
+        "href": "#results"
+      },
+      {
+        "label": "Team",
+        "href": "#team"
+      },
+      {
+        "label": "Contact",
+        "href": "#contact"
+      }
     ],
     "awards": [
       "Top 10 Consulting Firm",
@@ -511,4 +754,3 @@
     "tier": "Pro"
   }
 }
-

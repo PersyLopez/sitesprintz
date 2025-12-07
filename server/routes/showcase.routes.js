@@ -7,9 +7,10 @@
 import express from 'express';
 import ShowcaseService from '../services/showcaseService.js';
 import { authenticateToken } from '../middleware/auth.js';
-import { prisma } from '../../database/db.js';
+import { prisma } from '../../database/prisma.js';
 
 const router = express.Router();
+console.log('Showcase routes module loaded');
 const showcaseService = new ShowcaseService();
 
 /**
@@ -27,13 +28,13 @@ const showcaseService = new ShowcaseService();
  */
 router.get('/', async (req, res) => {
   try {
-    const { 
-      page: pageParam = '1', 
-      pageSize: pageSizeParam = '12', 
-      category, 
-      search, 
-      sortBy = 'created_at', 
-      sortOrder = 'desc' 
+    const {
+      page: pageParam = '1',
+      pageSize: pageSizeParam = '12',
+      category,
+      search,
+      sortBy = 'created_at',
+      sortOrder = 'desc'
     } = req.query;
 
     const page = parseInt(pageParam, 10) || 1;
@@ -63,7 +64,7 @@ router.get('/', async (req, res) => {
     // Build orderBy
     const validSortFields = ['created_at', 'subdomain'];
     let orderBy;
-    
+
     if (sortBy === 'name') {
       // Prisma doesn't support ordering by JSON path directly in the same way
       // We'll fetch and sort in memory for now (acceptable for paginated results)
@@ -108,7 +109,7 @@ router.get('/', async (req, res) => {
 
     // Filter by search term (in memory)
     if (search) {
-      sitesResponse = sitesResponse.filter(site => 
+      sitesResponse = sitesResponse.filter(site =>
         site.name.toLowerCase().includes(search.toLowerCase())
       );
       total = sitesResponse.length;
@@ -134,9 +135,9 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Error listing showcases:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: 'Failed to list showcases' 
+      error: 'Failed to list showcases'
     });
   }
 });
@@ -177,9 +178,9 @@ router.get('/categories', async (req, res) => {
     });
   } catch (error) {
     console.error('Error getting categories:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: 'Failed to get categories' 
+      error: 'Failed to get categories'
     });
   }
 });
@@ -240,9 +241,9 @@ router.get('/stats', async (req, res) => {
     });
   } catch (error) {
     console.error('Error getting stats:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: 'Failed to get stats' 
+      error: 'Failed to get stats'
     });
   }
 });
@@ -255,6 +256,15 @@ router.get('/stats', async (req, res) => {
 router.get('/:subdomain', async (req, res) => {
   try {
     const { subdomain } = req.params;
+
+    // Validate subdomain format
+    const subdomainRegex = /^[a-zA-Z0-9-]+$/;
+    if (!subdomainRegex.test(subdomain)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid subdomain format'
+      });
+    }
 
     const site = await prisma.sites.findFirst({
       where: {
@@ -295,9 +305,9 @@ router.get('/:subdomain', async (req, res) => {
     });
   } catch (error) {
     console.error('Error getting site:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: 'Failed to get site' 
+      error: 'Failed to get site'
     });
   }
 });

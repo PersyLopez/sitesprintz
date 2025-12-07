@@ -1,38 +1,64 @@
 {
   "brand": {
-    "name": "Glow Studio", 
+    "name": "Glow Studio",
     "logo": "assets/logo.svg",
     "tagline": "Beauty & Wellness • Since 2015",
     "phone": "(555) 234-5678",
     "email": "hello@glowstudio.com"
   },
   "themeVars": {
-    "color-primary": "#d946ef", 
-    "color-accent": "#f472b6",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "About", "href": "#about"},
-    {"label": "Team", "href": "#team"},
-    {"label": "Reviews", "href": "#reviews"},
-    {"label": "Contact", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "About",
+      "href": "#about"
+    },
+    {
+      "label": "Team",
+      "href": "#team"
+    },
+    {
+      "label": "Reviews",
+      "href": "#reviews"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "💇‍♀️ Professional Beauty Services",
     "title": "Look and feel your absolute best",
     "subtitle": "From precision cuts to stunning color transformations, our expert stylists create looks that enhance your natural beauty. Book your appointment and discover the Glow Studio difference.",
     "cta": [
-      {"label": "📅 Book Now", "href": "#book"},
-      {"label": "🖼️ View Gallery", "href": "#gallery", "variant": "secondary"}
+      {
+        "label": "📅 Book Now",
+        "href": "#book"
+      },
+      {
+        "label": "🖼️ View Gallery",
+        "href": "#gallery",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=1200&q=80",
-    "imageAlt": "Modern salon interior with professional styling stations and elegant lighting"
+    "imageAlt": "Modern salon interior with professional styling stations and elegant lighting",
+    "layout": "split"
   },
   "about": {
-    "title": "Our Story", 
+    "title": "Our Story",
     "body": "Founded in 2015 by Master Stylist Sarah Chen, Glow Studio has become the premier destination for beauty and wellness in our community. Our team of certified professionals brings years of experience and the latest techniques to every service.",
     "subtitle": "Why choose Glow Studio",
     "features": [
@@ -160,7 +186,7 @@
     }
   },
   "contact": {
-    "title": "Visit Us", 
+    "title": "Visit Us",
     "subtitle": "We'd love to welcome you to Glow Studio",
     "phone": "(555) 234-5678",
     "email": "hello@glowstudio.com",
@@ -220,10 +246,22 @@
   },
   "stats": {
     "items": [
-      {"number": "1000+", "label": "Clients Served"},
-      {"number": "10+", "label": "Years Experience"},
-      {"number": "4.9", "label": "Star Rating"},
-      {"number": "5", "label": "Master Stylists"}
+      {
+        "number": "1000+",
+        "label": "Clients Served"
+      },
+      {
+        "number": "10+",
+        "label": "Years Experience"
+      },
+      {
+        "number": "4.9",
+        "label": "Star Rating"
+      },
+      {
+        "number": "5",
+        "label": "Master Stylists"
+      }
     ]
   },
   "team": {
@@ -236,7 +274,11 @@
         "bio": "Sarah brings 15+ years of experience from top salons in New York and Los Angeles. She specializes in color correction and bridal styling.",
         "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
         "imageAlt": "Sarah Chen",
-        "credentials": ["Vidal Sassoon Certified", "Redken Color Specialist", "Featured in Beauty Magazine"]
+        "credentials": [
+          "Vidal Sassoon Certified",
+          "Redken Color Specialist",
+          "Featured in Beauty Magazine"
+        ]
       }
     ]
   },
@@ -244,39 +286,97 @@
     "title": "Your Visit",
     "subtitle": "What to expect at Glow Studio",
     "steps": [
-      {"title": "Book Appointment", "description": "Choose your service and preferred stylist online or by phone"},
-      {"title": "Consultation", "description": "Discuss your vision, concerns, and desired results"},
-      {"title": "Transformation", "description": "Relax while we work our magic with premium products"},
-      {"title": "Style & Finish", "description": "Walk out looking and feeling absolutely amazing"}
+      {
+        "title": "Book Appointment",
+        "description": "Choose your service and preferred stylist online or by phone"
+      },
+      {
+        "title": "Consultation",
+        "description": "Discuss your vision, concerns, and desired results"
+      },
+      {
+        "title": "Transformation",
+        "description": "Relax while we work our magic with premium products"
+      },
+      {
+        "title": "Style & Finish",
+        "description": "Walk out looking and feeling absolutely amazing"
+      }
     ]
   },
   "credentials": {
     "title": "Why Choose Glow Studio",
     "items": [
-      {"icon": "🌟", "name": "Master Stylists", "description": "10+ years experience"},
-      {"icon": "💎", "name": "Premium Products", "description": "Oribe, Redken, Moroccan Oil"},
-      {"icon": "🏆", "name": "Award Winning", "description": "Best Salon 2023"},
-      {"icon": "💯", "name": "Satisfaction Guaranteed", "description": "Love it or we'll fix it free"}
+      {
+        "icon": "🌟",
+        "name": "Master Stylists",
+        "description": "10+ years experience"
+      },
+      {
+        "icon": "💎",
+        "name": "Premium Products",
+        "description": "Oribe, Redken, Moroccan Oil"
+      },
+      {
+        "icon": "🏆",
+        "name": "Award Winning",
+        "description": "Best Salon 2023"
+      },
+      {
+        "icon": "💯",
+        "name": "Satisfaction Guaranteed",
+        "description": "Love it or we'll fix it free"
+      }
     ]
   },
   "faq": {
     "title": "Frequently Asked Questions",
     "items": [
-      {"question": "How do I book an appointment?", "answer": "You can book online through our website, call us at (555) 234-5678, or use our mobile app. We recommend booking 1-2 weeks in advance for popular time slots."},
-      {"question": "What should I bring to my appointment?", "answer": "Just bring yourself! We provide everything you need. If you have inspiration photos, feel free to bring those for your consultation."},
-      {"question": "What is your cancellation policy?", "answer": "We require 24 hours notice for cancellations or rescheduling. Late cancellations may incur a 50% service fee."},
-      {"question": "Do you offer bridal services?", "answer": "Yes! We offer complete bridal packages including trials, hair, makeup, and day-of styling. Book your complimentary bridal consultation today."},
-      {"question": "What products do you use?", "answer": "We use premium brands including Oribe, Redken, Moroccan Oil, and Pureology. All products are salon-quality and many are organic."},
-      {"question": "Do you offer gift certificates?", "answer": "Yes! Gift certificates are available in any amount and can be purchased online or in-salon. They never expire and make perfect gifts."}
+      {
+        "question": "How do I book an appointment?",
+        "answer": "You can book online through our website, call us at (555) 234-5678, or use our mobile app. We recommend booking 1-2 weeks in advance for popular time slots."
+      },
+      {
+        "question": "What should I bring to my appointment?",
+        "answer": "Just bring yourself! We provide everything you need. If you have inspiration photos, feel free to bring those for your consultation."
+      },
+      {
+        "question": "What is your cancellation policy?",
+        "answer": "We require 24 hours notice for cancellations or rescheduling. Late cancellations may incur a 50% service fee."
+      },
+      {
+        "question": "Do you offer bridal services?",
+        "answer": "Yes! We offer complete bridal packages including trials, hair, makeup, and day-of styling. Book your complimentary bridal consultation today."
+      },
+      {
+        "question": "What products do you use?",
+        "answer": "We use premium brands including Oribe, Redken, Moroccan Oil, and Pureology. All products are salon-quality and many are organic."
+      },
+      {
+        "question": "Do you offer gift certificates?",
+        "answer": "Yes! Gift certificates are available in any amount and can be purchased online or in-salon. They never expire and make perfect gifts."
+      }
     ]
   },
   "footer": {
     "text": "💇‍♀️ Glow Studio • Beauty & Wellness Since 2015",
     "links": [
-      {"label": "Privacy Policy", "href": "#privacy"},
-      {"label": "Terms of Service", "href": "#terms"},
-      {"label": "Careers", "href": "#careers"},
-      {"label": "Gift Cards", "href": "#giftcards"}
+      {
+        "label": "Privacy Policy",
+        "href": "#privacy"
+      },
+      {
+        "label": "Terms of Service",
+        "href": "#terms"
+      },
+      {
+        "label": "Careers",
+        "href": "#careers"
+      },
+      {
+        "label": "Gift Cards",
+        "href": "#giftcards"
+      }
     ],
     "awards": [
       "Best Salon 2023",

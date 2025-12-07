@@ -3,8 +3,8 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { requireAuth } from '../middleware/auth.js';
-import { emailService } from '../services/emailService.js';
-import { prisma } from '../../database/db.js';
+import emailService from '../utils/email-service-wrapper.js';
+import { prisma } from '../../database/prisma.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,22 +32,22 @@ function sanitizeString(str, maxLength = 500) {
 router.post('/contact', async (req, res) => {
   try {
     const { subdomain, name, email, phone, message, type, ...otherFields } = req.body;
-    
+
     if (!subdomain || !email || !message) {
       return res.status(400).json({ error: 'Missing required fields: subdomain, email, message' });
     }
-    
+
     if (!isValidEmail(email)) {
       return res.status(400).json({ error: 'Invalid email address' });
     }
-    
+
     if (phone && !isValidPhone(phone)) {
       return res.status(400).json({ error: 'Invalid phone number format' });
     }
-    
+
     const siteDir = path.join(publicDir, 'sites', subdomain);
     const submissionsFile = path.join(siteDir, 'submissions.json');
-    
+
     // Check if site directory exists
     let siteExists = false;
     try {
@@ -72,7 +72,7 @@ router.post('/contact', async (req, res) => {
         return res.status(404).json({ error: 'Site not found' });
       }
     }
-    
+
     const siteJsonPath = path.join(siteDir, 'data', 'site.json');
     // Also check root site.json for backward compatibility
     const siteJsonPathRoot = path.join(siteDir, 'site.json');
@@ -92,7 +92,7 @@ router.post('/contact', async (req, res) => {
           select: { site_data: true }
         });
         if (site && site.site_data) {
-          siteData = typeof site.site_data === 'string' 
+          siteData = typeof site.site_data === 'string'
             ? JSON.parse(site.site_data)
             : site.site_data;
         } else {
@@ -104,10 +104,10 @@ router.post('/contact', async (req, res) => {
         return res.status(500).json({ error: 'Failed to load site data' });
       }
     }
-    
+
     const siteOwnerEmail = siteData.published?.email || siteData.contact?.email;
     const businessName = siteData.brand?.name || 'Your Business';
-    
+
     const submission = {
       id: `sub-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       type: type || 'contact',
@@ -119,7 +119,7 @@ router.post('/contact', async (req, res) => {
       status: 'unread',
       ...otherFields
     };
-    
+
     let submissions = [];
     try {
       const existingData = await fs.readFile(submissionsFile, 'utf-8');
@@ -127,34 +127,36 @@ router.post('/contact', async (req, res) => {
     } catch (error) {
       submissions = [];
     }
-    
+
     submissions.unshift(submission);
-    
+
     if (submissions.length > 1000) {
       submissions = submissions.slice(0, 1000);
     }
-    
+
     await fs.writeFile(submissionsFile, JSON.stringify(submissions, null, 2));
-    
+
     // Also store in database for reliability
     try {
       const site = await prisma.sites.findUnique({
         where: { subdomain },
         select: { id: true }
       });
-      
+
       if (site) {
         await prisma.submissions.create({
           data: {
-            site_id: site.id,
-            name: submission.name,
-            email: submission.email,
-            phone: submission.phone,
-            message: submission.message,
-            type: submission.type,
+            sites: { connect: { id: site.id } },
+            form_type: submission.type,
             status: submission.status,
             created_at: new Date(),
-            data: otherFields
+            data: {
+              name: submission.name,
+              email: submission.email,
+              phone: submission.phone,
+              message: submission.message,
+              ...otherFields
+            }
           }
         });
       }
@@ -162,11 +164,11 @@ router.post('/contact', async (req, res) => {
       console.error('Failed to store submission in database:', dbError);
       // Don't fail the request if DB storage fails - file storage is primary
     }
-    
+
     if (siteOwnerEmail) {
       try {
         const siteUrl = `${process.env.SITE_URL || 'http://localhost:3000'}/sites/${subdomain}/`;
-        
+
         await emailService.sendContactFormEmail({
           to: siteOwnerEmail,
           businessName,
@@ -181,13 +183,13 @@ router.post('/contact', async (req, res) => {
         console.error('Failed to send submission notification email:', emailError);
       }
     }
-    
+
     res.json({
       success: true,
       message: 'Your message has been sent successfully.',
       submissionId: submission.id
     });
-    
+
   } catch (error) {
     console.error('Contact form error:', error);
     res.status(500).json({ error: 'Failed to process submission' });
@@ -198,7 +200,7 @@ router.post('/contact', async (req, res) => {
 router.get('/', requireAuth, async (req, res) => {
   try {
     const userEmail = req.user.email;
-    
+
     // Get all submissions from user's sites
     const submissions = await prisma.submissions.findMany({
       where: {
@@ -221,12 +223,12 @@ router.get('/', requireAuth, async (req, res) => {
       },
       take: 100
     });
-    
+
     const submissionsResponse = submissions.map(row => {
-      const siteData = typeof row.sites.site_data === 'string' 
-        ? JSON.parse(row.sites.site_data) 
+      const siteData = typeof row.sites.site_data === 'string'
+        ? JSON.parse(row.sites.site_data)
         : row.sites.site_data;
-      
+
       return {
         id: row.id,
         name: row.name,
@@ -241,9 +243,9 @@ router.get('/', requireAuth, async (req, res) => {
         ...((row.data && typeof row.data === 'object') ? row.data : {})
       };
     });
-    
+
     res.json({ submissions: submissionsResponse });
-    
+
   } catch (error) {
     console.error('Get submissions error:', error);
     res.status(500).json({ error: 'Failed to retrieve submissions' });
@@ -255,7 +257,7 @@ router.get('/:subdomain', requireAuth, async (req, res) => {
   try {
     const { subdomain } = req.params;
     const userEmail = req.user.email;
-    
+
     // Verify user owns this site
     const site = await prisma.sites.findUnique({
       where: { subdomain },
@@ -265,15 +267,15 @@ router.get('/:subdomain', requireAuth, async (req, res) => {
         }
       }
     });
-    
+
     if (!site) {
       return res.status(404).json({ error: 'Site not found' });
     }
-    
+
     if (site.users.email !== userEmail && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Not authorized to view these submissions' });
     }
-    
+
     // Get submissions from database
     const submissions = await prisma.submissions.findMany({
       where: { site_id: site.id },
@@ -293,7 +295,7 @@ router.get('/:subdomain', requireAuth, async (req, res) => {
       },
       take: 100
     });
-    
+
     const submissionsResponse = submissions.map(row => ({
       id: row.id,
       name: row.name,
@@ -305,9 +307,9 @@ router.get('/:subdomain', requireAuth, async (req, res) => {
       submittedAt: row.created_at,
       ...((row.data && typeof row.data === 'object') ? row.data : {})
     }));
-    
+
     res.json({ submissions });
-    
+
   } catch (error) {
     console.error('Get site submissions error:', error);
     res.status(500).json({ error: 'Failed to retrieve submissions' });
@@ -319,7 +321,7 @@ router.patch('/:submissionId/read', requireAuth, async (req, res) => {
   try {
     const { submissionId } = req.params;
     const userEmail = req.user.email;
-    
+
     // Verify user owns the site this submission belongs to
     const submission = await prisma.submissions.findUnique({
       where: { id: parseInt(submissionId, 10) },
@@ -333,26 +335,26 @@ router.patch('/:submissionId/read', requireAuth, async (req, res) => {
         }
       }
     });
-    
+
     if (!submission) {
       return res.status(404).json({ error: 'Submission not found' });
     }
-    
+
     if (submission.sites.users.email !== userEmail && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Not authorized to modify this submission' });
     }
-    
+
     // Update submission status in database
     await prisma.submissions.update({
       where: { id: parseInt(submissionId, 10) },
       data: { status: 'read' }
     });
-    
+
     res.json({
       success: true,
       message: 'Submission marked as read'
     });
-    
+
   } catch (error) {
     console.error('Mark submission read error:', error);
     res.status(500).json({ error: 'Failed to update submission status' });

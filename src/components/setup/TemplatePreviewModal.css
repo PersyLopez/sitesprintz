@@ -10,20 +10,8 @@
   justify-content: center;
   z-index: 10000;
   padding: var(--spacing-lg);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
   animation: fadeIn 0.2s ease-out;
-}
-
-.preview-modal-content {
-  background: var(--bg-card);
-  border-radius: 20px;
-  max-width: 1200px;
-  width: 100%;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  animation: slideUp 0.3s ease-out;
 }
 
 @keyframes fadeIn {
@@ -42,19 +30,63 @@
   }
 }
 
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.preview-modal-content {
+  background: linear-gradient(180deg, 
+    rgba(15,27,45,0.98) 0%, 
+    rgba(26,15,46,0.95) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 20px;
+  max-width: 1200px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  animation: slideUp 0.3s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.preview-modal-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.1), transparent);
+  animation: shimmer 3s infinite;
+  pointer-events: none; /* FIXED: Prevent shimmer from blocking clicks */
+}
+
 .preview-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   padding: var(--spacing-xl);
-  border-bottom: 2px solid var(--border-dark);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+  background: linear-gradient(180deg, 
+    rgba(15,27,45,0.8) 0%, 
+    rgba(26,15,46,0.5) 100%);
+  position: relative;
+  z-index: 2;
 }
 
 .template-title-info h2 {
   margin: 0 0 var(--spacing-md);
-  color: var(--text-light);
   font-size: 1.8rem;
   font-weight: 800;
+  background: linear-gradient(135deg, #ffffff 0%, #6366f1 50%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
 }
 
 .template-badges {
@@ -64,45 +96,52 @@
 }
 
 .tier-badge {
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 0.75rem;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.1em;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 .tier-badge.tier-pro {
-  background: rgba(168, 85, 247, 0.2);
-  color: #a855f7;
+  background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%);
+  color: #1a1a1a;
 }
 
 .tier-badge.tier-checkout {
-  background: rgba(59, 130, 246, 0.2);
-  color: #3b82f6;
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  color: white;
 }
 
 .tier-badge.tier-starter {
-  background: rgba(34, 197, 94, 0.2);
-  color: #22c55e;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+}
+
+.tier-badge.tier-premium {
+  background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+  color: white;
 }
 
 .category-badge {
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 0.75rem;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.7rem;
   font-weight: 700;
-  background: rgba(6, 182, 212, 0.2);
-  color: #06b6d4;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  color: #a5b4fc;
 }
 
 .close-preview-btn {
-  background: rgba(239, 68, 68, 0.2);
-  border: none;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.3));
+  border: 1px solid rgba(239, 68, 68, 0.3);
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  color: #ef4444;
+  color: #fca5a5;
   font-size: 1.5rem;
   cursor: pointer;
   display: flex;
@@ -113,8 +152,9 @@
 }
 
 .close-preview-btn:hover {
-  background: rgba(239, 68, 68, 0.3);
-  transform: rotate(90deg);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(220, 38, 38, 0.4));
+  transform: rotate(90deg) scale(1.1);
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4);
 }
 
 /* Device Toggle */
@@ -122,30 +162,56 @@
   display: flex;
   gap: var(--spacing-sm);
   padding: 0 var(--spacing-xl) var(--spacing-lg);
-  border-bottom: 2px solid var(--border-dark);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+  background: linear-gradient(180deg, 
+    rgba(15,27,45,0.4) 0%, 
+    rgba(26,15,46,0.2) 100%);
+  position: relative;
+  z-index: 2;
 }
 
 .device-btn {
   padding: var(--spacing-sm) var(--spacing-lg);
-  background: rgba(100, 116, 139, 0.2);
-  border: 2px solid transparent;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05));
+  border: 1px solid rgba(99, 102, 241, 0.2);
   border-radius: 8px;
-  color: var(--text-muted);
+  color: rgba(226, 232, 240, 0.7);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 0.9rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.device-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.2), transparent);
+  transition: left 0.5s;
 }
 
 .device-btn:hover {
-  background: rgba(100, 116, 139, 0.3);
-  color: var(--text-light);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.1));
+  color: rgba(226, 232, 240, 0.9);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.device-btn:hover::before {
+  left: 100%;
 }
 
 .device-btn.active {
-  background: rgba(6, 182, 212, 0.2);
-  border-color: var(--primary-color);
-  color: var(--primary-color);
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border-color: rgba(99, 102, 241, 0.5);
+  color: white;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
 }
 
 /* Preview Container */

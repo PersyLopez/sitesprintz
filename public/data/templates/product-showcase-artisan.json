@@ -7,27 +7,47 @@
     "email": "hello@makersmarket.shop"
   },
   "themeVars": {
-    "color-primary": "#f59e0b",
-    "color-accent": "#fbbf24",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Shop", "href": "#products"},
-    {"label": "Our Makers", "href": "#about"},
-    {"label": "Visit", "href": "#contact"}
+    {
+      "label": "Shop",
+      "href": "#products"
+    },
+    {
+      "label": "Our Makers",
+      "href": "#about"
+    },
+    {
+      "label": "Visit",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "🎨 Handmade Artisan Goods",
     "title": "Support local makers",
     "subtitle": "Unique, handcrafted goods from talented local artisans. Every purchase supports independent makers and tells a story. From pottery to jewelry to home decor - discover one-of-a-kind treasures. Shop online or visit our collective.",
     "cta": [
-      {"label": "Browse Collection", "href": "#products"},
-      {"label": "Meet the Makers", "href": "#about", "variant": "secondary"}
+      {
+        "label": "Browse Collection",
+        "href": "#products"
+      },
+      {
+        "label": "Meet the Makers",
+        "href": "#about",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1452860606245-08befc0ff44b?w=1200&q=80",
-    "imageAlt": "Artisan craft workshop"
+    "imageAlt": "Artisan craft workshop",
+    "layout": "split"
   },
   "about": {
     "title": "Supporting Local Makers",
@@ -125,4 +145,3 @@
   "productsTitle": "Artisan Collection",
   "productsSubtitle": "Handmade by local makers"
 }
-

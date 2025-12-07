@@ -1,12 +1,12 @@
 /**
  * E2E Tests: Google OAuth Redirect Flow
- * Purpose: Verify OAuth redirects to frontend (localhost:5173) not backend (localhost:3000)
+ * Purpose: Verify OAuth redirects to frontend (localhost:3000) not backend (localhost:3000)
  */
 
 import { test, expect } from '@playwright/test';
 
 const API_URL = process.env.VITE_API_URL || 'http://localhost:3000';
-const FRONTEND_URL = process.env.VITE_APP_URL || 'http://localhost:5173';
+const FRONTEND_URL = process.env.VITE_APP_URL || 'http://localhost:3000';
 
 test.describe('Google OAuth Redirect Flow', () => {
   
@@ -28,8 +28,8 @@ test.describe('Google OAuth Redirect Flow', () => {
   });
 
   test('should have FRONTEND_URL environment variable set', async () => {
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    expect(frontendUrl).toBe('http://localhost:5173');
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    expect(frontendUrl).toBe('http://localhost:3000');
   });
 
   test('should verify OAuth callback endpoint exists', async ({ request }) => {
@@ -146,7 +146,7 @@ test.describe('OAuth Success Flow - Token Handling', () => {
         
         // Should redirect to login or frontend
         const isValidRedirect = 
-          location.includes('localhost:5173') || 
+          location.includes('localhost:3000') || 
           location.includes('/login') ||
           location.startsWith('/');
         

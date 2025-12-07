@@ -72,10 +72,10 @@ describe('Admin Page', () => {
       trial: 66
     },
     recentSignups: [
-      { 
-        id: 1, 
-        email: 'user1@example.com', 
-        name: 'John Doe', 
+      {
+        id: 1,
+        email: 'user1@example.com',
+        name: 'John Doe',
         date: '2025-01-15T10:30:00Z',
         plan: 'trial'
       }
@@ -97,7 +97,7 @@ describe('Admin Page', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    useAuth.mockReturnValue({ user: mockUser });
+    useAuth.mockReturnValue({ user: mockUser, token: 'fake-token' });
     useToast.mockReturnValue({
       showSuccess: mockShowSuccess,
       showError: mockShowError,
@@ -144,7 +144,7 @@ describe('Admin Page', () => {
     });
 
     it('should show loading state', () => {
-      global.fetch.mockReturnValue(new Promise(() => {}));
+      global.fetch.mockReturnValue(new Promise(() => { }));
 
       render(
         <MemoryRouter>

@@ -7,28 +7,51 @@
     "email": "repairs@gamefixpro.gg"
   },
   "themeVars": {
-    "color-primary": "#8b5cf6",
-    "color-accent": "#a78bfa",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#3b82f6",
+    "color-primary-light": "#60a5fa",
+    "color-accent": "#ec4899",
+    "color-bg": "#0F172A",
+    "color-surface": "rgba(30, 41, 59, 0.5)",
+    "color-card": "rgba(30, 41, 59, 0.3)",
+    "color-text": "#f1f5f9",
+    "color-muted": "#94a3b8"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "Consoles", "href": "#about"},
-    {"label": "Reviews", "href": "#testimonials"},
-    {"label": "Contact", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "Consoles",
+      "href": "#about"
+    },
+    {
+      "label": "Reviews",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "🎮 Gaming Console & PC Repair",
     "title": "Get back in the game",
     "subtitle": "Expert repair for PlayStation, Xbox, Nintendo Switch, and gaming PCs. From red rings to HDMI ports to overheating issues - we fix it all. Fast turnaround. Gamers helping gamers since 2016.",
     "cta": [
-      {"label": "Book Repair", "href": "#contact"},
-      {"label": "See Pricing", "href": "#products", "variant": "secondary"}
+      {
+        "label": "Book Repair",
+        "href": "#contact"
+      },
+      {
+        "label": "See Pricing",
+        "href": "#products",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=1200&q=80",
-    "imageAlt": "Gaming console repair workspace"
+    "imageAlt": "Gaming console repair workspace",
+    "layout": "split"
   },
   "about": {
     "title": "Gaming Repair Specialists",
@@ -135,7 +158,11 @@
         "bio": "Lifelong gamer and electronics enthusiast. 8+ years repairing gaming hardware. Former micro-soldering specialist. Can fix almost anything gaming-related.",
         "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
         "imageAlt": "Tyler Wu",
-        "credentials": ["Micro-Soldering Expert", "8+ Years Experience", "Custom PC Builder"]
+        "credentials": [
+          "Micro-Soldering Expert",
+          "8+ Years Experience",
+          "Custom PC Builder"
+        ]
       }
     ]
   },
@@ -143,18 +170,42 @@
     "title": "Repair Process",
     "subtitle": "Fast and reliable",
     "steps": [
-      {"title": "Drop Off or Mail", "description": "Bring your console/PC or use our mail-in service"},
-      {"title": "Diagnosis", "description": "Free diagnostic within 24 hours. Clear quote provided"},
-      {"title": "Repair", "description": "Fast repair with quality parts. We test by gaming on it"},
-      {"title": "Warranty", "description": "90-day warranty on all repairs. Game with confidence"}
+      {
+        "title": "Drop Off or Mail",
+        "description": "Bring your console/PC or use our mail-in service"
+      },
+      {
+        "title": "Diagnosis",
+        "description": "Free diagnostic within 24 hours. Clear quote provided"
+      },
+      {
+        "title": "Repair",
+        "description": "Fast repair with quality parts. We test by gaming on it"
+      },
+      {
+        "title": "Warranty",
+        "description": "90-day warranty on all repairs. Game with confidence"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "1,500+", "label": "Consoles Fixed"},
-      {"number": "2-3", "label": "Days Average"},
-      {"number": "4.9", "label": "Star Rating"},
-      {"number": "90-Day", "label": "Warranty"}
+      {
+        "number": "1,500+",
+        "label": "Consoles Fixed"
+      },
+      {
+        "number": "2-3",
+        "label": "Days Average"
+      },
+      {
+        "number": "4.9",
+        "label": "Star Rating"
+      },
+      {
+        "number": "90-Day",
+        "label": "Warranty"
+      }
     ]
   },
   "contact": {
@@ -183,4 +234,3 @@
   "productsTitle": "Gaming Repair Services",
   "productsSubtitle": "Fair prices, fast service, tested by gaming"
 }
-

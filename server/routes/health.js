@@ -1,5 +1,5 @@
 import express from 'express';
-import { query as dbQuery, pool } from '../../database/db.js';
+import { prisma } from '../../database/db.js';
 
 const router = express.Router();
 const startTime = Date.now();
@@ -11,19 +11,19 @@ const startTime = Date.now();
 router.get('/', async (req, res) => {
   try {
     const uptime = Math.floor((Date.now() - startTime) / 1000);
-    
+
     // Check database connection
     let dbStatus = 'unknown';
     let dbLatency = 0;
     try {
       const start = Date.now();
-      await dbQuery('SELECT 1');
+      await prisma.$queryRaw`SELECT 1`;
       dbLatency = Date.now() - start;
       dbStatus = 'connected';
     } catch (err) {
       dbStatus = 'disconnected';
     }
-    
+
     res.json({
       status: dbStatus === 'connected' ? 'ok' : 'degraded',
       timestamp: new Date().toISOString(),
@@ -47,22 +47,17 @@ router.get('/', async (req, res) => {
 
 /**
  * Detailed database health check
- * Returns: connection status, latency, pool stats
+ * Returns: connection status, latency
  */
 router.get('/db', async (req, res) => {
   try {
     const start = Date.now();
-    await dbQuery('SELECT NOW()');
+    await prisma.$queryRaw`SELECT NOW()`;
     const latency = Date.now() - start;
-    
+
     res.json({
       status: 'ok',
       latency_ms: latency,
-      connections: {
-        total: pool.totalCount,
-        idle: pool.idleCount,
-        active: pool.totalCount - pool.idleCount
-      },
       timestamp: new Date().toISOString()
     });
   } catch (error) {
@@ -81,7 +76,7 @@ router.get('/db', async (req, res) => {
 router.get('/stripe', async (req, res) => {
   try {
     const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
-    
+
     if (!STRIPE_SECRET_KEY) {
       return res.status(500).json({
         status: 'error',
@@ -89,7 +84,7 @@ router.get('/stripe', async (req, res) => {
         error: 'Stripe not configured'
       });
     }
-    
+
     // Simple check - if key is set, assume it's valid
     // (We don't want to make actual API calls on every health check)
     res.json({
@@ -114,7 +109,7 @@ router.get('/stripe', async (req, res) => {
 router.get('/email', async (req, res) => {
   try {
     const RESEND_API_KEY = process.env.RESEND_API_KEY;
-    
+
     if (!RESEND_API_KEY) {
       return res.status(500).json({
         status: 'error',
@@ -122,7 +117,7 @@ router.get('/email', async (req, res) => {
         error: 'Resend not configured'
       });
     }
-    
+
     res.json({
       status: 'ok',
       service: 'resend',
@@ -149,26 +144,26 @@ router.get('/full', async (req, res) => {
     stripe: { status: 'checking' },
     email: { status: 'checking' }
   };
-  
+
   // Run all checks in parallel
   const results = await Promise.allSettled([
     // Database check
     (async () => {
       const start = Date.now();
-      await dbQuery('SELECT 1');
+      await prisma.$queryRaw`SELECT 1`;
       checks.database = {
         status: 'ok',
         latency_ms: Date.now() - start
       };
     })(),
-    
+
     // Stripe check
     (async () => {
       checks.stripe = {
         status: process.env.STRIPE_SECRET_KEY ? 'ok' : 'not_configured'
       };
     })(),
-    
+
     // Email check
     (async () => {
       checks.email = {
@@ -176,7 +171,7 @@ router.get('/full', async (req, res) => {
       };
     })()
   ]);
-  
+
   // Update failed checks
   results.forEach((result, index) => {
     if (result.status === 'rejected') {
@@ -187,12 +182,12 @@ router.get('/full', async (req, res) => {
       };
     }
   });
-  
+
   // Determine overall health
-  const allHealthy = Object.values(checks).every(check => 
+  const allHealthy = Object.values(checks).every(check =>
     check.status === 'ok' || check.status === 'not_configured'
   );
-  
+
   res.status(allHealthy ? 200 : 503).json({
     status: allHealthy ? 'healthy' : 'degraded',
     checks,
@@ -207,8 +202,8 @@ router.get('/full', async (req, res) => {
 router.get('/ready', async (req, res) => {
   try {
     // Check critical dependencies
-    await dbQuery('SELECT 1');
-    
+    await prisma.$queryRaw`SELECT 1`;
+
     res.json({
       ready: true,
       timestamp: new Date().toISOString()

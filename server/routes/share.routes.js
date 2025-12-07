@@ -10,13 +10,13 @@
 import express from 'express';
 import NodeCache from 'node-cache';
 import { generateShareCard } from '../services/shareCardService.js';
-import { query as dbQuery } from '../../database/db.js';
+import { prisma } from '../../database/db.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // Cache for generated cards (TTL: 1 hour)
-const shareCardCache = new NodeCache({ 
+const shareCardCache = new NodeCache({
   stdTTL: 3600,
   checkperiod: 600,
   useClones: false // Store buffers directly
@@ -31,21 +31,21 @@ const rateLimits = new Map();
 function checkRateLimit(ip) {
   const now = Date.now();
   const limit = rateLimits.get(ip);
-  
+
   if (!limit) {
     rateLimits.set(ip, { count: 1, resetAt: now + 60000 });
     return true;
   }
-  
+
   if (now > limit.resetAt) {
     rateLimits.set(ip, { count: 1, resetAt: now + 60000 });
     return true;
   }
-  
+
   if (limit.count >= 10) {
     return false;
   }
-  
+
   limit.count++;
   return true;
 }
@@ -83,29 +83,29 @@ router.post('/generate', async (req, res) => {
 
     // Validate input
     if (!subdomain || typeof subdomain !== 'string') {
-      return res.status(400).json({ 
-        error: 'Invalid subdomain' 
+      return res.status(400).json({
+        error: 'Invalid subdomain'
       });
     }
 
     if (!['social', 'story', 'square'].includes(format)) {
-      return res.status(400).json({ 
-        error: 'Invalid format. Must be: social, story, or square' 
+      return res.status(400).json({
+        error: 'Invalid format. Must be: social, story, or square'
       });
     }
 
     // Rate limiting
     const clientIp = req.ip || req.connection.remoteAddress;
     if (!checkRateLimit(clientIp)) {
-      return res.status(429).json({ 
-        error: 'Rate limit exceeded. Max 10 cards per minute.' 
+      return res.status(429).json({
+        error: 'Rate limit exceeded. Max 10 cards per minute.'
       });
     }
 
     // Check cache first
     const cacheKey = `${subdomain}:${format}`;
     const cached = shareCardCache.get(cacheKey);
-    
+
     if (cached) {
       console.log(`✅ Share card cache HIT: ${cacheKey}`);
       res.set('Content-Type', 'image/png');
@@ -115,18 +115,20 @@ router.post('/generate', async (req, res) => {
     }
 
     // Fetch site data
-    const siteResult = await dbQuery(
-      'SELECT template_data FROM sites WHERE subdomain = $1',
-      [subdomain]
-    );
+    const site = await prisma.sites.findUnique({
+      where: { subdomain },
+      select: { template_data: true }
+    });
 
-    if (!siteResult.rows || siteResult.rows.length === 0) {
-      return res.status(404).json({ 
-        error: 'Site not found' 
+    if (!site) {
+      return res.status(404).json({
+        error: 'Site not found'
       });
     }
 
-    const templateData = siteResult.rows[0].template_data;
+    const templateData = typeof site.template_data === 'string'
+      ? JSON.parse(site.template_data)
+      : site.template_data;
 
     // Add subdomain to template data if not present
     if (!templateData.subdomain) {
@@ -149,9 +151,9 @@ router.post('/generate', async (req, res) => {
 
   } catch (error) {
     console.error('Share card generation error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to generate share card',
-      message: error.message 
+      message: error.message
     });
   }
 });
@@ -174,23 +176,23 @@ const getShareCard = async (req, res) => {
 
     // Validate format
     if (!['social', 'story', 'square'].includes(format)) {
-      return res.status(400).json({ 
-        error: 'Invalid format' 
+      return res.status(400).json({
+        error: 'Invalid format'
       });
     }
 
     // Rate limiting
     const clientIp = req.ip || req.connection.remoteAddress;
     if (!checkRateLimit(clientIp)) {
-      return res.status(429).json({ 
-        error: 'Rate limit exceeded' 
+      return res.status(429).json({
+        error: 'Rate limit exceeded'
       });
     }
 
     // Check cache
     const cacheKey = `${subdomain}:${format}`;
     const cached = shareCardCache.get(cacheKey);
-    
+
     if (cached) {
       res.set('Content-Type', 'image/png');
       res.set('Cache-Control', 'public, max-age=3600');
@@ -199,18 +201,21 @@ const getShareCard = async (req, res) => {
     }
 
     // Not cached, generate
-    const siteResult = await dbQuery(
-      'SELECT template_data FROM sites WHERE subdomain = $1',
-      [subdomain]
-    );
+    const site = await prisma.sites.findUnique({
+      where: { subdomain },
+      select: { template_data: true }
+    });
 
-    if (!siteResult.rows || siteResult.rows.length === 0) {
-      return res.status(404).json({ 
-        error: 'Site not found' 
+    if (!site) {
+      return res.status(404).json({
+        error: 'Site not found'
       });
     }
 
-    const templateData = siteResult.rows[0].template_data;
+    const templateData = typeof site.template_data === 'string'
+      ? JSON.parse(site.template_data)
+      : site.template_data;
+
     if (!templateData.subdomain) {
       templateData.subdomain = subdomain;
     }
@@ -225,9 +230,9 @@ const getShareCard = async (req, res) => {
 
   } catch (error) {
     console.error('Share card fetch error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to get share card',
-      message: error.message 
+      message: error.message
     });
   }
 };
@@ -251,20 +256,20 @@ router.delete('/:subdomain', requireAuth, async (req, res) => {
     const { subdomain } = req.params;
 
     // Verify user owns this site
-    const siteResult = await dbQuery(
-      'SELECT user_id FROM sites WHERE subdomain = $1',
-      [subdomain]
-    );
+    const site = await prisma.sites.findUnique({
+      where: { subdomain },
+      select: { user_id: true }
+    });
 
-    if (!siteResult.rows || siteResult.rows.length === 0) {
-      return res.status(404).json({ 
-        error: 'Site not found' 
+    if (!site) {
+      return res.status(404).json({
+        error: 'Site not found'
       });
     }
 
-    if (siteResult.rows[0].user_id !== req.user.id) {
-      return res.status(403).json({ 
-        error: 'Not authorized to clear cache for this site' 
+    if (site.user_id !== req.user.id) {
+      return res.status(403).json({
+        error: 'Not authorized to clear cache for this site'
       });
     }
 
@@ -281,17 +286,17 @@ router.delete('/:subdomain', requireAuth, async (req, res) => {
 
     console.log(`🗑️  Cleared ${cleared} share card(s) for: ${subdomain}`);
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       cleared,
-      message: `Cache cleared for ${subdomain}` 
+      message: `Cache cleared for ${subdomain}`
     });
 
   } catch (error) {
     console.error('Cache clear error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to clear cache',
-      message: error.message 
+      message: error.message
     });
   }
 });

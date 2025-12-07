@@ -15,10 +15,16 @@ import jwt from 'jsonwebtoken';
 function getAuthToken(userEmail, userId) {
   return jwt.sign(
     { email: userEmail, userId: userId },
-    process.env.JWT_SECRET || 'test-secret-key',
+    process.env.JWT_SECRET || 'your-secret-key-change-in-production',
     { expiresIn: '24h' }
   );
 }
+
+// Mock CSRF protection to avoid 403 errors in API tests
+vi.mock('../../server/middleware/csrf.js', () => ({
+  csrfProtection: (req, res, next) => next(),
+  csrfTokenEndpoint: (req, res) => res.json({ csrfToken: 'mock-token' })
+}));
 
 describe('Showcase Routes Integration Tests', () => {
   let testUser;
@@ -147,7 +153,7 @@ describe('Showcase Routes Integration Tests', () => {
 
       expect(response.body.success).toBe(true);
       expect(response.body.categories).toBeInstanceOf(Array);
-      
+
       if (response.body.categories.length > 0) {
         expect(response.body.categories[0]).toHaveProperty('template');
         expect(response.body.categories[0]).toHaveProperty('count');

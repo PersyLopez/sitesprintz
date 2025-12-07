@@ -7,28 +7,51 @@
     "email": "woof@pamperedpaws.pet"
   },
   "themeVars": {
-    "color-primary": "#f59e0b",
-    "color-accent": "#fbbf24",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "About", "href": "#about"},
-    {"label": "Gallery", "href": "#testimonials"},
-    {"label": "Book", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "About",
+      "href": "#about"
+    },
+    {
+      "label": "Gallery",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Book",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "🐕 Professional Dog Grooming",
     "title": "Your pup deserves to be pampered",
     "subtitle": "Expert grooming for dogs of all breeds and sizes. From basic baths to full spa treatments, we make grooming a positive experience. Gentle handling, premium products, and lots of treats!",
     "cta": [
-      {"label": "Book Appointment", "href": "#contact"},
-      {"label": "View Services", "href": "#products", "variant": "secondary"}
+      {
+        "label": "Book Appointment",
+        "href": "#contact"
+      },
+      {
+        "label": "View Services",
+        "href": "#products",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1200&q=80",
-    "imageAlt": "Happy dog being groomed"
+    "imageAlt": "Happy dog being groomed",
+    "layout": "split"
   },
   "about": {
     "title": "Where Dogs Love to Visit",
@@ -135,7 +158,11 @@
         "bio": "15+ years grooming dogs of all breeds. Certified by the National Dog Groomers Association. Specializes in anxious and senior dogs. Believes every dog deserves gentle, patient care.",
         "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
         "imageAlt": "Laura Chen",
-        "credentials": ["NDGA Certified", "Fear Free Certified", "15+ Years Experience"]
+        "credentials": [
+          "NDGA Certified",
+          "Fear Free Certified",
+          "15+ Years Experience"
+        ]
       }
     ]
   },
@@ -143,18 +170,42 @@
     "title": "Grooming Process",
     "subtitle": "Stress-free experience",
     "steps": [
-      {"title": "Book Appointment", "description": "Schedule online or by phone. Tell us about your pup's needs"},
-      {"title": "Drop Off", "description": "Meet your groomer and share any special requests"},
-      {"title": "Grooming Time", "description": "We take our time and never rush your dog"},
-      {"title": "Pick Up Happy Pup", "description": "Your dog comes home looking and smelling amazing!"}
+      {
+        "title": "Book Appointment",
+        "description": "Schedule online or by phone. Tell us about your pup's needs"
+      },
+      {
+        "title": "Drop Off",
+        "description": "Meet your groomer and share any special requests"
+      },
+      {
+        "title": "Grooming Time",
+        "description": "We take our time and never rush your dog"
+      },
+      {
+        "title": "Pick Up Happy Pup",
+        "description": "Your dog comes home looking and smelling amazing!"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "1,000+", "label": "Dogs Groomed"},
-      {"number": "4.9", "label": "Star Rating"},
-      {"number": "15+", "label": "Years Experience"},
-      {"number": "100%", "label": "Gentle Care"}
+      {
+        "number": "1,000+",
+        "label": "Dogs Groomed"
+      },
+      {
+        "number": "4.9",
+        "label": "Star Rating"
+      },
+      {
+        "number": "15+",
+        "label": "Years Experience"
+      },
+      {
+        "number": "100%",
+        "label": "Gentle Care"
+      }
     ]
   },
   "contact": {
@@ -183,4 +234,3 @@
   "productsTitle": "Grooming Services",
   "productsSubtitle": "All breeds, all sizes welcome"
 }
-

@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
-import { query as dbQuery } from '../../database/db.js';
+import { prisma } from '../../database/db.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+// function to get secret to avoid ESM hoisting issues
+const getJwtSecret = () => process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'dev-token';
 
 /**
@@ -13,32 +14,37 @@ const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'dev-token';
 export async function requireAdmin(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
-  
+
   if (!token) {
     return res.status(401).json({ error: 'No token provided' });
   }
-  
+
   try {
     // Step 1: Verify JWT token
     const decoded = jwt.verify(token, JWT_SECRET);
-    
+
     // Step 2: Get fresh user data from database
-    const result = await dbQuery(
-      'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-      [decoded.userId || decoded.id]
-    );
-    
-    if (result.rows.length === 0) {
+    const user = await prisma.users.findUnique({
+      where: { id: decoded.userId || decoded.id },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        status: true,
+        subscription_status: true,
+        subscription_plan: true
+      }
+    });
+
+    if (!user) {
       return res.status(401).json({ error: 'User not found' });
     }
-    
-    const user = result.rows[0];
-    
+
     // Step 3: Check if user account is active
     if (user.status !== 'active') {
       return res.status(403).json({ error: 'Account is suspended' });
     }
-    
+
     // Step 4: Check if user is admin
     if (user.role !== 'admin') {
       return res.status(403).json({
@@ -46,7 +52,7 @@ export async function requireAdmin(req, res, next) {
         message: 'You do not have permission to access this resource'
       });
     }
-    
+
     // Step 5: Attach user to request
     req.user = {
       id: user.id,
@@ -57,9 +63,9 @@ export async function requireAdmin(req, res, next) {
       subscriptionStatus: user.subscription_status,
       subscriptionPlan: user.subscription_plan
     };
-    
+
     next();
-    
+
   } catch (err) {
     if (err.name === 'JsonWebTokenError') {
       return res.status(401).json({ error: 'Invalid token' });
@@ -88,32 +94,40 @@ export async function requireAdmin(req, res, next) {
 export async function requireAuth(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
-  
+
   if (!token) {
+    console.log('Auth Middleware: No token provided');
     return res.status(401).json({ error: 'No token provided' });
   }
-  
+
   try {
     // Step 1: Verify JWT token
-    const decoded = jwt.verify(token, JWT_SECRET);
-    
+    const decoded = jwt.verify(token, getJwtSecret());
+    console.log(`Auth Middleware: Token verified for user ${decoded.email} (${decoded.role})`);
+
     // Step 2: Get fresh user data from database
-    const result = await dbQuery(
-      'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-      [decoded.userId || decoded.id] // Support both old and new token formats
-    );
-    
-    if (result.rows.length === 0) {
+    const user = await prisma.users.findUnique({
+      where: { id: decoded.userId || decoded.id }, // Support both old and new token formats
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        status: true,
+        subscription_status: true,
+        subscription_plan: true
+      }
+    });
+
+    if (!user) {
+      console.log('Auth Middleware: User not found in DB');
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    
-    const user = result.rows[0];
-    
+
     // Step 3: Check if user account is active
     if (user.status !== 'active') {
       return res.status(403).json({ error: 'Account is suspended' });
     }
-    
+
     // Step 4: Attach user to request
     req.user = {
       id: user.id,
@@ -124,9 +138,9 @@ export async function requireAuth(req, res, next) {
       subscriptionStatus: user.subscription_status,
       subscriptionPlan: user.subscription_plan
     };
-    
+
     next();
-    
+
   } catch (err) {
     if (err.name === 'JsonWebTokenError') {
       return res.status(401).json({ error: 'Invalid token' });
@@ -135,6 +149,7 @@ export async function requireAuth(req, res, next) {
       return res.status(401).json({ error: 'Token expired' });
     }
     console.error('Auth middleware error:', err);
+    console.log('Auth Middleware: Error details:', err.message);
     return res.status(500).json({ error: 'Authentication failed' });
   }
 }

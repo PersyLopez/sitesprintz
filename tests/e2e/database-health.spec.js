@@ -40,7 +40,7 @@ test.describe('Dashboard API Coverage', () => {
   test('dashboard should not have 404 API errors', async ({ page }) => {
     // Register and login
     const email = `dash${Date.now()}@example.com`;
-    await page.goto('http://localhost:5173/register');
+    await page.goto('http://localhost:3000/register');
     await page.fill('input[type="email"]', email);
     await page.fill('input[type="password"]', 'Test123!@#');
     await page.fill('input[name="confirmPassword"]', 'Test123!@#');

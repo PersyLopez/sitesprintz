@@ -7,7 +7,8 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
-  
+  globalSetup: './tests/setup/global-setup.js',
+
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
@@ -39,7 +40,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'npm run start',
+    command: 'NODE_ENV=test USE_MOCK_EMAIL=true CLIENT_URL=http://localhost:3000 npm run start',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,

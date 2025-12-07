@@ -1,38 +1,64 @@
 {
   "brand": {
-    "name": "Harbor Bistro", 
+    "name": "Harbor Bistro",
     "logo": "assets/logo.svg",
     "tagline": "Family-Friendly Dining • Comfort Food Done Right",
     "phone": "(555) 234-5678",
     "email": "hello@harborbistro.com"
   },
   "themeVars": {
-    "color-primary": "#e67e22", 
-    "color-accent": "#d35400",
-    "color-success": "#27ae60",
-    "color-warning": "#f39c12",
-    "color-danger": "#c0392b"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Full Menu", "href": "#products"},
-    {"label": "Daily Specials", "href": "#services"},
-    {"label": "Kids Menu", "href": "#about"},
-    {"label": "Takeout", "href": "#process"},
-    {"label": "Contact", "href": "#contact"}
+    {
+      "label": "Full Menu",
+      "href": "#products"
+    },
+    {
+      "label": "Daily Specials",
+      "href": "#services"
+    },
+    {
+      "label": "Kids Menu",
+      "href": "#about"
+    },
+    {
+      "label": "Takeout",
+      "href": "#process"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "🍔 Your Neighborhood Favorite",
     "title": "Great Food, Great Friends, Great Times",
     "subtitle": "Welcome to Harbor Bistro, where delicious comfort food meets warm hospitality. Perfect for family dinners, date nights, and everything in between. We're your home away from home.",
     "cta": [
-      {"label": "🍴 View Menu", "href": "#products"},
-      {"label": "📞 Call for Takeout", "href": "tel:+15552345678", "variant": "secondary"}
+      {
+        "label": "🍴 View Menu",
+        "href": "#products"
+      },
+      {
+        "label": "📞 Call for Takeout",
+        "href": "tel:+15552345678",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=80",
-    "imageAlt": "Cozy restaurant interior with families dining"
+    "imageAlt": "Cozy restaurant interior with families dining",
+    "layout": "split"
   },
   "about": {
-    "title": "Welcome to Our Family", 
+    "title": "Welcome to Our Family",
     "body": "Founded in 2010 by the Martinez family, Harbor Bistro has become a beloved neighborhood gathering spot. We believe great food brings people together. Our menu features classic American favorites made from scratch with quality ingredients. Whether you're celebrating a birthday or just grabbing dinner on a Tuesday, we treat every guest like family.",
     "subtitle": "Why neighbors love us",
     "features": [
@@ -130,22 +156,38 @@
       {
         "title": "🌮 Taco Tuesday",
         "description": "$2 tacos all day - beef, chicken, or fish",
-        "features": ["3 taco minimum", "Add sides", "Margarita specials"]
+        "features": [
+          "3 taco minimum",
+          "Add sides",
+          "Margarita specials"
+        ]
       },
       {
         "title": "🍝 Pasta Wednesday",
         "description": "All pasta dishes 20% off",
-        "features": ["Choose your pasta", "House-made sauces", "Add meatballs"]
+        "features": [
+          "Choose your pasta",
+          "House-made sauces",
+          "Add meatballs"
+        ]
       },
       {
         "title": "🎵 Friday Night Live",
         "description": "Local musicians + happy hour pricing",
-        "features": ["6-9 PM", "Full bar", "No cover charge"]
+        "features": [
+          "6-9 PM",
+          "Full bar",
+          "No cover charge"
+        ]
       },
       {
         "title": "🥞 Sunday Brunch",
         "description": "Breakfast & lunch favorites 10 AM - 2 PM",
-        "features": ["Pancakes & waffles", "Eggs your way", "Bottomless mimosas $15"]
+        "features": [
+          "Pancakes & waffles",
+          "Eggs your way",
+          "Bottomless mimosas $15"
+        ]
       }
     ]
   },
@@ -198,7 +240,7 @@
     }
   },
   "contact": {
-    "title": "Visit Us", 
+    "title": "Visit Us",
     "subtitle": "We're in your neighborhood!",
     "phone": "(555) 234-5678",
     "email": "hello@harborbistro.com",
@@ -257,10 +299,22 @@
   },
   "stats": {
     "items": [
-      {"number": "13+", "label": "Years Serving"},
-      {"number": "4.7", "label": "Star Rating"},
-      {"number": "50+", "label": "Menu Items"},
-      {"number": "850+", "label": "Happy Reviews"}
+      {
+        "number": "13+",
+        "label": "Years Serving"
+      },
+      {
+        "number": "4.7",
+        "label": "Star Rating"
+      },
+      {
+        "number": "50+",
+        "label": "Menu Items"
+      },
+      {
+        "number": "850+",
+        "label": "Happy Reviews"
+      }
     ]
   },
   "team": {
@@ -273,48 +327,116 @@
         "bio": "Maria grew up in her grandmother's kitchen, learning the art of comfort food. After culinary school, she returned home to open Harbor Bistro with her family.",
         "image": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80",
         "imageAlt": "Maria Martinez",
-        "credentials": ["Culinary Institute Graduate", "Family Recipe Keeper", "Community Favorite"]
+        "credentials": [
+          "Culinary Institute Graduate",
+          "Family Recipe Keeper",
+          "Community Favorite"
+        ]
       }
     ]
   },
   "process": {
     "title": "Easy Takeout & Delivery",
     "steps": [
-      {"title": "Call or Order Online", "description": "Give us a call or visit our website to order"},
-      {"title": "We Prep Your Food", "description": "Everything is made fresh to order"},
-      {"title": "Pick Up or Delivery", "description": "Ready in 20-30 minutes for pickup"},
-      {"title": "Enjoy at Home", "description": "Our food travels well - still delicious at home!"}
+      {
+        "title": "Call or Order Online",
+        "description": "Give us a call or visit our website to order"
+      },
+      {
+        "title": "We Prep Your Food",
+        "description": "Everything is made fresh to order"
+      },
+      {
+        "title": "Pick Up or Delivery",
+        "description": "Ready in 20-30 minutes for pickup"
+      },
+      {
+        "title": "Enjoy at Home",
+        "description": "Our food travels well - still delicious at home!"
+      }
     ]
   },
   "credentials": {
     "title": "Why Choose Harbor Bistro",
     "items": [
-      {"icon": "👨‍👩‍👧‍👦", "name": "Family Owned", "description": "Since 2010"},
-      {"icon": "🥗", "name": "Fresh Ingredients", "description": "Never frozen"},
-      {"icon": "🎂", "name": "We Celebrate You", "description": "Birthday club"},
-      {"icon": "📦", "name": "Easy Takeout", "description": "Call ahead"}
+      {
+        "icon": "👨‍👩‍👧‍👦",
+        "name": "Family Owned",
+        "description": "Since 2010"
+      },
+      {
+        "icon": "🥗",
+        "name": "Fresh Ingredients",
+        "description": "Never frozen"
+      },
+      {
+        "icon": "🎂",
+        "name": "We Celebrate You",
+        "description": "Birthday club"
+      },
+      {
+        "icon": "📦",
+        "name": "Easy Takeout",
+        "description": "Call ahead"
+      }
     ]
   },
   "faq": {
     "title": "Common Questions",
     "items": [
-      {"question": "Do you take reservations?", "answer": "Walk-ins are always welcome! We recommend calling ahead for parties of 6+ or Friday/Saturday evenings."},
-      {"question": "Do you have a kids menu?", "answer": "Yes! We have a full kids menu with favorites like chicken tenders, mac & cheese, and mini burgers. All kids meals include a drink."},
-      {"question": "Can I order takeout?", "answer": "Absolutely! Call us at (555) 234-5678 or order through our website. Most orders are ready in 20-30 minutes."},
-      {"question": "Do you deliver?", "answer": "Yes! We deliver through DoorDash, Uber Eats, and Grubhub. Or call us directly for delivery within 3 miles."},
-      {"question": "What are your daily specials?", "answer": "Taco Tuesday ($2 tacos), Pasta Wednesday (20% off), Friday Live Music, and Sunday Brunch. Plus Kids Eat Free Mondays!"},
-      {"question": "Can you accommodate dietary restrictions?", "answer": "Yes! We can modify most dishes for vegetarian, gluten-free, and allergy needs. Just let your server know."},
-      {"question": "Do you have a private room?", "answer": "Yes! Our back room fits up to 30 people. Perfect for birthdays, showers, and celebrations. No room fee - just a food minimum."},
-      {"question": "Is there parking?", "answer": "Yes! We have a free parking lot behind the restaurant. Street parking is also available."}
+      {
+        "question": "Do you take reservations?",
+        "answer": "Walk-ins are always welcome! We recommend calling ahead for parties of 6+ or Friday/Saturday evenings."
+      },
+      {
+        "question": "Do you have a kids menu?",
+        "answer": "Yes! We have a full kids menu with favorites like chicken tenders, mac & cheese, and mini burgers. All kids meals include a drink."
+      },
+      {
+        "question": "Can I order takeout?",
+        "answer": "Absolutely! Call us at (555) 234-5678 or order through our website. Most orders are ready in 20-30 minutes."
+      },
+      {
+        "question": "Do you deliver?",
+        "answer": "Yes! We deliver through DoorDash, Uber Eats, and Grubhub. Or call us directly for delivery within 3 miles."
+      },
+      {
+        "question": "What are your daily specials?",
+        "answer": "Taco Tuesday ($2 tacos), Pasta Wednesday (20% off), Friday Live Music, and Sunday Brunch. Plus Kids Eat Free Mondays!"
+      },
+      {
+        "question": "Can you accommodate dietary restrictions?",
+        "answer": "Yes! We can modify most dishes for vegetarian, gluten-free, and allergy needs. Just let your server know."
+      },
+      {
+        "question": "Do you have a private room?",
+        "answer": "Yes! Our back room fits up to 30 people. Perfect for birthdays, showers, and celebrations. No room fee - just a food minimum."
+      },
+      {
+        "question": "Is there parking?",
+        "answer": "Yes! We have a free parking lot behind the restaurant. Street parking is also available."
+      }
     ]
   },
   "footer": {
     "text": "🍔 Harbor Bistro • Your Neighborhood Favorite Since 2010",
     "links": [
-      {"label": "Privacy Policy", "href": "#privacy"},
-      {"label": "Order Online", "href": "#order"},
-      {"label": "Careers", "href": "#careers"},
-      {"label": "Gift Cards", "href": "#giftcards"}
+      {
+        "label": "Privacy Policy",
+        "href": "#privacy"
+      },
+      {
+        "label": "Order Online",
+        "href": "#order"
+      },
+      {
+        "label": "Careers",
+        "href": "#careers"
+      },
+      {
+        "label": "Gift Cards",
+        "href": "#giftcards"
+      }
     ],
     "awards": [
       "Best Family Restaurant 2023",
@@ -333,4 +455,3 @@
   "productsTitle": "Our Menu",
   "productsSubtitle": "Comfort food made with love"
 }
-

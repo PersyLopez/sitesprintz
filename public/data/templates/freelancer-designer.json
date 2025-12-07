@@ -7,28 +7,51 @@
     "email": "hello@lunadesign.co"
   },
   "themeVars": {
-    "color-primary": "#ec4899",
-    "color-accent": "#f472b6",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Portfolio", "href": "#about"},
-    {"label": "Services", "href": "#products"},
-    {"label": "Process", "href": "#process"},
-    {"label": "Contact", "href": "#contact"}
+    {
+      "label": "Portfolio",
+      "href": "#about"
+    },
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "Process",
+      "href": "#process"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "🎨 Brand & Web Designer",
     "title": "Design that connects with your audience",
     "subtitle": "I help small businesses and startups create beautiful, strategic brand identities and websites that attract customers and build trust. From concept to launch, let's bring your vision to life.",
     "cta": [
-      {"label": "View Portfolio", "href": "#about"},
-      {"label": "Start Project", "href": "#contact", "variant": "secondary"}
+      {
+        "label": "View Portfolio",
+        "href": "#about"
+      },
+      {
+        "label": "Start Project",
+        "href": "#contact",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=1200&q=80",
-    "imageAlt": "Designer workspace with sketches and color swatches"
+    "imageAlt": "Designer workspace with sketches and color swatches",
+    "layout": "split"
   },
   "about": {
     "title": "Creative Design Solutions",
@@ -135,7 +158,11 @@
         "bio": "BFA in Graphic Design from RISD. 6+ years helping businesses create impactful brands. Featured in Design Milk and The Dieline. Passionate about empowering entrepreneurs through great design.",
         "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
         "imageAlt": "Luna Martinez",
-        "credentials": ["BFA RISD", "Adobe Certified", "Featured in Design Milk"]
+        "credentials": [
+          "BFA RISD",
+          "Adobe Certified",
+          "Featured in Design Milk"
+        ]
       }
     ]
   },
@@ -143,18 +170,42 @@
     "title": "Design Process",
     "subtitle": "How we'll work together",
     "steps": [
-      {"title": "Discovery Call", "description": "We'll discuss your vision, goals, and project requirements"},
-      {"title": "Research & Concepts", "description": "I'll research your industry and create initial design concepts"},
-      {"title": "Revisions", "description": "Refine the design based on your feedback until it's perfect"},
-      {"title": "Final Delivery", "description": "Receive all final files and launch your new brand!"}
+      {
+        "title": "Discovery Call",
+        "description": "We'll discuss your vision, goals, and project requirements"
+      },
+      {
+        "title": "Research & Concepts",
+        "description": "I'll research your industry and create initial design concepts"
+      },
+      {
+        "title": "Revisions",
+        "description": "Refine the design based on your feedback until it's perfect"
+      },
+      {
+        "title": "Final Delivery",
+        "description": "Receive all final files and launch your new brand!"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "50+", "label": "Projects Completed"},
-      {"number": "6", "label": "Years Experience"},
-      {"number": "100%", "label": "Client Satisfaction"},
-      {"number": "4.9", "label": "Star Rating"}
+      {
+        "number": "50+",
+        "label": "Projects Completed"
+      },
+      {
+        "number": "6",
+        "label": "Years Experience"
+      },
+      {
+        "number": "100%",
+        "label": "Client Satisfaction"
+      },
+      {
+        "number": "4.9",
+        "label": "Star Rating"
+      }
     ]
   },
   "contact": {

@@ -1,15 +1,18 @@
 # Pro Template Standard
 
-**Version:** 1.1  
-**Last Updated:** November 14, 2025  
-**Status:** ✅ All 12 Pro templates compliant  
-**Payment:** ✅ Stripe Connect enabled on all templates
+**Version:** 2.0  
+**Last Updated:** November 16, 2025  
+**Status:** 🔄 Update in progress - New requirements added  
+**Payment:** ✅ Stripe Connect enabled on all templates  
+**E-Commerce:** ✅ Online ordering/shopping cart required for all Pro templates
 
 ---
 
 ## Overview
 
-This document defines the standard schema and requirements for all SiteSprintz Pro templates. Pro templates are designed for established businesses and include advanced features like booking, analytics, reviews, and owner dashboards.
+This document defines the standard schema and requirements for all SiteSprintz Pro templates. Pro templates are designed for established businesses and include advanced features like booking, analytics, reviews, owner dashboards, **online ordering with shopping cart**, social media integration, FAQ sections, and credentials display.
+
+**All Pro templates enable customers to purchase products or services online through an integrated shopping cart and Stripe checkout.**
 
 **Current Pro Templates:** 12
 - `restaurant-pro.json`
@@ -138,6 +141,7 @@ All Pro templates MUST include this complete features configuration:
     "url": "",
     "embedMode": true
   },
+  "onlineOrdering": true,
   "reviews": {
     "enabled": false,
     "placeId": "",
@@ -148,6 +152,8 @@ All Pro templates MUST include this complete features configuration:
   "analytics": true
 }
 ```
+
+**NEW in v2.0:** `onlineOrdering` is now REQUIRED for all Pro templates.
 
 ### Required Settings Object
 
@@ -247,6 +253,225 @@ All Pro templates MUST include this complete settings configuration:
 - Backend: `AnalyticsService` (`server/services/analyticsService.js`)
 - Frontend: `AnalyticsTracker` (`public/modules/analytics-tracker.js`)
 - Dashboard: `SiteAnalytics.jsx` (`src/pages/SiteAnalytics.jsx`)
+
+#### 5. Online Ordering / Shopping Cart (REQUIRED - NEW in v2.0)
+
+```json
+"features": {
+  "onlineOrdering": true
+}
+```
+
+**Value:** MUST be `true` for all Pro templates
+
+**Purpose:** Enable customers to purchase products or services online through an integrated shopping cart
+
+**Features:**
+- 🛒 Shopping cart sidebar
+- Cart item management (add, remove, update quantity)
+- Real-time cart total calculation
+- Checkout integration with Stripe
+- Cart persistence across pages
+- Mobile-responsive cart UI
+
+**Implementation:**
+- Cart UI renders in published site automatically when `onlineOrdering: true`
+- Works with both `products` arrays and `menu.sections` items
+- Integrates with Stripe Connect for payment processing
+- Order management through Owner Dashboard
+
+**Business Model:**
+- Works for **product-based** businesses (retail, e-commerce)
+- Works for **service-based** businesses (bookable services with upfront payment)
+- Works for **restaurants** (online ordering, takeout, delivery)
+- Works for **consultants** (package purchases, retainers)
+
+**User Experience:**
+1. Customer browses products/services/menu
+2. Clicks "Add to Cart" or "Buy Now"
+3. Cart sidebar slides in from right
+4. Reviews cart, adjusts quantities
+5. Clicks "Proceed to Checkout"
+6. Stripe Checkout opens
+7. Completes payment
+8. Order appears in Owner Dashboard
+
+---
+
+## Required Content Sections
+
+All Pro templates MUST include these content sections in their schema:
+
+### 1. Contact Information (REQUIRED)
+
+```json
+"contact": {
+  "title": "Get In Touch",
+  "subtitle": "We'd love to hear from you",
+  "email": "contact@business.com",
+  "phone": "(555) 123-4567",
+  "address": "123 Main St, City, ST 12345",
+  "hours": "Mon-Fri: 9am-5pm | Sat-Sun: Closed"
+}
+```
+
+**Required Fields:**
+- `email` (string): Business email
+- `phone` (string): Business phone
+- `address` (string): Physical address (if applicable)
+- `hours` (string): Business hours
+
+### 2. Social Media Links (REQUIRED - NEW in v2.0)
+
+```json
+"social": {
+  "facebook": "https://facebook.com/businessname",
+  "instagram": "https://instagram.com/businessname",
+  "twitter": "https://twitter.com/businessname",
+  "yelp": "https://yelp.com/biz/businessname",
+  "maps": "https://maps.google.com/?q=Business+Name"
+}
+```
+
+**Purpose:** Connect customers with business social media presence
+
+**Required:** At least 2 social media links
+
+**Supported Platforms:**
+- Facebook
+- Instagram
+- Twitter
+- Yelp
+- Google Maps
+- LinkedIn (optional)
+- YouTube (optional)
+
+**Rendered as:** Social media hub with icon buttons linking to profiles
+
+### 3. FAQ Section (REQUIRED - NEW in v2.0)
+
+```json
+"faq": {
+  "title": "Frequently Asked Questions",
+  "items": [
+    {
+      "question": "Do you offer refunds?",
+      "answer": "Yes, we offer a 30-day money-back guarantee on all purchases."
+    },
+    {
+      "question": "What are your business hours?",
+      "answer": "We're open Monday through Friday, 9am to 5pm."
+    },
+    {
+      "question": "Do you offer delivery?",
+      "answer": "Yes, we offer free delivery on orders over $50 within 10 miles."
+    }
+  ]
+}
+```
+
+**Purpose:** Answer common customer questions proactively
+
+**Requirements:**
+- Minimum 3 FAQ items
+- Maximum 15 FAQ items
+- Questions should be actual customer questions
+- Answers should be clear and concise
+
+**Common FAQ Topics by Industry:**
+- **Restaurant:** Reservations, dietary options, parking, private events
+- **Salon:** Cancellation policy, product recommendations, appointment changes
+- **Gym:** Membership tiers, trial periods, cancellation, personal training
+- **Services:** Service areas, pricing, scheduling, emergency availability
+- **Consulting:** Process, pricing models, deliverables, timelines
+
+### 4. Credentials / Awards (REQUIRED - NEW in v2.0)
+
+```json
+"credentials": {
+  "title": "Awards & Recognition",
+  "items": [
+    {
+      "icon": "🏆",
+      "name": "Best Restaurant 2024",
+      "description": "City Magazine Readers' Choice"
+    },
+    {
+      "icon": "⭐",
+      "name": "Michelin Recommended",
+      "description": "2020-2024"
+    },
+    {
+      "icon": "🎖️",
+      "name": "Industry Excellence Award",
+      "description": "National Association"
+    }
+  ]
+}
+```
+
+**Purpose:** Build trust and credibility through recognition and achievements
+
+**Requirements:**
+- Minimum 2 credentials
+- Can include: Awards, certifications, licenses, recognitions, memberships
+- Must be legitimate and verifiable
+- Icon should be relevant emoji or symbol
+
+**Common Credentials by Industry:**
+- **Restaurant:** Michelin stars, awards, health ratings, certifications
+- **Salon:** Certifications, brand partnerships, stylist awards
+- **Gym:** Trainer certifications, facility awards, safety certifications
+- **Trade Services:** Licenses, insurance, certifications, industry memberships
+- **Professional Services:** Degrees, certifications, client awards, publications
+
+### 5. Testimonials (REQUIRED)
+
+```json
+"testimonials": {
+  "title": "What Our Customers Say",
+  "subtitle": "Real reviews from real customers",
+  "items": [
+    {
+      "text": "Absolutely amazing service! Highly recommend.",
+      "author": "John Doe",
+      "location": "San Francisco, CA",
+      "rating": 5,
+      "image": "https://example.com/avatar.jpg",
+      "date": "2024-11-01"
+    }
+  ]
+}
+```
+
+**Requirements:**
+- Minimum 3 testimonials
+- Each must include: text, author, rating (1-5 stars)
+- Optional: location, image, date
+
+### 6. About Section (RECOMMENDED)
+
+```json
+"about": {
+  "title": "About Us",
+  "subtitle": "Our Story",
+  "body": "We started our business in 2010 with a simple mission: to provide exceptional service to our community. Over the years, we've grown from a small startup to a trusted local business serving thousands of satisfied customers.",
+  "features": [
+    "🏆 Industry-leading expertise",
+    "🌟 Award-winning service",
+    "💯 100% satisfaction guarantee",
+    "👥 Family-owned and operated",
+    "🌱 Eco-friendly practices",
+    "🎯 Customer-first approach"
+  ]
+}
+```
+
+**Purpose:** Tell the business story and build connection with customers
+
+**Requirements:**
+- Body text: 100-500 words
+- Features list: 4-8 items highlighting key differentiators
 
 ---
 
@@ -616,6 +841,38 @@ Before releasing a new or updated Pro template:
 
 ## Version History
 
+### 2.0 (November 16, 2025) - MAJOR UPDATE
+**New Required Features:**
+- ✅ **Online Ordering / Shopping Cart** - Now required for all Pro templates
+  - Integrated shopping cart sidebar
+  - Real-time cart management
+  - Stripe checkout integration
+  - Works for products AND services
+  
+**New Required Content Sections:**
+- ✅ **Social Media Links** - Minimum 2 platforms required
+- ✅ **FAQ Section** - Minimum 3 questions required
+- ✅ **Credentials / Awards** - Minimum 2 items required
+
+**Published Site Rendering:**
+- All new sections render automatically in published sites
+- Reviews Widget rendering added
+- About section rendering added
+- Complete feature parity between preview and published sites
+
+**Key Changes:**
+- `features.onlineOrdering: true` now required
+- `social` object with links now required
+- `faq.items` array now required
+- `credentials.items` array now required
+- All Pro templates must support e-commerce capability
+- Templates support both product sales AND service bookings simultaneously
+
+**Migration Required:**
+- All 12 Pro templates need to add new required fields
+- Run `scripts/update-pro-templates-v2.js` (to be created)
+- Verify all templates with updated compliance script
+
 ### 1.1 (November 14, 2025)
 - **Added Stripe Connect support to all 12 Pro templates**
 - All templates now have `allowCheckout: true` and `stripeEnabled: true`
@@ -633,6 +890,77 @@ Before releasing a new or updated Pro template:
 
 ---
 
+## Migration Guide for v2.0
+
+### Updating Templates from v1.1 to v2.0
+
+**Required Changes for Each Template:**
+
+1. **Add Online Ordering Feature:**
+```json
+"features": {
+  // ... existing features
+  "onlineOrdering": true  // ADD THIS
+}
+```
+
+2. **Add Social Media Links:**
+```json
+"social": {
+  "facebook": "https://facebook.com/businessname",
+  "instagram": "https://instagram.com/businessname",
+  // Add at least 2 platforms
+}
+```
+
+3. **Add FAQ Section:**
+```json
+"faq": {
+  "title": "Frequently Asked Questions",
+  "items": [
+    // Add at least 3 FAQ items relevant to the business type
+  ]
+}
+```
+
+4. **Add Credentials:**
+```json
+"credentials": {
+  "title": "Awards & Recognition",
+  "items": [
+    // Add at least 2 credentials, awards, or certifications
+  ]
+}
+```
+
+5. **Verify About Section** (if not present):
+```json
+"about": {
+  "title": "About Us",
+  "subtitle": "Our Story",
+  "body": "...",
+  "features": [...]
+}
+```
+
+### Automated Migration Script
+
+Run the migration script to automatically add required v2.0 fields:
+
+```bash
+node scripts/migrate-pro-templates-v2.js
+```
+
+**What it does:**
+- Adds `onlineOrdering: true` to all Pro templates
+- Adds placeholder social media links
+- Adds industry-specific FAQ items
+- Adds relevant credentials for each business type
+- Validates compliance with v2.0 standard
+- Generates migration report
+
+---
+
 ## Support
 
 For questions or issues with Pro templates:
@@ -643,5 +971,17 @@ For questions or issues with Pro templates:
 
 ---
 
-**✅ All Pro templates are production-ready and fully compliant with this standard.**
+**✅ Pro Template Standard v2.0 defines a comprehensive, e-commerce-enabled business website solution.**
+
+**All Pro templates must support:**
+- 📅 **Appointment Booking** (services)
+- 🛒 **Online Ordering** (products/services)
+- ⭐ **Customer Reviews** (social proof)
+- 📊 **Business Analytics** (insights)
+- 🏢 **Owner Dashboard** (management)
+- 📱 **Social Media Integration** (engagement)
+- ❓ **FAQ Section** (customer support)
+- 🏆 **Credentials Display** (trust building)
+
+**This makes Pro templates suitable for virtually any business type: restaurants, salons, gyms, consultants, trade services, retail, and more.**
 

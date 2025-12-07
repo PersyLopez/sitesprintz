@@ -8,9 +8,7 @@
  * - Category statistics
  */
 
-import { pool } from '../../database/db.js';
-
-const db = { query: (...args) => pool.query(...args) };
+import { prisma } from '../../database/db.js';
 
 class GalleryService {
   constructor() {
@@ -37,55 +35,57 @@ class GalleryService {
     const limit = Math.min(pageSize, this.maxPageSize);
     const offset = (page - 1) * limit;
 
-    // Build query
-    let query = `
-      SELECT 
-        id, subdomain, template_id, status, plan, is_public,
-        created_at, updated_at,
-        site_data
-      FROM sites
-      WHERE is_public = TRUE AND status = $1
-    `;
-    const params = ['published'];
-    let paramIndex = 2;
+    // Build where clause
+    const where = {
+      is_public: true,
+      status: 'published'
+    };
 
-    // Add category filter
     if (category) {
-      query += ` AND template_id = $${paramIndex}`;
-      params.push(category);
-      paramIndex++;
+      where.template_id = category;
     }
 
-    // Add search filter
     if (search) {
-      query += ` AND name ILIKE $${paramIndex}`;
-      params.push(`%${search}%`);
-      paramIndex++;
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        // Add other searchable fields if needed
+      ];
     }
 
-    // Add sorting
+    // Build sort
     const allowedSortFields = ['created_at', 'name', 'updated_at'];
-    const allowedSortOrders = ['asc', 'desc'];
     const safeSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'created_at';
-    const safeSortOrder = allowedSortOrders.includes(sortOrder.toLowerCase()) 
-      ? sortOrder.toUpperCase() 
-      : 'DESC';
-
-    query += ` ORDER BY ${safeSortBy} ${safeSortOrder}`;
-
-    // Add pagination
-    query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
-    params.push(limit, offset);
+    const safeSortOrder = sortOrder.toLowerCase() === 'asc' ? 'asc' : 'desc';
+    const orderBy = { [safeSortBy]: safeSortOrder };
 
     try {
-      const result = await db.query(query, params);
+      const [sites, total] = await Promise.all([
+        prisma.sites.findMany({
+          where,
+          select: {
+            id: true,
+            subdomain: true,
+            template_id: true,
+            status: true,
+            plan: true,
+            is_public: true,
+            created_at: true,
+            updated_at: true,
+            site_data: true
+          },
+          orderBy,
+          skip: offset,
+          take: limit
+        }),
+        prisma.sites.count({ where })
+      ]);
 
       return {
-        sites: result.rows,
-        total: result.rowCount,
+        sites,
+        total,
         page,
         pageSize: limit,
-        totalPages: Math.ceil(result.rowCount / limit)
+        totalPages: Math.ceil(total / limit)
       };
     } catch (error) {
       console.error('Error fetching public sites:', error);
@@ -109,18 +109,27 @@ class GalleryService {
       throw new Error('Invalid subdomain');
     }
 
-    const query = `
-      SELECT 
-        id, subdomain, template_id, status, plan, is_public,
-        created_at, updated_at,
-        site_data, user_id
-      FROM sites
-      WHERE subdomain = $1 AND is_public = TRUE AND status = $2
-    `;
-
     try {
-      const result = await db.query(query, [subdomain, 'published']);
-      return result.rows[0] || null;
+      const site = await prisma.sites.findFirst({
+        where: {
+          subdomain,
+          is_public: true,
+          status: 'published'
+        },
+        select: {
+          id: true,
+          subdomain: true,
+          template_id: true,
+          status: true,
+          plan: true,
+          is_public: true,
+          created_at: true,
+          updated_at: true,
+          site_data: true,
+          user_id: true
+        }
+      });
+      return site;
     } catch (error) {
       console.error('Error fetching site by subdomain:', error);
       throw error;
@@ -143,21 +152,39 @@ class GalleryService {
       throw new Error('Invalid user ID');
     }
 
-    const query = `
-      UPDATE sites
-      SET is_public = $1, updated_at = NOW()
-      WHERE id = $2 AND user_id = $3 AND status = $4
-      RETURNING id, subdomain, is_public, status
-    `;
-
     try {
-      const result = await db.query(query, [isPublic, siteId, userId, 'published']);
+      // First verify ownership and status
+      // Using updateMany to match the WHERE clause logic of original SQL
+      // But updateMany doesn't return the updated record.
+      // So we'll use findFirst then update.
 
-      if (result.rowCount === 0) {
+      const site = await prisma.sites.findFirst({
+        where: {
+          id: siteId,
+          user_id: userId,
+          status: 'published'
+        }
+      });
+
+      if (!site) {
         throw new Error('Site not found or unauthorized');
       }
 
-      return result.rows[0];
+      const updatedSite = await prisma.sites.update({
+        where: { id: siteId },
+        data: {
+          is_public: isPublic,
+          updated_at: new Date()
+        },
+        select: {
+          id: true,
+          subdomain: true,
+          is_public: true,
+          status: true
+        }
+      });
+
+      return updatedSite;
     } catch (error) {
       console.error('Error toggling public status:', error);
       throw error;
@@ -169,19 +196,26 @@ class GalleryService {
    * @returns {Promise<Array>}
    */
   async getCategories() {
-    const query = `
-      SELECT template_id, COUNT(*) as count
-      FROM sites
-      WHERE is_public = TRUE AND status = $1
-      GROUP BY template_id
-      ORDER BY count DESC
-    `;
-
     try {
-      const result = await db.query(query, ['published']);
-      return result.rows.map(row => ({
-        template: row.template_id,
-        count: parseInt(row.count, 10)
+      const groups = await prisma.sites.groupBy({
+        by: ['template_id'],
+        where: {
+          is_public: true,
+          status: 'published'
+        },
+        _count: {
+          _all: true
+        },
+        orderBy: {
+          _count: {
+            template_id: 'desc'
+          }
+        }
+      });
+
+      return groups.map(group => ({
+        template: group.template_id,
+        count: group._count._all
       }));
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -194,23 +228,36 @@ class GalleryService {
    * @returns {Promise<Object>}
    */
   async getStats() {
-    const query = `
-      SELECT 
-        COUNT(*) as total_public,
-        COUNT(DISTINCT template_id) as total_categories,
-        MAX(created_at) as latest_date
-      FROM sites
-      WHERE is_public = TRUE AND status = $1
-    `;
-
     try {
-      const result = await db.query(query, ['published']);
-      const row = result.rows[0];
+      // Get total count and max date
+      const aggregate = await prisma.sites.aggregate({
+        where: {
+          is_public: true,
+          status: 'published'
+        },
+        _count: {
+          _all: true
+        },
+        _max: {
+          created_at: true
+        }
+      });
+
+      // Get distinct categories count
+      // Prisma aggregate doesn't support COUNT(DISTINCT) directly easily
+      // So we group by template_id and count the groups
+      const categories = await prisma.sites.groupBy({
+        by: ['template_id'],
+        where: {
+          is_public: true,
+          status: 'published'
+        }
+      });
 
       return {
-        totalPublic: parseInt(row.total_public, 10),
-        totalCategories: parseInt(row.total_categories, 10),
-        latestDate: row.latest_date
+        totalPublic: aggregate._count._all,
+        totalCategories: categories.length,
+        latestDate: aggregate._max.created_at
       };
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -224,23 +271,23 @@ class GalleryService {
    * @returns {Promise<{eligible: boolean, reasons: Array}>}
    */
   async validatePublicEligibility(siteId) {
-    const query = `
-      SELECT status, plan, site_data
-      FROM sites
-      WHERE id = $1
-    `;
-
     try {
-      const result = await db.query(query, [siteId]);
+      const site = await prisma.sites.findUnique({
+        where: { id: siteId },
+        select: {
+          status: true,
+          plan: true,
+          site_data: true
+        }
+      });
 
-      if (result.rowCount === 0) {
+      if (!site) {
         return {
           eligible: false,
           reasons: ['Site not found']
         };
       }
 
-      const site = result.rows[0];
       const reasons = [];
 
       // Check if published
@@ -249,7 +296,11 @@ class GalleryService {
       }
 
       // Check if has required content
-      const siteData = site.site_data || {};
+      // Parse site_data if it's a string (Prisma might return it as string depending on schema)
+      // Assuming site_data is Json in schema, Prisma returns object.
+      // But just in case:
+      const siteData = typeof site.site_data === 'string' ? JSON.parse(site.site_data) : (site.site_data || {});
+
       if (!siteData.hero?.title) {
         reasons.push('Site missing required content');
       }

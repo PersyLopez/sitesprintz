@@ -22,14 +22,14 @@ function ShowcaseGallery() {
   const [totalSites, setTotalSites] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   const sitesPerPage = 12;
   const totalPages = Math.ceil(totalSites / sitesPerPage);
 
   // Set page title for SEO
   useEffect(() => {
     document.title = 'Showcase - Made with SiteSprintz | Website Gallery';
-    
+
     // Add/update meta description
     let metaDescription = document.querySelector('meta[name="description"]');
     if (!metaDescription) {
@@ -44,7 +44,7 @@ function ShowcaseGallery() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('/api/showcase/categories');
+        const response = await fetch('/api/showcases/categories');
         if (!response.ok) throw new Error('Failed to fetch categories');
         const data = await response.json();
         setCategories(data);
@@ -75,8 +75,8 @@ function ShowcaseGallery() {
         params.append('search', searchQuery);
       }
 
-      const response = await fetch(`/api/showcase?${params.toString()}`);
-      
+      const response = await fetch(`/api/showcases?${params.toString()}`);
+
       if (!response.ok) {
         throw new Error('Failed to fetch sites');
       }
@@ -144,6 +144,7 @@ function ShowcaseGallery() {
   };
 
   const formatCategory = (category) => {
+    if (!category || typeof category !== 'string') return 'Unknown';
     return category
       .split('-')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -168,6 +169,7 @@ function ShowcaseGallery() {
             value={searchQuery}
             onChange={handleSearchChange}
             aria-label="Search sites"
+            data-testid="showcase-search"
           />
         </div>
 
@@ -176,6 +178,7 @@ function ShowcaseGallery() {
           <button
             className={`category-btn ${!selectedCategory ? 'active' : ''}`}
             onClick={() => handleCategoryChange(null)}
+            data-testid="category-btn-all"
           >
             All
           </button>
@@ -185,6 +188,7 @@ function ShowcaseGallery() {
               key={cat.template}
               className={`category-btn ${selectedCategory === cat.template ? 'active' : ''}`}
               onClick={() => handleCategoryChange(cat.template)}
+              data-testid={`category-btn-${cat.template}`}
             >
               {formatCategory(cat.template)} ({cat.count})
             </button>
@@ -225,7 +229,7 @@ function ShowcaseGallery() {
         <>
           <div className="showcase-grid" data-testid="showcase-grid">
             {sites.map((site) => (
-              <div key={site.id} className="site-card">
+              <div key={site.id} className="site-card" data-testid={`site-card-${site.id}`}>
                 <Link to={`/showcase/${site.subdomain}`} className="site-card-link">
                   <div className="site-image">
                     <img
@@ -240,20 +244,19 @@ function ShowcaseGallery() {
                   <div className="site-info">
                     <h3>{getSiteTitle(site)}</h3>
                     <p className="site-category">{formatCategory(site.template_id)}</p>
-                    <div className="site-meta">
-                      <span className="site-plan">{site.plan}</span>
-                      <a
-                        href={getSiteUrl(site.subdomain)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="visit-site-btn"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Visit Site ↗
-                      </a>
-                    </div>
                   </div>
                 </Link>
+                <div className="site-meta" style={{ padding: '0 20px 20px' }}>
+                  <span className="site-plan">{site.plan}</span>
+                  <a
+                    href={getSiteUrl(site.subdomain)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="visit-site-btn"
+                  >
+                    Visit Site ↗
+                  </a>
+                </div>
               </div>
             ))}
           </div>

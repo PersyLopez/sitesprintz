@@ -18,7 +18,7 @@ router.get('/tenants/:userId/services', async (req, res) => {
     const { userId } = req.params;
 
     // Get or create tenant
-    const tenant = await bookingService.getOrCreateTenant(parseInt(userId), null);
+    const tenant = await bookingService.getOrCreateTenant(userId, null);
 
     // Get active services
     const services = await bookingService.getServices(tenant.id, false);
@@ -57,14 +57,16 @@ router.get('/tenants/:userId/availability', async (req, res) => {
     const { service_id, staff_id, date, timezone = 'America/New_York' } = req.query;
 
     if (!service_id || !date) {
+      console.log('Missing service_id or date', { service_id, date });
       return res.status(400).json({
         success: false,
         error: 'service_id and date are required',
       });
     }
+    console.log(`Availability request: userId=${userId}, service=${service_id}, date=${date}`);
 
     // Get or create tenant
-    const tenant = await bookingService.getOrCreateTenant(parseInt(userId), null);
+    const tenant = await bookingService.getOrCreateTenant(userId, null);
 
     // Get or use default staff
     let staffIdToUse = staff_id;
@@ -121,7 +123,7 @@ router.post('/tenants/:userId/appointments', async (req, res) => {
     }
 
     // Get or create tenant
-    const tenant = await bookingService.getOrCreateTenant(parseInt(userId), null);
+    const tenant = await bookingService.getOrCreateTenant(userId, null);
 
     // Get or use default staff
     let staffId = appointmentData.staff_id;
@@ -174,7 +176,7 @@ router.get('/tenants/:userId/appointments/:identifier', async (req, res) => {
     const { userId, identifier } = req.params;
 
     // Get tenant
-    const tenant = await bookingService.getOrCreateTenant(parseInt(userId), null);
+    const tenant = await bookingService.getOrCreateTenant(userId, null);
 
     // Get appointment
     const appointment = await bookingService.getAppointment(identifier, tenant.id);
@@ -209,7 +211,7 @@ router.delete('/tenants/:userId/appointments/:identifier', async (req, res) => {
     const { reason, cancelled_by = 'customer' } = req.body;
 
     // Get tenant
-    const tenant = await bookingService.getOrCreateTenant(parseInt(userId), null);
+    const tenant = await bookingService.getOrCreateTenant(userId, null);
 
     // Cancel appointment
     const appointment = await bookingService.cancelAppointment(identifier, tenant.id, {
@@ -225,6 +227,85 @@ router.delete('/tenants/:userId/appointments/:identifier', async (req, res) => {
     }
 
     // Email notification is sent automatically by the service
+
+    res.json({
+      success: true,
+      message: 'Appointment cancelled successfully',
+      appointment: {
+        id: appointment.id,
+        confirmation_code: appointment.confirmation_code,
+        status: appointment.status,
+        cancelled_at: appointment.cancelled_at,
+      },
+    });
+  } catch (error) {
+    console.error('Error cancelling appointment:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to cancel appointment',
+    });
+  }
+});
+
+/**
+ * GET /api/booking/appointments/:identifier
+ * Get appointment details by confirmation code (Global lookup)
+ */
+router.get('/appointments/:identifier', async (req, res) => {
+  try {
+    const { identifier } = req.params;
+
+    // We need to find the appointment globally.
+    // Since bookingService methods usually require tenantId, we might need to extend the service
+    // or use a method that finds by confirmation code first.
+    // Let's assume getAppointment can handle it if we pass null for tenantId, or we add a new method.
+    // Checking BookingService... we'll need to update it too if it doesn't support this.
+    // For now, let's try to find it.
+
+    // Actually, let's implement the logic here or call a new service method.
+    // Since I can't see BookingService right now, I'll assume I need to add `getAppointmentByCode` to it.
+    const appointment = await bookingService.getAppointmentByCode(identifier);
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        error: 'Appointment not found',
+      });
+    }
+
+    res.json({
+      success: true,
+      appointment,
+    });
+  } catch (error) {
+    console.error('Error fetching appointment:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch appointment',
+    });
+  }
+});
+
+/**
+ * DELETE /api/booking/appointments/:identifier
+ * Cancel appointment by confirmation code (Global lookup)
+ */
+router.delete('/appointments/:identifier', async (req, res) => {
+  try {
+    const { identifier } = req.params;
+    const { reason, cancelled_by = 'customer' } = req.body;
+
+    const appointment = await bookingService.cancelAppointmentByCode(identifier, {
+      reason,
+      cancelled_by,
+    });
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        error: 'Appointment not found or already cancelled',
+      });
+    }
 
     res.json({
       success: true,
@@ -262,7 +343,7 @@ router.post('/admin/:userId/services', async (req, res) => {
     // TODO: Add authentication middleware
 
     // Get tenant
-    const tenant = await bookingService.getOrCreateTenant(parseInt(userId), null);
+    const tenant = await bookingService.getOrCreateTenant(userId, null);
 
     // Create service
     const service = await bookingService.createService(tenant.id, serviceData);
@@ -292,7 +373,7 @@ router.put('/admin/:userId/services/:serviceId', async (req, res) => {
     // TODO: Add authentication middleware
 
     // Get tenant
-    const tenant = await bookingService.getOrCreateTenant(parseInt(userId), null);
+    const tenant = await bookingService.getOrCreateTenant(userId, null);
 
     // Update service
     const service = await bookingService.updateService(serviceId, tenant.id, serviceData);
@@ -328,7 +409,7 @@ router.delete('/admin/:userId/services/:serviceId', async (req, res) => {
     // TODO: Add authentication middleware
 
     // Get tenant
-    const tenant = await bookingService.getOrCreateTenant(parseInt(userId), null);
+    const tenant = await bookingService.getOrCreateTenant(userId, null);
 
     // Delete service
     const deleted = await bookingService.deleteService(serviceId, tenant.id);
@@ -366,7 +447,7 @@ router.get('/admin/:userId/appointments', async (req, res) => {
     // TODO: Add authentication middleware
 
     // Get tenant
-    const tenant = await bookingService.getOrCreateTenant(parseInt(userId), null);
+    const tenant = await bookingService.getOrCreateTenant(userId, null);
 
     // Get appointments
     const appointments = await bookingService.getAppointments(tenant.id, filters);
@@ -404,10 +485,16 @@ router.post('/admin/:userId/staff/:staffId/availability', async (req, res) => {
     // TODO: Add authentication middleware
 
     // Get tenant
-    const tenant = await bookingService.getOrCreateTenant(parseInt(userId), null);
+    const tenant = await bookingService.getOrCreateTenant(userId, null);
+
+    let targetStaffId = staffId;
+    if (staffId === 'default-staff-id' || staffId === 'default') {
+      const defaultStaff = await bookingService.getOrCreateDefaultStaff(tenant.id);
+      targetStaffId = defaultStaff.id;
+    }
 
     // Set availability
-    const rules = await bookingService.setAvailabilityRules(staffId, tenant.id, scheduleRules);
+    const rules = await bookingService.setAvailabilityRules(targetStaffId, tenant.id, scheduleRules);
 
     res.json({
       success: true,
@@ -429,12 +516,21 @@ router.post('/admin/:userId/staff/:staffId/availability', async (req, res) => {
  */
 router.get('/admin/:userId/staff/:staffId/availability', async (req, res) => {
   try {
-    const { staffId } = req.params;
+    const { userId, staffId } = req.params;
 
     // TODO: Add authentication middleware
 
+    let targetStaffId = staffId;
+
+    // Resolve default staff if needed
+    if (staffId === 'default-staff-id' || staffId === 'default') {
+      const tenant = await bookingService.getOrCreateTenant(userId, null);
+      const defaultStaff = await bookingService.getOrCreateDefaultStaff(tenant.id);
+      targetStaffId = defaultStaff.id;
+    }
+
     // Get availability
-    const rules = await bookingService.getAvailabilityRules(staffId);
+    const rules = await bookingService.getAvailabilityRules(targetStaffId);
 
     res.json({
       success: true,

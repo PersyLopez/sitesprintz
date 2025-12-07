@@ -12,7 +12,7 @@ function Products() {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { showSuccess, showError } = useToast();
-  
+
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
   const [siteId, setSiteId] = useState(null);
@@ -37,7 +37,7 @@ function Products() {
 
   const loadProducts = async (id) => {
     setLoading(true);
-    
+
     try {
       const response = await fetch(`/api/sites/${id}/products`, {
         headers: {
@@ -80,17 +80,17 @@ function Products() {
   const handleSaveProduct = async (productData) => {
     try {
       let updatedProducts;
-      
+
       if (editingProduct) {
         // Update existing product
-        updatedProducts = products.map(p => 
+        updatedProducts = products.map(p =>
           p.id === editingProduct.id ? { ...productData, id: p.id } : p
         );
       } else {
         // Add new product
         const newProduct = {
           ...productData,
-          id: Date.now().toString()
+          id: Date.now() + Math.random().toString(36).substr(2, 9)
         };
         updatedProducts = [...products, newProduct];
       }
@@ -181,7 +181,7 @@ function Products() {
   const handleDuplicateProduct = async (product) => {
     const duplicate = {
       ...product,
-      id: Date.now().toString(),
+      id: Date.now() + Math.random().toString(36).substr(2, 9),
       name: `${product.name} (Copy)`
     };
 
@@ -216,7 +216,7 @@ function Products() {
     }
 
     let csv = 'name,description,price,category,image,available\n';
-    
+
     products.forEach(p => {
       csv += `"${p.name}","${p.description || ''}",${p.price},"${p.category || 'General'}","${p.image || ''}",${p.available !== false}\n`;
     });
@@ -235,7 +235,7 @@ function Products() {
   const handleImportComplete = async (importedProducts, mode) => {
     try {
       let finalProducts;
-      
+
       if (mode === 'replace') {
         finalProducts = importedProducts;
       } else {
@@ -267,9 +267,9 @@ function Products() {
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
-    
+
     return matchesSearch && matchesCategory;
   });
 
@@ -278,14 +278,14 @@ function Products() {
   return (
     <div className="products-page">
       <Header />
-      
+
       <main className="products-container">
         <div className="products-header">
           <div className="header-content">
             <h1>📦 Products - {siteName}</h1>
             <p>{products.length} total products</p>
           </div>
-          
+
           <div className="header-actions">
             <button onClick={() => setShowImportModal(true)} className="btn btn-secondary">
               📤 Import CSV
@@ -314,7 +314,7 @@ function Products() {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
           />
-          
+
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
@@ -365,7 +365,7 @@ function Products() {
                     </button>
                     <button
                       onClick={() => handleEditProduct(product)}
-                      className="btn-icon btn-primary"
+                      className="btn-icon btn-primary edit-button"
                       title="Edit"
                     >
                       ✏️
@@ -379,7 +379,7 @@ function Products() {
                     </button>
                     <button
                       onClick={() => handleDeleteProduct(product.id)}
-                      className="btn-icon btn-danger"
+                      className="btn-icon btn-danger delete-button"
                       title="Delete"
                     >
                       🗑️
@@ -408,9 +408,9 @@ function Products() {
           </div>
         )}
       </main>
-      
+
       <Footer />
-      
+
       {/* Modals */}
       {showProductModal && (
         <ProductModal
@@ -422,7 +422,7 @@ function Products() {
           }}
         />
       )}
-      
+
       {showImportModal && (
         <ImportModal
           currentProducts={products}

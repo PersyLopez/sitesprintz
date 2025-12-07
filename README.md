@@ -14,13 +14,19 @@
 
 ## 📚 Essential Documentation
 
+**📖 [Complete Documentation Index](./docs/README.md)** - All documentation organized by category
+
+### Quick Links
+
 | Doc | Purpose | Time |
 |-----|---------|------|
-| [`QUICK-START.md`](./QUICK-START.md) | Launch guide, workflow, commands | 5 min |
-| [`GIT-STRATEGY.md`](./GIT-STRATEGY.md) | Branch workflow & daily dev | 3 min |
-| [`RAILWAY-DEPLOY.md`](./RAILWAY-DEPLOY.md) | Deploy to production | 15 min |
-| [`INTEGRATION-SETUP.md`](./INTEGRATION-SETUP.md) | Stripe & Email status | 2 min |
-| [`BACKLOG.md`](./BACKLOG.md) | Roadmap & tasks | Reference |
+| [Quick Start](./docs/setup/QUICK-START.md) | Launch guide, workflow, commands | 5 min |
+| [Git Strategy](./docs/setup/GIT-STRATEGY.md) | Branch workflow & daily dev | 3 min |
+| [Railway Deploy](./docs/setup/RAILWAY-DEPLOY.md) | Deploy to production | 15 min |
+| [Integration Setup](./docs/setup/INTEGRATION-SETUP.md) | Stripe & Email status | 2 min |
+| [Admin Setup](./docs/ADMIN-SETUP.md) | 🔐 Create admin account | 2 min |
+| [Backlog](./docs/plans/BACKLOG.md) | Current roadmap & tasks | Reference |
+| [Strategic Plan](./docs/plans/STRATEGIC-MASTER-PLAN.md) | 3-year vision & unimplemented features | Reference |
 
 ---
 
@@ -125,17 +131,23 @@ npm run start:prod
 
 ## 📖 Documentation Index
 
-### **Getting Started**
-- [`QUICK-START.md`](./QUICK-START.md) - Launch in 15 minutes
-- [`GIT-STRATEGY.md`](./GIT-STRATEGY.md) - Daily workflow
-- [`RAILWAY-DEPLOY.md`](./RAILWAY-DEPLOY.md) - Production deployment
+**📚 [Full Documentation](./docs/README.md)** - Complete organized documentation
 
-### **Development**
-- [`BACKLOG.md`](./BACKLOG.md) - Roadmap & tasks
-- [`INTEGRATION-SETUP.md`](./INTEGRATION-SETUP.md) - API configuration
+### By Category
 
-### **Reference**
-- All historical docs moved to `docs/archive/` (optional cleanup)
+- **[Setup & Deployment](./docs/setup/)** - Quick start, Railway, Git workflow, integrations
+- **[User Guides](./docs/guides/)** - Feature guides, tutorials, demos
+- **[Development](./docs/development/)** - Code standards, templates, architecture
+- **[Plans & Roadmap](./docs/plans/)** - Future features, backlog, strategy
+- **[Reports](./docs/reports/)** - Test coverage, execution reports
+- **[Archive](./docs/archive/)** - Completed work summaries (450+ docs)
+
+### Key Documents
+
+- **Getting Started:** [Quick Start](./docs/setup/QUICK-START.md), [Git Strategy](./docs/setup/GIT-STRATEGY.md)
+- **Deployment:** [Railway Deploy](./docs/setup/RAILWAY-DEPLOY.md), [Integration Setup](./docs/setup/INTEGRATION-SETUP.md)
+- **Planning:** [Strategic Plan](./docs/plans/STRATEGIC-MASTER-PLAN.md), [Backlog](./docs/plans/BACKLOG.md)
+- **Development:** [Template Guide](./docs/TEMPLATE-CREATION-GUIDE.md), [JS Standards](./docs/JS-STANDARDS.md)
 
 ---
 
@@ -163,4 +175,5 @@ Proprietary - SiteSprintz © 2025
 
 ---
 
-**Ready to launch?** → [`QUICK-START.md`](./QUICK-START.md) 🚀
+**Ready to launch?** → [Quick Start Guide](./docs/setup/QUICK-START.md) 🚀  
+**See all docs:** → [Documentation Index](./docs/README.md) 📚

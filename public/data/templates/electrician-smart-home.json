@@ -7,28 +7,51 @@
     "email": "hello@smartwire.tech"
   },
   "themeVars": {
-    "color-primary": "#8b5cf6",
-    "color-accent": "#a78bfa",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "Smart Home", "href": "#about"},
-    {"label": "Portfolio", "href": "#testimonials"},
-    {"label": "Consult", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "Smart Home",
+      "href": "#about"
+    },
+    {
+      "label": "Portfolio",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Consult",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "🏠 Smart Home Electrical",
     "title": "Transform your home with intelligent automation",
     "subtitle": "Licensed electricians specializing in smart home technology. From smart lighting to EV chargers to whole-home automation. Expert installation, seamless integration, future-proof solutions. Welcome to the home of tomorrow.",
     "cta": [
-      {"label": "Free Consultation", "href": "#contact"},
-      {"label": "Smart Solutions", "href": "#products", "variant": "secondary"}
+      {
+        "label": "Free Consultation",
+        "href": "#contact"
+      },
+      {
+        "label": "Smart Solutions",
+        "href": "#products",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1558002038-1055907df827?w=1200&q=80",
-    "imageAlt": "Smart home control system"
+    "imageAlt": "Smart home control system",
+    "layout": "split"
   },
   "about": {
     "title": "Smart Home Experts",
@@ -135,7 +158,11 @@
         "bio": "Licensed electrician with advanced certifications in home automation, EV charging, and solar systems. Combines traditional electrical expertise with cutting-edge technology.",
         "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
         "imageAlt": "Alex Thompson",
-        "credentials": ["Master Electrician", "CEDIA Certified", "Tesla Certified Installer"]
+        "credentials": [
+          "Master Electrician",
+          "CEDIA Certified",
+          "Tesla Certified Installer"
+        ]
       }
     ]
   },
@@ -143,18 +170,42 @@
     "title": "Smart Home Process",
     "subtitle": "From consultation to automation",
     "steps": [
-      {"title": "Free Consultation", "description": "Discuss your goals and assess your home's potential"},
-      {"title": "Custom Design", "description": "Create a smart home system tailored to your lifestyle"},
-      {"title": "Professional Installation", "description": "Licensed electrical work with technology integration"},
-      {"title": "Training & Support", "description": "Learn your system and enjoy ongoing support"}
+      {
+        "title": "Free Consultation",
+        "description": "Discuss your goals and assess your home's potential"
+      },
+      {
+        "title": "Custom Design",
+        "description": "Create a smart home system tailored to your lifestyle"
+      },
+      {
+        "title": "Professional Installation",
+        "description": "Licensed electrical work with technology integration"
+      },
+      {
+        "title": "Training & Support",
+        "description": "Learn your system and enjoy ongoing support"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "200+", "label": "Smart Homes"},
-      {"number": "100+", "label": "EV Chargers Installed"},
-      {"number": "4.9", "label": "Star Rating"},
-      {"number": "Licensed", "label": "& Certified"}
+      {
+        "number": "200+",
+        "label": "Smart Homes"
+      },
+      {
+        "number": "100+",
+        "label": "EV Chargers Installed"
+      },
+      {
+        "number": "4.9",
+        "label": "Star Rating"
+      },
+      {
+        "number": "Licensed",
+        "label": "& Certified"
+      }
     ]
   },
   "contact": {
@@ -183,4 +234,3 @@
   "productsTitle": "Smart Home Solutions",
   "productsSubtitle": "Intelligent electrical systems"
 }
-

@@ -7,29 +7,55 @@
     "email": "coach@elevateleadership.com"
   },
   "themeVars": {
-    "color-primary": "#7c3aed",
-    "color-accent": "#a78bfa",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#0f172a",
+    "color-primary-light": "#334155",
+    "color-accent": "#d4af37",
+    "color-surface": "rgba(255, 255, 255, 0.03)",
+    "color-card": "rgba(255, 255, 255, 0.06)",
+    "color-text": "#f8fafc",
+    "color-muted": "#94a3b8",
+    "color-bg": "#020617"
   },
   "nav": [
-    {"label": "Coaching", "href": "#products"},
-    {"label": "Approach", "href": "#about"},
-    {"label": "About Me", "href": "#team"},
-    {"label": "Testimonials", "href": "#testimonials"},
-    {"label": "Contact", "href": "#contact"}
+    {
+      "label": "Coaching",
+      "href": "#products"
+    },
+    {
+      "label": "Approach",
+      "href": "#about"
+    },
+    {
+      "label": "About Me",
+      "href": "#team"
+    },
+    {
+      "label": "Testimonials",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Contact",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "🎯 Executive Leadership Coaching",
     "title": "Unlock your leadership potential",
     "subtitle": "Transform your leadership style and amplify your impact. Through 1-on-1 coaching, I help executives and emerging leaders develop the skills, mindset, and emotional intelligence to lead with confidence and authenticity.",
     "cta": [
-      {"label": "Discovery Session", "href": "#contact"},
-      {"label": "Learn More", "href": "#about", "variant": "secondary"}
+      {
+        "label": "Discovery Session",
+        "href": "#contact"
+      },
+      {
+        "label": "Learn More",
+        "href": "#about",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1515169067868-5387ec356754?w=1200&q=80",
-    "imageAlt": "Executive coaching session"
+    "imageAlt": "Executive coaching session",
+    "layout": "split"
   },
   "about": {
     "title": "Leadership Transformation",
@@ -136,7 +162,11 @@
         "bio": "Former Fortune 500 executive turned coach. PhD in Organizational Psychology. ICF-certified with 15+ years helping leaders unlock their potential and create meaningful impact.",
         "image": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80",
         "imageAlt": "Dr. Alexandra Anderson",
-        "credentials": ["PhD Org Psychology", "ICF-PCC Certified", "Former VP Operations"]
+        "credentials": [
+          "PhD Org Psychology",
+          "ICF-PCC Certified",
+          "Former VP Operations"
+        ]
       }
     ]
   },
@@ -144,18 +174,42 @@
     "title": "The Coaching Journey",
     "subtitle": "Structured yet flexible approach",
     "steps": [
-      {"title": "Discovery", "description": "Complimentary session to explore your goals and establish fit"},
-      {"title": "Assessment", "description": "360 feedback and leadership assessment to identify focus areas"},
-      {"title": "Coaching", "description": "Regular sessions with reflection, tools, and accountability"},
-      {"title": "Integration", "description": "Apply insights and measure progress toward your goals"}
+      {
+        "title": "Discovery",
+        "description": "Complimentary session to explore your goals and establish fit"
+      },
+      {
+        "title": "Assessment",
+        "description": "360 feedback and leadership assessment to identify focus areas"
+      },
+      {
+        "title": "Coaching",
+        "description": "Regular sessions with reflection, tools, and accountability"
+      },
+      {
+        "title": "Integration",
+        "description": "Apply insights and measure progress toward your goals"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "15+", "label": "Years Coaching"},
-      {"number": "200+", "label": "Leaders Coached"},
-      {"number": "95%", "label": "Client Satisfaction"},
-      {"number": "ICF-PCC", "label": "Certified"}
+      {
+        "number": "15+",
+        "label": "Years Coaching"
+      },
+      {
+        "number": "200+",
+        "label": "Leaders Coached"
+      },
+      {
+        "number": "95%",
+        "label": "Client Satisfaction"
+      },
+      {
+        "number": "ICF-PCC",
+        "label": "Certified"
+      }
     ]
   },
   "contact": {
@@ -184,4 +238,3 @@
   "productsTitle": "Coaching Programs",
   "productsSubtitle": "Investment in your leadership development"
 }
-

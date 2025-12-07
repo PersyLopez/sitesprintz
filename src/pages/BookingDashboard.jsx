@@ -14,7 +14,7 @@ const BookingDashboard = () => {
   const { user } = useAuth();
   const { showError } = useToast();
   const { isPro, isPremium, plan } = usePlan();
-  
+
   const [activeTab, setActiveTab] = useState('appointments');
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -35,7 +35,7 @@ const BookingDashboard = () => {
       showError('Booking features require a Pro or higher subscription');
       return;
     }
-    
+
     if (user?.id) {
       fetchStats();
     }
@@ -43,14 +43,17 @@ const BookingDashboard = () => {
 
   const fetchStats = async () => {
     try {
+      console.log('Fetching booking stats...');
       setLoading(true);
       setStatsError(null);
-      
+
       // Fetch appointments and services to calculate stats
       const [appointmentsRes, servicesRes] = await Promise.all([
         get(`/api/booking/admin/${user.id}/appointments`),
         get(`/api/booking/tenants/${user.id}/services`),
       ]);
+
+      console.log('Stats fetched successfully', { appointments: appointmentsRes, services: servicesRes });
 
       const appointments = appointmentsRes.appointments || [];
       const services = servicesRes.services || [];
@@ -83,6 +86,7 @@ const BookingDashboard = () => {
   };
 
   const handleTabChange = (tab) => {
+    console.log('Switching tab to:', tab);
     setActiveTab(tab);
     setMobileMenuOpen(false);
   };
@@ -116,7 +120,7 @@ const BookingDashboard = () => {
   return (
     <div className="booking-dashboard">
       <Header />
-      
+
       <div className="dashboard-container">
         {/* Pro+ Access Gate */}
         {!hasBookingAccess ? (
@@ -136,7 +140,7 @@ const BookingDashboard = () => {
                   <li>✅ Analytics and stats</li>
                 </ul>
               </div>
-              <button 
+              <button
                 className="upgrade-btn"
                 onClick={() => window.location.href = '/dashboard'}
               >
@@ -151,16 +155,17 @@ const BookingDashboard = () => {
                 <h1>Booking Dashboard</h1>
                 <span className="pro-badge">PRO</span>
               </div>
-              <button 
+              <button
                 className="refresh-btn"
                 onClick={handleRefresh}
                 aria-label="Refresh"
+                data-testid="dashboard-refresh-btn"
               >
                 🔄 Refresh
               </button>
-              
+
               {window.innerWidth <= 768 && (
-                <button 
+                <button
                   className="mobile-menu-toggle"
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                   aria-label="Menu"
@@ -170,91 +175,96 @@ const BookingDashboard = () => {
               )}
             </div>
 
-        {/* Stats Cards */}
-        {loading && <div className="loading">Loading...</div>}
-        
-        {statsError && (
-          <div className="error-message">{statsError}</div>
-        )}
+            {/* Stats Cards */}
+            {loading && <div className="loading">Loading...</div>}
 
-        {!loading && !statsError && (
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-label">Total Appointments</div>
-              <div className="stat-value">{stats.total_appointments}</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-label">Pending</div>
-              <div className="stat-value">{stats.pending_appointments}</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-label">Confirmed</div>
-              <div className="stat-value">{stats.confirmed_appointments}</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-label">Total Revenue</div>
-              <div className="stat-value">{formatCurrency(stats.total_revenue)}</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-label">Active Services</div>
-              <div className="stat-value">{stats.active_services}</div>
-            </div>
-          </div>
-        )}
-
-        {/* Quick Actions */}
-        <div className="quick-actions">
-          <button 
-            className="action-btn"
-            onClick={handleAddService}
-          >
-            ➕ Add Service
-          </button>
-          <button 
-            className="action-btn"
-            onClick={handleViewCalendar}
-          >
-            📅 View Calendar
-          </button>
-        </div>
-
-        {/* Navigation Tabs */}
-        <div className={`dashboard-tabs ${mobileMenuOpen ? 'mobile-open' : ''}`}>
-          <button
-            role="tab"
-            className={`tab ${activeTab === 'appointments' ? 'active' : ''}`}
-            onClick={() => handleTabChange('appointments')}
-          >
-            📅 Appointments
-          </button>
-          <button
-            role="tab"
-            className={`tab ${activeTab === 'services' ? 'active' : ''}`}
-            onClick={() => handleTabChange('services')}
-          >
-            🛠️ Services
-          </button>
-          <button
-            role="tab"
-            className={`tab ${activeTab === 'schedule' ? 'active' : ''}`}
-            onClick={() => handleTabChange('schedule')}
-          >
-            ⏰ Schedule
-          </button>
-        </div>
-
-        {/* Tab Content */}
-        <div className="tab-content">
-          {activeTab === 'appointments' && (
-            <AppointmentList userId={user?.id} onRefresh={fetchStats} />
-          )}
-          {activeTab === 'services' && (
-            <ServiceManager userId={user?.id} onRefresh={fetchStats} />
-          )}
-          {activeTab === 'schedule' && (
-            <AvailabilityScheduler userId={user?.id} />
+            {statsError && (
+              <div className="error-message">{statsError}</div>
             )}
-          </div>
+
+            {!loading && !statsError && (
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <div className="stat-label">Total Appointments</div>
+                  <div className="stat-value">{stats.total_appointments}</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Pending</div>
+                  <div className="stat-value">{stats.pending_appointments}</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Confirmed</div>
+                  <div className="stat-value">{stats.confirmed_appointments}</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Total Revenue</div>
+                  <div className="stat-value">{formatCurrency(stats.total_revenue)}</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Active Services</div>
+                  <div className="stat-value">{stats.active_services}</div>
+                </div>
+              </div>
+            )}
+
+            {/* Quick Actions */}
+            <div className="quick-actions">
+              <button
+                className="action-btn"
+                data-testid="add-service-button"
+                onClick={handleAddService}
+              >
+                ➕ Add Service
+              </button>
+              <button
+                className="action-btn"
+                onClick={handleViewCalendar}
+              >
+                📅 View Calendar
+              </button>
+            </div>
+
+            {/* Navigation Tabs */}
+            <div className={`dashboard-tabs ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+              <button
+                role="tab"
+                data-testid="appointments-tab"
+                className={`tab ${activeTab === 'appointments' ? 'active' : ''}`}
+                onClick={() => handleTabChange('appointments')}
+              >
+                📅 Appointments
+              </button>
+              <button
+                role="tab"
+                data-testid="services-tab"
+                className={`tab ${activeTab === 'services' ? 'active' : ''}`}
+                onClick={() => handleTabChange('services')}
+              >
+                🛠️ Services
+              </button>
+              <button
+                role="tab"
+                data-testid="schedule-tab"
+                className={`tab ${activeTab === 'schedule' ? 'active' : ''}`}
+                onClick={() => handleTabChange('schedule')}
+              >
+                ⏰ Schedule
+              </button>
+            </div>
+
+            {/* Tab Content */}
+            <div className="tab-content">
+              {activeTab === 'appointments' && (
+                <AppointmentList userId={user?.id} onRefresh={fetchStats} />
+              )}
+              {activeTab === 'services' && (
+                <ServiceManager userId={user?.id} onRefresh={fetchStats} />
+              )}
+              {activeTab === 'schedule' && (
+                <AvailabilityScheduler userId={user?.id} />
+              )}
+            </div>
+          </>
         )}
       </div>
 

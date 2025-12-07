@@ -7,28 +7,51 @@
     "email": "service@provolt.biz"
   },
   "themeVars": {
-    "color-primary": "#1e40af",
-    "color-accent": "#3b82f6",
-    "color-success": "#10b981",
-    "color-warning": "#f59e0b",
-    "color-danger": "#ef4444"
+    "color-primary": "#475569",
+    "color-primary-light": "#94a3b8",
+    "color-accent": "#e2e8f0",
+    "color-bg": "#ffffff",
+    "color-surface": "#f8fafc",
+    "color-card": "#ffffff",
+    "color-text": "#1e293b",
+    "color-muted": "#64748b"
   },
   "nav": [
-    {"label": "Services", "href": "#products"},
-    {"label": "Industries", "href": "#about"},
-    {"label": "Projects", "href": "#testimonials"},
-    {"label": "Quote", "href": "#contact"}
+    {
+      "label": "Services",
+      "href": "#products"
+    },
+    {
+      "label": "Industries",
+      "href": "#about"
+    },
+    {
+      "label": "Projects",
+      "href": "#testimonials"
+    },
+    {
+      "label": "Quote",
+      "href": "#contact"
+    }
   ],
   "hero": {
     "eyebrow": "⚡ Commercial Electrical Services",
     "title": "Powering businesses safely & efficiently",
     "subtitle": "Licensed commercial electricians for offices, retail, warehouses, and industrial facilities. Electrical maintenance, repairs, installations, and emergency service. Minimize downtime. Keep your business running.",
     "cta": [
-      {"label": "Request Quote", "href": "#contact"},
-      {"label": "Our Services", "href": "#products", "variant": "secondary"}
+      {
+        "label": "Request Quote",
+        "href": "#contact"
+      },
+      {
+        "label": "Our Services",
+        "href": "#products",
+        "variant": "secondary"
+      }
     ],
     "image": "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=1200&q=80",
-    "imageAlt": "Commercial electrical work"
+    "imageAlt": "Commercial electrical work",
+    "layout": "split"
   },
   "about": {
     "title": "Commercial Electrical Experts",
@@ -135,7 +158,11 @@
         "bio": "Licensed Master Electrician with 18+ years in commercial and industrial electrical work. Specializes in large-scale projects, maintenance contracts, and emergency service.",
         "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
         "imageAlt": "James Rodriguez",
-        "credentials": ["Master Electrician", "18+ Years Commercial", "Fully Insured"]
+        "credentials": [
+          "Master Electrician",
+          "18+ Years Commercial",
+          "Fully Insured"
+        ]
       }
     ]
   },
@@ -143,18 +170,42 @@
     "title": "Project Process",
     "subtitle": "Professional commercial electrical service",
     "steps": [
-      {"title": "Site Assessment", "description": "Visit your facility to understand needs and scope"},
-      {"title": "Detailed Proposal", "description": "Clear quote with timeline and specifications"},
-      {"title": "Professional Work", "description": "Licensed electricians complete work to code"},
-      {"title": "Inspection & Testing", "description": "Verify all work meets standards and your satisfaction"}
+      {
+        "title": "Site Assessment",
+        "description": "Visit your facility to understand needs and scope"
+      },
+      {
+        "title": "Detailed Proposal",
+        "description": "Clear quote with timeline and specifications"
+      },
+      {
+        "title": "Professional Work",
+        "description": "Licensed electricians complete work to code"
+      },
+      {
+        "title": "Inspection & Testing",
+        "description": "Verify all work meets standards and your satisfaction"
+      }
     ]
   },
   "stats": {
     "items": [
-      {"number": "19+", "label": "Years Serving Business"},
-      {"number": "500+", "label": "Commercial Clients"},
-      {"number": "24/7", "label": "Emergency Service"},
-      {"number": "$5M", "label": "Liability Coverage"}
+      {
+        "number": "19+",
+        "label": "Years Serving Business"
+      },
+      {
+        "number": "500+",
+        "label": "Commercial Clients"
+      },
+      {
+        "number": "24/7",
+        "label": "Emergency Service"
+      },
+      {
+        "number": "$5M",
+        "label": "Liability Coverage"
+      }
     ]
   },
   "contact": {
@@ -183,4 +234,3 @@
   "productsTitle": "Commercial Electrical Services",
   "productsSubtitle": "Professional electrical solutions for business"
 }
-

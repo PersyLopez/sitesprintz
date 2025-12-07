@@ -3,7 +3,7 @@
  * Handles CRUD operations for menu items, services, and products
  */
 
-import { query } from '../../database/db.js';
+import { prisma } from '../../database/db.js';
 import sanitizeHtml from 'sanitize-html';
 
 class ContentService {
@@ -11,21 +11,24 @@ class ContentService {
    * Menu Items
    */
   static async getMenuItems(subdomain, grouped = false) {
-    const result = await query(
-      'SELECT * FROM menu_items WHERE subdomain = $1 ORDER BY display_order ASC, id ASC',
-      [subdomain]
-    );
+    const items = await prisma.menu_items.findMany({
+      where: { subdomain },
+      orderBy: [
+        { display_order: 'asc' },
+        { id: 'asc' }
+      ]
+    });
 
     if (grouped) {
-      return this.groupByCategory(result.rows);
+      return this.groupByCategory(items);
     }
 
-    return result.rows;
+    return items;
   }
 
   static async createMenuItem(subdomain, item) {
     this.validateMenuItem(item);
-    
+
     const sanitized = {
       ...item,
       description: sanitizeHtml(item.description, {
@@ -34,15 +37,19 @@ class ContentService {
       })
     };
 
-    const result = await query(
-      `INSERT INTO menu_items (subdomain, name, description, price, category, image, display_order)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING *`,
-      [subdomain, sanitized.name, sanitized.description, sanitized.price, 
-       sanitized.category || 'Uncategorized', sanitized.image || null, sanitized.order || 0]
-    );
+    const newItem = await prisma.menu_items.create({
+      data: {
+        subdomain,
+        name: sanitized.name,
+        description: sanitized.description,
+        price: sanitized.price,
+        category: sanitized.category || 'Uncategorized',
+        image: sanitized.image || null,
+        display_order: sanitized.order || 0
+      }
+    });
 
-    return result.rows[0];
+    return newItem;
   }
 
   static async updateMenuItem(subdomain, itemId, updates) {
@@ -57,46 +64,83 @@ class ContentService {
       this.validatePrice(updates.price);
     }
 
-    const fields = [];
-    const values = [];
-    let paramCount = 1;
+    const allowedFields = ['name', 'description', 'price', 'category', 'image', 'display_order'];
+    const data = {};
 
     for (const [key, value] of Object.entries(updates)) {
-      if (['name', 'description', 'price', 'category', 'image', 'display_order'].includes(key)) {
-        fields.push(`${key} = $${paramCount}`);
-        values.push(value);
-        paramCount++;
+      if (allowedFields.includes(key)) {
+        data[key] = value;
       }
     }
 
-    if (fields.length === 0) {
+    if (Object.keys(data).length === 0) {
       throw new Error('No valid fields to update');
     }
 
-    values.push(subdomain, itemId);
-    const result = await query(
-      `UPDATE menu_items SET ${fields.join(', ')}
-       WHERE subdomain = $${paramCount} AND id = $${paramCount + 1}
-       RETURNING *`,
-      values
-    );
+    // Verify ownership and update
+    const updatedItem = await prisma.menu_items.update({
+      where: {
+        id: itemId,
+        subdomain: subdomain // Ensure subdomain matches (Prisma composite unique or check first)
+      },
+      data
+    }).catch(err => {
+      // Prisma throws if record not found
+      if (err.code === 'P2025') {
+        throw new Error('Item not found');
+      }
+      throw err;
+    });
 
-    if (result.rows.length === 0) {
+    // Since we can't easily add subdomain to where clause in update if it's not part of unique identifier,
+    // we should ideally check existence first or rely on ID being unique globally (which it is usually).
+    // However, to be safe and match original logic:
+    // Original: WHERE subdomain = $1 AND id = $2
+    // If ID is unique globally, just updating by ID is fine, but we should verify subdomain.
+    // Let's do a check first if we want to be strict, or just trust the ID.
+    // But wait, if we update by ID, we might update someone else's item if we don't check subdomain.
+    // The original code enforced subdomain check.
+    // Prisma `update` only allows unique where input. `id` is likely unique.
+    // To enforce subdomain, we can use `updateMany` (returns count) or `findFirst` then `update`.
+
+    // Let's use updateMany to enforce subdomain check and get count
+    /*
+    const result = await prisma.menu_items.updateMany({
+      where: { id: itemId, subdomain },
+      data
+    });
+    if (result.count === 0) throw new Error('Item not found');
+    return await prisma.menu_items.findUnique({ where: { id: itemId } });
+    */
+
+    // Actually, simpler: findFirst to verify, then update.
+    const existing = await prisma.menu_items.findFirst({
+      where: { id: itemId, subdomain }
+    });
+
+    if (!existing) {
       throw new Error('Item not found');
     }
 
-    return result.rows[0];
+    return await prisma.menu_items.update({
+      where: { id: itemId },
+      data
+    });
   }
 
   static async deleteMenuItem(subdomain, itemId) {
-    const result = await query(
-      'DELETE FROM menu_items WHERE subdomain = $1 AND id = $2 RETURNING id',
-      [subdomain, itemId]
-    );
+    // Verify existence and ownership
+    const existing = await prisma.menu_items.findFirst({
+      where: { id: itemId, subdomain }
+    });
 
-    if (result.rows.length === 0) {
+    if (!existing) {
       throw new Error('Item not found');
     }
+
+    await prisma.menu_items.delete({
+      where: { id: itemId }
+    });
 
     return { success: true, id: itemId };
   }
@@ -104,22 +148,27 @@ class ContentService {
   static async reorderMenuItems(subdomain, items) {
     // Verify all items belong to this subdomain
     const ids = items.map(i => i.id);
-    const check = await query(
-      'SELECT id FROM menu_items WHERE subdomain = $1 AND id = ANY($2)',
-      [subdomain, ids]
-    );
+    const count = await prisma.menu_items.count({
+      where: {
+        subdomain,
+        id: { in: ids }
+      }
+    });
 
-    if (check.rows.length !== ids.length) {
+    if (count !== ids.length) {
       throw new Error('Some items do not belong to this site');
     }
 
     // Update order for each item
-    for (const item of items) {
-      await query(
-        'UPDATE menu_items SET display_order = $1 WHERE id = $2',
-        [item.order, item.id]
-      );
-    }
+    // Use transaction for atomicity
+    await prisma.$transaction(
+      items.map(item =>
+        prisma.menu_items.update({
+          where: { id: item.id },
+          data: { display_order: item.order }
+        })
+      )
+    );
 
     return { success: true, updated: items.length };
   }
@@ -128,21 +177,24 @@ class ContentService {
    * Services
    */
   static async getServices(subdomain) {
-    const result = await query(
-      'SELECT * FROM services WHERE subdomain = $1 ORDER BY display_order ASC, id ASC',
-      [subdomain]
-    );
+    const services = await prisma.services.findMany({
+      where: { subdomain },
+      orderBy: [
+        { display_order: 'asc' },
+        { id: 'asc' }
+      ],
+      include: {
+        service_pricing: {
+          orderBy: { price: 'asc' }
+        }
+      }
+    });
 
-    // Fetch pricing tiers for each service
-    for (const service of result.rows) {
-      const pricing = await query(
-        'SELECT * FROM service_pricing WHERE service_id = $1 ORDER BY price ASC',
-        [service.id]
-      );
-      service.pricing = pricing.rows;
-    }
-
-    return result.rows;
+    // Map to match original structure (service.pricing)
+    return services.map(service => ({
+      ...service,
+      pricing: service.service_pricing
+    }));
   }
 
   static async createService(subdomain, service) {
@@ -156,31 +208,38 @@ class ContentService {
       })
     };
 
-    const result = await query(
-      `INSERT INTO services (subdomain, name, description, duration, price, category)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING *`,
-      [subdomain, sanitized.name, sanitized.description, 
-       sanitized.duration || null, sanitized.price || null, sanitized.category || 'Services']
-    );
-
-    const newService = result.rows[0];
+    const serviceData = {
+      subdomain,
+      name: sanitized.name,
+      description: sanitized.description,
+      duration: sanitized.duration || null,
+      price: sanitized.price || null,
+      category: sanitized.category || 'Services'
+    };
 
     // Add pricing tiers if provided
     if (service.pricing && Array.isArray(service.pricing)) {
-      newService.pricing = [];
-      for (const tier of service.pricing) {
-        const pricingResult = await query(
-          `INSERT INTO service_pricing (service_id, tier, price, duration, description)
-           VALUES ($1, $2, $3, $4, $5)
-           RETURNING *`,
-          [newService.id, tier.tier, tier.price, tier.duration || null, tier.description || null]
-        );
-        newService.pricing.push(pricingResult.rows[0]);
-      }
+      serviceData.service_pricing = {
+        create: service.pricing.map(tier => ({
+          tier: tier.tier,
+          price: tier.price,
+          duration: tier.duration || null,
+          description: tier.description || null
+        }))
+      };
     }
 
-    return newService;
+    const newService = await prisma.services.create({
+      data: serviceData,
+      include: {
+        service_pricing: true
+      }
+    });
+
+    return {
+      ...newService,
+      pricing: newService.service_pricing
+    };
   }
 
   static async updateService(subdomain, serviceId, updates) {
@@ -191,42 +250,45 @@ class ContentService {
       });
     }
 
-    const fields = [];
-    const values = [];
-    let paramCount = 1;
+    const allowedFields = ['name', 'description', 'duration', 'price', 'category'];
+    const data = {};
 
     for (const [key, value] of Object.entries(updates)) {
-      if (['name', 'description', 'duration', 'price', 'category'].includes(key)) {
-        fields.push(`${key} = $${paramCount}`);
-        values.push(value);
-        paramCount++;
+      if (allowedFields.includes(key)) {
+        data[key] = value;
       }
     }
 
-    values.push(subdomain, serviceId);
-    const result = await query(
-      `UPDATE services SET ${fields.join(', ')}
-       WHERE subdomain = $${paramCount} AND id = $${paramCount + 1}
-       RETURNING *`,
-      values
-    );
+    // Verify existence and ownership
+    const existing = await prisma.services.findFirst({
+      where: { id: serviceId, subdomain }
+    });
 
-    if (result.rows.length === 0) {
+    if (!existing) {
       throw new Error('Service not found');
     }
 
-    return result.rows[0];
+    const updatedService = await prisma.services.update({
+      where: { id: serviceId },
+      data
+    });
+
+    return updatedService;
   }
 
   static async deleteService(subdomain, serviceId) {
-    const result = await query(
-      'DELETE FROM services WHERE subdomain = $1 AND id = $2 RETURNING id',
-      [subdomain, serviceId]
-    );
+    // Verify existence and ownership
+    const existing = await prisma.services.findFirst({
+      where: { id: serviceId, subdomain }
+    });
 
-    if (result.rows.length === 0) {
+    if (!existing) {
       throw new Error('Service not found');
     }
+
+    await prisma.services.delete({
+      where: { id: serviceId }
+    });
 
     return { success: true, id: serviceId };
   }
@@ -239,25 +301,28 @@ class ContentService {
     const limit = options.limit || 50;
     const offset = (page - 1) * limit;
 
-    const result = await query(
-      `SELECT * FROM products WHERE subdomain = $1 
-       ORDER BY display_order ASC, id ASC
-       LIMIT $2 OFFSET $3`,
-      [subdomain, limit, offset]
-    );
-
-    const countResult = await query(
-      'SELECT COUNT(*) FROM products WHERE subdomain = $1',
-      [subdomain]
-    );
+    const [products, total] = await prisma.$transaction([
+      prisma.products.findMany({
+        where: { subdomain },
+        orderBy: [
+          { display_order: 'asc' },
+          { id: 'asc' }
+        ],
+        skip: offset,
+        take: limit
+      }),
+      prisma.products.count({
+        where: { subdomain }
+      })
+    ]);
 
     return {
-      products: result.rows,
+      products,
       pagination: {
         page,
         limit,
-        total: parseInt(countResult.rows[0].count),
-        pages: Math.ceil(countResult.rows[0].count / limit)
+        total,
+        pages: Math.ceil(total / limit)
       }
     };
   }
@@ -273,16 +338,19 @@ class ContentService {
       })
     };
 
-    const result = await query(
-      `INSERT INTO products (subdomain, name, description, price, inventory, images, variants)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING *`,
-      [subdomain, sanitized.name, sanitized.description, sanitized.price,
-       sanitized.inventory || 0, JSON.stringify(sanitized.images || []), 
-       JSON.stringify(sanitized.variants || [])]
-    );
+    const newProduct = await prisma.products.create({
+      data: {
+        subdomain,
+        name: sanitized.name,
+        description: sanitized.description,
+        price: sanitized.price,
+        inventory: sanitized.inventory || 0,
+        images: JSON.stringify(sanitized.images || []),
+        variants: JSON.stringify(sanitized.variants || [])
+      }
+    });
 
-    return result.rows[0];
+    return newProduct;
   }
 
   /**
@@ -384,4 +452,3 @@ class ContentService {
 
 export default ContentService;
 export { ContentService };
-

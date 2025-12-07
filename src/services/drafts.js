@@ -3,7 +3,20 @@ import api from './api.js';
 
 export const draftsService = {
   // Save draft
-  async saveDraft(draftData) {
+  async saveDraft(draft) {
+    // Ensure we have required fields
+    const draftData = {
+      ...draft,
+      // Explicitly set top-level templateId for server validation
+      templateId: draft.data?.template || draft.data?.templateId || draft.data?.id,
+      data: {
+        ...draft.data,
+        // Ensure templateId is included
+        templateId: draft.data?.template || draft.data?.templateId || draft.data?.id,
+      }
+    };
+    console.log('Saving Draft Payload:', JSON.stringify(draftData));
+
     return api.post('/api/drafts', draftData);
   },
 
