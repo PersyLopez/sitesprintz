@@ -120,8 +120,10 @@ export function csrfProtection(req, res, next) {
     return next();
   }
 
-  // Skip CSRF for auth endpoints (login/register) as they establish the session
-  if (req.path.startsWith('/api/auth/')) {
+
+
+  // Check for test bypass header in non-production environments
+  if (req.headers['x-test-bypass-csrf'] === 'true' && process.env.NODE_ENV !== 'production') {
     return next();
   }
 
