@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import BookingService from '../../server/services/bookingService.js';
 import { DateTime } from 'luxon';
-import * as db from '../../database/db.js';
+import { prisma } from '../../database/db.js';
+import { resetPrismaMocks } from '../mocks/prisma.js';
 
-// Mock the database
-vi.mock('../../database/db.js');
+// Use global Prisma mock from setup.js
 
 // Mock the notification service
 vi.mock('../../server/services/bookingNotificationService.js', () => ({
@@ -22,6 +22,7 @@ describe('BookingService - Appointments', () => {
 
   beforeEach(() => {
     bookingService = new BookingService();
+    resetPrismaMocks();
     vi.clearAllMocks();
   });
 

@@ -354,32 +354,32 @@ function Admin() {
                     <StatsCard
                       icon="👥"
                       label="Total Users"
-                      value={adminData.platform.totalUsers.toLocaleString()}
-                      change={adminData.platform.userGrowth}
+                      value={(adminData.platform?.totalUsers || 0).toLocaleString()}
+                      change={adminData.platform?.userGrowth}
                       changeLabel="this month"
                     />
 
                     <StatsCard
                       icon="🌐"
                       label="Total Sites"
-                      value={adminData.platform.totalSites.toLocaleString()}
-                      change={adminData.platform.siteGrowth}
+                      value={(adminData.platform?.totalSites || 0).toLocaleString()}
+                      change={adminData.platform?.siteGrowth}
                       changeLabel="this month"
                     />
 
                     <StatsCard
                       icon="💰"
                       label="Total Revenue"
-                      value={`$${adminData.platform.totalRevenue.toLocaleString()}`}
-                      change={adminData.platform.revenueGrowth}
+                      value={`$${(adminData.platform?.totalRevenue || 0).toLocaleString()}`}
+                      change={adminData.platform?.revenueGrowth}
                       changeLabel="this month"
                     />
 
                     <StatsCard
                       icon="📈"
                       label="Conversion Rate"
-                      value={`${adminData.platform.conversionRate}%`}
-                      change={adminData.platform.conversionChange}
+                      value={`${adminData.platform?.conversionRate || 0}%`}
+                      change={adminData.platform?.conversionChange}
                       changeLabel="this month"
                     />
                   </div>
@@ -491,7 +491,7 @@ function Admin() {
                             <div className="user-info">
                               <div className="user-name">{user.name}</div>
                               <div className="user-stats">
-                                {user.sites} sites • ${user.revenue.toLocaleString()}
+                                {user.sites} sites • ${(user.revenue || 0).toLocaleString()}
                                 <span className={`plan-badge ${getPlanBadgeClass(user.plan)}`}>
                                   {user.plan}
                                 </span>
@@ -586,7 +586,7 @@ function Admin() {
                     </div>
                     <div className="health-item">
                       <div className="health-label">Total Requests</div>
-                      <div className="health-value">{adminData.system.totalRequests.toLocaleString()}</div>
+                      <div className="health-value">{(adminData.system?.totalRequests || 0).toLocaleString()}</div>
                     </div>
                   </div>
                 </div>

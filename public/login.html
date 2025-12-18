@@ -274,7 +274,6 @@
         if (csrfResponse.ok) {
           const data = await csrfResponse.json();
           csrfToken = data.csrfToken;
-          console.log('CSRF token initialized');
         }
       } catch (err) {
         console.error('Failed to fetch CSRF token:', err);
@@ -283,7 +282,7 @@
 
     async function handleLogin(event) {
       event.preventDefault();
-      console.log('handleLogin called');
+
 
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;

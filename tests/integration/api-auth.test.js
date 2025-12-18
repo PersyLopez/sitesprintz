@@ -1,13 +1,12 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
 import request from 'supertest';
 import express from 'express';
+import { createTestUser, seedPrismaData, resetPrismaMocks } from '../utils/integrationTestSetup.js';
+
+// Routes are imported after mocks are set up in setup.js
 import authRoutes from '../../server/routes/auth.routes.js';
 import siteRoutes from '../../server/routes/sites.routes.js';
 import { authenticateToken } from '../../server/middleware/auth.js';
-import { setupIntegrationTest, createTestUser, seedPrismaData } from '../utils/integrationTestSetup.js';
-
-// Mock Prisma before importing routes
-const mockPrisma = setupIntegrationTest();
 
 // Create test app
 const createTestApp = () => {
@@ -35,6 +34,7 @@ describe('API Integration Tests - Authentication', () => {
 
   beforeEach(() => {
     // Reset mocks and seed test data
+    resetPrismaMocks();
     vi.clearAllMocks();
     seedPrismaData({
       users: [

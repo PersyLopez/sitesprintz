@@ -73,10 +73,19 @@ This document outlines all E2E tests that need to be verified, fixed, or updated
 - [ ] Verify CSRF middleware is active in test environment
 - [ ] Check that `x-csrf-token` header is being sent
 
-### 2.3 `password-reset.spec.js`
-- [ ] Verify forgot password flow
-- [ ] Verify reset password with token
-- [ ] Check email mock captures reset token
+### 2.3 `password-reset.spec.js` (9 tests)
+- [x] **Verify forgot password flow**
+  - Updated selectors to use `data-testid` where possible
+  - Fixed navigation interruption issues
+- [x] **Verify reset password with token**
+  - Handled CSRF token requirement in `reset-password.html`
+  - Fixed password strength validation in tests
+- [x] **Check email mock/bypass for reset token**
+  - Integrated `X-Test-Bypass-CSRF` for API-driven reset requests
+- [x] **Handle expired reset token**
+  - Improved error message visibility detection in `reset-password.html`
+- [x] **Login with new password after reset**
+  - Ensured test users are automatically activated in non-production environments
 
 ### 2.4 `session-management.spec.js`
 - [ ] Verify access token refresh
@@ -370,9 +379,10 @@ const [response] = await Promise.all([
    - Run and fix `auth-flow.spec.js`
 
 2. **Week 2: Core Flows**
-   - Fix `site-creation.spec.js`
-   - Fix `booking-flow.spec.js`
-   - Fix `admin-flow.spec.js`
+   - [x] Stabilize `password-reset.spec.js` (9/9 pass)
+   - [ ] Fix `site-creation.spec.js`
+   - [ ] Fix `booking-flow.spec.js`
+   - [ ] Fix `admin-flow.spec.js`
 
 3. **Week 3: Payments & Pro**
    - Fix `payment-flow.spec.js`
@@ -387,6 +397,7 @@ const [response] = await Promise.all([
 ---
 
 *Last Updated: December 2024*
+
 
 
 

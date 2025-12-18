@@ -8,14 +8,8 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import GalleryService from '../../server/services/galleryService.js';
 
-// Mock database
-vi.mock('../../database/db.js', () => ({
-  pool: {
-    query: vi.fn()
-  }
-}));
-
-import { pool } from '../../database/db.js';
+// Use global Prisma mock from setup.js
+import { prisma } from '../../database/db.js';
 
 describe('GalleryService', () => {
   let galleryService;

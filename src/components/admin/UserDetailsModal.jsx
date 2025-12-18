@@ -163,11 +163,11 @@ function UserDetailsModal({ user, onClose, onUpdate }) {
           <div className="user-stats-section">
             <div className="stat-item">
               <div className="stat-label">Sites Created</div>
-              <div className="stat-value">{user.sitesCount}</div>
+              <div className="stat-value">{user.sitesCount || 0}</div>
             </div>
             <div className="stat-item">
               <div className="stat-label">Total Revenue</div>
-              <div className="stat-value">${user.totalRevenue.toLocaleString()}</div>
+              <div className="stat-value">${(user.totalRevenue || 0).toLocaleString()}</div>
             </div>
             <div className="stat-item">
               <div className="stat-label">Stripe Connected</div>

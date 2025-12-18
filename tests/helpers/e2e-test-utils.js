@@ -85,7 +85,7 @@ export async function createTestSite(page, options = {}) {
  * Helper to login
  */
 export async function login(page, email = 'test@example.com', password = 'password123') {
-  await page.goto('/login');
+  await page.goto('/login.html');
   await page.fill('input[type="email"]', email);
   await page.fill('input[type="password"]', password);
   await page.click('button[type="submit"]');
@@ -123,11 +123,15 @@ export async function register(page, options = {}) {
     name = 'Test User'
   } = options;
 
-  await page.goto('/register');
+  await page.goto('/register.html');
 
-  // Use consistent ID selectors matching register.html
-  await page.fill('#email', email).catch(() => page.fill('input[name="email"]', email));
-  await page.fill('#password', password).catch(() => page.fill('input[name="password"]', password));
+  // Wait for fields to be present
+  const emailSelector = '#email, input[name="email"], input[type="email"]';
+  const passwordSelector = '#password, input[name="password"], input[type="password"]';
+
+  await page.waitForSelector(emailSelector, { state: 'visible', timeout: 10000 });
+  await page.fill(emailSelector, email);
+  await page.fill(passwordSelector, password);
 
   // Fill confirm password
   const confirmSelector = '#confirmPassword';
@@ -146,8 +150,11 @@ export async function register(page, options = {}) {
   }
 
   await page.click('button[type="submit"]');
-  // Pending users might be redirected to login
-  await page.waitForURL(/dashboard|success|login/, { timeout: 5000 });
+
+  // Wait for the URL to change and the network to settle
+  // This helps handle the 800ms delayed redirect in register.html
+  await page.waitForURL(/dashboard|success|login/, { timeout: 10000 });
+  await page.waitForLoadState('networkidle').catch(() => { });
 
   return { email, password, name };
 }

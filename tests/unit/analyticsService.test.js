@@ -13,7 +13,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { query } from '../../database/db.js';
+import { query, prisma } from '../../database/db.js';
 
 // Will implement this service
 let AnalyticsService;

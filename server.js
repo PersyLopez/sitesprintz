@@ -30,6 +30,7 @@ import showcaseRoutes from './server/routes/showcase.routes.js';
 import adminRoutes from './server/routes/admin.routes.js';
 import reviewsRoutes from './server/routes/reviews.routes.js';
 import shareRoutes from './server/routes/share.routes.js';
+import templatesRoutes from './server/routes/templates.routes.js';
 
 dotenv.config();
 
@@ -49,7 +50,8 @@ const PORT = process.env.PORT || 3000;
 // Disable ETags to prevent 304 responses causing issues with fetch API client
 app.set('etag', false);
 
-const publicDir = path.join(__dirname, 'dist');
+const isProd = process.env.NODE_ENV === 'production';
+const publicDir = isProd ? path.join(__dirname, 'dist') : path.join(__dirname, 'public');
 
 // Security Headers with Helmet (must be before static files)
 app.use(helmet({
@@ -243,9 +245,10 @@ passport.deserializeUser((user, done) => done(null, user));
 // Mount Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api', userRoutes); // Mounts at /api/admin/..., /api/users/...
-app.use('/api', paymentRoutes); // Mounts at /api/payments/..., /api/checkout/...
-app.use('/api', siteRoutes); // Mounts at /api/site, /api/upload, etc.
+app.use('/api/templates', templatesRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api', paymentRoutes);
+app.use('/api/sites', siteRoutes);
 app.use('/api/booking', bookingRoutes);
 app.use('/api/content', contentRoutes);
 app.use('/api/showcases', showcaseRoutes);

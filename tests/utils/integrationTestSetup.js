@@ -18,14 +18,10 @@ export function setupIntegrationTest(options = {}) {
     mockPrisma = null
   } = options;
 
-  let prismaMock = mockPrisma || createMockPrisma();
-
-  // Mock the database module
-  vi.mock('../../database/db.js', () => ({
-    prisma: prismaMock,
-    resetPrismaMocks,
-    seedPrismaData
-  }));
+  // Note: vi.mock() must be called at top level, not inside functions
+  // The global mock in setup.js handles this, so this function just
+  // sets up test data and cleanup hooks
+  const prismaMock = mockPrisma || createMockPrisma();
 
   // Seed initial data if provided
   if (Object.keys(seedData).length > 0) {
@@ -151,6 +147,9 @@ export function generateTestToken(payload = {}) {
   );
 }
 
+// Re-export mock utilities for convenience
+export { seedPrismaData, resetPrismaMocks, createMockPrisma } from '../mocks/prisma.js';
+
 export default {
   setupIntegrationTest,
   createTestUser,
@@ -159,6 +158,7 @@ export default {
   createTestApp,
   generateTestToken
 };
+
 
 
 

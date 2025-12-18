@@ -557,8 +557,8 @@ function AdminUsers() {
                           {userItem.plan}
                         </span>
                       </td>
-                      <td>{userItem.sitesCount}</td>
-                      <td>${userItem.totalRevenue.toLocaleString()}</td>
+                      <td>{userItem.sitesCount || 0}</td>
+                      <td>${(userItem.totalRevenue || 0).toLocaleString()}</td>
                       <td>{formatDate(userItem.lastLogin)}</td>
                       <td>
                         <div className="action-buttons">

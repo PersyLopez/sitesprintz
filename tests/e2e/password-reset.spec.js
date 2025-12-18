@@ -4,7 +4,7 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { register, login } from '../helpers/e2e-test-utils.js';
+import { register, login, logout } from '../helpers/e2e-test-utils.js';
 import { prisma } from '../../database/db.js';
 import {
   fillForgotPasswordForm,
@@ -18,6 +18,18 @@ test.describe('Password Reset Flow', () => {
   let testUser;
 
   test.beforeEach(async ({ page }) => {
+    // Listen for consoles and errors
+    page.on('console', msg => console.log(`BROWSER LOG: ${msg.text()}`));
+    page.on('pageerror', err => console.log(`BROWSER ERROR: ${err}`));
+    page.on('requestfailed', request => {
+      console.log(`REQUEST FAILED: ${request.url()} - ${request.failure()?.errorText || 'No error text'}`);
+    });
+    page.on('response', response => {
+      if (response.status() >= 400) {
+        console.log(`RESPONSE ERROR: ${response.url()} - ${response.status()}`);
+      }
+    });
+
     // Register a test user
     testUser = await register(page, {
       email: `reset${Date.now()}@example.com`,
@@ -158,17 +170,16 @@ test.describe('Password Reset Flow', () => {
 
     // First, try to login with old password (should work if reset hasn't happened)
     await page.goto('/login.html');
-
-    await page.getByRole('textbox', { name: /email/i }).fill(testUser.email);
-    await page.getByLabel(/password/i).fill(testUser.password);
-    await page.getByRole('button', { name: /login|sign in|submit/i }).click();
+    await page.fill('#email', testUser.email);
+    await page.fill('#password', testUser.password);
+    await page.click('button[type="submit"]');
 
     // Should login successfully (password hasn't been reset yet)
     await page.waitForURL(/dashboard/, { timeout: 5000 });
 
-    // Logout
-    await page.goto('/logout');
-    await page.waitForURL(/login|\//, { timeout: 3000 });
+    // Logout using helper
+    await logout(page);
+    await page.waitForURL(/login|\//, { timeout: 5000 }).catch(() => { });
 
     // In a full integration test:
     // 1. Request password reset
@@ -182,24 +193,17 @@ test.describe('Password Reset Flow', () => {
   });
 
   test('should handle expired reset token', async ({ page }) => {
-    // Navigate with an expired token (would be in URL in real scenario)
+    // Navigate with an expired token
     await page.goto('/reset-password.html?token=expired-token');
     await page.waitForLoadState('networkidle');
 
     // Try to submit with expired token
-    await fillResetPasswordForm(page, 'NewPassword123!', 'NewPassword123!');
+    await fillResetPasswordForm(page, 'SecretPass2025!', 'SecretPass2025!');
 
-    // Wait for error or redirect
-    await Promise.race([
-      page.getByText(/expired|invalid.*token|expired.*link/i).waitFor({ timeout: 3000 }),
-      page.waitForURL(/forgot-password|\/login/, { timeout: 3000 })
-    ]);
-
-    // Should show expired token error or redirect
-    const hasExpiredError = await page.getByText(/expired|invalid.*token|expired.*link/i).count() > 0;
-    const isRedirected = page.url().includes('/forgot-password') || page.url().includes('/login');
-
-    expect(hasExpiredError || isRedirected).toBeTruthy();
+    // Should show expired token error
+    const errorMsg = page.locator('#errorMessage');
+    await expect(errorMsg).toBeVisible({ timeout: 5000 });
+    await expect(errorMsg).toContainText(/expired|invalid/i);
   });
 });
 

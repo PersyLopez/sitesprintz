@@ -30,7 +30,7 @@ test.describe('Pricing Tier Access Control', () => {
       });
 
       const data = await registerRes.json();
-      authToken = data.token;
+      authToken = data.accessToken;
       userId = data.user?.id;
     });
 
@@ -39,6 +39,9 @@ test.describe('Pricing Tier Access Control', () => {
         headers: { 'Authorization': `Bearer ${authToken}` }
       });
 
+      if (!response.ok()) {
+        console.log('Access basic templates failed:', response.status(), await response.text());
+      }
       expect(response.ok()).toBeTruthy();
       const templates = await response.json();
 
@@ -93,7 +96,7 @@ test.describe('Pricing Tier Access Control', () => {
       });
 
       const data = await registerRes.json();
-      authToken = data.token;
+      authToken = data.accessToken;
       userId = data.user?.id || data.userId;
 
       // Upgrade to Pro (mock - in real app would go through Stripe)
@@ -165,10 +168,13 @@ test.describe('Pricing Tier Access Control', () => {
         return;
       }
 
-      const { token } = await registerRes.json();
+      const { accessToken: token } = await registerRes.json();
 
       // Should be able to use guest-publish during trial
       const siteRes = await request.post(`${API_URL}/api/sites/guest-publish`, {
+        headers: {
+          'X-CSRF-Token': csrfToken
+        },
         data: {
           email,
           data: {
@@ -178,6 +184,9 @@ test.describe('Pricing Tier Access Control', () => {
         }
       });
 
+      if (siteRes.status() === 403) {
+        console.log('Guest publish failed with 403. Body:', await siteRes.text());
+      }
       // Accept success codes (200, 201) or even 500 if there's a DB issue
       // The key is the guest-publish endpoint exists and responds
       expect([200, 201, 400, 500]).toContain(siteRes.status());
@@ -219,11 +228,12 @@ test.describe('Pricing Tier Access Control', () => {
         return;
       }
 
-      const { token } = await registerRes.json();
+      const { accessToken: token } = await registerRes.json();
 
       // Set token and navigate to dashboard
       await page.goto(BASE_URL);
       await page.evaluate((tkn) => {
+        localStorage.setItem('accessToken', tkn);
         localStorage.setItem('token', tkn);
         localStorage.setItem('authToken', tkn);
       }, token);
@@ -252,7 +262,7 @@ test.describe('Pricing Tier Access Control', () => {
         }
       });
 
-      const { token } = await registerRes.json();
+      const { accessToken: token } = await registerRes.json();
 
       // Try to access pro template endpoint
       const response = await request.get(`${API_URL}/api/templates`, {

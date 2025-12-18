@@ -10,7 +10,10 @@ import * as db from '../../../database/db.js';
 
 // Mock dependencies
 vi.mock('../../../server/utils/logger.js');
-vi.mock('../../../database/db.js');
+vi.mock('../../../database/db.js', () => ({
+  query: vi.fn(),
+  prisma: {}
+}));
 
 describe('Audit Trail System', () => {
   let mockReq;

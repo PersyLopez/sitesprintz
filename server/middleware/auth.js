@@ -85,7 +85,16 @@ function checkEmailVerification(user, res) {
   const requireEmailVerification = process.env.REQUIRE_EMAIL_VERIFICATION !== 'false';
   if (requireEmailVerification && !user.email_verified && user.role !== 'admin') {
     // Skip verification for test users in E2E environment
-    if (process.env.NODE_ENV !== 'production' && (user.email.startsWith('test') || user.email.startsWith('reset'))) {
+    const isTestUser = user.email.startsWith('test') ||
+      user.email.startsWith('reset') ||
+      user.email.startsWith('starter') ||
+      user.email.startsWith('pro') ||
+      user.email.startsWith('trial') ||
+      user.email.startsWith('blocked') ||
+      user.email.startsWith('upgrade') ||
+      user.email.includes('csrf-test');
+
+    if (process.env.NODE_ENV !== 'production' && isTestUser) {
       return null;
     }
     return res.status(403).json({

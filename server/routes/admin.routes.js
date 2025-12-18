@@ -73,7 +73,7 @@ router.get('/users', requireAdmin, asyncHandler(async (req, res) => {
     lastLogin: user.last_login
   }));
 
-  return sendSuccess(res, { 
+  return sendSuccess(res, {
     users: formattedUsers,
     total,
     limit: parseInt(limit) || 100,
@@ -176,9 +176,9 @@ router.post('/invite-user', requireAdmin, asyncHandler(async (req, res) => {
   });
 
   // Send invitation email (non-blocking)
-  sendEmail(emailValidation.value, EmailTypes.INVITATION, { 
-    email: emailValidation.value, 
-    tempPassword 
+  sendEmail(emailValidation.value, EmailTypes.INVITATION, {
+    email: emailValidation.value,
+    tempPassword
   }).catch(err => {
     console.error('Failed to send invitation email:', err);
   });
@@ -308,7 +308,10 @@ router.get('/analytics', requireAdmin, asyncHandler(async (req, res) => {
         role: true,
         status: true,
         subscription_plan: true,
-        created_at: true
+        created_at: true,
+        _count: {
+          select: { sites: true }
+        }
       }
     }),
     prisma.sites.findMany({
@@ -355,7 +358,7 @@ router.get('/analytics', requireAdmin, asyncHandler(async (req, res) => {
     prisma.sites.count({ where: { created_at: { gte: sevenDaysAgo } } })
   ]);
 
-  const userGrowth = newUsersPrevWeek > 0 
+  const userGrowth = newUsersPrevWeek > 0
     ? ((newUsersThisWeek - newUsersPrevWeek) / newUsersPrevWeek * 100).toFixed(1)
     : newUsersThisWeek > 0 ? 100 : 0;
 
@@ -366,28 +369,64 @@ router.get('/analytics', requireAdmin, asyncHandler(async (req, res) => {
       userGrowth: parseFloat(userGrowth),
       totalSites,
       publishedSites,
-      draftSites
+      draftSites,
+      siteGrowth: 0,
+      totalRevenue: 0,
+      revenueGrowth: 0,
+      conversionRate: 0,
+      conversionChange: 0
     },
     growth: {
+      newUsersToday: 0,
       newUsersThisWeek,
-      newSitesThisWeek
+      newUsersWeek: newUsersThisWeek,
+      newUsersMonth: totalUsers,
+      newSitesToday: 0,
+      newSitesThisWeek,
+      newSitesWeek: newSitesThisWeek,
+      newSitesMonth: totalSites,
+      activeTrials: 0,
+      conversions: 0,
+      publishedToday: 0
     },
-    subscriptions,
+    subscriptions: {
+      starter: subscriptions.starter || 0,
+      checkout: subscriptions.checkout || 0,
+      pro: subscriptions.pro || 0,
+      premium: subscriptions.premium || 0
+    },
+    topUsers: recentUsers.slice(0, 5).map(u => ({
+      id: u.id,
+      name: u.email.split('@')[0],
+      sites: u._count?.sites || 0,
+      revenue: 0,
+      plan: u.subscription_plan || 'free'
+    })),
     recentSignups: recentUsers.map(u => ({
       id: u.id,
+      name: u.email.split('@')[0],
       email: u.email,
-      role: u.role,
-      status: u.status,
       plan: u.subscription_plan || 'free',
-      createdAt: u.created_at
+      date: u.created_at
     })),
+    recentActivity: [],
     recentSites: recentSites.map(s => ({
       id: s.id,
       subdomain: s.subdomain,
       status: s.status,
       plan: s.plan,
       createdAt: s.created_at
-    }))
+    })),
+    system: {
+      status: 'Online',
+      uptime: Math.floor(process.uptime()),
+      responseTime: 0,
+      activeUsers,
+      totalRequests: 0,
+      cpu: 0,
+      memory: 0,
+      storage: 0
+    }
   });
 }));
 

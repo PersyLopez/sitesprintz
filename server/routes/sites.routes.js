@@ -391,7 +391,7 @@ router.put('/:siteId/public', requireAuth, asyncHandler(async (req, res) => {
     data: { is_public: isPublic }
   });
 
-  return sendSuccess(res, { isPublic: updated.is_public }, 
+  return sendSuccess(res, { isPublic: updated.is_public },
     isPublic ? 'Site is now public' : 'Site is now private');
 }));
 
@@ -477,6 +477,91 @@ router.delete('/:siteId', requireAuth, asyncHandler(async (req, res) => {
   fs.rm(siteDir, { recursive: true, force: true }).catch(() => { });
 
   return sendSuccess(res, {}, 'Site deleted successfully');
+}));
+
+/**
+ * POST /api/sites/guest-publish
+ * Instant publish for new/unauthenticated users
+ */
+router.post('/guest-publish', asyncHandler(async (req, res) => {
+  const { email, data, template } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  if (!data) {
+    return res.status(400).json({ error: 'Site data is required' });
+  }
+
+  // Get or create user
+  let user = await prisma.users.findUnique({
+    where: { email: email.toLowerCase() }
+  });
+
+  if (!user) {
+    // Create a new user with pending status
+    const tempPassword = crypto.randomBytes(16).toString('hex');
+    const hashedPassword = await import('bcryptjs').then(m => m.default.hash(tempPassword, 10));
+
+    user = await prisma.users.create({
+      data: {
+        email: email.toLowerCase(),
+        password_hash: hashedPassword,
+        role: 'user',
+        status: 'pending',
+        created_at: new Date()
+      }
+    });
+  }
+
+  // Generate unique subdomain
+  const businessName = data.brand?.name || data.businessName || 'my-site';
+  const baseSubdomain = businessName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+    .substring(0, 50);
+
+  let subdomain = baseSubdomain || 'site';
+  let attempt = 0;
+  const maxAttempts = 10;
+
+  while (attempt < maxAttempts) {
+    const existing = await prisma.sites.findFirst({
+      where: { subdomain },
+      select: { id: true }
+    });
+
+    if (!existing) break;
+
+    attempt++;
+    const suffix = crypto.randomBytes(4).toString('hex');
+    subdomain = `${baseSubdomain}-${suffix}`;
+  }
+
+  // Create site record
+  const site = await prisma.sites.create({
+    data: {
+      id: subdomain,
+      user_id: user.id,
+      subdomain,
+      template_id: template || 'starter',
+      status: 'published',
+      plan: 'trial',
+      published_at: new Date(),
+      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days trial
+      site_data: data,
+      created_at: new Date(),
+      updated_at: new Date()
+    }
+  });
+
+  return res.status(201).json({
+    success: true,
+    subdomain: site.subdomain,
+    message: 'Site published successfully! Check your email to manage it.'
+  });
 }));
 
 // ==================== TEMPLATE LOADING ====================

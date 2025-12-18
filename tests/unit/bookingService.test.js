@@ -1,12 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import BookingService from '../../server/services/bookingService.js';
-import * as db from '../../database/db.js';
+import { prisma } from '../../database/db.js';
+import { createMockPrisma, seedPrismaData, resetPrismaMocks } from '../mocks/prisma.js';
 
-// Mock the database
-vi.mock('../../database/db.js', () => ({
-  query: vi.fn(),
-  transaction: vi.fn(),
-}));
+// Use global Prisma mock from setup.js
+// The setup.js already mocks database/db.js with Prisma
 
 // Mock the notification service
 vi.mock('../../server/services/bookingNotificationService.js', () => ({
@@ -21,10 +19,12 @@ describe('BookingService - Tenant & Service Management', () => {
 
   beforeEach(() => {
     bookingService = new BookingService();
+    resetPrismaMocks();
     vi.clearAllMocks();
   });
 
   afterEach(() => {
+    resetPrismaMocks();
     vi.clearAllMocks();
   });
 
@@ -35,44 +35,56 @@ describe('BookingService - Tenant & Service Management', () => {
         user_id: 1,
         business_name: 'Test Business',
         email: 'test@example.com',
+        site_id: 'site-123',
+        status: 'active'
       };
 
-      db.query.mockResolvedValueOnce({ rows: [mockTenant] });
+      vi.mocked(prisma.booking_tenants.findFirst).mockResolvedValueOnce(mockTenant);
 
       const result = await bookingService.getOrCreateTenant(1, 'site-123');
 
       expect(result).toEqual(mockTenant);
-      expect(db.query).toHaveBeenCalledWith(
-        'SELECT * FROM booking_tenants WHERE user_id = $1 LIMIT 1',
-        [1]
-      );
+      expect(prisma.booking_tenants.findFirst).toHaveBeenCalledWith({
+        where: { user_id: 1 }
+      });
     });
 
     it('should create new tenant if not found', async () => {
-      const mockUser = { email: 'newuser@example.com' };
+      const mockUser = { 
+        id: 2,
+        email: 'newuser@example.com' 
+      };
       const mockNewTenant = {
         id: 'tenant-456',
         user_id: 2,
         business_name: 'My Business',
         email: 'newuser@example.com',
+        site_id: 'site-456',
+        status: 'active'
       };
 
-      // First query: no existing tenant
-      db.query.mockResolvedValueOnce({ rows: [] });
-      // Second query: get user
-      db.query.mockResolvedValueOnce({ rows: [mockUser] });
-      // Third query: create tenant
-      db.query.mockResolvedValueOnce({ rows: [mockNewTenant] });
+      // No existing tenant
+      vi.mocked(prisma.booking_tenants.findFirst).mockResolvedValueOnce(null);
+      // Get user
+      vi.mocked(prisma.users.findUnique).mockResolvedValueOnce(mockUser);
+      // Create tenant
+      vi.mocked(prisma.booking_tenants.create).mockResolvedValueOnce(mockNewTenant);
 
       const result = await bookingService.getOrCreateTenant(2, 'site-456');
 
       expect(result).toEqual(mockNewTenant);
-      expect(db.query).toHaveBeenCalledTimes(3);
+      expect(prisma.booking_tenants.findFirst).toHaveBeenCalled();
+      expect(prisma.users.findUnique).toHaveBeenCalledWith({
+        where: { id: 2 }
+      });
+      expect(prisma.booking_tenants.create).toHaveBeenCalled();
     });
 
     it('should throw error if user not found', async () => {
-      db.query.mockResolvedValueOnce({ rows: [] }); // No tenant
-      db.query.mockResolvedValueOnce({ rows: [] }); // No user
+      // No tenant
+      vi.mocked(prisma.booking_tenants.findFirst).mockResolvedValueOnce(null);
+      // No user
+      vi.mocked(prisma.users.findUnique).mockResolvedValueOnce(null);
 
       await expect(
         bookingService.getOrCreateTenant(999, 'site-999')
@@ -99,22 +111,21 @@ describe('BookingService - Tenant & Service Management', () => {
         status: 'active',
       };
 
-      db.query.mockResolvedValueOnce({ rows: [mockService] });
+      vi.mocked(prisma.booking_services.create).mockResolvedValueOnce(mockService);
 
       const result = await bookingService.createService(mockTenantId, serviceData);
 
       expect(result).toEqual(mockService);
-      expect(db.query).toHaveBeenCalledWith(
-        expect.stringContaining('INSERT INTO booking_services'),
-        expect.arrayContaining([
-          mockTenantId,
-          'Haircut',
-          'Professional haircut',
-          'hair',
-          60,
-          5000,
-        ])
-      );
+      expect(prisma.booking_services.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          tenant_id: mockTenantId,
+          name: 'Haircut',
+          description: 'Professional haircut',
+          category: 'hair',
+          duration_minutes: 60,
+          price_cents: 5000,
+        })
+      });
     });
 
     it('should throw error if name is missing', async () => {
