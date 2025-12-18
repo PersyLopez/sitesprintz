@@ -28,6 +28,21 @@ coverage/
 .idea/
 *.sublime-*
 
+# Cursor/Editor agent configs (not project files)
+.agent/
+.cursor/
+.cursorrules
+.continuerc.json
+
+# Debug/temporary scripts
+check_*.js
+get_test_user_id.js
+find_fks.js
+
+# Test output files
+test_output.txt
+test_results.txt
+
 # OS files
 Thumbs.db
 .DS_Store

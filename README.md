@@ -20,6 +20,7 @@
 
 | Doc | Purpose | Time |
 |-----|---------|------|
+| [Production Setup Guide](./docs/setup/PRODUCTION-SETUP-GUIDE.md) | **Complete production deployment with checkboxes** ⭐ | 30-45 min |
 | [Quick Start](./docs/setup/QUICK-START.md) | Launch guide, workflow, commands | 5 min |
 | [Git Strategy](./docs/setup/GIT-STRATEGY.md) | Branch workflow & daily dev | 3 min |
 | [Railway Deploy](./docs/setup/RAILWAY-DEPLOY.md) | Deploy to production | 15 min |

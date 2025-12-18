@@ -19,6 +19,7 @@
 
 ### 🛠️ Setup & Deployment
 
+- [Production Setup Guide](setup/PRODUCTION-SETUP-GUIDE.md) - **Complete production deployment guide with checkboxes** ⭐
 - [Quick Start](setup/QUICK-START.md) - 15-minute deployment guide
 - [Railway Deploy](setup/RAILWAY-DEPLOY.md) - Production deployment
 - [Git Strategy](setup/GIT-STRATEGY.md) - Quick workflow reference
@@ -38,6 +39,14 @@
 
 ### 💻 Development
 
+**Core Documentation:**
+- [Architecture Overview](ARCHITECTURE.md) - **System architecture & design patterns** ⭐
+- [Backend Documentation](BACKEND.md) - **API routes, services, middleware** ⭐
+- [Frontend Documentation](FRONTEND.md) - **React components, pages, hooks** ⭐
+- [Database Schema](DATABASE.md) - **Models, relationships, Prisma usage** ⭐
+- [Integrations](INTEGRATIONS.md) - **Stripe, Email, OAuth integrations** ⭐
+- [Testing Guide](TESTING.md) - **Test structure, running tests, best practices** ⭐
+
 **Coding Standards:**
 - [JS Standards](JS-STANDARDS.md) - JavaScript conventions
 - [TDD Guidelines](TDD-GUIDELINES.md) - Testing approach
@@ -45,6 +54,9 @@
 **Templates:**
 - [Template Creation Guide](TEMPLATE-CREATION-GUIDE.md) - How to create templates
 - [Template Checklist](TEMPLATE-CHECKLIST.md) - Requirements
+- [Template Tier Limitations](TEMPLATE-TIER-LIMITATIONS.md) - **Complete tier comparison & limitations** ⭐
+- [Configuring Tier Features](CONFIGURING-TEMPLATE-TIER-FEATURES.md) - **How to change what each tier allows** ⭐
+- [Quick Feature Config](QUICK-FEATURE-CONFIG-GUIDE.md) - Quick reference for feature changes
 - [Starter Template Standard](development/STARTER-TEMPLATE-STANDARD.md) - Starter specs
 - [Starter vs Premium](development/STARTER-VS-PREMIUM.md) - Tier comparison
 
@@ -82,6 +94,8 @@
 
 ### 🔒 Security & Stability
 
+- [Security Gaps Analysis](security/SECURITY-GAPS-ANALYSIS.md) - **⚠️ Critical security gaps identified** 🔴
+- [Bot Protection Analysis](security/BOT-PROTECTION-ANALYSIS.md) - **Account creation security & bot attacks** ⭐
 - [Quick Start Security](security/QUICK-START-SECURITY.md) - Security basics
 - [Security Assessment](security/SECURITY-ASSESSMENT.md) - Security audit
 - [Production Readiness](stability/PRODUCTION-READINESS.md) - Deployment checklist
@@ -99,7 +113,12 @@ Completed work summaries (455+ docs) - see `archive/` directory
 
 **"I want to..."**
 
-- **Deploy** → [Quick Start](setup/QUICK-START.md)
+- **Understand the system** → [Architecture Overview](ARCHITECTURE.md) ⭐
+- **Work on backend** → [Backend Documentation](BACKEND.md) ⭐
+- **Work on frontend** → [Frontend Documentation](FRONTEND.md) ⭐
+- **Understand database** → [Database Schema](DATABASE.md) ⭐
+- **Deploy to production** → [Production Setup Guide](setup/PRODUCTION-SETUP-GUIDE.md) ⭐
+- **Quick deploy** → [Quick Start](setup/QUICK-START.md)
 - **See roadmap** → [Strategic Plan](plans/STRATEGIC-MASTER-PLAN.md) + [Backlog](plans/BACKLOG.md)
 - **Create template** → [Template Guide](TEMPLATE-CREATION-GUIDE.md)
 - **Test locally** → [Test Credentials](setup/TEST-CREDENTIALS.md)
@@ -131,9 +150,9 @@ Completed work summaries (455+ docs) - see `archive/` directory
 
 ---
 
-**Last Updated:** November 20, 2025  
-**Version:** 2.0  
-**Total Docs:** 470+ organized
+**Last Updated:** December 2025  
+**Version:** 2.1  
+**Total Docs:** 460+ organized (outdated docs removed)
 
 ---
 

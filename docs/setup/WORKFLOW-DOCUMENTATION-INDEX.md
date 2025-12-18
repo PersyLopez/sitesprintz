@@ -23,22 +23,6 @@ Complete guide to git workflow documentation in SiteSprintz.
    - Fixing mistakes
    - **Best for:** Complete understanding and setup
 
-3. **[Git Workflow Quick Start](./GIT-WORKFLOW-QUICK-START.md)** 🚀 Quick Start
-   - Quick reference for common tasks
-   - Common mistakes to avoid
-   - **Best for:** Quick lookup
-
-### **Reference Documents**
-
-4. **[Workflow Setup Complete](./WORKFLOW-SETUP-COMPLETE.md)** ✅ Setup Summary
-   - What was set up
-   - Current branch state
-   - Next steps
-
-5. **[Workflow Fix Complete](./WORKFLOW-FIX-COMPLETE.md)** 🔧 Fix Summary
-   - How workflow was fixed
-   - Current state
-   - Action items
 
 ---
 
@@ -48,7 +32,7 @@ Complete guide to git workflow documentation in SiteSprintz.
 |--------------|-----------|
 | Quick daily reference | [Git Strategy](./GIT-STRATEGY.md) |
 | Complete understanding | [Git Workflow Best Practices](./GIT-WORKFLOW-BEST-PRACTICES.md) |
-| Quick lookup | [Git Workflow Quick Start](./GIT-WORKFLOW-QUICK-START.md) |
+| Quick lookup | [Git Strategy](./GIT-STRATEGY.md) |
 | Set up branch protection | [Git Workflow Best Practices](./GIT-WORKFLOW-BEST-PRACTICES.md) |
 | Fix a mistake | [Git Workflow Best Practices](./GIT-WORKFLOW-BEST-PRACTICES.md) - "Fixing Mistakes" section |
 
@@ -62,6 +46,7 @@ Complete guide to git workflow documentation in SiteSprintz.
 - [CONTRIBUTING.md](../../../CONTRIBUTING.md) - Contribution guide with workflow
 
 ### **Related Setup Docs**
+- [Production Setup Guide](./PRODUCTION-SETUP-GUIDE.md) - Complete production deployment guide ⭐
 - [Quick Start](./QUICK-START.md) - Deployment guide
 - [Railway Deploy](./RAILWAY-DEPLOY.md) - Production deployment
 - [Integration Setup](./INTEGRATION-SETUP.md) - API integrations
@@ -84,6 +69,6 @@ feature/* → dev → staging → main
 
 ---
 
-**Last Updated:** $(date)
+**Last Updated:** December 2025
 **Status:** ✅ Fully integrated into documentation structure
 

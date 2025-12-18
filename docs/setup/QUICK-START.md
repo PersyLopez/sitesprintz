@@ -142,9 +142,10 @@ git checkout main && git merge hotfix/urgent && git push
 
 ## 📚 Full Documentation
 
-- **Git Strategy:** `GIT-BRANCH-STRATEGY.md`
-- **Railway Guide:** `RAILWAY-DEPLOY.md`
-- **Integration Setup:** `INTEGRATION-SETUP.md`
+- **Production Setup Guide:** [`PRODUCTION-SETUP-GUIDE.md`](./PRODUCTION-SETUP-GUIDE.md) - Complete step-by-step guide with checkboxes ⭐
+- **Git Strategy:** [`GIT-STRATEGY.md`](./GIT-STRATEGY.md)
+- **Railway Guide:** [`RAILWAY-DEPLOY.md`](./RAILWAY-DEPLOY.md)
+- **Integration Setup:** [`INTEGRATION-SETUP.md`](./INTEGRATION-SETUP.md)
 
 ---
 
