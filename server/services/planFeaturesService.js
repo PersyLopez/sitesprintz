@@ -30,6 +30,7 @@ export async function loadPlanFeaturesFromDB() {
     const planFeatures = {
       free: [],
       starter: [],
+      growth: [],
       pro: [],
       premium: []
     };
@@ -72,7 +73,7 @@ export async function getPlanFeatures() {
 export async function updatePlanFeatures(planFeatures) {
   try {
     // Validate input
-    const validPlans = ['free', 'starter', 'pro', 'premium'];
+    const validPlans = ['free', 'starter', 'growth', 'pro', 'premium'];
     for (const plan of validPlans) {
       if (!planFeatures[plan] || !Array.isArray(planFeatures[plan])) {
         throw new Error(`Invalid plan features for ${plan}. Must be an array.`);

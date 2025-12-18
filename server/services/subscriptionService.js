@@ -18,11 +18,33 @@ export const PLAN_LIMITS = {
     support: 'community',
     stripeFee: 0.05
   },
+  starter: {
+    templates: ['*'], // All starter templates
+    maxSites: 1,
+    customDomain: false,
+    analytics: false,
+    booking: false,
+    payments: false,
+    support: 'email',
+    stripeFee: 0.05
+  },
+  growth: {
+    templates: ['*'], // All starter templates
+    maxSites: 3,
+    customDomain: false,
+    analytics: 'basic',
+    booking: true,
+    payments: false,
+    support: 'email',
+    stripeFee: 0.05
+  },
   pro: {
     templates: ['*'], // All templates
     maxSites: 10,
     customDomain: true,
     analytics: true,
+    booking: true,
+    payments: true,
     support: 'email',
     stripeFee: 0
   },
@@ -31,6 +53,8 @@ export const PLAN_LIMITS = {
     maxSites: -1, // Unlimited
     customDomain: true,
     analytics: true,
+    booking: true,
+    payments: true,
     support: 'priority',
     stripeFee: 0
   }
