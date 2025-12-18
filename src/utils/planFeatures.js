@@ -15,11 +15,16 @@ export const FEATURES = {
   FILTERS: 'filters',
   BEFORE_AFTER_GALLERY: 'before_after_gallery',
   
+  // Growth features
+  EMBEDDED_BOOKING: 'embedded_booking',
+  SERVICE_REQUEST_FORMS: 'service_request_forms',
+  QUOTE_REQUESTS: 'quote_requests',
+  BASIC_ANALYTICS: 'basic_analytics',
+  
   // Pro features
   STRIPE_CHECKOUT: 'stripe_checkout',
   SHOPPING_CART: 'shopping_cart',
   ORDER_MANAGEMENT: 'order_management',
-  EMBEDDED_BOOKING: 'embedded_booking',
   RECURRING_PRICING: 'recurring_pricing',
   SALES_ANALYTICS: 'sales_analytics',
   PRODUCT_MANAGEMENT: 'product_management',
@@ -51,12 +56,19 @@ const STARTER_FEATURES = [
   FEATURES.BEFORE_AFTER_GALLERY
 ];
 
-const PRO_FEATURES = [
+const GROWTH_FEATURES = [
   ...STARTER_FEATURES,
+  FEATURES.EMBEDDED_BOOKING,
+  FEATURES.SERVICE_REQUEST_FORMS,
+  FEATURES.QUOTE_REQUESTS,
+  FEATURES.BASIC_ANALYTICS
+];
+
+const PRO_FEATURES = [
+  ...GROWTH_FEATURES,
   FEATURES.STRIPE_CHECKOUT,
   FEATURES.SHOPPING_CART,
   FEATURES.ORDER_MANAGEMENT,
-  FEATURES.EMBEDDED_BOOKING,
   FEATURES.RECURRING_PRICING,
   FEATURES.SALES_ANALYTICS,
   FEATURES.PRODUCT_MANAGEMENT
@@ -77,6 +89,7 @@ const PREMIUM_FEATURES = [
 export const PLAN_FEATURES = {
   free: FREE_FEATURES,
   starter: STARTER_FEATURES,
+  growth: GROWTH_FEATURES,
   pro: PRO_FEATURES,
   premium: PREMIUM_FEATURES
 };
@@ -99,9 +112,18 @@ export const PLAN_INFO = {
     ctaText: 'Upgrade to Starter'
   },
   
+  growth: {
+    name: 'Growth',
+    price: 25,
+    duration: 'month',
+    color: '#f59e0b',
+    description: 'Take bookings, collect cash',
+    ctaText: 'Upgrade to Growth'
+  },
+  
   pro: {
     name: 'Pro',
-    price: 25,
+    price: 45,
     duration: 'month',
     color: '#06b6d4',
     description: 'Add e-commerce and payments',
@@ -160,7 +182,7 @@ export function getPlanInfo(plan) {
 
 // Check if plan A is higher than plan B
 export function isPlanHigherThan(planA, planB) {
-  const hierarchy = ['free', 'starter', 'pro', 'premium'];
+  const hierarchy = ['free', 'starter', 'growth', 'pro', 'premium'];
   const indexA = hierarchy.indexOf(planA?.toLowerCase());
   const indexB = hierarchy.indexOf(planB?.toLowerCase());
   return indexA > indexB;
@@ -168,7 +190,7 @@ export function isPlanHigherThan(planA, planB) {
 
 // Get upgrade options for current plan
 export function getUpgradeOptions(currentPlan) {
-  const hierarchy = ['free', 'starter', 'pro', 'premium'];
+  const hierarchy = ['free', 'starter', 'growth', 'pro', 'premium'];
   const currentIndex = hierarchy.indexOf(currentPlan?.toLowerCase());
   
   if (currentIndex === -1 || currentIndex >= hierarchy.length - 1) {
@@ -195,6 +217,9 @@ export const FEATURE_NAMES = {
   [FEATURES.SHOPPING_CART]: 'Shopping Cart',
   [FEATURES.ORDER_MANAGEMENT]: 'Order Management Dashboard',
   [FEATURES.EMBEDDED_BOOKING]: 'Embedded Booking Widget',
+  [FEATURES.SERVICE_REQUEST_FORMS]: 'Service Request Forms',
+  [FEATURES.QUOTE_REQUESTS]: 'Quote Request System',
+  [FEATURES.BASIC_ANALYTICS]: 'Basic Analytics',
   [FEATURES.RECURRING_PRICING]: 'Subscription/Recurring Pricing',
   [FEATURES.SALES_ANALYTICS]: 'Sales Analytics',
   [FEATURES.PRODUCT_MANAGEMENT]: 'Product Management',

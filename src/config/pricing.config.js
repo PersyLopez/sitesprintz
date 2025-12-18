@@ -123,6 +123,99 @@ export const PRICING_CONFIG = {
       popular: false
     },
 
+    growth: {
+      id: 'growth',
+      name: 'Growth',
+      price: 25,
+      priceAnnual: 240, // $20/month when paid annually
+      billingPeriod: 'monthly',
+      tagline: 'Take bookings, collect cash',
+      description: 'Everything in Starter, plus booking and request forms',
+      
+      // Value badge for pricing card
+      valueBadge: {
+        title: 'Save $60/year',
+        detail: 'vs separate booking tools'
+      },
+      
+      // Core features (inherited + new)
+      features: [
+        'Everything in Starter, PLUS:',
+        '✨ Native booking widget',
+        '✨ Service request forms',
+        '✨ Quote request system',
+        '✨ Appointment scheduling',
+        '✨ Email notifications',
+        '✨ Basic analytics',
+        '✨ Before/after galleries',
+        '✨ Service filters'
+      ],
+      
+      // What's NOT included (Pro features)
+      limitations: [
+        'No online payments',
+        'No shopping cart',
+        'No order management dashboard',
+        'No Stripe integration'
+      ],
+      
+      // Ideal customer profile
+      idealFor: [
+        'Service businesses taking cash',
+        'Salons and barbershops',
+        'Food trucks and cafes',
+        'Trades and contractors',
+        'Businesses wanting online booking'
+      ],
+      
+      // Competitor comparison
+      competitors: {
+        calendly: {
+          name: 'Calendly + Website',
+          price: 40, // $20 Calendly + $20 website
+          savings: 15,
+          savingsPerYear: 180,
+          advantages: [
+            'Integrated booking (not separate tool)',
+            'Industry-specific forms',
+            'Better customization',
+            'All-in-one solution'
+          ]
+        },
+        acuity: {
+          name: 'Acuity Scheduling + Website',
+          price: 45, // $25 Acuity + $20 website
+          savings: 20,
+          savingsPerYear: 240,
+          advantages: [
+            'Native booking (not third-party)',
+            'Custom request forms',
+            'Better user experience',
+            'No external dependencies'
+          ]
+        }
+      },
+      
+      // Value calculation
+      valueBreakdown: {
+        websiteBuilder: 15,
+        bookingSystem: 25,
+        requestForms: 15,
+        emailNotifications: 10,
+        basicAnalytics: 10,
+        totalMarketValue: 75,
+        youPay: 25,
+        savings: 50,
+        savingsPercent: 67
+      },
+      
+      // UI styling
+      color: '#f59e0b',
+      cta: 'Upgrade to Growth',
+      available: true,
+      popular: false
+    },
+
     pro: {
       id: 'pro',
       name: 'Pro',
@@ -481,27 +574,29 @@ export const PRICING_CONFIG = {
 
   // Feature comparison matrix
   featureMatrix: {
-    websiteBuilder: { starter: true, pro: true, premium: true },
-    templates: { starter: '13 base', pro: '12 pro', premium: '4 premium' },
-    customDomain: { starter: 'Subdomain', pro: 'Subdomain', premium: 'Included' },
-    ssl: { starter: true, pro: true, premium: true },
-    contactForms: { starter: true, pro: true, premium: true },
-    mobileResponsive: { starter: true, pro: true, premium: true },
-    paymentProcessing: { starter: false, pro: true, premium: true },
-    shoppingCart: { starter: false, pro: true, premium: true },
-    orderManagement: { starter: false, pro: true, premium: true },
-    bookingWidget: { starter: false, pro: 'External', premium: 'Native' },
-    googleReviews: { starter: false, pro: true, premium: true },
-    analytics: { starter: false, pro: true, premium: true },
-    liveChat: { starter: false, pro: false, premium: true },
-    emailAutomation: { starter: false, pro: false, premium: true },
-    multiLocation: { starter: false, pro: false, premium: true },
-    whiteLabel: { starter: false, pro: false, premium: true }
+    websiteBuilder: { starter: true, growth: true, pro: true, premium: true },
+    templates: { starter: '13 base', growth: '13 base', pro: '12 pro', premium: '4 premium' },
+    customDomain: { starter: 'Subdomain', growth: 'Subdomain', pro: 'Subdomain', premium: 'Included' },
+    ssl: { starter: true, growth: true, pro: true, premium: true },
+    contactForms: { starter: true, growth: true, pro: true, premium: true },
+    mobileResponsive: { starter: true, growth: true, pro: true, premium: true },
+    paymentProcessing: { starter: false, growth: false, pro: true, premium: true },
+    shoppingCart: { starter: false, growth: false, pro: true, premium: true },
+    orderManagement: { starter: false, growth: false, pro: true, premium: true },
+    bookingWidget: { starter: false, growth: 'Native', pro: 'External', premium: 'Native' },
+    serviceRequestForms: { starter: false, growth: true, pro: true, premium: true },
+    googleReviews: { starter: false, growth: false, pro: true, premium: true },
+    analytics: { starter: false, growth: 'Basic', pro: true, premium: true },
+    liveChat: { starter: false, growth: false, pro: false, premium: true },
+    emailAutomation: { starter: false, growth: false, pro: false, premium: true },
+    multiLocation: { starter: false, growth: false, pro: false, premium: true },
+    whiteLabel: { starter: false, growth: false, pro: false, premium: true }
   }
 };
 
 // Export individual tier configs for easy access
 export const STARTER_CONFIG = PRICING_CONFIG.tiers.starter;
+export const GROWTH_CONFIG = PRICING_CONFIG.tiers.growth;
 export const PRO_CONFIG = PRICING_CONFIG.tiers.pro;
 export const PREMIUM_CONFIG = PRICING_CONFIG.tiers.premium;
 
