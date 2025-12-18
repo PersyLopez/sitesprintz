@@ -13,6 +13,7 @@ import crypto from 'crypto';
 import { testConnection } from './database/db.js';
 import { configureGoogleAuth, setupGoogleRoutes } from './auth-google.js';
 import { errorHandler } from './server/middleware/errorHandler.js';
+import { requireAdmin } from './server/middleware/auth.js';
 import cookieParser from 'cookie-parser';
 import { csrfProtection, csrfTokenEndpoint } from './server/middleware/csrf.js';
 import { apiLimiter } from './server/middleware/rateLimiting.js';
@@ -248,21 +249,31 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/templates', templatesRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api', paymentRoutes);
+import stripeRoutes from './server/routes/stripe.routes.js';
+app.use('/api/stripe', stripeRoutes);
 app.use('/api/sites', siteRoutes);
 app.use('/api/booking', bookingRoutes);
 app.use('/api/content', contentRoutes);
 app.use('/api/showcases', showcaseRoutes);
 app.use('/api/reviews', reviewsRoutes);
 app.use('/api/share', shareRoutes);
-// app.use('/api/admin', adminRoutes); -- Moved up to prioritized list
 import submissionsRoutes from './server/routes/submissions.routes.js';
 app.use('/api/submissions', submissionsRoutes);
+import serviceRequestsRoutes from './server/routes/service-requests.routes.js';
+app.use('/api/service-requests', serviceRequestsRoutes);
 import draftsRoutes from './server/routes/drafts.routes.js';
 app.use('/api/drafts', draftsRoutes);
+import uploadsRoutes from './server/routes/uploads.routes.js';
+app.use('/api/uploads', uploadsRoutes);
+app.use('/api/upload', uploadsRoutes); // Alias for backward compatibility
+import ordersRoutes from './server/routes/orders.routes.js';
+app.use('/api/orders', ordersRoutes);
 
-// Mock endpoints to prevent frontend 404 errors
-app.get('/api/stripe/status', (req, res) => res.json({ connected: false }));
-app.get('/api/orders/pending-count', (req, res) => res.json({ count: 0 }));
+// Admin token endpoint (mounted separately for backward compatibility)
+app.get('/api/admin-token', requireAdmin, async (req, res) => {
+  const adminToken = process.env.ADMIN_TOKEN || 'dev-token';
+  res.json({ token: adminToken, expiresIn: '1h' });
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
