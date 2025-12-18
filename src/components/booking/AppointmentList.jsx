@@ -252,9 +252,12 @@ const AppointmentList = ({ userId, onRefresh }) => {
             >
               <div className="appointment-main">
                 <div className="appointment-info">
-                  <div className="appointment-customer">
+                  <div className="appointment-customer" data-testid={`appointment-customer-${apt.id}`}>
                     <h3>{apt.customer_name}</h3>
-                    <span className={`status-badge status-${apt.status}`}>
+                    <span 
+                      className={`status-badge status-${apt.status}`}
+                      data-testid={`status-badge-${apt.id}`}
+                    >
                       {apt.status}
                     </span>
                   </div>

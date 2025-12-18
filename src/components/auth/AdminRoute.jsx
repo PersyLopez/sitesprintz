@@ -25,6 +25,7 @@ function AdminRoute({ children }) {
   }
 
   // Check if user has admin role
+  console.log('AdminRoute: user object:', JSON.stringify(user));
   console.log('AdminRoute: user role:', user?.role);
   if (user?.role !== 'admin') {
     console.log('AdminRoute: user not admin, redirecting to dashboard');

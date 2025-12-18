@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
+import { PasswordStrengthMeter } from '../components/auth/PasswordStrengthMeter';
 import './Auth.css';
 
 function Register() {
@@ -10,6 +11,8 @@ function Register() {
   const [searchParams] = useSearchParams();
   const { register } = useAuth();
   const { showSuccess, showError } = useToast();
+  const turnstileRef = useRef(null);
+  const captchaTokenRef = useRef(null);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -17,6 +20,46 @@ function Register() {
     confirmPassword: '',
   });
   const [loading, setLoading] = useState(false);
+  const [captchaReady, setCaptchaReady] = useState(false);
+
+  // Initialize Cloudflare Turnstile
+  useEffect(() => {
+    // Check if Turnstile is loaded
+    if (window.turnstile) {
+      setCaptchaReady(true);
+      // Render Turnstile widget
+      const widgetId = window.turnstile.render(turnstileRef.current, {
+        sitekey: import.meta.env.VITE_TURNSTILE_SITE_KEY || '',
+        callback: (token) => {
+          captchaTokenRef.current = token;
+        },
+        'error-callback': () => {
+          captchaTokenRef.current = null;
+          showError('CAPTCHA verification failed. Please try again.');
+        },
+        'expired-callback': () => {
+          captchaTokenRef.current = null;
+        },
+      });
+
+      return () => {
+        // Cleanup widget on unmount
+        if (window.turnstile && widgetId) {
+          window.turnstile.remove(widgetId);
+        }
+      };
+    } else {
+      // Wait for Turnstile to load
+      const checkTurnstile = setInterval(() => {
+        if (window.turnstile) {
+          setCaptchaReady(true);
+          clearInterval(checkTurnstile);
+        }
+      }, 100);
+
+      return () => clearInterval(checkTurnstile);
+    }
+  }, [showError]);
 
   const handleChange = (e) => {
     setFormData({
@@ -46,17 +89,27 @@ function Register() {
       return;
     }
 
-    // Validate password strength
-    if (formData.password.length < 6) {
-      showError('Password must be at least 6 characters long');
+    // Password validation will be handled by backend
+    // Frontend validation is for UX only
+
+    // Check CAPTCHA if site key is configured
+    const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
+    if (siteKey && !captchaTokenRef.current) {
+      showError('Please complete the CAPTCHA verification');
       return;
     }
 
     setLoading(true);
 
     try {
-      await register(formData.email, formData.password);
+      await register(formData.email, formData.password, captchaTokenRef.current);
       showSuccess('Account created successfully!');
+      
+      // Reset CAPTCHA after successful registration
+      if (window.turnstile && turnstileRef.current) {
+        window.turnstile.reset();
+        captchaTokenRef.current = null;
+      }
 
       const template = searchParams.get('template');
       if (template) {
@@ -65,7 +118,13 @@ function Register() {
         navigate('/dashboard');
       }
     } catch (error) {
-      showError(error.message || 'Registration failed. Please try again.');
+      // Handle password validation errors from backend
+      const errorData = error.response?.data || error;
+      if (errorData.passwordErrors && Array.isArray(errorData.passwordErrors)) {
+        showError(errorData.passwordErrors.join('. '));
+      } else {
+        showError(errorData.error || error.message || 'Registration failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -113,12 +172,12 @@ function Register() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="••••••••"
+                placeholder="Create a secure password"
                 required
                 disabled={loading}
-                minLength={6}
+                minLength={12}
               />
-              <small className="form-hint">At least 6 characters</small>
+              <PasswordStrengthMeter password={formData.password} />
             </div>
 
             <div className="form-group">
@@ -129,12 +188,22 @@ function Register() {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                placeholder="••••••••"
+                placeholder="Confirm your password"
                 required
                 disabled={loading}
-                minLength={6}
+                minLength={12}
               />
             </div>
+
+            {/* Cloudflare Turnstile CAPTCHA */}
+            {import.meta.env.VITE_TURNSTILE_SITE_KEY && (
+              <div className="form-group">
+                <div ref={turnstileRef} className="turnstile-widget"></div>
+                {!captchaReady && (
+                  <small className="form-hint">Loading security verification...</small>
+                )}
+              </div>
+            )}
 
             <button
               type="submit"

@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+import { PasswordStrengthMeter } from '../components/auth/PasswordStrengthMeter';
 import './Auth.css';
 
 function ResetPassword() {
@@ -34,10 +35,8 @@ function ResetPassword() {
       return;
     }
 
-    if (password.length < 8) {
-      showError('Password must be at least 8 characters');
-      return;
-    }
+    // Password validation will be handled by backend
+    // Frontend validation is for UX only
 
     if (password !== confirmPassword) {
       showError('Passwords do not match');
@@ -60,7 +59,11 @@ function ResetPassword() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Failed to reset password');
+        // Handle password validation errors
+        if (error.passwordErrors) {
+          throw new Error(error.passwordErrors.join('. '));
+        }
+        throw new Error(error.error || error.message || 'Failed to reset password');
       }
 
       showSuccess('Password reset successful! You can now login.');
@@ -80,7 +83,7 @@ function ResetPassword() {
         
         <main className="auth-container">
           <div className="auth-card">
-            <div className="error-message">
+            <div className="error-message" data-testid="reset-password-invalid-token">
               <div className="error-icon">❌</div>
               <h2>Invalid Reset Link</h2>
               <p>
@@ -88,7 +91,7 @@ function ResetPassword() {
                 Please request a new one.
               </p>
               <div className="auth-links">
-                <Link to="/forgot-password" className="btn btn-primary">
+                <Link to="/forgot-password" className="btn btn-primary" data-testid="reset-password-request-new">
                   Request New Link
                 </Link>
                 <Link to="/login">← Back to Login</Link>
@@ -119,16 +122,15 @@ function ResetPassword() {
               <input
                 type="password"
                 id="password"
+                data-testid="reset-password-new"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter new password"
                 required
                 autoFocus
-                minLength={8}
+                minLength={12}
               />
-              <small className="form-hint">
-                Must be at least 8 characters
-              </small>
+              <PasswordStrengthMeter password={password} />
             </div>
 
             <div className="form-group">
@@ -136,17 +138,19 @@ function ResetPassword() {
               <input
                 type="password"
                 id="confirmPassword"
+                data-testid="reset-password-confirm"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm new password"
                 required
-                minLength={8}
+                minLength={12}
               />
             </div>
 
             <button 
               type="submit" 
               className="btn btn-primary btn-full"
+              data-testid="reset-password-submit"
               disabled={loading}
             >
               {loading ? 'Resetting...' : 'Reset Password'}

@@ -62,6 +62,7 @@ function ForgotPassword() {
                 <input
                   type="email"
                   id="email"
+                  data-testid="forgot-password-email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
@@ -73,6 +74,7 @@ function ForgotPassword() {
               <button 
                 type="submit" 
                 className="btn btn-primary btn-full"
+                data-testid="forgot-password-submit"
                 disabled={loading}
               >
                 {loading ? 'Sending...' : 'Send Reset Link'}
@@ -83,7 +85,7 @@ function ForgotPassword() {
               </div>
             </form>
           ) : (
-            <div className="success-message">
+            <div className="success-message" data-testid="forgot-password-success">
               <div className="success-icon">✅</div>
               <h2>Check Your Email</h2>
               <p>
@@ -95,6 +97,7 @@ function ForgotPassword() {
                 <button 
                   onClick={() => setSent(false)}
                   className="link-button"
+                  data-testid="forgot-password-try-again"
                 >
                   try again
                 </button>

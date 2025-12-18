@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -12,17 +13,17 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      // REMOVED
       padding: 20px;
     }
 
     .auth-container {
-      background: var(--bg-card); background-image: linear-gradient(135deg, rgba(6, 182, 212, 0.05) 0%, transparent 100%);
+      background: var(--bg-card);
+      background-image: linear-gradient(135deg, rgba(6, 182, 212, 0.05) 0%, transparent 100%);
       border-radius: 20px;
       padding: 40px;
       max-width: 450px;
       width: 100%;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     }
 
     .auth-header {
@@ -148,7 +149,7 @@
 
     .google-btn:hover {
       background: #f8f9fa;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       transform: translateY(-1px);
     }
 
@@ -187,27 +188,34 @@
     }
   </style>
 </head>
+
 <body>
   <div class="auth-container">
     <div class="auth-header">
       <div class="auth-logo">✨</div>
       <h1 class="auth-title">Get Started</h1>
       <p class="auth-subtitle" id="authSubtitle">Create your account in seconds</p>
-      <div id="planBadge" style="display: none; margin-top: 15px; padding: 10px 20px; background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 8px; color: var(--color-primary); font-weight: 600; font-size: 0.9rem;"></div>
+      <div id="planBadge"
+        style="display: none; margin-top: 15px; padding: 10px 20px; background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 8px; color: var(--color-primary); font-weight: 600; font-size: 0.9rem;">
+      </div>
     </div>
 
     <!-- Social Auth Section -->
     <div class="social-auth-section">
       <a href="#" id="googleAuthBtn" class="social-auth-btn google-btn">
         <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          <path fill="#EA4335"
+            d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+          <path fill="#4285F4"
+            d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+          <path fill="#FBBC05"
+            d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+          <path fill="#34A853"
+            d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
         </svg>
         Continue with Google
       </a>
-      
+
       <!-- Apple button placeholder for future implementation -->
       <!-- <a href="#" class="social-auth-btn apple-btn">
         <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" fill="currentColor">
@@ -230,7 +238,8 @@
 
       <div class="form-group">
         <label class="form-label">Password</label>
-        <input type="password" class="form-input" id="password" placeholder="Create a secure password" required minlength="6">
+        <input type="password" class="form-input" id="password" placeholder="Create a secure password" required
+          minlength="6">
         <div class="password-strength" id="passwordStrength">At least 6 characters</div>
         <div class="error-message" id="passwordError"></div>
       </div>
@@ -251,20 +260,35 @@
   </div>
 
   <script>
-    // Check for plan parameter on page load
-    window.addEventListener('DOMContentLoaded', function() {
+    // CSRF Token state
+    let csrfToken = '';
+
+    // Check for plan parameter & Fetch CSRF token on page load
+    window.addEventListener('DOMContentLoaded', async function () {
       const urlParams = new URLSearchParams(window.location.search);
       const plan = urlParams.get('plan');
-      
+
+      // Fetch CSRF Token
+      try {
+        const csrfResponse = await fetch('/api/csrf-token');
+        if (csrfResponse.ok) {
+          const data = await csrfResponse.json();
+          csrfToken = data.csrfToken;
+          console.log('CSRF token initialized');
+        }
+      } catch (err) {
+        console.error('Failed to fetch CSRF token:', err);
+      }
+
       if (plan) {
         const planBadge = document.getElementById('planBadge');
         const subtitle = document.getElementById('authSubtitle');
-        
+
         const planNames = {
           'starter': 'Starter Plan - $10/month',
           'pro': 'Pro Plan - $25/month'
         };
-        
+
         if (planNames[plan]) {
           subtitle.textContent = 'Create your account to continue';
           planBadge.textContent = `📦 Selected: ${planNames[plan]}`;
@@ -274,27 +298,27 @@
 
       // Handle Google OAuth button
       const googleBtn = document.getElementById('googleAuthBtn');
-      googleBtn.addEventListener('click', function(e) {
+      googleBtn.addEventListener('click', function (e) {
         e.preventDefault();
         const urlParams = new URLSearchParams(window.location.search);
         const plan = urlParams.get('plan');
-        
+
         // Build OAuth URL with plan parameter if exists
         let oauthUrl = '/auth/google';
         if (plan && (plan === 'starter' || plan === 'pro')) {
           oauthUrl += `?plan=${plan}`;
         }
-        
+
         // Redirect to Google OAuth
         window.location.href = oauthUrl;
       });
     });
-    
+
     // Password strength indicator
-    document.getElementById('password').addEventListener('input', function() {
+    document.getElementById('password').addEventListener('input', function () {
       const password = this.value;
       const strengthDiv = document.getElementById('passwordStrength');
-      
+
       if (password.length === 0) {
         strengthDiv.textContent = 'At least 6 characters';
         strengthDiv.style.color = '#64748b';
@@ -311,11 +335,11 @@
     });
 
     // Password match validation
-    document.getElementById('confirmPassword').addEventListener('input', function() {
+    document.getElementById('confirmPassword').addEventListener('input', function () {
       const password = document.getElementById('password').value;
       const confirm = this.value;
       const confirmError = document.getElementById('confirmError');
-      
+
       if (confirm && password !== confirm) {
         confirmError.textContent = 'Passwords do not match';
         confirmError.classList.add('show');
@@ -326,51 +350,54 @@
 
     async function handleRegister(event) {
       event.preventDefault();
-      
+
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
-      
+
       const emailError = document.getElementById('emailError');
       const passwordError = document.getElementById('passwordError');
       const confirmError = document.getElementById('confirmError');
-      
+
       // Clear errors
       emailError.classList.remove('show');
       passwordError.classList.remove('show');
       confirmError.classList.remove('show');
-      
+
       // Validate passwords match
       if (password !== confirmPassword) {
         confirmError.textContent = 'Passwords do not match';
         confirmError.classList.add('show');
         return;
       }
-      
+
       // Validate password length
       if (password.length < 6) {
         passwordError.textContent = 'Password must be at least 6 characters';
         passwordError.classList.add('show');
         return;
       }
-      
+
       // Check if there's a plan parameter in the URL
       const urlParams = new URLSearchParams(window.location.search);
       const selectedPlan = urlParams.get('plan');
-      
+
       try {
         const response = await fetch('/api/auth/register', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+          },
           body: JSON.stringify({ email, password })
         });
-        
+
         const result = await response.json();
-        
+
         if (response.ok && result.success) {
           // Store token
           localStorage.setItem('authToken', result.token);
-          
+
           // If there's a plan, redirect to checkout for that plan
           if (selectedPlan && (selectedPlan === 'starter' || selectedPlan === 'pro')) {
             try {
@@ -382,9 +409,9 @@
                 },
                 body: JSON.stringify({ plan: selectedPlan })
               });
-              
+
               const checkoutData = await checkoutResponse.json();
-              
+
               if (checkoutResponse.ok && checkoutData.url) {
                 // Redirect to Stripe Checkout
                 window.location.href = checkoutData.url;
@@ -395,7 +422,7 @@
               // Fall back to dashboard if checkout fails
             }
           }
-          
+
           // Default redirect to dashboard
           window.location.href = '/dashboard.html';
         } else {
@@ -415,5 +442,5 @@
     }
   </script>
 </body>
-</html>
 
+</html>

@@ -8,9 +8,9 @@ import UserDetailsModal from '../components/admin/UserDetailsModal';
 import './AdminUsers.css';
 
 function AdminUsers() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const { showError, showSuccess } = useToast();
-  
+
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
@@ -20,13 +20,13 @@ function AdminUsers() {
   const [planFilter, setPlanFilter] = useState('all');
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserModal, setShowUserModal] = useState(false);
-  
+
   // Invite form state
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('user');
   const [invitePlan, setInvitePlan] = useState('starter');
   const [inviting, setInviting] = useState(false);
-  
+
   // Stats
   const [stats, setStats] = useState({
     total: 0,
@@ -45,11 +45,11 @@ function AdminUsers() {
 
   const loadUsers = async () => {
     setLoading(true);
-    
+
     try {
       const response = await fetch('/api/admin/users', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token || localStorage.getItem('accessToken')}`
         }
       });
 
@@ -193,7 +193,7 @@ function AdminUsers() {
     // Search filter
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(u => 
+      filtered = filtered.filter(u =>
         u.email.toLowerCase().includes(term) ||
         u.name?.toLowerCase().includes(term)
       );
@@ -219,7 +219,7 @@ function AdminUsers() {
 
   const handleInviteUser = async (e) => {
     e.preventDefault();
-    
+
     if (!inviteEmail) {
       showError('Please enter an email address');
       return;
@@ -232,7 +232,7 @@ function AdminUsers() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token || localStorage.getItem('accessToken')}`
         },
         body: JSON.stringify({
           email: inviteEmail,
@@ -247,12 +247,12 @@ function AdminUsers() {
 
       const result = await response.json();
       showSuccess(`Invitation sent to ${inviteEmail}!`);
-      
+
       // Reset form
       setInviteEmail('');
       setInviteRole('user');
       setInvitePlan('starter');
-      
+
       // Reload users
       loadUsers();
     } catch (error) {
@@ -265,7 +265,7 @@ function AdminUsers() {
 
   const handleUserAction = async (userId, action) => {
     const userToUpdate = users.find(u => u.id === userId);
-    
+
     if (!userToUpdate) return;
 
     let confirmMessage = '';
@@ -301,7 +301,7 @@ function AdminUsers() {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token || localStorage.getItem('accessToken')}`
         },
         body: action === 'make-admin' ? JSON.stringify({ role: 'admin' }) : undefined
       });
@@ -361,7 +361,7 @@ function AdminUsers() {
   return (
     <div className="admin-users-page">
       <Header />
-      
+
       <main className="admin-users-container">
         {/* Page Header */}
         <div className="admin-users-header">
@@ -369,7 +369,7 @@ function AdminUsers() {
             <h1>👥 User Management</h1>
             <p>Invite users and manage accounts • {stats.total} total users</p>
           </div>
-          
+
           <div className="header-actions">
             <Link to="/admin" className="btn btn-secondary">
               📊 Admin Dashboard
@@ -387,19 +387,19 @@ function AdminUsers() {
             <div className="stat-value">{stats.total}</div>
             <div className="stat-label">Total Users</div>
           </div>
-          
+
           <div className="stat-card">
             <div className="stat-icon">✅</div>
             <div className="stat-value">{stats.active}</div>
             <div className="stat-label">Active Users</div>
           </div>
-          
+
           <div className="stat-card">
             <div className="stat-icon">👑</div>
             <div className="stat-value">{stats.admins}</div>
             <div className="stat-label">Admins</div>
           </div>
-          
+
           <div className="stat-card">
             <div className="stat-icon">⏱️</div>
             <div className="stat-value">{stats.trial}</div>
@@ -422,7 +422,7 @@ function AdminUsers() {
                 required
               />
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="inviteRole">Role</label>
               <select
@@ -434,7 +434,7 @@ function AdminUsers() {
                 <option value="admin">Admin</option>
               </select>
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="invitePlan">Initial Plan</label>
               <select
@@ -448,9 +448,9 @@ function AdminUsers() {
                 <option value="pro">Pro</option>
               </select>
             </div>
-            
-            <button 
-              type="submit" 
+
+            <button
+              type="submit"
               className="btn btn-primary"
               disabled={inviting}
             >
@@ -463,7 +463,7 @@ function AdminUsers() {
         <div className="users-section">
           <div className="section-header">
             <h2>All Users</h2>
-            
+
             <div className="filters">
               <input
                 type="text"
@@ -472,7 +472,7 @@ function AdminUsers() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="search-input"
               />
-              
+
               <select
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value)}
@@ -482,7 +482,7 @@ function AdminUsers() {
                 <option value="user">User</option>
                 <option value="admin">Admin</option>
               </select>
-              
+
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -493,7 +493,7 @@ function AdminUsers() {
                 <option value="invited">Invited</option>
                 <option value="suspended">Suspended</option>
               </select>
-              
+
               <select
                 value={planFilter}
                 onChange={(e) => setPlanFilter(e.target.value)}
@@ -569,7 +569,7 @@ function AdminUsers() {
                           >
                             👁️
                           </button>
-                          
+
                           {userItem.status === 'active' && (
                             <button
                               onClick={() => handleUserAction(userItem.id, 'suspend')}
@@ -579,7 +579,7 @@ function AdminUsers() {
                               ⏸️
                             </button>
                           )}
-                          
+
                           {userItem.status === 'suspended' && (
                             <button
                               onClick={() => handleUserAction(userItem.id, 'activate')}
@@ -589,7 +589,7 @@ function AdminUsers() {
                               ▶️
                             </button>
                           )}
-                          
+
                           {userItem.role !== 'admin' && (
                             <button
                               onClick={() => handleUserAction(userItem.id, 'make-admin')}
@@ -599,7 +599,7 @@ function AdminUsers() {
                               👑
                             </button>
                           )}
-                          
+
                           <button
                             onClick={() => handleUserAction(userItem.id, 'delete')}
                             className="btn-action btn-delete"
@@ -623,9 +623,9 @@ function AdminUsers() {
           )}
         </div>
       </main>
-      
+
       <Footer />
-      
+
       {/* User Details Modal */}
       {showUserModal && selectedUser && (
         <UserDetailsModal

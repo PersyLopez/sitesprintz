@@ -200,6 +200,7 @@ const ServiceManager = ({ userId, onRefresh }) => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="service-search"
+            data-testid="service-search"
           />
           <button
             className="add-service-btn"
@@ -233,12 +234,12 @@ const ServiceManager = ({ userId, onRefresh }) => {
       {!loading && !error && filteredServices.length > 0 && (
         <div className="services-grid">
           {filteredServices.map(service => (
-            <div key={service.id} className="service-card">
+            <div key={service.id} className="service-card" data-testid={`service-card-${service.id}`}>
               <div className="service-card-header">
                 <h3>{service.name}</h3>
                 <span
                   className={`status-badge ${service.online_booking_enabled ? 'active' : 'inactive'}`}
-                  data-testid="service-status-badge"
+                  data-testid={`service-status-badge-${service.id}`}
                 >
                   {service.online_booking_enabled ? 'Active' : 'Inactive'}
                 </span>

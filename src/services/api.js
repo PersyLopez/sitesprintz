@@ -21,64 +21,92 @@ class APIClient {
     }
   }
 
-  async request(endpoint, options = {}) {
-    let url = `${this.baseURL}${endpoint}`;
+  /**
+   * Get authentication token from localStorage
+   */
+  getAuthToken() {
+    return localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+  }
 
-    // Handle query parameters
+  /**
+   * Build request URL with query parameters
+   */
+  buildRequestUrl(endpoint, options) {
+    let url = `${this.baseURL}${endpoint}`;
     if (options.params) {
       const queryString = new URLSearchParams(options.params).toString();
       url += `?${queryString}`;
     }
+    return url;
+  }
 
-    // Get token from localStorage
-    const token = localStorage.getItem('authToken');
-
-    // Default headers
+  /**
+   * Build headers with authentication and CSRF tokens
+   */
+  buildHeaders(options, includeContentType = true) {
+    const token = this.getAuthToken();
     const headers = {
-      'Content-Type': 'application/json',
       ...options.headers,
     };
 
-    // Add authorization header if token exists
+    if (includeContentType) {
+      headers['Content-Type'] = 'application/json';
+    }
+
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    // Add CSRF token if exists
     if (this.csrfToken) {
       headers['x-csrf-token'] = this.csrfToken;
     }
 
-    let retries = 5;
-    let delay = 1000;
+    return headers;
+  }
 
+  /**
+   * Handle 401 Unauthorized response
+   */
+  async handleAuthError(response) {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('authToken');
+      window.location.href = '/login';
+      throw new Error('Unauthorized');
+    }
+  }
+
+  /**
+   * Parse response data based on content type
+   */
+  async parseResponse(response) {
+    const contentType = response.headers && response.headers.get ? response.headers.get('content-type') : null;
+    
+    if (contentType && contentType.includes('application/json')) {
+      return await response.json();
+    } else if (typeof response.text === 'function') {
+      return await response.text();
+    } else if (typeof response.json === 'function') {
+      // Fallback for mocks that only provide json() but no headers/text
+      return await response.json();
+    }
+    return null;
+  }
+
+  /**
+   * Execute request with retry logic
+   */
+  async executeWithRetry(url, options, retries, delay = 1000) {
     while (retries >= 0) {
       try {
-        const response = await fetch(url, {
-          ...options,
-          headers,
-        });
+        const response = await fetch(url, options);
 
-        // Handle 401 Unauthorized
         if (response.status === 401) {
-          localStorage.removeItem('authToken');
-          window.location.href = '/login';
-          throw new Error('Unauthorized');
+          await this.handleAuthError(response);
         }
 
-        // Parse JSON response
-        let data;
-        const contentType = response.headers && response.headers.get ? response.headers.get('content-type') : null;
-        if (contentType && contentType.includes('application/json')) {
-          data = await response.json();
-        } else if (typeof response.text === 'function') {
-          data = await response.text();
-        } else if (typeof response.json === 'function') {
-          // Fallback for mocks that only provide json() but no headers/text
-          data = await response.json();
-        } else {
-          data = null;
-        }
+        const data = await this.parseResponse(response);
 
         if (!response.ok) {
           throw new Error(data.message || data.error || 'Request failed');
@@ -86,7 +114,6 @@ class APIClient {
 
         return data;
       } catch (error) {
-        // Don't retry on auth errors or if retries exhausted
         if (retries === 0 || error.message === 'Unauthorized') {
           console.error('API request failed:', error);
           throw error;
@@ -98,6 +125,17 @@ class APIClient {
         delay *= 2;
       }
     }
+  }
+
+  async request(endpoint, options = {}) {
+    const url = this.buildRequestUrl(endpoint, options);
+    const headers = this.buildHeaders(options);
+    
+    const retries = options.retries !== undefined
+      ? options.retries
+      : (import.meta.env.MODE === 'test' ? 0 : 3);
+
+    return await this.executeWithRetry(url, { ...options, headers }, retries);
   }
 
   get(endpoint, options = {}) {
@@ -126,16 +164,8 @@ class APIClient {
 
   // For file uploads (multipart/form-data)
   async upload(endpoint, formData, options = {}) {
-    const url = `${this.baseURL}${endpoint}`;
-    const token = localStorage.getItem('authToken');
-
-    const headers = {
-      ...options.headers,
-    };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+    const url = this.buildRequestUrl(endpoint, options);
+    const headers = this.buildHeaders(options, false); // Don't include Content-Type for multipart
 
     try {
       const response = await fetch(url, {
@@ -145,12 +175,10 @@ class APIClient {
       });
 
       if (response.status === 401) {
-        localStorage.removeItem('authToken');
-        window.location.href = '/login';
-        throw new Error('Unauthorized');
+        await this.handleAuthError(response);
       }
 
-      const data = await response.json();
+      const data = await this.parseResponse(response);
 
       if (!response.ok) {
         throw new Error(data.message || data.error || 'Upload failed');

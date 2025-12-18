@@ -14,15 +14,27 @@ export function AuthProvider({ children }) {
   }, []);
 
   const checkAuth = async () => {
-    const storedToken = localStorage.getItem('authToken');
+    const storedToken = localStorage.getItem('accessToken') || localStorage.getItem('authToken'); // Support both formats
     if (storedToken) {
       setToken(storedToken);
       try {
         const userData = await authService.getCurrentUser();
         setUser(userData.user || userData);
+        // Schedule token refresh if we have a refresh token
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (refreshToken) {
+          // Schedule refresh (15 minutes = 900 seconds)
+          setTimeout(() => {
+            authService.refreshToken().catch(() => {
+              // Refresh failed, will be handled by fetch interceptor
+            });
+          }, 14 * 60 * 1000); // 14 minutes
+        }
       } catch (error) {
         console.error('Auth check failed:', error);
-        localStorage.removeItem('authToken');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('authToken'); // Clean up old format
         setToken(null);
       }
     }
@@ -32,7 +44,7 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     try {
       const data = await authService.login(email, password);
-      setToken(data.token);
+      setToken(data.accessToken || data.token); // Support both formats
       setUser(data.user);
       return data;
     } catch (error) {
@@ -40,10 +52,10 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const register = async (email, password) => {
+  const register = async (email, password, captchaToken = null) => {
     try {
-      const data = await authService.register(email, password);
-      setToken(data.token);
+      const data = await authService.register(email, password, captchaToken);
+      setToken(data.accessToken || data.token); // Support both formats
       setUser(data.user);
       return data;
     } catch (error) {
@@ -59,7 +71,9 @@ export function AuthProvider({ children }) {
     } finally {
       setUser(null);
       setToken(null);
-      localStorage.removeItem('authToken');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('authToken'); // Clean up old format
     }
   };
 

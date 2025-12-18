@@ -316,13 +316,10 @@ function Admin() {
                 <span className="action-icon">📧</span>
                 <span className="action-label">Email Users</span>
               </button>
-              <button
-                className="quick-action-btn"
-                onClick={() => showSuccess('Feature coming soon!')}
-              >
+              <Link to="/admin/plan-features" className="quick-action-btn">
                 <span className="action-icon">⚙️</span>
-                <span className="action-label">Settings</span>
-              </button>
+                <span className="action-label">Plan Features</span>
+              </Link>
             </div>
 
             {/* Tabs */}

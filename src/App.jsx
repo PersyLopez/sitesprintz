@@ -15,9 +15,11 @@ import Orders from './pages/Orders';
 import Analytics from './pages/Analytics';
 import Admin from './pages/Admin';
 import AdminUsers from './pages/AdminUsers';
+import AdminPlanFeatures from './pages/AdminPlanFeatures';
 import Products from './pages/Products';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import VerifyEmail from './pages/VerifyEmail';
 import OAuthCallback from './pages/OAuthCallback';
 import NotFound from './pages/NotFound';
 import ShowcaseGallery from './pages/ShowcaseGallery';
@@ -50,6 +52,7 @@ function App() {
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/oauth/callback" element={<OAuthCallback />} />
@@ -134,6 +137,14 @@ function App() {
                 element={
                   <AdminRoute>
                     <AdminUsers />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/plan-features"
+                element={
+                  <AdminRoute>
+                    <AdminPlanFeatures />
                   </AdminRoute>
                 }
               />
