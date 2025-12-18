@@ -71,6 +71,7 @@
     "sharp": "^0.34.4",
     "stripe": "^19.1.0",
     "validator": "^13.15.23",
+    "web-vitals": "^4.2.4",
     "winston": "^3.18.3"
   },
   "devDependencies": {

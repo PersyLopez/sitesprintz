@@ -11,7 +11,7 @@ export default defineConfig({
   retries: isCI ? 2 : 1,
   workers: 1,
   reporter: isCI ? [['line'], ['html']] : [['html']],
-  globalSetup: './tests/setup/global-setup.js',
+  // globalSetup: './tests/setup/global-setup.js', // Replaced by setup project for auth
 
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
@@ -22,36 +22,60 @@ export default defineConfig({
     navigationTimeout: 30_000,
     testIdAttribute: 'data-testid',
     reducedMotion: 'reduce',
+    reducedMotion: 'reduce',
   },
 
-  projects: (runAllBrowsers ? [
+  projects: [
+    // Setup project
+    {
+      name: 'setup',
+      testMatch: /auth\.setup\.js/,
+    },
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        // Use prepared auth state.
+        storageState: 'tests/e2e/.auth/user.json',
+      },
+      dependencies: ['setup'],
     },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-    // Mobile viewports
-    {
-      name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
-    },
-    {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
-    },
-  ] : [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    }
-  ]),
+    ...(runAllBrowsers ? [
+      {
+        name: 'firefox',
+        use: {
+          ...devices['Desktop Firefox'],
+          storageState: 'tests/e2e/.auth/user.json',
+        },
+        dependencies: ['setup'],
+      },
+      {
+        name: 'webkit',
+        use: {
+          ...devices['Desktop Safari'],
+          storageState: 'tests/e2e/.auth/user.json',
+        },
+        dependencies: ['setup'],
+      },
+      // Mobile viewports
+      {
+        name: 'Mobile Chrome',
+        use: {
+          ...devices['Pixel 5'],
+          storageState: 'tests/e2e/.auth/user.json',
+        },
+        dependencies: ['setup'],
+      },
+      {
+        name: 'Mobile Safari',
+        use: {
+          ...devices['iPhone 12'],
+          storageState: 'tests/e2e/.auth/user.json',
+        },
+        dependencies: ['setup'],
+      },
+    ] : []),
+  ],
 
   webServer: {
     // server.js serves ./dist, so ensure build exists before starting.
