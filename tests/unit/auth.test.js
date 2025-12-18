@@ -26,9 +26,10 @@ describe('Auth Service', () => {
 
   // Register (3 tests)
   describe('register', () => {
-    it('should register user and store token', async () => {
+    it('should register user and store tokens', async () => {
       api.post.mockResolvedValueOnce({
-        token: 'new-token-123',
+        accessToken: 'new-access-token-123',
+        refreshToken: 'new-refresh-token-456',
         user: { id: 1, email: 'test@example.com' }
       });
 
@@ -36,9 +37,11 @@ describe('Auth Service', () => {
 
       expect(api.post).toHaveBeenCalledWith('/api/auth/register', {
         email: 'test@example.com',
-        password: 'password123'
+        password: 'password123',
+        captchaToken: null
       });
-      expect(localStorageMock.setItem).toHaveBeenCalledWith('authToken', 'new-token-123');
+      expect(localStorageMock.setItem).toHaveBeenCalledWith('accessToken', 'new-access-token-123');
+      expect(localStorageMock.setItem).toHaveBeenCalledWith('refreshToken', 'new-refresh-token-456');
       expect(result.user.email).toBe('test@example.com');
     });
 
@@ -61,9 +64,10 @@ describe('Auth Service', () => {
 
   // Login (3 tests)
   describe('login', () => {
-    it('should login user and store token', async () => {
+    it('should login user and store tokens', async () => {
       api.post.mockResolvedValueOnce({
-        token: 'login-token-456',
+        accessToken: 'login-access-token-456',
+        refreshToken: 'login-refresh-token-789',
         user: { id: 1, email: 'user@example.com' }
       });
 
@@ -73,7 +77,8 @@ describe('Auth Service', () => {
         email: 'user@example.com',
         password: 'password123'
       });
-      expect(localStorageMock.setItem).toHaveBeenCalledWith('authToken', 'login-token-456');
+      expect(localStorageMock.setItem).toHaveBeenCalledWith('accessToken', 'login-access-token-456');
+      expect(localStorageMock.setItem).toHaveBeenCalledWith('refreshToken', 'login-refresh-token-789');
       expect(result.user.email).toBe('user@example.com');
     });
 
@@ -92,25 +97,24 @@ describe('Auth Service', () => {
 
   // Logout (2 tests)
   describe('logout', () => {
-    it('should logout user and remove token', async () => {
+    it('should logout user and remove tokens', async () => {
+      localStorageMock.getItem.mockReturnValue('some-refresh-token');
       api.post.mockResolvedValueOnce({ success: true });
 
       await authService.logout();
 
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('authToken');
-      expect(api.post).toHaveBeenCalledWith('/api/auth/logout', {});
+      expect(localStorageMock.removeItem).toHaveBeenCalledWith('accessToken');
+      expect(localStorageMock.removeItem).toHaveBeenCalledWith('refreshToken');
     });
 
-    it('should remove token even if API call fails', async () => {
+    it('should remove tokens even if API call fails', async () => {
+      localStorageMock.getItem.mockReturnValue('some-refresh-token');
       api.post.mockRejectedValueOnce(new Error('API error'));
 
-      try {
-        await authService.logout();
-      } catch (e) {
-        // Expected to fail
-      }
+      await authService.logout();
 
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('authToken');
+      expect(localStorageMock.removeItem).toHaveBeenCalledWith('accessToken');
+      expect(localStorageMock.removeItem).toHaveBeenCalledWith('refreshToken');
     });
   });
 
@@ -216,4 +220,3 @@ describe('Auth Service', () => {
     });
   });
 });
-

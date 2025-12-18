@@ -1,14 +1,24 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
 import request from 'supertest';
 import express from 'express';
 import authRoutes from '../../server/routes/auth.routes.js';
 import siteRoutes from '../../server/routes/sites.routes.js';
 import { authenticateToken } from '../../server/middleware/auth.js';
+import { setupIntegrationTest, createTestUser, seedPrismaData } from '../utils/integrationTestSetup.js';
+
+// Mock Prisma before importing routes
+const mockPrisma = setupIntegrationTest();
 
 // Create test app
 const createTestApp = () => {
   const app = express();
   app.use(express.json());
+  
+  // Mock CSRF protection for tests
+  app.use((req, res, next) => {
+    next();
+  });
+  
   app.use('/api/auth', authRoutes);
   app.use('/api/sites', authenticateToken, siteRoutes);
   return app;
@@ -21,6 +31,16 @@ describe('API Integration Tests - Authentication', () => {
 
   beforeAll(() => {
     app = createTestApp();
+  });
+
+  beforeEach(() => {
+    // Reset mocks and seed test data
+    vi.clearAllMocks();
+    seedPrismaData({
+      users: [
+        createTestUser({ email: 'existing@example.com', id: 'user-existing' })
+      ]
+    });
   });
 
   describe('POST /api/auth/register', () => {

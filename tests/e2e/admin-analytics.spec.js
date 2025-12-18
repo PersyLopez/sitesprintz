@@ -15,7 +15,7 @@ test.describe('Admin Analytics', () => {
 
     test('should display analytics dashboard', async ({ page }) => {
         // Check for main headers
-        await expect(page.getByRole('heading', { name: 'Admin Dashboard' })).toBeVisible({ timeout: 15000 });
+        await expect(page.getByRole('heading', { name: /Admin Dashboard/i })).toBeVisible({ timeout: 15000 });
 
         // Check for stats cards
         await expect(page.locator('.stats-grid')).toBeVisible();

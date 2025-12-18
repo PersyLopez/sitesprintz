@@ -71,22 +71,22 @@ test.describe('Booking Admin Dashboard - E2E', () => {
       await page.click('[data-testid="add-service-btn"]');
 
       // Fill in form
-      await waitForVisible(page, 'input[name="name"]');
-      await page.fill('input[name="name"]', TEST_SERVICE.name);
-      await page.fill('textarea[name="description"]', TEST_SERVICE.description);
-      await page.fill('input[name="duration_minutes"]', TEST_SERVICE.duration);
-      await page.fill('input[name="price_cents"]', TEST_SERVICE.price);
-      await page.selectOption('select[name="category"]', TEST_SERVICE.category);
+      await waitForVisible(page, '[data-testid="service-name"]');
+      await page.getByTestId('service-name').fill(TEST_SERVICE.name);
+      await page.getByTestId('service-description').fill(TEST_SERVICE.description);
+      await page.getByTestId('service-duration').fill(TEST_SERVICE.duration);
+      await page.getByTestId('service-price').fill(TEST_SERVICE.price);
+      await page.getByRole('combobox', { name: /category/i }).selectOption(TEST_SERVICE.category);
 
       // Submit form
-      await waitForVisible(page, 'button:has-text("Save")');
-      await page.click('button:has-text("Save")');
+      await waitForVisible(page, '[data-testid="save-service-button"]');
+      await page.getByTestId('save-service-button').click();
 
       // Should show success message
-      await expect(page.locator('text=Service created successfully')).toBeVisible({ timeout: 5000 });
+      await expect(page.getByText(/service created successfully/i)).toBeVisible({ timeout: 5000 });
 
-      // Should see service in list - use specific selector
-      await expect(page.locator('.service-card h3', { hasText: TEST_SERVICE.name })).toBeVisible();
+      // Should see service in list - use data-testid selector
+      await expect(page.getByTestId('service-card').filter({ hasText: TEST_SERVICE.name })).toBeVisible();
     });
 
     test('should validate required fields when creating service', async ({ page }) => {
@@ -97,16 +97,16 @@ test.describe('Booking Admin Dashboard - E2E', () => {
       await page.click('[data-testid="add-service-btn"]');
 
       // Submit empty form
-      const saveBtn = page.locator('button:has-text("Save")');
+      const saveBtn = page.getByRole('button', { name: /save/i });
       await expect(saveBtn).toBeVisible();
       await saveBtn.click();
 
       // Should show validation errors
-      await expect(page.locator('text=Service name is required')).toBeVisible();
-      await expect(page.locator('text=Duration must be greater than 0')).toBeVisible();
+      await expect(page.getByText(/service name is required/i)).toBeVisible();
+      await expect(page.getByText(/duration must be greater than 0/i)).toBeVisible();
 
       // Close modal
-      await page.click('.close-btn');
+      await page.getByRole('button', { name: /close/i }).click();
     });
 
     test('should edit an existing service', async ({ page }) => {
@@ -114,21 +114,21 @@ test.describe('Booking Admin Dashboard - E2E', () => {
       await page.getByTestId('services-tab').click();
 
       // Assuming a service exists, wait for list to load
-      await expect(page.locator('.service-card').first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByTestId(/service-card-/).first()).toBeVisible({ timeout: 10000 });
 
       // Find the service we created (or any service)
-      const editBtn = page.locator('[data-testid="edit-btn"]').first();
+      const editBtn = page.getByTestId('edit-btn').first();
       await editBtn.click();
 
       // Update name
       const newName = `Updated Service ${Date.now()}`;
-      await page.fill('input[name="name"]', newName);
-      await page.click('button:has-text("Save")');
+      await page.getByTestId('service-name').fill(newName);
+      await page.getByRole('button', { name: /save/i }).click();
 
       // Verify update
       await waitForVisible(page, 'text=Service updated successfully');
-      await expect(page.locator('text=Service updated successfully')).toBeVisible({ timeout: 5000 });
-      await expect(page.locator('.service-card h3', { hasText: newName })).toBeVisible();
+      await expect(page.getByText(/service updated successfully/i)).toBeVisible({ timeout: 5000 });
+      await expect(page.getByTestId(/service-card-/).filter({ hasText: newName })).toBeVisible();
     });
 
     test('should delete a service with confirmation', async ({ page }) => {
@@ -139,15 +139,15 @@ test.describe('Booking Admin Dashboard - E2E', () => {
       await page.click('[data-testid="add-service-btn"]');
 
       const tempServiceName = `Delete Me ${Date.now()}`;
-      await page.fill('input[name="name"]', tempServiceName);
-      await page.fill('input[name="duration_minutes"]', '30');
-      await page.fill('input[name="price_cents"]', '50.00');
-      await page.click('button:has-text("Save")');
+      await page.getByTestId('service-name').fill(tempServiceName);
+      await page.getByTestId('service-duration').fill('30');
+      await page.getByTestId('service-price').fill('50.00');
+      await page.getByRole('button', { name: /save/i }).click();
       await waitForVisible(page, 'text=Service created successfully');
 
       // Find the service we just created and delete IT
-      // Use filter to find the row/card with this name
-      const serviceCard = page.locator('.service-card').filter({ hasText: tempServiceName });
+      // Use data-testid selector
+      const serviceCard = page.getByTestId(/service-card-/).filter({ hasText: tempServiceName });
       await expect(serviceCard).toBeVisible();
 
       await serviceCard.locator('[data-testid="delete-btn"]').click();
@@ -158,11 +158,11 @@ test.describe('Booking Admin Dashboard - E2E', () => {
 
       // Click confirm
       await waitForVisible(page, 'button:has-text("Confirm")');
-      await page.click('button:has-text("Confirm")');
+      await page.getByRole('button', { name: /confirm/i }).click();
 
       // Should show success
       await waitForVisible(page, 'text=Service deleted successfully');
-      await expect(page.locator('text=Service deleted successfully')).toBeVisible({ timeout: 5000 });
+      await expect(page.getByText(/service deleted successfully/i)).toBeVisible({ timeout: 5000 });
     });
 
     test('should search/filter services', async ({ page }) => {
@@ -170,11 +170,10 @@ test.describe('Booking Admin Dashboard - E2E', () => {
       await page.getByTestId('services-tab').click();
 
       // Search for "Haircut"
-      await page.fill('.service-search', 'Haircut');
+      await page.getByTestId('service-search').fill('Haircut');
 
-      // Should filter results - target the heading specifically to avoid matching description
-      // Use .first() to handle potential duplicates from seeding/previous runs
-      await expect(page.locator('.service-card h3', { hasText: 'Haircut' }).first()).toBeVisible();
+      // Should filter results - use data-testid selector
+      await expect(page.getByTestId(/service-card-/).filter({ hasText: 'Haircut' }).first()).toBeVisible();
     });
   });
 
@@ -195,16 +194,16 @@ test.describe('Booking Admin Dashboard - E2E', () => {
       await navigateToBookingDashboard(page);
 
       // Wait for appointments to load first (should see at least one from seeding)
-      await expect(page.locator('.appointment-item').first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByTestId(/appointment-item-/).first()).toBeVisible({ timeout: 10000 });
 
       // Select confirmed status
-      await page.selectOption('select[aria-label="Status"]', 'confirmed');
+      await page.getByRole('combobox', { name: /status/i }).selectOption('confirmed');
 
       // Wait for filtered results - wait for at least one badge or empty state
       // We expect at least one confirmed appointment from seeding
-      await expect(page.locator('.status-badge.status-confirmed').first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByTestId(/status-badge-/).filter({ hasText: /confirmed/i }).first()).toBeVisible({ timeout: 10000 });
 
-      const statusBadges = await page.locator('.status-badge.status-confirmed').all();
+      const statusBadges = await page.getByTestId(/status-badge-/).filter({ hasText: /confirmed/i }).all();
       expect(statusBadges.length).toBeGreaterThan(0);
     });
 
@@ -217,26 +216,26 @@ test.describe('Booking Admin Dashboard - E2E', () => {
       // Wait for filtered results
       await page.waitForTimeout(1000);
 
-      // Should show matching results - specific selector
-      await expect(page.locator('.appointment-customer h3', { hasText: 'John' }).first()).toBeVisible();
+      // Should show matching results - use data-testid selector
+      await expect(page.getByTestId(/appointment-customer-/).filter({ hasText: 'John' }).first()).toBeVisible();
     });
 
     test('should view appointment details', async ({ page }) => {
       await navigateToBookingDashboard(page);
 
       // Click view details on first appointment
-      await page.locator('button:has-text("View Details")').first().click();
+      await page.getByRole('button', { name: /view details/i }).first().click();
 
       // Should open modal
-      await expect(page.locator('[role="dialog"]')).toBeVisible();
-      await expect(page.locator('h3:has-text("Appointment Details")')).toBeVisible();
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await expect(page.getByRole('heading', { name: /appointment details/i })).toBeVisible();
 
       // Should show appointment info
-      await expect(page.locator('text=Confirmation Code')).toBeVisible();
-      await expect(page.locator('text=Customer Name')).toBeVisible();
+      await expect(page.getByText(/confirmation code/i)).toBeVisible();
+      await expect(page.getByText(/customer name/i)).toBeVisible();
 
       // Close modal
-      await page.click('button:has-text("Close")');
+      await page.getByRole('button', { name: /close/i }).click();
       await expect(page.locator('[role="dialog"]')).not.toBeVisible();
     });
 
@@ -244,11 +243,11 @@ test.describe('Booking Admin Dashboard - E2E', () => {
       await navigateToBookingDashboard(page);
 
       // Filter to show only confirmed or pending appointments
-      await page.selectOption('select[aria-label="Status"]', 'confirmed');
+      await page.getByRole('combobox', { name: /status/i }).selectOption('confirmed');
       await page.waitForTimeout(1000); // Wait for filter to apply
 
       // Check if there are any appointments to cancel
-      const cancelButtons = page.locator('button:has-text("Cancel")');
+      const cancelButtons = page.getByRole('button', { name: /cancel/i });
       if (await cancelButtons.count() === 0) {
         console.log('No confirmed appointments to cancel, skipping test');
         return;
@@ -258,20 +257,20 @@ test.describe('Booking Admin Dashboard - E2E', () => {
       await cancelButtons.first().click();
 
       // Should show confirmation
-      await expect(page.locator('text=Are you sure')).toBeVisible();
+      await expect(page.getByText(/are you sure/i)).toBeVisible();
 
       // Confirm cancellation
-      await page.click('button:has-text("Confirm")');
+      await page.getByRole('button', { name: /confirm/i }).click();
 
       // Should show success
-      await expect(page.locator('text=cancelled successfully')).toBeVisible({ timeout: 5000 });
+      await expect(page.getByText(/cancelled successfully/i)).toBeVisible({ timeout: 5000 });
     });
 
     test('should refresh appointments list', async ({ page }) => {
       await navigateToBookingDashboard(page);
 
       // Click refresh button
-      await page.click('button:has-text("Refresh")');
+      await page.getByRole('button', { name: /refresh/i }).click();
 
       // Should reload data (indicated by brief loading state)
       await page.waitForTimeout(500);
@@ -284,13 +283,13 @@ test.describe('Booking Admin Dashboard - E2E', () => {
       await page.getByTestId('schedule-tab').click();
 
       // Should show all days
-      await expect(page.locator('text=Monday')).toBeVisible();
-      await expect(page.locator('text=Tuesday')).toBeVisible();
-      await expect(page.locator('text=Wednesday')).toBeVisible();
-      await expect(page.locator('text=Thursday')).toBeVisible();
-      await expect(page.locator('text=Friday')).toBeVisible();
-      await expect(page.locator('text=Saturday')).toBeVisible();
-      await expect(page.locator('text=Sunday')).toBeVisible();
+      await expect(page.getByText(/monday/i)).toBeVisible();
+      await expect(page.getByText(/tuesday/i)).toBeVisible();
+      await expect(page.getByText(/wednesday/i)).toBeVisible();
+      await expect(page.getByText(/thursday/i)).toBeVisible();
+      await expect(page.getByText(/friday/i)).toBeVisible();
+      await expect(page.getByText(/saturday/i)).toBeVisible();
+      await expect(page.getByText(/sunday/i)).toBeVisible();
     });
 
     test('should enable/disable days', async ({ page }) => {
@@ -325,10 +324,10 @@ test.describe('Booking Admin Dashboard - E2E', () => {
       await endInput.fill('17:00');
 
       // Save schedule
-      await page.click('button:has-text("Save Schedule")');
+      await page.getByRole('button', { name: /save schedule/i }).click();
 
       // Should show success
-      await expect(page.locator('text=Schedule saved successfully')).toBeVisible({ timeout: 5000 });
+      await expect(page.getByText(/schedule saved successfully/i)).toBeVisible({ timeout: 5000 });
     });
 
     test('should validate time slots', async ({ page }) => {
@@ -343,10 +342,10 @@ test.describe('Booking Admin Dashboard - E2E', () => {
       await page.locator('input[type="time"]').nth(1).fill('09:00');
 
       // Try to save
-      await page.click('button:has-text("Save Schedule")');
+      await page.getByRole('button', { name: /save schedule/i }).click();
 
       // Should show error
-      await expect(page.locator('text=End time must be after start time')).toBeVisible();
+      await expect(page.getByText(/end time must be after start time/i)).toBeVisible();
     });
 
     test('should copy schedule to all weekdays', async ({ page }) => {
@@ -359,10 +358,10 @@ test.describe('Booking Admin Dashboard - E2E', () => {
       await page.locator('input[type="time"]').nth(1).fill('17:00');
 
       // Click copy to all
-      await page.click('button:has-text("Copy to all")');
+      await page.getByRole('button', { name: /copy to all/i }).click();
 
       // Should show success
-      await expect(page.locator('text=copied to all weekdays')).toBeVisible();
+      await expect(page.getByText(/copied to all weekdays/i)).toBeVisible();
 
       // Should enable all weekday checkboxes
       const weekdayCheckboxes = await page.locator('input[type="checkbox"]').all();
@@ -377,7 +376,7 @@ test.describe('Booking Admin Dashboard - E2E', () => {
       await navigateToBookingDashboard(page);
 
       // Click "Add Service" quick action
-      await page.click('.quick-actions button:has-text("Add Service")');
+      await page.getByRole('button', { name: /add service/i }).first().click();
 
       // Should switch to services tab
       await expect(page.locator('[data-testid="service-manager"]')).toBeVisible();
@@ -387,7 +386,7 @@ test.describe('Booking Admin Dashboard - E2E', () => {
       await navigateToBookingDashboard(page);
 
       // Click "View Calendar" quick action
-      await page.click('.quick-actions button:has-text("View Calendar")');
+      await page.getByRole('button', { name: /view calendar/i }).click();
 
       // Should stay on/switch to appointments tab
       await expect(page.locator('[data-testid="appointment-list"]')).toBeVisible();
@@ -401,7 +400,7 @@ test.describe('Booking Admin Dashboard - E2E', () => {
       await navigateToBookingDashboard(page);
 
       // Should show mobile menu toggle
-      await expect(page.locator('button:has-text("Menu")')).toBeVisible();
+      await expect(page.getByRole('button', { name: /menu/i })).toBeVisible();
     });
 
     test('should toggle mobile menu', async ({ page }) => {
@@ -409,7 +408,7 @@ test.describe('Booking Admin Dashboard - E2E', () => {
       await navigateToBookingDashboard(page);
 
       // Click menu toggle
-      await page.click('button:has-text("Menu")');
+      await page.getByRole('button', { name: /menu/i }).click();
 
       // Should show tabs
       await expect(page.locator('.dashboard-tabs.mobile-open')).toBeVisible();
@@ -429,7 +428,7 @@ test.describe('Booking Admin Dashboard - E2E', () => {
       await navigateToBookingDashboard(page);
 
       // Should show error message
-      await expect(page.locator('text=Failed to load').first()).toBeVisible();
+      await expect(page.getByText(/failed to load/i).first()).toBeVisible();
     });
 
     test('should retry failed requests', async ({ page }) => {
@@ -437,13 +436,13 @@ test.describe('Booking Admin Dashboard - E2E', () => {
 
       // Simulate network error then click refresh
       await page.route('/api/booking/admin/**', route => route.abort());
-      await page.click('button:has-text("Refresh")');
+      await page.getByRole('button', { name: /refresh/i }).click();
 
       // Remove route block
       await page.unroute('/api/booking/admin/**');
 
       // Click refresh again
-      await page.click('button:has-text("Refresh")');
+      await page.getByRole('button', { name: /refresh/i }).click();
 
       // Should recover and load data
       await page.waitForTimeout(1000);
@@ -470,12 +469,12 @@ test.describe('Booking Admin Dashboard - E2E', () => {
       await navigateToBookingDashboard(page);
 
       // Check tab roles
-      await expect(page.locator('button[role="tab"]').first()).toBeVisible();
+      await expect(page.getByRole('tab').first()).toBeVisible();
 
       // Check dialog roles
       await page.getByTestId('services-tab').click();
-      await page.click('[data-testid="add-service-btn"]');
-      await expect(page.locator('[role="dialog"]')).toBeVisible();
+      await page.getByTestId('add-service-btn').click();
+      await expect(page.getByRole('dialog')).toBeVisible();
     });
 
     test('should be keyboard navigable', async ({ page }) => {

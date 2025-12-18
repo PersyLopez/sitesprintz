@@ -1,23 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { screen, waitFor, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { BrowserRouter, MemoryRouter } from 'react-router-dom';
 import Products from '../../src/pages/Products';
 import { useSite } from '../../src/context/SiteContext';
-import { AuthProvider } from '../../src/context/AuthContext';
-import { ToastProvider } from '../../src/context/ToastContext';
+import { renderWithAllProviders } from '../utils/testWrapper.jsx';
 
 // Helper to render with all required providers
 const renderWithProviders = (component, initialEntries = ['/products?siteId=site-123']) => {
-  return render(
-    <MemoryRouter initialEntries={initialEntries}>
-      <AuthProvider>
-        <ToastProvider>
-          {component}
-        </ToastProvider>
-      </AuthProvider>
-    </MemoryRouter>
-  );
+  return renderWithAllProviders(component, { initialEntries });
 };
 
 // Mock the SiteContext

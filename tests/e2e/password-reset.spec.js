@@ -5,6 +5,14 @@
 
 import { test, expect } from '@playwright/test';
 import { register, login } from '../helpers/e2e-test-utils.js';
+import { prisma } from '../../database/db.js';
+import {
+  fillForgotPasswordForm,
+  fillResetPasswordForm,
+  waitForForgotPasswordSuccess,
+  waitForPasswordResetError,
+  requestPasswordReset
+} from '../helpers/password-reset-helpers.js';
 
 test.describe('Password Reset Flow', () => {
   let testUser;
@@ -13,220 +21,135 @@ test.describe('Password Reset Flow', () => {
     // Register a test user
     testUser = await register(page, {
       email: `reset${Date.now()}@example.com`,
-      password: 'OldPassword123!',
+      password: 'SecurePass!2025',
       name: 'Reset Test User'
     });
   });
 
   test('should request password reset', async ({ page }) => {
-    await page.goto('/forgot-password');
+    await page.goto('/forgot-password.html');
 
-    // Fill in email
-    const emailInput = page.locator('input[type="email"], input[name="email"]');
-    await emailInput.fill(testUser.email);
-
-    // Submit form
-    const submitButton = page.locator('button[type="submit"], button:has-text("Reset"), button:has-text("Send")');
-    await submitButton.click();
+    // Fill and submit form
+    await fillForgotPasswordForm(page, testUser.email);
 
     // Wait for success message
-    await page.waitForTimeout(1000);
-
-    // Check for success message (should not reveal if user exists)
-    const successMessage = page.locator(
-      'text=/reset.*link.*sent|email.*sent|check.*email|if.*account.*exists/i'
-    );
-
-    await expect(successMessage.first()).toBeVisible({ timeout: 5000 });
+    await waitForForgotPasswordSuccess(page);
   });
 
   test('should show error for invalid email format', async ({ page }) => {
-    await page.goto('/forgot-password');
+    await page.goto('/forgot-password.html');
 
     // Fill in invalid email
-    const emailInput = page.locator('input[type="email"], input[name="email"]');
+    const emailInput = page.getByTestId('forgot-password-email');
     await emailInput.fill('invalid-email');
 
     // Try to submit
-    const submitButton = page.locator('button[type="submit"], button:has-text("Reset")');
-    await submitButton.click();
+    await page.getByTestId('forgot-password-submit').click();
 
-    // Check for validation error
-    await page.waitForTimeout(500);
+    // Check for validation error (browser or custom)
+    const hasBrowserError = await emailInput.evaluate(el => !el.validity.valid);
+    const hasCustomError = await page.getByText(/invalid.*email|valid.*email|email.*format/i).count() > 0;
 
-    const errorMessage = page.locator('text=/invalid.*email|valid.*email|email.*format/i');
-    const hasError = await errorMessage.count() > 0;
-
-    // Either browser validation or custom validation should show error
-    expect(hasError || await emailInput.evaluate(el => el.validity.valid === false)).toBeTruthy();
+    expect(hasBrowserError || hasCustomError).toBeTruthy();
   });
 
   test('should validate reset token', async ({ page, request }) => {
-    // First, request password reset via API to get token
-    const resetRequest = await request.post('/api/auth/forgot-password', {
-      data: {
-        email: testUser.email
-      }
-    });
-
+    // First, request password reset via API
+    const resetRequest = await requestPasswordReset(request, testUser.email);
     expect(resetRequest.ok()).toBeTruthy();
 
-    // In a real scenario, we'd extract the token from email
-    // For testing, we'll use an invalid token to test validation
-    await page.goto('/reset-password?token=invalid-token');
+    // Navigate with invalid token to test validation
+    await page.goto('/reset-password.html?token=invalid-token');
+
+    // Submit form to trigger validation
+    await fillResetPasswordForm(page, 'SecurePass!2025', 'SecurePass!2025');
 
     // Should show error for invalid token
-    await page.waitForTimeout(1000);
-
-    const errorMessage = page.locator(
-      'text=/invalid.*token|expired.*token|invalid.*link|expired.*link/i'
+    const errorMessage = await waitForPasswordResetError(
+      page,
+      /invalid.*token|expired.*token|invalid.*link|expired.*link/i
     );
-
-    // Error should be visible
-    const hasError = await errorMessage.count() > 0;
-    expect(hasError).toBeTruthy();
+    await expect(errorMessage).toBeVisible();
   });
 
   test('should reset password with valid token', async ({ page, request }) => {
     // Request password reset
-    const resetRequest = await request.post('/api/auth/forgot-password', {
-      data: {
-        email: testUser.email
-      }
-    });
-
+    const resetRequest = await requestPasswordReset(request, testUser.email);
     expect(resetRequest.ok()).toBeTruthy();
 
-    // In a real test, we'd need to extract token from email or database
-    // For now, we'll test the UI flow with a mock token
-    // This would require access to the test database or email service
+    // Get token from DB
+    const user = await prisma.users.findUnique({
+      where: { email: testUser.email }
+    });
+    const token = user.password_reset_token;
+    expect(token).toBeTruthy();
 
-    // Navigate to reset page (would normally have token in URL)
-    await page.goto('/reset-password');
+    // Navigate to reset page with valid token
+    await page.goto(`/reset-password.html?token=${token}`);
 
-    // Check if token is required
-    const tokenInput = page.locator('input[name="token"], input[type="hidden"][name="token"]');
-    const passwordInput = page.locator('input[type="password"][name="password"], input[type="password"][name="newPassword"]');
-    const confirmInput = page.locator('input[type="password"][name="confirmPassword"], input[type="password"][name="confirm"]');
+    // Fill and submit password form
+    await fillResetPasswordForm(page, 'SecurePass!2025', 'SecurePass!2025');
 
-    // If token input is visible, fill it (otherwise it's in URL)
-    if (await tokenInput.count() > 0) {
-      // We'd use a real token here in integration tests
-      // For E2E, we'll test the form validation
-    }
-
-    // Fill password fields
-    if (await passwordInput.count() > 0) {
-      await passwordInput.fill('NewPassword123!');
-    }
-
-    if (await confirmInput.count() > 0) {
-      await confirmInput.fill('NewPassword123!');
-    }
-
-    // Submit
-    const submitButton = page.locator('button[type="submit"], button:has-text("Reset")');
-
-    // Note: This will fail without a valid token, which is expected
-    // In a full integration test, we'd extract the real token
-    await submitButton.click();
-
-    // Wait for response
-    await page.waitForTimeout(2000);
-
-    // Either success (if token was valid) or error (if invalid/missing)
-    const resultMessage = page.locator(
-      'text=/success|password.*reset|invalid|expired|error/i'
-    );
-
+    // Wait for success
+    const resultMessage = page.getByText(/success|password.*reset/i);
     await expect(resultMessage.first()).toBeVisible({ timeout: 5000 });
   });
 
   test('should validate password requirements', async ({ page }) => {
     // Navigate to reset page
-    await page.goto('/reset-password?token=test-token');
-
+    await page.goto('/reset-password.html?token=test-token');
     await page.waitForLoadState('networkidle');
 
-    const passwordInput = page.locator('input[type="password"][name="password"], input[type="password"][name="newPassword"]').first();
-    const confirmInput = page.locator('input[type="password"][name="confirmPassword"], input[type="password"][name="confirm"]').first();
+    const passwordInput = page.getByTestId('reset-password-new');
+    const confirmInput = page.getByTestId('reset-password-confirm');
 
     // Try short password
-    if (await passwordInput.count() > 0) {
-      await passwordInput.fill('123');
+    await passwordInput.fill('123');
+    await page.getByTestId('reset-password-submit').click();
 
-      // Try to submit
-      const submitButton = page.locator('button[type="submit"]');
-      await submitButton.click();
+    // Check for password length error (browser or custom validation)
+    const hasBrowserError = await passwordInput.evaluate(el => el.validity.tooShort);
+    const hasCustomError = await page.getByText(/at least.*6|at least.*8|password.*length|too.*short/i).count() > 0;
 
-      await page.waitForTimeout(500);
-
-      // Check for password length error
-      const lengthError = page.locator('text=/at least.*6|at least.*8|password.*length|too.*short/i');
-      const hasLengthError = await lengthError.count() > 0;
-
-      expect(hasLengthError || await passwordInput.evaluate(el => el.validity.tooShort)).toBeTruthy();
-    }
+    expect(hasBrowserError || hasCustomError).toBeTruthy();
   });
 
   test('should validate password confirmation match', async ({ page }) => {
-    await page.goto('/reset-password?token=test-token');
-
+    await page.goto('/reset-password.html?token=test-token');
     await page.waitForLoadState('networkidle');
 
-    const passwordInput = page.locator('input[type="password"][name="password"], input[type="password"][name="newPassword"]').first();
-    const confirmInput = page.locator('input[type="password"][name="confirmPassword"], input[type="password"][name="confirm"]').first();
+    const passwordInput = page.getByTestId('reset-password-new');
+    const confirmInput = page.getByTestId('reset-password-confirm');
 
-    if (await passwordInput.count() > 0 && await confirmInput.count() > 0) {
-      await passwordInput.fill('NewPassword123!');
-      await confirmInput.fill('DifferentPassword123!');
+    await passwordInput.fill('NewPassword123!');
+    await confirmInput.fill('DifferentPassword123!');
+    await page.getByTestId('reset-password-submit').click();
 
-      // Try to submit
-      const submitButton = page.locator('button[type="submit"]');
-      await submitButton.click();
-
-      await page.waitForTimeout(500);
-
-      // Check for mismatch error
-      const mismatchError = page.locator('text=/passwords.*match|do not match|must.*match/i');
-      const hasMismatchError = await mismatchError.count() > 0;
-
-      expect(hasMismatchError).toBeTruthy();
-    }
+    // Check for mismatch error
+    const mismatchError = page.getByText(/passwords.*match|do not match|must.*match/i);
+    await expect(mismatchError).toBeVisible({ timeout: 2000 });
   });
 
   test('should redirect to login after successful reset', async ({ page, request }) => {
     // Request reset
-    await request.post('/api/auth/forgot-password', {
-      data: { email: testUser.email }
+    await requestPasswordReset(request, testUser.email);
+
+    // Get token from DB
+    const user = await prisma.users.findUnique({
+      where: { email: testUser.email }
     });
+    const token = user.password_reset_token;
 
-    // Navigate to reset page (would have real token in production test)
-    await page.goto('/reset-password');
+    // Navigate to reset page
+    await page.goto(`/reset-password.html?token=${token}`);
 
-    // Fill form (this will fail without real token, but tests redirect logic)
-    const passwordInput = page.locator('input[type="password"][name="password"], input[type="password"][name="newPassword"]').first();
-    const confirmInput = page.locator('input[type="password"][name="confirmPassword"]').first();
+    // Fill form
+    await fillResetPasswordForm(page, 'SecurePass!2025', 'SecurePass!2025');
 
-    if (await passwordInput.count() > 0) {
-      await passwordInput.fill('NewPassword123!');
+    // Wait for redirect to login
+    await page.waitForURL(/\/login/, { timeout: 5000 });
 
-      if (await confirmInput.count() > 0) {
-        await confirmInput.fill('NewPassword123!');
-      }
-
-      const submitButton = page.locator('button[type="submit"]');
-      await submitButton.click();
-
-      // Wait for redirect (may go to login or show error)
-      await page.waitForTimeout(2000);
-
-      // Should either redirect to login or show error
-      const isLoginPage = page.url().includes('/login');
-      const hasError = await page.locator('text=/error|invalid|expired/i').count() > 0;
-
-      expect(isLoginPage || hasError).toBeTruthy();
-    }
+    expect(page.url()).toContain('login');
   });
 
   test('should login with new password after reset', async ({ page, request }) => {
@@ -234,11 +157,11 @@ test.describe('Password Reset Flow', () => {
     // For E2E, we'll test the login flow with a known password
 
     // First, try to login with old password (should work if reset hasn't happened)
-    await page.goto('/login');
+    await page.goto('/login.html');
 
-    await page.fill('input[type="email"]', testUser.email);
-    await page.fill('input[type="password"]', testUser.password);
-    await page.click('button[type="submit"]');
+    await page.getByRole('textbox', { name: /email/i }).fill(testUser.email);
+    await page.getByLabel(/password/i).fill(testUser.password);
+    await page.getByRole('button', { name: /login|sign in|submit/i }).click();
 
     // Should login successfully (password hasn't been reset yet)
     await page.waitForURL(/dashboard/, { timeout: 5000 });
@@ -260,33 +183,23 @@ test.describe('Password Reset Flow', () => {
 
   test('should handle expired reset token', async ({ page }) => {
     // Navigate with an expired token (would be in URL in real scenario)
-    await page.goto('/reset-password?token=expired-token');
-
-
+    await page.goto('/reset-password.html?token=expired-token');
     await page.waitForLoadState('networkidle');
 
     // Try to submit with expired token
-    const passwordInput = page.locator('input[type="password"]').first();
-    if (await passwordInput.count() > 0) {
-      await passwordInput.fill('NewPassword123!');
+    await fillResetPasswordForm(page, 'NewPassword123!', 'NewPassword123!');
 
-      const confirmInput = page.locator('input[type="password"]').nth(1);
-      if (await confirmInput.count() > 0) {
-        await confirmInput.fill('NewPassword123!');
-      }
+    // Wait for error or redirect
+    await Promise.race([
+      page.getByText(/expired|invalid.*token|expired.*link/i).waitFor({ timeout: 3000 }),
+      page.waitForURL(/forgot-password|\/login/, { timeout: 3000 })
+    ]);
 
-      const submitButton = page.locator('button[type="submit"]');
-      await submitButton.click();
+    // Should show expired token error or redirect
+    const hasExpiredError = await page.getByText(/expired|invalid.*token|expired.*link/i).count() > 0;
+    const isRedirected = page.url().includes('/forgot-password') || page.url().includes('/login');
 
-      await page.waitForTimeout(2000);
-
-      // Should show expired token error
-      const expiredError = page.locator('text=/expired|invalid.*token|expired.*link/i');
-      const hasExpiredError = await expiredError.count() > 0;
-
-      // Either shows error or redirects (both are valid responses)
-      expect(hasExpiredError || page.url().includes('/forgot-password') || page.url().includes('/login')).toBeTruthy();
-    }
+    expect(hasExpiredError || isRedirected).toBeTruthy();
   });
 });
 

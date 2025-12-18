@@ -23,17 +23,23 @@ test.describe('Contact Form Email Notifications', () => {
     ownerEmail = `test-owner-${timestamp}-${random}@example.com`;
     siteSubdomain = `test-site-${timestamp}-${random}`;
 
+    // Get CSRF token
+    const csrfResponse = await request.get('/api/csrf-token');
+    const { csrfToken } = await csrfResponse.json();
+
     // Register test user
     const registerResponse = await request.post('/api/auth/register', {
+      headers: { 'X-CSRF-Token': csrfToken },
       data: {
         email: ownerEmail,
-        password: 'TestPassword123!'
+        password: 'StrictPwd!2024',
+        confirmPassword: 'StrictPwd!2024'
       }
     });
 
     expect(registerResponse.ok()).toBeTruthy();
     const registerData = await registerResponse.json();
-    const token = registerData.token;
+    const token = registerData.accessToken;
 
     // Create a draft
     const draftResponse = await request.post('/api/drafts', {

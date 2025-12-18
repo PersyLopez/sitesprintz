@@ -15,17 +15,22 @@ test.describe('Site Publishing', () => {
   test.beforeEach(async ({ request }) => {
     // Create test user
     const email = `pubtest${Date.now()}@example.com`;
+    const csrfRes = await request.get(`${API_URL}/api/csrf-token`);
+    const { csrfToken } = await csrfRes.json();
+
     const registerRes = await request.post(`${API_URL}/api/auth/register`, {
+      headers: { 'X-CSRF-Token': csrfToken },
       data: {
         email,
-        password: 'Test123!@#',
+        password: 'StrictPwd!2024',
+        confirmPassword: 'StrictPwd!2024',
         name: 'Publish Test User'
       }
     });
-    
+
     const registerData = await registerRes.json();
-    authToken = registerData.token;
-    
+    authToken = registerData.accessToken;
+
     subdomain = `pubtest${Date.now()}`;
   });
 
@@ -41,7 +46,7 @@ test.describe('Site Publishing', () => {
         }
       }
     });
-    
+
     // Should succeed, return validation error, or DB error - all are acceptable responses
     // The key is it doesn't crash unexpectedly
     expect([200, 201, 400, 500]).toContain(response.status());
@@ -51,7 +56,7 @@ test.describe('Site Publishing', () => {
     // Publish first site
     const email = `pub1${Date.now()}@example.com`;
     const sub = `pubtest${Date.now()}`;
-    
+
     const firstPublish = await request.post(`${API_URL}/api/sites/guest-publish`, {
       data: {
         email,
@@ -62,16 +67,16 @@ test.describe('Site Publishing', () => {
         }
       }
     });
-    
+
     // Accept success or server error (DB issues)
     expect([200, 201, 500]).toContain(firstPublish.status());
-    
+
     // Only test subdomain conflict if first publish succeeded
     if (!firstPublish.ok()) {
       console.log('First publish failed, skipping subdomain conflict test');
       return;
     }
-    
+
     // Try to publish another site with same subdomain
     const secondPublish = await request.post(`${API_URL}/api/sites/guest-publish`, {
       data: {
@@ -83,7 +88,7 @@ test.describe('Site Publishing', () => {
         }
       }
     });
-    
+
     // Should either succeed with different subdomain or fail
     if (secondPublish.ok()) {
       const data = await secondPublish.json();
@@ -96,7 +101,7 @@ test.describe('Site Publishing', () => {
     // Publish site
     const email = `pub${Date.now()}@example.com`;
     const sub = `pubtest${Date.now()}`;
-    
+
     await request.post(`${API_URL}/api/sites/guest-publish`, {
       data: {
         email,
@@ -107,12 +112,12 @@ test.describe('Site Publishing', () => {
         }
       }
     });
-    
+
     // Try to access published site
     const publishedUrl = `http://${sub}.localhost:3000`;
-    await page.goto(publishedUrl).catch(() => {});
+    await page.goto(publishedUrl).catch(() => { });
     await page.waitForTimeout(1000);
-    
+
     // Should load some content
     const hasContent = await page.locator('body').textContent();
     expect(hasContent).toBeTruthy();
@@ -128,7 +133,7 @@ test.describe('Site Publishing', () => {
         }
       }
     });
-    
+
     // Should handle gracefully - accept success, validation error, or server error
     expect([200, 201, 400, 422, 500]).toContain(response.status());
   });
@@ -146,7 +151,7 @@ test.describe('Site Publishing', () => {
         }
       }
     });
-    
+
     // Accept success or server error
     expect([200, 201, 500]).toContain(response.status());
   });

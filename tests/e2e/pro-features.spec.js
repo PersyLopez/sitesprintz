@@ -32,7 +32,9 @@ test.describe('Pro Features - Booking Widget', () => {
 
   test('should display booking widget when enabled', async ({ page }) => {
     // Look for booking widget container
-    const bookingWidget = page.locator('#booking-widget-container, [data-booking-widget]');
+    const bookingWidget = page.getByTestId('booking-widget-container').or(
+      page.locator('[data-booking-widget]').first()
+    );
 
     // Widget should be present (may be hidden until triggered)
     const widgetExists = await bookingWidget.count();
@@ -41,7 +43,9 @@ test.describe('Pro Features - Booking Widget', () => {
 
   test('should load booking iframe for Calendly', async ({ page }) => {
     // Click booking trigger
-    const bookingBtn = page.locator('button:has-text("Book"), a:has-text("Schedule")').first();
+    const bookingBtn = page.getByRole('button', { name: /book|schedule/i }).or(
+      page.getByRole('link', { name: /book|schedule/i })
+    ).first();
 
     if (await bookingBtn.count() > 0) {
       await bookingBtn.click();
@@ -57,7 +61,7 @@ test.describe('Pro Features - Booking Widget', () => {
 
   test('should show fallback link if iframe blocked', async ({ page }) => {
     // If iframe fails, should show external link
-    const fallbackLink = page.locator('a[href*="calendly"], a[href*="acuity"], a[href*="square"]');
+    const fallbackLink = page.getByRole('link', { href: /calendly|acuity|square/i });
 
     const linkCount = await fallbackLink.count();
     if (linkCount > 0) {
@@ -66,7 +70,9 @@ test.describe('Pro Features - Booking Widget', () => {
   });
 
   test('should display loading skeleton while booking loads', async ({ page }) => {
-    const loadingSkeleton = page.locator('.booking-loading, [data-loading-skeleton]');
+    const loadingSkeleton = page.getByTestId('loading-skeleton').or(
+      page.locator('[data-loading-skeleton]').first()
+    );
 
     // May appear briefly during load
     const skeletonExists = await loadingSkeleton.count();
@@ -111,7 +117,7 @@ test.describe('Pro Features - Analytics Tracking', () => {
 
     // Navigate to another page (triggers tracking)
     // First try to find a real link
-    const navLink = page.locator('nav a').first();
+    const navLink = page.getByRole('navigation').getByRole('link').first();
     if (await navLink.count() > 0 && await navLink.isVisible()) {
       await navLink.click();
     } else {
@@ -133,7 +139,7 @@ test.describe('Pro Features - Analytics Tracking', () => {
     });
 
     // Click a link
-    const externalLink = page.locator('a[href^="http"]').first();
+    const externalLink = page.getByRole('link', { href: /^http/ }).first();
     if (await externalLink.count() > 0) {
       await externalLink.click({ button: 'middle' }); // Middle click to not navigate away
     }
@@ -173,7 +179,9 @@ test.describe('Pro Features - Google Reviews Widget', () => {
   });
 
   test('should display reviews widget when configured', async ({ page }) => {
-    const reviewsWidget = page.locator('#reviews-widget, [data-reviews-widget], .reviews-section');
+    const reviewsWidget = page.getByTestId('reviews-widget').or(
+      page.locator('[data-reviews-widget]').first()
+    );
 
     const widgetCount = await reviewsWidget.count();
     if (widgetCount > 0) {
@@ -182,26 +190,34 @@ test.describe('Pro Features - Google Reviews Widget', () => {
   });
 
   test('should show star ratings', async ({ page }) => {
-    const starRatings = page.locator('.star-rating, [data-rating], .review-stars');
+    const starRatings = page.getByTestId(/rating/).or(
+      page.locator('[data-rating]').first()
+    );
 
     if (await starRatings.count() > 0) {
       await expect(starRatings.first()).toBeVisible();
 
       // Check for star icons
-      const stars = page.locator('.star, .fa-star, svg[data-star]');
+      const stars = page.getByTestId(/star/).or(
+        page.locator('svg[data-star]')
+      );
       expect(await stars.count()).toBeGreaterThanOrEqual(1);
     }
   });
 
   test('should display individual review cards', async ({ page }) => {
-    const reviewCards = page.locator('.review-card, [data-review], .review-item');
+    const reviewCards = page.getByTestId(/review-/).or(
+      page.locator('[data-review]')
+    );
 
     if (await reviewCards.count() > 0) {
       // Should have at least one review
       await expect(reviewCards.first()).toBeVisible();
 
       // Review should have author name
-      const authorName = reviewCards.first().locator('.author-name, .reviewer-name, [data-author]');
+      const authorName = reviewCards.first().getByTestId(/author/).or(
+        reviewCards.first().locator('[data-author]')
+      );
       await expect(authorName).toBeVisible().catch(() => {
         console.log('Review author name structure may vary');
       });
@@ -209,7 +225,9 @@ test.describe('Pro Features - Google Reviews Widget', () => {
   });
 
   test('should show relative timestamps', async ({ page }) => {
-    const timestamps = page.locator('.review-date, .review-time, [data-timestamp]');
+    const timestamps = page.getByTestId(/timestamp/).or(
+      page.locator('[data-timestamp]')
+    );
 
     if (await timestamps.count() > 0) {
       const timestampText = await timestamps.first().textContent();
@@ -224,10 +242,14 @@ test.describe('Pro Features - Google Reviews Widget', () => {
 
   test('should handle reviews loading error gracefully', async ({ page }) => {
     // Check if error state is handled
-    const errorMessage = page.locator('.reviews-error, [data-error], .error-message');
+    const errorMessage = page.getByTestId(/error/).or(
+      page.getByText(/error/i)
+    );
 
     // Either reviews load or error is shown
-    const reviewsWidget = page.locator('#reviews-widget');
+    const reviewsWidget = page.getByTestId('reviews-widget').or(
+      page.locator('[data-reviews-widget]').first()
+    );
     const hasContent = await reviewsWidget.count() > 0;
     const hasError = await errorMessage.count() > 0;
 
@@ -243,36 +265,52 @@ test.describe('Pro Features - Enhanced Shopping Cart', () => {
 
   test('should add product with modifiers to cart', async ({ page }) => {
     // Look for product with modifiers
-    const productCard = page.locator('.product-card, [data-product]').first();
+    const productCard = page.getByTestId(/product-/).or(
+      page.locator('[data-product]').first()
+    );
 
     if (await productCard.count() > 0) {
       await productCard.click();
 
       // Look for modifier options
-      const modifiers = page.locator('.modifier-option, [data-modifier], select, input[type="radio"]');
+      const modifiers = page.getByTestId(/modifier/).or(
+        page.locator('[data-modifier]').first()
+      ).or(
+        page.getByRole('combobox').first()
+      ).or(
+        page.getByRole('radio').first()
+      );
 
       if (await modifiers.count() > 0) {
         await modifiers.first().click();
       }
 
       // Add to cart
-      await page.click('button:has-text("Add to Cart")');
+      await page.getByRole('button', { name: /add to cart/i }).click();
 
       // Cart should update
-      const cartCount = page.locator('.cart-count, [data-cart-count]');
+      const cartCount = page.getByTestId('cart-count').or(
+        page.locator('[data-cart-count]').first()
+      );
       await expect(cartCount).toBeVisible({ timeout: 5000 }).catch(() => { });
     }
   });
 
   test('should allow special instructions', async ({ page }) => {
     // Add product
-    await page.click('button:has-text("Add to Cart")').catch(() => { });
+    await page.getByRole('button', { name: /add to cart/i }).click().catch(() => { });
 
     // Open cart
-    await page.click('[data-cart-icon], button:has-text("Cart")').catch(() => { });
+    await page.getByTestId('cart-icon').or(
+      page.getByRole('button', { name: /cart/i })
+    ).click().catch(() => { });
 
     // Look for special instructions field
-    const instructionsField = page.locator('textarea[placeholder*="instructions"], textarea[placeholder*="notes"]');
+    const instructionsField = page.getByTestId('instructions-field').or(
+      page.getByLabel(/instructions|notes/i)
+    ).or(
+      page.getByPlaceholder(/instructions|notes/i)
+    );
 
     if (await instructionsField.count() > 0) {
       await instructionsField.fill('Please make it extra spicy');
@@ -284,29 +322,39 @@ test.describe('Pro Features - Enhanced Shopping Cart', () => {
 
   test('should calculate tip options', async ({ page }) => {
     // Add product and open cart
-    await page.click('button:has-text("Add to Cart")').catch(() => { });
-    await page.click('button:has-text("Cart")').catch(() => { });
+    await page.getByRole('button', { name: /add to cart/i }).click().catch(() => { });
+    await page.getByRole('button', { name: /cart/i }).click().catch(() => { });
 
     // Look for tip options
-    const tipButtons = page.locator('button:has-text("%"), [data-tip-option]');
+    const tipButtons = page.getByTestId(/tip-option/).or(
+      page.locator('[data-tip-option]')
+    ).or(
+      page.getByRole('button', { name: /%/ })
+    );
 
     if (await tipButtons.count() > 0) {
       const tipButton = tipButtons.first();
       await tipButton.click();
 
       // Total should update with tip
-      const total = page.locator('.cart-total, [data-cart-total]');
+      const total = page.getByTestId('cart-total').or(
+        page.locator('[data-cart-total]').first()
+      );
       await expect(total).toBeVisible();
     }
   });
 
   test('should support delivery/pickup scheduling', async ({ page }) => {
     // Add product and open cart
-    await page.click('button:has-text("Add to Cart")').catch(() => { });
-    await page.click('button:has-text("Cart")').catch(() => { });
+    await page.getByRole('button', { name: /add to cart/i }).click().catch(() => { });
+    await page.getByRole('button', { name: /cart/i }).click().catch(() => { });
 
     // Look for scheduling options
-    const schedulingOptions = page.locator('select[name*="delivery"], select[name*="pickup"], [data-scheduling]');
+    const schedulingOptions = page.getByTestId('scheduling-select').or(
+      page.locator('[data-scheduling]').first()
+    ).or(
+      page.getByRole('combobox', { name: /delivery|pickup/i })
+    );
 
     if (await schedulingOptions.count() > 0) {
       await schedulingOptions.first().selectOption({ index: 1 });
@@ -315,7 +363,7 @@ test.describe('Pro Features - Enhanced Shopping Cart', () => {
 
   test('should persist cart in localStorage', async ({ page }) => {
     // Add product
-    await page.click('button:has-text("Add to Cart")').catch(() => { });
+    await page.getByRole('button', { name: /add to cart/i }).click().catch(() => { });
 
     // Check localStorage
     const cartData = await page.evaluate(() => {
@@ -330,12 +378,18 @@ test.describe('Pro Features - Enhanced Shopping Cart', () => {
 
   test.skip('should calculate total with tax', async ({ page }) => {
     // Add product
-    await page.click('button:has-text("Add to Cart")').catch(() => { });
-    await page.click('button:has-text("Cart")').catch(() => { });
+    await page.getByRole('button', { name: /add to cart/i }).click().catch(() => { });
+    await page.getByRole('button', { name: /cart/i }).click().catch(() => { });
 
     // Check for tax calculation
-    const taxLine = page.locator('text=/tax/i, [data-tax]');
-    const total = page.locator('.cart-total, [data-total]');
+    const taxLine = page.getByTestId('tax-line').or(
+      page.locator('[data-tax]').first()
+    ).or(
+      page.getByText(/tax/i)
+    );
+    const total = page.getByTestId('cart-total').or(
+      page.locator('[data-total]').first()
+    );
 
     if (await taxLine.count() > 0 && await total.count() > 0) {
       await expect(taxLine).toBeVisible();
@@ -349,18 +403,23 @@ test.describe('Pro Features - Order Management', () => {
 
   test.beforeEach(async ({ request }) => {
     // Create Pro user
+    const csrfRes = await request.get(`${API_URL}/api/csrf-token`);
+    const { csrfToken } = await csrfRes.json();
+
     const email = `proowner${Date.now()}@example.com`;
     const registerRes = await request.post(`${API_URL}/api/auth/register`, {
+      headers: { 'X-CSRF-Token': csrfToken },
       data: {
         email,
-        password: 'Test123!@#',
+        password: 'StrictPwd!2024',
+        confirmPassword: 'StrictPwd!2024',
         name: 'Pro Site Owner'
       }
     });
 
     if (registerRes.ok()) {
       const data = await registerRes.json();
-      authToken = data.token;
+      authToken = data.accessToken;
     }
   });
 
@@ -380,7 +439,7 @@ test.describe('Pro Features - Order Management', () => {
     await page.goto(`${BASE_URL}/dashboard/orders`);
 
     // Should see orders page
-    const ordersHeading = page.locator('h1:has-text("Orders"), h2:has-text("Orders")');
+    const ordersHeading = page.getByRole('heading', { name: /orders/i });
     await expect(ordersHeading).toBeVisible({ timeout: 10000 }).catch(() => {
       console.log('Orders page structure may vary');
     });
@@ -392,7 +451,11 @@ test.describe('Pro Features - Order Management', () => {
     await page.goto(`${BASE_URL}/dashboard/orders`);
 
     // Look for status filter
-    const statusFilter = page.locator('select[name*="status"], [data-status-filter]');
+    const statusFilter = page.getByTestId('status-filter').or(
+      page.locator('[data-status-filter]').first()
+    ).or(
+      page.getByRole('combobox', { name: /status/i })
+    );
 
     if (await statusFilter.count() > 0) {
       await statusFilter.selectOption('pending');
@@ -408,7 +471,7 @@ test.describe('Pro Features - Order Management', () => {
     await page.goto(`${BASE_URL}/dashboard/orders`);
 
     // Look for export button
-    const exportBtn = page.locator('button:has-text("Export"), button:has-text("CSV")');
+    const exportBtn = page.getByRole('button', { name: /export|csv/i });
 
     if (await exportBtn.count() > 0) {
       // Set up download handler
@@ -429,7 +492,11 @@ test.describe('Pro Features - Order Management', () => {
     await page.goto(`${BASE_URL}/dashboard/orders`);
 
     // Look for print button
-    const printBtn = page.locator('button:has-text("Print"), [data-print-ticket]');
+    const printBtn = page.getByTestId('print-ticket-button').or(
+      page.locator('[data-print-ticket]').first()
+    ).or(
+      page.getByRole('button', { name: /print/i })
+    );
 
     if (await printBtn.count() > 0) {
       // Intercept print dialog
@@ -575,15 +642,21 @@ test.describe('Pro Features - Cross-Template Validation', () => {
     await page.goto(`${BASE_URL}/templates/restaurant-pro`);
 
     // Should have booking
-    const booking = page.locator('[data-booking], button:has-text("Book")');
+    const booking = page.getByTestId(/booking/).or(
+      page.locator('[data-booking]').first()
+    ).or(
+      page.getByRole('button', { name: /book/i })
+    );
     expect(await booking.count()).toBeGreaterThanOrEqual(0);
 
     // Should have menu
-    const menu = page.locator('.menu-item, [data-menu-item]');
+    const menu = page.getByTestId(/menu-item/).or(
+      page.locator('[data-menu-item]')
+    );
     expect(await menu.count()).toBeGreaterThanOrEqual(0);
 
     // Should have orders capability
-    const orderBtn = page.locator('button:has-text("Order"), button:has-text("Add to Cart")');
+    const orderBtn = page.getByRole('button', { name: /order|add to cart/i });
     expect(await orderBtn.count()).toBeGreaterThanOrEqual(0);
   });
 
@@ -591,11 +664,17 @@ test.describe('Pro Features - Cross-Template Validation', () => {
     await page.goto(`${BASE_URL}/templates/salon-pro`);
 
     // Should have booking
-    const booking = page.locator('[data-booking], button:has-text("Book")');
+    const booking = page.getByTestId(/booking/).or(
+      page.locator('[data-booking]').first()
+    ).or(
+      page.getByRole('button', { name: /book/i })
+    );
     expect(await booking.count()).toBeGreaterThanOrEqual(0);
 
     // Should have services
-    const services = page.locator('.service-card, [data-service]');
+    const services = page.getByTestId(/service-/).or(
+      page.locator('[data-service]')
+    );
     expect(await services.count()).toBeGreaterThanOrEqual(0);
   });
 
@@ -603,11 +682,17 @@ test.describe('Pro Features - Cross-Template Validation', () => {
     await page.goto(`${BASE_URL}/templates/product-showcase-pro`);
 
     // Should have products
-    const products = page.locator('.product-card, [data-product]');
+    const products = page.getByTestId(/product-/).or(
+      page.locator('[data-product]')
+    );
     expect(await products.count()).toBeGreaterThanOrEqual(0);
 
     // Should have shopping cart
-    const cart = page.locator('[data-cart-icon], button:has-text("Cart")');
+    const cart = page.getByTestId('cart-icon').or(
+      page.locator('[data-cart-icon]').first()
+    ).or(
+      page.getByRole('button', { name: /cart/i })
+    );
     expect(await cart.count()).toBeGreaterThanOrEqual(0);
   });
 });
@@ -619,7 +704,9 @@ test.describe('Pro Features - Mobile Responsiveness', () => {
     await page.goto(`${BASE_URL}/sites/${TEST_SUBDOMAIN}/`);
 
     // Booking should be accessible
-    const bookingBtn = page.locator('button:has-text("Book"), a:has-text("Book")');
+    const bookingBtn = page.getByRole('button', { name: /book/i }).or(
+      page.getByRole('link', { name: /book/i })
+    );
     if (await bookingBtn.count() > 0) {
       await expect(bookingBtn.first()).toBeVisible();
     }
@@ -630,7 +717,11 @@ test.describe('Pro Features - Mobile Responsiveness', () => {
     await page.goto(`${BASE_URL}/sites/${TEST_SUBDOMAIN}/`);
 
     // Cart should be accessible
-    const cartIcon = page.locator('[data-cart-icon], .cart-icon, button:has-text("Cart")');
+    const cartIcon = page.getByTestId('cart-icon').or(
+      page.locator('[data-cart-icon]').first()
+    ).or(
+      page.getByRole('button', { name: /cart/i })
+    );
     if (await cartIcon.count() > 0) {
       await expect(cartIcon.first()).toBeVisible();
 
@@ -649,7 +740,9 @@ test.describe('Pro Features - Mobile Responsiveness', () => {
     await page.goto(`${BASE_URL}/dashboard/analytics`);
 
     // Dashboard should be responsive
-    const dashboard = page.locator('[data-analytics-dashboard], .analytics-page');
+    const dashboard = page.getByTestId('analytics-dashboard').or(
+      page.locator('[data-analytics-dashboard]').first()
+    );
     if (await dashboard.count() > 0) {
       await expect(dashboard).toBeVisible();
     }
@@ -660,12 +753,16 @@ test.describe('Pro Features - Mobile Responsiveness', () => {
     await page.goto(`${BASE_URL}/sites/${TEST_SUBDOMAIN}/`);
 
     // Reviews should be visible and scrollable
-    const reviewsWidget = page.locator('#reviews-widget, [data-reviews-widget]');
+    const reviewsWidget = page.getByTestId('reviews-widget').or(
+      page.locator('[data-reviews-widget]').first()
+    );
     if (await reviewsWidget.count() > 0) {
       await expect(reviewsWidget).toBeVisible();
 
       // Should be able to scroll reviews
-      const reviewCards = page.locator('.review-card, [data-review]');
+      const reviewCards = page.getByTestId(/review-/).or(
+        page.locator('[data-review]')
+      );
       if (await reviewCards.count() > 1) {
         // Multiple reviews should be scrollable
         const firstReview = reviewCards.first();

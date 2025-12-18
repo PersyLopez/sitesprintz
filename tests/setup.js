@@ -5,10 +5,50 @@ import * as matchers from '@testing-library/jest-dom/matchers';
 // Extend Vitest's expect method with methods from react-testing-library
 expect.extend(matchers);
 
+// Mock Prisma for integration tests (only in node environment)
+if (typeof window === 'undefined') {
+  vi.mock('../database/db.js', async () => {
+    try {
+      const { createMockPrisma, resetPrismaMocks, seedPrismaData } = await import('./mocks/prisma.js');
+      const mockPrisma = createMockPrisma();
+      
+      return {
+        prisma: mockPrisma,
+        resetPrismaMocks,
+        seedPrismaData
+      };
+    } catch (e) {
+      // Fallback if mock not available
+      return {
+        prisma: {
+          users: { findUnique: vi.fn(), findMany: vi.fn(), create: vi.fn(), update: vi.fn() },
+          sites: { findUnique: vi.fn(), findMany: vi.fn(), create: vi.fn(), update: vi.fn() },
+          $queryRaw: vi.fn(),
+          $executeRaw: vi.fn(),
+          $transaction: vi.fn()
+        }
+      };
+    }
+  });
+}
+
 // Cleanup after each test case
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  
+  // Reset Prisma mocks if available (only in node environment)
+  if (typeof window === 'undefined') {
+    try {
+      import('./mocks/prisma.js').then(({ resetPrismaMocks }) => {
+        resetPrismaMocks();
+      }).catch(() => {
+        // Ignore if module not available
+      });
+    } catch (e) {
+      // Ignore if module not available
+    }
+  }
 });
 
 // Setup test environment once before all tests
@@ -54,6 +94,9 @@ beforeAll(() => {
 
     // Mock scrollTo
     window.scrollTo = vi.fn();
+
+    // Mock scrollIntoView for all elements
+    Element.prototype.scrollIntoView = vi.fn();
 
     // Mock localStorage
     const localStorageMock = (() => {

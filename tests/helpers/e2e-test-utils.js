@@ -113,24 +113,41 @@ export async function logout(page) {
  * Helper to register a new user
  */
 export async function register(page, options = {}) {
+  // Debug browser logs
+  page.on('console', msg => console.log(`[Browser] ${msg.type()}: ${msg.text()}`));
+
   const timestamp = Date.now();
   const {
     email = `test${timestamp}@example.com`,
-    password = 'TestPassword123!',
+    password = 'SecurePass!2025',
     name = 'Test User'
   } = options;
 
   await page.goto('/register');
 
-  await page.fill('input[type="email"]', email);
-  await page.fill('input[type="password"]', password);
+  // Use consistent ID selectors matching register.html
+  await page.fill('#email', email).catch(() => page.fill('input[name="email"]', email));
+  await page.fill('#password', password).catch(() => page.fill('input[name="password"]', password));
+
+  // Fill confirm password
+  const confirmSelector = '#confirmPassword';
+  if (await page.locator(confirmSelector).count() > 0) {
+    await page.fill(confirmSelector, password);
+  } else {
+    // Fallback for types if IDs missing
+    const confirmInput = page.locator('input[name="confirmPassword"]');
+    if (await confirmInput.count() > 0) {
+      await confirmInput.fill(password);
+    }
+  }
 
   if (await page.locator('input[name="name"]').count() > 0) {
     await page.fill('input[name="name"]', name);
   }
 
   await page.click('button[type="submit"]');
-  await page.waitForURL(/dashboard|success/, { timeout: 5000 });
+  // Pending users might be redirected to login
+  await page.waitForURL(/dashboard|success|login/, { timeout: 5000 });
 
   return { email, password, name };
 }

@@ -2,7 +2,10 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vites
 import request from 'supertest';
 import express from 'express';
 import { randomUUID } from 'crypto';
-import { query as dbQuery } from '../../database/db.js';
+import { setupIntegrationTest, createTestUser, createTestSite, seedPrismaData } from '../utils/integrationTestSetup.js';
+
+// Mock Prisma before importing routes
+const mockPrisma = setupIntegrationTest();
 
 // Mock auth middleware BEFORE importing routes
 vi.mock('../../server/middleware/auth.js', () => ({
@@ -22,12 +25,30 @@ const testSiteId = randomUUID();
 const testUserId = randomUUID();
 const testEmail = `test-${testUserId.substring(0, 8)}@example.com`;
 
+// Seed initial test data
+beforeEach(() => {
+  seedPrismaData({
+    users: [createTestUser({ id: testUserId, email: testEmail })],
+    sites: [createTestSite({ 
+      id: testSiteId, 
+      subdomain: 'test-restaurant',
+      user_id: testUserId,
+      site_data: { businessName: 'Test Restaurant', template: 'restaurant' }
+    })]
+  });
+});
+
 const createTestApp = () => {
   const app = express();
   app.use(express.json());
   app.use('/api/submissions', submissionsRoutes);
   return app;
 };
+
+import { setupIntegrationTest, createTestUser, createTestSite, seedPrismaData } from '../utils/integrationTestSetup.js';
+
+// Mock Prisma before importing routes
+const mockPrisma = setupIntegrationTest();
 
 const createAuthTestApp = () => {
   const app = express();

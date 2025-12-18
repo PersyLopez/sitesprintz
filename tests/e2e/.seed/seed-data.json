@@ -1,0 +1,20 @@
+{
+  "users": {
+    "adminEmail": "admin@example.com",
+    "proEmail": "test@example.com",
+    "freeEmail": "free@example.com",
+    "adminUserId": "ef13f902-4f66-4eff-beec-71020db4dcc9",
+    "proUserId": "a5fcad86-fd13-484f-b4e3-d1a3cdf6adde",
+    "freeUserId": "62486d65-4755-4da2-82ac-eba87eaa498c"
+  },
+  "sites": {
+    "bySubdomain": {
+      "test-restaurant": "site_1763761113928_v4gweq9hs",
+      "test-salon": "site_1763761114000_hy3apfd29",
+      "admin-site": "site_1763761114030_20m0o8mxk"
+    }
+  },
+  "booking": {
+    "userId": "a5fcad86-fd13-484f-b4e3-d1a3cdf6adde"
+  }
+}

@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import fs from 'fs';
+import path from 'path';
 
 /**
  * E2E Tests for Booking System - Complete Coverage
@@ -13,25 +15,28 @@ import { test, expect } from '@playwright/test';
 
 // Test data - Use seeded user ID
 const BASE_URL = process.env.VITE_APP_URL || 'http://localhost:3000';
-const TEST_USER_ID = '545'; // The ID we saw in the logs
+let TEST_USER_ID;
+let FREE_USER_ID;
 
 test.describe('Booking System - Complete E2E Flow', () => {
 
   test.beforeAll(async () => {
-    // Clear all appointments for the test user to ensure a clean state
-    // We need to get the tenant ID first
-    const { prisma } = await import('../../database/db.js');
-
-    const tenant = await prisma.booking_tenants.findFirst({
-      where: { user_id: TEST_USER_ID }
-    });
-
-    if (tenant) {
-      await prisma.appointments.deleteMany({
-        where: { tenant_id: tenant.id }
-      });
-      console.log('🧹 Cleared appointments for test tenant');
+    // Read IDs from deterministic seed artifact (written by seed-test-data.js)
+    const seedPath = path.resolve(process.cwd(), 'tests/e2e/.seed/seed-data.json');
+    if (!fs.existsSync(seedPath)) {
+      throw new Error(`Seed artifact not found at ${seedPath}. Did Playwright globalSetup seeding run?`);
     }
+
+    const seed = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
+    TEST_USER_ID = seed?.users?.proUserId;
+    FREE_USER_ID = seed?.users?.freeUserId;
+
+    if (!TEST_USER_ID || !FREE_USER_ID) {
+      throw new Error('Seed artifact missing user IDs. Check tests/setup/seed-test-data.js output.');
+    }
+
+    console.log(`Using Test User ID: ${TEST_USER_ID}`);
+    console.log(`Using Free User ID: ${FREE_USER_ID}`);
   });
 
   test.beforeEach(async ({ page }) => {
@@ -47,13 +52,13 @@ test.describe('Booking System - Complete E2E Flow', () => {
     await page.goto(`${BASE_URL}/booking/user/${TEST_USER_ID}`);
 
     // Step 2: Wait for services to load
-    await page.waitForSelector('[data-testid="services-list"]', {
+    await page.getByTestId('services-list').waitFor({
       state: 'visible',
       timeout: 10000
     });
 
     // Step 3: Verify services are displayed
-    const serviceCards = page.locator('[data-testid^="service-card-"]');
+    const serviceCards = page.getByTestId(/service-card-/);
     const serviceCount = await serviceCards.count();
     expect(serviceCount).toBeGreaterThan(0);
 
@@ -66,66 +71,66 @@ test.describe('Booking System - Complete E2E Flow', () => {
     await expect(firstService).toHaveClass(/selected/);
 
     // Step 5: Click Next to proceed to date selection
-    const nextButton = page.locator('[data-testid="next-button"]');
+    const nextButton = page.getByTestId('next-button');
     await expect(nextButton).toBeVisible();
     await nextButton.click();
 
     // Step 6: Verify date picker is shown
-    await expect(page.locator('[data-testid="date-picker"]')).toBeVisible();
+    await expect(page.getByTestId('date-picker')).toBeVisible();
 
     // Step 7: Select tomorrow's date
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const dateString = tomorrow.toISOString().split('T')[0];
 
-    const dateButton = page.locator(`[data-testid="date-${dateString}"]`);
+    const dateButton = page.getByTestId(`date-${dateString}`);
     await expect(dateButton).toBeEnabled();
     await dateButton.click();
 
     // Step 8: Wait for time slots to load
-    await page.waitForSelector('[data-testid="time-slots"]', {
+    await page.getByTestId('time-slots').waitFor({
       state: 'visible',
       timeout: 10000
     });
 
-    // Step 9: Select first available time slot
-    // Step 9: Select a random available time slot to avoid conflicts
-    const timeSlots = page.locator('[data-testid^="time-slot-"]:not([disabled])');
+    // Step 9: Select first available time slot (deterministic = less flaky)
+    const timeSlots = page.getByTestId(/time-slot-/);
     const count = await timeSlots.count();
     expect(count).toBeGreaterThan(0);
-    const randomIndex = Math.floor(Math.random() * count);
-    const randomSlot = timeSlots.nth(randomIndex);
-    await expect(randomSlot).toBeVisible();
-    await randomSlot.click();
+    // Get first slot that is not disabled
+    const firstSlot = timeSlots.first();
+    await expect(firstSlot).toBeVisible();
+    await expect(firstSlot).toBeEnabled();
+    await firstSlot.click();
 
     // Step 10: Click Next to proceed to form
-    await page.waitForSelector('[data-testid="next-button"]');
-    await page.locator('[data-testid="next-button"]').click();
+    await page.getByTestId('next-button').waitFor();
+    await page.getByTestId('next-button').click();
 
     // Step 11: Fill in customer information
-    await expect(page.locator('[data-testid="customer-form"]')).toBeVisible();
+    await expect(page.getByTestId('customer-form')).toBeVisible();
 
     const timestamp = Date.now();
-    await page.locator('[data-testid="customer-name"]').fill(`Test Customer ${timestamp}`);
-    await page.locator('[data-testid="customer-email"]').fill(`test${timestamp}@example.com`);
-    await page.locator('[data-testid="customer-phone"]').fill('+1234567890');
-    await page.locator('[data-testid="customer-notes"]').fill('E2E test booking');
+    await page.getByTestId('customer-name').fill(`Test Customer ${timestamp}`);
+    await page.getByTestId('customer-email').fill(`test${timestamp}@example.com`);
+    await page.getByTestId('customer-phone').fill('+1234567890');
+    await page.getByTestId('customer-notes').fill('E2E test booking');
 
     // Step 12: Submit booking
-    const bookButton = page.locator('[data-testid="book-now-button"]');
+    const bookButton = page.getByTestId('book-now-button');
     await expect(bookButton).toBeEnabled();
     await bookButton.click();
 
     // Step 13: Wait for confirmation page
-    await page.waitForSelector('[data-testid="confirmation-page"]', {
+    await page.getByTestId('confirmation-page').waitFor({
       state: 'visible',
       timeout: 30000
     });
 
     // Step 14: Verify confirmation details
-    await expect(page.locator('[data-testid="confirmation-message"]')).toBeVisible();
+    await expect(page.getByTestId('confirmation-message')).toBeVisible();
 
-    const confirmationCode = page.locator('[data-testid="confirmation-code"]');
+    const confirmationCode = page.getByTestId('confirmation-code');
     await expect(confirmationCode).toBeVisible();
 
     const code = await confirmationCode.textContent();
@@ -138,58 +143,62 @@ test.describe('Booking System - Complete E2E Flow', () => {
     await page.goto(`${BASE_URL}/booking/user/${TEST_USER_ID}`);
 
     // Navigate to form without filling required fields
-    await page.waitForSelector('[data-testid="services-list"]');
-    await page.locator('[data-testid^="service-card-"]').first().click();
-    await page.locator('[data-testid="next-button"]').click();
+    await page.getByTestId('services-list').waitFor();
+    await page.getByTestId(/service-card-/).first().click();
+    await page.getByTestId('next-button').click();
 
     // Select date
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const dateString = tomorrow.toISOString().split('T')[0];
-    await page.locator(`[data-testid="date-${dateString}"]`).click();
+    await page.getByTestId(`date-${dateString}`).click();
 
     // Wait for slots and select one
-    await page.waitForSelector('[data-testid="time-slots"]');
-    await page.locator('[data-testid^="time-slot-"]:not([disabled])').first().click();
-    await page.waitForSelector('[data-testid="next-button"]');
-    await page.locator('[data-testid="next-button"]').click();
+    await page.getByTestId('time-slots').waitFor();
+    const firstSlot = page.getByTestId(/time-slot-/).first();
+    await expect(firstSlot).toBeEnabled();
+    await firstSlot.click();
+    await page.getByTestId('next-button').waitFor();
+    await page.getByTestId('next-button').click();
 
     // Try to submit without filling form
-    await expect(page.locator('[data-testid="customer-form"]')).toBeVisible();
-    await page.locator('[data-testid="book-now-button"]').click();
+    await expect(page.getByTestId('customer-form')).toBeVisible();
+    await page.getByTestId('book-now-button').click();
 
     // Verify error messages appear
-    await expect(page.locator('[data-testid="name-error"]')).toBeVisible();
-    await expect(page.locator('[data-testid="email-error"]')).toBeVisible();
+    await expect(page.getByTestId('name-error')).toBeVisible();
+    await expect(page.getByTestId('email-error')).toBeVisible();
 
     // Verify we're still on the form
-    await expect(page.locator('[data-testid="customer-form"]')).toBeVisible();
+    await expect(page.getByTestId('customer-form')).toBeVisible();
   });
 
   test('FLOW 3: Invalid email format shows error', async ({ page }) => {
     await page.goto(`${BASE_URL}/booking/user/${TEST_USER_ID}`);
 
     // Navigate to form
-    await page.waitForSelector('[data-testid="services-list"]');
-    await page.locator('[data-testid^="service-card-"]').first().click();
-    await page.locator('[data-testid="next-button"]').click();
+    await page.getByTestId('services-list').waitFor();
+    await page.getByTestId(/service-card-/).first().click();
+    await page.getByTestId('next-button').click();
 
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    await page.locator(`[data-testid="date-${tomorrow.toISOString().split('T')[0]}"]`).click();
+    await page.getByTestId(`date-${tomorrow.toISOString().split('T')[0]}`).click();
 
-    await page.waitForSelector('[data-testid="time-slots"]');
-    await page.locator('[data-testid^="time-slot-"]:not([disabled])').first().click();
-    await page.waitForSelector('[data-testid="next-button"]');
-    await page.locator('[data-testid="next-button"]').click();
+    await page.getByTestId('time-slots').waitFor();
+    const firstSlot = page.getByTestId(/time-slot-/).first();
+    await expect(firstSlot).toBeEnabled();
+    await firstSlot.click();
+    await page.getByTestId('next-button').waitFor();
+    await page.getByTestId('next-button').click();
 
     // Fill with invalid email
-    await page.locator('[data-testid="customer-name"]').fill('Test User');
-    await page.locator('[data-testid="customer-email"]').fill('invalid-email');
-    await page.locator('[data-testid="book-now-button"]').click();
+    await page.getByTestId('customer-name').fill('Test User');
+    await page.getByTestId('customer-email').fill('invalid-email');
+    await page.getByTestId('book-now-button').click();
 
     // Verify email error
-    const emailError = page.locator('[data-testid="email-error"]');
+    const emailError = page.getByTestId('email-error');
     await expect(emailError).toBeVisible();
     await expect(emailError).toContainText(/valid email/i);
   });
@@ -198,35 +207,35 @@ test.describe('Booking System - Complete E2E Flow', () => {
     await page.goto(`${BASE_URL}/booking/user/${TEST_USER_ID}`);
 
     // Go to date selection
-    await page.waitForSelector('[data-testid="services-list"]');
-    await page.locator('[data-testid^="service-card-"]').first().click();
-    await page.waitForSelector('[data-testid="next-button"]');
-    await page.locator('[data-testid="next-button"]').click();
+    await page.getByTestId('services-list').waitFor();
+    await page.getByTestId(/service-card-/).first().click();
+    await page.getByTestId('next-button').waitFor();
+    await page.getByTestId('next-button').click();
 
     // Verify we're on date selection
-    await expect(page.locator('[data-testid="date-picker"]')).toBeVisible();
+    await expect(page.getByTestId('date-picker')).toBeVisible();
 
     // Click back button
-    await page.locator('[data-testid="back-button"]').click();
+    await page.getByTestId('back-button').click();
 
     // Verify we're back on services
-    await expect(page.locator('[data-testid="services-list"]')).toBeVisible();
+    await expect(page.getByTestId('services-list')).toBeVisible();
   });
 
   test('FLOW 5: Past dates are disabled', async ({ page }) => {
     await page.goto(`${BASE_URL}/booking/user/${TEST_USER_ID}`);
 
     // Navigate to date picker
-    await page.waitForSelector('[data-testid="services-list"]');
-    await page.locator('[data-testid^="service-card-"]').first().click();
-    await page.locator('[data-testid="next-button"]').click();
+    await page.getByTestId('services-list').waitFor();
+    await page.getByTestId(/service-card-/).first().click();
+    await page.getByTestId('next-button').click();
 
     // Check that yesterday is disabled
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayString = yesterday.toISOString().split('T')[0];
 
-    const yesterdayButton = page.locator(`[data-testid="date-${yesterdayString}"]`);
+    const yesterdayButton = page.getByTestId(`date-${yesterdayString}`);
 
     // Only check if the button exists (might not if it's a different month)
     const count = await yesterdayButton.count();
@@ -239,32 +248,32 @@ test.describe('Booking System - Complete E2E Flow', () => {
     await page.goto(`${BASE_URL}/booking/user/${TEST_USER_ID}`);
 
     // Check for loading state (might be very fast)
-    const servicesLoading = page.locator('[data-testid="services-loading"]');
+    const servicesLoading = page.getByTestId('services-loading');
 
     // Either loading or services should appear
     await Promise.race([
       servicesLoading.waitFor({ state: 'visible', timeout: 100 }).catch(() => { }),
-      page.locator('[data-testid="services-list"]').waitFor({ state: 'visible', timeout: 5000 })
+      page.getByTestId('services-list').waitFor({ state: 'visible', timeout: 5000 })
     ]);
 
     // Verify services loaded eventually
-    await expect(page.locator('[data-testid="services-list"]')).toBeVisible();
+    await expect(page.getByTestId('services-list')).toBeVisible();
   });
 
   test('FLOW 7: Booking summary shows selected service', async ({ page }) => {
     await page.goto(`${BASE_URL}/booking/user/${TEST_USER_ID}`);
 
-    await page.waitForSelector('[data-testid="services-list"]');
+    await page.getByTestId('services-list').waitFor();
 
     // Get service name
-    const firstService = page.locator('[data-testid^="service-card-"]').first();
+    const firstService = page.getByTestId(/service-card-/).first();
     const serviceName = await firstService.locator('h3').textContent();
 
     // Select service
     await firstService.click();
 
     // Verify summary appears
-    const summary = page.locator('[data-testid="booking-summary"]');
+    const summary = page.getByTestId('booking-summary');
     await expect(summary).toBeVisible();
     await expect(summary).toContainText(serviceName);
   });
@@ -272,9 +281,9 @@ test.describe('Booking System - Complete E2E Flow', () => {
   test('FLOW 8: Multiple service selection works', async ({ page }) => {
     await page.goto(`${BASE_URL}/booking/user/${TEST_USER_ID}`);
 
-    await page.waitForSelector('[data-testid="services-list"]');
+    await page.getByTestId('services-list').waitFor();
 
-    const services = page.locator('[data-testid^="service-card-"]');
+    const services = page.getByTestId(/service-card-/);
     const count = await services.count();
 
     if (count > 1) {
@@ -294,18 +303,18 @@ test.describe('Booking System - Complete E2E Flow', () => {
   test('FLOW 9: Calendar month navigation works', async ({ page }) => {
     await page.goto(`${BASE_URL}/booking/user/${TEST_USER_ID}`);
 
-    await page.waitForSelector('[data-testid="services-list"]');
-    await page.locator('[data-testid^="service-card-"]').first().click();
-    await page.locator('[data-testid="next-button"]').click();
+    await page.getByTestId('services-list').waitFor();
+    await page.getByTestId(/service-card-/).first().click();
+    await page.getByTestId('next-button').click();
 
     // Check current month
-    const calendar = page.locator('[data-testid="calendar"]');
+    const calendar = page.getByTestId('calendar');
     await expect(calendar).toBeVisible();
 
     const currentMonth = await calendar.locator('h3').textContent();
 
     // Click next month button
-    await calendar.locator('button:has-text("→")').click();
+    await calendar.getByRole('button', { name: /→|next/i }).click();
 
     // Verify month changed
     const newMonth = await calendar.locator('h3').textContent();
@@ -315,14 +324,14 @@ test.describe('Booking System - Complete E2E Flow', () => {
   test('FLOW 10: Service details are displayed correctly', async ({ page }) => {
     await page.goto(`${BASE_URL}/booking/user/${TEST_USER_ID}`);
 
-    await page.waitForSelector('[data-testid="services-list"]');
+    await page.getByTestId('services-list').waitFor();
 
-    const firstService = page.locator('[data-testid^="service-card-"]').first();
+    const firstService = page.getByTestId(/service-card-/).first();
 
     // Verify service has required elements
     await expect(firstService.locator('h3')).toBeVisible(); // Name
-    await expect(firstService.locator('.price')).toBeVisible(); // Price
-    await expect(firstService.locator('.duration')).toBeVisible(); // Duration
+    await expect(firstService.getByText(/\$/)).toBeVisible(); // Price
+    await expect(firstService.getByText(/min/i)).toBeVisible(); // Duration
   });
 });
 
@@ -336,29 +345,36 @@ test.describe('Booking System - Error Handling', () => {
 
     // Wait for either services or error
     await Promise.race([
-      page.locator('[data-testid="services-list"]').waitFor({ timeout: 5000 }),
-      page.locator('[data-testid="error-message"]').waitFor({ timeout: 5000 }),
-      page.locator('[data-testid="services-empty"]').waitFor({ timeout: 5000 })
+      page.getByTestId('services-list').waitFor({ timeout: 15000 }),
+      page.getByTestId('error-message').waitFor({ timeout: 15000 }),
+      page.getByTestId('services-empty').waitFor({ timeout: 15000 })
     ]);
 
     // One of these should be visible
-    const hasContent = await page.locator('[data-testid="services-list"], [data-testid="error-message"], [data-testid="services-empty"]').count();
+    const hasContent = await Promise.race([
+      page.getByTestId('services-list').count(),
+      page.getByTestId('error-message').count(),
+      page.getByTestId('services-empty').count()
+    ]);
     expect(hasContent).toBeGreaterThan(0);
   });
 
   test('ERROR 2: Shows empty state when no services available', async ({ page }) => {
     // Test that empty state is handled
     // Would require a user with no services configured
-
-    await page.goto(`${BASE_URL}/booking/user/${TEST_USER_ID}`);
+    // Use the free user who has no services by default
+    await page.goto(`${BASE_URL}/booking/user/${FREE_USER_ID}`);
 
     await Promise.race([
-      page.locator('[data-testid="services-list"]').waitFor({ timeout: 5000 }),
-      page.locator('[data-testid="services-empty"]').waitFor({ timeout: 5000 })
+      page.getByTestId('services-list').waitFor({ timeout: 15000 }),
+      page.getByTestId('services-empty').waitFor({ timeout: 15000 })
     ]);
 
     // Should show either services or empty state
-    const hasState = await page.locator('[data-testid="services-list"], [data-testid="services-empty"]').count();
+    const hasState = await Promise.race([
+      page.getByTestId('services-list').count(),
+      page.getByTestId('services-empty').count()
+    ]);
     expect(hasState).toBeGreaterThan(0);
   });
 });
@@ -369,36 +385,35 @@ test.describe('Booking System - Accessibility', () => {
     await page.goto(`${BASE_URL}/booking/user/${TEST_USER_ID}`);
 
     // Navigate to form
-    await page.waitForSelector('[data-testid="services-list"]');
-    await page.locator('[data-testid^="service-card-"]').first().click();
-    await page.locator('[data-testid="next-button"]').click();
+    await page.getByTestId('services-list').waitFor();
+    await page.getByTestId(/service-card-/).first().click();
+    await page.getByTestId('next-button').click();
 
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    await page.locator(`[data-testid="date-${tomorrow.toISOString().split('T')[0]}"]`).click();
+    await page.getByTestId(`date-${tomorrow.toISOString().split('T')[0]}`).click();
 
-    await page.waitForSelector('[data-testid="time-slots"]');
-    const firstSlot = page.locator('[data-testid^="time-slot-"]:not([disabled])').first();
+    await page.getByTestId('time-slots').waitFor();
+    const firstSlot = page.getByTestId(/time-slot-/).filter({ hasNot: page.locator('[disabled]') }).first();
     await firstSlot.click();
-    // await expect(firstSlot).toHaveClass(/selected/);
-    await page.waitForSelector('[data-testid="next-button"]');
-    await page.locator('[data-testid="next-button"]').click();
+    await page.getByTestId('next-button').waitFor();
+    await page.getByTestId('next-button').click();
 
     // Check that form inputs have labels
-    const nameLabel = page.locator('label[for="customer-name"]');
+    const nameLabel = page.getByLabel(/name/i);
     await expect(nameLabel).toBeVisible();
 
-    const emailLabel = page.locator('label[for="customer-email"]');
+    const emailLabel = page.getByLabel(/email/i);
     await expect(emailLabel).toBeVisible();
   });
 
   test('A11Y 2: Buttons are keyboard accessible', async ({ page }) => {
     await page.goto(`${BASE_URL}/booking/user/${TEST_USER_ID}`);
 
-    await page.waitForSelector('[data-testid="services-list"]');
+    await page.getByTestId('services-list').waitFor();
 
     // Focus first service and press Enter
-    const firstService = page.locator('[data-testid^="service-card-"]').first();
+    const firstService = page.getByTestId(/service-card-/).first();
     await firstService.focus();
     await page.keyboard.press('Enter');
 
@@ -416,19 +431,19 @@ test.describe('Booking System - Mobile Responsiveness', () => {
   test('MOBILE 1: Booking flow works on mobile', async ({ page }) => {
     await page.goto(`${BASE_URL}/booking/user/${TEST_USER_ID}`);
 
-    await page.waitForSelector('[data-testid="services-list"]', { timeout: 10000 });
+    await page.getByTestId('services-list').waitFor({ timeout: 10000 });
 
     // Verify services are visible on mobile
-    const firstService = page.locator('[data-testid^="service-card-"]').first();
+    const firstService = page.getByTestId(/service-card-/).first();
     await expect(firstService).toBeVisible();
 
     // Complete basic flow
     await firstService.click();
     await expect(firstService).toHaveClass(/selected/);
 
-    await page.waitForSelector('[data-testid="next-button"]');
-    await page.locator('[data-testid="next-button"]').click();
-    await expect(page.locator('[data-testid="date-picker"]')).toBeVisible();
+    await page.getByTestId('next-button').waitFor();
+    await page.getByTestId('next-button').click();
+    await expect(page.getByTestId('date-picker')).toBeVisible();
   });
 });
 

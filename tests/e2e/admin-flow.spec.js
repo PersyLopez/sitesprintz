@@ -19,14 +19,14 @@ test.describe('Admin Dashboard', () => {
     await page.goto('/admin');
 
     // Should show admin interface
-    await expect(page.getByRole('heading', { name: 'Admin Dashboard' })).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('heading', { name: /Admin Dashboard/i })).toBeVisible({ timeout: 5000 });
   });
 
   test('should display user management section', async ({ page }) => {
     await page.goto('/admin/users');
 
     // Should show users table
-    await expect(page.locator('h1, h2').filter({ hasText: /users|manage users/i })).toBeVisible();
+    await expect(page.locator('h1, h2').filter({ hasText: /users|user management/i }).first()).toBeVisible();
     await expect(page.locator('table, .user-list, [data-user-id], .user-item')).toBeVisible({ timeout: 5000 });
   });
 
@@ -49,7 +49,7 @@ test.describe('Admin Dashboard', () => {
       test.skip();
     } else {
       try {
-        await expect(page.locator('h2', { hasText: 'Platform Overview' })).toBeVisible({ timeout: 5000 });
+        await expect(page.locator('h2', { hasText: /Platform Overview/i })).toBeVisible({ timeout: 5000 });
       } catch (e) {
         console.log('Test failed, dumping page content:');
         console.log(await page.content());

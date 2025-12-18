@@ -1,12 +1,21 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 import request from 'supertest';
 import express from 'express';
 import siteRoutes from '../../server/routes/sites.routes.js';
 import { authenticateToken } from '../../server/middleware/auth.js';
+import { setupIntegrationTest, createTestUser, createTestSite, seedPrismaData } from '../utils/integrationTestSetup.js';
+
+// Mock Prisma before importing routes
+const mockPrisma = setupIntegrationTest();
 
 const createTestApp = () => {
   const app = express();
   app.use(express.json());
+  
+  // Mock CSRF protection
+  app.use((req, res, next) => {
+    next();
+  });
   
   // Mock auth middleware for testing
   app.use((req, res, next) => {
@@ -24,6 +33,15 @@ describe('API Integration Tests - Sites', () => {
 
   beforeAll(() => {
     app = createTestApp();
+  });
+
+  beforeEach(() => {
+    // Reset mocks and seed test data
+    vi.clearAllMocks();
+    seedPrismaData({
+      users: [createTestUser({ id: 'test-user-id', email: 'test@example.com' })],
+      sites: [createTestSite({ id: 'site-123', user_id: 'test-user-id', subdomain: 'test-site' })]
+    });
   });
 
   describe('GET /api/sites', () => {

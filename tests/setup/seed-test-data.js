@@ -15,6 +15,7 @@ import { prisma } from '../../database/db.js';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 
 dotenv.config();
 
@@ -91,6 +92,7 @@ async function seedTestData() {
 
         const testSites = [
             {
+                id: 'seed_test_restaurant',
                 userId: userIds['test@example.com'],
                 subdomain: 'test-restaurant',
                 template: 'restaurant',
@@ -101,6 +103,7 @@ async function seedTestData() {
                 }
             },
             {
+                id: 'seed_test_salon',
                 userId: userIds['test@example.com'],
                 subdomain: 'test-salon',
                 template: 'salon',
@@ -111,6 +114,7 @@ async function seedTestData() {
                 }
             },
             {
+                id: 'seed_admin_site',
                 userId: userIds['admin@example.com'],
                 subdomain: 'admin-site',
                 template: 'business',
@@ -123,6 +127,7 @@ async function seedTestData() {
         ];
 
         const siteIds = [];
+        const siteIdsBySubdomain = {};
 
         for (const site of testSites) {
             const existing = await prisma.sites.findFirst({
@@ -134,9 +139,21 @@ async function seedTestData() {
 
             if (existing) {
                 siteIds.push(existing.id);
-                console.log(`  ✓ Site "${site.subdomain}" already exists`);
+                siteIdsBySubdomain[site.subdomain] = existing.id;
+                console.log(`  ✓ Site "${site.subdomain}" already exists (ID: ${existing.id})`);
+
+                // Keep seeded sites consistent across runs
+                await prisma.sites.update({
+                    where: { id: existing.id },
+                    data: {
+                        template_id: site.template,
+                        status: site.status,
+                        site_data: site.siteData,
+                        site_data: site.siteData
+                    }
+                });
             } else {
-                const siteId = `site_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                const siteId = site.id || `seed_site_${crypto.randomUUID()}`;
                 const newSite = await prisma.sites.create({
                     data: {
                         id: siteId,
@@ -149,6 +166,7 @@ async function seedTestData() {
                     }
                 });
                 siteIds.push(newSite.id);
+                siteIdsBySubdomain[site.subdomain] = newSite.id;
                 console.log(`  ✓ Created site "${site.subdomain}" (ID: ${newSite.id})`);
             }
         }
@@ -177,12 +195,16 @@ async function seedTestData() {
             try {
                 const schemaPath = path.resolve(process.cwd(), 'database/booking-schema.sql');
                 const schemaSql = fs.readFileSync(schemaPath, 'utf8');
-                // Split by semicolon to execute multiple statements if needed, 
-                // but $executeRawUnsafe can handle it if the driver supports it.
-                // Postgres driver usually supports multiple statements in one query string? 
-                // Prisma might not. Best to split if it fails.
-                // But let's try executeRawUnsafe first.
-                await prisma.$executeRawUnsafe(schemaSql);
+                // Prisma does NOT reliably support multi-statement execution in one call.
+                // Execute statements one-by-one for determinism.
+                const statements = schemaSql
+                    .split(';')
+                    .map(s => s.trim())
+                    .filter(Boolean);
+
+                for (const stmt of statements) {
+                    await prisma.$executeRawUnsafe(stmt);
+                }
                 console.log('  ✓ Created booking tables from schema');
             } catch (err) {
                 console.error('  ❌ Failed to create booking tables:', err);
@@ -271,6 +293,34 @@ async function seedTestData() {
                 console.log(`  ✓ Staff member already exists`);
             }
 
+            // Ensure availability rules exist
+            const staff = await prisma.booking_staff.findFirst({
+                where: { tenant_id: tenantId }
+            });
+
+            if (staff) {
+                // Always recreate rules to ensure correct schedule
+                await prisma.booking_availability_rules.deleteMany({
+                    where: { staff_id: staff.id }
+                });
+
+                console.log('  Creating default availability rules (Sun-Sat)...');
+                const weekDays = [0, 1, 2, 3, 4, 5, 6]; // All days (Sun-Sat)
+                const availabilityData = weekDays.map(day => ({
+                    tenant_id: tenantId,
+                    staff_id: staff.id,
+                    day_of_week: day,
+                    start_time: new Date('1970-01-01T09:00:00Z'),
+                    end_time: new Date('1970-01-01T17:00:00Z'),
+                    is_available: true
+                }));
+
+                await prisma.booking_availability_rules.createMany({
+                    data: availabilityData
+                });
+                console.log(`  ✓ Created default availability (Sun-Sat 9-5)`);
+            }
+
             // Check specifically for CONFIRMED appointments
             const confirmedCount = await prisma.appointments.count({
                 where: {
@@ -349,6 +399,39 @@ async function seedTestData() {
                 data: { is_public: true }
             });
             console.log(`  ✓ Made site ${siteId} public for showcase`);
+        }
+
+        // 5. Write seed artifact for Playwright tests (avoid DB reads inside specs)
+        try {
+            const outDir = path.resolve(process.cwd(), 'tests/e2e/.seed');
+            fs.mkdirSync(outDir, { recursive: true });
+            const outPath = path.join(outDir, 'seed-data.json');
+
+            const seedArtifact = {
+                users: {
+                    adminEmail: 'admin@example.com',
+                    proEmail: 'test@example.com',
+                    freeEmail: 'free@example.com',
+                    adminUserId: userIds['admin@example.com'],
+                    proUserId: userIds['test@example.com'],
+                    freeUserId: userIds['free@example.com']
+                },
+                sites: {
+                    bySubdomain: siteIdsBySubdomain
+                }
+            };
+
+            // tenantId is defined only if booking seeding ran successfully
+            if (typeof tenantId !== 'undefined' && tenantId) {
+                seedArtifact.booking = { tenantId, userId: userIds['test@example.com'] };
+            } else {
+                seedArtifact.booking = { userId: userIds['test@example.com'] };
+            }
+
+            fs.writeFileSync(outPath, JSON.stringify(seedArtifact, null, 2), 'utf8');
+            console.log(`\n📦 Wrote Playwright seed artifact: ${outPath}\n`);
+        } catch (e) {
+            console.warn('⚠️ Could not write Playwright seed artifact:', e?.message || e);
         }
 
         console.log('\n✅ Test database seeded successfully!\n');

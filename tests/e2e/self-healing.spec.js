@@ -13,10 +13,14 @@ test.describe('Self Healing & Resilience', () => {
     test('should recover from session expiration (auto-refresh)', async ({ request, page }) => {
         // 1. Register
         const email = `healing${Date.now()}@example.com`;
+        const csrfRes = await request.get(`${API_URL}/api/csrf-token`);
+        const { csrfToken } = await csrfRes.json();
+
         const registerRes = await request.post(`${API_URL}/api/auth/register`, {
-            data: { email, password: 'Test123!@#', name: 'Healing User' }
+            headers: { 'X-CSRF-Token': csrfToken },
+            data: { email, password: 'StrictPwd!2024', confirmPassword: 'StrictPwd!2024', name: 'Healing User' }
         });
-        const { token } = await registerRes.json();
+        const { accessToken: token } = await registerRes.json();
 
         // 2. Login on page
         await page.goto('/');
