@@ -1,15 +1,17 @@
 import { test, expect } from '@playwright/test';
+import { TEST_USERS } from '../fixtures/test-credentials.js';
+import { SELECTORS, TIMEOUTS } from '../fixtures/test-config.js';
 
 test.describe('Payment & Checkout Flow', () => {
   test.describe.configure({ mode: 'serial' });
 
   test.beforeEach(async ({ page }) => {
-    // Login first
+    // Login first using PRO_USER
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'test@example.com');
-    await page.fill('input[type="password"]', 'password123');
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/\/dashboard/);
+    await page.fill(SELECTORS.AUTH.EMAIL_INPUT, TEST_USERS.PRO_USER.email);
+    await page.fill(SELECTORS.AUTH.PASSWORD_INPUT, TEST_USERS.PRO_USER.password);
+    await page.click(SELECTORS.AUTH.SUBMIT_BUTTON);
+    await page.waitForURL(/\/dashboard/, { timeout: TIMEOUTS.LONG });
   });
 
   test('should display products page', async ({ page }) => {
@@ -23,8 +25,8 @@ test.describe('Payment & Checkout Flow', () => {
     // Click add product button
     await page.click('button:has-text("Add Product"), button:has-text("New Product")');
 
-    // Wait for modal animation
-    await page.waitForTimeout(500);
+    // Wait for modal to be visible instead of arbitrary timeout
+    await expect(page.locator('.modal, [role="dialog"]')).toBeVisible({ timeout: TIMEOUTS.SHORT });
 
     // Fill product details
     const timestamp = Date.now();
@@ -123,10 +125,10 @@ test.describe('Stripe Checkout Integration', () => {
     // For now, we verify the UI flow
 
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'test@example.com');
-    await page.fill('input[type="password"]', 'password123');
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/\/dashboard/);
+    await page.fill(SELECTORS.AUTH.EMAIL_INPUT, TEST_USERS.PRO_USER.email);
+    await page.fill(SELECTORS.AUTH.PASSWORD_INPUT, TEST_USERS.PRO_USER.password);
+    await page.click(SELECTORS.AUTH.SUBMIT_BUTTON);
+    await page.waitForURL(/\/dashboard/, { timeout: TIMEOUTS.LONG });
 
     // Navigate to a site with products
     await page.goto('/products?siteId=test-site');
@@ -151,10 +153,10 @@ test.describe('Stripe Checkout Integration', () => {
 test.describe('Pro Features Access', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'test@example.com');
-    await page.fill('input[type="password"]', 'password123');
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/\/dashboard/);
+    await page.fill(SELECTORS.AUTH.EMAIL_INPUT, TEST_USERS.PRO_USER.email);
+    await page.fill(SELECTORS.AUTH.PASSWORD_INPUT, TEST_USERS.PRO_USER.password);
+    await page.click(SELECTORS.AUTH.SUBMIT_BUTTON);
+    await page.waitForURL(/\/dashboard/, { timeout: TIMEOUTS.LONG });
   });
 
   test.skip('should show upgrade prompts for non-pro users', async ({ page }) => {

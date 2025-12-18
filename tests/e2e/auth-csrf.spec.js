@@ -8,9 +8,11 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { TEST_USERS, STRONG_PASSWORD, generateTestEmail } from '../fixtures/test-credentials.js';
+import { URLS, TIMEOUTS, SELECTORS, API_PATTERNS } from '../fixtures/test-config.js';
 
-const BASE_URL = process.env.VITE_APP_URL || 'http://localhost:3000';
-const API_URL = process.env.VITE_API_URL || 'http://localhost:3000';
+const BASE_URL = URLS.BASE;
+const API_URL = URLS.API;
 
 test.describe('Authentication Flow with CSRF', () => {
   test.beforeEach(async ({ page }) => {
@@ -39,14 +41,14 @@ test.describe('Authentication Flow with CSRF', () => {
   });
 
   test('should successfully register new user with CSRF', async ({ page }) => {
-    const testEmail = `test-${Date.now()}@example.com`;
-    const testPassword = 'StrictPwd!2024';
+    const testEmail = generateTestEmail('csrf');
+    const testPassword = STRONG_PASSWORD;
 
     // Navigate to registration
     await page.goto(`${BASE_URL}/register.html`);
 
-    // Wait for CSRF token to be fetched
-    await page.waitForTimeout(500);
+    // Wait for CSRF token to be fetched (proper waiter instead of timeout)
+    await page.waitForResponse(r => r.url().includes(API_PATTERNS.CSRF));
 
     // Fill registration form
     await page.fill('#email', testEmail);
@@ -104,15 +106,15 @@ test.describe('Authentication Flow with CSRF', () => {
   });
 
   test('should successfully login with CSRF', async ({ page }) => {
-    // Note: This requires a pre-existing test user
-    const testEmail = 'test@example.com';
-    const testPassword = 'password123';
+    // Use seeded PRO_USER
+    const testEmail = TEST_USERS.PRO_USER.email;
+    const testPassword = TEST_USERS.PRO_USER.password;
 
     // Navigate to login
     await page.goto(`${BASE_URL}/login.html`);
 
-    // Wait for CSRF token
-    await page.waitForTimeout(500);
+    // Wait for CSRF token (proper waiter)
+    await page.waitForResponse(r => r.url().includes(API_PATTERNS.CSRF));
 
     // Fill login form
     await page.fill('#email', testEmail);
@@ -157,15 +159,18 @@ test.describe('Authentication Flow with CSRF', () => {
 
     // Navigate and interact with app
     await page.goto(`${BASE_URL}/register.html`);
-    await page.waitForTimeout(1000);
+    // Wait for CSRF token fetch
+    await page.waitForResponse(r => r.url().includes(API_PATTERNS.CSRF));
 
     // Try to trigger a POST request
-    await page.fill('#email', 'csrf-test@example.com');
-    await page.fill('#password', 'StrictPwd!2024');
-    await page.fill('#confirmPassword', 'StrictPwd!2024');
-    await page.click('button[type="submit"]');
-
-    await page.waitForTimeout(1000);
+    await page.fill('#email', generateTestEmail('csrf-all'));
+    await page.fill('#password', STRONG_PASSWORD);
+    await page.fill('#confirmPassword', STRONG_PASSWORD);
+    
+    // Wait for registration response
+    const responsePromise = page.waitForResponse(r => r.url().includes(API_PATTERNS.REGISTER));
+    await page.click(SELECTORS.AUTH.SUBMIT_BUTTON);
+    await responsePromise;
 
     // Verify at least one POST was made
     expect(postRequests.length).toBeGreaterThan(0);
@@ -192,7 +197,8 @@ test.describe('Authentication Flow with CSRF', () => {
     });
 
     await page.goto(`${BASE_URL}/dashboard.html`);
-    await page.waitForTimeout(1000);
+    // Wait for network to settle instead of arbitrary timeout
+    await page.waitForLoadState('networkidle');
 
     // GET requests should not have CSRF token (except the token fetch itself)
     for (const request of getRequests) {
@@ -207,26 +213,28 @@ test.describe('Authentication Flow with CSRF', () => {
   test('should handle CSRF token refresh on 403', async ({ page }) => {
     // This test simulates a scenario where token becomes invalid
     await page.goto(`${BASE_URL}/register.html`);
-    await page.waitForTimeout(500);
+    await page.waitForResponse(r => r.url().includes(API_PATTERNS.CSRF));
 
     // Intercept and track retries
     let requestCount = 0;
     const requestUrls = [];
 
     page.on('request', request => {
-      if (request.url().includes('/api/auth/register')) {
+      if (request.url().includes(API_PATTERNS.REGISTER)) {
         requestCount++;
         requestUrls.push(request.url());
       }
     });
 
     // Fill form
-    await page.fill('#email', `retry-test-${Date.now()}@example.com`);
-    await page.fill('#password', 'StrictPwd!2024');
-    await page.fill('#confirmPassword', 'StrictPwd!2024');
-    await page.click('button[type="submit"]');
-
-    await page.waitForTimeout(2000);
+    await page.fill('#email', generateTestEmail('retry'));
+    await page.fill('#password', STRONG_PASSWORD);
+    await page.fill('#confirmPassword', STRONG_PASSWORD);
+    
+    // Wait for response instead of arbitrary timeout
+    const responsePromise = page.waitForResponse(r => r.url().includes(API_PATTERNS.REGISTER));
+    await page.click(SELECTORS.AUTH.SUBMIT_BUTTON);
+    await responsePromise;
 
     // Should have made at least one request
     expect(requestCount).toBeGreaterThan(0);
@@ -235,7 +243,7 @@ test.describe('Authentication Flow with CSRF', () => {
   test('should persist CSRF token across navigation', async ({ page }) => {
     // First page load
     await page.goto(`${BASE_URL}/register.html`);
-    await page.waitForTimeout(500);
+    await page.waitForResponse(r => r.url().includes(API_PATTERNS.CSRF));
 
     // Check for CSRF token in console
     const hasToken1 = await page.evaluate(() => {
@@ -245,7 +253,7 @@ test.describe('Authentication Flow with CSRF', () => {
 
     // Navigate to different page
     await page.goto(`${BASE_URL}/login.html`);
-    await page.waitForTimeout(500);
+    await page.waitForResponse(r => r.url().includes(API_PATTERNS.CSRF));
 
     // CSRF cookie should still be present
     const cookies = await page.context().cookies();
@@ -259,14 +267,14 @@ test.describe('Authentication Flow with CSRF', () => {
   test('should work with template flow (preserving query params)', async ({ page }) => {
     // Navigate with template parameter
     await page.goto(`${BASE_URL}/register.html?template=restaurant`);
-    await page.waitForTimeout(500);
+    await page.waitForResponse(r => r.url().includes(API_PATTERNS.CSRF));
 
-    const testEmail = `template-test-${Date.now()}@example.com`;
+    const testEmail = generateTestEmail('template');
 
     // Fill form
     await page.fill('#email', testEmail);
-    await page.fill('#password', 'StrictPwd!2024');
-    await page.fill('#confirmPassword', 'StrictPwd!2024');
+    await page.fill('#password', STRONG_PASSWORD);
+    await page.fill('#confirmPassword', STRONG_PASSWORD);
 
     // Listen for registration request
     const registerPromise = page.waitForRequest(
@@ -296,15 +304,14 @@ test.describe('CSRF Error Handling', () => {
     await page.goto(`${BASE_URL}/register.html`);
 
     // Fill form
-    await page.fill('#email', 'error-test@example.com');
-    await page.fill('#password', 'StrictPwd!2024');
-    await page.fill('#confirmPassword', 'StrictPwd!2024');
+    await page.fill('#email', generateTestEmail('error'));
+    await page.fill('#password', STRONG_PASSWORD);
+    await page.fill('#confirmPassword', STRONG_PASSWORD);
 
-    // Submit
-    await page.click('button[type="submit"]');
-
-    // Wait for response
-    await page.waitForTimeout(2000);
+    // Submit and wait for response
+    const responsePromise = page.waitForResponse(r => r.url().includes(API_PATTERNS.REGISTER));
+    await page.click(SELECTORS.AUTH.SUBMIT_BUTTON);
+    await responsePromise;
 
     // Check if error message is shown (if CSRF fails)
     const errorMessage = await page.textContent('body');
@@ -328,10 +335,10 @@ test.describe('Backend CSRF Endpoint', () => {
   });
 
   test('POST without CSRF token should be rejected', async ({ request }) => {
-    const response = await request.post(`${API_URL}/api/auth/register`, {
+    const response = await request.post(`${API_URL}${API_PATTERNS.REGISTER}`, {
       data: {
-        email: 'no-csrf@example.com',
-        password: 'StrictPwd!2024'
+        email: generateTestEmail('no-csrf'),
+        password: STRONG_PASSWORD
       }
     });
 
@@ -344,17 +351,17 @@ test.describe('Backend CSRF Endpoint', () => {
 
   test('POST with valid CSRF token should succeed', async ({ request }) => {
     // First get CSRF token
-    const tokenResponse = await request.get(`${API_URL}/api/csrf-token`);
+    const tokenResponse = await request.get(`${API_URL}${API_PATTERNS.CSRF}`);
     const { csrfToken } = await tokenResponse.json();
 
     // Extract cookies
     const cookies = tokenResponse.headers()['set-cookie'];
 
     // Make authenticated request
-    const response = await request.post(`${API_URL}/api/auth/register`, {
+    const response = await request.post(`${API_URL}${API_PATTERNS.REGISTER}`, {
       data: {
-        email: `csrf-valid-${Date.now()}@example.com`,
-        password: 'StrictPwd!2024'
+        email: generateTestEmail('csrf-valid'),
+        password: STRONG_PASSWORD
       },
       headers: {
         'X-CSRF-Token': csrfToken,

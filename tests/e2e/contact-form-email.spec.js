@@ -101,8 +101,8 @@ test.describe('Contact Form Email Notifications', () => {
     // Note: In real E2E, we'd check the database or use an API endpoint
     // For now, we verify the response was successful
 
-    // Wait a bit for email to be processed
-    await page.waitForTimeout(1000);
+    // Wait for email processing to complete
+    await page.waitForLoadState('networkidle');
 
     // TODO: Verify email was sent
     // In production, you might:
@@ -172,7 +172,8 @@ test.describe('Contact Form Email Notifications', () => {
       await page.click('button[type="submit"]');
 
       if (i < 4) {
-        await page.waitForTimeout(500);
+        // Wait for form to reset for next submission
+        await page.waitForLoadState('domcontentloaded');
       }
     }
 

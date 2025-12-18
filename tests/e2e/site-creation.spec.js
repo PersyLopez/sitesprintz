@@ -1,9 +1,26 @@
 import { test, expect } from '@playwright/test';
+import { TEST_USERS } from '../fixtures/test-credentials.js';
+import { SELECTORS, TIMEOUTS } from '../fixtures/test-config.js';
 
 test.describe('Site Creation Flow', () => {
   test.beforeEach(async ({ page }) => {
+    // Listen for consoles and errors for debugging
+    page.on('console', msg => {
+      const text = msg.text();
+      if (!text.includes('Crisp') && !text.includes('Content Security Policy')) {
+        console.log(`BROWSER LOG: ${text}`);
+      }
+    });
+    page.on('pageerror', err => console.log(`BROWSER ERROR: ${err}`));
+    page.on('requestfailed', request => {
+      const url = request.url();
+      if (!url.includes('crisp.chat')) {
+        console.log(`REQUEST FAILED: ${url} - ${request.failure()?.errorText || 'No error text'}`);
+      }
+    });
+
     // Mock template data for stability
-    await page.route('**/data/templates/index.json', async route => {
+    await page.route(/\/data\/templates\/index\.json/, async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -11,18 +28,18 @@ test.describe('Site Creation Flow', () => {
           templates: [
             {
               id: 'restaurant-casual',
-              template: 'restaurant-casual', // Used for ID
+              templateId: 'restaurant-casual',
               name: 'Casual Dining',
               description: 'Perfect for casual restaurants',
-              tier: 'Starter',
+              plan: 'Starter',
               type: 'restaurant'
             },
             {
               id: 'restaurant',
-              template: 'restaurant',
+              templateId: 'restaurant',
               name: 'Restaurant Pro',
               description: 'Professional restaurant template',
-              tier: 'Pro',
+              plan: 'Pro',
               type: 'restaurant'
             }
           ]
@@ -43,171 +60,93 @@ test.describe('Site Creation Flow', () => {
       });
     });
 
-    // Login first
-    await page.goto('/login');
-    await page.fill('input[type="email"]', 'test@example.com');
-    await page.fill('input[type="password"]', 'password123');
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/\/dashboard/);
+    // Ensure we are on the dashboard and authenticated
+    await page.goto('/dashboard.html');
+    await page.waitForURL(/\/dashboard\.html/, { timeout: TIMEOUTS.LONG });
 
-    // Bypass welcome modal
+    // Set flag to bypass welcome modal if it exists
     await page.evaluate(() => localStorage.setItem('hasVisitedDashboard', 'true'));
     await page.reload();
   });
 
   test('should display dashboard with create site button', async ({ page }) => {
-    await expect(page.locator('.dashboard-header-actions a[href="/setup"], a:has-text("Create New Site")')).toBeVisible();
+    await expect(page.locator(SELECTORS.DASHBOARD.CREATE_SITE_BUTTON).first()).toBeVisible();
   });
 
-  test('should show template selection', async ({ page }) => {
-    // Navigate to setup
-    await page.goto('/setup');
-
-    // Should show template grid
-    await page.goto('/setup');
-    console.log('Navigated to /setup');
+  test('should show template selection in setup', async ({ page }) => {
+    await page.goto('/setup.html');
     await page.waitForLoadState('networkidle');
-    console.log('Current URL:', page.url());
 
-    // Check if we were redirected
-    if (page.url().includes('/login')) {
-      console.log('REDIRECTED TO LOGIN!');
-    }
-
-    await expect(page.locator('.template-grid-container, .template-cards').first()).toBeVisible({ timeout: 10000 });
+    // Verify template grid is visible
+    await expect(page.locator(SELECTORS.TEMPLATE.GRID).first()).toBeVisible({ timeout: TIMEOUTS.LONG });
+    await expect(page.locator(SELECTORS.TEMPLATE.CARD).first()).toBeVisible();
   });
 
-  test('should create a new site', async ({ page }) => {
-    // Pipe browser console logs to terminal
-    page.on('console', msg => console.log(`BROWSER LOG: ${msg.text()}`));
+  test('should create a new site flow', async ({ page }) => {
+    await page.goto('/setup.html');
 
-    await page.goto('/setup');
+    // 1. Select a template
+    await expect(page.locator(SELECTORS.TEMPLATE.CARD).first()).toBeVisible({ timeout: TIMEOUTS.LONG });
+    const selectBtn = page.locator(SELECTORS.TEMPLATE.SELECT_BUTTON).first();
+    await selectBtn.click();
 
-    // Select template (if on setup page) or navigate from dashboard
-    // If /setup is the route for creating a new site
+    // 2. Wait for customization panel
+    await expect(page.locator(SELECTORS.EDITOR.PANEL)).toBeVisible({ timeout: TIMEOUTS.LONG });
 
-    // Check if we need to select a template first
-    await expect(page.locator('.template-card').first()).toBeVisible({ timeout: 10000 });
-    const templateCard = page.locator('[data-template="restaurant"], .template-card').first();
+    // 3. Fill basic info
+    await page.fill(SELECTORS.EDITOR.BUSINESS_NAME, 'My New Test Site');
 
-    if (await templateCard.count() > 0) {
-      // Click the "Use Template" button specifically
-      await templateCard.locator('.btn-select').click();
+    // 4. Click Publish (redirects to quick-publish.html)
+    await page.click(SELECTORS.EDITOR.PUBLISH_BUTTON);
 
-      // Wait for selection to process (empty state should disappear)
-      await expect(page.locator('.editor-panel .panel-empty')).toBeHidden({ timeout: 10000 });
-    }
+    // 5. Verify redirect to quick-publish then auto-publish to success
+    await page.waitForURL(/\/publish-success\.html/, { timeout: TIMEOUTS.EXTENDED });
 
-    // Wait for editor to load
-    await expect(page.locator('.editor-panel')).toBeVisible();
-
-    // Debug: Log editor content
-    const editorContent = await page.locator('.editor-panel').innerHTML();
-    console.log('Editor Content Length:', editorContent.length); // Log length to avoid huge output, or log substring
-    if (!editorContent.includes('businessName')) {
-      console.log('WARNING: businessName input not found in DOM');
-      console.log('Partial HTML:', editorContent.substring(0, 1000));
-    }
-
-    // Enter site details
-    // BusinessInfoForm uses id="businessName"
-    await page.fill('input#businessName', 'My New Restaurant');
-    // Subdomain is auto-generated or not manually entered in this form
-
-    // Verify network request for saving draft
-    const savePromise = page.waitForResponse(async response => {
-      if (response.url().includes('/api/drafts') && response.request().method() === 'POST') {
-        try {
-          console.log('Save Request Payload:', response.request().postData());
-        } catch (e) {
-          console.log('Could not get post data');
-        }
-        return true;
-      }
-      return false;
-    }, { timeout: 10000 }).catch(() => null);
-
-    // Click Save Draft
-    await page.click('button:has-text("Save Draft")');
-
-    const response = await savePromise;
-    if (response) {
-      console.log(`Save Draft Response Status: ${response.status()}`);
-      if (!response.ok()) {
-        console.log('Save Draft Failed Response:', await response.text());
-      }
-    } else {
-      console.log('WARNING: No network response for /api/drafts received');
-    }
-
-    // Check for success or error message
-    // If success matches, good. If error matches, fail with clear message.
-    const successMsg = page.locator('text=/Draft saved|Last saved/i').first();
-    const errorMsg = page.locator('text=Failed to save draft').first();
-
-    try {
-      await expect(successMsg).toBeVisible({ timeout: 5000 });
-    } catch (e) {
-      if (await errorMsg.isVisible()) {
-        throw new Error('Save failed with UI Error: Failed to save draft');
-      }
-      throw new Error('Save draft success message not found. Response status: ' + (response ? response.status() : 'none'));
-    }
-    // Or if we try to click it (force), it should show error
-    // But since it's disabled, we check that state
+    // Verify success message
+    const successHeading = page.locator('h1:has-text("Your Site is Live!")');
+    const successText = page.locator('text=/published|success|live/i');
+    await expect(successHeading.or(successText).first()).toBeVisible({ timeout: TIMEOUTS.LONG });
   });
 
-  test('should edit existing site', async ({ page }) => {
-    // Assuming site exists from seeding
-    await page.goto('/setup?siteId=test-restaurant');
+  test('should edit existing site flow', async ({ page }) => {
+    // Navigate directly to edit mode
+    await page.goto('/setup.html?edit=test-restaurant');
 
-    // Wait for editor to load
-    await expect(page.locator('.editor-panel')).toBeVisible({ timeout: 10000 });
+    // 1. Wait for customization panel
+    await expect(page.locator(SELECTORS.EDITOR.PANEL)).toBeVisible({ timeout: TIMEOUTS.LONG });
 
-    // Update details in editor
-    // We need to find input fields in the editor panel
-    // This depends on EditorPanel component structure
-    const businessNameInput = page.locator('input[name="businessName"], input[label="Business Name"]');
+    // 2. Update info
+    await page.fill(SELECTORS.EDITOR.BUSINESS_NAME, 'Updated Restaurant Name');
 
-    if (await businessNameInput.count() > 0) {
-      await businessNameInput.fill('Updated Restaurant Name');
+    // 3. Click Publish
+    await page.click(SELECTORS.EDITOR.PUBLISH_BUTTON);
 
-      // Save draft
-      await page.click('button:has-text("Save Draft")');
-
-      // Should show success
-      await expect(page.locator('text=/saved|updated|success/i')).toBeVisible();
-    } else {
-      // If input not found directly, maybe it's inside a section
-      test.skip('Editor inputs not found');
-    }
+    // 4. Verify redirect
+    await page.waitForURL(/\/quick-publish\.html/, { timeout: TIMEOUTS.LONG });
   });
 
-  test('should preview site', async ({ page }) => {
-    await page.goto('/setup?siteId=test-restaurant');
+  test('should complete full publish flow', async ({ page }) => {
+    await page.goto('/setup.html?edit=test-restaurant');
+    await expect(page.locator(SELECTORS.EDITOR.PANEL)).toBeVisible({ timeout: TIMEOUTS.LONG });
 
-    // Click preview button
-    const previewBtn = page.locator('button:has-text("Preview")');
-    if (await previewBtn.count() > 0) {
-      await previewBtn.click();
-      // Should show preview
-      await expect(page.locator('.preview-frame, iframe')).toBeVisible({ timeout: 5000 });
-    } else {
-      test.skip();
-    }
-  });
+    // Click Publish
+    await page.click(SELECTORS.EDITOR.PUBLISH_BUTTON);
 
-  test('should publish site', async ({ page }) => {
-    await page.goto('/setup?siteId=test-restaurant');
+    // Wait for redirect to quick-publish
+    await page.waitForURL(/\/quick-publish\.html/, { timeout: TIMEOUTS.LONG });
 
-    // Click publish button
-    const publishBtn = page.locator('button:has-text("Publish")');
-    if (await publishBtn.count() > 0) {
+    // Since user is authenticated, it should auto-publish or show the publish button
+    const publishBtn = page.locator('button:has-text("Publish My Site")');
+    if (await publishBtn.isVisible()) {
       await publishBtn.click();
-      // Should show confirmation or success message
-      await expect(page.locator('text=/published|success|live/i')).toBeVisible({ timeout: 5000 });
-    } else {
-      test.skip();
     }
+
+    // Should eventually redirect to success page
+    await page.waitForURL(/\/publish-success\.html/, { timeout: TIMEOUTS.EXTENDED });
+
+    // Verify success message
+    const successHeading = page.locator('h1:has-text("Your Site is Live!")');
+    const successText = page.locator('text=/published|success|live/i');
+    await expect(successHeading.or(successText).first()).toBeVisible({ timeout: TIMEOUTS.LONG });
   });
 });

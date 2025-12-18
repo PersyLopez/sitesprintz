@@ -116,7 +116,7 @@ test.describe('Site Publishing', () => {
     // Try to access published site
     const publishedUrl = `http://${sub}.localhost:3000`;
     await page.goto(publishedUrl).catch(() => { });
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('domcontentloaded');
 
     // Should load some content
     const hasContent = await page.locator('body').textContent();

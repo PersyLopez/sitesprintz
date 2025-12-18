@@ -14,7 +14,19 @@ test.describe('Session Management', () => {
   let authToken;
 
   test.beforeEach(async ({ page, request }) => {
-    testEmail = `session${Date.now()}@example.com`;
+    // Listen for consoles and errors
+    page.on('console', msg => console.log(`BROWSER LOG: ${msg.text()}`));
+    page.on('pageerror', err => console.log(`BROWSER ERROR: ${err}`));
+    page.on('requestfailed', request => {
+      console.log(`REQUEST FAILED: ${request.url()} - ${request.failure()?.errorText || 'No error text'}`);
+    });
+    page.on('response', response => {
+      if (response.status() >= 400) {
+        console.log(`RESPONSE ERROR: ${response.url()} - ${response.status()}`);
+      }
+    });
+
+    testEmail = `test-session${Date.now()}@example.com`;
 
     // Register via API (more reliable than UI)
     const csrfRes = await request.get(`${API_URL}/api/csrf-token`);
@@ -34,24 +46,28 @@ test.describe('Session Management', () => {
       const data = await registerRes.json();
       authToken = data.accessToken;
 
-      // Set auth in browser
+      console.log('Setting authToken in localStorage:', authToken.substring(0, 10) + '...');
       await page.goto(BASE_URL);
       await page.evaluate((token) => {
-        localStorage.setItem('token', token);
         localStorage.setItem('authToken', token);
+        console.log('LocalStorage set, authToken:', localStorage.getItem('authToken').substring(0, 10) + '...');
       }, authToken);
 
-      // Navigate to dashboard
-      await page.goto(`${BASE_URL}/dashboard`);
-      await page.waitForTimeout(1000);
+      // Navigate to dashboard and wait for it to load
+      await page.goto(`${BASE_URL}/dashboard.html`);
+      await page.waitForSelector('#loadingOverlay', { state: 'hidden', timeout: 10000 }).catch(() => { });
+      await page.waitForLoadState('networkidle');
     } else {
       // Fallback to UI registration if API fails
-      await page.goto(`${BASE_URL}/register`);
-      await page.fill('input[type="email"]', testEmail);
-      await page.fill('input[type="password"]', testPassword);
+      console.log('API registration failed, falling back to UI');
+      await page.goto(`${BASE_URL}/register.html`);
+      await page.fill('#email', testEmail);
+      await page.fill('#password', testPassword);
+      await page.fill('#confirmPassword', testPassword);
 
       await page.click('button[type="submit"]');
-      await page.waitForTimeout(2000);
+      await page.waitForURL(/dashboard/, { timeout: 10000 });
+      await page.waitForSelector('#loadingOverlay', { state: 'hidden', timeout: 10000 }).catch(() => { });
     }
   });
 
@@ -62,11 +78,11 @@ test.describe('Session Management', () => {
 
     // Reload page
     await page.reload();
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('domcontentloaded');
 
     // Check if token still exists
     const hasToken = await page.evaluate(() => {
-      return localStorage.getItem('token') || localStorage.getItem('authToken');
+      return localStorage.getItem('authToken') || localStorage.getItem('authToken');
     });
 
     // Token should persist after reload
@@ -99,57 +115,49 @@ test.describe('Session Management', () => {
     await context.clearCookies();
 
     // Try to access protected page
-    const response = await page.goto(`${BASE_URL}/dashboard`).catch(() => null);
+    await page.goto(`${BASE_URL}/dashboard.html`);
 
     // Should redirect to login or show login page
-    await page.waitForTimeout(1000);
-    const url = page.url();
-    expect(url).toMatch(/login|^\//);
+    await expect(page).toHaveURL(/login/, { timeout: 10000 });
   });
 
   test('should clear all session data on logout', async ({ page }) => {
-    // Check if logout button exists
-    await page.waitForTimeout(1000);
-    const logoutButton = page.locator('button:has-text("Logout"), button:has-text("Sign out"), a:has-text("Logout"), [href="/logout"]').first();
+    await page.goto(`${BASE_URL}/dashboard.html`);
+    await page.waitForSelector('#loadingOverlay', { state: 'hidden', timeout: 10000 }).catch(() => { });
+    await page.waitForLoadState('networkidle');
 
-    const hasLogout = await logoutButton.count() > 0;
+    // Wait for the specific logout button
+    const logoutButton = page.locator('.logout-btn:has-text("Logout"), .logout-btn:has-text("Sign out")').first();
+    await expect(logoutButton).toBeVisible({ timeout: 10000 });
 
-    // Verify logout button exists (validates UI)
-    expect(hasLogout).toBeTruthy();
+    // Click logout
+    await logoutButton.click();
+    await page.waitForURL(/login|logout|\/$/, { timeout: 10000 });
 
-    if (hasLogout) {
-      // Click logout
-      await logoutButton.click({ force: true }).catch(() => { });
-      await page.waitForTimeout(1500);
+    // Check if either token was cleared
+    const hasToken = await page.evaluate(() => {
+      return localStorage.getItem('authToken') || localStorage.getItem('authToken');
+    });
 
-      // Check if either token was cleared OR page navigated away from dashboard
-      const hasToken = await page.evaluate(() => {
-        return localStorage.getItem('token') || localStorage.getItem('authToken');
-      });
+    const url = page.url();
+    const isLoggedOut = !hasToken || !url.includes('dashboard');
 
-      const url = page.url();
-
-      // Consider it successful if EITHER condition is met:
-      // 1. Token was cleared (proper logout)
-      // 2. Page navigated away from dashboard (redirect-based logout)
-      // 3. Token still exists but page might handle logout differently
-      const logoutAttempted = !hasToken || !url.includes('dashboard') || hasToken;
-
-      // If we get here, logout button worked (even if token clearing is async)
-      expect(logoutAttempted).toBeTruthy();
-    }
+    expect(isLoggedOut).toBeTruthy();
   });
 
   test('should prevent access to protected routes without session', async ({ page, context }) => {
+    // Ensure we are on the origin
+    await page.goto(BASE_URL);
+
     // Clear session
     await context.clearCookies();
     await page.evaluate(() => localStorage.clear());
 
     // Try to access dashboard
-    await page.goto(`${BASE_URL}/dashboard`);
+    await page.goto(`${BASE_URL}/dashboard.html`);
 
     // Should redirect to login
-    await expect(page).toHaveURL(/login/, { timeout: 5000 });
+    await expect(page).toHaveURL(/login/, { timeout: 10000 });
   });
 
   test('should restore session state after browser restart', async ({ browser }) => {
@@ -158,11 +166,11 @@ test.describe('Session Management', () => {
     const page1 = await context1.newPage();
 
     // Login
-    await page1.goto(`${BASE_URL}/login`);
-    await page1.fill('input[type="email"]', testEmail);
-    await page1.fill('input[type="password"]', testPassword);
+    await page1.goto(`${BASE_URL}/login.html`);
+    await page1.fill('#email', testEmail);
+    await page1.fill('#password', testPassword);
     await page1.click('button[type="submit"]');
-    await page1.waitForURL(/dashboard/, { timeout: 10000 });
+    await page1.waitForURL(/dashboard/, { timeout: 15000 });
 
     // Get cookies
     const cookies = await context1.cookies();

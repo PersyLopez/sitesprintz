@@ -4,9 +4,10 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { URLS, TIMEOUTS } from '../fixtures/test-config.js';
 
-const BASE_URL = process.env.VITE_APP_URL || 'http://localhost:3000';
-const API_URL = process.env.VITE_API_URL || 'http://localhost:3000';
+const BASE_URL = URLS.BASE;
+const API_URL = URLS.API;
 
 test.describe('Contact Form Submissions', () => {
   let testSubdomain;
@@ -43,7 +44,8 @@ test.describe('Contact Form Submissions', () => {
 
   test('should display contact form on published site', async ({ page }) => {
     await page.goto(siteUrl).catch(() => {});
-    await page.waitForTimeout(2000); // Wait for site to load
+    // Wait for page to fully load instead of arbitrary timeout
+    await page.waitForLoadState('networkidle');
     
     // Look for contact form
     const hasForm = await page.locator('form#contact-form').count() > 0;
@@ -56,7 +58,7 @@ test.describe('Contact Form Submissions', () => {
 
   test('should validate required fields', async ({ page }) => {
     await page.goto(siteUrl);
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
     
     // Check if form exists
     const formExists = await page.locator('form#contact-form').count() > 0;
@@ -83,7 +85,7 @@ test.describe('Contact Form Submissions', () => {
 
   test('should validate email format', async ({ page }) => {
     await page.goto(siteUrl);
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
     
     // Check if form exists
     const formExists = await page.locator('form#contact-form').count() > 0;
@@ -106,7 +108,7 @@ test.describe('Contact Form Submissions', () => {
 
   test('should successfully submit valid form', async ({ page }) => {
     await page.goto(siteUrl);
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
     
     // Check if form exists
     const formExists = await page.locator('form#contact-form').count() > 0;
@@ -121,10 +123,14 @@ test.describe('Contact Form Submissions', () => {
     await page.fill('textarea#message', 'This is a test message');
     
     const submitButton = page.locator('button[type="submit"]');
-    await submitButton.click();
     
-    // Wait for response
-    await page.waitForTimeout(2000);
+    // Wait for form submission response
+    const responsePromise = page.waitForResponse(r => 
+      r.url().includes('/api/') && r.request().method() === 'POST'
+    ).catch(() => null);
+    
+    await submitButton.click();
+    await responsePromise;
     
     // Should show success or form should be reset
     const formReset = await page.locator('input#name').inputValue();
@@ -133,7 +139,7 @@ test.describe('Contact Form Submissions', () => {
 
   test('should handle network errors gracefully', async ({ page, context }) => {
     await page.goto(siteUrl);
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
     
     // Check if form exists
     const formExists = await page.locator('form#contact-form').count() > 0;
@@ -151,8 +157,8 @@ test.describe('Contact Form Submissions', () => {
     await page.fill('textarea#message', 'Test message');
     await page.click('button[type="submit"]');
     
-    // Wait for error handling
-    await page.waitForTimeout(2000);
+    // Wait for network to settle (error handling)
+    await page.waitForLoadState('networkidle');
     
     // Form should still be visible (not crashed)
     const formStillThere = await page.locator('form#contact-form').count() > 0;
@@ -161,7 +167,7 @@ test.describe('Contact Form Submissions', () => {
 
   test('should prevent spam with rate limiting', async ({ page }) => {
     await page.goto(siteUrl);
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
     
     // Check if form exists
     const formExists = await page.locator('form#contact-form').count() > 0;
@@ -176,7 +182,8 @@ test.describe('Contact Form Submissions', () => {
     await page.fill('textarea#message', 'Message');
     await page.click('button[type="submit"]');
     
-    await page.waitForTimeout(1000);
+    // Wait for response
+    await page.waitForLoadState('networkidle');
     
     // Form should still exist
     const formStillExists = await page.locator('form#contact-form').count() > 0;
@@ -185,7 +192,7 @@ test.describe('Contact Form Submissions', () => {
 
   test('should sanitize malicious input', async ({ page }) => {
     await page.goto(siteUrl);
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
     
     // Check if form exists
     const formExists = await page.locator('form#contact-form').count() > 0;

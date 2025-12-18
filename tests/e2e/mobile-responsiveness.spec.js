@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { STRONG_PASSWORD } from '../fixtures/test-credentials.js';
 
 /**
  * Mobile E2E Testing Suite
@@ -86,7 +87,7 @@ test.describe('Mobile E2E - Touch Interactions', () => {
     await btn.click();
     
     // Page should still be functional after click
-    await page.waitForTimeout(100);
+    await page.waitForLoadState('domcontentloaded');
     await expect(page.locator('body')).toBeVisible();
   });
 
@@ -137,8 +138,8 @@ test.describe('Mobile E2E - Touch Interactions', () => {
       await page.mouse.move(box.x + 50, box.y + box.height / 2);
       await page.mouse.up();
       
-      // Verify carousel moved
-      await page.waitForTimeout(500);
+      // Verify carousel moved (wait for animation)
+      await page.waitForLoadState('domcontentloaded');
     }
   });
 });
@@ -180,7 +181,7 @@ test.describe('Mobile E2E - Navigation and Menus', () => {
       await menuItem.click();
       
       // Verify navigation occurred
-      await page.waitForTimeout(500);
+      await page.waitForLoadState('domcontentloaded');
     }
   });
 });
@@ -432,8 +433,8 @@ test.describe('Mobile E2E - Orientation Changes', () => {
     // Rotate to landscape
     await page.setViewportSize({ width: 1024, height: 768 });
     
-    // Verify landscape layout
-    await page.waitForTimeout(500);
+    // Verify landscape layout responds to viewport change
+    await page.waitForLoadState('domcontentloaded');
     await expect(page.locator('body')).toBeVisible();
   });
 });

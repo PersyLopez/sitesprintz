@@ -4,8 +4,10 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { STRONG_PASSWORD, generateTestEmail } from '../fixtures/test-credentials.js';
+import { URLS, TIMEOUTS, SELECTORS, API_PATTERNS } from '../fixtures/test-config.js';
 
-const API_URL = 'http://localhost:3000';
+const API_URL = URLS.API;
 
 test.describe('Database Health', () => {
 
@@ -18,15 +20,15 @@ test.describe('Database Health', () => {
   });
 
   test('should verify users table exists', async ({ request }) => {
-    const csrfRes = await request.get(`${API_URL}/api/csrf-token`);
+    const csrfRes = await request.get(`${API_URL}${API_PATTERNS.CSRF}`);
     const { csrfToken } = await csrfRes.json();
 
-    const response = await request.post(`${API_URL}/api/auth/register`, {
+    const response = await request.post(`${API_URL}${API_PATTERNS.REGISTER}`, {
       headers: { 'X-CSRF-Token': csrfToken },
       data: {
-        email: `dbtest${Date.now()}@example.com`,
-        password: 'StrictPwd!2024',
-        confirmPassword: 'StrictPwd!2024'
+        email: generateTestEmail('dbtest'),
+        password: STRONG_PASSWORD,
+        confirmPassword: STRONG_PASSWORD
       }
     });
 
@@ -44,14 +46,14 @@ test.describe('Dashboard API Coverage', () => {
 
   test('dashboard should not have 404 API errors', async ({ page }) => {
     // Register and login
-    const email = `dash${Date.now()}@example.com`;
-    await page.goto('http://localhost:3000/register');
-    await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', 'StrictPwd!2024');
-    await page.fill('input[name="confirmPassword"]', 'StrictPwd!2024');
-    await page.click('button[type="submit"]');
+    const email = generateTestEmail('dash');
+    await page.goto(`${URLS.BASE}/register`);
+    await page.fill(SELECTORS.AUTH.EMAIL_INPUT, email);
+    await page.fill(SELECTORS.AUTH.PASSWORD_INPUT, STRONG_PASSWORD);
+    await page.fill('#confirmPassword', STRONG_PASSWORD);
+    await page.click(SELECTORS.AUTH.SUBMIT_BUTTON);
 
-    await page.waitForURL(/dashboard/, { timeout: 10000 });
+    await page.waitForURL(/dashboard/, { timeout: TIMEOUTS.LONG });
 
     // Monitor 404s
     const failed404s = [];

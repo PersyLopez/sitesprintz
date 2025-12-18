@@ -1,18 +1,20 @@
 import { test, expect } from '@playwright/test';
+import { TEST_USERS } from '../fixtures/test-credentials.js';
+import { SELECTORS, TIMEOUTS } from '../fixtures/test-config.js';
 
 test.describe('Admin Dashboard', () => {
   test.beforeEach(async ({ page }) => {
     // Login as admin
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'admin@example.com');
-    await page.fill('input[type="password"]', 'admin123');
-    await page.click('button[type="submit"]');
+    await page.fill('input[type="email"]', TEST_USERS.ADMIN.email);
+    await page.fill('input[type="password"]', TEST_USERS.ADMIN.password);
+    await page.click(SELECTORS.AUTH.SUBMIT_BUTTON);
 
     // Capture console logs
     page.on('console', msg => console.log(`[Browser] ${msg.text()}`));
 
     // Should redirect to admin or dashboard
-    await page.waitForURL(/\/admin|\/dashboard/, { timeout: 10000 });
+    await page.waitForURL(/\/admin|\/dashboard/, { timeout: TIMEOUTS.LONG });
   });
 
   test('should access admin dashboard', async ({ page }) => {
@@ -68,7 +70,7 @@ test.describe('Admin Dashboard', () => {
       await searchInput.fill('test');
 
       // Wait for results to filter
-      await page.waitForTimeout(500);
+      await page.waitForLoadState('networkidle');
 
       // Should show filtered results
       const userCards = await page.locator('.user-card, [data-user-id], .user-item').count();
@@ -138,10 +140,10 @@ test.describe('Admin Dashboard', () => {
 test.describe('Admin Site Management', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'admin@example.com');
-    await page.fill('input[type="password"]', 'admin123');
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/\/admin|\/dashboard/);
+    await page.fill('input[type="email"]', TEST_USERS.ADMIN.email);
+    await page.fill('input[type="password"]', TEST_USERS.ADMIN.password);
+    await page.click(SELECTORS.AUTH.SUBMIT_BUTTON);
+    await page.waitForURL(/\/admin|\/dashboard/, { timeout: TIMEOUTS.LONG });
   });
 
   test('should view user site statistics', async ({ page }) => {
@@ -183,10 +185,10 @@ test.describe('Admin Site Management', () => {
 test.describe('Admin Template Management', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'admin@example.com');
-    await page.fill('input[type="password"]', 'admin123');
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/\/admin|\/dashboard/);
+    await page.fill('input[type="email"]', TEST_USERS.ADMIN.email);
+    await page.fill('input[type="password"]', TEST_USERS.ADMIN.password);
+    await page.click(SELECTORS.AUTH.SUBMIT_BUTTON);
+    await page.waitForURL(/\/admin|\/dashboard/, { timeout: TIMEOUTS.LONG });
   });
 
   test('should access template management', async ({ page }) => {
@@ -208,18 +210,18 @@ test.describe('Admin Template Management', () => {
 
 test.describe('Admin Permissions', () => {
   test('non-admin should not access admin routes', async ({ page }) => {
-    // Login as regular user
+    // Login as regular user (PRO_USER, not admin)
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'test@example.com');
-    await page.fill('input[type="password"]', 'password123');
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/\/dashboard/);
+    await page.fill('input[type="email"]', TEST_USERS.PRO_USER.email);
+    await page.fill('input[type="password"]', TEST_USERS.PRO_USER.password);
+    await page.click(SELECTORS.AUTH.SUBMIT_BUTTON);
+    await page.waitForURL(/\/dashboard/, { timeout: TIMEOUTS.LONG });
 
     // Try to access admin page
     await page.goto('/admin');
 
     // Should be redirected or show access denied
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
     const url = page.url();
     const hasAccessDenied = await page.locator('text=/access denied|unauthorized|forbidden/i').count() > 0;
     const redirectedAway = !url.includes('/admin');
@@ -230,13 +232,13 @@ test.describe('Admin Permissions', () => {
   test('should protect admin API endpoints', async ({ page, request }) => {
     // Login as regular user first to get token
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'test@example.com');
-    await page.fill('input[type="password"]', 'password123');
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/\/dashboard/);
+    await page.fill('input[type="email"]', TEST_USERS.PRO_USER.email);
+    await page.fill('input[type="password"]', TEST_USERS.PRO_USER.password);
+    await page.click(SELECTORS.AUTH.SUBMIT_BUTTON);
+    await page.waitForURL(/\/dashboard/, { timeout: TIMEOUTS.LONG });
 
     // Get token from localStorage
-    const token = await page.evaluate(() => localStorage.getItem('token'));
+    const token = await page.evaluate(() => localStorage.getItem('authToken'));
 
     // Try to access admin API endpoint
     const response = await request.get('http://localhost:3000/api/admin/users', {
@@ -253,10 +255,10 @@ test.describe('Admin Permissions', () => {
 test.describe('Admin Audit Log', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'admin@example.com');
-    await page.fill('input[type="password"]', 'admin123');
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/\/admin|\/dashboard/);
+    await page.fill('input[type="email"]', TEST_USERS.ADMIN.email);
+    await page.fill('input[type="password"]', TEST_USERS.ADMIN.password);
+    await page.click(SELECTORS.AUTH.SUBMIT_BUTTON);
+    await page.waitForURL(/\/admin|\/dashboard/, { timeout: TIMEOUTS.LONG });
   });
 
   test('should view audit logs if implemented', async ({ page }) => {

@@ -12,13 +12,11 @@
 
 import { test, expect } from '@playwright/test';
 import { waitForVisible, dismissWelcomeModal } from '../../src/utils/waitHelpers';
+import { TEST_USERS } from '../fixtures/test-credentials.js';
+import { SELECTORS, TIMEOUTS } from '../fixtures/test-config.js';
 
-// Test data
-const TEST_USER = {
-  email: 'test@example.com',
-  password: 'password123',
-  userId: 545,
-};
+// Use centralized test user
+const TEST_USER = TEST_USERS.PRO_USER;
 
 const TEST_SERVICE = {
   name: `Test Haircut Service ${Date.now()}`,
@@ -32,12 +30,12 @@ test.describe('Booking Admin Dashboard - E2E', () => {
   test.describe.configure({ mode: 'serial' });
 
   test.beforeEach(async ({ page }) => {
-    // Login as test user
+    // Login as test user (PRO_USER)
     await page.goto('/login');
-    await page.fill('input[name="email"]', TEST_USER.email);
-    await page.fill('input[name="password"]', TEST_USER.password);
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/dashboard');
+    await page.fill(SELECTORS.AUTH.EMAIL_INPUT, TEST_USER.email);
+    await page.fill(SELECTORS.AUTH.PASSWORD_INPUT, TEST_USER.password);
+    await page.click(SELECTORS.AUTH.SUBMIT_BUTTON);
+    await page.waitForURL('/dashboard', { timeout: TIMEOUTS.LONG });
   });
 
   // Helper to navigate to booking dashboard
@@ -213,8 +211,8 @@ test.describe('Booking Admin Dashboard - E2E', () => {
       // Type in search
       await page.fill('input[placeholder*="Search"]', 'John');
 
-      // Wait for filtered results
-      await page.waitForTimeout(1000);
+      // Wait for filtered results to load
+      await page.waitForLoadState('networkidle');
 
       // Should show matching results - use data-testid selector
       await expect(page.getByTestId(/appointment-customer-/).filter({ hasText: 'John' }).first()).toBeVisible();
@@ -244,7 +242,7 @@ test.describe('Booking Admin Dashboard - E2E', () => {
 
       // Filter to show only confirmed or pending appointments
       await page.getByRole('combobox', { name: /status/i }).selectOption('confirmed');
-      await page.waitForTimeout(1000); // Wait for filter to apply
+      await page.waitForLoadState('networkidle'); // Wait for filter to apply
 
       // Check if there are any appointments to cancel
       const cancelButtons = page.getByRole('button', { name: /cancel/i });
@@ -273,7 +271,7 @@ test.describe('Booking Admin Dashboard - E2E', () => {
       await page.getByRole('button', { name: /refresh/i }).click();
 
       // Should reload data (indicated by brief loading state)
-      await page.waitForTimeout(500);
+      await page.waitForLoadState('networkidle');
     });
   });
 
@@ -445,7 +443,7 @@ test.describe('Booking Admin Dashboard - E2E', () => {
       await page.getByRole('button', { name: /refresh/i }).click();
 
       // Should recover and load data
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle');
     });
   });
 

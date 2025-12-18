@@ -1,6 +1,8 @@
 import { expect, afterEach, beforeAll, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import * as matchers from '@testing-library/jest-dom/matchers';
+import { StrictMode, createElement } from 'react';
+import { render } from '@testing-library/react';
 
 // Extend Vitest's expect method with methods from react-testing-library
 expect.extend(matchers);
@@ -11,7 +13,7 @@ if (typeof window === 'undefined') {
     try {
       const { createMockPrisma, resetPrismaMocks, seedPrismaData } = await import('./mocks/prisma.js');
       const mockPrisma = createMockPrisma();
-      
+
       return {
         prisma: mockPrisma,
         resetPrismaMocks,
@@ -36,7 +38,7 @@ if (typeof window === 'undefined') {
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
-  
+
   // Reset Prisma mocks if available (only in node environment)
   if (typeof window === 'undefined') {
     try {
@@ -119,6 +121,11 @@ beforeAll(() => {
       value: localStorageMock,
       writable: true
     });
+
+    // Rule 5: Wrap all renders in StrictMode
+    global.renderWithStrictMode = (ui, options) => {
+      return render(createElement(StrictMode, null, ui), options);
+    };
   }
 
   // Mock fetch for all tests (browser and node)

@@ -1,9 +1,11 @@
 import { test, expect } from '@playwright/test';
 import { setupBookingData, createTestAppointment } from '../helpers/booking-test-utils';
 import { registerUser } from '../helpers/e2e-test-utils';
+import { TEST_USERS } from '../fixtures/test-credentials.js';
+import { URLS, TIMEOUTS, SELECTORS } from '../fixtures/test-config.js';
 
 test.describe.configure({ mode: 'serial' });
-test.setTimeout(60000); // Set 60s timeout for all tests in this file due to extensive API retries
+test.setTimeout(TIMEOUTS.TEST); // Use centralized timeout
 
 /**
  * E2E Tests for Booking System
@@ -11,7 +13,7 @@ test.setTimeout(60000); // Set 60s timeout for all tests in this file due to ext
  */
 
 test.describe('Booking System - Complete User Journey', () => {
-  const baseURL = process.env.VITE_API_URL || 'http://localhost:3000';
+  const baseURL = URLS.BASE;
   let testUserId;
   let testUserEmail;
   let testServiceId;

@@ -4,9 +4,11 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { URLS, TIMEOUTS, API_PATTERNS } from '../fixtures/test-config.js';
+import { STRONG_PASSWORD, generateTestEmail } from '../fixtures/test-credentials.js';
 
-const API_URL = process.env.VITE_API_URL || 'http://localhost:3000';
-const FRONTEND_URL = process.env.VITE_APP_URL || 'http://localhost:3000';
+const API_URL = URLS.API;
+const FRONTEND_URL = URLS.BASE;
 
 test.describe('Dashboard OAuth Token Handling', () => {
 
@@ -15,7 +17,7 @@ test.describe('Dashboard OAuth Token Handling', () => {
 
     // Navigate to dashboard with token parameter (simulating OAuth callback)
     await page.goto(`${FRONTEND_URL}/dashboard?token=${mockToken}`);
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
 
     // Check if token was stored in localStorage
     const storedToken = await page.evaluate(() => {
@@ -30,7 +32,7 @@ test.describe('Dashboard OAuth Token Handling', () => {
 
     // Navigate with token
     await page.goto(`${FRONTEND_URL}/dashboard?token=${mockToken}`);
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
 
     // URL should no longer contain token (security)
     const currentUrl = page.url();
@@ -42,7 +44,7 @@ test.describe('Dashboard OAuth Token Handling', () => {
     const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token';
 
     await page.goto(`${FRONTEND_URL}/dashboard?token=${mockToken}`);
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
 
     // Check if token was stored
     const hasToken = await page.evaluate(() => localStorage.getItem('authToken'));
@@ -55,7 +57,7 @@ test.describe('Dashboard OAuth Token Handling', () => {
   test('should not break dashboard if no token in URL', async ({ page }) => {
     // Navigate without token (normal access)
     await page.goto(`${FRONTEND_URL}/dashboard`);
-    await page.waitForTimeout(1500);
+    await page.waitForLoadState('domcontentloaded');
 
     // Page should load (might redirect to login if not authenticated)
     const url = page.url();
@@ -73,22 +75,20 @@ test.describe('Full OAuth Flow Integration', () => {
   test('should complete Google OAuth flow end-to-end (mocked)', async ({ page, request, context }) => {
     // 1. Start on login page
     await page.goto(`${FRONTEND_URL}/login`);
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('domcontentloaded');
 
     // 2. Verify Google button exists
     const googleButton = page.locator('.google-oauth-button, button:has-text("Continue with Google")').first();
     expect(await googleButton.count()).toBeGreaterThan(0);
 
     // 3. Simulate successful OAuth by directly navigating to dashboard with token
-    // (We can't actually complete Google OAuth in tests)
-    // (We can't actually complete Google OAuth in tests)
-    const csrfRes = await request.get(`${API_URL}/api/csrf-token`);
+    const csrfRes = await request.get(`${API_URL}${API_PATTERNS.CSRF}`);
     const { csrfToken } = await csrfRes.json();
 
-    const testEmail = `oauth${Date.now()}@example.com`;
-    const registerRes = await request.post(`${API_URL}/api/auth/register`, {
+    const testEmail = generateTestEmail('oauth');
+    const registerRes = await request.post(`${API_URL}${API_PATTERNS.REGISTER}`, {
       headers: { 'X-CSRF-Token': csrfToken },
-      data: { email: testEmail, password: 'StrictPwd!2024', confirmPassword: 'StrictPwd!2024', name: 'OAuth Test User' }
+      data: { email: testEmail, password: STRONG_PASSWORD, confirmPassword: STRONG_PASSWORD, name: 'OAuth Test User' }
     });
 
     if (registerRes.ok()) {
@@ -96,7 +96,7 @@ test.describe('Full OAuth Flow Integration', () => {
 
       // 4. Simulate OAuth callback redirect
       await page.goto(`${FRONTEND_URL}/dashboard?token=${token}`);
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle');
 
       // 5. Verify token was stored
       const storedToken = await page.evaluate(() => localStorage.getItem('authToken'));
@@ -112,13 +112,13 @@ test.describe('Full OAuth Flow Integration', () => {
 
   test('should handle OAuth token and load user data', async ({ page, request }) => {
     // Create a user and get their token
-    const csrfRes = await request.get(`${API_URL}/api/csrf-token`);
+    const csrfRes = await request.get(`${API_URL}${API_PATTERNS.CSRF}`);
     const { csrfToken } = await csrfRes.json();
 
-    const testEmail = `tokentest${Date.now()}@example.com`;
-    const registerRes = await request.post(`${API_URL}/api/auth/register`, {
+    const testEmail = generateTestEmail('tokentest');
+    const registerRes = await request.post(`${API_URL}${API_PATTERNS.REGISTER}`, {
       headers: { 'X-CSRF-Token': csrfToken },
-      data: { email: testEmail, password: 'StrictPwd!2024', confirmPassword: 'StrictPwd!2024', name: 'Token Test' }
+      data: { email: testEmail, password: STRONG_PASSWORD, confirmPassword: STRONG_PASSWORD, name: 'Token Test' }
     });
 
     if (registerRes.ok()) {
@@ -126,7 +126,7 @@ test.describe('Full OAuth Flow Integration', () => {
 
       // Navigate to dashboard with token (OAuth callback simulation)
       await page.goto(`${FRONTEND_URL}/dashboard?token=${token}`);
-      await page.waitForTimeout(3000);
+      await page.waitForLoadState('networkidle');
 
       // Should show user's name or email
       const greeting = page.locator('h1:has-text("Welcome back")').first();

@@ -1,26 +1,28 @@
 import { test as base } from '@playwright/test';
+import { TEST_USERS, STRONG_PASSWORD } from '../fixtures/test-credentials.js';
+import { SELECTORS, TIMEOUTS } from '../fixtures/test-config.js';
 
 /**
  * Extended Playwright test with authentication helpers
  */
 export const test = base.extend({
-  // Authenticated context
+  // Authenticated context (Pro user)
   authenticatedPage: async ({ page }, use) => {
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'test@example.com');
-    await page.fill('input[type="password"]', 'password123');
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/dashboard/);
+    await page.fill(SELECTORS.AUTH.EMAIL_INPUT, TEST_USERS.PRO_USER.email);
+    await page.fill(SELECTORS.AUTH.PASSWORD_INPUT, TEST_USERS.PRO_USER.password);
+    await page.click(SELECTORS.AUTH.SUBMIT_BUTTON);
+    await page.waitForURL(/dashboard/, { timeout: TIMEOUTS.LONG });
     await use(page);
   },
 
   // Admin authenticated context
   adminPage: async ({ page }, use) => {
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'admin@example.com');
-    await page.fill('input[type="password"]', 'admin123');
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/dashboard|admin/);
+    await page.fill(SELECTORS.AUTH.EMAIL_INPUT, TEST_USERS.ADMIN.email);
+    await page.fill(SELECTORS.AUTH.PASSWORD_INPUT, TEST_USERS.ADMIN.password);
+    await page.click(SELECTORS.AUTH.SUBMIT_BUTTON);
+    await page.waitForURL(/dashboard|admin/, { timeout: TIMEOUTS.LONG });
     await use(page);
   }
 });
@@ -83,16 +85,19 @@ export async function createTestSite(page, options = {}) {
 
 /**
  * Helper to login
+ * @param {Page} page - Playwright page
+ * @param {string} email - User email (defaults to PRO_USER)
+ * @param {string} password - User password (defaults to PRO_USER password)
  */
-export async function login(page, email = 'test@example.com', password = 'password123') {
+export async function login(page, email = TEST_USERS.PRO_USER.email, password = TEST_USERS.PRO_USER.password) {
   await page.goto('/login.html');
-  await page.fill('input[type="email"]', email);
-  await page.fill('input[type="password"]', password);
-  await page.click('button[type="submit"]');
-  await page.waitForURL(/dashboard/, { timeout: 5000 });
+  await page.fill(SELECTORS.AUTH.EMAIL_INPUT, email);
+  await page.fill(SELECTORS.AUTH.PASSWORD_INPUT, password);
+  await page.click(SELECTORS.AUTH.SUBMIT_BUTTON);
+  await page.waitForURL(/dashboard/, { timeout: TIMEOUTS.MEDIUM });
 
   // Dismiss welcome modal if present
-  const welcomeModal = page.locator('.welcome-modal .btn-primary');
+  const welcomeModal = page.locator(SELECTORS.DASHBOARD.WELCOME_MODAL);
   if (await welcomeModal.count() > 0 && await welcomeModal.isVisible()) {
     await welcomeModal.click();
   }
@@ -111,6 +116,9 @@ export async function logout(page) {
 
 /**
  * Helper to register a new user
+ * @param {Page} page - Playwright page
+ * @param {object} options - Registration options
+ * @returns {Promise<{email: string, password: string, name: string}>}
  */
 export async function register(page, options = {}) {
   // Debug browser logs
@@ -119,7 +127,7 @@ export async function register(page, options = {}) {
   const timestamp = Date.now();
   const {
     email = `test${timestamp}@example.com`,
-    password = 'SecurePass!2025',
+    password = STRONG_PASSWORD,
     name = 'Test User'
   } = options;
 
@@ -161,12 +169,15 @@ export async function register(page, options = {}) {
 
 /**
  * Helper to register a new user via API
+ * @param {APIRequestContext} request - Playwright request context
+ * @param {object} options - Registration options
+ * @returns {Promise<object>} User data with csrfToken
  */
 export async function registerUser(request, options = {}) {
   const timestamp = Date.now();
   const {
     email = `test${timestamp}@example.com`,
-    password = 'TestPassword123!',
+    password = STRONG_PASSWORD,
     name = 'Test User'
   } = options;
 

@@ -5,8 +5,9 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { URLS } from '../fixtures/test-config.js';
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+const BASE_URL = URLS.BASE;
 const TEST_SUBDOMAIN = 'testsite';
 
 test.describe('Showcase Feature E2E Tests', () => {

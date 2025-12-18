@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import { TEST_USERS, STRONG_PASSWORD } from '../fixtures/test-credentials.js';
+import { SELECTORS, TIMEOUTS } from '../fixtures/test-config.js';
 
 test.describe('User Authentication Flow', () => {
   test.beforeEach(async ({ page }) => {
@@ -60,26 +62,26 @@ test.describe('User Authentication Flow', () => {
 
     const email = `newuser-${Date.now()}@example.com`;
     await page.fill('#email', email);
-    await page.fill('#password', 'StrictPwd!2024');
-    await page.fill('#confirmPassword', 'StrictPwd!2024');
+    await page.fill('#password', STRONG_PASSWORD);
+    await page.fill('#confirmPassword', STRONG_PASSWORD);
 
-    await page.click('button[type="submit"]');
+    await page.click(SELECTORS.AUTH.SUBMIT_BUTTON);
 
     // Should redirect to dashboard
-    await page.waitForURL(/\/dashboard\.html/, { timeout: 10000 });
+    await page.waitForURL(/\/dashboard\.html/, { timeout: TIMEOUTS.LONG });
   });
 
   test('should fail registration with existing email', async ({ page }) => {
     await page.goto('/register.html');
 
-    // Use seeded user
-    await page.fill('#email', 'test@example.com');
-    await page.fill('#password', 'StrictPwd!2024');
-    await page.fill('#confirmPassword', 'StrictPwd!2024');
+    // Use seeded user (PRO_USER)
+    await page.fill('#email', TEST_USERS.PRO_USER.email);
+    await page.fill('#password', STRONG_PASSWORD);
+    await page.fill('#confirmPassword', STRONG_PASSWORD);
 
     const [response] = await Promise.all([
       page.waitForResponse(resp => resp.url().includes('/api/auth/register')),
-      page.click('button[type="submit"]')
+      page.click(SELECTORS.AUTH.SUBMIT_BUTTON)
     ]);
 
     expect(response.status()).toBe(409); // Conflict
@@ -93,25 +95,25 @@ test.describe('User Authentication Flow', () => {
   test('should login with valid credentials', async ({ page }) => {
     await page.goto('/login.html');
 
-    // Use seeded user
-    await page.fill('#email', 'test@example.com');
-    await page.fill('#password', 'password123'); // Seeded password
+    // Use seeded PRO_USER
+    await page.fill('#email', TEST_USERS.PRO_USER.email);
+    await page.fill('#password', TEST_USERS.PRO_USER.password);
 
-    await page.click('button[type="submit"]');
+    await page.click(SELECTORS.AUTH.SUBMIT_BUTTON);
 
     // Should redirect to dashboard
-    await page.waitForURL(/\/dashboard(\.html)?/);
+    await page.waitForURL(/\/dashboard(\.html)?/, { timeout: TIMEOUTS.LONG });
   });
 
   test('should fail login with invalid credentials', async ({ page }) => {
     await page.goto('/login.html');
 
-    await page.fill('#email', 'test@example.com');
+    await page.fill('#email', TEST_USERS.PRO_USER.email);
     await page.fill('#password', 'WrongPass123!');
 
     const [response] = await Promise.all([
       page.waitForResponse(resp => resp.url().includes('/api/auth/login')),
-      page.click('button[type="submit"]')
+      page.click(SELECTORS.AUTH.SUBMIT_BUTTON)
     ]);
 
     console.log('Login failure status:', response.status());
@@ -119,8 +121,7 @@ test.describe('User Authentication Flow', () => {
 
     // Should show error
     const passwordError = page.locator('#passwordError');
-    // Wait for it to become visible with longer timeout if needed?
-    await expect(passwordError).toBeVisible({ timeout: 10000 });
+    await expect(passwordError).toBeVisible({ timeout: TIMEOUTS.LONG });
     await expect(passwordError).toHaveText(/invalid|incorrect|connection/i);
   });
 });

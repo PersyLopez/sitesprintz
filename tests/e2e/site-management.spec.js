@@ -3,9 +3,9 @@
  * Tests editing existing sites, duplicating sites, and deleting sites
  */
 
-
 import { test, expect } from '@playwright/test';
 import { login, createTestSiteViaApi } from '../helpers/e2e-test-utils.js';
+import { TIMEOUTS } from '../fixtures/test-config.js';
 
 test.describe('Site Management', () => {
   let siteId;
@@ -71,12 +71,16 @@ test.describe('Site Management', () => {
         // Save changes (auto-save or manual save button)
         const saveButton = page.locator('button:has-text("Save"), button:has-text("Update")');
         if (await saveButton.count() > 0) {
+          // Wait for save response
+          const savePromise = page.waitForResponse(r => 
+            r.url().includes('/api/') && (r.request().method() === 'POST' || r.request().method() === 'PUT')
+          ).catch(() => null);
           await saveButton.click();
-          await page.waitForTimeout(1000);
+          await savePromise;
         }
 
-        // Wait for auto-save if applicable
-        await page.waitForTimeout(2000);
+        // Wait for auto-save to complete
+        await page.waitForLoadState('networkidle');
 
         // Verify change was saved (check for success message or navigate back)
         const successMessage = page.locator('text=/saved|updated|success/i');
@@ -107,10 +111,14 @@ test.describe('Site Management', () => {
     ).first();
 
     if (await duplicateButton.count() > 0) {
+      // Wait for duplication API response
+      const duplicatePromise = page.waitForResponse(r => 
+        r.url().includes('/api/') && r.request().method() === 'POST'
+      ).catch(() => null);
+      
       await duplicateButton.click();
-
-      // Wait for duplication to complete
-      await page.waitForTimeout(2000);
+      await duplicatePromise;
+      await page.waitForLoadState('networkidle');
 
       // Check for success message or confirmation
       const successMessage = page.locator('text=/duplicated|copied|success/i');
@@ -159,10 +167,14 @@ test.describe('Site Management', () => {
         await dialog.accept();
       });
 
+      // Wait for delete API response
+      const deletePromise = page.waitForResponse(r => 
+        r.url().includes('/api/') && r.request().method() === 'DELETE'
+      ).catch(() => null);
+      
       await deleteButton.click();
-
-      // Wait for deletion to complete
-      await page.waitForTimeout(2000);
+      await deletePromise;
+      await page.waitForLoadState('networkidle');
 
       // Refresh dashboard
       await page.reload();
@@ -205,8 +217,8 @@ test.describe('Site Management', () => {
 
       await deleteButton.click();
 
-      // Wait a bit
-      await page.waitForTimeout(1000);
+      // Wait for dialog to be handled
+      await page.waitForLoadState('networkidle');
 
       // Site should still exist
       const sitesAfter = await page.locator('.site-card, [data-site-id]').count();
@@ -231,8 +243,8 @@ test.describe('Site Management', () => {
     if (await publishButton.count() > 0) {
       await publishButton.click();
 
-      // Handle publish modal if it appears
-      await page.waitForTimeout(1000);
+      // Wait for publish modal to appear
+      await page.waitForLoadState('domcontentloaded');
 
       // Fill subdomain if needed
       const subdomainInput = page.locator('input[name="subdomain"]');
@@ -243,8 +255,12 @@ test.describe('Site Management', () => {
       // Confirm publish
       const confirmButton = page.locator('button:has-text("Publish"), button:has-text("Confirm")');
       if (await confirmButton.count() > 0) {
+        const publishPromise = page.waitForResponse(r => 
+          r.url().includes('/api/') && r.request().method() === 'POST'
+        ).catch(() => null);
         await confirmButton.click();
-        await page.waitForTimeout(2000);
+        await publishPromise;
+        await page.waitForLoadState('networkidle');
       }
     }
 
@@ -332,8 +348,8 @@ test.describe('Site Management', () => {
       // Type search query
       await searchInput.fill(siteSubdomain);
 
-      // Wait for filtering
-      await page.waitForTimeout(1000);
+      // Wait for filtering (debounced)
+      await page.waitForLoadState('networkidle');
 
       // Should show matching site
       const matchingSite = page.locator(`text=${siteSubdomain}, [data-subdomain="${siteSubdomain}"]`);
@@ -341,7 +357,7 @@ test.describe('Site Management', () => {
 
       // Clear search
       await searchInput.clear();
-      await page.waitForTimeout(500);
+      await page.waitForLoadState('networkidle');
     } else {
       // Search/filter not implemented
       test.skip();

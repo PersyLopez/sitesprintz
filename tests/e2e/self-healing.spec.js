@@ -24,12 +24,12 @@ test.describe('Self Healing & Resilience', () => {
 
         // 2. Login on page
         await page.goto('/');
-        await page.evaluate((t) => localStorage.setItem('token', t), token);
+        await page.evaluate((t) => localStorage.setItem('authToken', t), token);
         await page.goto('/dashboard');
         await expect(page).toHaveURL(/dashboard/);
 
         // 3. Simulate token expiration (corrupt token)
-        await page.evaluate(() => localStorage.setItem('token', 'expired_or_invalid_token'));
+        await page.evaluate(() => localStorage.setItem('authToken', 'expired_or_invalid_token'));
 
         // 4. Action that requires auth
         // The app should either:

@@ -5,6 +5,7 @@
 
 import { test, expect } from '@playwright/test';
 import { login } from '../helpers/e2e-test-utils.js';
+import { TIMEOUTS } from '../fixtures/test-config.js';
 import path from 'path';
 import fs from 'fs';
 
@@ -48,11 +49,14 @@ test.describe('Image Upload', () => {
 
     fs.writeFileSync(testImagePath, pngData);
 
-    // Set file input
+    // Set file input and wait for upload response
+    const uploadPromise = page.waitForResponse(r => 
+      r.url().includes('/api/') && r.request().method() === 'POST'
+    ).catch(() => null);
+    
     await fileInput.setInputFiles(testImagePath);
-
-    // Wait for upload to complete (check for success message or image preview)
-    await page.waitForTimeout(2000);
+    await uploadPromise;
+    await page.waitForLoadState('networkidle');
 
     // Check for success indicators
     const successIndicator = page.locator('text=/upload.*success|image.*uploaded|success/i');
@@ -90,8 +94,8 @@ test.describe('Image Upload', () => {
     // Try to upload PDF
     await fileInput.setInputFiles(testPdfPath);
 
-    // Wait for validation error
-    await page.waitForTimeout(1000);
+    // Wait for validation (client-side validation is immediate)
+    await page.waitForLoadState('domcontentloaded');
 
     // Check for error message
     const errorMessage = page.locator('text=/invalid.*file|only.*image|image.*file|file.*type/i');
@@ -142,7 +146,7 @@ test.describe('Image Upload', () => {
     const hasProgress = await progressIndicator.count() > 0;
 
     // Wait for upload to complete
-    await page.waitForTimeout(3000);
+    await page.waitForLoadState('networkidle');
 
     // Either progress was shown or upload completed quickly
     expect(hasProgress || await page.locator('img[src*="/uploads/"]').count() > 0).toBeTruthy();
@@ -173,8 +177,8 @@ test.describe('Image Upload', () => {
     // Try to upload
     await fileInput.setInputFiles(testLargePath);
 
-    // Wait for validation
-    await page.waitForTimeout(2000);
+    // Wait for validation (size check may be client-side)
+    await page.waitForLoadState('domcontentloaded');
 
     // Check for size error
     const sizeError = page.locator('text=/too.*large|file.*size|max.*5|5.*mb/i');
@@ -234,8 +238,8 @@ test.describe('Image Upload', () => {
 
       await dropZone.dispatchEvent('drop', { dataTransfer });
 
-      // Wait for upload
-      await page.waitForTimeout(2000);
+      // Wait for upload to complete
+      await page.waitForLoadState('networkidle');
 
       // Check for success
       const imagePreview = page.locator('img[src*="/uploads/"], .image-preview');
@@ -279,8 +283,8 @@ test.describe('Image Upload', () => {
 
     await fileInput.setInputFiles(testImagePath);
 
-    // Wait for preview to appear
-    await page.waitForTimeout(2000);
+    // Wait for upload and preview to appear
+    await page.waitForLoadState('networkidle');
 
     // Check for image preview
     const preview = page.locator('img[src*="/uploads/"], .image-preview img, [data-testid="image-preview"] img');

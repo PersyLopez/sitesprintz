@@ -19,14 +19,14 @@ export async function registerUser(page, userData = {}) {
 
   // Navigate to registration page
   await page.goto('/register');
-  
+
   // Fill registration form
   await page.fill('input[name="email"], input[type="email"]', user.email);
   await page.fill('input[name="password"], input[type="password"]', user.password);
-  
+
   // Submit form
   await page.click('button[type="submit"]');
-  
+
   return user;
 }
 
@@ -41,14 +41,14 @@ export async function loginUser(page, credentials) {
 
   // Navigate to login page
   await page.goto('/login');
-  
+
   // Fill login form
   await page.fill('input[name="email"], input[type="email"]', email);
   await page.fill('input[name="password"], input[type="password"]', password);
-  
+
   // Submit form
   await page.click('button[type="submit"]');
-  
+
   // Wait for navigation to dashboard
   await page.waitForURL(/dashboard/);
 }
@@ -61,7 +61,7 @@ export async function loginUser(page, credentials) {
 export async function logoutUser(page) {
   // Click logout button (may be in dropdown or direct button)
   await page.click('[data-testid="logout"], button:has-text("Logout"), button:has-text("Log Out")');
-  
+
   // Wait for redirect to home or login
   await page.waitForURL(/\/(login|)$/);
 }
@@ -75,7 +75,7 @@ export async function isAuthenticated(page) {
   // Check for presence of dashboard or user menu
   const dashboardLink = await page.locator('[href*="dashboard"]').count();
   const userMenu = await page.locator('[data-testid="user-menu"]').count();
-  
+
   return dashboardLink > 0 || userMenu > 0;
 }
 
@@ -87,14 +87,14 @@ export async function isAuthenticated(page) {
  */
 export async function registerAndLogin(page, userData = {}) {
   const user = await registerUser(page, userData);
-  
+
   // Registration might auto-login, check first
   const authenticated = await isAuthenticated(page);
-  
+
   if (!authenticated) {
     await loginUser(page, user);
   }
-  
+
   return user;
 }
 
@@ -106,17 +106,17 @@ export async function registerAndLogin(page, userData = {}) {
 export async function getAuthToken(page) {
   // Try localStorage
   const localStorageToken = await page.evaluate(() => {
-    return localStorage.getItem('token') || localStorage.getItem('authToken');
+    return localStorage.getItem('authToken') || localStorage.getItem('authToken');
   });
-  
+
   if (localStorageToken) {
     return localStorageToken;
   }
-  
+
   // Try cookies
   const cookies = await page.context().cookies();
-  const authCookie = cookies.find(c => c.name === 'token' || c.name === 'authToken');
-  
+  const authCookie = cookies.find(c => c.name === 'authToken' || c.name === 'token');
+
   return authCookie ? authCookie.value : null;
 }
 
@@ -128,7 +128,7 @@ export async function getAuthToken(page) {
  */
 export async function setAuthToken(page, token) {
   await page.evaluate((token) => {
-    localStorage.setItem('token', token);
+    localStorage.setItem('authToken', token);
   }, token);
 }
 
@@ -142,7 +142,7 @@ export async function clearAuth(page) {
     localStorage.clear();
     sessionStorage.clear();
   });
-  
+
   await page.context().clearCookies();
 }
 

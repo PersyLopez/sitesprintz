@@ -10,7 +10,7 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { waitForVisible } from '../../src/utils/waitHelpers';
+import { TIMEOUTS } from '../fixtures/test-config.js';
 
 // Test data
 const testUser = {
@@ -53,9 +53,8 @@ test.describe('Public Showcase Gallery E2E Tests', () => {
     test('should display site cards in grid layout', async ({ page }) => {
       await page.goto('/showcase');
       // Wait for grid to be visible using data-testid
-      await waitForVisible(page, '[data-testid="showcase-grid"]');
       const grid = page.locator('[data-testid="showcase-grid"]');
-      await expect(grid).toBeVisible();
+      await expect(grid).toBeVisible({ timeout: TIMEOUTS.MEDIUM });
 
       // Verify at least one site card exists
       const cards = page.locator('[data-testid^="site-card-"]');
@@ -85,17 +84,14 @@ test.describe('Public Showcase Gallery E2E Tests', () => {
   test.describe('Category Filtering', () => {
     test('should filter sites by category', async ({ page }) => {
       await page.goto('/showcase');
-      await waitForVisible(page, '[data-testid="category-btn-restaurant"]');
+      const restaurantBtn = page.locator('[data-testid="category-btn-restaurant"]').first();
+      await expect(restaurantBtn).toBeVisible({ timeout: TIMEOUTS.MEDIUM });
 
       // Click restaurant category
-      const restaurantBtn = page.locator('[data-testid="category-btn-restaurant"]').first();
       await restaurantBtn.click();
 
-      // Wait for filtered results
-      await page.waitForTimeout(1000);
-
-      // Verify URL contains category param
-      await expect(page).toHaveURL(/category=restaurant/);
+      // Wait for URL to update with category param
+      await expect(page).toHaveURL(/category=restaurant/, { timeout: TIMEOUTS.MEDIUM });
 
       // Verify button has active class
       await expect(restaurantBtn).toHaveClass(/active/);
@@ -103,14 +99,14 @@ test.describe('Public Showcase Gallery E2E Tests', () => {
 
     test('should show all sites when "All" is clicked', async ({ page }) => {
       await page.goto('/showcase?category=restaurant');
-      await waitForVisible(page, '[data-testid="category-btn-all"]');
+      const allBtn = page.locator('[data-testid="category-btn-all"]').first();
+      await expect(allBtn).toBeVisible({ timeout: TIMEOUTS.MEDIUM });
 
       // Click "All" button
-      const allBtn = page.locator('[data-testid="category-btn-all"]').first();
       await allBtn.click();
 
-      // Wait for results
-      await page.waitForTimeout(1000);
+      // Wait for URL to update
+      await page.waitForURL(url => !url.includes('category='), { timeout: TIMEOUTS.MEDIUM });
 
       // Verify URL doesn't contain category param
       const url = page.url();
@@ -136,29 +132,26 @@ test.describe('Public Showcase Gallery E2E Tests', () => {
 
     test('should search sites by name', async ({ page }) => {
       await page.goto('/showcase');
-      await waitForVisible(page, '[data-testid="showcase-search"]');
+      const searchInput = page.locator('[data-testid="showcase-search"]');
+      await expect(searchInput).toBeVisible({ timeout: TIMEOUTS.MEDIUM });
 
       // Type in search box
-      const searchInput = page.locator('[data-testid="showcase-search"]');
       await searchInput.fill('restaurant');
 
-      // Wait for debounce and results
-      await page.waitForTimeout(1000);
-
-      // Verify URL contains search param
-      await expect(page).toHaveURL(/search=restaurant/);
+      // Wait for debounce and URL update
+      await expect(page).toHaveURL(/search=restaurant/, { timeout: TIMEOUTS.MEDIUM });
     });
 
     test('should clear search results', async ({ page }) => {
       await page.goto('/showcase?search=restaurant');
-      await waitForVisible(page, '[data-testid="showcase-search"]');
+      const searchInput = page.locator('[data-testid="showcase-search"]');
+      await expect(searchInput).toBeVisible({ timeout: TIMEOUTS.MEDIUM });
 
       // Clear search
-      const searchInput = page.locator('[data-testid="showcase-search"]');
       await searchInput.fill('');
 
-      // Wait for results to update
-      await page.waitForTimeout(1000);
+      // Wait for URL to update
+      await page.waitForURL(url => !url.includes('search='), { timeout: TIMEOUTS.MEDIUM });
 
       // Verify URL doesn't contain search param
       const url = page.url();
@@ -174,9 +167,8 @@ test.describe('Public Showcase Gallery E2E Tests', () => {
       // Type rapidly
       await searchInput.type('test', { delay: 50 });
 
-      // Should not have made multiple requests (check this by monitoring network)
-      // This is a simplified check
-      await page.waitForTimeout(600);
+      // Wait for debounce to complete and URL to update
+      await expect(page).toHaveURL(/search=test/, { timeout: TIMEOUTS.MEDIUM });
     });
   });
 
@@ -228,10 +220,10 @@ test.describe('Public Showcase Gallery E2E Tests', () => {
   test.describe('Individual Site Pages', () => {
     test('should navigate to site detail page', async ({ page }) => {
       await page.goto('/showcase');
-      await waitForVisible(page, '[data-testid^="site-card-"]');
+      const firstCard = page.locator('[data-testid^="site-card-"]').first();
+      await expect(firstCard).toBeVisible({ timeout: TIMEOUTS.MEDIUM });
 
       // Click first site card
-      const firstCard = page.locator('[data-testid^="site-card-"]').first();
       await firstCard.click();
 
       // Verify navigation to detail page
@@ -249,10 +241,11 @@ test.describe('Public Showcase Gallery E2E Tests', () => {
 
     test('should have back to gallery link', async ({ page }) => {
       await page.goto('/showcase');
-      await waitForVisible(page, '[data-testid^="site-card-"]');
+      const firstCard = page.locator('[data-testid^="site-card-"]').first();
+      await expect(firstCard).toBeVisible({ timeout: TIMEOUTS.MEDIUM });
 
       // Navigate to detail page
-      await page.locator('[data-testid^="site-card-"]').first().click();
+      await firstCard.click();
       await page.waitForURL(/\/showcase\/[a-z0-9-]+/);
 
       // Find and click back link
@@ -266,10 +259,11 @@ test.describe('Public Showcase Gallery E2E Tests', () => {
 
     test('should have visit site link that opens in new tab', async ({ page }) => {
       await page.goto('/showcase');
-      await waitForVisible(page, '[data-testid^="site-card-"]');
+      const firstCard = page.locator('[data-testid^="site-card-"]').first();
+      await expect(firstCard).toBeVisible({ timeout: TIMEOUTS.MEDIUM });
 
       // Navigate to detail page
-      await page.locator('[data-testid^="site-card-"]').first().click();
+      await firstCard.click();
       await page.waitForURL(/\/showcase\/[a-z0-9-]+/);
 
       // Check visit site link

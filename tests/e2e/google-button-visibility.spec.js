@@ -4,8 +4,9 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { URLS } from '../fixtures/test-config.js';
 
-const BASE_URL = process.env.VITE_APP_URL || 'http://localhost:3000';
+const BASE_URL = URLS.BASE;
 
 test.describe('Google OAuth Button Visibility', () => {
   
@@ -13,7 +14,7 @@ test.describe('Google OAuth Button Visibility', () => {
     await page.goto(`${BASE_URL}/login`);
     
     // Wait for page to load
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('domcontentloaded');
     
     // Look for Google button
     const googleButton = page.locator('.google-oauth-button, button:has-text("Continue with Google"), a:has-text("Continue with Google")').first();
@@ -36,7 +37,7 @@ test.describe('Google OAuth Button Visibility', () => {
     await page.goto(`${BASE_URL}/register`);
     
     // Wait for page to load
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('domcontentloaded');
     
     // Look for Google button
     const googleButton = page.locator('.google-oauth-button, button:has-text("Continue with Google"), a:has-text("Continue with Google")').first();
@@ -57,7 +58,7 @@ test.describe('Google OAuth Button Visibility', () => {
 
   test('should have Google icon SVG in button', async ({ page }) => {
     await page.goto(`${BASE_URL}/login`);
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('domcontentloaded');
     
     // Check for Google icon SVG
     const googleIcon = page.locator('.google-icon, .google-oauth-button svg').first();
@@ -68,7 +69,7 @@ test.describe('Google OAuth Button Visibility', () => {
 
   test('Google button should be clickable on login page', async ({ page }) => {
     await page.goto(`${BASE_URL}/login`);
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('domcontentloaded');
     
     const googleButton = page.locator('.google-oauth-button, button:has-text("Continue with Google")').first();
     
@@ -79,7 +80,7 @@ test.describe('Google OAuth Button Visibility', () => {
 
   test('Google button should be clickable on register page', async ({ page }) => {
     await page.goto(`${BASE_URL}/register`);
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('domcontentloaded');
     
     const googleButton = page.locator('.google-oauth-button, button:has-text("Continue with Google")').first();
     

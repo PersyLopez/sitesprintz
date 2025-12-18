@@ -4,9 +4,10 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { URLS } from '../fixtures/test-config.js';
 
-const API_URL = process.env.VITE_API_URL || 'http://localhost:3000';
-const FRONTEND_URL = process.env.VITE_APP_URL || 'http://localhost:3000';
+const API_URL = URLS.API;
+const FRONTEND_URL = URLS.BASE;
 
 test.describe('Cookie SameSite Configuration', () => {
 
@@ -55,7 +56,7 @@ test.describe('Cookie SameSite Configuration', () => {
   test('should verify sessionId cookie persists across redirects', async ({ page }) => {
     // Navigate to frontend
     await page.goto(`${FRONTEND_URL}/login`);
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Check if sessionId cookie is set
     const cookies = await page.context().cookies();
@@ -87,7 +88,7 @@ test.describe('Cookie SameSite Configuration', () => {
 
     // Navigate and trigger CSRF token fetch
     await page.goto(`${FRONTEND_URL}/login`);
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
 
     // Check for SameSite warnings
     const sameSiteWarnings = consoleWarnings.filter(w =>
@@ -104,7 +105,7 @@ test.describe('OAuth Cookie Flow', () => {
   test('should maintain session through OAuth redirect flow', async ({ page, context }) => {
     // 1. Start on login page
     await page.goto(`${FRONTEND_URL}/login`);
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('domcontentloaded');
 
     // 2. Get initial cookies
     const initialCookies = await context.cookies();
@@ -119,7 +120,7 @@ test.describe('OAuth Cookie Flow', () => {
 
       // Session cookie should persist across navigation
       await page.goto(`${FRONTEND_URL}/register`);
-      await page.waitForTimeout(500);
+      await page.waitForLoadState('domcontentloaded');
 
       const afterNavCookies = await context.cookies();
       const afterSession = afterNavCookies.find(c => c.name === 'sessionId');

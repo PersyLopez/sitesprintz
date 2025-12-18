@@ -166,7 +166,8 @@ test.describe('Pro Features - Analytics Tracking', () => {
       }
     });
 
-    await page.waitForTimeout(1000);
+    // Wait for any analytics requests to complete
+    await page.waitForLoadState('networkidle');
 
     // No tracking requests should be made with DNT
     expect(analyticsRequests.length).toBeLessThanOrEqual(1); // May have initial page load
@@ -432,7 +433,7 @@ test.describe('Pro Features - Order Management', () => {
     // Set auth cookie/token
     await page.goto(`${BASE_URL}/dashboard`);
     await page.evaluate((token) => {
-      localStorage.setItem('token', token);
+      localStorage.setItem('authToken', token);
     }, authToken);
 
     // Navigate to orders
@@ -460,8 +461,8 @@ test.describe('Pro Features - Order Management', () => {
     if (await statusFilter.count() > 0) {
       await statusFilter.selectOption('pending');
 
-      // Orders should filter
-      await page.waitForTimeout(500);
+      // Wait for filter to apply
+      await page.waitForLoadState('networkidle');
     }
   });
 
@@ -503,7 +504,8 @@ test.describe('Pro Features - Order Management', () => {
       page.on('dialog', dialog => dialog.accept());
 
       await printBtn.click();
-      await page.waitForTimeout(500);
+      // Wait for print dialog handling
+      await page.waitForLoadState('domcontentloaded');
     }
   });
 });
@@ -728,8 +730,8 @@ test.describe('Pro Features - Mobile Responsiveness', () => {
       // Click cart
       await cartIcon.first().click();
 
-      // Cart should open (modal or slide-in)
-      await page.waitForTimeout(500);
+      // Wait for cart modal/drawer to open
+      await page.waitForLoadState('domcontentloaded');
     }
   });
 

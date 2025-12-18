@@ -26,24 +26,27 @@ async function seedTestData() {
         // 1. Create test users
         console.log('👤 Creating test users...');
 
+        // Import centralized credentials
+        const { TEST_USERS } = await import('../fixtures/test-credentials.js');
+
         const testUsers = [
             {
-                email: 'admin@example.com',
-                password: 'admin123',
-                role: 'admin',
-                plan: 'pro'
+                email: TEST_USERS.ADMIN.email,
+                password: TEST_USERS.ADMIN.password,
+                role: TEST_USERS.ADMIN.role,
+                plan: TEST_USERS.ADMIN.plan
             },
             {
-                email: 'test@example.com',
-                password: 'password123',
-                role: 'user',
-                plan: 'pro'
+                email: TEST_USERS.PRO_USER.email,
+                password: TEST_USERS.PRO_USER.password,
+                role: TEST_USERS.PRO_USER.role,
+                plan: TEST_USERS.PRO_USER.plan
             },
             {
-                email: 'free@example.com',
-                password: 'password123',
-                role: 'user',
-                plan: 'free'
+                email: TEST_USERS.FREE_USER.email,
+                password: TEST_USERS.FREE_USER.password,
+                role: TEST_USERS.FREE_USER.role,
+                plan: TEST_USERS.FREE_USER.plan
             }
         ];
 
@@ -59,10 +62,12 @@ async function seedTestData() {
                 userIds[user.email] = existing.id;
                 console.log(`  ✓ User ${user.email} already exists (ID: ${userIds[user.email]})`);
 
-                // Update to ensure correct role and plan
+                // Update to ensure correct role, plan, and password
+                const hashedPassword = await bcrypt.hash(user.password, 10);
                 await prisma.users.update({
                     where: { email: user.email },
                     data: {
+                        password_hash: hashedPassword,
                         role: user.role,
                         subscription_plan: user.plan,
                         subscription_status: 'active',
@@ -148,7 +153,6 @@ async function seedTestData() {
                     data: {
                         template_id: site.template,
                         status: site.status,
-                        site_data: site.siteData,
                         site_data: site.siteData
                     }
                 });
@@ -435,10 +439,10 @@ async function seedTestData() {
         }
 
         console.log('\n✅ Test database seeded successfully!\n');
-        console.log('Test credentials:');
-        console.log('  Admin:   admin@example.com / admin123');
-        console.log('  User:    test@example.com / password123');
-        console.log('  Free:    free@example.com / password123\n');
+        console.log('Test credentials (see tests/fixtures/test-credentials.js):');
+        console.log(`  Admin:   ${TEST_USERS.ADMIN.email} / ${TEST_USERS.ADMIN.password}`);
+        console.log(`  User:    ${TEST_USERS.PRO_USER.email} / ${TEST_USERS.PRO_USER.password}`);
+        console.log(`  Free:    ${TEST_USERS.FREE_USER.email} / ${TEST_USERS.FREE_USER.password}\n`);
 
     } catch (error) {
         console.error('\n❌ Error seeding test data:', error);

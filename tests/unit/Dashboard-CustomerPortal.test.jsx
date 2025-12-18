@@ -167,7 +167,7 @@ describe('Dashboard - Customer Portal Feature', () => {
 
   it('should include authorization token in API request', async () => {
     const mockToken = 'test-jwt-token';
-    localStorage.setItem('token', mockToken);
+    localStorage.setItem('authToken', mockToken);
 
     global.fetch.mockResolvedValueOnce({
       ok: true,

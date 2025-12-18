@@ -3,69 +3,100 @@
  * Eliminates code duplication and improves maintainability
  */
 
+import { TIMEOUTS, API_PATTERNS } from '../fixtures/test-config.js';
+
 /**
  * Fill and submit forgot password form
+ * @param {Page} page - Playwright page
+ * @param {string} email - Email to request reset for
+ * @throws {Error} If form elements are not found
  */
 export async function fillForgotPasswordForm(page, email) {
-  await page.getByTestId('forgot-password-email').fill(email);
-  await page.getByTestId('forgot-password-submit').click();
+  const emailInput = page.getByTestId('forgot-password-email');
+  const submitBtn = page.getByTestId('forgot-password-submit');
+  
+  // Validate elements exist before interacting
+  await emailInput.waitFor({ state: 'visible', timeout: TIMEOUTS.MEDIUM });
+  
+  await emailInput.fill(email);
+  await submitBtn.click();
 }
 
 /**
  * Fill reset password form
+ * @param {Page} page - Playwright page
+ * @param {string} password - New password
+ * @param {string} [confirmPassword] - Confirm password (defaults to password)
+ * @throws {Error} If form elements are not found
  */
 export async function fillResetPasswordForm(page, password, confirmPassword) {
-  await page.getByTestId('reset-password-new').fill(password);
-  await page.getByTestId('reset-password-confirm').fill(confirmPassword || password);
-  await page.getByTestId('reset-password-submit').click();
+  const newPasswordInput = page.getByTestId('reset-password-new');
+  const confirmInput = page.getByTestId('reset-password-confirm');
+  const submitBtn = page.getByTestId('reset-password-submit');
+  
+  // Validate elements exist
+  await newPasswordInput.waitFor({ state: 'visible', timeout: TIMEOUTS.MEDIUM });
+  
+  await newPasswordInput.fill(password);
+  await confirmInput.fill(confirmPassword || password);
+  await submitBtn.click();
 }
 
 /**
  * Wait for success message on forgot password page
+ * @param {Page} page - Playwright page
+ * @throws {Error} If success message doesn't appear within timeout
  */
 export async function waitForForgotPasswordSuccess(page) {
-  await page.getByTestId('forgot-password-success').waitFor({ timeout: 5000 });
+  await page.getByTestId('forgot-password-success').waitFor({ 
+    state: 'visible',
+    timeout: TIMEOUTS.MEDIUM 
+  });
 }
 
 /**
  * Wait for error message (generic - works for both pages)
+ * @param {Page} page - Playwright page
+ * @param {RegExp} errorPattern - Pattern to match error message
+ * @returns {Locator} The error message locator
+ * @throws {Error} If error message doesn't appear within timeout
  */
 export async function waitForPasswordResetError(page, errorPattern) {
   const errorMessage = page.getByText(errorPattern);
-  await errorMessage.waitFor({ timeout: 5000 });
+  await errorMessage.waitFor({ 
+    state: 'visible',
+    timeout: TIMEOUTS.MEDIUM 
+  });
   return errorMessage;
 }
 
 /**
- * Request password reset via API
+ * Request password reset via API with proper error handling
+ * @param {APIRequestContext} request - Playwright request context
+ * @param {string} email - Email to request reset for
+ * @returns {Promise<APIResponse>} The API response
+ * @throws {Error} If the request fails with detailed error context
  */
 export async function requestPasswordReset(request, email) {
-  // In test environment, we might need to bypass CSRF or fetch it first
-  // Assuming backend allows bypassing for tests with a specific header/token
-  // or we just rely on standard CSRF flow.
-
-  // If strict CSRF is on, this direct API call will fail without a token.
-  // One way is to fetch the token first, but `request` context doesn't share cookies easily 
-  // with a browser context unless configured.
-
-  // A simpler approach for API testing is often to have a bypass/secret for tests 
-  // OR to implement a full flow. 
-
-  // However, since we see failures, let's try to add a bypass header if the backend supports it,
-  // OR we need to fetch the token.
-
-  // Let's first try to fetch the token if possible, or bypass.
-  // Actually, standard `request` fixture in Playwright is separate from BrowserContext 
-  // so cookies aren't shared automatically unless using context.
-
-  // Strategy: Add a header to bypass CSRF for test requests if local/test env
-  const response = await request.post('/api/auth/forgot-password', {
-    data: { email },
-    headers: {
-      'X-Test-Bypass-CSRF': 'true' // We need to enable this in backend if not present
+  try {
+    // Strategy: Add a header to bypass CSRF for test requests in test env
+    const response = await request.post(API_PATTERNS.FORGOT_PASSWORD, {
+      data: { email },
+      headers: {
+        'X-Test-Bypass-CSRF': 'true'
+      }
+    });
+    
+    // Log non-success responses for debugging
+    if (!response.ok()) {
+      const errorBody = await response.text().catch(() => 'Could not read response body');
+      console.log(`Password reset request failed for ${email}:`, response.status(), errorBody);
     }
-  });
-  return response;
+    
+    return response;
+  } catch (error) {
+    throw new Error(`Failed to request password reset for ${email}: ${error.message}`);
+  }
 }
 
 

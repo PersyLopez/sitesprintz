@@ -1,0 +1,25 @@
+{
+  "cookies": [
+    {
+      "name": "sessionId",
+      "value": "5b7955e2a2072c1737b55fc693e1a774",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1766187636.008202,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        {
+          "name": "authToken",
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJhNWZjYWQ4Ni1mZDEzLTQ4NGYtYjRlMy1kMWEzY2RmNmFkZGUiLCJpZCI6ImE1ZmNhZDg2LWZkMTMtNDg0Zi1iNGUzLWQxYTNjZGY2YWRkZSIsImVtYWlsIjoidGVzdEBleGFtcGxlLmNvbSIsInJvbGUiOiJ1c2VyIiwidHlwZSI6ImFjY2VzcyIsImlhdCI6MTc2NjEwMTIzNiwiZXhwIjoxNzY2MTAyMTM2fQ.QYMDDHD-V1UUSTu1hFZHLQXLGBSZvPD9W8V7citvYiM"
+        }
+      ]
+    }
+  ]
+}

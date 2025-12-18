@@ -13,6 +13,8 @@ import {
   waitForPasswordResetError,
   requestPasswordReset
 } from '../helpers/password-reset-helpers.js';
+import { STRONG_PASSWORD } from '../fixtures/test-credentials.js';
+import { TIMEOUTS, SELECTORS } from '../fixtures/test-config.js';
 
 test.describe('Password Reset Flow', () => {
   let testUser;
@@ -30,10 +32,10 @@ test.describe('Password Reset Flow', () => {
       }
     });
 
-    // Register a test user
+    // Register a test user using centralized strong password
     testUser = await register(page, {
       email: `reset${Date.now()}@example.com`,
-      password: 'SecurePass!2025',
+      password: STRONG_PASSWORD,
       name: 'Reset Test User'
     });
   });
@@ -99,12 +101,12 @@ test.describe('Password Reset Flow', () => {
     // Navigate to reset page with valid token
     await page.goto(`/reset-password.html?token=${token}`);
 
-    // Fill and submit password form
-    await fillResetPasswordForm(page, 'SecurePass!2025', 'SecurePass!2025');
+    // Fill and submit password form with strong password
+    await fillResetPasswordForm(page, STRONG_PASSWORD, STRONG_PASSWORD);
 
     // Wait for success
     const resultMessage = page.getByText(/success|password.*reset/i);
-    await expect(resultMessage.first()).toBeVisible({ timeout: 5000 });
+    await expect(resultMessage.first()).toBeVisible({ timeout: TIMEOUTS.MEDIUM });
   });
 
   test('should validate password requirements', async ({ page }) => {
@@ -155,11 +157,11 @@ test.describe('Password Reset Flow', () => {
     // Navigate to reset page
     await page.goto(`/reset-password.html?token=${token}`);
 
-    // Fill form
-    await fillResetPasswordForm(page, 'SecurePass!2025', 'SecurePass!2025');
+    // Fill form with strong password
+    await fillResetPasswordForm(page, STRONG_PASSWORD, STRONG_PASSWORD);
 
     // Wait for redirect to login
-    await page.waitForURL(/\/login/, { timeout: 5000 });
+    await page.waitForURL(/\/login/, { timeout: TIMEOUTS.MEDIUM });
 
     expect(page.url()).toContain('login');
   });
@@ -170,16 +172,16 @@ test.describe('Password Reset Flow', () => {
 
     // First, try to login with old password (should work if reset hasn't happened)
     await page.goto('/login.html');
-    await page.fill('#email', testUser.email);
-    await page.fill('#password', testUser.password);
-    await page.click('button[type="submit"]');
+    await page.fill(SELECTORS.AUTH.EMAIL_INPUT, testUser.email);
+    await page.fill(SELECTORS.AUTH.PASSWORD_INPUT, testUser.password);
+    await page.click(SELECTORS.AUTH.SUBMIT_BUTTON);
 
     // Should login successfully (password hasn't been reset yet)
-    await page.waitForURL(/dashboard/, { timeout: 5000 });
+    await page.waitForURL(/dashboard/, { timeout: TIMEOUTS.MEDIUM });
 
     // Logout using helper
     await logout(page);
-    await page.waitForURL(/login|\//, { timeout: 5000 }).catch(() => { });
+    await page.waitForURL(/login|\//, { timeout: TIMEOUTS.MEDIUM }).catch(() => { });
 
     // In a full integration test:
     // 1. Request password reset
@@ -197,12 +199,12 @@ test.describe('Password Reset Flow', () => {
     await page.goto('/reset-password.html?token=expired-token');
     await page.waitForLoadState('networkidle');
 
-    // Try to submit with expired token
-    await fillResetPasswordForm(page, 'SecretPass2025!', 'SecretPass2025!');
+    // Try to submit with expired token using strong password
+    await fillResetPasswordForm(page, STRONG_PASSWORD, STRONG_PASSWORD);
 
     // Should show expired token error
     const errorMsg = page.locator('#errorMessage');
-    await expect(errorMsg).toBeVisible({ timeout: 5000 });
+    await expect(errorMsg).toBeVisible({ timeout: TIMEOUTS.MEDIUM });
     await expect(errorMsg).toContainText(/expired|invalid/i);
   });
 });

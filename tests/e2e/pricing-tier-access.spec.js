@@ -4,9 +4,11 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { STRONG_PASSWORD, generateTestEmail } from '../fixtures/test-credentials.js';
+import { URLS, API_PATTERNS } from '../fixtures/test-config.js';
 
-const BASE_URL = process.env.VITE_APP_URL || 'http://localhost:3000';
-const API_URL = process.env.VITE_API_URL || 'http://localhost:3000';
+const BASE_URL = URLS.BASE;
+const API_URL = URLS.API;
 
 test.describe('Pricing Tier Access Control', () => {
 
@@ -15,16 +17,16 @@ test.describe('Pricing Tier Access Control', () => {
     let userId;
 
     test.beforeAll(async ({ request }) => {
-      const csrfRes = await request.get(`${API_URL}/api/csrf-token`);
+      const csrfRes = await request.get(`${API_URL}${API_PATTERNS.CSRF}`);
       const { csrfToken } = await csrfRes.json();
 
-      const email = `starter${Date.now()}@example.com`;
-      const registerRes = await request.post(`${API_URL}/api/auth/register`, {
+      const email = generateTestEmail('starter');
+      const registerRes = await request.post(`${API_URL}${API_PATTERNS.REGISTER}`, {
         headers: { 'X-CSRF-Token': csrfToken },
         data: {
           email,
-          password: 'StrictPwd!2024',
-          confirmPassword: 'StrictPwd!2024',
+          password: STRONG_PASSWORD,
+          confirmPassword: STRONG_PASSWORD,
           name: 'Starter User'
         }
       });
@@ -81,16 +83,16 @@ test.describe('Pricing Tier Access Control', () => {
     let userId;
 
     test.beforeAll(async ({ request }) => {
-      const csrfRes = await request.get(`${API_URL}/api/csrf-token`);
+      const csrfRes = await request.get(`${API_URL}${API_PATTERNS.CSRF}`);
       const { csrfToken } = await csrfRes.json();
 
-      const email = `pro${Date.now()}@example.com`;
-      const registerRes = await request.post(`${API_URL}/api/auth/register`, {
+      const email = generateTestEmail('pro');
+      const registerRes = await request.post(`${API_URL}${API_PATTERNS.REGISTER}`, {
         headers: { 'X-CSRF-Token': csrfToken },
         data: {
           email,
-          password: 'StrictPwd!2024',
-          confirmPassword: 'StrictPwd!2024',
+          password: STRONG_PASSWORD,
+          confirmPassword: STRONG_PASSWORD,
           name: 'Pro User'
         }
       });
@@ -148,16 +150,16 @@ test.describe('Pricing Tier Access Control', () => {
 
   test.describe('Trial Period', () => {
     test('should allow access during trial', async ({ request }) => {
-      const csrfRes = await request.get(`${API_URL}/api/csrf-token`);
+      const csrfRes = await request.get(`${API_URL}${API_PATTERNS.CSRF}`);
       const { csrfToken } = await csrfRes.json();
 
-      const email = `trial${Date.now()}@example.com`;
-      const registerRes = await request.post(`${API_URL}/api/auth/register`, {
+      const email = generateTestEmail('trial');
+      const registerRes = await request.post(`${API_URL}${API_PATTERNS.REGISTER}`, {
         headers: { 'X-CSRF-Token': csrfToken },
         data: {
           email,
-          password: 'StrictPwd!2024',
-          confirmPassword: 'StrictPwd!2024',
+          password: STRONG_PASSWORD,
+          confirmPassword: STRONG_PASSWORD,
           name: 'Trial User'
         }
       });
@@ -209,16 +211,16 @@ test.describe('Pricing Tier Access Control', () => {
   test.describe('Upgrade Flow', () => {
     test('should show upgrade prompts for premium features', async ({ page, request }) => {
       // Register via API (more reliable)
-      const csrfRes = await request.get(`${API_URL}/api/csrf-token`);
+      const csrfRes = await request.get(`${API_URL}${API_PATTERNS.CSRF}`);
       const { csrfToken } = await csrfRes.json();
 
-      const email = `upgrade${Date.now()}@example.com`;
-      const registerRes = await request.post(`${API_URL}/api/auth/register`, {
+      const email = generateTestEmail('upgrade');
+      const registerRes = await request.post(`${API_URL}${API_PATTERNS.REGISTER}`, {
         headers: { 'X-CSRF-Token': csrfToken },
         data: {
           email,
-          password: 'StrictPwd!2024',
-          confirmPassword: 'StrictPwd!2024',
+          password: STRONG_PASSWORD,
+          confirmPassword: STRONG_PASSWORD,
           name: 'Upgrade User'
         }
       });
@@ -234,12 +236,12 @@ test.describe('Pricing Tier Access Control', () => {
       await page.goto(BASE_URL);
       await page.evaluate((tkn) => {
         localStorage.setItem('accessToken', tkn);
-        localStorage.setItem('token', tkn);
+        localStorage.setItem('authToken', tkn);
         localStorage.setItem('authToken', tkn);
       }, token);
 
       await page.goto(`${BASE_URL}/dashboard`);
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle');
 
       // Just verify we can access dashboard
       const url = page.url();
@@ -248,16 +250,16 @@ test.describe('Pricing Tier Access Control', () => {
 
     test('should redirect to pricing when accessing blocked features', async ({ page, request }) => {
       // Create starter user
-      const csrfRes = await request.get(`${API_URL}/api/csrf-token`);
+      const csrfRes = await request.get(`${API_URL}${API_PATTERNS.CSRF}`);
       const { csrfToken } = await csrfRes.json();
 
-      const email = `blocked${Date.now()}@example.com`;
-      const registerRes = await request.post(`${API_URL}/api/auth/register`, {
+      const email = generateTestEmail('blocked');
+      const registerRes = await request.post(`${API_URL}${API_PATTERNS.REGISTER}`, {
         headers: { 'X-CSRF-Token': csrfToken },
         data: {
           email,
-          password: 'StrictPwd!2024',
-          confirmPassword: 'StrictPwd!2024',
+          password: STRONG_PASSWORD,
+          confirmPassword: STRONG_PASSWORD,
           name: 'Blocked User'
         }
       });

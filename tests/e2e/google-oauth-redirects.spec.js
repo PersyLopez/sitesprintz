@@ -4,9 +4,10 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { URLS } from '../fixtures/test-config.js';
 
-const API_URL = process.env.VITE_API_URL || 'http://localhost:3000';
-const FRONTEND_URL = process.env.VITE_APP_URL || 'http://localhost:3000';
+const API_URL = URLS.API;
+const FRONTEND_URL = URLS.BASE;
 
 test.describe('Google OAuth Redirect Flow', () => {
   
@@ -70,7 +71,7 @@ test.describe('Google OAuth Button Redirects to Backend', () => {
   
   test('should have Google button that redirects to backend OAuth endpoint', async ({ page }) => {
     await page.goto(`${FRONTEND_URL}/login`);
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('domcontentloaded');
     
     const googleButton = page.locator('.google-oauth-button, button:has-text("Continue with Google")').first();
     
@@ -95,7 +96,7 @@ test.describe('Google OAuth Button Redirects to Backend', () => {
 
   test('should verify Google button has correct OAuth URL', async ({ page }) => {
     await page.goto(`${FRONTEND_URL}/login`);
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('domcontentloaded');
     
     // Check if Google button exists and has the right behavior
     const googleButton = page.locator('.google-oauth-button, button:has-text("Continue with Google")').first();
@@ -118,11 +119,11 @@ test.describe('OAuth Success Flow - Token Handling', () => {
     const mockToken = 'mock.jwt.token';
     
     await page.goto(`${FRONTEND_URL}/dashboard?token=${mockToken}`);
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
     
     // Check if token is processed (stored in localStorage or used for auth)
     const tokenInStorage = await page.evaluate(() => {
-      return localStorage.getItem('token') || localStorage.getItem('authToken');
+      return localStorage.getItem('authToken') || localStorage.getItem('authToken');
     });
     
     const url = page.url();
