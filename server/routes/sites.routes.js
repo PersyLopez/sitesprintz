@@ -158,45 +158,75 @@ router.delete('/uploads/:filename', requireAuth, asyncHandler(async (req, res) =
  */
 router.get('/:siteId', asyncHandler(async (req, res) => {
   const { siteId } = req.params;
+  console.log(`[GET /api/sites/${siteId}] Fetching site...`);
 
-  const site = await prisma.sites.findUnique({
-    where: { id: siteId },
-    select: {
-      id: true,
-      subdomain: true,
-      template_id: true,
-      status: true,
-      plan: true,
-      site_data: true,
-      created_at: true,
-      updated_at: true,
-      published_at: true,
-      expires_at: true,
-      is_public: true
+  try {
+    let site = await prisma.sites.findUnique({
+      where: { id: siteId },
+      select: {
+        id: true,
+        subdomain: true,
+        template_id: true,
+        status: true,
+        plan: true,
+        site_data: true,
+        created_at: true,
+        published_at: true,
+        expires_at: true,
+        is_public: true
+      }
+    });
+
+    // If not found by ID, try subdomain
+    if (!site) {
+      console.log(`[GET /api/sites/${siteId}] Not found by ID, trying subdomain...`);
+      site = await prisma.sites.findUnique({
+        where: { subdomain: siteId },
+        select: {
+          id: true,
+          subdomain: true,
+          template_id: true,
+          status: true,
+          plan: true,
+          site_data: true,
+          created_at: true,
+          published_at: true,
+          expires_at: true,
+          is_public: true
+        }
+      });
     }
-  });
 
-  if (!site) {
-    return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
+    if (!site) {
+      console.log(`[GET /api/sites/${siteId}] Site not found`);
+      return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
+    }
+
+    const siteData = parseSiteData(site);
+
+    return sendSuccess(res, {
+      site: {
+        id: site.id,
+        subdomain: site.subdomain,
+        templateId: site.template_id,
+        status: site.status,
+        plan: site.plan,
+        isPublic: site.is_public,
+        createdAt: site.created_at,
+        publishedAt: site.published_at,
+        expiresAt: site.expires_at,
+        data: siteData
+      }
+    });
+  } catch (err) {
+    console.error(`[GET /api/sites/${siteId}] ERROR:`, err);
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+      stack: err.stack,
+      code: 'SERVER_ERROR'
+    });
   }
-
-  const siteData = parseSiteData(site);
-
-  return sendSuccess(res, {
-    site: {
-      id: site.id,
-      subdomain: site.subdomain,
-      templateId: site.template_id,
-      status: site.status,
-      plan: site.plan,
-      isPublic: site.is_public,
-      createdAt: site.created_at,
-      updatedAt: site.updated_at,
-      publishedAt: site.published_at,
-      expiresAt: site.expires_at,
-      data: siteData
-    }
-  });
 }));
 
 /**
@@ -284,7 +314,7 @@ router.get('/:siteId/products', requireAuth, asyncHandler(async (req, res) => {
     // Convert services to products format
     products = siteData.services.items.map((s, index) => ({
       id: s.id || `service-${index}`,
-      name: s.title || s.name || '',
+      title: s.title || s.name || '',
       description: s.description || '',
       price: typeof s.price === 'number' ? s.price : parseFloat(s.price) || 0,
       image: s.image || null,
@@ -420,7 +450,6 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
       plan: true,
       is_public: true,
       created_at: true,
-      updated_at: true,
       published_at: true,
       expires_at: true,
       site_data: true
@@ -439,7 +468,6 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
       isPublic: site.is_public,
       businessName: siteData.brand?.name || siteData.businessName || null,
       createdAt: site.created_at,
-      updatedAt: site.updated_at,
       publishedAt: site.published_at,
       expiresAt: site.expires_at
     };
@@ -552,8 +580,7 @@ router.post('/guest-publish', asyncHandler(async (req, res) => {
       published_at: new Date(),
       expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days trial
       site_data: data,
-      created_at: new Date(),
-      updated_at: new Date()
+      created_at: new Date()
     }
   });
 

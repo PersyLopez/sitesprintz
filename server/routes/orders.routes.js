@@ -410,4 +410,32 @@ router.get('/:siteId/stats', requireAuth, asyncHandler(async (req, res) => {
   });
 }));
 
+/**
+ * GET /api/orders/pending-count
+ * Get total pending orders count for authenticated user's sites
+ */
+router.get('/pending-count', requireAuth, asyncHandler(async (req, res) => {
+  const userId = req.user.id || req.user.userId;
+
+  // Get all sites owned by user
+  const userSites = await prisma.sites.findMany({
+    where: { user_id: userId },
+    select: { id: true }
+  });
+
+  const siteIds = userSites.map(site => site.id);
+
+  // Count pending orders across all user's sites
+  const pendingCount = siteIds.length > 0
+    ? await prisma.orders.count({
+        where: {
+          site_id: { in: siteIds },
+          status: 'pending'
+        }
+      })
+    : 0;
+
+  return sendSuccess(res, { count: pendingCount });
+}));
+
 export default router;

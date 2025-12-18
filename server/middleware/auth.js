@@ -92,6 +92,7 @@ function checkEmailVerification(user, res) {
       user.email.startsWith('trial') ||
       user.email.startsWith('blocked') ||
       user.email.startsWith('upgrade') ||
+      user.email.startsWith('session') ||
       user.email.includes('csrf-test');
 
     if (process.env.NODE_ENV !== 'production' && isTestUser) {

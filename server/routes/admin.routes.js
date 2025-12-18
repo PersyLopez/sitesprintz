@@ -25,6 +25,19 @@ import { validateEmail, generateSecurePassword } from '../utils/validators.js';
 const router = express.Router();
 
 /**
+ * GET /api/admin-token
+ * Get admin token for authenticated admin users
+ * Used for certain operations that require admin privileges
+ */
+router.get('/token', requireAdmin, asyncHandler(async (req, res) => {
+  const adminToken = process.env.ADMIN_TOKEN || 'dev-token';
+  return sendSuccess(res, { 
+    token: adminToken,
+    expiresIn: '1h' // Token validity period
+  });
+}));
+
+/**
  * GET /api/admin/users
  * List all users (admin only)
  */
