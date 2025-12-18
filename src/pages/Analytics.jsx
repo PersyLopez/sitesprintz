@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
@@ -6,8 +6,11 @@ import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import StatsCard from '../components/analytics/StatsCard';
 import SiteAnalyticsTable from '../components/analytics/SiteAnalyticsTable';
-import AnalyticsChart from '../components/analytics/AnalyticsChart';
+import LoadingFallback from '../components/common/LoadingFallback';
 import './Analytics.css';
+
+// Lazy load AnalyticsChart (heavy Chart.js component)
+const AnalyticsChart = lazy(() => import('../components/analytics/AnalyticsChart'));
 
 function Analytics() {
   const [searchParams] = useSearchParams();
@@ -192,37 +195,39 @@ function Analytics() {
 
             {/* Charts Section */}
             <div className="charts-section">
-              <div className="chart-grid">
-                <AnalyticsChart
-                  title="📈 Site Views Over Time"
-                  data={analyticsData.chartData?.views || []}
-                  labels={analyticsData.labels || []}
-                  color="#06b6d4"
-                />
+              <Suspense fallback={<LoadingFallback message="Loading charts..." />}>
+                <div className="chart-grid">
+                  <AnalyticsChart
+                    title="📈 Site Views Over Time"
+                    data={analyticsData.chartData?.views || []}
+                    labels={analyticsData.labels || []}
+                    color="#06b6d4"
+                  />
+                  
+                  <AnalyticsChart
+                    title="👥 Unique Visitors"
+                    data={analyticsData.chartData?.visitors || []}
+                    labels={analyticsData.labels || []}
+                    color="#8b5cf6"
+                  />
+                </div>
                 
-                <AnalyticsChart
-                  title="👥 Unique Visitors"
-                  data={analyticsData.chartData?.visitors || []}
-                  labels={analyticsData.labels || []}
-                  color="#8b5cf6"
-                />
-              </div>
-              
-              <div className="chart-grid">
-                <AnalyticsChart
-                  title="📦 Orders Over Time"
-                  data={analyticsData.chartData?.orders || []}
-                  labels={analyticsData.labels || []}
-                  color="#22c55e"
-                />
-                
-                <AnalyticsChart
-                  title="💰 Revenue Trend"
-                  data={analyticsData.chartData?.revenue || []}
-                  labels={analyticsData.labels || []}
-                  color="#f59e0b"
-                />
-              </div>
+                <div className="chart-grid">
+                  <AnalyticsChart
+                    title="📦 Orders Over Time"
+                    data={analyticsData.chartData?.orders || []}
+                    labels={analyticsData.labels || []}
+                    color="#22c55e"
+                  />
+                  
+                  <AnalyticsChart
+                    title="💰 Revenue Trend"
+                    data={analyticsData.chartData?.revenue || []}
+                    labels={analyticsData.labels || []}
+                    color="#f59e0b"
+                  />
+                </div>
+              </Suspense>
             </div>
 
             {/* Sites Analytics Table */}

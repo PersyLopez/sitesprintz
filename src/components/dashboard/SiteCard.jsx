@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { OptimizedImage } from '../common/OptimizedImage';
 import './SiteCard.css';
 
 function SiteCard({ site, onDelete, onDuplicate }) {
@@ -26,10 +27,18 @@ function SiteCard({ site, onDelete, onDuplicate }) {
       <div className="site-card-header">
         <div className="site-thumbnail">
           {site.heroImage ? (
-            <img src={site.heroImage} alt={site.businessName} />
+            <OptimizedImage
+              src={site.heroImage}
+              alt={site.businessName || 'Site thumbnail'}
+              width={400}
+              height={225}
+              aspectRatio="16/9"
+              priority={false}
+              sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
           ) : (
             <div className="thumbnail-placeholder">
-              <span>🌐</span>
+              <span aria-hidden="true">🌐</span>
             </div>
           )}
         </div>

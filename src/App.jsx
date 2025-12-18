@@ -1,45 +1,51 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { SiteProvider } from './context/SiteContext';
 import { CartProvider } from './context/CartContext';
 
-// Pages
+// Critical pages - load immediately (above the fold)
 import Landing from './pages/Landing';
 import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import Setup from './pages/Setup';
-import Orders from './pages/Orders';
-import Analytics from './pages/Analytics';
-import Admin from './pages/Admin';
-import AdminUsers from './pages/AdminUsers';
-import AdminPlanFeatures from './pages/AdminPlanFeatures';
-import Products from './pages/Products';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import VerifyEmail from './pages/VerifyEmail';
-import OAuthCallback from './pages/OAuthCallback';
-import NotFound from './pages/NotFound';
-import ShowcaseGallery from './pages/ShowcaseGallery';
-import ShowcaseDetail from './pages/ShowcaseDetail';
-import PaymentSuccess from './pages/PaymentSuccess';
-import PaymentCancel from './pages/PaymentCancel';
-import BookingPage from './pages/BookingPage';
-import AppointmentPage from './pages/AppointmentPage';
-import BookingDashboard from './pages/BookingDashboard';
+
+// Lazy load all other pages for code splitting
+const Register = lazy(() => import('./pages/Register'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Setup = lazy(() => import('./pages/Setup'));
+const Orders = lazy(() => import('./pages/Orders'));
+const Analytics = lazy(() => import('./pages/Analytics'));
+const Admin = lazy(() => import('./pages/Admin'));
+const AdminUsers = lazy(() => import('./pages/AdminUsers'));
+const AdminPlanFeatures = lazy(() => import('./pages/AdminPlanFeatures'));
+const Products = lazy(() => import('./pages/Products'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
+const OAuthCallback = lazy(() => import('./pages/OAuthCallback'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+const ShowcaseGallery = lazy(() => import('./pages/ShowcaseGallery'));
+const ShowcaseDetail = lazy(() => import('./pages/ShowcaseDetail'));
+const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'));
+const PaymentCancel = lazy(() => import('./pages/PaymentCancel'));
+const BookingPage = lazy(() => import('./pages/BookingPage'));
+const AppointmentPage = lazy(() => import('./pages/AppointmentPage'));
+const BookingDashboard = lazy(() => import('./pages/BookingDashboard'));
 
 // Components
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminRoute from './components/auth/AdminRoute';
+import LoadingFallback from './components/common/LoadingFallback';
 
 import api from './services/api';
 import { useEffect } from 'react';
+import { initWebVitals } from './utils/webVitals';
 
 function App() {
   useEffect(() => {
     api.initCsrf();
+    // Initialize Core Web Vitals monitoring
+    initWebVitals();
   }, []);
 
   return (
@@ -51,24 +57,103 @@ function App() {
               {/* Public routes */}
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/verify-email" element={<VerifyEmail />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/oauth/callback" element={<OAuthCallback />} />
-              <Route path="/showcase" element={<ShowcaseGallery />} />
-              <Route path="/showcase/:subdomain" element={<ShowcaseDetail />} />
-              <Route path="/payment-success" element={<PaymentSuccess />} />
-              <Route path="/payment-cancel" element={<PaymentCancel />} />
-              <Route path="/booking/user/:userId" element={<BookingPage />} />
-              <Route path="/booking/appointment/:confirmationCode" element={<AppointmentPage />} />
+              <Route 
+                path="/register" 
+                element={
+                  <Suspense fallback={<LoadingFallback message="Loading registration..." />}>
+                    <Register />
+                  </Suspense>
+                } 
+              />
+              <Route 
+                path="/verify-email" 
+                element={
+                  <Suspense fallback={<LoadingFallback message="Loading..." />}>
+                    <VerifyEmail />
+                  </Suspense>
+                } 
+              />
+              <Route 
+                path="/forgot-password" 
+                element={
+                  <Suspense fallback={<LoadingFallback message="Loading..." />}>
+                    <ForgotPassword />
+                  </Suspense>
+                } 
+              />
+              <Route 
+                path="/reset-password" 
+                element={
+                  <Suspense fallback={<LoadingFallback message="Loading..." />}>
+                    <ResetPassword />
+                  </Suspense>
+                } 
+              />
+              <Route 
+                path="/oauth/callback" 
+                element={
+                  <Suspense fallback={<LoadingFallback message="Loading..." />}>
+                    <OAuthCallback />
+                  </Suspense>
+                } 
+              />
+              <Route 
+                path="/showcase" 
+                element={
+                  <Suspense fallback={<LoadingFallback message="Loading showcase..." />}>
+                    <ShowcaseGallery />
+                  </Suspense>
+                } 
+              />
+              <Route 
+                path="/showcase/:subdomain" 
+                element={
+                  <Suspense fallback={<LoadingFallback message="Loading site..." />}>
+                    <ShowcaseDetail />
+                  </Suspense>
+                } 
+              />
+              <Route 
+                path="/payment-success" 
+                element={
+                  <Suspense fallback={<LoadingFallback message="Loading..." />}>
+                    <PaymentSuccess />
+                  </Suspense>
+                } 
+              />
+              <Route 
+                path="/payment-cancel" 
+                element={
+                  <Suspense fallback={<LoadingFallback message="Loading..." />}>
+                    <PaymentCancel />
+                  </Suspense>
+                } 
+              />
+              <Route 
+                path="/booking/user/:userId" 
+                element={
+                  <Suspense fallback={<LoadingFallback message="Loading booking..." />}>
+                    <BookingPage />
+                  </Suspense>
+                } 
+              />
+              <Route 
+                path="/booking/appointment/:confirmationCode" 
+                element={
+                  <Suspense fallback={<LoadingFallback message="Loading appointment..." />}>
+                    <AppointmentPage />
+                  </Suspense>
+                } 
+              />
 
-              {/* Protected routes */}
+              {/* Protected routes - Lazy loaded */}
               <Route
                 path="/dashboard"
                 element={
                   <ProtectedRoute>
-                    <Dashboard />
+                    <Suspense fallback={<LoadingFallback message="Loading dashboard..." />}>
+                      <Dashboard />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -77,7 +162,9 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <SiteProvider>
-                      <Setup />
+                      <Suspense fallback={<LoadingFallback message="Loading setup..." />}>
+                        <Setup />
+                      </Suspense>
                     </SiteProvider>
                   </ProtectedRoute>
                 }
@@ -86,7 +173,9 @@ function App() {
                 path="/orders"
                 element={
                   <ProtectedRoute>
-                    <Orders />
+                    <Suspense fallback={<LoadingFallback message="Loading orders..." />}>
+                      <Orders />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -94,7 +183,9 @@ function App() {
                 path="/analytics"
                 element={
                   <ProtectedRoute>
-                    <Analytics />
+                    <Suspense fallback={<LoadingFallback message="Loading analytics..." />}>
+                      <Analytics />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -102,7 +193,9 @@ function App() {
                 path="/products"
                 element={
                   <ProtectedRoute>
-                    <Products />
+                    <Suspense fallback={<LoadingFallback message="Loading products..." />}>
+                      <Products />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -110,17 +203,21 @@ function App() {
                 path="/booking-dashboard"
                 element={
                   <ProtectedRoute>
-                    <BookingDashboard />
+                    <Suspense fallback={<LoadingFallback message="Loading booking dashboard..." />}>
+                      <BookingDashboard />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
 
-              {/* Admin routes */}
+              {/* Admin routes - Lazy loaded */}
               <Route
                 path="/admin"
                 element={
                   <AdminRoute>
-                    <Admin />
+                    <Suspense fallback={<LoadingFallback message="Loading admin panel..." />}>
+                      <Admin />
+                    </Suspense>
                   </AdminRoute>
                 }
               />
@@ -128,7 +225,9 @@ function App() {
                 path="/admin/analytics"
                 element={
                   <AdminRoute>
-                    <Admin />
+                    <Suspense fallback={<LoadingFallback message="Loading admin analytics..." />}>
+                      <Admin />
+                    </Suspense>
                   </AdminRoute>
                 }
               />
@@ -136,7 +235,9 @@ function App() {
                 path="/admin/users"
                 element={
                   <AdminRoute>
-                    <AdminUsers />
+                    <Suspense fallback={<LoadingFallback message="Loading user management..." />}>
+                      <AdminUsers />
+                    </Suspense>
                   </AdminRoute>
                 }
               />
@@ -144,13 +245,22 @@ function App() {
                 path="/admin/plan-features"
                 element={
                   <AdminRoute>
-                    <AdminPlanFeatures />
+                    <Suspense fallback={<LoadingFallback message="Loading plan features..." />}>
+                      <AdminPlanFeatures />
+                    </Suspense>
                   </AdminRoute>
                 }
               />
 
               {/* 404 */}
-              <Route path="*" element={<NotFound />} />
+              <Route 
+                path="*" 
+                element={
+                  <Suspense fallback={<LoadingFallback message="Loading..." />}>
+                    <NotFound />
+                  </Suspense>
+                } 
+              />
             </Routes>
           </CartProvider>
         </ToastProvider>

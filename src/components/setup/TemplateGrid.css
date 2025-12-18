@@ -513,10 +513,11 @@
 .btn-select {
   flex: 1;
   padding: var(--spacing-sm) var(--spacing-md);
+  min-height: 44px; /* Touch target */
   border: none;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: clamp(0.8rem, 1vw, 0.85rem); /* Fluid typography */
   cursor: pointer;
   transition: all 0.2s;
   text-align: center;
@@ -546,86 +547,103 @@
 }
 
 /* ============================================
-   RESPONSIVE DESIGN
+   RESPONSIVE DESIGN - MOBILE FIRST
    ============================================ */
 
-/* Tablet */
-@media (max-width: 768px) {
+/* Mobile (default): Stack layout */
+.template-grid-container {
+  padding: var(--spacing-sm);
+}
+
+.template-controls {
+  padding: var(--spacing-sm);
+  gap: var(--spacing-sm);
+}
+
+.template-group-selector,
+.template-tier-filter {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+}
+
+.btn-group {
+  width: 100%;
+}
+
+.btn-group-item {
+  flex: 1;
+  text-align: center;
+  min-height: 44px; /* Touch target */
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.template-preview {
+  height: 100px;
+}
+
+.template-info h4 {
+  font-size: clamp(0.95rem, 2vw + 0.25rem, 1.05rem); /* Fluid typography */
+}
+
+.template-description {
+  font-size: clamp(0.8rem, 1.5vw, 0.85rem); /* Fluid typography */
+}
+
+.tier-header h3 {
+  font-size: clamp(0.9rem, 2vw + 0.25rem, 1rem); /* Fluid typography */
+}
+
+.search-input {
+  padding: 8px 35px 8px 35px;
+  font-size: clamp(0.85rem, 1.5vw, 0.9rem); /* Fluid typography */
+  min-height: 44px; /* Touch target */
+}
+
+.template-group-selector label,
+.template-tier-filter label {
+  font-size: clamp(0.75rem, 1vw, 0.8rem); /* Fluid typography */
+}
+
+.tier-badge {
+  padding: 3px 8px;
+  font-size: clamp(0.7rem, 1vw, 0.75rem); /* Fluid typography */
+}
+
+.template-tier-badge {
+  font-size: clamp(0.7rem, 1vw, 0.75rem); /* Fluid typography */
+  padding: 3px 8px;
+}
+
+/* Tablet: Horizontal layout */
+@media (min-width: 640px) {
+  .template-grid-container {
+    padding: var(--spacing-md);
+  }
+
   .template-controls {
     padding: var(--spacing-md);
   }
 
   .template-group-selector,
   .template-tier-filter {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-sm);
+    flex-direction: row;
+    align-items: center;
   }
 
   .btn-group {
-    width: 100%;
-  }
-
-  .btn-group-item {
-    flex: 1;
-    text-align: center;
+    width: auto;
   }
 
   .template-preview {
     height: 120px;
   }
-
-  .tier-header h3 {
-    font-size: 0.9rem;
-  }
 }
 
-/* Mobile */
-@media (max-width: 480px) {
+/* Desktop: Full layout */
+@media (min-width: 1024px) {
   .template-grid-container {
-    padding: var(--spacing-md);
-  }
-
-  .template-controls {
-    padding: var(--spacing-sm);
-    gap: var(--spacing-sm);
-  }
-
-  .search-input {
-    padding: 8px 35px 8px 35px;
-    font-size: 0.9rem;
-  }
-
-  .template-group-selector label,
-  .template-tier-filter label {
-    font-size: 0.75rem;
-  }
-
-  .btn-group-item {
-    padding: 5px 10px;
-    font-size: 0.8rem;
-  }
-
-  .template-preview {
-    height: 100px;
-  }
-
-  .template-info h4 {
-    font-size: 0.95rem;
-  }
-
-  .template-description {
-    font-size: 0.8rem;
-  }
-
-  .tier-badge {
-    padding: 3px 8px;
-    font-size: 0.75rem;
-  }
-
-  .template-tier-badge {
-    font-size: 0.7rem;
-    padding: 3px 8px;
+    padding: var(--spacing-lg);
   }
 }
 

@@ -6,6 +6,7 @@ import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import ProductModal from '../components/products/ProductModal';
 import ImportModal from '../components/products/ImportModal';
+import { OptimizedImage } from '../components/common/OptimizedImage';
 import './Products.css';
 
 function Products() {
@@ -337,12 +338,23 @@ function Products() {
           <div className="products-grid">
             {filteredProducts.map(product => (
               <div key={product.id} className="product-card">
-                <img
-                  src={product.image || 'https://via.placeholder.com/280x200?text=No+Image'}
-                  alt={product.name}
-                  className="product-image"
-                  onError={(e) => e.target.src = 'https://via.placeholder.com/280x200?text=No+Image'}
-                />
+                {product.image ? (
+                  <OptimizedImage
+                    src={product.image}
+                    alt={product.name}
+                    width={400}
+                    height={250}
+                    aspectRatio="8/5"
+                    priority={false}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="product-image"
+                  />
+                ) : (
+                  <div className="product-image-placeholder">
+                    <span aria-hidden="true">📦</span>
+                    <span className="sr-only">No image available</span>
+                  </div>
+                )}
                 <div className="product-body">
                   <div className="product-name">{product.name}</div>
                   <div className="product-description">

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import TemplatePreviewModal from './TemplatePreviewModal';
+import { OptimizedImage } from '../common/OptimizedImage';
 import './TemplateGrid.css';
 
 function TemplateGrid({ templates, selectedTemplate, onSelect }) {
@@ -107,20 +108,26 @@ function TemplateGrid({ templates, selectedTemplate, onSelect }) {
             <button
               className={`btn-group-item ${groupBy === 'category' ? 'active' : ''}`}
               onClick={() => setGroupBy('category')}
+              aria-label="Group templates by category"
+              aria-pressed={groupBy === 'category'}
             >
-              📁 Category
+              <span aria-hidden="true">📁</span> Category
             </button>
             <button
               className={`btn-group-item ${groupBy === 'tier' ? 'active' : ''}`}
               onClick={() => setGroupBy('tier')}
+              aria-label="Group templates by plan tier"
+              aria-pressed={groupBy === 'tier'}
             >
-              ⭐ Plan
+              <span aria-hidden="true">⭐</span> Plan
             </button>
             <button
               className={`btn-group-item ${groupBy === 'all' ? 'active' : ''}`}
               onClick={() => setGroupBy('all')}
+              aria-label="Show all templates without grouping"
+              aria-pressed={groupBy === 'all'}
             >
-              📋 All
+              <span aria-hidden="true">📋</span> All
             </button>
           </div>
         </div>
@@ -132,24 +139,32 @@ function TemplateGrid({ templates, selectedTemplate, onSelect }) {
             <button
               className={`btn-group-item ${filterTier === 'all' ? 'active' : ''}`}
               onClick={() => setFilterTier('all')}
+              aria-label="Show all plan tiers"
+              aria-pressed={filterTier === 'all'}
             >
               All
             </button>
             <button
               className={`btn-group-item tier-pro ${filterTier === 'Pro' ? 'active' : ''}`}
               onClick={() => setFilterTier('Pro')}
+              aria-label="Filter to Pro plan templates"
+              aria-pressed={filterTier === 'Pro'}
             >
               Pro
             </button>
             <button
               className={`btn-group-item tier-premium ${filterTier === 'Premium' ? 'active' : ''}`}
               onClick={() => setFilterTier('Premium')}
+              aria-label="Filter to Premium plan templates"
+              aria-pressed={filterTier === 'Premium'}
             >
               Premium
             </button>
             <button
               className={`btn-group-item tier-starter ${filterTier === 'Starter' ? 'active' : ''}`}
               onClick={() => setFilterTier('Starter')}
+              aria-label="Filter to Starter plan templates"
+              aria-pressed={filterTier === 'Starter'}
             >
               Starter
             </button>
@@ -174,6 +189,7 @@ function TemplateGrid({ templates, selectedTemplate, onSelect }) {
               setSearchQuery('');
               setFilterTier('all');
             }}
+            aria-label="Clear all search and filter settings"
           >
             Clear All Filters
           </button>
@@ -231,14 +247,18 @@ function TemplateGrid({ templates, selectedTemplate, onSelect }) {
                       {/* Template Preview Image */}
                       <div className="template-preview">
                         {template.preview || template.heroImage || template.hero?.image ? (
-                          <img
+                          <OptimizedImage
                             src={template.preview || template.heroImage || template.hero?.image}
-                            alt={template.name || template.businessName}
-                            loading="lazy"
+                            alt={`${template.name || template.businessName} template preview`}
+                            width={400}
+                            height={225}
+                            aspectRatio="16/9"
+                            priority={false}
+                            sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           />
                         ) : (
                           <div className="preview-placeholder">
-                            <span>{template.icon || getCategoryIcon(category)}</span>
+                            <span aria-hidden="true">{template.icon || getCategoryIcon(category)}</span>
                           </div>
                         )}
 
@@ -272,8 +292,9 @@ function TemplateGrid({ templates, selectedTemplate, onSelect }) {
                               e.stopPropagation();
                               setPreviewTemplate(template);
                             }}
+                            aria-label={`Preview ${template.name || template.businessName} template`}
                           >
-                            👁️ Preview
+                            <span aria-hidden="true">👁️</span> Preview
                           </button>
                           <button
                             className="btn-select"
@@ -281,6 +302,7 @@ function TemplateGrid({ templates, selectedTemplate, onSelect }) {
                               e.stopPropagation();
                               onSelect(template);
                             }}
+                            aria-label={`Use ${template.name || template.businessName} template`}
                           >
                             Use Template →
                           </button>

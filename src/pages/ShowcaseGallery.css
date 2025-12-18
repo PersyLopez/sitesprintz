@@ -151,7 +151,8 @@
   margin-bottom: 50px;
 }
 
-@media (min-width: 768px) {
+/* Using breakpoint variables for consistency */
+@media (min-width: 640px) {
   .showcase-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -163,7 +164,7 @@
   }
 }
 
-@media (min-width: 1440px) {
+@media (min-width: 1280px) {
   .showcase-grid {
     grid-template-columns: repeat(4, 1fr);
   }
@@ -320,22 +321,23 @@
   font-weight: 500;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .showcase-header h1 {
-    font-size: 2rem;
-  }
-
-  .showcase-header p {
-    font-size: 1rem;
-  }
-
-  .search-box {
-    max-width: 100%;
-  }
-
-  .showcase-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
+/* Mobile-First: Base styles are mobile */
+.showcase-header h1 {
+  font-size: clamp(1.75rem, 4vw + 0.5rem, 2.5rem); /* Fluid typography */
 }
+
+.showcase-header p {
+  font-size: clamp(0.9rem, 1.5vw, 1rem); /* Fluid typography */
+}
+
+.search-box {
+  max-width: 100%;
+  min-height: 44px; /* Touch target */
+}
+
+.showcase-grid {
+  grid-template-columns: 1fr; /* Mobile: Single column */
+  gap: var(--spacing-md);
+}
+
+/* Tablet+: Already handled above with min-width queries */

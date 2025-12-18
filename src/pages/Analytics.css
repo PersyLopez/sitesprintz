@@ -8,27 +8,58 @@
   flex: 1;
   max-width: 1400px;
   margin: 0 auto;
-  padding: var(--spacing-2xl);
+  padding: var(--spacing-md);
   width: 100%;
+}
+
+/* Tablet+: Increase padding */
+@media (min-width: 640px) {
+  .analytics-container {
+    padding: var(--spacing-lg);
+  }
+}
+
+/* Desktop: Full padding */
+@media (min-width: 1024px) {
+  .analytics-container {
+    padding: var(--spacing-2xl);
+  }
 }
 
 .analytics-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-2xl);
-  padding: var(--spacing-2xl);
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-lg);
   background: linear-gradient(135deg, #6366f1, #4f46e5);
   color: white;
-  border-radius: 16px;
+  border-radius: 12px;
   box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
-  flex-wrap: wrap;
-  gap: var(--spacing-lg);
+}
+
+/* Tablet+: Horizontal layout */
+@media (min-width: 640px) {
+  .analytics-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-xl);
+    border-radius: 16px;
+    margin-bottom: var(--spacing-2xl);
+  }
+}
+
+/* Desktop: Full padding */
+@media (min-width: 1024px) {
+  .analytics-header {
+    padding: var(--spacing-2xl);
+  }
 }
 
 .header-content h1 {
   margin: 0 0 var(--spacing-xs);
-  font-size: 2rem;
+  font-size: clamp(1.5rem, 4vw + 0.5rem, 2rem); /* Fluid typography */
   font-weight: 800;
 }
 
@@ -46,11 +77,12 @@
 
 .time-range-select {
   padding: var(--spacing-sm) var(--spacing-md);
+  min-height: 44px; /* Touch target */
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 8px;
   color: white;
-  font-size: 0.9rem;
+  font-size: clamp(0.85rem, 1vw, 0.9rem); /* Fluid typography */
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -77,9 +109,26 @@
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: var(--spacing-xl);
-  margin-bottom: var(--spacing-2xl);
+  grid-template-columns: 1fr; /* Mobile: Single column */
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 640px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-2xl);
+  }
+}
+
+/* Desktop: Auto-fit */
+@media (min-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--spacing-xl);
+  }
 }
 
 .charts-section {
@@ -88,8 +137,23 @@
 
 .chart-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-  gap: var(--spacing-xl);
+  grid-template-columns: 1fr; /* Mobile: Single column */
+  gap: var(--spacing-lg);
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 640px) {
+  .chart-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-xl);
+  }
+}
+
+/* Desktop: Auto-fit */
+@media (min-width: 1024px) {
+  .chart-grid {
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  }
 }
 
 .chart-card {
@@ -262,44 +326,48 @@
   margin: 0;
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-  .chart-grid {
-    grid-template-columns: 1fr;
-  }
+/* Mobile-First: Base styles are mobile, enhance with media queries */
+/* Most styles already mobile-first above */
+
+.header-actions {
+  width: 100%;
+  flex-direction: column;
+  gap: var(--spacing-sm);
 }
 
-@media (max-width: 768px) {
-  .analytics-container {
-    padding: var(--spacing-lg);
-  }
+.header-actions .btn,
+.time-range-select {
+  width: 100%;
+  min-height: 44px; /* Touch target */
+}
 
-  .analytics-header {
-    flex-direction: column;
-    align-items: stretch;
-    padding: var(--spacing-lg);
-  }
+.coming-soon-grid {
+  grid-template-columns: 1fr; /* Mobile: Single column */
+  gap: var(--spacing-md);
+}
 
-  .header-content h1 {
-    font-size: 1.5rem;
-  }
-
+/* Tablet: 2 columns */
+@media (min-width: 640px) {
   .header-actions {
-    width: 100%;
-    flex-direction: column;
+    flex-direction: row;
+    width: auto;
   }
 
   .header-actions .btn,
   .time-range-select {
-    width: 100%;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
+    width: auto;
   }
 
   .coming-soon-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-lg);
+  }
+}
+
+/* Desktop: 3+ columns */
+@media (min-width: 1024px) {
+  .coming-soon-grid {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 

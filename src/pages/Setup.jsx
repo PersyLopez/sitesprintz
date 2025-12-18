@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useSite } from '../hooks/useSite';
 import { templatesService } from '../services/templates';
@@ -7,10 +7,13 @@ import { hasLayouts, getLayoutsForTemplate } from '../config/templateLayouts';
 import Header from '../components/layout/Header';
 import TemplateGrid from '../components/setup/TemplateGrid';
 import EditorPanel from '../components/setup/EditorPanel';
-import PreviewFrame from '../components/setup/PreviewFrame';
 import PublishModal from '../components/setup/PublishModal';
 import LayoutSelector from '../components/setup/LayoutSelector';
+import LoadingFallback from '../components/common/LoadingFallback';
 import './Setup.css';
+
+// Lazy load PreviewFrame (heavy component with iframe)
+const PreviewFrame = lazy(() => import('../components/setup/PreviewFrame'));
 
 function Setup() {
   const [searchParams] = useSearchParams();
@@ -224,7 +227,9 @@ function Setup() {
             </div>
             <div className="panel-content">
               {siteData.template ? (
-                <PreviewFrame siteData={siteData} />
+                <Suspense fallback={<LoadingFallback message="Loading preview..." />}>
+                  <PreviewFrame siteData={siteData} />
+                </Suspense>
               ) : (
                 <div className="panel-empty">
                   <div className="empty-icon">🖼️</div>

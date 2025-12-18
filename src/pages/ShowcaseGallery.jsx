@@ -11,6 +11,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { OptimizedImage } from '../components/common/OptimizedImage';
 import './ShowcaseGallery.css';
 
 function ShowcaseGallery() {
@@ -232,10 +233,14 @@ function ShowcaseGallery() {
               <div key={site.id} className="site-card" data-testid={`site-card-${site.id}`}>
                 <Link to={`/showcase/${site.subdomain}`} className="site-card-link">
                   <div className="site-image">
-                    <img
+                    <OptimizedImage
                       src={getSiteImage(site)}
                       alt={`${getSiteTitle(site)} preview`}
-                      loading="lazy"
+                      width={600}
+                      height={400}
+                      aspectRatio="3/2"
+                      priority={false}
+                      sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                     <div className="site-overlay">
                       <span className="view-details">View Details</span>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useCart } from '../../hooks/useCart';
+import { OptimizedImage } from '../common/OptimizedImage';
 import './ProductCard.css';
 
 function ProductCard({ product, showActions = true }) {
@@ -35,10 +36,18 @@ function ProductCard({ product, showActions = true }) {
       {/* Product Image */}
       <div className="product-image">
         {product.image ? (
-          <img src={product.image} alt={product.name} />
+          <OptimizedImage
+            src={product.image}
+            alt={product.name}
+            width={400}
+            height={250}
+            aspectRatio="8/5"
+            priority={false}
+            sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
         ) : (
           <div className="product-image-placeholder">
-            <span>📦</span>
+            <span aria-hidden="true">📦</span>
           </div>
         )}
 

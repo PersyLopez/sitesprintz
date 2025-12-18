@@ -1,17 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Modal } from '../common/Modal';
 import './WelcomeModal.css';
 
 function WelcomeModal({ onClose }) {
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content welcome-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>×</button>
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Welcome to SiteSprintz!"
+      className="welcome-modal"
+      ariaDescribedBy="welcome-description"
+    >
+        <div className="welcome-icon" aria-hidden="true">🎉</div>
         
-        <div className="welcome-icon">🎉</div>
-        
-        <h2>Welcome to SiteSprintz!</h2>
-        <p className="welcome-subtitle">
+        <p id="welcome-description" className="welcome-subtitle">
           You're all set to create your first professional website
         </p>
 
@@ -42,19 +45,27 @@ function WelcomeModal({ onClose }) {
         </div>
 
         <div className="welcome-actions">
-          <Link to="/setup" className="btn btn-primary btn-large">
+          <Link 
+            to="/setup" 
+            className="btn btn-primary btn-large"
+            onClick={onClose}
+            aria-label="Go to setup page to create your first site"
+          >
             Create Your First Site →
           </Link>
-          <button onClick={onClose} className="btn btn-secondary">
+          <button 
+            onClick={onClose} 
+            className="btn btn-secondary"
+            aria-label="Close welcome modal and do this later"
+          >
             I'll do this later
           </button>
         </div>
 
         <p className="welcome-tip">
-          💡 <strong>Tip:</strong> Start with a template that matches your business type for the best results
+          <span aria-hidden="true">💡</span> <strong>Tip:</strong> Start with a template that matches your business type for the best results
         </p>
-      </div>
-    </div>
+    </Modal>
   );
 }
 
