@@ -8,22 +8,22 @@
       "contact"
     ],
     "hero": {
-      "image": "/showcases/testsite/hero-1766092387909.png",
+      "image": "/showcases/testsite/hero-1766100962424.png",
       "width": 1920,
       "height": 800
     },
     "services": [
       {
-        "image": "/showcases/testsite/services-1766092387909.png",
+        "image": "/showcases/testsite/services-1766100962442.png",
         "width": 1920
       }
     ],
     "reviews": {
-      "image": "/showcases/testsite/reviews-1766092387909.png",
+      "image": "/showcases/testsite/reviews-1766100962442.png",
       "width": 1920
     },
     "contact": {
-      "image": "/showcases/testsite/contact-1766092387909.png",
+      "image": "/showcases/testsite/contact-1766100962442.png",
       "width": 1920
     }
   },
@@ -31,6 +31,6 @@
     "businessName": "Testsite",
     "template": "unknown"
   },
-  "generatedAt": "2025-12-18T21:13:07.911Z",
+  "generatedAt": "2025-12-18T23:36:02.485Z",
   "url": "/showcase/testsite"
 }
