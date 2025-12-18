@@ -6,9 +6,18 @@
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 import ContentService from '../services/contentService.js';
 import { requireAuth } from '../middleware/auth.js';
+import {
+  sendSuccess,
+  sendCreated,
+  sendBadRequest,
+  sendNotFound,
+  sendForbidden,
+  sendServerError,
+  asyncHandler
+} from '../utils/apiResponse.js';
 
 const router = express.Router();
 
@@ -18,7 +27,8 @@ const storage = multer.diskStorage({
     cb(null, 'public/uploads/');
   },
   filename: (req, file, cb) => {
-    const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
+    // Use crypto.randomBytes for secure filename generation
+    const uniqueName = `${Date.now()}-${crypto.randomBytes(8).toString('hex')}${path.extname(file.originalname)}`;
     cb(null, uniqueName);
   }
 });
@@ -44,270 +54,255 @@ const upload = multer({
  */
 
 // GET all menu items
-router.get('/:subdomain/menu', async (req, res) => {
-  try {
-    const { subdomain } = req.params;
-    const { grouped } = req.query;
+router.get('/:subdomain/menu', asyncHandler(async (req, res) => {
+  const { subdomain } = req.params;
+  const { grouped } = req.query;
 
-    const items = await ContentService.getMenuItems(subdomain, grouped === 'true');
+  const items = await ContentService.getMenuItems(subdomain, grouped === 'true');
 
-    res.json({ items: grouped === 'true' ? items.categories : items });
-  } catch (error) {
-    console.error('Get menu error:', error);
-    res.status(500).json({ error: 'Failed to fetch menu items' });
-  }
-});
+  return sendSuccess(res, { 
+    items: grouped === 'true' ? items.categories : items 
+  });
+}));
 
 // POST create menu item
-router.post('/:subdomain/menu', requireAuth, async (req, res) => {
+router.post('/:subdomain/menu', requireAuth, asyncHandler(async (req, res) => {
+  const { subdomain } = req.params;
+  
   try {
-    const { subdomain } = req.params;
     const item = await ContentService.createMenuItem(subdomain, req.body);
-
-    res.status(201).json(item);
+    return sendCreated(res, { item });
   } catch (error) {
-    console.error('Create menu item error:', error);
-    
     if (error.message.includes('required') || error.message.includes('positive')) {
-      return res.status(400).json({ errors: [error.message] });
+      return sendBadRequest(res, error.message, 'VALIDATION_ERROR');
     }
-    
-    res.status(500).json({ error: 'Failed to create menu item' });
+    throw error;
   }
-});
+}));
 
 // PUT update menu item
-router.put('/:subdomain/menu/:itemId', requireAuth, async (req, res) => {
+router.put('/:subdomain/menu/:itemId', requireAuth, asyncHandler(async (req, res) => {
+  const { subdomain, itemId } = req.params;
+  
   try {
-    const { subdomain, itemId } = req.params;
     const item = await ContentService.updateMenuItem(subdomain, itemId, req.body);
-
-    res.json(item);
+    return sendSuccess(res, { item });
   } catch (error) {
-    console.error('Update menu item error:', error);
-    
     if (error.message === 'Item not found') {
-      return res.status(404).json({ error: 'Item not found' });
+      return sendNotFound(res, 'Menu item', 'ITEM_NOT_FOUND');
     }
     if (error.message.includes('positive') || error.message.includes('number')) {
-      return res.status(400).json({ error: error.message });
+      return sendBadRequest(res, error.message, 'VALIDATION_ERROR');
     }
-    
-    res.status(500).json({ error: 'Failed to update menu item' });
+    throw error;
   }
-});
+}));
 
 // DELETE menu item
-router.delete('/:subdomain/menu/:itemId', requireAuth, async (req, res) => {
+router.delete('/:subdomain/menu/:itemId', requireAuth, asyncHandler(async (req, res) => {
+  const { subdomain, itemId } = req.params;
+  
   try {
-    const { subdomain, itemId } = req.params;
-    const result = await ContentService.deleteMenuItem(subdomain, itemId);
-
-    res.json(result);
+    await ContentService.deleteMenuItem(subdomain, itemId);
+    return sendSuccess(res, {}, 'Menu item deleted');
   } catch (error) {
-    console.error('Delete menu item error:', error);
-    
     if (error.message === 'Item not found') {
-      return res.status(404).json({ error: 'Item not found' });
+      return sendNotFound(res, 'Menu item', 'ITEM_NOT_FOUND');
     }
-    
-    res.status(500).json({ error: 'Failed to delete menu item' });
+    throw error;
   }
-});
+}));
 
 // PATCH reorder menu items
-router.patch('/:subdomain/menu/reorder', requireAuth, async (req, res) => {
-  try {
-    const { subdomain } = req.params;
-    const { items } = req.body;
+router.patch('/:subdomain/menu/reorder', requireAuth, asyncHandler(async (req, res) => {
+  const { subdomain } = req.params;
+  const { items } = req.body;
 
-    const result = await ContentService.reorderMenuItems(subdomain, items);
-
-    res.json(result);
-  } catch (error) {
-    console.error('Reorder error:', error);
-    
-    if (error.message.includes('do not belong')) {
-      return res.status(403).json({ error: error.message });
-    }
-    
-    res.status(500).json({ error: 'Failed to reorder items' });
+  if (!Array.isArray(items)) {
+    return sendBadRequest(res, 'Items must be an array', 'INVALID_ITEMS');
   }
-});
+
+  try {
+    const result = await ContentService.reorderMenuItems(subdomain, items);
+    return sendSuccess(res, result);
+  } catch (error) {
+    if (error.message.includes('do not belong')) {
+      return sendForbidden(res, error.message, 'OWNERSHIP_ERROR');
+    }
+    throw error;
+  }
+}));
 
 // POST bulk create menu items
-router.post('/:subdomain/menu/bulk', requireAuth, async (req, res) => {
-  try {
-    const { subdomain } = req.params;
-    const { items } = req.body;
+router.post('/:subdomain/menu/bulk', requireAuth, asyncHandler(async (req, res) => {
+  const { subdomain } = req.params;
+  const { items } = req.body;
 
-    const result = await ContentService.bulkCreateMenuItems(subdomain, items);
-
-    const status = result.failed > 0 ? 207 : 200;
-    res.status(status).json(result);
-  } catch (error) {
-    console.error('Bulk create error:', error);
-    res.status(500).json({ error: 'Failed to create items' });
+  if (!Array.isArray(items) || items.length === 0) {
+    return sendBadRequest(res, 'Items array is required', 'INVALID_ITEMS');
   }
-});
+
+  const result = await ContentService.bulkCreateMenuItems(subdomain, items);
+  
+  // Use 207 Multi-Status if some items failed
+  const statusCode = result.failed > 0 ? 207 : 200;
+  return res.status(statusCode).json({ success: result.failed === 0, ...result });
+}));
 
 // DELETE bulk delete menu items
-router.delete('/:subdomain/menu/bulk', requireAuth, async (req, res) => {
-  try {
-    const { subdomain } = req.params;
-    const { ids } = req.body;
+router.delete('/:subdomain/menu/bulk', requireAuth, asyncHandler(async (req, res) => {
+  const { subdomain } = req.params;
+  const { ids } = req.body;
 
-    const result = await ContentService.bulkDeleteMenuItems(subdomain, ids);
-
-    res.json(result);
-  } catch (error) {
-    console.error('Bulk delete error:', error);
-    res.status(500).json({ error: 'Failed to delete items' });
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return sendBadRequest(res, 'IDs array is required', 'INVALID_IDS');
   }
-});
+
+  const result = await ContentService.bulkDeleteMenuItems(subdomain, ids);
+  return sendSuccess(res, result, 'Items deleted');
+}));
 
 /**
  * Services Routes
  */
 
 // GET all services
-router.get('/:subdomain/services', async (req, res) => {
-  try {
-    const { subdomain } = req.params;
-    const services = await ContentService.getServices(subdomain);
-
-    res.json({ services });
-  } catch (error) {
-    console.error('Get services error:', error);
-    res.status(500).json({ error: 'Failed to fetch services' });
-  }
-});
+router.get('/:subdomain/services', asyncHandler(async (req, res) => {
+  const { subdomain } = req.params;
+  const services = await ContentService.getServices(subdomain);
+  return sendSuccess(res, { services });
+}));
 
 // POST create service
-router.post('/:subdomain/services', requireAuth, async (req, res) => {
+router.post('/:subdomain/services', requireAuth, asyncHandler(async (req, res) => {
+  const { subdomain } = req.params;
+  
   try {
-    const { subdomain } = req.params;
     const service = await ContentService.createService(subdomain, req.body);
-
-    res.status(201).json(service);
+    return sendCreated(res, { service });
   } catch (error) {
-    console.error('Create service error:', error);
-    
     if (error.message.includes('required') || error.message.includes('positive')) {
-      return res.status(400).json({ errors: [error.message] });
+      return sendBadRequest(res, error.message, 'VALIDATION_ERROR');
     }
-    
-    res.status(500).json({ error: 'Failed to create service' });
+    throw error;
   }
-});
+}));
 
 // PUT update service
-router.put('/:subdomain/services/:serviceId', requireAuth, async (req, res) => {
+router.put('/:subdomain/services/:serviceId', requireAuth, asyncHandler(async (req, res) => {
+  const { subdomain, serviceId } = req.params;
+  
   try {
-    const { subdomain, serviceId } = req.params;
     const service = await ContentService.updateService(subdomain, serviceId, req.body);
-
-    res.json(service);
+    return sendSuccess(res, { service });
   } catch (error) {
-    console.error('Update service error:', error);
-    
     if (error.message === 'Service not found') {
-      return res.status(404).json({ error: 'Service not found' });
+      return sendNotFound(res, 'Service', 'SERVICE_NOT_FOUND');
     }
-    
-    res.status(500).json({ error: 'Failed to update service' });
+    throw error;
   }
-});
+}));
 
 // DELETE service
-router.delete('/:subdomain/services/:serviceId', requireAuth, async (req, res) => {
+router.delete('/:subdomain/services/:serviceId', requireAuth, asyncHandler(async (req, res) => {
+  const { subdomain, serviceId } = req.params;
+  
   try {
-    const { subdomain, serviceId } = req.params;
-    const result = await ContentService.deleteService(subdomain, serviceId);
-
-    res.json(result);
+    await ContentService.deleteService(subdomain, serviceId);
+    return sendSuccess(res, {}, 'Service deleted');
   } catch (error) {
-    console.error('Delete service error:', error);
-    
     if (error.message === 'Service not found') {
-      return res.status(404).json({ error: 'Service not found' });
+      return sendNotFound(res, 'Service', 'SERVICE_NOT_FOUND');
     }
-    
-    res.status(500).json({ error: 'Failed to delete service' });
+    throw error;
   }
-});
+}));
 
 /**
  * Products Routes
  */
 
 // GET all products
-router.get('/:subdomain/products', async (req, res) => {
-  try {
-    const { subdomain } = req.params;
-    const { page, limit } = req.query;
+router.get('/:subdomain/products', asyncHandler(async (req, res) => {
+  const { subdomain } = req.params;
+  const { page, limit } = req.query;
 
-    const result = await ContentService.getProducts(subdomain, {
-      page: parseInt(page) || 1,
-      limit: parseInt(limit) || 50
-    });
+  const result = await ContentService.getProducts(subdomain, {
+    page: parseInt(page) || 1,
+    limit: Math.min(parseInt(limit) || 50, 100) // Cap at 100
+  });
 
-    res.json(result);
-  } catch (error) {
-    console.error('Get products error:', error);
-    res.status(500).json({ error: 'Failed to fetch products' });
-  }
-});
+  return sendSuccess(res, result);
+}));
 
 // POST create product
-router.post('/:subdomain/products', requireAuth, async (req, res) => {
+router.post('/:subdomain/products', requireAuth, asyncHandler(async (req, res) => {
+  const { subdomain } = req.params;
+  
   try {
-    const { subdomain } = req.params;
     const product = await ContentService.createProduct(subdomain, req.body);
-
-    res.status(201).json(product);
+    return sendCreated(res, { product });
   } catch (error) {
-    console.error('Create product error:', error);
-    
     if (error.message.includes('required') || error.message.includes('negative')) {
-      return res.status(400).json({ errors: [error.message] });
+      return sendBadRequest(res, error.message, 'VALIDATION_ERROR');
     }
-    
-    res.status(500).json({ error: 'Failed to create product' });
+    throw error;
   }
-});
+}));
 
 /**
  * Image Upload Route
  */
+router.post('/:subdomain/upload', requireAuth, (req, res) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      if (err.message?.includes('Only images')) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Only image files are allowed',
+          code: 'INVALID_FILE_TYPE'
+        });
+      }
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(413).json({ 
+          success: false, 
+          error: 'File too large (max 5MB)',
+          code: 'FILE_TOO_LARGE'
+        });
+      }
+      console.error('Upload error:', err);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Upload failed',
+        code: 'UPLOAD_ERROR'
+      });
+    }
 
-router.post('/:subdomain/upload', requireAuth, upload.single('image'), (req, res) => {
-  try {
     if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
+      return res.status(400).json({ 
+        success: false, 
+        error: 'No file uploaded',
+        code: 'NO_FILE'
+      });
     }
 
-    const url = `/uploads/${req.file.filename}`;
-    res.json({ url, filename: req.file.filename });
-  } catch (error) {
-    console.error('Upload error:', error);
-    
-    if (error.message.includes('Only images')) {
-      return res.status(400).json({ error: 'Only image files are allowed' });
-    }
-    if (error.code === 'LIMIT_FILE_SIZE') {
-      return res.status(413).json({ error: 'File too large (max 5MB)' });
-    }
-    
-    res.status(500).json({ error: 'Upload failed' });
-  }
+    res.json({ 
+      success: true,
+      url: `/uploads/${req.file.filename}`, 
+      filename: req.file.filename 
+    });
+  });
 });
 
 // Error handler for multer
 router.use((error, req, res, next) => {
   if (error instanceof multer.MulterError) {
     if (error.code === 'LIMIT_FILE_SIZE') {
-      return res.status(413).json({ error: 'File too large' });
+      return res.status(413).json({ 
+        success: false,
+        error: 'File too large',
+        code: 'FILE_TOO_LARGE'
+      });
     }
   }
   next(error);

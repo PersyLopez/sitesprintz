@@ -1,18 +1,10 @@
 import express from 'express';
 import Stripe from 'stripe';
-import fs from 'fs/promises';
-import fsSync from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { randomUUID as nodeRandomUUID } from 'crypto';
 import { prisma } from '../../database/db.js';
 import { authenticateToken, requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const publicDir = path.join(__dirname, '../../public');
-const dataFile = path.join(publicDir, 'data', 'site.json');
 
 // Stripe setup
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
@@ -172,41 +164,26 @@ router.post('/payments/checkout-sessions', async (req, res) => {
             return res.status(400).json({ error: 'Invalid productIndex' });
         }
 
-        // Load site data - try DB first
+        // Load site data from database
+        if (!siteId) {
+            return res.status(400).json({ error: 'siteId is required' });
+        }
+
         let siteData = null;
         let siteOwner = null;
 
-        if (siteId) {
-            try {
-                const site = await prisma.sites.findUnique({
-                    where: { id: siteId },
-                    include: { users: true } // Relation usually named matching table or plural
-                });
-                if (site) {
-                    siteData = typeof site.site_data === 'string' ? JSON.parse(site.site_data) : site.site_data;
-                    siteOwner = site.users;
-                }
-            } catch (err) {
-                console.warn(`[Payments] Failed to find site by ID '${siteId}': ${err.message}`);
-                // Fallback to file search below
+        try {
+            const site = await prisma.sites.findUnique({
+                where: { id: siteId },
+                include: { users: true }
+            });
+            if (site) {
+                siteData = typeof site.site_data === 'string' ? JSON.parse(site.site_data) : site.site_data;
+                siteOwner = site.users;
             }
-        }
-
-        // Fallback to file if DB lookup failed or no siteId (legacy support?)
-        if (!siteData) {
-            let siteFile = dataFile;
-            if (siteId) {
-                const potentialPath = path.join(publicDir, 'sites', siteId, 'data', 'site.json');
-                if (fsSync.existsSync(potentialPath)) {
-                    siteFile = potentialPath;
-                }
-            }
-            try {
-                const raw = await fs.readFile(siteFile, 'utf-8');
-                siteData = JSON.parse(raw);
-            } catch (e) {
-                // Ignore
-            }
+        } catch (err) {
+            console.error(`[Payments] Failed to find site by ID '${siteId}':`, err.message);
+            return res.status(500).json({ error: 'Failed to load site data' });
         }
 
         if (!siteData) {

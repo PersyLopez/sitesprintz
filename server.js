@@ -6,12 +6,17 @@ import { fileURLToPath } from 'url';
 import bodyParser from 'body-parser';
 import passport from 'passport';
 import session from 'express-session';
+import helmet from 'helmet';
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
 import { testConnection } from './database/db.js';
 import { configureGoogleAuth, setupGoogleRoutes } from './auth-google.js';
 import { errorHandler } from './server/middleware/errorHandler.js';
 import cookieParser from 'cookie-parser';
 import { csrfProtection, csrfTokenEndpoint } from './server/middleware/csrf.js';
+import { apiLimiter } from './server/middleware/rateLimiting.js';
+import './server/jobs/tokenCleanup.js'; // Token cleanup job
 
 // Routes
 import authRoutes from './server/routes/auth.routes.js';
@@ -23,6 +28,8 @@ import bookingRoutes from './server/routes/booking.routes.js';
 import contentRoutes from './server/routes/content.routes.js';
 import showcaseRoutes from './server/routes/showcase.routes.js';
 import adminRoutes from './server/routes/admin.routes.js';
+import reviewsRoutes from './server/routes/reviews.routes.js';
+import shareRoutes from './server/routes/share.routes.js';
 
 dotenv.config();
 
@@ -43,6 +50,52 @@ const PORT = process.env.PORT || 3000;
 app.set('etag', false);
 
 const publicDir = path.join(__dirname, 'dist');
+
+// Security Headers with Helmet (must be before static files)
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'",
+        "'unsafe-inline'", // Required for React/Vite
+        "https://challenges.cloudflare.com", // Cloudflare Turnstile
+        "https://js.stripe.com", // Stripe.js
+        "https://checkout.stripe.com" // Stripe Checkout
+      ],
+      scriptSrcAttr: ["'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      connectSrc: [
+        "'self'",
+        "https://api.stripe.com",
+        "https://challenges.cloudflare.com",
+        "https://resend.com"
+      ],
+      fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: [
+        "'self'",
+        "https://js.stripe.com",
+        "https://hooks.stripe.com",
+        "https://challenges.cloudflare.com"
+      ],
+      upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null,
+    },
+  },
+  hsts: {
+    maxAge: 31536000, // 1 year
+    includeSubDomains: true,
+    preload: true
+  },
+  frameguard: { action: 'deny' },
+  noSniff: true,
+  xssFilter: true,
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  crossOriginEmbedderPolicy: false, // Disable for compatibility
+  crossOriginResourcePolicy: { policy: 'cross-origin' } // Allow images from any origin
+}));
 
 app.use(cors());
 app.use(express.static(publicDir));
@@ -72,6 +125,15 @@ app.use('/api/webhooks', webhookRoutes);
 app.use(bodyParser.json({ limit: '1mb' }));
 app.use(cookieParser());
 
+// Apply general API rate limiting (excludes webhooks which are handled separately)
+app.use('/api/', (req, res, next) => {
+  // Skip rate limiting for webhooks (they have their own protection)
+  if (req.path.startsWith('/webhooks/')) {
+    return next();
+  }
+  return apiLimiter(req, res, next);
+});
+
 // CSRF Protection
 app.get('/api/csrf-token', csrfTokenEndpoint);
 app.use(csrfProtection);
@@ -91,6 +153,87 @@ app.use(passport.session());
 const googleAuthConfigured = configureGoogleAuth();
 if (googleAuthConfigured) {
   setupGoogleRoutes(app);
+} else if (process.env.NODE_ENV === 'test') {
+  // Test-mode Google OAuth mock:
+  // - Never hits external Google
+  // - Always produces a valid JWT and redirects to /oauth/callback?token=...
+  // This makes E2E reliable and allows testing the full redirect/token flow.
+  const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this';
+
+  app.get('/auth/google', (req, res) => {
+    const plan = req.query.plan;
+    const intent = req.query.intent;
+    let state = plan || 'free';
+    if (intent) state += `,intent:${intent}`;
+
+    const redirect = `/auth/google/callback?code=mock&state=${encodeURIComponent(state)}`;
+    return res.redirect(redirect);
+  });
+
+  app.get('/auth/google/callback', async (req, res) => {
+    const { error, state } = req.query;
+    if (error) {
+      return res.redirect(`/register.html?error=${encodeURIComponent(error)}`);
+    }
+
+    try {
+      const { prisma } = await import('./database/db.js');
+
+      // Use a deterministic mock user; tests can rely on this existing.
+      const email = 'google-mock@example.com';
+      let user = await prisma.users.findUnique({ where: { email } });
+
+      if (!user) {
+        user = await prisma.users.create({
+          data: {
+            id: crypto.randomUUID(),
+            email,
+            name: 'Google Mock User',
+            role: 'user',
+            status: 'active',
+            subscription_status: 'trial',
+            subscription_plan: 'free',
+            auth_provider: 'google',
+            email_verified: true,
+            created_at: new Date(),
+            last_login: new Date()
+          }
+        });
+      } else {
+        await prisma.users.update({
+          where: { email },
+          data: { last_login: new Date() }
+        });
+      }
+
+      const token = jwt.sign(
+        { userId: user.id, email: user.email, role: user.role },
+        JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+
+      // Keep redirect behavior consistent with real auth-google.js logic
+      const stateStr = typeof state === 'string' ? state : '';
+      const parts = stateStr.split(',');
+      const plan = parts[0];
+      const intentPart = parts.find(p => p.startsWith('intent:'));
+      const intent = intentPart ? intentPart.split(':')[1] : null;
+
+      if (intent === 'publish') {
+        return res.redirect(`/auto-publish.html?token=${token}`);
+      }
+
+      if (plan && (plan === 'starter' || plan === 'pro')) {
+        return res.redirect(`/register-success.html?token=${token}&plan=${plan}`);
+      }
+
+      const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+      return res.redirect(`${clientUrl}/oauth/callback?token=${token}`);
+    } catch (e) {
+      console.error('Test-mode Google OAuth mock failed:', e);
+      return res.redirect('/register.html?error=auth_failed');
+    }
+  });
 }
 
 // Passport serialization (required for session support)
@@ -106,6 +249,8 @@ app.use('/api', siteRoutes); // Mounts at /api/site, /api/upload, etc.
 app.use('/api/booking', bookingRoutes);
 app.use('/api/content', contentRoutes);
 app.use('/api/showcases', showcaseRoutes);
+app.use('/api/reviews', reviewsRoutes);
+app.use('/api/share', shareRoutes);
 // app.use('/api/admin', adminRoutes); -- Moved up to prioritized list
 import submissionsRoutes from './server/routes/submissions.routes.js';
 app.use('/api/submissions', submissionsRoutes);

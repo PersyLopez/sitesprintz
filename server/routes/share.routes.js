@@ -117,7 +117,7 @@ router.post('/generate', async (req, res) => {
     // Fetch site data
     const site = await prisma.sites.findUnique({
       where: { subdomain },
-      select: { template_data: true }
+      select: { site_data: true }
     });
 
     if (!site) {
@@ -126,9 +126,9 @@ router.post('/generate', async (req, res) => {
       });
     }
 
-    const templateData = typeof site.template_data === 'string'
-      ? JSON.parse(site.template_data)
-      : site.template_data;
+    const templateData = typeof site.site_data === 'string'
+      ? JSON.parse(site.site_data)
+      : site.site_data;
 
     // Add subdomain to template data if not present
     if (!templateData.subdomain) {
@@ -203,7 +203,7 @@ const getShareCard = async (req, res) => {
     // Not cached, generate
     const site = await prisma.sites.findUnique({
       where: { subdomain },
-      select: { template_data: true }
+      select: { site_data: true }
     });
 
     if (!site) {
@@ -212,9 +212,9 @@ const getShareCard = async (req, res) => {
       });
     }
 
-    const templateData = typeof site.template_data === 'string'
-      ? JSON.parse(site.template_data)
-      : site.template_data;
+    const templateData = typeof site.site_data === 'string'
+      ? JSON.parse(site.site_data)
+      : site.site_data;
 
     if (!templateData.subdomain) {
       templateData.subdomain = subdomain;

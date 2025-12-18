@@ -1,286 +1,360 @@
+/**
+ * Users Routes
+ * 
+ * User-specific endpoints for profile, sites, and analytics.
+ * All routes require authentication.
+ */
+
 import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import bcrypt from 'bcryptjs';
 import { prisma } from '../../database/db.js';
-import { sendEmail, EmailTypes } from '../utils/email-service-wrapper.js';
 import { requireAuth } from '../middleware/auth.js';
-import { getUserFilePath } from '../utils/helpers.js';
+import {
+  sendSuccess,
+  sendBadRequest,
+  sendForbidden,
+  sendNotFound,
+  asyncHandler
+} from '../utils/apiResponse.js';
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const publicDir = path.join(__dirname, '../../public');
-const usersDir = path.join(publicDir, 'users');
 const sitesDir = path.join(publicDir, 'sites');
 
-// User invitation system endpoints
-router.post('/admin/invite-user', requireAuth, async (req, res) => {
+/**
+ * Helper: Check if user can access resource
+ */
+function canAccessUser(reqUser, targetUserId) {
+  return reqUser.id === targetUserId || 
+         reqUser.userId === targetUserId || 
+         reqUser.role === 'admin';
+}
+
+/**
+ * Helper: Parse site_data
+ */
+function parseSiteData(site) {
+  if (!site?.site_data) return {};
+  if (typeof site.site_data === 'string') {
     try {
-        const { email, role = 'user' } = req.body;
-
-        if (!email) {
-            return res.status(400).json({ error: 'Email is required' });
-        }
-
-        // Check if user already exists
-        const userPath = getUserFilePath(email);
-
-        if (await fs.access(userPath).then(() => true).catch(() => false)) {
-            return res.status(400).json({ error: 'User with this email already exists' });
-        }
-
-        // Generate temporary password
-        const tempPassword = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-        const tempPasswordExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-
-        // Create user account
-        const hashedPassword = await bcrypt.hash(tempPassword, 10);
-
-        const userData = {
-            id: email.replace('@', '_at_').replace('.', '_dot_'),
-            email: email,
-            password: hashedPassword,
-            role: role,
-            status: 'invited',
-            tempPassword: tempPassword,
-            tempPasswordExpires: tempPasswordExpires.toISOString(),
-            createdAt: new Date().toISOString(),
-            lastLogin: null,
-            sites: []
-        };
-
-        // Save user data
-        await fs.writeFile(userPath, JSON.stringify(userData, null, 2));
-
-        // Send invitation email
-        await sendEmail(email, EmailTypes.INVITATION, { email, tempPassword });
-
-        console.log(`✅ Invitation email sent to ${email}`);
-
-        res.json({
-            message: 'User invitation sent successfully',
-            email: email,
-            loginUrl: `${req.protocol}://${req.get('host')}/login.html`
-        });
-    } catch (error) {
-        console.error('Error creating user invitation:', error);
-        res.status(500).json({ error: 'Failed to create user invitation' });
+      return JSON.parse(site.site_data);
+    } catch (e) {
+      return {};
     }
-});
+  }
+  return site.site_data;
+}
 
-// List all users (admin only)
-router.get('/admin/users', requireAuth, async (req, res) => {
-    try {
-        // Check if user is admin
-        if (req.user.role !== 'admin') {
-            return res.status(403).json({ error: 'Admin access required' });
-        }
+/**
+ * GET /api/users/:userId
+ * Get user profile
+ */
+router.get('/:userId', requireAuth, asyncHandler(async (req, res) => {
+  const { userId } = req.params;
 
-        const users = [];
-        const userFiles = await fs.readdir(usersDir);
+  if (!canAccessUser(req.user, userId)) {
+    return sendForbidden(res, 'Access denied', 'ACCESS_DENIED');
+  }
 
-        for (const userFile of userFiles) {
-            if (userFile.endsWith('.json')) {
-                try {
-                    const userData = JSON.parse(await fs.readFile(path.join(usersDir, userFile), 'utf-8'));
-                    // Don't include sensitive data
-                    users.push({
-                        id: userData.id,
-                        email: userData.email,
-                        role: userData.role,
-                        status: userData.status,
-                        createdAt: userData.createdAt,
-                        lastLogin: userData.lastLogin,
-                        sitesCount: userData.sites ? userData.sites.length : 0
-                    });
-                } catch (err) {
-                    console.error(`Error reading user file ${userFile}:`, err.message);
-                }
-            }
-        }
-
-        // Sort by creation date (newest first)
-        users.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-        res.json({ users });
-    } catch (error) {
-        console.error('Error loading users:', error);
-        res.status(500).json({ error: 'Failed to load users' });
+  const user = await prisma.users.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      role: true,
+      status: true,
+      subscription_plan: true,
+      subscription_status: true,
+      created_at: true,
+      last_login: true,
+      email_verified: true,
+      _count: {
+        select: { sites: true }
+      }
     }
-});
+  });
 
-// User site management endpoints
-router.get('/users/:userId/sites', requireAuth, async (req, res) => {
-    try {
-        const userId = req.params.userId;
+  if (!user) {
+    return sendNotFound(res, 'User', 'USER_NOT_FOUND');
+  }
 
-        // Verify user can only access their own sites
-        if (req.user.id !== userId && req.user.userId !== userId) {
-            return res.status(403).json({ error: 'Access denied' });
-        }
-
-        // Load sites from database
-        const sites = await prisma.sites.findMany({
-            where: { user_id: userId },
-            orderBy: { created_at: 'desc' },
-            select: {
-                id: true,
-                subdomain: true,
-                template_id: true,
-                status: true,
-                plan: true,
-                published_at: true,
-                created_at: true,
-                site_data: true
-            }
-        });
-
-        const formattedSites = sites.map(site => ({
-            id: site.id,
-            subdomain: site.subdomain,
-            name: site.site_data?.brand?.name || 'Untitled Site',
-            url: `/sites/${site.subdomain}/`,
-            status: site.status,
-            createdAt: site.published_at || site.created_at,
-            plan: site.plan,
-            template: site.template_id
-        }));
-
-        res.json({ sites: formattedSites });
-    } catch (error) {
-        console.error('Error loading user sites:', error);
-        res.status(500).json({ error: 'Failed to load sites' });
+  return sendSuccess(res, {
+    user: {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      status: user.status,
+      plan: user.subscription_plan,
+      subscriptionStatus: user.subscription_status,
+      emailVerified: user.email_verified,
+      sitesCount: user._count.sites,
+      createdAt: user.created_at,
+      lastLogin: user.last_login
     }
-});
+  });
+}));
 
-// Delete user site
-router.delete('/users/:userId/sites/:siteId', requireAuth, async (req, res) => {
-    try {
-        const userId = req.params.userId;
-        const siteId = req.params.siteId;
+/**
+ * GET /api/users/:userId/sites
+ * Get all sites for a user
+ */
+router.get('/:userId/sites', requireAuth, asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const { status, limit = 50 } = req.query;
 
-        // Verify user can only delete their own sites
-        if (req.user.id !== userId && req.user.userId !== userId) {
-            return res.status(403).json({ error: 'Access denied' });
-        }
+  if (!canAccessUser(req.user, userId)) {
+    return sendForbidden(res, 'Access denied', 'ACCESS_DENIED');
+  }
 
-        // Check if site exists and belongs to user
-        const site = await prisma.sites.findFirst({
-            where: { id: siteId, user_id: userId },
-            select: { subdomain: true }
-        });
+  // Build query
+  const where = { user_id: userId };
+  if (status) where.status = status;
 
-        if (!site) {
-            return res.status(404).json({ error: 'Site not found' });
-        }
-
-        const subdomain = site.subdomain;
-
-        // Delete from database (CASCADE will delete related submissions and analytics)
-        await prisma.sites.delete({
-            where: { id: siteId }
-        });
-
-        // Delete the site directory from file system
-        const sitePath = path.join(sitesDir, subdomain);
-        try {
-            await fs.rm(sitePath, { recursive: true, force: true });
-        } catch (err) {
-            console.error(`Error deleting site directory ${subdomain}:`, err.message);
-            // Continue even if file deletion fails - database record is gone
-        }
-
-        res.json({ message: 'Site deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting site:', error);
-        res.status(500).json({ error: 'Failed to delete site' });
+  const sites = await prisma.sites.findMany({
+    where,
+    orderBy: { created_at: 'desc' },
+    take: Math.min(parseInt(limit) || 50, 100),
+    select: {
+      id: true,
+      subdomain: true,
+      template_id: true,
+      status: true,
+      plan: true,
+      is_public: true,
+      published_at: true,
+      created_at: true,
+      expires_at: true,
+      site_data: true
     }
-});
+  });
 
-// Get user analytics
-router.get('/users/:userId/analytics', requireAuth, async (req, res) => {
-    try {
-        const { userId } = req.params;
+  const formattedSites = sites.map(site => {
+    const siteData = parseSiteData(site);
+    return {
+      id: site.id,
+      subdomain: site.subdomain,
+      name: siteData?.brand?.name || 'Untitled Site',
+      url: `/sites/${site.subdomain}/`,
+      status: site.status,
+      plan: site.plan,
+      isPublic: site.is_public,
+      template: site.template_id,
+      publishedAt: site.published_at,
+      createdAt: site.created_at,
+      expiresAt: site.expires_at
+    };
+  });
 
-        // Users can only view their own analytics unless they're admin
-        if (req.user.id !== userId && req.user.role !== 'admin') {
-            return res.status(403).json({ error: 'Access denied' });
+  return sendSuccess(res, { sites: formattedSites });
+}));
+
+/**
+ * DELETE /api/users/:userId/sites/:siteId
+ * Delete a user's site
+ */
+router.delete('/:userId/sites/:siteId', requireAuth, asyncHandler(async (req, res) => {
+  const { userId, siteId } = req.params;
+
+  if (!canAccessUser(req.user, userId)) {
+    return sendForbidden(res, 'Access denied', 'ACCESS_DENIED');
+  }
+
+  // Check if site exists and belongs to user
+  const site = await prisma.sites.findFirst({
+    where: { id: siteId, user_id: userId },
+    select: { id: true, subdomain: true }
+  });
+
+  if (!site) {
+    return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
+  }
+
+  // Delete from database (CASCADE handles related data)
+  await prisma.sites.delete({
+    where: { id: siteId }
+  });
+
+  // Delete site directory (non-blocking)
+  const sitePath = path.join(sitesDir, site.subdomain);
+  fs.rm(sitePath, { recursive: true, force: true }).catch(err => {
+    console.error(`Error deleting site directory ${site.subdomain}:`, err.message);
+  });
+
+  return sendSuccess(res, {}, 'Site deleted successfully');
+}));
+
+/**
+ * GET /api/users/:userId/analytics
+ * Get user's sites analytics
+ */
+router.get('/:userId/analytics', requireAuth, asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  if (!canAccessUser(req.user, userId)) {
+    return sendForbidden(res, 'Access denied', 'ACCESS_DENIED');
+  }
+
+  // Get user's sites with analytics data
+  const sites = await prisma.sites.findMany({
+    where: { user_id: userId },
+    select: {
+      id: true,
+      subdomain: true,
+      status: true,
+      plan: true,
+      created_at: true,
+      site_data: true,
+      _count: {
+        select: {
+          submissions: true,
+          analytics_events: true
         }
-
-        // Load user data
-        const userPath = getUserFilePath(req.user.email);
-        const userData = JSON.parse(await fs.readFile(userPath, 'utf-8'));
-
-        // Get user's sites
-        const userSites = userData.sites || [];
-
-        const sitesAnalytics = [];
-        let totalViews = 0;
-        let viewsThisMonth = 0;
-        let publishedCount = 0;
-        let draftCount = 0;
-
-        // Analyze each site
-        for (const siteId of userSites) {
-            try {
-                const sitePath = path.join(sitesDir, siteId, 'site.json');
-                const siteData = JSON.parse(await fs.readFile(sitePath, 'utf-8'));
-
-                // Generate mock analytics (in production, this would come from real tracking)
-                const views = Math.floor(Math.random() * 1000);
-                const viewsLast7Days = Math.floor(Math.random() * 100);
-
-                totalViews += views;
-
-                // Count published vs draft
-                if (siteData.status === 'published') {
-                    publishedCount++;
-                } else {
-                    draftCount++;
-                }
-
-                sitesAnalytics.push({
-                    id: siteId,
-                    name: siteData.brand?.name || siteId,
-                    template: siteData.template || 'Unknown',
-                    status: siteData.status || 'draft',
-                    views: views,
-                    viewsLast7Days: viewsLast7Days,
-                    createdAt: siteData.createdAt || new Date().toISOString()
-                });
-            } catch (err) {
-                console.error(`Error reading site ${siteId}:`, err.message);
-            }
-        }
-
-        // Calculate month views (mock data)
-        const now = new Date();
-        const monthAgo = new Date(now.getFullYear(), now.getMonth(), 1);
-        viewsThisMonth = Math.floor(totalViews * 0.3); // Mock: 30% of total views this month
-
-        // Calculate changes (mock)
-        const viewsChange = Math.floor(Math.random() * 50) - 10; // -10 to +40
-        const engagementChange = Math.floor(Math.random() * 20) - 5; // -5 to +15
-
-        res.json({
-            totalSites: userSites.length,
-            publishedSites: publishedCount,
-            totalViews: totalViews,
-            viewsThisMonth: viewsThisMonth,
-            viewsChange: viewsChange,
-            avgEngagement: Math.floor(Math.random() * 40) + 30, // 30-70%
-            engagementChange: engagementChange,
-            activeSites: publishedCount,
-            sites: sitesAnalytics.sort((a, b) => b.views - a.views)
-        });
-    } catch (error) {
-        console.error('Error loading user analytics:', error);
-        res.status(500).json({ error: 'Failed to load analytics' });
+      }
     }
-});
+  });
 
+  // Calculate stats
+  let totalViews = 0;
+  let publishedCount = 0;
+  let draftCount = 0;
 
+  const sitesAnalytics = sites.map(site => {
+    const siteData = parseSiteData(site);
+    const views = site._count.analytics_events || 0;
+    
+    totalViews += views;
+    
+    if (site.status === 'published') {
+      publishedCount++;
+    } else {
+      draftCount++;
+    }
+
+    return {
+      id: site.id,
+      subdomain: site.subdomain,
+      name: siteData?.brand?.name || site.subdomain,
+      status: site.status,
+      plan: site.plan,
+      views,
+      submissions: site._count.submissions || 0,
+      createdAt: site.created_at
+    };
+  });
+
+  // Get recent submissions count
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  const recentSubmissions = await prisma.submissions.count({
+    where: {
+      sites: { user_id: userId },
+      created_at: { gte: sevenDaysAgo }
+    }
+  });
+
+  return sendSuccess(res, {
+    totalSites: sites.length,
+    publishedSites: publishedCount,
+    draftSites: draftCount,
+    totalViews,
+    recentSubmissions,
+    sites: sitesAnalytics.sort((a, b) => b.views - a.views)
+  });
+}));
+
+/**
+ * GET /api/users/:userId/submissions
+ * Get all submissions for user's sites
+ */
+router.get('/:userId/submissions', requireAuth, asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const { status, limit = 50 } = req.query;
+
+  if (!canAccessUser(req.user, userId)) {
+    return sendForbidden(res, 'Access denied', 'ACCESS_DENIED');
+  }
+
+  // Build query
+  const where = { sites: { user_id: userId } };
+  if (status) where.status = status;
+
+  const submissions = await prisma.submissions.findMany({
+    where,
+    orderBy: { created_at: 'desc' },
+    take: Math.min(parseInt(limit) || 50, 200),
+    include: {
+      sites: {
+        select: {
+          subdomain: true,
+          site_data: true
+        }
+      }
+    }
+  });
+
+  const formattedSubmissions = submissions.map(sub => {
+    const siteData = parseSiteData(sub.sites);
+    return {
+      id: sub.id,
+      name: sub.name,
+      email: sub.email,
+      phone: sub.phone,
+      message: sub.message,
+      type: sub.form_type,
+      status: sub.status,
+      subdomain: sub.sites?.subdomain,
+      businessName: siteData?.brand?.name || 'Unknown',
+      createdAt: sub.created_at
+    };
+  });
+
+  return sendSuccess(res, { submissions: formattedSubmissions });
+}));
+
+/**
+ * PATCH /api/users/:userId/profile
+ * Update user profile
+ */
+router.patch('/:userId/profile', requireAuth, asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  // Users can only update their own profile
+  if (req.user.id !== userId && req.user.userId !== userId) {
+    return sendForbidden(res, 'Access denied', 'ACCESS_DENIED');
+  }
+
+  const { displayName, timezone, notifications } = req.body;
+
+  // Build update data
+  const updateData = {};
+  
+  if (displayName !== undefined) {
+    updateData.display_name = String(displayName).substring(0, 100);
+  }
+  
+  if (timezone !== undefined) {
+    updateData.timezone = String(timezone).substring(0, 50);
+  }
+  
+  if (notifications !== undefined) {
+    updateData.notification_preferences = notifications;
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    return sendBadRequest(res, 'No valid fields to update', 'NO_UPDATE_FIELDS');
+  }
+
+  await prisma.users.update({
+    where: { id: userId },
+    data: updateData
+  });
+
+  return sendSuccess(res, {}, 'Profile updated successfully');
+}));
 
 export default router;

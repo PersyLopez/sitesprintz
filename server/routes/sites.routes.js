@@ -1,440 +1,510 @@
+/**
+ * Sites Routes
+ * 
+ * Handles site management, products, and file uploads.
+ * All site data is stored in the database (sites.site_data JSONB column).
+ */
+
 import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import crypto from 'crypto';
 import multer from 'multer';
 import { requireAdmin, requireAuth } from '../middleware/auth.js';
 import { prisma } from '../../database/db.js';
-import { isValidEmail, isValidPhone, sanitizeString } from '../utils/helpers.js';
+import {
+  sendSuccess,
+  sendCreated,
+  sendBadRequest,
+  sendForbidden,
+  sendNotFound,
+  sendServerError,
+  asyncHandler
+} from '../utils/apiResponse.js';
+import { sanitizeSiteDataForStorage } from '../utils/siteDataSanitizer.js';
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const publicDir = path.join(__dirname, '../../public');
 const uploadsDir = path.join(publicDir, 'uploads');
-const draftsDir = path.join(publicDir, 'drafts');
-const dataFile = path.join(publicDir, 'data', 'site.json');
 const templatesDir = path.join(publicDir, 'data', 'templates');
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'dev-token';
 
-// Ensure directories exist
+// Ensure uploads directory exists
 fs.mkdir(uploadsDir, { recursive: true }).catch(() => { });
-fs.mkdir(draftsDir, { recursive: true }).catch(() => { });
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadsDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    // Use crypto.randomBytes for secure filename generation
+    const uniqueSuffix = Date.now() + '-' + crypto.randomBytes(8).toString('hex');
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
 });
 
 const upload = multer({
-    storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image/')) {
-            cb(null, true);
-        } else {
-            cb(new Error('Only image files are allowed'));
-        }
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files (JPEG, PNG, GIF, WebP, SVG) are allowed'));
     }
+  }
 });
 
-// Endpoint to get admin token (for image uploads during setup)
-router.get('/admin-token', (req, res) => {
-    // Return the admin token - in production, you might want to add rate limiting here
-    res.json({ token: ADMIN_TOKEN });
-});
+/**
+ * Helper: Verify site ownership
+ */
+async function verifySiteOwnership(siteId, userId, userRole) {
+  const site = await prisma.sites.findUnique({
+    where: { id: siteId },
+    select: { id: true, user_id: true, site_data: true, status: true }
+  });
 
-// Get site data
-router.get('/site', async (req, res) => {
+  if (!site) {
+    return { authorized: false, error: 'Site not found', status: 404 };
+  }
+
+  if (site.user_id !== userId && userRole !== 'admin') {
+    return { authorized: false, error: 'Access denied', status: 403 };
+  }
+
+  return { authorized: true, site };
+}
+
+/**
+ * Helper: Parse site_data from database
+ */
+function parseSiteData(site) {
+  if (!site.site_data) return {};
+  if (typeof site.site_data === 'string') {
     try {
-        const raw = await fs.readFile(dataFile, 'utf-8');
-        const json = JSON.parse(raw);
-        res.json(json);
-    } catch (err) {
-        // If no site.json yet, fall back to a sensible default template
-        if (err && (err.code === 'ENOENT' || err.message?.includes('ENOENT'))) {
-            try {
-                const fallbackRaw = await fs.readFile(path.join(templatesDir, 'starter.json'), 'utf-8');
-                const fallback = JSON.parse(fallbackRaw);
-                return res.json(fallback);
-            } catch (e) {
-                return res.status(500).json({ error: 'No site.json and failed to load default template' });
-            }
-        }
-        res.status(500).json({ error: 'Failed to read site.json' });
+      return JSON.parse(site.site_data);
+    } catch (e) {
+      return {};
     }
-});
+  }
+  return site.site_data;
+}
 
-// Update site data
-router.post('/site', requireAdmin, async (req, res) => {
-    try {
-        const incoming = req.body;
-        if (typeof incoming !== 'object' || incoming == null) {
-            return res.status(400).json({ error: 'Invalid JSON payload' });
-        }
-        await fs.mkdir(path.dirname(dataFile), { recursive: true });
-        await fs.writeFile(dataFile, JSON.stringify(incoming, null, 2));
-        res.json({ ok: true });
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to write site.json' });
+// ==================== UPLOAD ENDPOINTS ====================
+
+/**
+ * POST /api/sites/upload
+ * Upload an image file
+ */
+router.post('/upload', requireAuth, (req, res) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      console.error('Upload error:', err);
+      return res.status(400).json({
+        success: false,
+        error: err.message || 'Upload failed',
+        code: 'UPLOAD_ERROR'
+      });
     }
-});
 
-// Upload image endpoint
-router.post('/upload', requireAdmin, (req, res) => {
-    upload.single('image')(req, res, (err) => {
-        if (err) {
-            console.error('Upload error:', err);
-            return res.status(400).json({ error: err.message || 'Upload failed' });
-        }
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: 'No file uploaded',
+        code: 'NO_FILE'
+      });
+    }
 
-        if (!req.file) {
-            return res.status(400).json({ error: 'No file uploaded' });
-        }
-
-        res.json({
-            success: true,
-            url: `/uploads/${req.file.filename}`,
-            filename: req.file.filename
-        });
+    res.json({
+      success: true,
+      url: `/uploads/${req.file.filename}`,
+      filename: req.file.filename
     });
+  });
 });
 
-// Delete uploaded image
-router.delete('/uploads/:filename', requireAdmin, async (req, res) => {
-    try {
-        const filename = req.params.filename;
-        await fs.unlink(path.join(uploadsDir, filename));
-        res.json({ success: true });
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to delete file' });
+/**
+ * DELETE /api/sites/uploads/:filename
+ * Delete an uploaded image
+ */
+router.delete('/uploads/:filename', requireAuth, asyncHandler(async (req, res) => {
+  const { filename } = req.params;
+
+  // Validate filename to prevent directory traversal
+  if (!filename || filename.includes('..') || filename.includes('/')) {
+    return sendBadRequest(res, 'Invalid filename', 'INVALID_FILENAME');
+  }
+
+  try {
+    await fs.unlink(path.join(uploadsDir, filename));
+    return sendSuccess(res, {}, 'File deleted successfully');
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      return sendNotFound(res, 'File', 'FILE_NOT_FOUND');
     }
-});
+    throw err;
+  }
+}));
 
-// Draft Management Endpoints
-router.post('/drafts', async (req, res) => {
-    try {
-        const draftData = req.body;
+// ==================== SITE DATA ENDPOINTS ====================
 
-        if (!draftData || !draftData.templateId) {
-            return res.status(400).json({ error: 'Invalid draft data: templateId is required' });
-        }
+/**
+ * GET /api/sites/:siteId
+ * Get site data by ID
+ */
+router.get('/:siteId', asyncHandler(async (req, res) => {
+  const { siteId } = req.params;
 
-        // Validate business data if provided
-        if (draftData.businessData) {
-            const bd = draftData.businessData;
-
-            // Validate email if provided
-            if (bd.email && !isValidEmail(bd.email)) {
-                return res.status(400).json({ error: 'Invalid email address' });
-            }
-
-            // Validate phone if provided
-            if (bd.phone && !isValidPhone(bd.phone)) {
-                return res.status(400).json({ error: 'Invalid phone number format' });
-            }
-
-            // Sanitize string fields
-            if (bd.businessName) bd.businessName = sanitizeString(bd.businessName, 200);
-            if (bd.heroTitle) bd.heroTitle = sanitizeString(bd.heroTitle, 200);
-            if (bd.heroSubtitle) bd.heroSubtitle = sanitizeString(bd.heroSubtitle, 500);
-            if (bd.address) bd.address = sanitizeString(bd.address, 300);
-        }
-
-        // Generate unique draft ID
-        const draftId = `draft-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        const draftFile = path.join(draftsDir, `${draftId}.json`);
-
-        // Add expiration timestamp (7 days from now)
-        const draft = {
-            draftId: draftId,
-            templateId: draftData.templateId,
-            businessData: draftData.businessData || {},
-            createdAt: new Date().toISOString(),
-            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-            status: 'draft'
-        };
-
-        await fs.writeFile(draftFile, JSON.stringify(draft, null, 2));
-
-        res.json({
-            success: true,
-            draftId: draftId,
-            previewUrl: `/preview/${draftId}`,
-            expiresAt: draft.expiresAt
-        });
-    } catch (err) {
-        console.error('Draft save error:', err);
-        res.status(500).json({ error: 'Failed to save draft' });
+  const site = await prisma.sites.findUnique({
+    where: { id: siteId },
+    select: {
+      id: true,
+      subdomain: true,
+      template_id: true,
+      status: true,
+      plan: true,
+      site_data: true,
+      created_at: true,
+      updated_at: true,
+      published_at: true,
+      expires_at: true,
+      is_public: true
     }
-});
+  });
 
-router.get('/drafts/:draftId', async (req, res) => {
-    try {
-        const draftId = req.params.draftId;
-        const draftFile = path.join(draftsDir, `${draftId}.json`);
+  if (!site) {
+    return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
+  }
 
-        const draftRaw = await fs.readFile(draftFile, 'utf-8');
-        const draft = JSON.parse(draftRaw);
+  const siteData = parseSiteData(site);
 
-        // Check if draft is expired
-        if (new Date(draft.expiresAt) < new Date()) {
-            await fs.unlink(draftFile);
-            return res.status(410).json({ error: 'Draft has expired' });
-        }
-
-        res.json(draft);
-    } catch (err) {
-        if (err.code === 'ENOENT') {
-            res.status(404).json({ error: 'Draft not found' });
-        } else {
-            res.status(500).json({ error: 'Failed to load draft' });
-        }
+  return sendSuccess(res, {
+    site: {
+      id: site.id,
+      subdomain: site.subdomain,
+      templateId: site.template_id,
+      status: site.status,
+      plan: site.plan,
+      isPublic: site.is_public,
+      createdAt: site.created_at,
+      updatedAt: site.updated_at,
+      publishedAt: site.published_at,
+      expiresAt: site.expires_at,
+      data: siteData
     }
-});
+  });
+}));
 
-router.delete('/drafts/:draftId', async (req, res) => {
-    try {
-        const draftId = req.params.draftId;
-        const draftFile = path.join(draftsDir, `${draftId}.json`);
-        await fs.unlink(draftFile);
-        res.json({ success: true });
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to delete draft' });
+/**
+ * PUT /api/sites/:siteId
+ * Update site data
+ */
+router.put('/:siteId', requireAuth, asyncHandler(async (req, res) => {
+  const { siteId } = req.params;
+  const userId = req.user.id || req.user.userId;
+  const { data, siteData } = req.body;
+
+  // Verify ownership
+  const ownership = await verifySiteOwnership(siteId, userId, req.user.role);
+  if (!ownership.authorized) {
+    if (ownership.status === 404) {
+      return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
     }
-});
+    return sendForbidden(res, ownership.error, 'ACCESS_DENIED');
+  }
 
-// Save site data from setup flow
-router.post('/setup', async (req, res) => {
-    try {
-        const setupData = req.body;
-        console.log('Received setup data:', JSON.stringify(setupData, null, 2));
+  // Get new site data (support both 'data' and 'siteData' keys)
+  const newData = data || siteData;
+  if (!newData || typeof newData !== 'object') {
+    return sendBadRequest(res, 'Site data is required', 'INVALID_DATA');
+  }
 
-        if (!setupData) {
-            return res.status(400).json({ error: 'No data received' });
-        }
+  // Merge with existing data
+  const existingData = parseSiteData(ownership.site);
+  const mergedData = { ...existingData, ...newData };
 
-        if (!setupData.templateId) {
-            return res.status(400).json({ error: 'templateId is required' });
-        }
+  // Sanitize and save
+  const sanitizedData = sanitizeSiteDataForStorage(mergedData);
 
-        // Load the template
-        const templateFile = path.join(templatesDir, `${setupData.templateId}.json`);
-        let siteData;
-
-        try {
-            const templateRaw = await fs.readFile(templateFile, 'utf-8');
-            siteData = JSON.parse(templateRaw);
-        } catch (err) {
-            // Fallback to starter template if template not found
-            const starterRaw = await fs.readFile(path.join(templatesDir, 'starter.json'), 'utf-8');
-            siteData = JSON.parse(starterRaw);
-        }
-
-        // Update site data with setup information
-        if (setupData.businessData && typeof setupData.businessData === 'object') {
-            if (setupData.businessData.businessName && setupData.businessData.businessName.trim()) {
-                siteData.brand.name = setupData.businessData.businessName;
-            }
-
-            if (siteData.hero) {
-                if (setupData.businessData.heroTitle && setupData.businessData.heroTitle.trim()) {
-                    siteData.hero.title = setupData.businessData.heroTitle;
-                }
-                if (setupData.businessData.heroSubtitle && setupData.businessData.heroSubtitle.trim()) {
-                    siteData.hero.subtitle = setupData.businessData.heroSubtitle;
-                }
-                if (setupData.businessData.heroImage && setupData.businessData.heroImage.trim()) {
-                    siteData.hero.image = setupData.businessData.heroImage;
-                }
-            }
-
-            if (siteData.contact) {
-                if (setupData.businessData.email && setupData.businessData.email.trim()) siteData.contact.email = setupData.businessData.email;
-                if (setupData.businessData.phone && setupData.businessData.phone.trim()) siteData.contact.phone = setupData.businessData.phone;
-                if (setupData.businessData.address && setupData.businessData.address.trim()) siteData.contact.subtitle = setupData.businessData.address;
-                if (setupData.businessData.businessHours && setupData.businessData.businessHours.trim()) siteData.contact.hours = setupData.businessData.businessHours;
-            }
-
-            // Update services/products
-            if (Array.isArray(setupData.businessData.services) && setupData.businessData.services.length > 0) {
-                // Determine if this template uses 'products' or 'services'
-                if (siteData.products) {
-                    siteData.products = setupData.businessData.services
-                        .filter(s => s.name && s.name.trim())
-                        .map(s => ({
-                            name: s.name,
-                            price: parseFloat(s.price) || 0,
-                            description: s.description || '',
-                            ...(s.image && s.image.trim() && { image: s.image }),
-                            ...(s.imageAlt && { imageAlt: s.imageAlt })
-                        }));
-                } else if (siteData.services) {
-                    siteData.services.items = setupData.businessData.services
-                        .filter(s => s.name && s.name.trim())
-                        .map(s => ({
-                            title: s.name,
-                            description: s.description || '',
-                            ...(s.price && { price: s.price }),
-                            ...(s.image && s.image.trim() && { image: s.image }),
-                            ...(s.imageAlt && { imageAlt: s.imageAlt })
-                        }));
-                }
-            }
-        }
-
-        // Create unique page ID
-        const pageId = `site-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-        // In a real app, we would save this to a database or a new file
-        // For now, we'll just return the modified site data
-
-        res.json({
-            success: true,
-            pageId: pageId,
-            siteData: siteData
-        });
-
-    } catch (err) {
-        console.error('Setup error:', err);
-        res.status(500).json({ error: 'Failed to process setup data' });
+  await prisma.sites.update({
+    where: { id: siteId },
+    data: {
+      site_data: sanitizedData,
+      updated_at: new Date()
     }
-});
+  });
 
-// Product Management Endpoints
-router.get('/sites/:siteId/products', async (req, res) => {
-    try {
-        const { siteId } = req.params;
-        console.log(`GET products for site: ${siteId}`);
-        const siteFile = path.join(publicDir, 'sites', siteId, 'data', 'site.json');
-
-        try {
-            const raw = await fs.readFile(siteFile, 'utf-8');
-            const data = JSON.parse(raw);
-
-            // Normalize products/services structure
-            let products = [];
-            if (data.products && Array.isArray(data.products)) {
-                products = data.products;
-            } else if (data.services && data.services.items && Array.isArray(data.services.items)) {
-                // Convert services to products format if needed
-                products = data.services.items.map(s => ({
-                    id: s.id || Date.now().toString() + Math.random(),
-                    name: s.title || s.name,
-                    description: s.description,
-                    price: s.price || 0,
-                    image: s.image,
-                    category: 'General'
-                }));
-            }
-            console.log(`Found ${products.length} products`);
-            res.json({ products });
-        } catch (err) {
-            console.error(`Error reading site file: ${err.message}`);
-            if (err.code === 'ENOENT') {
-                return res.status(404).json({ error: 'Site not found' });
-            }
-            throw err;
-        }
-    } catch (err) {
-        console.error('Get products error:', err);
-        res.status(500).json({ error: 'Failed to get products' });
+  return sendSuccess(res, {
+    site: {
+      id: siteId,
+      data: sanitizedData
     }
-});
+  }, 'Site updated successfully');
+}));
 
-router.put('/sites/:siteId/products', async (req, res) => {
-    try {
-        const { siteId } = req.params;
-        const { products } = req.body;
-        console.log(`PUT products for site: ${siteId}, count: ${products.length}`);
+// ==================== PRODUCTS ENDPOINTS ====================
 
-        if (!Array.isArray(products)) {
-            return res.status(400).json({ error: 'Products must be an array' });
-        }
+/**
+ * GET /api/sites/:siteId/products
+ * Get products for a site
+ */
+router.get('/:siteId/products', requireAuth, asyncHandler(async (req, res) => {
+  const { siteId } = req.params;
+  const userId = req.user.id || req.user.userId;
 
-        const siteFile = path.join(publicDir, 'sites', siteId, 'data', 'site.json');
-
-        try {
-            const raw = await fs.readFile(siteFile, 'utf-8');
-            const data = JSON.parse(raw);
-
-            // Update products
-            // If template uses services, we might need to update that too, but for now assume products
-            data.products = products;
-
-            // Also update services if they exist and map to products
-            if (data.services && data.services.items) {
-                data.services.items = products.map(p => ({
-                    title: p.name,
-                    description: p.description,
-                    price: p.price,
-                    image: p.image
-                }));
-            }
-
-            await fs.writeFile(siteFile, JSON.stringify(data, null, 2));
-            console.log('Products updated successfully');
-            res.json({ success: true });
-        } catch (err) {
-            console.error(`Error updating site file: ${err.message}`);
-            if (err.code === 'ENOENT') {
-                return res.status(404).json({ error: 'Site not found' });
-            }
-            throw err;
-        }
-    } catch (err) {
-        console.error('Update products error:', err);
-        res.status(500).json({ error: 'Failed to update products' });
+  // Verify ownership
+  const ownership = await verifySiteOwnership(siteId, userId, req.user.role);
+  if (!ownership.authorized) {
+    if (ownership.status === 404) {
+      return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
     }
-});
+    return sendForbidden(res, ownership.error, 'ACCESS_DENIED');
+  }
 
-router.put('/sites/:siteId/public', requireAuth, async (req, res) => {
-    try {
-        const { siteId } = req.params;
-        const { isPublic } = req.body;
-        const userId = req.user.userId || req.user.id; // handle both formats
+  const siteData = parseSiteData(ownership.site);
 
-        if (typeof isPublic !== 'boolean') {
-            return res.status(400).json({ error: 'isPublic must be a boolean' });
-        }
+  // Normalize products/services structure
+  let products = [];
+  if (Array.isArray(siteData.products)) {
+    products = siteData.products.map((p, index) => ({
+      id: p.id || `product-${index}`,
+      name: p.name || '',
+      description: p.description || '',
+      price: typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0,
+      image: p.image || null,
+      category: p.category || 'General',
+      stock: p.stock || null,
+      sku: p.sku || null
+    }));
+  } else if (siteData.services?.items && Array.isArray(siteData.services.items)) {
+    // Convert services to products format
+    products = siteData.services.items.map((s, index) => ({
+      id: s.id || `service-${index}`,
+      name: s.title || s.name || '',
+      description: s.description || '',
+      price: typeof s.price === 'number' ? s.price : parseFloat(s.price) || 0,
+      image: s.image || null,
+      category: 'Service'
+    }));
+  }
 
-        const site = await prisma.sites.findUnique({
-            where: { id: siteId }
-        });
+  return sendSuccess(res, { products });
+}));
 
-        if (!site) {
-            return res.status(404).json({ error: 'Site not found' });
-        }
+/**
+ * PUT /api/sites/:siteId/products
+ * Update products for a site
+ */
+router.put('/:siteId/products', requireAuth, asyncHandler(async (req, res) => {
+  const { siteId } = req.params;
+  const userId = req.user.id || req.user.userId;
+  const { products } = req.body;
 
-        // Check ownership
-        if (site.user_id !== userId) {
-            return res.status(403).json({ error: 'Unauthorized' });
-        }
+  // Validate products array
+  if (!Array.isArray(products)) {
+    return sendBadRequest(res, 'Products must be an array', 'INVALID_PRODUCTS');
+  }
 
-        // Check if site is published
-        if (site.status !== 'published') {
-            return res.status(400).json({ error: 'Only published sites can be made public' });
-        }
-
-        const updated = await prisma.sites.update({
-            where: { id: siteId },
-            data: { is_public: isPublic }
-        });
-
-        res.json({
-            success: true,
-            isPublic: updated.is_public
-        });
-    } catch (err) {
-        console.error('Error toggling public status:', err);
-        res.status(500).json({ error: 'Internal server error' });
+  // Verify ownership
+  const ownership = await verifySiteOwnership(siteId, userId, req.user.role);
+  if (!ownership.authorized) {
+    if (ownership.status === 404) {
+      return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
     }
-});
+    return sendForbidden(res, ownership.error, 'ACCESS_DENIED');
+  }
+
+  // Validate and sanitize products
+  const sanitizedProducts = products.slice(0, 100).map((p, index) => ({
+    id: p.id || `product-${Date.now()}-${index}`,
+    name: String(p.name || '').substring(0, 200),
+    description: String(p.description || '').substring(0, 1000),
+    price: typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0,
+    image: p.image ? String(p.image).substring(0, 500) : null,
+    category: String(p.category || 'General').substring(0, 100),
+    stock: typeof p.stock === 'number' ? p.stock : null,
+    sku: p.sku ? String(p.sku).substring(0, 50) : null
+  }));
+
+  // Get existing data and update products
+  const existingData = parseSiteData(ownership.site);
+  existingData.products = sanitizedProducts;
+
+  // Also update services if they exist (for templates that use services)
+  if (existingData.services?.items) {
+    existingData.services.items = sanitizedProducts.map(p => ({
+      id: p.id,
+      title: p.name,
+      description: p.description,
+      price: p.price,
+      image: p.image
+    }));
+  }
+
+  // Save to database
+  await prisma.sites.update({
+    where: { id: siteId },
+    data: {
+      site_data: existingData,
+      updated_at: new Date()
+    }
+  });
+
+  return sendSuccess(res, { products: sanitizedProducts }, 'Products updated successfully');
+}));
+
+// ==================== VISIBILITY ENDPOINTS ====================
+
+/**
+ * PUT /api/sites/:siteId/public
+ * Toggle site public visibility (for showcase)
+ */
+router.put('/:siteId/public', requireAuth, asyncHandler(async (req, res) => {
+  const { siteId } = req.params;
+  const { isPublic } = req.body;
+  const userId = req.user.id || req.user.userId;
+
+  if (typeof isPublic !== 'boolean') {
+    return sendBadRequest(res, 'isPublic must be a boolean', 'INVALID_VALUE');
+  }
+
+  // Verify ownership
+  const ownership = await verifySiteOwnership(siteId, userId, req.user.role);
+  if (!ownership.authorized) {
+    if (ownership.status === 404) {
+      return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
+    }
+    return sendForbidden(res, ownership.error, 'ACCESS_DENIED');
+  }
+
+  // Check if site is published
+  if (ownership.site.status !== 'published') {
+    return sendBadRequest(res, 'Only published sites can be made public', 'NOT_PUBLISHED');
+  }
+
+  const updated = await prisma.sites.update({
+    where: { id: siteId },
+    data: { is_public: isPublic }
+  });
+
+  return sendSuccess(res, { isPublic: updated.is_public }, 
+    isPublic ? 'Site is now public' : 'Site is now private');
+}));
+
+// ==================== USER'S SITES LIST ====================
+
+/**
+ * GET /api/sites
+ * Get all sites for the authenticated user
+ */
+router.get('/', requireAuth, asyncHandler(async (req, res) => {
+  const userId = req.user.id || req.user.userId;
+  const { status } = req.query;
+
+  const where = { user_id: userId };
+  if (status) {
+    where.status = status;
+  }
+
+  const sites = await prisma.sites.findMany({
+    where,
+    select: {
+      id: true,
+      subdomain: true,
+      template_id: true,
+      status: true,
+      plan: true,
+      is_public: true,
+      created_at: true,
+      updated_at: true,
+      published_at: true,
+      expires_at: true,
+      site_data: true
+    },
+    orderBy: { created_at: 'desc' }
+  });
+
+  const formattedSites = sites.map(site => {
+    const siteData = parseSiteData(site);
+    return {
+      id: site.id,
+      subdomain: site.subdomain,
+      templateId: site.template_id,
+      status: site.status,
+      plan: site.plan,
+      isPublic: site.is_public,
+      businessName: siteData.brand?.name || siteData.businessName || null,
+      createdAt: site.created_at,
+      updatedAt: site.updated_at,
+      publishedAt: site.published_at,
+      expiresAt: site.expires_at
+    };
+  });
+
+  return sendSuccess(res, { sites: formattedSites });
+}));
+
+/**
+ * DELETE /api/sites/:siteId
+ * Delete a site
+ */
+router.delete('/:siteId', requireAuth, asyncHandler(async (req, res) => {
+  const { siteId } = req.params;
+  const userId = req.user.id || req.user.userId;
+
+  // Verify ownership
+  const ownership = await verifySiteOwnership(siteId, userId, req.user.role);
+  if (!ownership.authorized) {
+    if (ownership.status === 404) {
+      return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
+    }
+    return sendForbidden(res, ownership.error, 'ACCESS_DENIED');
+  }
+
+  // Delete related data first (submissions, analytics)
+  await prisma.submissions.deleteMany({ where: { site_id: siteId } });
+  await prisma.analytics_events.deleteMany({ where: { site_id: siteId } });
+
+  // Delete the site
+  await prisma.sites.delete({ where: { id: siteId } });
+
+  // Try to delete site files (non-blocking)
+  const siteDir = path.join(publicDir, 'sites', siteId);
+  fs.rm(siteDir, { recursive: true, force: true }).catch(() => { });
+
+  return sendSuccess(res, {}, 'Site deleted successfully');
+}));
+
+// ==================== TEMPLATE LOADING ====================
+
+/**
+ * GET /api/sites/templates/:templateId
+ * Get template data
+ */
+router.get('/templates/:templateId', asyncHandler(async (req, res) => {
+  const { templateId } = req.params;
+
+  // Validate template ID
+  if (!templateId || !/^[a-z0-9-]+$/.test(templateId)) {
+    return sendBadRequest(res, 'Invalid template ID', 'INVALID_TEMPLATE');
+  }
+
+  try {
+    const templateFile = path.join(templatesDir, `${templateId}.json`);
+    const templateRaw = await fs.readFile(templateFile, 'utf-8');
+    const template = JSON.parse(templateRaw);
+
+    return sendSuccess(res, { template });
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      return sendNotFound(res, 'Template', 'TEMPLATE_NOT_FOUND');
+    }
+    throw err;
+  }
+}));
 
 export default router;

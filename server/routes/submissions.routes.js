@@ -1,366 +1,444 @@
+/**
+ * Submissions Routes
+ * 
+ * Handles contact form submissions and form data management.
+ * All submissions are stored in the database (primary).
+ */
+
 import express from 'express';
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { requireAuth } from '../middleware/auth.js';
 import emailService from '../utils/email-service-wrapper.js';
-import { prisma } from '../../database/prisma.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { prisma } from '../../database/db.js';
+import {
+  sendSuccess,
+  sendCreated,
+  sendBadRequest,
+  sendForbidden,
+  sendNotFound,
+  sendServerError,
+  asyncHandler
+} from '../utils/apiResponse.js';
+import {
+  validateEmail,
+  validatePhone,
+  sanitizeString,
+  generateSecureId
+} from '../utils/validators.js';
 
 const router = express.Router();
-const publicDir = path.join(__dirname, '../../public');
 
-// Helper functions
-function isValidEmail(email) {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
+/**
+ * Helper: Get site by subdomain with owner info
+ */
+async function getSiteBySubdomain(subdomain) {
+  return prisma.sites.findFirst({
+    where: { subdomain },
+    select: {
+      id: true,
+      subdomain: true,
+      site_data: true,
+      user_id: true,
+      users: {
+        select: { id: true, email: true }
+      }
+    }
+  });
 }
 
-function isValidPhone(phone) {
-  const phoneRegex = /^[\+]?[1-9][\d\s\-\(\)]{7,}$/;
-  return phoneRegex.test(phone);
-}
-
-function sanitizeString(str, maxLength = 500) {
-  if (typeof str !== 'string') return '';
-  return str.trim().substring(0, maxLength);
-}
-
-// POST /api/submissions/contact
-router.post('/contact', async (req, res) => {
-  try {
-    const { subdomain, name, email, phone, message, type, ...otherFields } = req.body;
-
-    if (!subdomain || !email || !message) {
-      return res.status(400).json({ error: 'Missing required fields: subdomain, email, message' });
-    }
-
-    if (!isValidEmail(email)) {
-      return res.status(400).json({ error: 'Invalid email address' });
-    }
-
-    if (phone && !isValidPhone(phone)) {
-      return res.status(400).json({ error: 'Invalid phone number format' });
-    }
-
-    const siteDir = path.join(publicDir, 'sites', subdomain);
-    const submissionsFile = path.join(siteDir, 'submissions.json');
-
-    // Check if site directory exists
-    let siteExists = false;
+/**
+ * Helper: Parse site_data
+ */
+function parseSiteData(site) {
+  if (!site?.site_data) return {};
+  if (typeof site.site_data === 'string') {
     try {
-      await fs.access(siteDir);
-      siteExists = true;
-    } catch (error) {
-      // Site directory doesn't exist - check if it's in database
-      try {
-        const site = await prisma.sites.findUnique({
-          where: { subdomain },
-          select: { id: true, subdomain: true }
-        });
-        if (site) {
-          // Site exists in database, create directory structure
-          await fs.mkdir(siteDir, { recursive: true });
-          await fs.mkdir(path.join(siteDir, 'data'), { recursive: true });
-          siteExists = true;
-        } else {
-          return res.status(404).json({ error: 'Site not found' });
-        }
-      } catch (dbError) {
-        return res.status(404).json({ error: 'Site not found' });
-      }
+      return JSON.parse(site.site_data);
+    } catch (e) {
+      return {};
     }
+  }
+  return site.site_data;
+}
 
-    const siteJsonPath = path.join(siteDir, 'data', 'site.json');
-    // Also check root site.json for backward compatibility
-    const siteJsonPathRoot = path.join(siteDir, 'site.json');
-    let siteData;
-    try {
-      // Try data/site.json first, then site.json
-      try {
-        siteData = JSON.parse(await fs.readFile(siteJsonPath, 'utf-8'));
-      } catch (error) {
-        siteData = JSON.parse(await fs.readFile(siteJsonPathRoot, 'utf-8'));
-      }
-    } catch (error) {
-      // If file doesn't exist, try to load from database
-      try {
-        const site = await prisma.sites.findUnique({
-          where: { subdomain },
-          select: { site_data: true }
-        });
-        if (site && site.site_data) {
-          siteData = typeof site.site_data === 'string'
-            ? JSON.parse(site.site_data)
-            : site.site_data;
-        } else {
-          console.error('Error loading site data:', error);
-          return res.status(500).json({ error: 'Failed to load site data' });
-        }
-      } catch (dbError) {
-        console.error('Error loading site data:', error);
-        return res.status(500).json({ error: 'Failed to load site data' });
-      }
+/**
+ * POST /api/submissions/contact
+ * Submit a contact form
+ */
+router.post('/contact', asyncHandler(async (req, res) => {
+  const { subdomain, name, email, phone, message, type, ...otherFields } = req.body;
+
+  // Validate required fields
+  if (!subdomain) {
+    return sendBadRequest(res, 'Subdomain is required', 'MISSING_SUBDOMAIN');
+  }
+
+  if (!email) {
+    return sendBadRequest(res, 'Email is required', 'MISSING_EMAIL');
+  }
+
+  if (!message) {
+    return sendBadRequest(res, 'Message is required', 'MISSING_MESSAGE');
+  }
+
+  // Validate email
+  const emailValidation = validateEmail(email);
+  if (!emailValidation.valid) {
+    return sendBadRequest(res, emailValidation.error, 'INVALID_EMAIL');
+  }
+
+  // Validate phone (optional)
+  if (phone) {
+    const phoneValidation = validatePhone(phone);
+    if (!phoneValidation.valid) {
+      return sendBadRequest(res, phoneValidation.error, 'INVALID_PHONE');
     }
+  }
 
-    const siteOwnerEmail = siteData.published?.email || siteData.contact?.email;
-    const businessName = siteData.brand?.name || 'Your Business';
+  // Find site
+  const site = await getSiteBySubdomain(subdomain);
+  if (!site) {
+    return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
+  }
 
-    const submission = {
-      id: `sub-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      type: type || 'contact',
-      submittedAt: new Date().toISOString(),
-      name: sanitizeString(name || '', 200),
-      email: email,
-      phone: phone || '',
-      message: sanitizeString(message, 2000),
+  const siteData = parseSiteData(site);
+  const siteOwnerEmail = siteData.published?.email || siteData.contact?.email || site.users?.email;
+  const businessName = siteData.brand?.name || 'Your Business';
+
+  // Create submission
+  const submissionId = generateSecureId('sub');
+  const sanitizedName = sanitizeString(name || '', 200);
+  const sanitizedMessage = sanitizeString(message, 2000);
+
+  const submission = await prisma.submissions.create({
+    data: {
+      site_id: site.id,
+      form_type: type || 'contact',
+      name: sanitizedName,
+      email: emailValidation.value,
+      phone: phone || null,
+      message: sanitizedMessage,
       status: 'unread',
-      ...otherFields
+      custom_data: Object.keys(otherFields).length > 0 ? otherFields : null,
+      created_at: new Date()
+    }
+  });
+
+  // Send notification email (non-blocking)
+  if (siteOwnerEmail) {
+    emailService.sendContactFormEmail({
+      to: siteOwnerEmail,
+      businessName,
+      formData: {
+        name: sanitizedName || 'Someone',
+        email: emailValidation.value,
+        phone: phone || 'Not provided',
+        message: sanitizedMessage
+      }
+    }).catch(err => {
+      console.error('Failed to send submission notification email:', err);
+    });
+  }
+
+  return sendCreated(res, {
+    submissionId: submission.id
+  }, 'Your message has been sent successfully');
+}));
+
+/**
+ * GET /api/submissions
+ * Get all submissions for authenticated user's sites
+ */
+router.get('/', requireAuth, asyncHandler(async (req, res) => {
+  const userId = req.user.id || req.user.userId;
+  const { status, limit = 100 } = req.query;
+
+  // Build query
+  const where = {
+    sites: { user_id: userId }
+  };
+
+  if (status) {
+    where.status = status;
+  }
+
+  const submissions = await prisma.submissions.findMany({
+    where,
+    include: {
+      sites: {
+        select: {
+          subdomain: true,
+          site_data: true
+        }
+      }
+    },
+    orderBy: { created_at: 'desc' },
+    take: Math.min(parseInt(limit) || 100, 500)
+  });
+
+  const formattedSubmissions = submissions.map(sub => {
+    const siteData = parseSiteData(sub.sites);
+    return {
+      id: sub.id,
+      name: sub.name,
+      email: sub.email,
+      phone: sub.phone,
+      message: sub.message,
+      type: sub.form_type,
+      status: sub.status,
+      submittedAt: sub.created_at,
+      readAt: sub.read_at,
+      subdomain: sub.sites?.subdomain,
+      businessName: siteData?.brand?.name || 'Unknown Site',
+      customData: sub.custom_data
     };
+  });
 
-    let submissions = [];
-    try {
-      const existingData = await fs.readFile(submissionsFile, 'utf-8');
-      submissions = JSON.parse(existingData);
-    } catch (error) {
-      submissions = [];
-    }
+  return sendSuccess(res, { submissions: formattedSubmissions });
+}));
 
-    submissions.unshift(submission);
+/**
+ * GET /api/submissions/site/:subdomain
+ * Get submissions for a specific site
+ */
+router.get('/site/:subdomain', requireAuth, asyncHandler(async (req, res) => {
+  const { subdomain } = req.params;
+  const userId = req.user.id || req.user.userId;
+  const { status, limit = 100 } = req.query;
 
-    if (submissions.length > 1000) {
-      submissions = submissions.slice(0, 1000);
-    }
-
-    await fs.writeFile(submissionsFile, JSON.stringify(submissions, null, 2));
-
-    // Also store in database for reliability
-    try {
-      const site = await prisma.sites.findUnique({
-        where: { subdomain },
-        select: { id: true }
-      });
-
-      if (site) {
-        await prisma.submissions.create({
-          data: {
-            sites: { connect: { id: site.id } },
-            form_type: submission.type,
-            status: submission.status,
-            created_at: new Date(),
-            data: {
-              name: submission.name,
-              email: submission.email,
-              phone: submission.phone,
-              message: submission.message,
-              ...otherFields
-            }
-          }
-        });
-      }
-    } catch (dbError) {
-      console.error('Failed to store submission in database:', dbError);
-      // Don't fail the request if DB storage fails - file storage is primary
-    }
-
-    if (siteOwnerEmail) {
-      try {
-        const siteUrl = `${process.env.SITE_URL || 'http://localhost:3000'}/sites/${subdomain}/`;
-
-        await emailService.sendContactFormEmail({
-          to: siteOwnerEmail,
-          businessName,
-          formData: {
-            name: submission.name || 'Someone',
-            email: submission.email,
-            phone: submission.phone || 'Not provided',
-            message: submission.message
-          }
-        });
-      } catch (emailError) {
-        console.error('Failed to send submission notification email:', emailError);
-      }
-    }
-
-    res.json({
-      success: true,
-      message: 'Your message has been sent successfully.',
-      submissionId: submission.id
-    });
-
-  } catch (error) {
-    console.error('Contact form error:', error);
-    res.status(500).json({ error: 'Failed to process submission' });
+  // Find and verify site ownership
+  const site = await getSiteBySubdomain(subdomain);
+  if (!site) {
+    return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
   }
-});
 
-// GET /api/submissions - Get all submissions for user's sites
-router.get('/', requireAuth, async (req, res) => {
-  try {
-    const userEmail = req.user.email;
-
-    // Get all submissions from user's sites
-    const submissions = await prisma.submissions.findMany({
-      where: {
-        sites: {
-          users: {
-            email: userEmail
-          }
-        }
-      },
-      include: {
-        sites: {
-          select: {
-            subdomain: true,
-            site_data: true
-          }
-        }
-      },
-      orderBy: {
-        created_at: 'desc'
-      },
-      take: 100
-    });
-
-    const submissionsResponse = submissions.map(row => {
-      const siteData = typeof row.sites.site_data === 'string'
-        ? JSON.parse(row.sites.site_data)
-        : row.sites.site_data;
-
-      return {
-        id: row.id,
-        name: row.name,
-        email: row.email,
-        phone: row.phone,
-        message: row.message,
-        type: row.type,
-        status: row.status,
-        submittedAt: row.created_at,
-        subdomain: row.sites.subdomain,
-        businessName: siteData?.brand?.name || 'Unknown Site',
-        ...((row.data && typeof row.data === 'object') ? row.data : {})
-      };
-    });
-
-    res.json({ submissions: submissionsResponse });
-
-  } catch (error) {
-    console.error('Get submissions error:', error);
-    res.status(500).json({ error: 'Failed to retrieve submissions' });
+  if (site.user_id !== userId && req.user.role !== 'admin') {
+    return sendForbidden(res, 'Not authorized to view these submissions', 'ACCESS_DENIED');
   }
-});
 
-// GET /api/submissions/:subdomain - Get submissions for a specific site
-router.get('/:subdomain', requireAuth, async (req, res) => {
-  try {
-    const { subdomain } = req.params;
-    const userEmail = req.user.email;
+  // Build query
+  const where = { site_id: site.id };
+  if (status) {
+    where.status = status;
+  }
 
-    // Verify user owns this site
-    const site = await prisma.sites.findUnique({
-      where: { subdomain },
-      include: {
-        users: {
-          select: { email: true }
+  const submissions = await prisma.submissions.findMany({
+    where,
+    orderBy: { created_at: 'desc' },
+    take: Math.min(parseInt(limit) || 100, 500)
+  });
+
+  const formattedSubmissions = submissions.map(sub => ({
+    id: sub.id,
+    name: sub.name,
+    email: sub.email,
+    phone: sub.phone,
+    message: sub.message,
+    type: sub.form_type,
+    status: sub.status,
+    submittedAt: sub.created_at,
+    readAt: sub.read_at,
+    customData: sub.custom_data
+  }));
+
+  return sendSuccess(res, { submissions: formattedSubmissions });
+}));
+
+/**
+ * GET /api/submissions/:submissionId
+ * Get a single submission
+ */
+router.get('/:submissionId', requireAuth, asyncHandler(async (req, res) => {
+  const { submissionId } = req.params;
+  const userId = req.user.id || req.user.userId;
+
+  const submission = await prisma.submissions.findUnique({
+    where: { id: submissionId },
+    include: {
+      sites: {
+        select: {
+          subdomain: true,
+          user_id: true,
+          site_data: true
         }
       }
-    });
-
-    if (!site) {
-      return res.status(404).json({ error: 'Site not found' });
     }
+  });
 
-    if (site.users.email !== userEmail && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Not authorized to view these submissions' });
-    }
-
-    // Get submissions from database
-    const submissions = await prisma.submissions.findMany({
-      where: { site_id: site.id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        message: true,
-        type: true,
-        status: true,
-        created_at: true,
-        data: true
-      },
-      orderBy: {
-        created_at: 'desc'
-      },
-      take: 100
-    });
-
-    const submissionsResponse = submissions.map(row => ({
-      id: row.id,
-      name: row.name,
-      email: row.email,
-      phone: row.phone,
-      message: row.message,
-      type: row.type,
-      status: row.status,
-      submittedAt: row.created_at,
-      ...((row.data && typeof row.data === 'object') ? row.data : {})
-    }));
-
-    res.json({ submissions });
-
-  } catch (error) {
-    console.error('Get site submissions error:', error);
-    res.status(500).json({ error: 'Failed to retrieve submissions' });
+  if (!submission) {
+    return sendNotFound(res, 'Submission', 'SUBMISSION_NOT_FOUND');
   }
-});
 
-// PATCH /api/submissions/:submissionId/read
-router.patch('/:submissionId/read', requireAuth, async (req, res) => {
-  try {
-    const { submissionId } = req.params;
-    const userEmail = req.user.email;
+  // Verify ownership
+  if (submission.sites?.user_id !== userId && req.user.role !== 'admin') {
+    return sendForbidden(res, 'Not authorized to view this submission', 'ACCESS_DENIED');
+  }
 
-    // Verify user owns the site this submission belongs to
-    const submission = await prisma.submissions.findUnique({
-      where: { id: parseInt(submissionId, 10) },
-      include: {
-        sites: {
-          include: {
-            users: {
-              select: { email: true }
-            }
-          }
-        }
+  const siteData = parseSiteData(submission.sites);
+
+  return sendSuccess(res, {
+    submission: {
+      id: submission.id,
+      name: submission.name,
+      email: submission.email,
+      phone: submission.phone,
+      message: submission.message,
+      type: submission.form_type,
+      status: submission.status,
+      submittedAt: submission.created_at,
+      readAt: submission.read_at,
+      subdomain: submission.sites?.subdomain,
+      businessName: siteData?.brand?.name || 'Unknown Site',
+      customData: submission.custom_data
+    }
+  });
+}));
+
+/**
+ * PATCH /api/submissions/:submissionId/read
+ * Mark submission as read
+ */
+router.patch('/:submissionId/read', requireAuth, asyncHandler(async (req, res) => {
+  const { submissionId } = req.params;
+  const userId = req.user.id || req.user.userId;
+
+  // Find submission with site ownership check
+  const submission = await prisma.submissions.findUnique({
+    where: { id: submissionId },
+    include: {
+      sites: {
+        select: { user_id: true }
       }
-    });
-
-    if (!submission) {
-      return res.status(404).json({ error: 'Submission not found' });
     }
+  });
 
-    if (submission.sites.users.email !== userEmail && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Not authorized to modify this submission' });
-    }
-
-    // Update submission status in database
-    await prisma.submissions.update({
-      where: { id: parseInt(submissionId, 10) },
-      data: { status: 'read' }
-    });
-
-    res.json({
-      success: true,
-      message: 'Submission marked as read'
-    });
-
-  } catch (error) {
-    console.error('Mark submission read error:', error);
-    res.status(500).json({ error: 'Failed to update submission status' });
+  if (!submission) {
+    return sendNotFound(res, 'Submission', 'SUBMISSION_NOT_FOUND');
   }
-});
+
+  if (submission.sites?.user_id !== userId && req.user.role !== 'admin') {
+    return sendForbidden(res, 'Not authorized to modify this submission', 'ACCESS_DENIED');
+  }
+
+  // Update status
+  await prisma.submissions.update({
+    where: { id: submissionId },
+    data: {
+      status: 'read',
+      read_at: new Date()
+    }
+  });
+
+  return sendSuccess(res, {}, 'Submission marked as read');
+}));
+
+/**
+ * PATCH /api/submissions/:submissionId/archive
+ * Archive a submission
+ */
+router.patch('/:submissionId/archive', requireAuth, asyncHandler(async (req, res) => {
+  const { submissionId } = req.params;
+  const userId = req.user.id || req.user.userId;
+
+  const submission = await prisma.submissions.findUnique({
+    where: { id: submissionId },
+    include: {
+      sites: {
+        select: { user_id: true }
+      }
+    }
+  });
+
+  if (!submission) {
+    return sendNotFound(res, 'Submission', 'SUBMISSION_NOT_FOUND');
+  }
+
+  if (submission.sites?.user_id !== userId && req.user.role !== 'admin') {
+    return sendForbidden(res, 'Not authorized to modify this submission', 'ACCESS_DENIED');
+  }
+
+  await prisma.submissions.update({
+    where: { id: submissionId },
+    data: { status: 'archived' }
+  });
+
+  return sendSuccess(res, {}, 'Submission archived');
+}));
+
+/**
+ * DELETE /api/submissions/:submissionId
+ * Delete a submission
+ */
+router.delete('/:submissionId', requireAuth, asyncHandler(async (req, res) => {
+  const { submissionId } = req.params;
+  const userId = req.user.id || req.user.userId;
+
+  const submission = await prisma.submissions.findUnique({
+    where: { id: submissionId },
+    include: {
+      sites: {
+        select: { user_id: true }
+      }
+    }
+  });
+
+  if (!submission) {
+    return sendNotFound(res, 'Submission', 'SUBMISSION_NOT_FOUND');
+  }
+
+  if (submission.sites?.user_id !== userId && req.user.role !== 'admin') {
+    return sendForbidden(res, 'Not authorized to delete this submission', 'ACCESS_DENIED');
+  }
+
+  await prisma.submissions.delete({
+    where: { id: submissionId }
+  });
+
+  return sendSuccess(res, {}, 'Submission deleted');
+}));
+
+/**
+ * GET /api/submissions/stats
+ * Get submission statistics for user's sites
+ */
+router.get('/stats/summary', requireAuth, asyncHandler(async (req, res) => {
+  const userId = req.user.id || req.user.userId;
+
+  // Get counts by status
+  const [total, unread, read, archived] = await Promise.all([
+    prisma.submissions.count({
+      where: { sites: { user_id: userId } }
+    }),
+    prisma.submissions.count({
+      where: { sites: { user_id: userId }, status: 'unread' }
+    }),
+    prisma.submissions.count({
+      where: { sites: { user_id: userId }, status: 'read' }
+    }),
+    prisma.submissions.count({
+      where: { sites: { user_id: userId }, status: 'archived' }
+    })
+  ]);
+
+  // Get recent submissions (last 7 days)
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  const recentCount = await prisma.submissions.count({
+    where: {
+      sites: { user_id: userId },
+      created_at: { gte: sevenDaysAgo }
+    }
+  });
+
+  return sendSuccess(res, {
+    stats: {
+      total,
+      unread,
+      read,
+      archived,
+      recentWeek: recentCount
+    }
+  });
+}));
 
 export default router;
-
-

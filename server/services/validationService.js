@@ -92,74 +92,111 @@ export class ValidationService {
       return { isValid: false, error: 'Email format is invalid' };
     }
 
-    // Trim and optionally normalize
+    // Normalize email
+    const normalized = this.normalizeEmail(email, options);
+    if (!normalized.isValid) {
+      return normalized;
+    }
+
+    // Validate email format
+    const formatResult = this.validateEmailFormat(normalized.value);
+    if (!formatResult.isValid) {
+      return formatResult;
+    }
+
+    // Validate domain part
+    const domainResult = this.validateEmailDomain(normalized.value);
+    if (!domainResult.isValid) {
+      return domainResult;
+    }
+
+    // Check security options
+    const securityResult = this.checkEmailSecurity(normalized.value, options);
+    if (!securityResult.isValid) {
+      return securityResult;
+    }
+
+    return {
+      isValid: true,
+      normalized: options.normalize ? normalized.value : email
+    };
+  }
+
+  /**
+   * Normalize email (trim and optionally lowercase)
+   */
+  normalizeEmail(email, options) {
     let normalized = email.trim();
     if (options.normalize) {
       normalized = normalized.toLowerCase();
     }
 
-    // Check length
     if (normalized.length > 254) {
       return { isValid: false, error: 'Email is too long (max 254 characters)' };
     }
 
-    // Check for unicode/Cyrillic characters FIRST if requested (homograph attack prevention)
-    if (options.checkUnicode) {
-      if (this.patterns.cyrillicInLatin.test(normalized)) {
-        return { isValid: false, error: 'Email contains invalid unicode characters (homograph attack)' };
-      }
-    }
+    return { isValid: true, value: normalized };
+  }
 
-    // Check for non-ASCII characters (including emojis) - only if not doing unicode-specific checks
-    if (!options.checkUnicode && /[^\x00-\x7F]/.test(normalized)) {
-      return { isValid: false, error: 'Email format is invalid' };
-    }
-
-    // Check basic format with regex (more permissive)
+  /**
+   * Validate email format (regex, consecutive dots, spaces)
+   */
+  validateEmailFormat(normalized) {
     if (!this.patterns.email.test(normalized)) {
       return { isValid: false, error: 'Email format is invalid' };
     }
 
-    // Check for consecutive dots
     if (this.patterns.consecutiveDots.test(normalized)) {
       return { isValid: false, error: 'Email format is invalid' };
     }
 
-    // Check for spaces
     if (normalized.includes(' ')) {
       return { isValid: false, error: 'Email cannot contain spaces' };
     }
 
-    // Validate domain part more strictly
+    return { isValid: true };
+  }
+
+  /**
+   * Validate email domain part
+   */
+  validateEmailDomain(normalized) {
     const [localPart, domain] = normalized.split('@');
-    if (domain) {
-      // Domain can't start or end with dot or dash
-      if (domain.startsWith('.') || domain.startsWith('-')) {
+    if (!domain) {
+      return { isValid: true };
+    }
+
+    if (domain.startsWith('.') || domain.startsWith('-') || domain.endsWith('-')) {
+      return { isValid: false, error: 'Email format is invalid' };
+    }
+
+    const labels = domain.split('.');
+    for (const label of labels) {
+      if (label.startsWith('-') || label.endsWith('-')) {
         return { isValid: false, error: 'Email format is invalid' };
-      }
-      if (domain.endsWith('-')) {
-        return { isValid: false, error: 'Email format is invalid' };
-      }
-      // Check each domain label
-      const labels = domain.split('.');
-      for (const label of labels) {
-        if (label.startsWith('-') || label.endsWith('-')) {
-          return { isValid: false, error: 'Email format is invalid' };
-        }
       }
     }
 
-    // Check for disposable email if requested
-    if (options.checkDisposable) {
-      if (this.isDisposableEmail(normalized)) {
-        return { isValid: false, error: 'Email address is disposable and not allowed' };
-      }
+    return { isValid: true };
+  }
+
+  /**
+   * Check email security (unicode, disposable)
+   */
+  checkEmailSecurity(normalized, options) {
+    if (options.checkUnicode && this.patterns.cyrillicInLatin.test(normalized)) {
+      return { isValid: false, error: 'Email contains invalid unicode characters (homograph attack)' };
     }
 
-    return {
-      isValid: true,
-      normalized: options.normalize ? normalized : email
-    };
+    if (!options.checkUnicode && /[^\x00-\x7F]/.test(normalized)) {
+      return { isValid: false, error: 'Email format is invalid' };
+    }
+
+    if (options.checkDisposable && this.isDisposableEmail(normalized)) {
+      return { isValid: false, error: 'Email address is disposable and not allowed' };
+    }
+
+    return { isValid: true };
   }
 
   isDisposableEmail(email) {
@@ -345,51 +382,118 @@ export class ValidationService {
 
   validatePasswordStrength(password) {
     if (!password || typeof password !== 'string') {
-      return { isValid: false, error: 'Password is required', strength: 0 };
+      return { isValid: false, error: 'Password is required', strength: 0, errors: [] };
+    }
+
+    // Check against common passwords FIRST
+    const commonPasswordCheck = this.checkCommonPassword(password);
+    if (!commonPasswordCheck.isValid) {
+      return commonPasswordCheck;
     }
 
     const errors = [];
-    let strength = 0;
+    
+    // Validate password requirements
+    this.checkPasswordLength(password, errors);
+    const characterChecks = this.checkPasswordCharacters(password, errors);
+    this.checkPasswordPatterns(password, errors);
 
-    // Check against common passwords FIRST (even for short passwords)
-    if (COMMON_PASSWORDS.has(password)) {
-      return { isValid: false, error: 'This password is too common', strength: 0 };
+    // Calculate strength
+    const strength = this.calculatePasswordStrength(password, characterChecks, errors);
+
+    // Return result
+    if (errors.length > 0) {
+      return { 
+        isValid: false, 
+        error: errors.join('. '), 
+        errors: errors,
+        strength: strength 
+      };
     }
 
-    // Length check
-    if (password.length < 8) {
-      errors.push('Password must be at least 8 characters');
-      return { isValid: false, error: errors.join(', '), strength: 0 };
-    }
+    return { 
+      isValid: true, 
+      strength: strength,
+      errors: []
+    };
+  }
 
-    // Character type checks
+  /**
+   * Check if password is in common passwords list
+   */
+  checkCommonPassword(password) {
+    if (COMMON_PASSWORDS.has(password.toLowerCase())) {
+      return { 
+        isValid: false, 
+        error: 'This password is too common. Please choose a more unique password.', 
+        strength: 0, 
+        errors: ['Password is too common'] 
+      };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Check password length requirements
+   */
+  checkPasswordLength(password, errors) {
+    if (password.length < 12) {
+      errors.push('Password must be at least 12 characters long');
+    }
+  }
+
+  /**
+   * Check password character types
+   */
+  checkPasswordCharacters(password, errors) {
     const hasUppercase = /[A-Z]/.test(password);
     const hasLowercase = /[a-z]/.test(password);
     const hasNumber = /[0-9]/.test(password);
-    const hasSpecial = /[^A-Za-z0-9]/.test(password);
+    const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
 
     if (!hasUppercase) errors.push('Password must contain at least one uppercase letter');
     if (!hasLowercase) errors.push('Password must contain at least one lowercase letter');
     if (!hasNumber) errors.push('Password must contain at least one number');
-    if (!hasSpecial) errors.push('Password must contain at least one special character');
+    if (!hasSpecial) errors.push('Password must contain at least one special character (!@#$%^&*()_+-=[]{}|;:,.<>?)');
 
-    // Calculate strength (even if validation fails)
-    if (hasUppercase) strength++;
-    if (hasLowercase) strength++;
-    if (hasNumber) strength++;
-    if (hasSpecial) strength++;
+    return { hasUppercase, hasLowercase, hasNumber, hasSpecial };
+  }
 
-    // Bonus for length
-    if (password.length >= 12) strength++;
-    if (password.length >= 16) strength++;
-
-    // Failed checks
-    if (errors.length > 0) {
-      return { isValid: false, error: errors.join(', '), strength: Math.min(4, strength) };
+  /**
+   * Check password for weak patterns
+   */
+  checkPasswordPatterns(password, errors) {
+    if (/(.)\1{2,}/.test(password)) {
+      errors.push('Password should not contain repeated characters (e.g., "aaa", "111")');
     }
 
-    // Passed all checks
-    return { isValid: true, strength: Math.min(4, strength) };
+    if (/123|abc|qwe|987|cba/i.test(password)) {
+      errors.push('Password should not contain sequential patterns (e.g., "123", "abc")');
+    }
+  }
+
+  /**
+   * Calculate password strength (0-5 scale)
+   */
+  calculatePasswordStrength(password, characterChecks, errors) {
+    let strength = 0;
+
+    // Length bonuses
+    if (password.length >= 12) strength += 1;
+    if (password.length >= 16) strength += 1;
+    if (password.length >= 20) strength += 1;
+    
+    // Character type bonuses
+    if (characterChecks.hasUppercase) strength += 1;
+    if (characterChecks.hasLowercase) strength += 1;
+    if (characterChecks.hasNumber) strength += 1;
+    if (characterChecks.hasSpecial) strength += 1;
+
+    // Deduct for weak patterns
+    if (/(.)\1{2,}/.test(password)) strength -= 1;
+    if (/123|abc|qwe/i.test(password)) strength -= 1;
+
+    return Math.max(0, Math.min(5, strength));
   }
 
   /**
@@ -455,7 +559,31 @@ export class ValidationService {
 
     const errors = [];
 
-    // Check object depth
+    // Validate object structure (depth, keys, strict keys)
+    const structureResult = this.validateObjectStructure(obj, options, errors);
+    if (!structureResult.isValid) {
+      return structureResult;
+    }
+
+    // Validate schema fields
+    for (const [field, rules] of Object.entries(schema)) {
+      this.validateSchemaField(obj, field, rules, options, errors);
+    }
+
+    // Validate strict mode
+    this.validateStrictMode(obj, schema, options, errors);
+
+    return {
+      isValid: errors.length === 0,
+      error: errors.length > 0 ? errors.map(e => e.message).join(', ') : undefined,
+      errors
+    };
+  }
+
+  /**
+   * Validate object structure (depth, key count, strict keys)
+   */
+  validateObjectStructure(obj, options, errors) {
     if (options.maxDepth) {
       const depth = this.checkObjectDepth(obj, options.maxDepth);
       if (depth > options.maxDepth) {
@@ -463,20 +591,17 @@ export class ValidationService {
       }
     }
 
-    // Check number of keys
     const keyCount = Object.keys(obj).length;
     if (options.maxKeys && keyCount > options.maxKeys) {
       return { isValid: false, error: `Object has too many keys (max: ${options.maxKeys})`, errors: [] };
     }
 
-    // Strict keys check (reject $ prefix for NoSQL injection prevention)
     if (options.strictKeys) {
       for (const key of Object.keys(obj)) {
         if (key.startsWith('$')) {
           errors.push({ field: key, message: 'Keys starting with $ are not allowed', rule: 'strictKeys' });
         }
       }
-      // If strictKeys errors, return early with error message as string
       if (errors.length > 0) {
         return { 
           isValid: false, 
@@ -486,56 +611,85 @@ export class ValidationService {
       }
     }
 
-    // Schema validation
-    for (const [field, rules] of Object.entries(schema)) {
-      const value = obj[field];
+    return { isValid: true };
+  }
 
-      // Required check
-      if (rules.required && (value === undefined || value === null)) {
-        errors.push({ field, message: `${field} is required`, rule: 'required' });
-        continue;
-      }
+  /**
+   * Validate a single schema field
+   */
+  validateSchemaField(obj, field, rules, options, errors) {
+    const value = obj[field];
 
-      // Skip validation if not required and value is missing
-      if (!rules.required && (value === undefined || value === null)) {
-        continue;
-      }
-
-      // Type check
-      if (rules.type) {
-        if (rules.type === 'email') {
-          const emailResult = this.validateEmail(value);
-          if (!emailResult.isValid) {
-            errors.push({ field, message: emailResult.error, rule: 'email' });
-          }
-        } else if (rules.type === 'object' && rules.schema) {
-          const nestedResult = this.validateObject(value, rules.schema, options);
-          if (!nestedResult.isValid) {
-            nestedResult.errors.forEach(err => {
-              errors.push({
-                field: `${field}.${err.field}`,
-                message: err.message,
-                rule: err.rule
-              });
-            });
-          }
-        } else if (typeof value !== rules.type) {
-          errors.push({ field, message: `${field} must be of type ${rules.type}`, rule: 'type' });
-        }
-      }
-
-      // Min/Max for numbers
-      if (typeof value === 'number') {
-        if (rules.min !== undefined && value < rules.min) {
-          errors.push({ field, message: `${field} must be at least ${rules.min}`, rule: 'min' });
-        }
-        if (rules.max !== undefined && value > options.max) {
-          errors.push({ field, message: `${field} must be at most ${rules.max}`, rule: 'max' });
-        }
-      }
+    // Required check
+    if (rules.required && (value === undefined || value === null)) {
+      errors.push({ field, message: `${field} is required`, rule: 'required' });
+      return;
     }
 
-    // Strict mode - reject unknown fields
+    // Skip validation if not required and value is missing
+    if (!rules.required && (value === undefined || value === null)) {
+      return;
+    }
+
+    // Type check
+    if (rules.type) {
+      this.validateFieldType(field, value, rules, options, errors);
+    }
+
+    // Min/Max for numbers
+    if (typeof value === 'number') {
+      this.validateNumberRange(field, value, rules, errors);
+    }
+  }
+
+  /**
+   * Validate field type
+   */
+  validateFieldType(field, value, rules, options, errors) {
+    if (rules.type === 'email') {
+      const emailResult = this.validateEmail(value);
+      if (!emailResult.isValid) {
+        errors.push({ field, message: emailResult.error, rule: 'email' });
+      }
+    } else if (rules.type === 'object' && rules.schema) {
+      this.validateNestedObject(field, value, rules, options, errors);
+    } else if (typeof value !== rules.type) {
+      errors.push({ field, message: `${field} must be of type ${rules.type}`, rule: 'type' });
+    }
+  }
+
+  /**
+   * Validate nested object
+   */
+  validateNestedObject(field, value, rules, options, errors) {
+    const nestedResult = this.validateObject(value, rules.schema, options);
+    if (!nestedResult.isValid) {
+      nestedResult.errors.forEach(err => {
+        errors.push({
+          field: `${field}.${err.field}`,
+          message: err.message,
+          rule: err.rule
+        });
+      });
+    }
+  }
+
+  /**
+   * Validate number range (min/max)
+   */
+  validateNumberRange(field, value, rules, errors) {
+    if (rules.min !== undefined && value < rules.min) {
+      errors.push({ field, message: `${field} must be at least ${rules.min}`, rule: 'min' });
+    }
+    if (rules.max !== undefined && value > rules.max) {
+      errors.push({ field, message: `${field} must be at most ${rules.max}`, rule: 'max' });
+    }
+  }
+
+  /**
+   * Validate strict mode (reject unknown fields)
+   */
+  validateStrictMode(obj, schema, options, errors) {
     if (options.strict) {
       const allowedFields = new Set(Object.keys(schema));
       for (const key of Object.keys(obj)) {
@@ -544,12 +698,6 @@ export class ValidationService {
         }
       }
     }
-
-    return {
-      isValid: errors.length === 0,
-      error: errors.length > 0 ? errors.map(e => e.message).join(', ') : undefined,
-      errors
-    };
   }
 
   checkObjectDepth(obj, maxDepth = Infinity) {

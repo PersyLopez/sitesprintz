@@ -1,8 +1,33 @@
 import express from 'express';
 import BookingService from '../services/bookingService.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 const bookingService = new BookingService();
+
+/**
+ * Authorization middleware for admin booking routes
+ * Ensures the authenticated user can only manage their own booking data
+ */
+const authorizeBookingAdmin = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const authenticatedUserId = req.user.id || req.user.userId;
+    
+    // Users can only access their own booking data (unless admin)
+    if (userId !== authenticatedUserId && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Not authorized to access this booking data'
+      });
+    }
+    
+    next();
+  } catch (error) {
+    console.error('Authorization error:', error);
+    res.status(500).json({ success: false, error: 'Authorization failed' });
+  }
+};
 
 /**
  * PUBLIC BOOKING API
@@ -335,12 +360,10 @@ router.delete('/appointments/:identifier', async (req, res) => {
  * POST /api/booking/admin/:userId/services
  * Create a new service (admin only)
  */
-router.post('/admin/:userId/services', async (req, res) => {
+router.post('/admin/:userId/services', requireAuth, authorizeBookingAdmin, async (req, res) => {
   try {
     const { userId } = req.params;
     const serviceData = req.body;
-
-    // TODO: Add authentication middleware
 
     // Get tenant
     const tenant = await bookingService.getOrCreateTenant(userId, null);
@@ -365,12 +388,10 @@ router.post('/admin/:userId/services', async (req, res) => {
  * PUT /api/booking/admin/:userId/services/:serviceId
  * Update a service (admin only)
  */
-router.put('/admin/:userId/services/:serviceId', async (req, res) => {
+router.put('/admin/:userId/services/:serviceId', requireAuth, authorizeBookingAdmin, async (req, res) => {
   try {
     const { userId, serviceId } = req.params;
     const serviceData = req.body;
-
-    // TODO: Add authentication middleware
 
     // Get tenant
     const tenant = await bookingService.getOrCreateTenant(userId, null);
@@ -402,11 +423,9 @@ router.put('/admin/:userId/services/:serviceId', async (req, res) => {
  * DELETE /api/booking/admin/:userId/services/:serviceId
  * Delete a service (admin only)
  */
-router.delete('/admin/:userId/services/:serviceId', async (req, res) => {
+router.delete('/admin/:userId/services/:serviceId', requireAuth, authorizeBookingAdmin, async (req, res) => {
   try {
     const { userId, serviceId } = req.params;
-
-    // TODO: Add authentication middleware
 
     // Get tenant
     const tenant = await bookingService.getOrCreateTenant(userId, null);
@@ -439,12 +458,10 @@ router.delete('/admin/:userId/services/:serviceId', async (req, res) => {
  * Get all appointments (admin only)
  * Query params: start_date, end_date, status, staff_id, service_id
  */
-router.get('/admin/:userId/appointments', async (req, res) => {
+router.get('/admin/:userId/appointments', requireAuth, authorizeBookingAdmin, async (req, res) => {
   try {
     const { userId } = req.params;
     const filters = req.query;
-
-    // TODO: Add authentication middleware
 
     // Get tenant
     const tenant = await bookingService.getOrCreateTenant(userId, null);
@@ -470,7 +487,7 @@ router.get('/admin/:userId/appointments', async (req, res) => {
  * POST /api/booking/admin/:userId/staff/:staffId/availability
  * Set availability schedule for staff (admin only)
  */
-router.post('/admin/:userId/staff/:staffId/availability', async (req, res) => {
+router.post('/admin/:userId/staff/:staffId/availability', requireAuth, authorizeBookingAdmin, async (req, res) => {
   try {
     const { userId, staffId } = req.params;
     const { scheduleRules } = req.body;
@@ -481,8 +498,6 @@ router.post('/admin/:userId/staff/:staffId/availability', async (req, res) => {
         error: 'scheduleRules array is required',
       });
     }
-
-    // TODO: Add authentication middleware
 
     // Get tenant
     const tenant = await bookingService.getOrCreateTenant(userId, null);
@@ -514,11 +529,9 @@ router.post('/admin/:userId/staff/:staffId/availability', async (req, res) => {
  * GET /api/booking/admin/:userId/staff/:staffId/availability
  * Get availability schedule for staff (admin only)
  */
-router.get('/admin/:userId/staff/:staffId/availability', async (req, res) => {
+router.get('/admin/:userId/staff/:staffId/availability', requireAuth, authorizeBookingAdmin, async (req, res) => {
   try {
     const { userId, staffId } = req.params;
-
-    // TODO: Add authentication middleware
 
     let targetStaffId = staffId;
 

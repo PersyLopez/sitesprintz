@@ -1,337 +1,413 @@
 /**
  * Orders Routes
- * Handles order management for Pro sites
+ * Handles order and product management for Pro sites
  */
 
 import express from 'express';
 import { requireAuth } from '../middleware/auth.js';
 import { prisma } from '../../database/db.js';
+import {
+  sendSuccess,
+  sendCreated,
+  sendBadRequest,
+  sendForbidden,
+  sendNotFound,
+  asyncHandler
+} from '../utils/apiResponse.js';
+import { sanitizeString } from '../utils/validators.js';
 
 const router = express.Router();
 
-// GET /api/sites/:siteId/products
-router.get('/:siteId/products', requireAuth, async (req, res) => {
-  try {
-    const { siteId } = req.params;
+/**
+ * Helper: Verify site ownership and get site
+ */
+async function verifySiteOwnership(siteId, userId, userRole) {
+  const site = await prisma.sites.findUnique({
+    where: { id: siteId },
+    select: { id: true, user_id: true, subdomain: true }
+  });
 
-    // Verify site ownership
-    const site = await prisma.sites.findUnique({
-      where: { id: siteId },
-      select: { user_id: true, subdomain: true }
-    });
-
-    if (!site) {
-      return res.status(404).json({ error: 'Site not found' });
-    }
-
-    if (site.user_id !== req.user.id) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
-    // Get products
-    const products = await prisma.products.findMany({
-      where: { subdomain: site.subdomain },
-      orderBy: [
-        { display_order: 'asc' },
-        { created_at: 'asc' }
-      ]
-    });
-
-    res.json({ products });
-  } catch (error) {
-    console.error('Get products error:', error);
-    res.status(500).json({ error: 'Failed to fetch products' });
+  if (!site) {
+    return { authorized: false, error: 'Site not found', status: 404 };
   }
-});
 
-// POST /api/sites/:siteId/products
-router.post('/:siteId/products', requireAuth, async (req, res) => {
-  try {
-    const { siteId } = req.params;
-    const { name, price, description, inventory } = req.body;
-
-    // Validation
-    if (!name || price === undefined) {
-      return res.status(400).json({ error: 'Name and price are required' });
-    }
-
-    if (price < 0) {
-      return res.status(400).json({ error: 'Price must be positive' });
-    }
-
-    // Verify site ownership
-    const site = await prisma.sites.findUnique({
-      where: { id: siteId },
-      select: { user_id: true, subdomain: true }
-    });
-
-    if (!site) {
-      return res.status(404).json({ error: 'Site not found' });
-    }
-
-    if (site.user_id !== req.user.id) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
-    // Insert product
-    const product = await prisma.products.create({
-      data: {
-        subdomain: site.subdomain,
-        name,
-        description: description || '',
-        price,
-        inventory: inventory || 0
-      }
-    });
-
-    res.status(201).json({ product });
-  } catch (error) {
-    console.error('Create product error:', error);
-    res.status(500).json({ error: 'Failed to create product' });
+  if (site.user_id !== userId && userRole !== 'admin') {
+    return { authorized: false, error: 'Access denied', status: 403 };
   }
-});
 
-// PUT /api/sites/:siteId/products/:productId
-router.put('/:siteId/products/:productId', requireAuth, async (req, res) => {
-  try {
-    const { siteId, productId } = req.params;
-    const { name, price, description, inventory } = req.body;
+  return { authorized: true, site };
+}
 
-    // Verify site ownership
-    const site = await prisma.sites.findUnique({
-      where: { id: siteId },
-      select: { user_id: true, subdomain: true }
-    });
+// ==================== PRODUCTS ENDPOINTS ====================
 
-    if (!site) {
-      return res.status(404).json({ error: 'Site not found' });
+/**
+ * GET /api/orders/:siteId/products
+ * Get all products for a site
+ */
+router.get('/:siteId/products', requireAuth, asyncHandler(async (req, res) => {
+  const { siteId } = req.params;
+  const userId = req.user.id || req.user.userId;
+
+  const ownership = await verifySiteOwnership(siteId, userId, req.user.role);
+  if (!ownership.authorized) {
+    if (ownership.status === 404) {
+      return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
     }
-
-    if (site.user_id !== req.user.id) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
-    // Verify product belongs to site (subdomain)
-    const existingProduct = await prisma.products.findFirst({
-      where: {
-        id: productId, // Assuming ID is unique enough, but checking subdomain is safer
-        subdomain: site.subdomain
-      }
-    });
-
-    if (!existingProduct) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-
-    // Update product
-    const product = await prisma.products.update({
-      where: { id: productId },
-      data: {
-        name: name !== undefined ? name : undefined,
-        price: price !== undefined ? price : undefined,
-        description: description !== undefined ? description : undefined,
-        inventory: inventory !== undefined ? inventory : undefined,
-        updated_at: new Date()
-      }
-    });
-
-    res.json({ product });
-  } catch (error) {
-    console.error('Update product error:', error);
-    res.status(500).json({ error: 'Failed to update product' });
+    return sendForbidden(res, ownership.error, 'ACCESS_DENIED');
   }
-});
 
-// DELETE /api/sites/:siteId/products/:productId
-router.delete('/:siteId/products/:productId', requireAuth, async (req, res) => {
-  try {
-    const { siteId, productId } = req.params;
+  const products = await prisma.products.findMany({
+    where: { subdomain: ownership.site.subdomain },
+    orderBy: [
+      { display_order: 'asc' },
+      { created_at: 'asc' }
+    ]
+  });
 
-    // Verify site ownership
-    const site = await prisma.sites.findUnique({
-      where: { id: siteId },
-      select: { user_id: true, subdomain: true }
-    });
+  return sendSuccess(res, { products });
+}));
 
-    if (!site) {
-      return res.status(404).json({ error: 'Site not found' });
-    }
+/**
+ * POST /api/orders/:siteId/products
+ * Create a new product
+ */
+router.post('/:siteId/products', requireAuth, asyncHandler(async (req, res) => {
+  const { siteId } = req.params;
+  const { name, price, description, inventory, category, image } = req.body;
+  const userId = req.user.id || req.user.userId;
 
-    if (site.user_id !== req.user.id) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
-    // Verify product belongs to site
-    const existingProduct = await prisma.products.findFirst({
-      where: {
-        id: productId,
-        subdomain: site.subdomain
-      }
-    });
-
-    if (!existingProduct) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-
-    // Delete product
-    await prisma.products.delete({
-      where: { id: productId }
-    });
-
-    res.status(204).send();
-  } catch (error) {
-    console.error('Delete product error:', error);
-    res.status(500).json({ error: 'Failed to delete product' });
+  // Validation
+  if (!name || typeof name !== 'string' || !name.trim()) {
+    return sendBadRequest(res, 'Product name is required', 'MISSING_NAME');
   }
-});
 
-// GET /api/sites/:siteId/orders
-router.get('/:siteId/orders', requireAuth, async (req, res) => {
-  try {
-    const { siteId } = req.params;
-    const { status } = req.query;
-
-    // Verify site ownership
-    const site = await prisma.sites.findUnique({
-      where: { id: siteId },
-      select: { user_id: true }
-    });
-
-    if (!site) {
-      return res.status(404).json({ error: 'Site not found' });
-    }
-
-    if (site.user_id !== req.user.id) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
-    // Get orders
-    // Using site_id instead of subdomain as orders table has site_id
-    const orders = await prisma.orders.findMany({
-      where: {
-        site_id: siteId,
-        ...(status ? { status } : {})
-      },
-      orderBy: { created_at: 'desc' }
-    });
-
-    res.json({ orders });
-  } catch (error) {
-    console.error('Get orders error:', error);
-    res.status(500).json({ error: 'Failed to fetch orders' });
+  if (price === undefined || isNaN(parseFloat(price))) {
+    return sendBadRequest(res, 'Valid price is required', 'MISSING_PRICE');
   }
-});
 
-// GET /api/sites/:siteId/orders/:orderId
-router.get('/:siteId/orders/:orderId', requireAuth, async (req, res) => {
-  try {
-    const { siteId, orderId } = req.params;
-
-    // Verify site ownership
-    const site = await prisma.sites.findUnique({
-      where: { id: siteId },
-      select: { user_id: true }
-    });
-
-    if (!site) {
-      return res.status(404).json({ error: 'Site not found' });
-    }
-
-    if (site.user_id !== req.user.id) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
-    // Get order with items
-    // Try to include order_items if relation exists, otherwise fetch separately
-    // Assuming order_items table exists and has order_id
-
-    const order = await prisma.orders.findFirst({
-      where: {
-        id: orderId,
-        site_id: siteId
-      }
-    });
-
-    if (!order) {
-      return res.status(404).json({ error: 'Order not found' });
-    }
-
-    // Try to fetch order items from order_items table
-    // If table doesn't exist or is empty, we might rely on order.items (JSON)
-    let items = [];
-    try {
-      items = await prisma.order_items.findMany({
-        where: { order_id: orderId }
-      });
-    } catch (e) {
-      // Table might not exist or other error
-      // Fallback to parsing JSON items if available
-      if (order.items && typeof order.items === 'string') {
-        try {
-          items = JSON.parse(order.items);
-        } catch (parseErr) {
-          items = [];
-        }
-      }
-    }
-
-    res.json({
-      order: {
-        ...order,
-        items: items.length > 0 ? items : (typeof order.items === 'string' ? JSON.parse(order.items) : order.items)
-      }
-    });
-  } catch (error) {
-    console.error('Get order error:', error);
-    res.status(500).json({ error: 'Failed to fetch order' });
+  const priceNum = parseFloat(price);
+  if (priceNum < 0) {
+    return sendBadRequest(res, 'Price cannot be negative', 'INVALID_PRICE');
   }
-});
 
-// PUT /api/sites/:siteId/orders/:orderId/status
-router.put('/:siteId/orders/:orderId/status', requireAuth, async (req, res) => {
+  const ownership = await verifySiteOwnership(siteId, userId, req.user.role);
+  if (!ownership.authorized) {
+    if (ownership.status === 404) {
+      return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
+    }
+    return sendForbidden(res, ownership.error, 'ACCESS_DENIED');
+  }
+
+  // Create product
+  const product = await prisma.products.create({
+    data: {
+      subdomain: ownership.site.subdomain,
+      name: sanitizeString(name, 200),
+      description: sanitizeString(description || '', 1000),
+      price: priceNum,
+      inventory: parseInt(inventory) || 0,
+      category: sanitizeString(category || 'General', 100),
+      image: image ? sanitizeString(image, 500) : null
+    }
+  });
+
+  return sendCreated(res, { product }, 'Product created successfully');
+}));
+
+/**
+ * PUT /api/orders/:siteId/products/:productId
+ * Update a product
+ */
+router.put('/:siteId/products/:productId', requireAuth, asyncHandler(async (req, res) => {
+  const { siteId, productId } = req.params;
+  const { name, price, description, inventory, category, image } = req.body;
+  const userId = req.user.id || req.user.userId;
+
+  const ownership = await verifySiteOwnership(siteId, userId, req.user.role);
+  if (!ownership.authorized) {
+    if (ownership.status === 404) {
+      return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
+    }
+    return sendForbidden(res, ownership.error, 'ACCESS_DENIED');
+  }
+
+  // Verify product belongs to site
+  const existingProduct = await prisma.products.findFirst({
+    where: {
+      id: productId,
+      subdomain: ownership.site.subdomain
+    }
+  });
+
+  if (!existingProduct) {
+    return sendNotFound(res, 'Product', 'PRODUCT_NOT_FOUND');
+  }
+
+  // Build update data
+  const updateData = { updated_at: new Date() };
+  
+  if (name !== undefined) {
+    updateData.name = sanitizeString(name, 200);
+  }
+  if (price !== undefined) {
+    const priceNum = parseFloat(price);
+    if (priceNum < 0) {
+      return sendBadRequest(res, 'Price cannot be negative', 'INVALID_PRICE');
+    }
+    updateData.price = priceNum;
+  }
+  if (description !== undefined) {
+    updateData.description = sanitizeString(description, 1000);
+  }
+  if (inventory !== undefined) {
+    updateData.inventory = parseInt(inventory) || 0;
+  }
+  if (category !== undefined) {
+    updateData.category = sanitizeString(category, 100);
+  }
+  if (image !== undefined) {
+    updateData.image = image ? sanitizeString(image, 500) : null;
+  }
+
+  const product = await prisma.products.update({
+    where: { id: productId },
+    data: updateData
+  });
+
+  return sendSuccess(res, { product }, 'Product updated successfully');
+}));
+
+/**
+ * DELETE /api/orders/:siteId/products/:productId
+ * Delete a product
+ */
+router.delete('/:siteId/products/:productId', requireAuth, asyncHandler(async (req, res) => {
+  const { siteId, productId } = req.params;
+  const userId = req.user.id || req.user.userId;
+
+  const ownership = await verifySiteOwnership(siteId, userId, req.user.role);
+  if (!ownership.authorized) {
+    if (ownership.status === 404) {
+      return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
+    }
+    return sendForbidden(res, ownership.error, 'ACCESS_DENIED');
+  }
+
+  // Verify product belongs to site
+  const existingProduct = await prisma.products.findFirst({
+    where: {
+      id: productId,
+      subdomain: ownership.site.subdomain
+    }
+  });
+
+  if (!existingProduct) {
+    return sendNotFound(res, 'Product', 'PRODUCT_NOT_FOUND');
+  }
+
+  await prisma.products.delete({
+    where: { id: productId }
+  });
+
+  return sendSuccess(res, {}, 'Product deleted successfully');
+}));
+
+// ==================== ORDERS ENDPOINTS ====================
+
+/**
+ * GET /api/orders/:siteId/orders
+ * Get all orders for a site
+ */
+router.get('/:siteId/orders', requireAuth, asyncHandler(async (req, res) => {
+  const { siteId } = req.params;
+  const { status, limit = 50 } = req.query;
+  const userId = req.user.id || req.user.userId;
+
+  const ownership = await verifySiteOwnership(siteId, userId, req.user.role);
+  if (!ownership.authorized) {
+    if (ownership.status === 404) {
+      return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
+    }
+    return sendForbidden(res, ownership.error, 'ACCESS_DENIED');
+  }
+
+  const where = { site_id: siteId };
+  if (status) {
+    where.status = status;
+  }
+
+  const orders = await prisma.orders.findMany({
+    where,
+    orderBy: { created_at: 'desc' },
+    take: Math.min(parseInt(limit) || 50, 200)
+  });
+
+  const formattedOrders = orders.map(order => ({
+    id: order.id,
+    customerName: order.customer_name,
+    customerEmail: order.customer_email,
+    customerPhone: order.customer_phone,
+    status: order.status,
+    total: order.total,
+    items: typeof order.items === 'string' ? JSON.parse(order.items) : order.items,
+    notes: order.notes,
+    createdAt: order.created_at,
+    updatedAt: order.updated_at
+  }));
+
+  return sendSuccess(res, { orders: formattedOrders });
+}));
+
+/**
+ * GET /api/orders/:siteId/orders/:orderId
+ * Get single order details
+ */
+router.get('/:siteId/orders/:orderId', requireAuth, asyncHandler(async (req, res) => {
+  const { siteId, orderId } = req.params;
+  const userId = req.user.id || req.user.userId;
+
+  const ownership = await verifySiteOwnership(siteId, userId, req.user.role);
+  if (!ownership.authorized) {
+    if (ownership.status === 404) {
+      return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
+    }
+    return sendForbidden(res, ownership.error, 'ACCESS_DENIED');
+  }
+
+  const order = await prisma.orders.findFirst({
+    where: {
+      id: orderId,
+      site_id: siteId
+    }
+  });
+
+  if (!order) {
+    return sendNotFound(res, 'Order', 'ORDER_NOT_FOUND');
+  }
+
+  // Try to get order items from separate table
+  let items = [];
   try {
-    const { siteId, orderId } = req.params;
-    const { status } = req.body;
-
-    const validStatuses = ['pending', 'confirmed', 'preparing', 'ready', 'completed', 'cancelled'];
-
-    if (!status || !validStatuses.includes(status)) {
-      return res.status(400).json({ error: 'Invalid status' });
-    }
-
-    // Verify site ownership
-    const site = await prisma.sites.findUnique({
-      where: { id: siteId },
-      select: { user_id: true }
+    items = await prisma.order_items.findMany({
+      where: { order_id: orderId }
     });
-
-    if (!site) {
-      return res.status(404).json({ error: 'Site not found' });
-    }
-
-    if (site.user_id !== req.user.id) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
-    // Update order status
-    const order = await prisma.orders.update({
-      where: { id: orderId },
-      data: {
-        status,
-        updated_at: new Date()
-      }
-    });
-
-    res.json({ order });
-  } catch (error) {
-    console.error('Update order status error:', error);
-    if (error.code === 'P2025') {
-      res.status(404).json({ error: 'Order not found' });
-    } else {
-      res.status(500).json({ error: 'Failed to update order status' });
+  } catch (e) {
+    // Fallback to JSON items field
+    if (order.items) {
+      items = typeof order.items === 'string' ? JSON.parse(order.items) : order.items;
     }
   }
-});
+
+  return sendSuccess(res, {
+    order: {
+      id: order.id,
+      customerName: order.customer_name,
+      customerEmail: order.customer_email,
+      customerPhone: order.customer_phone,
+      status: order.status,
+      total: order.total,
+      items: items.length > 0 ? items : (typeof order.items === 'string' ? JSON.parse(order.items) : order.items),
+      shippingAddress: order.shipping_address,
+      notes: order.notes,
+      createdAt: order.created_at,
+      updatedAt: order.updated_at
+    }
+  });
+}));
+
+/**
+ * PUT /api/orders/:siteId/orders/:orderId/status
+ * Update order status
+ */
+router.put('/:siteId/orders/:orderId/status', requireAuth, asyncHandler(async (req, res) => {
+  const { siteId, orderId } = req.params;
+  const { status } = req.body;
+  const userId = req.user.id || req.user.userId;
+
+  const validStatuses = ['pending', 'confirmed', 'preparing', 'ready', 'shipped', 'completed', 'cancelled', 'refunded'];
+
+  if (!status || !validStatuses.includes(status)) {
+    return sendBadRequest(res, `Invalid status. Must be one of: ${validStatuses.join(', ')}`, 'INVALID_STATUS');
+  }
+
+  const ownership = await verifySiteOwnership(siteId, userId, req.user.role);
+  if (!ownership.authorized) {
+    if (ownership.status === 404) {
+      return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
+    }
+    return sendForbidden(res, ownership.error, 'ACCESS_DENIED');
+  }
+
+  // Verify order belongs to site
+  const existingOrder = await prisma.orders.findFirst({
+    where: {
+      id: orderId,
+      site_id: siteId
+    }
+  });
+
+  if (!existingOrder) {
+    return sendNotFound(res, 'Order', 'ORDER_NOT_FOUND');
+  }
+
+  const order = await prisma.orders.update({
+    where: { id: orderId },
+    data: {
+      status,
+      updated_at: new Date()
+    }
+  });
+
+  return sendSuccess(res, { 
+    order: {
+      id: order.id,
+      status: order.status,
+      updatedAt: order.updated_at
+    }
+  }, `Order status updated to ${status}`);
+}));
+
+/**
+ * GET /api/orders/:siteId/stats
+ * Get order statistics for a site
+ */
+router.get('/:siteId/stats', requireAuth, asyncHandler(async (req, res) => {
+  const { siteId } = req.params;
+  const userId = req.user.id || req.user.userId;
+
+  const ownership = await verifySiteOwnership(siteId, userId, req.user.role);
+  if (!ownership.authorized) {
+    if (ownership.status === 404) {
+      return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
+    }
+    return sendForbidden(res, ownership.error, 'ACCESS_DENIED');
+  }
+
+  // Get order statistics
+  const [totalOrders, pendingOrders, completedOrders, totalRevenue] = await Promise.all([
+    prisma.orders.count({ where: { site_id: siteId } }),
+    prisma.orders.count({ where: { site_id: siteId, status: 'pending' } }),
+    prisma.orders.count({ where: { site_id: siteId, status: 'completed' } }),
+    prisma.orders.aggregate({
+      where: { site_id: siteId, status: 'completed' },
+      _sum: { total: true }
+    })
+  ]);
+
+  // Get products count
+  const productCount = await prisma.products.count({
+    where: { subdomain: ownership.site.subdomain }
+  });
+
+  return sendSuccess(res, {
+    stats: {
+      totalOrders,
+      pendingOrders,
+      completedOrders,
+      totalRevenue: totalRevenue._sum.total || 0,
+      productCount
+    }
+  });
+}));
 
 export default router;
-

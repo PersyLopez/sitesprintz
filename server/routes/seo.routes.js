@@ -8,6 +8,7 @@ import express from 'express';
 import SEOService from '../services/seoService.js';
 import { prisma } from '../../database/db.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { sanitizeSiteDataForStorage } from '../utils/siteDataSanitizer.js';
 
 const router = express.Router();
 const seoService = new SEOService();
@@ -206,14 +207,24 @@ router.put('/api/seo/:subdomain', authenticateToken, async (req, res) => {
       updatedAt: new Date().toISOString()
     };
 
-    // Store in site_data.seo for now
+    // Sanitize site data before storing
+    const currentSiteData = typeof site.site_data === 'string' 
+      ? JSON.parse(site.site_data) 
+      : site.site_data || {};
+    
+    const updatedSiteData = {
+      ...currentSiteData,
+      seo: seoConfig
+    };
+    
+    // Sanitize site data to prevent XSS
+    const sanitizedSiteData = sanitizeSiteDataForStorage(updatedSiteData);
+
+    // Store sanitized site_data
     await prisma.sites.update({
       where: { id: site.id },
       data: {
-        site_data: {
-          ...site.site_data,
-          seo: seoConfig
-        }
+        site_data: sanitizedSiteData
       }
     });
 

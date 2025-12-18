@@ -1,40 +1,71 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import fs from 'fs/promises';
-import path from 'path';
 import { prisma } from '../../database/db.js';
 import { sendEmail, EmailTypes, sendAdminNotification } from '../utils/email-service-wrapper.js';
 import { requireAuth } from '../middleware/auth.js';
-import { isValidEmail, generateRandomPassword, getUserFilePath } from '../utils/helpers.js';
+import { isValidEmail, generateVerificationToken } from '../utils/helpers.js';
+import crypto from 'crypto';
+import { registrationLimiter, loginLimiter, passwordResetLimiter } from '../middleware/rateLimiting.js';
+import { verifyTurnstile } from '../utils/captcha.js';
+import { createTokenPair, verifyRefreshToken, revokeRefreshToken, revokeAllUserTokens } from '../services/tokenService.js';
+import { ValidationService } from '../services/validationService.js';
+import {
+  sendSuccess,
+  sendBadRequest,
+  sendUnauthorized,
+  sendForbidden,
+  sendNotFound,
+  sendConflict,
+  sendServerError,
+  asyncHandler
+} from '../utils/apiResponse.js';
+import { validateEmail, generateSecurePassword } from '../utils/validators.js';
+
+const validator = new ValidationService();
 
 const router = express.Router();
 // Use getter to avoid hoisting issues with dotenv
 const getJwtSecret = () => process.env.JWT_SECRET || 'your-secret-key-change-in-production';
-const publicDir = path.join(process.cwd(), 'public');
-const usersDir = path.join(publicDir, 'users');
-
-// Ensure users directory exists
-fs.mkdir(usersDir, { recursive: true }).catch(() => { });
 
 /**
  * USER REGISTRATION ENDPOINT
+ * Protected by rate limiting: 3 registrations per 15 minutes per IP
  */
-router.post('/register', async (req, res) => {
+router.post('/register', registrationLimiter, async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, captchaToken } = req.body;
 
         // Step 1: Validate input
         if (!email || !password) {
             return res.status(400).json({ error: 'Email and password required' });
         }
 
+        // Step 1b: Verify CAPTCHA (if configured)
+        if (process.env.TURNSTILE_SECRET_KEY) {
+            const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
+            const captchaResult = await verifyTurnstile(captchaToken, clientIp);
+            
+            if (!captchaResult.success) {
+                return res.status(400).json({ 
+                    error: captchaResult.error || 'CAPTCHA verification failed',
+                    captchaError: true 
+                });
+            }
+        }
+
         if (!email.includes('@')) {
             return res.status(400).json({ error: 'Invalid email format' });
         }
 
-        if (password.length < 8) {
-            return res.status(400).json({ error: 'Password must be at least 8 characters' });
+        // Validate password strength (12+ chars with complexity)
+        const passwordValidation = validator.validatePasswordStrength(password);
+        if (!passwordValidation.isValid) {
+            return res.status(400).json({ 
+                error: passwordValidation.error,
+                passwordErrors: passwordValidation.errors,
+                strength: passwordValidation.strength
+            });
         }
 
         // Step 2: Check if user already exists
@@ -50,13 +81,21 @@ router.post('/register', async (req, res) => {
         // Step 3: Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Step 4: Insert user into database
+        // Step 3b: Generate verification token
+        const verificationToken = generateVerificationToken();
+        const verificationExpires = new Date();
+        verificationExpires.setHours(verificationExpires.getHours() + 24); // 24 hours expiry
+
+        // Step 4: Insert user into database with pending status
         const user = await prisma.users.create({
             data: {
                 email: email.toLowerCase(),
                 password_hash: hashedPassword,
                 role: 'user',
-                status: 'active',
+                status: 'pending', // Account starts as pending until email verified
+                email_verified: false,
+                verification_token: verificationToken,
+                verification_token_expires: verificationExpires,
                 created_at: new Date()
             },
             select: {
@@ -64,27 +103,31 @@ router.post('/register', async (req, res) => {
                 email: true,
                 role: true,
                 status: true,
+                email_verified: true,
                 created_at: true
             }
         });
 
-        // Step 5: Generate JWT token (valid for 7 days)
-        const token = jwt.sign(
-            {
-                userId: user.id,
-                id: user.id, // For compatibility
-                email: user.email,
-                role: user.role
-            },
-            getJwtSecret(),
-            { expiresIn: '7d' }
-        );
+        // Step 5: Generate token pair (access + refresh)
+        // Note: User can login but will be prompted to verify email
+        const { accessToken, refreshToken, expiresAt } = await createTokenPair({
+            id: user.id,
+            email: user.email,
+            role: user.role
+        });
 
-        // Step 6: Send welcome email (don't fail registration if email fails)
+        // Step 6: Send verification email (don't fail registration if email fails)
         try {
-            await sendEmail(user.email, EmailTypes.WELCOME, { email: user.email });
+            const baseUrl = process.env.SITE_URL || process.env.BASE_URL || 'http://localhost:3000';
+            const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
+            
+            await sendEmail(user.email, EmailTypes.VERIFY_EMAIL, { 
+                email: user.email,
+                verificationLink 
+            });
         } catch (emailError) {
-            console.error('Failed to send welcome email:', emailError);
+            console.error('Failed to send verification email:', emailError);
+            // Don't fail registration if email fails - user can request resend
         }
 
         // Step 6b: Notify admin of new user (don't fail registration if this fails)
@@ -97,15 +140,21 @@ router.post('/register', async (req, res) => {
             console.error('Failed to send admin notification:', emailError);
         }
 
-        // Step 7: Return success
+        // Step 7: Return success with verification status
         res.json({
             success: true,
-            token,
+            accessToken,
+            refreshToken,
+            expiresAt,
             user: {
                 id: user.id,
                 email: user.email,
-                role: user.role
-            }
+                role: user.role,
+                emailVerified: user.email_verified,
+                status: user.status
+            },
+            requiresVerification: true,
+            message: 'Account created! Please check your email to verify your account.'
         });
 
     } catch (err) {
@@ -116,69 +165,64 @@ router.post('/register', async (req, res) => {
 
 /**
  * USER LOGIN ENDPOINT
+ * Protected by rate limiting: 5 login attempts per 15 minutes per IP
  */
-router.post('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
+router.post('/login', loginLimiter, asyncHandler(async (req, res) => {
+    const { email, password } = req.body;
 
-        // Step 1: Validate input
-        if (!email || !password) {
-            return res.status(400).json({ error: 'Email and password required' });
-        }
-
-        // Step 2: Get user from database
-        const user = await prisma.users.findUnique({
-            where: { email: email.toLowerCase() }
-        });
-
-        if (!user) {
-            return res.status(401).json({ error: 'Invalid credentials' });
-        }
-
-        // Step 3: Verify password
-        const isValid = await bcrypt.compare(password, user.password_hash);
-        if (!isValid) {
-            return res.status(401).json({ error: 'Invalid credentials' });
-        }
-
-        // Step 4: Check account status
-        if (user.status !== 'active') {
-            return res.status(403).json({ error: 'Account is suspended' });
-        }
-
-        // Step 5: Update last login timestamp (async, don't wait)
-        prisma.users.update({
-            where: { id: user.id },
-            data: { last_login: new Date() }
-        }).catch(err => console.error('Failed to update last login:', err));
-
-        // Step 6: Generate JWT token (valid for 7 days)
-        const token = jwt.sign({
-            userId: user.id,
-            id: user.id, // For compatibility
-            email: user.email,
-            role: user.role
-        }, getJwtSecret(), { expiresIn: '7d' });
-
-        // Step 7: Return success
-        res.json({
-            success: true,
-            token,
-            user: {
-                id: user.id,
-                email: user.email,
-                role: user.role,
-                status: user.status,
-                subscriptionStatus: user.subscription_status,
-                subscriptionPlan: user.subscription_plan
-            }
-        });
-
-    } catch (err) {
-        console.error('Login error:', err);
-        res.status(500).json({ error: 'Failed to login' });
+    // Step 1: Validate input
+    if (!email || !password) {
+        return sendBadRequest(res, 'Email and password are required', 'MISSING_CREDENTIALS');
     }
-});
+
+    // Step 2: Get user from database
+    const user = await prisma.users.findUnique({
+        where: { email: email.toLowerCase() }
+    });
+
+    if (!user) {
+        return sendUnauthorized(res, 'Invalid credentials', 'INVALID_CREDENTIALS');
+    }
+
+    // Step 3: Verify password
+    const isValid = await bcrypt.compare(password, user.password_hash);
+    if (!isValid) {
+        return sendUnauthorized(res, 'Invalid credentials', 'INVALID_CREDENTIALS');
+    }
+
+    // Step 4: Check account status
+    if (user.status !== 'active') {
+        return sendForbidden(res, 'Account is suspended', 'ACCOUNT_SUSPENDED');
+    }
+
+    // Step 5: Update last login timestamp (async, don't wait)
+    prisma.users.update({
+        where: { id: user.id },
+        data: { last_login: new Date() }
+    }).catch(err => console.error('Failed to update last login:', err));
+
+    // Step 6: Generate token pair (access + refresh)
+    const { accessToken, refreshToken, expiresAt } = await createTokenPair({
+        id: user.id,
+        email: user.email,
+        role: user.role
+    });
+
+    // Step 7: Return success
+    return sendSuccess(res, {
+        accessToken,
+        refreshToken,
+        expiresAt,
+        user: {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            status: user.status,
+            subscriptionStatus: user.subscription_status,
+            subscriptionPlan: user.subscription_plan
+        }
+    });
+}));
 
 /**
  * QUICK REGISTER ENDPOINT
@@ -225,12 +269,12 @@ router.post('/quick-register', async (req, res) => {
             }
         });
 
-        // Generate token
-        const token = jwt.sign(
-            { id: user.id, email: user.email, role: user.role },
-            getJwtSecret(),
-            { expiresIn: '7d' }
-        );
+        // Generate token pair (access + refresh)
+        const { accessToken, refreshToken, expiresAt } = await createTokenPair({
+            id: user.id,
+            email: user.email,
+            role: user.role
+        });
 
         // Send welcome email if skip password
         if (skipPassword) {
@@ -243,7 +287,9 @@ router.post('/quick-register', async (req, res) => {
 
         res.json({
             success: true,
-            token,
+            accessToken,
+            refreshToken,
+            expiresAt,
             user: {
                 id: user.id,
                 email: user.email,
@@ -253,6 +299,164 @@ router.post('/quick-register', async (req, res) => {
     } catch (error) {
         console.error('Quick register error:', error);
         res.status(500).json({ error: 'Registration failed' });
+    }
+});
+
+/**
+ * EMAIL VERIFICATION ENDPOINT
+ * 
+ * Verifies user's email address using verification token
+ * GET /api/auth/verify-email?token=xxx
+ */
+router.get('/verify-email', async (req, res) => {
+    try {
+        const { token } = req.query;
+
+        if (!token) {
+            return res.status(400).json({ error: 'Verification token is required' });
+        }
+
+        // Find user by verification token
+        const user = await prisma.users.findUnique({
+            where: { verification_token: token },
+            select: {
+                id: true,
+                email: true,
+                email_verified: true,
+                verification_token_expires: true,
+                status: true
+            }
+        });
+
+        if (!user) {
+            return res.status(400).json({ error: 'Invalid or expired verification token' });
+        }
+
+        // Check if already verified
+        if (user.email_verified) {
+            return res.status(400).json({ 
+                error: 'Email already verified',
+                message: 'Your email has already been verified. You can log in now.'
+            });
+        }
+
+        // Check if token expired
+        if (user.verification_token_expires && new Date() > new Date(user.verification_token_expires)) {
+            return res.status(400).json({ 
+                error: 'Verification token expired',
+                message: 'This verification link has expired. Please request a new one.'
+            });
+        }
+
+        // Verify email and activate account
+        await prisma.users.update({
+            where: { id: user.id },
+            data: {
+                email_verified: true,
+                status: 'active', // Activate account
+                verified_at: new Date(),
+                verification_token: null, // Clear token after use
+                verification_token_expires: null
+            }
+        });
+
+        res.json({
+            success: true,
+            message: 'Email verified successfully! Your account is now active.',
+            verified: true
+        });
+
+    } catch (err) {
+        console.error('Email verification error:', err);
+        res.status(500).json({ error: 'Failed to verify email' });
+    }
+});
+
+/**
+ * RESEND VERIFICATION EMAIL ENDPOINT
+ * 
+ * Resends verification email to user
+ * POST /api/auth/resend-verification
+ */
+router.post('/resend-verification', async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ error: 'Email is required' });
+        }
+
+        // Find user
+        const user = await prisma.users.findUnique({
+            where: { email: email.toLowerCase() },
+            select: {
+                id: true,
+                email: true,
+                email_verified: true,
+                verification_token: true,
+                verification_token_expires: true
+            }
+        });
+
+        if (!user) {
+            // Don't reveal if email exists (security best practice)
+            return res.json({
+                success: true,
+                message: 'If an account with that email exists and is unverified, a verification email has been sent.'
+            });
+        }
+
+        // Check if already verified
+        if (user.email_verified) {
+            return res.status(400).json({ 
+                error: 'Email already verified',
+                message: 'Your email is already verified. You can log in now.'
+            });
+        }
+
+        // Generate new token if expired or missing
+        let verificationToken = user.verification_token;
+        let verificationExpires = user.verification_token_expires 
+            ? new Date(user.verification_token_expires)
+            : new Date();
+
+        // If token expired or missing, generate new one
+        if (!verificationToken || (verificationExpires && new Date() > verificationExpires)) {
+            verificationToken = generateVerificationToken();
+            verificationExpires = new Date();
+            verificationExpires.setHours(verificationExpires.getHours() + 24);
+
+            await prisma.users.update({
+                where: { id: user.id },
+                data: {
+                    verification_token: verificationToken,
+                    verification_token_expires: verificationExpires
+                }
+            });
+        }
+
+        // Send verification email
+        try {
+            const baseUrl = process.env.SITE_URL || process.env.BASE_URL || 'http://localhost:3000';
+            const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
+            
+            await sendEmail(user.email, EmailTypes.VERIFY_EMAIL, { 
+                email: user.email,
+                verificationLink 
+            });
+        } catch (emailError) {
+            console.error('Failed to send verification email:', emailError);
+            return res.status(500).json({ error: 'Failed to send verification email' });
+        }
+
+        res.json({
+            success: true,
+            message: 'Verification email sent! Please check your inbox.'
+        });
+
+    } catch (err) {
+        console.error('Resend verification error:', err);
+        res.status(500).json({ error: 'Failed to resend verification email' });
     }
 });
 
@@ -343,13 +547,60 @@ router.post('/send-magic-link', async (req, res) => {
     }
 });
 
-router.post('/logout', (req, res) => {
-    // JWT is stateless, so logout is handled client-side
-    res.json({ success: true, message: 'Logged out successfully' });
+/**
+ * REFRESH TOKEN ENDPOINT
+ * Exchanges refresh token for new access token
+ */
+router.post('/refresh', async (req, res) => {
+    try {
+        const { refreshToken } = req.body;
+
+        if (!refreshToken) {
+            return res.status(400).json({ error: 'Refresh token is required' });
+        }
+
+        // Verify refresh token and get user
+        const user = await verifyRefreshToken(refreshToken);
+
+        // Generate new access token
+        const { generateAccessToken } = await import('../services/tokenService.js');
+        const accessToken = generateAccessToken(user);
+
+        res.json({
+            success: true,
+            accessToken
+        });
+
+    } catch (error) {
+        console.error('Token refresh error:', error);
+        return res.status(401).json({ 
+            error: error.message || 'Invalid or expired refresh token' 
+        });
+    }
 });
 
+/**
+ * LOGOUT ENDPOINT
+ * Revokes refresh token
+ */
+router.post('/logout', requireAuth, asyncHandler(async (req, res) => {
+    const { refreshToken } = req.body;
+    const userId = req.user.id || req.user.userId;
+
+    if (refreshToken) {
+        // Revoke specific token
+        await revokeRefreshToken(refreshToken);
+    } else if (userId) {
+        // Revoke all tokens for user (full logout)
+        await revokeAllUserTokens(userId);
+    }
+
+    return sendSuccess(res, {}, 'Logged out successfully');
+}));
+
 // Password reset endpoints
-router.post('/forgot-password', async (req, res) => {
+// Protected by rate limiting: 3 requests per hour per email
+router.post('/forgot-password', passwordResetLimiter, async (req, res) => {
     try {
         const { email } = req.body;
 
@@ -357,28 +608,45 @@ router.post('/forgot-password', async (req, res) => {
             return res.status(400).json({ error: 'Email is required' });
         }
 
-        // Check if user exists
-        const userPath = getUserFilePath(email);
+        // Check if user exists in database
+        const user = await prisma.users.findUnique({
+            where: { email: email.toLowerCase() },
+            select: { id: true, email: true }
+        });
 
-        if (!(await fs.access(userPath).then(() => true).catch(() => false))) {
-            // Don't reveal if user exists or not for security
+        // Don't reveal if user exists or not for security
+        if (!user) {
             return res.json({ message: 'If an account with that email exists, a password reset link has been sent.' });
         }
 
-        // Generate reset token (in production, use crypto.randomBytes)
-        const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-        const resetExpires = new Date(Date.now() + 3600000); // 1 hour
+        // Generate secure reset token using crypto.randomBytes
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetExpires = new Date();
+        resetExpires.setHours(resetExpires.getHours() + 1); // 1 hour expiry
 
-        // Load user data
-        const userData = JSON.parse(await fs.readFile(userPath, 'utf-8'));
-        userData.resetToken = resetToken;
-        userData.resetExpires = resetExpires.toISOString();
-
-        // Save updated user data
-        await fs.writeFile(userPath, JSON.stringify(userData, null, 2));
+        // Store reset token in database
+        await prisma.users.update({
+            where: { id: user.id },
+            data: {
+                password_reset_token: resetToken,
+                password_reset_expires: resetExpires
+            }
+        });
 
         // Send password reset email
-        await sendEmail(email, EmailTypes.PASSWORD_RESET, { email, resetToken });
+        try {
+            const baseUrl = process.env.SITE_URL || process.env.BASE_URL || 'http://localhost:3000';
+            const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
+            
+            await sendEmail(user.email, EmailTypes.PASSWORD_RESET, { 
+                email: user.email, 
+                resetToken,
+                resetLink 
+            });
+        } catch (emailError) {
+            console.error('Failed to send password reset email:', emailError);
+            // Don't fail the request if email fails
+        }
 
         res.json({ message: 'If an account with that email exists, a password reset link has been sent.' });
     } catch (error) {
@@ -396,43 +664,48 @@ router.post('/reset-password', async (req, res) => {
             return res.status(400).json({ error: 'Token and new password required' });
         }
 
-        if (newPassword.length < 6) {
-            return res.status(400).json({ error: 'Password must be at least 6 characters' });
+        // Validate password strength (12+ chars with complexity)
+        const passwordValidation = validator.validatePasswordStrength(newPassword);
+        if (!passwordValidation.isValid) {
+            return res.status(400).json({ 
+                error: passwordValidation.error,
+                passwordErrors: passwordValidation.errors,
+                strength: passwordValidation.strength
+            });
         }
 
-        // Find user with this reset token
-        const userFiles = await fs.readdir(usersDir);
-        let userFile = null;
-        let userData = null;
-
-        for (const file of userFiles) {
-            if (!file.endsWith('.json')) continue;
-            const filePath = path.join(usersDir, file);
-            const data = JSON.parse(await fs.readFile(filePath, 'utf-8'));
-
-            if (data.resetToken === token) {
-                userFile = filePath;
-                userData = data;
-                break;
+        // Find user with this reset token in database
+        const user = await prisma.users.findUnique({
+            where: { password_reset_token: token },
+            select: {
+                id: true,
+                email: true,
+                password_reset_expires: true
             }
-        }
+        });
 
-        if (!userData) {
+        if (!user) {
             return res.status(400).json({ error: 'Invalid or expired reset token' });
         }
 
         // Check if token expired
-        if (new Date(userData.resetExpires) < new Date()) {
+        if (!user.password_reset_expires || new Date(user.password_reset_expires) < new Date()) {
             return res.status(400).json({ error: 'Reset token has expired' });
         }
 
-        // Update password
-        userData.password = await bcrypt.hash(newPassword, 10);
-        userData.resetToken = undefined;
-        userData.resetExpires = undefined;
-        userData.passwordChangedAt = new Date().toISOString();
+        // Hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-        await fs.writeFile(userFile, JSON.stringify(userData, null, 2));
+        // Update password and clear reset token
+        await prisma.users.update({
+            where: { id: user.id },
+            data: {
+                password_hash: hashedPassword,
+                password_reset_token: null,
+                password_reset_expires: null,
+                password_changed_at: new Date()
+            }
+        });
 
         res.json({ success: true, message: 'Password reset successfully' });
     } catch (error) {
@@ -441,7 +714,7 @@ router.post('/reset-password', async (req, res) => {
     }
 });
 
-// Force password change on first login
+// Force password change on first login (for users with temporary passwords)
 router.post('/change-temp-password', requireAuth, async (req, res) => {
     try {
         const { newPassword } = req.body;
@@ -450,28 +723,49 @@ router.post('/change-temp-password', requireAuth, async (req, res) => {
             return res.status(400).json({ error: 'New password is required' });
         }
 
-        if (newPassword.length < 6) {
-            return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+        // Validate password strength (12+ chars with complexity)
+        const passwordValidation = validator.validatePasswordStrength(newPassword);
+        if (!passwordValidation.isValid) {
+            return res.status(400).json({ 
+                error: passwordValidation.error,
+                passwordErrors: passwordValidation.errors,
+                strength: passwordValidation.strength
+            });
         }
 
-        // Load user data
-        const userPath = getUserFilePath(req.user.email);
-        const userData = JSON.parse(await fs.readFile(userPath, 'utf-8'));
+        // Get user from database
+        const user = await prisma.users.findUnique({
+            where: { id: req.user.id },
+            select: {
+                id: true,
+                email: true,
+                status: true,
+                temp_password: true
+            }
+        });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
 
         // Check if user is using temporary password
-        if (userData.status !== 'invited' && !userData.tempPassword) {
+        if (user.status !== 'invited' && !user.temp_password) {
             return res.status(400).json({ error: 'No temporary password to change' });
         }
 
-        // Update password and status
-        userData.password = await bcrypt.hash(newPassword, 10);
-        userData.status = 'active';
-        userData.tempPassword = undefined;
-        userData.tempPasswordExpires = undefined;
-        userData.passwordChangedAt = new Date().toISOString();
-
-        // Save updated user data
-        await fs.writeFile(userPath, JSON.stringify(userData, null, 2));
+        // Hash new password and update user
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        
+        await prisma.users.update({
+            where: { id: user.id },
+            data: {
+                password_hash: hashedPassword,
+                status: 'active',
+                temp_password: null,
+                temp_password_expires: null,
+                password_changed_at: new Date()
+            }
+        });
 
         res.json({ message: 'Password changed successfully' });
     } catch (error) {

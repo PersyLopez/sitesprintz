@@ -53,6 +53,52 @@ const templates = {
     `
   }),
 
+  verifyEmail: (email, verificationLink) => ({
+    subject: 'Verify Your Email Address - SiteSprintz',
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #2563eb; margin: 0; font-size: 2rem;">Verify Your Email 📧</h1>
+        </div>
+        
+        <div style="background: #f8fafc; border-radius: 12px; padding: 30px; margin-bottom: 20px;">
+          <p style="font-size: 1.1rem; color: #1e293b; line-height: 1.6; margin: 0 0 20px 0;">
+            Thanks for signing up! Please verify your email address to activate your account.
+          </p>
+          
+          <p style="color: #64748b; line-height: 1.6; margin: 0 0 30px 0;">
+            Click the button below to verify your email address. This link will expire in 24 hours.
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${verificationLink}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 1rem;">
+              Verify Email Address
+            </a>
+          </div>
+          
+          <p style="color: #94a3b8; font-size: 0.875rem; line-height: 1.6; margin: 20px 0 0 0;">
+            If the button doesn't work, copy and paste this link into your browser:
+          </p>
+          <p style="color: #2563eb; font-size: 0.875rem; word-break: break-all; margin: 10px 0 0 0;">
+            ${verificationLink}
+          </p>
+        </div>
+        
+        <div style="background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 16px; margin: 20px 0;">
+          <p style="color: #1e40af; font-size: 0.9rem; margin: 0; line-height: 1.5;">
+            ⚠️ <strong>Didn't sign up?</strong> You can safely ignore this email. No account will be created.
+          </p>
+        </div>
+        
+        <div style="border-top: 1px solid #e2e8f0; margin-top: 30px; padding-top: 20px;">
+          <p style="color: #94a3b8; font-size: 0.875rem; text-align: center; margin: 0;">
+            Need help? Visit our <a href="${SITE_URL}" style="color: #2563eb; text-decoration: none;">support center</a> or reply to this email.
+          </p>
+        </div>
+      </div>
+    `
+  }),
+
   invitation: (email, tempPassword) => ({
     subject: 'You\'ve been invited to SiteSprintz! 🎉',
     html: `
@@ -101,7 +147,7 @@ const templates = {
     `
   }),
 
-  passwordReset: (email, resetToken) => ({
+  passwordReset: (email, resetToken, resetLink) => ({
     subject: 'Reset Your Password 🔐',
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -116,7 +162,7 @@ const templates = {
         </div>
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="${SITE_URL}/reset-password.html?token=${resetToken}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 1rem;">
+          <a href="${resetLink || `${SITE_URL}/reset-password?token=${resetToken}`}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 1rem;">
             Reset Password
           </a>
         </div>
@@ -702,8 +748,10 @@ export async function sendEmail(to, templateName, templateData = {}) {
       throw new Error(`Unknown email template: ${templateName}`);
     }
 
+    // Handle template functions - pass templateData as arguments
+    // Templates can accept individual params or destructure from templateData
     const emailContent = typeof template === 'function' 
-      ? template(...Object.values(templateData))
+      ? template(templateData.email || templateData[0], templateData.resetToken || templateData[1], templateData.resetLink || templateData[2])
       : template;
 
     console.log(`📧 Sending email to ${to}: ${emailContent.subject}`);
@@ -731,6 +779,7 @@ export async function sendEmail(to, templateName, templateData = {}) {
 // Available email types
 export const EmailTypes = {
   WELCOME: 'welcome',
+  VERIFY_EMAIL: 'verifyEmail',
   INVITATION: 'invitation',
   PASSWORD_RESET: 'passwordReset',
   SITE_PUBLISHED: 'sitePublished',
