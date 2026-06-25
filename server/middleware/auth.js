@@ -1,9 +1,10 @@
 import jwt from 'jsonwebtoken';
 import { prisma } from '../../database/db.js';
 import { redactValue } from '../utils/redaction.js';
+import { getRequiredSecret } from '../config/secrets.js';
 
 // function to get secret to avoid ESM hoisting issues
-const getJwtSecret = () => process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const getJwtSecret = () => getRequiredSecret('JWT_SECRET', { allowTestFallback: true });
 
 /**
  * Extract token from Authorization header

@@ -12,8 +12,9 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { prisma } from '../../database/db.js';
+import { getRequiredSecret } from '../config/secrets.js';
 
-const getJwtSecret = () => process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const getJwtSecret = () => getRequiredSecret('JWT_SECRET', { allowTestFallback: true });
 const getRefreshSecret = () => process.env.REFRESH_TOKEN_SECRET || getJwtSecret() + '-refresh';
 const ACCESS_TOKEN_EXPIRY = '15m'; // 15 minutes
 const REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
@@ -212,6 +213,9 @@ export async function getUserRefreshTokens(userId) {
     }
   });
 }
+
+
+
 
 
 
