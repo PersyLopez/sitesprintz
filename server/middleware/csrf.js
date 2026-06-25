@@ -115,8 +115,11 @@ export function csrfProtection(req, res, next) {
     return next();
   }
 
-  // Skip CSRF validation for public checkout endpoint (anonymous users)
-  if (req.path === '/api/payments/checkout-sessions') {
+  // Skip CSRF validation for public checkout endpoints (anonymous customers)
+  if (
+    req.path === '/api/payments/checkout-sessions' ||
+    req.path === '/api/stripe/connect/create-checkout'
+  ) {
     return next();
   }
 
@@ -139,9 +142,10 @@ export function csrfProtection(req, res, next) {
   //   return next();
   // }
 
-  log(`🔒 CSRF Middleware executing for: ${req.method} ${req.path}`);
-  log(`Cookies: ${JSON.stringify(req.cookies)}`);
-  log(`Headers: ${JSON.stringify(req.headers)}`);
+  // Log minimal debug info only when CSRF_DEBUG is explicitly enabled
+  if (process.env.CSRF_DEBUG === 'true') {
+    log(`🔒 CSRF Middleware executing for: ${req.method} ${req.path}`);
+  }
 
   try {
     const sessionId = req.cookies?.sessionId;
