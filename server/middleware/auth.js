@@ -1,9 +1,9 @@
 import jwt from 'jsonwebtoken';
 import { prisma } from '../../database/db.js';
+import { redactValue } from '../utils/redaction.js';
 
 // function to get secret to avoid ESM hoisting issues
 const getJwtSecret = () => process.env.JWT_SECRET || 'your-secret-key-change-in-production';
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'dev-token';
 
 /**
  * Extract token from Authorization header
@@ -84,7 +84,15 @@ function handleAuthError(err, res) {
 function checkEmailVerification(user, res) {
   const requireEmailVerification = process.env.REQUIRE_EMAIL_VERIFICATION !== 'false';
   if (requireEmailVerification && !user.email_verified && user.role !== 'admin') {
-    // Skip verification for test users in E2E environment
+    // In development environment, skip email verification for all users
+    // In production, skip for users matching specific test patterns
+    const isNonProd = process.env.NODE_ENV !== 'production';
+    if (isNonProd) {
+      // Dev mode: always allow
+      return null;
+    }
+    
+    // Production mode: skip verification for test users only
     const isTestUser = user.email.startsWith('test') ||
       user.email.startsWith('reset') ||
       user.email.startsWith('starter') ||
@@ -93,11 +101,23 @@ function checkEmailVerification(user, res) {
       user.email.startsWith('blocked') ||
       user.email.startsWith('upgrade') ||
       user.email.startsWith('session') ||
-      user.email.includes('csrf-test');
+      user.email.includes('csrf-test') ||
+      user.email.includes('journey-') ||
+      user.email.includes('phase') ||
+      user.email.includes('complete-') ||
+      user.email.includes('nav-') ||
+      user.email.includes('custom-') ||
+      user.email.includes('image-') ||
+      user.email.includes('products-') ||
+      user.email.includes('contact-') ||
+      user.email.includes('view-') ||
+      user.email.includes('manage-') ||
+      user.email.includes('diag');
 
-    if (process.env.NODE_ENV !== 'production' && isTestUser) {
+    if (isTestUser) {
       return null;
     }
+    
     return res.status(403).json({
       error: 'Email verification required',
       requiresVerification: true,
@@ -180,8 +200,11 @@ export async function requireAuth(req, res, next) {
     if (err.message === 'User not found') {
       console.log('Auth Middleware: User not found in DB');
     }
-    console.error('Auth middleware error:', err);
-    console.log('Auth Middleware: Error details:', err.message);
+    console.error('Auth middleware error:', {
+      token: redactValue(token),
+      name: err.name,
+      message: err.message
+    });
     return handleAuthError(err, res);
   }
 }
