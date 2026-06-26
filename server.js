@@ -57,6 +57,7 @@ dotenv.config();
 // Validate environment configuration
 import { validateEnv, logBootSummary } from './server/config/validateEnv.js';
 import { getRequiredSecret } from './server/config/secrets.js';
+import { buildCorsOptions } from './server/config/cors.js';
 validateEnv();
 logBootSummary();
 
@@ -125,7 +126,8 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' } // Allow images from any origin
 }));
 
-app.use(cors());
+// CORS — strict allowlist in production, localhost permitted in development
+app.use(cors(buildCorsOptions()));
 
 // SEO routes must be mounted BEFORE static middleware for sitemap/robots.txt to work
 app.use('/', seoRoutes);
