@@ -1,0 +1,42 @@
+url: http://localhost:5173/
+goal: Landing page renders and primary public navigation works
+steps:
+  - action: See hero and brand
+    wait_for: { text: Create Your Professional Website in Minutes }
+    assert:
+      - text contains SiteSprintz
+      - text contains Get Started Free
+      - text contains View Gallery
+      - text contains Choose Your Plan
+      - text contains Starter
+      - text contains Growth
+      - text contains Pro
+
+  - action: Open Gallery from header
+    click: { testId: nav-gallery }
+    assert:
+      - url contains /showcase
+
+  - action: Return home via logo
+    click: { testId: header-logo }
+    assert:
+      - url equals http://localhost:5173/
+      - text contains Create Your Professional Website in Minutes
+
+  - action: Open Pricing section from header
+    click: { testId: nav-pricing }
+    settle_ms: 400
+    assert:
+      - text contains Choose Your Plan
+
+  - action: Open Login from header
+    click: { testId: nav-login }
+    assert:
+      - url contains /login
+      - text contains Welcome Back
+
+  - action: Open Get Started from header
+    click: { testId: nav-get-started }
+    assert:
+      - url contains /register
+      - text contains Create Your Account

@@ -1,0 +1,52 @@
+url: http://localhost:5173/login
+goal: Settings shell and local tabs load without opening Stripe billing portal
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter email
+    fill: { testId: login-email, value: "test@example.com" }
+
+  - action: Enter password
+    fill: { testId: login-password, value: "SecurePass!2024" }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 2500
+
+  - action: Dashboard
+    wait_for: { url: /dashboard, timeout: 20000 }
+
+  - action: Open settings
+    goto: http://localhost:5173/settings
+
+  - action: Settings welcome
+    wait_for: { text: Select a setting category from the sidebar, timeout: 15000 }
+    assert:
+      - text contains Payment Settings
+      - text contains Billing
+      - text contains Foundation Settings
+      - text contains Custom Domain
+      - text contains Help & FAQ
+
+  - action: Open foundation tab (local site settings, no external DNS)
+    click: { text: Foundation Settings }
+    settle_ms: 1200
+    assert:
+      - url contains /settings/foundation
+      - text contains Foundation Settings
+
+  - action: Open domain tab shell
+    click: { text: Custom Domain }
+    settle_ms: 1200
+    assert:
+      - url contains /settings/domain
+      - text contains Custom Domain
+
+  - action: Open billing tab UI only (do not click Stripe portal)
+    click: { text: Billing }
+    settle_ms: 1000
+    assert:
+      - url contains /settings/billing
+      - text contains Billing Management
+      - text contains Current Plan

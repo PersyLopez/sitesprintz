@@ -1,0 +1,43 @@
+url: http://localhost:5173/about
+goal: Public content pages About, Contact, Track, and 404 behave correctly
+steps:
+  - action: About page content
+    wait_for: { text: About SiteSprintz, timeout: 20000 }
+    assert:
+      - text contains Our Mission
+      - text contains What We Do
+      - text contains 12+ industry-specific templates
+
+  - action: Go to Contact
+    goto: http://localhost:5173/contact
+
+  - action: Contact loaded
+    wait_for: { text: Contact Us, timeout: 20000 }
+    assert:
+      - text contains hello@sitesprintz.com
+      - text contains support@sitesprintz.com
+      - text contains Common Questions
+
+  - action: Go to Track lookup
+    goto: http://localhost:5173/track
+
+  - action: Track loaded
+    wait_for: { text: Track Your Order or Appointment, timeout: 20000 }
+    assert:
+      - text contains Order ID
+      - text contains Email Address
+
+  - action: Track form empty submit stays on page
+    click: { role: button, name: Track }
+    settle_ms: 600
+    assert:
+      - text contains Track Your Order or Appointment
+
+  - action: Unknown route
+    goto: http://localhost:5173/this-page-does-not-exist-xyz
+
+  - action: 404 loaded
+    wait_for: { text: Page Not Found, timeout: 20000 }
+    assert:
+      - text contains Page Not Found
+      - text contains Go Home

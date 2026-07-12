@@ -1,0 +1,37 @@
+url: http://localhost:5173/
+goal: Landing CTAs and template marketing sections work
+steps:
+  - action: Hero primary CTA goes to register
+    wait_for: { text: Get Started Free }
+    click: { text: Get Started Free → }
+    settle_ms: 1000
+    assert:
+      - url contains /register
+
+  - action: Back to landing
+    goto: http://localhost:5173/
+    wait_for: { text: Create Your Professional Website in Minutes }
+
+  - action: View Gallery secondary CTA
+    click: { text: View Gallery }
+    settle_ms: 1000
+    assert:
+      - url contains /showcase
+
+  - action: Landing templates section
+    goto: http://localhost:5173/
+    wait_for: { text: Choose Your Template }
+    assert:
+      - text contains Restaurant
+      - text contains Salon
+      - text contains Fitness
+      - text contains How It Works
+      - text contains Choose a Template
+      - text contains Customize Content
+      - text contains Launch & Grow
+
+  - action: How it works nav
+    click: { testId: nav-how-it-works }
+    settle_ms: 600
+    assert:
+      - text contains How It Works

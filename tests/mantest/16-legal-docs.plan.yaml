@@ -1,0 +1,31 @@
+url: http://localhost:3000/legal/terms
+goal: Legal documents served by local API (no third-party legal hosts)
+steps:
+  - action: Terms of Service
+    wait_for: { text: Terms of Service, timeout: 15000 }
+    assert:
+      - text contains SiteSprintz
+      - text contains Privacy Policy
+
+  - action: Privacy Policy
+    goto: http://localhost:3000/legal/privacy
+
+  - action: Privacy loaded
+    wait_for: { text: Privacy Policy, timeout: 15000 }
+    assert:
+      - text contains SiteSprintz
+
+  - action: Cookie Policy
+    goto: http://localhost:3000/legal/cookies
+
+  - action: Cookies loaded
+    wait_for: { text: Cookie, timeout: 15000 }
+    assert:
+      - text contains Cookie
+
+  - action: Third-party disclosure
+    goto: http://localhost:3000/legal/third-party-services
+
+  - action: Third-party page
+    wait_for: { text: Third-Party, timeout: 15000 }
+    settle_ms: 400

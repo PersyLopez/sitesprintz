@@ -1,0 +1,66 @@
+url: http://localhost:5173/login
+goal: Auth surfaces render; login validation and forgot-password flow work
+steps:
+  - action: Login form visible
+    wait_for: { text: Welcome Back, timeout: 20000 }
+    assert:
+      - text contains Sign in to your account to continue
+      - text contains Email
+      - text contains Password
+      - text contains Forgot password?
+
+  - action: Submit empty login shows validation
+    click: { testId: login-submit }
+    settle_ms: 500
+    assert:
+      - text contains Email is required
+
+  - action: Reload login for credential test
+    goto: http://localhost:5173/login
+
+  - action: Login ready again
+    wait_for: { text: Welcome Back, timeout: 15000 }
+
+  - action: Enter invalid email
+    fill: { testId: login-email, value: "nobody-invalid@example.com" }
+
+  - action: Enter invalid password
+    fill: { testId: login-password, value: "WrongPass!9999" }
+
+  - action: Submit invalid credentials
+    code: |
+      await page.getByTestId('login-submit').click();
+      // Wait for either toast or form-level auth error after 401
+      await page.waitForFunction(() => {
+        const t = document.body?.innerText || '';
+        return /unauthorized|login failed|invalid|credentials|incorrect/i.test(t);
+      }, { timeout: 10000 });
+    settle_ms: 500
+    assert:
+      - text contains Unauthorized
+
+  - action: Open forgot password
+    click: { text: Forgot password? }
+    assert:
+      - url contains /forgot-password
+
+  - action: Forgot password form visible (no email send — external Resend)
+    wait_for: { text: Forgot Password, timeout: 15000 }
+    assert:
+      - text contains reset link
+
+  - action: Forgot-password email field present
+    expect:
+      - text contains Email
+
+  - action: Go to register
+    goto: http://localhost:5173/register
+
+  - action: Register page loaded
+    wait_for: { text: Create Your Account, timeout: 20000 }
+    assert:
+      - text contains Email
+      - text contains Password
+      - text contains Confirm Password
+      - text contains Terms of Service
+      - text contains Create Account

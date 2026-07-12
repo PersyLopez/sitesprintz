@@ -1,0 +1,55 @@
+url: http://localhost:5173/register
+goal: Register form client validation without creating accounts or calling email/CAPTCHA services
+steps:
+  - action: Register page loads
+    wait_for: { text: Create Your Account, timeout: 20000 }
+    assert:
+      - text contains Email
+      - text contains Password
+      - text contains Confirm Password
+      - text contains Terms of Service
+      - text contains Privacy Policy
+
+  - action: Submit disabled without terms
+    code: |
+      const btn = page.getByTestId('register-submit');
+      const disabled = await btn.isDisabled();
+      if (!disabled) throw new Error('Register submit should be disabled until terms accepted');
+    settle_ms: 200
+
+  - action: Accept terms
+    check: { testId: register-accept-terms }
+    settle_ms: 300
+
+  - action: Submit empty form shows email required
+    code: |
+      await page.getByTestId('register-submit').click();
+      await page.waitForFunction(() => {
+        const t = document.body?.innerText || '';
+        return /email is required/i.test(t);
+      }, { timeout: 8000 });
+    settle_ms: 400
+    assert:
+      - text contains Email is required
+      - url contains /register
+
+  - action: Fill mismatched passwords
+    fill: { testId: register-email, value: "local-only-test@example.com", clear: true }
+
+  - action: Password value
+    fill: { testId: register-password, value: "SecurePass!2024AA", clear: true }
+
+  - action: Confirm different password
+    fill: { testId: register-confirm-password, value: "DifferentPass!2024BB", clear: true }
+
+  - action: Submit mismatched passwords
+    code: |
+      await page.getByTestId('register-submit').click();
+      await page.waitForFunction(() => {
+        const t = document.body?.innerText || '';
+        return /passwords do not match/i.test(t);
+      }, { timeout: 8000 });
+    settle_ms: 400
+    assert:
+      - text contains Passwords do not match
+      - url contains /register

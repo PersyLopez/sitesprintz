@@ -1,0 +1,52 @@
+url: http://localhost:5173/login
+goal: Booking plan gate and setup wizard steps work locally (no email/payment integrations)
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter email
+    fill: { testId: login-email, value: "test@example.com" }
+
+  - action: Enter password
+    fill: { testId: login-password, value: "SecurePass!2024" }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 2500
+
+  - action: Dashboard
+    wait_for: { url: /dashboard, timeout: 20000 }
+
+  - action: Open booking dashboard
+    goto: http://localhost:5173/booking-dashboard
+
+  - action: Booking page resolves
+    wait_for: { url: /booking-dashboard, timeout: 15000 }
+    settle_ms: 1200
+
+  - action: Booking UI or Pro gate
+    code: |
+      const t = await page.locator('body').innerText();
+      const ok =
+        /Booking Dashboard|Pro Feature|Upgrade to Pro|Appointments|Add Service/i.test(t);
+      if (!ok) throw new Error('Unexpected booking dashboard content: ' + t.slice(0, 300));
+    settle_ms: 300
+
+  - action: Open setup
+    goto: http://localhost:5173/setup
+
+  - action: Quick Start
+    wait_for: { text: Quick Start, timeout: 20000 }
+    settle_ms: 800
+    assert:
+      - text contains What type of business
+
+  - action: Choose Salon business type
+    click: { text: Salon & Spa }
+    settle_ms: 1200
+
+  - action: Business essentials step
+    wait_for: { text: Business essentials, timeout: 15000 }
+    settle_ms: 800
+    assert:
+      - text contains Business essentials

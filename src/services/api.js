@@ -10,7 +10,9 @@ class APIClient {
 
   async initCsrf() {
     try {
-      const response = await fetch(`${this.baseURL}/api/csrf-token`);
+      const response = await fetch(`${this.baseURL}/api/csrf-token`, {
+        credentials: 'include'
+      });
       if (response.ok) {
         const data = await response.json();
         this.csrfToken = data.csrfToken;
@@ -25,7 +27,12 @@ class APIClient {
    * Get authentication token from localStorage
    */
   getAuthToken() {
-    return localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+    const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+    // Sanitize token - ignore literal "null", "undefined", or empty strings
+    if (!token || token === 'null' || token === 'undefined' || token === '[object Object]') {
+      return null;
+    }
+    return token;
   }
 
   /**
@@ -72,7 +79,19 @@ class APIClient {
     if (!refreshToken) {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('authToken');
-      window.location.href = '/login';
+      // Stay on auth screens so login/register can show form errors.
+      // A hard redirect here wipes toasts and controlled form state.
+      const path = typeof window !== 'undefined' ? window.location.pathname : '';
+      const isAuthScreen =
+        path === '/login' ||
+        path === '/register' ||
+        path === '/forgot-password' ||
+        path.startsWith('/reset-password') ||
+        path.startsWith('/verify-email') ||
+        path.startsWith('/oauth');
+      if (!isAuthScreen) {
+        window.location.href = '/login';
+      }
       throw new Error('Unauthorized');
     }
   }
@@ -82,7 +101,7 @@ class APIClient {
    */
   async parseResponse(response) {
     const contentType = response.headers && response.headers.get ? response.headers.get('content-type') : null;
-    
+
     if (contentType && contentType.includes('application/json')) {
       return await response.json();
     } else if (typeof response.text === 'function') {
@@ -100,7 +119,10 @@ class APIClient {
   async executeWithRetry(url, options, retries, delay = 1000) {
     while (retries >= 0) {
       try {
-        const response = await fetch(url, options);
+        const response = await fetch(url, {
+          ...options,
+          credentials: 'include'
+        });
 
         if (response.status === 401) {
           await this.handleAuthError(response);
@@ -116,7 +138,18 @@ class APIClient {
       } catch (error) {
         if (retries === 0 || error.message === 'Unauthorized') {
           console.error('API request failed:', error);
-          throw error;
+          // Enhance error with more context
+          const enhancedError = new Error(error.message || 'Request failed');
+          enhancedError.isNetworkError = error.message?.includes('fetch') || 
+                                       error.message?.includes('network') ||
+                                       error.message?.includes('Failed to fetch') ||
+                                       error.name === 'TypeError';
+          enhancedError.isAuthError = error.message?.includes('Unauthorized') ||
+                                     error.message?.includes('401') ||
+                                     error.message?.includes('token');
+          enhancedError.originalError = error;
+          enhancedError.statusCode = error.status || error.response?.status;
+          throw enhancedError;
         }
 
         console.warn(`API request failed, retrying (${retries} left)...`, error);
@@ -130,7 +163,7 @@ class APIClient {
   async request(endpoint, options = {}) {
     const url = this.buildRequestUrl(endpoint, options);
     const headers = this.buildHeaders(options);
-    
+
     const retries = options.retries !== undefined
       ? options.retries
       : (import.meta.env.MODE === 'test' ? 0 : 3);
@@ -172,6 +205,7 @@ class APIClient {
         method: 'POST',
         headers,
         body: formData,
+        credentials: 'include'
       });
 
       if (response.status === 401) {

@@ -1,0 +1,38 @@
+url: http://localhost:5173/login
+goal: Authenticated user can open setup and pick a business type in Quick Start
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter email
+    fill: { testId: login-email, value: "test@example.com" }
+
+  - action: Enter password
+    fill: { testId: login-password, value: "SecurePass!2024" }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Wait for dashboard
+    wait_for: { url: /dashboard, timeout: 20000 }
+    assert:
+      - text contains Welcome back
+
+  - action: Go to setup
+    goto: http://localhost:5173/setup
+
+  - action: Quick Start loaded
+    wait_for: { text: Quick Start, timeout: 20000 }
+    settle_ms: 1000
+    assert:
+      - url contains /setup
+      - text contains What type of business are you creating
+
+  - action: Choose Restaurant business type
+    click: { text: Restaurant }
+    settle_ms: 1200
+
+  - action: Advanced past business type
+    expect:
+      - text contains Business essentials

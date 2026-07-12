@@ -1,0 +1,33 @@
+url: http://localhost:5173/showcase
+goal: Showcase gallery opens a demo site detail page without external CDN-only dependencies
+steps:
+  - action: Gallery loads
+    wait_for: { text: Made with SiteSprintz, timeout: 20000 }
+    settle_ms: 1500
+
+  - action: Open first View Details
+    code: |
+      const details = page.getByText('View Details', { exact: true });
+      const n = await details.count();
+      if (n === 0) {
+        // empty gallery is still a valid local state
+        const empty = await page.getByTestId('showcase-empty-cta').count();
+        if (empty) return;
+        throw new Error('No showcase cards or empty state');
+      }
+      await details.first().click();
+    settle_ms: 2000
+
+  - action: Detail or stayed on empty gallery
+    code: |
+      const url = page.url();
+      const t = await page.locator('body').innerText();
+      if (url.includes('/showcase/') || (await page.getByTestId('showcase-detail').count()) > 0) {
+        const ok = /Visit|Demo|Growth|Starter|Pro|Template|View Site|VISIT SITE/i.test(t);
+        if (!ok) throw new Error('Showcase detail missing expected content');
+        return;
+      }
+      // empty path
+      if (/No sites found|Create Your Site|Made with SiteSprintz/i.test(t)) return;
+      throw new Error('Neither detail nor gallery empty state. url=' + url);
+    settle_ms: 400

@@ -1,0 +1,29 @@
+url: http://localhost:5173/showcase
+goal: Showcase gallery page loads with search/filters and CTAs
+steps:
+  - action: Gallery page loads
+    wait_for: { text: Made with SiteSprintz }
+    settle_ms: 1500
+    assert:
+      - url contains /showcase
+      - text contains Discover amazing websites
+
+  - action: Search control present
+    fill: { testId: showcase-search, value: "salon", clear: true }
+    settle_ms: 800
+
+  - action: All category filter
+    click: { testId: category-btn-all }
+    settle_ms: 800
+
+  - action: Empty state or sites visible
+    code: |
+      const body = await page.locator('body').innerText();
+      const ok =
+        body.includes('No sites found') ||
+        body.includes('Create Your Site') ||
+        body.includes('showcase') ||
+        (await page.getByTestId('showcase-grid').count()) > 0 ||
+        (await page.getByTestId('showcase-empty-cta').count()) > 0;
+      if (!ok) throw new Error('Showcase shows neither empty state nor grid');
+    settle_ms: 500

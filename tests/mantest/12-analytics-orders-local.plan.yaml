@@ -1,0 +1,44 @@
+url: http://localhost:5173/login
+goal: Analytics dashboard and orders empty-state render from local API data
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter email
+    fill: { testId: login-email, value: "test@example.com" }
+
+  - action: Enter password
+    fill: { testId: login-password, value: "SecurePass!2024" }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 2500
+
+  - action: Dashboard
+    wait_for: { url: /dashboard, timeout: 20000 }
+
+  - action: Open analytics
+    goto: http://localhost:5173/analytics
+
+  - action: Analytics dashboard
+    wait_for: { text: Analytics Dashboard, timeout: 15000 }
+    settle_ms: 1500
+    assert:
+      - url contains /analytics
+      - text contains TOTAL VIEWS
+      - text contains UNIQUE VISITORS
+      - text contains Your Sites Performance
+
+  - action: Time range controls present
+    expect:
+      - text contains Last 30 Days
+
+  - action: Open orders without siteId
+    goto: http://localhost:5173/orders
+
+  - action: Orders empty guidance
+    wait_for: { text: No Site Selected, timeout: 15000 }
+    settle_ms: 800
+    assert:
+      - text contains select a site
+      - text contains Go to Dashboard

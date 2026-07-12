@@ -1,0 +1,126 @@
+url: http://localhost:5173/login
+goal: Login as pro test user and exercise dashboard, setup, settings, products, booking
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter email
+    fill: { testId: login-email, value: "test@example.com" }
+
+  - action: Enter password
+    fill: { testId: login-password, value: "SecurePass!2024" }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Land on dashboard
+    wait_for: { url: /dashboard, timeout: 20000 }
+    assert:
+      - url contains /dashboard
+      - text contains Welcome back
+      - text contains Manage your websites
+
+  - action: Dismiss welcome modal if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 5000 });
+        await page.waitForTimeout(400);
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+    settle_ms: 800
+
+  - action: Open setup via nav
+    code: |
+      // Prefer header Create Site link if present, else create buttons
+      const navCreate = page.getByTestId('nav-create-site');
+      const createBtn = page.getByTestId('create-site-button');
+      const firstBtn = page.getByTestId('create-first-site-button');
+      if (await navCreate.count()) {
+        await navCreate.first().click({ force: true });
+      } else if (await createBtn.count()) {
+        await createBtn.first().click({ force: true });
+      } else if (await firstBtn.count()) {
+        await firstBtn.first().click({ force: true });
+      } else {
+        await page.goto('http://localhost:5173/setup', { waitUntil: 'load' });
+      }
+    settle_ms: 2500
+    assert:
+      - url contains /setup
+
+  - action: Setup quick start present
+    wait_for: { text: Quick Start, timeout: 20000 }
+    settle_ms: 800
+    assert:
+      - text contains Quick Start
+      - text contains What type of business
+
+  - action: Navigate to settings
+    goto: http://localhost:5173/settings
+
+  - action: Settings loaded
+    wait_for: { url: /settings, timeout: 15000 }
+    settle_ms: 1000
+    assert:
+      - url contains /settings
+
+  - action: Navigate to products
+    goto: http://localhost:5173/products
+
+  - action: Products loaded
+    wait_for: { url: /products, timeout: 15000 }
+    settle_ms: 800
+    assert:
+      - url contains /products
+
+  - action: Navigate to orders
+    goto: http://localhost:5173/orders
+
+  - action: Orders loaded
+    wait_for: { url: /orders, timeout: 15000 }
+    settle_ms: 800
+    assert:
+      - url contains /orders
+
+  - action: Navigate to analytics
+    goto: http://localhost:5173/analytics
+
+  - action: Analytics loaded
+    wait_for: { url: /analytics, timeout: 15000 }
+    settle_ms: 800
+    assert:
+      - url contains /analytics
+
+  - action: Navigate to booking dashboard
+    goto: http://localhost:5173/booking-dashboard
+
+  - action: Booking dashboard loaded
+    wait_for: { url: /booking-dashboard, timeout: 15000 }
+    settle_ms: 800
+    assert:
+      - url contains /booking-dashboard
+
+  - action: Back to dashboard
+    goto: http://localhost:5173/dashboard
+
+  - action: Dashboard ready for logout
+    wait_for: { text: Welcome back, timeout: 15000 }
+    settle_ms: 800
+
+  - action: Dismiss modal before logout
+    code: |
+      const overlay = page.locator('[role="dialog"], .modal-overlay');
+      if (await overlay.count()) {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(300);
+      }
+    settle_ms: 300
+
+  - action: Logout
+    click: { testId: nav-logout-button }
+    settle_ms: 2000
+    assert:
+      - url contains /login

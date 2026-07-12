@@ -1,0 +1,50 @@
+url: http://localhost:5173/dashboard
+goal: Unauthenticated users are redirected away from protected routes
+steps:
+  - action: Dashboard requires auth
+    wait_for: { url: /login }
+    settle_ms: 500
+    assert:
+      - url contains /login
+
+  - action: Setup requires auth
+    goto: http://localhost:5173/setup
+    wait_for: { url: /login }
+    assert:
+      - url contains /login
+
+  - action: Orders requires auth
+    goto: http://localhost:5173/orders
+    wait_for: { url: /login }
+    assert:
+      - url contains /login
+
+  - action: Analytics requires auth
+    goto: http://localhost:5173/analytics
+    wait_for: { url: /login }
+    assert:
+      - url contains /login
+
+  - action: Settings requires auth
+    goto: http://localhost:5173/settings
+    wait_for: { url: /login }
+    assert:
+      - url contains /login
+
+  - action: Products requires auth
+    goto: http://localhost:5173/products
+    wait_for: { url: /login }
+    assert:
+      - url contains /login
+
+  - action: Booking dashboard requires auth
+    goto: http://localhost:5173/booking-dashboard
+    wait_for: { url: /login }
+    assert:
+      - url contains /login
+
+  - action: Admin requires auth
+    goto: http://localhost:5173/admin
+    wait_for: { url: /login }
+    assert:
+      - url contains /login

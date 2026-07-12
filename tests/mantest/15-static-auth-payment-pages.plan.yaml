@@ -1,0 +1,27 @@
+url: http://localhost:5173/reset-password
+goal: Local static auth/payment outcome pages without Stripe sessions or email tokens
+steps:
+  - action: Invalid reset link page
+    wait_for: { text: Invalid Reset Link, timeout: 15000 }
+    assert:
+      - text contains invalid or has expired
+      - text contains Request New Link
+      - text contains Back to Login
+
+  - action: Payment cancel page
+    goto: http://localhost:5173/payment-cancel
+
+  - action: Payment cancel content
+    wait_for: { text: Payment Cancelled, timeout: 15000 }
+    assert:
+      - text contains payment was cancelled
+      - text contains Return to Dashboard
+
+  - action: Payment success without session redirects home
+    goto: http://localhost:5173/payment-success
+
+  - action: Redirected away without session_id
+    wait_for: { url: "http://localhost:5173/", timeout: 15000 }
+    settle_ms: 800
+    assert:
+      - url equals http://localhost:5173/
