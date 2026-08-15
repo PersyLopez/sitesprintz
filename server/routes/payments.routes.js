@@ -3,19 +3,93 @@ import Stripe from 'stripe';
 import { randomUUID as nodeRandomUUID } from 'crypto';
 import { prisma } from '../../database/db.js';
 import { authenticateToken, requireAuth } from '../middleware/auth.js';
+import { checkoutLimiter, orderLimiter } from '../middleware/rateLimiting.js';
+import { verifyTurnstile } from '../utils/captcha.js';
+import { resolvePlanLimits } from '../utils/resolveUserPlan.js';
 import {
   sendSuccess,
-  sendCreated,
   sendBadRequest,
-  sendUnauthorized,
   sendForbidden,
   sendNotFound,
   sendServerError,
   sendServiceUnavailable,
   asyncHandler
 } from '../utils/apiResponse.js';
+import {
+  createStandardAccountLink,
+  isStripeOAuthConfigured,
+  initiateStripeOAuth
+} from '../services/payments/StripeConnectService.js';
+import {
+  getApiOrigin,
+  getFrontendOrigin,
+  resolveOwnedSiteId,
+  getConnectedProcessors,
+  isProcessorConfigured,
+  normalizeApplyTo,
+  deactivateProcessor,
+  getFuturePaymentDefaults
+} from '../services/payments/processorConnectHelpers.js';
+import { isPayPalConfigured } from '../services/payments/PayPalOAuthService.js';
 
 const router = express.Router();
+
+/**
+ * Middleware: Require Growth plan for payments
+ * Checks plan from site owner, not the customer making the purchase
+ */
+async function requireProPlan(req, res, next) {
+  try {
+    const siteId = req.body?.siteId || req.query?.siteId;
+    
+    if (!siteId) {
+      const userId = req.user?.id || req.user?.userId;
+      if (!userId) {
+        return sendBadRequest(res, 'Site ID is required', 'MISSING_SITE_ID');
+      }
+
+      const user = await prisma.users.findUnique({
+        where: { id: userId },
+        select: { plan: true, subscription_plan: true }
+      });
+
+      const limits = resolvePlanLimits(user);
+
+      if (!limits.payments) {
+        return sendForbidden(res, 'Online payments require Growth plan', 'GROWTH_PLAN_REQUIRED');
+      }
+
+      return next();
+    }
+
+    // Check site owner's plan
+    const site = await prisma.sites.findUnique({
+      where: { id: siteId },
+      select: { 
+        user_id: true,
+        plan: true,
+        users: {
+          select: { plan: true, subscription_plan: true }
+        }
+      }
+    });
+
+    if (!site) {
+      return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
+    }
+
+    const limits = resolvePlanLimits(site.users || { plan: site.plan });
+
+    if (!limits.payments) {
+      return sendForbidden(res, 'This site does not have online payments enabled. The site owner needs a Growth plan.', 'GROWTH_PLAN_REQUIRED');
+    }
+
+    next();
+  } catch (error) {
+    console.error('Error checking plan for payments:', error);
+    return sendForbidden(res, 'Error checking plan', 'PLAN_CHECK_ERROR');
+  }
+}
 
 // Stripe setup
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
@@ -60,10 +134,16 @@ router.get('/payments/config', asyncHandler(async (req, res) => {
     });
 }));
 
-// Create Checkout Session for Shopping Cart (Pro Feature)
-router.post('/checkout/create-session', authenticateToken, asyncHandler(async (req, res) => {
+// Create Checkout Session for Shopping Cart (Growth Feature)
+router.post('/checkout/create-session', checkoutLimiter, orderLimiter, authenticateToken, requireProPlan, asyncHandler(async (req, res) => {
     if (!stripe) {
         return sendServiceUnavailable(res, 'Stripe not configured', 'STRIPE_NOT_CONFIGURED');
+    }
+
+    // Verify CAPTCHA
+    const captchaResult = await verifyTurnstile(req.body.captchaToken, req.ip);
+    if (!captchaResult.success && !captchaResult.skipped) {
+        return sendBadRequest(res, 'CAPTCHA verification failed', 'CAPTCHA_FAILED');
     }
 
     const { items, siteId, successUrl, cancelUrl } = req.body;
@@ -90,7 +170,27 @@ router.post('/checkout/create-session', authenticateToken, asyncHandler(async (r
         return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
     }
 
-    const stripeAccountId = site.stripe_account_id;
+    // Check if owner has Stripe Connect ready (charges_enabled)
+    const owner = await prisma.users.findUnique({
+        where: { id: req.user.id }
+    });
+
+    if (!owner?.stripe_account_id || !owner?.stripe_connected) {
+        return sendBadRequest(res, 'Stripe Connect is not set up. Please complete your payment setup first.', 'STRIPE_CONNECT_REQUIRED');
+    }
+
+    // Verify account is live with Stripe
+    try {
+        const account = await stripe.accounts.retrieve(owner.stripe_account_id);
+        if (!account.charges_enabled) {
+            return sendBadRequest(res, 'Stripe account is not ready to accept charges. Please complete your setup.', 'STRIPE_CONNECT_REQUIRED');
+        }
+    } catch (error) {
+        console.error('Failed to verify Stripe account:', error);
+        return sendBadRequest(res, 'Unable to verify Stripe account status', 'STRIPE_CONNECT_REQUIRED');
+    }
+
+    const stripeAccountId = owner.stripe_account_id;
 
     // Build line items for Stripe
     const lineItems = items.map(item => ({
@@ -118,7 +218,7 @@ router.post('/checkout/create-session', authenticateToken, asyncHandler(async (r
 
     // Create Stripe session
     const sessionParams = {
-        payment_method_types: ['card', 'paypal', 'link'], // Multiple payment methods
+        payment_method_types: ['card', 'paypal', 'link'],
         line_items: lineItems,
         mode: 'payment',
         success_url: successUrl,
@@ -130,18 +230,17 @@ router.post('/checkout/create-session', authenticateToken, asyncHandler(async (r
             order_items: JSON.stringify(items)
         },
         billing_address_collection: 'auto',
-        // Enable Stripe Connect if site has connected account
-        ...(stripeAccountId && {
+        ...(platformFee > 0 && {
             payment_intent_data: {
-                application_fee_amount: platformFee,
-                transfer_data: {
-                    destination: stripeAccountId,
-                },
-            },
-        }),
+                application_fee_amount: platformFee
+            }
+        })
     };
 
-    const session = await stripe.checkout.sessions.create(sessionParams);
+    // Direct charge on the owner's Standard account — funds never settle on SiteSprintz
+    const session = await stripe.checkout.sessions.create(sessionParams, {
+        stripeAccount: stripeAccountId
+    });
 
     console.log('✅ Checkout session created:', session.id, 'for user:', req.user.email);
 
@@ -152,9 +251,15 @@ router.post('/checkout/create-session', authenticateToken, asyncHandler(async (r
 }));
 
 // Create a Checkout Session for a product with dynamic pricing and Stripe Connect support
-router.post('/payments/checkout-sessions', asyncHandler(async (req, res) => {
+router.post('/payments/checkout-sessions', checkoutLimiter, orderLimiter, requireProPlan, asyncHandler(async (req, res) => {
     if (!stripe) {
         return sendServiceUnavailable(res, 'Payments not configured', 'STRIPE_NOT_CONFIGURED');
+    }
+
+    // Verify CAPTCHA
+    const captchaResult = await verifyTurnstile(req.body.captchaToken, req.ip);
+    if (!captchaResult.success && !captchaResult.skipped) {
+        return sendBadRequest(res, 'CAPTCHA verification failed', 'CAPTCHA_FAILED');
     }
 
     if (!isAllowedOrigin(req)) {
@@ -203,6 +308,22 @@ router.post('/payments/checkout-sessions', asyncHandler(async (req, res) => {
     const allowCheckout = siteData.settings?.allowCheckout !== false;
     if (!allowCheckout) {
         return sendForbidden(res, 'Checkout disabled for this site', 'CHECKOUT_DISABLED');
+    }
+
+    // Check if site owner has Stripe Connect ready (charges_enabled)
+    if (!siteOwner?.stripe_account_id || !siteOwner?.stripe_connected) {
+        return sendBadRequest(res, 'Stripe Connect is not set up for this site. The owner needs to complete their payment setup.', 'STRIPE_CONNECT_REQUIRED');
+    }
+
+    // Verify account is live with Stripe
+    try {
+        const account = await stripe.accounts.retrieve(siteOwner.stripe_account_id);
+        if (!account.charges_enabled) {
+            return sendBadRequest(res, 'Site owner\'s Stripe account is not ready to accept charges. Please try again later.', 'STRIPE_CONNECT_REQUIRED');
+        }
+    } catch (error) {
+        console.error('Failed to verify Stripe account:', error);
+        return sendBadRequest(res, 'Unable to verify Stripe account status', 'STRIPE_CONNECT_REQUIRED');
     }
 
     const unitAmountCents = Math.round(product.price * 100);
@@ -283,19 +404,20 @@ router.post('/payments/checkout-sessions', asyncHandler(async (req, res) => {
     return sendSuccess(res, { url: session.url });
 }));
 
-// Create Checkout Session for subscription (Starter/Pro plans)
+// Create Checkout Session for subscription (Starter/Growth plans)
 const createSubscriptionCheckout = asyncHandler(async (req, res) => {
     if (!stripe) {
         return sendServiceUnavailable(res, 'Stripe not configured. Add STRIPE_SECRET_KEY to .env', 'STRIPE_NOT_CONFIGURED');
     }
 
-    const { plan, draftId } = req.body;
+    const { plan: rawPlan, draftId } = req.body;
     const userEmail = req.user.email;
+    const plan = rawPlan === 'pro' || rawPlan === 'premium' ? 'growth' : rawPlan;
 
     // Validate plan and get pricing details
-    const validPlans = ['starter', 'pro'];
+    const validPlans = ['starter', 'growth'];
     if (!validPlans.includes(plan)) {
-        return sendBadRequest(res, 'Invalid plan. Must be "starter" or "pro"', 'INVALID_PLAN');
+        return sendBadRequest(res, 'Invalid plan. Must be "starter" or "growth"', 'INVALID_PLAN');
     }
 
         // Define plan details (dynamic pricing - no need for pre-created products!)
@@ -303,12 +425,12 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
             starter: {
                 name: 'SiteSprintz Starter',
                 amount: 1000, // $10.00 in cents
-                description: 'Professional website with all premium features'
+                description: 'Professional website — get found'
             },
-            pro: {
-                name: 'SiteSprintz Pro',
-                amount: 2500, // $25.00 in cents
-                description: 'Pro plan with payments, ecommerce, and advanced features'
+            growth: {
+                name: 'SiteSprintz Growth',
+                amount: 3500, // $35.00 in cents
+                description: 'Booking, checkout, and custom domain'
             }
         };
 
@@ -370,6 +492,212 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
 router.post('/payments/create-subscription-checkout', requireAuth, createSubscriptionCheckout);
 router.post('/create-subscription-checkout', requireAuth, createSubscriptionCheckout);
 
+// Create Setup Intent for trial payment method collection
+router.post('/trial/setup-intent', requireAuth, asyncHandler(async (req, res) => {
+  if (!stripe) {
+    return sendServiceUnavailable(res, 'Stripe not configured. Add STRIPE_SECRET_KEY to .env', 'STRIPE_NOT_CONFIGURED');
+  }
+
+  const userEmail = req.user.email;
+  const { plan: rawPlan } = req.body;
+  const plan = rawPlan === 'pro' || rawPlan === 'premium' ? 'growth' : rawPlan;
+
+  // Validate plan
+  const validPlans = ['starter', 'growth'];
+  if (!validPlans.includes(plan)) {
+    return sendBadRequest(res, 'Invalid plan. Must be "starter" or "growth"', 'INVALID_PLAN');
+  }
+
+  // Create or retrieve Stripe customer
+  let customer;
+  const existingCustomers = await stripe.customers.list({ email: userEmail, limit: 1 });
+
+  if (existingCustomers.data.length > 0) {
+    customer = existingCustomers.data[0];
+  } else {
+    customer = await stripe.customers.create({
+      email: userEmail,
+      metadata: {
+        source: 'sitesprintz',
+        signupDate: new Date().toISOString()
+      }
+    });
+  }
+
+  // Save customer ID to user record
+  await prisma.users.update({
+    where: { email: userEmail },
+    data: { stripe_customer_id: customer.id }
+  });
+
+  // Create Setup Intent to collect payment method
+  const setupIntent = await stripe.setupIntents.create({
+    customer: customer.id,
+    payment_method_types: ['card'],
+    usage: 'off_session', // For future payments
+    metadata: {
+      plan,
+      user_email: userEmail,
+      purpose: 'trial_payment_method'
+    }
+  });
+
+  console.log(`Created Setup Intent ${setupIntent.id} for trial - user: ${userEmail}, plan: ${plan}`);
+  sendSuccess(res, {
+    clientSecret: setupIntent.client_secret,
+    setupIntentId: setupIntent.id
+  });
+}));
+
+// Create subscription with trial period
+router.post('/trial/create-subscription', requireAuth, asyncHandler(async (req, res) => {
+  if (!stripe) {
+    return sendServiceUnavailable(res, 'Stripe not configured. Add STRIPE_SECRET_KEY to .env', 'STRIPE_NOT_CONFIGURED');
+  }
+
+  const userEmail = req.user.email;
+  const { plan: rawPlan, paymentMethodId, draftId } = req.body;
+  const plan = rawPlan === 'pro' || rawPlan === 'premium' ? 'growth' : rawPlan;
+
+  // Validate plan
+  const validPlans = ['starter', 'growth'];
+  if (!validPlans.includes(plan)) {
+    return sendBadRequest(res, 'Invalid plan. Must be "starter" or "growth"', 'INVALID_PLAN');
+  }
+
+  if (!paymentMethodId) {
+    return sendBadRequest(res, 'Payment method ID is required', 'MISSING_PAYMENT_METHOD');
+  }
+
+  // Get plan pricing
+  const planDetails = {
+    starter: { name: 'SiteSprintz Starter', amount: 1000 }, // $10.00
+    growth: { name: 'SiteSprintz Growth', amount: 3500 } // $35.00
+  };
+
+  const selectedPlan = planDetails[plan];
+
+  // Get or create customer
+  const user = await prisma.users.findUnique({
+    where: { email: userEmail },
+    select: { stripe_customer_id: true }
+  });
+
+  let customerId = user?.stripe_customer_id;
+
+  if (!customerId) {
+    const customer = await stripe.customers.create({
+      email: userEmail,
+      metadata: {
+        source: 'sitesprintz',
+        signupDate: new Date().toISOString()
+      }
+    });
+    customerId = customer.id;
+
+    await prisma.users.update({
+      where: { email: userEmail },
+      data: { stripe_customer_id: customerId }
+    });
+  }
+
+  // Attach payment method to customer
+  await stripe.paymentMethods.attach(paymentMethodId, {
+    customer: customerId
+  });
+
+  // Set as default payment method
+  await stripe.customers.update(customerId, {
+    invoice_settings: {
+      default_payment_method: paymentMethodId
+    }
+  });
+
+  // Create subscription with 7-day trial
+  const subscription = await stripe.subscriptions.create({
+    customer: customerId,
+    items: [{
+      price_data: {
+        currency: 'usd',
+        product_data: {
+          name: selectedPlan.name,
+          description: `7-day free trial, then ${selectedPlan.name}`
+        },
+        unit_amount: selectedPlan.amount,
+        recurring: {
+          interval: 'month'
+        }
+      }
+    }],
+    trial_period_days: 7,
+    payment_behavior: 'default_incomplete',
+    payment_settings: {
+      payment_method_types: ['card'],
+      save_default_payment_method: 'on_subscription'
+    },
+    expand: ['latest_invoice.payment_intent'],
+    metadata: {
+      plan,
+      user_email: userEmail,
+      draft_id: draftId || '',
+      source: 'sitesprintz_trial',
+      trial_start: new Date().toISOString()
+    }
+  });
+
+  // Update user with subscription info (keep plan fields in sync)
+  await prisma.users.update({
+    where: { email: userEmail },
+    data: {
+      stripe_subscription_id: subscription.id,
+      subscription_status: subscription.status,
+      plan: plan,
+      subscription_plan: plan,
+      current_period_end: new Date(subscription.current_period_end * 1000)
+    }
+  });
+
+  console.log(`Created trial subscription ${subscription.id} for ${userEmail}, plan: ${plan}`);
+  sendSuccess(res, {
+    subscriptionId: subscription.id,
+    status: subscription.status,
+    trialEnd: new Date(subscription.trial_end * 1000).toISOString(),
+    currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString()
+  });
+}));
+
+// Create billing portal session
+router.post('/create-portal-session', requireAuth, asyncHandler(async (req, res) => {
+    if (!stripe) {
+        return sendServiceUnavailable(res, 'Stripe not configured', 'STRIPE_NOT_CONFIGURED');
+    }
+
+    const { returnUrl } = req.body;
+    const userEmail = req.user.email;
+    
+    // Get or create Stripe customer ID for user
+    let stripeCustomerId = req.user.stripe_customer_id;
+    if (!stripeCustomerId) {
+        const customer = await stripe.customers.create({
+            email: userEmail
+        });
+        stripeCustomerId = customer.id;
+        // Store in database
+        await prisma.users.update({
+            where: { email: userEmail },
+            data: { stripe_customer_id: stripeCustomerId }
+        });
+    }
+    
+    // Create billing portal session
+    const session = await stripe.billingPortal.sessions.create({
+        customer: stripeCustomerId,
+        return_url: returnUrl || `${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard`
+    });
+    
+    sendSuccess(res, { url: session.url });
+}));
+
 // Get user's subscription status
 router.get('/subscription/status', requireAuth, asyncHandler(async (req, res) => {
     const userEmail = req.user.email;
@@ -380,12 +708,12 @@ router.get('/subscription/status', requireAuth, asyncHandler(async (req, res) =>
     });
 
     if (!user) {
-        return sendSuccess(res, { hasSubscription: false, plan: 'free' });
+        return sendSuccess(res, { hasSubscription: false, plan: 'trial' });
     }
 
     // Check if user has subscription data
     if (!user.stripe_subscription_id) {
-        return sendSuccess(res, { hasSubscription: false, plan: 'free' });
+        return sendSuccess(res, { hasSubscription: false, plan: 'trial' });
     }
 
     // Verify subscription status with Stripe
@@ -403,7 +731,7 @@ router.get('/subscription/status', requireAuth, asyncHandler(async (req, res) =>
 
             return sendSuccess(res, {
                 hasSubscription: subscription.status === 'active' || subscription.status === 'trialing',
-                plan: user.plan || 'free',
+                plan: user.plan || 'trial',
                 status: subscription.status,
                 currentPeriodEnd: subscription.current_period_end,
                 cancelAtPeriodEnd: subscription.cancel_at_period_end
@@ -423,7 +751,7 @@ router.get('/subscription/status', requireAuth, asyncHandler(async (req, res) =>
 
 // ==================== STRIPE CONNECT ROUTES ====================
 
-// Initiate Stripe Connect onboarding
+// Initiate Stripe Connect onboarding (Standard accounts only — Stripe hosts KYC)
 router.post('/connect/onboard', requireAuth, asyncHandler(async (req, res) => {
     if (!stripe) {
         return sendServiceUnavailable(res, 'Stripe not configured', 'STRIPE_NOT_CONFIGURED');
@@ -431,7 +759,6 @@ router.post('/connect/onboard', requireAuth, asyncHandler(async (req, res) => {
 
     const userEmail = req.user.email;
 
-    // Check if user has Pro or Premium subscription
     const user = await prisma.users.findUnique({
         where: { email: userEmail }
     });
@@ -440,55 +767,32 @@ router.post('/connect/onboard', requireAuth, asyncHandler(async (req, res) => {
         return sendNotFound(res, 'User', 'USER_NOT_FOUND');
     }
 
-    // Verify user has Pro or Premium subscription
-    const plan = user.plan?.toLowerCase();
-    if (plan !== 'pro' && plan !== 'premium') {
-        return sendForbidden(res, 'Stripe Connect requires Pro or Premium subscription', 'PLAN_REQUIRED', {
-            currentPlan: plan || 'free'
+    const limits = resolvePlanLimits(user);
+    if (!limits.payments) {
+        return sendForbidden(res, 'Stripe Connect requires Growth subscription', 'PLAN_REQUIRED', {
+            currentPlan: user.plan || 'trial'
         });
     }
 
-        // Check if user already has a connected account
-        let accountId = user.stripe_account_id;
+    const origin = getFrontendOrigin(req);
+    const siteId = await resolveOwnedSiteId(user.id, req.body?.siteId);
+    const applyTo = normalizeApplyTo(req.body?.applyTo);
 
-        if (!accountId) {
-            // Create a new Stripe Connect account
-            const account = await stripe.accounts.create({
-                type: 'standard',
-                email: userEmail,
-                business_type: 'individual',
-                metadata: {
-                    platform_user_email: userEmail,
-                    created_via: 'sitesprintz_platform'
-                }
-            });
-
-            accountId = account.id;
-
-            // Save account ID to user data
-            await prisma.users.update({
-                where: { email: userEmail },
-                data: {
-                    stripe_account_id: accountId,
-                    stripe_connected: false // Pending
-                }
-            });
-
-            console.log(`Created Connect account ${accountId} for ${userEmail}`);
-        }
-
-        // Create Account Link for onboarding
-        const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
-        const accountLink = await stripe.accountLinks.create({
-            account: accountId,
-            refresh_url: `${origin}/dashboard.html?connect=refresh`,
-            return_url: `${origin}/dashboard.html?connect=success`,
-            type: 'account_onboarding',
+    // Prefer OAuth so owners connect an existing Stripe account in one click.
+    if (isStripeOAuthConfigured() && !user.stripe_account_id) {
+        const redirectUri = `${getApiOrigin(req)}/api/connect/stripe/callback`;
+        const { authorizeUrl } = await initiateStripeOAuth(user.id, siteId, redirectUri, applyTo);
+        return sendSuccess(res, {
+            url: authorizeUrl,
+            method: 'oauth'
         });
+    }
 
+    const { url, accountId } = await createStandardAccountLink({ user, origin, siteId, applyTo });
     sendSuccess(res, {
-        url: accountLink.url,
-        accountId
+        url,
+        accountId,
+        method: 'account_link'
     });
 }));
 
@@ -503,27 +807,61 @@ router.get('/connect/status', requireAuth, asyncHandler(async (req, res) => {
         where: { email: userEmail }
     });
 
-    if (!user || !user.stripe_account_id) {
-        return sendSuccess(res, { connected: false });
+    if (!user) {
+        return sendSuccess(res, { connected: false, accountId: null });
     }
 
-        // Verify account status with Stripe
-        try {
-            const account = await stripe.accounts.retrieve(user.stripe_account_id);
+    const siteId = await resolveOwnedSiteId(user.id, req.query.siteId);
+    const extra = await getConnectedProcessors(user.id, siteId);
+    const futureDefaults = extra.futureDefaults || await getFuturePaymentDefaults(user.id);
+    const available = {
+        stripe: Boolean(stripe),
+        stripeOAuth: isStripeOAuthConfigured(),
+        square: isProcessorConfigured('square'),
+        paypal: isPayPalConfigured()
+    };
+    const square = {
+        connected: Boolean(extra.byProcessor.square),
+        accountId: extra.byProcessor.square?.account_id || null
+    };
+    const paypal = {
+        connected: Boolean(extra.byProcessor.paypal),
+        accountId: extra.byProcessor.paypal?.account_id || null
+    };
 
-            const isConnected = account.charges_enabled && account.payouts_enabled;
-
-            // Update local status if changed
-            if (user.stripe_connected !== isConnected) {
-                await prisma.users.update({
-                    where: { email: userEmail },
-                    data: { stripe_connected: isConnected }
-                });
+    if (!user.stripe_account_id) {
+        return sendSuccess(res, {
+            connected: false,
+            accountId: null,
+            siteId,
+            square,
+            paypal,
+            defaultProcessor: extra.defaultProcessor,
+            futureDefaults,
+            available,
+            stripe: {
+                connected: Boolean(extra.byProcessor.stripe),
+                accountAvailable: false,
+                accountId: extra.byProcessor.stripe?.account_id || null
             }
+        });
+    }
+
+    try {
+        const account = await stripe.accounts.retrieve(user.stripe_account_id);
+        const isConnected = account.charges_enabled && account.payouts_enabled;
+
+        if (user.stripe_connected !== isConnected) {
+            await prisma.users.update({
+                where: { email: userEmail },
+                data: { stripe_connected: isConnected }
+            });
+        }
 
         sendSuccess(res, {
             connected: isConnected,
             accountId: account.id,
+            siteId,
             status: isConnected ? 'active' : 'pending',
             chargesEnabled: account.charges_enabled,
             payoutsEnabled: account.payouts_enabled,
@@ -532,15 +870,34 @@ router.get('/connect/status', requireAuth, asyncHandler(async (req, res) => {
             businessProfile: {
                 name: account.business_profile?.name,
                 url: account.business_profile?.url
+            },
+            square,
+            paypal,
+            defaultProcessor: extra.defaultProcessor || (extra.byProcessor.stripe && isConnected ? 'stripe' : extra.defaultProcessor),
+            futureDefaults,
+            available,
+            stripe: {
+                connected: Boolean(extra.byProcessor.stripe),
+                accountAvailable: true,
+                accountId: extra.byProcessor.stripe?.account_id || account.id
             }
         });
-
     } catch (error) {
         console.error('Failed to retrieve Connect account:', error);
         sendSuccess(res, {
             connected: false,
             error: 'Failed to verify account status',
-            accountId: user.stripe_account_id
+            accountId: user.stripe_account_id,
+            siteId,
+            square,
+            paypal,
+            futureDefaults,
+            available,
+            stripe: {
+                connected: Boolean(extra.byProcessor.stripe),
+                accountAvailable: true,
+                accountId: extra.byProcessor.stripe?.account_id || user.stripe_account_id
+            }
         });
     }
 }));
@@ -564,11 +921,11 @@ router.post('/connect/refresh', requireAuth, asyncHandler(async (req, res) => {
         return sendBadRequest(res, 'No Connect account found. Please start onboarding first.', 'NO_CONNECT_ACCOUNT');
     }
 
-    const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
+    const origin = getFrontendOrigin(req);
     const accountLink = await stripe.accountLinks.create({
         account: user.stripe_account_id,
-        refresh_url: `${origin}/dashboard.html?connect=refresh`,
-        return_url: `${origin}/dashboard.html?connect=success`,
+        refresh_url: `${origin}/settings/payments?connect=refresh&processor=stripe`,
+        return_url: `${origin}/settings/payments?connect=success&processor=stripe`,
         type: 'account_onboarding',
     });
 
@@ -586,30 +943,27 @@ router.post('/connect/disconnect', requireAuth, asyncHandler(async (req, res) =>
         return sendNotFound(res, 'User', 'USER_NOT_FOUND');
     }
 
-    if (user.stripe_account_id) {
-        // Note: We don't delete the Stripe account, just disconnect it from our platform
-        // The business owner can delete it themselves from their Stripe dashboard
-        await prisma.users.update({
-            where: { email: userEmail },
-            data: {
-                stripe_connected: false,
-                // We might want to keep stripe_account_id for reference or clear it?
-                // Keeping it allows reconnection to same account easily.
-                // But if they want to disconnect fully, maybe we should clear it?
-                // The original code kept it but set status to 'disconnected'.
-                // I'll keep it but set stripe_connected to false.
-            }
-        });
-        console.log(`Disconnected Connect account for ${userEmail}`);
-    }
+    const siteId = await resolveOwnedSiteId(user.id, req.body?.siteId);
+    await deactivateProcessor({
+        siteId,
+        userId: user.id,
+        processor: 'stripe',
+        applyTo: normalizeApplyTo(req.body?.applyTo)
+    });
 
-    sendSuccess(res, {}, 'Account disconnected');
+    sendSuccess(res, { siteId }, 'Stripe disconnected from this site');
 }));
 
 // Create checkout session with connected account (for customer purchases)
-router.post('/connect/create-checkout', asyncHandler(async (req, res) => {
+router.post('/connect/create-checkout', checkoutLimiter, orderLimiter, requireProPlan, asyncHandler(async (req, res) => {
     if (!stripe) {
         return sendServiceUnavailable(res, 'Stripe not configured', 'STRIPE_NOT_CONFIGURED');
+    }
+
+    // Verify CAPTCHA
+    const captchaResult = await verifyTurnstile(req.body.captchaToken, req.ip);
+    if (!captchaResult.success && !captchaResult.skipped) {
+        return sendBadRequest(res, 'CAPTCHA verification failed', 'CAPTCHA_FAILED');
     }
 
     const { connectedAccountId, lineItems, metadata } = req.body;

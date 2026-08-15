@@ -58,13 +58,13 @@ describe('PublishModal', () => {
         defaultToastValue
       );
 
-      // Premium plan should be selected - check for selected plan card
-      const premiumPlanCards = screen.getAllByText('Premium');
-      const premiumPlanCard = premiumPlanCards.find(el => 
+      // Growth is the current commerce plan (legacy Premium templates map here)
+      const growthPlanCards = screen.getAllByText('Growth');
+      const growthPlanCard = growthPlanCards.find(el =>
         el.closest('.plan-card')?.classList.contains('selected')
       );
-      expect(premiumPlanCard).toBeTruthy();
-      expect(premiumPlanCard?.closest('.plan-card')).toHaveClass('selected');
+      expect(growthPlanCard).toBeTruthy();
+      expect(growthPlanCard?.closest('.plan-card')).toHaveClass('selected');
     });
 
     it('should detect pro template by tier metadata', () => {
@@ -80,12 +80,12 @@ describe('PublishModal', () => {
         defaultToastValue
       );
 
-      const proPlanCards = screen.getAllByText('Pro');
-      const proPlanCard = proPlanCards.find(el => 
+      const growthPlanCards = screen.getAllByText('Growth');
+      const growthPlanCard = growthPlanCards.find(el =>
         el.closest('.plan-card')?.classList.contains('selected')
       );
-      expect(proPlanCard).toBeTruthy();
-      expect(proPlanCard?.closest('.plan-card')).toHaveClass('selected');
+      expect(growthPlanCard).toBeTruthy();
+      expect(growthPlanCard?.closest('.plan-card')).toHaveClass('selected');
     });
 
     it('should detect pro template by -pro suffix', () => {
@@ -100,12 +100,12 @@ describe('PublishModal', () => {
         defaultToastValue
       );
 
-      const proPlanCards = screen.getAllByText('Pro');
-      const proPlanCard = proPlanCards.find(el => 
+      const growthPlanCards = screen.getAllByText('Growth');
+      const growthPlanCard = growthPlanCards.find(el =>
         el.closest('.plan-card')?.classList.contains('selected')
       );
-      expect(proPlanCard).toBeTruthy();
-      expect(proPlanCard?.closest('.plan-card')).toHaveClass('selected');
+      expect(growthPlanCard).toBeTruthy();
+      expect(growthPlanCard?.closest('.plan-card')).toHaveClass('selected');
     });
 
     it('should detect pro template by template ID', () => {
@@ -120,12 +120,12 @@ describe('PublishModal', () => {
         defaultToastValue
       );
 
-      const proPlanCards = screen.getAllByText('Pro');
-      const proPlanCard = proPlanCards.find(el => 
+      const growthPlanCards = screen.getAllByText('Growth');
+      const growthPlanCard = growthPlanCards.find(el =>
         el.closest('.plan-card')?.classList.contains('selected')
       );
-      expect(proPlanCard).toBeTruthy();
-      expect(proPlanCard?.closest('.plan-card')).toHaveClass('selected');
+      expect(growthPlanCard).toBeTruthy();
+      expect(growthPlanCard?.closest('.plan-card')).toHaveClass('selected');
     });
 
     it('should default to starter for basic templates', () => {
@@ -212,33 +212,24 @@ describe('PublishModal', () => {
   });
 
   describe('Payment Logic', () => {
-    it('should show error for pro plan without subscription', () => {
+    it('does not require a merchant processor to publish a Growth template', () => {
       const siteData = {
         template: 'restaurant-ordering',
         tier: 'Pro',
         brand: { name: 'Test Business' }
       };
 
-      const authValue = {
-        user: { id: '123', email: 'test@example.com', subscription: null },
-        loading: false
-      };
-
       renderWithContext(
         <PublishModal siteData={siteData} onClose={mockOnClose} />,
-        authValue,
+        defaultAuthValue,
         defaultToastValue
       );
 
-      const publishButton = screen.getByText(/Publish Site/i);
-      fireEvent.click(publishButton);
-
-      expect(mockShowError).toHaveBeenCalledWith(
-        expect.stringContaining('Pro subscription required')
-      );
+      expect(screen.queryByRole('button', { name: /connect stripe/i })).not.toBeInTheDocument();
+      expect(screen.queryByText(/subscription required/i)).not.toBeInTheDocument();
     });
 
-    it('should show error for premium plan without subscription', () => {
+    it('does not require a merchant processor to publish a Premium template', () => {
       const siteData = {
         template: 'medical-premium',
         tier: 'Premium',
@@ -251,12 +242,8 @@ describe('PublishModal', () => {
         defaultToastValue
       );
 
-      const publishButton = screen.getByText(/Publish Site/i);
-      fireEvent.click(publishButton);
-
-      expect(mockShowError).toHaveBeenCalledWith(
-        expect.stringContaining('Premium subscription required')
-      );
+      expect(screen.queryByRole('button', { name: /connect stripe/i })).not.toBeInTheDocument();
+      expect(screen.queryByText(/subscription required/i)).not.toBeInTheDocument();
     });
 
     it('should allow starter plan without subscription', async () => {
@@ -422,10 +409,10 @@ describe('PublishModal', () => {
         defaultToastValue
       );
 
-      const proPlanCard = screen.getByText('Pro').closest('.plan-card');
-      fireEvent.click(proPlanCard);
+      const growthPlanCard = screen.getByText('Growth').closest('.plan-card');
+      fireEvent.click(growthPlanCard);
 
-      expect(proPlanCard).toHaveClass('selected');
+      expect(growthPlanCard).toHaveClass('selected');
     });
 
     it('should show plan features', () => {
@@ -440,9 +427,27 @@ describe('PublishModal', () => {
         defaultToastValue
       );
 
-      expect(screen.getByText(/Display-only site/)).toBeInTheDocument();
-      expect(screen.getByText(/Stripe payments/)).toBeInTheDocument();
-      expect(screen.getByText(/Advanced features/)).toBeInTheDocument();
+      expect(screen.getByText(/Your website \+ templates/)).toBeInTheDocument();
+      expect(screen.getByText(/Booking, cart & Stripe checkout/)).toBeInTheDocument();
+    });
+  });
+
+  describe('Merchant payments', () => {
+    it('does not ask owners to connect Stripe while publishing a site', () => {
+      const siteData = {
+        template: 'salon',
+        brand: { name: 'Test Business' }
+      };
+
+      renderWithContext(
+        <PublishModal siteData={siteData} onClose={mockOnClose} />,
+        defaultAuthValue,
+        defaultToastValue
+      );
+
+      expect(screen.queryByRole('button', { name: /connect stripe/i })).not.toBeInTheDocument();
+      expect(screen.queryByText(/set up payments/i)).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /i'll do this later/i })).not.toBeInTheDocument();
     });
   });
 
