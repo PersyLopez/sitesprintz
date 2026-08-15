@@ -9,6 +9,7 @@ function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const menuRef = useRef(null);
   const location = useLocation();
+  const isDashboard = location.pathname === '/dashboard' || location.pathname.startsWith('/dashboard/');
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -64,19 +65,28 @@ function Header() {
           to="/" 
           className="logo"
           aria-label="SiteSprintz Home"
+          data-testid="header-logo"
         >
-          <span className="logo-icon" aria-hidden="true">🚀</span>
+          <span className="logo-icon" aria-hidden="true">
+            <svg className="logo-mark" viewBox="0 0 24 24" width="1em" height="1em" focusable="false">
+              <path
+                fill="#93c5fd"
+                d="M12 2l2.4 7.2H22l-6 4.8 2.4 7.2L12 16.8 5.6 21.2 8 14 2 9.2h7.6L12 2z"
+              />
+            </svg>
+          </span>
           <span className="logo-text">SiteSprintz</span>
         </Link>
         
         {/* Desktop Navigation */}
-        <nav className="nav-menu desktop-nav" aria-label="Main navigation">
+        <nav className="nav-menu desktop-nav" aria-label="Main navigation" data-testid="desktop-nav">
           {isAuthenticated ? (
             <>
               <Link 
                 to="/dashboard" 
-                className={`nav-link ${location.pathname === '/dashboard' ? 'active' : ''}`}
-                aria-current={location.pathname === '/dashboard' ? 'page' : undefined}
+                className={`nav-link ${isDashboard ? 'active' : ''}`}
+                aria-current={isDashboard ? 'page' : undefined}
+                data-testid="nav-dashboard"
               >
                 Dashboard
               </Link>
@@ -84,11 +94,20 @@ function Header() {
                 to="/setup" 
                 className={`nav-link ${location.pathname === '/setup' ? 'active' : ''}`}
                 aria-current={location.pathname === '/setup' ? 'page' : undefined}
+                data-testid="nav-create-site"
               >
                 Create Site
               </Link>
+              <Link
+                to="/showcase"
+                className={`nav-link ${location.pathname === '/showcase' || location.pathname.startsWith('/showcase/') ? 'active' : ''}`}
+                aria-current={location.pathname.startsWith('/showcase') ? 'page' : undefined}
+                data-testid="nav-gallery"
+              >
+                Gallery
+              </Link>
               {user?.name && (
-                <span className="user-name" aria-label={`Logged in as ${user.name}`}>
+                <span className="user-name" aria-label={`Logged in as ${user.name}`} data-testid="user-name">
                   {user.name}
                 </span>
               )}
@@ -96,16 +115,47 @@ function Header() {
                 onClick={handleLogout} 
                 className="btn btn-secondary"
                 aria-label="Logout"
+                data-testid="nav-logout-button"
               >
                 Logout
               </button>
             </>
           ) : (
             <>
+              <Link
+                to="/#templates"
+                className="nav-link"
+                data-testid="nav-templates"
+              >
+                Templates
+              </Link>
+              <Link
+                to="/#how-it-works"
+                className="nav-link"
+                data-testid="nav-how-it-works"
+              >
+                How It Works
+              </Link>
+              <Link
+                to="/showcase"
+                className={`nav-link ${location.pathname === '/showcase' ? 'active' : ''}`}
+                aria-current={location.pathname === '/showcase' ? 'page' : undefined}
+                data-testid="nav-gallery"
+              >
+                Gallery
+              </Link>
+              <Link
+                to="/#pricing"
+                className="nav-link"
+                data-testid="nav-pricing"
+              >
+                Pricing
+              </Link>
               <Link 
                 to="/login" 
                 className={`nav-link ${location.pathname === '/login' ? 'active' : ''}`}
                 aria-current={location.pathname === '/login' ? 'page' : undefined}
+                data-testid="nav-login"
               >
                 Login
               </Link>
@@ -113,6 +163,7 @@ function Header() {
                 to="/register" 
                 className="btn btn-primary"
                 aria-label="Get Started - Create Account"
+                data-testid="nav-get-started"
               >
                 Get Started
               </Link>
@@ -128,6 +179,7 @@ function Header() {
           aria-expanded={mobileMenuOpen}
           aria-controls="mobile-menu"
           onKeyDown={handleKeyDown}
+          data-testid="mobile-menu-toggle"
         >
           <span></span>
           <span></span>
@@ -142,11 +194,12 @@ function Header() {
         className={`mobile-nav ${mobileMenuOpen ? 'open' : ''}`}
         aria-label="Mobile navigation"
         aria-hidden={!mobileMenuOpen}
+        data-testid="mobile-nav"
       >
         {isAuthenticated ? (
           <>
             {user?.name && (
-              <div className="mobile-user-info">
+              <div className="mobile-user-info" data-testid="mobile-user-info">
                 <span className="user-name">{user.name}</span>
                 {user?.email && (
                   <span className="user-email">{user.email}</span>
@@ -155,9 +208,10 @@ function Header() {
             )}
             <Link 
               to="/dashboard" 
-              className={`mobile-nav-link ${location.pathname === '/dashboard' ? 'active' : ''}`}
+              className={`mobile-nav-link ${isDashboard ? 'active' : ''}`}
               onClick={() => setMobileMenuOpen(false)}
-              aria-current={location.pathname === '/dashboard' ? 'page' : undefined}
+              aria-current={isDashboard ? 'page' : undefined}
+              data-testid="mobile-nav-dashboard"
             >
               Dashboard
             </Link>
@@ -166,24 +220,68 @@ function Header() {
               className={`mobile-nav-link ${location.pathname === '/setup' ? 'active' : ''}`}
               onClick={() => setMobileMenuOpen(false)}
               aria-current={location.pathname === '/setup' ? 'page' : undefined}
+              data-testid="mobile-nav-create-site"
             >
               Create Site
+            </Link>
+            <Link
+              to="/showcase"
+              className={`mobile-nav-link ${location.pathname.startsWith('/showcase') ? 'active' : ''}`}
+              onClick={() => setMobileMenuOpen(false)}
+              aria-current={location.pathname.startsWith('/showcase') ? 'page' : undefined}
+              data-testid="mobile-nav-gallery"
+            >
+              Gallery
             </Link>
             <button 
               onClick={handleLogout} 
               className="mobile-nav-link mobile-logout"
               aria-label="Logout"
+              data-testid="mobile-nav-logout"
             >
               Logout
             </button>
           </>
         ) : (
           <>
+            <Link
+              to="/#templates"
+              className="mobile-nav-link"
+              onClick={() => setMobileMenuOpen(false)}
+              data-testid="mobile-nav-templates"
+            >
+              Templates
+            </Link>
+            <Link
+              to="/#how-it-works"
+              className="mobile-nav-link"
+              onClick={() => setMobileMenuOpen(false)}
+              data-testid="mobile-nav-how-it-works"
+            >
+              How It Works
+            </Link>
+            <Link
+              to="/showcase"
+              className={`mobile-nav-link ${location.pathname === '/showcase' ? 'active' : ''}`}
+              onClick={() => setMobileMenuOpen(false)}
+              data-testid="mobile-nav-gallery"
+            >
+              Gallery
+            </Link>
+            <Link
+              to="/#pricing"
+              className="mobile-nav-link"
+              onClick={() => setMobileMenuOpen(false)}
+              data-testid="mobile-nav-pricing"
+            >
+              Pricing
+            </Link>
             <Link 
               to="/login" 
               className={`mobile-nav-link ${location.pathname === '/login' ? 'active' : ''}`}
               onClick={() => setMobileMenuOpen(false)}
               aria-current={location.pathname === '/login' ? 'page' : undefined}
+              data-testid="mobile-nav-login"
             >
               Login
             </Link>
@@ -191,6 +289,7 @@ function Header() {
               to="/register" 
               className="mobile-nav-link mobile-cta"
               onClick={() => setMobileMenuOpen(false)}
+              data-testid="mobile-nav-register"
             >
               Get Started
             </Link>

@@ -2,17 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
+import { usePolling } from '../hooks/usePolling';
+import { useSiteWorkspace } from '../context/SiteWorkspaceContext';
+import { getSiteWorkspacePaths } from '../utils/siteWorkspace';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import OrderCard from '../components/orders/OrderCard';
 import OrderDetailsModal from '../components/orders/OrderDetailsModal';
+import { api } from '../services/api';
 import './Orders.css';
 
 function Orders() {
   const [searchParams] = useSearchParams();
-  const { user } = useAuth();
+  const { embedded, siteId: workspaceSiteId } = useSiteWorkspace();
+  const { user, token, loading: authLoading } = useAuth();
   const { showSuccess, showError } = useToast();
-  
+
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,17 +25,39 @@ function Orders() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedOrders, setSelectedOrders] = useState(new Set());
   const [searchTerm, setSearchTerm] = useState('');
-  
-  const siteId = searchParams.get('siteId');
+
+  const siteId = workspaceSiteId || searchParams.get('siteId');
+  const backTo = embedded && siteId ? getSiteWorkspacePaths(siteId).overview : '/dashboard';
+
+  // Poll for order updates
+  const { data: polledData, lastUpdated } = usePolling({
+    endpoint: siteId ? `/api/orders/${siteId}/orders` : null,
+    interval: 30000,
+    enabled: !!siteId && !authLoading,
+    params: { status: selectedStatus !== 'all' ? selectedStatus : undefined },
+    onUpdate: (newData) => {
+      if (newData.orders) {
+        setOrders(newData.orders);
+      }
+    }
+  });
 
   useEffect(() => {
+    if (polledData?.orders) {
+      setOrders(polledData.orders);
+    }
+  }, [polledData]);
+
+  useEffect(() => {
+    if (authLoading) return;
+
     if (siteId) {
       loadOrders();
     } else {
       showError('No site selected. Please select a site from your dashboard.');
       setLoading(false);
     }
-  }, [siteId]);
+  }, [siteId, authLoading]);
 
   useEffect(() => {
     filterOrders();
@@ -38,19 +65,9 @@ function Orders() {
 
   const loadOrders = async () => {
     setLoading(true);
-    
+
     try {
-      const response = await fetch(`/api/sites/${siteId}/orders`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to load orders');
-      }
-
-      const data = await response.json();
+      const data = await api.get(`/api/orders/${siteId}/orders`);
       setOrders(data.orders || []);
     } catch (error) {
       console.error('Load orders error:', error);
@@ -71,7 +88,7 @@ function Orders() {
     // Filter by search term
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(order => 
+      filtered = filtered.filter(order =>
         order.orderId?.toLowerCase().includes(term) ||
         order.customer?.name?.toLowerCase().includes(term) ||
         order.customer?.email?.toLowerCase().includes(term)
@@ -86,24 +103,13 @@ function Orders() {
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
-      const response = await fetch(`/api/sites/${siteId}/orders/${orderId}`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ status: newStatus })
+      const data = await api.put(`/api/orders/${siteId}/orders/${orderId}/status`, {
+        status: newStatus
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update order');
-      }
-
-      const data = await response.json();
-
       // Update local state
-      setOrders(prev => prev.map(order => 
-        order.orderId === orderId ? data.order : order
+      setOrders(prev => prev.map(order =>
+        (order.orderId || order.id) === orderId ? { ...order, ...data.order } : order
       ));
 
       showSuccess(`Order ${orderId} marked as ${newStatus}`);
@@ -136,32 +142,23 @@ function Orders() {
   const bulkUpdateStatus = async (newStatus) => {
     if (selectedOrders.size === 0) return;
 
-    const confirmMessage = newStatus === 'cancelled' 
+    const confirmMessage = newStatus === 'cancelled'
       ? `Cancel ${selectedOrders.size} order(s)?`
       : `Mark ${selectedOrders.size} order(s) as ${newStatus}?`;
-    
+
     if (!confirm(confirmMessage)) return;
 
     let successCount = 0;
 
     for (const orderId of selectedOrders) {
       try {
-        const response = await fetch(`/api/sites/${siteId}/orders/${orderId}`, {
-          method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ status: newStatus })
+        const data = await api.put(`/api/orders/${siteId}/orders/${orderId}/status`, {
+          status: newStatus
         });
-
-        if (response.ok) {
-          const data = await response.json();
-          setOrders(prev => prev.map(order => 
-            order.orderId === orderId ? data.order : order
-          ));
-          successCount++;
-        }
+        setOrders(prev => prev.map(order =>
+          (order.orderId || order.id) === orderId ? { ...order, ...data.order } : order
+        ));
+        successCount++;
       } catch (error) {
         console.error(`Failed to update order ${orderId}:`, error);
       }
@@ -198,7 +195,7 @@ function Orders() {
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
-    
+
     showSuccess('Orders exported successfully');
   };
 
@@ -211,8 +208,8 @@ function Orders() {
 
   if (!siteId) {
     return (
-      <div className="orders-page">
-        <Header />
+      <div className={`orders-page${embedded ? ' embedded-page' : ''}`}>
+        {!embedded && <Header />}
         <div className="orders-container">
           <div className="empty-state">
             <div className="empty-icon">📦</div>
@@ -223,15 +220,15 @@ function Orders() {
             </Link>
           </div>
         </div>
-        <Footer />
+        {!embedded && <Footer />}
       </div>
     );
   }
 
   return (
-    <div className="orders-page">
-      <Header />
-      
+    <div className={`orders-page${embedded ? ' embedded-page' : ''}`}>
+      {!embedded && <Header />}
+
       <main className="orders-container">
         {/* Page Header */}
         <div className="page-header">
@@ -239,14 +236,16 @@ function Orders() {
             <h1>📦 Orders</h1>
             <p>{filteredOrders.length} {selectedStatus === 'all' ? 'total' : selectedStatus} orders</p>
           </div>
-          
+
           <div className="header-actions">
             <button onClick={exportOrders} className="btn btn-secondary">
               📥 Export CSV
             </button>
-            <Link to="/dashboard" className="btn btn-secondary">
-              ← Back to Dashboard
-            </Link>
+            {!embedded && (
+              <Link to={backTo} className="btn btn-secondary">
+                ← Back to Dashboard
+              </Link>
+            )}
           </div>
         </div>
 
@@ -327,11 +326,11 @@ function Orders() {
             <div className="empty-icon">📦</div>
             <h2>No Orders Found</h2>
             <p>
-              {searchTerm 
-                ? 'No orders match your search.' 
+              {searchTerm
+                ? 'No orders match your search.'
                 : selectedStatus === 'all'
-                ? 'You haven\'t received any orders yet.'
-                : `No ${selectedStatus} orders.`
+                  ? 'You haven\'t received any orders yet.'
+                  : `No ${selectedStatus} orders.`
               }
             </p>
             {searchTerm && (
@@ -355,8 +354,8 @@ function Orders() {
           </div>
         )}
       </main>
-      
-      <Footer />
+
+      {!embedded && <Footer />}
 
       {/* Order Details Modal */}
       {selectedOrder && (

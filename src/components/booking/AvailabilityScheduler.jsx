@@ -16,7 +16,7 @@ const DAYS_OF_WEEK = [
 const DEFAULT_START_TIME = '09:00';
 const DEFAULT_END_TIME = '17:00';
 
-const AvailabilityScheduler = ({ userId }) => {
+const AvailabilityScheduler = ({ userId, siteId = null }) => {
   const { showSuccess, showError } = useToast();
 
   const [loading, setLoading] = useState(true);
@@ -41,7 +41,7 @@ const AvailabilityScheduler = ({ userId }) => {
     if (userId) {
       fetchAvailability();
     }
-  }, [userId]);
+  }, [userId, siteId]);
 
   const fetchAvailability = async () => {
     try {
@@ -51,7 +51,9 @@ const AvailabilityScheduler = ({ userId }) => {
       // Fetch availability rules - use default staff for now
       // API expects: /api/booking/admin/:userId/staff/:staffId/availability
       const defaultStaffId = 'default-staff-id';
-      const response = await get(`/api/booking/admin/${userId}/staff/${defaultStaffId}/availability`);
+      const response = await get(`/api/booking/admin/${userId}/staff/${defaultStaffId}/availability`, {
+        params: siteId ? { siteId } : undefined,
+      });
 
       if (response && response.success && Array.isArray(response.rules)) {
         setSchedule(prev => {
@@ -197,6 +199,7 @@ const AvailabilityScheduler = ({ userId }) => {
 
       await post(`/api/booking/admin/${userId}/staff/${defaultStaffId}/availability`, {
         scheduleRules,
+        ...(siteId ? { siteId } : {}),
       });
 
       showSuccess('Schedule saved successfully');

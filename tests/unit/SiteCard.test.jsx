@@ -140,23 +140,25 @@ describe('SiteCard', () => {
     expect(previewButton).toBeDisabled();
   });
 
-  it('should show orders button for pro sites', () => {
+  it('should show a Manage link into the site dashboard', () => {
     const proSite = { ...mockSite, plan: 'pro' };
-    
+
     renderWithRouter(
-      <SiteCard 
-        site={proSite} 
+      <SiteCard
+        site={proSite}
         onDelete={mockDeleteHandler}
       />
     );
 
-    expect(screen.getByText(/View Orders/)).toBeInTheDocument();
+    const manage = screen.getByTestId('manage-site-button');
+    expect(manage).toBeInTheDocument();
+    expect(manage).toHaveAttribute('href', '/dashboard/sites/site-1');
   });
 
-  it('should not show orders button for starter sites', () => {
+  it('should keep orders off the account site card', () => {
     renderWithRouter(
-      <SiteCard 
-        site={mockSite} 
+      <SiteCard
+        site={{ ...mockSite, plan: 'pro' }}
         onDelete={mockDeleteHandler}
       />
     );

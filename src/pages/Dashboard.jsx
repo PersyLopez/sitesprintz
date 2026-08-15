@@ -1,41 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
+import { usePlan } from '../hooks/usePlan';
 import { sitesService } from '../services/sites';
 import api from '../services/api';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import SiteCard from '../components/dashboard/SiteCard';
 import WelcomeModal from '../components/dashboard/WelcomeModal';
-import StripeConnectSection from '../components/dashboard/StripeConnectSection';
 import TrialBanner from '../components/dashboard/TrialBanner';
+import SkeletonLoader from '../components/common/SkeletonLoader';
 import './Dashboard.css';
 
 function Dashboard() {
-  const navigate = useNavigate();
-  const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { user, token, loading: authLoading } = useAuth();
+  const { isGrowth } = usePlan();
   const { showSuccess, showError } = useToast();
 
   const [sites, setSites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
-  const [stripeConnected, setStripeConnected] = useState(false);
-  const [pendingOrders, setPendingOrders] = useState(0);
 
   useEffect(() => {
-    loadUserSites();
-    checkFirstTimeUser();
-    checkStripeConnection();
-    loadPendingOrders();
-  }, []);
+    if (authLoading) return;
 
-  const checkFirstTimeUser = () => {
-    const hasVisited = localStorage.getItem('hasVisitedDashboard');
-    if (!hasVisited) {
-      setShowWelcome(true);
-      localStorage.setItem('hasVisitedDashboard', 'true');
+    // Handle return from Stripe Connect
+    const connectParam = searchParams.get('connect');
+    if (connectParam === 'success') {
+      showSuccess('Stripe Connect setup completed!');
+      setSearchParams({}, { replace: true });
+    } else if (connectParam === 'refresh') {
+      showSuccess('Refreshing Stripe Connect setup...');
+      setSearchParams({}, { replace: true });
     }
+
+    loadUserSites();
+  }, [authLoading]);
+
+  const dismissWelcome = () => {
+    setShowWelcome(false);
+    localStorage.setItem('hasVisitedDashboard', 'true');
   };
 
   const loadUserSites = async () => {
@@ -43,34 +49,33 @@ function Dashboard() {
 
     try {
       const data = await sitesService.getUserSites(user.id);
-      setSites(data.sites || []);
+      const list = data.sites || [];
+      setSites(list);
+
+      // First-run welcome only when the account has no sites yet
+      const hasVisited = localStorage.getItem('hasVisitedDashboard');
+      if (!hasVisited && list.length === 0) {
+        setShowWelcome(true);
+      }
     } catch (error) {
       console.error('Failed to load sites:', error);
-      showError('Failed to load your sites');
+      const { analyzeError } = await import('../utils/errorHelpers');
+      const errorInfo = analyzeError(error);
+      
+      showError(errorInfo.message, {
+        action: {
+          label: errorInfo.action.label,
+          type: errorInfo.action.type,
+          onRetry: errorInfo.action.type === 'retry' ? () => {
+            setLoading(true);
+            loadUserSites();
+          } : undefined,
+          path: errorInfo.action.path
+        },
+        duration: 5000
+      });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const checkStripeConnection = async () => {
-    try {
-      const data = await api.get('/api/stripe/status');
-      setStripeConnected(data.connected || false);
-    } catch (error) {
-      // Ignore error - Stripe connection is optional
-      // Endpoint may not exist, which is fine
-      setStripeConnected(false);
-    }
-  };
-
-  const loadPendingOrders = async () => {
-    try {
-      const data = await api.get('/api/orders/pending-count');
-      setPendingOrders(data.count || 0);
-    } catch (error) {
-      // Ignore error - orders are optional for non-pro users
-      // Endpoint may not exist, which is fine
-      setPendingOrders(0);
     }
   };
 
@@ -90,99 +95,90 @@ function Dashboard() {
 
   const handleDuplicateSite = async (siteId) => {
     try {
-      const response = await fetch(`/api/sites/${siteId}/duplicate`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const newSite = await response.json();
-        setSites([...sites, newSite]);
-        showSuccess('Site duplicated successfully');
-      } else {
-        throw new Error('Failed to duplicate site');
-      }
+      const data = await api.post(`/api/sites/${siteId}/duplicate`);
+      setSites([...sites, data]);
+      showSuccess('Site duplicated successfully');
     } catch (error) {
       showError('Failed to duplicate site');
     }
   };
 
-  const isProOrCheckoutPlan = user?.subscriptionPlan === 'pro' || user?.subscriptionPlan === 'checkout';
-  const hasProSites = sites.some(site => site.plan === 'pro' || site.plan === 'checkout');
+  const openBillingPortal = async () => {
+    try {
+      const response = await fetch('/api/payments/create-portal-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ returnUrl: window.location.href })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to open billing portal');
+      }
+      
+      const { url } = await response.json();
+      window.location.href = url;
+    } catch (error) {
+      console.error('Error opening billing portal:', error);
+      showError('Failed to open billing portal');
+    }
+  };
 
   return (
     <div className="dashboard-page">
+      <a href="#dashboard-main" className="skip-to-content">
+        Skip to main content
+      </a>
       <Header />
 
-      <main className="dashboard-container">
+      <main id="dashboard-main" className="dashboard-container">
         {/* Trial Banner */}
-        {user?.subscriptionStatus === 'trial' && (
+        {(user?.subscriptionStatus === 'trial' || user?.subscription_status === 'trial') && (
           <TrialBanner user={user} />
         )}
 
-        <div className="dashboard-header">
+        <div className="dashboard-header" data-testid="dashboard-header">
           <div className="user-greeting">
             <h1>Welcome back, {user?.name || user?.email?.split('@')[0] || 'there'}!</h1>
-            <p>Manage your websites and create new ones</p>
+            <p data-testid="dashboard-subtitle">Your sites — open one to manage orders, appointments, and settings</p>
           </div>
 
-          <div className="dashboard-header-actions">
-            {/* Analytics Button */}
-            <Link to="/analytics" className="btn btn-secondary btn-icon">
-              <span>📊</span> Analytics
-            </Link>
-
-            {/* Orders Button (only for Pro/Checkout sites) */}
-            {hasProSites && (
-              <Link to="/orders" className="btn btn-secondary btn-icon badge-container">
-                <span>📦</span> Orders
-                {pendingOrders > 0 && (
-                  <span className="notification-badge">{pendingOrders}</span>
-                )}
-              </Link>
+          <div className="dashboard-header-actions" data-testid="dashboard-quick-actions">
+            {(user?.subscriptionPlan === 'starter' || user?.subscriptionPlan === 'pro' || user?.subscriptionPlan === 'checkout' || user?.subscription_plan === 'starter' || user?.subscription_plan === 'pro' || isGrowth) && (
+              <button onClick={openBillingPortal} className="btn btn-secondary btn-icon" title="Manage your billing and subscription">
+                <span>💳</span> Manage Billing
+              </button>
             )}
 
-            {/* Bookings Button (only for Pro/Checkout users) */}
-            {isProOrCheckoutPlan && (
-              <Link to="/booking-dashboard" className="btn btn-secondary btn-icon">
-                <span>📅</span> Bookings
-              </Link>
-            )}
-
-            {/* Admin Buttons */}
             {user?.role === 'admin' && (
               <>
                 <Link to="/admin" className="btn btn-secondary btn-icon">
                   <span>👑</span> Admin
                 </Link>
-                <Link to="/users" className="btn btn-secondary btn-icon">
+                <Link to="/admin/users" className="btn btn-secondary btn-icon">
                   <span>👥</span> Users
                 </Link>
               </>
             )}
 
-            {/* Create New Site */}
-            <Link to="/setup" className="btn btn-primary">
+            <Link to="/settings/billing" className="btn btn-secondary btn-icon" data-testid="dashboard-account-settings">
+              <span>⚙️</span> Account
+            </Link>
+
+            <Link to="/setup" className="btn btn-primary" data-testid="create-site-button">
               <span>+</span> Create New Site
             </Link>
           </div>
         </div>
 
-        {/* Stripe Connect Section */}
-        {isProOrCheckoutPlan && (
-          <StripeConnectSection
-            connected={stripeConnected}
-            onConnect={() => checkStripeConnection()}
-          />
-        )}
-
         {loading ? (
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-            <p>Loading your sites...</p>
+          <div className="sites-grid" aria-busy="true" aria-label="Loading your sites...">
+            <span className="sr-only">Loading your sites...</span>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <SkeletonLoader key={i} variant="card" width="100%" height="400px" />
+            ))}
           </div>
         ) : sites.length === 0 ? (
           <div className="empty-state">
@@ -191,7 +187,7 @@ function Dashboard() {
             <p className="empty-state-description">
               Create your first website to get started. Choose from beautiful templates and launch in minutes.
             </p>
-            <Link to="/setup" className="btn btn-primary btn-lg">
+            <Link to="/setup" className="btn btn-primary btn-lg" data-testid="create-first-site-button">
               Create Your First Site
             </Link>
           </div>
@@ -243,7 +239,7 @@ function Dashboard() {
       <Footer />
 
       {showWelcome && (
-        <WelcomeModal onClose={() => setShowWelcome(false)} />
+        <WelcomeModal onClose={dismissWelcome} />
       )}
     </div>
   );

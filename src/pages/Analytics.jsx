@@ -2,11 +2,13 @@ import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
+import { useSiteWorkspace } from '../context/SiteWorkspaceContext';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import StatsCard from '../components/analytics/StatsCard';
 import SiteAnalyticsTable from '../components/analytics/SiteAnalyticsTable';
 import LoadingFallback from '../components/common/LoadingFallback';
+import { api } from '../services/api';
 import './Analytics.css';
 
 // Lazy load AnalyticsChart (heavy Chart.js component)
@@ -14,97 +16,41 @@ const AnalyticsChart = lazy(() => import('../components/analytics/AnalyticsChart
 
 function Analytics() {
   const [searchParams] = useSearchParams();
-  const { user } = useAuth();
+  const { embedded, siteId: workspaceSiteId } = useSiteWorkspace();
+  const { user, token, loading: authLoading } = useAuth();
   const { showError } = useToast();
-  
+
   const [loading, setLoading] = useState(true);
   const [analyticsData, setAnalyticsData] = useState(null);
   const [timeRange, setTimeRange] = useState('30'); // days
   const [lastUpdated, setLastUpdated] = useState(null);
-  
-  const siteId = searchParams.get('siteId');
+
+  const siteId = workspaceSiteId || searchParams.get('siteId');
 
   useEffect(() => {
+    if (authLoading) return;
     loadAnalytics();
-  }, [siteId, timeRange]);
+  }, [siteId, timeRange, authLoading]);
 
   const loadAnalytics = async () => {
     setLoading(true);
-    
+
     try {
-      const endpoint = siteId 
+      const endpoint = siteId
         ? `/api/sites/${siteId}/analytics?days=${timeRange}`
         : `/api/users/${user.id}/analytics?days=${timeRange}`;
-      
-      const response = await fetch(endpoint, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
 
-      if (!response.ok) {
-        throw new Error('Failed to load analytics');
-      }
-
-      const data = await response.json();
+      const data = await api.get(endpoint);
       setAnalyticsData(data);
       setLastUpdated(new Date());
     } catch (error) {
       console.error('Load analytics error:', error);
       showError('Failed to load analytics');
-      // Set mock data for development
-      setAnalyticsData(getMockData());
-      setLastUpdated(new Date());
+      setAnalyticsData(null);
     } finally {
       setLoading(false);
     }
   };
-
-  const getMockData = () => ({
-    totalViews: 12458,
-    totalVisitors: 3876,
-    avgDuration: '2m 34s',
-    bounceRate: 42.3,
-    trends: {
-      views: 15.2,
-      visitors: 8.7,
-      duration: -3.1,
-      bounceRate: -5.4
-    },
-    chartData: {
-      views: [850, 920, 1100, 980, 1050, 1200, 1150, 1300, 1250, 1400, 1380, 1500, 1450, 1600],
-      visitors: [320, 350, 390, 360, 380, 420, 410, 450, 440, 480, 470, 510, 495, 540],
-      orders: [12, 15, 18, 14, 16, 22, 20, 25, 23, 28, 26, 32, 30, 35],
-      revenue: [480, 600, 720, 560, 640, 880, 800, 1000, 920, 1120, 1040, 1280, 1200, 1400]
-    },
-    labels: ['Jan 1', 'Jan 3', 'Jan 5', 'Jan 7', 'Jan 9', 'Jan 11', 'Jan 13', 'Jan 15', 'Jan 17', 'Jan 19', 'Jan 21', 'Jan 23', 'Jan 25', 'Jan 27'],
-    sites: [
-      {
-        id: '1',
-        name: 'Main Site',
-        views: 5234,
-        visitors: 1543,
-        bounceRate: 38.2,
-        avgDuration: '3m 12s'
-      },
-      {
-        id: '2',
-        name: 'Restaurant Site',
-        views: 4156,
-        visitors: 1234,
-        bounceRate: 45.1,
-        avgDuration: '2m 08s'
-      },
-      {
-        id: '3',
-        name: 'Salon Site',
-        views: 3068,
-        visitors: 1099,
-        bounceRate: 43.5,
-        avgDuration: '2m 25s'
-      }
-    ]
-  });
 
   const formatLastUpdated = () => {
     if (!lastUpdated) return '';
@@ -115,23 +61,23 @@ function Analytics() {
   };
 
   return (
-    <div className="analytics-page">
-      <Header />
-      
+    <div className={`analytics-page${embedded ? ' embedded-page' : ''}`}>
+      {!embedded && <Header />}
+
       <main className="analytics-container">
         {/* Page Header */}
         <div className="analytics-header">
           <div className="header-content">
             <h1>📊 Analytics Dashboard</h1>
             <p>
-              {siteId ? 'Site Performance' : 'All Sites'} • 
+              {siteId ? 'Site Performance' : 'All Sites'} •
               Last updated: {formatLastUpdated()}
             </p>
           </div>
-          
+
           <div className="header-actions">
-            <select 
-              value={timeRange} 
+            <select
+              value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
               className="time-range-select"
             >
@@ -139,14 +85,16 @@ function Analytics() {
               <option value="30">Last 30 Days</option>
               <option value="90">Last 90 Days</option>
             </select>
-            
+
             <button onClick={loadAnalytics} className="btn btn-secondary">
               🔄 Refresh
             </button>
-            
-            <Link to="/dashboard" className="btn btn-secondary">
-              ← Dashboard
-            </Link>
+
+            {!embedded && (
+              <Link to="/dashboard" className="btn btn-secondary">
+                ← Dashboard
+              </Link>
+            )}
           </div>
         </div>
 
@@ -166,7 +114,7 @@ function Analytics() {
                 change={analyticsData.trends?.views}
                 changeLabel="vs previous period"
               />
-              
+
               <StatsCard
                 icon="👥"
                 label="Unique Visitors"
@@ -174,7 +122,7 @@ function Analytics() {
                 change={analyticsData.trends?.visitors}
                 changeLabel="vs previous period"
               />
-              
+
               <StatsCard
                 icon="⏱️"
                 label="Avg. Duration"
@@ -182,7 +130,7 @@ function Analytics() {
                 change={analyticsData.trends?.duration}
                 changeLabel="vs previous period"
               />
-              
+
               <StatsCard
                 icon="📈"
                 label="Bounce Rate"
@@ -203,7 +151,7 @@ function Analytics() {
                     labels={analyticsData.labels || []}
                     color="#06b6d4"
                   />
-                  
+
                   <AnalyticsChart
                     title="👥 Unique Visitors"
                     data={analyticsData.chartData?.visitors || []}
@@ -211,7 +159,7 @@ function Analytics() {
                     color="#8b5cf6"
                   />
                 </div>
-                
+
                 <div className="chart-grid">
                   <AnalyticsChart
                     title="📦 Orders Over Time"
@@ -219,7 +167,7 @@ function Analytics() {
                     labels={analyticsData.labels || []}
                     color="#22c55e"
                   />
-                  
+
                   <AnalyticsChart
                     title="💰 Revenue Trend"
                     data={analyticsData.chartData?.revenue || []}
@@ -269,8 +217,8 @@ function Analytics() {
           </div>
         )}
       </main>
-      
-      <Footer />
+
+      {!embedded && <Footer />}
     </div>
   );
 }

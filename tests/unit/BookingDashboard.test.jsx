@@ -182,6 +182,17 @@ describe('BookingDashboard Component - TDD', () => {
         expect(screen.getByTestId('availability-scheduler')).toBeInTheDocument();
       });
     });
+
+    it('should render TeamCalendar in the team calendar tab', async () => {
+      renderWithProviders(<BookingDashboard />);
+
+      const calendarTab = screen.getByTestId('calendar-board-tab');
+      calendarTab.click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('schedule-board')).toBeInTheDocument();
+      });
+    });
   });
 
   describe('Quick Actions', () => {
@@ -212,7 +223,7 @@ describe('BookingDashboard Component - TDD', () => {
 
       renderWithProviders(<BookingDashboard />);
 
-      expect(screen.getByRole('button', { name: /menu/i })).toBeInTheDocument();
+      expect(screen.getAllByTestId('mobile-menu-toggle').length).toBeGreaterThan(0);
     });
   });
 

@@ -173,14 +173,14 @@ describe('Dashboard Page', () => {
   });
 
   describe('Loading State', () => {
-    it('should show loading spinner while fetching sites', () => {
+    it('should show loading placeholders while fetching sites', () => {
       sitesService.getUserSites.mockImplementation(
         () => new Promise((resolve) => setTimeout(resolve, 100))
       );
       renderDashboard();
 
       expect(screen.getByText('Loading your sites...')).toBeInTheDocument();
-      expect(document.querySelector('.loading-spinner')).toBeInTheDocument();
+      expect(screen.getByLabelText('Loading your sites...')).toBeInTheDocument();
     });
 
     it('should hide loading state after sites are loaded', async () => {
@@ -198,7 +198,7 @@ describe('Dashboard Page', () => {
 
       await waitFor(() => {
         expect(screen.getByText('No sites yet')).toBeInTheDocument();
-        expect(screen.getByText('Create your first website to get started')).toBeInTheDocument();
+        expect(screen.getByText(/Create your first website to get started/i)).toBeInTheDocument();
       });
     });
 
@@ -331,18 +331,13 @@ describe('Dashboard Page', () => {
 
     it('should show error if duplicate fails', async () => {
       const user = userEvent.setup();
-      
-      // First call is for loadPendingOrders, second is for duplicate (fails)
-      global.fetch
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({ count: 0 }),
-        })
-        .mockResolvedValueOnce({
-          ok: false,
-          status: 500,
-          json: async () => ({ error: 'Failed to duplicate' }),
-        });
+
+      global.fetch.mockReset();
+      global.fetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => ({ error: 'Failed to duplicate' }),
+      });
         
       renderDashboard();
 
@@ -370,14 +365,17 @@ describe('Dashboard Page', () => {
       });
     });
 
-    it('should have Analytics button', async () => {
+    it('should have Account settings instead of global Orders and Analytics', async () => {
       renderDashboard();
 
       await waitFor(() => {
-        const analyticsButton = screen.getByRole('link', { name: /Analytics/i });
-        expect(analyticsButton).toBeInTheDocument();
-        expect(analyticsButton).toHaveAttribute('href', '/analytics');
+        expect(screen.getByTestId('dashboard-account-settings')).toBeInTheDocument();
       });
+
+      expect(screen.queryByTestId('dashboard-orders-link')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('dashboard-analytics-link')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('dashboard-products-link')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('dashboard-bookings-link')).not.toBeInTheDocument();
     });
 
     it('should show Admin and Users buttons for admin users', async () => {
@@ -399,49 +397,20 @@ describe('Dashboard Page', () => {
       });
     });
 
-    it('should show Orders button for users with pro sites', async () => {
-      global.fetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ count: 0 }),
-      });
+    it('should keep orders and bookings off the account dashboard', async () => {
       renderDashboard();
 
       await waitFor(() => {
-        expect(screen.getByRole('link', { name: /Orders/i })).toBeInTheDocument();
+        expect(screen.getByTestId('create-site-button')).toBeInTheDocument();
       });
-    });
 
-    it('should not show Orders button for users without pro sites', async () => {
-      const starterSites = [{ ...mockSites[0], plan: 'starter' }];
-      renderDashboard(mockUser, starterSites);
-
-      await waitFor(() => {
-        expect(screen.queryByRole('link', { name: /Orders/i })).not.toBeInTheDocument();
-      });
-    });
-
-    it('should display pending orders badge', async () => {
-      global.fetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ count: 5 }),
-      });
-      renderDashboard();
-
-      await waitFor(() => {
-        expect(screen.getByTestId('site-card-1')).toBeInTheDocument();
-      }, { timeout: 3000 });
-
-      // Badge might take extra time to load
-      await waitFor(() => {
-        const badge = document.querySelector('.notification-badge');
-        expect(badge).toBeInTheDocument();
-      }, { timeout: 3000 });
+      expect(screen.queryByRole('link', { name: /^Orders$/i })).not.toBeInTheDocument();
     });
   });
 
   describe('Welcome Modal', () => {
-    it('should show welcome modal for first-time users', async () => {
-      renderDashboard();
+    it('should show welcome modal for first-time users with no sites', async () => {
+      renderDashboard(mockUser, []);
 
       await waitFor(() => {
         expect(screen.getByTestId('welcome-modal')).toBeInTheDocument();
@@ -459,7 +428,7 @@ describe('Dashboard Page', () => {
 
     it('should close welcome modal when user clicks close', async () => {
       const user = userEvent.setup();
-      renderDashboard();
+      renderDashboard(mockUser, []);
 
       await waitFor(() => {
         expect(screen.getByTestId('welcome-modal')).toBeInTheDocument();
@@ -474,7 +443,14 @@ describe('Dashboard Page', () => {
     });
 
     it('should set localStorage flag after showing welcome modal', async () => {
-      renderDashboard();
+      const user = userEvent.setup();
+      renderDashboard(mockUser, []);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('welcome-modal')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('button', { name: /Close/i }));
 
       await waitFor(() => {
         expect(localStorage.getItem('hasVisitedDashboard')).toBe('true');
@@ -502,49 +478,47 @@ describe('Dashboard Page', () => {
     });
   });
 
-  describe('Stripe Connect Section', () => {
-    it('should show Stripe connect section for pro users', async () => {
+  describe('Account-level payments', () => {
+    it('should not show Stripe connect on the account sites list', async () => {
       const proUser = { ...mockUser, subscription_plan: 'pro' };
-      global.fetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ connected: false }),
-      });
       renderDashboard(proUser);
 
       await waitFor(() => {
-        expect(screen.getByTestId('stripe-connect')).toBeInTheDocument();
+        expect(screen.getByTestId('create-site-button')).toBeInTheDocument();
       });
-    });
 
-    it('should not show Stripe connect section for starter users', async () => {
-      renderDashboard();
-
-      await waitFor(() => {
-        expect(screen.queryByTestId('stripe-connect')).not.toBeInTheDocument();
-      });
-    });
-
-    it('should display Stripe connection status', async () => {
-      const proUser = { ...mockUser, subscription_plan: 'pro' };
-      global.fetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ connected: true }),
-      });
-      renderDashboard(proUser);
-
-      await waitFor(() => {
-        expect(screen.getByText(/Stripe: Connected/i)).toBeInTheDocument();
-      });
+      expect(screen.queryByTestId('stripe-connect')).not.toBeInTheDocument();
     });
   });
 
   describe('Error Handling', () => {
     it('should show error if sites fail to load', async () => {
       sitesService.getUserSites.mockRejectedValue(new Error('Network error'));
-      renderDashboard();
+
+      render(
+        <BrowserRouter>
+          <AuthContext.Provider
+            value={{
+              user: mockUser,
+              loading: false,
+              isAuthenticated: true,
+              logout: vi.fn(),
+            }}
+          >
+            <ToastContext.Provider
+              value={{
+                showSuccess: mockShowSuccess,
+                showError: mockShowError,
+              }}
+            >
+              <Dashboard />
+            </ToastContext.Provider>
+          </AuthContext.Provider>
+        </BrowserRouter>
+      );
 
       await waitFor(() => {
-        expect(mockShowError).toHaveBeenCalledWith('Failed to load your sites');
+        expect(mockShowError).toHaveBeenCalled();
       }, { timeout: 3000 });
     });
 

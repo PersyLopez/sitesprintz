@@ -1,56 +1,50 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { OptimizedImage } from '../common/OptimizedImage';
+import { getSiteDisplayName, getSiteWorkspacePaths } from '../../utils/siteWorkspace';
 import './SiteCard.css';
 
 function SiteCard({ site, onDelete, onDuplicate }) {
-  // In development, sites are served from Express (port 3000), not Vite (port 5173)
   const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-  const siteUrl = site.subdomain 
-    ? `${backendUrl}/sites/${site.subdomain}/`
-    : null;
+  const siteUrl = site.subdomain ? `${backendUrl}/sites/${site.subdomain}/` : null;
+  const name = getSiteDisplayName(site);
+  const paths = getSiteWorkspacePaths(site.id);
+  const templateLabel = site.template || site.templateId || 'Custom Template';
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric' 
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
     });
   };
 
-  const isProSite = site.plan === 'pro' || site.plan === 'checkout';
-
   return (
-    <div className="site-card">
+    <div className="site-card" data-testid="site-card" data-subdomain={site.subdomain}>
       <div className="site-card-header">
         <div className="site-thumbnail">
           {site.heroImage ? (
             <OptimizedImage
               src={site.heroImage}
-              alt={site.businessName || 'Site thumbnail'}
+              alt={name}
               width={400}
               height={225}
               aspectRatio="16/9"
-              priority={false}
               sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           ) : (
-            <div className="thumbnail-placeholder">
-              <span aria-hidden="true">🌐</span>
-            </div>
+            <div className="thumbnail-placeholder">🌐</div>
           )}
         </div>
-        
         <div className={`site-status ${site.status}`}>
           {site.status === 'published' ? '✅ Published' : '📝 Draft'}
         </div>
       </div>
 
       <div className="site-card-body">
-        <h3>{site.businessName || site.name || 'Untitled Site'}</h3>
-        <p className="site-template">{site.template || 'Custom Template'}</p>
+        <h3>{name}</h3>
+        <p className="site-template">{templateLabel}</p>
         {site.plan && (
           <p className="site-plan">Plan: <span className={`plan-badge ${site.plan}`}>{site.plan}</span></p>
         )}
@@ -59,73 +53,56 @@ function SiteCard({ site, onDelete, onDuplicate }) {
         </p>
       </div>
 
-      {/* Pro Site - Orders Button */}
-      {isProSite && site.status === 'published' && (
-        <div className="site-card-orders">
-          <Link 
-            to={`/orders?siteId=${site.id}`}
-            className="btn btn-warning btn-sm btn-full"
-          >
-            <span>📦</span> View Orders
-          </Link>
-        </div>
-      )}
-
       <div className="site-card-actions">
+        <Link
+          to={paths.overview}
+          className="btn btn-primary btn-sm"
+          data-testid="manage-site-button"
+        >
+          Manage
+        </Link>
+
         {site.status === 'published' && siteUrl ? (
-          <a 
+          <a
             href={siteUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-secondary btn-sm"
+            data-testid="view-site-button"
             title="View live site"
           >
-            <span>🌐</span> View
+            View
           </a>
         ) : (
-          <button 
+          <button
+            type="button"
             className="btn btn-secondary btn-sm"
-            title="Preview draft"
             disabled
+            title="Preview draft"
           >
-            <span>👁️</span> Preview
+            Preview
           </button>
         )}
-        
-        {site.status === 'published' && site.subdomain ? (
-          <a 
-            href={`${backendUrl}/sites/${site.subdomain}/?edit=true&token=${localStorage.getItem('token')}`}
-            className="btn btn-primary btn-sm"
-            title="Edit site with visual editor"
-          >
-            <span>✏️</span> Edit
-          </a>
-        ) : (
-          <Link 
-            to={`/setup?site=${site.id}`}
-            className="btn btn-primary btn-sm"
-            title="Edit draft in setup"
-          >
-            <span>✏️</span> Edit
-          </Link>
-        )}
-        
+
+        <Link to={paths.edit} className="btn btn-secondary btn-sm" data-testid="edit-site-button">
+          Edit
+        </Link>
+
         {onDuplicate && (
-          <button 
-            onClick={onDuplicate}
-            className="btn btn-secondary btn-sm"
-            title="Duplicate site"
-          >
-            <span>📋</span>
+          <button type="button" onClick={onDuplicate} className="btn btn-secondary btn-sm" title="Duplicate site" aria-label="Duplicate site">
+            📋
           </button>
         )}
-        
-        <button 
+
+        <button
+          type="button"
           onClick={onDelete}
           className="btn btn-danger btn-sm"
+          data-testid="delete-site-button"
           title="Delete site"
+          aria-label="Delete site"
         >
-          <span>🗑️</span>
+          🗑️
         </button>
       </div>
     </div>
@@ -133,4 +110,3 @@ function SiteCard({ site, onDelete, onDuplicate }) {
 }
 
 export default SiteCard;
-

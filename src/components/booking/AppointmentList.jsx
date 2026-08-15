@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from '../../hooks/useToast';
+import { usePolling } from '../../hooks/usePolling';
 import { get, del as deleteAPI } from '../../utils/api';
 import { DateTime } from 'luxon';
+import PaymentStatusBadge from './PaymentStatusBadge';
+import RefundModal from './RefundModal';
 import './AppointmentList.css';
 
-const AppointmentList = ({ userId, onRefresh }) => {
+const AppointmentList = ({ userId, siteId = null, onRefresh }) => {
   const { showSuccess, showError } = useToast();
 
   const [appointments, setAppointments] = useState([]);
@@ -22,12 +25,36 @@ const AppointmentList = ({ userId, onRefresh }) => {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [cancellingAppointment, setCancellingAppointment] = useState(null);
+  const [showRefundModal, setShowRefundModal] = useState(false);
+  const [refundingAppointment, setRefundingAppointment] = useState(null);
+
+  // Poll for appointment updates
+  const { data: polledData, lastUpdated } = usePolling({
+    endpoint: userId ? `/api/booking/admin/${userId}/appointments` : null,
+    interval: 30000,
+    enabled: !!userId,
+    params: {
+      ...(statusFilter !== 'all' ? { status: statusFilter } : {}),
+      ...(siteId ? { siteId } : {}),
+    },
+    onUpdate: (newData) => {
+      if (newData.appointments) {
+        setAppointments(newData.appointments);
+      }
+    }
+  });
+
+  useEffect(() => {
+    if (polledData?.appointments) {
+      setAppointments(polledData.appointments);
+    }
+  }, [polledData]);
 
   useEffect(() => {
     if (userId) {
       fetchAppointments();
     }
-  }, [userId]);
+  }, [userId, siteId]);
 
   const fetchAppointments = async () => {
     try {
@@ -37,6 +64,9 @@ const AppointmentList = ({ userId, onRefresh }) => {
       const params = {};
       if (statusFilter !== 'all') {
         params.status = statusFilter;
+      }
+      if (siteId) {
+        params.siteId = siteId;
       }
 
       const response = await get(`/api/booking/admin/${userId}/appointments`, { params });
@@ -80,7 +110,7 @@ const AppointmentList = ({ userId, onRefresh }) => {
 
     try {
       await deleteAPI(
-        `/api/booking/tenants/${userId}/appointments/${cancellingAppointment.confirmation_code}`,
+        `/api/booking/admin/${userId}/appointments/${cancellingAppointment.confirmation_code}`,
         {
           body: JSON.stringify({
             reason: 'Cancelled by admin',
@@ -171,6 +201,7 @@ const AppointmentList = ({ userId, onRefresh }) => {
           className="refresh-btn"
           onClick={handleRefresh}
           aria-label="Refresh"
+          data-testid="refresh-btn"
         >
           🔄 Refresh
         </button>
@@ -184,6 +215,7 @@ const AppointmentList = ({ userId, onRefresh }) => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="search-input"
+          data-testid="appointment-search"
         />
 
         <select
@@ -191,6 +223,7 @@ const AppointmentList = ({ userId, onRefresh }) => {
           onChange={(e) => setStatusFilter(e.target.value)}
           className="filter-select"
           aria-label="Status"
+          data-testid="status-filter"
         >
           <option value="all">All Statuses</option>
           <option value="pending">Pending</option>
@@ -204,6 +237,7 @@ const AppointmentList = ({ userId, onRefresh }) => {
           onChange={(e) => setDateRange(e.target.value)}
           className="filter-select"
           aria-label="Date Range"
+          data-testid="date-range-filter"
         >
           <option value="all">All Time</option>
           <option value="today">Today</option>
@@ -216,6 +250,7 @@ const AppointmentList = ({ userId, onRefresh }) => {
           onChange={(e) => setSortBy(e.target.value)}
           className="filter-select"
           aria-label="Sort By"
+          data-testid="sort-filter"
         >
           <option value="date">Sort by Date</option>
           <option value="customer">Sort by Customer</option>
@@ -254,7 +289,7 @@ const AppointmentList = ({ userId, onRefresh }) => {
                 <div className="appointment-info">
                   <div className="appointment-customer" data-testid={`appointment-customer-${apt.id}`}>
                     <h3>{apt.customer_name}</h3>
-                    <span 
+                    <span
                       className={`status-badge status-${apt.status}`}
                       data-testid={`status-badge-${apt.id}`}
                     >
@@ -285,6 +320,16 @@ const AppointmentList = ({ userId, onRefresh }) => {
                   {apt.total_price_cents && (
                     <div className="service-price">{formatCurrency(apt.total_price_cents)}</div>
                   )}
+                  {/* Payment Status Badge */}
+                  {apt.payment_status && apt.payment_status !== 'unpaid' && (
+                    <div className="payment-status-container">
+                      <PaymentStatusBadge 
+                        status={apt.payment_status}
+                        amount={apt.payment_amount_cents}
+                        paymentMethod={apt.payment_method}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -292,6 +337,7 @@ const AppointmentList = ({ userId, onRefresh }) => {
                 <button
                   className="view-details-btn"
                   onClick={() => handleViewDetails(apt)}
+                  data-testid={`view-details-btn-${apt.id}`}
                 >
                   👁️ View Details
                 </button>
@@ -299,8 +345,22 @@ const AppointmentList = ({ userId, onRefresh }) => {
                   <button
                     className="cancel-btn"
                     onClick={() => handleOpenCancelConfirm(apt)}
+                    data-testid={`cancel-appt-btn-${apt.id}`}
                   >
                     ❌ Cancel
+                  </button>
+                )}
+                {/* Refund Button for Paid Appointments */}
+                {apt.payment_status === 'paid' && (
+                  <button
+                    className="refund-btn"
+                    onClick={() => {
+                      setRefundingAppointment(apt);
+                      setShowRefundModal(true);
+                    }}
+                    data-testid={`refund-btn-${apt.id}`}
+                  >
+                    💰 Refund
                   </button>
                 )}
               </div>
@@ -311,7 +371,7 @@ const AppointmentList = ({ userId, onRefresh }) => {
 
       {/* Details Modal */}
       {showDetails && selectedAppointment && (
-        <div className="modal-overlay" onClick={handleCloseDetails}>
+        <div className="modal-overlay" onClick={handleCloseDetails} data-testid="appointment-details-modal">
           <div
             className="modal-content"
             onClick={(e) => e.stopPropagation()}
@@ -320,7 +380,7 @@ const AppointmentList = ({ userId, onRefresh }) => {
           >
             <div className="modal-header">
               <h3>Appointment Details</h3>
-              <button className="close-btn" onClick={handleCloseDetails}>×</button>
+              <button className="close-btn" onClick={handleCloseDetails} data-testid="close-modal-btn">×</button>
             </div>
 
             <div className="modal-body">
@@ -398,7 +458,7 @@ const AppointmentList = ({ userId, onRefresh }) => {
 
       {/* Cancel Confirmation Modal */}
       {showCancelConfirm && cancellingAppointment && (
-        <div className="modal-overlay" onClick={handleCloseCancelConfirm}>
+        <div className="modal-overlay" onClick={handleCloseCancelConfirm} data-testid="cancel-confirm-modal">
           <div
             className="modal-content small-modal"
             onClick={(e) => e.stopPropagation()}
@@ -424,12 +484,29 @@ const AppointmentList = ({ userId, onRefresh }) => {
               <button className="cancel-action-btn" onClick={handleCloseCancelConfirm}>
                 Cancel
               </button>
-              <button className="confirm-action-btn" onClick={handleConfirmCancel}>
+              <button className="confirm-action-btn" onClick={handleConfirmCancel} data-testid="confirm-cancel-btn">
                 Confirm
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Refund Modal */}
+      {showRefundModal && refundingAppointment && (
+        <RefundModal
+          appointment={refundingAppointment}
+          userId={userId}
+          onRefund={() => {
+            setShowRefundModal(false);
+            setRefundingAppointment(null);
+            handleRefresh();
+          }}
+          onClose={() => {
+            setShowRefundModal(false);
+            setRefundingAppointment(null);
+          }}
+        />
       )}
     </div>
   );

@@ -3,7 +3,7 @@ import { useToast } from '../../hooks/useToast';
 import { get, post, put, del as deleteAPI } from '../../utils/api';
 import './ServiceManager.css';
 
-const ServiceManager = ({ userId, onRefresh }) => {
+const ServiceManager = ({ userId, siteId = null, onRefresh }) => {
   const { showSuccess, showError } = useToast();
 
   const [services, setServices] = useState([]);
@@ -26,20 +26,27 @@ const ServiceManager = ({ userId, onRefresh }) => {
     category: 'other',
     online_booking_enabled: true,
     requires_approval: false,
+    // Payment fields (Phase 2)
+    requires_payment: false,
+    payment_type: 'none',
+    deposit_percentage: 50,
   });
   const [formErrors, setFormErrors] = useState({});
+  const [savingPayment, setSavingPayment] = useState(false);
 
   useEffect(() => {
     if (userId) {
       fetchServices();
     }
-  }, [userId]);
+  }, [userId, siteId]);
 
   const fetchServices = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await get(`/api/booking/tenants/${userId}/services`);
+      const response = await get(`/api/booking/tenants/${userId}/services`, {
+        params: siteId ? { siteId } : undefined,
+      });
       setServices(response.services || []);
     } catch (err) {
       console.error('Error fetching services:', err);
@@ -81,13 +88,17 @@ const ServiceManager = ({ userId, onRefresh }) => {
       category: 'other',
       online_booking_enabled: true,
       requires_approval: false,
+      // Payment fields (Phase 2)
+      requires_payment: false,
+      payment_type: 'none',
+      deposit_percentage: 50,
     });
     setFormErrors({});
     setShowModal(true);
     // data-testid for add service button handled in JSX
   };
 
-  const handleOpenEditModal = (service) => {
+  const handleOpenEditModal = async (service) => {
     setEditingService(service);
     setFormData({
       name: service.name,
@@ -97,6 +108,10 @@ const ServiceManager = ({ userId, onRefresh }) => {
       category: service.category || 'other',
       online_booking_enabled: service.online_booking_enabled,
       requires_approval: service.requires_approval || false,
+      // Payment fields (Phase 2)
+      requires_payment: service.requires_payment || false,
+      payment_type: service.payment_type || 'none',
+      deposit_percentage: service.deposit_percentage || 50,
     });
     setFormErrors({});
     setShowModal(true);
@@ -137,14 +152,40 @@ const ServiceManager = ({ userId, onRefresh }) => {
         requires_approval: formData.requires_approval,
       };
 
+      let serviceId;
       if (editingService) {
         // Update existing service
-        await put(`/api/booking/admin/${userId}/services/${editingService.id}`, serviceData);
+        console.log('Updating service:', editingService.id, serviceData);
+        const response = await put(`/api/booking/admin/${userId}/services/${editingService.id}`, serviceData);
+        serviceId = editingService.id;
+        console.log('Service updated successfully');
         showSuccess('Service updated successfully');
       } else {
         // Create new service
-        await post(`/api/booking/admin/${userId}/services`, serviceData);
+        console.log('Creating new service:', serviceData);
+        const response = await post(`/api/booking/admin/${userId}/services`, serviceData);
+        serviceId = response.service?.id;
+        console.log('Service created successfully');
         showSuccess('Service created successfully');
+      }
+
+      // Save payment configuration (Phase 2)
+      if (serviceId && (formData.requires_payment || editingService?.requires_payment)) {
+        try {
+          setSavingPayment(true);
+          await put(`/api/booking/admin/${userId}/services/${serviceId}/payment`, {
+            requires_payment: formData.requires_payment,
+            payment_type: formData.requires_payment ? formData.payment_type : 'none',
+            deposit_percentage: formData.requires_payment && formData.payment_type === 'deposit' 
+              ? formData.deposit_percentage 
+              : 50
+          });
+        } catch (err) {
+          console.error('Error saving payment config:', err);
+          showError('Service saved but payment configuration failed');
+        } finally {
+          setSavingPayment(false);
+        }
       }
 
       handleCloseModal();
@@ -264,6 +305,18 @@ const ServiceManager = ({ userId, onRefresh }) => {
                     <span className="detail-value">{service.category}</span>
                   </div>
                 )}
+                {service.requires_payment && (
+                  <div className="service-detail">
+                    <span className="detail-label">Payment:</span>
+                    <span className="detail-value payment-badge">
+                      {service.payment_type === 'deposit' 
+                        ? `Deposit (${service.deposit_percentage || 50}%)`
+                        : service.payment_type === 'full'
+                        ? 'Full Payment'
+                        : 'Optional'}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="service-actions">
@@ -300,7 +353,7 @@ const ServiceManager = ({ userId, onRefresh }) => {
           >
             <div className="modal-header">
               <h3>{editingService ? 'Edit Service' : 'Add Service'}</h3>
-              <button className="close-btn" onClick={handleCloseModal}>×</button>
+              <button className="close-btn" onClick={handleCloseModal} data-testid="close-modal-btn">×</button>
             </div>
 
             <form onSubmit={handleSubmit}>
@@ -406,12 +459,107 @@ const ServiceManager = ({ userId, onRefresh }) => {
                 </label>
               </div>
 
+              {/* Payment Settings Section (Phase 2) */}
+              <div className="form-section-divider"></div>
+              <h4 className="form-section-title">Payment Settings</h4>
+
+              <div className="form-group checkbox-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    name="requires_payment"
+                    checked={formData.requires_payment}
+                    onChange={handleChange}
+                    data-testid="requires-payment-checkbox"
+                  />
+                  <span>Require payment at booking</span>
+                </label>
+                <p className="form-help-text">
+                  Customers will be required to pay when booking this service
+                </p>
+              </div>
+
+              {formData.requires_payment && (
+                <>
+                  <div className="form-group">
+                    <label htmlFor="payment_type">Payment Type *</label>
+                    <select
+                      id="payment_type"
+                      name="payment_type"
+                      value={formData.payment_type}
+                      onChange={handleChange}
+                      data-testid="payment-type-select"
+                    >
+                      <option value="deposit">Deposit (partial payment)</option>
+                      <option value="full">Full payment</option>
+                      <option value="optional">Optional (customer chooses)</option>
+                    </select>
+                    <p className="form-help-text">
+                      {formData.payment_type === 'deposit' && 'Customer pays a percentage upfront'}
+                      {formData.payment_type === 'full' && 'Customer pays the full amount'}
+                      {formData.payment_type === 'optional' && 'Customer can choose to pay or pay later'}
+                    </p>
+                  </div>
+
+                  {formData.payment_type === 'deposit' && (
+                    <div className="form-group">
+                      <label htmlFor="deposit_percentage">
+                        Deposit Percentage: {formData.deposit_percentage}%
+                      </label>
+                      <input
+                        type="range"
+                        id="deposit_percentage"
+                        name="deposit_percentage"
+                        min="10"
+                        max="100"
+                        step="5"
+                        value={formData.deposit_percentage}
+                        onChange={handleChange}
+                        data-testid="deposit-percentage-slider"
+                      />
+                      <div className="deposit-preview">
+                        <p>
+                          <strong>Service Price:</strong> ${formData.price_cents || '0.00'}
+                        </p>
+                        <p>
+                          <strong>Deposit Amount:</strong>{' '}
+                          <span className="deposit-amount">
+                            ${formData.price_cents 
+                              ? ((parseFloat(formData.price_cents) * formData.deposit_percentage / 100).toFixed(2))
+                              : '0.00'}
+                          </span>
+                        </p>
+                        <p className="deposit-remaining">
+                          Remaining Balance: ${formData.price_cents 
+                            ? ((parseFloat(formData.price_cents) * (100 - formData.deposit_percentage) / 100).toFixed(2))
+                            : '0.00'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {formData.payment_type === 'full' && formData.price_cents && (
+                    <div className="payment-preview">
+                      <p>
+                        <strong>Full Payment Amount:</strong>{' '}
+                        <span className="payment-amount">${formData.price_cents}</span>
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+
               <div className="modal-actions">
                 <button type="button" className="cancel-btn" onClick={handleCloseModal}>
                   Cancel
                 </button>
-                <button type="submit" className="save-btn" data-testid="save-service-button" onClick={() => console.log('Save button clicked')}>
-                  Save
+                <button 
+                  type="submit" 
+                  className="save-btn" 
+                  data-testid="save-service-button" 
+                  disabled={savingPayment}
+                >
+                  {savingPayment ? 'Saving...' : 'Save'}
                 </button>
               </div>
             </form>

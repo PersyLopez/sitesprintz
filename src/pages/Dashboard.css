@@ -32,11 +32,26 @@
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-xl);
   padding: var(--spacing-lg);
-  background: var(--primary-gradient);
+  background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 50%, #2563eb 100%);
   color: white;
   border-radius: 16px;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 
+    var(--shadow-lg),
+    0 0 40px rgba(59, 130, 246, 0.15);
   animation: slideInUp 0.4s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40%;
+  height: 100%;
+  background: radial-gradient(ellipse at right, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+  pointer-events: none;
 }
 
 /* Tablet+: Horizontal layout */
@@ -61,6 +76,14 @@
   margin: 0;
   opacity: 0.95;
   font-size: 1.1rem;
+}
+
+.dashboard-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  position: relative;
+  z-index: 1;
 }
 
 .loading-container {
