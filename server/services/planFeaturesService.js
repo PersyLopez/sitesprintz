@@ -7,15 +7,19 @@
 
 import { prisma } from '../../database/db.js';
 import { PLAN_FEATURES as DEFAULT_PLAN_FEATURES } from '../../src/utils/planFeatures.js';
+import { TIERS } from '../../src/config/tiers.js';
 
 // Cache for plan features (refreshed on updates)
 let planFeaturesCache = null;
 let cacheTimestamp = null;
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
+// Canonical tier list
+const VALID_TIERS = [TIERS.TRIAL, TIERS.STARTER, TIERS.GROWTH];
+
 /**
  * Load plan features from database
- * Returns object: { free: [...], starter: [...], pro: [...], premium: [...] }
+ * Returns object: { trial: [...], starter: [...], growth: [...] }
  */
 export async function loadPlanFeaturesFromDB() {
   try {
@@ -26,18 +30,17 @@ export async function loadPlanFeaturesFromDB() {
       ORDER BY plan, feature
     `;
 
-    // Group by plan
+    // Group by plan using canonical tiers (legacy pro/premium rows fold into growth)
     const planFeatures = {
-      free: [],
+      trial: [],
       starter: [],
-      growth: [],
-      pro: [],
-      premium: []
+      growth: []
     };
 
     features.forEach(row => {
-      if (planFeatures[row.plan]) {
-        planFeatures[row.plan].push(row.feature);
+      const plan = row.plan === 'pro' || row.plan === 'premium' ? 'growth' : row.plan;
+      if (planFeatures[plan] && !planFeatures[plan].includes(row.feature)) {
+        planFeatures[plan].push(row.feature);
       }
     });
 
@@ -72,9 +75,8 @@ export async function getPlanFeatures() {
  */
 export async function updatePlanFeatures(planFeatures) {
   try {
-    // Validate input
-    const validPlans = ['free', 'starter', 'growth', 'pro', 'premium'];
-    for (const plan of validPlans) {
+    // Validate input using canonical tiers
+    for (const plan of VALID_TIERS) {
       if (!planFeatures[plan] || !Array.isArray(planFeatures[plan])) {
         throw new Error(`Invalid plan features for ${plan}. Must be an array.`);
       }
@@ -87,7 +89,7 @@ export async function updatePlanFeatures(planFeatures) {
     const existingFeatures = allFeatures.map(r => r.feature);
 
     // Update each plan
-    for (const plan of validPlans) {
+    for (const plan of VALID_TIERS) {
       const enabledFeatures = planFeatures[plan] || [];
       
       // Disable all features for this plan first

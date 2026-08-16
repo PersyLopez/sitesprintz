@@ -1,7 +1,11 @@
 /**
  * Plan Features and Tier Gating Utility
  * Defines what features are available for each plan tier
+ * 
+ * Now imports from src/config/tiers.js for single source of truth
  */
+
+import { TIERS, TIER_HIERARCHY, normalizeTier, hasTierAccess } from '../config/tiers.js';
 
 // Feature definitions
 export const FEATURES = {
@@ -20,14 +24,17 @@ export const FEATURES = {
   SERVICE_REQUEST_FORMS: 'service_request_forms',
   QUOTE_REQUESTS: 'quote_requests',
   BASIC_ANALYTICS: 'basic_analytics',
+  ORDER_MANAGEMENT: 'order_management',
+  PRODUCT_MANAGEMENT: 'product_management',
   
   // Pro features
   STRIPE_CHECKOUT: 'stripe_checkout',
   SHOPPING_CART: 'shopping_cart',
-  ORDER_MANAGEMENT: 'order_management',
   RECURRING_PRICING: 'recurring_pricing',
   SALES_ANALYTICS: 'sales_analytics',
-  PRODUCT_MANAGEMENT: 'product_management',
+  CUSTOM_DOMAIN: 'custom_domain',
+  REMOVE_BRANDING: 'remove_branding',
+  PRIORITY_SUPPORT: 'priority_support',
   
   // Premium features
   LIVE_CHAT: 'live_chat',
@@ -35,13 +42,24 @@ export const FEATURES = {
   EMAIL_AUTOMATION: 'email_automation',
   CRM_INTEGRATION: 'crm_integration',
   MULTI_LOCATION: 'multi_location',
-  CUSTOM_DOMAIN: 'custom_domain',
   AB_TESTING: 'ab_testing',
-  BLOG_CMS: 'blog_cms'
+  BLOG_CMS: 'blog_cms',
+  
+  // New niche gap features
+  INTERACTIVE_CALCULATOR: 'interactive_calculator',
+  CLASS_SCHEDULER: 'class_scheduler',
+  SUBSCRIPTION_BOOKING: 'subscription_booking',
+  DIAGNOSTIC_QUIZ: 'diagnostic_quiz',
+  RESOURCE_CENTER: 'resource_center',
+  VIDEO_GALLERY: 'video_gallery',
+  ZIP_CHECKER: 'zip_checker',
+  ENHANCED_PROFILES: 'enhanced_profiles',
+  PROGRESS_TRACKER: 'progress_tracker'
 };
 
 // Plan feature mapping
-const FREE_FEATURES = [
+// Note: "trial" and "free" are aliases - both refer to the 7-day free trial
+const TRIAL_FEATURES = [
   FEATURES.CONTACT_FORMS,
   FEATURES.SERVICE_DISPLAY,
   FEATURES.BASIC_BOOKING_LINK,
@@ -49,7 +67,7 @@ const FREE_FEATURES = [
 ];
 
 const STARTER_FEATURES = [
-  ...FREE_FEATURES,
+  ...TRIAL_FEATURES,
   FEATURES.STAFF_PROFILES,
   FEATURES.FAQ_SECTION,
   FEATURES.FILTERS,
@@ -61,90 +79,64 @@ const GROWTH_FEATURES = [
   FEATURES.EMBEDDED_BOOKING,
   FEATURES.SERVICE_REQUEST_FORMS,
   FEATURES.QUOTE_REQUESTS,
-  FEATURES.BASIC_ANALYTICS
-];
-
-const PRO_FEATURES = [
-  ...GROWTH_FEATURES,
+  FEATURES.BASIC_ANALYTICS,
+  FEATURES.ORDER_MANAGEMENT,
+  FEATURES.PRODUCT_MANAGEMENT,
   FEATURES.STRIPE_CHECKOUT,
   FEATURES.SHOPPING_CART,
-  FEATURES.ORDER_MANAGEMENT,
   FEATURES.RECURRING_PRICING,
   FEATURES.SALES_ANALYTICS,
-  FEATURES.PRODUCT_MANAGEMENT
-];
-
-const PREMIUM_FEATURES = [
-  ...PRO_FEATURES,
-  FEATURES.LIVE_CHAT,
-  FEATURES.ADVANCED_BOOKING,
-  FEATURES.EMAIL_AUTOMATION,
-  FEATURES.CRM_INTEGRATION,
-  FEATURES.MULTI_LOCATION,
   FEATURES.CUSTOM_DOMAIN,
-  FEATURES.AB_TESTING,
-  FEATURES.BLOG_CMS
+  FEATURES.REMOVE_BRANDING,
+  // Niche modules
+  FEATURES.INTERACTIVE_CALCULATOR,
+  FEATURES.CLASS_SCHEDULER,
+  FEATURES.SUBSCRIPTION_BOOKING,
+  FEATURES.DIAGNOSTIC_QUIZ,
+  FEATURES.RESOURCE_CENTER,
+  FEATURES.VIDEO_GALLERY,
+  FEATURES.ZIP_CHECKER,
+  FEATURES.ENHANCED_PROFILES,
+  FEATURES.PROGRESS_TRACKER
 ];
 
 export const PLAN_FEATURES = {
-  free: FREE_FEATURES,
-  starter: STARTER_FEATURES,
-  growth: GROWTH_FEATURES,
-  pro: PRO_FEATURES,
-  premium: PREMIUM_FEATURES
+  [TIERS.TRIAL]: TRIAL_FEATURES,
+  [TIERS.STARTER]: STARTER_FEATURES,
+  [TIERS.GROWTH]: GROWTH_FEATURES
 };
 
-// Plan metadata
+// Plan metadata (2 paid tiers)
 export const PLAN_INFO = {
-  free: {
+  trial: {
     name: 'Free Trial',
     price: 0,
     duration: '7 days',
     color: '#64748b'
   },
-  
   starter: {
     name: 'Starter',
     price: 10,
     duration: 'month',
     color: '#22c55e',
-    description: 'Perfect for service businesses',
+    description: 'Get found — site, hours, contact',
     ctaText: 'Upgrade to Starter'
   },
-  
   growth: {
     name: 'Growth',
-    price: 25,
+    price: 35,
     duration: 'month',
     color: '#f59e0b',
-    description: 'Take bookings, collect cash',
-    ctaText: 'Upgrade to Growth'
-  },
-  
-  pro: {
-    name: 'Pro',
-    price: 45,
-    duration: 'month',
-    color: '#06b6d4',
-    description: 'Add e-commerce and payments',
-    ctaText: 'Upgrade to Pro',
+    description: 'Bookings, checkout, custom domain',
+    ctaText: 'Upgrade to Growth',
     popular: true
-  },
-  
-  premium: {
-    name: 'Premium',
-    price: 49,
-    duration: 'month',
-    color: '#8b5cf6',
-    description: 'Full automation and advanced tools',
-    ctaText: 'Upgrade to Premium'
   }
 };
 
 // Check if user has access to a feature
 export function hasFeature(userPlan, feature) {
-  const plan = userPlan?.toLowerCase() || 'free';
-  const features = PLAN_FEATURES[plan] || PLAN_FEATURES.free;
+  const plan = normalizeTier(userPlan);
+  const features = PLAN_FEATURES[plan] || PLAN_FEATURES[TIERS.TRIAL];
   return features.includes(feature);
 }
 
@@ -160,43 +152,44 @@ export function hasAllFeatures(userPlan, featureList) {
 
 // Get minimum required plan for a feature
 export function getRequiredPlan(feature) {
-  for (const [plan, features] of Object.entries(PLAN_FEATURES)) {
-    if (features.includes(feature)) {
+  for (const plan of TIER_HIERARCHY) {
+    const features = PLAN_FEATURES[plan];
+    if (features?.includes(feature)) {
       return plan;
     }
   }
-  return 'premium'; // Default to highest tier if not found
+  return TIERS.GROWTH;
 }
 
 // Get list of features for a plan
 export function getPlanFeatures(plan) {
-  const planKey = plan?.toLowerCase() || 'free';
-  return PLAN_FEATURES[planKey] || PLAN_FEATURES.free;
+  const planKey = normalizeTier(plan);
+  return PLAN_FEATURES[planKey] || PLAN_FEATURES[TIERS.TRIAL];
 }
 
 // Get plan info
 export function getPlanInfo(plan) {
-  const planKey = plan?.toLowerCase() || 'free';
-  return PLAN_INFO[planKey] || PLAN_INFO.free;
+  const planKey = normalizeTier(plan);
+  return PLAN_INFO[planKey] || PLAN_INFO.trial;
 }
 
 // Check if plan A is higher than plan B
 export function isPlanHigherThan(planA, planB) {
-  const hierarchy = ['free', 'starter', 'growth', 'pro', 'premium'];
-  const indexA = hierarchy.indexOf(planA?.toLowerCase());
-  const indexB = hierarchy.indexOf(planB?.toLowerCase());
+  const hierarchy = TIER_HIERARCHY;
+  const indexA = hierarchy.indexOf(normalizeTier(planA));
+  const indexB = hierarchy.indexOf(normalizeTier(planB));
   return indexA > indexB;
 }
 
 // Get upgrade options for current plan
 export function getUpgradeOptions(currentPlan) {
-  const hierarchy = ['free', 'starter', 'growth', 'pro', 'premium'];
-  const currentIndex = hierarchy.indexOf(currentPlan?.toLowerCase());
-  
+  const hierarchy = TIER_HIERARCHY;
+  const currentIndex = hierarchy.indexOf(normalizeTier(currentPlan));
+
   if (currentIndex === -1 || currentIndex >= hierarchy.length - 1) {
-    return []; // Already at highest tier or invalid plan
+    return [];
   }
-  
+
   return hierarchy.slice(currentIndex + 1).map(plan => ({
     plan,
     info: PLAN_INFO[plan]
@@ -229,7 +222,18 @@ export const FEATURE_NAMES = {
   [FEATURES.CRM_INTEGRATION]: 'CRM Integration',
   [FEATURES.MULTI_LOCATION]: 'Multi-Location Support',
   [FEATURES.CUSTOM_DOMAIN]: 'Custom Domain',
+  [FEATURES.REMOVE_BRANDING]: 'Remove Branding',
+  [FEATURES.PRIORITY_SUPPORT]: 'Priority Support',
   [FEATURES.AB_TESTING]: 'A/B Testing',
-  [FEATURES.BLOG_CMS]: 'Blog & CMS'
+  [FEATURES.BLOG_CMS]: 'Blog & CMS',
+  [FEATURES.INTERACTIVE_CALCULATOR]: 'Interactive Calculator',
+  [FEATURES.CLASS_SCHEDULER]: 'Class Scheduler',
+  [FEATURES.SUBSCRIPTION_BOOKING]: 'Subscription Booking',
+  [FEATURES.DIAGNOSTIC_QUIZ]: 'Diagnostic Quiz',
+  [FEATURES.RESOURCE_CENTER]: 'Resource Center',
+  [FEATURES.VIDEO_GALLERY]: 'Video Gallery',
+  [FEATURES.ZIP_CHECKER]: 'ZIP Code Checker',
+  [FEATURES.ENHANCED_PROFILES]: 'Enhanced Profiles',
+  [FEATURES.PROGRESS_TRACKER]: 'Progress Tracker'
 };
 

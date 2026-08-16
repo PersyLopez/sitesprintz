@@ -175,6 +175,51 @@ export async function restoreVersion(req, res) {
 }
 
 /**
+ * POST /api/sites/:subdomain/restore/template
+ * Restore site to template defaults
+ */
+export async function restoreTemplate(req, res) {
+  try {
+    const { subdomain } = req.params;
+    const userEmail = req.user?.email;
+    
+    if (!userEmail) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+    
+    const siteDir = path.join(process.cwd(), 'public', 'sites', subdomain);
+    
+    // Verify permissions
+    try {
+      await visualEditorService.verifyEditPermission(siteDir, userEmail);
+    } catch (error) {
+      return res.status(403).json({ error: error.message });
+    }
+    
+    // Reset site.json to template defaults
+    const result = await visualEditorService.restoreTemplateDefaults(siteDir);
+    
+    res.json({
+      success: true,
+      version: result.version,
+      message: 'Site restored to template defaults'
+    });
+    
+  } catch (error) {
+    console.error('Restore template error:', error);
+    
+    if (error.message.includes('not found')) {
+      return res.status(404).json({ error: error.message });
+    }
+    
+    res.status(500).json({ 
+      error: 'Failed to restore template',
+      message: error.message 
+    });
+  }
+}
+
+/**
  * GET /api/sites/:subdomain/session
  * Get current edit session information
  */
@@ -212,6 +257,7 @@ export async function getEditSession(req, res) {
 router.patch('/sites/:subdomain', requireAuth, patchSiteWithVersion);
 router.get('/sites/:subdomain/history', requireAuth, getVersionHistory);
 router.post('/sites/:subdomain/restore/:versionId', requireAuth, restoreVersion);
+router.post('/sites/:subdomain/restore/template', requireAuth, restoreTemplate);
 router.get('/sites/:subdomain/session', requireAuth, getEditSession);
 
 export default router;

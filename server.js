@@ -19,12 +19,15 @@ import cookieParser from 'cookie-parser';
 import { csrfProtection, csrfTokenEndpoint } from './server/middleware/csrf.js';
 import { apiLimiter } from './server/middleware/rateLimiting.js';
 import './server/jobs/tokenCleanup.js'; // Token cleanup job
+import { startReminderJob } from './server/jobs/booking-reminders.js';
+startReminderJob();
 
 // Routes
 import authRoutes from './server/routes/auth.routes.js';
 import webhookRoutes from './server/routes/webhooks.routes.js';
 import userRoutes from './server/routes/users.routes.js';
 import paymentRoutes from './server/routes/payments.routes.js';
+import paymentFacilitatorRoutes from './server/routes/payment-facilitator.routes.js';
 import siteRoutes from './server/routes/sites.routes.js';
 import bookingRoutes from './server/routes/booking.routes.js';
 import bookingFeesRoutes from './server/routes/booking-fees.routes.js';
@@ -49,6 +52,7 @@ import bookingPhase2Routes from './server/routes/booking-phase2.routes.js';
 import { initializePricingRoutes } from './server/routes/pricing.routes.js';
 import { query, prisma } from './database/db.js';
 import publishedSiteRenderer from './server/services/publishedSiteRenderer.js';
+import { isSafeSiteIdentifier } from './server/utils/siteIsolation.js';
 import testRoutes from './server/routes/test.routes.js';
 import healthRoutes from './server/routes/health.js';
 
@@ -132,7 +136,20 @@ app.use(cors(buildCorsOptions()));
 // SEO routes must be mounted BEFORE static middleware for sitemap/robots.txt to work
 app.use('/', seoRoutes);
 
-app.use(express.static(publicDir));
+// Never serve unpublished drafts or user JSON from the public tree
+app.use((req, res, next) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    return next();
+  }
+  const blocked = req.path === '/drafts' || req.path.startsWith('/drafts/')
+    || req.path === '/users' || req.path.startsWith('/users/');
+  if (blocked) {
+    return res.status(404).end();
+  }
+  next();
+});
+
+app.use(express.static(publicDir, { dotfiles: 'ignore' }));
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -280,6 +297,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/templates', templatesRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api', paymentRoutes);
+app.use('/api/payments', paymentFacilitatorRoutes);
 import stripeRoutes from './server/routes/stripe.routes.js';
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/sites', siteRoutes);
@@ -311,6 +329,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/foundation', initializeFoundationRoutes(query));
 app.use('/api', visualEditorRoutes);
 app.use('/api/payment-processors', processorConnectRoutes);
+app.use('/api/connect', processorConnectRoutes);
 app.use('/api/booking', bookingPhase2Routes);
 app.use('/api/pricing', initializePricingRoutes(query));
 
@@ -575,6 +594,10 @@ app.get('/sites/:siteIdentifier', async (req, res, next) => {
   try {
     const { siteIdentifier } = req.params;
 
+    if (!isSafeSiteIdentifier(siteIdentifier)) {
+      return next();
+    }
+
     // Try to find site by subdomain first (preferred for published sites)
     let site = await prisma.sites.findFirst({
       where: { subdomain: siteIdentifier },
@@ -623,7 +646,10 @@ app.get('/sites/:siteIdentifier/', async (req, res, next) => {
 });
 
 // Serve published sites static files (for specific file requests, not subdomain routes)
-app.use('/sites', express.static(path.join(__dirname, 'public/sites')));
+app.use('/sites', express.static(path.join(__dirname, 'public/sites'), {
+  index: false,
+  dotfiles: 'ignore'
+}));
 
 // Handle all other SPA routing - serve index.html for remaining non-API routes
 app.use((req, res, next) => {
@@ -645,7 +671,7 @@ app.use(errorHandler);
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT} (0.0.0.0)`);
-  console.log(`Admin token: ${process.env.ADMIN_TOKEN || 'dev-token'}`);
+  console.log(`Admin token: ${process.env.ADMIN_TOKEN ? 'set' : 'missing'}`);
 });
 
 export default app;

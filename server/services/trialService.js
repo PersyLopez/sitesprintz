@@ -126,6 +126,7 @@ export class TrialService {
 
   /**
    * Check site trial status from database
+   * Also checks for active subscription (trial converted to paid)
    * 
    * @param {string} siteId - Site ID
    * @returns {Promise<Object>} Trial status with access info
@@ -135,6 +136,7 @@ export class TrialService {
       where: { id: siteId },
       select: {
         id: true,
+        user_id: true,
         expires_at: true,
         plan: true,
         status: true
@@ -145,8 +147,32 @@ export class TrialService {
       throw new Error('Site not found');
     }
 
+    // Check if user has active subscription (trial converted to paid)
+    const user = await this.db.users.findUnique({
+      where: { id: site.user_id },
+      select: {
+        stripe_subscription_id: true,
+        subscription_status: true,
+        plan: true
+      }
+    });
+
+    // If user has active subscription, site has no expiration
+    if (user?.stripe_subscription_id && 
+        (user.subscription_status === 'active' || user.subscription_status === 'trialing')) {
+      return {
+        canAccess: true,
+        isExpired: false,
+        hasPaidPlan: true,
+        hasActiveSubscription: true,
+        plan: user.plan || site.plan,
+        daysRemaining: Infinity,
+        subscriptionStatus: user.subscription_status
+      };
+    }
+
     // Paid plans bypass trial expiration
-    if (site.plan && site.plan !== 'trial') {
+    if (site.plan && site.plan !== 'trial' && site.plan !== 'free') {
       return {
         canAccess: true,
         isExpired: false,
@@ -156,7 +182,7 @@ export class TrialService {
       };
     }
 
-    // No expiration date = no trial limit
+    // No expiration date = no trial limit (or paid subscription)
     if (!site.expires_at) {
       return {
         canAccess: true,

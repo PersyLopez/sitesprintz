@@ -1,20 +1,22 @@
 {
   "brand": {
-    "name": "BrightSpark Electric",
+    "name": "Apex Electric Solutions",
     "logo": "assets/logo.svg",
-    "alt": "BrightSpark Electric logo",
-    "phone": "+1-555-432-7890",
-    "email": "service@brightsparkelectric.com"
+    "tagline": "Licensed & Insured • 24/7 Emergency Service",
+    "phone": "(555) 901-2345",
+    "email": "service@apexelectric.com"
   },
   "themeVars": {
-    "color-primary": "#475569",
-    "color-primary-light": "#94a3b8",
-    "color-accent": "#e2e8f0",
-    "color-bg": "#ffffff",
-    "color-surface": "#f8fafc",
-    "color-card": "#ffffff",
-    "color-text": "#1e293b",
-    "color-muted": "#64748b"
+    "color-primary": "#f59e0b",
+    "color-accent": "#d97706",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444",
+    "color-bg": "#0f172a",
+    "color-surface": "#1e293b",
+    "color-card": "#1e293b",
+    "color-text": "#f8fafc",
+    "color-muted": "#cbd5e1"
   },
   "nav": [
     {
@@ -22,16 +24,16 @@
       "href": "#services"
     },
     {
-      "label": "Why Us",
-      "href": "#about"
+      "label": "Emergency",
+      "href": "#emergency"
     },
     {
-      "label": "Testimonials",
-      "href": "#testimonials"
+      "label": "Certifications",
+      "href": "#credentials"
     },
     {
-      "label": "Service Areas",
-      "href": "#pages"
+      "label": "Team",
+      "href": "#team"
     },
     {
       "label": "Contact",
@@ -39,148 +41,607 @@
     }
   ],
   "hero": {
-    "eyebrow": "Licensed and insured electricians",
-    "title": "Powering homes and businesses since 1998",
-    "subtitle": "Same-day appointments, 24/7 emergency support, and workmanship you can trust.",
-    "image": "assets/hero-placeholder.svg",
-    "imageAlt": "Electrician working on a breaker panel",
+    "eyebrow": "⚡ 24/7 Emergency Service Available",
+    "title": "Expert Electrical Services You Can Trust",
+    "subtitle": "Licensed master electricians providing residential and commercial electrical services. From emergency repairs to complete rewiring, solar installation to EV charging stations—we do it all with safety, quality, and professionalism.",
     "cta": [
       {
-        "label": "Call for Service",
-        "href": "tel:+15554327890"
+        "label": "📞 Call for Emergency",
+        "href": "tel:5559012345"
       },
       {
-        "label": "Request a Quote",
-        "href": "#contact",
+        "label": "📅 Schedule Service",
+        "href": "#booking",
         "variant": "secondary"
       }
     ],
-    "layout": "split"
+    "image": "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=1200&q=80",
+    "imageAlt": "Professional electrician at work"
   },
-  "services": {
-    "title": "Electrical services",
-    "subtitle": "Professional service for every project",
-    "items": [
+  "features": {
+    "bookingWidget": {
+      "enabled": true,
+      "provider": "calendly",
+      "url": "https://calendly.com/apexelectric"
+    },
+    "emergency247": true,
+    "certifications": true,
+    "teamProfiles": true,
+    "ownerDashboard": true,
+    "analytics": true,
+    "testimonials": {
+      "enabled": true,
+      "ratings": true
+    }
+  },
+  "menu": {
+    "sections": [
       {
-        "title": "Panel upgrades",
-        "description": "Modernize outdated panels to handle today's electrical loads safely."
+        "id": "residential",
+        "name": "Residential Services",
+        "description": "Complete electrical solutions for your home",
+        "items": [
+          {
+            "name": "Electrical Panel Upgrade",
+            "price": 1800,
+            "description": "Upgrade outdated electrical panel to modern 200-amp service. Includes permits and inspection.",
+            "image": "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=600&q=80",
+            "imageAlt": "Electrical panel",
+            "duration": "1 day",
+            "warranty": "5 years",
+            "popular": true
+          },
+          {
+            "name": "Whole Home Rewiring",
+            "price": 8500,
+            "description": "Complete home rewiring to modern code standards. Includes all materials, permits, and inspections.",
+            "image": "https://images.unsplash.com/photo-1621905251340-a56e21f84d05?w=600&q=80",
+            "imageAlt": "Whole home rewiring project",
+            "duration": "3-5 days",
+            "warranty": "10 years",
+            "popular": true
+          },
+          {
+            "name": "EV Charger Installation",
+            "price": 1200,
+            "description": "Install Level 2 EV charging station with 240V circuit. Includes permit and charger.",
+            "image": "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=600&q=80",
+            "imageAlt": "EV charger",
+            "duration": "4-6 hours",
+            "warranty": "3 years"
+          },
+          {
+            "name": "Generator Installation",
+            "price": 4500,
+            "description": "Standby generator installation with transfer switch. Never lose power again!",
+            "image": "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=600&q=80",
+            "imageAlt": "Generator installation",
+            "duration": "1-2 days",
+            "warranty": "5 years"
+          },
+          {
+            "name": "Smart Home Wiring",
+            "price": 2200,
+            "description": "Structured wiring for smart home systems, security, and automation.",
+            "image": "https://images.unsplash.com/photo-1558089120-d5f3a14b0fcb?w=600&q=80",
+            "imageAlt": "Smart home wiring installation",
+            "duration": "1-2 days",
+            "warranty": "3 years"
+          }
+        ]
       },
       {
-        "title": "Emergency repairs",
-        "description": "On-call electricians for outages, shorts, and urgent troubleshooting."
+        "id": "commercial",
+        "name": "Commercial Services",
+        "description": "Professional commercial electrical work",
+        "items": [
+          {
+            "name": "Commercial Wiring",
+            "price": 5000,
+            "description": "Complete commercial space electrical installation. Code compliant, bid available.",
+            "image": "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=600&q=80",
+            "imageAlt": "Commercial electrical",
+            "warranty": "5 years",
+            "popular": true
+          },
+          {
+            "name": "Lighting Design & Installation",
+            "price": 3500,
+            "description": "Energy-efficient LED lighting design and installation for businesses.",
+            "image": "https://images.unsplash.com/photo-1617638924702-92d37f439220?w=600&q=80",
+            "imageAlt": "LED lighting installation",
+            "warranty": "3 years"
+          },
+          {
+            "name": "Data Center Wiring",
+            "price": 8000,
+            "description": "Specialized wiring for server rooms and data centers with redundancy.",
+            "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
+            "imageAlt": "Data center infrastructure",
+            "warranty": "5 years"
+          }
+        ]
       },
       {
-        "title": "Lighting and wiring",
-        "description": "Interior, exterior, and landscape lighting installs with clean wiring."
+        "id": "emergency",
+        "name": "Emergency Services",
+        "description": "24/7 emergency electrical repairs",
+        "items": [
+          {
+            "name": "Emergency Service Call",
+            "price": 195,
+            "description": "24/7 emergency response within 60 minutes. Diagnostic and first hour of labor.",
+            "image": "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=600&q=80",
+            "imageAlt": "Emergency service",
+            "duration": "ASAP",
+            "popular": true
+          },
+          {
+            "name": "Power Outage Diagnosis",
+            "price": 150,
+            "description": "Diagnose and repair power outages, tripped breakers, or electrical failures.",
+            "image": "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=600&q=80",
+            "imageAlt": "Power outage repair",
+            "duration": "1-2 hours"
+          },
+          {
+            "name": "Electrical Fire Prevention",
+            "price": 250,
+            "description": "Emergency inspection and repair of burning smells, sparking outlets, or overheating.",
+            "image": "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=600&q=80",
+            "imageAlt": "Electrical fire prevention",
+            "duration": "1-3 hours"
+          }
+        ]
       },
       {
-        "title": "EV charger installs",
-        "description": "Certified installation for Level 2 home and commercial charging stations."
+        "id": "specialty",
+        "name": "Specialty Services",
+        "description": "Advanced electrical solutions",
+        "items": [
+          {
+            "name": "Solar Panel Installation",
+            "price": 15000,
+            "description": "Complete solar system design and installation. Includes panels, inverter, monitoring.",
+            "image": "https://images.unsplash.com/photo-1508614589041-895b88991e3e?w=600&q=80",
+            "imageAlt": "Solar panel installation",
+            "warranty": "25 years panels, 10 years installation"
+          },
+          {
+            "name": "Electrical Safety Inspection",
+            "price": 250,
+            "description": "Comprehensive 50-point safety inspection with detailed report.",
+            "image": "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=600&q=80",
+            "imageAlt": "Electrical safety inspection",
+            "duration": "2-3 hours",
+            "popular": true
+          },
+          {
+            "name": "Surge Protection System",
+            "price": 650,
+            "description": "Whole-home surge protection to protect electronics and appliances.",
+            "image": "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=600&q=80",
+            "imageAlt": "Surge protection installation",
+            "warranty": "5 years"
+          },
+          {
+            "name": "Outdoor Lighting",
+            "price": 1800,
+            "description": "Landscape and security lighting design and installation.",
+            "image": "https://images.unsplash.com/photo-1564466809058-bf4114d55352?w=600&q=80",
+            "imageAlt": "Outdoor lighting design",
+            "warranty": "3 years"
+          }
+        ]
       }
     ]
   },
   "about": {
-    "title": "Certified electricians who show up on time",
-    "body": "BrightSpark Electric has supported local homeowners, builders, and facility managers for over two decades. Our master electricians are OSHA trained, background checked, and committed to clear communication from the first call through final inspection."
+    "title": "About Apex Electric",
+    "body": "Since 2008, Apex Electric Solutions has been the trusted name in electrical services for residential and commercial clients. Our team of licensed master electricians brings decades of combined experience, cutting-edge knowledge, and unwavering commitment to safety. We're fully licensed, insured, and bonded, and we stand behind every job with industry-leading warranties.",
+    "subtitle": "Why choose us",
+    "features": [
+      "⚡ Licensed Master Electricians",
+      "🛡️ Fully Insured & Bonded",
+      "🏆 15+ Years Experience",
+      "📞 24/7 Emergency Service",
+      "✅ Code Compliant Work",
+      "💯 100% Satisfaction Guarantee"
+    ]
   },
   "testimonials": {
-    "title": "Trusted by our community",
+    "title": "Client Reviews",
+    "subtitle": "What our customers say",
     "items": [
       {
-        "text": "They rewired our historic home and kept us informed every step of the way.",
-        "author": "Lena K.",
-        "title": "Homeowner"
+        "text": "Had an electrical emergency at 11pm and Apex was here within an hour! Professional, knowledgeable, and fixed the problem quickly. Highly recommend for emergency service!",
+        "author": "Michael Chen",
+        "location": "Homeowner",
+        "rating": 5,
+        "date": "1 week ago",
+        "service": "Emergency Service",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80",
+        "imageAlt": "Michael Chen"
       },
       {
-        "text": "Fast response and professional repairs when our storefront lost power.",
-        "author": "Marcos R.",
-        "title": "Retail Owner"
+        "text": "Upgraded our electrical panel and installed an EV charger. The work was clean, professional, and exactly on schedule. Fair pricing and excellent communication throughout.",
+        "author": "Sarah Martinez",
+        "location": "Homeowner",
+        "rating": 5,
+        "date": "2 weeks ago",
+        "service": "Panel Upgrade & EV Charger",
+        "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
+        "imageAlt": "Sarah Martinez"
       },
       {
-        "text": "Inspection passed on the first visit. Their team is top-notch.",
-        "author": "Dana W.",
-        "title": "General Contractor"
+        "text": "We use Apex for all our commercial properties. Always reliable, code-compliant work, and they handle inspections seamlessly. True professionals!",
+        "author": "David Thompson",
+        "location": "Property Manager",
+        "rating": 5,
+        "date": "3 weeks ago",
+        "service": "Commercial Services",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "imageAlt": "David Thompson"
+      }
+    ],
+    "stats": {
+      "averageRating": 4.9,
+      "totalReviews": 527,
+      "googleRating": 4.9,
+      "responseTime": "< 60 min"
+    }
+  },
+  "team": {
+    "title": "Meet Our Team",
+    "subtitle": "Licensed master electricians",
+    "members": [
+      {
+        "name": "James Patterson",
+        "title": "Owner & Master Electrician",
+        "bio": "With 20 years of experience and a master electrician license, James founded Apex to provide top-tier electrical services with integrity and professionalism.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "James Patterson",
+        "credentials": [
+          "Master Electrician License",
+          "Solar Installation Certified",
+          "20+ Years Experience"
+        ]
+      },
+      {
+        "name": "Robert Chen",
+        "title": "Lead Commercial Electrician",
+        "bio": "Robert specializes in commercial electrical systems, data centers, and large-scale projects. His expertise ensures code-compliant, efficient installations.",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+        "imageAlt": "Robert Chen",
+        "credentials": [
+          "Journeyman License",
+          "Commercial Specialist",
+          "15+ Years Experience"
+        ]
+      },
+      {
+        "name": "Marcus Williams",
+        "title": "Residential Specialist",
+        "bio": "Marcus focuses on residential services from panel upgrades to smart home installations. His attention to detail and customer service are exceptional.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "Marcus Williams",
+        "credentials": [
+          "Licensed Electrician",
+          "EV Charger Certified",
+          "12+ Years Experience"
+        ]
       }
     ]
   },
-  "pricing": {
-    "title": "Popular service bundles",
-    "plans": [
+  "credentials": {
+    "title": "Certifications & Trust",
+    "items": [
       {
-        "name": "Home Safety Check",
-        "description": "Full inspection, load test, and smoke detector replacement.",
-        "price": 149,
-        "cta": {
-          "label": "Book inspection",
-          "href": "#contact"
-        }
+        "icon": "⚡",
+        "name": "Licensed Master Electrician",
+        "description": "State Licensed #EC-12345"
       },
       {
-        "name": "LED Lighting Package",
-        "description": "Design consult plus installation of up to 12 fixtures.",
-        "price": 689,
-        "cta": {
-          "label": "Schedule install",
-          "href": "#contact"
-        }
+        "icon": "🛡️",
+        "name": "Fully Insured",
+        "description": "$2M Liability Coverage"
       },
       {
-        "name": "Commercial Service Plan",
-        "description": "Quarterly maintenance with priority dispatch and reporting.",
-        "price": 129,
-        "cta": {
-          "label": "Join plan",
-          "href": "#contact"
-        }
+        "icon": "✅",
+        "name": "Code Compliant",
+        "description": "NEC & Local Codes"
+      },
+      {
+        "icon": "🏆",
+        "name": "Award Winning",
+        "description": "Best Electrician 2023"
       }
+    ]
+  },
+  "gallery": {
+    "title": "Our Work",
+    "subtitle": "Completed installations and projects",
+    "categories": [
+      {
+        "name": "Residential",
+        "images": [
+          {
+            "url": "https://images.unsplash.com/photo-1621905251340-a56e21f84d05?w=800&q=80",
+            "alt": "Residential panel upgrade"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=800&q=80",
+            "alt": "EV charger installation"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1558089120-d5f3a14b0fcb?w=800&q=80",
+            "alt": "Smart home automation"
+          }
+        ]
+      },
+      {
+        "name": "Commercial",
+        "images": [
+          {
+            "url": "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=800&q=80",
+            "alt": "Commercial electrical installation"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
+            "alt": "Data center wiring"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1617638924702-92d37f439220?w=800&q=80",
+            "alt": "LED lighting project"
+          }
+        ]
+      },
+      {
+        "name": "Installations",
+        "images": [
+          {
+            "url": "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&q=80",
+            "alt": "Generator installation"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1508614589041-895b88991e3e?w=800&q=80",
+            "alt": "Solar panel system"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1564466809058-bf4114d55352?w=800&q=80",
+            "alt": "Outdoor lighting project"
+          }
+        ]
+      }
+    ]
+  },
+  "emergency": {
+    "title": "24/7 Emergency Service",
+    "subtitle": "We're here when you need us most",
+    "description": "Electrical emergencies can't wait. Our emergency response team is available 24/7/365 to handle urgent electrical issues. We guarantee response within 60 minutes for emergency calls.",
+    "features": [
+      "⚡ 60-minute response time",
+      "🚨 Available 24/7/365",
+      "🔧 Fully stocked service vehicles",
+      "💯 Upfront emergency pricing",
+      "🛡️ Safety is our priority"
+    ],
+    "emergencyPhone": "(555) 901-2345"
+  },
+  "serviceAreas": {
+    "title": "Service Areas",
+    "subtitle": "Proudly serving the greater metro area",
+    "areas": [
+      "Downtown & Central City",
+      "North County",
+      "South County",
+      "East Valley",
+      "West Hills",
+      "All Surrounding Areas"
     ]
   },
   "contact": {
-    "title": "Schedule your service",
-    "subtitle": "Call 24/7 for emergencies or send a note for next-day appointments.",
-    "email": "service@brightsparkelectric.com",
-    "phone": "+1-555-432-7890"
+    "title": "Get Started Today",
+    "subtitle": "Free estimates on all non-emergency work",
+    "phone": "(555) 901-2345",
+    "email": "service@apexelectric.com",
+    "address": "456 Industrial Way, Suite 200, Phoenix, AZ 85001",
+    "coordinates": {
+      "lat": 33.4484,
+      "lng": -112.074
+    },
+    "hours": {
+      "title": "Office Hours",
+      "items": [
+        "Monday - Friday: 7:00 AM - 6:00 PM",
+        "Saturday: 8:00 AM - 4:00 PM",
+        "Sunday: Emergency service only"
+      ],
+      "note": "24/7 emergency service always available"
+    }
+  },
+  "social": {
+    "facebook": "https://facebook.com/apexelectric",
+    "instagram": "https://instagram.com/apexelectric",
+    "yelp": "https://yelp.com/biz/apexelectric",
+    "googleMaps": "https://maps.google.com/apexelectric"
+  },
+  "stats": {
+    "items": [
+      {
+        "number": "4.9",
+        "label": "Star Rating"
+      },
+      {
+        "number": "15+",
+        "label": "Years Experience"
+      },
+      {
+        "number": "24/7",
+        "label": "Emergency"
+      },
+      {
+        "number": "Licensed",
+        "label": "& Insured"
+      }
+    ]
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "items": [
+      {
+        "question": "Do you offer emergency service?",
+        "answer": "Yes! We provide 24/7 emergency electrical service with guaranteed response within 60 minutes. Call our emergency line anytime at (555) 901-2345."
+      },
+      {
+        "question": "Are you licensed and insured?",
+        "answer": "Absolutely. All our electricians are licensed (State License #EC-12345), and we carry $2M in liability insurance and workers' compensation coverage."
+      },
+      {
+        "question": "Do you provide free estimates?",
+        "answer": "Yes, we provide free estimates for all non-emergency work. For emergency service calls, there's a service call fee that includes diagnosis and the first hour of labor."
+      },
+      {
+        "question": "How quickly can you schedule non-emergency work?",
+        "answer": "We typically can schedule non-emergency work within 2-3 business days. For urgent (but non-emergency) issues, we often have same-day or next-day availability."
+      },
+      {
+        "question": "Do you handle permits and inspections?",
+        "answer": "Yes! We pull all necessary permits and coordinate inspections. Our work is always done to code, and we handle the entire process for you."
+      },
+      {
+        "question": "What areas do you serve?",
+        "answer": "We serve the entire metro area and surrounding communities. Check our service areas section or call to confirm we service your location."
+      },
+      {
+        "question": "Do you offer financing?",
+        "answer": "Yes, we offer flexible financing options for larger projects like panel upgrades, rewiring, and solar installations. Ask us for details!"
+      },
+      {
+        "question": "What's your warranty policy?",
+        "answer": "We stand behind our work with industry-leading warranties: 3-10 years on installations depending on the service. All warranties are transferable if you sell your property."
+      }
+    ]
   },
   "footer": {
-    "text": "BrightSpark Electric. Licensed, bonded, and insured EC#01234."
+    "text": "⚡ Apex Electric Solutions • Licensed & Trusted Since 2008",
+    "links": [
+      {
+        "label": "Emergency Service",
+        "href": "#emergency"
+      },
+      {
+        "label": "Services",
+        "href": "#services"
+      },
+      {
+        "label": "Schedule",
+        "href": "#booking"
+      },
+      {
+        "label": "Contact",
+        "href": "#contact"
+      }
+    ],
+    "awards": [
+      "Licensed Master Electrician",
+      "24/7 Emergency Service",
+      "$2M Insured",
+      "15+ Years Excellence"
+    ]
   },
-  "pages": [
+  "sections": [
     {
-      "slug": "service-areas",
-      "title": "Service Areas",
-      "body": "# Neighborhoods we cover\nDowntown\nMidtown\nRiverside\nHillcrest\nSurrounding suburbs within 30 miles."
+      "type": "zip-checker",
+      "id": "service-area",
+      "settings": {
+        "title": "Check Service Availability",
+        "description": "Enter your ZIP code to see if we service your area",
+        "serviceAreas": [
+          "75001",
+          "75002",
+          "75003",
+          "75004",
+          "75005"
+        ],
+        "serviceAreaRanges": [
+          {
+            "start": 75000,
+            "end": 75999
+          }
+        ],
+        "successMessage": "Great news! We service your area.",
+        "errorMessage": "We don't currently service this area, but we're expanding!",
+        "showLeadCapture": true
+      }
     },
     {
-      "slug": "certifications",
-      "title": "Certifications",
-      "body": "# Credentials\n- Licensed Master Electricians\n- OSHA 30 certified\n- EVITP installer\n- NFPA 70E compliant"
-    }
-  ],
-  "products": [
-    {
-      "name": "Surge Protection Upgrade",
-      "price": 349,
-      "description": "Whole-home surge protection with warranty and same-day install."
-    },
-    {
-      "name": "Generator Interlock Kit",
-      "price": 279,
-      "description": "Keep critical circuits powered during outages with professional installation."
-    },
-    {
-      "name": "Panel Thermal Scan",
-      "price": 199,
-      "description": "Thermal imaging report to prevent overloads and unexpected downtime."
+      "type": "interactive-calculator",
+      "id": "quote-calculator",
+      "settings": {
+        "heading": "Get an Instant Quote",
+        "subheading": "Select your services to see estimated pricing",
+        "type": "service-quote",
+        "basePrice": 95,
+        "items": [
+          {
+            "id": "diagnostic",
+            "name": "Service Call / Diagnostic",
+            "price": 0,
+            "description": "Professional inspection and diagnosis (included in base)"
+          },
+          {
+            "id": "repair-basic",
+            "name": "Basic Electrical Repair",
+            "price": 200,
+            "description": "Standard repair work (1-2 hours)"
+          },
+          {
+            "id": "repair-complex",
+            "name": "Complex Electrical Work",
+            "price": 450,
+            "description": "Advanced electrical work (3-4 hours)"
+          },
+          {
+            "id": "installation",
+            "name": "Installation",
+            "price": 600,
+            "description": "New electrical installation"
+          },
+          {
+            "id": "panel-upgrade",
+            "name": "Panel Upgrade",
+            "price": 1500,
+            "description": "Electrical panel upgrade or replacement"
+          },
+          {
+            "id": "outlet-install",
+            "name": "Outlet Installation",
+            "price": 150,
+            "description": "Install new electrical outlet"
+          },
+          {
+            "id": "emergency",
+            "name": "Emergency Service",
+            "price": 150,
+            "description": "After-hours emergency call (added to base)"
+          }
+        ],
+        "discount": {
+          "type": "percentage",
+          "value": 10,
+          "description": "10% off for first-time customers"
+        },
+        "submitButtonText": "Request Quote",
+        "onSubmit": "function(data) { console.log('Quote requested:', data); }"
+      }
     }
   ],
   "settings": {
     "allowCheckout": false,
-    "allowOrders": true,
-    "orderNotificationEmail": "service@brightsparkelectric.com",
-    "productCta": "Request Service",
-    "productCtaHref": "tel:+15554327890",
-    "productNote": "Submit your service request and we'll contact you within 24 hours to schedule. Emergency calls available 24/7."
-  },
-  "productsTitle": "Featured Services",
-  "productsSubtitle": "Professional electrical solutions with transparent pricing"
+    "allowOrders": false,
+    "bookingEnabled": true,
+    "bookingWidget": "native",
+    "tier": "Pro"
+  }
 }

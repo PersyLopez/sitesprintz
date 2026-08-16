@@ -105,7 +105,7 @@ class ServiceManagementService {
 
     const dataToUpdate = {};
     for (const field of allowedFields) {
-      if (serviceData.hasOwnProperty(field)) {
+      if (Object.prototype.hasOwnProperty.call(serviceData, field)) {
         dataToUpdate[field] = serviceData[field];
       }
     }
@@ -186,6 +186,8 @@ class ServiceManagementService {
 }
 
 export default ServiceManagementService;
+
+
 
 
 

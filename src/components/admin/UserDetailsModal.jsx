@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useToast } from '../../hooks/useToast';
+import { api } from '../../services/api';
 import './UserDetailsModal.css';
 
 function UserDetailsModal({ user, onClose, onUpdate }) {
@@ -10,21 +11,8 @@ function UserDetailsModal({ user, onClose, onUpdate }) {
 
   const handleSave = async () => {
     setSaving(true);
-
     try {
-      const response = await fetch(`/api/admin/users/${user.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(editedUser)
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update user');
-      }
-
+      await api.patch(`/api/admin/users/${user.id}`, editedUser);
       showSuccess('User updated successfully');
       setEditing(false);
       onUpdate();
@@ -38,17 +26,7 @@ function UserDetailsModal({ user, onClose, onUpdate }) {
 
   const handleResendInvite = async () => {
     try {
-      const response = await fetch(`/api/admin/users/${user.id}/resend-invite`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to resend invitation');
-      }
-
+      await api.post(`/api/admin/users/${user.id}/resend-invite`);
       showSuccess('Invitation resent successfully');
     } catch (error) {
       console.error('Resend invite error:', error);
@@ -58,19 +36,8 @@ function UserDetailsModal({ user, onClose, onUpdate }) {
 
   const handleResetPassword = async () => {
     if (!window.confirm('Send password reset email to this user?')) return;
-
     try {
-      const response = await fetch(`/api/admin/users/${user.id}/reset-password`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to send reset email');
-      }
-
+      await api.post(`/api/admin/users/${user.id}/reset-password`);
       showSuccess('Password reset email sent');
     } catch (error) {
       console.error('Reset password error:', error);
@@ -92,9 +59,10 @@ function UserDetailsModal({ user, onClose, onUpdate }) {
   const getPlanBadgeClass = (plan) => {
     switch (plan?.toLowerCase()) {
       case 'pro': return 'plan-badge-pro';
-      case 'checkout': return 'plan-badge-checkout';
+      case 'growth': return 'plan-badge-growth';
       case 'starter': return 'plan-badge-starter';
       case 'trial': return 'plan-badge-trial';
+      case 'premium': return 'plan-badge-premium';
       default: return '';
     }
   };
@@ -110,14 +78,13 @@ function UserDetailsModal({ user, onClose, onUpdate }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content user-details-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content user-details-modal" data-testid="user-details-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>👤 User Details</h2>
           <button className="close-btn" onClick={onClose}>×</button>
         </div>
 
         <div className="modal-body">
-          {/* User Avatar & Basic Info */}
           <div className="user-header">
             <div className="user-avatar-large">
               {user.name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
@@ -146,48 +113,36 @@ function UserDetailsModal({ user, onClose, onUpdate }) {
                 </>
               )}
               <div className="user-badges">
-                <span className={`status-badge ${getStatusBadgeClass(user.status)}`}>
-                  {user.status}
-                </span>
-                <span className={`plan-badge ${getPlanBadgeClass(user.plan)}`}>
-                  {user.plan}
-                </span>
-                <span className="role-badge">
-                  {user.role}
-                </span>
+                <span className={`status-badge ${getStatusBadgeClass(user.status)}`}>{user.status}</span>
+                <span className={`plan-badge ${getPlanBadgeClass(user.plan)}`}>{user.plan}</span>
+                <span className="role-badge">{user.role}</span>
               </div>
             </div>
           </div>
 
-          {/* User Stats */}
           <div className="user-stats-section">
-            <div className="stat-item">
+            <div className="stat-item" data-testid="stat-item-sites">
               <div className="stat-label">Sites Created</div>
               <div className="stat-value">{user.sitesCount || 0}</div>
             </div>
             <div className="stat-item">
-              <div className="stat-label">Total Revenue</div>
+              <div className="stat-label">Revenue</div>
               <div className="stat-value">${(user.totalRevenue || 0).toLocaleString()}</div>
             </div>
             <div className="stat-item">
-              <div className="stat-label">Stripe Connected</div>
-              <div className="stat-value">{user.stripeConnected ? '✅ Yes' : '❌ No'}</div>
+              <div className="stat-label">Stripe</div>
+              <div className="stat-value">{user.stripeConnected ? '✅' : '❌'}</div>
             </div>
           </div>
 
-          {/* User Details */}
           <div className="user-details-section">
             <div className="detail-row">
-              <span className="detail-label">User ID:</span>
+              <span className="detail-label">ID:</span>
               <span className="detail-value">{user.id}</span>
             </div>
             <div className="detail-row">
-              <span className="detail-label">Account Created:</span>
+              <span className="detail-label">Created:</span>
               <span className="detail-value">{formatDate(user.createdAt)}</span>
-            </div>
-            <div className="detail-row">
-              <span className="detail-label">Last Login:</span>
-              <span className="detail-value">{formatDate(user.lastLogin)}</span>
             </div>
             {editing && (
               <>
@@ -211,76 +166,26 @@ function UserDetailsModal({ user, onClose, onUpdate }) {
                   >
                     <option value="trial">Trial</option>
                     <option value="starter">Starter</option>
-                    <option value="checkout">Checkout</option>
-                    <option value="pro">Pro</option>
-                  </select>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Status:</span>
-                  <select
-                    value={editedUser.status}
-                    onChange={(e) => setEditedUser({ ...editedUser, status: e.target.value })}
-                    className="edit-select"
-                  >
-                    <option value="active">Active</option>
-                    <option value="invited">Invited</option>
-                    <option value="suspended">Suspended</option>
+                    <option value="growth">Growth</option>
                   </select>
                 </div>
               </>
             )}
           </div>
 
-          {/* Action Buttons */}
           <div className="user-actions">
             {!editing ? (
               <>
-                <button
-                  onClick={() => setEditing(true)}
-                  className="btn btn-primary"
-                >
-                  ✏️ Edit User
-                </button>
-                {user.status === 'invited' && (
-                  <button
-                    onClick={handleResendInvite}
-                    className="btn btn-secondary"
-                  >
-                    📧 Resend Invite
-                  </button>
-                )}
-                <button
-                  onClick={handleResetPassword}
-                  className="btn btn-secondary"
-                >
-                  🔑 Reset Password
-                </button>
-                <button
-                  onClick={onClose}
-                  className="btn btn-secondary"
-                >
-                  Close
-                </button>
+                <button onClick={() => setEditing(true)} className="btn btn-primary">✏️ Edit</button>
+                <button onClick={handleResetPassword} className="btn btn-secondary">🔑 Reset PWD</button>
+                <button onClick={onClose} className="btn btn-secondary">Close</button>
               </>
             ) : (
               <>
-                <button
-                  onClick={handleSave}
-                  className="btn btn-primary"
-                  disabled={saving}
-                >
-                  {saving ? 'Saving...' : '💾 Save Changes'}
+                <button onClick={handleSave} className="btn btn-primary" disabled={saving}>
+                  {saving ? 'Saving...' : '💾 Save'}
                 </button>
-                <button
-                  onClick={() => {
-                    setEditing(false);
-                    setEditedUser({ ...user });
-                  }}
-                  className="btn btn-secondary"
-                  disabled={saving}
-                >
-                  Cancel
-                </button>
+                <button onClick={() => setEditing(false)} className="btn btn-secondary" disabled={saving}>Cancel</button>
               </>
             )}
           </div>
@@ -291,4 +196,3 @@ function UserDetailsModal({ user, onClose, onUpdate }) {
 }
 
 export default UserDetailsModal;
-

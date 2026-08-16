@@ -107,9 +107,18 @@ router.post('/conversion', asyncHandler(async (req, res) => {
  */
 router.post('/order', requireAuth, asyncHandler(async (req, res) => {
   const { subdomain, orderId, revenue, itemsCount, orderType } = req.body;
+  const userId = req.user.id || req.user.userId;
 
   if (!subdomain || !orderId || revenue === undefined) {
     return sendBadRequest(res, 'subdomain, orderId, and revenue are required', 'MISSING_FIELDS');
+  }
+
+  const ownership = await verifySiteOwnership(subdomain, userId, req.user.role);
+  if (!ownership.authorized) {
+    if (ownership.status === 404) {
+      return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
+    }
+    return sendForbidden(res, ownership.error, 'ACCESS_DENIED');
   }
 
   const result = await AnalyticsService.trackOrder({

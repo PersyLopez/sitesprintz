@@ -300,6 +300,51 @@ export class VisualEditorService {
   }
   
   /**
+   * Restore site to template defaults
+   */
+  async restoreTemplateDefaults(siteDir) {
+    try {
+      // Load current site to get template
+      const currentData = await this.loadSite(siteDir);
+      const templateId = currentData.template;
+      
+      if (!templateId) {
+        throw new Error('Template not found in site configuration');
+      }
+      
+      // Load template defaults
+      const templatePath = path.join(process.cwd(), 'public', 'data', 'templates', `${templateId}.json`);
+      const templateContent = await fs.readFile(templatePath, 'utf-8');
+      const templateData = JSON.parse(templateContent);
+      
+      // Create backup of current state before restoring
+      await this.createCheckpoint(siteDir, currentData, 'before-template-restore');
+      
+      // Reset to template with new version
+      const restoredData = {
+        ...templateData,
+        template: templateId,
+        version: currentData.version + 1,
+        restoredFrom: 'template',
+        restoredAt: new Date().toISOString()
+      };
+      
+      // Save restored data
+      await this.saveSite(siteDir, restoredData);
+      
+      return {
+        success: true,
+        version: restoredData.version
+      };
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        throw new Error('Template file not found');
+      }
+      throw error;
+    }
+  }
+  
+  /**
    * Cleanup old checkpoints (keep only last N)
    */
   async cleanupCheckpoints(siteDir) {

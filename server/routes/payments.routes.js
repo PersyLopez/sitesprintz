@@ -97,7 +97,7 @@ const STRIPE_PUBLISHABLE_KEY = process.env.STRIPE_PUBLISHABLE_KEY || '';
 const stripe = STRIPE_SECRET_KEY ? new Stripe(STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' }) : null;
 
 // Allowed origins
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '')
+const ALLOWED_ORIGINS = `${process.env.CORS_ORIGINS || ''},${process.env.ALLOWED_ORIGINS || ''}`
     .split(',')
     .map(s => s.trim())
     .filter(Boolean);
@@ -115,15 +115,10 @@ function getRequestOrigin(req) {
 function isAllowedOrigin(req) {
     if (process.env.NODE_ENV === 'test') return true;
     const origin = getRequestOrigin(req);
-    console.log(`[AUTH] Origin check: Origin=${origin}`);
     if (!origin) return true; // Non-browser clients; allow
     const sameOrigin = `${req.protocol}://${req.get('host')}`;
-    console.log(`[AUTH] Origin check: SameOrigin=${sameOrigin}`);
     const allowed = [sameOrigin, ...ALLOWED_ORIGINS];
-    console.log(`[AUTH] Origin check: Allowed=[${allowed.join(', ')}]`);
-    const isAllowed = allowed.some(o => o && o.toLowerCase() === origin.toLowerCase());
-    console.log(`[AUTH] Origin check: Result=${isAllowed}`);
-    return isAllowed;
+    return allowed.some(o => o && o.toLowerCase() === origin.toLowerCase());
 }
 
 // Payments config – expose if payments are enabled

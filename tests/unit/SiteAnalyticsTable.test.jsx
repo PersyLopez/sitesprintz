@@ -8,6 +8,7 @@ describe('SiteAnalyticsTable Component', () => {
     {
       id: '1',
       name: 'Main Site',
+      subdomain: 'main-site',
       views: 5234,
       visitors: 1543,
       bounceRate: 38.2,
@@ -16,6 +17,7 @@ describe('SiteAnalyticsTable Component', () => {
     {
       id: '2',
       name: 'Restaurant Site',
+      subdomain: 'restaurant-site',
       views: 4156,
       visitors: 1234,
       bounceRate: 45.1,
@@ -117,7 +119,7 @@ describe('SiteAnalyticsTable Component', () => {
         </MemoryRouter>
       );
 
-      const links = screen.getAllByText('View Details');
+      const links = screen.getAllByText(/View Analytics/);
       expect(links).toHaveLength(2);
     });
 
@@ -128,9 +130,9 @@ describe('SiteAnalyticsTable Component', () => {
         </MemoryRouter>
       );
 
-      const links = screen.getAllByText('View Details');
-      expect(links[0]).toHaveAttribute('href', '/analytics?siteId=1');
-      expect(links[1]).toHaveAttribute('href', '/analytics?siteId=2');
+      const links = screen.getAllByText(/View Analytics/);
+      expect(links[0]).toHaveAttribute('href', '/analytics/main-site');
+      expect(links[1]).toHaveAttribute('href', '/analytics/restaurant-site');
     });
   });
 
@@ -167,7 +169,7 @@ describe('SiteAnalyticsTable Component', () => {
       );
 
       expect(screen.getByText('Main Site')).toBeInTheDocument();
-      const links = screen.getAllByText('View Details');
+      const links = screen.getAllByText(/View Analytics/);
       expect(links).toHaveLength(1);
     });
 
@@ -175,6 +177,7 @@ describe('SiteAnalyticsTable Component', () => {
       const manySites = Array.from({ length: 10 }, (_, i) => ({
         id: String(i),
         name: `Site ${i}`,
+        subdomain: `site-${i}`,
         views: 1000 * i,
         visitors: 100 * i,
         bounceRate: 30 + i,

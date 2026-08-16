@@ -156,8 +156,7 @@ describe('CartContext', () => {
       expect(result.current.cartItems).toHaveLength(2);
     });
 
-    it('should open cart temporarily after adding', async () => {
-      vi.useFakeTimers();
+    it('should keep the cart open after adding so checkout is reachable', () => {
       const { result } = renderCartHook();
 
       act(() => {
@@ -165,13 +164,6 @@ describe('CartContext', () => {
       });
 
       expect(result.current.isCartOpen).toBe(true);
-
-      act(() => {
-        vi.advanceTimersByTime(2000);
-      });
-
-      expect(result.current.isCartOpen).toBe(false);
-      vi.useRealTimers();
     });
 
     it('should save to localStorage after adding', () => {

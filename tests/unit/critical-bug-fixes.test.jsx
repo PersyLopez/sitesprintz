@@ -59,7 +59,7 @@ describe('TDD RED Phase: Critical Bug Fixes', () => {
 
       // Should show loading, then sites
       await waitFor(() => {
-        expect(screen.getByText(/Made with SiteSprintz/i)).toBeInTheDocument();
+        expect(screen.getByText(/See how your site could look/i)).toBeInTheDocument();
       });
 
       // Should NOT have any category buttons (except "All")
@@ -86,7 +86,7 @@ describe('TDD RED Phase: Critical Bug Fixes', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/Made with SiteSprintz/i)).toBeInTheDocument();
+        expect(screen.getByText(/See how your site could look/i)).toBeInTheDocument();
       });
 
       // Should show "All" button even with null categories
@@ -112,7 +112,7 @@ describe('TDD RED Phase: Critical Bug Fixes', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/Made with SiteSprintz/i)).toBeInTheDocument();
+        expect(screen.getByText(/See how your site could look/i)).toBeInTheDocument();
       });
 
       // Should only show "All" button

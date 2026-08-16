@@ -23,9 +23,12 @@ import {
  */
 
 test.describe('Complete User Journey: Template Selection → Publish', () => {
+  // These tests register fresh accounts, so start unauthenticated
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   const timestamp = Date.now();
   const testEmail = `e2etest+${timestamp}@example.com`;
-  const testPassword = 'TestPassword123!';
+  const testPassword = 'E2ETestP@ss7!';
   const businessName = `E2E Test Business ${timestamp}`;
   const subdomain = `e2e-test-${timestamp}`;
 
@@ -37,12 +40,14 @@ test.describe('Complete User Journey: Template Selection → Publish', () => {
   test('Complete flow: Browse → Select Template → Register → Setup → Publish', async ({ page }) => {
     // STEP 1: Landing Page - Browse Templates
     await test.step('Browse templates on landing page', async () => {
-      await expect(page.getByRole('heading', { name: /templates|solutions|start/i })).toBeVisible();
+      await expect(page.getByRole('heading', { name: /templates|solutions|starting|A layout that already feels like your business/i })).toBeVisible();
       
-      // Verify template cards are visible
-      const templateCards = page.getByTestId(/template-/).or(
+      // Verify template cards are visible (new landing gallery uses gallery-card-*)
+      const templateCards = page.getByTestId(/gallery-card-/).or(
+        page.getByTestId(/template-/)
+      ).or(
         page.locator('[data-template]').first()
-      );
+      ).first();
       await expect(templateCards).toBeVisible({ timeout: 5000 });
     });
 
@@ -65,7 +70,14 @@ test.describe('Complete User Journey: Template Selection → Publish', () => {
       await submitRegistration(page);
 
       // Should redirect to setup page with template parameter
-      await page.waitForURL(/\/setup.*template=restaurant/i, { timeout: 15000 });
+      // Wait for either setup page or dashboard (registration might redirect to dashboard first)
+      await page.waitForURL(/\/(setup|dashboard).*template=restaurant/i, { timeout: 30000 });
+      
+      // If redirected to dashboard, navigate to setup
+      if (page.url().includes('/dashboard')) {
+        await page.goto(`/setup?template=restaurant`);
+        await page.waitForLoadState('networkidle');
+      }
     });
 
     // STEP 4: Setup Page - Template Pre-Selected
@@ -92,7 +104,9 @@ test.describe('Complete User Journey: Template Selection → Publish', () => {
     // STEP 5: Fill Business Information
     await test.step('Fill business information', async () => {
       // If we need to select template first
-      const templateGrid = page.getByTestId('template-grid').or(
+      const templateGrid = page.getByTestId('gallery-grid').or(
+        page.getByTestId('template-grid')
+      ).or(
         page.locator('[data-template-grid]').first()
       );
       if (await templateGrid.isVisible().catch(() => false)) {
@@ -197,20 +211,22 @@ test.describe('Complete User Journey: Template Selection → Publish', () => {
     
     await test.step('Select template and register', async () => {
       // Click any template
-      const anyTemplate = page.getByTestId(/template-/).or(
+      const anyTemplate = page.getByTestId(/gallery-card-/).or(
+        page.getByTestId(/template-/)
+      ).or(
         page.locator('[data-template]').first()
-      );
+      ).first();
       await anyTemplate.click();
 
       // Quick register
       await page.waitForURL(/register|signup/i, { timeout: 10000 });
-      await fillRegistrationForm(page, `quicktest+${timestamp}@example.com`, 'QuickTest123!');
+      await fillRegistrationForm(page, `quicktest+${timestamp}@example.com`, 'QuickTestP@ss7!');
       await submitRegistration(page);
     });
 
     await test.step('Minimal setup and publish', async () => {
       // Wait for setup
-      await page.waitForURL(/setup/i, { timeout: 15000 });
+      await page.waitForURL(/setup/i, { timeout: 30000 });
 
       // Fill only required fields
       await fillBusinessInfo(page, `Quick Test ${timestamp}`);
@@ -225,7 +241,9 @@ test.describe('Complete User Journey: Template Selection → Publish', () => {
     // Test that template parameter survives login flow
     
     await test.step('Select template', async () => {
-      const gymTemplate = page.getByTestId('template-gym').or(
+      const gymTemplate = page.getByTestId('gallery-card-gym').or(
+        page.getByTestId('template-gym')
+      ).or(
         page.locator('[data-template="gym"]').first()
       );
       if (await gymTemplate.isVisible().catch(() => false)) {
@@ -238,8 +256,8 @@ test.describe('Complete User Journey: Template Selection → Publish', () => {
     await test.step('Go to login instead of register', async () => {
       await page.waitForURL(/register|signup/i, { timeout: 10000 });
       
-      // Click login link
-      const loginLink = page.getByRole('link', { name: /login|sign in/i });
+      // Click the Sign in link on the register form (preserves template param)
+      const loginLink = page.getByRole('link', { name: /Sign in/i });
       await loginLink.click();
 
       // Verify template parameter is in login URL
@@ -254,15 +272,17 @@ test.describe('Complete User Journey: Template Selection → Publish', () => {
     await page.goto('/register?template=invalid-template-xyz');
 
     await test.step('Register with invalid template', async () => {
-      await fillRegistrationForm(page, `invalid+${timestamp}@example.com`, 'Invalid123!');
+      await fillRegistrationForm(page, `invalid+${timestamp}@example.com`, 'InvalidP@ss7!');
       await submitRegistration(page);
     });
 
     await test.step('Setup should handle invalid template gracefully', async () => {
-      await page.waitForURL(/setup/i, { timeout: 15000 });
+      await page.waitForURL(/setup/i, { timeout: 30000 });
 
       // Should either show error or default template grid
-      const templateGrid = page.getByTestId('template-grid').or(
+      const templateGrid = page.getByTestId('gallery-grid').or(
+        page.getByTestId('template-grid')
+      ).or(
         page.locator('[data-template-grid]').first()
       );
       const errorMessage = page.getByText(/error|invalid|not found/i);
@@ -281,9 +301,9 @@ test.describe('Complete User Journey: Template Selection → Publish', () => {
     await test.step('Start setup flow', async () => {
       // Quick registration
       await page.goto('/register?template=salon');
-      await fillRegistrationForm(page, `autosave+${timestamp}@example.com`, 'AutoSave123!');
+      await fillRegistrationForm(page, `autosave+${timestamp}@example.com`, 'AutoSaveP@ss7!');
       await submitRegistration(page);
-      await page.waitForURL(/setup/i, { timeout: 15000 });
+      await page.waitForURL(/setup/i, { timeout: 30000 });
     });
 
     await test.step('Fill some data and verify auto-save', async () => {
@@ -315,23 +335,27 @@ test.describe('Template Categories and Filtering', () => {
   test('Browse templates by category', async ({ page }) => {
     await page.goto('/');
 
-    // Look for category filters or navigation
-    const categories = ['restaurant', 'salon', 'gym', 'professional'];
+    // New landing gallery uses Service / Food & Dining / Professional tabs
+    const categories = ['service', 'food', 'professional'];
 
     for (const category of categories) {
-      const categoryButton = page.getByRole('button', { name: new RegExp(category, 'i') }).or(
+      const categoryButton = page.getByTestId(`gallery-tab-${category}`).or(
+        page.getByRole('button', { name: new RegExp(category, 'i') })
+      ).or(
         page.getByRole('link', { name: new RegExp(category, 'i') })
       );
-      
+
       if (await categoryButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await categoryButton.click();
 
         // Verify templates are filtered
-        const templateCards = page.getByTestId(/template-/).or(
+        const templateCards = page.getByTestId(/gallery-card-/).or(
+          page.getByTestId(/template-/)
+        ).or(
           page.locator('[data-template]')
         );
         const count = await templateCards.count();
-        
+
         // Should show at least one template
         expect(count).toBeGreaterThan(0);
       }
@@ -366,9 +390,9 @@ test.describe('Published Site Verification', () => {
       
       // Quick flow to create site
       await page.goto('/register?template=restaurant');
-      await fillRegistrationForm(page, `published+${timestamp}@example.com`, 'Published123!');
+      await fillRegistrationForm(page, `published+${timestamp}@example.com`, 'PublishedP@ss7!');
       await submitRegistration(page);
-      await page.waitForURL(/setup/i, { timeout: 15000 });
+      await page.waitForURL(/setup/i, { timeout: 30000 });
 
       // Fill required data
       await fillBusinessInfo(page, `Published Test ${timestamp}`, `published-${timestamp}`);

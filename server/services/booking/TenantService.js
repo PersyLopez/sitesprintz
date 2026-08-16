@@ -8,38 +8,47 @@ class TenantService {
   /**
    * Get or create tenant for a user/site
    */
+  /**
+   * Prefer a site-scoped tenant when siteId is known (gallery demos share one owner).
+   * Falls back to the first tenant for the user.
+   */
   async getOrCreateTenant(userId, siteId) {
     try {
-      // Check if tenant exists
+      if (siteId) {
+        const bySite = await prisma.booking_tenants.findFirst({
+          where: {
+            user_id: userId,
+            OR: [{ site_id: siteId }, { site_id: String(siteId) }],
+          },
+        });
+        if (bySite) return bySite;
+      }
+
       const existingTenant = await prisma.booking_tenants.findFirst({
-        where: { user_id: userId }
+        where: { user_id: userId },
       });
 
       if (existingTenant) {
         return existingTenant;
       }
 
-      // Get user details
       const user = await prisma.users.findUnique({
-        where: { id: userId }
+        where: { id: userId },
       });
 
       if (!user) {
         throw new Error('User not found');
       }
 
-      // Create tenant
-      const newTenant = await prisma.booking_tenants.create({
+      return prisma.booking_tenants.create({
         data: {
           user_id: userId,
-          site_id: siteId,
+          site_id: siteId || null,
           business_name: 'My Business',
           email: user.email,
-          status: 'active'
-        }
+          status: 'active',
+        },
       });
-
-      return newTenant;
     } catch (error) {
       console.error('Error getting/creating tenant:', error);
       throw error;
@@ -48,6 +57,9 @@ class TenantService {
 }
 
 export default TenantService;
+
+
+
 
 
 

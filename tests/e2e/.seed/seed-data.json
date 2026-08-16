@@ -3,18 +3,18 @@
     "adminEmail": "admin@example.com",
     "proEmail": "test@example.com",
     "freeEmail": "free@example.com",
-    "adminUserId": "ef13f902-4f66-4eff-beec-71020db4dcc9",
-    "proUserId": "a5fcad86-fd13-484f-b4e3-d1a3cdf6adde",
-    "freeUserId": "62486d65-4755-4da2-82ac-eba87eaa498c"
+    "adminUserId": "d79e6d29-a310-47db-85f3-8077ec17f37f",
+    "proUserId": "628059d8-f2d5-4e9a-a0fc-e803b67dc29a",
+    "freeUserId": "7f83622d-a72b-4eec-bf66-1abd6e0bb7e4"
   },
   "sites": {
     "bySubdomain": {
-      "test-restaurant": "site_1763761113928_v4gweq9hs",
-      "test-salon": "site_1763761114000_hy3apfd29",
-      "admin-site": "site_1763761114030_20m0o8mxk"
+      "test-restaurant": "seed_test_restaurant",
+      "test-salon": "seed_test_salon",
+      "admin-site": "seed_admin_site"
     }
   },
   "booking": {
-    "userId": "a5fcad86-fd13-484f-b4e3-d1a3cdf6adde"
+    "userId": "628059d8-f2d5-4e9a-a0fc-e803b67dc29a"
   }
 }

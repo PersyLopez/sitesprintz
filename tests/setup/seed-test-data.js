@@ -104,7 +104,29 @@ async function seedTestData() {
                 status: 'published',
                 siteData: {
                     businessName: 'Test Restaurant',
-                    template: 'restaurant'
+                    template: 'restaurant',
+                    contact: {
+                        enabled: true,
+                        email: 'test@example.com',
+                        phone: '(555) 123-4567',
+                        address: '123 Main St, Test City, TC 12345',
+                        title: 'Contact Us',
+                        recipientEmail: 'test@example.com'
+                    },
+                    booking: {
+                        enabled: true,
+                        provider: 'native',
+                        style: 'inline'
+                    },
+                    settings: {
+                        bookingWidget: 'native',
+                        allowCheckout: true
+                    },
+                    products: [
+                        { id: 'p1', name: 'Classic Burger', price: 12.99, description: 'Juicy beef burger', active: true, category: 'Food' },
+                        { id: 'p2', name: 'Crispy Fries', price: 4.99, description: 'Golden potato fries', active: true, category: 'Sides' },
+                        { id: 'p3', name: 'Milkshake', price: 5.99, description: 'Vanilla milkshake', active: true, category: 'Drinks' }
+                    ]
                 }
             },
             {
@@ -115,7 +137,15 @@ async function seedTestData() {
                 status: 'draft',
                 siteData: {
                     businessName: 'Test Salon',
-                    template: 'salon'
+                    template: 'salon',
+                    contact: {
+                        enabled: true,
+                        email: 'test@example.com',
+                        phone: '(555) 234-5678',
+                        address: '456 Oak Ave, Test City, TC 23456',
+                        title: 'Get In Touch',
+                        recipientEmail: 'test@example.com'
+                    }
                 }
             },
             {
@@ -126,7 +156,15 @@ async function seedTestData() {
                 status: 'published',
                 siteData: {
                     businessName: 'Admin Site',
-                    template: 'business'
+                    template: 'business',
+                    contact: {
+                        enabled: true,
+                        email: 'admin@example.com',
+                        phone: '(555) 345-6789',
+                        address: '789 Pine Rd, Admin City, AC 34567',
+                        title: 'Contact Information',
+                        recipientEmail: 'admin@example.com'
+                    }
                 }
             }
         ];

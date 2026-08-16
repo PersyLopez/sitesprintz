@@ -1,13 +1,13 @@
 {
   "brand": {
-    "name": "Strategic Solutions",
+    "name": "Apex Strategy Group",
     "logo": "assets/logo.svg",
-    "tagline": "Business Consulting • Since 2010",
+    "tagline": "Elite Business Consulting • Transformative Results",
     "phone": "(555) 456-7890",
-    "email": "hello@strategicsolutions.com"
+    "email": "contact@apexstrategy.com"
   },
   "themeVars": {
-    "color-primary": "#0f172a",
+    "color-primary": "#818cf8",
     "color-primary-light": "#334155",
     "color-accent": "#d4af37",
     "color-surface": "rgba(255, 255, 255, 0.03)",
@@ -19,19 +19,19 @@
   "nav": [
     {
       "label": "Services",
-      "href": "#products"
-    },
-    {
-      "label": "About",
-      "href": "#about"
+      "href": "#services"
     },
     {
       "label": "Results",
-      "href": "#reviews"
+      "href": "#results"
     },
     {
-      "label": "FAQ",
-      "href": "#faq"
+      "label": "Team",
+      "href": "#team"
+    },
+    {
+      "label": "Testimonials",
+      "href": "#testimonials"
     },
     {
       "label": "Contact",
@@ -40,270 +40,610 @@
   ],
   "hero": {
     "layout": "split",
-    "eyebrow": "💼 Strategic Business Consulting",
-    "title": "Transform your business with expert guidance",
-    "subtitle": "From startups to established enterprises, we provide strategic solutions that drive growth, optimize operations, and maximize profitability. Partner with us to unlock your business's full potential.",
+    "eyebrow": "✨ Strategic Excellence Since 2012",
+    "title": "Transform Your Business with Data-Driven Strategy",
+    "subtitle": "Apex Strategy Group partners with ambitious companies to unlock growth, optimize operations, and dominate their markets.",
     "cta": [
       {
-        "label": "📞 Get Quote",
-        "href": "#contact"
+        "label": "📅 Schedule Strategy Session",
+        "href": "#booking"
       },
       {
-        "label": "📋 Schedule Call",
-        "href": "#contact",
+        "label": "📊 View Case Studies",
+        "href": "#results",
         "variant": "secondary"
       }
     ],
-    "image": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1200&q=80",
-    "imageAlt": "Professional business consulting meeting with strategic planning"
+    "image": "https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&q=80",
+    "imageAlt": "Business strategy meeting in modern office"
+  },
+  "features": {
+    "bookingWidget": {
+      "enabled": true,
+      "provider": "calendly",
+      "url": "https://calendly.com/apexstrategy"
+    },
+    "caseStudies": true,
+    "clientResults": true,
+    "ownerDashboard": true,
+    "analytics": true,
+    "testimonials": {
+      "enabled": true,
+      "ratings": true
+    }
+  },
+  "menu": {
+    "sections": [
+      {
+        "id": "strategy",
+        "name": "Strategy & Growth",
+        "description": "Market positioning and growth acceleration",
+        "items": [
+          {
+            "name": "Growth Strategy Development",
+            "price": 15000,
+            "description": "Comprehensive market analysis, competitive positioning, and 3-year growth roadmap with actionable initiatives",
+            "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80",
+            "imageAlt": "Strategy planning",
+            "duration": "6-8 weeks",
+            "deliverables": [
+              "Market analysis",
+              "Growth roadmap",
+              "Financial projections",
+              "Implementation plan"
+            ],
+            "popular": true
+          },
+          {
+            "name": "Market Entry Strategy",
+            "price": 12000,
+            "description": "Go-to-market planning for new markets, products, or customer segments with risk mitigation",
+            "image": "https://images.unsplash.com/photo-1551836022-4c4c79ecde51?w=600&q=80",
+            "imageAlt": "Market analysis",
+            "duration": "4-6 weeks",
+            "deliverables": [
+              "Market research",
+              "Entry strategy",
+              "Competitive analysis",
+              "Launch plan"
+            ],
+            "popular": true
+          },
+          {
+            "name": "Digital Transformation",
+            "price": 25000,
+            "description": "End-to-end digital strategy including technology roadmap, process automation, and change management",
+            "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80",
+            "imageAlt": "Digital transformation",
+            "duration": "10-12 weeks",
+            "deliverables": [
+              "Technology assessment",
+              "Transformation roadmap",
+              "Vendor selection",
+              "Implementation support"
+            ]
+          },
+          {
+            "name": "Strategic Planning Session",
+            "price": 8000,
+            "description": "Intensive 2-day workshop with your leadership team to define vision, strategy, and key initiatives",
+            "duration": "2 days",
+            "deliverables": [
+              "Strategic framework",
+              "Priority initiatives",
+              "Action plans",
+              "Performance metrics"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "operations",
+        "name": "Operations & Efficiency",
+        "description": "Process optimization and operational excellence",
+        "items": [
+          {
+            "name": "Operational Excellence Assessment",
+            "price": 10000,
+            "description": "Deep dive into your operations to identify inefficiencies, bottlenecks, and improvement opportunities",
+            "image": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&q=80",
+            "imageAlt": "Operations analysis",
+            "duration": "4 weeks",
+            "deliverables": [
+              "Process audit",
+              "Efficiency report",
+              "Cost reduction roadmap",
+              "Quick wins list"
+            ],
+            "popular": true
+          },
+          {
+            "name": "Supply Chain Optimization",
+            "price": 18000,
+            "description": "Supply chain analysis and redesign to reduce costs, improve reliability, and increase agility",
+            "image": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&q=80",
+            "imageAlt": "Supply chain analysis",
+            "duration": "8 weeks",
+            "deliverables": [
+              "Supply chain mapping",
+              "Optimization plan",
+              "Vendor strategy",
+              "Cost savings model"
+            ]
+          },
+          {
+            "name": "Process Reengineering",
+            "price": 14000,
+            "description": "Redesign critical business processes for dramatic improvements in speed, quality, and cost",
+            "image": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&q=80",
+            "imageAlt": "Process reengineering",
+            "duration": "6 weeks",
+            "deliverables": [
+              "Process documentation",
+              "Redesign blueprints",
+              "Implementation plan",
+              "Training materials"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "financial",
+        "name": "Financial Advisory",
+        "description": "CFO services and financial optimization",
+        "items": [
+          {
+            "name": "Fractional CFO Services",
+            "price": 5000,
+            "description": "Executive-level financial leadership on a part-time basis (monthly retainer)",
+            "image": "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80",
+            "imageAlt": "Financial planning",
+            "duration": "Monthly",
+            "deliverables": [
+              "Financial strategy",
+              "Budget management",
+              "Investor relations",
+              "Board reporting"
+            ],
+            "popular": true
+          },
+          {
+            "name": "Financial Modeling & Forecasting",
+            "price": 8000,
+            "description": "Build robust financial models for fundraising, M&A, or strategic planning",
+            "image": "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80",
+            "imageAlt": "Financial modeling",
+            "duration": "3-4 weeks",
+            "deliverables": [
+              "Financial model",
+              "Scenario analysis",
+              "Sensitivity testing",
+              "Executive dashboard"
+            ]
+          },
+          {
+            "name": "Fundraising Strategy",
+            "price": 12000,
+            "description": "Prepare for and execute successful fundraising with investor materials and pitch coaching",
+            "image": "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80",
+            "imageAlt": "Fundraising strategy",
+            "duration": "6-8 weeks",
+            "deliverables": [
+              "Pitch deck",
+              "Financial projections",
+              "Investor targeting",
+              "Pitch coaching"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "leadership",
+        "name": "Leadership & Organizational Development",
+        "description": "Team building and leadership effectiveness",
+        "items": [
+          {
+            "name": "Executive Coaching",
+            "price": 3500,
+            "description": "One-on-one coaching for C-suite executives (3-month engagement)",
+            "duration": "3 months",
+            "deliverables": [
+              "Assessment",
+              "Development plan",
+              "12 coaching sessions",
+              "Progress tracking"
+            ]
+          },
+          {
+            "name": "Leadership Team Alignment",
+            "price": 7500,
+            "description": "Build high-performing leadership teams through alignment workshops and team development",
+            "duration": "4 weeks",
+            "deliverables": [
+              "Team assessment",
+              "Alignment workshop",
+              "Communication protocols",
+              "Action plan"
+            ]
+          },
+          {
+            "name": "Organizational Design",
+            "price": 11000,
+            "description": "Restructure your organization for improved performance, clarity, and scalability",
+            "duration": "5-6 weeks",
+            "deliverables": [
+              "Org assessment",
+              "Redesign proposal",
+              "Role definitions",
+              "Implementation roadmap"
+            ]
+          }
+        ]
+      }
+    ]
   },
   "about": {
-    "title": "Our Story",
-    "body": "Founded in 2010 by Dr. Jennifer Walsh, Strategic Solutions has helped over 200 businesses achieve their growth objectives. Our team combines deep industry expertise with proven methodologies to deliver measurable results.",
-    "subtitle": "Why choose Strategic Solutions",
+    "title": "About Apex Strategy Group",
+    "body": "Founded in 2012, Apex Strategy Group has helped over 200 companies achieve breakthrough performance. Our team of former Fortune 500 executives and McKinsey alumni brings deep industry expertise and practical experience to every engagement. We don't just provide recommendations—we partner with you to drive implementation and deliver results.",
+    "subtitle": "Why clients choose us",
     "features": [
-      "📊 Data-driven insights",
-      "🎯 Proven methodologies",
-      "👥 Expert team of consultants",
-      "📈 Measurable results",
-      "🔄 Ongoing support",
-      "🏆 Industry recognition"
-    ],
-    "founder": {
-      "name": "Dr. Jennifer Walsh",
-      "title": "Founder & Principal Consultant",
-      "bio": "Former McKinsey consultant with 20+ years of experience helping businesses scale. PhD in Business Strategy from Wharton, specializing in operational excellence and growth strategy.",
-      "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
-      "imageAlt": "Dr. Jennifer Walsh"
-    }
+      "🏆 200+ successful engagements",
+      "📈 Average 3.5x ROI on projects",
+      "⚡ Results in 90 days or less",
+      "🎓 Former Big 3 consultants",
+      "💼 Industry-specific expertise",
+      "🤝 Implementation support included"
+    ]
   },
-  "products": [
-    {
-      "name": "Strategic Planning",
-      "price": 2500,
-      "description": "Comprehensive business strategy development with 3-year roadmap and implementation plan",
-      "image": "https://images.unsplash.com/photo-1559149811-ff2a4e2d3ded?w=600&q=80",
-      "imageAlt": "Strategic planning session",
-      "category": "Strategy & Planning",
-      "duration": "4-6 weeks",
-      "deliverables": [
-        "Strategic plan",
-        "Implementation roadmap",
-        "KPI framework"
-      ],
-      "popular": true
-    },
-    {
-      "name": "Process Optimization",
-      "price": 2000,
-      "description": "Analyze and improve business processes to increase efficiency and reduce costs",
-      "image": "https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&q=80",
-      "imageAlt": "Process optimization workflow",
-      "category": "Operations Excellence",
-      "duration": "4-6 weeks",
-      "deliverables": [
-        "Process maps",
-        "Efficiency improvements",
-        "Cost reduction plan"
-      ]
-    },
-    {
-      "name": "Market Analysis",
-      "price": 1800,
-      "description": "In-depth market research and competitive analysis to identify growth opportunities",
-      "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80",
-      "imageAlt": "Market analysis presentation",
-      "category": "Strategy & Planning",
-      "duration": "3-4 weeks",
-      "deliverables": [
-        "Market report",
-        "Competitive analysis",
-        "Opportunity assessment"
-      ]
-    },
-    {
-      "name": "Team Development",
-      "price": 1200,
-      "description": "Build high-performing teams through leadership development and organizational design",
-      "image": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80",
-      "imageAlt": "Team development workshop",
-      "category": "Growth & Development",
-      "duration": "3-4 weeks",
-      "deliverables": [
-        "Team assessment",
-        "Development plan",
-        "Training program"
-      ]
-    },
-    {
-      "name": "Sales Strategy",
-      "price": 1800,
-      "description": "Develop and implement sales strategies to accelerate revenue growth",
-      "image": "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80",
-      "imageAlt": "Sales strategy planning",
-      "category": "Growth & Development",
-      "duration": "4-5 weeks",
-      "deliverables": [
-        "Sales strategy",
-        "Process improvements",
-        "Training materials"
-      ]
-    },
-    {
-      "name": "Financial Planning",
-      "price": 1500,
-      "description": "Develop financial models and planning frameworks for sustainable growth",
-      "image": "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&q=80",
-      "imageAlt": "Financial planning",
-      "category": "Growth & Development",
-      "duration": "3-4 weeks",
-      "deliverables": [
-        "Financial models",
-        "Planning framework",
-        "Budget templates"
-      ]
-    }
-  ],
-  "casestudies": {
-    "title": "Success Stories",
-    "subtitle": "Real results from our client partnerships",
+  "featuredResults": {
+    "title": "Featured Client Success",
+    "subtitle": "Transformative outcomes across industries",
     "items": [
       {
-        "title": "Manufacturing Company Growth",
-        "client": "Midwest Manufacturing Co.",
-        "challenge": "Struggling with operational inefficiencies and declining margins",
-        "solution": "Process optimization and supply chain restructuring",
-        "results": "40% increase in efficiency, 25% cost reduction, $2M annual savings",
+        "client": "TechScale SaaS",
+        "industry": "B2B Software",
+        "challenge": "Plateaued growth at $10M ARR",
+        "result": "Grew to $35M ARR in 18 months",
+        "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80",
+        "imageAlt": "SaaS growth",
+        "metrics": [
+          {
+            "label": "Revenue Growth",
+            "value": "250%"
+          },
+          {
+            "label": "Customer Acquisition",
+            "value": "180%"
+          },
+          {
+            "label": "Market Share",
+            "value": "+15pts"
+          }
+        ]
+      },
+      {
+        "client": "Legacy Manufacturing Co.",
+        "industry": "Manufacturing",
+        "challenge": "Declining margins and operational inefficiency",
+        "result": "$4.2M in annual cost savings achieved",
+        "image": "https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?w=800&q=80",
+        "imageAlt": "Manufacturing",
+        "metrics": [
+          {
+            "label": "Cost Reduction",
+            "value": "22%"
+          },
+          {
+            "label": "Productivity",
+            "value": "+35%"
+          },
+          {
+            "label": "Quality",
+            "value": "+28%"
+          }
+        ]
+      }
+    ]
+  },
+  "caseStudies": {
+    "title": "Case Studies",
+    "subtitle": "Deep dives into our methodology and results",
+    "items": [
+      {
+        "title": "From $10M to $35M: SaaS Growth Transformation",
+        "client": "TechScale (B2B SaaS)",
+        "industry": "Software",
+        "challenge": "TechScale had plateaued at $10M ARR with high churn and inefficient go-to-market. The board was pressuring for growth before the next funding round.",
+        "solution": "We implemented a comprehensive growth strategy: redesigned pricing and packaging, rebuilt the sales process, launched a customer success function, and expanded into two new verticals. We worked hands-on with their team for 6 months.",
+        "results": [
+          "$35M ARR achieved in 18 months (250% growth)",
+          "Churn reduced from 8% to 2.5% monthly",
+          "Deal sizes increased 3.2x through new packaging",
+          "Successfully raised $25M Series B",
+          "NPS improved from 32 to 67"
+        ],
+        "image": "https://images.unsplash.com/photo-1551836022-4c4c79ecde51?w=800&q=80",
+        "imageAlt": "SaaS dashboard",
+        "testimonial": {
+          "text": "Apex didn't just give us a strategy deck—they rolled up their sleeves and made it happen with us. The results speak for themselves.",
+          "author": "Jennifer Park",
+          "title": "CEO, TechScale"
+        },
         "duration": "6 months",
-        "image": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=600&q=80",
-        "imageAlt": "Manufacturing facility"
+        "services": [
+          "Growth Strategy",
+          "Pricing Optimization",
+          "Sales Process",
+          "Customer Success"
+        ]
       },
       {
-        "title": "Tech Startup Scaling",
-        "client": "InnovateTech Solutions",
-        "challenge": "Rapid growth causing operational chaos and team burnout",
-        "solution": "Organizational design and process standardization",
-        "results": "300% team productivity increase, 50% reduction in operational costs",
-        "duration": "4 months",
-        "image": "https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=600&q=80",
-        "imageAlt": "Tech startup office"
+        "title": "Digital Transformation Saves Manufacturer $4.2M Annually",
+        "client": "Legacy Manufacturing Co.",
+        "industry": "Manufacturing",
+        "challenge": "A 50-year-old manufacturer was losing ground to competitors with higher margins, faster production, and lower defect rates. Manual processes and legacy systems were holding them back.",
+        "solution": "We led a comprehensive digital transformation: automated production planning, implemented IoT sensors for predictive maintenance, digitized quality control, and trained the workforce on new systems.",
+        "results": [
+          "$4.2M in annual cost savings (22% reduction)",
+          "Production throughput increased 35%",
+          "Defect rate decreased 67%",
+          "Maintenance costs reduced 45%",
+          "Employee satisfaction increased significantly"
+        ],
+        "image": "https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?w=800&q=80",
+        "imageAlt": "Manufacturing facility",
+        "testimonial": {
+          "text": "We thought digital transformation was for tech companies. Apex showed us how to modernize while respecting our culture and people.",
+          "author": "Robert Chen",
+          "title": "COO, Legacy Manufacturing"
+        },
+        "duration": "10 months",
+        "services": [
+          "Digital Transformation",
+          "Process Automation",
+          "Change Management",
+          "Training"
+        ]
       },
       {
-        "title": "Retail Chain Expansion",
-        "client": "Urban Retail Group",
-        "challenge": "Planning expansion into new markets without clear strategy",
-        "solution": "Market analysis and strategic planning",
-        "results": "Successful expansion to 5 new markets, 150% revenue growth",
-        "duration": "8 months",
-        "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80",
-        "imageAlt": "Retail store expansion"
+        "title": "Retail Chain Expansion: 12 to 47 Locations in 2 Years",
+        "client": "FreshBowl Restaurants",
+        "industry": "Restaurant/Retail",
+        "challenge": "Successful 12-location healthy fast-casual chain wanted to scale but lacked systems, processes, and capital strategy for rapid growth.",
+        "solution": "We developed a comprehensive scaling strategy: standardized operations playbook, real estate site selection model, franchise vs. company-owned analysis, and helped secure growth capital. We also recruited key executives.",
+        "results": [
+          "Expanded from 12 to 47 locations in 24 months",
+          "Unit economics improved by 18%",
+          "Secured $15M in growth capital",
+          "Built scalable operations infrastructure",
+          "On track for 100 locations by 2026"
+        ],
+        "image": "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800&q=80",
+        "imageAlt": "Restaurant interior",
+        "testimonial": {
+          "text": "Apex gave us the roadmap and expertise to scale without losing quality. They understood both the strategic and operational challenges.",
+          "author": "Maria Gonzalez",
+          "title": "Founder & CEO, FreshBowl"
+        },
+        "duration": "24 months (ongoing)",
+        "services": [
+          "Growth Strategy",
+          "Fundraising",
+          "Operations",
+          "Executive Recruiting"
+        ]
       }
     ]
   },
   "testimonials": {
     "title": "Client Testimonials",
-    "subtitle": "What our clients say about working with us",
+    "subtitle": "What our clients say",
     "items": [
       {
-        "text": "Strategic Solutions transformed our business completely. The process optimization alone saved us $2M annually.",
-        "author": "Sarah Mitchell",
-        "location": "CEO, Midwest Manufacturing",
-        "rating": 5,
-        "date": "2 months ago",
-        "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
-        "imageAlt": "Sarah Mitchell"
-      },
-      {
-        "text": "Dr. Walsh's strategic guidance helped us scale from startup to market leader in just 18 months.",
-        "author": "Michael Rodriguez",
-        "location": "Founder, InnovateTech",
+        "text": "Apex Strategy Group transformed our business. Their insights were spot-on, and more importantly, they stayed with us through implementation. We achieved a 3x return on our investment in the first year alone.",
+        "author": "David Martinez",
+        "location": "CEO, TechVenture Inc.",
         "rating": 5,
         "date": "1 month ago",
-        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
-        "imageAlt": "Michael Rodriguez"
-      },
-      {
-        "text": "The best investment we made. The team development program transformed our culture and performance.",
-        "author": "Amanda Thompson",
-        "location": "VP Operations, Urban Retail",
-        "rating": 5,
-        "date": "3 weeks ago",
-        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&q=80",
-        "imageAlt": "Amanda Thompson"
-      },
-      {
-        "text": "Professional, insightful, and results-driven. Strategic Solutions exceeded all our expectations.",
-        "author": "David Chen",
-        "location": "President, Global Logistics",
-        "rating": 5,
-        "date": "1 week ago",
+        "project": "Growth Strategy",
         "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80",
-        "imageAlt": "David Chen"
+        "imageAlt": "David Martinez"
+      },
+      {
+        "text": "We've worked with multiple consulting firms, and Apex stands apart. They combine Big 3 methodology with startup speed and founder empathy. Highly recommend for any growing company.",
+        "author": "Sarah Johnson",
+        "location": "Founder, HealthTech Innovations",
+        "rating": 5,
+        "date": "2 months ago",
+        "project": "Digital Transformation",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&q=80",
+        "imageAlt": "Sarah Johnson"
+      },
+      {
+        "text": "The operational improvements Apex helped us implement saved our company over $4M annually. They paid for themselves many times over. True partners in every sense.",
+        "author": "Robert Chen",
+        "location": "COO, Legacy Manufacturing Co.",
+        "rating": 5,
+        "date": "3 months ago",
+        "project": "Operational Excellence",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "imageAlt": "Robert Chen"
       }
     ],
     "stats": {
       "averageRating": 4.9,
-      "totalReviews": 89,
-      "googleRating": 4.8,
-      "linkedinRating": 4.9
+      "totalReviews": 87,
+      "averageROI": "3.5x",
+      "clientRetention": "92%"
     }
   },
+  "team": {
+    "title": "Meet Our Team",
+    "subtitle": "Former Big 3 consultants and Fortune 500 executives",
+    "members": [
+      {
+        "name": "Michael Stevens",
+        "title": "Managing Partner & CEO",
+        "bio": "Former McKinsey Senior Partner with 20 years advising Fortune 500 CEOs. Michael specializes in growth strategy, M&A, and digital transformation. MBA from Harvard Business School.",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+        "imageAlt": "Michael Stevens",
+        "credentials": [
+          "McKinsey Senior Partner",
+          "Harvard MBA",
+          "Board Member"
+        ],
+        "specialties": [
+          "Growth Strategy",
+          "M&A",
+          "Digital Transformation"
+        ]
+      },
+      {
+        "name": "Jennifer Park",
+        "title": "Partner, Operations",
+        "bio": "Former VP of Operations at Amazon and Bain consultant. Jennifer leads operational excellence engagements across manufacturing, retail, and logistics. MIT Engineering background.",
+        "image": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80",
+        "imageAlt": "Jennifer Park",
+        "credentials": [
+          "Former Amazon VP",
+          "Bain Alum",
+          "MIT Engineering"
+        ],
+        "specialties": [
+          "Operations",
+          "Supply Chain",
+          "Process Improvement"
+        ]
+      },
+      {
+        "name": "David Thompson",
+        "title": "Partner, Financial Advisory",
+        "bio": "Former Fortune 500 CFO and BCG consultant. David brings 25 years of financial leadership experience to help clients optimize capital structure, fundraising, and financial operations.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "David Thompson",
+        "credentials": [
+          "Former CFO",
+          "BCG Alum",
+          "CPA"
+        ],
+        "specialties": [
+          "Financial Strategy",
+          "Fundraising",
+          "M&A"
+        ]
+      },
+      {
+        "name": "Lisa Rodriguez",
+        "title": "Partner, People & Culture",
+        "bio": "Former Chief People Officer at Google and organizational psychologist. Lisa helps clients build high-performing teams, develop leaders, and create winning cultures.",
+        "image": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80",
+        "imageAlt": "Lisa Rodriguez",
+        "credentials": [
+          "Former Google CPO",
+          "PhD Organizational Psychology"
+        ],
+        "specialties": [
+          "Leadership Development",
+          "Org Design",
+          "Culture"
+        ]
+      }
+    ]
+  },
+  "industries": {
+    "title": "Industry Expertise",
+    "subtitle": "Deep experience across key sectors",
+    "items": [
+      {
+        "name": "Technology & SaaS",
+        "icon": "💻",
+        "projects": "78+"
+      },
+      {
+        "name": "Healthcare & Life Sciences",
+        "icon": "🏥",
+        "projects": "34+"
+      },
+      {
+        "name": "Manufacturing & Industrial",
+        "icon": "🏭",
+        "projects": "42+"
+      },
+      {
+        "name": "Retail & Consumer",
+        "icon": "🛍️",
+        "projects": "56+"
+      },
+      {
+        "name": "Financial Services",
+        "icon": "💰",
+        "projects": "28+"
+      },
+      {
+        "name": "Professional Services",
+        "icon": "💼",
+        "projects": "31+"
+      }
+    ]
+  },
+  "process": {
+    "title": "Our Approach",
+    "subtitle": "Proven methodology for delivering results",
+    "steps": [
+      {
+        "number": 1,
+        "title": "Discovery & Diagnosis",
+        "description": "Deep dive into your business through stakeholder interviews, data analysis, and market research to understand root causes and opportunities.",
+        "duration": "1-2 weeks"
+      },
+      {
+        "number": 2,
+        "title": "Strategy Development",
+        "description": "Develop data-driven recommendations and strategic roadmap with input from your team. Test assumptions and build financial models.",
+        "duration": "2-3 weeks"
+      },
+      {
+        "number": 3,
+        "title": "Collaborative Refinement",
+        "description": "Present findings and work with your leadership team to refine the strategy, align on priorities, and build buy-in.",
+        "duration": "1 week"
+      },
+      {
+        "number": 4,
+        "title": "Implementation Support",
+        "description": "Work side-by-side with your team to execute the strategy, overcome obstacles, and adjust course as needed.",
+        "duration": "4-12 weeks"
+      },
+      {
+        "number": 5,
+        "title": "Measurement & Optimization",
+        "description": "Track KPIs, measure impact, and continuously optimize for maximum results. Ensure sustainability after engagement ends.",
+        "duration": "Ongoing"
+      }
+    ]
+  },
   "contact": {
-    "title": "Let's Discuss Your Project",
-    "subtitle": "Schedule a free consultation to explore how we can help",
+    "title": "Start Your Transformation",
+    "subtitle": "Free 60-minute strategy consultation",
     "phone": "(555) 456-7890",
-    "email": "hello@strategicsolutions.com",
-    "address": "789 Business Plaza, Suite 400, Downtown District, Springfield, IL 62701",
+    "email": "contact@apexstrategy.com",
+    "address": "1200 Executive Tower, Suite 3500, New York, NY 10022",
     "coordinates": {
-      "lat": 39.7817,
-      "lng": -89.6501
+      "lat": 40.7589,
+      "lng": -73.9851
     },
-    "parking": "Valet parking available • Garage parking • Street parking",
-    "accessibility": "Wheelchair accessible • Elevator access • Accessible meeting rooms",
     "hours": {
-      "title": "Office Hours",
+      "title": "Availability",
       "items": [
-        "Monday - Friday: 8:00 AM - 6:00 PM",
-        "Saturday: 9:00 AM - 2:00 PM",
-        "Sunday: Closed"
+        "Monday - Friday: 8:00 AM - 7:00 PM EST",
+        "Weekend: By appointment"
       ],
-      "note": "Evening consultations available by appointment"
-    },
-    "consultation": {
-      "phone": "(555) 456-7890",
-      "online": "https://strategicsolutions.com/schedule",
-      "note": "Free 30-minute consultation to discuss your needs"
+      "note": "Free 60-minute consultation for qualified opportunities"
     }
   },
   "social": {
-    "facebook": "https://facebook.com/strategicsolutionsconsulting",
-    "linkedin": "https://linkedin.com/company/strategic-solutions-consulting",
-    "googleMaps": "https://maps.google.com/strategicsolutions",
-    "twitter": "https://twitter.com/strategicsol"
-  },
-  "resources": {
-    "title": "Resources & Insights",
-    "subtitle": "Stay informed with our latest business insights",
-    "items": [
-      {
-        "title": "Strategic Planning Guide",
-        "description": "Free comprehensive guide to business strategic planning",
-        "type": "Download",
-        "price": "Free"
-      },
-      {
-        "title": "Monthly Webinar Series",
-        "description": "Expert insights on business growth and optimization",
-        "type": "Event",
-        "price": "Free"
-      },
-      {
-        "title": "Business Assessment Tool",
-        "description": "Self-assessment tool to identify improvement opportunities",
-        "type": "Tool",
-        "price": "Free"
-      }
-    ]
+    "linkedin": "https://linkedin.com/company/apexstrategy",
+    "twitter": "https://twitter.com/apexstrategy"
   },
   "stats": {
     "items": [
@@ -312,147 +652,170 @@
         "label": "Clients Served"
       },
       {
-        "number": "13+",
-        "label": "Years Experience"
+        "number": "3.5x",
+        "label": "Average ROI"
       },
       {
-        "number": "$100M+",
-        "label": "Client Revenue Generated"
+        "number": "92%",
+        "label": "Retention Rate"
       },
       {
-        "number": "4.9",
-        "label": "Star Rating"
+        "number": "$500M+",
+        "label": "Value Created"
       }
     ]
   },
-  "process": {
-    "title": "How We Work",
-    "subtitle": "Proven methodology for measurable results",
-    "steps": [
+  "gallery": {
+    "title": "Our Impact",
+    "subtitle": "Success stories and client transformations",
+    "categories": [
       {
-        "title": "Discovery Call",
-        "description": "Free 30-minute consultation to understand your challenges"
+        "name": "Strategy Work",
+        "images": [
+          {
+            "url": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80",
+            "alt": "Strategic planning session"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1551836022-4c4c79ecde51?w=800&q=80",
+            "alt": "Market analysis and insights"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80",
+            "alt": "Digital transformation strategy"
+          }
+        ]
       },
       {
-        "title": "Strategic Assessment",
-        "description": "Deep analysis of your business, market, and opportunities"
+        "name": "Operations",
+        "images": [
+          {
+            "url": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80",
+            "alt": "Operational efficiency improvements"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80",
+            "alt": "Process optimization"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1551836022-4c4c79ecde51?w=800&q=80",
+            "alt": "Supply chain excellence"
+          }
+        ]
       },
       {
-        "title": "Custom Roadmap",
-        "description": "Actionable plan with clear milestones and timelines"
-      },
-      {
-        "title": "Implementation Support",
-        "description": "Hands-on guidance to execute and achieve your goals"
+        "name": "Financial Advisory",
+        "images": [
+          {
+            "url": "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&q=80",
+            "alt": "Financial planning and modeling"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?w=800&q=80",
+            "alt": "Fundraising preparation"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800&q=80",
+            "alt": "Financial performance optimization"
+          }
+        ]
       }
     ]
   },
   "credentials": {
-    "title": "Proven Expertise",
-    "subtitle": "Credentials and experience you can trust",
+    "title": "Credentials & Recognition",
     "items": [
       {
-        "icon": "🎓",
-        "name": "PhD, Wharton",
-        "description": "Former McKinsey consultant"
-      },
-      {
-        "icon": "📈",
-        "name": "$100M+ Generated",
-        "description": "For client businesses"
-      },
-      {
         "icon": "🏆",
-        "name": "Best Consulting 2023",
-        "description": "Industry recognized"
+        "name": "Top 10 Consulting Firm",
+        "description": "Inc. Magazine 2023"
       },
       {
         "icon": "⭐",
-        "name": "4.9 Star Rating",
-        "description": "200+ satisfied clients"
+        "name": "Former Big 3",
+        "description": "McKinsey, Bain, BCG Alumni"
+      },
+      {
+        "icon": "💎",
+        "name": "Fortune 500 Experience",
+        "description": "Executive-Level Expertise"
+      },
+      {
+        "icon": "📰",
+        "name": "Featured In",
+        "description": "Harvard Business Review, Forbes"
       }
     ]
   },
   "faq": {
     "title": "Frequently Asked Questions",
-    "subtitle": "Common questions about our consulting services",
     "items": [
       {
-        "question": "What industries do you specialize in?",
-        "answer": "We work primarily with manufacturing, technology, retail, and professional services firms. Our team has experience across 15+ industries, and our methodologies adapt to any business looking to scale sustainably."
+        "question": "What makes Apex different from other consulting firms?",
+        "answer": "We combine Big 3 methodology with hands-on implementation support. Unlike traditional consultants who deliver recommendations and leave, we stay with you to drive results. Our team includes former McKinsey, Bain, and BCG consultants plus Fortune 500 executives."
       },
       {
-        "question": "How long is a typical engagement?",
-        "answer": "Engagements typically last 4-8 weeks for project-based work, though some clients work with us ongoing as fractional executives or strategic advisors. We'll discuss the right timeline during your discovery call."
+        "question": "What is your typical engagement length?",
+        "answer": "Most engagements run 8-16 weeks, though some are shorter (strategy sprints) or longer (transformation programs). We tailor the timeline to your needs and can work on retainer for ongoing support."
       },
       {
-        "question": "What size companies do you work with?",
-        "answer": "We focus on businesses with $5M-$100M in annual revenue. This allows for meaningful impact while maintaining personalized attention to your unique challenges."
+        "question": "Do you work with startups or just established companies?",
+        "answer": "We work with companies from Series A startups to Fortune 500s. Our sweet spot is growth-stage companies ($5M-$500M revenue) that need senior-level expertise without the overhead of full-time executives."
       },
       {
-        "question": "How is your pricing structured?",
-        "answer": "We offer both project-based and retainer pricing depending on scope. Projects start at $1,200 and typically range from $1,500-$2,500 depending on complexity. Retainers start at $3,000/month. All pricing is transparent and agreed upon before we begin."
+        "question": "How do you charge for your services?",
+        "answer": "We typically work on fixed-fee project engagements or monthly retainers. For some growth engagements, we're open to performance-based fees. We'll discuss pricing during your consultation based on scope and objectives."
       },
       {
-        "question": "Will I work directly with Dr. Walsh or a team?",
-        "answer": "You work directly with our senior consultants, including Dr. Walsh who oversees all engagements. For larger projects, you'll have a dedicated team, but Dr. Walsh is involved in strategy development and key milestones."
+        "question": "Can you provide references?",
+        "answer": "Absolutely. We're happy to connect you with past clients in your industry who can speak to their experience working with us and the results achieved."
       },
       {
-        "question": "What results can I expect?",
-        "answer": "While every business is different, clients typically see 20-50% revenue growth, improved operational efficiency, stronger market positioning, and clearer strategic direction. Our case studies showcase specific results achieved with recent clients."
+        "question": "Do you sign NDAs?",
+        "answer": "Yes, we sign NDAs and have strict confidentiality protocols. Many of our clients are working on sensitive strategic initiatives, and we take data security seriously."
       },
       {
-        "question": "Do you offer ongoing support after a project ends?",
-        "answer": "Yes! Many clients transition to an advisory retainer for ongoing strategic guidance, quarterly planning sessions, and implementation support. This ensures long-term success."
+        "question": "What if we're not satisfied with the work?",
+        "answer": "We have a satisfaction guarantee. If you're not satisfied within the first 2 weeks, we'll make it right or part ways amicably. In 11 years, we've never had a client invoke this—our 92% retention rate speaks for itself."
       },
       {
-        "question": "How involved will I need to be?",
-        "answer": "We work collaboratively with you and your leadership team. Expect 3-5 hours per week of your time for meetings, feedback, and decision-making. We handle the research, analysis, and heavy lifting."
-      },
-      {
-        "question": "Can you help with implementation or just strategy?",
-        "answer": "Both! We're hands-on and can support implementation, or provide a detailed roadmap for your team to execute. We'll determine the right approach based on your needs, resources, and timeline."
-      },
-      {
-        "question": "What if I'm not sure what I need?",
-        "answer": "That's exactly what the free 30-minute discovery call is for! We'll discuss your challenges and goals, and provide honest feedback on whether consulting is right for you and what approach makes sense."
+        "question": "Do you implement or just provide recommendations?",
+        "answer": "Both! Unlike traditional consultants, we provide hands-on implementation support. We work alongside your team to ensure the strategy becomes reality and delivers results."
       }
     ]
   },
   "footer": {
-    "text": "💼 Strategic Solutions • Business Consulting Since 2010",
+    "text": "✨ Apex Strategy Group • Transforming Businesses Since 2012",
     "links": [
       {
-        "label": "Privacy Policy",
-        "href": "#privacy"
+        "label": "Services",
+        "href": "#services"
       },
       {
-        "label": "Terms of Service",
-        "href": "#terms"
+        "label": "Case Studies",
+        "href": "#results"
       },
       {
-        "label": "Careers",
-        "href": "#careers"
+        "label": "Team",
+        "href": "#team"
       },
       {
-        "label": "Resources",
-        "href": "#resources"
+        "label": "Contact",
+        "href": "#contact"
       }
     ],
     "awards": [
-      "Best Consulting Firm 2023",
-      "Excellence in Business Strategy",
-      "Client Satisfaction Award"
+      "Top 10 Consulting Firm",
+      "200+ Successful Engagements",
+      "Former Big 3 Consultants",
+      "92% Client Retention"
     ]
   },
   "settings": {
     "allowCheckout": false,
-    "allowOrders": true,
-    "orderNotificationEmail": "info@strategicsolutions.com",
-    "productCta": "Schedule Consultation",
-    "productCtaHref": "https://calendly.com/strategicsolutions",
-    "productNote": "Submit your consultation request and we'll contact you within 24 hours to schedule a free 30-minute session."
-  },
-  "productsTitle": "Consulting Services",
-  "productsSubtitle": "Strategic solutions tailored to your business goals"
+    "allowOrders": false,
+    "bookingEnabled": true,
+    "bookingWidget": "native",
+    "tier": "Pro"
+  }
 }

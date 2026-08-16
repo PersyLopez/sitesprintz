@@ -1,25 +1,33 @@
 /**
  * Subscription Constants
- * 
- * Centralized configuration for subscription tiers and features.
- * Single source of truth for tier names and feature availability.
+ *
+ * Official tiers: trial, starter, growth
+ * Legacy "pro" / "premium" normalize to growth
  */
 
 export const SUBSCRIPTION_TIERS = {
-  FREE: 'free',
+  TRIAL: 'trial',
   STARTER: 'starter',
-  GROWTH: 'growth',
-  PRO: 'pro',
-  PREMIUM: 'premium'
+  GROWTH: 'growth'
+};
+
+/**
+ * Legacy tier names (for backward compatibility)
+ */
+export const LEGACY_TIER_MAPPING = {
+  free: 'trial',
+  pro: 'growth',
+  premium: 'growth',
+  enterprise: 'growth',
+  business: 'growth',
+  checkout: 'growth'
 };
 
 /**
  * Tiers that have access to service request forms
  */
 export const SERVICE_REQUEST_ENABLED_TIERS = [
-  SUBSCRIPTION_TIERS.GROWTH,
-  SUBSCRIPTION_TIERS.PRO,
-  SUBSCRIPTION_TIERS.PREMIUM
+  SUBSCRIPTION_TIERS.GROWTH
 ];
 
 /**
@@ -28,18 +36,25 @@ export const SERVICE_REQUEST_ENABLED_TIERS = [
  * @returns {boolean} Whether tier has access to service requests
  */
 export function hasServiceRequestFeature(tier) {
-  return SERVICE_REQUEST_ENABLED_TIERS.includes(tier?.toLowerCase());
+  const normalized = LEGACY_TIER_MAPPING[tier?.toLowerCase()] || tier?.toLowerCase();
+  return (
+    SERVICE_REQUEST_ENABLED_TIERS.includes(normalized) ||
+    normalized === 'pro' ||
+    normalized === 'premium'
+  );
 }
 
 /**
  * Tier hierarchy (for feature comparison)
  */
 export const TIER_HIERARCHY = {
-  [SUBSCRIPTION_TIERS.FREE]: 0,
+  [SUBSCRIPTION_TIERS.TRIAL]: 0,
   [SUBSCRIPTION_TIERS.STARTER]: 1,
   [SUBSCRIPTION_TIERS.GROWTH]: 2,
-  [SUBSCRIPTION_TIERS.PRO]: 3,
-  [SUBSCRIPTION_TIERS.PREMIUM]: 4
+  // Legacy keys so old comparisons still work
+  pro: 2,
+  premium: 2,
+  enterprise: 2
 };
 
 /**
@@ -49,16 +64,17 @@ export const TIER_HIERARCHY = {
  * @returns {boolean} Whether tierA >= tierB
  */
 export function isTierHigherOrEqual(tierA, tierB) {
-  const levelA = TIER_HIERARCHY[tierA?.toLowerCase()] ?? -1;
-  const levelB = TIER_HIERARCHY[tierB?.toLowerCase()] ?? -1;
+  const normalize = (t) => LEGACY_TIER_MAPPING[t?.toLowerCase()] || t?.toLowerCase();
+  const levelA = TIER_HIERARCHY[normalize(tierA)] ?? -1;
+  const levelB = TIER_HIERARCHY[normalize(tierB)] ?? -1;
   return levelA >= levelB;
 }
 
 export default {
   SUBSCRIPTION_TIERS,
+  LEGACY_TIER_MAPPING,
   SERVICE_REQUEST_ENABLED_TIERS,
   hasServiceRequestFeature,
   TIER_HIERARCHY,
   isTierHigherOrEqual
 };
-

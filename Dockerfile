@@ -7,8 +7,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install all dependencies (dev deps required for Vite build)
+RUN npm ci
 
 # Copy prisma schema
 COPY prisma ./prisma/
@@ -19,8 +19,8 @@ RUN npx prisma generate
 # Copy application code
 COPY . .
 
-# Build frontend
-RUN npm run build
+# Build frontend for production
+RUN npm run build:prod
 
 # Expose port
 EXPOSE 3000

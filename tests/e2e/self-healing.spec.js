@@ -18,7 +18,7 @@ test.describe('Self Healing & Resilience', () => {
 
         const registerRes = await request.post(`${API_URL}/api/auth/register`, {
             headers: { 'X-CSRF-Token': csrfToken },
-            data: { email, password: 'StrictPwd!2024', confirmPassword: 'StrictPwd!2024', name: 'Healing User' }
+            data: { email, password: 'StrictPwd!2024', confirmPassword: 'StrictPwd!2024', name: 'Healing User', acceptedTerms: true }
         });
         const { accessToken: token } = await registerRes.json();
 

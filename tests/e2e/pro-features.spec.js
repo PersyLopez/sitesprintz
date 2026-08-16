@@ -30,18 +30,19 @@ test.describe('Pro Features - Booking Widget', () => {
     await page.goto(`${BASE_URL}/sites/${TEST_SUBDOMAIN}/`);
   });
 
-  test('should display booking widget when enabled', async ({ page }) => {
-    // Look for booking widget container
-    const bookingWidget = page.getByTestId('booking-widget-container').or(
-      page.locator('[data-booking-widget]').first()
-    );
+  test('should display native booking widget when enabled', async ({ page }) => {
+    // Look for native booking widget container
+    const nativeWidget = page.locator('.native-booking-widget, .booking-widget-container').first();
+    const servicesList = page.getByTestId('services-list');
 
-    // Widget should be present (may be hidden until triggered)
-    const widgetExists = await bookingWidget.count();
-    expect(widgetExists).toBeGreaterThanOrEqual(0);
+    // Either native widget container or services list should be present
+    const widgetExists = await nativeWidget.count() > 0;
+    const servicesVisible = await servicesList.isVisible({ timeout: 10000 }).catch(() => false);
+    
+    expect(widgetExists || servicesVisible).toBeTruthy();
   });
 
-  test('should load booking iframe for Calendly', async ({ page }) => {
+  test('should load booking iframe for Calendly (fallback)', async ({ page }) => {
     // Click booking trigger
     const bookingBtn = page.getByRole('button', { name: /book|schedule/i }).or(
       page.getByRole('link', { name: /book|schedule/i })
@@ -414,7 +415,8 @@ test.describe('Pro Features - Order Management', () => {
         email,
         password: 'StrictPwd!2024',
         confirmPassword: 'StrictPwd!2024',
-        name: 'Pro Site Owner'
+        name: 'Pro Site Owner',
+        acceptedTerms: true
       }
     });
 

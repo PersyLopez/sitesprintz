@@ -1,0 +1,64 @@
+url: http://localhost:5173/view/gallery-restaurant
+goal: Live generated restaurant, electrician, bazaar, and consultant sites render real content
+steps:
+  - action: Restaurant live site loads
+    wait_for: { text: The Grand Table, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Restaurant has menu or contact
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/Menu|Contact|Hours|Grand Table/i.test(t)) {
+        throw new Error('Restaurant site missing menu/contact: ' + t.slice(0, 300));
+      }
+      if (/not yet supported in preview/i.test(t)) {
+        throw new Error('Restaurant site shows placeholders');
+      }
+
+  - action: Open electrician live site
+    goto: http://localhost:5173/view/gallery-electrician
+    settle_ms: 2000
+
+  - action: Electrician identity visible
+    wait_for: { text: Brightline Electric, timeout: 20000 }
+    settle_ms: 400
+
+  - action: Electrician has service or contact copy
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/Quote|Contact|Service|Electric/i.test(t)) {
+        throw new Error('Electrician site missing expected copy: ' + t.slice(0, 300));
+      }
+
+  - action: Open bazaar food stall
+    goto: http://localhost:5173/view/gallery-food-stall
+    settle_ms: 2000
+
+  - action: Bazaar identity visible
+    wait_for: { text: Sunset Tacos, timeout: 20000 }
+    settle_ms: 400
+
+  - action: Bazaar has catalog copy and no booking
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/Tacos|Order|Catalog|Selling|Menu|Harbor/i.test(t)) {
+        throw new Error('Bazaar site missing catalog/order copy: ' + t.slice(0, 300));
+      }
+      if (/Book an Appointment/i.test(t)) {
+        throw new Error('Bazaar site should not show booking');
+      }
+
+  - action: Open consultant live site
+    goto: http://localhost:5173/view/gallery-consultant
+    settle_ms: 2000
+
+  - action: Consultant identity visible
+    wait_for: { text: Northstar Advisory, timeout: 20000 }
+    settle_ms: 400
+
+  - action: Consultant has professional copy
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/Contact|Advisory|Case|Service/i.test(t)) {
+        throw new Error('Consultant site missing expected sections: ' + t.slice(0, 300));
+      }

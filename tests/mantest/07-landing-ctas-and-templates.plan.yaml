@@ -2,36 +2,36 @@ url: http://localhost:5173/
 goal: Landing CTAs and template marketing sections work
 steps:
   - action: Hero primary CTA goes to register
-    wait_for: { text: Get Started Free }
-    click: { text: Get Started Free → }
+    wait_for: { text: Get Your Page Free }
+    click: { text: Get Your Page Free → }
     settle_ms: 1000
     assert:
       - url contains /register
 
   - action: Back to landing
     goto: http://localhost:5173/
-    wait_for: { text: Create Your Professional Website in Minutes }
+    wait_for: { text: They love what you make }
 
   - action: View Gallery secondary CTA
-    click: { text: View Gallery }
+    click: { text: Browse example sites → }
     settle_ms: 1000
     assert:
       - url contains /showcase
 
   - action: Landing templates section
     goto: http://localhost:5173/
-    wait_for: { text: Choose Your Template }
+    wait_for: { text: A layout that already feels like your business }
     assert:
       - text contains Restaurant
-      - text contains Salon
-      - text contains Fitness
-      - text contains How It Works
-      - text contains Choose a Template
-      - text contains Customize Content
-      - text contains Launch & Grow
+      - text contains Salon & Spa
+      - text contains Fitness & Gym
+      - text contains How it works
+      - text contains Tell us what you sell
+      - text contains Show what customers need
+      - text contains Leave the light on
 
   - action: How it works nav
     click: { testId: nav-how-it-works }
     settle_ms: 600
     assert:
-      - text contains How It Works
+      - text contains Three steps. Then you’re findable.

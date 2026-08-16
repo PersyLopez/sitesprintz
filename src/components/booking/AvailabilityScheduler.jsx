@@ -37,6 +37,25 @@ const AvailabilityScheduler = ({ userId, siteId = null }) => {
     }), {})
   );
 
+  const siteParams = siteId ? { siteId } : undefined;
+
+  const resolveStaffId = async () => {
+    if (staffId) return staffId;
+
+    try {
+      const staffRes = await get(`/api/booking/tenants/${userId}/staff`, {
+        params: siteParams,
+      });
+      const list = Array.isArray(staffRes?.staff) ? staffRes.staff : [];
+      const resolved = list[0]?.id || 'default';
+      setStaffId(resolved);
+      return resolved;
+    } catch {
+      setStaffId('default');
+      return 'default';
+    }
+  };
+
   useEffect(() => {
     if (userId) {
       fetchAvailability();
@@ -48,11 +67,9 @@ const AvailabilityScheduler = ({ userId, siteId = null }) => {
       setLoading(true);
       setError(null);
 
-      // Fetch availability rules - use default staff for now
-      // API expects: /api/booking/admin/:userId/staff/:staffId/availability
-      const defaultStaffId = 'default-staff-id';
-      const response = await get(`/api/booking/admin/${userId}/staff/${defaultStaffId}/availability`, {
-        params: siteId ? { siteId } : undefined,
+      const resolvedStaffId = await resolveStaffId();
+      const response = await get(`/api/booking/admin/${userId}/staff/${resolvedStaffId}/availability`, {
+        params: siteParams,
       });
 
       if (response && response.success && Array.isArray(response.rules)) {
@@ -77,7 +94,6 @@ const AvailabilityScheduler = ({ userId, siteId = null }) => {
       setLoading(false);
 
     } catch (err) {
-      console.error('Error fetching availability:', err);
       setError('Failed to load availability schedule');
       showError('Failed to load availability schedule');
       setLoading(false);
@@ -188,16 +204,9 @@ const AvailabilityScheduler = ({ userId, siteId = null }) => {
         return;
       }
 
-      // We need to get staff ID first
-      // For now, let's use a placeholder. In real implementation:
-      // 1. Fetch tenant info
-      // 2. Get or create default staff
-      // 3. Use that staff ID
+      const resolvedStaffId = await resolveStaffId();
 
-      // Simplified for demo - you'd need actual staff ID
-      const defaultStaffId = 'default-staff-id';
-
-      await post(`/api/booking/admin/${userId}/staff/${defaultStaffId}/availability`, {
+      await post(`/api/booking/admin/${userId}/staff/${resolvedStaffId}/availability`, {
         scheduleRules,
         ...(siteId ? { siteId } : {}),
       });
@@ -205,7 +214,6 @@ const AvailabilityScheduler = ({ userId, siteId = null }) => {
       showSuccess('Schedule saved successfully');
 
     } catch (err) {
-      console.error('Error saving schedule:', err);
       showError('Failed to save schedule');
     } finally {
       setSaving(false);

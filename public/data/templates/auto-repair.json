@@ -2,19 +2,21 @@
   "brand": {
     "name": "Precision Auto Care",
     "logo": "assets/logo.svg",
-    "alt": "Precision Auto Care badge",
-    "phone": "+1-555-987-1234",
+    "tagline": "ASE-Certified Technicians • Quality You Can Trust",
+    "phone": "(555) 012-3456",
     "email": "service@precisionautocare.com"
   },
   "themeVars": {
-    "color-primary": "#475569",
-    "color-primary-light": "#94a3b8",
-    "color-accent": "#e2e8f0",
-    "color-bg": "#ffffff",
-    "color-surface": "#f8fafc",
-    "color-card": "#ffffff",
-    "color-text": "#1e293b",
-    "color-muted": "#64748b"
+    "color-primary": "#ef4444",
+    "color-accent": "#dc2626",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444",
+    "color-bg": "#0f172a",
+    "color-surface": "#1e293b",
+    "color-card": "#1e293b",
+    "color-text": "#f8fafc",
+    "color-muted": "#cbd5e1"
   },
   "nav": [
     {
@@ -22,12 +24,12 @@
       "href": "#services"
     },
     {
-      "label": "Diagnostics",
-      "href": "#pricing"
+      "label": "Specials",
+      "href": "#specials"
     },
     {
-      "label": "Fleet",
-      "href": "#pages"
+      "label": "Team",
+      "href": "#team"
     },
     {
       "label": "Testimonials",
@@ -39,148 +41,553 @@
     }
   ],
   "hero": {
-    "eyebrow": "ASE-certified mechanics",
-    "title": "Honest repairs and maintenance you can rely on",
-    "subtitle": "Family owned since 1985. Same-day service on most repairs with nationwide warranty.",
-    "image": "assets/hero-placeholder.jpg",
-    "imageAlt": "Mechanic inspecting a vehicle",
+    "eyebrow": "🏆 ASE-Certified Master Technicians",
+    "title": "Expert Auto Repair & Maintenance",
+    "subtitle": "From routine maintenance to complex repairs, our ASE-certified technicians provide honest, reliable service for all makes and models. State-of-the-art diagnostics, quality parts, and a warranty you can trust. Your car is in expert hands.",
     "cta": [
       {
-        "label": "Schedule service",
-        "href": "https://cal.com/precision-auto"
+        "label": "📅 Schedule Service",
+        "href": "#booking"
       },
       {
-        "label": "Call the shop",
-        "href": "tel:+15559871234",
+        "label": "🔧 View Services",
+        "href": "#services",
         "variant": "secondary"
       }
     ],
-    "layout": "split"
+    "image": "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=1200&q=80",
+    "imageAlt": "Professional auto repair shop"
   },
-  "services": {
-    "title": "Complete auto repair",
-    "subtitle": "Maintenance for every make and model",
-    "items": [
+  "features": {
+    "bookingWidget": {
+      "enabled": true,
+      "provider": "calendly",
+      "url": "https://calendly.com/precisionautocare"
+    },
+    "certifications": true,
+    "teamProfiles": true,
+    "ownerDashboard": true,
+    "analytics": true,
+    "testimonials": {
+      "enabled": true,
+      "ratings": true
+    }
+  },
+  "menu": {
+    "sections": [
       {
-        "title": "Advanced diagnostics",
-        "description": "Check engine lights, electrical issues, and drivability problems solved fast."
+        "id": "maintenance",
+        "name": "Maintenance Services",
+        "description": "Keep your vehicle running smoothly",
+        "items": [
+          {
+            "name": "Premium Oil Change",
+            "price": 69,
+            "description": "Full synthetic oil change, filter, fluid top-off, tire pressure check, multi-point inspection",
+            "image": "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=600&q=80",
+            "imageAlt": "Oil change service",
+            "duration": "30-45 min",
+            "warranty": "6 months/5,000 miles",
+            "popular": true
+          },
+          {
+            "name": "Brake Service",
+            "price": 299,
+            "description": "Brake pad replacement (front or rear), rotor inspection, brake fluid flush if needed",
+            "image": "https://images.unsplash.com/photo-1625047509248-ec889cbff17f?w=600&q=80",
+            "imageAlt": "Brake service",
+            "duration": "2-3 hours",
+            "warranty": "2 years/24,000 miles",
+            "popular": true
+          },
+          {
+            "name": "Tire Rotation & Balance",
+            "price": 59,
+            "description": "Complete tire rotation, computerized balancing, alignment check included",
+            "image": "https://images.unsplash.com/photo-1625047509248-ec889cbff17f?w=600&q=80",
+            "imageAlt": "Tire rotation and balancing",
+            "duration": "45 min",
+            "warranty": "N/A"
+          },
+          {
+            "name": "Battery Replacement",
+            "price": 189,
+            "description": "Premium battery with 3-year warranty, corrosion cleaning, charging system test",
+            "image": "https://images.unsplash.com/photo-1625047509248-ec889cbff17f?w=600&q=80",
+            "imageAlt": "Battery replacement service",
+            "duration": "30 min",
+            "warranty": "3 years"
+          },
+          {
+            "name": "A/C Service",
+            "price": 149,
+            "description": "A/C system inspection, refrigerant recharge, leak detection, performance test",
+            "image": "https://images.unsplash.com/photo-1625047509248-ec889cbff17f?w=600&q=80",
+            "imageAlt": "A/C service and recharge",
+            "duration": "1-2 hours",
+            "warranty": "90 days"
+          }
+        ]
       },
       {
-        "title": "Brakes and suspension",
-        "description": "OEM or OEM-equivalent parts with lifetime pad warranty."
+        "id": "repair",
+        "name": "Repair Services",
+        "description": "Expert diagnosis and repair",
+        "items": [
+          {
+            "name": "Engine Diagnostics",
+            "price": 129,
+            "description": "Computer diagnostics with professional scan tool, comprehensive report, repair estimate",
+            "image": "https://images.unsplash.com/photo-1632823471565-1ecdf3cadd85?w=600&q=80",
+            "imageAlt": "Engine diagnostics",
+            "duration": "1 hour",
+            "popular": true
+          },
+          {
+            "name": "Transmission Service",
+            "price": 179,
+            "description": "Transmission fluid exchange, filter replacement, pan gasket, complete inspection",
+            "image": "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=600&q=80",
+            "imageAlt": "Transmission service",
+            "duration": "2-3 hours",
+            "warranty": "1 year/12,000 miles"
+          },
+          {
+            "name": "Timing Belt Replacement",
+            "price": 799,
+            "description": "Timing belt and related components, water pump inspection, pulleys and tensioners",
+            "image": "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=600&q=80",
+            "imageAlt": "Timing belt replacement",
+            "duration": "4-6 hours",
+            "warranty": "2 years/24,000 miles"
+          },
+          {
+            "name": "Exhaust System Repair",
+            "price": 249,
+            "description": "Exhaust leak repair, muffler or catalytic converter replacement, emissions compliance",
+            "image": "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=600&q=80",
+            "imageAlt": "Exhaust system repair",
+            "duration": "2-4 hours",
+            "warranty": "1 year/12,000 miles"
+          },
+          {
+            "name": "Suspension Repair",
+            "price": 399,
+            "description": "Shocks/struts replacement, alignment included, ride quality restoration",
+            "image": "https://images.unsplash.com/photo-1625047509248-ec889cbff17f?w=600&q=80",
+            "imageAlt": "Suspension repair service",
+            "duration": "3-4 hours",
+            "warranty": "2 years/24,000 miles"
+          }
+        ]
       },
       {
-        "title": "Engine and transmission",
-        "description": "Rebuilds, replacements, and preventative maintenance backed by warranty."
+        "id": "specialty",
+        "name": "Specialty Services",
+        "description": "Advanced automotive services",
+        "items": [
+          {
+            "name": "Pre-Purchase Inspection",
+            "price": 149,
+            "description": "Comprehensive 150-point inspection for used car buyers. Detailed report with photos.",
+            "image": "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=600&q=80",
+            "imageAlt": "Vehicle inspection",
+            "duration": "1.5 hours",
+            "popular": true
+          },
+          {
+            "name": "Performance Tuning",
+            "price": 599,
+            "description": "ECU tuning, performance upgrades, dyno testing available",
+            "image": "https://images.unsplash.com/photo-1632823471565-1ecdf3cadd85?w=600&q=80",
+            "imageAlt": "Performance tuning service",
+            "duration": "3-5 hours",
+            "warranty": "1 year"
+          },
+          {
+            "name": "Fleet Maintenance",
+            "price": 0,
+            "description": "Commercial fleet maintenance programs. Volume pricing, priority scheduling. Call for quote.",
+            "image": "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&q=80",
+            "imageAlt": "Fleet maintenance service",
+            "duration": "Varies"
+          },
+          {
+            "name": "Hybrid/Electric Vehicle Service",
+            "price": 199,
+            "description": "Specialized service for hybrid and electric vehicles by certified EV technicians",
+            "image": "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=600&q=80",
+            "imageAlt": "Hybrid and EV service",
+            "duration": "2-3 hours",
+            "warranty": "1 year"
+          }
+        ]
       },
       {
-        "title": "Fleet maintenance",
-        "description": "Customized service schedules and pickup and delivery for commercial fleets."
+        "id": "packages",
+        "name": "Service Packages",
+        "description": "Bundle and save",
+        "items": [
+          {
+            "name": "30K Mile Service",
+            "price": 299,
+            "description": "Oil change, tire rotation, brake inspection, fluid top-off, multi-point inspection",
+            "image": "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=600&q=80",
+            "imageAlt": "30K mile service package",
+            "duration": "2 hours",
+            "savings": "Save $50"
+          },
+          {
+            "name": "60K Mile Service",
+            "price": 599,
+            "description": "Major service: oil, filters, fluids, belts, hoses, complete inspection per manufacturer specs",
+            "image": "https://images.unsplash.com/photo-1625047509248-ec889cbff17f?w=600&q=80",
+            "imageAlt": "60K mile service package",
+            "duration": "3-4 hours",
+            "savings": "Save $100"
+          },
+          {
+            "name": "90K Mile Service",
+            "price": 899,
+            "description": "Comprehensive service including transmission, coolant, spark plugs, all filters, inspection",
+            "image": "https://images.unsplash.com/photo-1632823471565-1ecdf3cadd85?w=600&q=80",
+            "imageAlt": "90K mile service package",
+            "duration": "4-6 hours",
+            "savings": "Save $150"
+          }
+        ]
       }
     ]
   },
   "about": {
-    "title": "Your neighborhood service center",
-    "body": "Precision Auto Care combines dealership-level diagnostics with the personal attention of a family-run shop. Every technician is ASE certified, we use digital inspections to show you exactly what we see, and we never recommend a repair you do not need."
+    "title": "About Precision Auto Care",
+    "body": "Family-owned and operated since 2010, Precision Auto Care is your trusted partner for auto repair and maintenance. Our ASE-certified master technicians use state-of-the-art diagnostic equipment and quality parts to keep your vehicle running at its best. We believe in honest communication, fair pricing, and service that exceeds expectations.",
+    "subtitle": "Why choose us",
+    "features": [
+      "🏆 ASE-Certified Master Technicians",
+      "🔧 All Makes & Models",
+      "⚡ Same-Day Service Available",
+      "✅ 2-Year/24K Mile Warranty",
+      "📱 Digital Inspections with Photos",
+      "🚗 Courtesy Shuttle Service"
+    ]
   },
-  "testimonials": {
-    "title": "Drivers who trust us",
+  "specials": {
+    "title": "Current Specials",
+    "subtitle": "Limited-time offers",
     "items": [
       {
-        "text": "Transparent pricing and they texted photos of everything before doing the work.",
-        "author": "Jared P.",
-        "title": "Honda Owner"
+        "name": "Spring Oil Change Special",
+        "price": 49,
+        "description": "Full synthetic oil change with free multi-point inspection and tire rotation",
+        "availability": "Valid through end of month",
+        "image": "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=600&q=80",
+        "imageAlt": "Oil change special",
+        "savings": "Save $40"
       },
       {
-        "text": "Our delivery vans stay on the road thanks to their fleet maintenance program.",
-        "author": "Monique L.",
-        "title": "Operations Manager"
-      },
-      {
-        "text": "Finally a shop that listens. Repairs were finished the same day.",
-        "author": "Henry C.",
-        "title": "BMW Owner"
+        "name": "Brake Service Package",
+        "price": 279,
+        "description": "Brake pads, rotors if needed, brake fluid flush. Front or rear axle.",
+        "availability": "This Month Only",
+        "savings": "Save $70"
       }
     ]
   },
-  "pricing": {
-    "title": "Popular service specials",
-    "plans": [
+  "testimonials": {
+    "title": "Customer Reviews",
+    "subtitle": "What our customers are saying",
+    "items": [
       {
-        "name": "Digital Inspection + Oil Change",
-        "description": "Full synthetic oil, filter, and 40-point inspection with photos.",
-        "price": 89,
-        "cta": {
-          "label": "Book now",
-          "href": "https://cal.com/precision-auto"
-        }
+        "text": "Best auto shop I've ever used! They diagnosed the issue accurately, explained everything clearly, and the repair was done right the first time. Fair pricing and excellent service.",
+        "author": "Jennifer Park",
+        "location": "Verified Customer",
+        "rating": 5,
+        "date": "1 week ago",
+        "vehicle": "2019 Honda Accord",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&q=80",
+        "imageAlt": "Jennifer Park"
       },
       {
-        "name": "Brake Package",
-        "description": "Pads, rotors, and fluid flush for most sedans and SUVs.",
-        "price": 279,
-        "cta": {
-          "label": "Check availability",
-          "href": "#contact"
-        }
+        "text": "I've been bringing my cars here for 5 years. The technicians are knowledgeable, honest, and they stand behind their work. The warranty gives me peace of mind. Highly recommend!",
+        "author": "Michael Chen",
+        "location": "Verified Customer",
+        "rating": 5,
+        "date": "2 weeks ago",
+        "vehicle": "2020 Toyota Camry",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80",
+        "imageAlt": "Michael Chen"
       },
       {
-        "name": "Fleet PM Plan",
-        "description": "Monthly maintenance for up to 10 vehicles with priority scheduling.",
-        "price": 129,
-        "cta": {
-          "label": "Enroll fleet",
-          "href": "#contact"
-        }
+        "text": "Had a complex transmission issue and they diagnosed and fixed it perfectly. Great communication throughout the process and reasonable pricing. These guys know what they're doing!",
+        "author": "David Martinez",
+        "location": "Verified Customer",
+        "rating": 5,
+        "date": "3 weeks ago",
+        "vehicle": "2018 Ford F-150",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "imageAlt": "David Martinez"
       }
+    ],
+    "stats": {
+      "averageRating": 4.9,
+      "totalReviews": 743,
+      "googleRating": 4.9,
+      "customerRetention": "92%"
+    }
+  },
+  "team": {
+    "title": "Meet Our Technicians",
+    "subtitle": "ASE-certified professionals",
+    "members": [
+      {
+        "name": "Tom Anderson",
+        "title": "Owner & Master Technician",
+        "bio": "Tom is an ASE Master Certified technician with 25+ years of experience. He founded Precision Auto Care to provide honest, expert service to the community.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "Tom Anderson",
+        "credentials": [
+          "ASE Master Certified",
+          "25+ Years Experience",
+          "Shop Owner"
+        ]
+      },
+      {
+        "name": "Carlos Rodriguez",
+        "title": "Lead Diagnostic Technician",
+        "bio": "Carlos specializes in complex diagnostics and electrical systems. His expertise with modern computerized vehicles is second to none.",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+        "imageAlt": "Carlos Rodriguez",
+        "credentials": [
+          "ASE Certified",
+          "Advanced Diagnostics",
+          "15+ Years Experience"
+        ]
+      },
+      {
+        "name": "Mike Johnson",
+        "title": "Master Technician",
+        "bio": "Mike handles everything from routine maintenance to engine rebuilds. His attention to detail ensures every job is done right.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "Mike Johnson",
+        "credentials": [
+          "ASE Master Certified",
+          "Engine Specialist",
+          "18+ Years Experience"
+        ]
+      }
+    ]
+  },
+  "credentials": {
+    "title": "Certifications & Trust",
+    "items": [
+      {
+        "icon": "🏆",
+        "name": "ASE Master Certified",
+        "description": "All Technicians Certified"
+      },
+      {
+        "icon": "⭐",
+        "name": "Top Rated",
+        "description": "4.9 Stars on Google"
+      },
+      {
+        "icon": "✅",
+        "name": "2-Year Warranty",
+        "description": "24K Mile Coverage"
+      },
+      {
+        "icon": "🔧",
+        "name": "All Makes & Models",
+        "description": "Expert Service"
+      }
+    ]
+  },
+  "gallery": {
+    "title": "Quality Work",
+    "subtitle": "Professional repairs and maintenance",
+    "categories": [
+      {
+        "name": "Maintenance",
+        "images": [
+          {
+            "url": "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=800&q=80",
+            "alt": "Oil change and fluid service"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1625047509248-ec889cbff17f?w=800&q=80",
+            "alt": "Tire and brake maintenance"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1632823471565-1ecdf3cadd85?w=800&q=80",
+            "alt": "Diagnostic and inspection"
+          }
+        ]
+      },
+      {
+        "name": "Repairs",
+        "images": [
+          {
+            "url": "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80",
+            "alt": "Engine and major repairs"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=800&q=80",
+            "alt": "Vehicle inspection and diagnostics"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1625047509248-ec889cbff17f?w=800&q=80",
+            "alt": "Brake and suspension repairs"
+          }
+        ]
+      },
+      {
+        "name": "Facility",
+        "images": [
+          {
+            "url": "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80",
+            "alt": "Service bays and equipment"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=800&q=80",
+            "alt": "Professional work environment"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1632823471565-1ecdf3cadd85?w=800&q=80",
+            "alt": "Advanced diagnostic equipment"
+          }
+        ]
+      }
+    ]
+  },
+  "warranty": {
+    "title": "Industry-Leading Warranty",
+    "subtitle": "We stand behind our work",
+    "description": "All repairs come with our 2-year/24,000-mile warranty—one of the best in the industry. If you have any issues with our work, we'll make it right.",
+    "features": [
+      "2-year or 24,000-mile coverage",
+      "Nationwide warranty honor",
+      "Parts and labor included",
+      "No-hassle claims process"
     ]
   },
   "contact": {
-    "title": "Ready to keep you moving",
-    "subtitle": "Open Monday through Saturday with early bird drop-off and after-hours pickup.",
+    "title": "Visit Our Shop",
+    "subtitle": "Schedule your service today",
+    "phone": "(555) 012-3456",
     "email": "service@precisionautocare.com",
-    "phone": "+1-555-987-1234"
+    "address": "789 Auto Plaza, Bay 5, Detroit, MI 48201",
+    "coordinates": {
+      "lat": 42.3314,
+      "lng": -83.0458
+    },
+    "parking": "Customer parking available • Waiting area with WiFi",
+    "accessibility": "Wheelchair accessible facility",
+    "hours": {
+      "title": "Hours",
+      "items": [
+        "Monday - Friday: 7:30 AM - 6:00 PM",
+        "Saturday: 8:00 AM - 4:00 PM",
+        "Sunday: Closed"
+      ],
+      "note": "Drop-off service available • Courtesy shuttle"
+    }
+  },
+  "social": {
+    "facebook": "https://facebook.com/precisionautocare",
+    "instagram": "https://instagram.com/precisionautocare",
+    "yelp": "https://yelp.com/biz/precisionautocare",
+    "googleMaps": "https://maps.google.com/precisionautocare"
+  },
+  "stats": {
+    "items": [
+      {
+        "number": "4.9",
+        "label": "Star Rating"
+      },
+      {
+        "number": "ASE",
+        "label": "Certified"
+      },
+      {
+        "number": "2yr/24K",
+        "label": "Warranty"
+      },
+      {
+        "number": "13+",
+        "label": "Years Trusted"
+      }
+    ]
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "items": [
+      {
+        "question": "Do I need an appointment?",
+        "answer": "Appointments are recommended for faster service, but we accept walk-ins based on availability. For oil changes and quick services, we often have same-day availability."
+      },
+      {
+        "question": "What's your warranty coverage?",
+        "answer": "We offer a 2-year/24,000-mile warranty on all repairs—one of the best in the industry. This covers both parts and labor, and it's honored nationwide."
+      },
+      {
+        "question": "Do you work on all makes and models?",
+        "answer": "Yes! Our ASE-certified technicians are trained to work on all domestic and foreign vehicles, from economy cars to luxury vehicles and trucks."
+      },
+      {
+        "question": "How long do repairs take?",
+        "answer": "It depends on the service. Oil changes take 30-45 minutes, while major repairs may require several hours or days. We'll provide a time estimate when you drop off your vehicle."
+      },
+      {
+        "question": "Do you provide loaner cars?",
+        "answer": "We offer a courtesy shuttle service within a 10-mile radius. For longer repairs, we can help arrange rental cars at discounted rates."
+      },
+      {
+        "question": "Can I wait while my car is serviced?",
+        "answer": "Absolutely! We have a comfortable waiting area with WiFi, coffee, and TV. For quick services like oil changes, most customers choose to wait."
+      },
+      {
+        "question": "Do you offer financing?",
+        "answer": "Yes, we offer financing options for larger repairs through our partners. Ask our service advisors for details and approval is usually quick."
+      },
+      {
+        "question": "What if I need emergency service?",
+        "answer": "Call us immediately! We'll do our best to accommodate emergencies. For after-hours emergencies, leave a message and we'll respond first thing in the morning."
+      }
+    ]
   },
   "footer": {
-    "text": "Precision Auto Care. Nationwide warranty through TechNet."
+    "text": "🔧 Precision Auto Care • ASE-Certified Excellence Since 2010",
+    "links": [
+      {
+        "label": "Schedule Service",
+        "href": "#booking"
+      },
+      {
+        "label": "Services",
+        "href": "#services"
+      },
+      {
+        "label": "Specials",
+        "href": "#specials"
+      },
+      {
+        "label": "Contact",
+        "href": "#contact"
+      }
+    ],
+    "awards": [
+      "ASE Master Certified",
+      "4.9 Star Rated",
+      "2-Year Warranty",
+      "Family Owned"
+    ]
   },
-  "pages": [
-    {
-      "slug": "fleet-program",
-      "title": "Fleet Program",
-      "body": "# Fleet maintenance\nPriority scheduling\nMonthly reporting\nPickup and delivery\nCustom maintenance plans"
-    },
-    {
-      "slug": "warranty",
-      "title": "Warranty",
-      "body": "# Peace of mind\n24-month/24,000 mile nationwide warranty\nRoadside assistance included\nDigital service history archived for every vehicle"
-    }
-  ],
-  "products": [
-    {
-      "name": "Battery and Charging Test",
-      "price": 49,
-      "description": "Computerized load test with printout and terminal cleaning."
-    },
-    {
-      "name": "AC Performance Service",
-      "price": 169,
-      "description": "Evacuation, recharge, dye, and leak test for most systems."
-    },
-    {
-      "name": "Alignment and Tire Health",
-      "price": 109,
-      "description": "Four-wheel alignment with tire rotation and tread depth report."
-    }
-  ],
   "settings": {
     "allowCheckout": false,
-    "allowOrders": true,
-    "orderNotificationEmail": "service@precisionautocare.com",
-    "productCta": "Schedule Service",
-    "productCtaHref": "tel:+15559871234",
-    "productNote": "Submit your service request and we'll contact you within 24 hours to schedule your appointment."
-  },
-  "productsTitle": "Featured Services",
-  "productsSubtitle": "Professional auto care with transparent pricing"
+    "allowOrders": false,
+    "bookingEnabled": true,
+    "bookingWidget": "native",
+    "tier": "Pro"
+  }
 }

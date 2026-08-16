@@ -354,21 +354,21 @@ describe('Stripe Checkout Integration', () => {
         payment_method_types: ['card', 'paypal', 'link'],
         mode: 'payment',
         payment_intent_data: {
-          application_fee_amount: platformFee,
-          transfer_data: {
-            destination: 'acct_connected_account'
-          }
+          application_fee_amount: platformFee
         }
       };
 
-      await mockStripe.checkout.sessions.create(sessionParams);
+      await mockStripe.checkout.sessions.create(sessionParams, {
+        stripeAccount: 'acct_connected_account'
+      });
       
       expect(mockStripe.checkout.sessions.create).toHaveBeenCalledWith(
         expect.objectContaining({
           payment_intent_data: expect.objectContaining({
             application_fee_amount: platformFee
           })
-        })
+        }),
+        expect.objectContaining({ stripeAccount: 'acct_connected_account' })
       );
     });
 

@@ -9,8 +9,16 @@ export function errorHandler(err, req, res, next) {
     const statusCode = err.statusCode || 500;
     const message = err.message || 'Internal Server Error';
 
-    res.status(statusCode).json({
-        error: message,
-        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-    });
+    const response = {
+        success: false,
+        error: message
+    };
+
+    // Only include stack traces if explicitly enabled via env var (never expose in production)
+    const exposeDetails = process.env.NODE_ENV === 'development' && process.env.EXPOSE_ERROR_DETAILS === 'true';
+    if (exposeDetails) {
+        response.stack = err.stack;
+    }
+
+    res.status(statusCode).json(response);
 }

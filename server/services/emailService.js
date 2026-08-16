@@ -47,6 +47,13 @@ export class EmailService {
 
     // Email template registry
     this.templates = this.initializeTemplates();
+
+    // Email throttling: daily limits per site
+    this.DAILY_EMAIL_LIMITS = {
+      perSite: 500,
+      perUser: 100
+    };
+    this.emailCounts = deps.emailCounts || new Map();
   }
 
   /**
@@ -99,6 +106,13 @@ export class EmailService {
     return {
       welcome: (data) => this.renderWelcomeTemplate(data),
       orderReceived: (data) => this.renderOrderReceivedTemplate(data),
+      orderConfirmation: (data) => this.renderOrderConfirmationTemplate(data),
+      orderPaymentFailed: (data) => this.renderOrderPaymentFailedTemplate(data),
+      newOrder: (data) => this.renderNewOrderTemplate(data),
+      paymentFailed: (data) => this.renderPaymentFailedTemplate(data),
+      subscriptionCanceled: (data) => this.renderSubscriptionCanceledTemplate(data),
+      refundConfirmation: (data) => this.renderRefundConfirmationTemplate(data),
+      bookingPaymentFailed: (data) => this.renderBookingPaymentFailedTemplate(data),
       contactFormSubmission: (data) => this.renderContactFormTemplate(data),
       trialExpiring: (data) => this.renderTrialExpiringTemplate(data),
       subscriptionCreated: (data) => this.renderSubscriptionTemplate(data)
@@ -132,7 +146,7 @@ export class EmailService {
           </div>
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${siteUrl}/dashboard.html" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; text-decoration: none; border-radius: 10px; font-weight: 600;">
+            <a href="${siteUrl}/dashboard" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; text-decoration: none; border-radius: 10px; font-weight: 600;">
               Go to Dashboard
             </a>
           </div>
@@ -175,31 +189,265 @@ export class EmailService {
   }
 
   /**
+   * Render order confirmation email template
+   */
+  renderOrderConfirmationTemplate(data) {
+    const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
+    const itemsHtml = Array.isArray(data.items) 
+      ? data.items.map(item => `
+        <tr style="border-bottom: 1px solid #e2e8f0;">
+          <td style="padding: 12px; text-align: left; color: #64748b;">${item.name || 'Item'}</td>
+          <td style="padding: 12px; text-align: right; color: #64748b;">$${(item.price / 100).toFixed(2)}</td>
+        </tr>
+      `).join('')
+      : '';
+
+    return {
+      subject: `Order Confirmation - Order #${data.orderId || 'N/A'}`,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #059669; margin: 0; font-size: 1.8rem;">Order Confirmed! ✅</h1>
+          </div>
+          
+          <div style="background: #f0fdf4; border: 2px solid #059669; border-radius: 12px; padding: 30px; margin-bottom: 20px;">
+            <p style="font-size: 1.1rem; color: #1e293b; line-height: 1.6; margin: 0 0 15px 0;">
+              Thank you for your purchase!
+            </p>
+            <p style="color: #64748b; margin: 0 0 20px 0;">
+              <strong style="color: #1e293b;">Order Number:</strong> ${data.orderId || 'N/A'}
+            </p>
+            
+            ${itemsHtml ? `
+            <div style="margin: 20px 0;">
+              <strong style="color: #1e293b;">Order Items:</strong>
+              <table style="width: 100%; margin-top: 10px; border-collapse: collapse;">
+                ${itemsHtml}
+              </table>
+            </div>
+            ` : ''}
+            
+            <div style="text-align: right; padding-top: 20px; border-top: 2px solid #dcfce7;">
+              <p style="color: #64748b; margin: 10px 0 0 0;">
+                <strong style="color: #1e293b;">Total:</strong> $${(data.amount / 100).toFixed(2)}
+              </p>
+            </div>
+          </div>
+          
+          <div style="background: #f8fafc; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+            <p style="color: #64748b; margin: 0;">
+              We'll get your order ready and send you a shipping update soon. If you have any questions, please don't hesitate to reach out!
+            </p>
+          </div>
+        </div>
+      `,
+      provider: 'resend'
+    };
+  }
+
+  /**
+   * Render new order notification email template (for site owner)
+   */
+  renderNewOrderTemplate(data) {
+    const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
+    return {
+      subject: `New Order Received - Order #${data.orderId || 'N/A'}`,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 1.8rem;">New Order! 🎉</h1>
+          </div>
+          
+          <div style="background: #eff6ff; border: 2px solid #2563eb; border-radius: 12px; padding: 30px; margin-bottom: 20px;">
+            <p style="font-size: 1.1rem; color: #1e293b; line-height: 1.6; margin: 0 0 15px 0;">
+              You have a new order!
+            </p>
+            <p style="color: #64748b; margin: 0 0 15px 0;">
+              <strong style="color: #1e293b;">Order Number:</strong> ${data.orderId || 'N/A'}
+            </p>
+            <p style="color: #64748b; margin: 0 0 15px 0;">
+              <strong style="color: #1e293b;">Customer Email:</strong> ${data.customerEmail || 'N/A'}
+            </p>
+            <p style="color: #64748b; margin: 0 0 20px 0;">
+              <strong style="color: #1e293b;">Amount:</strong> $${(data.amount / 100).toFixed(2)}
+            </p>
+            
+            <div style="text-align: center; margin: 20px 0;">
+              <a href="${siteUrl}/admin/orders" style="display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
+                View Order Details
+              </a>
+            </div>
+          </div>
+        </div>
+      `,
+      provider: 'resend'
+    };
+  }
+
+  /**
+   * Render order payment failed email template
+   */
+  renderOrderPaymentFailedTemplate(data) {
+    return {
+      subject: `Payment Failed - Order #${data.orderId || 'N/A'}`,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #dc2626; margin: 0; font-size: 1.8rem;">Payment Issue ⚠️</h1>
+          </div>
+          
+          <div style="background: #fef2f2; border: 2px solid #dc2626; border-radius: 12px; padding: 30px; margin-bottom: 20px;">
+            <p style="font-size: 1.1rem; color: #1e293b; line-height: 1.6; margin: 0 0 15px 0;">
+              Unfortunately, your payment could not be processed.
+            </p>
+            <p style="color: #64748b; margin: 0 0 20px 0;">
+              Order #: ${data.orderId || 'N/A'}
+            </p>
+            <p style="color: #64748b; margin: 0;">
+              Please try again or contact our support team if you continue to experience issues.
+            </p>
+          </div>
+        </div>
+      `,
+      provider: 'resend'
+    };
+  }
+
+  /**
+   * Render general payment failed template
+   */
+  renderPaymentFailedTemplate(data) {
+    return this.renderOrderPaymentFailedTemplate(data);
+  }
+
+  /**
+   * Render subscription canceled template
+   */
+  renderSubscriptionCanceledTemplate(data) {
+    return {
+      subject: 'Your Subscription Has Been Canceled',
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #dc2626; margin: 0; font-size: 1.8rem;">Subscription Canceled</h1>
+          </div>
+          
+          <div style="background: #fef2f2; border-radius: 12px; padding: 30px; margin-bottom: 20px;">
+            <p style="color: #64748b; margin: 0;">
+              Your subscription has been canceled as requested. If you change your mind, you can reactivate it anytime from your account dashboard.
+            </p>
+          </div>
+        </div>
+      `,
+      provider: 'resend'
+    };
+  }
+
+  /**
+   * Render refund confirmation template
+   */
+  renderRefundConfirmationTemplate(data) {
+    return {
+      subject: `Refund Processed - Order #${data.orderId || 'N/A'}`,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #059669; margin: 0; font-size: 1.8rem;">Refund Processed ✅</h1>
+          </div>
+          
+          <div style="background: #f0fdf4; border: 2px solid #059669; border-radius: 12px; padding: 30px; margin-bottom: 20px;">
+            <p style="font-size: 1.1rem; color: #1e293b; line-height: 1.6; margin: 0 0 15px 0;">
+              Your refund has been processed.
+            </p>
+            <p style="color: #64748b; margin: 0 0 15px 0;">
+              <strong style="color: #1e293b;">Order Number:</strong> ${data.orderId || 'N/A'}
+            </p>
+            <p style="color: #64748b; margin: 0;">
+              <strong style="color: #1e293b;">Refund Amount:</strong> $${(data.amount / 100).toFixed(2)}
+            </p>
+            <p style="color: #64748b; margin: 15px 0 0 0;">
+              The refund should appear in your account within 5-10 business days.
+            </p>
+          </div>
+        </div>
+      `,
+      provider: 'resend'
+    };
+  }
+
+  /**
+   * Render booking payment failed template
+   */
+  renderBookingPaymentFailedTemplate(data) {
+    return {
+      subject: `Payment Failed - Appointment #${data.appointmentId || 'N/A'}`,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #dc2626; margin: 0; font-size: 1.8rem;">Payment Issue ⚠️</h1>
+          </div>
+          
+          <div style="background: #fef2f2; border: 2px solid #dc2626; border-radius: 12px; padding: 30px; margin-bottom: 20px;">
+            <p style="font-size: 1.1rem; color: #1e293b; line-height: 1.6; margin: 0 0 15px 0;">
+              Unfortunately, we could not process your payment for your appointment.
+            </p>
+            <p style="color: #64748b; margin: 0 0 20px 0;">
+              Appointment: ${data.appointmentId || 'N/A'}
+            </p>
+            <p style="color: #64748b; margin: 0;">
+              Please try again or contact our support team if you continue to experience issues.
+            </p>
+          </div>
+        </div>
+      `,
+      provider: 'resend'
+    };
+  }
+
+  /**
+   * Escape user-controlled strings for HTML email bodies
+   */
+  escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  /**
    * Render contact form submission email template
    */
   renderContactFormTemplate(data) {
+    const businessName = this.escapeHtml(data.businessName || 'Your Site');
+    const submitterName = this.escapeHtml(data.submitterName || 'Unknown');
+    const submitterEmail = this.escapeHtml(data.submitterEmail || 'No email provided');
+    const submitterPhone = this.escapeHtml(data.submitterPhone || 'No phone provided');
+    const message = this.escapeHtml(data.message || 'No message');
+
     return {
       subject: `New Contact Form Submission - ${data.businessName || 'Your Site'}`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #2563eb; margin: 0; font-size: 1.8rem;">New Contact Form Submission 📧</h1>
+            <h1 style="color: #2563eb; margin: 0; font-size: 1.8rem;">New Contact Form Submission</h1>
           </div>
           
           <div style="background: #f8fafc; border-radius: 12px; padding: 30px; margin-bottom: 20px;">
             <p style="color: #64748b; margin: 0 0 15px 0;">
-              <strong style="color: #1e293b;">From:</strong> ${data.submitterName || 'Unknown'}
+              <strong style="color: #1e293b;">From:</strong> ${submitterName}
             </p>
             <p style="color: #64748b; margin: 0 0 15px 0;">
-              <strong style="color: #1e293b;">Email:</strong> ${data.submitterEmail || 'No email provided'}
+              <strong style="color: #1e293b;">Email:</strong> ${submitterEmail}
             </p>
             <p style="color: #64748b; margin: 0 0 15px 0;">
-              <strong style="color: #1e293b;">Phone:</strong> ${data.submitterPhone || 'No phone provided'}
+              <strong style="color: #1e293b;">Phone:</strong> ${submitterPhone}
             </p>
             <div style="margin-top: 20px; padding: 15px; background: white; border-radius: 8px;">
               <strong style="color: #1e293b;">Message:</strong>
               <p style="color: #64748b; margin: 10px 0 0 0; white-space: pre-wrap;">
-                ${data.message || 'No message'}
+                ${message}
               </p>
             </div>
           </div>
@@ -274,6 +522,32 @@ export class EmailService {
   }
 
   /**
+   * Check if email can be sent (daily limit check)
+   * 
+   * @param {string} siteId - Site ID (optional, for per-site limits)
+   * @returns {boolean} True if email can be sent
+   */
+  canSendEmail(siteId = null) {
+    if (!siteId) {
+      // If no siteId, allow (for system emails)
+      return true;
+    }
+
+    const today = new Date().toDateString();
+    const key = `${siteId}:${today}`;
+    const count = this.emailCounts.get(key) || 0;
+
+    if (count >= this.DAILY_EMAIL_LIMITS.perSite) {
+      this.logger.warn(`Email limit reached for site ${siteId}: ${count}/${this.DAILY_EMAIL_LIMITS.perSite}`);
+      return false;
+    }
+
+    // Increment count
+    this.emailCounts.set(key, count + 1);
+    return true;
+  }
+
+  /**
    * Main email sending method
    * 
    * @param {Object} options - Email options
@@ -281,6 +555,7 @@ export class EmailService {
    * @param {string} options.template - Template name
    * @param {Object} options.data - Template data
    * @param {string} options.provider - Provider override (optional)
+   * @param {string} options.siteId - Site ID for rate limiting (optional)
    * @returns {Promise<Object>} Result object { success, messageId, provider, error }
    */
   async sendEmail(options) {
@@ -295,6 +570,16 @@ export class EmailService {
     // Check if template exists
     if (!this.templates[options.template]) {
       throw new Error(`Unknown email template: ${options.template}`);
+    }
+
+    // Check daily email limit (if siteId provided)
+    if (options.siteId && !this.canSendEmail(options.siteId)) {
+      this.logger.warn(`Email send blocked: daily limit reached for site ${options.siteId}`);
+      return {
+        success: false,
+        error: 'Daily email limit reached for this site. Please try again tomorrow.',
+        limitReached: true
+      };
     }
 
     // If queue is enabled, add to queue instead of sending directly
@@ -348,11 +633,11 @@ export class EmailService {
    */
   selectProvider(options, renderedEmail) {
     const provider = options.provider || renderedEmail.provider || this.config.defaultProvider;
-    
+
     if (!this.providers[provider]) {
       throw new Error(`No email provider configured: ${provider}`);
     }
-    
+
     return provider;
   }
 
@@ -434,7 +719,7 @@ export class EmailService {
     try {
       const renderedEmail = this.renderTemplate(options);
       const provider = this.selectProvider(options, renderedEmail);
-      
+
       const result = await this.sendViaProvider(provider, {
         to: options.to,
         subject: renderedEmail.subject,

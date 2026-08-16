@@ -49,6 +49,9 @@ class BookingWidget {
       return;
     }
 
+    // Fetch business mode configuration
+    await this.loadBusinessMode();
+
     // Attempt to embed iframe if embedMode is true
     if (this.config.embedMode) {
       // Show loading skeleton
@@ -63,6 +66,98 @@ class BookingWidget {
     } else {
       // Just show the external link
       this.showFallbackLink();
+    }
+  }
+
+  /**
+   * Load business mode configuration and wire solo/team UI
+   */
+  async loadBusinessMode() {
+    try {
+      const tenantId = this.config.tenantId || this.extractTenantId();
+      if (!tenantId) return;
+
+      const response = await fetch(`/api/business-mode/${tenantId}`);
+      if (!response.ok) {
+        console.warn('Failed to load business mode config');
+        return;
+      }
+
+      const modeConfig = await response.json();
+      this.config.businessMode = modeConfig.business_mode || 'team';
+      this.config.staffSelectionEnabled = modeConfig.staff_selection_enabled !== false;
+
+      // Wire UI based on business mode
+      this.configureStaffSelector();
+    } catch (error) {
+      console.warn('Business mode loading failed:', error);
+      // Continue with default behavior
+    }
+  }
+
+  /**
+   * Configure staff selector visibility based on business mode
+   */
+  configureStaffSelector() {
+    const staffSelector = document.getElementById('staff-selector');
+    const ownerName = document.getElementById('owner-name');
+
+    if (!staffSelector || !ownerName) return;
+
+    if (this.config.businessMode === 'solo' || !this.config.staffSelectionEnabled) {
+      // Solo mode: hide staff selector, show owner's name
+      staffSelector.style.display = 'none';
+      ownerName.style.display = 'block';
+      if (this.config.ownerName) {
+        ownerName.textContent = `Book with ${this.config.ownerName}`;
+      }
+    } else {
+      // Team mode: show staff selector
+      staffSelector.style.display = 'block';
+      ownerName.style.display = 'none';
+      if (this.config.tenantId) {
+        this.loadStaffList(this.config.tenantId);
+      }
+    }
+  }
+
+  /**
+   * Extract tenant ID from config or current page
+   */
+  extractTenantId() {
+    if (this.config.tenantId) return this.config.tenantId;
+    if (this.config.subdomain) return this.config.subdomain;
+    
+    // Fallback: try to extract from window location
+    try {
+      const parts = window.location.hostname.split('.');
+      return parts[0];
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /**
+   * Load staff list for team mode
+   */
+  async loadStaffList(tenantId) {
+    try {
+      const response = await fetch(`/api/staff/${tenantId}`);
+      if (!response.ok) return;
+
+      const data = await response.json();
+      const select = document.getElementById('stylist-select');
+      if (!select || !data.staff) return;
+
+      // Add staff options
+      data.staff.forEach(staff => {
+        const option = document.createElement('option');
+        option.value = staff.id;
+        option.textContent = `${staff.name}${staff.specialty ? ` - ${staff.specialty}` : ''}`;
+        select.appendChild(option);
+      });
+    } catch (error) {
+      console.warn('Failed to load staff list:', error);
     }
   }
 

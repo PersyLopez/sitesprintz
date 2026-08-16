@@ -8,57 +8,83 @@
 import { prisma } from '../../database/db.js';
 import { SimpleCache } from '../utils/cache.js';
 
-// Plan feature limits (imported from existing subscriptionVerification.js)
+// Plan feature limits (trial + starter + growth)
 export const PLAN_LIMITS = {
-  free: {
-    templates: ['starter-1', 'starter-2', 'starter-3'],
+  trial: {
+    templates: ['*'],
     maxSites: 1,
-    customDomain: false,
-    analytics: false,
-    support: 'community',
-    stripeFee: 0.05
-  },
-  starter: {
-    templates: ['*'], // All starter templates
-    maxSites: 1,
+    maxProducts: 0,
+    maxOrdersPerMonth: 0,
     customDomain: false,
     analytics: false,
     booking: false,
     payments: false,
+    orderManagement: false,
+    removeBranding: false,
+    support: 'community',
+    stripeFee: 0.05
+  },
+  starter: {
+    templates: ['*'],
+    maxSites: 1,
+    maxProducts: 30,
+    maxOrdersPerMonth: 0,
+    customDomain: false,
+    analytics: false,
+    booking: false,
+    payments: false,
+    orderManagement: false,
+    removeBranding: false,
     support: 'email',
     stripeFee: 0.05
   },
   growth: {
-    templates: ['*'], // All starter templates
-    maxSites: 3,
-    customDomain: false,
-    analytics: 'basic',
+    templates: ['*'],
+    maxSites: 5,
+    maxProducts: -1,
+    maxOrdersPerMonth: -1,
+    customDomain: true,
+    analytics: 'advanced',
     booking: true,
-    payments: false,
+    payments: true,
+    orderManagement: true,
+    removeBranding: true,
     support: 'email',
     stripeFee: 0.05
-  },
-  pro: {
-    templates: ['*'], // All templates
-    maxSites: 10,
-    customDomain: true,
-    analytics: true,
-    booking: true,
-    payments: true,
-    support: 'email',
-    stripeFee: 0
-  },
-  enterprise: {
-    templates: ['*'],
-    maxSites: -1, // Unlimited
-    customDomain: true,
-    analytics: true,
-    booking: true,
-    payments: true,
-    support: 'priority',
-    stripeFee: 0
   }
 };
+
+/**
+ * Normalize legacy tier names to official tier names
+ * @param {string} tierName - Tier name (may be legacy)
+ * @returns {string} Official tier name
+ */
+export function normalizeTierName(tierName) {
+  if (!tierName) return 'trial';
+
+  const normalized = tierName.toLowerCase();
+
+  const legacyMapping = {
+    free: 'trial',
+    pro: 'growth',
+    premium: 'growth',
+    enterprise: 'growth',
+    business: 'growth',
+    checkout: 'growth'
+  };
+
+  return legacyMapping[normalized] || normalized;
+}
+
+/**
+ * Get plan limits with legacy name support
+ * @param {string} planName - Plan name (may be legacy)
+ * @returns {object} Plan limits
+ */
+export function getPlanLimits(planName) {
+  const normalizedPlan = normalizeTierName(planName);
+  return PLAN_LIMITS[normalizedPlan] || PLAN_LIMITS.trial;
+}
 
 export class SubscriptionService {
   constructor(db = null, stripe = null, cache = null) {
@@ -180,8 +206,8 @@ export class SubscriptionService {
         };
       }
 
-      const plan = subscription.plan || 'free';
-      const limits = PLAN_LIMITS[plan] || PLAN_LIMITS.free;
+      const plan = subscription.plan || 'trial';
+      const limits = PLAN_LIMITS[plan] || PLAN_LIMITS.trial || PLAN_LIMITS.free;
 
       // Check template access
       if (limits.templates.includes('*')) {
@@ -216,8 +242,8 @@ export class SubscriptionService {
   async canCreateSite(userId) {
     try {
       const subscription = await this.getSubscriptionStatus(userId);
-      const plan = subscription.plan || 'free';
-      const limits = PLAN_LIMITS[plan] || PLAN_LIMITS.free;
+      const plan = subscription.plan || 'trial';
+      const limits = PLAN_LIMITS[plan] || PLAN_LIMITS.trial || PLAN_LIMITS.free;
 
       // Unlimited sites for enterprise
       if (limits.maxSites === -1) {

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
 import './Auth.css';
 
 function Login() {
@@ -37,7 +38,7 @@ function Login() {
       ...formData,
       [name]: value,
     });
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors({
@@ -121,7 +122,7 @@ function Login() {
   };
 
   return (
-    <div className="auth-page">
+    <div className="auth-page story-public">
       <Header />
 
       <div className="auth-container">
@@ -156,6 +157,7 @@ function Login() {
                 aria-invalid={errors.email && touched.email ? 'true' : 'false'}
                 aria-describedby={errors.email && touched.email ? 'email-error' : undefined}
                 className={errors.email && touched.email ? 'error' : ''}
+                data-testid="login-email"
               />
               {errors.email && touched.email && (
                 <div className="form-error" id="email-error" role="alert">
@@ -182,6 +184,7 @@ function Login() {
                 aria-invalid={errors.password && touched.password ? 'true' : 'false'}
                 aria-describedby={errors.password && touched.password ? 'password-error' : undefined}
                 className={errors.password && touched.password ? 'error' : ''}
+                data-testid="login-password"
               />
               {errors.password && touched.password && (
                 <div className="form-error" id="password-error" role="alert">
@@ -201,6 +204,7 @@ function Login() {
               type="submit"
               className="btn btn-primary btn-full"
               disabled={loading}
+              data-testid="login-submit"
             >
               {loading ? (
                 <>
@@ -241,6 +245,7 @@ function Login() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

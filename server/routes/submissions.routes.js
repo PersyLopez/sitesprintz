@@ -7,7 +7,7 @@
 
 import express from 'express';
 import { requireAuth } from '../middleware/auth.js';
-import emailService from '../utils/email-service-wrapper.js';
+import { sendEmail, EmailTypes } from '../utils/email-service-wrapper.js';
 import { prisma } from '../../database/db.js';
 import {
   sendSuccess,
@@ -15,13 +15,13 @@ import {
   sendBadRequest,
   sendForbidden,
   sendNotFound,
-  sendServerError,
   asyncHandler
 } from '../utils/apiResponse.js';
 import {
   validateEmail,
   validatePhone,
   sanitizeString,
+  sanitizeCustomFields,
   generateSecureId
 } from '../utils/validators.js';
 
@@ -105,36 +105,42 @@ router.post('/contact', asyncHandler(async (req, res) => {
   const businessName = siteData.brand?.name || 'Your Business';
 
   // Create submission
-  const submissionId = generateSecureId('sub');
   const sanitizedName = sanitizeString(name || '', 200);
   const sanitizedMessage = sanitizeString(message, 2000);
+  const sanitizedPhone = phone ? sanitizeString(String(phone), 40) : null;
+  const formType = sanitizeString(type || 'contact', 50) || 'contact';
+  const custom = sanitizeCustomFields(otherFields);
 
   const submission = await prisma.submissions.create({
     data: {
       site_id: site.id,
-      form_type: type || 'contact',
-      name: sanitizedName,
-      email: emailValidation.value,
-      phone: phone || null,
-      message: sanitizedMessage,
+      form_type: formType,
+      data: {
+        name: sanitizedName,
+        email: emailValidation.value,
+        phone: sanitizedPhone,
+        message: sanitizedMessage,
+        ...(Object.keys(custom).length > 0 ? { custom } : {})
+      },
       status: 'unread',
-      custom_data: Object.keys(otherFields).length > 0 ? otherFields : null,
       created_at: new Date()
     }
   });
 
-  // Send notification email (non-blocking)
-  if (siteOwnerEmail) {
-    emailService.sendContactFormEmail({
-      to: siteOwnerEmail,
-      businessName,
-      formData: {
-        name: sanitizedName || 'Someone',
-        email: emailValidation.value,
-        phone: phone || 'Not provided',
-        message: sanitizedMessage
-      }
-    }).catch(err => {
+  // Send notification email (non-blocking; never fail the submission on email errors)
+  if (siteOwnerEmail && typeof sendEmail === 'function') {
+    Promise.resolve(
+      sendEmail(siteOwnerEmail, EmailTypes.CONTACT_FORM_SUBMISSION, {
+        businessName,
+        submitterName: sanitizedName || 'Someone',
+        submitterEmail: emailValidation.value,
+        submitterPhone: phone || 'Not provided',
+        message: sanitizedMessage,
+        type: type || 'contact',
+        siteUrl: subdomain,
+        submissionTime: new Date().toLocaleString()
+      })
+    ).catch(err => {
       console.error('Failed to send submission notification email:', err);
     });
   }
@@ -166,8 +172,8 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
     include: {
       sites: {
         select: {
-          subdomain: true,
-          site_data: true
+          subdomain: true
+          // intentionally omit site_data — owners don't need full site blob here
         }
       }
     },
@@ -176,20 +182,19 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
   });
 
   const formattedSubmissions = submissions.map(sub => {
-    const siteData = parseSiteData(sub.sites);
+    const payload = sub.data && typeof sub.data === 'object' ? sub.data : {};
     return {
       id: sub.id,
-      name: sub.name,
-      email: sub.email,
-      phone: sub.phone,
-      message: sub.message,
+      name: payload.name || null,
+      email: payload.email || null,
+      phone: payload.phone || null,
+      message: payload.message || null,
       type: sub.form_type,
       status: sub.status,
       submittedAt: sub.created_at,
-      readAt: sub.read_at,
       subdomain: sub.sites?.subdomain,
-      businessName: siteData?.brand?.name || 'Unknown Site',
-      customData: sub.custom_data
+      businessName: sub.sites?.subdomain || 'Unknown Site',
+      customData: payload.custom || null
     };
   });
 
@@ -227,18 +232,20 @@ router.get('/site/:subdomain', requireAuth, asyncHandler(async (req, res) => {
     take: Math.min(parseInt(limit) || 100, 500)
   });
 
-  const formattedSubmissions = submissions.map(sub => ({
-    id: sub.id,
-    name: sub.name,
-    email: sub.email,
-    phone: sub.phone,
-    message: sub.message,
-    type: sub.form_type,
-    status: sub.status,
-    submittedAt: sub.created_at,
-    readAt: sub.read_at,
-    customData: sub.custom_data
-  }));
+  const formattedSubmissions = submissions.map(sub => {
+    const payload = sub.data && typeof sub.data === 'object' ? sub.data : {};
+    return {
+      id: sub.id,
+      name: payload.name || null,
+      email: payload.email || null,
+      phone: payload.phone || null,
+      message: payload.message || null,
+      type: sub.form_type,
+      status: sub.status,
+      submittedAt: sub.created_at,
+      customData: payload.custom || null
+    };
+  });
 
   return sendSuccess(res, { submissions: formattedSubmissions });
 }));
@@ -275,20 +282,21 @@ router.get('/:submissionId', requireAuth, asyncHandler(async (req, res) => {
 
   const siteData = parseSiteData(submission.sites);
 
+  const payload = submission.data && typeof submission.data === 'object' ? submission.data : {};
+
   return sendSuccess(res, {
     submission: {
       id: submission.id,
-      name: submission.name,
-      email: submission.email,
-      phone: submission.phone,
-      message: submission.message,
+      name: payload.name || null,
+      email: payload.email || null,
+      phone: payload.phone || null,
+      message: payload.message || null,
       type: submission.form_type,
       status: submission.status,
       submittedAt: submission.created_at,
-      readAt: submission.read_at,
       subdomain: submission.sites?.subdomain,
       businessName: siteData?.brand?.name || 'Unknown Site',
-      customData: submission.custom_data
+      customData: payload.custom || null
     }
   });
 }));

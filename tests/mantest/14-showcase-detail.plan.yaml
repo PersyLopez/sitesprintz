@@ -1,33 +1,40 @@
 url: http://localhost:5173/showcase
-goal: Showcase gallery opens a demo site detail page without external CDN-only dependencies
+goal: Showcase gallery opens a demo site detail page and visit link works in-app
 steps:
   - action: Gallery loads
-    wait_for: { text: Made with SiteSprintz, timeout: 20000 }
-    settle_ms: 1500
+    wait_for: { text: See how your site could look, timeout: 20000 }
+    settle_ms: 2000
+
+  - action: Wait for grid
+    wait_for: { selector: '[data-testid="showcase-grid"]', timeout: 20000 }
+    settle_ms: 500
 
   - action: Open first View Details
     code: |
-      const details = page.getByText('View Details', { exact: true });
-      const n = await details.count();
-      if (n === 0) {
-        // empty gallery is still a valid local state
-        const empty = await page.getByTestId('showcase-empty-cta').count();
-        if (empty) return;
-        throw new Error('No showcase cards or empty state');
+      const card = page.locator('[data-testid^="site-card-"] a.site-card-link').first();
+      if (await card.count()) {
+        await card.click();
+        return;
       }
-      await details.first().click();
-    settle_ms: 2000
+      const details = page.getByText(/See this look/i);
+      if (await details.count()) {
+        await details.first().click({ force: true });
+        return;
+      }
+      const empty = await page.getByTestId('showcase-empty-cta').count();
+      if (empty) return;
+      throw new Error('No showcase cards or empty state');
+    settle_ms: 2500
 
-  - action: Detail or stayed on empty gallery
+  - action: Detail page content
     code: |
       const url = page.url();
       const t = await page.locator('body').innerText();
-      if (url.includes('/showcase/') || (await page.getByTestId('showcase-detail').count()) > 0) {
-        const ok = /Visit|Demo|Growth|Starter|Pro|Template|View Site|VISIT SITE/i.test(t);
-        if (!ok) throw new Error('Showcase detail missing expected content');
+      if (url.includes('/showcase/')) {
+        const ok = /Visit example|Open live preview|Visit|Demo|Growth|Starter|Pro|Template|View Site|VISIT SITE|See how your site/i.test(t);
+        if (!ok) throw new Error('Showcase detail missing expected content: ' + t.slice(0, 200));
         return;
       }
-      // empty path
-      if (/No sites found|Create Your Site|Made with SiteSprintz/i.test(t)) return;
+      if (/No examples found|Start your site|See how your site could look/i.test(t)) return;
       throw new Error('Neither detail nor gallery empty state. url=' + url);
     settle_ms: 400

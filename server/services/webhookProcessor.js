@@ -7,13 +7,15 @@
 
 import { prisma } from '../../database/db.js';
 import { emailService } from './emailService.js';
+import BookingPaymentAdapter from './booking/BookingPaymentAdapter.js';
 
 export class WebhookProcessor {
-  constructor(db = null, emailSvc = null, stripe = null) {
+  constructor(db = null, emailSvc = null, stripe = null, paymentAdapter = null) {
     // Allow dependency injection for testing
     this.db = db || prisma;
     this.emailService = emailSvc || emailService;
     this.stripe = stripe;
+    this.paymentAdapter = paymentAdapter;
 
     // Event handler mapping
     this.handlers = {
@@ -21,6 +23,8 @@ export class WebhookProcessor {
       'customer.subscription.updated': this.handleSubscriptionUpdated.bind(this),
       'customer.subscription.deleted': this.handleSubscriptionDeleted.bind(this),
       'invoice.payment_failed': this.handlePaymentFailed.bind(this),
+      'charge.refunded': this.handleChargeRefunded.bind(this),
+      'payment_intent.payment_failed': this.handlePaymentIntentFailed.bind(this),
     };
   }
 
@@ -61,38 +65,50 @@ export class WebhookProcessor {
 
   /**
    * Check if event has already been processed
+   * Uses webhook_events table for idempotency (unique constraint on event_id + processor)
    * @param {string} eventId - Stripe event ID
    * @returns {Promise<boolean>}
    */
   async isEventProcessed(eventId) {
     try {
-      const result = await this.db.processed_webhooks.findUnique({
-        where: { id: eventId }
+      const result = await this.db.webhook_events.findUnique({
+        where: {
+          event_id_processor: { event_id: eventId, processor: 'stripe' }
+        }
       });
       return !!result;
     } catch (error) {
       console.error('Error checking event processing status:', error);
-      throw error;
+      return false; // Fail open - allow processing on error
     }
   }
 
   /**
-   * Mark event as processed in database
+   * Mark event as processed in database using webhook_events table
    * @param {Object} event - Stripe event object
+   * @param {string} status - 'processed' or 'failed'
    */
-  async markEventAsProcessed(event) {
+  async markEventAsProcessed(event, status = 'processed') {
     try {
-      await this.db.processed_webhooks.create({
-        data: {
-          id: event.id,
+      await this.db.webhook_events.upsert({
+        where: {
+          event_id_processor: { event_id: event.id, processor: 'stripe' }
+        },
+        create: {
+          event_id: event.id,
+          processor: 'stripe',
           event_type: event.type,
-          data: JSON.stringify(event),
+          payload: event,
+          status: status
+        },
+        update: {
+          status: status,
           processed_at: new Date()
         }
       });
     } catch (error) {
       console.error('Error marking event as processed:', error);
-      throw error;
+      // Don't throw - let caller decide whether to fail
     }
   }
 
@@ -104,12 +120,59 @@ export class WebhookProcessor {
     const session = event.data.object;
 
     if (session.mode === 'payment') {
+      // Check if this is a booking payment (Phase 2)
+      if (session.metadata?.type === 'booking') {
+        return await this.handleBookingPayment(session);
+      }
+      
+      // Original: Product order payment
       return await this.handlePaymentCheckout(session);
     } else if (session.mode === 'subscription') {
       return await this.handleSubscriptionCheckout(session);
     }
 
     return { action: 'unknown_mode' };
+  }
+
+  /**
+   * Handle booking payment (Phase 2)
+   * Creates appointment after successful payment
+   */
+  async handleBookingPayment(session) {
+    try {
+      const appointmentId = session.metadata?.appointment_id;
+      
+      if (!appointmentId) {
+        console.warn('Booking payment session missing appointment_id:', session.id);
+        return { action: 'booking_payment_processed', warning: 'missing appointment_id' };
+      }
+
+      const paymentAdapter = this.paymentAdapter || new BookingPaymentAdapter();
+
+      // Handle payment success (updates appointment status to 'paid')
+      const result = await paymentAdapter.handlePaymentSuccess(session.id, appointmentId);
+
+      console.log('✅ Booking payment processed:', {
+        sessionId: session.id,
+        appointmentId,
+        amount: session.amount_total / 100,
+        customerEmail: session.customer_email
+      });
+
+      return {
+        success: true,
+        action: 'booking_payment_processed',
+        appointmentId: result.appointmentId,
+        paymentStatus: result.paymentStatus
+      };
+    } catch (error) {
+      console.error('Error handling booking payment:', error);
+      // Don't throw - return error info for logging
+      return {
+        action: 'booking_payment_failed',
+        error: error.message
+      };
+    }
   }
 
   /**
@@ -206,27 +269,90 @@ export class WebhookProcessor {
 
   /**
    * Create order in database with transaction
+   * Uses canonical schema with standardized field names
+   * Also handles inventory decrement atomically
    */
   async createOrder(session) {
     const items = session.metadata.order_items ? JSON.parse(session.metadata.order_items) : [];
+    
+    // Build normalized order items for creation
+    const orderItemsData = items.map(item => ({
+      product_id: item.productId ? parseInt(item.productId) : null,
+      name: item.name,
+      description: item.description,
+      quantity: item.quantity || 1,
+      unit_price: item.price, // Normalize: price -> unit_price
+      total_price: (item.price || 0) * (item.quantity || 1),
+      modifiers: item.modifiers || null
+    }));
 
-    const order = await this.db.orders.create({
-      data: {
-        site_id: session.metadata.site_id,
-        stripe_session_id: session.id,
-        customer_email: session.customer_email,
-        amount: session.amount_total,
-        currency: session.currency,
-        status: 'completed',
-        created_at: new Date(),
-        order_items: {
-          create: items.map(item => ({
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity
-          }))
+    // Use transaction for order + inventory
+    const order = await this.db.$transaction(async (tx) => {
+      // Create order and line items
+      const createdOrder = await tx.orders.create({
+        data: {
+          site_id: session.metadata.site_id,
+          user_id: session.metadata.user_id,
+          customer_email: session.customer_email || session.customer_details?.email,
+          customer_name: session.customer_details?.name || 'Guest',
+          customer_phone: session.customer_details?.phone,
+          stripe_session_id: session.id,
+          total_amount: session.amount_total / 100, // Convert cents to dollars
+          currency: session.currency || 'usd',
+          payment_status: 'paid',
+          status: 'pending',
+          items: JSON.stringify(items), // Denormalized for history
+          metadata: session.metadata,
+          // Create normalized line items
+          order_items: {
+            create: orderItemsData
+          }
+        },
+        include: { order_items: true }
+      });
+
+      // Decrement inventory for each item
+      for (const item of orderItemsData) {
+        if (!item.product_id || item.quantity < 1) continue;
+
+        try {
+          // Get current stock
+          const product = await tx.products.findUnique({
+            where: { id: item.product_id }
+          });
+
+          if (!product) continue;
+
+          // Guard: only decrement if enough stock
+          if (product.inventory < item.quantity) {
+            throw new Error(`Insufficient inventory for product ${item.product_id}`);
+          }
+
+          // Atomic decrement
+          const updated = await tx.products.update({
+            where: { id: item.product_id },
+            data: { inventory: { decrement: item.quantity } }
+          });
+
+          // Log to inventory_transactions
+          await tx.inventory_transactions.create({
+            data: {
+              product_id: item.product_id,
+              order_id: createdOrder.id,
+              quantity_change: -item.quantity,
+              previous_quantity: product.inventory,
+              new_quantity: updated.inventory,
+              transaction_type: 'sale',
+              notes: `Order ${createdOrder.id} - ${item.quantity} unit(s)`
+            }
+          });
+        } catch (err) {
+          console.error(`Failed to decrement inventory for product ${item.product_id}:`, err);
+          // Continue - inventory tracking is not critical to order creation
         }
       }
+
+      return createdOrder;
     });
 
     return { orderId: order.id };
@@ -258,11 +384,12 @@ export class WebhookProcessor {
         }
       });
 
-      // Update user record
+      // Update user record (keep plan + subscription_plan in sync)
       await tx.users.update({
         where: { id: session.metadata.userId },
         data: {
           plan: session.metadata.plan,
+          subscription_plan: session.metadata.plan,
           stripe_customer_id: session.customer,
           stripe_subscription_id: session.subscription,
           subscription_status: 'active',
@@ -504,6 +631,190 @@ export class WebhookProcessor {
     }
 
     throw new Error(`User not found after ${maxRetries} retries: ${email}`);
+  }
+
+  /**
+   * Handle charge.refunded event
+   * Restocks inventory and updates order status
+   */
+  async handleChargeRefunded(event) {
+    const charge = event.data.object;
+
+    try {
+      // Find order by charge ID or payment ID
+      const order = await this.db.orders.findFirst({
+        where: {
+          OR: [
+            { stripe_charge_id: charge.id },
+            { stripe_payment_id: charge.payment_intent }
+          ]
+        },
+        include: { order_items: true }
+      });
+
+      if (!order) {
+        console.warn('No order found for refunded charge:', charge.id);
+        return { action: 'refund_processed', warning: 'order_not_found' };
+      }
+
+      // Update order status to refunded
+      await this.db.orders.update({
+        where: { id: order.id },
+        data: {
+          status: 'refunded',
+          payment_status: 'refunded',
+          updated_at: new Date()
+        }
+      });
+
+      // Restock inventory
+      for (const item of order.order_items) {
+        if (!item.product_id || item.quantity < 1) continue;
+
+        try {
+          const product = await this.db.products.findUnique({
+            where: { id: item.product_id }
+          });
+
+          if (!product) continue;
+
+          // Atomic increment
+          const updated = await this.db.products.update({
+            where: { id: item.product_id },
+            data: { inventory: { increment: item.quantity } }
+          });
+
+          // Log to inventory_transactions
+          await this.db.inventory_transactions.create({
+            data: {
+              product_id: item.product_id,
+              order_id: order.id,
+              quantity_change: item.quantity, // Positive for restock
+              previous_quantity: product.inventory,
+              new_quantity: updated.inventory,
+              transaction_type: 'restock',
+              notes: `Refund of order ${order.id} - ${item.quantity} unit(s)`
+            }
+          });
+        } catch (err) {
+          console.error(`Failed to restock inventory for product ${item.product_id}:`, err);
+          // Continue - inventory tracking is not critical
+        }
+      }
+
+      // Send refund confirmation email
+      try {
+        await this.emailService.sendEmail({
+          to: order.customer_email,
+          template: 'refundConfirmation',
+          data: {
+            orderId: order.id,
+            amount: order.total_amount,
+            chargeId: charge.id
+          }
+        });
+      } catch (emailError) {
+        console.error('Refund confirmation email failed:', emailError);
+      }
+
+      return { action: 'refund_processed', orderId: order.id };
+    } catch (error) {
+      console.error('Error handling charge refund:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Handle payment_intent.payment_failed event
+   * Handles booking payment failures and order payment failures
+   */
+  async handlePaymentIntentFailed(event) {
+    const paymentIntent = event.data.object;
+
+    try {
+      // Check if this is a booking payment
+      if (paymentIntent.metadata?.type === 'booking') {
+        const appointmentId = paymentIntent.metadata?.appointment_id;
+
+        if (appointmentId) {
+          // Update appointment to mark payment as failed
+          await this.db.appointments.update({
+            where: { id: appointmentId },
+            data: {
+              payment_status: 'failed',
+              status: 'cancelled', // Cancel the appointment if payment fails
+              cancellation_reason: 'Payment failed',
+              updated_at: new Date()
+            }
+          });
+
+          // Send failure notification
+          const appointment = await this.db.appointments.findUnique({
+            where: { id: appointmentId },
+            select: { customer_email: true, total_price_cents: true }
+          });
+
+          if (appointment) {
+            try {
+              await this.emailService.sendEmail({
+                to: appointment.customer_email,
+                template: 'bookingPaymentFailed',
+                data: {
+                  appointmentId,
+                  amount: appointment.total_price_cents / 100,
+                  error: paymentIntent.last_payment_error?.message
+                }
+              });
+            } catch (emailError) {
+              console.error('Booking failure email failed:', emailError);
+            }
+          }
+
+          return { action: 'booking_payment_failed', appointmentId };
+        }
+      }
+
+      // Check if this is an order payment
+      const order = await this.db.orders.findFirst({
+        where: {
+          stripe_payment_id: paymentIntent.id
+        }
+      });
+
+      if (order) {
+        // Update order status to failed
+        await this.db.orders.update({
+          where: { id: order.id },
+          data: {
+            payment_status: 'failed',
+            status: 'cancelled',
+            updated_at: new Date()
+          }
+        });
+
+        // Send failure notification
+        try {
+          await this.emailService.sendEmail({
+            to: order.customer_email,
+            template: 'orderPaymentFailed',
+            data: {
+              orderId: order.id,
+              amount: order.total_amount,
+              error: paymentIntent.last_payment_error?.message
+            }
+          });
+        } catch (emailError) {
+          console.error('Order failure email failed:', emailError);
+        }
+
+        return { action: 'order_payment_failed', orderId: order.id };
+      }
+
+      return { action: 'payment_failed', warning: 'no_related_record' };
+    } catch (error) {
+      console.error('Error handling payment intent failure:', error);
+      throw error;
+    }
   }
 }
 

@@ -334,8 +334,8 @@ describe('Drafts Routes Integration Tests', () => {
       const response = await request(app)
         .delete(`/api/drafts/${nonExistentId}`);
 
-      // Should handle gracefully (might succeed or 404)
-      expect([200, 204, 404]).toContain(response.status);
+      // Invalid IDs are rejected (400) rather than treated as missing
+      expect([200, 204, 400, 404]).toContain(response.status);
     });
 
     it('should delete draft file from filesystem', async () => {
@@ -458,7 +458,7 @@ describe('Drafts Routes Integration Tests', () => {
       const response = await request(app)
         .post(`/api/drafts/${nonExistentId}/publish`);
 
-      expect([404, 500]).toContain(response.status);
+      expect([400, 404, 500]).toContain(response.status);
       expect(response.body).toHaveProperty('error');
     });
   });

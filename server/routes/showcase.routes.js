@@ -32,6 +32,38 @@ function parseSiteData(site) {
 }
 
 /**
+ * Load only gallery-card JSON paths for a set of site ids (avoids ~25KB/site blobs).
+ */
+async function loadShowcaseCardMeta(ids) {
+  if (!ids.length) return new Map();
+  const placeholders = ids.map((_, i) => `$${i + 1}`).join(', ');
+  const rows = await prisma.$queryRawUnsafe(
+    `SELECT
+       id,
+       site_data #>> '{brand,name}' AS name,
+       site_data #>> '{hero,image}' AS "heroImage",
+       COALESCE(
+         site_data #>> '{galleryTheme,id}',
+         site_data #>> '{colors,themeId}',
+         site_data ->> '_themeId'
+       ) AS "themeId",
+       site_data #>> '{galleryTheme,name}' AS "themeName",
+       COALESCE(
+         site_data #>> '{galleryTheme,mode}',
+         site_data #>> '{colors,mode}'
+       ) AS "themeMode",
+       COALESCE(
+         site_data #>> '{colors,accent}',
+         site_data #>> '{colors,primary}'
+       ) AS "themeAccent"
+     FROM sites
+     WHERE id IN (${placeholders})`,
+    ...ids
+  );
+  return new Map(rows.map((row) => [row.id, row]));
+}
+
+/**
  * GET /api/showcases
  * List public sites with filtering and pagination
  * Access: Public
@@ -42,7 +74,7 @@ router.get('/', asyncHandler(async (req, res) => {
     pageSize: pageSizeParam = '12',
     category,
     search,
-    sortBy = 'created_at',
+    sortBy = 'featured',
     sortOrder = 'desc'
   } = req.query;
 
@@ -67,10 +99,12 @@ router.get('/', asyncHandler(async (req, res) => {
 
   if (sortBy === 'name') {
     orderBy = { created_at: sortOrder === 'asc' ? 'asc' : 'desc' };
+  } else if (sortBy === 'featured') {
+    orderBy = [{ is_featured: 'desc' }, { created_at: 'desc' }];
   } else if (validSortFields.includes(sortBy)) {
     orderBy = { [sortBy]: sortOrder === 'asc' ? 'asc' : 'desc' };
   } else {
-    orderBy = { created_at: 'desc' };
+    orderBy = [{ is_featured: 'desc' }, { created_at: 'desc' }];
   }
 
   // Fetch more sites if searching (for in-memory filtering)
@@ -86,7 +120,6 @@ router.get('/', asyncHandler(async (req, res) => {
         template_id: true,
         status: true,
         plan: true,
-        site_data: true,
         created_at: true
       },
       orderBy,
@@ -96,18 +129,24 @@ router.get('/', asyncHandler(async (req, res) => {
     prisma.sites.count({ where })
   ]);
 
+  const cardMeta = await loadShowcaseCardMeta(sites.map((site) => site.id));
+
   // Map to response format
   let sitesResponse = sites.map(site => {
-    const siteData = parseSiteData(site);
+    const card = cardMeta.get(site.id) || {};
     return {
       id: site.id,
       subdomain: site.subdomain,
       template: site.template_id,
       status: site.status,
       plan: site.plan,
-      name: siteData?.brand?.name || site.subdomain,
-      heroImage: siteData?.hero?.image || null,
-      createdAt: site.created_at
+      name: card.name || site.subdomain,
+      heroImage: card.heroImage || null,
+      createdAt: site.created_at,
+      themeId: card.themeId || null,
+      themeName: card.themeName || null,
+      themeMode: card.themeMode || null,
+      themeAccent: card.themeAccent || null,
     };
   });
 
@@ -228,7 +267,7 @@ router.get('/stats', asyncHandler(async (req, res) => {
 router.get('/featured', asyncHandler(async (req, res) => {
   const { limit = 6 } = req.query;
 
-  // Get latest published public sites as "featured"
+  // Prefer explicitly featured public sites, then newest
   const sites = await prisma.sites.findMany({
     where: {
       is_public: true,
@@ -242,7 +281,10 @@ router.get('/featured', asyncHandler(async (req, res) => {
       site_data: true,
       created_at: true
     },
-    orderBy: { created_at: 'desc' },
+    orderBy: [
+      { is_featured: 'desc' },
+      { created_at: 'desc' }
+    ],
     take: Math.min(parseInt(limit) || 6, 20)
   });
 
@@ -290,7 +332,9 @@ router.get('/:subdomain', asyncHandler(async (req, res) => {
       status: true,
       plan: true,
       site_data: true,
-      created_at: true
+      user_id: true,
+      created_at: true,
+      users: { select: { stripe_connected: true } },
     }
   });
 
@@ -309,6 +353,8 @@ router.get('/:subdomain', asyncHandler(async (req, res) => {
       plan: site.plan,
       name: siteData?.brand?.name || site.subdomain,
       data: siteData,
+      userId: site.user_id,
+      stripe_connected: site.users?.stripe_connected === true,
       createdAt: site.created_at
     }
   });

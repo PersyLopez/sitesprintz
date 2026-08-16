@@ -33,20 +33,26 @@ export const initializeStripe = async (publishableKey) => {
   }
 };
 
-// Create checkout session
+// Create checkout session (supports both single and multi-item checkout)
 export const createCheckoutSession = async (items, siteId) => {
   try {
-    const response = await fetch('/api/checkout/create-session', {
+    // Use Stripe Connect endpoint for multi-item checkout
+    const response = await fetch('/api/stripe/connect/create-checkout', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        items,
         siteId,
-        successUrl: `${window.location.origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancelUrl: `${window.location.origin}/checkout/cancel`
+        items: items.map(item => ({
+          id: item.id,
+          productId: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity || 1,
+          image: item.image
+        })),
+        captchaToken: '' // CAPTCHA handled server-side if needed
       })
     });
 
@@ -55,8 +61,18 @@ export const createCheckoutSession = async (items, siteId) => {
       throw new Error(error.message || 'Failed to create checkout session');
     }
 
-    const session = await response.json();
-    return session;
+    const data = await response.json();
+    
+    // Return in format expected by redirectToCheckout
+    if (data.url) {
+      // Direct URL redirect (Stripe Connect)
+      return { url: data.url };
+    } else if (data.sessionId) {
+      // Session ID for redirectToCheckout
+      return { id: data.sessionId };
+    } else {
+      throw new Error('No checkout URL or session ID returned');
+    }
   } catch (error) {
     console.error('Create checkout session error:', error);
     throw error;
@@ -85,8 +101,18 @@ export const processCheckout = async (stripe, items, siteId) => {
     // Create session
     const session = await createCheckoutSession(items, siteId);
     
-    // Redirect to Stripe
-    await redirectToCheckout(stripe, session.id);
+    // If we have a direct URL (Stripe Connect), redirect directly
+    if (session.url) {
+      window.location.href = session.url;
+      return;
+    }
+    
+    // Otherwise use Stripe redirectToCheckout
+    if (session.id && stripe) {
+      await redirectToCheckout(stripe, session.id);
+    } else {
+      throw new Error('No checkout URL or session ID available');
+    }
   } catch (error) {
     console.error('Checkout error:', error);
     throw error;

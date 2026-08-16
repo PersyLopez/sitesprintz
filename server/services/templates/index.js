@@ -17,6 +17,8 @@ import { CleaningService } from './CleaningService.js';
 import { PetCareService } from './PetCareService.js';
 import { TechRepairService } from './TechRepairService.js';
 import { ProductShowcaseService } from './ProductShowcaseService.js';
+import { TowTruckService } from './TowTruckService.js';
+import { ProductOrderingService } from './ProductOrderingService.js';
 import { BaseTemplateService } from './BaseTemplateService.js';
 
 /**
@@ -34,7 +36,9 @@ const SERVICE_MAP = {
   'cleaning': CleaningService,
   'pet-care': PetCareService,
   'tech-repair': TechRepairService,
-  'product-showcase': ProductShowcaseService
+  'product-showcase': ProductShowcaseService,
+  'tow-truck': TowTruckService,
+  'product-ordering': ProductOrderingService
 };
 
 /**
@@ -80,7 +84,7 @@ export function getAvailableTemplateIds() {
  */
 export function hasTemplateService(templateId) {
   const baseTemplate = templateId.split('-')[0];
-  return SERVICE_MAP.hasOwnProperty(baseTemplate);
+  return Object.prototype.hasOwnProperty.call(SERVICE_MAP, baseTemplate);
 }
 
 export default {
@@ -88,4 +92,6 @@ export default {
   getAvailableTemplateIds,
   hasTemplateService
 };
+
+
 

@@ -1,0 +1,148 @@
+.payment-status-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border-dark);
+  border-radius: 16px;
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  transition: all 0.2s ease;
+}
+
+.payment-status-card.compact {
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  border-radius: 12px;
+}
+
+.payment-status-card.ready {
+  border-color: var(--success-color, #22c55e);
+  background: rgba(34, 197, 94, 0.05);
+}
+
+.payment-status-card.incomplete,
+.payment-status-card.not-started {
+  border-color: var(--warning-color, #f59e0b);
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.payment-status-card.error {
+  border-color: var(--error-color, #ef4444);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.payment-status-card.loading {
+  border-color: var(--border-dark);
+  opacity: 0.8;
+}
+
+.payment-status-upgrade {
+  border-color: var(--info-color, #3b82f6);
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.payment-status-main {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  flex: 1;
+  min-width: 0;
+}
+
+.payment-status-icon {
+  font-size: 1.75rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.payment-status-card.compact .payment-status-icon {
+  font-size: 1.5rem;
+}
+
+.payment-status-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.payment-status-content h4 {
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.payment-status-card.compact .payment-status-content h4 {
+  font-size: 1rem;
+}
+
+.payment-status-content p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.payment-status-detail {
+  font-size: 0.85rem;
+  margin-top: var(--spacing-xs);
+  color: var(--text-muted);
+}
+
+.payment-status-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  margin-bottom: var(--spacing-xs);
+}
+
+.payment-status-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.payment-status-badge.ready {
+  background: var(--success-color, #22c55e);
+  color: white;
+}
+
+.payment-status-badge.incomplete,
+.payment-status-badge.not-started {
+  background: var(--warning-color, #f59e0b);
+  color: white;
+}
+
+.payment-status-badge.error {
+  background: var(--error-color, #ef4444);
+  color: white;
+}
+
+.payment-status-badge.loading {
+  background: var(--border-dark);
+  color: var(--text-muted);
+}
+
+.payment-status-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 640px) {
+  .payment-status-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .payment-status-actions {
+    justify-content: flex-start;
+  }
+
+  .payment-status-actions .btn {
+    width: 100%;
+  }
+}

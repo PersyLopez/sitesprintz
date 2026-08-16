@@ -14,10 +14,10 @@ function scheduleTokenRefresh(expiresInSeconds) {
   if (refreshTimer) {
     clearTimeout(refreshTimer);
   }
-  
+
   // Refresh 1 minute before expiry (14 minutes for 15-minute tokens)
   const refreshTime = Math.max(0, (expiresInSeconds - 60) * 1000);
-  
+
   if (refreshTime > 0) {
     refreshTimer = setTimeout(async () => {
       await refreshAccessToken();
@@ -33,7 +33,7 @@ async function refreshAccessToken() {
   if (isRefreshing) {
     return refreshPromise;
   }
-  
+
   isRefreshing = true;
   refreshPromise = (async () => {
     try {
@@ -41,23 +41,25 @@ async function refreshAccessToken() {
       if (!refreshToken) {
         throw new Error('No refresh token available');
       }
-      
+
       const response = await fetch('/api/auth/refresh', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refreshToken })
       });
-      
+
       if (!response.ok) {
         throw new Error('Token refresh failed');
       }
-      
+
       const data = await response.json();
       localStorage.setItem('accessToken', data.accessToken);
-      
+      localStorage.setItem('authToken', data.accessToken); // Keep legacy synced
+      localStorage.setItem('token', data.accessToken); // Keep some React synced
+
       // Schedule next refresh (15 minutes = 900 seconds)
       scheduleTokenRefresh(900);
-      
+
       return data.accessToken;
     } catch (error) {
       console.error('Token refresh error:', error);
@@ -71,7 +73,7 @@ async function refreshAccessToken() {
       refreshPromise = null;
     }
   })();
-  
+
   return refreshPromise;
 }
 
@@ -79,16 +81,16 @@ async function refreshAccessToken() {
  * Intercept fetch to auto-refresh token on 401
  */
 const originalFetch = window.fetch;
-window.fetch = async function(...args) {
+window.fetch = async function (...args) {
   let response = await originalFetch(...args);
-  
+
   // If 401, try to refresh token and retry
   if (response.status === 401 && args[0]?.includes('/api/')) {
     const refreshToken = localStorage.getItem('refreshToken');
     if (refreshToken) {
       try {
         const newAccessToken = await refreshAccessToken();
-        
+
         // Retry original request with new token
         const newHeaders = { ...args[1]?.headers };
         newHeaders['Authorization'] = `Bearer ${newAccessToken}`;
@@ -99,21 +101,24 @@ window.fetch = async function(...args) {
       }
     }
   }
-  
+
   return response;
 };
 
 export const authService = {
   // Register new user
-  async register(email, password, captchaToken = null) {
-    const data = await api.post('/api/auth/register', { 
-      email, 
+  async register(email, password, captchaToken = null, acceptedTerms = false) {
+    const data = await api.post('/api/auth/register', {
+      email,
       password,
-      captchaToken 
+      captchaToken,
+      acceptedTerms
     });
     if (data.accessToken) {
       localStorage.setItem('accessToken', data.accessToken);
       localStorage.setItem('refreshToken', data.refreshToken);
+      localStorage.setItem('authToken', data.accessToken); // Support legacy pages
+      localStorage.setItem('token', data.accessToken); // Support some React pages
       // Schedule auto-refresh (15 minutes = 900 seconds)
       scheduleTokenRefresh(900);
     }
@@ -126,6 +131,8 @@ export const authService = {
     if (data.accessToken) {
       localStorage.setItem('accessToken', data.accessToken);
       localStorage.setItem('refreshToken', data.refreshToken);
+      localStorage.setItem('authToken', data.accessToken); // Support legacy pages
+      localStorage.setItem('token', data.accessToken); // Support some React pages
       // Schedule auto-refresh (15 minutes = 900 seconds)
       scheduleTokenRefresh(900);
     }
@@ -149,6 +156,8 @@ export const authService = {
     }
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
+    localStorage.removeItem('authToken'); // Clean up legacy
+    localStorage.removeItem('token'); // Clean up some React
     if (refreshTimer) {
       clearTimeout(refreshTimer);
       refreshTimer = null;
@@ -177,9 +186,9 @@ export const authService = {
 
   // Change temporary password
   async changeTempPassword(currentPassword, newPassword) {
-    return api.post('/api/auth/change-temp-password', { 
-      currentPassword, 
-      newPassword 
+    return api.post('/api/auth/change-temp-password', {
+      currentPassword,
+      newPassword
     });
   },
 };

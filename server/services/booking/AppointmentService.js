@@ -1,6 +1,8 @@
 import { prisma } from '../../../database/db.js';
 import { DateTime } from 'luxon';
 import crypto from 'crypto';
+import { availabilityService } from './AvailabilityServiceV2.js';
+import AppointmentCancellationService from './AppointmentCancellationService.js';
 
 /**
  * Appointment Service - Manages appointments
@@ -10,6 +12,7 @@ class AppointmentService {
   constructor(serviceManagementService, notificationService) {
     this.serviceManagementService = serviceManagementService;
     this.notificationService = notificationService;
+    this.cancellationService = new AppointmentCancellationService();
   }
 
   /**
@@ -20,11 +23,19 @@ class AppointmentService {
 
     let appointment;
     try {
+      await availabilityService.validateAppointmentTime({
+        staffId: appointmentData.staff_id,
+        serviceId: appointmentData.service_id,
+        startTime: appointmentData.start_time,
+        tenantId,
+        timezone: appointmentData.timezone
+      });
+
       appointment = await prisma.$transaction(async (tx) => {
         const service = await this.getServiceForAppointment(tx, appointmentData.service_id, tenantId);
         const timeRange = this.calculateAppointmentTimeRange(appointmentData.start_time, service.duration_minutes, appointmentData.timezone);
         
-        await this.checkForAppointmentConflicts(tx, appointmentData.staff_id, timeRange);
+        await this.checkForAppointmentConflicts(tx, appointmentData.staff_id, timeRange, service);
         const confirmationCode = await this.generateUniqueConfirmationCode(tx);
         const status = this.determineAppointmentStatus(service);
         
@@ -185,6 +196,8 @@ class AppointmentService {
         return null;
       }
 
+      await this.assertCanCancel(appt.id, cancelled_by);
+
       const updatedAppt = await prisma.appointments.update({
         where: { id: appt.id },
         data: {
@@ -233,6 +246,8 @@ class AppointmentService {
         return null;
       }
 
+      await this.assertCanCancel(appt.id, cancelled_by);
+
       const updatedAppt = await prisma.appointments.update({
         where: { id: appt.id },
         data: {
@@ -251,6 +266,16 @@ class AppointmentService {
     } catch (error) {
       console.error('Error cancelling appointment:', error);
       throw error;
+    }
+  }
+
+  async assertCanCancel(appointmentId, cancelledBy) {
+    const requesterType = ['admin', 'owner', 'staff'].includes(cancelledBy) ? 'admin' : 'customer';
+    const check = await this.cancellationService.canCancelAppointment(appointmentId, requesterType);
+    if (!check.canCancel) {
+      const err = new Error(check.reason || 'Cancellation not allowed');
+      err.code = 'CANCELLATION_NOT_ALLOWED';
+      throw err;
     }
   }
 
@@ -296,14 +321,18 @@ class AppointmentService {
   /**
    * Check for appointment conflicts using pessimistic locking
    */
-  async checkForAppointmentConflicts(tx, staffId, timeRange) {
+  async checkForAppointmentConflicts(tx, staffId, timeRange, service = {}) {
+    const bufferBefore = service.buffer_minutes_before || 0;
+    const bufferAfter = service.buffer_minutes_after || 0;
+    const windowStart = timeRange.startTimeUTC.minus({ minutes: bufferBefore }).toJSDate();
+    const windowEnd = timeRange.endTimeUTC.plus({ minutes: bufferAfter }).toJSDate();
+
     const conflicts = await tx.$queryRaw`
       SELECT id FROM appointments 
       WHERE staff_id = ${staffId}::uuid
       AND status NOT IN ('cancelled')
-      AND ((start_time < ${timeRange.endTimeUTC.toJSDate()} AND end_time > ${timeRange.startTimeUTC.toJSDate()}) 
-           OR (start_time < ${timeRange.endTimeUTC.toJSDate()} AND end_time > ${timeRange.endTimeUTC.toJSDate()})
-           OR (start_time >= ${timeRange.startTimeUTC.toJSDate()} AND end_time <= ${timeRange.endTimeUTC.toJSDate()}))
+      AND start_time < ${windowEnd}
+      AND end_time > ${windowStart}
       FOR UPDATE
     `;
 
@@ -352,8 +381,14 @@ class AppointmentService {
 
   /**
    * Determine appointment status based on service requirements
+   * Payment-gated services go to pending_payment status until webhook confirms payment
    */
   determineAppointmentStatus(service) {
+    // If service requires payment, hold in pending_payment status until webhook
+    if (service.requires_payment) {
+      return 'pending_payment';
+    }
+    // If service requires approval, hold in pending status
     return service.requires_approval ? 'pending' : 'confirmed';
   }
 
@@ -361,6 +396,9 @@ class AppointmentService {
    * Create appointment record in database
    */
   async createAppointmentRecord(tx, { tenantId, appointmentData, service, timeRange, confirmationCode, status }) {
+    const { sanitizeString } = await import('../../utils/validators.js');
+    const email = String(appointmentData.customer_email || '').trim().toLowerCase().slice(0, 255);
+
     return await tx.appointments.create({
       data: {
         tenant_id: tenantId,
@@ -370,12 +408,16 @@ class AppointmentService {
         end_time: timeRange.endTimeUTC.toJSDate(),
         duration_minutes: service.duration_minutes,
         timezone: appointmentData.timezone || 'America/New_York',
-        customer_name: appointmentData.customer_name,
-        customer_email: appointmentData.customer_email,
-        customer_phone: appointmentData.customer_phone || null,
-        customer_notes: appointmentData.customer_notes || null,
+        customer_name: sanitizeString(appointmentData.customer_name, 200),
+        customer_email: email,
+        customer_phone: appointmentData.customer_phone
+          ? sanitizeString(String(appointmentData.customer_phone), 40)
+          : null,
+        customer_notes: appointmentData.customer_notes
+          ? sanitizeString(String(appointmentData.customer_notes), 1000)
+          : null,
         confirmation_code: confirmationCode,
-        booking_source: appointmentData.booking_source || 'online',
+        booking_source: sanitizeString(appointmentData.booking_source || 'online', 50) || 'online',
         status,
         total_price_cents: service.price_cents,
         requires_approval: service.requires_approval,
@@ -385,8 +427,14 @@ class AppointmentService {
 
   /**
    * Send confirmation email asynchronously
+   * Skip if appointment is pending payment (will be sent when payment is confirmed)
    */
   sendConfirmationEmailAsync(appointment) {
+    // Don't send confirmation email until payment is received (if payment is required)
+    if (appointment.payment_status === 'unpaid' || appointment.status === 'pending_payment') {
+      return;
+    }
+    
     // Must be done after transaction commits so the appointment is visible to other connections
     this.sendConfirmationEmail(appointment).catch((error) => {
       console.error('Failed to send confirmation email:', error);
@@ -488,6 +536,9 @@ class AppointmentService {
 }
 
 export default AppointmentService;
+
+
+
 
 
 

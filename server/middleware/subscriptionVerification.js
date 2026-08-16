@@ -5,6 +5,7 @@
  * REFACTORED: Now uses SubscriptionService with caching and conflict resolution
  */
 import { subscriptionService, PLAN_LIMITS } from '../services/subscriptionService.js';
+import { prisma } from '../../database/db.js';
 
 // Re-export PLAN_LIMITS for backward compatibility
 export { PLAN_LIMITS };
@@ -127,13 +128,14 @@ export async function canCreateSite(userId) {
   }
   
   // Get current site count
-  const result = await dbQuery(`
-    SELECT COUNT(*) as site_count
-    FROM sites
-    WHERE user_id = $1 AND status != 'deleted'
-  `, [userId]);
+  const siteCount = await prisma.sites.count({
+    where: {
+      user_id: userId,
+      status: { not: 'deleted' }
+    }
+  });
   
-  const currentCount = parseInt(result.rows[0].site_count);
+  const currentCount = siteCount;
   const maxSites = limits.maxSites;
   
   // -1 means unlimited

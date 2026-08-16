@@ -17,6 +17,7 @@ class StaffManagementService {
       });
 
       if (existingStaff) {
+        await this.ensureDefaultAvailabilityRules(existingStaff.id, tenantId);
         return existingStaff;
       }
 
@@ -41,11 +42,30 @@ class StaffManagementService {
         }
       });
 
+      await this.ensureDefaultAvailabilityRules(newStaff.id, tenantId);
       return newStaff;
     } catch (error) {
       console.error('Error getting/creating default staff:', error);
       throw error;
     }
+  }
+
+  /**
+   * Ensure Mon–Fri 09:00–17:00 rules exist so availability/booking works out of the box
+   */
+  async ensureDefaultAvailabilityRules(staffId, tenantId) {
+    const count = await prisma.booking_availability_rules.count({
+      where: { staff_id: staffId }
+    });
+    if (count > 0) return;
+
+    const weekdayRules = [1, 2, 3, 4, 5].map((day_of_week) => ({
+      day_of_week,
+      start_time: '09:00',
+      end_time: '17:00',
+      is_available: true
+    }));
+    await this.setAvailabilityRules(staffId, tenantId, weekdayRules);
   }
 
   /**
@@ -111,19 +131,70 @@ class StaffManagementService {
       });
 
       // Convert Date objects back to HH:MM strings for compatibility
-      return rules.map(rule => ({
-        ...rule,
-        start_time: rule.start_time.toISOString().split('T')[1].substring(0, 5),
-        end_time: rule.end_time.toISOString().split('T')[1].substring(0, 5)
-      }));
+      return rules.map(rule => {
+        let startStr = '00:00';
+        let endStr = '00:00';
+
+        try {
+          if (rule.start_time instanceof Date) {
+            startStr = rule.start_time.toISOString().split('T')[1].substring(0, 5);
+          } else if (typeof rule.start_time === 'string') {
+            startStr = rule.start_time.substring(0, 5);
+          }
+
+          if (rule.end_time instanceof Date) {
+            endStr = rule.end_time.toISOString().split('T')[1].substring(0, 5);
+          } else if (typeof rule.end_time === 'string') {
+            endStr = rule.end_time.substring(0, 5);
+          }
+        } catch (err) {
+          console.error('Error parsing availability rule times in StaffManagementService:', err, rule);
+        }
+
+        return {
+          ...rule,
+          start_time: startStr,
+          end_time: endStr
+        };
+      });
     } catch (error) {
       console.error('Error getting availability rules:', error);
       throw error;
     }
   }
+
+  /**
+   * List active staff for a tenant (public-safe fields)
+   */
+  async getStaffForTenant(tenantId) {
+    return prisma.booking_staff.findMany({
+      where: {
+        tenant_id: tenantId,
+        status: 'active'
+      },
+      select: {
+        id: true,
+        name: true,
+        title: true,
+        bio: true,
+        avatar_url: true,
+        photo_url: true,
+        is_primary: true,
+        display_order: true
+      },
+      orderBy: [
+        { is_primary: 'desc' },
+        { display_order: 'asc' },
+        { name: 'asc' }
+      ]
+    });
+  }
 }
 
 export default StaffManagementService;
+
+
+
 
 
 

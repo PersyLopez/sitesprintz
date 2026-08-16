@@ -1,11 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, within } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Landing from '../../src/pages/Landing';
 import { AuthContext } from '../../src/context/AuthContext';
 
-// Mock child components
 vi.mock('../../src/components/layout/Header', () => ({
   default: () => <div data-testid="header">Header</div>,
 }));
@@ -14,428 +12,153 @@ vi.mock('../../src/components/layout/Footer', () => ({
   default: () => <div data-testid="footer">Footer</div>,
 }));
 
+vi.mock('../../src/components/landing/HeroStoryVideo', () => ({
+  default: () => <div data-testid="hero-story-video">Hero video</div>,
+}));
+
+vi.mock('../../src/components/landing/LandingGallery', () => ({
+  default: () => <section id="templates" data-testid="landing-gallery">Gallery</section>,
+}));
+
+function renderLanding({ isAuthenticated = false } = {}) {
+  return render(
+    <BrowserRouter>
+      <AuthContext.Provider
+        value={{
+          user: isAuthenticated ? { id: '1', name: 'Test User' } : null,
+          loading: false,
+          isAuthenticated,
+          logout: vi.fn(),
+        }}
+      >
+        <Landing />
+      </AuthContext.Provider>
+    </BrowserRouter>
+  );
+}
+
 describe('Landing Page', () => {
-  const renderLanding = () => {
-    return render(
-      <BrowserRouter>
-        <AuthContext.Provider
-          value={{
-            user: null,
-            loading: false,
-            isAuthenticated: false,
-            logout: vi.fn(),
-          }}
-        >
-          <Landing />
-        </AuthContext.Provider>
-      </BrowserRouter>
-    );
-  };
-
-  let intervalId;
-
-  beforeEach(() => {
-    vi.useFakeTimers();
+  it('renders header, footer, and main content', () => {
+    renderLanding();
+    expect(screen.getByTestId('header')).toBeInTheDocument();
+    expect(screen.getByTestId('footer')).toBeInTheDocument();
+    expect(screen.getByTestId('hero-story-video')).toBeInTheDocument();
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-    vi.useRealTimers();
-    if (intervalId) {
-      clearInterval(intervalId);
-    }
+  it('renders the story-driven hero headline', () => {
+    renderLanding();
+    expect(screen.getByRole('heading', { name: /They love what you make/i })).toBeInTheDocument();
+    expect(screen.getByText(/so the people who already care can come back/i)).toBeInTheDocument();
   });
 
-  describe('Page Structure', () => {
-    it('should render header and footer', () => {
-      renderLanding();
-
-      expect(screen.getByTestId('header')).toBeInTheDocument();
-      expect(screen.getByTestId('footer')).toBeInTheDocument();
-    });
-
-    it('should render hero section', () => {
-      renderLanding();
-
-      expect(
-        screen.getByText('Create Your Professional Website in Minutes')
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText(
-          /Choose from beautiful templates, customize with our easy editor/i
-        )
-      ).toBeInTheDocument();
-    });
-
-    it('should display hero badge', () => {
-      renderLanding();
-
-      expect(screen.getByText('Launch Your Business Online Today')).toBeInTheDocument();
-    });
+  it('renders brand as a hero-level signal', () => {
+    renderLanding();
+    const brand = document.querySelector('.hero-brand');
+    expect(brand).toBeInTheDocument();
+    expect(brand).toHaveTextContent('SiteSprintz');
   });
 
-  describe('CTA Buttons', () => {
-    it('should have Get Started Free button in hero', () => {
-      renderLanding();
-
-      const ctaButton = screen.getByRole('link', { name: /Get Started Free/i });
-      expect(ctaButton).toBeInTheDocument();
-      expect(ctaButton).toHaveAttribute('href', '/register');
-    });
-
-    it('should have View Templates button in hero', () => {
-      renderLanding();
-
-      const templatesButton = screen.getByRole('link', { name: /View Templates/i });
-      expect(templatesButton).toBeInTheDocument();
-      expect(templatesButton).toHaveAttribute('href', '#templates');
-    });
-
-    it('should have Create Your Website Now button in final CTA', () => {
-      renderLanding();
-
-      const finalCta = screen.getByRole('link', { name: /Create Your Website Now/i });
-      expect(finalCta).toBeInTheDocument();
-      expect(finalCta).toHaveAttribute('href', '/register');
-    });
+  it('renders the primary CTA for unauthenticated visitors', () => {
+    renderLanding();
+    const hero = document.querySelector('.landing-hero');
+    const heroCta = within(hero).getByRole('link', { name: /Get Your Page Free/i });
+    expect(heroCta).toHaveAttribute('href', '/register');
   });
 
-  describe('Template Categories', () => {
-    it('should display Restaurant template card', () => {
-      renderLanding();
-
-      expect(screen.getByRole('heading', { name: 'Restaurant' })).toBeInTheDocument();
-      expect(screen.getByText('Menu, reservations, contact')).toBeInTheDocument();
-      expect(screen.getAllByText(/Fine Dining/i).length).toBeGreaterThan(0);
-    });
-
-    it('should display Salon & Spa template card', () => {
-      renderLanding();
-
-      expect(screen.getByRole('heading', { name: 'Salon & Spa' })).toBeInTheDocument();
-      expect(screen.getByText('Services, booking, gallery')).toBeInTheDocument();
-      expect(screen.getAllByText(/Hair Salon/i).length).toBeGreaterThan(0);
-    });
-
-    it('should display Fitness & Gym template card', () => {
-      renderLanding();
-
-      expect(screen.getByRole('heading', { name: 'Fitness & Gym' })).toBeInTheDocument();
-      expect(screen.getByText('Classes, pricing, testimonials')).toBeInTheDocument();
-      expect(screen.getAllByText(/CrossFit/i).length).toBeGreaterThan(0);
-    });
-
-    it('should display Consultant template card', () => {
-      renderLanding();
-
-      expect(screen.getByRole('heading', { name: 'Consultant' })).toBeInTheDocument();
-      expect(screen.getByText('About, services, contact')).toBeInTheDocument();
-      expect(screen.getAllByText(/Business/i).length).toBeGreaterThan(0);
-    });
-
-    it('should display Electrician template card', () => {
-      renderLanding();
-
-      expect(screen.getByRole('heading', { name: 'Electrician' })).toBeInTheDocument();
-      expect(screen.getByText('Services, emergency, booking')).toBeInTheDocument();
-      expect(screen.getAllByText(/Residential/i).length).toBeGreaterThan(0);
-    });
-
-    it('should display Auto Repair template card', () => {
-      renderLanding();
-
-      expect(screen.getByRole('heading', { name: 'Auto Repair' })).toBeInTheDocument();
-      expect(screen.getByText('Services, booking, pricing')).toBeInTheDocument();
-      expect(screen.getByText('Quick Service')).toBeInTheDocument();
-    });
-
-    it('should have all template cards link to registration', () => {
-      renderLanding();
-
-      const templateLinks = screen.getAllByRole('link').filter((link) => {
-        const href = link.getAttribute('href');
-        return href && href.startsWith('/register');
-      });
-      
-      // Multiple template cards should link to registration (with or without template params)
-      expect(templateLinks.length).toBeGreaterThan(6);
-    });
+  it('renders the primary CTA for authenticated users', () => {
+    renderLanding({ isAuthenticated: true });
+    const hero = document.querySelector('.landing-hero');
+    const heroCta = within(hero).getByRole('link', { name: /Create Your Page/i });
+    expect(heroCta).toHaveAttribute('href', '/setup');
   });
 
-  describe('Templates Section', () => {
-    it('should have templates section with anchor', () => {
-      renderLanding();
-
-      const templatesSection = document.querySelector('#templates');
-      expect(templatesSection).toBeInTheDocument();
-    });
-
-    it('should display templates section heading', () => {
-      renderLanding();
-
-      expect(screen.getByRole('heading', { name: 'Choose Your Template' })).toBeInTheDocument();
-      expect(
-        screen.getByText('All templates included - pick the perfect one for your business')
-      ).toBeInTheDocument();
-    });
+  it('renders the customer stories section', () => {
+    renderLanding();
+    expect(screen.getByRole('heading', { name: /Same longing\. Different businesses\./i })).toBeInTheDocument();
+    expect(screen.getByText('Maria')).toBeInTheDocument();
+    expect(screen.getByText('James')).toBeInTheDocument();
+    expect(screen.getByText('Aisha')).toBeInTheDocument();
   });
 
-  describe('How It Works Section', () => {
-    it('should display How It Works heading', () => {
-      renderLanding();
-
-      expect(screen.getByRole('heading', { name: 'How It Works' })).toBeInTheDocument();
-      expect(
-        screen.getByText('Three simple steps to your perfect website')
-      ).toBeInTheDocument();
-    });
-
-    it('should display step 1: Choose a Template', () => {
-      renderLanding();
-
-      expect(screen.getByRole('heading', { name: 'Choose a Template' })).toBeInTheDocument();
-      expect(
-        screen.getByText(
-          'Select from 10+ professionally designed templates for your business type'
-        )
-      ).toBeInTheDocument();
-    });
-
-    it('should display step 2: Customize Content', () => {
-      renderLanding();
-
-      expect(screen.getByRole('heading', { name: 'Customize Content' })).toBeInTheDocument();
-      expect(
-        screen.getByText('Add your text, images, and branding with our intuitive editor')
-      ).toBeInTheDocument();
-    });
-
-    it('should display step 3: Launch & Grow', () => {
-      renderLanding();
-
-      expect(screen.getByRole('heading', { name: 'Launch & Grow' })).toBeInTheDocument();
-      expect(
-        screen.getByText('Publish instantly and start attracting customers online')
-      ).toBeInTheDocument();
-    });
+  it('renders each customer story with a before, turning point, and after', () => {
+    renderLanding();
+    const stories = document.getElementById('stories');
+    expect(stories.querySelectorAll('.story-card').length).toBe(3);
+    expect(screen.getByText(/Forgotten by noon/i)).toBeInTheDocument();
+    expect(screen.getByText(/Empty chair, busy street/i)).toBeInTheDocument();
+    expect(screen.getByText(/DMs instead of a door/i)).toBeInTheDocument();
+    expect(screen.getByText(/Neighbors lined up for her mangoes/i)).toBeInTheDocument();
+    expect(screen.getByText(/couldn’t remember which corner/i)).toBeInTheDocument();
+    expect(screen.getByText(/see today’s fruit/i)).toBeInTheDocument();
+    expect(stories.querySelectorAll('.story-phase').length).toBe(0);
   });
 
-  describe('Features Section', () => {
-    it('should display Everything You Need heading', () => {
-      renderLanding();
-
-      expect(screen.getByRole('heading', { name: 'Everything You Need' })).toBeInTheDocument();
-      expect(screen.getByText('Powerful features for modern websites')).toBeInTheDocument();
-    });
-
-    it('should display Mobile Responsive feature', () => {
-      renderLanding();
-
-      expect(screen.getByRole('heading', { name: 'Mobile Responsive' })).toBeInTheDocument();
-      expect(screen.getByText('Perfect on all devices automatically')).toBeInTheDocument();
-    });
-
-    it('should display Payment Ready feature', () => {
-      renderLanding();
-
-      expect(screen.getByRole('heading', { name: 'Payment Ready' })).toBeInTheDocument();
-      expect(screen.getByText('Accept payments with Stripe integration')).toBeInTheDocument();
-    });
-
-    it('should display Lightning Fast feature', () => {
-      renderLanding();
-
-      expect(screen.getByRole('heading', { name: 'Lightning Fast' })).toBeInTheDocument();
-      expect(screen.getByText('Optimized for speed and SEO')).toBeInTheDocument();
-    });
-
-    it('should display Secure & Reliable feature', () => {
-      renderLanding();
-
-      expect(screen.getByRole('heading', { name: 'Secure & Reliable' })).toBeInTheDocument();
-      expect(screen.getByText('HTTPS and daily backups included')).toBeInTheDocument();
-    });
+  it('renders the purpose story section', () => {
+    renderLanding();
+    expect(screen.getByRole('heading', { name: /Leave a light on for tomorrow’s customer/i })).toBeInTheDocument();
+    expect(screen.getByText(/We built SiteSprintz so the smallest shop/i)).toBeInTheDocument();
   });
 
-  describe('Final CTA Section', () => {
-    it('should display Ready to Get Started heading', () => {
-      renderLanding();
-
-      expect(screen.getByRole('heading', { name: 'Ready to Get Started?' })).toBeInTheDocument();
-    });
-
-    it('should display social proof text', () => {
-      renderLanding();
-
-      expect(
-        screen.getByText('Join thousands of businesses already using SiteSprintz')
-      ).toBeInTheDocument();
-    });
+  it('renders the founder story block', () => {
+    renderLanding();
+    expect(screen.getByText(/Who we built this for/i)).toBeInTheDocument();
+    expect(screen.getByText(/We didn’t start this for agencies/i)).toBeInTheDocument();
   });
 
-  describe('Template Showcase Carousel', () => {
-    it('should render template showcase section', () => {
-      renderLanding();
-
-      const showcaseSection = document.querySelector('.template-showcase-section');
-      expect(showcaseSection).toBeInTheDocument();
-    });
-
-    it('should have dots for manual navigation', () => {
-      renderLanding();
-
-      const dots = document.querySelectorAll('.dot');
-      expect(dots.length).toBeGreaterThan(0);
-    });
-
-    it('should have slides for templates', () => {
-      renderLanding();
-
-      const slides = document.querySelectorAll('.showcase-slide');
-      expect(slides.length).toBeGreaterThan(0);
-    });
+  it('renders the template gallery section', () => {
+    renderLanding();
+    expect(screen.getByTestId('landing-gallery')).toBeInTheDocument();
   });
 
-  describe('Content Quality', () => {
-    it('should have descriptive hero text', () => {
-      renderLanding();
+  it('renders the how-it-works section with all steps visible', () => {
+    renderLanding();
+    expect(screen.getByRole('heading', { name: /Three steps\. Then you’re findable\./i })).toBeInTheDocument();
 
-      expect(
-        screen.getByText(/Choose from beautiful templates, customize with our easy editor/i)
-      ).toBeInTheDocument();
-      expect(screen.getByText(/No coding required/i)).toBeInTheDocument();
-    });
-
-    it('should emphasize ease of use', () => {
-      renderLanding();
-
-      expect(screen.getByText(/in Minutes/i)).toBeInTheDocument();
-      expect(screen.getByText(/Three simple steps/i)).toBeInTheDocument();
-    });
-
-    it('should highlight business benefits', () => {
-      renderLanding();
-
-      expect(screen.getByText(/Launch Your Business Online/i)).toBeInTheDocument();
-      expect(screen.getByText(/start attracting customers online/i)).toBeInTheDocument();
-    });
+    const howSection = document.getElementById('how-it-works');
+    const stepTitles = Array.from(howSection.querySelectorAll('h3')).map((h) => h.textContent);
+    expect(stepTitles).toContain('Tell us what you sell');
+    expect(stepTitles).toContain('Show what customers need');
+    expect(stepTitles).toContain('Leave the light on');
+    expect(howSection.querySelectorAll('.how-arc-step').length).toBe(3);
   });
 
-  describe('Accessibility', () => {
-    it('should have proper heading hierarchy', () => {
-      renderLanding();
-
-      const h1 = screen.getByRole('heading', { level: 1 });
-      expect(h1).toHaveTextContent('Create Your Professional Website in Minutes');
-
-      const h2Headings = screen.getAllByRole('heading', { level: 2 });
-      expect(h2Headings.length).toBeGreaterThan(3);
-    });
-
-    it('should have descriptive link text', () => {
-      renderLanding();
-
-      const getStartedLinks = screen.getAllByRole('link', { name: /Get Started/i });
-      expect(getStartedLinks.length).toBeGreaterThan(0);
-
-      const viewTemplatesLink = screen.getByRole('link', { name: /View Templates/i });
-      expect(viewTemplatesLink).toBeInTheDocument();
-    });
+  it('renders the pricing section with two tiers', () => {
+    renderLanding();
+    expect(screen.getByRole('heading', { name: /Two plans\. Pick what you need\./i })).toBeInTheDocument();
+    expect(screen.getByText('Starter')).toBeInTheDocument();
+    expect(screen.getByText('Growth')).toBeInTheDocument();
   });
 
-  describe('Responsive Design Indicators', () => {
-    it('should have template cards with proper structure', () => {
-      renderLanding();
-
-      const templateCards = document.querySelectorAll('.quick-template-card');
-      expect(templateCards.length).toBeGreaterThanOrEqual(6);
-    });
-
-    it('should have feature cards with proper structure', () => {
-      renderLanding();
-
-      const featureCards = document.querySelectorAll('.feature-card');
-      expect(featureCards.length).toBe(4);
-    });
-
-    it('should have step cards with proper structure', () => {
-      renderLanding();
-
-      const stepCards = document.querySelectorAll('.step-compact');
-      expect(stepCards.length).toBe(3);
-    });
+  it('renders the final CTA section', () => {
+    renderLanding();
+    expect(screen.getByRole('heading', { name: /Don’t let tomorrow’s customer forget you/i })).toBeInTheDocument();
   });
 
-  describe('Template Links with Query Parameters', () => {
-    it('should include template=restaurant in restaurant link', () => {
-      renderLanding();
-      
-      const restaurantLink = screen.getByRole('link', { name: /restaurant/i });
-      expect(restaurantLink).toHaveAttribute('href', '/register?template=restaurant');
-    });
+  it('has a jump nav linking to each major section', () => {
+    renderLanding();
+    const nav = screen.getByRole('navigation', { name: /Page sections/i });
+    expect(nav).toBeInTheDocument();
 
-    it('should include template=salon in salon link', () => {
-      renderLanding();
-      
-      const salonLink = screen.getByRole('link', { name: /salon & spa/i });
-      expect(salonLink).toHaveAttribute('href', '/register?template=salon');
-    });
+    const chips = within(nav).getAllByRole('button');
+    const labels = chips.map((chip) => chip.textContent);
+    expect(labels).toEqual(['Stories', 'Purpose', 'Templates', 'How it works', 'Pricing']);
+  });
 
-    it('should include template=gym in gym link', () => {
-      renderLanding();
-      
-      const gymLink = screen.getByRole('link', { name: /fitness & gym/i });
-      expect(gymLink).toHaveAttribute('href', '/register?template=gym');
-    });
+  it('has a proper heading hierarchy', () => {
+    renderLanding();
+    const h1 = screen.getByRole('heading', { level: 1 });
+    expect(h1).toHaveTextContent(/They love what you make/i);
 
-    it('should include template=consultant in consultant link', () => {
-      renderLanding();
-      
-      const consultantLink = screen.getByRole('link', { name: /consultant/i });
-      expect(consultantLink).toHaveAttribute('href', '/register?template=consultant');
-    });
+    const h2Headings = screen.getAllByRole('heading', { level: 2 });
+    expect(h2Headings.length).toBeGreaterThanOrEqual(4);
+  });
 
-    it('should include template=freelancer in freelancer link', () => {
-      renderLanding();
-      
-      const freelancerLink = screen.getByRole('link', { name: /freelancer/i });
-      expect(freelancerLink).toHaveAttribute('href', '/register?template=freelancer');
-    });
-
-    it('should include template=tech-repair in tech repair link', () => {
-      renderLanding();
-      
-      const techRepairLink = screen.getByRole('link', { name: /tech repair/i });
-      expect(techRepairLink).toHaveAttribute('href', '/register?template=tech-repair');
-    });
-
-    it('should include template=cleaning in cleaning services link', () => {
-      renderLanding();
-      
-      const cleaningLink = screen.getByRole('link', { name: /cleaning services/i });
-      expect(cleaningLink).toHaveAttribute('href', '/register?template=cleaning');
-    });
-
-    it('should include template=pet-care in pet care link', () => {
-      renderLanding();
-      
-      const petCareLink = screen.getByRole('link', { name: /pet care/i });
-      expect(petCareLink).toHaveAttribute('href', '/register?template=pet-care');
-    });
-
-    it('should include template=electrician in electrician link', () => {
-      renderLanding();
-      
-      const electricianLink = screen.getByRole('link', { name: /electrician/i });
-      expect(electricianLink).toHaveAttribute('href', '/register?template=electrician');
-    });
-
-    it('should include template=auto-repair in auto repair link', () => {
-      renderLanding();
-      
-      const autoRepairLink = screen.getByRole('link', { name: /auto repair/i });
-      expect(autoRepairLink).toHaveAttribute('href', '/register?template=auto-repair');
-    });
+  it('renders the trust indicators in the trust strip', () => {
+    renderLanding();
+    const trustStrip = document.querySelector('.trust-strip-inner');
+    expect(trustStrip).toBeInTheDocument();
+    expect(within(trustStrip).getByText('Draft free')).toBeInTheDocument();
+    expect(within(trustStrip).getByText('Preview fast')).toBeInTheDocument();
+    expect(within(trustStrip).getByText('Cancel anytime')).toBeInTheDocument();
   });
 });
-

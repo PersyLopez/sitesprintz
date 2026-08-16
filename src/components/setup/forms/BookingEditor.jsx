@@ -4,6 +4,8 @@ import './BookingEditor.css';
 
 function BookingEditor() {
   const { siteData, updateNestedField } = useSite();
+  const [businessMode, setBusinessMode] = React.useState('solo');
+  const [savingMode, setSavingMode] = React.useState(false);
   
   const booking = siteData.booking || {
     enabled: false,
@@ -14,6 +16,34 @@ function BookingEditor() {
 
   const updateBooking = (field, value) => {
     updateNestedField(`booking.${field}`, value);
+  };
+
+  const handleBusinessModeChange = async (mode) => {
+    setBusinessMode(mode);
+    
+    // Only save if user has a site (in edit mode)
+    if (siteData?.id) {
+      try {
+        setSavingMode(true);
+        const response = await fetch(`/api/business-mode/${siteData.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ business_mode: mode }),
+        });
+
+        if (!response.ok) {
+          console.error('Failed to update business mode');
+          setBusinessMode(businessMode); // Revert on failure
+        }
+      } catch (error) {
+        console.error('Error updating business mode:', error);
+        setBusinessMode(businessMode); // Revert on error
+      } finally {
+        setSavingMode(false);
+      }
+    }
   };
 
   const providers = [
@@ -129,13 +159,51 @@ function BookingEditor() {
               </div>
             </div>
           )}
+
+          <fieldset className="booking-fieldset">
+            <legend>Business Type</legend>
+            <p className="form-help">How many staff members handle bookings?</p>
+            <div className="radio-group">
+              <label className="radio-option">
+                <input
+                  type="radio"
+                  name="business_mode"
+                  value="solo"
+                  checked={businessMode === 'solo'}
+                  onChange={(e) => handleBusinessModeChange(e.target.value)}
+                  disabled={savingMode}
+                  data-testid="business-mode-solo"
+                />
+                <div className="radio-content">
+                  <strong>Solo - I handle all bookings alone</strong>
+                  <span>No staff selection needed, you'll be auto-assigned</span>
+                </div>
+              </label>
+              <label className="radio-option">
+                <input
+                  type="radio"
+                  name="business_mode"
+                  value="team"
+                  checked={businessMode === 'team'}
+                  onChange={(e) => handleBusinessModeChange(e.target.value)}
+                  disabled={savingMode}
+                  data-testid="business-mode-team"
+                />
+                <div className="radio-content">
+                  <strong>Team - I have multiple staff members</strong>
+                  <span>Customers can select their preferred provider</span>
+                </div>
+              </label>
+            </div>
+            {savingMode && <small className="saving-indicator">Updating business mode...</small>}
+          </fieldset>
         </div>
       )}
 
       <div className="editor-tip">
         <span className="tip-icon">💡</span>
         <div>
-          <strong>Pro Feature:</strong> Embedded booking widgets keep visitors on your site,
+          <strong>Growth Feature:</strong> Embedded booking widgets keep visitors on your site,
           improving conversion rates by up to 25% compared to external links.
         </div>
       </div>

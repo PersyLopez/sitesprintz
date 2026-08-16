@@ -34,17 +34,14 @@ describe('Header Component', () => {
       renderHeader();
 
       expect(screen.getByText('SiteSprintz')).toBeInTheDocument();
-      expect(screen.getByText('🚀')).toBeInTheDocument();
+      expect(screen.getByTestId('header-logo')).toBeInTheDocument();
     });
 
     it('should have logo link to home page', () => {
       renderHeader();
 
-      // The logo contains both emoji and text as separate spans, query by href instead
-      const logoLinks = screen.getAllByRole('link');
-      const homeLink = logoLinks.find(link => link.getAttribute('href') === '/');
-      expect(homeLink).toBeInTheDocument();
-      expect(homeLink).toHaveTextContent('🚀');
+      const homeLink = screen.getByTestId('header-logo');
+      expect(homeLink).toHaveAttribute('href', '/');
       expect(homeLink).toHaveTextContent('SiteSprintz');
     });
   });
@@ -94,6 +91,14 @@ describe('Header Component', () => {
       const createSiteLink = screen.getByRole('link', { name: /Create Site/i });
       expect(createSiteLink).toBeInTheDocument();
       expect(createSiteLink).toHaveAttribute('href', '/setup');
+    });
+
+    it('should show Gallery link when authenticated', () => {
+      renderHeader(true);
+
+      const galleryLinks = screen.getAllByTestId('nav-gallery');
+      expect(galleryLinks.length).toBeGreaterThan(0);
+      expect(galleryLinks[0]).toHaveAttribute('href', '/showcase');
     });
 
     it('should show Logout button when authenticated', () => {

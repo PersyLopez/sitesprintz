@@ -21,6 +21,7 @@
     "validate-templates": "node validation/validate-template.js public/data/templates/",
     "create-admin": "node scripts/create-admin.js",
     "create-demo-sites": "node scripts/create-demo-sites.js",
+    "seed:gallery": "node scripts/seed-gallery-example-sites.js",
     "setup-beta": "./scripts/setup-beta-env.sh",
     "create-beta-sites": "node scripts/create-beta-sites.js",
     "lint": "eslint . --ext .js,.jsx --report-unused-disable-directives --max-warnings 0",
@@ -31,7 +32,12 @@
     "build:prod": "prisma generate && vite build",
     "start:prod": "NODE_ENV=production node server.js",
     "launch:check": "node scripts/launch-check.js",
-    "predeploy": "npm run build:prod && npm run launch:check"
+    "predeploy": "npm run build:prod && npm run launch:check",
+    "graphify:processes": "bash scripts/graphify-processes.sh",
+    "graphify:processes:vault": "bash scripts/graphify-processes.sh --vault",
+    "graphify:obsidian": "bash scripts/graphify-processes.sh --vault --hub",
+    "graphify:obsidian:open": "bash scripts/graphify-processes.sh --vault --hub --open",
+    "graphify:hub": "bash scripts/graphify-processes.sh --hub-only"
   },
   "repository": {
     "type": "git",
@@ -46,6 +52,9 @@
   "homepage": "https://github.com/PersyLopez/Active-Directory#readme",
   "type": "module",
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@napi-rs/canvas": "^0.1.84",
     "@prisma/client": "^6.19.0",
     "ajv": "^8.12.0",

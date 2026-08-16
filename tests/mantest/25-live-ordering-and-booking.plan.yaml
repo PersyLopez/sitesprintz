@@ -1,0 +1,151 @@
+url: http://localhost:5173/view/gallery-restaurant
+goal: Live restaurant cart and salon booking actually work end-to-end
+steps:
+  - action: Restaurant live site loads
+    wait_for: { text: The Grand Table, timeout: 20000 }
+    settle_ms: 1200
+
+  - action: Cart toggle is present for checkout-enabled site
+    wait_for: { selector: '[data-testid="cart-toggle-button"]', timeout: 10000 }
+
+  - action: Add a catalog item to the cart
+    click: { selector: '[data-ss-add-to-cart]' }
+    settle_ms: 800
+
+  - action: Cart shows the added item
+    wait_for: { selector: '[data-testid="cart-item"]', timeout: 8000 }
+
+  - action: Cart badge incremented
+    code: |
+      const count = await page.getByTestId('cart-item-count').innerText();
+      if (Number(count) < 1) {
+        throw new Error('Cart badge did not increment after add-to-cart');
+      }
+
+  - action: Quantity can increase
+    click: { testId: cart-item-increase-qty }
+    settle_ms: 400
+
+  - action: Quantity is at least two
+    code: |
+      const qty = await page.getByTestId('cart-item-quantity').innerText();
+      if (Number(qty) < 2) {
+        throw new Error('Quantity did not increase, got ' + qty);
+      }
+
+  - action: Checkout path is reachable from a filled cart
+    code: |
+      const hasNotice = await page.getByTestId('checkout-upgrade-notice').count();
+      const hasCheckout = await page.getByTestId('checkout-button').count();
+      const hasPayOnSite = await page.getByTestId('pay-on-site-checkout').count();
+      if (!hasNotice && !hasCheckout && !hasPayOnSite) {
+        throw new Error('Filled cart has no checkout button, pay-on-site form, or payments-not-set-up notice');
+      }
+
+  - action: Open salon live site
+    goto: http://localhost:5173/view/gallery-salon
+    settle_ms: 2000
+
+  - action: Salon identity visible
+    wait_for: { text: Luxe Beauty Studio, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Booking widget mounted
+    wait_for: { selector: '[data-testid="live-booking-widget"]', timeout: 10000 }
+
+  - action: Bookable services are listed
+    wait_for: { selector: '[data-testid="services-list"]', timeout: 15000 }
+
+  - action: Services list is not empty
+    code: |
+      const empty = await page.getByTestId('services-empty').count();
+      if (empty) throw new Error('Salon booking widget has no services');
+      const err = await page.getByTestId('error-message').count();
+      if (err) {
+        const t = await page.getByTestId('error-message').innerText();
+        throw new Error('Salon booking failed to load services: ' + t);
+      }
+      const cards = page.locator('[data-testid^="service-card-"]');
+      if ((await cards.count()) < 1) {
+        throw new Error('Expected at least one bookable service');
+      }
+
+  - action: Select the first service
+    click: { selector: '[data-testid^="service-card-"]' }
+    settle_ms: 400
+
+  - action: Continue to date picker
+    click: { testId: next-button }
+    settle_ms: 800
+
+  - action: Calendar is visible
+    wait_for: { selector: '[data-testid="calendar"]', timeout: 8000 }
+
+  - action: Pick the next weekday with availability
+    code: |
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      let picked = false;
+      for (let offset = 1; offset <= 14; offset += 1) {
+        const day = new Date(today);
+        day.setDate(today.getDate() + offset);
+        const weekday = day.getDay();
+        if (weekday === 0 || weekday === 6) continue;
+        const iso = day.getFullYear() + '-' + String(day.getMonth() + 1).padStart(2, '0') + '-' + String(day.getDate()).padStart(2, '0');
+        const btn = page.getByTestId('date-' + iso);
+        if ((await btn.count()) === 0) {
+          await page.getByTestId('next-month').click();
+          await page.waitForTimeout(300);
+        }
+        if ((await btn.count()) > 0 && await btn.isEnabled()) {
+          await btn.click();
+          picked = true;
+          break;
+        }
+      }
+      if (!picked) throw new Error('Could not pick a future weekday on the booking calendar');
+
+  - action: Time slots appear
+    wait_for: { selector: '[data-testid="time-slots"]', timeout: 10000 }
+    settle_ms: 600
+
+  - action: Pick a time slot
+    code: |
+      const slots = page.locator('[data-testid^="time-slot-"]');
+      const count = await slots.count();
+      if (count < 1) {
+        throw new Error('No time slots returned for the selected weekday');
+      }
+      await slots.first().click();
+
+  - action: Continue to customer form
+    click: { testId: next-button }
+    settle_ms: 600
+
+  - action: Customer form is visible
+    wait_for: { selector: '[data-testid="customer-form"]', timeout: 8000 }
+
+  - action: Fill customer name
+    fill: { testId: customer-name, value: "Maya Chen", clear: true }
+
+  - action: Fill customer email
+    fill: { testId: customer-email, value: "maya.chen@example.com", clear: true }
+
+  - action: Fill customer phone
+    fill: { testId: customer-phone, value: "555-010-4488", clear: true }
+
+  - action: Submit the booking
+    click: { testId: book-now-button }
+    settle_ms: 1500
+
+  - action: Confirmation page is shown
+    wait_for: { selector: '[data-testid="confirmation-page"]', timeout: 15000 }
+
+  - action: Confirmation has a code
+    code: |
+      const msg = await page.getByTestId('confirmation-message').innerText();
+      if (!/booked|confirmed|appointment/i.test(msg)) {
+        throw new Error('Unexpected confirmation copy: ' + msg);
+      }
+      const code = await page.getByTestId('confirmation-code').innerText();
+      if (!code.trim()) throw new Error('Missing confirmation code');

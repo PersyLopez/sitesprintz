@@ -9,17 +9,44 @@ import path from 'path';
 import crypto from 'crypto';
 import ContentService from '../services/contentService.js';
 import { requireAuth } from '../middleware/auth.js';
+import { prisma } from '../../database/db.js';
 import {
   sendSuccess,
   sendCreated,
   sendBadRequest,
   sendNotFound,
   sendForbidden,
-  sendServerError,
   asyncHandler
 } from '../utils/apiResponse.js';
 
 const router = express.Router();
+
+/**
+ * Ensure authenticated user owns the site for this subdomain
+ */
+const requireContentOwnership = asyncHandler(async (req, res, next) => {
+  const { subdomain } = req.params;
+  const userId = req.user?.id || req.user?.userId;
+  if (!userId) {
+    return sendForbidden(res, 'Authentication required', 'AUTH_REQUIRED');
+  }
+
+  const site = await prisma.sites.findFirst({
+    where: { subdomain },
+    select: { id: true, user_id: true }
+  });
+
+  if (!site) {
+    return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
+  }
+
+  if (site.user_id !== userId && req.user.role !== 'admin') {
+    return sendForbidden(res, 'Not authorized to modify this site', 'ACCESS_DENIED');
+  }
+
+  req.contentSite = site;
+  next();
+});
 
 // Configure multer for image uploads
 const storage = multer.diskStorage({
@@ -66,7 +93,7 @@ router.get('/:subdomain/menu', asyncHandler(async (req, res) => {
 }));
 
 // POST create menu item
-router.post('/:subdomain/menu', requireAuth, asyncHandler(async (req, res) => {
+router.post('/:subdomain/menu', requireAuth, requireContentOwnership, asyncHandler(async (req, res) => {
   const { subdomain } = req.params;
   
   try {
@@ -81,7 +108,7 @@ router.post('/:subdomain/menu', requireAuth, asyncHandler(async (req, res) => {
 }));
 
 // PUT update menu item
-router.put('/:subdomain/menu/:itemId', requireAuth, asyncHandler(async (req, res) => {
+router.put('/:subdomain/menu/:itemId', requireAuth, requireContentOwnership, asyncHandler(async (req, res) => {
   const { subdomain, itemId } = req.params;
   
   try {
@@ -99,7 +126,7 @@ router.put('/:subdomain/menu/:itemId', requireAuth, asyncHandler(async (req, res
 }));
 
 // DELETE menu item
-router.delete('/:subdomain/menu/:itemId', requireAuth, asyncHandler(async (req, res) => {
+router.delete('/:subdomain/menu/:itemId', requireAuth, requireContentOwnership, asyncHandler(async (req, res) => {
   const { subdomain, itemId } = req.params;
   
   try {
@@ -114,7 +141,7 @@ router.delete('/:subdomain/menu/:itemId', requireAuth, asyncHandler(async (req, 
 }));
 
 // PATCH reorder menu items
-router.patch('/:subdomain/menu/reorder', requireAuth, asyncHandler(async (req, res) => {
+router.patch('/:subdomain/menu/reorder', requireAuth, requireContentOwnership, asyncHandler(async (req, res) => {
   const { subdomain } = req.params;
   const { items } = req.body;
 
@@ -134,7 +161,7 @@ router.patch('/:subdomain/menu/reorder', requireAuth, asyncHandler(async (req, r
 }));
 
 // POST bulk create menu items
-router.post('/:subdomain/menu/bulk', requireAuth, asyncHandler(async (req, res) => {
+router.post('/:subdomain/menu/bulk', requireAuth, requireContentOwnership, asyncHandler(async (req, res) => {
   const { subdomain } = req.params;
   const { items } = req.body;
 
@@ -150,7 +177,7 @@ router.post('/:subdomain/menu/bulk', requireAuth, asyncHandler(async (req, res) 
 }));
 
 // DELETE bulk delete menu items
-router.delete('/:subdomain/menu/bulk', requireAuth, asyncHandler(async (req, res) => {
+router.delete('/:subdomain/menu/bulk', requireAuth, requireContentOwnership, asyncHandler(async (req, res) => {
   const { subdomain } = req.params;
   const { ids } = req.body;
 
@@ -174,7 +201,7 @@ router.get('/:subdomain/services', asyncHandler(async (req, res) => {
 }));
 
 // POST create service
-router.post('/:subdomain/services', requireAuth, asyncHandler(async (req, res) => {
+router.post('/:subdomain/services', requireAuth, requireContentOwnership, asyncHandler(async (req, res) => {
   const { subdomain } = req.params;
   
   try {
@@ -189,7 +216,7 @@ router.post('/:subdomain/services', requireAuth, asyncHandler(async (req, res) =
 }));
 
 // PUT update service
-router.put('/:subdomain/services/:serviceId', requireAuth, asyncHandler(async (req, res) => {
+router.put('/:subdomain/services/:serviceId', requireAuth, requireContentOwnership, asyncHandler(async (req, res) => {
   const { subdomain, serviceId } = req.params;
   
   try {
@@ -204,7 +231,7 @@ router.put('/:subdomain/services/:serviceId', requireAuth, asyncHandler(async (r
 }));
 
 // DELETE service
-router.delete('/:subdomain/services/:serviceId', requireAuth, asyncHandler(async (req, res) => {
+router.delete('/:subdomain/services/:serviceId', requireAuth, requireContentOwnership, asyncHandler(async (req, res) => {
   const { subdomain, serviceId } = req.params;
   
   try {
@@ -236,7 +263,7 @@ router.get('/:subdomain/products', asyncHandler(async (req, res) => {
 }));
 
 // POST create product
-router.post('/:subdomain/products', requireAuth, asyncHandler(async (req, res) => {
+router.post('/:subdomain/products', requireAuth, requireContentOwnership, asyncHandler(async (req, res) => {
   const { subdomain } = req.params;
   
   try {
@@ -253,7 +280,7 @@ router.post('/:subdomain/products', requireAuth, asyncHandler(async (req, res) =
 /**
  * Image Upload Route
  */
-router.post('/:subdomain/upload', requireAuth, (req, res) => {
+router.post('/:subdomain/upload', requireAuth, requireContentOwnership, (req, res) => {
   upload.single('image')(req, res, (err) => {
     if (err) {
       if (err.message?.includes('Only images')) {

@@ -118,7 +118,8 @@ export function csrfProtection(req, res, next) {
   // Skip CSRF validation for public checkout endpoints (anonymous customers)
   if (
     req.path === '/api/payments/checkout-sessions' ||
-    req.path === '/api/stripe/connect/create-checkout'
+    req.path === '/api/stripe/connect/create-checkout' ||
+    (typeof req.path === 'string' && req.path.endsWith('/pay-on-site'))
   ) {
     return next();
   }

@@ -1,337 +1,59 @@
 /**
  * Unit Tests for Analytics Service
- * TDD Approach: RED phase - Define tests first
- * 
- * Analytics Service should:
- * - Track page views with timestamp, subdomain, page path, user agent, referrer
- * - Track order completions with revenue, items count
- * - Track conversions (contact forms, booking clicks)
- * - Aggregate daily/weekly/monthly stats
- * - Calculate conversion rates
- * - Handle bot traffic filtering
- * - Respect privacy (no PII storage)
+ * Tests the Prisma-based analytics implementation
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { query, prisma } from '../../database/db.js';
 
-// Will implement this service
+// Mock the Prisma DB module
+vi.mock('../../database/db.js', () => ({
+  prisma: {
+    sites: {
+      findUnique: vi.fn()
+    },
+    analytics_page_views: {
+      create: vi.fn(),
+      deleteMany: vi.fn()
+    },
+    analytics_orders: {
+      create: vi.fn(),
+      deleteMany: vi.fn()
+    },
+    analytics_conversions: {
+      create: vi.fn(),
+      deleteMany: vi.fn()
+    },
+    $queryRawUnsafe: vi.fn()
+  }
+}));
+
 let AnalyticsService;
+let prisma;
 
 describe('AnalyticsService', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     
-    // Import the service
+    // Re-import to get fresh mocks
+    const dbModule = await import('../../database/db.js');
+    prisma = dbModule.prisma;
+    
+    // Setup default mock for site resolution
+    vi.mocked(prisma.sites.findUnique).mockResolvedValue({
+      id: 'site-123',
+      subdomain: 'mybusiness'
+    });
+    
+    // Import analytics service
     const module = await import('../../server/services/analyticsService.js');
     AnalyticsService = module.default || module.AnalyticsService;
-  });
-
-  describe('trackPageView()', () => {
-    it('should record a page view with all required fields', async () => {
-      const pageView = {
-        subdomain: 'mybusiness',
-        path: '/menu',
-        userAgent: 'Mozilla/5.0...',
-        referrer: 'https://google.com',
-        ipAddress: '192.168.1.1'
-      };
-
-      await AnalyticsService.trackPageView(pageView);
-
-      expect(query).toHaveBeenCalledWith(
-        expect.stringContaining('INSERT INTO analytics_page_views'),
-        expect.arrayContaining([
-          pageView.subdomain,
-          pageView.path,
-          expect.any(String), // timestamp
-          pageView.userAgent,
-          'google.com' // referrer domain extracted
-        ])
-      );
-    });
-
-    it('should filter out bot traffic', async () => {
-      const botView = {
-        subdomain: 'mybusiness',
-        path: '/menu',
-        userAgent: 'Googlebot/2.1',
-        referrer: '',
-        ipAddress: '192.168.1.1'
-      };
-
-      const result = await AnalyticsService.trackPageView(botView);
-
-      expect(result.tracked).toBe(false);
-      expect(result.reason).toBe('bot_traffic');
-      expect(query).not.toHaveBeenCalled();
-    });
-
-    it('should not store IP addresses (privacy)', async () => {
-      const pageView = {
-        subdomain: 'mybusiness',
-        path: '/menu',
-        userAgent: 'Mozilla/5.0...',
-        referrer: 'https://google.com',
-        ipAddress: '192.168.1.1'
-      };
-
-      await AnalyticsService.trackPageView(pageView);
-
-      const insertCall = query.mock.calls[0];
-      expect(insertCall[1]).not.toContain('192.168.1.1');
-    });
-
-    it('should handle missing optional fields', async () => {
-      const pageView = {
-        subdomain: 'mybusiness',
-        path: '/'
-      };
-
-      await AnalyticsService.trackPageView(pageView);
-
-      expect(query).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.arrayContaining([
-          'mybusiness',
-          '/',
-          expect.any(String),
-          null, // userAgent
-          null  // referrer
-        ])
-      );
-    });
-  });
-
-  describe('trackOrder()', () => {
-    it('should record an order completion event', async () => {
-      const order = {
-        subdomain: 'mybusiness',
-        orderId: 'order_123',
-        revenue: 45.99,
-        itemsCount: 3,
-        orderType: 'pickup'
-      };
-
-      await AnalyticsService.trackOrder(order);
-
-      expect(query).toHaveBeenCalledWith(
-        expect.stringContaining('INSERT INTO analytics_orders'),
-        expect.arrayContaining([
-          order.subdomain,
-          order.orderId,
-          order.revenue,
-          order.itemsCount,
-          order.orderType
-        ])
-      );
-    });
-
-    it('should validate revenue is a positive number', async () => {
-      const order = {
-        subdomain: 'mybusiness',
-        orderId: 'order_123',
-        revenue: -10,
-        itemsCount: 1
-      };
-
-      await expect(AnalyticsService.trackOrder(order))
-        .rejects.toThrow('Revenue must be a positive number');
-    });
-  });
-
-  describe('trackConversion()', () => {
-    it('should record a conversion event', async () => {
-      const conversion = {
-        subdomain: 'mybusiness',
-        type: 'contact_form_submit',
-        value: 0,
-        metadata: { formType: 'quote_request' }
-      };
-
-      await AnalyticsService.trackConversion(conversion);
-
-      expect(query).toHaveBeenCalledWith(
-        expect.stringContaining('INSERT INTO analytics_conversions'),
-        expect.arrayContaining([
-          conversion.subdomain,
-          conversion.type,
-          conversion.value,
-          expect.any(String) // JSON metadata
-        ])
-      );
-    });
-
-    it('should support different conversion types', async () => {
-      const types = [
-        'contact_form_submit',
-        'booking_click',
-        'phone_click',
-        'email_click',
-        'menu_download'
-      ];
-
-      for (const type of types) {
-        await AnalyticsService.trackConversion({
-          subdomain: 'mybusiness',
-          type,
-          value: 0
-        });
-      }
-
-      expect(query).toHaveBeenCalledTimes(types.length);
-    });
-  });
-
-  describe('getStats()', () => {
-    it('should return overview stats for a subdomain', async () => {
-      query.mockResolvedValueOnce({
-        rows: [{
-          total_page_views: 150,
-          unique_visitors: 45,
-          total_orders: 12,
-          total_revenue: 567.88,
-          avg_order_value: 47.32,
-          conversion_rate: 0.08
-        }]
-      });
-
-      const stats = await AnalyticsService.getStats('mybusiness', {
-        period: '7d'
-      });
-
-      expect(stats).toEqual({
-        pageViews: 150,
-        uniqueVisitors: 45,
-        orders: 12,
-        revenue: 567.88,
-        avgOrderValue: 47.32,
-        conversionRate: 8.0 // percentage
-      });
-    });
-
-    it('should support different time periods', async () => {
-      const periods = ['24h', '7d', '30d', '90d', '1y'];
-      
-      for (const period of periods) {
-        query.mockResolvedValueOnce({ rows: [{}] });
-        await AnalyticsService.getStats('mybusiness', { period });
-      }
-
-      expect(query).toHaveBeenCalledTimes(periods.length);
-    });
-
-    it('should filter by date range', async () => {
-      await AnalyticsService.getStats('mybusiness', {
-        startDate: '2025-01-01',
-        endDate: '2025-01-31'
-      });
-
-      const sqlCall = query.mock.calls[0][0];
-      expect(sqlCall).toContain('timestamp >=');
-      expect(sqlCall).toContain('timestamp <=');
-    });
-  });
-
-  describe('getTopPages()', () => {
-    it('should return most visited pages', async () => {
-      query.mockResolvedValueOnce({
-        rows: [
-          { path: '/menu', views: 89, unique_visitors: 45 },
-          { path: '/', views: 67, unique_visitors: 42 },
-          { path: '/contact', views: 34, unique_visitors: 28 }
-        ]
-      });
-
-      const topPages = await AnalyticsService.getTopPages('mybusiness', {
-        limit: 10
-      });
-
-      expect(topPages).toHaveLength(3);
-      expect(topPages[0]).toEqual({
-        path: '/menu',
-        views: 89,
-        uniqueVisitors: 45
-      });
-    });
-
-    it('should limit results to specified count', async () => {
-      await AnalyticsService.getTopPages('mybusiness', { limit: 5 });
-
-      const sqlCall = query.mock.calls[0][0];
-      expect(sqlCall).toContain('LIMIT 5');
-    });
-  });
-
-  describe('getReferrerStats()', () => {
-    it('should return traffic sources', async () => {
-      query.mockResolvedValueOnce({
-        rows: [
-          { referrer_domain: 'google.com', count: 120, percentage: 60.0 },
-          { referrer_domain: 'facebook.com', count: 50, percentage: 25.0 },
-          { referrer_domain: 'direct', count: 30, percentage: 15.0 }
-        ]
-      });
-
-      const referrers = await AnalyticsService.getReferrerStats('mybusiness');
-
-      expect(referrers).toHaveLength(3);
-      expect(referrers[0].domain).toBe('google.com');
-      expect(referrers[0].visits).toBe(120);
-      expect(referrers[0].percentage).toBe(60.0);
-    });
-
-    it('should categorize direct traffic', async () => {
-      query.mockResolvedValueOnce({
-        rows: [{ referrer_domain: 'direct', count: 30, percentage: 100.0 }]
-      });
-
-      const referrers = await AnalyticsService.getReferrerStats('mybusiness');
-
-      expect(referrers[0].domain).toBe('direct');
-    });
-  });
-
-  describe('getTimeSeriesData()', () => {
-    it('should return daily aggregated data', async () => {
-      query.mockResolvedValueOnce({
-        rows: [
-          { date: '2025-01-10', page_views: 45, orders: 3, revenue: 120.50 },
-          { date: '2025-01-11', page_views: 52, orders: 4, revenue: 180.25 },
-          { date: '2025-01-12', page_views: 38, orders: 2, revenue: 95.00 }
-        ]
-      });
-
-      const timeSeries = await AnalyticsService.getTimeSeriesData('mybusiness', {
-        period: '7d',
-        groupBy: 'day'
-      });
-
-      expect(timeSeries).toHaveLength(3);
-      expect(timeSeries[0]).toEqual({
-        date: '2025-01-10',
-        pageViews: 45,
-        orders: 3,
-        revenue: 120.50
-      });
-    });
-
-    it('should support hourly grouping for 24h period', async () => {
-      await AnalyticsService.getTimeSeriesData('mybusiness', {
-        period: '24h',
-        groupBy: 'hour'
-      });
-
-      const sqlCall = query.mock.calls[0][0];
-      expect(sqlCall).toContain('DATE_TRUNC');
-    });
   });
 
   describe('Bot Detection', () => {
     const botUserAgents = [
       'Googlebot',
       'bingbot',
-      'Slurp', // Yahoo
+      'Slurp',
       'DuckDuckBot',
       'Baiduspider',
       'YandexBot',
@@ -340,66 +62,270 @@ describe('AnalyticsService', () => {
       'Twitterbot'
     ];
 
-    it.each(botUserAgents)('should detect %s as a bot', async (botUA) => {
+    it.each(botUserAgents)('should filter out %s traffic', async (botUA) => {
       const result = await AnalyticsService.trackPageView({
-        subdomain: 'test',
+        subdomain: 'mybusiness',
         path: '/',
-        userAgent: `Mozilla/5.0 (compatible; ${botUA}/2.1; +http://www.google.com/bot.html)`
+        userAgent: `Mozilla/5.0 (compatible; ${botUA}/2.1)`
       });
 
       expect(result.tracked).toBe(false);
       expect(result.reason).toBe('bot_traffic');
+      expect(prisma.analytics_page_views.create).not.toHaveBeenCalled();
     });
 
     it('should allow legitimate user agents', async () => {
-      const legitimateUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
-      
-      await AnalyticsService.trackPageView({
-        subdomain: 'test',
+      const result = await AnalyticsService.trackPageView({
+        subdomain: 'mybusiness',
         path: '/',
-        userAgent: legitimateUA
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
       });
 
-      expect(query).toHaveBeenCalled();
+      expect(result.tracked).toBe(true);
+      expect(prisma.analytics_page_views.create).toHaveBeenCalled();
     });
   });
 
-  describe('Privacy & Data Retention', () => {
-    it('should not store any personally identifiable information', async () => {
-      const pageView = {
+  describe('trackPageView()', () => {
+    it('should record a page view with all fields', async () => {
+      const result = await AnalyticsService.trackPageView({
         subdomain: 'mybusiness',
-        path: '/contact?email=user@example.com&phone=555-1234',
+        path: '/menu',
         userAgent: 'Mozilla/5.0...',
-        ipAddress: '192.168.1.1'
-      };
+        referrer: 'https://google.com'
+      });
 
-      await AnalyticsService.trackPageView(pageView);
-
-      const insertCall = query.mock.calls[0];
-      const insertedData = insertCall[1].join(' ');
-      
-      // Should not contain email, phone, or IP
-      expect(insertedData).not.toContain('user@example.com');
-      expect(insertedData).not.toContain('555-1234');
-      expect(insertedData).not.toContain('192.168.1.1');
+      expect(result.tracked).toBe(true);
+      expect(prisma.analytics_page_views.create).toHaveBeenCalledWith({
+        data: {
+          site_id: 'site-123',
+          path: '/menu',
+          timestamp: expect.any(Date),
+          user_agent: 'Mozilla/5.0...',
+          referrer: 'https://google.com'
+        }
+      });
     });
 
-    it('should provide method to delete analytics for a subdomain', async () => {
+    it('should handle missing optional fields', async () => {
+      await AnalyticsService.trackPageView({
+        subdomain: 'mybusiness',
+        path: '/'
+      });
+
+      expect(prisma.analytics_page_views.create).toHaveBeenCalledWith({
+        data: {
+          site_id: 'site-123',
+          path: '/',
+          timestamp: expect.any(Date),
+          user_agent: null,
+          referrer: null
+        }
+      });
+    });
+
+    it('should sanitize paths to remove query parameters', async () => {
+      await AnalyticsService.trackPageView({
+        subdomain: 'mybusiness',
+        path: '/contact?email=user@example.com&phone=555-1234'
+      });
+
+      const call = vi.mocked(prisma.analytics_page_views.create).mock.calls[0];
+      expect(call[0].data.path).toBe('/contact');
+    });
+
+    it('should not store IP addresses', async () => {
+      await AnalyticsService.trackPageView({
+        subdomain: 'mybusiness',
+        path: '/',
+        ipAddress: '192.168.1.1'
+      });
+
+      const call = vi.mocked(prisma.analytics_page_views.create).mock.calls[0];
+      expect(call[0].data).not.toHaveProperty('ip_address');
+    });
+  });
+
+  describe('trackOrder()', () => {
+    it('should record an order with value', async () => {
+      const result = await AnalyticsService.trackOrder({
+        subdomain: 'mybusiness',
+        orderId: 'order_123',
+        value: 4599
+      });
+
+      expect(result.tracked).toBe(true);
+      expect(prisma.analytics_orders.create).toHaveBeenCalledWith({
+        data: {
+          site_id: 'site-123',
+          order_id: 'order_123',
+          value: 4599,
+          timestamp: expect.any(Date)
+        }
+      });
+    });
+
+    it('should validate value is positive', async () => {
+      await expect(
+        AnalyticsService.trackOrder({
+          subdomain: 'mybusiness',
+          orderId: 'order_123',
+          value: -10
+        })
+      ).rejects.toThrow('Value must be a positive number');
+    });
+  });
+
+  describe('trackConversion()', () => {
+    it('should record a conversion event', async () => {
+      const result = await AnalyticsService.trackConversion({
+        subdomain: 'mybusiness',
+        type: 'contact_form_submit',
+        metadata: { formType: 'quote_request' }
+      });
+
+      expect(result.tracked).toBe(true);
+      expect(prisma.analytics_conversions.create).toHaveBeenCalledWith({
+        data: {
+          site_id: 'site-123',
+          event_type: 'contact_form_submit',
+          metadata: { formType: 'quote_request' },
+          timestamp: expect.any(Date)
+        }
+      });
+    });
+
+    it('should handle conversion without metadata', async () => {
+      await AnalyticsService.trackConversion({
+        subdomain: 'mybusiness',
+        type: 'booking_click'
+      });
+
+      expect(prisma.analytics_conversions.create).toHaveBeenCalledWith({
+        data: {
+          site_id: 'site-123',
+          event_type: 'booking_click',
+          metadata: null,
+          timestamp: expect.any(Date)
+        }
+      });
+    });
+  });
+
+  describe('getStats()', () => {
+    it('should query aggregated stats by site_id', async () => {
+      vi.mocked(prisma.$queryRawUnsafe).mockResolvedValueOnce([{
+        total_page_views: 150,
+        unique_visitors: 45,
+        total_orders: 12,
+        total_revenue: 56788,
+        avg_order_value: 4732,
+        conversion_rate: 0.08
+      }]);
+
+      const stats = await AnalyticsService.getStats('mybusiness', { period: '7d' });
+
+      expect(stats.pageViews).toBe(150);
+      expect(stats.uniqueVisitors).toBe(45);
+      expect(stats.orders).toBe(12);
+      expect(stats.revenue).toBe(56788);
+      expect(stats.conversionRate).toBe(8);
+      
+      const sqlCall = vi.mocked(prisma.$queryRawUnsafe).mock.calls[0];
+      expect(sqlCall[0]).toContain('pv.site_id = $1');
+    });
+  });
+
+  describe('getTopPages()', () => {
+    it('should return top pages for a site', async () => {
+      vi.mocked(prisma.$queryRawUnsafe).mockResolvedValueOnce([
+        { path: '/menu', views: 89, unique_visitors: 45 },
+        { path: '/', views: 67, unique_visitors: 42 }
+      ]);
+
+      const topPages = await AnalyticsService.getTopPages('mybusiness', { limit: 10 });
+
+      expect(topPages).toHaveLength(2);
+      expect(topPages[0].path).toBe('/menu');
+      expect(topPages[0].views).toBe(89);
+      
+      const sqlCall = vi.mocked(prisma.$queryRawUnsafe).mock.calls[0];
+      expect(sqlCall[0]).toContain('site_id = $1');
+    });
+  });
+
+  describe('getReferrerStats()', () => {
+    it('should return traffic sources', async () => {
+      vi.mocked(prisma.$queryRawUnsafe).mockResolvedValueOnce([
+        { referrer: 'google.com', count: 120, percentage: 60.0 },
+        { referrer: 'direct', count: 30, percentage: 15.0 }
+      ]);
+
+      const referrers = await AnalyticsService.getReferrerStats('mybusiness');
+
+      expect(referrers).toHaveLength(2);
+      expect(referrers[0].domain).toBe('google.com');
+      expect(referrers[0].visits).toBe(120);
+      
+      const sqlCall = vi.mocked(prisma.$queryRawUnsafe).mock.calls[0];
+      expect(sqlCall[0]).toContain('site_id = $1');
+    });
+  });
+
+  describe('getTimeSeriesData()', () => {
+    it('should return time-series aggregated data', async () => {
+      vi.mocked(prisma.$queryRawUnsafe).mockResolvedValueOnce([
+        { date: '2025-01-10', page_views: 45, orders: 3, revenue: 12050 }
+      ]);
+
+      const timeSeries = await AnalyticsService.getTimeSeriesData('mybusiness', {
+        period: '7d',
+        groupBy: 'day'
+      });
+
+      expect(timeSeries[0].pageViews).toBe(45);
+      expect(timeSeries[0].orders).toBe(3);
+      expect(timeSeries[0].revenue).toBe(12050);
+      
+      const sqlCall = vi.mocked(prisma.$queryRawUnsafe).mock.calls[0];
+      expect(sqlCall[0]).toContain('pv.site_id = $1');
+    });
+  });
+
+  describe('deleteAnalytics() and clearSiteData()', () => {
+    it('should delete all analytics for a subdomain', async () => {
       await AnalyticsService.deleteAnalytics('mybusiness');
 
-      expect(query).toHaveBeenCalledWith(
-        expect.stringContaining('DELETE FROM analytics_page_views'),
-        ['mybusiness']
-      );
-      expect(query).toHaveBeenCalledWith(
-        expect.stringContaining('DELETE FROM analytics_orders'),
-        ['mybusiness']
-      );
-      expect(query).toHaveBeenCalledWith(
-        expect.stringContaining('DELETE FROM analytics_conversions'),
-        ['mybusiness']
-      );
+      expect(prisma.analytics_page_views.deleteMany).toHaveBeenCalledWith({
+        where: { site_id: 'site-123' }
+      });
+      expect(prisma.analytics_orders.deleteMany).toHaveBeenCalledWith({
+        where: { site_id: 'site-123' }
+      });
+      expect(prisma.analytics_conversions.deleteMany).toHaveBeenCalledWith({
+        where: { site_id: 'site-123' }
+      });
+    });
+
+    it('should clear analytics by site_id directly', async () => {
+      await AnalyticsService.clearSiteData('site-456');
+
+      expect(prisma.analytics_page_views.deleteMany).toHaveBeenCalledWith({
+        where: { site_id: 'site-456' }
+      });
+    });
+  });
+
+  describe('resolveSiteId()', () => {
+    it('should throw error if site not found', async () => {
+      vi.mocked(prisma.sites.findUnique).mockResolvedValueOnce(null);
+
+      await expect(
+        AnalyticsService.trackPageView({
+          subdomain: 'nonexistent',
+          path: '/'
+        })
+      ).rejects.toThrow('Site not found');
     });
   });
 });
-

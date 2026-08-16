@@ -1,7 +1,16 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import BookingWidget from '../../src/components/booking/BookingWidget';
+
+const renderWithRouter = (component) => {
+  return render(
+    <MemoryRouter>
+      {component}
+    </MemoryRouter>
+  );
+};
 
 describe('BookingWidget Component', () => {
   beforeEach(() => {
@@ -26,13 +35,13 @@ describe('BookingWidget Component', () => {
         url: 'https://calendly.com/test',
       };
 
-      render(<BookingWidget config={config} />);
+      renderWithRouter(<BookingWidget config={config} />);
 
       expect(screen.getByText(/loading booking widget/i)).toBeInTheDocument();
     });
 
     it('should show error for missing config', async () => {
-      render(<BookingWidget config={null} />);
+      renderWithRouter(<BookingWidget config={null} />);
 
       await waitFor(() => {
         expect(screen.getByText(/booking widget error/i)).toBeInTheDocument();
@@ -46,7 +55,7 @@ describe('BookingWidget Component', () => {
         url: 'https://example.com',
       };
 
-      render(<BookingWidget config={config} />);
+      renderWithRouter(<BookingWidget config={config} />);
 
       await waitFor(() => {
         expect(screen.getByText(/unknown booking provider/i)).toBeInTheDocument();
@@ -63,7 +72,7 @@ describe('BookingWidget Component', () => {
         style: 'inline',
       };
 
-      const { container } = render(<BookingWidget config={config} />);
+      const { container } = renderWithRouter(<BookingWidget config={config} />);
 
       // Initially shows loading
       expect(screen.getByText(/loading/i)).toBeInTheDocument();
@@ -80,7 +89,7 @@ describe('BookingWidget Component', () => {
         style: 'popup',
       };
 
-      render(<BookingWidget config={config} />);
+      renderWithRouter(<BookingWidget config={config} />);
 
       await waitFor(() => {
         expect(screen.getByText(/schedule appointment/i)).toBeInTheDocument();
@@ -93,7 +102,7 @@ describe('BookingWidget Component', () => {
         url: 'https://calendly.com/test',
       };
 
-      render(<BookingWidget config={config} />);
+      renderWithRouter(<BookingWidget config={config} />);
 
       // Just verify component renders without errors
       await waitFor(() => {
@@ -109,7 +118,7 @@ describe('BookingWidget Component', () => {
         style: 'popup',
       };
 
-      render(<BookingWidget config={config} />);
+      renderWithRouter(<BookingWidget config={config} />);
 
       await waitFor(() => {
         expect(screen.getByText(/schedule appointment/i)).toBeInTheDocument();
@@ -133,7 +142,7 @@ describe('BookingWidget Component', () => {
         style: 'inline',
       };
 
-      const { container } = render(<BookingWidget config={config} />);
+      const { container } = renderWithRouter(<BookingWidget config={config} />);
 
       // Initially shows loading  
       expect(screen.getByText(/loading/i)).toBeInTheDocument();
@@ -149,7 +158,7 @@ describe('BookingWidget Component', () => {
         style: 'popup',
       };
 
-      render(<BookingWidget config={config} />);
+      renderWithRouter(<BookingWidget config={config} />);
 
       await waitFor(() => {
         expect(screen.getByText(/book appointment/i)).toBeInTheDocument();
@@ -164,7 +173,7 @@ describe('BookingWidget Component', () => {
         style: 'popup',
       };
 
-      render(<BookingWidget config={config} />);
+      renderWithRouter(<BookingWidget config={config} />);
 
       await waitFor(() => {
         expect(screen.getByText(/book appointment/i)).toBeInTheDocument();
@@ -190,7 +199,7 @@ describe('BookingWidget Component', () => {
         style: 'inline',
       };
 
-      render(<BookingWidget config={config} />);
+      renderWithRouter(<BookingWidget config={config} />);
 
       await waitFor(() => {
         const iframe = screen.getByTitle(/booking widget/i);
@@ -205,7 +214,7 @@ describe('BookingWidget Component', () => {
         url: 'https://square.site/book/test',
       };
 
-      const { container } = render(<BookingWidget config={config} />);
+      const { container } = renderWithRouter(<BookingWidget config={config} />);
 
       await waitFor(() => {
         const widget = container.querySelector('.booking-square');
@@ -223,7 +232,7 @@ describe('BookingWidget Component', () => {
         style: 'inline',
       };
 
-      render(<BookingWidget config={config} />);
+      renderWithRouter(<BookingWidget config={config} />);
 
       await waitFor(() => {
         const iframe = screen.getByTitle(/booking widget/i);
@@ -238,7 +247,7 @@ describe('BookingWidget Component', () => {
         url: 'https://cal.com/test',
       };
 
-      const { container } = render(<BookingWidget config={config} />);
+      const { container } = renderWithRouter(<BookingWidget config={config} />);
 
       await waitFor(() => {
         const widget = container.querySelector('.booking-calcom');
@@ -256,7 +265,7 @@ describe('BookingWidget Component', () => {
         url: 'https://example.com/test',
       };
 
-      render(<BookingWidget config={config} />);
+      renderWithRouter(<BookingWidget config={config} />);
 
       await waitFor(() => {
         expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
@@ -264,7 +273,7 @@ describe('BookingWidget Component', () => {
     });
 
     it('should display error message', async () => {
-      render(<BookingWidget config={{}} />);
+      renderWithRouter(<BookingWidget config={{}} />);
 
       await waitFor(() => {
         expect(screen.getByText(/configuration is incomplete/i)).toBeInTheDocument();
@@ -277,7 +286,7 @@ describe('BookingWidget Component', () => {
         provider: 'calendly',
       };
 
-      render(<BookingWidget config={config} />);
+      renderWithRouter(<BookingWidget config={config} />);
 
       await waitFor(() => {
         expect(screen.getByText(/booking widget error/i)).toBeInTheDocument();
@@ -294,7 +303,7 @@ describe('BookingWidget Component', () => {
       };
 
       // Render multiple instances
-      const { unmount } = render(<BookingWidget config={config} />);
+      const { unmount } = renderWithRouter(<BookingWidget config={config} />);
 
       await waitFor(() => {
         expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
@@ -303,7 +312,7 @@ describe('BookingWidget Component', () => {
       unmount();
 
       // Render again
-      render(<BookingWidget config={config} />);
+      renderWithRouter(<BookingWidget config={config} />);
 
       await waitFor(() => {
         expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();

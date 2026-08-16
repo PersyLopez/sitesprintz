@@ -1,20 +1,68 @@
 /**
- * ShowcaseGallery Component
- * 
- * Public gallery page displaying all customer sites ("Made with SiteSprintz")
- * - Grid layout with site cards
- * - Category filtering
- * - Search functionality
- * - Pagination
- * - SEO optimized
+ * ShowcaseGallery — public “Made with SiteSprintz” gallery
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { OptimizedImage } from '../components/common/OptimizedImage';
+import PublicPageLayout from '../components/layout/PublicPageLayout';
+import { useAuth } from '../hooks/useAuth';
 import './ShowcaseGallery.css';
 
+const CATEGORY_META = {
+  restaurant: { emoji: '🍽️', accent: '#e87b1e' },
+  product: { emoji: '🛍️', accent: '#c45a0a' },
+  cleaning: { emoji: '✨', accent: '#0f766e' },
+  consultant: { emoji: '💼', accent: '#b45309' },
+  electrician: { emoji: '⚡', accent: '#ca8a04' },
+  freelancer: { emoji: '🎨', accent: '#c2410c' },
+  gym: { emoji: '💪', accent: '#9a3412' },
+  pet: { emoji: '🐾', accent: '#ea580c' },
+  plumbing: { emoji: '🔧', accent: '#0f766e' },
+  salon: { emoji: '💇', accent: '#be185d' },
+  tech: { emoji: '💻', accent: '#15803d' },
+  auto: { emoji: '🚗', accent: '#78716c' },
+  tow: { emoji: '🚛', accent: '#c2410c' },
+  other: { emoji: '🌐', accent: '#e87b1e' },
+};
+
+function normalizeCategories(payload) {
+  const list = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload?.categories)
+      ? payload.categories
+      : [];
+
+  return list
+    .map((cat) => {
+      const key = cat?.name || cat?.template || cat?.id;
+      if (!key) return null;
+      return {
+        id: String(key),
+        label: String(key),
+        count: Number(cat.count) || 0,
+      };
+    })
+    .filter(Boolean);
+}
+
+function formatLabel(value) {
+  if (!value || typeof value !== 'string') return 'Unknown';
+  return value
+    .split(/[-_\s]+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
+function categoryMeta(templateOrId) {
+  if (!templateOrId) return CATEGORY_META.other;
+  const key = String(templateOrId).split('-')[0].toLowerCase();
+  return CATEGORY_META[key] || CATEGORY_META.other;
+}
+
 function ShowcaseGallery() {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [sites, setSites] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -23,60 +71,83 @@ function ShowcaseGallery() {
   const [totalSites, setTotalSites] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const sitesAbortRef = useRef(null);
 
   const sitesPerPage = 12;
-  const totalPages = Math.ceil(totalSites / sitesPerPage);
+  const totalPages = Math.max(1, Math.ceil(totalSites / sitesPerPage) || 1);
+  const ctaTo = isAuthenticated ? '/setup' : '/register';
+  const ctaLabel = isAuthenticated ? 'Create your page' : 'Create your site free';
 
-  // Set page title for SEO
+  const handleCta = useCallback((e) => {
+    if (isAuthenticated) {
+      e.preventDefault();
+      navigate('/setup');
+    }
+  }, [isAuthenticated, navigate]);
+
   useEffect(() => {
-    document.title = 'Showcase - Made with SiteSprintz | Website Gallery';
+    document.title = 'Gallery — See how your SiteSprintz site could look';
 
-    // Add/update meta description
     let metaDescription = document.querySelector('meta[name="description"]');
     if (!metaDescription) {
       metaDescription = document.createElement('meta');
       metaDescription.setAttribute('name', 'description');
       document.head.appendChild(metaDescription);
     }
-    metaDescription.setAttribute('content', 'Discover amazing websites created with SiteSprintz. Browse our gallery of beautiful small business sites.');
+    metaDescription.setAttribute(
+      'content',
+      'Browse example SiteSprintz sites by industry and theme. Open a live preview to see how your page could look — then build yours.'
+    );
   }, []);
 
-  // Fetch categories
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchCategories = async () => {
       try {
-        const response = await fetch('/api/showcases/categories');
+        const response = await fetch('/api/showcases/categories', {
+          signal: controller.signal,
+        });
         if (!response.ok) throw new Error('Failed to fetch categories');
         const data = await response.json();
-        setCategories(data);
+        setCategories(normalizeCategories(data));
       } catch (err) {
-        console.error('Error fetching categories:', err);
+        if (err?.name === 'AbortError') return;
+        setCategories([]);
       }
     };
 
     fetchCategories();
+    return () => controller.abort();
   }, []);
 
-  // Fetch sites with filters
   const fetchSites = useCallback(async () => {
+    if (sitesAbortRef.current) {
+      sitesAbortRef.current.abort();
+    }
+    const controller = new AbortController();
+    sitesAbortRef.current = controller;
+
     setLoading(true);
     setError(null);
 
     try {
       const params = new URLSearchParams({
         page: currentPage.toString(),
-        limit: sitesPerPage.toString()
+        pageSize: sitesPerPage.toString(),
       });
 
       if (selectedCategory) {
         params.append('category', selectedCategory);
       }
 
-      if (searchQuery) {
-        params.append('search', searchQuery);
+      if (searchQuery.trim()) {
+        params.append('search', searchQuery.trim());
       }
 
-      const response = await fetch(`/api/showcases?${params.toString()}`);
+      const response = await fetch(`/api/showcases?${params.toString()}`, {
+        signal: controller.signal,
+      });
 
       if (!response.ok) {
         throw new Error('Failed to fetch sites');
@@ -86,28 +157,28 @@ function ShowcaseGallery() {
       setSites(data.sites || []);
       setTotalSites(data.total || 0);
     } catch (err) {
-      console.error('Error fetching sites:', err);
+      if (err?.name === 'AbortError') return;
       setError('Failed to load showcase. Please try again later.');
       setSites([]);
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) {
+        setLoading(false);
+      }
     }
   }, [currentPage, selectedCategory, searchQuery, sitesPerPage]);
 
   useEffect(() => {
     fetchSites();
+    return () => {
+      if (sitesAbortRef.current) {
+        sitesAbortRef.current.abort();
+      }
+    };
   }, [fetchSites]);
 
-  // Debounced search
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (currentPage !== 1) {
-        setCurrentPage(1); // Reset to first page on search
-      } else {
-        fetchSites();
-      }
-    }, 500);
-
+    if (currentPage === 1) return undefined;
+    const timer = setTimeout(() => setCurrentPage(1), 400);
     return () => clearTimeout(timer);
   }, [searchQuery]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -116,181 +187,323 @@ function ShowcaseGallery() {
     setCurrentPage(1);
   };
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
+  const getSiteUrl = (subdomain) => `/view/${subdomain}`;
+
+  const getSiteImage = (site) =>
+    site.site_data?.images?.hero || site.heroImage || null;
+
+  const getSiteTitle = (site) =>
+    site.name ||
+    site.site_data?.hero?.title ||
+    site.site_data?.brand?.name ||
+    'Untitled Site';
+
+  const getSiteCategory = (site) => {
+    if (!site.template || typeof site.template !== 'string') return 'Unknown';
+    return formatLabel(site.template);
   };
 
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const getSiteUrl = (subdomain) => {
-    return `https://${subdomain}.sitesprintz.com`;
-  };
-
-  const getSiteImage = (site) => {
-    return site.site_data?.images?.hero || '/images/default-site.jpg';
-  };
-
-  const getSiteTitle = (site) => {
-    return site.site_data?.hero?.title || 'Untitled Site';
-  };
-
-  const formatCategory = (category) => {
-    if (!category || typeof category !== 'string') return 'Unknown';
-    return category
-      .split('-')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-  };
+  const rangeStart = totalSites === 0 ? 0 : (currentPage - 1) * sitesPerPage + 1;
+  const rangeEnd = Math.min(currentPage * sitesPerPage, totalSites);
 
   return (
-    <div className="showcase-gallery">
-      {/* Header */}
-      <header className="showcase-header">
-        <h1>Made with SiteSprintz</h1>
-        <p>Discover amazing websites created by businesses like yours</p>
-      </header>
-
-      {/* Filters */}
-      <div className="showcase-filters">
-        {/* Search */}
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="Search sites..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            aria-label="Search sites"
-            data-testid="showcase-search"
-          />
-        </div>
-
-        {/* Categories */}
-        <div className="category-filters">
-          <button
-            className={`category-btn ${!selectedCategory ? 'active' : ''}`}
-            onClick={() => handleCategoryChange(null)}
-            data-testid="category-btn-all"
-          >
-            All
-          </button>
-          {/* TDD FIX: Handle missing/null/empty categories safely */}
-          {categories && Array.isArray(categories) && categories.map((cat) => (
-            <button
-              key={cat.template}
-              className={`category-btn ${selectedCategory === cat.template ? 'active' : ''}`}
-              onClick={() => handleCategoryChange(cat.template)}
-              data-testid={`category-btn-${cat.template}`}
-            >
-              {formatCategory(cat.template)} ({cat.count})
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Loading State */}
-      {loading && (
-        <div className="loading-state">
-          <div className="spinner"></div>
-          <p>Loading showcase...</p>
-        </div>
-      )}
-
-      {/* Error State */}
-      {error && !loading && (
-        <div className="error-state">
-          <p>{error}</p>
-          <button onClick={fetchSites}>Try Again</button>
-        </div>
-      )}
-
-      {/* Empty State */}
-      {!loading && !error && sites.length === 0 && (
-        <div className="empty-state">
-          <h2>No sites found</h2>
-          <p>
-            {searchQuery || selectedCategory
-              ? 'Try adjusting your filters'
-              : 'Be the first to showcase your site!'}
-          </p>
-        </div>
-      )}
-
-      {/* Site Grid */}
-      {!loading && !error && sites.length > 0 && (
-        <>
-          <div className="showcase-grid" data-testid="showcase-grid">
-            {sites.map((site) => (
-              <div key={site.id} className="site-card" data-testid={`site-card-${site.id}`}>
-                <Link to={`/showcase/${site.subdomain}`} className="site-card-link">
-                  <div className="site-image">
-                    <OptimizedImage
-                      src={getSiteImage(site)}
-                      alt={`${getSiteTitle(site)} preview`}
-                      width={600}
-                      height={400}
-                      aspectRatio="3/2"
-                      priority={false}
-                      sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
-                    <div className="site-overlay">
-                      <span className="view-details">View Details</span>
-                    </div>
-                  </div>
-                  <div className="site-info">
-                    <h3>{getSiteTitle(site)}</h3>
-                    <p className="site-category">{formatCategory(site.template_id)}</p>
-                  </div>
-                </Link>
-                <div className="site-meta" style={{ padding: '0 20px 20px' }}>
-                  <span className="site-plan">{site.plan}</span>
-                  <a
-                    href={getSiteUrl(site.subdomain)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="visit-site-btn"
-                  >
-                    Visit Site ↗
-                  </a>
+    <PublicPageLayout className="showcase-gallery-page">
+      <div className="showcase-gallery">
+        {/* Hero */}
+        <header className="showcase-hero">
+          <div className="showcase-hero-glow" aria-hidden="true" />
+          <div className="showcase-hero-glow showcase-hero-glow--2" aria-hidden="true" />
+          <div className="showcase-hero-inner">
+            <span className="showcase-hero-badge">
+              <span className="showcase-hero-badge-dot" aria-hidden="true" />
+              Example sites
+            </span>
+            <h1>See how your site could look</h1>
+            <p className="showcase-hero-lead">
+              Browse live examples by industry and theme. Open one, click around,
+              and picture your name on the door — then start your own draft.
+            </p>
+            <div className="showcase-hero-stats">
+              {totalSites > 0 && (
+                <div className="showcase-stat" data-testid="showcase-count">
+                  <strong>{totalSites}</strong>
+                  <span>example {totalSites === 1 ? 'site' : 'sites'}</span>
                 </div>
+              )}
+              <div className="showcase-stat">
+                <strong>{categories.length || '12+'}</strong>
+                <span>industries</span>
+              </div>
+              <div className="showcase-stat">
+                <strong>6 themes</strong>
+                <span>light &amp; dark</span>
+              </div>
+            </div>
+            <div className="showcase-hero-actions">
+              <Link to={ctaTo} className="showcase-btn-primary" onClick={handleCta}>
+                {ctaLabel}
+              </Link>
+              <a href="#showcase-browse" className="showcase-btn-ghost">
+                Browse examples
+              </a>
+            </div>
+          </div>
+        </header>
+
+        {/* Filters */}
+        <section
+          id="showcase-browse"
+          className="showcase-filters"
+          aria-label="Search and filter showcase"
+        >
+          <div className="search-box">
+            <span className="search-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+                <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </span>
+            <input
+              type="search"
+              placeholder="Search by name or industry…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search sites"
+              data-testid="showcase-search"
+            />
+          </div>
+
+          <div className="category-filters" role="group" aria-label="Filter by category">
+            <button
+              type="button"
+              className={`category-btn ${!selectedCategory ? 'active' : ''}`}
+              onClick={() => handleCategoryChange(null)}
+              data-testid="category-btn-all"
+            >
+              <span className="category-btn-emoji" aria-hidden="true">✦</span>
+              All
+              {totalSites > 0 && <span className="category-btn-count">{totalSites}</span>}
+            </button>
+            {categories.map((cat) => {
+              const meta = categoryMeta(cat.id);
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  className={`category-btn ${selectedCategory === cat.id ? 'active' : ''}`}
+                  onClick={() => handleCategoryChange(cat.id)}
+                  data-testid={`category-btn-${cat.id}`}
+                  style={
+                    selectedCategory === cat.id
+                      ? { '--chip-accent': meta.accent }
+                      : undefined
+                  }
+                >
+                  <span className="category-btn-emoji" aria-hidden="true">
+                    {meta.emoji}
+                  </span>
+                  {formatLabel(cat.label)}
+                  <span className="category-btn-count">{cat.count}</span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Results toolbar */}
+        {!loading && !error && totalSites > 0 && (
+          <div className="showcase-toolbar">
+            <p className="showcase-results-label">
+              Showing <strong>{rangeStart}–{rangeEnd}</strong> of <strong>{totalSites}</strong>
+              {selectedCategory && (
+                <> in <strong>{formatLabel(selectedCategory)}</strong></>
+              )}
+              {searchQuery.trim() && (
+                <> matching “{searchQuery.trim()}”</>
+              )}
+            </p>
+          </div>
+        )}
+
+        {loading && (
+          <div className="showcase-skeleton-grid" role="status" aria-live="polite" aria-label="Loading showcase">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="showcase-skeleton-card">
+                <div className="showcase-skeleton-image" />
+                <div className="showcase-skeleton-line" />
+                <div className="showcase-skeleton-line showcase-skeleton-line--short" />
               </div>
             ))}
           </div>
+        )}
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="pagination">
-              <button
-                onClick={handlePrevPage}
-                disabled={currentPage === 1}
-                aria-label="Previous page"
-              >
-                Previous
-              </button>
-              <span className="page-info">
-                Page {currentPage} of {totalPages}
-              </span>
-              <button
-                onClick={handleNextPage}
-                disabled={currentPage >= totalPages}
-                aria-label="Next page"
-              >
-                Next
-              </button>
+        {error && !loading && (
+          <div className="error-state" role="alert">
+            <div className="empty-icon" aria-hidden="true">⚠</div>
+            <p>{error}</p>
+            <button type="button" onClick={fetchSites} data-testid="showcase-retry">
+              Try again
+            </button>
+          </div>
+        )}
+
+        {!loading && !error && sites.length === 0 && (
+          <div className="empty-state">
+            <div className="empty-icon" aria-hidden="true">🔍</div>
+            <h2>No examples found</h2>
+            <p>
+              {searchQuery || selectedCategory
+                ? 'Try a different search or category filter.'
+                : 'Example sites will appear here soon.'}
+            </p>
+            <Link to={ctaTo} className="empty-state-cta" data-testid="showcase-empty-cta" onClick={handleCta}>
+              Start your site →
+            </Link>
+          </div>
+        )}
+
+        {!loading && !error && sites.length > 0 && (
+          <>
+            <div className="showcase-grid" data-testid="showcase-grid">
+              {sites.map((site) => {
+                const title = getSiteTitle(site);
+                const category = getSiteCategory(site);
+                const meta = categoryMeta(site.template);
+                const image = getSiteImage(site);
+                const plan = (site.plan || 'starter').toLowerCase();
+
+                return (
+                  <article
+                    key={site.id}
+                    className="site-card"
+                    data-testid={`site-card-${site.subdomain || site.id}`}
+                    style={{ '--card-accent': meta.accent }}
+                  >
+                    <Link to={`/showcase/${site.subdomain}`} className="site-card-link">
+                      <div className="site-browser">
+                        <div className="site-browser-bar" aria-hidden="true">
+                          <span className="site-browser-dots">
+                            <i /><i /><i />
+                          </span>
+                          <span className="site-browser-url">
+                            {site.subdomain}.sitesprintz.com
+                          </span>
+                        </div>
+                        <div className="site-image">
+                          {image ? (
+                            <OptimizedImage
+                              src={image}
+                              alt={`${title} preview`}
+                              width={600}
+                              height={400}
+                              aspectRatio="3/2"
+                              priority={false}
+                              sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            />
+                          ) : (
+                            <div
+                              className="site-image-fallback"
+                              style={{
+                                background: `linear-gradient(145deg, ${meta.accent}55 0%, #2a1f18 55%, #1a2e35 100%)`,
+                              }}
+                            >
+                              <span className="site-image-fallback-emoji" aria-hidden="true">
+                                {meta.emoji}
+                              </span>
+                              <span className="site-image-fallback-label">{category}</span>
+                            </div>
+                          )}
+                          <div className="site-overlay">
+                            <span className="view-details">See this look</span>
+                          </div>
+                          <span className={`site-plan-badge site-plan-badge--${plan}`}>
+                            {plan}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="site-info">
+                        <div className="site-category-row">
+                          <span className="site-category-pill">
+                            <span aria-hidden="true">{meta.emoji}</span>
+                            {category}
+                          </span>
+                          {site.themeName && (
+                            <span
+                              className={`site-theme-pill site-theme-pill--${site.themeMode || 'dark'}`}
+                              style={site.themeAccent ? { '--theme-accent': site.themeAccent } : undefined}
+                            >
+                              {site.themeName}
+                            </span>
+                          )}
+                        </div>
+                        <p className="site-card-title">{title}</p>
+                      </div>
+                    </Link>
+                    <div className="site-meta">
+                      <Link
+                        to={getSiteUrl(site.subdomain)}
+                        className="visit-site-btn"
+                        data-testid={`visit-site-${site.subdomain}`}
+                      >
+                        Open live preview
+                        <span aria-hidden="true">↗</span>
+                      </Link>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
-          )}
-        </>
-      )}
-    </div>
+
+            {totalPages > 1 && (
+              <nav
+                className="pagination"
+                aria-label="Gallery pagination"
+                data-testid="showcase-pagination"
+              >
+                <button
+                  type="button"
+                  onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  aria-label="Previous page"
+                >
+                  ← Previous
+                </button>
+                <span className="page-info">
+                  Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
+                  disabled={currentPage >= totalPages}
+                  aria-label="Next page"
+                >
+                  Next →
+                </button>
+              </nav>
+            )}
+          </>
+        )}
+
+        {/* Bottom CTA */}
+        <section className="showcase-bottom-cta" aria-label="Get started">
+          <div className="showcase-bottom-cta-inner">
+            <h2>Like what you see? Make it yours.</h2>
+            <p>
+              These are example pages — start a draft, pick a theme, and shape it
+              for your stall, shop, or service.
+            </p>
+            <div className="showcase-hero-actions">
+              <Link to={ctaTo} className="showcase-btn-primary" onClick={handleCta}>
+                {ctaLabel}
+              </Link>
+              <Link to="/#templates" className="showcase-btn-ghost">
+                See templates
+              </Link>
+            </div>
+          </div>
+        </section>
+      </div>
+    </PublicPageLayout>
   );
 }
 

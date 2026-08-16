@@ -4,12 +4,13 @@
  */
 
 export const PRICING_CONFIG = {
-  // Trial period configuration
+  // Trial period configuration (must match Stripe trial_period_days in payments.routes.js)
   trial: {
-    duration: 14,
+    duration: 7,
     durationUnit: 'days',
-    features: 'all',
-    description: 'Try all features risk-free'
+    features: 'starter',
+    description: '7-day free trial when you publish — payment method required to start',
+    paymentMethodRequired: true
   },
 
   // Pricing tiers with full details
@@ -17,11 +18,18 @@ export const PRICING_CONFIG = {
     starter: {
       id: 'starter',
       name: 'Starter',
-      price: 15,
-      priceAnnual: 144, // $12/month when paid annually
+      price: 10,
+      priceAnnual: 96, // $8/month when paid annually
       billingPeriod: 'monthly',
-      tagline: 'Perfect for service businesses',
-      description: 'Get online fast with a professional website',
+      tagline: 'Get found',
+      description: 'A simple page for hours, menu, and how to reach you',
+      
+      // Short list for landing / comparison UIs
+      summary: [
+        'Your website + templates',
+        'Contact form & shareable link',
+        'Hours, menu, photos'
+      ],
       
       // Value badge for pricing card
       valueBadge: {
@@ -32,12 +40,13 @@ export const PRICING_CONFIG = {
       // Core features
       features: [
         'Professional website',
-        '13 industry-specific templates',
+        '14 industry-specific templates',
         'Contact forms with email notifications',
         'Mobile-responsive design',
         'SSL certificate (HTTPS)',
-        'Free subdomain (yoursite.sitesprintz.com)',
+        'Shareable published site link',
         'Service/product listings (display only)',
+        'Basic booking / contact link',
         'Pricing tables',
         'Photo galleries',
         'Google Maps integration',
@@ -51,8 +60,9 @@ export const PRICING_CONFIG = {
       // What's NOT included (limitations)
       limitations: [
         'No payment processing',
+        'No shopping cart or checkout',
         'No order management',
-        'No booking system',
+        'No embedded booking widget',
         'No analytics dashboard'
       ],
       
@@ -95,7 +105,7 @@ export const PRICING_CONFIG = {
           savings: -3,
           savingsPerYear: -36,
           advantages: [
-            'More templates (13 industries)',
+            'More templates (14 industries)',
             'Better support',
             'Modern design system'
           ],
@@ -111,9 +121,9 @@ export const PRICING_CONFIG = {
         templates: 10,
         forms: 5,
         totalMarketValue: 45,
-        youPay: 15,
-        savings: 30,
-        savingsPercent: 67
+        youPay: 10,
+        savings: 35,
+        savingsPercent: 78
       },
       
       // UI styling
@@ -126,11 +136,18 @@ export const PRICING_CONFIG = {
     growth: {
       id: 'growth',
       name: 'Growth',
-      price: 25,
-      priceAnnual: 240, // $20/month when paid annually
+      price: 35,
+      priceAnnual: 336, // $28/month when paid annually
       billingPeriod: 'monthly',
-      tagline: 'Take bookings, collect cash',
-      description: 'Everything in Starter, plus booking and request forms',
+      tagline: 'Get booked & paid',
+      description: 'Everything in Starter, plus booking, cart, and Stripe checkout',
+      
+      // Short list for landing / comparison UIs
+      summary: [
+        'Everything in Starter',
+        'Booking, cart & Stripe checkout',
+        'Custom domain & remove branding'
+      ],
       
       // Value badge for pricing card
       valueBadge: {
@@ -138,34 +155,31 @@ export const PRICING_CONFIG = {
         detail: 'vs separate booking tools'
       },
       
-      // Core features (inherited + new)
+      // Core features — must match planFeatures.js GROWTH_FEATURES
       features: [
         'Everything in Starter, PLUS:',
-        '✨ Native booking widget',
-        '✨ Service request forms',
-        '✨ Quote request system',
-        '✨ Appointment scheduling',
-        '✨ Email notifications',
-        '✨ Basic analytics',
-        '✨ Before/after galleries',
-        '✨ Service filters'
+        'Native booking widget',
+        'Service & quote request forms',
+        'Shopping cart & Stripe checkout',
+        'Order & product management',
+        'Custom domain',
+        'Remove “Powered by” branding',
+        'Basic + sales analytics',
+        'Email notifications'
       ],
       
-      // What's NOT included (Pro features)
+      // Soft limits (local-business scale — not hard product gates)
       limitations: [
-        'No online payments',
-        'No shopping cart',
-        'No order management dashboard',
-        'No Stripe integration'
+        'Fair-use hosting for local business traffic'
       ],
       
       // Ideal customer profile
       idealFor: [
-        'Service businesses taking cash',
+        'Service businesses taking bookings',
         'Salons and barbershops',
         'Food trucks and cafes',
         'Trades and contractors',
-        'Businesses wanting online booking'
+        'Shops ready for online checkout'
       ],
       
       // Competitor comparison
@@ -203,352 +217,24 @@ export const PRICING_CONFIG = {
         requestForms: 15,
         emailNotifications: 10,
         basicAnalytics: 10,
-        totalMarketValue: 75,
-        youPay: 25,
-        savings: 50,
-        savingsPercent: 67
+        totalMarketValue: 100,
+        youPay: 35,
+        savings: 65,
+        savingsPercent: 65
       },
       
       // UI styling
       color: '#f59e0b',
       cta: 'Upgrade to Growth',
       available: true,
-      popular: false
-    },
-
-    pro: {
-      id: 'pro',
-      name: 'Pro',
-      price: 45,
-      priceAnnual: 432, // $36/month when paid annually
-      billingPeriod: 'monthly',
-      tagline: 'Add payments and grow revenue',
-      description: 'Everything in Starter, plus e-commerce and powerful business tools',
-      
-      // Value badge for pricing card
-      valueBadge: {
-        title: 'Save $720/year',
-        detail: 'vs Shopify Basic ($105/mo)'
-      },
-      
-      // Core features (inherited + new)
-      features: [
-        'Everything in Starter, PLUS:',
-        '✨ Stripe Connect payments',
-        '✨ Shopping cart & checkout',
-        '✨ Order management dashboard',
-        '✨ Automated order confirmations',
-        '✨ Customer email notifications',
-        '✨ Embedded booking widget (Calendly)',
-        '✨ Google Reviews integration',
-        '✨ Analytics dashboard',
-        '✨ Sales reports',
-        '✨ 12 Pro templates with advanced features',
-        'Product/service management',
-        'Inventory tracking',
-        'Discount codes',
-        'Tax calculations',
-        'Priority email support'
-      ],
-      
-      // What's NOT included (Premium features)
-      limitations: [
-        'No native booking system',
-        'No live chat widget',
-        'No email automation',
-        'No POS system'
-      ],
-      
-      // Ideal customer profile
-      idealFor: [
-        'E-commerce businesses',
-        'Restaurants with online ordering',
-        'Service businesses accepting payments',
-        'Growing businesses needing booking',
-        'Product-based businesses'
-      ],
-      
-      // Competitor comparison
-      competitors: {
-        wix: {
-          name: 'Wix Business Basic + Bookings',
-          price: 86, // $59 Business + $27 Bookings
-          savings: 41,
-          savingsPerYear: 492,
-          advantages: [
-            'Stripe Connect (no commission fees)',
-            'Better e-commerce templates',
-            'Integrated booking (not extra cost)',
-            'Google Reviews built-in',
-            'Analytics included'
-          ]
-        },
-        squarespace: {
-          name: 'Squarespace Commerce Basic',
-          price: 49,
-          savings: 4,
-          savingsPerYear: 48,
-          advantages: [
-            'Stripe Connect (no transaction fees)',
-            'Industry-specific templates',
-            'Booking widget included',
-            'Better analytics'
-          ]
-        },
-        shopify: {
-          name: 'Shopify Basic',
-          price: 105,
-          savings: 60,
-          savingsPerYear: 720,
-          advantages: [
-            '57% cheaper than Shopify',
-            'Includes booking (Shopify doesn\'t)',
-            'Industry templates (Shopify is generic)',
-            'Better for service businesses',
-            'No transaction fees with Stripe Connect'
-          ]
-        },
-        toast: {
-          name: 'Toast Website + Online Ordering',
-          price: 165, // $75 website + $90 ordering
-          savings: 120,
-          savingsPerYear: 1440,
-          advantages: [
-            '73% cheaper than Toast',
-            'More flexible customization',
-            'No commission on orders'
-          ],
-          note: 'For restaurants'
-        }
-      },
-      
-      // Value calculation
-      valueBreakdown: {
-        websiteBuilder: 15,
-        ecommerce: 40,
-        paymentProcessing: 50,
-        bookingWidget: 30,
-        analytics: 15,
-        googleReviews: 20,
-        orderManagement: 30,
-        emailNotifications: 15,
-        totalMarketValue: 215,
-        youPay: 45,
-        savings: 170,
-        savingsPercent: 79
-      },
-      
-      // ROI examples
-      roiExamples: [
-        {
-          scenario: 'Restaurant with online ordering',
-          monthlyOrders: 50,
-          averageOrder: 45,
-          monthlyRevenue: 2250,
-          platformCost: 45,
-          roi: '4900%',
-          breakeven: 'First order'
-        },
-        {
-          scenario: 'Service business with bookings',
-          monthlyBookings: 20,
-          averageBooking: 150,
-          monthlyRevenue: 3000,
-          platformCost: 45,
-          roi: '6567%',
-          breakeven: 'First booking'
-        }
-      ],
-      
-      // UI styling
-      color: '#06b6d4',
-      cta: 'Upgrade to Pro',
-      available: true,
-      popular: true, // Most popular tier
-      badge: 'Most Popular'
-    },
-
-    premium: {
-      id: 'premium',
-      name: 'Premium',
-      price: 100,
-      priceAnnual: 960, // $80/month when paid annually
-      billingPeriod: 'monthly',
-      tagline: 'Full automation and advanced tools',
-      description: 'Everything you need to run and scale your business',
-      
-      // Value badge for pricing card
-      valueBadge: {
-        title: 'Save $1,440/year',
-        detail: 'vs Separate SaaS Tools ($220/mo)'
-      },
-      
-      // Core features (inherited + new)
-      features: [
-        'Everything in Pro, PLUS:',
-        '🚀 Live chat widget',
-        '🚀 Enhanced service filters',
-        '🚀 Advanced hero sections',
-        '🚀 Enhanced provider profiles',
-        '🚀 Trust indicators & credentials',
-        '🔮 Coming Q1 2026:',
-        '  • Native booking system (replace Calendly)',
-        '  • Email automation sequences',
-        '  • Multi-step lead forms',
-        '  • Client portal with status tracking',
-        '  • Blog & CMS integration',
-        '  • Interactive price calculators',
-        '  • Service area mapping',
-        'Multi-location support',
-        'White-label option',
-        'Custom domain included ($15/year value)',
-        'Priority phone + chat support',
-        'Dedicated account manager'
-      ],
-      
-      // What's coming soon
-      comingSoon: [
-        'Native booking system (BookFlow)',
-        'Advanced payment processing (PayStack)',
-        'Email automation',
-        'CRM integration',
-        'Multi-step forms',
-        'Client portal',
-        'Blog/CMS'
-      ],
-      
-      // Ideal customer profile
-      idealFor: [
-        'Multi-location businesses',
-        'Growing service companies',
-        'Businesses wanting full automation',
-        'Premium brands',
-        'Businesses needing white-label'
-      ],
-      
-      // Competitor comparison
-      competitors: {
-        wix: {
-          name: 'Wix Business VIP + Apps',
-          price: 159, // $59 + $50 for apps + $50 for advanced features
-          savings: 59,
-          savingsPerYear: 708,
-          advantages: [
-            '37% cheaper than Wix premium',
-            'All features included (no app marketplace)',
-            'Better live chat',
-            'Industry-specific focus',
-            'No hidden costs'
-          ]
-        },
-        squarespace: {
-          name: 'Squarespace Commerce Advanced + Acuity',
-          price: 98, // $65 Commerce + $33 Acuity
-          savings: -2,
-          savingsPerYear: -24,
-          advantages: [
-            'Native booking (vs third-party)',
-            'More automation features',
-            'Better multi-location support',
-            'Live chat included',
-            'Email automation'
-          ],
-          note: 'Slightly more but significantly more features'
-        },
-        shopify: {
-          name: 'Shopify Plus (basic features)',
-          price: 2000,
-          savings: 1900,
-          savingsPerYear: 22800,
-          advantages: [
-            '95% cheaper than Shopify Plus',
-            'Better for service businesses',
-            'All automation included'
-          ],
-          note: 'For enterprise comparison'
-        },
-        serviceBundle: {
-          name: 'Individual SaaS tools',
-          breakdown: {
-            website: 45,
-            booking: 30,
-            liveChat: 25,
-            emailAutomation: 50,
-            crm: 40,
-            analytics: 30,
-            total: 220
-          },
-          savings: 120,
-          savingsPerYear: 1440,
-          advantages: [
-            '55% cheaper than separate tools',
-            'Integrated experience',
-            'Single dashboard',
-            'No integration headaches'
-          ]
-        }
-      },
-      
-      // Value calculation
-      valueBreakdown: {
-        websiteBuilder: 15,
-        ecommerce: 40,
-        paymentProcessing: 50,
-        nativeBooking: 50,
-        liveChat: 30,
-        emailAutomation: 60,
-        crmIntegration: 50,
-        multiLocation: 40,
-        customDomain: 15,
-        whiteLabel: 50,
-        totalMarketValue: 400,
-        youPay: 100,
-        savings: 300,
-        savingsPercent: 75
-      },
-      
-      // ROI examples
-      roiExamples: [
-        {
-          scenario: 'Service business with automation',
-          monthlySales: 15000,
-          timeSavedHours: 20,
-          hourlyRate: 75,
-          automationValue: 1500,
-          platformCost: 100,
-          roi: '1500%',
-          breakeven: 'Day 2'
-        },
-        {
-          scenario: 'Multi-location retail',
-          locations: 3,
-          avgRevenuePerLocation: 8000,
-          totalRevenue: 24000,
-          platformCost: 100,
-          roi: '23900%',
-          breakeven: 'First sale'
-        }
-      ],
-      
-      // Development status
-      underDevelopment: true,
-      releaseDate: 'Q1 2026',
-      currentStatus: 'Core features available, advanced features coming soon',
-      
-      // UI styling
-      color: '#8b5cf6',
-      cta: 'Join Waitlist',
-      available: false, // Some features still in development
-      badge: 'Coming Soon',
-      devBadge: '🚧 Under Development'
+      popular: true
     }
   },
-
   // Overall value proposition
   valueProps: {
     noHiddenFees: 'No transaction fees, no hidden costs, no surprises',
     cancel: 'Cancel anytime, no long-term contracts',
-    support: '24/7 support via email, priority for Pro/Premium',
+    support: 'Email support for all plans',
     updates: 'Regular updates and new features included',
     guarantee: '30-day money-back guarantee'
   },
@@ -574,35 +260,31 @@ export const PRICING_CONFIG = {
 
   // Feature comparison matrix
   featureMatrix: {
-    websiteBuilder: { starter: true, growth: true, pro: true, premium: true },
-    templates: { starter: '13 base', growth: '13 base', pro: '12 pro', premium: '4 premium' },
-    customDomain: { starter: 'Subdomain', growth: 'Subdomain', pro: 'Subdomain', premium: 'Included' },
-    ssl: { starter: true, growth: true, pro: true, premium: true },
-    contactForms: { starter: true, growth: true, pro: true, premium: true },
-    mobileResponsive: { starter: true, growth: true, pro: true, premium: true },
-    paymentProcessing: { starter: false, growth: false, pro: true, premium: true },
-    shoppingCart: { starter: false, growth: false, pro: true, premium: true },
-    orderManagement: { starter: false, growth: false, pro: true, premium: true },
-    bookingWidget: { starter: false, growth: 'Native', pro: 'External', premium: 'Native' },
-    serviceRequestForms: { starter: false, growth: true, pro: true, premium: true },
-    googleReviews: { starter: false, growth: false, pro: true, premium: true },
-    analytics: { starter: false, growth: 'Basic', pro: true, premium: true },
-    liveChat: { starter: false, growth: false, pro: false, premium: true },
-    emailAutomation: { starter: false, growth: false, pro: false, premium: true },
-    multiLocation: { starter: false, growth: false, pro: false, premium: true },
-    whiteLabel: { starter: false, growth: false, pro: false, premium: true }
+    websiteBuilder: { starter: true, growth: true },
+    templates: { starter: '14 industries', growth: '14 industries' },
+    customDomain: { starter: 'Shareable link', growth: 'Connect your own' },
+    ssl: { starter: true, growth: true },
+    contactForms: { starter: true, growth: true },
+    mobileResponsive: { starter: true, growth: true },
+    paymentProcessing: { starter: false, growth: true },
+    shoppingCart: { starter: false, growth: true },
+    orderManagement: { starter: false, growth: true },
+    bookingWidget: { starter: false, growth: true },
+    serviceRequestForms: { starter: false, growth: true },
+    analytics: { starter: false, growth: true },
+    removeBranding: { starter: false, growth: true }
   }
 };
 
 // Export individual tier configs for easy access
 export const STARTER_CONFIG = PRICING_CONFIG.tiers.starter;
 export const GROWTH_CONFIG = PRICING_CONFIG.tiers.growth;
-export const PRO_CONFIG = PRICING_CONFIG.tiers.pro;
-export const PREMIUM_CONFIG = PRICING_CONFIG.tiers.premium;
 
-// Helper function to get tier by ID
+// Helper function to get tier by ID (legacy pro/premium → growth)
 export function getTierConfig(tierId) {
-  return PRICING_CONFIG.tiers[tierId] || null;
+  const aliases = { pro: 'growth', premium: 'growth', business: 'growth', enterprise: 'growth' };
+  const id = aliases[tierId] || tierId;
+  return PRICING_CONFIG.tiers[id] || null;
 }
 
 // Helper function to compare two tiers

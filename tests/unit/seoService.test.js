@@ -84,6 +84,16 @@ describe('SEOService', () => {
       expect(metaTags.keywords).toBeTruthy();
     });
 
+    it('should use brand.name when businessName is missing', () => {
+      const metaTags = seoService.generateMetaTags({
+        brand: { name: 'Luxe Beauty Studio' },
+        category: 'salon'
+      });
+
+      expect(metaTags.title).toContain('Luxe Beauty Studio');
+      expect(metaTags.description).not.toContain('undefined');
+    });
+
     it('should include Open Graph tags', () => {
       const siteData = {
         businessName: 'Best Pizza',

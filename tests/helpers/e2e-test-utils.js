@@ -157,6 +157,12 @@ export async function register(page, options = {}) {
     await page.fill('input[name="name"]', name);
   }
 
+  // Accept the legal agreements (required clickwrap consent)
+  const acceptTerms = page.locator('[data-testid="register-accept-terms"]');
+  if (await acceptTerms.count() > 0) {
+    await acceptTerms.check();
+  }
+
   await page.click('button[type="submit"]');
 
   // Wait for the URL to change and the network to settle
@@ -195,7 +201,8 @@ export async function registerUser(request, options = {}) {
     data: {
       email,
       password,
-      name
+      name,
+      acceptedTerms: true
     }
   });
 
@@ -205,7 +212,7 @@ export async function registerUser(request, options = {}) {
   }
 
   const data = await response.json();
-  return { ...data.user, password, csrfToken };
+  return { ...data.user, accessToken: data.accessToken, password, csrfToken };
 }
 
 /**
@@ -324,10 +331,11 @@ export async function waitForNavigation(page, callback) {
 export async function createTestSiteViaApi(request, options = {}) {
   const timestamp = Date.now();
   const {
-    templateId = 'restaurant-casual',
+    templateId = 'restaurant', // Use valid template ID (not restaurant-casual)
     email = 'test@example.com',
     businessName = `API Site ${timestamp}`,
-    plan = 'starter'
+    plan = 'starter',
+    publish = true
   } = options;
 
   // 1. Get CSRF token
@@ -354,7 +362,34 @@ export async function createTestSiteViaApi(request, options = {}) {
   const draft = await draftResponse.json();
   const draftId = draft.draftId;
 
+  if (!publish) {
+    const draftSiteResponse = await request.post('/api/test/create-draft-site', {
+      headers,
+      data: {
+        email,
+        businessName,
+        templateId
+      }
+    });
+
+    if (!draftSiteResponse.ok()) {
+      throw new Error(`Failed to create draft site via test route: ${await draftSiteResponse.text()}`);
+    }
+
+    const { site } = await draftSiteResponse.json();
+    return {
+      id: site.id,
+      draftId: site.id,
+      subdomain: site.subdomain,
+      name: businessName,
+      template: templateId,
+      status: 'draft'
+    };
+  }
+
   // 3. Publish Draft
+  // Note: The request object inherits cookies from the test context's storageState,
+  // so cookies (including session tokens) are automatically included
   const publishResponse = await request.post(`/api/drafts/${draftId}/publish`, {
     headers,
     data: {
@@ -364,15 +399,27 @@ export async function createTestSiteViaApi(request, options = {}) {
   });
 
   if (!publishResponse.ok()) {
-    throw new Error(`Failed to publish site: ${await publishResponse.text()}`);
+    const errorText = await publishResponse.text();
+    console.error('[TEST] Publish failed:', {
+      status: publishResponse.status(),
+      statusText: publishResponse.statusText(),
+      error: errorText,
+      draftId,
+      email,
+      plan
+    });
+    throw new Error(`Failed to publish site: ${errorText}`);
   }
 
-  const site = await publishResponse.json();
+  const responseData = await publishResponse.json();
+  const site = responseData.site || responseData;
   return {
     ...site,
+    id: site.id || site.subdomain,
     subdomain: site.subdomain,
     name: businessName,
-    template: templateId
+    template: templateId,
+    status: 'published'
   };
 }
 

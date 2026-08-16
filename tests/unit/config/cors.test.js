@@ -8,6 +8,7 @@ describe('CORS configuration', () => {
     process.env = { ...process.env };
     delete process.env.NODE_ENV;
     delete process.env.CORS_ORIGINS;
+    delete process.env.ALLOWED_ORIGINS;
   });
 
   afterEach(() => {
@@ -33,6 +34,17 @@ describe('CORS configuration', () => {
 
     it('allows origins listed in CORS_ORIGINS', () => {
       process.env.CORS_ORIGINS = 'https://sitesprintz.com,https://www.sitesprintz.com';
+      const opts = buildCorsOptions(process.env);
+      const callback = opts.origin;
+
+      callback('https://sitesprintz.com', (err, allowed) => {
+        expect(err).toBeNull();
+        expect(allowed).toBe(true);
+      });
+    });
+
+    it('allows origins listed in ALLOWED_ORIGINS when CORS_ORIGINS is unset', () => {
+      process.env.ALLOWED_ORIGINS = 'https://sitesprintz.com';
       const opts = buildCorsOptions(process.env);
       const callback = opts.origin;
 

@@ -1,0 +1,191 @@
+url: http://localhost:5173/
+goal: Complete manual/behavioral coverage of SiteSprintz public marketing, auth UI, gallery, contact, track, and auth-gate redirects
+
+steps:
+  # --- Landing ---
+  - action: Landing shows brand and hero CTA
+    wait_for: { text: SiteSprintz }
+    settle_ms: 500
+    assert:
+      - text contains SiteSprintz
+      - text contains They love what you make
+      - text contains Get Your Page Free
+
+  - action: Pricing section reachable via nav
+    click: { role: link, name: Pricing }
+    settle_ms: 600
+    assert:
+      - url contains #pricing
+      - text contains Starter
+      - text contains Growth
+
+  - action: How It Works section via nav
+    click: { role: link, name: How It Works }
+    settle_ms: 600
+    assert:
+      - url contains #how-it-works
+      - text contains Tell us what you sell
+
+  - action: Templates section via nav
+    click: { role: link, name: Templates }
+    settle_ms: 600
+    assert:
+      - url contains #templates
+      - text contains Salon & Spa
+
+  # --- Showcase gallery ---
+  - action: Open Gallery from nav
+    click: { role: link, name: Gallery }
+    settle_ms: 2500
+    assert:
+      - url contains /showcase
+      - text contains See how your site could look
+
+  - action: Showcase search and empty state
+    wait_for: { text: Example sites }
+    settle_ms: 500
+    assert:
+      - text contains Create your site free
+      - text contains No examples found
+
+  # --- About / Contact ---
+  - action: About page loads
+    goto: http://localhost:5173/about
+    settle_ms: 800
+    assert:
+      - url contains /about
+      - text contains About SiteSprintz
+      - text contains Who we built this for
+
+  - action: Contact page loads
+    goto: http://localhost:5173/contact
+    settle_ms: 800
+    assert:
+      - url contains /contact
+      - text contains Contact
+      - text contains hello@sitesprintz.com
+
+  # --- Track lookup ---
+  - action: Track page loads
+    goto: http://localhost:5173/track
+    settle_ms: 2000
+    assert:
+      - url contains /track
+      - text contains Track Your Order or Appointment
+      - text contains Order ID
+
+  - action: Track form validation with empty submit
+    click: { role: button, name: Track }
+    settle_ms: 800
+    assert:
+      - url contains /track
+
+  # --- Auth UI ---
+  - action: Login page loads
+    goto: http://localhost:5173/login
+    settle_ms: 800
+    assert:
+      - url contains /login
+      - text contains Welcome Back
+      - text contains Sign In
+      - text contains Continue with Google
+
+  - action: Invalid login shows error
+    fill: { label: Email, value: "nobody-mantest@example.com", clear: true }
+  - action: Fill bad password
+    fill: { label: Password, value: "WrongPass!9999", clear: true }
+  - action: Submit bad login
+    click: { role: button, name: Sign In }
+    settle_ms: 2000
+    assert:
+      - url contains /login
+      - text contains Unauthorized
+
+  - action: Forgot password link
+    click: { role: link, name: Forgot password? }
+    settle_ms: 2000
+    assert:
+      - url contains /forgot-password
+      - text contains Forgot Password
+      - text contains Send Reset Link
+
+  - action: Back to Login from forgot password
+    click: { role: link, name: Back to Login }
+    settle_ms: 1000
+    assert:
+      - url contains /login
+
+  - action: Register page loads
+    goto: http://localhost:5173/register
+    settle_ms: 2500
+    assert:
+      - url contains /register
+      - text contains Create Your Account
+      - text contains Password Requirements
+      - text contains Confirm Password
+
+  - action: Register shows password rules
+    expect:
+      - text contains At least 12 characters
+      - text contains One uppercase letter
+      - text contains Terms of Service
+
+  # --- Auth gates ---
+  - action: Dashboard redirects unauthenticated users to login
+    goto: http://localhost:5173/dashboard
+    settle_ms: 1500
+    assert:
+      - url contains /login
+
+  - action: Setup redirects unauthenticated users to login
+    goto: http://localhost:5173/setup
+    settle_ms: 1500
+    assert:
+      - url contains /login
+
+  - action: Orders redirects unauthenticated users to login
+    goto: http://localhost:5173/orders
+    settle_ms: 1500
+    assert:
+      - url contains /login
+
+  - action: Settings redirects unauthenticated users to login
+    goto: http://localhost:5173/settings
+    settle_ms: 1500
+    assert:
+      - url contains /login
+
+  - action: Products redirects unauthenticated users to login
+    goto: http://localhost:5173/products
+    settle_ms: 1500
+    assert:
+      - url contains /login
+
+  - action: Admin redirects unauthenticated users away
+    goto: http://localhost:5173/admin
+    settle_ms: 1500
+    assert:
+      - url contains /login
+
+  # --- 404 ---
+  - action: Unknown route shows 404
+    goto: http://localhost:5173/this-page-does-not-exist-xyz
+    settle_ms: 1500
+    assert:
+      - text contains Page Not Found
+      - text contains Go Home
+
+  - action: 404 Go Home returns to landing
+    click: { role: link, name: Go Home }
+    settle_ms: 1000
+    assert:
+      - url matches http://localhost:5173/?$
+      - text contains SiteSprintz
+
+  # --- Get Started CTA ---
+  - action: Get Started navigates to register
+    click: { role: link, name: Get Started, nth: 0 }
+    settle_ms: 2000
+    assert:
+      - url contains /register
+      - text contains Create Your Account

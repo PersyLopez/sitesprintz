@@ -1,0 +1,63 @@
+url: http://localhost:5173/showcase
+goal: Gallery shows seeded example sites and opens a live generated site
+steps:
+  - action: Gallery page loads
+    wait_for: { text: See how your site could look, timeout: 20000 }
+    settle_ms: 1500
+    assert:
+      - url contains /showcase
+
+  - action: Example sites appear in the grid
+    wait_for: { selector: '[data-testid="showcase-grid"]', timeout: 20000 }
+    settle_ms: 800
+    code: |
+      const body = await page.locator('body').innerText();
+      const needed = ['Luxe Beauty Studio', 'The Grand Table', 'Brightline Electric', 'Sunset Tacos'];
+      const missing = needed.filter((name) => !body.includes(name));
+      if (missing.length) {
+        throw new Error('Gallery missing example sites: ' + missing.join(', '));
+      }
+      const salonCard = page.getByTestId('site-card-gallery-salon');
+      if ((await salonCard.count()) === 0) {
+        throw new Error('Missing gallery-salon card');
+      }
+
+  - action: Open salon example details
+    click: { testId: site-card-gallery-salon }
+    settle_ms: 1500
+    assert:
+      - url contains /showcase/gallery-salon
+
+  - action: Detail shows generated business identity
+    wait_for: { text: Luxe Beauty Studio, timeout: 15000 }
+    settle_ms: 400
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/Visit example|Open live preview|Visit Site|Visit live site/i.test(t)) {
+        throw new Error('Detail page missing visit CTA');
+      }
+      if (/Site not found|not public/i.test(t)) {
+        throw new Error('Salon example is not public');
+      }
+
+  - action: Visit live salon site
+    goto: http://localhost:5173/view/gallery-salon
+    settle_ms: 2000
+
+  - action: Live salon site has hero and contact
+    wait_for: { text: Luxe Beauty Studio, timeout: 20000 }
+    settle_ms: 500
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/Book|Contact|Services|Beauty/i.test(t)) {
+        throw new Error('Salon live site missing expected sections: ' + t.slice(0, 300));
+      }
+      if (/not yet supported in preview/i.test(t)) {
+        throw new Error('Salon live site still shows unsupported placeholders');
+      }
+      if (/Welcome to undefined|My Business/i.test(t)) {
+        throw new Error('Salon live site has generic/broken SEO copy');
+      }
+      if (!/Sarah Williams|Our Work|Our Story|Meet Our Stylists/i.test(t)) {
+        throw new Error('Salon live site missing rich catalog sections (team/gallery/about)');
+      }

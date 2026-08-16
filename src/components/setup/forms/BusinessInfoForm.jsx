@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSite } from '../../../hooks/useSite';
 import ImageUploader from './ImageUploader';
-import ColorPicker from './ColorPicker';
+import FieldValidation from '../../common/FieldValidation';
 import './BusinessInfoForm.css';
 
 function BusinessInfoForm() {
@@ -19,20 +19,29 @@ function BusinessInfoForm() {
     <div className="business-info-form">
       <div className="form-section">
         <h3>Basic Information</h3>
-        
+
         <div className="form-group">
-          <label htmlFor="businessName">
-            Business Name *
-            <span className="field-hint">Your business or website name</span>
-          </label>
-          <input
-            type="text"
-            id="businessName"
+          <FieldValidation
             value={siteData.brand?.name || siteData.businessName || ''}
-            onChange={(e) => handleChange('brand.name', e.target.value)}
-            placeholder="e.g., Acme Restaurant"
-            required
-          />
+            validator={(val) => val.trim().length >= 2}
+            errorMessage="Business name must be at least 2 characters"
+            maxLength={50}
+          >
+            <label htmlFor="businessName">
+              Business Name *
+              <span className="field-hint">Your business or website name</span>
+            </label>
+            <input
+              type="text"
+              id="businessName"
+              data-testid="business-name-input"
+              value={siteData.brand?.name || siteData.businessName || ''}
+              onChange={(e) => handleChange('brand.name', e.target.value)}
+              placeholder="e.g., Acme Restaurant"
+              required
+              aria-describedby="businessName-hint"
+            />
+          </FieldValidation>
         </div>
 
         <div className="form-group">
@@ -53,7 +62,7 @@ function BusinessInfoForm() {
 
       <div className="form-section">
         <h3>Hero Section</h3>
-        
+
         <div className="form-group">
           <label htmlFor="heroTitle">
             Hero Title *
@@ -99,7 +108,7 @@ function BusinessInfoForm() {
 
       <div className="form-section">
         <h3>Branding</h3>
-        
+
         <div className="form-group">
           <label>
             Logo
@@ -111,32 +120,11 @@ function BusinessInfoForm() {
             aspectRatio="1:1"
           />
         </div>
-
-        <div className="form-group">
-          <label>
-            Theme Colors
-            <span className="field-hint">Choose colors that match your brand</span>
-          </label>
-          
-          <div className="color-picker-group">
-            <ColorPicker
-              label="Primary Color"
-              value={siteData.themeVars?.['color-primary'] || siteData.colors?.primary || '#06b6d4'}
-              onChange={(color) => handleChange('themeVars.color-primary', color)}
-            />
-            
-            <ColorPicker
-              label="Accent Color"
-              value={siteData.themeVars?.['color-accent'] || siteData.colors?.accent || '#0891b2'}
-              onChange={(color) => handleChange('themeVars.color-accent', color)}
-            />
-          </div>
-        </div>
       </div>
 
       <div className="form-section">
         <h3>Call-to-Action Buttons</h3>
-        
+
         <div className="form-group">
           <label htmlFor="ctaPrimaryLabel">
             Primary Button Text

@@ -410,27 +410,23 @@ class ShowcaseService {
    * @returns {Promise<boolean>} Success status
    */
   async deleteShowcase(subdomain) {
+    const dir = path.join(this.screenshotDir, subdomain);
+    
+    // Check if directory exists
     try {
-      const dir = path.join(this.screenshotDir, subdomain);
-      
-      // Check if directory exists
-      try {
-        await fs.access(dir);
-      } catch (error) {
-        // Directory doesn't exist
-        return false;
-      }
-      
-      // Delete the directory
-      await fs.rm(dir, { recursive: true, force: true });
-      
-      // Clear from cache
-      this.cache.delete(subdomain);
-      
-      return true;
+      await fs.access(dir);
     } catch (error) {
-      throw error;
+      // Directory doesn't exist
+      return false;
     }
+    
+    // Delete the directory
+    await fs.rm(dir, { recursive: true, force: true });
+    
+    // Clear from cache
+    this.cache.delete(subdomain);
+    
+    return true;
   }
 
   /**

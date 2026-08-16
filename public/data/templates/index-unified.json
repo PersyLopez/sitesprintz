@@ -1,0 +1,480 @@
+{
+  "version": "2.0",
+  "description": "Unified template architecture - one high-quality Pro template per niche with tier-based feature gating",
+  "templates": [
+    {
+      "id": "restaurant",
+      "name": "Restaurant",
+      "description": "Complete restaurant website with menu, reservations, and online ordering",
+      "category": "Food & Dining",
+      "color": "#ef4444",
+      "icon": "\ud83c\udf7d\ufe0f",
+      "preview": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80",
+      "tier": "growth",
+      "highlights": [
+        "Tabbed menu navigation",
+        "Online reservations",
+        "Private dining showcases",
+        "Chef's specials section",
+        "Photo gallery",
+        "Team profiles"
+      ],
+      "tierFeatures": {
+        "starter": [
+          "Menu display",
+          "Contact info",
+          "Gallery",
+          "FAQ"
+        ],
+        "growth": [
+          "+ Stripe checkout",
+          "+ Order management",
+          "+ Analytics"
+        ]
+      }
+    },
+    {
+      "id": "salon",
+      "name": "Salon & Spa",
+      "description": "Luxury salon website with booking, galleries, and team profiles",
+      "category": "Beauty & Wellness",
+      "color": "#a855f7",
+      "icon": "\ud83d\udc87",
+      "preview": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&q=80",
+      "tier": "growth",
+      "highlights": [
+        "Service categories with pricing",
+        "Before/after gallery",
+        "Stylist profiles & booking",
+        "Bridal packages",
+        "Featured specials",
+        "Client testimonials"
+      ],
+      "tierFeatures": {
+        "starter": [
+          "Service display",
+          "Contact info",
+          "Gallery",
+          "FAQ"
+        ],
+        "growth": [
+          "+ Stripe checkout",
+          "+ Private events",
+          "+ Analytics"
+        ]
+      }
+    },
+    {
+      "id": "gym",
+      "name": "Gym & Fitness",
+      "description": "Fitness center website with memberships, schedules, and transformation stories",
+      "category": "Fitness & Health",
+      "color": "#dc2626",
+      "icon": "\ud83d\udcaa",
+      "preview": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80",
+      "tier": "growth",
+      "highlights": [
+        "Membership tiers with pricing",
+        "Transformation gallery",
+        "Class schedule",
+        "Trainer profiles",
+        "Member testimonials",
+        "Free consultation booking"
+      ],
+      "tierFeatures": {
+        "starter": [
+          "Membership display",
+          "Contact info",
+          "Gallery",
+          "FAQ"
+        ],
+        "growth": [
+          "+ Stripe subscriptions",
+          "+ Member management",
+          "+ Analytics"
+        ]
+      }
+    },
+    {
+      "id": "consultant",
+      "name": "Business Consultant",
+      "description": "Professional consulting website with services, case studies, and booking",
+      "category": "Professional Services",
+      "color": "#1e40af",
+      "icon": "\ud83d\udcbc",
+      "preview": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&q=80",
+      "tier": "growth",
+      "highlights": [
+        "Service packages with outcomes",
+        "Case studies & results",
+        "Team credentials",
+        "Process methodology",
+        "Client testimonials",
+        "Consultation booking"
+      ],
+      "tierFeatures": {
+        "starter": [
+          "Service display",
+          "Contact info",
+          "Testimonials",
+          "FAQ"
+        ],
+        "growth": [
+          "+ Stripe checkout",
+          "+ Lead analytics",
+          "+ Priority features"
+        ]
+      }
+    },
+    {
+      "id": "freelancer",
+      "name": "Freelancer Portfolio",
+      "description": "Portfolio website with project showcase, skills, and hiring options",
+      "category": "Professional Services",
+      "color": "#0ea5e9",
+      "icon": "\ud83d\udc54",
+      "preview": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&q=80",
+      "tier": "growth",
+      "highlights": [
+        "Portfolio gallery",
+        "Skills & expertise",
+        "Pricing packages",
+        "Process showcase",
+        "Client testimonials",
+        "Hire me booking"
+      ],
+      "tierFeatures": {
+        "starter": [
+          "Portfolio display",
+          "Contact info",
+          "Testimonials",
+          "FAQ"
+        ],
+        "growth": [
+          "+ Stripe checkout",
+          "+ Analytics",
+          "+ Priority features"
+        ]
+      }
+    },
+    {
+      "id": "cleaning",
+      "name": "Cleaning Service",
+      "description": "Cleaning service website with packages, booking, and before/after gallery",
+      "category": "Home Services",
+      "color": "#0891b2",
+      "icon": "\ud83e\uddf9",
+      "preview": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80",
+      "tier": "growth",
+      "highlights": [
+        "Service packages with pricing",
+        "Before/after gallery",
+        "Team profiles",
+        "Service area coverage",
+        "Add-on services",
+        "Quote request"
+      ],
+      "tierFeatures": {
+        "starter": [
+          "Service display",
+          "Contact info",
+          "Gallery",
+          "FAQ"
+        ],
+        "growth": [
+          "+ Stripe checkout",
+          "+ Order management",
+          "+ Analytics"
+        ]
+      }
+    },
+    {
+      "id": "electrician",
+      "name": "Electrician",
+      "description": "Electrical services website with 24/7 emergency, certifications, and booking",
+      "category": "Home Services",
+      "color": "#f59e0b",
+      "icon": "\u26a1",
+      "preview": "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=800&q=80",
+      "tier": "growth",
+      "highlights": [
+        "Service categories with pricing",
+        "24/7 emergency service",
+        "Certifications display",
+        "Team profiles",
+        "Service area",
+        "Quote request"
+      ],
+      "tierFeatures": {
+        "starter": [
+          "Service display",
+          "Contact info",
+          "Certifications",
+          "FAQ"
+        ],
+        "growth": [
+          "+ Stripe checkout",
+          "+ Analytics",
+          "+ Priority features"
+        ]
+      }
+    },
+    {
+      "id": "plumbing",
+      "name": "Plumbing",
+      "description": "Plumbing services website with emergency service, memberships, and booking",
+      "category": "Home Services",
+      "color": "#3b82f6",
+      "icon": "\ud83d\udd27",
+      "preview": "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=800&q=80",
+      "tier": "growth",
+      "highlights": [
+        "Service packages with pricing",
+        "24/7 emergency emphasis",
+        "Membership plans",
+        "Team profiles",
+        "Service area",
+        "Booking system"
+      ],
+      "tierFeatures": {
+        "starter": [
+          "Service display",
+          "Contact info",
+          "Emergency info",
+          "FAQ"
+        ],
+        "growth": [
+          "+ Stripe checkout",
+          "+ Analytics",
+          "+ Priority features"
+        ]
+      }
+    },
+    {
+      "id": "auto-repair",
+      "name": "Auto Repair",
+      "description": "Auto repair shop website with services, specials, and ASE-certified team",
+      "category": "Automotive",
+      "color": "#ef4444",
+      "icon": "\ud83d\ude97",
+      "preview": "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=800&q=80",
+      "tier": "growth",
+      "highlights": [
+        "Service categories with pricing",
+        "Current specials",
+        "ASE-certified team",
+        "Before/after gallery",
+        "Warranty information",
+        "Appointment booking"
+      ],
+      "tierFeatures": {
+        "starter": [
+          "Service display",
+          "Contact info",
+          "Team profiles",
+          "FAQ"
+        ],
+        "growth": [
+          "+ Stripe checkout",
+          "+ Analytics",
+          "+ Priority features"
+        ]
+      }
+    },
+    {
+      "id": "pet-care",
+      "name": "Pet Care",
+      "description": "Pet grooming website with services, gallery, and groomer profiles",
+      "category": "Pet Services",
+      "color": "#7c3aed",
+      "icon": "\ud83d\udc3e",
+      "preview": "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?w=800&q=80",
+      "tier": "growth",
+      "highlights": [
+        "Service categories with pricing",
+        "Before/after gallery",
+        "Groomer profiles",
+        "Add-on services",
+        "Process explanation",
+        "Appointment booking"
+      ],
+      "tierFeatures": {
+        "starter": [
+          "Service display",
+          "Contact info",
+          "Gallery",
+          "FAQ"
+        ],
+        "growth": [
+          "+ Stripe checkout",
+          "+ Analytics",
+          "+ Priority features"
+        ]
+      }
+    },
+    {
+      "id": "tech-repair",
+      "name": "Tech Repair",
+      "description": "Tech repair website with device categories, warranty info, and repair tracking",
+      "category": "Technology",
+      "color": "#059669",
+      "icon": "\ud83d\udcbb",
+      "preview": "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=800&q=80",
+      "tier": "growth",
+      "highlights": [
+        "Device categories with pricing",
+        "Before/after gallery",
+        "Warranty information",
+        "Team certifications",
+        "Repair process",
+        "Appointment booking"
+      ],
+      "tierFeatures": {
+        "starter": [
+          "Service display",
+          "Contact info",
+          "Warranty info",
+          "FAQ"
+        ],
+        "growth": [
+          "+ Stripe checkout",
+          "+ Analytics",
+          "+ Priority features"
+        ]
+      }
+    },
+    {
+      "id": "product-showcase",
+      "name": "Product Showcase",
+      "description": "E-commerce website with product catalog, collections, and artisan profiles",
+      "category": "Retail",
+      "color": "#f97316",
+      "icon": "\ud83d\udecd\ufe0f",
+      "preview": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80",
+      "tier": "growth",
+      "highlights": [
+        "Product catalog with pricing",
+        "Collections & categories",
+        "Artisan/maker profiles",
+        "Customer testimonials",
+        "Process showcase",
+        "Stripe checkout"
+      ],
+      "tierFeatures": {
+        "starter": [
+          "Product display",
+          "Contact info",
+          "Gallery",
+          "FAQ"
+        ],
+        "growth": [
+          "+ Stripe checkout",
+          "+ Order management",
+          "+ Analytics"
+        ]
+      }
+    },
+    {
+      "id": "tow-truck",
+      "name": "Tow Truck",
+      "description": "24/7 towing and roadside assistance",
+      "category": "Transportation",
+      "color": "#f97316",
+      "icon": "🚛",
+      "preview": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
+      "tier": "growth",
+      "highlights": [
+        "Service area coverage",
+        "24/7 availability",
+        "Quick quote and dispatch",
+        "Roadside assistance"
+      ],
+      "tierFeatures": {
+        "starter": [
+          "Service display",
+          "Contact info",
+          "Service areas",
+          "FAQ"
+        ],
+        "growth": [
+          "+ Booking / dispatch",
+          "+ Analytics"
+        ]
+      }
+    },
+    {
+      "id": "product-ordering",
+      "name": "Product Ordering",
+      "description": "Product catalog with ordering and checkout on Growth",
+      "category": "Retail",
+      "color": "#3b82f6",
+      "icon": "📦",
+      "preview": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&q=80",
+      "tier": "growth",
+      "highlights": [
+        "Product catalog",
+        "Pickup or delivery",
+        "Stripe checkout on Growth"
+      ],
+      "tierFeatures": {
+        "starter": [
+          "Product display",
+          "Contact info",
+          "Gallery"
+        ],
+        "growth": [
+          "+ Stripe checkout",
+          "+ Shopping cart",
+          "+ Order management"
+        ]
+      }
+    }
+  ],
+  "categories": [
+    {
+      "id": "food-dining",
+      "name": "Food & Dining",
+      "icon": "\ud83c\udf7d\ufe0f"
+    },
+    {
+      "id": "beauty-wellness",
+      "name": "Beauty & Wellness",
+      "icon": "\ud83d\udc87"
+    },
+    {
+      "id": "fitness-health",
+      "name": "Fitness & Health",
+      "icon": "\ud83d\udcaa"
+    },
+    {
+      "id": "professional-services",
+      "name": "Professional Services",
+      "icon": "\ud83d\udcbc"
+    },
+    {
+      "id": "home-services",
+      "name": "Home Services",
+      "icon": "\ud83c\udfe0"
+    },
+    {
+      "id": "automotive",
+      "name": "Automotive",
+      "icon": "\ud83d\ude97"
+    },
+    {
+      "id": "pet-services",
+      "name": "Pet Services",
+      "icon": "\ud83d\udc3e"
+    },
+    {
+      "id": "technology",
+      "name": "Technology",
+      "icon": "\ud83d\udcbb"
+    },
+    {
+      "id": "retail",
+      "name": "Retail",
+      "icon": "\ud83d\udecd\ufe0f"
+    }
+  ]
+}

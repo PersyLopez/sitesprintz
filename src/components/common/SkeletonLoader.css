@@ -1,0 +1,102 @@
+.skeleton-loader {
+  background: var(--bg-elevated, rgba(30, 41, 59, 0.5));
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.skeleton-loader::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Text variant */
+.skeleton-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+
+.skeleton-line {
+  background: var(--bg-elevated, rgba(30, 41, 59, 0.5));
+  border-radius: 4px;
+  height: 1rem;
+}
+
+/* Card variant */
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  gap: 1rem;
+}
+
+.skeleton-card-header {
+  width: 100%;
+  height: 200px;
+  background: var(--bg-elevated, rgba(30, 41, 59, 0.5));
+  border-radius: 8px;
+}
+
+.skeleton-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Image variant */
+.skeleton-image {
+  aspect-ratio: 16 / 9;
+  background: var(--bg-elevated, rgba(30, 41, 59, 0.5));
+}
+
+/* Circle variant */
+.skeleton-circle {
+  border-radius: 50%;
+  aspect-ratio: 1 / 1;
+  background: var(--bg-elevated, rgba(30, 41, 59, 0.5));
+}
+
+/* Table variant */
+.skeleton-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.skeleton-table-row {
+  display: flex;
+  gap: 1rem;
+  padding: 0.75rem;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-loader::after {
+    animation: none;
+  }
+}
+
+
+

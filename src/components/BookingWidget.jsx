@@ -3,8 +3,9 @@ import { useParams } from 'react-router-dom';
 import { get, post } from '../utils/api';
 import './BookingWidget.css';
 
-const BookingWidget = () => {
-  const { userId } = useParams();
+const BookingWidget = ({ userId: propUserId, siteId = null, demoMode = false }) => {
+  const { userId: paramUserId } = useParams();
+  const userId = propUserId || paramUserId;
   const [step, setStep] = useState('services'); // services, date, time, form, confirmation
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -32,18 +33,20 @@ const BookingWidget = () => {
   // Booking result
   const [appointment, setAppointment] = useState(null);
 
+  const siteQuery = siteId ? { siteId } : undefined;
+
   // Fetch services on mount
   useEffect(() => {
     fetchServices();
-  }, [userId]);
+  }, [userId, siteId]);
 
   const fetchServices = async () => {
     try {
-      console.log(`Fetching services for user ${userId}...`);
       setServicesLoading(true);
       setError(null);
-      const response = await get(`/api/booking/tenants/${userId}/services`);
-      console.log('Services fetched:', response);
+      const response = await get(`/api/booking/tenants/${userId}/services`, {
+        params: siteQuery,
+      });
       setServices(response.services || []);
     } catch (err) {
       console.error('Error fetching services:', err);
@@ -77,15 +80,14 @@ const BookingWidget = () => {
 
   const fetchTimeSlots = async (date) => {
     try {
-      console.log(`Fetching time slots for date: ${date}, service: ${selectedService.id}`);
       setSlotsLoading(true);
       const response = await get(`/api/booking/tenants/${userId}/availability`, {
         params: {
           service_id: selectedService.id,
           date: date,
+          ...(siteId ? { siteId } : {}),
         },
       });
-      console.log('Time slots response:', response);
       setTimeSlots(response.slots || []);
     } catch (err) {
       console.error('Error fetching time slots:', err);
@@ -139,6 +141,7 @@ const BookingWidget = () => {
         customer_email: customerEmail,
         customer_phone: customerPhone,
         notes: customerNotes,
+        ...(siteId ? { siteId } : {}),
       };
 
       const response = await post(
@@ -385,13 +388,18 @@ const BookingWidget = () => {
 
   // Step 4: Confirmation
   if (step === 'confirmation') {
+    const isDemo = demoMode || appointment?.demo === true;
     return (
       <div className="booking-widget">
         <div data-testid="confirmation-page" className="confirmation">
-          <h2>✅ Booking Confirmed!</h2>
+          <h2>{isDemo ? 'Demo booking confirmed' : 'Booking Confirmed!'}</h2>
 
           <div data-testid="confirmation-message" className="success-message">
-            <p>Your appointment has been successfully booked.</p>
+            <p>
+              {isDemo
+                ? 'This is a gallery demo — your appointment was simulated and was not saved.'
+                : 'Your appointment has been successfully booked.'}
+            </p>
           </div>
 
           <div className="confirmation-details">
@@ -405,9 +413,11 @@ const BookingWidget = () => {
             <p><strong>Time:</strong> {selectedTime}</p>
           </div>
 
-          <p className="email-notice">
-            A confirmation email has been sent to {customerEmail}
-          </p>
+          {!isDemo && (
+            <p className="email-notice">
+              A confirmation email has been sent to {customerEmail}
+            </p>
+          )}
         </div>
       </div>
     );

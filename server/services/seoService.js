@@ -16,6 +16,7 @@ class SEOService {
    * @returns {Object} Meta tags object
    */
   generateMetaTags(siteData) {
+    const resolved = this._withResolvedIdentity(siteData);
     const {
       businessName,
       businessDescription = '',
@@ -24,7 +25,7 @@ class SEOService {
       businessAddress,
       category,
       logo
-    } = siteData;
+    } = resolved;
 
     // Generate optimized title (max 60 chars)
     let title = businessName || 'My Business';
@@ -33,7 +34,7 @@ class SEOService {
     }
 
     // Generate optimized description (50-160 chars)
-    let description = businessDescription || `Welcome to ${businessName}`;
+    let description = businessDescription || (businessName ? `Welcome to ${businessName}` : 'Professional business website');
     if (description.length > 160) {
       description = description.substring(0, 157) + '...';
     } else if (description.length < 50 && businessDescription) {
@@ -80,13 +81,14 @@ class SEOService {
    * @returns {Object} Schema.org markup object
    */
   generateSchemaMarkup(type, data) {
+    const resolved = this._withResolvedIdentity(data);
     const schema = {
       '@context': 'https://schema.org'
     };
 
     switch (type) {
       case 'restaurant':
-        return this._generateRestaurantSchema(data);
+        return this._generateRestaurantSchema(resolved);
       
       case 'salon':
       case 'gym':
@@ -96,21 +98,28 @@ class SEOService {
       case 'tech-repair':
       case 'cleaning':
       case 'pet-care':
-        return this._generateLocalBusinessSchema(data, type);
+        return this._generateLocalBusinessSchema(resolved, type);
       
       case 'consultant':
       case 'freelancer':
-        return this._generateProfessionalServiceSchema(data);
+        return this._generateProfessionalServiceSchema(resolved);
       
       case 'product':
-        return this._generateProductSchema(data);
+        return this._generateProductSchema(resolved);
       
       case 'service':
-        return this._generateServiceSchema(data);
+        return this._generateServiceSchema(resolved);
       
       default:
-        return this._generateLocalBusinessSchema(data, 'LocalBusiness');
+        return this._generateLocalBusinessSchema(resolved, 'LocalBusiness');
     }
+  }
+
+  _withResolvedIdentity(siteData = {}) {
+    const fromBrand = typeof siteData.brand?.name === 'string' ? siteData.brand.name.trim() : '';
+    const fromName = typeof siteData.businessName === 'string' ? siteData.businessName.trim() : '';
+    const businessName = fromName || fromBrand;
+    return { ...siteData, businessName };
   }
 
   /**

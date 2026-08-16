@@ -246,6 +246,19 @@
   overflow: hidden;
 }
 
+.template-skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
+}
+
+.setup-progress-section {
+  padding: var(--spacing-md) var(--spacing-xl);
+  background: rgba(15, 27, 45, 0.5);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+}
+
 .setup-panels {
   flex: 1;
   display: flex;

@@ -1,26 +1,32 @@
 import React, { useState } from 'react';
 import { useCart } from '../../hooks/useCart';
-import { useStripe } from '../../hooks/useStripe';
-import { processCheckout } from '../../utils/stripe';
+import PayOnSiteCheckout from './PayOnSiteCheckout';
 import './CheckoutButton.css';
 
-function CheckoutButton({ 
-  stripePublishableKey, 
+function CheckoutButton({
+  stripePublishableKey,
   siteId,
   buttonText = 'Proceed to Checkout',
-  className = ''
+  className = '',
+  paymentsReady = false,
+  payOnSite = false
 }) {
-  const { cartItems, getCartTotal, clearCart } = useCart();
-  const { stripe, loading: stripeLoading, error: stripeError } = useStripe(stripePublishableKey);
+  const { cartItems, getCartTotal } = useCart();
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleCheckout = async () => {
-    if (!stripe) {
-      setError('Stripe is not loaded. Please try again.');
-      return;
-    }
+  if (!paymentsReady && !payOnSite) {
+    return (
+      <div className="checkout-button-container" data-testid="checkout-upgrade-container">
+        <div className="checkout-upgrade-notice" data-testid="checkout-upgrade-notice">
+          <p>Payments are not yet set up for this site</p>
+          <p className="notice-subtext">The site owner needs to connect Stripe or enable pay on site.</p>
+        </div>
+      </div>
+    );
+  }
 
+  const handleCheckout = async () => {
     if (cartItems.length === 0) {
       setError('Your cart is empty');
       return;
@@ -30,56 +36,67 @@ function CheckoutButton({
     setError(null);
 
     try {
-      await processCheckout(stripe, cartItems, siteId);
-      // Cart will be cleared on successful checkout
-      // clearCart();
+      const response = await fetch('/api/payments/checkout/create-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          siteId,
+          items: cartItems.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity
+          })),
+          successUrl: `${window.location.origin}/sites/${siteId}/?order=success`,
+          cancelUrl: `${window.location.origin}/sites/${siteId}/?order=cancelled`
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Checkout failed');
+      }
+
+      const { redirectUrl } = await response.json();
+      window.location.href = redirectUrl;
     } catch (err) {
-      console.error('Checkout error:', err);
       setError(err.message || 'Checkout failed. Please try again.');
-    } finally {
       setProcessing(false);
     }
   };
 
   const total = getCartTotal();
-  const isDisabled = stripeLoading || processing || cartItems.length === 0 || !stripe || !!stripeError;
+  const isDisabled = processing || !paymentsReady || cartItems.length === 0;
 
   return (
-    <div className="checkout-button-container">
-      <button
-        onClick={handleCheckout}
-        disabled={isDisabled}
-        className={`btn btn-primary btn-checkout ${className}`}
-      >
-        {processing ? (
-          <>
-            <span className="checkout-spinner"></span>
-            Processing...
-          </>
-        ) : stripeLoading ? (
-          'Loading...'
-        ) : (
-          <>
-            {buttonText} • ${total.toFixed(2)}
-          </>
-        )}
-      </button>
+    <div className="checkout-button-container" data-testid="checkout-button-container">
+      {paymentsReady && (
+        <button
+          onClick={handleCheckout}
+          disabled={isDisabled}
+          className={`btn btn-primary btn-checkout ${className}`}
+          data-testid="checkout-button"
+        >
+          {processing ? (
+            <>
+              <span className="checkout-spinner" data-testid="checkout-spinner"></span>
+              Redirecting to payment processor...
+            </>
+          ) : (
+            <>
+              {buttonText} • ${total.toFixed(2)}
+            </>
+          )}
+        </button>
+      )}
+
+      {payOnSite && (
+        <PayOnSiteCheckout siteId={siteId} showAsAlternative={paymentsReady} />
+      )}
 
       {error && (
-        <div className="checkout-error">
-          ⚠️ {error}
-        </div>
-      )}
-
-      {stripeError && (
-        <div className="checkout-error">
-          ⚠️ Stripe Error: {stripeError}
-        </div>
-      )}
-
-      {!stripePublishableKey && (
-        <div className="checkout-warning">
-          💡 Stripe is not configured. Please add your Stripe keys in settings.
+        <div className="checkout-error" data-testid="checkout-error">
+          {error}
         </div>
       )}
     </div>
@@ -87,4 +104,3 @@ function CheckoutButton({
 }
 
 export default CheckoutButton;
-

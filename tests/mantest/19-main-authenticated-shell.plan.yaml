@@ -1,0 +1,120 @@
+url: http://localhost:5173/login
+goal: Main authenticated shell — dashboard, setup, products, orders, analytics, booking, settings, logout
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter email
+    fill: { testId: login-email, value: "test@example.com" }
+
+  - action: Enter password
+    fill: { testId: login-password, value: "SecurePass!2024" }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Land on dashboard
+    wait_for: { url: /dashboard, timeout: 20000 }
+    assert:
+      - url contains /dashboard
+      - text contains Welcome back
+
+  - action: Dismiss welcome modal if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 5000 });
+        await page.waitForTimeout(400);
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+    settle_ms: 500
+
+  - action: Dashboard primary CTA present
+    code: |
+      const t = await page.locator('body').innerText();
+      const hasCreate =
+        (await page.getByTestId('create-site-button').count()) > 0 ||
+        (await page.getByTestId('create-first-site-button').count()) > 0 ||
+        (await page.getByTestId('nav-create-site').count()) > 0 ||
+        /Create|Setup|Manage your websites/i.test(t);
+      if (!hasCreate) throw new Error('Dashboard missing create/setup CTA');
+    settle_ms: 300
+
+  - action: Open setup
+    goto: http://localhost:5173/setup
+    settle_ms: 800
+
+  - action: Choose permanent business if asked
+    wait_for: { text: What kind of business are you setting up, timeout: 20000 }
+    click: { testId: choose-business }
+    settle_ms: 1500
+
+  - action: Setup quick start
+    wait_for: { text: Quick Start, timeout: 20000 }
+    assert:
+      - text contains What type of business
+
+  - action: Products
+    goto: http://localhost:5173/products
+    settle_ms: 800
+
+  - action: Products shell
+    wait_for: { url: /products, timeout: 15000 }
+    assert:
+      - text contains Products
+      - text contains Add Product
+
+  - action: Orders
+    goto: http://localhost:5173/orders
+    settle_ms: 800
+
+  - action: Orders shell
+    wait_for: { url: /orders, timeout: 15000 }
+    assert:
+      - url contains /orders
+
+  - action: Analytics
+    goto: http://localhost:5173/analytics
+    settle_ms: 800
+
+  - action: Analytics shell
+    wait_for: { url: /analytics, timeout: 15000 }
+    assert:
+      - url contains /analytics
+
+  - action: Booking dashboard
+    goto: http://localhost:5173/booking-dashboard
+    settle_ms: 1000
+
+  - action: Booking shell or gate
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/Booking|Pro Feature|Upgrade|Appointments|Add Service/i.test(t)) {
+        throw new Error('Unexpected booking content: ' + t.slice(0, 240));
+      }
+    settle_ms: 300
+
+  - action: Settings
+    goto: http://localhost:5173/settings
+    settle_ms: 800
+
+  - action: Settings shell
+    wait_for: { url: /settings, timeout: 15000 }
+    assert:
+      - url contains /settings
+      - text contains Settings
+
+  - action: Back to dashboard
+    goto: http://localhost:5173/dashboard
+    settle_ms: 800
+
+  - action: Dashboard ready
+    wait_for: { text: Welcome back, timeout: 15000 }
+
+  - action: Logout
+    click: { testId: nav-logout-button }
+    settle_ms: 2000
+    assert:
+      - url contains /login

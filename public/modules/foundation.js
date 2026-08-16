@@ -659,12 +659,54 @@
     if (PLAN !== 'pro' && PLAN !== 'premium') return;
     if (!config || !config.enabled) return;
 
-    // TODO: Implement Pro trust signals
-    // - Custom badge uploads
-    // - Live visitor count
-    // - Customer served counter
-    // - 5-star review count
-    console.log('Foundation: Trust Signals Pro - Coming soon');
+    const trustSignalsHtml = renderProTrustSignals(SITE_DATA, PLAN);
+    if (!trustSignalsHtml) return;
+
+    // Find or create trust signals container
+    let container = document.querySelector('[data-section="trust-signals"]');
+    if (!container) {
+      // If no specific container, append to hero or above CTA
+      const cta = document.querySelector('[data-section="cta"]');
+      if (cta) {
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = trustSignalsHtml;
+        cta.parentNode.insertBefore(wrapper, cta);
+      }
+    } else {
+      container.innerHTML = trustSignalsHtml;
+    }
+  }
+
+  /**
+   * Render Pro trust signals HTML
+   */
+  function renderProTrustSignals(siteData, planTier) {
+    if (planTier !== 'pro' && planTier !== 'premium') return '';
+    
+    const signals = siteData?.foundation?.trust_signals || {};
+    const badges = [];
+
+    if (signals.years_in_business) {
+      badges.push(`<div class="trust-badge years-badge">🏢 In business since ${signals.years_in_business}</div>`);
+    }
+
+    if (signals.certifications && Array.isArray(signals.certifications) && signals.certifications.length > 0) {
+      badges.push(`<div class="trust-badge cert-badge">✓ ${signals.certifications[0]}</div>`);
+    }
+
+    if (signals.reviews_count) {
+      badges.push(`<div class="trust-badge reviews-badge">⭐ ${signals.reviews_count}+ reviews</div>`);
+    }
+
+    if (badges.length === 0) return '';
+
+    return `
+      <div class="trust-signals-section" data-section="trust-signals">
+        <div class="trust-badges-container">
+          ${badges.join('')}
+        </div>
+      </div>
+    `;
   }
 
   /**

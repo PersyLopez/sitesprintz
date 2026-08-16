@@ -4,19 +4,19 @@ steps:
   - action: About page content
     wait_for: { text: About SiteSprintz, timeout: 20000 }
     assert:
-      - text contains Our Mission
-      - text contains What We Do
-      - text contains 12+ industry-specific templates
+      - text contains Leave a light on for tomorrow’s customer
+      - text contains Who we built this for
+      - text contains How it works
 
   - action: Go to Contact
     goto: http://localhost:5173/contact
 
   - action: Contact loaded
-    wait_for: { text: Contact Us, timeout: 20000 }
+    wait_for: { text: Contact, timeout: 20000 }
     assert:
       - text contains hello@sitesprintz.com
       - text contains support@sitesprintz.com
-      - text contains Common Questions
+      - text contains Common questions
 
   - action: Go to Track lookup
     goto: http://localhost:5173/track

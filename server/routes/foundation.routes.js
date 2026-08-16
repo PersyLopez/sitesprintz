@@ -10,8 +10,9 @@ import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import crypto from 'crypto';
 import { FoundationService } from '../services/foundationService.js';
+import { EmailService } from '../services/emailService.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -20,12 +21,15 @@ const __dirname = path.dirname(__filename);
 // Service instance
 let foundationService;
 let dbQuery;
+let emailService;
 
 // Initialize with database query function
 function initializeFoundationRoutes(dbQueryFunction) {
   dbQuery = dbQueryFunction;
-  // Initialize foundation service with database wrapper
-  foundationService = new FoundationService({ query: dbQueryFunction });
+  // Initialize foundation service with default Prisma client
+  foundationService = new FoundationService();
+  // Initialize email service
+  emailService = new EmailService();
   return router;
 }
 
@@ -59,7 +63,7 @@ router.get('/config/:subdomain', async (req, res) => {
  * Update foundation configuration for a site
  * Requires authentication
  */
-router.put('/config/:subdomain', async (req, res) => {
+router.put('/config/:subdomain', requireAuth, async (req, res) => {
   try {
     const { subdomain } = req.params;
     const { foundation } = req.body;
@@ -68,8 +72,17 @@ router.put('/config/:subdomain', async (req, res) => {
       return res.status(400).json({ error: 'Invalid foundation configuration' });
     }
 
-    // TODO: Add authentication check here
-    // For now, allow updates (will be secured in next iteration)
+    // Add authentication check - verify user owns this site
+    const siteResult = await dbQuery(
+      'SELECT user_id FROM sites WHERE subdomain = $1',
+      [subdomain]
+    );
+    
+    const site = siteResult.rows[0];
+    
+    if (!site || site.user_id !== req.user?.id) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
 
     // Use service to update config
     const result = await foundationService.updateConfig(subdomain, foundation);
@@ -157,21 +170,57 @@ router.post('/contact', async (req, res) => {
     }
 
     // Store submission in database
-    const submissionId = crypto.randomUUID();
+    // First resolve the site_id from subdomain
+    const siteIdResult = await dbQuery(
+      'SELECT id FROM sites WHERE subdomain = $1',
+      [subdomain]
+    );
+    
+    if (siteIdResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Site not found' });
+    }
+    
+    const siteId = siteIdResult.rows[0].id;
+    // submissions schema: (id serial, site_id, form_type, data jsonb, status, created_at)
+    // Customer details are stored in the `data` JSON column.
+    const submissionData = JSON.stringify({ name, email, phone: phone || null, message });
     await dbQuery(
-      `INSERT INTO submissions (id, site_id, name, email, phone, message, form_type, status, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())`,
-      [submissionId, subdomain, name, email, phone || null, message, 'contact', 'unread']
+      `INSERT INTO submissions (site_id, form_type, data, status, created_at)
+       VALUES ($1, $2, $3::jsonb, $4, NOW())`,
+      [siteId, 'contact', submissionData, 'unread']
     );
 
-    // TODO: Send email notification to site owner
-    // This will be implemented when we add the email service
-    console.log(`📧 Contact form submission for ${subdomain}:`, { name, email });
+    // Send email notification to site owner
+    try {
+      await emailService.send({
+        to: recipientEmail,
+        subject: `New contact from ${name}`,
+        html: `
+          <h2>New Contact Form Submission</h2>
+          <p><strong>From:</strong> ${name} (${email})</p>
+          ${phone ? `<p><strong>Phone:</strong> ${phone}</p>` : ''}
+          <p><strong>Message:</strong></p>
+          <p>${message.replace(/\n/g, '<br>')}</p>
+        `
+      });
+    } catch (err) {
+      console.error('Email send to owner failed:', err);
+      // Don't fail the submission if email fails
+    }
 
-    // TODO: Send auto-responder to customer if enabled
+    // Send auto-responder to customer if enabled
     const autoResponder = siteData.foundation?.contactForm?.autoResponder;
     if (autoResponder && autoResponder.enabled) {
-      console.log(`📧 Auto-responder would be sent to ${email}`);
+      try {
+        await emailService.send({
+          to: email,
+          subject: autoResponder.subject || 'Thank you for contacting us',
+          html: autoResponder.body || '<p>Thank you for your message. We will get back to you soon!</p>'
+        });
+      } catch (err) {
+        console.error('Auto-responder send failed:', err);
+        // Don't fail the submission if auto-responder fails
+      }
     }
 
     res.json({
@@ -190,23 +239,47 @@ router.post('/contact', async (req, res) => {
  * Get contact form submissions for a site
  * Requires authentication (site owner)
  */
-router.get('/submissions/:subdomain', async (req, res) => {
+router.get('/submissions/:subdomain', requireAuth, async (req, res) => {
   try {
     const { subdomain } = req.params;
 
-    // TODO: Add authentication check - verify user owns this site
+    // Add authentication check - verify user owns this site
+    const siteResult = await dbQuery(
+      'SELECT id, user_id FROM sites WHERE subdomain = $1',
+      [subdomain]
+    );
+    
+    const site = siteResult.rows[0];
+    
+    if (!site || site.user_id !== req.user?.id) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
 
     const result = await dbQuery(
-      `SELECT id, name, email, phone, message, status, created_at 
+      `SELECT id, form_type, data, status, created_at 
        FROM submissions 
        WHERE site_id = $1 
        ORDER BY created_at DESC 
        LIMIT 100`,
-      [subdomain]
+      [site.id]
     );
 
+    // Flatten the JSON `data` column into top-level fields for the client.
+    const submissions = result.rows.map((row) => {
+      const data = typeof row.data === 'string' ? JSON.parse(row.data) : (row.data || {});
+      return {
+        id: row.id,
+        name: data.name || null,
+        email: data.email || null,
+        phone: data.phone || null,
+        message: data.message || null,
+        status: row.status,
+        created_at: row.created_at
+      };
+    });
+
     res.json({
-      submissions: result.rows
+      submissions
     });
 
   } catch (error) {

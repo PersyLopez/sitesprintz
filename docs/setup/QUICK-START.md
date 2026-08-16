@@ -140,15 +140,16 @@ git checkout main && git merge hotfix/urgent && git push
 
 ---
 
-## 📚 Full Documentation
+## Related Documentation
 
-- **Production Setup Guide:** [`PRODUCTION-SETUP-GUIDE.md`](./PRODUCTION-SETUP-GUIDE.md) - Complete step-by-step guide with checkboxes ⭐
-- **Git Strategy:** [`GIT-STRATEGY.md`](./GIT-STRATEGY.md)
-- **Railway Guide:** [`RAILWAY-DEPLOY.md`](./RAILWAY-DEPLOY.md)
-- **Integration Setup:** [`INTEGRATION-SETUP.md`](./INTEGRATION-SETUP.md)
+| Topic | Doc |
+|-------|-----|
+| Production deploy | [PRODUCTION-SETUP-GUIDE.md](./PRODUCTION-SETUP-GUIDE.md) |
+| Git workflow | [GIT-STRATEGY.md](./GIT-STRATEGY.md) |
+| Railway | [RAILWAY-DEPLOY.md](./RAILWAY-DEPLOY.md) |
+| Stripe & email | [INTEGRATION-SETUP.md](./INTEGRATION-SETUP.md) |
+| Google OAuth + ngrok | [GOOGLE-OAUTH-NGROK.md](./GOOGLE-OAUTH-NGROK.md) |
+| Full index | [../README.md](../README.md) |
 
----
-
-**Time to Launch:** RIGHT NOW! 🚀  
-**Questions?** Check the detailed docs or ask!
+**Maintaining docs**: Update these setup files in place — [../governance/AGENT_DOCUMENTATION_GUIDE.md](../governance/AGENT_DOCUMENTATION_GUIDE.md)
 

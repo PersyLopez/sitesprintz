@@ -11,11 +11,10 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 import multer from 'multer';
-import { requireAdmin, requireAuth } from '../middleware/auth.js';
+import { requireAuth } from '../middleware/auth.js';
 import { prisma } from '../../database/db.js';
 import {
   sendSuccess,
-  sendCreated,
   sendBadRequest,
   sendForbidden,
   sendNotFound,
@@ -23,13 +22,24 @@ import {
   asyncHandler
 } from '../utils/apiResponse.js';
 import { sanitizeSiteDataForStorage } from '../utils/siteDataSanitizer.js';
+import { applyPayOnSiteSetting, mergeSiteDataSettings } from '../utils/payOnSite.js';
+import { resolvePlanLimits } from '../utils/resolveUserPlan.js';
+import AnalyticsService from '../services/analyticsService.js';
+import { validateTemplateId } from '../utils/validators.js';
+import {
+  PathEscapeError,
+  allocateUniqueSubdomain,
+  cloneIsolatedSiteData,
+  getTemplateFilePath,
+  removeIsolatedSiteFiles,
+  writeIsolatedSiteFiles
+} from '../utils/siteIsolation.js';
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const publicDir = path.join(__dirname, '../../public');
 const uploadsDir = path.join(publicDir, 'uploads');
-const templatesDir = path.join(publicDir, 'data', 'templates');
 
 // Ensure uploads directory exists
 fs.mkdir(uploadsDir, { recursive: true }).catch(() => { });
@@ -40,9 +50,12 @@ const storage = multer.diskStorage({
     cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
-    // Use crypto.randomBytes for secure filename generation
+    // Prefix with user id so deletes can be ownership-scoped
+    const userId = String(req.user?.id || req.user?.userId || 'anon')
+      .replace(/[^a-zA-Z0-9_-]/g, '')
+      .slice(0, 36) || 'anon';
     const uniqueSuffix = Date.now() + '-' + crypto.randomBytes(8).toString('hex');
-    cb(null, uniqueSuffix + path.extname(file.originalname));
+    cb(null, `${userId}-${uniqueSuffix}${path.extname(file.originalname)}`);
   }
 });
 
@@ -50,11 +63,12 @@ const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+    // Ban SVG — can carry script payloads when served inline
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only image files (JPEG, PNG, GIF, WebP, SVG) are allowed'));
+      cb(new Error('Only image files (JPEG, PNG, GIF, WebP) are allowed'));
     }
   }
 });
@@ -63,10 +77,17 @@ const upload = multer({
  * Helper: Verify site ownership
  */
 async function verifySiteOwnership(siteId, userId, userRole) {
-  const site = await prisma.sites.findUnique({
+  let site = await prisma.sites.findUnique({
     where: { id: siteId },
-    select: { id: true, user_id: true, site_data: true, status: true }
+    select: { id: true, user_id: true, site_data: true, status: true, subdomain: true }
   });
+
+  if (!site) {
+    site = await prisma.sites.findFirst({
+      where: { subdomain: siteId },
+      select: { id: true, user_id: true, site_data: true, status: true, subdomain: true }
+    });
+  }
 
   if (!site) {
     return { authorized: false, error: 'Site not found', status: 404 };
@@ -133,10 +154,17 @@ router.post('/upload', requireAuth, (req, res) => {
  */
 router.delete('/uploads/:filename', requireAuth, asyncHandler(async (req, res) => {
   const { filename } = req.params;
+  const userId = req.user.id || req.user.userId;
 
   // Validate filename to prevent directory traversal
-  if (!filename || filename.includes('..') || filename.includes('/')) {
+  if (!filename || filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
     return sendBadRequest(res, 'Invalid filename', 'INVALID_FILENAME');
+  }
+
+  // Ownership: file must be prefixed with the uploader's user id (or admin)
+  const ownerPrefix = `${String(userId).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 36)}-`;
+  if (req.user.role !== 'admin' && !filename.startsWith(ownerPrefix)) {
+    return sendForbidden(res, 'Not authorized to delete this file', 'ACCESS_DENIED');
   }
 
   try {
@@ -158,7 +186,6 @@ router.delete('/uploads/:filename', requireAuth, asyncHandler(async (req, res) =
  */
 router.get('/:siteId', asyncHandler(async (req, res) => {
   const { siteId } = req.params;
-  console.log(`[GET /api/sites/${siteId}] Fetching site...`);
 
   try {
     let site = await prisma.sites.findUnique({
@@ -173,13 +200,13 @@ router.get('/:siteId', asyncHandler(async (req, res) => {
         created_at: true,
         published_at: true,
         expires_at: true,
-        is_public: true
+        is_public: true,
+        user_id: true
       }
     });
 
     // If not found by ID, try subdomain
     if (!site) {
-      console.log(`[GET /api/sites/${siteId}] Not found by ID, trying subdomain...`);
       site = await prisma.sites.findUnique({
         where: { subdomain: siteId },
         select: {
@@ -192,14 +219,34 @@ router.get('/:siteId', asyncHandler(async (req, res) => {
           created_at: true,
           published_at: true,
           expires_at: true,
-          is_public: true
+          is_public: true,
+          user_id: true
         }
       });
     }
 
     if (!site) {
-      console.log(`[GET /api/sites/${siteId}] Site not found`);
       return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
+    }
+
+    const isPublicPublished = site.status === 'published' && site.is_public !== false;
+    const authHeader = req.headers.authorization;
+    let isOwner = false;
+
+    if (authHeader?.startsWith('Bearer ')) {
+      try {
+        const { default: jwt } = await import('jsonwebtoken');
+        const { getRequiredSecret } = await import('../config/secrets.js');
+        const decoded = jwt.verify(authHeader.slice(7), getRequiredSecret('JWT_SECRET', { allowTestFallback: true }));
+        const userId = decoded.userId || decoded.id;
+        isOwner = userId === site.user_id || decoded.role === 'admin';
+      } catch {
+        isOwner = false;
+      }
+    }
+
+    if (!isPublicPublished && !isOwner) {
+      return sendForbidden(res, 'Site is not publicly available', 'SITE_PRIVATE');
     }
 
     const siteData = parseSiteData(site);
@@ -219,14 +266,51 @@ router.get('/:siteId', asyncHandler(async (req, res) => {
       }
     });
   } catch (err) {
-    console.error(`[GET /api/sites/${siteId}] ERROR:`, err);
-    return res.status(500).json({
-      success: false,
-      error: err.message,
-      stack: err.stack,
-      code: 'SERVER_ERROR'
-    });
+    console.error(`[GET /api/sites/${siteId}] ERROR:`, err.message);
+    return sendServerError(res, err, 'Failed to load site');
   }
+}));
+
+/**
+ * PUT /api/sites/:siteId/payment-options
+ * Enable or disable pay-on-site on this Neon site row.
+ */
+router.put('/:siteId/payment-options', requireAuth, asyncHandler(async (req, res) => {
+  const { siteId } = req.params;
+  const userId = req.user.id || req.user.userId;
+  const payOnSite = req.body?.payOnSite === true;
+
+  const user = await prisma.users.findUnique({
+    where: { id: userId },
+    select: { plan: true, subscription_plan: true }
+  });
+  const limits = resolvePlanLimits(user);
+
+  if (!limits.orderManagement) {
+    return sendForbidden(res, 'Pay on site requires a Growth plan', 'GROWTH_PLAN_REQUIRED');
+  }
+
+  const ownership = await verifySiteOwnership(siteId, userId, req.user.role);
+  if (!ownership.authorized) {
+    if (ownership.status === 404) {
+      return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
+    }
+    return sendForbidden(res, ownership.error, 'ACCESS_DENIED');
+  }
+
+  const existingData = parseSiteData(ownership.site);
+  const mergedData = applyPayOnSiteSetting(existingData, payOnSite);
+  const sanitizedData = sanitizeSiteDataForStorage(mergedData);
+
+  await prisma.sites.update({
+    where: { id: ownership.site.id },
+    data: { site_data: sanitizedData }
+  });
+
+  return sendSuccess(res, {
+    siteId: ownership.site.id,
+    payOnSite
+  }, payOnSite ? 'Pay on site enabled' : 'Pay on site disabled');
 }));
 
 /**
@@ -255,7 +339,7 @@ router.put('/:siteId', requireAuth, asyncHandler(async (req, res) => {
 
   // Merge with existing data
   const existingData = parseSiteData(ownership.site);
-  const mergedData = { ...existingData, ...newData };
+  const mergedData = mergeSiteDataSettings(existingData, newData);
 
   // Sanitize and save
   const sanitizedData = sanitizeSiteDataForStorage(mergedData);
@@ -263,8 +347,7 @@ router.put('/:siteId', requireAuth, asyncHandler(async (req, res) => {
   await prisma.sites.update({
     where: { id: siteId },
     data: {
-      site_data: sanitizedData,
-      updated_at: new Date()
+      site_data: sanitizedData
     }
   });
 
@@ -307,8 +390,9 @@ router.get('/:siteId/products', requireAuth, asyncHandler(async (req, res) => {
       price: typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0,
       image: p.image || null,
       category: p.category || 'General',
-      stock: p.stock || null,
-      sku: p.sku || null
+      stock: p.stock ?? null,
+      sku: p.sku || null,
+      available: p.available !== false
     }));
   } else if (siteData.services?.items && Array.isArray(siteData.services.items)) {
     // Convert services to products format
@@ -356,8 +440,9 @@ router.put('/:siteId/products', requireAuth, asyncHandler(async (req, res) => {
     price: typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0,
     image: p.image ? String(p.image).substring(0, 500) : null,
     category: String(p.category || 'General').substring(0, 100),
-    stock: typeof p.stock === 'number' ? p.stock : null,
-    sku: p.sku ? String(p.sku).substring(0, 50) : null
+    stock: typeof p.stock === 'number' ? p.stock : (p.stock != null && p.stock !== '' ? parseInt(p.stock, 10) || null : null),
+    sku: p.sku ? String(p.sku).substring(0, 50) : null,
+    available: p.available !== false && p.available !== 'false' && p.available !== 0 && p.available !== '0'
   }));
 
   // Get existing data and update products
@@ -379,8 +464,7 @@ router.put('/:siteId/products', requireAuth, asyncHandler(async (req, res) => {
   await prisma.sites.update({
     where: { id: siteId },
     data: {
-      site_data: existingData,
-      updated_at: new Date()
+      site_data: existingData
     }
   });
 
@@ -467,6 +551,8 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
       plan: site.plan,
       isPublic: site.is_public,
       businessName: siteData.brand?.name || siteData.businessName || null,
+      payOnSite: siteData.settings?.payOnSite === true,
+      allowCheckout: siteData.settings?.allowCheckout === true,
       createdAt: site.created_at,
       publishedAt: site.published_at,
       expiresAt: site.expires_at
@@ -495,14 +581,21 @@ router.delete('/:siteId', requireAuth, asyncHandler(async (req, res) => {
 
   // Delete related data first (submissions, analytics)
   await prisma.submissions.deleteMany({ where: { site_id: siteId } });
-  await prisma.analytics_events.deleteMany({ where: { site_id: siteId } });
+  // Analytics cleanup is handled by Prisma CASCADE on foreign key
+  await AnalyticsService.clearSiteData(siteId);
 
   // Delete the site
   await prisma.sites.delete({ where: { id: siteId } });
 
-  // Try to delete site files (non-blocking)
-  const siteDir = path.join(publicDir, 'sites', siteId);
-  fs.rm(siteDir, { recursive: true, force: true }).catch(() => { });
+  // Try to delete isolated site files (non-blocking)
+  try {
+    const siteKey = ownership.site.subdomain || siteId;
+    await removeIsolatedSiteFiles(siteKey);
+  } catch (err) {
+    if (!(err instanceof PathEscapeError)) {
+      fs.rm(path.join(publicDir, 'sites', siteId), { recursive: true, force: true }).catch(() => { });
+    }
+  }
 
   return sendSuccess(res, {}, 'Site deleted successfully');
 }));
@@ -514,7 +607,10 @@ router.delete('/:siteId', requireAuth, asyncHandler(async (req, res) => {
 router.post('/guest-publish', asyncHandler(async (req, res) => {
   const { email, data, template } = req.body;
 
-  if (!email) {
+  const emailValidation = email && typeof email === 'string'
+    ? email.trim().toLowerCase()
+    : '';
+  if (!emailValidation) {
     return res.status(400).json({ error: 'Email is required' });
   }
 
@@ -522,9 +618,14 @@ router.post('/guest-publish', asyncHandler(async (req, res) => {
     return res.status(400).json({ error: 'Site data is required' });
   }
 
+  const templateValidation = validateTemplateId(template || 'starter');
+  if (!templateValidation.valid) {
+    return res.status(400).json({ error: templateValidation.error, code: 'INVALID_TEMPLATE' });
+  }
+
   // Get or create user
   let user = await prisma.users.findUnique({
-    where: { email: email.toLowerCase() }
+    where: { email: emailValidation }
   });
 
   if (!user) {
@@ -534,7 +635,7 @@ router.post('/guest-publish', asyncHandler(async (req, res) => {
 
     user = await prisma.users.create({
       data: {
-        email: email.toLowerCase(),
+        email: emailValidation,
         password_hash: hashedPassword,
         role: 'user',
         status: 'pending',
@@ -543,46 +644,46 @@ router.post('/guest-publish', asyncHandler(async (req, res) => {
     });
   }
 
-  // Generate unique subdomain
   const businessName = data.brand?.name || data.businessName || 'my-site';
-  const baseSubdomain = businessName
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
-    .substring(0, 50);
-
-  let subdomain = baseSubdomain || 'site';
-  let attempt = 0;
-  const maxAttempts = 10;
-
-  while (attempt < maxAttempts) {
+  const subdomain = await allocateUniqueSubdomain(businessName, async (slug) => {
     const existing = await prisma.sites.findFirst({
-      where: { subdomain },
+      where: { subdomain: slug },
       select: { id: true }
     });
+    return Boolean(existing);
+  });
 
-    if (!existing) break;
+  const isolatedData = cloneIsolatedSiteData(data, {
+    siteId: subdomain,
+    subdomain,
+    templateId: templateValidation.value
+  });
+  const sanitizedSiteData = sanitizeSiteDataForStorage(isolatedData);
 
-    attempt++;
-    const suffix = crypto.randomBytes(4).toString('hex');
-    subdomain = `${baseSubdomain}-${suffix}`;
-  }
+  await writeIsolatedSiteFiles(subdomain, isolatedData);
 
   // Create site record
-  const site = await prisma.sites.create({
-    data: {
-      id: subdomain,
-      user_id: user.id,
-      subdomain,
-      template_id: template || 'starter',
-      status: 'published',
-      plan: 'trial',
-      published_at: new Date(),
-      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days trial
-      site_data: data,
-      created_at: new Date()
-    }
-  });
+  let site;
+  try {
+    site = await prisma.sites.create({
+      data: {
+        id: subdomain,
+        user_id: user.id,
+        subdomain,
+        template_id: templateValidation.value,
+        status: 'published',
+        plan: 'trial',
+        published_at: new Date(),
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        site_data: sanitizedSiteData,
+        json_file_path: path.join('sites', subdomain, 'data', 'site.json'),
+        created_at: new Date()
+      }
+    });
+  } catch (error) {
+    await removeIsolatedSiteFiles(subdomain).catch(() => {});
+    throw error;
+  }
 
   return res.status(201).json({
     success: true,
@@ -599,19 +700,21 @@ router.post('/guest-publish', asyncHandler(async (req, res) => {
  */
 router.get('/templates/:templateId', asyncHandler(async (req, res) => {
   const { templateId } = req.params;
-
-  // Validate template ID
-  if (!templateId || !/^[a-z0-9-]+$/.test(templateId)) {
-    return sendBadRequest(res, 'Invalid template ID', 'INVALID_TEMPLATE');
+  const templateValidation = validateTemplateId(templateId);
+  if (!templateValidation.valid) {
+    return sendBadRequest(res, templateValidation.error, 'INVALID_TEMPLATE');
   }
 
   try {
-    const templateFile = path.join(templatesDir, `${templateId}.json`);
+    const templateFile = getTemplateFilePath(templateValidation.value);
     const templateRaw = await fs.readFile(templateFile, 'utf-8');
     const template = JSON.parse(templateRaw);
 
     return sendSuccess(res, { template });
   } catch (err) {
+    if (err instanceof PathEscapeError) {
+      return sendBadRequest(res, err.message, 'INVALID_TEMPLATE');
+    }
     if (err.code === 'ENOENT') {
       return sendNotFound(res, 'Template', 'TEMPLATE_NOT_FOUND');
     }

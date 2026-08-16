@@ -2,105 +2,377 @@
   "brand": {
     "name": "QuickCart Electronics",
     "logo": "assets/logo.svg",
-    "alt": "QuickCart logo"
+    "alt": "QuickCart logo",
+    "tagline": "Premium tech products • Fast shipping • Expert support",
+    "email": "hello@quickcart.io",
+    "phone": "+1-415-555-0199"
   },
   "themeVars": {
     "color-primary": "#2563eb",
     "color-primary-600": "#1d4ed8",
-    "color-accent": "#38bdf8"
+    "color-accent": "#38bdf8",
+    "color-bg": "#0f172a",
+    "color-surface": "#1e293b",
+    "color-card": "#1e293b",
+    "color-text": "#f8fafc",
+    "color-muted": "#cbd5e1"
   },
   "nav": [
-    { "label": "Home", "href": "#hero" },
-    { "label": "Products", "href": "#products" },
-    { "label": "Support", "href": "#support" },
-    { "label": "Contact", "href": "#contact" }
-  ],
-  "hero": {
-    "eyebrow": "Premium ordering experience",
-    "title": "Sell online with integrated checkout",
-    "subtitle": "Perfect for shops ready to accept payment through Stripe checkout in minutes.",
-    "image": "assets/hero-placeholder.svg",
-    "imageAlt": "Team packaging products",
-    "cta": [
-      { "label": "Shop Products", "href": "#products" },
-      { "label": "Learn More", "href": "#support", "variant": "secondary" }
-    ]
-  },
-  "services": {
-    "title": "Why customers choose us",
-    "subtitle": "Every template includes secure payments, receipts, and order tracking.",
-    "items": [
-      { "title": "Secure checkout", "description": "Powered by Stripe with fraud detection built in." },
-      { "title": "Fast fulfillment", "description": "Automated email confirmations with every order." },
-      { "title": "Mobile optimized", "description": "Beautiful on any device for higher conversions." }
-    ]
-  },
-  "products": [
     {
-      "name": "Wireless Earbuds Pro",
-      "price": 129,
-      "description": "Active noise cancellation, 24-hour battery life, and Qi charging. Sweat-resistant with 6 different ear tip sizes. Perfect sound quality."
+      "label": "Home",
+      "href": "#hero"
     },
     {
-      "name": "Smart Home Hub",
-      "price": 189,
-      "description": "Control lights, climate, and security from one sleek hub. Works with Alexa, Google, and HomeKit. Voice control included."
+      "label": "Products",
+      "href": "#products"
     },
     {
-      "name": "Portable Solar Charger",
-      "price": 89,
-      "description": "Fast USB-C charging with rugged, water-resistant design. 20,000mAh capacity. Charge 3 devices simultaneously. Perfect for camping."
+      "label": "About",
+      "href": "#about"
     },
     {
-      "name": "4K Streaming Stick",
-      "price": 59,
-      "description": "Ultra HD streaming with Dolby Vision and Atmos. Works with all major streaming apps. Voice remote included. Easy setup."
-    },
-    {
-      "name": "Wireless Mechanical Keyboard",
-      "price": 149,
-      "description": "Premium mechanical switches with RGB lighting. Connects via Bluetooth or USB-C. Hot-swappable keys. Aluminum frame."
-    },
-    {
-      "name": "Smart LED Light Bulbs (4-Pack)",
-      "price": 79,
-      "description": "16 million colors, dimmable, and voice-controlled. Works with your smart home hub. Set schedules and scenes. Energy efficient."
-    },
-    {
-      "name": "Wireless Charging Pad",
-      "price": 39,
-      "description": "Fast 15W charging for all Qi-enabled devices. Non-slip surface with LED indicator. Includes wall adapter. Slim aluminum design."
-    },
-    {
-      "name": "HD Security Camera",
-      "price": 119,
-      "description": "1080p HD video with night vision and motion detection. Two-way audio. Free cloud storage. Weather-resistant for indoor/outdoor use."
-    },
-    {
-      "name": "Bluetooth Speaker",
-      "price": 99,
-      "description": "360° sound with deep bass. 20-hour battery life. IPX7 waterproof. Perfect for parties, pool, or travel. Connects to 2 devices."
-    },
-    {
-      "name": "Fitness Tracker Watch",
-      "price": 159,
-      "description": "Heart rate monitoring, sleep tracking, GPS, and 50+ workout modes. 7-day battery. Water resistant to 50m. iOS & Android compatible."
+      "label": "Contact",
+      "href": "#contact"
     }
   ],
-  "pricing": {
-    "title": "Flexible bundles",
-    "plans": [
+  "hero": {
+    "eyebrow": "Premium tech products",
+    "title": "Sell online with integrated checkout",
+    "subtitle": "Perfect for shops ready to accept payment through Stripe checkout in minutes. Secure, fast, and mobile-optimized for maximum conversions.",
+    "image": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=1200&q=80",
+    "imageAlt": "Team packaging products",
+    "cta": [
       {
-        "name": "Starter Kit",
-        "description": "Best-selling devices and priority setup support.",
-        "price": 249,
-        "cta": { "label": "Buy Now", "href": "#products" }
+        "label": "Shop Products",
+        "href": "#products"
       },
       {
-        "name": "Smart Home Pro",
-        "description": "Advanced automations, installation, and training.",
-        "price": 449,
-        "cta": { "label": "Buy Now", "href": "#products" }
+        "label": "Learn More",
+        "href": "#about",
+        "variant": "secondary"
+      }
+    ]
+  },
+  "about": {
+    "title": "About QuickCart",
+    "body": "QuickCart Electronics has been the trusted source for premium tech products since 2015. We carefully curate every item to ensure quality, reliability, and value. Our expert team is here to help you find the perfect tech for your lifestyle. Fast shipping, exceptional support, and hassle-free returns make us your go-to electronics retailer.",
+    "subtitle": "Why choose us",
+    "features": [
+      "✅ Premium quality products",
+      "📦 Fast, free shipping on orders over $100",
+      "🛡️ 2-year warranty on all items",
+      "💯 Satisfaction guaranteed",
+      "🤝 Expert support team",
+      "⚡ Same-day processing"
+    ]
+  },
+  "menu": {
+    "sections": [
+      {
+        "id": "audio",
+        "name": "Audio & Speakers",
+        "description": "Premium sound for every occasion",
+        "items": [
+          {
+            "name": "Wireless Earbuds Pro",
+            "price": 129,
+            "description": "Active noise cancellation, 24-hour battery life, and Qi charging. Sweat-resistant with 6 different ear tip sizes.",
+            "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80",
+            "imageAlt": "Wireless earbuds",
+            "duration": "In stock",
+            "popular": true
+          },
+          {
+            "name": "Bluetooth Speaker",
+            "price": 99,
+            "description": "360° sound with deep bass. 20-hour battery life. IPX7 waterproof. Perfect for parties, pool, or travel.",
+            "image": "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=600&q=80",
+            "imageAlt": "Bluetooth speaker",
+            "duration": "In stock"
+          }
+        ]
+      },
+      {
+        "id": "smart-home",
+        "name": "Smart Home",
+        "description": "Connect and control your home",
+        "items": [
+          {
+            "name": "Smart Home Hub",
+            "price": 189,
+            "description": "Control lights, climate, and security from one sleek hub. Works with Alexa, Google, and HomeKit. Voice control included.",
+            "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
+            "imageAlt": "Smart home hub",
+            "duration": "In stock",
+            "popular": true
+          },
+          {
+            "name": "Smart LED Light Bulbs (4-Pack)",
+            "price": 79,
+            "description": "16 million colors, dimmable, and voice-controlled. Works with your smart home hub. Set schedules and scenes.",
+            "image": "https://images.unsplash.com/photo-1565636192335-14c08edf1112?w=600&q=80",
+            "imageAlt": "Smart LED bulbs",
+            "duration": "In stock"
+          },
+          {
+            "name": "HD Security Camera",
+            "price": 119,
+            "description": "1080p HD video with night vision and motion detection. Two-way audio. Free cloud storage. Weather-resistant.",
+            "image": "https://images.unsplash.com/photo-1557804506-669714531e83?w=600&q=80",
+            "imageAlt": "Security camera",
+            "duration": "In stock"
+          }
+        ]
+      },
+      {
+        "id": "portable",
+        "name": "Portable Tech",
+        "description": "Take your tech on the go",
+        "items": [
+          {
+            "name": "Portable Solar Charger",
+            "price": 89,
+            "description": "Fast USB-C charging with rugged, water-resistant design. 20,000mAh capacity. Charge 3 devices simultaneously.",
+            "image": "https://images.unsplash.com/photo-1609042231215-d0461e893e7e?w=600&q=80",
+            "imageAlt": "Solar charger",
+            "duration": "In stock"
+          },
+          {
+            "name": "Wireless Charging Pad",
+            "price": 39,
+            "description": "Fast 15W charging for all Qi-enabled devices. Non-slip surface with LED indicator. Includes wall adapter.",
+            "image": "https://images.unsplash.com/photo-1591936281607-7bab0e1b1b41?w=600&q=80",
+            "imageAlt": "Wireless charging pad",
+            "duration": "In stock"
+          },
+          {
+            "name": "Fitness Tracker Watch",
+            "price": 159,
+            "description": "Heart rate monitoring, sleep tracking, GPS, and 50+ workout modes. 7-day battery. Water resistant to 50m.",
+            "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80",
+            "imageAlt": "Fitness tracker",
+            "duration": "In stock"
+          }
+        ]
+      },
+      {
+        "id": "computing",
+        "name": "Computing",
+        "description": "Upgrade your setup",
+        "items": [
+          {
+            "name": "Wireless Mechanical Keyboard",
+            "price": 149,
+            "description": "Premium mechanical switches with RGB lighting. Connects via Bluetooth or USB-C. Hot-swappable keys.",
+            "image": "https://images.unsplash.com/photo-1587829191301-dc798b83add3?w=600&q=80",
+            "imageAlt": "Mechanical keyboard",
+            "duration": "In stock",
+            "popular": true
+          },
+          {
+            "name": "4K Streaming Stick",
+            "price": 59,
+            "description": "Ultra HD streaming with Dolby Vision and Atmos. Works with all major streaming apps. Voice remote included.",
+            "image": "https://images.unsplash.com/photo-1569825534853-aaef84be7f3d?w=600&q=80",
+            "imageAlt": "4K streaming stick",
+            "duration": "In stock"
+          }
+        ]
+      }
+    ]
+  },
+  "gallery": {
+    "title": "Our Products",
+    "subtitle": "Premium electronics for every need",
+    "categories": [
+      {
+        "name": "Audio",
+        "images": [
+          {
+            "url": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80",
+            "alt": "Wireless earbuds"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=800&q=80",
+            "alt": "Bluetooth speaker"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1487215078519-e21cc028cb29?w=800&q=80",
+            "alt": "Audio equipment"
+          }
+        ]
+      },
+      {
+        "name": "Smart Home",
+        "images": [
+          {
+            "url": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
+            "alt": "Smart home hub"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1565636192335-14c08edf1112?w=800&q=80",
+            "alt": "Smart lighting"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1557804506-669714531e83?w=800&q=80",
+            "alt": "Security camera"
+          }
+        ]
+      },
+      {
+        "name": "Tech Accessories",
+        "images": [
+          {
+            "url": "https://images.unsplash.com/photo-1609042231215-d0461e893e7e?w=800&q=80",
+            "alt": "Portable chargers"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1587829191301-dc798b83add3?w=800&q=80",
+            "alt": "Keyboard and peripherals"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80",
+            "alt": "Wearable tech"
+          }
+        ]
+      }
+    ]
+  },
+  "team": {
+    "title": "Meet Our Team",
+    "subtitle": "Tech experts ready to help",
+    "members": [
+      {
+        "name": "Alex Rodriguez",
+        "title": "Founder & CEO",
+        "bio": "Alex is a tech enthusiast with 15 years of experience in consumer electronics. He founded QuickCart to bring the best products and service to customers everywhere.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "Alex Rodriguez",
+        "credentials": [
+          "Tech Industry Expert",
+          "15+ Years Experience",
+          "CEO/Founder"
+        ]
+      },
+      {
+        "name": "Jessica Chen",
+        "title": "Customer Support Lead",
+        "bio": "Jessica leads our support team with passion for customer satisfaction. She brings deep technical knowledge and a commitment to solving problems quickly.",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
+        "imageAlt": "Jessica Chen",
+        "credentials": [
+          "Support Expert",
+          "Tech Product Specialist",
+          "10+ Years Service"
+        ]
+      },
+      {
+        "name": "Marcus Williams",
+        "title": "Product Curator",
+        "bio": "Marcus carefully selects every product in our catalog. His expertise ensures we offer only the highest quality tech that our customers love.",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+        "imageAlt": "Marcus Williams",
+        "credentials": [
+          "Product Expert",
+          "12+ Years in Tech",
+          "Buyer/Curator"
+        ]
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Customer Reviews",
+    "subtitle": "What our customers say",
+    "items": [
+      {
+        "text": "QuickCart has the best selection of tech products and their customer service is outstanding. My orders always arrive quickly and everything works perfectly. Highly recommended!",
+        "author": "Jennifer Martinez",
+        "location": "Verified Buyer",
+        "rating": 5,
+        "date": "2 days ago",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&q=80",
+        "imageAlt": "Jennifer Martinez"
+      },
+      {
+        "text": "I've been a customer for 3 years and have bought everything from earbuds to smart home equipment. Quality is consistent, shipping is fast, and they stand behind their products.",
+        "author": "David Park",
+        "location": "Verified Buyer",
+        "rating": 5,
+        "date": "1 week ago",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "imageAlt": "David Park"
+      },
+      {
+        "text": "The wireless earbuds I ordered were exactly as described and arrived in perfect condition. Great price, great product, great service. This is my go-to place for tech!",
+        "author": "Sarah Johnson",
+        "location": "Verified Buyer",
+        "rating": 5,
+        "date": "3 weeks ago",
+        "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
+        "imageAlt": "Sarah Johnson"
+      }
+    ],
+    "stats": {
+      "averageRating": 4.9,
+      "totalReviews": 1247,
+      "googleRating": 4.9,
+      "returnRate": "<1%"
+    }
+  },
+  "stats": {
+    "items": [
+      {
+        "number": "4.9",
+        "label": "Star Rating"
+      },
+      {
+        "number": "1000+",
+        "label": "Products"
+      },
+      {
+        "number": "$0",
+        "label": "Shipping Over $100"
+      },
+      {
+        "number": "2yr",
+        "label": "Warranty"
+      }
+    ]
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "items": [
+      {
+        "question": "How long does shipping take?",
+        "answer": "We process orders same-day and ship via UPS/FedEx. Most orders arrive within 2-3 business days. Expedited shipping is available at checkout."
+      },
+      {
+        "question": "Do you offer free shipping?",
+        "answer": "Yes! Free shipping on all orders over $100. For orders under $100, standard shipping is $5.99. Express and overnight shipping options available."
+      },
+      {
+        "question": "What's your return policy?",
+        "answer": "30-day money-back guarantee on all products. If you're not satisfied for any reason, we'll issue a full refund including original shipping. See website for exceptions."
+      },
+      {
+        "question": "Are all products authentic?",
+        "answer": "100% authentic. All products are purchased directly from manufacturers or authorized distributors. We guarantee authenticity or your money back."
+      },
+      {
+        "question": "Do you offer volume discounts?",
+        "answer": "Yes! Orders of 10+ units receive volume pricing. Contact our sales team at sales@quickcart.io for custom quotes and enterprise pricing."
+      },
+      {
+        "question": "What payment methods do you accept?",
+        "answer": "We accept all major credit cards (Visa, Mastercard, Amex, Discover), PayPal, Apple Pay, and Google Pay. All payments are processed securely through Stripe."
+      },
+      {
+        "question": "How do I track my order?",
+        "answer": "A tracking number will be emailed to you as soon as your order ships. You can also track your order in your QuickCart account dashboard."
+      },
+      {
+        "question": "Is my data secure?",
+        "answer": "Absolutely. We use industry-leading SSL encryption, PCI compliance, and Stripe's security standards to protect your personal and payment information."
       }
     ]
   },
@@ -108,15 +380,47 @@
     "title": "Need a custom quote?",
     "subtitle": "Talk with our team for enterprise pricing and integrations.",
     "email": "sales@quickcart.io",
-    "phone": "+1-415-555-0199"
+    "phone": "+1-415-555-0199",
+    "address": "123 Tech Park Ave, San Francisco, CA 94103",
+    "hours": {
+      "title": "Support Hours",
+      "items": [
+        "Monday - Friday: 9am - 6pm PST",
+        "Saturday: 10am - 4pm PST",
+        "Sunday: Closed"
+      ]
+    }
+  },
+  "pricing": {
+    "title": "Flexible bundles",
+    "plans": [
+      {
+        "name": "Starter Kit",
+        "description": "Best-selling devices and priority setup support.",
+        "price": 249,
+        "cta": {
+          "label": "Buy Now",
+          "href": "#products"
+        }
+      },
+      {
+        "name": "Smart Home Pro",
+        "description": "Advanced automations, installation, and training.",
+        "price": 449,
+        "cta": {
+          "label": "Buy Now",
+          "href": "#products"
+        }
+      }
+    ]
   },
   "footer": {
-    "text": "© QuickCart Electronics — Built for modern online retail."
+    "text": "© QuickCart Electronics — Built for modern online retail. Premium tech delivered fast."
   },
   "settings": {
     "allowCheckout": true,
-    "productCta": "Buy Now",
-    "productNote": "Checkout buttons are active. Configure your Stripe keys to begin accepting payments."
+    "allowOrders": true,
+    "bookingEnabled": false,
+    "tier": "Pro"
   }
 }
-

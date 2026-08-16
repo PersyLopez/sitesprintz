@@ -99,7 +99,8 @@ export function sanitizeSiteData(data) {
           key === 'created_at' || key === 'updated_at' || key === 'published_at' ||
           key === 'expires_at' || key === 'draftId' || key === 'templateId' ||
           key === 'subdomain' || key === 'status' || key === 'plan' ||
-          key === 'json_file_path' || key === 'user_id') {
+          key === 'json_file_path' || key === 'user_id' || key === 'siteId' ||
+          key === '_isolation' || key === '_siteId' || key === '_sourceTemplateId') {
         sanitized[key] = value;
       } else {
         // Recursively sanitize nested objects/arrays
@@ -136,6 +137,9 @@ export default {
   sanitizeSiteData,
   sanitizeSiteDataForStorage
 };
+
+
+
 
 
 

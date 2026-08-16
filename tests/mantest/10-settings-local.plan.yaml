@@ -22,6 +22,7 @@ steps:
 
   - action: Settings welcome
     wait_for: { text: Select a setting category from the sidebar, timeout: 15000 }
+    settle_ms: 800
     assert:
       - text contains Payment Settings
       - text contains Billing
@@ -30,23 +31,40 @@ steps:
       - text contains Help & FAQ
 
   - action: Open foundation tab (local site settings, no external DNS)
-    click: { text: Foundation Settings }
+    code: |
+      const link = page.locator('[data-testid="settings-nav-foundation"]');
+      if (await link.count()) {
+        await link.first().click({ force: true, timeout: 10000 });
+      } else {
+        await page.goto('http://localhost:5173/settings/foundation', { waitUntil: 'load' });
+      }
     settle_ms: 1200
     assert:
       - url contains /settings/foundation
       - text contains Foundation Settings
 
   - action: Open domain tab shell
-    click: { text: Custom Domain }
+    code: |
+      const link = page.locator('[data-testid="settings-nav-domain"]');
+      if (await link.count()) {
+        await link.first().click({ force: true, timeout: 10000 });
+      } else {
+        await page.goto('http://localhost:5173/settings/domain', { waitUntil: 'load' });
+      }
     settle_ms: 1200
     assert:
       - url contains /settings/domain
       - text contains Custom Domain
 
   - action: Open billing tab UI only (do not click Stripe portal)
-    click: { text: Billing }
+    code: |
+      const link = page.locator('[data-testid="settings-nav-billing"]');
+      if (await link.count()) {
+        await link.first().click({ force: true, timeout: 10000 });
+      } else {
+        await page.goto('http://localhost:5173/settings/billing', { waitUntil: 'load' });
+      }
     settle_ms: 1000
     assert:
       - url contains /settings/billing
-      - text contains Billing Management
-      - text contains Current Plan
+      - text contains Billing

@@ -2,26 +2,36 @@ import React, { createContext, useState, useEffect } from 'react';
 
 export const CartContext = createContext();
 
-export function CartProvider({ children }) {
+const DEFAULT_CART_KEY = 'sitesprintz_cart';
+
+function getCartStorageKey(siteId) {
+  return siteId ? `${DEFAULT_CART_KEY}_${siteId}` : DEFAULT_CART_KEY;
+}
+
+export function CartProvider({ children, siteId = null }) {
   const [cartItems, setCartItems] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const cartKey = getCartStorageKey(siteId);
 
-  // Load cart from localStorage on mount
+  // Load site-scoped cart from localStorage on mount / site change
   useEffect(() => {
-    const savedCart = localStorage.getItem('sitesprintz_cart');
+    const savedCart = localStorage.getItem(cartKey);
     if (savedCart) {
       try {
         setCartItems(JSON.parse(savedCart));
       } catch (error) {
         console.error('Failed to load cart:', error);
+        setCartItems([]);
       }
+    } else {
+      setCartItems([]);
     }
-  }, []);
+  }, [cartKey]);
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('sitesprintz_cart', JSON.stringify(cartItems));
-  }, [cartItems]);
+    localStorage.setItem(cartKey, JSON.stringify(cartItems));
+  }, [cartItems, cartKey]);
 
   // Add item to cart
   const addToCart = (product, quantity = 1, options = {}) => {
@@ -32,26 +42,35 @@ export function CartProvider({ children }) {
       );
 
       if (existingIndex >= 0) {
-        // Update quantity
+        // Update quantity, cap at stock if defined
         const updated = [...prevItems];
-        updated[existingIndex].quantity += quantity;
+        const maxQty = product.stock ?? product.inventory;
+        const newQty = updated[existingIndex].quantity + quantity;
+        updated[existingIndex].quantity = maxQty != null
+          ? Math.min(newQty, maxQty)
+          : newQty;
         return updated;
       } else {
+        const maxQty = product.stock ?? product.inventory;
+        const safeQty = maxQty != null ? Math.min(quantity, maxQty) : quantity;
+        if (maxQty != null && safeQty <= 0) {
+          return prevItems;
+        }
         // Add new item
         return [...prevItems, {
           id: product.id,
           name: product.name,
           price: product.price,
           image: product.image,
-          quantity,
+          quantity: safeQty,
+          stock: maxQty,
           options
         }];
       }
     });
 
-    // Show cart briefly
+    // Show cart after adding an item so checkout is reachable
     setIsCartOpen(true);
-    setTimeout(() => setIsCartOpen(false), 2000);
   };
 
   // Update item quantity
@@ -97,11 +116,14 @@ export function CartProvider({ children }) {
 
   const value = {
     cartItems,
+    items: cartItems,
     isCartOpen,
     setIsCartOpen,
     addToCart,
+    addItem: addToCart,
     updateQuantity,
     removeFromCart,
+    removeItem: removeFromCart,
     clearCart,
     getCartTotal,
     getItemCount

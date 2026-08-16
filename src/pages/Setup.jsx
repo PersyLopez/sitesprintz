@@ -3,13 +3,18 @@ import { useSearchParams } from 'react-router-dom';
 import { useSite } from '../hooks/useSite';
 import { templatesService } from '../services/templates';
 import { useToast } from '../hooks/useToast';
-import { hasLayouts, getLayoutsForTemplate } from '../config/templateLayouts';
 import Header from '../components/layout/Header';
 import TemplateGrid from '../components/setup/TemplateGrid';
 import EditorPanel from '../components/setup/EditorPanel';
 import PublishModal from '../components/setup/PublishModal';
-import LayoutSelector from '../components/setup/LayoutSelector';
+import QuickStartWizard from '../components/setup/QuickStartWizard';
+import BazaarWizard from '../components/setup/BazaarWizard';
+import CustomTemplateBuilder from '../components/setup/CustomTemplateBuilder';
 import LoadingFallback from '../components/common/LoadingFallback';
+import SaveIndicator from '../components/common/SaveIndicator';
+import ProgressIndicator from '../components/common/ProgressIndicator';
+import SkeletonLoader from '../components/common/SkeletonLoader';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import './Setup.css';
 
 // Lazy load PreviewFrame (heavy component with iframe)
@@ -17,15 +22,17 @@ const PreviewFrame = lazy(() => import('../components/setup/PreviewFrame'));
 
 function Setup() {
   const [searchParams] = useSearchParams();
-  const { siteData, loadTemplate, saveDraft, lastSaved } = useSite();
+  const { siteData, loadTemplate, loadSite, saveDraft, lastSaved, isSaving } = useSite();
   const { showError, showSuccess } = useToast();
 
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [activeTab, setActiveTab] = useState('templates'); // templates, editor, preview
-  const [selectedLayout, setSelectedLayout] = useState(null);
-  const [baseTemplate, setBaseTemplate] = useState(null);
+  const [showWizard, setShowWizard] = useState(true);
+  const [wizardCompleted, setWizardCompleted] = useState(false);
+  const [showCustomBuilder, setShowCustomBuilder] = useState(false);
+  const [setupMode, setSetupMode] = useState('choice'); // 'choice' | 'bazaar' | 'business'
 
   // Calculate progress percentage
   const progressPercentage = () => {
@@ -41,9 +48,19 @@ function Setup() {
     // Load existing site if ID provided
     const siteId = searchParams.get('site');
     if (siteId) {
-      // Load site data
+      loadSite(siteId).then(() => {
+        setActiveTab('editor');
+        setShowWizard(false); // Don't show wizard when editing existing site
+        setWizardCompleted(true);
+      }).catch(err => {
+        console.error('Failed to load site:', err);
+      });
+    } else if (siteData.template) {
+      // If template already loaded, skip wizard
+      setShowWizard(false);
+      setWizardCompleted(true);
     }
-  }, []);
+  }, [searchParams]);
 
   const loadTemplates = async () => {
     try {
@@ -58,43 +75,10 @@ function Setup() {
   };
 
   const handleTemplateSelect = async (template) => {
-    const templateId = template.id || template.template;
-
-    // Check if this template has layout variations
-    if (hasLayouts(templateId)) {
-      // Set base template and show layout selector
-      setBaseTemplate(templateId);
-      const layoutConfig = getLayoutsForTemplate(templateId);
-      setSelectedLayout(layoutConfig.defaultLayout);
-
-      // Load the default layout
-      const fullTemplateId = `${templateId}-${layoutConfig.defaultLayout}`;
-      const layoutTemplate = await templatesService.getTemplate(fullTemplateId);
-      loadTemplate(layoutTemplate);
-    } else {
-      // No layouts, load template directly
-      setBaseTemplate(null);
-      setSelectedLayout(null);
-      loadTemplate(template);
-    }
-
+    // Load template directly (no layout variations)
+    loadTemplate(template);
     setActiveTab('editor');
     showSuccess(`✨ ${template.name || template.businessName} template selected!`);
-  };
-
-  const handleLayoutChange = async (layoutKey) => {
-    if (!baseTemplate) return;
-
-    setSelectedLayout(layoutKey);
-    const fullTemplateId = `${baseTemplate}-${layoutKey}`;
-
-    try {
-      const layoutTemplate = await templatesService.getTemplate(fullTemplateId);
-      loadTemplate(layoutTemplate);
-      showSuccess(`Switched to ${layoutKey.replace('-', ' ')} layout`);
-    } catch (error) {
-      showError('Failed to load layout');
-    }
   };
 
   const handlePublish = () => {
@@ -105,15 +89,163 @@ function Setup() {
     setShowPublishModal(true);
   };
 
+  const handleWizardComplete = (wizardData) => {
+    setWizardCompleted(true);
+    setShowWizard(false);
+    setActiveTab('editor');
+    showSuccess('✨ Your website is ready! Customize it further or publish now.');
+  };
+
+  const handleWizardSkip = () => {
+    setShowWizard(false);
+    setWizardCompleted(true);
+  };
+
+  const handleCustomBuilderComplete = async (customTemplate) => {
+    // Load the custom template like a regular template
+    setShowCustomBuilder(false);
+    await loadTemplate(customTemplate);
+    setActiveTab('editor');
+    showSuccess(`✨ ${customTemplate.businessName} - Ready to customize!`);
+  };
+
+  const handleCustomBuilderCancel = () => {
+    setShowCustomBuilder(false);
+  };
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    'Meta+s': (e) => {
+      e.preventDefault();
+      saveDraft();
+    },
+    'Ctrl+s': (e) => {
+      e.preventDefault();
+      saveDraft();
+    },
+    'Meta+p': (e) => {
+      e.preventDefault();
+      if (siteData.template) {
+        setActiveTab('preview');
+      }
+    },
+    'Ctrl+p': (e) => {
+      e.preventDefault();
+      if (siteData.template) {
+        setActiveTab('preview');
+      }
+    },
+    'Meta+Shift+p': (e) => {
+      e.preventDefault();
+      if (siteData.template && siteData.businessName) {
+        handlePublish();
+      }
+    },
+    'Ctrl+Shift+p': (e) => {
+      e.preventDefault();
+      if (siteData.template && siteData.businessName) {
+        handlePublish();
+      }
+    }
+  }, [siteData.template, siteData.businessName]);
+
+  // Show wizard if not completed and no existing site
+  if (showWizard && !wizardCompleted && !searchParams.get('site')) {
+    // Mode choice screen
+    if (setupMode === 'choice') {
+      return (
+        <div className="setup-page">
+          <Header />
+          <div data-testid="setup-mode-choice" style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '60vh',
+            gap: '32px',
+            padding: '48px 24px',
+          }}>
+            <h1 style={{ fontSize: '2rem', textAlign: 'center' }}>What kind of business are you setting up?</h1>
+            <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', justifyContent: 'center' }}>
+              <button
+                data-testid="choose-bazaar"
+                onClick={() => setSetupMode('bazaar')}
+                style={{
+                  padding: '24px 32px',
+                  fontSize: '1.1rem',
+                  borderRadius: '12px',
+                  border: '2px solid var(--color-accent, #c2683a)',
+                  background: 'var(--color-surface, #141417)',
+                  color: 'var(--color-text, #f4f2ee)',
+                  cursor: 'pointer',
+                  minWidth: '220px',
+                  textAlign: 'center',
+                }}
+              >
+                🛍️ Pop-up / Yard Sale / Food Stall
+              </button>
+              <button
+                data-testid="choose-business"
+                onClick={() => setSetupMode('business')}
+                style={{
+                  padding: '24px 32px',
+                  fontSize: '1.1rem',
+                  borderRadius: '12px',
+                  border: '2px solid var(--color-accent, #c2683a)',
+                  background: 'var(--color-surface, #141417)',
+                  color: 'var(--color-text, #f4f2ee)',
+                  cursor: 'pointer',
+                  minWidth: '220px',
+                  textAlign: 'center',
+                }}
+              >
+                🏢 Permanent Business
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Bazaar wizard (pop-up path)
+    if (setupMode === 'bazaar') {
+      return (
+        <div className="setup-page">
+          <Header />
+          <BazaarWizard
+            onComplete={handleWizardComplete}
+            onCancel={() => setSetupMode('choice')}
+          />
+        </div>
+      );
+    }
+
+    // QuickStart wizard (permanent business path)
+    return (
+      <div className="setup-page">
+        <Header />
+        <QuickStartWizard
+          onComplete={handleWizardComplete}
+          onSkip={handleWizardSkip}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="setup-page">
+      <a href="#setup-main" className="skip-to-content">
+        Skip to main content
+      </a>
       <Header />
 
       {/* Progress Bar */}
-      <div className="progress-bar">
-        <div
-          className="progress-fill"
-          style={{ width: `${progressPercentage()}%` }}
+      <div className="setup-progress-section">
+        <ProgressIndicator
+          percentage={progressPercentage()}
+          label="Setup Progress"
+          showPercentage={true}
+          size="md"
         />
       </div>
 
@@ -124,14 +256,11 @@ function Setup() {
         </div>
 
         <div className="setup-actions">
-          {lastSaved && (
-            <span className="last-saved">
-              💾 Last saved: {lastSaved.toLocaleTimeString()}
-            </span>
-          )}
+          <SaveIndicator lastSaved={lastSaved} isSaving={isSaving} />
           <button
             onClick={() => saveDraft()}
             className="btn btn-secondary btn-glow"
+            data-testid="save-draft-button"
           >
             💾 Save Draft
           </button>
@@ -139,6 +268,7 @@ function Setup() {
             onClick={handlePublish}
             className="btn btn-primary btn-glow"
             disabled={!siteData.template}
+            data-testid="publish-site-button"
           >
             🚀 Publish Site
           </button>
@@ -179,38 +309,38 @@ function Setup() {
             </div>
             <div className="panel-content">
               {loading ? (
-                <div className="panel-loading">
-                  <div className="loading-spinner"></div>
-                  <p>Loading amazing templates...</p>
+                <div className="template-skeleton-grid">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <SkeletonLoader key={i} variant="card" width="100%" height="300px" />
+                  ))}
                 </div>
+              ) : showCustomBuilder ? (
+                <CustomTemplateBuilder
+                  onComplete={handleCustomBuilderComplete}
+                  onCancel={handleCustomBuilderCancel}
+                />
               ) : (
                 <TemplateGrid
                   templates={templates}
                   selectedTemplate={siteData.template}
                   onSelect={handleTemplateSelect}
+                  onCustom={() => setShowCustomBuilder(true)}
                 />
               )}
             </div>
           </div>
 
           {/* Editor Panel */}
-          <div className={`setup-panel editor-panel ${activeTab === 'editor' ? 'active' : ''}`}>
+          <div
+            className={`setup-panel editor-panel ${activeTab === 'editor' ? 'active' : ''}`}
+            data-testid="customize-panel"
+          >
             <div className="panel-header">
               <h2>✏️ Customize Your Content</h2>
             </div>
             <div className="panel-content">
               {siteData.template ? (
-                <>
-                  {/* Show layout selector if template has layouts */}
-                  {baseTemplate && hasLayouts(baseTemplate) && (
-                    <LayoutSelector
-                      baseTemplate={baseTemplate}
-                      currentLayout={selectedLayout}
-                      onLayoutChange={handleLayoutChange}
-                    />
-                  )}
-                  <EditorPanel />
-                </>
+                <EditorPanel />
               ) : (
                 <div className="panel-empty">
                   <div className="empty-icon">🎨</div>

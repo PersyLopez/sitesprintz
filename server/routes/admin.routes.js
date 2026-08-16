@@ -11,6 +11,7 @@ import { prisma } from '../../database/db.js';
 import { sendEmail, EmailTypes } from '../utils/email-service-wrapper.js';
 import bcrypt from 'bcryptjs';
 import adminPlanFeaturesRoutes from './admin-plan-features.routes.js';
+import adminTemplatesRoutes from './admin-templates.routes.js';
 import {
   sendSuccess,
   sendCreated,
@@ -347,15 +348,20 @@ router.get('/analytics', requireAdmin, asyncHandler(async (req, res) => {
   });
 
   const subscriptions = {
-    free: 0,
+    trial: 0,
     starter: 0,
-    pro: 0,
-    premium: 0
+    growth: 0,
+    pro: 0
   };
 
   subscriptionBreakdown.forEach(item => {
-    const plan = item.subscription_plan || 'free';
-    if (subscriptions.hasOwnProperty(plan)) {
+    let plan = item.subscription_plan || 'trial';
+    
+    // Normalize legacy tier names
+    if (plan === 'free') plan = 'trial';
+    if (plan === 'premium' || plan === 'enterprise') plan = 'pro';
+    
+    if (Object.prototype.hasOwnProperty.call(subscriptions, plan)) {
       subscriptions[plan] = item._count;
     }
   });
@@ -403,10 +409,10 @@ router.get('/analytics', requireAdmin, asyncHandler(async (req, res) => {
       publishedToday: 0
     },
     subscriptions: {
+      trial: subscriptions.trial || 0,
       starter: subscriptions.starter || 0,
-      checkout: subscriptions.checkout || 0,
-      pro: subscriptions.pro || 0,
-      premium: subscriptions.premium || 0
+      growth: subscriptions.growth || 0,
+      pro: subscriptions.pro || 0
     },
     topUsers: recentUsers.slice(0, 5).map(u => ({
       id: u.id,
@@ -475,7 +481,135 @@ router.get('/system', requireAdmin, asyncHandler(async (req, res) => {
   });
 }));
 
+/**
+ * PATCH /api/admin/users/:userId
+ * Update user details like plan and email (admin only)
+ */
+router.patch('/users/:userId', requireAdmin, asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const { plan, email, subscription_plan } = req.body;
+
+  const user = await prisma.users.findUnique({
+    where: { id: userId },
+    select: { id: true, email: true }
+  });
+
+  if (!user) {
+    return sendNotFound(res, 'User', 'USER_NOT_FOUND');
+  }
+
+  const updateData = {};
+
+  // Update plan if provided
+  if (plan) {
+    updateData.subscription_plan = plan;
+  }
+  if (subscription_plan) {
+    updateData.subscription_plan = subscription_plan;
+  }
+
+  // Update email if provided and different
+  if (email && email !== user.email) {
+    // Check if new email already exists
+    const existingUser = await prisma.users.findUnique({
+      where: { email }
+    });
+    if (existingUser) {
+      return sendConflict(res, 'User with this email already exists', 'EMAIL_EXISTS');
+    }
+    updateData.email = email;
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    return sendBadRequest(res, 'No valid fields to update', 'NO_UPDATE_FIELDS');
+  }
+
+  const updatedUser = await prisma.users.update({
+    where: { id: userId },
+    data: updateData,
+    select: {
+      id: true,
+      email: true,
+      subscription_plan: true,
+      status: true,
+      role: true
+    }
+  });
+
+  return sendSuccess(res, { user: updatedUser }, 'User updated successfully');
+}));
+
+/**
+ * POST /api/admin/users/:userId/resend-invite
+ * Resend invitation email to a user (admin only)
+ */
+router.post('/users/:userId/resend-invite', requireAdmin, asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  const user = await prisma.users.findUnique({
+    where: { id: userId },
+    select: { id: true, email: true, status: true }
+  });
+
+  if (!user) {
+    return sendNotFound(res, 'User', 'USER_NOT_FOUND');
+  }
+
+  // Send invitation email (non-blocking)
+  sendEmail(user.email, EmailTypes.INVITATION, {
+    email: user.email
+  }).catch(err => {
+    console.error('Failed to send invitation email:', err);
+  });
+
+  return sendSuccess(res, { userId }, 'Invitation email sent successfully');
+}));
+
+/**
+ * POST /api/admin/users/:userId/reset-password
+ * Send password reset email to a user (admin only)
+ */
+router.post('/users/:userId/reset-password', requireAdmin, asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  const user = await prisma.users.findUnique({
+    where: { id: userId },
+    select: { id: true, email: true }
+  });
+
+  if (!user) {
+    return sendNotFound(res, 'User', 'USER_NOT_FOUND');
+  }
+
+  // Generate password reset token
+  const resetToken = require('crypto').randomBytes(32).toString('hex');
+  const resetExpires = new Date();
+  resetExpires.setHours(resetExpires.getHours() + 1); // 1 hour validity
+
+  // Save token to database
+  await prisma.users.update({
+    where: { id: userId },
+    data: {
+      password_reset_token: resetToken,
+      password_reset_expires: resetExpires
+    }
+  });
+
+  // Send password reset email (non-blocking)
+  sendEmail(user.email, EmailTypes.PASSWORD_RESET, {
+    email: user.email,
+    resetToken
+  }).catch(err => {
+    console.error('Failed to send password reset email:', err);
+  });
+
+  return sendSuccess(res, { userId }, 'Password reset email sent successfully');
+}));
+
 // Mount plan features routes
 router.use('/', adminPlanFeaturesRoutes);
+
+// Mount templates routes
+router.use('/templates', adminTemplatesRoutes);
 
 export default router;

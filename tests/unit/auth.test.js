@@ -38,7 +38,8 @@ describe('Auth Service', () => {
       expect(api.post).toHaveBeenCalledWith('/api/auth/register', {
         email: 'test@example.com',
         password: 'password123',
-        captchaToken: null
+        captchaToken: null,
+        acceptedTerms: false
       });
       expect(localStorageMock.setItem).toHaveBeenCalledWith('accessToken', 'new-access-token-123');
       expect(localStorageMock.setItem).toHaveBeenCalledWith('refreshToken', 'new-refresh-token-456');

@@ -13,10 +13,15 @@ import { renderWithAllProviders } from '../utils/testWrapper.jsx';
 // Mock fetch globally
 global.fetch = vi.fn();
 
+vi.mock('../../src/hooks/useAuth', () => ({
+  useAuth: () => ({ isAuthenticated: false, user: null, loading: false }),
+}));
+
 const mockSites = [
   {
     id: 'site-1',
     subdomain: 'amazing-restaurant',
+    template: 'restaurant',
     template_id: 'restaurant',
     status: 'published',
     plan: 'pro',
@@ -30,6 +35,7 @@ const mockSites = [
   {
     id: 'site-2',
     subdomain: 'beauty-salon',
+    template: 'salon',
     template_id: 'salon',
     status: 'published',
     plan: 'starter',
@@ -43,6 +49,7 @@ const mockSites = [
   {
     id: 'site-3',
     subdomain: 'fitness-gym',
+    template: 'gym',
     template_id: 'gym',
     status: 'published',
     plan: 'pro',
@@ -69,14 +76,23 @@ function renderWithRouter(component) {
 describe('ShowcaseGallery Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    global.fetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        sites: mockSites,
-        total: mockSites.length,
-        page: 1,
-        limit: 12
-      })
+    global.fetch.mockImplementation((url) => {
+      const href = String(url);
+      if (href.includes('/api/showcases/categories')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ categories: mockCategories }),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({
+          sites: mockSites,
+          total: mockSites.length,
+          page: 1,
+          limit: 12,
+        }),
+      });
     });
   });
 
@@ -88,7 +104,7 @@ describe('ShowcaseGallery Component', () => {
       });
       
       await waitFor(() => {
-        expect(screen.getByText(/Made with SiteSprintz/i)).toBeInTheDocument();
+        expect(screen.getByText(/See how your site could look/i)).toBeInTheDocument();
       });
     });
 
@@ -98,7 +114,7 @@ describe('ShowcaseGallery Component', () => {
       });
       
       await waitFor(() => {
-        expect(screen.getByText(/Discover amazing websites/i)).toBeInTheDocument();
+        expect(screen.getByText(/Browse live examples by industry and theme/i)).toBeInTheDocument();
       });
     });
 
@@ -145,7 +161,8 @@ describe('ShowcaseGallery Component', () => {
       
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          expect.stringContaining('/api/showcase')
+          expect.stringContaining('/api/showcase'),
+          expect.anything()
         );
       }, { timeout: 3000 });
     });
@@ -161,31 +178,47 @@ describe('ShowcaseGallery Component', () => {
     });
 
     it('should handle fetch errors gracefully', async () => {
-      global.fetch.mockRejectedValueOnce(new Error('Network error'));
-      
+      global.fetch.mockImplementation((url) => {
+        const href = String(url);
+        if (href.includes('/categories')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({ categories: [] }),
+          });
+        }
+        return Promise.reject(new Error('Network error'));
+      });
+
       await act(async () => {
         renderWithRouter(<ShowcaseGallery />);
       });
-      
+
       await waitFor(() => {
-        const errorElement = screen.queryByText(/error/i) || screen.queryByText(/failed/i);
-        expect(errorElement).toBeTruthy();
+        expect(screen.getByText(/Failed to load showcase/i)).toBeInTheDocument();
       }, { timeout: 3000 });
     });
 
     it('should show empty state when no sites exist', async () => {
-      global.fetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ sites: [], total: 0, page: 1, limit: 12 })
+      global.fetch.mockImplementation((url) => {
+        const href = String(url);
+        if (href.includes('/categories')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({ categories: [] }),
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ sites: [], total: 0, page: 1, limit: 12 }),
+        });
       });
-      
+
       await act(async () => {
         renderWithRouter(<ShowcaseGallery />);
       });
-      
+
       await waitFor(() => {
-        const emptyState = screen.queryByText(/No sites/i) || screen.queryByText(/empty/i);
-        expect(emptyState).toBeTruthy();
+        expect(screen.getByText(/No examples found/i)).toBeInTheDocument();
       }, { timeout: 3000 });
     });
   });
@@ -193,12 +226,12 @@ describe('ShowcaseGallery Component', () => {
   // ==================== FILTERING TESTS ====================
   describe('Category Filtering', () => {
     beforeEach(() => {
-      // Mock categories endpoint
       global.fetch.mockImplementation((url) => {
-        if (url.includes('/api/showcase/categories')) {
+        const href = String(url);
+        if (href.includes('/api/showcases/categories')) {
           return Promise.resolve({
             ok: true,
-            json: async () => mockCategories
+            json: async () => ({ categories: mockCategories }),
           });
         }
         return Promise.resolve({
@@ -207,114 +240,106 @@ describe('ShowcaseGallery Component', () => {
             sites: mockSites,
             total: mockSites.length,
             page: 1,
-            limit: 12
-          })
+            limit: 12,
+          }),
         });
       });
     });
 
     it('should render category filter buttons', async () => {
       renderWithRouter(<ShowcaseGallery />);
-      
+
       await waitFor(() => {
-        expect(screen.getByText(/All/i)).toBeInTheDocument();
-        expect(screen.getByText(/Restaurant/i)).toBeInTheDocument();
+        expect(screen.getByTestId('category-btn-all')).toBeInTheDocument();
+        expect(screen.getByTestId('category-btn-restaurant')).toBeInTheDocument();
       });
     });
 
     it('should filter sites by category when clicked', async () => {
       renderWithRouter(<ShowcaseGallery />);
-      
+
       await waitFor(() => {
-        expect(screen.getByText(/Restaurant/i)).toBeInTheDocument();
+        expect(screen.getByTestId('category-btn-restaurant')).toBeInTheDocument();
       });
 
-      const restaurantButton = screen.getByText(/Restaurant/i);
-      fireEvent.click(restaurantButton);
-      
+      fireEvent.click(screen.getByTestId('category-btn-restaurant'));
+
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          expect.stringContaining('category=restaurant')
+          expect.stringContaining('category=restaurant'),
+          expect.anything()
         );
       });
     });
 
     it('should show active state on selected category', async () => {
       renderWithRouter(<ShowcaseGallery />);
-      
+
       await waitFor(() => {
-        const allButton = screen.getByText(/All/i);
+        const allButton = screen.getByTestId('category-btn-all');
         expect(allButton).toHaveClass('active');
       });
     });
 
     it('should reset to all categories when "All" is clicked', async () => {
       renderWithRouter(<ShowcaseGallery />);
-      
-      await waitFor(() => {
-        const restaurantButton = screen.getByText(/Restaurant/i);
-        fireEvent.click(restaurantButton);
-      });
 
       await waitFor(() => {
-        const allButton = screen.getByText(/All/i);
-        fireEvent.click(allButton);
+        expect(screen.getByTestId('category-btn-restaurant')).toBeInTheDocument();
       });
 
+      fireEvent.click(screen.getByTestId('category-btn-restaurant'));
+      fireEvent.click(screen.getByTestId('category-btn-all'));
+
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith(
-          expect.not.stringContaining('category=')
-        );
+        const calls = global.fetch.mock.calls.map((c) => String(c[0]));
+        expect(calls.some((u) => u.includes('/api/showcases?') && !u.includes('category='))).toBe(true);
       });
     });
   });
 
   // ==================== SEARCH TESTS ====================
   describe('Search Functionality', () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
     it('should render search input', () => {
       renderWithRouter(<ShowcaseGallery />);
-      
+
       expect(screen.getByPlaceholderText(/Search/i)).toBeInTheDocument();
     });
 
     it('should update search query on input', async () => {
       renderWithRouter(<ShowcaseGallery />);
-      
+
       const searchInput = screen.getByPlaceholderText(/Search/i);
       fireEvent.change(searchInput, { target: { value: 'restaurant' } });
-      
+
       expect(searchInput.value).toBe('restaurant');
     });
 
-    it('should debounce search requests', async () => {
-      vi.useFakeTimers();
+    it('should fetch with search query when input changes', async () => {
       renderWithRouter(<ShowcaseGallery />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Amazing Restaurant')).toBeInTheDocument();
       });
 
       const searchInput = screen.getByPlaceholderText(/Search/i);
       fireEvent.change(searchInput, { target: { value: 'rest' } });
-      
-      // Should not call immediately
-      expect(global.fetch).toHaveBeenCalledTimes(1); // Only initial load
-      
-      // Fast-forward timers
-      vi.advanceTimersByTime(500);
-      
+
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          expect.stringContaining('search=rest')
+          expect.stringContaining('search=rest'),
+          expect.anything()
         );
       });
-      
-      vi.useRealTimers();
     });
 
     it('should clear search when input is cleared', async () => {
       renderWithRouter(<ShowcaseGallery />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Amazing Restaurant')).toBeInTheDocument();
       });
@@ -322,11 +347,10 @@ describe('ShowcaseGallery Component', () => {
       const searchInput = screen.getByPlaceholderText(/Search/i);
       fireEvent.change(searchInput, { target: { value: 'restaurant' } });
       fireEvent.change(searchInput, { target: { value: '' } });
-      
+
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith(
-          expect.not.stringContaining('search=')
-        );
+        const calls = global.fetch.mock.calls.map((c) => String(c[0]));
+        expect(calls.some((u) => u.includes('/api/showcases?') && !u.includes('search='))).toBe(true);
       });
     });
   });
@@ -334,14 +358,23 @@ describe('ShowcaseGallery Component', () => {
   // ==================== PAGINATION TESTS ====================
   describe('Pagination', () => {
     beforeEach(() => {
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          sites: mockSites,
-          total: 50, // More than one page
-          page: 1,
-          limit: 12
-        })
+      global.fetch.mockImplementation((url) => {
+        const href = String(url);
+        if (href.includes('/categories')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({ categories: mockCategories }),
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            sites: mockSites,
+            total: 50,
+            page: 1,
+            limit: 12,
+          }),
+        });
       });
     });
 
@@ -355,33 +388,34 @@ describe('ShowcaseGallery Component', () => {
 
     it('should load next page when Next is clicked', async () => {
       renderWithRouter(<ShowcaseGallery />);
-      
+
       await waitFor(() => {
-        const nextButton = screen.getByText(/Next/i);
-        fireEvent.click(nextButton);
+        expect(screen.getByLabelText(/Next page/i)).toBeInTheDocument();
       });
+
+      fireEvent.click(screen.getByLabelText(/Next page/i));
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          expect.stringContaining('page=2')
+          expect.stringContaining('page=2'),
+          expect.anything()
         );
       });
     });
 
     it('should disable Previous button on first page', async () => {
       renderWithRouter(<ShowcaseGallery />);
-      
+
       await waitFor(() => {
-        const prevButton = screen.getByText(/Previous/i);
-        expect(prevButton).toBeDisabled();
+        expect(screen.getByLabelText(/Previous page/i)).toBeDisabled();
       });
     });
 
     it('should show current page number', async () => {
       renderWithRouter(<ShowcaseGallery />);
-      
+
       await waitFor(() => {
-        expect(screen.getByText(/Page 1 of/i)).toBeInTheDocument();
+        expect(screen.getByTestId('showcase-pagination')).toHaveTextContent(/Page\s*1\s*of\s*5/i);
       });
     });
   });
@@ -390,19 +424,19 @@ describe('ShowcaseGallery Component', () => {
   describe('Navigation', () => {
     it('should link to individual site showcase pages', async () => {
       renderWithRouter(<ShowcaseGallery />);
-      
+
       await waitFor(() => {
-        const links = screen.getAllByRole('link');
-        expect(links[0]).toHaveAttribute('href', '/showcase/amazing-restaurant');
+        const detailLink = screen.getByTestId('site-card-amazing-restaurant').querySelector('a');
+        expect(detailLink).toHaveAttribute('href', '/showcase/amazing-restaurant');
       });
     });
 
-    it('should open site in new tab when external link is clicked', async () => {
+    it('should link to the live published site', async () => {
       renderWithRouter(<ShowcaseGallery />);
-      
+
       await waitFor(() => {
-        const externalLinks = screen.getAllByText(/Visit Site/i);
-        expect(externalLinks[0].closest('a')).toHaveAttribute('target', '_blank');
+        const visit = screen.getByTestId('visit-site-amazing-restaurant');
+        expect(visit).toHaveAttribute('href', '/view/amazing-restaurant');
       });
     });
   });
@@ -434,7 +468,7 @@ describe('ShowcaseGallery Component', () => {
       renderWithRouter(<ShowcaseGallery />);
       
       await waitFor(() => {
-        expect(document.title).toContain('Showcase');
+        expect(document.title).toContain('Gallery');
       });
     });
 

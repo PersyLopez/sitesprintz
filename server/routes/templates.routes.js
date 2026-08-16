@@ -2,6 +2,8 @@ import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { validateTemplateId } from '../utils/validators.js';
+import { getTemplateFilePath, PathEscapeError } from '../utils/siteIsolation.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,30 +20,14 @@ router.get('/', async (req, res) => {
     
     let templates = index.templates || [];
     
-    // Exclude layout variations (templates with layout suffixes)
-    const layoutVariations = ['casual', 'fine-dining', 'fast-casual', 'luxury-spa', 'modern-studio', 'neighborhood'];
-    templates = templates.filter(t => {
-      if (!t.id) return true;
-      return !layoutVariations.some(variation => t.id.endsWith(`-${variation}`));
-    });
-    
-    // Add tier field if not present (map from plan)
-    // Also ensure all required metadata fields are present
+    // All templates are Pro templates now - ensure tier field is set
     templates = templates.map(t => ({
       ...t,
-      tier: t.tier || t.plan?.toLowerCase() || 'starter',
-      // Ensure metadata fields exist for tests
-      ...(t.tier ? {} : { tier: t.plan?.toLowerCase() || 'starter' })
+      tier: t.tier || 'pro'
     }));
     
-    // Filter by tier if specified
-    const tier = req.query.tier;
-    if (tier) {
-      templates = templates.filter(t => {
-        const templateTier = t.tier || t.plan?.toLowerCase();
-        return templateTier === tier.toLowerCase();
-      });
-    }
+    // All templates are Pro, so no tier filtering needed
+    // (Keeping query parameter for backward compatibility, but all templates are Pro)
     
     res.json(templates);
   } catch (error) {
@@ -54,20 +40,21 @@ router.get('/', async (req, res) => {
 router.get('/preview/:templateId', async (req, res) => {
   try {
     const { templateId } = req.params;
-    
-    // Handle invalid template ID format
-    if (!templateId || templateId.includes('..') || templateId.includes('/')) {
-      return res.status(400).json({ error: 'Invalid template ID format' });
+    const templateValidation = validateTemplateId(templateId);
+    if (!templateValidation.valid) {
+      return res.status(400).json({ error: templateValidation.error });
     }
-    
-    const templatePath = path.join(templatesDir, `${templateId}.json`);
-    
+
     try {
+      const templatePath = getTemplateFilePath(templateValidation.value);
       const templateData = await fs.readFile(templatePath, 'utf-8');
       const template = JSON.parse(templateData);
       
       res.json(template);
     } catch (error) {
+      if (error instanceof PathEscapeError) {
+        return res.status(400).json({ error: error.message });
+      }
       if (error.code === 'ENOENT') {
         res.status(404).json({ error: 'Template not found' });
       } else {

@@ -985,14 +985,14 @@
     </div>
 
     <!-- Step 1: Choose Template -->
-    <div id="step1" class="step-content">
+    <div id="step1" class="step-content" data-testid="template-selection-step">
       <div class="step-header">
         <h1 class="step-title">Choose Your Template</h1>
         <p class="step-subtitle">Browse tiers below. Starter sites publish instantly, Checkout enables payments, and
           Premium is on the way.</p>
       </div>
 
-      <div class="template-grid" id="templateGrid"></div>
+      <div class="template-grid" id="templateGrid" data-testid="template-grid"></div>
 
       <div class="navigation">
         <div></div>
@@ -1002,14 +1002,14 @@
     </div>
 
     <!-- Step 2: Customize -->
-    <div id="step2" class="step-content" style="display: none;">
+    <div id="step2" class="step-content" style="display: none;" data-testid="customization-step">
       <div class="step-header">
         <h1 class="step-title">Customize Your Site</h1>
         <p class="step-subtitle">Edit all the details that matter</p>
       </div>
 
       <div class="customize-layout">
-        <div class="customize-panel">
+        <div class="customize-panel" data-testid="customize-panel">
           <div class="template-summary" id="templateSummary" aria-live="polite"></div>
           <div class="preview-toggle">
             <button class="btn btn-secondary" id="previewToggle" onclick="togglePreview()">✕ Close Preview</button>
@@ -1042,16 +1042,18 @@
             <div class="section-body">
               <div class="form-group">
                 <label class="form-label">Business Name</label>
-                <input type="text" class="form-input" id="businessName" placeholder="Enter your business name">
+                <input type="text" class="form-input" id="businessName" placeholder="Enter your business name"
+                  data-testid="business-name-input" required>
               </div>
               <div class="form-group">
                 <label class="form-label">Tagline / Hero Title</label>
-                <input type="text" class="form-input" id="heroTitle" placeholder="What makes you special?">
+                <input type="text" class="form-input" id="heroTitle" placeholder="What makes you special?"
+                  data-testid="hero-title-input">
               </div>
               <div class="form-group">
                 <label class="form-label">Subtitle / Description</label>
-                <textarea class="form-input form-textarea" id="heroSubtitle"
-                  placeholder="Tell visitors what you do..."></textarea>
+                <textarea class="form-input form-textarea" id="heroSubtitle" placeholder="Tell visitors what you do..."
+                  data-testid="hero-subtitle-input"></textarea>
               </div>
             </div>
           </section>
@@ -1168,12 +1170,13 @@
 
       <div class="navigation">
         <button class="btn-secondary-large" onclick="prevStep()">← Back</button>
-        <button class="btn-primary-large" onclick="publishNow()">🚀 Publish Site</button>
+        <button class="btn-primary-large" onclick="publishNow()" data-testid="publish-site-button">🚀 Publish
+          Site</button>
       </div>
     </div>
 
     <!-- Success Step -->
-    <div id="success" class="step-content" style="display: none;">
+    <div id="success" class="step-content" style="display: none;" data-testid="success-step">
       <div class="success-message">
         <div class="success-icon">🎉</div>
         <h2>Your Site is Ready!</h2>
@@ -2140,6 +2143,8 @@
     function createTemplateCard(template, options = {}) {
       const card = document.createElement('div');
       card.className = 'template-card';
+      card.setAttribute('data-testid', 'template-card');
+      card.setAttribute('data-template-id', template.id);
       card.style.setProperty('--template-color', template.color || 'var(--color-primary)');
 
       const isDisabled = Boolean(options.disabled || template.status === 'coming-soon');
@@ -2195,6 +2200,7 @@
         const selectBtn = document.createElement('button');
         selectBtn.type = 'button';
         selectBtn.className = 'btn btn-primary';
+        selectBtn.setAttribute('data-testid', 'select-template-button');
         selectBtn.textContent = 'Use Template';
         selectBtn.onclick = (event) => {
           event.stopPropagation();
@@ -2204,6 +2210,7 @@
         const preview = document.createElement('button');
         preview.type = 'button';
         preview.className = 'btn btn-secondary';
+        preview.setAttribute('data-testid', 'preview-template-button');
         preview.textContent = 'Quick Preview';
         preview.title = 'Preview template in modal';
         preview.onclick = (event) => {

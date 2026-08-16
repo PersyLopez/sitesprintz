@@ -1,0 +1,264 @@
+/* Fee Configuration Component Styles */
+.fee-configuration {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 20px;
+}
+
+.fee-configuration h2 {
+  margin-bottom: 30px;
+  color: #1f2937;
+  font-size: 24px;
+  border-bottom: 3px solid #2563eb;
+  padding-bottom: 10px;
+}
+
+.fee-section {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.section-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #1f2937;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #2563eb;
+}
+
+.toggle span {
+  font-weight: 500;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.policy-details {
+  background: #f9fafb;
+  padding: 15px;
+  border-radius: 6px;
+  border-left: 4px solid #2563eb;
+}
+
+.info {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.policy-group {
+  margin: 15px 0;
+}
+
+.policy-group label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 500;
+  color: #374151;
+  font-size: 14px;
+}
+
+.policy-group select,
+.policy-group input[type="number"],
+.policy-group input[type="text"] {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 100%;
+  max-width: 300px;
+}
+
+.policy-group select:focus,
+.policy-group input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.input-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.input-group input {
+  max-width: 100px;
+  width: auto;
+}
+
+.input-group select {
+  max-width: 150px;
+  width: auto;
+}
+
+.input-group span {
+  color: #6b7280;
+  font-weight: 500;
+  min-width: 30px;
+}
+
+.rules-list {
+  background: white;
+  padding: 12px;
+  border-radius: 6px;
+  margin: 15px 0;
+}
+
+.rules-list h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #374151;
+}
+
+.rule-row {
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.rule-row:last-child {
+  border-bottom: none;
+}
+
+.rule-input,
+.rule-output {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.rule-input label,
+.rule-output label {
+  font-size: 12px;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.rule-input input,
+.rule-output input {
+  width: 70px;
+  padding: 6px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.rule-input span,
+.rule-output span {
+  font-size: 12px;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.fee-preview {
+  background: white;
+  padding: 12px;
+  border-radius: 6px;
+  margin-top: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.fee-preview strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #374151;
+  font-size: 13px;
+}
+
+.fee-preview ul {
+  margin: 0;
+  padding-left: 20px;
+  list-style: none;
+}
+
+.fee-preview li {
+  padding: 4px 0;
+  font-size: 13px;
+  color: #6b7280;
+  list-style-type: disc;
+  margin-left: 20px;
+}
+
+.message {
+  padding: 12px;
+  border-radius: 6px;
+  margin: 15px 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.message.success {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.message.error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+

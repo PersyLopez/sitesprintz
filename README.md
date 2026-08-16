@@ -1,14 +1,38 @@
-# 🚀 SiteSprintz
+# SiteSprintz
 
-**Small Business Website Builder** - Launch your professional site in minutes.
+**Small Business Website Builder** — Launch your professional site in minutes.
 
 [![Tests](https://img.shields.io/badge/tests-85%25-green)]() [![Ready](https://img.shields.io/badge/status-production--ready-brightgreen)]()
 
 ---
 
-## 🎯 Quick Start
+## Architecture Summary
 
-**New here? Start with [`QUICK-START.md`](./QUICK-START.md)** - Everything you need to launch in 15 minutes.
+| Layer | Path | Role |
+|-------|------|------|
+| Frontend | `src/` | React 19 + Vite — editor, dashboard, published viewer |
+| API | `server/routes/` | Express REST — drafts, sites, orders, auth |
+| Services | `server/services/` | Business logic, Stripe, booking, templates |
+| Data | `prisma/` | PostgreSQL via Prisma ORM |
+| Assets | `public/` | Templates, section registry, published sites |
+| Tests | `tests/` | Vitest + Playwright |
+| Docs | `docs/` | Architecture, setup, verification reports |
+
+**Critical flows**: template → draft → publish → live site; tier-gated features; canonical `sections[]` model.
+
+| Resource | Purpose |
+|----------|---------|
+| [`AGENTS.md`](./AGENTS.md) | AI assistant & contributor context |
+| [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) | Full architecture |
+| [`docs/PROJECT_STRUCTURE.md`](./docs/PROJECT_STRUCTURE.md) | Directory map |
+| [`docs/governance/DOCUMENTATION_POLICIES.md`](./docs/governance/DOCUMENTATION_POLICIES.md) | Where docs go |
+| [`.cursor/rules/`](./.cursor/rules/) | Scoped agent rules for future changes |
+
+---
+
+## Quick Start
+
+**New here?** Start with [`docs/setup/QUICK-START.md`](./docs/setup/QUICK-START.md) — launch in 15 minutes.
 
 ---
 
@@ -130,25 +154,18 @@ npm run start:prod
 
 ---
 
-## 📖 Documentation Index
+## Documentation
 
-**📚 [Full Documentation](./docs/README.md)** - Complete organized documentation
+**[docs/README.md](./docs/README.md)** — single index. Each subfolder has a `README.md` with canonical docs only.
 
-### By Category
-
-- **[Setup & Deployment](./docs/setup/)** - Quick start, Railway, Git workflow, integrations
-- **[User Guides](./docs/guides/)** - Feature guides, tutorials, demos
-- **[Development](./docs/development/)** - Code standards, templates, architecture
-- **[Plans & Roadmap](./docs/plans/)** - Future features, backlog, strategy
-- **[Reports](./docs/reports/)** - Test coverage, execution reports
-- **[Archive](./docs/archive/)** - Completed work summaries (450+ docs)
-
-### Key Documents
-
-- **Getting Started:** [Quick Start](./docs/setup/QUICK-START.md), [Git Strategy](./docs/setup/GIT-STRATEGY.md), [Git Workflow Best Practices](./docs/setup/GIT-WORKFLOW-BEST-PRACTICES.md)
-- **Deployment:** [Railway Deploy](./docs/setup/RAILWAY-DEPLOY.md), [Integration Setup](./docs/setup/INTEGRATION-SETUP.md)
-- **Planning:** [Strategic Plan](./docs/plans/STRATEGIC-MASTER-PLAN.md), [Backlog](./docs/plans/BACKLOG.md)
-- **Development:** [Template Guide](./docs/TEMPLATE-CREATION-GUIDE.md), [JS Standards](./docs/JS-STANDARDS.md)
+| Area | Entry point |
+|------|-------------|
+| Setup | [docs/setup/QUICK-START.md](./docs/setup/QUICK-START.md) |
+| Development | [docs/development/JS-STANDARDS.md](./docs/development/JS-STANDARDS.md) |
+| Features | [docs/features/QUICK_REFERENCE_STATUS.md](./docs/features/QUICK_REFERENCE_STATUS.md) |
+| E-commerce | [docs/ecommerce/README.md](./docs/ecommerce/README.md) |
+| Architecture | [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) |
+| Agent context | [AGENTS.md](./AGENTS.md) |
 
 ---
 

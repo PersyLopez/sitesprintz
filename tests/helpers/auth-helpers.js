@@ -24,6 +24,9 @@ export async function registerUser(page, userData = {}) {
   await page.fill('input[name="email"], input[type="email"]', user.email);
   await page.fill('input[name="password"], input[type="password"]', user.password);
 
+  // Accept the legal agreements (required clickwrap consent)
+  await page.check('[data-testid="register-accept-terms"]');
+
   // Submit form
   await page.click('button[type="submit"]');
 

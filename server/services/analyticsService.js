@@ -74,6 +74,21 @@ class AnalyticsService {
   }
 
   /**
+   * Resolve site_id from subdomain
+   */
+  static async resolveSiteId(subdomain) {
+    if (!subdomain) throw new Error('Subdomain required');
+    
+    const site = await prisma.sites.findUnique({
+      where: { subdomain },
+      select: { id: true }
+    });
+    
+    if (!site) throw new Error('Site not found');
+    return site.id;
+  }
+
+  /**
    * Track a page view
    */
   static async trackPageView(pageView) {
@@ -86,17 +101,18 @@ class AnalyticsService {
 
     // Sanitize path to remove PII
     const sanitizedPath = this.sanitizePath(path);
-    const referrerDomain = this.extractReferrerDomain(referrer);
     const timestamp = new Date();
+    
+    const siteId = await this.resolveSiteId(subdomain);
 
     // Do NOT store IP addresses (privacy)
     await prisma.analytics_page_views.create({
       data: {
-        subdomain,
+        site_id: siteId,
         path: sanitizedPath,
         timestamp,
         user_agent: userAgent || null,
-        referrer_domain: referrerDomain
+        referrer: referrer || null
       }
     });
 
@@ -107,22 +123,21 @@ class AnalyticsService {
    * Track an order completion
    */
   static async trackOrder(order) {
-    const { subdomain, orderId, revenue, itemsCount, orderType } = order;
+    const { subdomain, orderId, value, itemsCount, orderType } = order;
 
     // Validation
-    if (revenue < 0) {
-      throw new Error('Revenue must be a positive number');
+    if (value < 0) {
+      throw new Error('Value must be a positive number');
     }
 
     const timestamp = new Date();
+    const siteId = await this.resolveSiteId(subdomain);
 
     await prisma.analytics_orders.create({
       data: {
-        subdomain,
+        site_id: siteId,
         order_id: orderId,
-        revenue,
-        items_count: itemsCount,
-        order_type: orderType || null,
+        value,
         timestamp
       }
     });
@@ -134,17 +149,16 @@ class AnalyticsService {
    * Track a conversion event
    */
   static async trackConversion(conversion) {
-    const { subdomain, type, value, metadata } = conversion;
+    const { subdomain, type, metadata } = conversion;
 
     const timestamp = new Date();
-    const metadataJson = metadata ? JSON.stringify(metadata) : null;
+    const siteId = await this.resolveSiteId(subdomain);
 
     await prisma.analytics_conversions.create({
       data: {
-        subdomain,
-        type,
-        value: value || 0,
-        metadata: metadataJson,
+        site_id: siteId,
+        event_type: type,
+        metadata: metadata || null,
         timestamp
       }
     });
@@ -159,10 +173,10 @@ class AnalyticsService {
     const { period, startDate, endDate } = options;
 
     let dateFilter = '';
-    const params = [subdomain];
+    const params = [];
 
     if (startDate && endDate) {
-      dateFilter = 'AND timestamp >= $2::timestamp AND timestamp <= $3::timestamp';
+      dateFilter = 'AND pv.timestamp >= $2::timestamp AND pv.timestamp <= $3::timestamp';
       params.push(startDate, endDate);
     } else if (period) {
       const periodMap = {
@@ -172,8 +186,10 @@ class AnalyticsService {
         '90d': '90 days',
         '1y': '1 year'
       };
-      dateFilter = `AND timestamp >= NOW() - INTERVAL '${periodMap[period] || '7 days'}'`;
+      dateFilter = `AND pv.timestamp >= NOW() - INTERVAL '${periodMap[period] || '7 days'}'`;
     }
+
+    const siteId = await this.resolveSiteId(subdomain);
 
     // Use raw query for complex join and aggregation
     const result = await prisma.$queryRawUnsafe(
@@ -181,17 +197,18 @@ class AnalyticsService {
         COUNT(DISTINCT pv.id) as total_page_views,
         COUNT(DISTINCT pv.user_agent) as unique_visitors,
         COALESCE(COUNT(DISTINCT o.id), 0) as total_orders,
-        COALESCE(SUM(o.revenue), 0) as total_revenue,
-        COALESCE(AVG(o.revenue), 0) as avg_order_value,
+        COALESCE(SUM(o.value), 0) as total_revenue,
+        COALESCE(AVG(o.value), 0) as avg_order_value,
         CASE 
           WHEN COUNT(DISTINCT pv.id) > 0 
           THEN COALESCE(COUNT(DISTINCT o.id)::float / COUNT(DISTINCT pv.id), 0)
           ELSE 0 
         END as conversion_rate
       FROM analytics_page_views pv
-      LEFT JOIN analytics_orders o ON o.subdomain = pv.subdomain AND o.timestamp >= pv.timestamp - INTERVAL '1 hour'
-      WHERE pv.subdomain = $1
+      LEFT JOIN analytics_orders o ON o.site_id = pv.site_id AND o.timestamp >= pv.timestamp - INTERVAL '1 hour'
+      WHERE pv.site_id = $1
       ${dateFilter}`,
+      siteId,
       ...params
     );
 
@@ -219,18 +236,20 @@ class AnalyticsService {
       '30d': '30 days'
     };
 
+    const siteId = await this.resolveSiteId(subdomain);
+
     const result = await prisma.$queryRawUnsafe(
       `SELECT 
         path,
         COUNT(*) as views,
         COUNT(DISTINCT user_agent) as unique_visitors
       FROM analytics_page_views
-      WHERE subdomain = $1
+      WHERE site_id = $1
         AND timestamp >= NOW() - INTERVAL '${periodMap[period] || '7 days'}'
       GROUP BY path
       ORDER BY views DESC
       LIMIT $2`,
-      subdomain,
+      siteId,
       limit
     );
 
@@ -253,21 +272,23 @@ class AnalyticsService {
       '90d': '90 days'
     };
 
+    const siteId = await this.resolveSiteId(subdomain);
+
     const result = await prisma.$queryRawUnsafe(
       `SELECT 
-        COALESCE(referrer_domain, 'direct') as referrer_domain,
+        COALESCE(referrer, 'direct') as referrer,
         COUNT(*) as count,
         (COUNT(*)::float / SUM(COUNT(*)) OVER () * 100) as percentage
       FROM analytics_page_views
-      WHERE subdomain = $1
+      WHERE site_id = $1
         AND timestamp >= NOW() - INTERVAL '${periodMap[period] || '30 days'}'
-      GROUP BY referrer_domain
+      GROUP BY referrer
       ORDER BY count DESC`,
-      subdomain
+      siteId
     );
 
     return result.map(row => ({
-      domain: row.referrer_domain,
+      domain: row.referrer,
       visits: Number(row.count),
       percentage: Number(Number(row.percentage).toFixed(1))
     }));
@@ -293,20 +314,22 @@ class AnalyticsService {
       '90d': '90 days'
     };
 
+    const siteId = await this.resolveSiteId(subdomain);
+
     const result = await prisma.$queryRawUnsafe(
       `SELECT 
         DATE_TRUNC('${truncMap[groupBy] || 'day'}', pv.timestamp) as date,
         COUNT(DISTINCT pv.id) as page_views,
         COALESCE(COUNT(DISTINCT o.id), 0) as orders,
-        COALESCE(SUM(o.revenue), 0) as revenue
+        COALESCE(SUM(o.value), 0) as revenue
       FROM analytics_page_views pv
-      LEFT JOIN analytics_orders o ON o.subdomain = pv.subdomain 
+      LEFT JOIN analytics_orders o ON o.site_id = pv.site_id 
         AND DATE_TRUNC('${truncMap[groupBy] || 'day'}', o.timestamp) = DATE_TRUNC('${truncMap[groupBy] || 'day'}', pv.timestamp)
-      WHERE pv.subdomain = $1
+      WHERE pv.site_id = $1
         AND pv.timestamp >= NOW() - INTERVAL '${periodMap[period] || '7 days'}'
       GROUP BY date
       ORDER BY date ASC`,
-      subdomain
+      siteId
     );
 
     return result.map(row => ({
@@ -321,16 +344,24 @@ class AnalyticsService {
    * Delete all analytics data for a subdomain
    */
   static async deleteAnalytics(subdomain) {
+    const siteId = await this.resolveSiteId(subdomain);
+    return this.clearSiteData(siteId);
+  }
+
+  /**
+   * Clear all analytics data for a site by site_id
+   */
+  static async clearSiteData(siteId) {
     await prisma.analytics_page_views.deleteMany({
-      where: { subdomain }
+      where: { site_id: siteId }
     });
 
     await prisma.analytics_orders.deleteMany({
-      where: { subdomain }
+      where: { site_id: siteId }
     });
 
     await prisma.analytics_conversions.deleteMany({
-      where: { subdomain }
+      where: { site_id: siteId }
     });
 
     return { deleted: true };

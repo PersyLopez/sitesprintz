@@ -1,29 +1,78 @@
 url: http://localhost:5173/showcase
-goal: Showcase gallery page loads with search/filters and CTAs
+goal: Showcase gallery loads sites grid, category filters, and search from local API
 steps:
   - action: Gallery page loads
-    wait_for: { text: Made with SiteSprintz }
-    settle_ms: 1500
+    wait_for: { text: See how your site could look, timeout: 20000 }
+    settle_ms: 2000
     assert:
       - url contains /showcase
-      - text contains Discover amazing websites
+      - text contains Example sites
+      - text contains Browse live examples by industry
 
-  - action: Search control present
-    fill: { testId: showcase-search, value: "salon", clear: true }
-    settle_ms: 800
+  - action: Sites grid or count appears
+    wait_for: { selector: '[data-testid="showcase-grid"]', timeout: 20000 }
+    settle_ms: 500
+    assert:
+      - text contains example site
 
-  - action: All category filter
+  - action: Category filters present
+    code: |
+      const all = page.getByTestId('category-btn-all');
+      if ((await all.count()) === 0) throw new Error('Missing All category button');
+      // At least one industry filter from API (name field)
+      const salon = page.getByTestId('category-btn-salon');
+      const restaurant = page.getByTestId('category-btn-restaurant');
+      const any =
+        (await salon.count()) > 0 ||
+        (await restaurant.count()) > 0 ||
+        (await page.locator('[data-testid^="category-btn-"]').count()) > 1;
+      if (!any) throw new Error('No industry category filters rendered');
+    settle_ms: 300
+
+  - action: Filter by a category when available
+    code: |
+      const salon = page.getByTestId('category-btn-salon');
+      if (await salon.count()) {
+        await salon.click();
+        await page.waitForTimeout(800);
+        const body = await page.locator('body').innerText();
+        if (!/Salon|salon|No examples found|example site/i.test(body)) {
+          throw new Error('Category filter did not update gallery content');
+        }
+      }
+    settle_ms: 400
+
+  - action: Reset to All
     click: { testId: category-btn-all }
     settle_ms: 800
 
-  - action: Empty state or sites visible
+  - action: Search control present
+    fill: { testId: showcase-search, value: "salon", clear: true }
+    settle_ms: 1000
+
+  - action: Search results resolve
     code: |
       const body = await page.locator('body').innerText();
-      const ok =
-        body.includes('No sites found') ||
-        body.includes('Create Your Site') ||
-        body.includes('showcase') ||
-        (await page.getByTestId('showcase-grid').count()) > 0 ||
-        (await page.getByTestId('showcase-empty-cta').count()) > 0;
-      if (!ok) throw new Error('Showcase shows neither empty state nor grid');
-    settle_ms: 500
+      const grid = await page.getByTestId('showcase-grid').count();
+      const empty = await page.getByTestId('showcase-empty-cta').count();
+      if (grid === 0 && empty === 0 && !/No sites found|Loading showcase/i.test(body)) {
+        throw new Error('Search left gallery in unknown state');
+      }
+    settle_ms: 300
+
+  - action: Clear search and show grid again
+    fill: { testId: showcase-search, value: "", clear: true }
+    settle_ms: 1000
+
+  - action: Grid still available after clear
+    code: |
+      await page.getByTestId('category-btn-all').click().catch(() => {});
+      await page.waitForTimeout(600);
+      const grid = page.getByTestId('showcase-grid');
+      if ((await grid.count()) === 0) {
+        // empty DB is rare in local demos; still accept empty CTA
+        if ((await page.getByTestId('showcase-empty-cta').count()) === 0) {
+          throw new Error('Expected showcase grid after clearing search');
+        }
+      }
+    settle_ms: 300

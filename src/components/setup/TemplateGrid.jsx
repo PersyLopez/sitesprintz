@@ -3,14 +3,40 @@ import TemplatePreviewModal from './TemplatePreviewModal';
 import { OptimizedImage } from '../common/OptimizedImage';
 import './TemplateGrid.css';
 
-function TemplateGrid({ templates, selectedTemplate, onSelect }) {
+function TemplateGrid({ templates, selectedTemplate, onSelect, onCustom }) {
   const [groupBy, setGroupBy] = useState('category'); // 'tier', 'category', 'all'
   const [filterTier, setFilterTier] = useState('all'); // 'all', 'Pro', 'Premium', 'Starter'
   const [searchQuery, setSearchQuery] = useState('');
   const [previewTemplate, setPreviewTemplate] = useState(null);
 
+  // Get user's industry preference for recommendations
+  const userIndustry = localStorage.getItem('userIndustryPreference');
+
   // Filter and group templates
-  const { groupedTemplates, categories, tiers } = useMemo(() => {
+  const { groupedTemplates, categories, tiers, recommendedTemplates } = useMemo(() => {
+    // Get recommended templates based on industry
+    const recommended = userIndustry 
+      ? templates.filter(t => {
+          const templateCategory = (t.category || '').toLowerCase();
+          const industryMap = {
+            restaurant: ['food', 'dining'],
+            salon: ['beauty', 'wellness'],
+            fitness: ['fitness', 'health', 'gym'],
+            consultant: ['professional', 'services'],
+            freelancer: ['professional', 'services'],
+            cleaning: ['home', 'services'],
+            electrician: ['home', 'services'],
+            plumbing: ['home', 'services'],
+            'auto-repair': ['automotive'],
+            'pet-care': ['pet', 'services'],
+            'tech-repair': ['technology'],
+            'product-showcase': ['retail', 'e-commerce']
+          };
+          const keywords = industryMap[userIndustry] || [];
+          return keywords.some(keyword => templateCategory.includes(keyword));
+        })
+      : [];
+
     // Filter by search query
     let filtered = templates.filter(template => {
       const searchLower = searchQuery.toLowerCase();
@@ -58,8 +84,8 @@ function TemplateGrid({ templates, selectedTemplate, onSelect }) {
       grouped = { 'All Templates': filtered };
     }
 
-    return { groupedTemplates: grouped, categories: cats, tiers: tiersSet };
-  }, [templates, groupBy, filterTier, searchQuery]);
+    return { groupedTemplates: grouped, categories: cats, tiers: tiersSet, recommendedTemplates: recommended };
+  }, [templates, groupBy, filterTier, searchQuery, userIndustry]);
 
   // Get group order based on groupBy type
   const getGroupOrder = () => {
@@ -145,28 +171,20 @@ function TemplateGrid({ templates, selectedTemplate, onSelect }) {
               All
             </button>
             <button
-              className={`btn-group-item tier-pro ${filterTier === 'Pro' ? 'active' : ''}`}
-              onClick={() => setFilterTier('Pro')}
-              aria-label="Filter to Pro plan templates"
-              aria-pressed={filterTier === 'Pro'}
-            >
-              Pro
-            </button>
-            <button
-              className={`btn-group-item tier-premium ${filterTier === 'Premium' ? 'active' : ''}`}
-              onClick={() => setFilterTier('Premium')}
-              aria-label="Filter to Premium plan templates"
-              aria-pressed={filterTier === 'Premium'}
-            >
-              Premium
-            </button>
-            <button
               className={`btn-group-item tier-starter ${filterTier === 'Starter' ? 'active' : ''}`}
               onClick={() => setFilterTier('Starter')}
               aria-label="Filter to Starter plan templates"
               aria-pressed={filterTier === 'Starter'}
             >
               Starter
+            </button>
+            <button
+              className={`btn-group-item tier-growth ${filterTier === 'Growth' ? 'active' : ''}`}
+              onClick={() => setFilterTier('Growth')}
+              aria-label="Filter to Growth plan templates"
+              aria-pressed={filterTier === 'Growth'}
+            >
+              Growth
             </button>
           </div>
         </div>
@@ -195,133 +213,255 @@ function TemplateGrid({ templates, selectedTemplate, onSelect }) {
           </button>
         </div>
       ) : (
-        groupOrder.map(groupName => {
-          const groupTemplates = groupedTemplates[groupName] || [];
-          if (groupTemplates.length === 0) return null;
-
-          // Get icon for category
-          const getCategoryIcon = (category) => {
-            const icons = {
-              'Food & Dining': '🍽️',
-              'Beauty & Wellness': '💇',
-              'Fitness & Health': '💪',
-              'Professional Services': '💼',
-              'Home Services': '🏠',
-              'Pet Services': '🐾',
-              'Technology': '💻',
-              'Retail': '🛍️',
-              'Automotive': '🚗',
-              'Healthcare': '🏥',
-              'Legal': '⚖️',
-              'Real Estate': '🏘️',
-              'Basic': '🌐',
-              'Other': '📄'
-            };
-            return icons[category] || '📄';
-          };
-
-          const groupIcon = groupBy === 'category' ? getCategoryIcon(groupName) : '';
-
-          return (
-            <div key={groupName} className="template-tier-section">
+        <>
+          {/* Recommended Templates */}
+          {recommendedTemplates && recommendedTemplates.length > 0 && (
+            <div className="template-tier-section recommended-section">
               <div className="tier-header">
                 <h3>
-                  {groupIcon && <span className="group-icon">{groupIcon}</span>}
-                  {groupName}
+                  <span className="group-icon">⭐</span>
+                  Recommended for You
                 </h3>
-                <span className="tier-badge">{groupTemplates.length}</span>
+                <span className="recommended-badge">Based on your industry</span>
               </div>
-
               <div className="template-cards">
-                {groupTemplates.map(template => {
+                {recommendedTemplates.slice(0, 3).map(template => {
                   const tier = template.tier || template.plan || 'Starter';
-                  const category = template.category || 'Other';
-
                   return (
                     <div
                       key={template.id || template.template}
-                      data-template={template.id || template.template}
                       className={`template-card ${selectedTemplate === (template.id || template.template) ? 'selected' : ''}`}
                       onClick={() => onSelect(template)}
                     >
-                      {/* Template Preview Image */}
                       <div className="template-preview">
-                        {template.preview || template.heroImage || template.hero?.image ? (
+                        {template.preview || template.heroImage ? (
                           <OptimizedImage
-                            src={template.preview || template.heroImage || template.hero?.image}
-                            alt={`${template.name || template.businessName} template preview`}
+                            src={template.preview || template.heroImage}
+                            alt={`${template.name || template.businessName} template`}
                             width={400}
                             height={225}
                             aspectRatio="16/9"
-                            priority={false}
-                            sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           />
                         ) : (
-                          <div className="preview-placeholder">
-                            <span aria-hidden="true">{template.icon || getCategoryIcon(category)}</span>
-                          </div>
+                          <div className="preview-placeholder">🎨</div>
                         )}
-
-                        {/* Tier Badge on Image */}
                         <div className={`template-tier-badge tier-${tier.toLowerCase()}`}>
                           {tier}
                         </div>
                       </div>
-
-                      {/* Template Info */}
                       <div className="template-info">
                         <h4>{template.name || template.businessName}</h4>
                         <p className="template-description">
-                          {template.description || template.brand?.tagline || `${template.type || 'Business'} template`}
+                          {template.description || `${template.type || 'Business'} template`}
                         </p>
-
-                        {/* Category Badge (when not grouping by category) */}
-                        {groupBy !== 'category' && (
-                          <div className="template-meta">
-                            <span className="category-badge">
-                              {getCategoryIcon(category)} {category}
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Action Buttons */}
                         <div className="template-actions">
-                          <button
-                            className="btn-preview"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setPreviewTemplate(template);
-                            }}
-                            aria-label={`Preview ${template.name || template.businessName} template`}
-                          >
-                            <span aria-hidden="true">👁️</span> Preview
-                          </button>
                           <button
                             className="btn-select"
                             onClick={(e) => {
                               e.stopPropagation();
                               onSelect(template);
                             }}
-                            aria-label={`Use ${template.name || template.businessName} template`}
                           >
                             Use Template →
                           </button>
                         </div>
                       </div>
-
-                      {/* Selected Indicator */}
-                      {selectedTemplate === (template.id || template.template) && (
-                        <div className="selected-indicator">
-                          <span>✓</span> Selected
-                        </div>
-                      )}
                     </div>
                   );
                 })}
               </div>
             </div>
-          );
-        })
+          )}
+
+          {/* Custom Template Card - Always visible */}
+          <div className="template-tier-section">
+            <div className="tier-header">
+              <h3>
+                <span className="group-icon">✨</span>
+                Create Your Own
+              </h3>
+            </div>
+
+            <div className="template-cards custom-template-section">
+              <div
+                className="template-card custom-template-card"
+                onClick={() => onCustom && onCustom()}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    onCustom && onCustom();
+                  }
+                }}
+              >
+                <div className="template-preview">
+                  <div className="preview-placeholder custom-placeholder">
+                    <span aria-hidden="true">🎨</span>
+                  </div>
+                </div>
+
+                <div className="template-info">
+                  <h4>Build From Scratch</h4>
+                  <p className="template-description">
+                    Start with a blank canvas and create exactly what you need
+                  </p>
+
+                  <div className="template-meta">
+                    <span className="category-badge">
+                      ✨ Custom
+                    </span>
+                  </div>
+
+                  <div className="template-actions">
+                    <button
+                      className="btn-select"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCustom && onCustom();
+                      }}
+                      aria-label="Start building your custom website"
+                    >
+                      Create Custom →
+                    </button>
+                  </div>
+                </div>
+
+                <div className="custom-badge">
+                  <span>NEW</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Pre-built Templates */}
+          {groupOrder.map(groupName => {
+            const groupTemplates = groupedTemplates[groupName] || [];
+            if (groupTemplates.length === 0) return null;
+
+            // Get icon for category
+            const getCategoryIcon = (category) => {
+              const icons = {
+                'Food & Dining': '🍽️',
+                'Beauty & Wellness': '💇',
+                'Fitness & Health': '💪',
+                'Professional Services': '💼',
+                'Home Services': '🏠',
+                'Pet Services': '🐾',
+                'Technology': '💻',
+                'Retail': '🛍️',
+                'Automotive': '🚗',
+                'Healthcare': '🏥',
+                'Legal': '⚖️',
+                'Real Estate': '🏘️',
+                'Basic': '🌐',
+                'Other': '📄'
+              };
+              return icons[category] || '📄';
+            };
+
+            const groupIcon = groupBy === 'category' ? getCategoryIcon(groupName) : '';
+
+            return (
+              <div key={groupName} className="template-tier-section">
+                <div className="tier-header">
+                  <h3>
+                    {groupIcon && <span className="group-icon">{groupIcon}</span>}
+                    {groupName}
+                  </h3>
+                  <span className="tier-badge">{groupTemplates.length}</span>
+                </div>
+
+                <div className="template-cards">
+                  {groupTemplates.map(template => {
+                    const tier = template.tier || template.plan || 'Starter';
+                    const category = template.category || 'Other';
+
+                    return (
+                      <div
+                        key={template.id || template.template}
+                        data-template={template.id || template.template}
+                        className={`template-card ${selectedTemplate === (template.id || template.template) ? 'selected' : ''}`}
+                        onClick={() => onSelect(template)}
+                      >
+                        {/* Template Preview Image */}
+                        <div className="template-preview">
+                          {template.preview || template.heroImage || template.hero?.image ? (
+                            <OptimizedImage
+                              src={template.preview || template.heroImage || template.hero?.image}
+                              alt={`${template.name || template.businessName} template preview`}
+                              width={400}
+                              height={225}
+                              aspectRatio="16/9"
+                              priority={false}
+                              sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            />
+                          ) : (
+                            <div className="preview-placeholder">
+                              <span aria-hidden="true">{template.icon || getCategoryIcon(category)}</span>
+                            </div>
+                          )}
+
+                          {/* Tier Badge on Image */}
+                          <div className={`template-tier-badge tier-${tier.toLowerCase()}`}>
+                            {tier}
+                          </div>
+                        </div>
+
+                        {/* Template Info */}
+                        <div className="template-info">
+                          <h4>{template.name || template.businessName}</h4>
+                          <p className="template-description">
+                            {template.description || template.brand?.tagline || `${template.type || 'Business'} template`}
+                          </p>
+
+                          {/* Category Badge (when not grouping by category) */}
+                          {groupBy !== 'category' && (
+                            <div className="template-meta">
+                              <span className="category-badge">
+                                {getCategoryIcon(category)} {category}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Action Buttons */}
+                          <div className="template-actions">
+                            <button
+                              className="btn-preview"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPreviewTemplate(template);
+                              }}
+                              aria-label={`Preview ${template.name || template.businessName} template`}
+                            >
+                              <span aria-hidden="true">👁️</span> Preview
+                            </button>
+                            <button
+                              className="btn-select"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onSelect(template);
+                              }}
+                              aria-label={`Use ${template.name || template.businessName} template`}
+                            >
+                              Use Template →
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Selected Indicator */}
+                        {selectedTemplate === (template.id || template.template) && (
+                          <div className="selected-indicator">
+                            <span>✓</span> Selected
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </>
       )}
 
       {/* Preview Modal */}

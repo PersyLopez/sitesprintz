@@ -1,36 +1,56 @@
 import { useAuth } from './useAuth';
+import { normalizeTier, hasTierAccess, TIERS, TIER_HIERARCHY } from '../config/tiers.js';
 
 /**
  * Hook to access user's plan information
- * @returns {Object} Plan information and helper booleans
+ * Official tiers: trial, starter, growth (legacy pro/premium → growth)
  */
 export function usePlan() {
   const { user } = useAuth();
-  
-  // Determine plan from user.plan or user.subscription.plan
-  const plan = user?.subscription?.plan || user?.plan || 'free';
-  
+
+  const rawPlan =
+    user?.subscriptionPlan ||
+    user?.subscription_plan ||
+    user?.subscription?.plan ||
+    user?.plan ||
+    'trial';
+  const plan = normalizeTier(rawPlan);
+
   return {
     plan,
-    isFree: plan === 'free',
-    isStarter: plan === 'starter',
-    isPro: plan === 'pro',
-    isPremium: plan === 'premium' || plan === 'pro',
-    isEnterprise: plan === 'enterprise',
-    
-    // Plan features
-    features: {
-      customDomain: plan !== 'free',
-      analytics: plan === 'pro' || plan === 'enterprise',
-      support: plan === 'free' ? 'community' : plan === 'pro' ? 'email' : 'priority',
-      maxSites: plan === 'free' ? 1 : plan === 'pro' ? 10 : -1,
+
+    isTrial: plan === TIERS.TRIAL,
+    isFree: plan === TIERS.TRIAL,
+    isStarter: plan === TIERS.STARTER,
+    isGrowth: plan === TIERS.GROWTH,
+    // Legacy aliases — Pro folded into Growth
+    isPro: plan === TIERS.GROWTH,
+    isPremium: plan === TIERS.GROWTH,
+    isEnterprise: plan === TIERS.GROWTH,
+
+    isAbove: (tier) => hasTierAccess(plan, tier),
+    isBelow: (tier) => {
+      const planIndex = TIER_HIERARCHY.indexOf(plan);
+      const tierIndex = TIER_HIERARCHY.indexOf(normalizeTier(tier));
+      return tierIndex >= 0 && planIndex < tierIndex;
     },
-    
-    // Subscription status
+
+    features: {
+      customDomain: hasTierAccess(plan, TIERS.GROWTH),
+      analytics: hasTierAccess(plan, TIERS.GROWTH),
+      support: plan === TIERS.TRIAL ? 'community' : 'email',
+      maxSites: plan === TIERS.TRIAL || plan === TIERS.STARTER ? 1 : 5,
+      orderManagement: hasTierAccess(plan, TIERS.GROWTH),
+      payments: hasTierAccess(plan, TIERS.GROWTH),
+      booking: hasTierAccess(plan, TIERS.GROWTH),
+      nativeBooking: hasTierAccess(plan, TIERS.GROWTH),
+      premiumModules: hasTierAccess(plan, TIERS.GROWTH),
+      removeBranding: hasTierAccess(plan, TIERS.GROWTH),
+    },
+
     subscriptionStatus: user?.subscription?.status || null,
     isActive: user?.subscription?.status === 'active',
   };
 }
 
 export default usePlan;
-

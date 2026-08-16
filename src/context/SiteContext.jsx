@@ -2,6 +2,9 @@ import React, { createContext, useState, useEffect, useCallback, useRef } from '
 import { draftsService } from '../services/drafts';
 import { useToast } from '../hooks/useToast';
 import { generateDemoContent } from '../utils/demoContent';
+import { colorsFromSiteTheme, DEFAULT_SITE_THEME_ID, normalizeSiteThemeId } from '../config/siteThemes';
+import { normalizeTemplateSections } from '../utils/sectionNormalizer';
+import { getLayoutForNiche } from '../config/layouts';
 
 export const SiteContext = createContext(null);
 
@@ -23,10 +26,7 @@ export function SiteProvider({ children }) {
     instagramUrl: '',
     googleMapsUrl: '',
     services: [],
-    colors: {
-      primary: '#06b6d4',
-      secondary: '#14b8a6',
-    },
+    colors: colorsFromSiteTheme(DEFAULT_SITE_THEME_ID),
   });
 
   const [draftId, setDraftId] = useState(null);
@@ -35,6 +35,9 @@ export function SiteProvider({ children }) {
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
   const [lastSaved, setLastSaved] = useState(null);
   const [previewKey, setPreviewKey] = useState(0); // For triggering preview updates
+  const [history, setHistory] = useState([]); // Undo history
+  const [historyIndex, setHistoryIndex] = useState(-1); // Current position in history
+  const MAX_HISTORY = 50;
 
   const previewTimerRef = useRef(null);
   const autoSaveTimerRef = useRef(null);
@@ -82,18 +85,38 @@ export function SiteProvider({ children }) {
     };
   }, []);
 
+  const addToHistory = useCallback((data) => {
+    setHistory(prev => {
+      const newHistory = prev.slice(0, historyIndex + 1);
+      newHistory.push(JSON.parse(JSON.stringify(data))); // Deep clone
+      // Limit history size
+      if (newHistory.length > MAX_HISTORY) {
+        newHistory.shift();
+      } else {
+        setHistoryIndex(newHistory.length - 1);
+      }
+      return newHistory;
+    });
+  }, [historyIndex]);
+
   const updateField = useCallback((field, value) => {
-    setSiteData(prev => ({
-      ...prev,
-      [field]: value,
-    }));
+    setSiteData(prev => {
+      const newData = {
+        ...prev,
+        [field]: value,
+      };
+      // Add to history before updating
+      addToHistory(prev);
+      return newData;
+    });
 
     // Trigger preview update
     triggerPreviewUpdate();
-  }, [triggerPreviewUpdate]);
+  }, [triggerPreviewUpdate, addToHistory]);
 
   const updateNestedField = useCallback((path, value) => {
     setSiteData(prev => {
+      addToHistory(prev);
       const newData = { ...prev };
       const keys = path.split('.');
       let current = newData;
@@ -109,7 +132,7 @@ export function SiteProvider({ children }) {
 
     // Trigger preview update
     triggerPreviewUpdate();
-  }, [triggerPreviewUpdate]);
+  }, [triggerPreviewUpdate, addToHistory]);
 
   const addService = useCallback((service) => {
     setSiteData(prev => ({
@@ -148,19 +171,30 @@ export function SiteProvider({ children }) {
       console.log('saveDraft called with template:', siteData.template);
     }
     try {
-      const response = await draftsService.saveDraft({
-        id: draftId,
-        data: siteData,
-      });
+      let response;
+      // If draftId exists and doesn't start with 'draft-', it's an existing site
+      if (draftId && !draftId.startsWith('draft-')) {
+        console.log('[SiteContext] Updating existing site:', draftId);
+        const { sitesService } = await import('../services/sites');
+        response = await sitesService.updateSite(draftId, siteData);
+      } else {
+        console.log('[SiteContext] Saving as draft. Current draftId:', draftId);
+        response = await draftsService.saveDraft({
+          id: draftId,
+          data: siteData,
+        });
+      }
 
-      if (response.draftId && !draftId) {
+      if (response && response.draftId && !draftId) {
         setDraftId(response.draftId);
+      } else if (response && response.site?.id && !draftId) {
+        setDraftId(response.site.id);
       }
 
       setLastSaved(new Date());
 
       if (!silent) {
-        showSuccess('Draft saved successfully');
+        showSuccess('Changes saved successfully');
       }
 
       return response;
@@ -191,6 +225,31 @@ export function SiteProvider({ children }) {
     }
   };
 
+  const loadSite = async (id) => {
+    setLoading(true);
+    try {
+      const { sitesService } = await import('../services/sites');
+      const response = await sitesService.getSite(id);
+      const site = response.site || response;
+
+      // Map site data to internal format
+      const mappedData = {
+        ...site.data,
+        template: site.templateId || site.data?.template,
+        id: site.id
+      };
+
+      setSiteData(mappedData);
+      setDraftId(site.id); // In the builder, draftId can also be the site ID
+      showSuccess('Site loaded');
+    } catch (error) {
+      showError('Failed to load site');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const loadTemplate = useCallback((templateData) => {
     // For Pro/Premium templates with existing content, use template content FIRST
     // Only use demo content as fallback for missing fields
@@ -214,13 +273,15 @@ export function SiteProvider({ children }) {
       contactPhone: templateData.brand?.phone || templateData.contact?.phone || templateData.contactPhone,
       contactAddress: templateData.contact?.address || templateData.contactAddress,
       businessHours: templateData.contact?.hours || templateData.businessHours,
-      // Map colors from themeVars
-      colors: {
-        primary: templateData.themeVars?.['color-primary'] || templateData.colors?.primary || '#06b6d4',
-        accent: templateData.themeVars?.['color-accent'] || templateData.colors?.accent || '#14b8a6',
-        secondary: templateData.themeVars?.['color-accent'] || templateData.colors?.secondary || '#14b8a6',
-        background: templateData.colors?.background || '#0f172a'
-      },
+      // Map colors from a curated theme id
+      colors: colorsFromSiteTheme(normalizeSiteThemeId(
+        templateData._themeId || templateData.colors?.themeId,
+        templateData._niche || templateData.template
+      )),
+      _themeId: normalizeSiteThemeId(
+        templateData._themeId || templateData.colors?.themeId,
+        templateData._niche || templateData.template
+      ),
       // Keep all rich content from template
       menu: templateData.menu,
       team: templateData.team,
@@ -246,6 +307,13 @@ export function SiteProvider({ children }) {
       id: templateData.id || templateData.template
     };
 
+    const nicheId = fullTemplateData.template || fullTemplateData.id;
+    if (!Array.isArray(fullTemplateData.sections) || fullTemplateData.sections.length === 0) {
+      fullTemplateData.sections = normalizeTemplateSections(fullTemplateData);
+    }
+    if (!fullTemplateData._niche) fullTemplateData._niche = nicheId;
+    if (!fullTemplateData._layout) fullTemplateData._layout = getLayoutForNiche(nicheId);
+
     setSiteData(fullTemplateData);
   }, []);
 
@@ -265,14 +333,34 @@ export function SiteProvider({ children }) {
       instagramUrl: '',
       googleMapsUrl: '',
       services: [],
-      colors: {
-        primary: '#06b6d4',
-        secondary: '#14b8a6',
-      },
+      colors: colorsFromSiteTheme(DEFAULT_SITE_THEME_ID),
     });
     setDraftId(null);
     setLastSaved(null);
+    setHistory([]);
+    setHistoryIndex(-1);
   }, []);
+
+  const undo = useCallback(() => {
+    if (historyIndex > 0) {
+      const newIndex = historyIndex - 1;
+      setHistoryIndex(newIndex);
+      setSiteData(JSON.parse(JSON.stringify(history[newIndex]))); // Deep clone
+      triggerPreviewUpdate();
+    }
+  }, [history, historyIndex, triggerPreviewUpdate]);
+
+  const redo = useCallback(() => {
+    if (historyIndex < history.length - 1) {
+      const newIndex = historyIndex + 1;
+      setHistoryIndex(newIndex);
+      setSiteData(JSON.parse(JSON.stringify(history[newIndex]))); // Deep clone
+      triggerPreviewUpdate();
+    }
+  }, [history, historyIndex, triggerPreviewUpdate]);
+
+  const canUndo = historyIndex > 0;
+  const canRedo = historyIndex < history.length - 1;
 
   const value = {
     siteData,
@@ -290,6 +378,11 @@ export function SiteProvider({ children }) {
     deleteService,
     saveDraft,
     loadDraft,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    loadSite,
     loadTemplate,
     reset,
   };

@@ -1,443 +1,105 @@
 /**
- * Template Validation Tests - TDD
- * Ensuring all Starter templates are structurally sound
+ * Tests for template validator
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { validateTemplate, TEMPLATE_SCHEMA } from '../../server/utils/templateValidator.js';
+import { describe, it, expect } from 'vitest';
+import { validateTemplateSections, getKnownSectionTypes } from '../../server/utils/templateValidator.js';
 
-describe('Template Validator - TDD RED Phase', () => {
-  describe('Required Fields Validation', () => {
-    it('should validate template with all required fields', () => {
-      const validTemplate = {
-        brand: {
-          name: "Test Business",
-          tagline: "Test Tagline"
-        },
-        themeVars: {
-          "color-primary": "#3b82f6"
-        },
-        nav: [
-          { label: "Home", href: "#top" }
-        ],
-        hero: {
-          title: "Test Title",
-          subtitle: "Test Subtitle",
-          cta: [{ label: "Contact", href: "#contact" }]
-        },
-        contact: {
-          title: "Contact Us",
-          email: "test@example.com"
-        },
-        settings: {
-          allowCheckout: false
-        }
-      };
-
-      const result = validateTemplate(validTemplate);
-      
-      expect(result.valid).toBe(true);
-      expect(result.errors).toEqual([]);
-    });
-
-    it('should fail if brand is missing', () => {
-      const invalid = {
-        themeVars: {},
-        nav: [],
-        hero: {},
-        contact: {},
-        settings: { allowCheckout: false }
-      };
-
-      const result = validateTemplate(invalid);
-      
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Missing required field: brand');
-    });
-
-    it('should fail if hero is missing', () => {
-      const invalid = {
-        brand: { name: "Test" },
-        themeVars: {},
-        nav: [],
-        contact: {},
-        settings: { allowCheckout: false }
-      };
-
-      const result = validateTemplate(invalid);
-      
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Missing required field: hero');
-    });
-
-    it('should fail if contact is missing', () => {
-      const invalid = {
-        brand: { name: "Test" },
-        themeVars: {},
-        nav: [],
-        hero: { title: "Test" },
-        settings: { allowCheckout: false }
-      };
-
-      const result = validateTemplate(invalid);
-      
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Missing required field: contact');
-    });
-
-    it('should fail if settings is missing', () => {
-      const invalid = {
-        brand: { name: "Test" },
-        themeVars: {},
-        nav: [],
-        hero: { title: "Test" },
-        contact: { email: "test@test.com" }
-      };
-
-      const result = validateTemplate(invalid);
-      
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Missing required field: settings');
-    });
+describe('validateTemplateSections', () => {
+  it('returns valid for empty array', () => {
+    const result = validateTemplateSections([]);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toEqual([]);
   });
 
-  describe('Starter Template Specific Validation', () => {
-    it('should require allowCheckout to be false for Starter templates', () => {
-      const template = {
-        brand: { name: "Test" },
-        themeVars: {},
-        nav: [],
-        hero: { title: "Test" },
-        contact: { email: "test@test.com" },
-        settings: {
-          allowCheckout: true  // ❌ Should be false for Starter
-        }
-      };
-
-      const result = validateTemplate(template, 'Starter');
-      
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Starter templates must have allowCheckout: false');
-    });
-
-    it('should allow allowCheckout true for Pro templates', () => {
-      const template = {
-        brand: { name: "Test" },
-        themeVars: {},
-        nav: [],
-        hero: { title: "Test" },
-        contact: { email: "test@test.com" },
-        settings: {
-          allowCheckout: true  // ✅ OK for Pro
-        }
-      };
-
-      const result = validateTemplate(template, 'Pro');
-      
-      expect(result.valid).toBe(true);
-    });
-
-    it('should require productCta for Starter templates with products', () => {
-      const template = {
-        brand: { name: "Test" },
-        themeVars: {},
-        nav: [],
-        hero: { title: "Test" },
-        products: [{ name: "Product", price: 100 }],
-        contact: { email: "test@test.com" },
-        settings: {
-          allowCheckout: false
-          // ❌ Missing productCta
-        }
-      };
-
-      const result = validateTemplate(template, 'Starter');
-      
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Starter templates with products must have productCta');
-    });
+  it('returns invalid for non-array', () => {
+    const result = validateTemplateSections(null);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain('Sections must be an array');
   });
 
-  describe('Navigation Validation', () => {
-    it('should validate navigation structure', () => {
-      const template = {
-        brand: { name: "Test" },
-        themeVars: {},
-        nav: [
-          { label: "Home", href: "#top" },
-          { label: "Services", href: "#services" }
-        ],
-        hero: { title: "Test" },
-        contact: { email: "test@test.com" },
-        settings: { allowCheckout: false }
-      };
-
-      const result = validateTemplate(template);
-      
-      expect(result.valid).toBe(true);
-    });
-
-    it('should fail if nav items missing label', () => {
-      const template = {
-        brand: { name: "Test" },
-        themeVars: {},
-        nav: [
-          { href: "#top" }  // ❌ Missing label
-        ],
-        hero: { title: "Test" },
-        contact: { email: "test@test.com" },
-        settings: { allowCheckout: false }
-      };
-
-      const result = validateTemplate(template);
-      
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Nav item missing label at index 0');
-    });
-
-    it('should fail if nav items missing href', () => {
-      const template = {
-        brand: { name: "Test" },
-        themeVars: {},
-        nav: [
-          { label: "Home" }  // ❌ Missing href
-        ],
-        hero: { title: "Test" },
-        contact: { email: "test@test.com" },
-        settings: { allowCheckout: false }
-      };
-
-      const result = validateTemplate(template);
-      
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Nav item missing href at index 0');
-    });
+  it('returns invalid for section without type', () => {
+    const result = validateTemplateSections([{ content: { title: 'Test' } }]);
+    expect(result.valid).toBe(false);
+    expect(result.errors[0]).toContain("missing 'type' field");
   });
 
-  describe('Image URL Validation', () => {
-    it('should allow valid image URLs', () => {
-      const template = {
-        brand: {
-          name: "Test",
-          logo: "https://images.unsplash.com/photo-123?w=200"
-        },
-        themeVars: {},
-        nav: [],
-        hero: {
-          title: "Test",
-          image: "https://via.placeholder.com/600x400"
-        },
-        contact: { email: "test@test.com" },
-        settings: { allowCheckout: false }
-      };
-
-      const result = validateTemplate(template);
-      
-      expect(result.valid).toBe(true);
-    });
-
-    it('should fail on invalid local image paths', () => {
-      const template = {
-        brand: {
-          name: "Test",
-          logo: "assets/logo.svg"  // ❌ Local path
-        },
-        themeVars: {},
-        nav: [],
-        hero: { title: "Test" },
-        contact: { email: "test@test.com" },
-        settings: { allowCheckout: false }
-      };
-
-      const result = validateTemplate(template);
-      
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain('brand.logo must be a valid URL or empty string');
-    });
-
-    it('should allow empty logo (user will upload)', () => {
-      const template = {
-        brand: {
-          name: "Test",
-          logo: ""  // ✅ Empty is OK
-        },
-        themeVars: {},
-        nav: [],
-        hero: { title: "Test" },
-        contact: { email: "test@test.com" },
-        settings: { allowCheckout: false }
-      };
-
-      const result = validateTemplate(template);
-      
-      expect(result.valid).toBe(true);
-    });
+  it('returns invalid for unknown section type', () => {
+    const result = validateTemplateSections([{ type: 'unknown-section', content: {} }]);
+    expect(result.valid).toBe(false);
+    expect(result.errors[0]).toContain("unknown section type 'unknown-section'");
   });
 
-  describe('Services vs Products Structure', () => {
-    it('should allow services.items structure', () => {
-      const template = {
-        brand: { name: "Test" },
-        themeVars: {},
-        nav: [],
-        hero: { title: "Test" },
-        services: {
-          title: "Services",
-          items: [
-            { title: "Service 1", description: "Description" }
-          ]
-        },
-        contact: { email: "test@test.com" },
-        settings: { allowCheckout: false }
-      };
-
-      const result = validateTemplate(template);
-      
-      expect(result.valid).toBe(true);
-    });
-
-    it('should allow products array structure', () => {
-      const template = {
-        brand: { name: "Test" },
-        themeVars: {},
-        nav: [],
-        hero: { title: "Test" },
-        products: [
-          { name: "Product 1", price: 100, description: "Description" }
-        ],
-        contact: { email: "test@test.com" },
-        settings: { allowCheckout: false, productCta: "Contact" }
-      };
-
-      const result = validateTemplate(template);
-      
-      expect(result.valid).toBe(true);
-    });
-
-    it('should document both as valid', () => {
-      // Both structures should be documented as valid patterns
-      expect(TEMPLATE_SCHEMA.notes).toContain('Both services.items and products[] are valid');
-    });
+  it('returns valid for known section types', () => {
+    const result = validateTemplateSections([
+      { type: 'hero', content: { title: 'Test' } },
+      { type: 'services', content: { items: [] } },
+      { type: 'gallery', content: { images: [] } },
+      { type: 'faq', content: { items: [] } },
+    ]);
+    expect(result.valid).toBe(true);
   });
 
-  describe('Email Validation', () => {
-    it('should validate contact email format', () => {
-      const template = {
-        brand: { name: "Test" },
-        themeVars: {},
-        nav: [],
-        hero: { title: "Test" },
-        contact: {
-          email: "test@example.com"  // ✅ Valid
-        },
-        settings: { allowCheckout: false }
-      };
-
-      const result = validateTemplate(template);
-      
-      expect(result.valid).toBe(true);
-    });
-
-    it('should fail on invalid email', () => {
-      const template = {
-        brand: { name: "Test" },
-        themeVars: {},
-        nav: [],
-        hero: { title: "Test" },
-        contact: {
-          email: "not-an-email"  // ❌ Invalid
-        },
-        settings: { allowCheckout: false }
-      };
-
-      const result = validateTemplate(template);
-      
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain('contact.email must be a valid email address');
-    });
+  it('returns invalid for missing required fields', () => {
+    // hero requires title
+    const result = validateTemplateSections([
+      { type: 'hero', content: {} },
+    ]);
+    expect(result.valid).toBe(false);
+    expect(result.errors[0]).toContain("required field 'title' is missing");
   });
 
-  describe('Color Theme Validation', () => {
-    it('should validate hex color format', () => {
-      const template = {
-        brand: { name: "Test" },
-        themeVars: {
-          "color-primary": "#3b82f6",  // ✅ Valid hex
-          "color-accent": "#10b981"
-        },
-        nav: [],
-        hero: { title: "Test" },
-        contact: { email: "test@test.com" },
-        settings: { allowCheckout: false }
-      };
-
-      const result = validateTemplate(template);
-      
-      expect(result.valid).toBe(true);
-    });
-
-    it('should fail on invalid color format', () => {
-      const template = {
-        brand: { name: "Test" },
-        themeVars: {
-          "color-primary": "blue"  // ❌ Invalid, should be hex
-        },
-        nav: [],
-        hero: { title: "Test" },
-        contact: { email: "test@test.com" },
-        settings: { allowCheckout: false }
-      };
-
-      const result = validateTemplate(template);
-      
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain('themeVars.color-primary must be a valid hex color');
-    });
+  it('returns valid for hero with title', () => {
+    const result = validateTemplateSections([
+      { type: 'hero', content: { title: 'Test', subtitle: 'Sub' } },
+    ]);
+    expect(result.valid).toBe(true);
   });
 
-  describe('Optional Sections', () => {
-    it('should allow templates without optional sections', () => {
-      const minimalTemplate = {
-        brand: { name: "Test" },
-        themeVars: {},
-        nav: [],
-        hero: { title: "Test" },
-        contact: { email: "test@test.com" },
-        settings: { allowCheckout: false }
-        // No testimonials, about, faq, etc. - all optional
-      };
+  it('returns invalid for invalid enabled type', () => {
+    const result = validateTemplateSections([
+      { type: 'hero', content: { title: 'Test' }, enabled: 'yes' },
+    ]);
+    expect(result.valid).toBe(false);
+    expect(result.errors[0]).toContain("'enabled' must be a boolean");
+  });
 
-      const result = validateTemplate(minimalTemplate);
-      
-      expect(result.valid).toBe(true);
-    });
+  it('returns invalid for negative order', () => {
+    const result = validateTemplateSections([
+      { type: 'hero', content: { title: 'Test' }, order: -1 },
+    ]);
+    expect(result.valid).toBe(false);
+    expect(result.errors[0]).toContain("'order' must be a non-negative number");
+  });
 
-    it('should validate optional sections when present', () => {
-      const enhancedTemplate = {
-        brand: { name: "Test" },
-        themeVars: {},
-        nav: [],
-        hero: { title: "Test" },
-        testimonials: {
-          title: "Testimonials",
-          items: [
-            { text: "Great service!", author: "John", rating: 5 }
-          ]
-        },
-        faq: {
-          title: "FAQ",
-          items: [
-            { question: "Question?", answer: "Answer" }
-          ]
-        },
-        contact: { email: "test@test.com" },
-        settings: { allowCheckout: false }
-      };
+  it('returns valid for all known booking section types', () => {
+    const result = validateTemplateSections([
+      { type: 'interactive-calculator', content: {} },
+      { type: 'subscription-booking', content: {} },
+      { type: 'class-scheduler', content: {} },
+    ]);
+    expect(result.valid).toBe(true);
+  });
 
-      const result = validateTemplate(enhancedTemplate);
-      
-      expect(result.valid).toBe(true);
-    });
+  it('returns valid for content sections with correct casing', () => {
+    const result = validateTemplateSections([
+      { type: 'hero', content: { title: 'Test' } },
+      { type: 'about', content: { text: 'About us' } },
+      { type: 'contact', content: { email: 'test@test.com' } },
+      { type: 'footer', content: {} },
+      { type: 'nav', content: { items: [] } },
+      { type: 'brand', content: { name: 'Test' } },
+      { type: 'features', content: { items: [] } },
+      { type: 'beforeAfter', content: { items: [] } },
+      { type: 'serviceAreas', content: { areas: [] } },
+    ]);
+    expect(result.valid).toBe(true);
+  });
+
+  it('getKnownSectionTypes returns sorted array', () => {
+    const types = getKnownSectionTypes();
+    expect(types.length).toBeGreaterThan(20);
+    expect(types[0]).toBe('about');
+    expect(types).toEqual([...types].sort());
   });
 });
-

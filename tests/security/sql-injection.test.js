@@ -90,7 +90,8 @@ describe('Security - SQL Injection Prevention', () => {
           .send({
             email: payload,
             password: 'TestPassword123!',
-            name: 'Test User'
+            name: 'Test User',
+            acceptedTerms: true
           });
 
         // Should reject with validation error, not process SQL

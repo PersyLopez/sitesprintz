@@ -12,6 +12,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -36,7 +37,8 @@ ChartJS.register(
   Legend
 );
 
-export default function SiteAnalytics({ subdomain }) {
+export default function SiteAnalytics() {
+  const { subdomain } = useParams();
   const [period, setPeriod] = useState('7d');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -44,6 +46,7 @@ export default function SiteAnalytics({ subdomain }) {
   const [timeSeriesData, setTimeSeriesData] = useState([]);
   const [topPages, setTopPages] = useState([]);
   const [referrers, setReferrers] = useState([]);
+  const [performanceMetrics, setPerformanceMetrics] = useState(null);
 
   // Fetch all analytics data
   const fetchAnalytics = async () => {
@@ -53,21 +56,21 @@ export default function SiteAnalytics({ subdomain }) {
 
       // Fetch overview stats
       const statsRes = await fetch(
-        `/api/analytics/stats/${subdomain}?period=${period}`,
+        `/api/analytics/summary/${subdomain}`,
         { credentials: 'include' }
       );
       if (!statsRes.ok) throw new Error('Failed to fetch stats');
       const statsData = await statsRes.json();
-      setStats(statsData);
+      setStats(statsData.stats || statsData);
 
       // Fetch time series data
       const timeSeriesRes = await fetch(
-        `/api/analytics/timeseries/${subdomain}?period=${period}&groupBy=day`,
+        `/api/analytics/timeseries/${subdomain}?period=${period}`,
         { credentials: 'include' }
       );
       if (!timeSeriesRes.ok) throw new Error('Failed to fetch time series');
       const timeSeriesResult = await timeSeriesRes.json();
-      setTimeSeriesData(timeSeriesResult);
+      setTimeSeriesData(timeSeriesResult.timeSeries || timeSeriesResult);
 
       // Fetch top pages
       const topPagesRes = await fetch(
@@ -76,7 +79,7 @@ export default function SiteAnalytics({ subdomain }) {
       );
       if (!topPagesRes.ok) throw new Error('Failed to fetch top pages');
       const topPagesData = await topPagesRes.json();
-      setTopPages(topPagesData);
+      setTopPages(topPagesData.pages || topPagesData);
 
       // Fetch referrers
       const referrersRes = await fetch(
@@ -85,7 +88,21 @@ export default function SiteAnalytics({ subdomain }) {
       );
       if (!referrersRes.ok) throw new Error('Failed to fetch referrers');
       const referrersData = await referrersRes.json();
-      setReferrers(referrersData);
+      setReferrers(referrersData.referrers || referrersData);
+
+      // Fetch performance metrics (Core Web Vitals)
+      try {
+        const perfRes = await fetch(
+          `/api/analytics/performance/${subdomain}`,
+          { credentials: 'include' }
+        );
+        if (perfRes.ok) {
+          const perfData = await perfRes.json();
+          setPerformanceMetrics(perfData);
+        }
+      } catch (perfErr) {
+        console.warn('Performance metrics not available:', perfErr);
+      }
 
     } catch (err) {
       setError(err.message);

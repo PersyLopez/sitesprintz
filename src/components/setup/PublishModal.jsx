@@ -246,7 +246,15 @@ function PublishModal({ siteData, onClose }) {
           settings: siteData.settings,
           beforeAfter: siteData.beforeAfter,
           hours: siteData.hours || siteData.contact?.hours,
-          social: siteData.social
+          social: siteData.social,
+          nav: siteData.nav,
+          _layout: siteData._layout,
+          _level: siteData._level,
+          _niche: siteData._niche,
+          _features: siteData._features,
+          _operatingModel: siteData._operatingModel,
+          _theme: siteData._theme,
+          _themeId: siteData._themeId
         }
       };
 

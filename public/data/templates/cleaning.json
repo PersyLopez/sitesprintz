@@ -1,37 +1,39 @@
 {
   "brand": {
-    "name": "Sparkle Clean",
+    "name": "Sparkle Elite Cleaning",
     "logo": "assets/logo.svg",
-    "tagline": "Professional Cleaning • Since 2016",
+    "tagline": "Premium Cleaning Services • Trusted & Reliable",
     "phone": "(555) 678-9012",
-    "email": "info@sparkleclean.com"
+    "email": "hello@sparkleelite.com"
   },
   "themeVars": {
-    "color-primary": "#475569",
-    "color-primary-light": "#94a3b8",
-    "color-accent": "#e2e8f0",
-    "color-bg": "#ffffff",
-    "color-surface": "#f8fafc",
-    "color-card": "#ffffff",
-    "color-text": "#1e293b",
-    "color-muted": "#64748b"
+    "color-primary": "#0891b2",
+    "color-accent": "#0e7490",
+    "color-success": "#10b981",
+    "color-warning": "#f59e0b",
+    "color-danger": "#ef4444",
+    "color-bg": "#0f172a",
+    "color-surface": "#1e293b",
+    "color-card": "#1e293b",
+    "color-text": "#f8fafc",
+    "color-muted": "#cbd5e1"
   },
   "nav": [
     {
       "label": "Services",
-      "href": "#products"
+      "href": "#services"
     },
     {
-      "label": "About",
-      "href": "#about"
+      "label": "Packages",
+      "href": "#packages"
     },
     {
-      "label": "Reviews",
-      "href": "#reviews"
+      "label": "Gallery",
+      "href": "#gallery"
     },
     {
-      "label": "FAQ",
-      "href": "#faq"
+      "label": "Team",
+      "href": "#team"
     },
     {
       "label": "Contact",
@@ -39,354 +41,715 @@
     }
   ],
   "hero": {
-    "eyebrow": "🧽 Professional Cleaning Services",
-    "title": "Spotless spaces, every time",
-    "subtitle": "Residential and commercial cleaning services you can trust. Eco-friendly products, insured professionals, and satisfaction guaranteed. Book your cleaning today!",
+    "eyebrow": "✨ Eco-Friendly • Fully Insured",
+    "title": "Professional Cleaning You Can Trust",
+    "subtitle": "Experience the difference of premium cleaning services. Our trained professionals use eco-friendly products and proven methods to make your space shine. Residential and commercial cleaning with 100% satisfaction guarantee.",
     "cta": [
       {
-        "label": "📅 Book Now",
-        "href": "#book"
+        "label": "📅 Book Cleaning",
+        "href": "#booking"
       },
       {
-        "label": "💰 Get Quote",
-        "href": "#contact",
+        "label": "📋 View Packages",
+        "href": "#packages",
         "variant": "secondary"
       }
     ],
-    "image": "https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=1200&q=80",
-    "imageAlt": "Professional cleaning team with eco-friendly supplies and modern equipment",
-    "layout": "split"
+    "image": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&q=80",
+    "imageAlt": "Professional cleaner with eco-friendly supplies"
+  },
+  "features": {
+    "bookingWidget": {
+      "enabled": true,
+      "provider": "calendly",
+      "url": "https://calendly.com/sparkleelite"
+    },
+    "beforeAfterGallery": true,
+    "teamProfiles": true,
+    "ownerDashboard": true,
+    "analytics": true,
+    "testimonials": {
+      "enabled": true,
+      "ratings": true
+    }
+  },
+  "menu": {
+    "sections": [
+      {
+        "id": "residential",
+        "name": "Residential Cleaning",
+        "description": "Keep your home spotless",
+        "items": [
+          {
+            "name": "Standard House Cleaning",
+            "price": 149,
+            "description": "Complete cleaning of all rooms: dusting, vacuuming, mopping, bathrooms, kitchen. Perfect for regular maintenance.",
+            "image": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&q=80",
+            "imageAlt": "Clean living room",
+            "duration": "2-3 hours",
+            "frequency": "Weekly, Bi-weekly, or Monthly",
+            "popular": true
+          },
+          {
+            "name": "Deep Cleaning",
+            "price": 299,
+            "description": "Thorough top-to-bottom cleaning including baseboards, inside appliances, windows, and hard-to-reach areas.",
+            "image": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80",
+            "imageAlt": "Deep cleaning service",
+            "duration": "4-6 hours",
+            "frequency": "One-time or Quarterly",
+            "popular": true
+          },
+          {
+            "name": "Move In/Out Cleaning",
+            "price": 349,
+            "description": "Make your old or new home pristine. Includes deep cleaning of all areas, inside cabinets, and appliances.",
+            "image": "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=600&q=80",
+            "imageAlt": "Empty clean room",
+            "duration": "4-7 hours",
+            "frequency": "One-time"
+          },
+          {
+            "name": "Post-Construction Cleaning",
+            "price": 399,
+            "description": "Remove dust, debris, and construction residue. Get your newly renovated space move-in ready.",
+            "image": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80",
+            "imageAlt": "Post-construction cleaning",
+            "duration": "5-8 hours",
+            "frequency": "One-time"
+          }
+        ]
+      },
+      {
+        "id": "commercial",
+        "name": "Commercial Cleaning",
+        "description": "Professional office and business cleaning",
+        "items": [
+          {
+            "name": "Office Cleaning",
+            "price": 199,
+            "description": "Daily or weekly cleaning for offices: desks, common areas, restrooms, break rooms, and trash removal.",
+            "image": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80",
+            "imageAlt": "Clean office space",
+            "duration": "2-4 hours",
+            "frequency": "Daily, Weekly, or Monthly",
+            "popular": true
+          },
+          {
+            "name": "Retail Store Cleaning",
+            "price": 249,
+            "description": "Keep your storefront spotless: floors, displays, windows, restrooms, and customer areas.",
+            "duration": "2-5 hours",
+            "frequency": "Daily or Weekly"
+          },
+          {
+            "name": "Medical Office Cleaning",
+            "price": 299,
+            "description": "Specialized cleaning for medical facilities with hospital-grade disinfectants and OSHA compliance.",
+            "image": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=600&q=80",
+            "imageAlt": "Medical office",
+            "duration": "3-5 hours",
+            "frequency": "Daily or Weekly"
+          },
+          {
+            "name": "Restaurant Cleaning",
+            "price": 349,
+            "description": "Complete kitchen and dining area cleaning: grease removal, sanitization, and health code compliance.",
+            "duration": "3-6 hours",
+            "frequency": "Daily or Weekly"
+          }
+        ]
+      },
+      {
+        "id": "specialty",
+        "name": "Specialty Services",
+        "description": "Specialized cleaning for specific needs",
+        "items": [
+          {
+            "name": "Carpet Cleaning",
+            "price": 179,
+            "description": "Professional steam cleaning removes stains, odors, and allergens. Fast drying time.",
+            "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
+            "imageAlt": "Carpet cleaning",
+            "duration": "2-4 hours",
+            "popular": true
+          },
+          {
+            "name": "Window Cleaning",
+            "price": 129,
+            "description": "Inside and outside window cleaning for sparkling, streak-free results.",
+            "duration": "1-3 hours"
+          },
+          {
+            "name": "Upholstery Cleaning",
+            "price": 149,
+            "description": "Refresh your furniture with professional upholstery cleaning. Safe for all fabrics.",
+            "duration": "1-2 hours"
+          },
+          {
+            "name": "Green Cleaning Package",
+            "price": 199,
+            "description": "100% eco-friendly products and methods. Perfect for sensitive individuals and families with children.",
+            "duration": "2-4 hours",
+            "popular": true
+          }
+        ]
+      },
+      {
+        "id": "add-ons",
+        "name": "Add-On Services",
+        "description": "Enhance your cleaning package",
+        "items": [
+          {
+            "name": "Interior Windows",
+            "price": 40,
+            "description": "Add interior window cleaning to any package"
+          },
+          {
+            "name": "Interior Fridge",
+            "price": 35,
+            "description": "Deep clean inside your refrigerator"
+          },
+          {
+            "name": "Inside Oven",
+            "price": 45,
+            "description": "Remove baked-on grease and grime"
+          },
+          {
+            "name": "Laundry Service",
+            "price": 50,
+            "description": "Wash, dry, and fold laundry (per load)"
+          }
+        ]
+      }
+    ]
   },
   "about": {
-    "title": "Our Story",
-    "body": "Founded in 2016 by Maria Santos, Sparkle Clean has grown from a small local business to the most trusted cleaning service in our community. Our team of trained professionals uses eco-friendly products and proven techniques to deliver exceptional results.",
-    "subtitle": "Why choose Sparkle Clean",
+    "title": "About Sparkle Elite",
+    "body": "Since 2016, Sparkle Elite has been providing premium cleaning services to homes and businesses throughout the region. Our team of trained professionals takes pride in delivering exceptional results using eco-friendly products and proven cleaning methods. We're fully insured, background-checked, and committed to your complete satisfaction.",
+    "subtitle": "Why choose us",
     "features": [
-      "🌱 Eco-friendly products",
-      "🛡️ Fully insured & bonded",
-      "👥 Trained professionals",
-      "✅ Satisfaction guaranteed",
-      "📱 Easy online booking",
-      "🏆 5-star rated service"
-    ],
-    "owner": {
-      "name": "Maria Santos",
-      "title": "Owner & Operations Manager",
-      "bio": "Maria brings 12+ years of cleaning industry experience and a passion for perfection. She personally trains every team member to ensure consistent, high-quality service.",
-      "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
-      "imageAlt": "Maria Santos, Owner"
-    }
+      "🏆 Trained & Background-Checked Staff",
+      "🌱 Eco-Friendly Products",
+      "⚡ Same-Day Service Available",
+      "💎 100% Satisfaction Guarantee",
+      "🛡️ Fully Insured & Bonded",
+      "✨ Trusted by 1,500+ Clients"
+    ]
   },
-  "products": [
-    {
-      "name": "Regular House Cleaning",
-      "price": 120,
-      "description": "Weekly or bi-weekly cleaning including all rooms, bathrooms, and kitchen",
-      "image": "https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?w=600&q=80",
-      "imageAlt": "Residential house cleaning",
-      "category": "Residential Cleaning",
-      "duration": "2-4 hours",
-      "frequency": "Weekly/Bi-weekly",
-      "popular": true
-    },
-    {
-      "name": "Deep Cleaning",
-      "price": 250,
-      "description": "Thorough cleaning including baseboards, inside appliances, and detailed scrubbing",
-      "image": "https://images.unsplash.com/photo-1554995207-c18c203602cb?w=600&q=80",
-      "imageAlt": "Deep cleaning service",
-      "category": "Residential Cleaning",
-      "duration": "4-6 hours",
-      "frequency": "One-time",
-      "popular": true
-    },
-    {
-      "name": "Office Cleaning",
-      "price": 180,
-      "description": "Daily or weekly office cleaning including desks, restrooms, and common areas",
-      "image": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80",
-      "imageAlt": "Office cleaning service",
-      "category": "Commercial Cleaning",
-      "duration": "2-3 hours",
-      "frequency": "Daily/Weekly"
-    },
-    {
-      "name": "Move-in/Move-out Cleaning",
-      "price": 300,
-      "description": "Complete cleaning for new homes or apartments, including inside cabinets and appliances",
-      "image": "https://images.unsplash.com/photo-1554995207-c18c203602cb?w=600&q=80",
-      "imageAlt": "Move-in cleaning",
-      "category": "Residential Cleaning",
-      "duration": "6-8 hours",
-      "frequency": "One-time"
-    },
-    {
-      "name": "Carpet Cleaning",
-      "price": 80,
-      "description": "Professional carpet cleaning with eco-friendly solutions",
-      "image": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80",
-      "imageAlt": "Carpet cleaning service",
-      "category": "Specialty Services",
-      "duration": "1-2 hours",
-      "frequency": "As needed"
-    },
-    {
-      "name": "Window Cleaning",
-      "price": 60,
-      "description": "Interior and exterior window cleaning for homes and offices",
-      "image": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80",
-      "imageAlt": "Window cleaning service",
-      "category": "Specialty Services",
-      "duration": "1-2 hours",
-      "frequency": "Monthly/Quarterly"
-    }
-  ],
-  "testimonials": {
-    "title": "Customer Reviews",
-    "subtitle": "What our customers say about our service",
+  "packages": {
+    "title": "Popular Packages",
+    "subtitle": "Bundle and save",
     "items": [
       {
-        "text": "Sparkle Clean has been cleaning our home for 3 years. They're reliable, thorough, and use eco-friendly products. Highly recommend!",
-        "author": "Lisa Johnson",
-        "location": "Regular Customer",
+        "name": "Weekly Maintenance",
+        "price": 499,
+        "billingCycle": "month",
+        "description": "Weekly standard cleaning to keep your home consistently spotless",
+        "features": [
+          "4 cleanings per month",
+          "All standard cleaning tasks",
+          "Eco-friendly products",
+          "Satisfaction guarantee",
+          "Priority scheduling"
+        ],
+        "savings": "Save $97/month",
+        "popular": true
+      },
+      {
+        "name": "Bi-Weekly Service",
+        "price": 279,
+        "billingCycle": "month",
+        "description": "Bi-weekly cleaning perfect for busy professionals",
+        "features": [
+          "2 cleanings per month",
+          "Standard cleaning tasks",
+          "Flexible scheduling",
+          "Satisfaction guarantee"
+        ],
+        "savings": "Save $19/month"
+      },
+      {
+        "name": "Monthly Deep Clean",
+        "price": 299,
+        "billingCycle": "month",
+        "description": "Monthly deep cleaning for thorough maintenance",
+        "features": [
+          "1 deep cleaning per month",
+          "Top-to-bottom service",
+          "Includes specialty areas",
+          "Satisfaction guarantee"
+        ]
+      }
+    ]
+  },
+  "beforeAfter": {
+    "title": "Before & After Gallery",
+    "subtitle": "See the Sparkle Elite difference",
+    "items": [
+      {
+        "service": "Deep Kitchen Cleaning",
+        "location": "Residential Home",
+        "before": "https://images.unsplash.com/photo-1556911073-52527ac43761?w=600&q=80",
+        "after": "https://images.unsplash.com/photo-1556912172-45b7abe8b7e1?w=600&q=80",
+        "description": "From grease buildup to sparkling clean"
+      },
+      {
+        "service": "Living Room Deep Clean",
+        "location": "Family Home",
+        "before": "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80",
+        "after": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&q=80",
+        "description": "Complete transformation with attention to detail"
+      },
+      {
+        "service": "Bathroom Restoration",
+        "location": "Residential Property",
+        "before": "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=600&q=80",
+        "after": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&q=80",
+        "description": "Deep cleaned and sanitized to perfection"
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Client Reviews",
+    "subtitle": "What our clients say",
+    "items": [
+      {
+        "text": "Sparkle Elite has been cleaning our home for over a year and they're fantastic! Always on time, thorough, and trustworthy. Our house has never looked better. Highly recommend!",
+        "author": "Jennifer Park",
+        "location": "Homeowner",
         "rating": 5,
         "date": "1 week ago",
-        "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
-        "imageAlt": "Lisa Johnson"
+        "service": "Weekly Cleaning",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&q=80",
+        "imageAlt": "Jennifer Park"
       },
       {
-        "text": "The move-out cleaning was incredible! They got our security deposit back and the place looked better than when we moved in.",
-        "author": "Robert Martinez",
-        "location": "Former Customer",
-        "rating": 5,
-        "date": "2 weeks ago",
-        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
-        "imageAlt": "Robert Martinez"
-      },
-      {
-        "text": "Professional, punctual, and thorough. Our office has never looked better. The team is friendly and trustworthy.",
-        "author": "Amanda Thompson",
+        "text": "We use Sparkle Elite for our office cleaning and couldn't be happier. The team is professional, reliable, and our workspace always looks immaculate. Great value!",
+        "author": "Michael Chen",
         "location": "Business Owner",
         "rating": 5,
-        "date": "3 days ago",
-        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&q=80",
-        "imageAlt": "Amanda Thompson"
+        "date": "2 weeks ago",
+        "service": "Office Cleaning",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80",
+        "imageAlt": "Michael Chen"
       },
       {
-        "text": "Maria and her team are amazing! They pay attention to every detail and always go above and beyond.",
-        "author": "David Chen",
-        "location": "Loyal Customer",
+        "text": "Their deep cleaning service is incredible! They cleaned areas I didn't even know needed attention. The eco-friendly products are a huge plus for our family with young kids.",
+        "author": "Sarah Martinez",
+        "location": "Homeowner",
         "rating": 5,
-        "date": "5 days ago",
-        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80",
-        "imageAlt": "David Chen"
+        "date": "3 weeks ago",
+        "service": "Deep Cleaning",
+        "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
+        "imageAlt": "Sarah Martinez"
       }
     ],
     "stats": {
       "averageRating": 4.9,
-      "totalReviews": 127,
-      "googleRating": 4.8,
-      "yelpRating": 4.9
+      "totalReviews": 634,
+      "googleRating": 4.9,
+      "repeatClients": "87%"
     }
   },
-  "contact": {
-    "title": "Book Your Cleaning Service",
-    "subtitle": "Call, text, or book online for immediate service",
-    "phone": "(555) 678-9012",
-    "email": "info@sparkleclean.com",
-    "address": "567 Clean Street, Service District, Springfield, IL 62701",
-    "coordinates": {
-      "lat": 39.7817,
-      "lng": -89.6501
-    },
-    "parking": "Free parking available • Easy access • Loading zone",
-    "accessibility": "Wheelchair accessible • Ground floor office • Accessible restrooms",
-    "hours": {
-      "title": "Service Hours",
-      "items": [
-        "Monday - Friday: 7:00 AM - 6:00 PM",
-        "Saturday: 8:00 AM - 4:00 PM",
-        "Sunday: 9:00 AM - 2:00 PM"
-      ],
-      "note": "Emergency cleaning services available outside hours"
-    },
-    "booking": {
-      "phone": "(555) 678-9012",
-      "online": "https://sparkleclean.com/book",
-      "note": "Free estimates available for all services"
-    }
-  },
-  "social": {
-    "facebook": "https://facebook.com/sparkleclean",
-    "instagram": "https://instagram.com/sparkleclean_pro",
-    "googleMaps": "https://maps.google.com/sparkleclean",
-    "yelp": "https://yelp.com/biz/sparkleclean-springfield",
-    "nextdoor": "https://nextdoor.com/sparkleclean"
-  },
-  "events": {
-    "title": "Special Offers",
-    "subtitle": "Take advantage of our current promotions",
-    "items": [
+  "team": {
+    "title": "Meet Our Team",
+    "subtitle": "Trained professionals you can trust",
+    "members": [
       {
-        "title": "New Customer Special",
-        "description": "20% off your first cleaning service",
-        "schedule": "Valid for new customers only",
-        "price": "20% discount"
+        "name": "Maria Rodriguez",
+        "title": "Owner & Lead Supervisor",
+        "bio": "With 12 years in the cleaning industry, Maria founded Sparkle Elite with a vision for premium, eco-friendly cleaning services. She personally trains all team members and ensures quality control.",
+        "image": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80",
+        "imageAlt": "Maria Rodriguez",
+        "credentials": [
+          "Certified Green Cleaning Professional",
+          "OSHA Safety Certified",
+          "10+ Years Experience"
+        ]
       },
       {
-        "title": "Referral Program",
-        "description": "Get $25 off for each friend you refer",
-        "schedule": "Ongoing program",
-        "price": "$25 credit per referral"
+        "name": "James Wilson",
+        "title": "Operations Manager",
+        "bio": "James oversees scheduling, quality assurance, and client relations. His attention to detail ensures every cleaning meets our high standards.",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+        "imageAlt": "James Wilson",
+        "credentials": [
+          "Operations Management Certified",
+          "Customer Service Excellence",
+          "8+ Years Experience"
+        ]
       },
       {
-        "title": "Monthly Package",
-        "description": "Save 15% with monthly cleaning packages",
-        "schedule": "Available year-round",
-        "price": "15% monthly discount"
-      }
-    ]
-  },
-  "stats": {
-    "items": [
-      {
-        "number": "500+",
-        "label": "Homes Cleaned"
-      },
-      {
-        "number": "8",
-        "label": "Years Experience"
-      },
-      {
-        "number": "4.9",
-        "label": "Average Rating"
-      },
-      {
-        "number": "100%",
-        "label": "Satisfaction Rate"
-      }
-    ]
-  },
-  "credentials": {
-    "title": "Licensed & Certified",
-    "subtitle": "Trust and professionalism you can count on",
-    "items": [
-      {
-        "icon": "🛡️",
-        "name": "Fully Insured",
-        "description": "General Liability & Bonding"
-      },
-      {
-        "icon": "✅",
-        "name": "Background Checked",
-        "description": "All team members vetted"
-      },
-      {
-        "icon": "🌱",
-        "name": "Eco-Certified",
-        "description": "Green Seal Approved"
-      },
-      {
-        "icon": "🏆",
-        "name": "BBB A+ Rating",
-        "description": "Accredited since 2016"
+        "name": "Lisa Chen",
+        "title": "Commercial Services Lead",
+        "bio": "Lisa specializes in commercial cleaning and trains our commercial teams. She ensures compliance with industry standards and client specifications.",
+        "image": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80",
+        "imageAlt": "Lisa Chen",
+        "credentials": [
+          "Commercial Cleaning Specialist",
+          "Safety Certified",
+          "7+ Years Experience"
+        ]
       }
     ]
   },
   "process": {
-    "title": "How It Works",
-    "subtitle": "Simple, fast, and hassle-free booking",
+    "title": "Our Process",
+    "subtitle": "How we deliver exceptional results",
     "steps": [
       {
-        "title": "Book Online",
-        "description": "Choose your service and preferred date through our easy booking system"
+        "number": 1,
+        "title": "Book Online or Call",
+        "description": "Schedule your cleaning at your convenience. Choose your service, date, and time.",
+        "duration": "2 minutes"
       },
       {
-        "title": "We Confirm",
-        "description": "Receive confirmation within 1 hour with your assigned team"
+        "number": 2,
+        "title": "Customized Quote",
+        "description": "Receive a detailed quote based on your specific needs and home size. No hidden fees.",
+        "duration": "Same day"
       },
       {
-        "title": "We Clean",
-        "description": "Professional team arrives on time with all supplies"
+        "number": 3,
+        "title": "Professional Cleaning",
+        "description": "Our trained team arrives on time with all supplies and equipment. We follow our proven checklist.",
+        "duration": "2-6 hours"
       },
       {
-        "title": "You Relax",
-        "description": "Enjoy your spotless space with 100% satisfaction guarantee"
+        "number": 4,
+        "title": "Quality Inspection",
+        "description": "We do a walkthrough to ensure every area meets our high standards before we leave.",
+        "duration": "15 minutes"
+      },
+      {
+        "number": 5,
+        "title": "Your Satisfaction",
+        "description": "Enjoy your sparkling clean space! Not satisfied? We'll make it right with our 100% guarantee.",
+        "duration": "Ongoing"
+      }
+    ]
+  },
+  "serviceAreas": {
+    "title": "Service Areas",
+    "subtitle": "Proudly serving the greater metro area",
+    "areas": [
+      "Downtown & Central City",
+      "Northside Neighborhoods",
+      "Westside Communities",
+      "Eastside Areas",
+      "Southside Districts",
+      "Surrounding Suburbs"
+    ],
+    "note": "Don't see your area? Call us—we may still be able to help!"
+  },
+  "contact": {
+    "title": "Get Started Today",
+    "subtitle": "Book your cleaning service",
+    "phone": "(555) 678-9012",
+    "email": "hello@sparkleelite.com",
+    "address": "567 Business Park Drive, Suite 202, Denver, CO 80202",
+    "coordinates": {
+      "lat": 39.7392,
+      "lng": -104.9903
+    },
+    "hours": {
+      "title": "Office Hours",
+      "items": [
+        "Monday - Friday: 8:00 AM - 6:00 PM",
+        "Saturday: 9:00 AM - 4:00 PM",
+        "Sunday: Closed"
+      ],
+      "note": "Cleaning services available 7 days a week"
+    }
+  },
+  "social": {
+    "facebook": "https://facebook.com/sparkleelite",
+    "instagram": "https://instagram.com/sparkleelite",
+    "yelp": "https://yelp.com/biz/sparkleelite",
+    "googleMaps": "https://maps.google.com/sparkleelite"
+  },
+  "stats": {
+    "items": [
+      {
+        "number": "4.9",
+        "label": "Star Rating"
+      },
+      {
+        "number": "1,500+",
+        "label": "Happy Clients"
+      },
+      {
+        "number": "Eco",
+        "label": "Friendly"
+      },
+      {
+        "number": "100%",
+        "label": "Guaranteed"
+      }
+    ]
+  },
+  "credentials": {
+    "title": "Trust & Certifications",
+    "items": [
+      {
+        "icon": "🏆",
+        "name": "Award Winning",
+        "description": "Best Cleaning Service 2023"
+      },
+      {
+        "icon": "⭐",
+        "name": "Top Rated",
+        "description": "4.9 Stars on Google & Yelp"
+      },
+      {
+        "icon": "🌱",
+        "name": "Green Certified",
+        "description": "Eco-Friendly Products"
+      },
+      {
+        "icon": "🛡️",
+        "name": "Fully Insured",
+        "description": "Licensed & Bonded"
+      }
+    ]
+  },
+  "gallery": {
+    "title": "Our Transformations",
+    "subtitle": "Before & after cleaning examples",
+    "categories": [
+      {
+        "name": "Residential",
+        "images": [
+          {
+            "url": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&q=80",
+            "alt": "Clean home interior"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80",
+            "alt": "Spotless living space"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=800&q=80",
+            "alt": "Move-in ready cleaning"
+          }
+        ]
+      },
+      {
+        "name": "Commercial",
+        "images": [
+          {
+            "url": "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800&q=80",
+            "alt": "Clean office space"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80",
+            "alt": "Professional facility cleaning"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&q=80",
+            "alt": "Corporate space maintenance"
+          }
+        ]
+      },
+      {
+        "name": "Specialty",
+        "images": [
+          {
+            "url": "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=800&q=80",
+            "alt": "Post-construction cleanup"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80",
+            "alt": "Deep clean detail work"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&q=80",
+            "alt": "Final inspection ready"
+          }
+        ]
       }
     ]
   },
   "faq": {
     "title": "Frequently Asked Questions",
-    "subtitle": "Everything you need to know about our services",
     "items": [
       {
-        "question": "Are you insured and bonded?",
-        "answer": "Yes, we carry full liability insurance and all team members are bonded for your protection. You can request proof of insurance at any time."
+        "question": "Do I need to provide cleaning supplies?",
+        "answer": "No! We bring all necessary supplies and equipment. We use professional-grade, eco-friendly products. If you prefer us to use your specific products, we're happy to accommodate."
       },
       {
-        "question": "What products do you use?",
-        "answer": "We use eco-friendly, non-toxic cleaning products that are safe for children and pets. All products are EPA-approved and Green Seal certified."
+        "question": "Do I need to be home during the cleaning?",
+        "answer": "Not at all! Many clients provide us with a key or access code. Our team is fully background-checked and insured. You can go about your day while we clean."
       },
       {
-        "question": "Do I need to be home during cleaning?",
-        "answer": "No, many clients provide a key or code. We're fully bonded and trustworthy. You can go about your day while we make your space sparkle!"
+        "question": "What if I'm not satisfied with the cleaning?",
+        "answer": "We have a 100% satisfaction guarantee. If you're not happy with any aspect of the cleaning, let us know within 24 hours and we'll return to fix it at no charge."
       },
       {
-        "question": "What if I'm not satisfied?",
-        "answer": "We offer a 100% satisfaction guarantee. We'll re-clean any areas you're not happy with within 24 hours, free of charge."
+        "question": "How long does a cleaning take?",
+        "answer": "It depends on the size of your space and service type. Standard cleanings typically take 2-3 hours, while deep cleanings can take 4-6 hours. We'll provide an estimate when you book."
       },
       {
-        "question": "How much does cleaning cost?",
-        "answer": "Prices vary based on home size and service type. Regular house cleaning starts at $120, deep cleaning at $250. Contact us for a free, no-obligation quote."
+        "question": "Are your cleaners background-checked?",
+        "answer": "Yes! All team members undergo thorough background checks, reference verification, and professional training before joining our team."
       },
       {
-        "question": "Do you provide cleaning supplies?",
-        "answer": "Yes! We bring all necessary supplies and equipment. If you have specific products you'd like us to use, just let us know."
+        "question": "Do you offer same-day service?",
+        "answer": "Yes, when available! Call us to check same-day availability. We recommend booking in advance for guaranteed scheduling."
       },
       {
-        "question": "Can I schedule recurring cleanings?",
-        "answer": "Absolutely! We offer weekly, bi-weekly, and monthly packages at discounted rates. Save 15% with a monthly plan."
+        "question": "What areas do you service?",
+        "answer": "We service the entire metro area and surrounding suburbs. Check our service areas section or call to confirm we service your location."
       },
       {
-        "question": "What areas do you serve?",
-        "answer": "We serve Springfield and surrounding areas within a 50-mile radius. Use our zip code checker or call to confirm service availability."
+        "question": "Do you clean on weekends?",
+        "answer": "Yes! We offer cleaning services 7 days a week to accommodate your schedule. Weekend bookings are popular, so book early!"
       }
     ]
   },
   "footer": {
-    "text": "🧽 Sparkle Clean • Professional Cleaning Since 2016",
+    "text": "✨ Sparkle Elite Cleaning • Trusted Since 2016",
     "links": [
       {
-        "label": "Privacy Policy",
-        "href": "#privacy"
+        "label": "Book Now",
+        "href": "#booking"
       },
       {
-        "label": "Terms of Service",
-        "href": "#terms"
+        "label": "Services",
+        "href": "#services"
       },
       {
-        "label": "Careers",
-        "href": "#careers"
+        "label": "Packages",
+        "href": "#packages"
       },
       {
-        "label": "Insurance",
-        "href": "#insurance"
+        "label": "Contact",
+        "href": "#contact"
       }
     ],
     "awards": [
-      "Best Cleaning Service 2023",
-      "Customer Choice Award",
-      "Eco-Friendly Business"
+      "Best Cleaning Service",
+      "1,500+ Happy Clients",
+      "Eco-Friendly",
+      "100% Guaranteed"
     ]
   },
+  "sections": [
+    {
+      "type": "interactive-calculator",
+      "id": "cleaning-calculator",
+      "settings": {
+        "heading": "Calculate Your Cleaning Cost",
+        "subheading": "Select rooms and services to see your price",
+        "type": "room-by-room",
+        "basePrice": 0,
+        "items": [
+          {
+            "id": "bedroom",
+            "name": "Bedroom",
+            "price": 25,
+            "description": "Standard bedroom cleaning"
+          },
+          {
+            "id": "bathroom",
+            "name": "Bathroom",
+            "price": 35,
+            "description": "Deep bathroom cleaning"
+          },
+          {
+            "id": "kitchen",
+            "name": "Kitchen",
+            "price": 40,
+            "description": "Kitchen deep clean"
+          },
+          {
+            "id": "living-room",
+            "name": "Living Room",
+            "price": 30,
+            "description": "Living area cleaning"
+          },
+          {
+            "id": "office",
+            "name": "Home Office",
+            "price": 20,
+            "description": "Office space cleaning"
+          },
+          {
+            "id": "dining-room",
+            "name": "Dining Room",
+            "price": 25,
+            "description": "Dining area cleaning"
+          },
+          {
+            "id": "basement",
+            "name": "Basement",
+            "price": 35,
+            "description": "Basement cleaning"
+          },
+          {
+            "id": "garage",
+            "name": "Garage",
+            "price": 40,
+            "description": "Garage cleaning"
+          }
+        ],
+        "discount": {
+          "type": "fixed",
+          "value": 20,
+          "description": "$20 off first cleaning"
+        },
+        "submitButtonText": "Book Cleaning",
+        "onSubmit": "function(data) { console.log('Cleaning booked:', data); }"
+      }
+    },
+    {
+      "type": "subscription-booking",
+      "id": "recurring-cleaning",
+      "settings": {
+        "title": "Book Recurring Cleaning",
+        "description": "Set up automatic weekly, bi-weekly, or monthly service",
+        "services": [
+          {
+            "id": "standard-cleaning",
+            "name": "Standard House Cleaning",
+            "price": 149,
+            "description": "Complete cleaning of all rooms: dusting, vacuuming, mopping, bathrooms, kitchen"
+          },
+          {
+            "id": "deep-cleaning",
+            "name": "Deep Cleaning",
+            "price": 299,
+            "description": "Thorough top-to-bottom cleaning including baseboards, inside appliances, and windows"
+          }
+        ],
+        "frequencies": [
+          {
+            "value": "weekly",
+            "label": "Weekly",
+            "discount": 10
+          },
+          {
+            "value": "bi-weekly",
+            "label": "Bi-Weekly",
+            "discount": 5
+          },
+          {
+            "value": "monthly",
+            "label": "Monthly",
+            "discount": 15
+          }
+        ],
+        "submitButtonText": "Book Recurring Service",
+        "onSubmit": "function(data) { console.log('Subscription booking:', data); }"
+      }
+    }
+  ],
   "settings": {
     "allowCheckout": false,
-    "allowOrders": true,
-    "orderNotificationEmail": "hello@sparkleclean.com",
-    "productCta": "Request Quote",
-    "productCtaHref": "mailto:hello@sparkleclean.com",
-    "productNote": "Submit your quote request and we'll contact you with pricing within 24 hours. Same-day service available!"
-  },
-  "productsTitle": "Our Services",
-  "productsSubtitle": "Professional cleaning solutions for every need"
+    "allowOrders": false,
+    "bookingEnabled": true,
+    "bookingWidget": "native",
+    "tier": "Pro"
+  }
 }

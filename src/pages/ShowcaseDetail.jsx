@@ -1,48 +1,42 @@
 /**
- * ShowcaseDetail Component
- * 
- * Individual site showcase page
- * - Site hero section with image
- * - About section
- * - Contact information
- * - Image gallery
- * - Call to action
- * - Social sharing
- * - SEO optimized
+ * ShowcaseDetail Component — individual site showcase page
  */
 
-import React, { useState, useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import PublicPageLayout from '../components/layout/PublicPageLayout';
 import './ShowcaseDetail.css';
 
 function ShowcaseDetail() {
   const { subdomain } = useParams();
-  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   const [site, setSite] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [copySuccess, setCopySuccess] = useState(false);
 
-  // Set page title and meta for SEO
   useEffect(() => {
     if (site) {
       const siteTitle = getSiteTitle(site);
       document.title = `${siteTitle} - Made with SiteSprintz`;
 
-      // Update meta description
       let metaDescription = document.querySelector('meta[name="description"]');
       if (!metaDescription) {
         metaDescription = document.createElement('meta');
         metaDescription.setAttribute('name', 'description');
         document.head.appendChild(metaDescription);
       }
-      const description = site.site_data?.about?.description || site.site_data?.hero?.subtitle || `${siteTitle} - A beautiful website made with SiteSprintz`;
+      const payload = site.data || site.site_data || {};
+      const description =
+        payload.about?.description ||
+        payload.hero?.subtitle ||
+        `${siteTitle} - A beautiful website made with SiteSprintz`;
       metaDescription.setAttribute('content', description);
     }
   }, [site]);
 
-  // Fetch site details
   useEffect(() => {
     const fetchSite = async () => {
       setLoading(true);
@@ -61,7 +55,7 @@ function ShowcaseDetail() {
         }
 
         const data = await response.json();
-        setSite(data);
+        setSite(data.site || data);
       } catch (err) {
         console.error('Error fetching site:', err);
         setError('An error occurred while loading the site. Please try again.');
@@ -76,36 +70,41 @@ function ShowcaseDetail() {
   }, [subdomain]);
 
   const getSiteTitle = (siteData) => {
-    return siteData?.site_data?.hero?.title || 'Untitled Site';
+    const payload = siteData?.data || siteData?.site_data || {};
+    return (
+      siteData?.name ||
+      payload.brand?.name ||
+      payload.hero?.title ||
+      siteData?.subdomain ||
+      'Untitled Site'
+    );
   };
 
   const getSiteSubtitle = (siteData) => {
-    return siteData?.site_data?.hero?.subtitle || '';
+    const payload = siteData?.data || siteData?.site_data || {};
+    return payload.hero?.subtitle || payload.brand?.tagline || '';
   };
 
   const getSiteHeroImage = (siteData) => {
-    return siteData?.site_data?.images?.hero || siteData?.site_data?.hero?.backgroundImage || '/images/default-hero.jpg';
+    const payload = siteData?.data || siteData?.site_data || {};
+    return (
+      payload.hero?.image ||
+      payload.hero?.backgroundImage ||
+      payload.images?.hero ||
+      '/images/default-hero.jpg'
+    );
   };
 
   const getSiteUrl = (siteData) => {
-    return `https://${siteData.subdomain}.sitesprintz.com`;
+    return `/view/${siteData.subdomain}`;
   };
 
   const formatCategory = (category) => {
     if (!category || typeof category !== 'string') return 'Unknown';
     return category
       .split('-')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
   };
 
   const handleCopyLink = async () => {
@@ -145,204 +144,209 @@ function ShowcaseDetail() {
     window.location.reload();
   };
 
-  // Loading state
+  const ctaTarget = isAuthenticated ? '/setup' : '/register';
+  const ctaLabel = isAuthenticated ? 'Create Your Site →' : 'Get Started Free →';
+
   if (loading) {
     return (
-      <div className="showcase-detail-loading">
-        <div className="spinner"></div>
-        <p>Loading site details...</p>
-      </div>
+      <PublicPageLayout className="showcase-detail-page">
+        <div className="showcase-detail-loading" role="status" aria-live="polite">
+          <div className="spinner" aria-hidden="true"></div>
+          <p>Loading site details...</p>
+        </div>
+      </PublicPageLayout>
     );
   }
 
-  // Error state
   if (error) {
     return (
-      <div className="showcase-detail-error">
-        <h2>Oops! Something went wrong</h2>
-        <p>{error}</p>
-        <div className="error-actions">
-          <button onClick={handleRetry} className="btn btn-primary">
-            Try Again
-          </button>
-          <Link to="/showcase" className="btn btn-secondary">
+      <PublicPageLayout className="showcase-detail-page">
+        <div className="showcase-detail-error">
+          <h2>Oops! Something went wrong</h2>
+          <p>{error}</p>
+          <div className="error-actions">
+            <button type="button" onClick={handleRetry} className="btn btn-primary">
+              Try Again
+            </button>
+            <Link to="/showcase" className="btn btn-secondary">
+              Back to Gallery
+            </Link>
+          </div>
+        </div>
+      </PublicPageLayout>
+    );
+  }
+
+  if (!site) {
+    return (
+      <PublicPageLayout className="showcase-detail-page">
+        <div className="showcase-detail-error">
+          <h2>Site not found</h2>
+          <p>This site doesn&apos;t exist or is not public.</p>
+          <Link to="/showcase" className="btn btn-primary">
             Back to Gallery
           </Link>
         </div>
-      </div>
+      </PublicPageLayout>
     );
   }
 
-  // No site state
-  if (!site) {
-    return (
-      <div className="showcase-detail-error">
-        <h2>Site not found</h2>
-        <p>This site doesn't exist or is not public.</p>
-        <Link to="/showcase" className="btn btn-primary">
-          Back to Gallery
-        </Link>
-      </div>
-    );
-  }
+  const payload = site.data || site.site_data || {};
 
   return (
-    <div className="showcase-detail" data-testid="showcase-detail">
-      {/* Back Button */}
-      <div className="showcase-detail-nav">
-        <Link to="/showcase" className="back-link">
-          ← Back to Gallery
-        </Link>
-      </div>
+    <PublicPageLayout className="showcase-detail-page">
+      <div className="showcase-detail" data-testid="showcase-detail">
+        <nav className="showcase-detail-nav" aria-label="Breadcrumb">
+          <Link to="/showcase" className="back-link">
+            ← Back to Gallery
+          </Link>
+        </nav>
 
-      {/* Hero Section */}
-      <section className="showcase-hero">
-        <div className="hero-image">
-          <img
-            src={getSiteHeroImage(site)}
-            alt={`${getSiteTitle(site)} hero image`}
-            style={{ maxWidth: '100%' }}
-          />
-        </div>
-        <div className="hero-content">
-          <div className="hero-badges">
-            <span className="category-badge">
-              {formatCategory(site.template_id)}
-            </span>
-            <span className="plan-badge">
-              {site.plan} Plan
+        <section className="showcase-hero">
+          <div className="hero-image">
+            <img
+              src={getSiteHeroImage(site)}
+              alt={`${getSiteTitle(site)} hero image`}
+            />
+          </div>
+          <div className="hero-content">
+            <div className="hero-badges">
+              <span className="category-badge">
+                {formatCategory(site.template || site.template_id)}
+              </span>
+              <span className="plan-badge">
+                {site.plan} Plan
+              </span>
+            </div>
+            <h1>{getSiteTitle(site)}</h1>
+            {getSiteSubtitle(site) && (
+              <p className="hero-subtitle">{getSiteSubtitle(site)}</p>
+            )}
+            <div className="hero-actions">
+              <a
+                href={getSiteUrl(site)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-primary cta-button"
+              >
+                Visit example →
+              </a>
+              <button type="button" onClick={handleCopyLink} className="btn btn-secondary share-button">
+                {copySuccess ? '✓ Copied!' : 'Copy Link'}
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section className="showcase-metadata" aria-label="Example site details">
+          <div className="metadata-item">
+            <span className="metadata-label">Example for</span>
+            <span className="metadata-value">{formatCategory(site.template || site.template_id)}</span>
+          </div>
+          <div className="metadata-item">
+            <span className="metadata-label">Theme</span>
+            <span className="metadata-value">
+              {payload.galleryTheme?.name || payload.colors?.themeId || 'SiteSprintz theme'}
             </span>
           </div>
-          <h1>{getSiteTitle(site)}</h1>
-          {getSiteSubtitle(site) && (
-            <p className="hero-subtitle">{getSiteSubtitle(site)}</p>
-          )}
-          <div className="hero-actions">
-            <a
-              href={getSiteUrl(site)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-primary"
+          <div className="metadata-item">
+            <span className="metadata-label">Plan shown</span>
+            <span className="metadata-value">{site.plan}</span>
+          </div>
+        </section>
+        {payload.about && (
+          <section className="showcase-about">
+            <h2>{payload.about.title || 'About'}</h2>
+            <p>{payload.about.description}</p>
+          </section>
+        )}
+
+        {payload.contact && (
+          <section className="showcase-contact">
+            <h2>Contact Information</h2>
+            <div className="contact-grid">
+              {payload.contact.phone && (
+                <div className="contact-item">
+                  <span className="contact-icon" aria-hidden="true">📞</span>
+                  <span>{payload.contact.phone}</span>
+                </div>
+              )}
+              {payload.contact.email && (
+                <div className="contact-item">
+                  <span className="contact-icon" aria-hidden="true">✉️</span>
+                  <span>{payload.contact.email}</span>
+                </div>
+              )}
+              {payload.contact.address && (
+                <div className="contact-item">
+                  <span className="contact-icon" aria-hidden="true">📍</span>
+                  <span>{payload.contact.address}</span>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {payload.images?.gallery && payload.images.gallery.length > 0 && (
+          <section className="showcase-image-gallery">
+            <h2>Gallery</h2>
+            <div className="gallery-grid">
+              {payload.images.gallery.map((image, index) => (
+                <img
+                  key={image}
+                  src={image}
+                  alt={`${getSiteTitle(site)} gallery image ${index + 1}`}
+                  loading="lazy"
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section className="showcase-share">
+          <h3>Share this site</h3>
+          <div className="share-buttons">
+            <button
+              type="button"
+              onClick={() => handleShare('twitter')}
+              className="share-btn share-twitter"
+              aria-label="Share on Twitter"
             >
-              Visit Site →
-            </a>
-            <button onClick={handleCopyLink} className="btn btn-secondary">
-              {copySuccess ? '✓ Copied!' : 'Copy Link'}
+              Twitter
+            </button>
+            <button
+              type="button"
+              onClick={() => handleShare('facebook')}
+              className="share-btn share-facebook"
+              aria-label="Share on Facebook"
+            >
+              Facebook
+            </button>
+            <button
+              type="button"
+              onClick={() => handleShare('linkedin')}
+              className="share-btn share-linkedin"
+              aria-label="Share on LinkedIn"
+            >
+              LinkedIn
             </button>
           </div>
-        </div>
-      </section>
-
-      {/* Metadata */}
-      <section className="showcase-metadata">
-        <div className="metadata-item">
-          <span className="metadata-label">Launched</span>
-          <span className="metadata-value">{formatDate(site.created_at)}</span>
-        </div>
-        <div className="metadata-item">
-          <span className="metadata-label">Category</span>
-          <span className="metadata-value">{formatCategory(site.template_id)}</span>
-        </div>
-        <div className="metadata-item">
-          <span className="metadata-label">Plan</span>
-          <span className="metadata-value">{site.plan}</span>
-        </div>
-      </section>
-
-      {/* About Section */}
-      {site.site_data?.about && (
-        <section className="showcase-about">
-          <h2>{site.site_data.about.title || 'About'}</h2>
-          <p>{site.site_data.about.description}</p>
         </section>
-      )}
 
-      {/* Contact Information */}
-      {site.site_data?.contact && (
-        <section className="showcase-contact">
-          <h2>Contact Information</h2>
-          <div className="contact-grid">
-            {site.site_data.contact.phone && (
-              <div className="contact-item">
-                <span className="contact-icon">📞</span>
-                <span>{site.site_data.contact.phone}</span>
-              </div>
-            )}
-            {site.site_data.contact.email && (
-              <div className="contact-item">
-                <span className="contact-icon">✉️</span>
-                <span>{site.site_data.contact.email}</span>
-              </div>
-            )}
-            {site.site_data.contact.address && (
-              <div className="contact-item">
-                <span className="contact-icon">📍</span>
-                <span>{site.site_data.contact.address}</span>
-              </div>
-            )}
+        <section className="showcase-cta">
+          <div className="cta-content">
+            <h2>Want a page that looks like this?</h2>
+            <p>
+              This is an example — start a free draft, pick your theme, and make it yours.
+            </p>
+            <Link to={ctaTarget} className="btn btn-primary btn-large">
+              {ctaLabel}
+            </Link>
           </div>
         </section>
-      )}
-
-      {/* Image Gallery */}
-      {site.site_data?.images?.gallery && site.site_data.images.gallery.length > 0 && (
-        <section className="showcase-gallery">
-          <h2>Gallery</h2>
-          <div className="gallery-grid">
-            {site.site_data.images.gallery.map((image, index) => (
-              <img
-                key={index}
-                src={image}
-                alt={`${getSiteTitle(site)} gallery image ${index + 1}`}
-                loading="lazy"
-                style={{ maxWidth: '100%' }}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Social Share */}
-      <section className="showcase-share">
-        <h3>Share this site</h3>
-        <div className="share-buttons">
-          <button
-            onClick={() => handleShare('twitter')}
-            className="share-btn share-twitter"
-            aria-label="Share on Twitter"
-          >
-            Twitter
-          </button>
-          <button
-            onClick={() => handleShare('facebook')}
-            className="share-btn share-facebook"
-            aria-label="Share on Facebook"
-          >
-            Facebook
-          </button>
-          <button
-            onClick={() => handleShare('linkedin')}
-            className="share-btn share-linkedin"
-            aria-label="Share on LinkedIn"
-          >
-            LinkedIn
-          </button>
-        </div>
-      </section>
-
-      {/* Call to Action */}
-      <section className="showcase-cta">
-        <div className="cta-content">
-          <h2>Create Your Own Beautiful Website</h2>
-          <p>Join thousands of businesses using SiteSprintz to build their online presence.</p>
-          <Link to="/" className="btn btn-primary btn-large">
-            Get Started Free →
-          </Link>
-        </div>
-      </section>
-    </div>
+      </div>
+    </PublicPageLayout>
   );
 }
 
 export default ShowcaseDetail;
-

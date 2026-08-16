@@ -1,0 +1,56 @@
+url: http://localhost:5173/login
+goal: Starter user — tier gates (no native booking/products), can use setup
+steps:
+  - action: Login ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Email
+    fill: { testId: login-email, value: "starter@example.com", clear: true }
+
+  - action: Password
+    fill: { testId: login-password, value: "StarterPass!2024", clear: true }
+
+  - action: Sign in
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 600
+
+  - action: Dismiss welcome
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) await dismiss.click({ timeout: 4000 }).catch(() => {});
+      else await page.keyboard.press('Escape').catch(() => {});
+    settle_ms: 500
+
+  - action: Booking gate for Starter
+    goto: http://localhost:5173/booking-dashboard
+    settle_ms: 1500
+
+  - action: Expect upgrade or limited booking
+    code: |
+      const t = await page.locator('body').innerText();
+      // Starter should not look like a full Growth booking console without gate
+      const gated = /Upgrade to Growth|Growth plan|requires Growth|Pro Feature|Upgrade/i.test(t);
+      const emptyOk = /Booking|No services|Get started|Dashboard/i.test(t);
+      if (!gated && !emptyOk) throw new Error('Unexpected starter booking view: ' + t.slice(0, 300));
+    settle_ms: 300
+
+  - action: Setup still available
+    goto: http://localhost:5173/setup
+    settle_ms: 1500
+
+  - action: Choose permanent business
+    code: |
+      const permanent = page.getByText(/Permanent Business/i).first();
+      if (await permanent.count()) {
+        await permanent.click({ timeout: 10000 });
+      }
+    settle_ms: 1500
+
+  - action: Setup works for Starter
+    wait_for: { text: Quick Start, timeout: 20000 }
+    assert:
+      - text contains What type of business

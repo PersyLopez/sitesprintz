@@ -109,6 +109,24 @@
   color: #a855f7;
 }
 
+.editor-header-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border-dark, rgba(255, 255, 255, 0.1));
+  background: rgba(15, 27, 45, 0.3);
+}
+
+.undo-redo-buttons {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.undo-redo-buttons button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .editor-tabs {
   display: flex;
   background: linear-gradient(180deg,

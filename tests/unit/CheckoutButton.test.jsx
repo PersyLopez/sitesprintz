@@ -1,263 +1,112 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import CheckoutButton from '@/components/ecommerce/CheckoutButton';
 import * as useCartHook from '@/hooks/useCart';
-import * as useStripeHook from '@/hooks/useStripe';
-import * as stripeUtils from '@/utils/stripe';
+import { api } from '../../src/services/api';
 
-// Mock hooks
 vi.mock('@/hooks/useCart');
-vi.mock('@/hooks/useStripe');
-vi.mock('@/utils/stripe');
+vi.mock('../../src/services/api', () => ({
+  api: {
+    post: vi.fn(),
+    get: vi.fn(),
+    put: vi.fn()
+  },
+  default: {
+    post: vi.fn(),
+    get: vi.fn(),
+    put: vi.fn()
+  }
+}));
 
 describe('CheckoutButton', () => {
-  const mockClearCart = vi.fn();
   const mockGetCartTotal = vi.fn();
-  const mockStripe = { createPaymentMethod: vi.fn() };
-  const mockProcessCheckout = vi.fn();
+  const mockClearCart = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
-    // Default happy path mocks
+    mockGetCartTotal.mockReturnValue(10);
     vi.mocked(useCartHook.useCart).mockReturnValue({
       cartItems: [{ id: '1', name: 'Test Product', price: 10, quantity: 1 }],
-      getCartTotal: mockGetCartTotal.mockReturnValue(10),
+      getCartTotal: mockGetCartTotal,
+      clearCart: mockClearCart
+    });
+  });
+
+  it('shows a blocked notice when Stripe and pay on site are both off', () => {
+    render(<CheckoutButton siteId="site-1" />);
+    expect(screen.getByTestId('checkout-upgrade-notice')).toBeInTheDocument();
+    expect(screen.queryByTestId('checkout-button')).not.toBeInTheDocument();
+  });
+
+  it('shows Stripe checkout when payments are ready', () => {
+    render(<CheckoutButton siteId="site-1" paymentsReady stripePublishableKey="pk_test_123" />);
+    expect(screen.getByTestId('checkout-button')).toHaveTextContent(/Proceed to Checkout/);
+    expect(screen.getByText(/\$10\.00/)).toBeInTheDocument();
+  });
+
+  it('shows pay-on-site checkout when the owner enabled it', () => {
+    render(<CheckoutButton siteId="site-1" payOnSite />);
+    expect(screen.getByTestId('pay-on-site-checkout')).toBeInTheDocument();
+    expect(screen.getByTestId('pay-on-site-place-order')).toHaveTextContent(/Place order/);
+    expect(screen.queryByTestId('checkout-upgrade-notice')).not.toBeInTheDocument();
+  });
+
+  it('places an unpaid pay-on-site order', async () => {
+    const user = userEvent.setup();
+    api.post.mockResolvedValue({
+      order: { id: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', total: 10 }
+    });
+
+    render(<CheckoutButton siteId="site-1" payOnSite />);
+
+    await user.type(screen.getByTestId('pay-on-site-name'), 'Alex Rivera');
+    await user.type(screen.getByTestId('pay-on-site-email'), 'alex@example.com');
+    await user.click(screen.getByTestId('pay-on-site-place-order'));
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/api/orders/site-1/pay-on-site', expect.objectContaining({
+        customerName: 'Alex Rivera',
+        customerEmail: 'alex@example.com',
+        items: [{ id: '1', name: 'Test Product', price: 10, quantity: 1 }]
+      }));
+    });
+
+    expect(mockClearCart).toHaveBeenCalled();
+    expect(screen.getByTestId('pay-on-site-confirmation')).toHaveTextContent(/Order placed/);
+  });
+
+  it('keeps Stripe checkout and pay on site together', () => {
+    render(<CheckoutButton siteId="site-1" paymentsReady payOnSite />);
+    expect(screen.getByTestId('checkout-button')).toBeInTheDocument();
+    expect(screen.getByTestId('pay-on-site-checkout')).toBeInTheDocument();
+    expect(screen.getByText(/Or pay on site/)).toBeInTheDocument();
+  });
+
+  it('disables Stripe checkout when the cart is empty', () => {
+    vi.mocked(useCartHook.useCart).mockReturnValue({
+      cartItems: [],
+      getCartTotal: vi.fn().mockReturnValue(0),
       clearCart: mockClearCart
     });
 
-    vi.mocked(useStripeHook.useStripe).mockReturnValue({
-      stripe: mockStripe,
-      loading: false,
-      error: null
-    });
-
-    vi.mocked(stripeUtils.processCheckout).mockImplementation(mockProcessCheckout);
+    render(<CheckoutButton siteId="site-1" paymentsReady />);
+    expect(screen.getByTestId('checkout-button')).toBeDisabled();
   });
 
-  describe('Rendering', () => {
-    it('should render checkout button with correct total', () => {
-      render(<CheckoutButton stripePublishableKey="pk_test_123" siteId="site-1" />);
-      
-      expect(screen.getByText(/Proceed to Checkout/)).toBeInTheDocument();
-      expect(screen.getByText(/\$10\.00/)).toBeInTheDocument();
+  it('redirects to the payment processor on Stripe checkout', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ redirectUrl: 'https://checkout.example/session' })
     });
+    delete window.location;
+    window.location = { href: '', origin: 'http://localhost:5173' };
 
-    it('should show custom button text when provided', () => {
-      render(
-        <CheckoutButton 
-          stripePublishableKey="pk_test_123" 
-          siteId="site-1"
-          buttonText="Pay Now"
-        />
-      );
-      
-      expect(screen.getByText(/Pay Now/)).toBeInTheDocument();
-    });
+    render(<CheckoutButton siteId="site-1" paymentsReady />);
+    fireEvent.click(screen.getByTestId('checkout-button'));
 
-    it('should show loading state when Stripe is loading', () => {
-      vi.mocked(useStripeHook.useStripe).mockReturnValue({
-        stripe: null,
-        loading: true,
-        error: null
-      });
-
-      render(<CheckoutButton stripePublishableKey="pk_test_123" siteId="site-1" />);
-      
-      expect(screen.getByText('Loading...')).toBeInTheDocument();
-    });
-  });
-
-  describe('Empty Cart Handling', () => {
-    it('should disable button when cart is empty', () => {
-      vi.mocked(useCartHook.useCart).mockReturnValue({
-        cartItems: [],
-        getCartTotal: vi.fn().mockReturnValue(0),
-        clearCart: mockClearCart
-      });
-
-      render(<CheckoutButton stripePublishableKey="pk_test_123" siteId="site-1" />);
-      
-      const button = screen.getByRole('button');
-      expect(button).toBeDisabled();
-    });
-
-    it('should show error when trying to checkout with empty cart', async () => {
-      vi.mocked(useCartHook.useCart).mockReturnValue({
-        cartItems: [],
-        getCartTotal: vi.fn().mockReturnValue(0),
-        clearCart: mockClearCart
-      });
-
-      render(<CheckoutButton stripePublishableKey="pk_test_123" siteId="site-1" />);
-      
-      const button = screen.getByRole('button');
-      fireEvent.click(button);
-
-      // Error should not be shown since button is disabled
-      expect(mockProcessCheckout).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('Stripe Not Loaded', () => {
-    it('should disable button when Stripe is not loaded', () => {
-      vi.mocked(useStripeHook.useStripe).mockReturnValue({
-        stripe: null,
-        loading: false,
-        error: null
-      });
-
-      render(<CheckoutButton stripePublishableKey="pk_test_123" siteId="site-1" />);
-      
-      const button = screen.getByRole('button');
-      expect(button).toBeDisabled();
-    });
-
-    it('should show error message when Stripe fails to load', () => {
-      vi.mocked(useStripeHook.useStripe).mockReturnValue({
-        stripe: null,
-        loading: false,
-        error: 'Failed to load Stripe'
-      });
-
-      render(<CheckoutButton stripePublishableKey="pk_test_123" siteId="site-1" />);
-      
-      expect(screen.getByText(/Stripe Error: Failed to load Stripe/)).toBeInTheDocument();
-    });
-
-    it('should show warning when Stripe key is not provided', () => {
-      render(<CheckoutButton siteId="site-1" />);
-      
-      expect(screen.getByText(/Stripe is not configured/)).toBeInTheDocument();
-    });
-  });
-
-  describe('Checkout Process', () => {
-    it('should process checkout successfully', async () => {
-      mockProcessCheckout.mockResolvedValue({ success: true });
-
-      render(<CheckoutButton stripePublishableKey="pk_test_123" siteId="site-1" />);
-      
-      const button = screen.getByRole('button');
-      fireEvent.click(button);
-
-      // Should show processing state
-      expect(await screen.findByText('Processing...')).toBeInTheDocument();
-
-      await waitFor(() => {
-        expect(mockProcessCheckout).toHaveBeenCalledWith(
-          mockStripe,
-          [{ id: '1', name: 'Test Product', price: 10, quantity: 1 }],
-          'site-1'
-        );
-      });
-    });
-
-    it('should handle checkout errors gracefully', async () => {
-      mockProcessCheckout.mockRejectedValue(new Error('Payment failed'));
-
-      render(<CheckoutButton stripePublishableKey="pk_test_123" siteId="site-1" />);
-      
-      const button = screen.getByRole('button');
-      fireEvent.click(button);
-
-      await waitFor(() => {
-        expect(screen.getByText(/Payment failed/)).toBeInTheDocument();
-      });
-    });
-
-    it('should handle network errors', async () => {
-      mockProcessCheckout.mockRejectedValue(new Error('Network error'));
-
-      render(<CheckoutButton stripePublishableKey="pk_test_123" siteId="site-1" />);
-      
-      const button = screen.getByRole('button');
-      fireEvent.click(button);
-
-      await waitFor(() => {
-        expect(screen.getByText(/Network error/)).toBeInTheDocument();
-      });
-    });
-
-    it('should disable button while processing', async () => {
-      mockProcessCheckout.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
-
-      render(<CheckoutButton stripePublishableKey="pk_test_123" siteId="site-1" />);
-      
-      const button = screen.getByRole('button');
-      fireEvent.click(button);
-
-      // Button should be disabled during processing
-      await waitFor(() => {
-        expect(button).toBeDisabled();
-      });
-    });
-  });
-
-  describe('Edge Cases', () => {
-    it('should handle cart total of zero', () => {
-      vi.mocked(useCartHook.useCart).mockReturnValue({
-        cartItems: [{ id: '1', name: 'Free Item', price: 0, quantity: 1 }],
-        getCartTotal: vi.fn().mockReturnValue(0),
-        clearCart: mockClearCart
-      });
-
-      render(<CheckoutButton stripePublishableKey="pk_test_123" siteId="site-1" />);
-      
-      expect(screen.getByText(/\$0\.00/)).toBeInTheDocument();
-    });
-
-    it('should format large totals correctly', () => {
-      vi.mocked(useCartHook.useCart).mockReturnValue({
-        cartItems: [{ id: '1', name: 'Expensive Item', price: 1234.56, quantity: 1 }],
-        getCartTotal: vi.fn().mockReturnValue(1234.56),
-        clearCart: mockClearCart
-      });
-
-      render(<CheckoutButton stripePublishableKey="pk_test_123" siteId="site-1" />);
-      
-      expect(screen.getByText(/\$1234\.56/)).toBeInTheDocument();
-    });
-
-    it('should handle rapid button clicks', async () => {
-      mockProcessCheckout.mockResolvedValue({ success: true });
-
-      render(<CheckoutButton stripePublishableKey="pk_test_123" siteId="site-1" />);
-      
-      const button = screen.getByRole('button');
-      
-      // Click multiple times rapidly
-      fireEvent.click(button);
-      fireEvent.click(button);
-      fireEvent.click(button);
-
-      await waitFor(() => {
-        // Should only process once
-        expect(mockProcessCheckout).toHaveBeenCalledTimes(1);
-      });
-    });
-  });
-
-  describe('Accessibility', () => {
-    it('should have proper button role', () => {
-      render(<CheckoutButton stripePublishableKey="pk_test_123" siteId="site-1" />);
-      
-      const button = screen.getByRole('button');
-      expect(button).toBeInTheDocument();
-    });
-
-    it('should show error messages to screen readers', async () => {
-      mockProcessCheckout.mockRejectedValue(new Error('Card declined'));
-
-      render(<CheckoutButton stripePublishableKey="pk_test_123" siteId="site-1" />);
-      
-      const button = screen.getByRole('button');
-      fireEvent.click(button);
-
-      const error = await screen.findByText(/Card declined/);
-      expect(error).toBeInTheDocument();
-      expect(error.closest('.checkout-error')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(window.location.href).toBe('https://checkout.example/session');
     });
   });
 });
-

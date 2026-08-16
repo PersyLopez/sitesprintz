@@ -7,10 +7,24 @@
  * Fill registration form
  */
 export async function fillRegistrationForm(page, email, password, confirmPassword = null) {
-  await page.getByRole('textbox', { name: /email/i }).fill(email);
-  await page.getByLabel(/password/i).first().fill(password);
+  // Use data-testid for reliable element selection
+  const emailField = page.getByTestId('register-email');
+  if (await emailField.count() > 0) {
+    await emailField.fill(email);
+  } else {
+    await page.getByRole('textbox', { name: /email/i }).fill(email);
+  }
+
+  const passwordField = page.getByTestId('register-password');
+  if (await passwordField.count() > 0) {
+    await passwordField.fill(password);
+  } else {
+    await page.getByLabel(/password/i).first().fill(password);
+  }
   
-  const confirmField = page.getByLabel(/confirm.*password/i);
+  const confirmField = page.getByTestId('register-confirm-password').or(
+    page.getByLabel(/confirm.*password/i)
+  );
   if (await confirmField.count() > 0) {
     await confirmField.fill(confirmPassword || password);
   }
@@ -25,15 +39,22 @@ export async function fillRegistrationForm(page, email, password, confirmPasswor
  * Submit registration form
  */
 export async function submitRegistration(page) {
-  await page.getByRole('button', { name: /sign up|register|create account/i }).click();
+  const submitButton = page.getByTestId('register-submit');
+  if (await submitButton.count() > 0) {
+    await submitButton.click();
+  } else {
+    await page.getByRole('button', { name: /sign up|register|create account/i }).click();
+  }
 }
 
 /**
  * Select template by name
  */
 export async function selectTemplate(page, templateName) {
-  // Try data-testid first, then data-template attribute, then link
-  const templateByTestId = page.getByTestId(`template-${templateName}`);
+  // Try new landing gallery data-testid first, then legacy data-template, then link
+  const templateByTestId = page.getByTestId(`gallery-card-${templateName}`).or(
+    page.getByTestId(`template-${templateName}`)
+  );
   if (await templateByTestId.count() > 0) {
     await templateByTestId.click();
     return;

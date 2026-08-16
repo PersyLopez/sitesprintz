@@ -41,8 +41,8 @@ steps:
     goto: http://localhost:5173/contact
 
   - action: Contact loaded
-    wait_for: { text: Contact Us, timeout: 15000 }
+    wait_for: { text: Contact, timeout: 15000 }
     assert:
       - text contains hello@sitesprintz.com
-      - text contains Common Questions
-      - text contains Start Building Free
+      - text contains Common questions
+      - text contains Get Your Page Free

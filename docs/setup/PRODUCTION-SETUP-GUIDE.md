@@ -1,724 +1,284 @@
-# 🚀 Production Setup Guide
+# Production Setup Guide
 
-**Complete step-by-step guide for deploying SiteSprintz to production**
+Step-by-step guide for deploying SiteSprintz to production.
 
-**Estimated Time:** 30-45 minutes  
-**Prerequisites:** GitHub account, Railway account (or alternative hosting), domain name
+**Estimated time:** 30-45 minutes  
+**Prerequisites:** GitHub access, a hosting platform (Railway, Render, Heroku, or Docker), a domain name, and accounts for Stripe and Resend.
 
----
+Last updated: 15 August 2026
 
-## 📋 Table of Contents
+## Table of contents
 
-- [Pre-Deployment Checklist](#pre-deployment-checklist)
-- [Step 1: Repository Setup](#step-1-repository-setup)
-- [Step 2: Environment Variables](#step-2-environment-variables)
-- [Step 3: Database Setup](#step-3-database-setup)
-- [Step 4: Stripe Configuration](#step-4-stripe-configuration)
-- [Step 5: Email Service Setup](#step-5-email-service-setup)
-- [Step 6: Google OAuth Setup (Optional)](#step-6-google-oauth-setup-optional)
-- [Step 7: Deployment Platform Setup](#step-7-deployment-platform-setup)
-- [Step 8: Domain Configuration](#step-8-domain-configuration)
-- [Step 9: Post-Deployment Verification](#step-9-post-deployment-verification)
-- [Step 10: Monitoring & Maintenance](#step-10-monitoring--maintenance)
-- [Troubleshooting](#troubleshooting)
-- [Quick Reference Links](#quick-reference-links)
+1. [Pre-deployment checklist](#pre-deployment-checklist)
+2. [Repository setup](#step-1-repository-setup)
+3. [Environment variables](#step-2-environment-variables)
+4. [Database setup](#step-3-database-setup)
+5. [Stripe configuration](#step-4-stripe-configuration)
+6. [Email service setup](#step-5-email-service-setup)
+7. [Google OAuth setup (optional)](#step-6-google-oauth-setup-optional)
+8. [Deployment platform setup](#step-7-deployment-platform-setup)
+9. [Domain configuration](#step-8-domain-configuration)
+10. [Post-deployment verification](#step-9-post-deployment-verification)
+11. [Monitoring and maintenance](#step-10-monitoring-and-maintenance)
+12. [Troubleshooting](#troubleshooting)
+13. [Quick reference links](#quick-reference-links)
+14. [Completion checklist](#completion-checklist)
 
----
+## Pre-deployment checklist
 
-## Pre-Deployment Checklist
+Before starting, make sure you have:
 
-Before starting, ensure you have:
+- [ ] GitHub repository access and a local clone
+- [ ] Hosting platform account (Railway, Render, Heroku, or Docker runtime)
+- [ ] Domain name and DNS access
+- [ ] Stripe account with live keys available
+- [ ] Resend account with a verified sender domain
+- [ ] Google Cloud Console access (only if using Google OAuth)
+- [ ] Strong secrets generated for `JWT_SECRET`, `ADMIN_TOKEN`, `ENCRYPTION_KEY`, and any session secret
+- [ ] `.env.production` created from `.env.production.example`
 
-- [ ] GitHub repository access ([sitesprintz](https://github.com/PersyLopez/sitesprintz))
-- [ ] Railway account ([railway.app](https://railway.app)) or alternative hosting
-- [ ] Domain name (e.g., `sitesprintz.com`)
-- [ ] Stripe account ([dashboard.stripe.com](https://dashboard.stripe.com))
-- [ ] Resend account ([resend.com](https://resend.com))
-- [ ] Google Cloud Console access (for OAuth - optional)
-- [ ] Admin email address ready
-- [ ] Strong secrets generated (JWT_SECRET, ADMIN_TOKEN)
+## Step 1: Repository setup
 
-**Related Documentation:**
-- [Quick Start Guide](./QUICK-START.md)
-- [Railway Deployment](./RAILWAY-DEPLOY.md)
-- [Integration Setup](./INTEGRATION-SETUP.md)
-- [Git Workflow Best Practices](./GIT-WORKFLOW-BEST-PRACTICES.md)
-
----
-
-## Step 1: Repository Setup
-
-### 1.1 Verify Repository Access
-
-- [ ] Clone repository: `git clone https://github.com/PersyLopez/sitesprintz.git`
-- [ ] Verify you're on the correct branch: `git branch`
-- [ ] Ensure `main` branch is up to date: `git checkout main && git pull origin main`
-
-### 1.2 Review Deployment Files
-
-Verify these files exist:
-
-- [ ] `railway.json` - Railway deployment configuration
-- [ ] `Procfile` - Process file for Heroku/Render compatibility
-- [ ] `Dockerfile` - Docker container configuration
-- [ ] `package.json` - Contains build and start scripts
-- [ ] `prisma/schema.prisma` - Database schema
-
-**File Locations:**
-- Railway config: [`railway.json`](../../railway.json)
-- Dockerfile: [`Dockerfile`](../../Dockerfile)
-- Procfile: [`Procfile`](../../Procfile)
-
----
-
-## Step 2: Environment Variables
-
-### 2.1 Core Settings
-
-Create a `.env` file or configure in your hosting platform:
+1. Clone the repository:
 
 ```bash
-# Core Configuration
-NODE_ENV=production
-PORT=3000
+git clone https://github.com/PersyLopez/sitesprintz.git
+cd sitesprintz
+git checkout production-readiness/audit-remediation  # or your release branch
 ```
 
-**Required Variables:**
-- [ ] `NODE_ENV=production` - Sets production mode
-- [ ] `PORT=3000` - Application port (Railway auto-sets, but good to specify)
+2. Confirm the deployment files are present:
 
-### 2.2 Security Secrets
+- `Dockerfile`
+- `package.json`
+- `prisma/schema.prisma`
+- `railway.json` (if deploying to Railway)
 
-**Generate Strong Secrets:**
+## Step 2: Environment variables
 
-```bash
-# Generate JWT Secret (32+ characters)
-openssl rand -hex 32
+Create a `.env.production` file from `.env.production.example` and fill in every required value. The application runs `server/config/validateEnv.js` on production startup and will exit if any critical variable is missing or invalid.
 
-# Generate Admin Token (32+ characters)
-openssl rand -hex 32
-```
+### Core application
 
-**Required Variables:**
-- [ ] `JWT_SECRET=<your-generated-secret>` - Minimum 32 characters
-- [ ] `ADMIN_TOKEN=<your-generated-secret>` - Minimum 32 characters
+- `NODE_ENV=production`
+- `PORT=3000`
 
-**⚠️ Security Note:** Never commit secrets to Git. Use environment variables only.
+### Security (required)
 
-### 2.3 URL Configuration
+- `JWT_SECRET` — strong random string, 32+ bytes. Generate: `openssl rand -hex 32`
+- `ADMIN_TOKEN` — strong random string, not the default `dev-token`
+- `ENCRYPTION_KEY` — 32-byte key for payment processor token encryption (hex or base64)
+- `REFRESH_TOKEN_SECRET` — strong random string used for refresh tokens
 
-Set your production URLs:
+### Database
 
-```bash
-# Production URLs
-BASE_URL=https://sitesprintz.com
-SITE_URL=https://sitesprintz.com
-FRONTEND_URL=https://sitesprintz.com
-CLIENT_URL=https://sitesprintz.com
-```
+- `DATABASE_URL` — PostgreSQL connection string with SSL, e.g. `postgresql://user:password@host:5432/dbname?sslmode=require`
 
-**Required Variables:**
-- [ ] `BASE_URL` - Base URL for API calls
-- [ ] `SITE_URL` - Site URL (can be same as BASE_URL)
-- [ ] `FRONTEND_URL` - Frontend URL
-- [ ] `CLIENT_URL` - Client redirect URL (for OAuth)
+### Stripe (live mode required for production)
 
-**Related Documentation:**
-- [Environment Variables Example](../../env.example)
+Production deployments must use live Stripe keys. The validation script specifically checks that `STRIPE_SECRET_KEY` starts with `sk_live_`.
 
----
+- `STRIPE_SECRET_KEY=sk_live_...`
+- `STRIPE_PUBLISHABLE_KEY=pk_live_...`
+- `STRIPE_WEBHOOK_SECRET=whsec_...` (live webhook signing secret)
+- `STRIPE_PRICE_GROWTH` — live price ID for the Growth plan
+- `STRIPE_PRICE_STARTER` — recommended live price ID for the Starter plan
 
-## Step 3: Database Setup
+For staging or local development, test keys (`sk_test_...`) can be used, but do not set `NODE_ENV=production` with test keys.
 
-### 3.1 Choose Database Provider
+### Email
 
-**Option A: Neon PostgreSQL (Recommended)**
+- `RESEND_API_KEY` — recommended for transactional email
+- `RESEND_FROM_EMAIL` — verified sender address with Resend
+- `FROM_EMAIL` and `FROM_NAME` — fallback sender values
+- `ADMIN_EMAIL` — address for admin notifications
 
-- [ ] Sign up at [Neon](https://neon.tech)
-- [ ] Create a new project
-- [ ] Copy the connection string
+### Google OAuth (optional)
 
-**Option B: Railway PostgreSQL**
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `GOOGLE_CALLBACK_URL` — must match the authorized redirect URI exactly and must not use an ngrok URL in production
 
-- [ ] Add PostgreSQL plugin in Railway dashboard
-- [ ] Railway auto-generates `DATABASE_URL`
+### Infrastructure
 
-**Option C: Other PostgreSQL Provider**
+- `SERVER_IP` — production server IP, used in custom-domain DNS instructions
+- `SITE_URL` / `CLIENT_URL` — production URLs
 
-- [ ] Create PostgreSQL database
-- [ ] Get connection string
+## Step 3: Database setup
 
-### 3.2 Configure Database URL
+1. Create a PostgreSQL database (Neon, Railway PostgreSQL, or another provider).
+2. Set `DATABASE_URL`.
+3. Generate the Prisma client and run migrations:
 
 ```bash
-# Database Connection String
-DATABASE_URL=postgresql://user:password@host:5432/dbname?sslmode=require
-```
-
-**Required Variables:**
-- [ ] `DATABASE_URL` - PostgreSQL connection string with SSL
-
-### 3.3 Run Database Migrations
-
-**On Railway:** Migrations run automatically via `railway.json`
-
-**Manual Migration:**
-```bash
-# Generate Prisma Client
 npx prisma generate
-
-# Run migrations
 npx prisma migrate deploy
 ```
 
-**Verification:**
-- [ ] Database connection successful
-- [ ] Migrations applied
-- [ ] Tables created correctly
+Railway can run migrations automatically via the `start` command if configured.
 
-**Related Documentation:**
-- [Prisma Schema](../../prisma/schema.prisma)
-- [Railway Deployment](./RAILWAY-DEPLOY.md)
+## Step 4: Stripe configuration
 
----
-
-## Step 4: Stripe Configuration
-
-### 4.1 Stripe Account Setup
-
-- [ ] Create account at [Stripe Dashboard](https://dashboard.stripe.com)
-- [ ] Complete business verification (for live mode)
-- [ ] Review [Stripe Go-Live Checklist](../../docs/STRIPE_GO_LIVE_CHECKLIST.md)
-
-### 4.2 Get API Keys
-
-**For Testing (Test Mode):**
-- [ ] Go to [Stripe API Keys](https://dashboard.stripe.com/test/apikeys)
-- [ ] Copy Secret Key: `sk_test_...`
-- [ ] Copy Publishable Key: `pk_test_...`
-
-**For Production (Live Mode):**
-- [ ] Switch to Live mode in Stripe Dashboard
-- [ ] Go to [Stripe API Keys](https://dashboard.stripe.com/apikeys)
-- [ ] Copy Secret Key: `sk_live_...`
-- [ ] Copy Publishable Key: `pk_live_...`
-
-### 4.3 Configure Webhooks
-
-**Webhook Setup Steps:**
-
-1. [ ] Go to [Stripe Webhooks](https://dashboard.stripe.com/webhooks)
-2. [ ] Click "Add endpoint"
-3. [ ] Enter endpoint URL: `https://sitesprintz.com/api/webhooks/stripe`
-4. [ ] Select events to listen to:
+1. In the Stripe Dashboard, switch to live mode.
+2. Copy the live secret key (`sk_live_...`) and publishable key (`pk_live_...`).
+3. Create a live webhook endpoint at `https://yourdomain.com/api/webhooks/stripe`.
+4. Listen for these events:
    - `checkout.session.completed`
    - `customer.subscription.created`
    - `customer.subscription.updated`
    - `customer.subscription.deleted`
    - `invoice.payment_succeeded`
    - `invoice.payment_failed`
-5. [ ] Copy webhook signing secret: `whsec_...`
+5. Copy the webhook signing secret (`whsec_...`) into `STRIPE_WEBHOOK_SECRET`.
+6. Create live products and price IDs for the Starter and Growth plans, then set `STRIPE_PRICE_GROWTH` (required) and `STRIPE_PRICE_STARTER` (recommended).
 
-**Required Variables:**
-- [ ] `STRIPE_SECRET_KEY=sk_live_...` or `sk_test_...`
-- [ ] `STRIPE_PUBLISHABLE_KEY=pk_live_...` or `pk_test_...`
-- [ ] `STRIPE_WEBHOOK_SECRET=whsec_...`
+## Step 5: Email service setup
 
-**⚠️ Important:** Webhook secret is different for test and live modes!
+1. Sign up at Resend and verify your domain.
+2. Create an API key and set `RESEND_API_KEY`.
+3. Set `RESEND_FROM_EMAIL` to a verified sender address.
+4. Set `ADMIN_EMAIL` for admin notifications.
 
-**Related Documentation:**
-- [Stripe Go-Live Checklist](../../docs/STRIPE_GO_LIVE_CHECKLIST.md)
-- [Integration Setup](./INTEGRATION-SETUP.md)
+## Step 6: Google OAuth setup (optional)
 
----
+1. Create or select a project in Google Cloud Console.
+2. Enable the Google People API.
+3. Create OAuth 2.0 web credentials:
+   - Authorized JavaScript origin: `https://yourdomain.com`
+   - Authorized redirect URI: `https://yourdomain.com/auth/google/callback`
+4. Set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_CALLBACK_URL`.
 
-## Step 5: Email Service Setup
+## Step 7: Deployment platform setup
 
-### 5.1 Resend Account Setup
+### Railway (recommended)
 
-- [ ] Sign up at [Resend](https://resend.com)
-- [ ] Verify your domain (e.g., `sitesprintz.com`)
-- [ ] Go to [API Keys](https://resend.com/api-keys)
-- [ ] Create new API key: `re_...`
+1. Create a new project and deploy from the GitHub repository.
+2. Add a PostgreSQL database; Railway creates `DATABASE_URL`.
+3. Add all environment variables from `.env.production`.
+4. Verify the build command includes `npm install && npx prisma generate && npm run build`.
+5. Verify the start command includes `npx prisma migrate deploy && npm start`.
+6. Confirm the health check endpoint `/api/health` returns 200.
 
-### 5.2 Domain Verification
+### Render or Heroku
 
-**Domain Setup:**
-- [ ] Add domain in Resend dashboard
-- [ ] Add DNS records (SPF, DKIM, DMARC)
-- [ ] Wait for verification (usually 5-10 minutes)
-- [ ] Verify domain status shows "Verified"
+- Connect the GitHub repository.
+- Set the build command to `npm install && npx prisma generate && npm run build`.
+- Set the start command to `npx prisma migrate deploy && npm start`.
+- Add a PostgreSQL database and configure the environment variables.
 
-### 5.3 Configure Email Variables
+### Docker
 
-```bash
-# Email Configuration
-RESEND_API_KEY=re_...
-FROM_EMAIL=noreply@sitesprintz.com
-FROM_NAME=SiteSprintz
-ADMIN_EMAIL=your-admin@email.com
-```
-
-**Required Variables:**
-- [ ] `RESEND_API_KEY` - Resend API key
-- [ ] `FROM_EMAIL` - Verified sender email
-- [ ] `FROM_NAME` - Sender display name
-- [ ] `ADMIN_EMAIL` - Admin notification email
-
-**Email Types Sent:**
-- Welcome emails (registration)
-- Password reset emails
-- Order confirmations
-- Site published notifications
-
-**Related Documentation:**
-- [Integration Setup](./INTEGRATION-SETUP.md)
-- [Resend Documentation](https://resend.com/docs)
-
----
-
-## Step 6: Google OAuth Setup (Optional)
-
-### 6.1 Google Cloud Console Setup
-
-- [ ] Go to [Google Cloud Console](https://console.cloud.google.com)
-- [ ] Create a new project or select existing
-- [ ] Enable "Google+ API" or "Google People API"
-- [ ] Go to [Credentials](https://console.cloud.google.com/apis/credentials)
-
-### 6.2 Create OAuth 2.0 Credentials
-
-**OAuth Client Configuration:**
-
-1. [ ] Click "Create Credentials" → "OAuth client ID"
-2. [ ] Application type: "Web application"
-3. [ ] Name: "SiteSprintz Production"
-4. [ ] Authorized JavaScript origins:
-   - `https://sitesprintz.com`
-5. [ ] Authorized redirect URIs:
-   - `https://sitesprintz.com/auth/google/callback`
-6. [ ] Copy Client ID: `...apps.googleusercontent.com`
-7. [ ] Copy Client Secret: `GOCSPX-...`
-
-### 6.3 Configure OAuth Variables
-
-```bash
-# Google OAuth Configuration
-GOOGLE_CLIENT_ID=...apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=GOCSPX-...
-GOOGLE_CALLBACK_URL=https://sitesprintz.com/auth/google/callback
-```
-
-**Required Variables:**
-- [ ] `GOOGLE_CLIENT_ID` - OAuth Client ID
-- [ ] `GOOGLE_CLIENT_SECRET` - OAuth Client Secret
-- [ ] `GOOGLE_CALLBACK_URL` - Must match redirect URI exactly
-
-**Related Documentation:**
-- [Google OAuth Setup Guide](https://developers.google.com/identity/protocols/oauth2)
-
----
-
-## Step 7: Deployment Platform Setup
-
-### 7.1 Railway Deployment (Recommended)
-
-**Railway Setup Steps:**
-
-1. [ ] Sign up at [Railway](https://railway.app)
-2. [ ] Login with GitHub
-3. [ ] Click "New Project"
-4. [ ] Select "Deploy from GitHub repo"
-5. [ ] Select `sitesprintz` repository
-6. [ ] Railway auto-detects configuration
-
-**Add PostgreSQL Database:**
-- [ ] Click "New" → "Database" → "Add PostgreSQL"
-- [ ] Railway auto-generates `DATABASE_URL`
-- [ ] Copy `DATABASE_URL` for reference
-
-**Configure Environment Variables:**
-- [ ] Go to project → "Variables"
-- [ ] Add all environment variables from Steps 2-6
-- [ ] Verify all variables are set
-
-**Deploy:**
-- [ ] Railway automatically builds and deploys
-- [ ] Monitor build logs
-- [ ] Wait for deployment to complete
-- [ ] Get deployment URL: `sitesprintz-production.up.railway.app`
-
-**Railway Configuration:**
-- [ ] Verify `railway.json` is detected
-- [ ] Check build command: `npm install && npx prisma generate && npm run build`
-- [ ] Check start command: `npx prisma migrate deploy && npm start`
-- [ ] Verify health check: `/api/health`
-
-**Related Documentation:**
-- [Railway Deployment Guide](./RAILWAY-DEPLOY.md)
-- [Railway Configuration](../../railway.json)
-
-### 7.2 Alternative: Heroku/Render
-
-**Heroku Setup:**
-- [ ] Create Heroku app
-- [ ] Add PostgreSQL addon
-- [ ] Set config vars (environment variables)
-- [ ] Deploy: `git push heroku main`
-- [ ] Run migrations: `heroku run npx prisma migrate deploy`
-
-**Render Setup:**
-- [ ] Create new Web Service
-- [ ] Connect GitHub repository
-- [ ] Set build command: `npm install && npx prisma generate && npm run build`
-- [ ] Set start command: `npx prisma migrate deploy && npm start`
-- [ ] Add PostgreSQL database
-- [ ] Configure environment variables
-
-**Related Documentation:**
-- [Production Setup](../../docs/PRODUCTION_SETUP.md)
-
-### 7.3 Alternative: Docker Deployment
-
-**Build Docker Image:**
 ```bash
 docker build -t sitesprintz:latest .
+docker run -d -p 3000:3000 --env-file .env.production sitesprintz:latest
 ```
 
-**Run Container:**
+## Step 8: Domain configuration
+
+1. Add the custom domain in your platform dashboard.
+2. Configure DNS:
+   - A record: root domain pointing to the platform IP
+   - CNAME: `www` pointing to the platform domain
+3. Wait for SSL provisioning (usually 5-10 minutes).
+4. Verify HTTPS with `curl -I https://yourdomain.com`.
+
+## Step 9: Post-deployment verification
+
+### Health checks
+
 ```bash
-docker run -d \
-  -p 3000:3000 \
-  -e NODE_ENV=production \
-  -e DATABASE_URL=... \
-  -e JWT_SECRET=... \
-  # ... add all other env vars
-  sitesprintz:latest
+curl https://yourdomain.com/api/health
+curl https://yourdomain.com/api/health/db
+curl https://yourdomain.com/api/health/full
 ```
 
-**Related Documentation:**
-- [Dockerfile](../../Dockerfile)
+Expected response includes `status: "healthy"` with `app`, `database`, `stripe`, and `email` checks.
 
----
+### Functional checks
 
-## Step 8: Domain Configuration
+- [ ] Register a test account and receive a welcome email.
+- [ ] Log in with email and password.
+- [ ] Create a site, select a template, customize, and publish.
+- [ ] Verify the published site is reachable.
+- [ ] Complete a payment flow. Use real cards only in production; use a staging environment for test cards.
 
-### 8.1 Add Custom Domain
+### Security checks
 
-**Railway:**
-- [ ] Go to project → "Settings" → "Domains"
-- [ ] Click "Add Domain"
-- [ ] Enter domain: `sitesprintz.com`
-- [ ] Railway provides DNS instructions
+- [ ] HTTPS is enforced.
+- [ ] Security headers are present.
+- [ ] CORS is configured.
+- [ ] Rate limiting is active (registration: 3 per 15 minutes; login: 5 per 15 minutes).
+- [ ] No secrets are exposed in responses or client bundles.
 
-**Other Platforms:**
-- [ ] Follow platform-specific domain setup
-- [ ] Add domain in platform dashboard
-- [ ] Configure DNS records
+### Performance checks
 
-### 8.2 Configure DNS Records
+- [ ] Page load time under 3 seconds.
+- [ ] API response time under 500 ms.
+- [ ] Static assets are cached and images are optimized.
 
-**Required DNS Records:**
+## Step 10: Monitoring and maintenance
 
-1. [ ] **A Record** (or CNAME):
-   - Type: `A` or `CNAME`
-   - Name: `@` (or root domain)
-   - Value: Railway IP or CNAME (provided by Railway)
-
-2. [ ] **CNAME Record** (for www):
-   - Type: `CNAME`
-   - Name: `www`
-   - Value: Railway domain or root domain
-
-3. [ ] **SSL Certificate:**
-   - Railway auto-provisions SSL
-   - Wait 5-10 minutes for SSL activation
-   - Verify HTTPS works: `https://sitesprintz.com`
-
-**DNS Verification:**
-- [ ] Check DNS propagation: [whatsmydns.net](https://www.whatsmydns.net)
-- [ ] Verify SSL certificate: [SSL Labs](https://www.ssllabs.com/ssltest/)
-- [ ] Test HTTPS: `curl -I https://sitesprintz.com`
-
-**Related Documentation:**
-- [Railway Domains Documentation](https://docs.railway.app/guides/domains)
-
----
-
-## Step 9: Post-Deployment Verification
-
-### 9.1 Health Check Verification
-
-**Test Health Endpoints:**
-
-- [ ] Basic health: `curl https://sitesprintz.com/api/health`
-- [ ] Database health: `curl https://sitesprintz.com/api/health/db`
-- [ ] Full health check: `curl https://sitesprintz.com/api/health/full`
-- [ ] Readiness probe: `curl https://sitesprintz.com/api/health/ready`
-- [ ] Liveness probe: `curl https://sitesprintz.com/api/health/live`
-
-**Expected Response:**
-```json
-{
-  "status": "healthy",
-  "checks": {
-    "app": { "status": "ok" },
-    "database": { "status": "ok", "latency_ms": < 100 },
-    "stripe": { "status": "ok" },
-    "email": { "status": "ok" }
-  }
-}
-```
-
-**Related Documentation:**
-- [Health Check Endpoints](../../server/routes/health.js)
-
-### 9.2 Functional Testing
-
-**User Registration:**
-- [ ] Visit `https://sitesprintz.com`
-- [ ] Create test account
-- [ ] Verify welcome email received
-- [ ] Check email in `ADMIN_EMAIL` inbox
-
-**Authentication:**
-- [ ] Login with email/password
-- [ ] Test password reset (if configured)
-- [ ] Test Google OAuth (if configured)
-
-**Payment Flow (Test Mode):**
-- [ ] Navigate to subscription page
-- [ ] Use test card: `4242 4242 4242 4242`
-- [ ] Complete checkout
-- [ ] Verify webhook received in Stripe dashboard
-- [ ] Check subscription status in app
-
-**Site Creation:**
-- [ ] Create a new site
-- [ ] Select template
-- [ ] Customize content
-- [ ] Publish site
-- [ ] Verify site is accessible
-
-**Related Documentation:**
-- [Test Credentials](./TEST-CREDENTIALS.md)
-- [Integration Setup](./INTEGRATION-SETUP.md)
-
-### 9.3 Security Verification
-
-**Security Checks:**
-- [ ] HTTPS is enforced (no HTTP access)
-- [ ] Security headers present (check with [SecurityHeaders.com](https://securityheaders.com))
-- [ ] No sensitive data in response headers
-- [ ] CORS configured correctly
-- [ ] Rate limiting active (registration: 3 per 15 min, login: 5 per 15 min)
-- [ ] Environment variables not exposed
-- [ ] Bot protection measures in place
-
-**Bot Protection Status:**
-- ✅ **Rate Limiting:** Implemented (3 registrations per 15 min per IP)
-- ⚠️ **CAPTCHA:** Recommended but not yet implemented (see [Bot Protection Analysis](../security/BOT-PROTECTION-ANALYSIS.md))
-- ⚠️ **Email Verification:** Recommended but not yet implemented
-- ⚠️ **IP Reputation:** Optional enhancement
-
-**Related Documentation:**
-- [Bot Protection Analysis](../security/BOT-PROTECTION-ANALYSIS.md) - Complete security analysis
-- [Security Checklist](../stability/SECURITY-CHECKLIST.md) - Security verification
-
-**Related Documentation:**
-- [Security Checklist](../../docs/stability/SECURITY-CHECKLIST.md)
-- [Security Assessment](../../docs/security/SECURITY-ASSESSMENT.md)
-
-### 9.4 Performance Verification
-
-**Performance Checks:**
-- [ ] Page load time < 3 seconds
-- [ ] API response time < 500ms
-- [ ] Database queries optimized
-- [ ] Static assets cached
-- [ ] Images optimized
-
-**Tools:**
-- [PageSpeed Insights](https://pagespeed.web.dev/)
-- [GTmetrix](https://gtmetrix.com/)
-- [WebPageTest](https://www.webpagetest.org/)
-
----
-
-## Step 10: Monitoring & Maintenance
-
-### 10.1 Set Up Monitoring
-
-**Application Monitoring:**
-- [ ] Set up Railway metrics/alerts
-- [ ] Configure uptime monitoring (e.g., [UptimeRobot](https://uptimerobot.com))
-- [ ] Set up error tracking (optional: Sentry)
-- [ ] Monitor database performance
-
-**Health Check Monitoring:**
-- [ ] Set up automated health checks every 5 minutes
-- [ ] Alert on `/api/health/full` returning non-200
-- [ ] Monitor database latency (< 100ms target)
-
-**Related Documentation:**
-- [Production Readiness](../../docs/stability/PRODUCTION-READINESS.md)
-
-### 10.2 Logging
-
-**Log Management:**
-- [ ] Review Railway logs regularly
-- [ ] Set up log aggregation (optional)
-- [ ] Monitor error rates
-- [ ] Track user signups and activity
-
-**Log Locations:**
-- Railway: Project → Deployments → View Logs
-- Application logs: Check `server.js` for Winston configuration
-
-### 10.3 Backup Strategy
-
-**Database Backups:**
-- [ ] Enable automatic backups (Neon/Railway)
-- [ ] Test restore procedure
-- [ ] Document backup frequency
-- [ ] Store backups securely
-
-**Code Backups:**
-- [ ] GitHub repository is backup
-- [ ] Tag releases: `git tag v1.0.0`
-- [ ] Document rollback procedure
-
-### 10.4 Maintenance Tasks
-
-**Regular Maintenance:**
-- [ ] Update dependencies monthly: `npm audit` and `npm update`
-- [ ] Review security advisories
-- [ ] Monitor Stripe webhook logs
-- [ ] Review error logs weekly
-- [ ] Test backup restore quarterly
-
-**Related Documentation:**
-- [Production Readiness Checklist](../../docs/stability/PRODUCTION-READINESS.md)
-
----
+- Configure uptime monitoring for `/api/health/full`.
+- Set database latency alerts.
+- Review application logs weekly.
+- Enable automatic database backups and test restore procedures quarterly.
+- Update dependencies monthly and review security advisories.
 
 ## Troubleshooting
 
-### Common Issues
+### Build fails
 
-**Build Fails:**
-- [ ] Check Railway build logs
-- [ ] Verify `package.json` scripts are correct
-- [ ] Ensure Node.js version matches (check `package.json` engines)
-- [ ] Verify Prisma generates correctly: `npx prisma generate`
+- Check the platform build logs.
+- Verify `package.json` scripts and Node version.
+- Run `npx prisma generate` locally to confirm Prisma client builds.
 
-**App Crashes on Start:**
-- [ ] Check environment variables are all set
-- [ ] Verify `DATABASE_URL` is correct
-- [ ] Check `JWT_SECRET` is set and valid
-- [ ] Review application logs for errors
+### App crashes on start
 
-**Database Connection Issues:**
-- [ ] Verify `DATABASE_URL` format is correct
-- [ ] Check database is accessible from Railway IP
-- [ ] Verify SSL mode: `?sslmode=require`
-- [ ] Test connection: `npx prisma db pull`
+- Check that all required environment variables are set.
+- Verify `DATABASE_URL` and `JWT_SECRET` are valid.
+- Run the app locally with `NODE_ENV=production` to reproduce validation errors.
 
-**Webhook Not Working:**
-- [ ] Verify webhook URL in Stripe: `https://sitesprintz.com/api/webhooks/stripe`
-- [ ] Check webhook secret matches environment variable
-- [ ] Review Stripe webhook logs
-- [ ] Verify webhook endpoint is accessible
+### Database connection issues
 
-**Email Not Sending:**
-- [ ] Verify `RESEND_API_KEY` is correct
-- [ ] Check domain is verified in Resend
-- [ ] Review Resend dashboard for errors
-- [ ] Check `FROM_EMAIL` matches verified domain
+- Confirm the connection string format and SSL mode.
+- Test with `npx prisma db pull`.
 
-**SSL Certificate Issues:**
-- [ ] Wait 10-15 minutes after adding domain
-- [ ] Verify DNS records are correct
-- [ ] Check Railway SSL status in dashboard
-- [ ] Clear browser cache and try again
+### Webhook not working
 
-**Related Documentation:**
-- [Railway Troubleshooting](https://docs.railway.app/guides/troubleshooting)
-- [Production Setup Troubleshooting](../../docs/PRODUCTION_SETUP.md)
+- Verify the webhook URL is `https://yourdomain.com/api/webhooks/stripe`.
+- Confirm the signing secret matches `STRIPE_WEBHOOK_SECRET`.
+- Check the Stripe webhook logs.
 
----
+### Email not sending
 
-## Quick Reference Links
+- Verify `RESEND_API_KEY` and `RESEND_FROM_EMAIL`.
+- Confirm the domain is verified in Resend.
+- Check `FROM_EMAIL` matches the verified domain.
 
-### Documentation
-- [Quick Start Guide](./QUICK-START.md)
+### SSL certificate issues
+
+- Wait 10-15 minutes after adding the domain.
+- Verify DNS records.
+- Clear the browser cache.
+
+## Quick reference links
+
+- [Quick Start](./QUICK-START.md)
 - [Railway Deployment](./RAILWAY-DEPLOY.md)
 - [Integration Setup](./INTEGRATION-SETUP.md)
-- [Git Workflow](./GIT-WORKFLOW-BEST-PRACTICES.md)
-- [Production Setup](../../docs/PRODUCTION_SETUP.md)
-- [Production Readiness](../../docs/stability/PRODUCTION-READINESS.md)
-- [Security Checklist](../../docs/stability/SECURITY-CHECKLIST.md)
+- [Google OAuth Setup](./GOOGLE-OAUTH-NGROK.md)
+- [Webhook Implementation](./WEBHOOK-IMPLEMENTATION.md)
+- [Production Readiness](../stability/PRODUCTION-READINESS.md)
+- [Security Checklist](../stability/SECURITY-CHECKLIST.md)
 
-### External Services
-- [Railway Dashboard](https://railway.app)
-- [Stripe Dashboard](https://dashboard.stripe.com)
-- [Resend Dashboard](https://resend.com)
-- [Google Cloud Console](https://console.cloud.google.com)
-- [Neon Dashboard](https://neon.tech)
+## Completion checklist
 
-### Health Checks
-- Basic: `https://sitesprintz.com/api/health`
-- Database: `https://sitesprintz.com/api/health/db`
-- Full: `https://sitesprintz.com/api/health/full`
-- Ready: `https://sitesprintz.com/api/health/ready`
-- Live: `https://sitesprintz.com/api/health/live`
-
-### Testing Tools
-- [SSL Labs](https://www.ssllabs.com/ssltest/)
-- [SecurityHeaders.com](https://securityheaders.com)
-- [PageSpeed Insights](https://pagespeed.web.dev/)
-- [What's My DNS](https://www.whatsmydns.net)
-
----
-
-## ✅ Completion Checklist
-
-**Pre-Deployment:**
-- [ ] All environment variables configured
-- [ ] Database created and accessible
-- [ ] Stripe account configured (test or live)
-- [ ] Email service configured
-- [ ] OAuth configured (if using)
-
-**Deployment:**
-- [ ] Application deployed successfully
-- [ ] Custom domain configured
-- [ ] SSL certificate active
-- [ ] Health checks passing
-
-**Post-Deployment:**
-- [ ] All functional tests passing
-- [ ] Payment flow working
-- [ ] Email sending working
-- [ ] Monitoring configured
-- [ ] Backups enabled
-
-**Production Ready:**
-- [ ] Security verified
-- [ ] Performance optimized
-- [ ] Documentation updated
-- [ ] Team trained on deployment process
-
----
-
-**🎉 Congratulations! Your SiteSprintz application is now in production!**
-
-**Need Help?**
-- Review [Troubleshooting](#troubleshooting) section
-- Check [Quick Reference Links](#quick-reference-links)
-- Review detailed documentation in `docs/` directory
-
-**Last Updated:** December 2024  
-**Maintained By:** SiteSprintz Team
-
-
+- [ ] All required environment variables are set and validated.
+- [ ] Database is created and migrations are applied.
+- [ ] Stripe live account is configured with live keys, webhook, and price IDs.
+- [ ] Email service is configured with a verified domain.
+- [ ] Application is deployed and the custom domain resolves with HTTPS.
+- [ ] Health checks pass.
+- [ ] Core functional flows (registration, site creation, publish) are verified.
+- [ ] Monitoring and backups are enabled.
+- [ ] Security verification is complete.

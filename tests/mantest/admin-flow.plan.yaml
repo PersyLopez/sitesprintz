@@ -1,0 +1,27 @@
+url: http://localhost:5173/login
+goal: Admin login and admin panel access
+
+steps:
+  - action: Login page ready
+    wait_for: { text: Welcome Back }
+    settle_ms: 500
+
+  - action: Fill admin email
+    fill: { testId: login-email, value: "admin@example.com", clear: true }
+
+  - action: Fill admin password
+    fill: { testId: login-password, value: "AdminPass!2024", clear: true }
+
+  - action: Submit login with Sign In button
+    click: { role: button, name: Sign In }
+    settle_ms: 3000
+    assert:
+      - url matches /admin|/dashboard
+
+  - action: Ensure admin panel visible
+    goto: http://localhost:5173/admin
+    settle_ms: 2000
+    assert:
+      - url contains /admin
+      - text contains Admin Dashboard
+      - text contains TOTAL USERS

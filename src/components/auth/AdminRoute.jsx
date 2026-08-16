@@ -6,7 +6,6 @@ function AdminRoute({ children }) {
   const { isAuthenticated, user, loading } = useAuth();
 
   if (loading) {
-    console.log('AdminRoute: loading...');
     return (
       <div style={{
         display: 'flex',
@@ -20,19 +19,14 @@ function AdminRoute({ children }) {
   }
 
   if (!isAuthenticated) {
-    console.log('AdminRoute: not authenticated, redirecting to login');
     return <Navigate to="/login" replace />;
   }
 
   // Check if user has admin role
-  console.log('AdminRoute: user object:', JSON.stringify(user));
-  console.log('AdminRoute: user role:', user?.role);
   if (user?.role !== 'admin') {
-    console.log('AdminRoute: user not admin, redirecting to dashboard');
     return <Navigate to="/dashboard" replace />;
   }
 
-  console.log('AdminRoute: access granted');
   return children;
 }
 

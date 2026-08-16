@@ -120,3 +120,46 @@
   }
 }
 
+
+.url-fallback {
+  margin-top: 0.75rem;
+  text-align: center;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--primary-color, #0ea5e9);
+  cursor: pointer;
+  font-size: 0.875rem;
+  text-decoration: underline;
+  padding: 0.25rem;
+}
+
+.btn-link:hover {
+  opacity: 0.85;
+}
+
+.url-fallback-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.url-fallback-row input {
+  flex: 1 1 12rem;
+  min-width: 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-dark, #334155);
+  border-radius: 8px;
+  background: var(--bg-darker, #0f172a);
+  color: var(--text-light, #f8fafc);
+}
+
+.uploader-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}

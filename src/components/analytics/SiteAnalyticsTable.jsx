@@ -34,10 +34,10 @@ function SiteAnalyticsTable({ sites }) {
             </span>
             <span className="table-col-actions">
               <Link
-                to={`/analytics?siteId=${site.id}`}
-                className="btn btn-sm btn-secondary"
+                to={`/analytics/${site.subdomain}`}
+                className="btn btn-sm btn-primary"
               >
-                View Details
+                View Analytics →
               </Link>
             </span>
           </div>

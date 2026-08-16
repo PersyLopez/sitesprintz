@@ -283,7 +283,7 @@ async function validateField(fieldPath, value, rules, opts, errors, sanitizedDat
 
   // Length validation for strings
   if (typeof value === 'string') {
-    const wasSanitized = sanitizedData.hasOwnProperty(fieldPath);
+    const wasSanitized = Object.prototype.hasOwnProperty.call(sanitizedData, fieldPath);
     
     // Only check length if no custom validator, or if custom validator passed
     const hasCustomError = errors.some(e => e.field === fieldPath && e.rule === 'custom');

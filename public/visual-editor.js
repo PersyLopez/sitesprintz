@@ -1706,8 +1706,27 @@ class SeamlessEditor {
       return;
     }
     
-    // This would need to fetch the original template data and restore it
-    alert('Reset to template feature coming soon!');
+    try {
+      const response = await fetch(`/api/sites/${this.subdomain}/restore/template`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        this.showSuccessToast('Reset to template complete');
+        // Reload the page to show the restored template
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        const error = await response.json();
+        this.showErrorToast(error.error || 'Failed to reset to template');
+      }
+    } catch (err) {
+      console.error('Reset failed:', err);
+      this.showErrorToast('Reset failed. Please try again.');
+    }
   }
 }
 

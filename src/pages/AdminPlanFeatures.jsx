@@ -3,7 +3,8 @@ import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
-import { FEATURES, PLAN_FEATURES, FEATURE_NAMES } from '../utils/planFeatures';
+import { FEATURES, PLAN_FEATURES, FEATURE_NAMES, PLAN_INFO } from '../utils/planFeatures';
+import { TIER_HIERARCHY } from '../config/tiers';
 import './AdminPlanFeatures.css';
 
 function AdminPlanFeatures() {
@@ -15,10 +16,9 @@ function AdminPlanFeatures() {
   
   // Feature configuration state
   const [planFeatures, setPlanFeatures] = useState({
-    free: [...PLAN_FEATURES.free],
-    starter: [...PLAN_FEATURES.starter],
-    pro: [...PLAN_FEATURES.pro],
-    premium: [...PLAN_FEATURES.premium]
+    trial: [...(PLAN_FEATURES.trial || [])],
+    starter: [...(PLAN_FEATURES.starter || [])],
+    growth: [...(PLAN_FEATURES.growth || [])],
   });
 
   // Get all available features
@@ -29,7 +29,7 @@ function AdminPlanFeatures() {
     return planFeatures[plan]?.includes(feature) || false;
   };
 
-  const planHierarchy = ['free', 'starter', 'pro', 'premium'];
+  const planHierarchy = [...TIER_HIERARCHY];
 
   // Toggle feature for a plan
   const toggleFeature = (plan, feature) => {
@@ -108,10 +108,9 @@ function AdminPlanFeatures() {
   const handleReset = () => {
     if (window.confirm('Reset all plan features to defaults? This cannot be undone.')) {
       setPlanFeatures({
-        free: [...PLAN_FEATURES.free],
-        starter: [...PLAN_FEATURES.starter],
-        pro: [...PLAN_FEATURES.pro],
-        premium: [...PLAN_FEATURES.premium]
+        trial: [...(PLAN_FEATURES.trial || [])],
+        starter: [...(PLAN_FEATURES.starter || [])],
+        growth: [...(PLAN_FEATURES.growth || [])],
       });
       showSuccess('Reset to defaults');
     }
@@ -156,12 +155,11 @@ function AdminPlanFeatures() {
     ]
   };
 
-  const plans = ['free', 'starter', 'pro', 'premium'];
+  const plans = [...TIER_HIERARCHY];
   const planColors = {
-    free: '#64748b',
-    starter: '#22c55e',
-    pro: '#06b6d4',
-    premium: '#8b5cf6'
+    trial: PLAN_INFO.trial.color,
+    starter: PLAN_INFO.starter.color,
+    growth: PLAN_INFO.growth.color,
   };
 
   return (

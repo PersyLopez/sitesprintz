@@ -1,19 +1,35 @@
-/* Theme */
+/* Theme - Ocean Blue Professional */
 :root {
-  --primary-900: #172554;
-  --primary-700: #1e3a8a;
+  /* Primary Blues */
+  --primary-900: #1e3a8a;
+  --primary-800: #1e40af;
+  --primary-700: #1d4ed8;
+  --primary-600: #2563eb;
   --primary-500: #3b82f6;
+  --primary-400: #60a5fa;
+  --primary-300: #93c5fd;
+  
+  /* Text Colors */
   --text-900: #111827;
   --text-700: #374151;
+  --text-500: #6b7280;
   --bg-50: #f8fafc;
   --white: #ffffff;
-  --gold-500: #ffd700;
-  --gold-600: #ffed4e;
-  --red-600: #dc3545;
-  --red-700: #c82333;
-  --green-600: #28a745;
-  --shadow-lg: 0 10px 30px rgba(0,0,0,0.1);
-  --shadow-xl: 0 20px 40px rgba(0,0,0,0.15);
+  
+  /* Accent Colors */
+  --accent-500: #6366f1;
+  --accent-400: #818cf8;
+  --gold-500: #fbbf24;
+  --gold-600: #f59e0b;
+  --red-600: #dc2626;
+  --red-700: #b91c1c;
+  --green-600: #16a34a;
+  --green-500: #22c55e;
+  
+  /* Shadows */
+  --shadow-lg: 0 10px 30px rgba(0,0,0,0.12);
+  --shadow-xl: 0 20px 40px rgba(0,0,0,0.18);
+  --shadow-glow: 0 0 30px rgba(59, 130, 246, 0.2);
 }
 
 /* Base */
@@ -38,7 +54,7 @@ img { max-width: 100%; height: auto; }
 .skip-link:focus { left: 1rem; top: 1rem; }
 
 :focus-visible {
-  outline: 3px solid var(--gold-500);
+  outline: 3px solid var(--primary-400);
   outline-offset: 2px;
 }
 

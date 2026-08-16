@@ -1,0 +1,147 @@
+url: http://localhost:5173/view/gallery-salon
+goal: Every seeded gallery template site renders identity, real sections, and no preview placeholders
+steps:
+  - action: Salon live site
+    wait_for: { text: Luxe Beauty Studio, timeout: 20000 }
+    settle_ms: 600
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/not yet supported in preview|Welcome to undefined|My Business/i.test(t)) {
+        throw new Error('Salon site has placeholders: ' + t.slice(0, 280));
+      }
+      if (!/Book|Contact|Service/i.test(t)) {
+        throw new Error('Salon missing expected sections: ' + t.slice(0, 280));
+      }
+
+  - action: Restaurant
+    goto: http://localhost:5173/view/gallery-restaurant
+    settle_ms: 1800
+  - action: Restaurant identity
+    wait_for: { text: The Grand Table, timeout: 20000 }
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/not yet supported in preview/i.test(t)) throw new Error('Restaurant placeholders');
+      if (!/Menu|Hour|Contact|Order|Grand Table/i.test(t)) {
+        throw new Error('Restaurant missing copy: ' + t.slice(0, 280));
+      }
+
+  - action: Electrician
+    goto: http://localhost:5173/view/gallery-electrician
+    settle_ms: 1800
+  - action: Electrician identity
+    wait_for: { text: Brightline Electric, timeout: 20000 }
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/not yet supported in preview/i.test(t)) throw new Error('Electrician placeholders');
+      if (!/Service|Quote|Contact|Electric/i.test(t)) {
+        throw new Error('Electrician missing copy: ' + t.slice(0, 280));
+      }
+
+  - action: Consultant
+    goto: http://localhost:5173/view/gallery-consultant
+    settle_ms: 1800
+  - action: Consultant identity
+    wait_for: { text: Northstar Advisory, timeout: 20000 }
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/not yet supported in preview/i.test(t)) throw new Error('Consultant placeholders');
+      if (!/Contact|Advisory|Case|Service/i.test(t)) {
+        throw new Error('Consultant missing copy: ' + t.slice(0, 280));
+      }
+
+  - action: Gym
+    goto: http://localhost:5173/view/gallery-gym
+    settle_ms: 1800
+  - action: Gym identity
+    wait_for: { text: Forge Fitness, timeout: 20000 }
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/not yet supported in preview/i.test(t)) throw new Error('Gym placeholders');
+      if (!/Fitness|Class|Train|Book|Contact|Membership/i.test(t)) {
+        throw new Error('Gym missing copy: ' + t.slice(0, 280));
+      }
+
+  - action: Food stall bazaar
+    goto: http://localhost:5173/view/gallery-food-stall
+    settle_ms: 1800
+  - action: Bazaar identity
+    wait_for: { text: Sunset Tacos, timeout: 20000 }
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/not yet supported in preview/i.test(t)) throw new Error('Bazaar placeholders');
+      if (/Book an Appointment/i.test(t)) throw new Error('Bazaar should not show booking');
+      if (!/Taco|Order|Catalog|Harbor|Menu|Stall/i.test(t)) {
+        throw new Error('Bazaar missing copy: ' + t.slice(0, 280));
+      }
+
+  - action: Cleaning
+    goto: http://localhost:5173/view/gallery-cleaning
+    settle_ms: 1800
+  - action: Cleaning identity
+    wait_for: { text: Cedar Clean Co, timeout: 20000 }
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/not yet supported in preview/i.test(t)) throw new Error('Cleaning placeholders');
+      if (!/Clean|Service|Quote|Contact|Area/i.test(t)) {
+        throw new Error('Cleaning missing copy: ' + t.slice(0, 280));
+      }
+
+  - action: Pet care
+    goto: http://localhost:5173/view/gallery-pet
+    settle_ms: 1800
+  - action: Pet identity
+    wait_for: { text: Paws & Pine, timeout: 20000 }
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/not yet supported in preview/i.test(t)) throw new Error('Pet placeholders');
+      if (!/Pet|Groom|Book|Contact|Paws/i.test(t)) {
+        throw new Error('Pet missing copy: ' + t.slice(0, 280));
+      }
+
+  - action: Freelancer
+    goto: http://localhost:5173/view/gallery-freelancer
+    settle_ms: 1800
+  - action: Freelancer identity
+    wait_for: { text: Mira Design Studio, timeout: 20000 }
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/not yet supported in preview/i.test(t)) throw new Error('Freelancer placeholders');
+      if (!/Design|Contact|Service|Project|Studio/i.test(t)) {
+        throw new Error('Freelancer missing copy: ' + t.slice(0, 280));
+      }
+
+  - action: Auto repair
+    goto: http://localhost:5173/view/gallery-auto
+    settle_ms: 1800
+  - action: Auto identity
+    wait_for: { text: Harbor Auto Works, timeout: 20000 }
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/not yet supported in preview/i.test(t)) throw new Error('Auto placeholders');
+      if (!/Auto|Service|Repair|Contact|Quote/i.test(t)) {
+        throw new Error('Auto missing copy: ' + t.slice(0, 280));
+      }
+
+  - action: Product showcase
+    goto: http://localhost:5173/view/gallery-products
+    settle_ms: 1800
+  - action: Products identity
+    wait_for: { text: Harbor Goods, timeout: 20000 }
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/not yet supported in preview/i.test(t)) throw new Error('Products placeholders');
+      if (!/Goods|Product|Shop|Catalog|Contact|Order/i.test(t)) {
+        throw new Error('Products missing copy: ' + t.slice(0, 280));
+      }
+
+  - action: Plumbing
+    goto: http://localhost:5173/view/gallery-plumbing
+    settle_ms: 1800
+  - action: Plumbing identity
+    wait_for: { text: Clearflow Plumbing, timeout: 20000 }
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/not yet supported in preview/i.test(t)) throw new Error('Plumbing placeholders');
+      if (!/Plumb|Service|Contact|Emergency|Quote/i.test(t)) {
+        throw new Error('Plumbing missing copy: ' + t.slice(0, 280));
+      }

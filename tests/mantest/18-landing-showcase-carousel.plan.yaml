@@ -1,0 +1,47 @@
+url: http://localhost:5173/
+goal: Landing hero and restored template gallery work without external deps
+steps:
+  - action: Hero ready
+    wait_for: { text: They love what you make, timeout: 20000 }
+    assert:
+      - text contains Get Your Page Free
+      - text contains Read their stories
+      - text contains A layout that already feels like your business
+
+  - action: Gallery labels present
+    code: |
+      const t = await page.locator('body').innerText();
+      const has =
+        /Salon & Spa|Restaurant|Fitness & Gym|Consultant/i.test(t);
+      if (!has) throw new Error('Landing gallery demo labels missing');
+    settle_ms: 300
+
+  - action: Gallery tabs present
+    code: |
+      const tabs = page.locator('[role="tablist"] [role="tab"]');
+      const n = await tabs.count();
+      if (n < 2) throw new Error('Expected multiple gallery tabs, got ' + n);
+    settle_ms: 200
+
+  - action: Switch to second tab
+    code: |
+      const tabs = page.locator('[role="tablist"] [role="tab"]');
+      await tabs.nth(1).click();
+      await page.waitForTimeout(400);
+    settle_ms: 500
+
+  - action: Pricing tiers still on page
+    click: { testId: nav-pricing }
+    settle_ms: 400
+    assert:
+      - text contains Two plans. Pick what you need.
+      - text contains Starter
+      - text contains Growth
+
+  - action: Open gallery from secondary CTA area
+    code: |
+      const link = page.getByRole('link', { name: /Browse example sites/i }).first();
+      await link.click();
+    settle_ms: 1500
+    assert:
+      - url contains /showcase

@@ -1,0 +1,115 @@
+.faq-widget {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.faq-header {
+  margin-bottom: var(--spacing-lg);
+}
+
+.faq-header h2 {
+  margin: 0 0 var(--spacing-md);
+  color: var(--text-light, #f8fafc);
+  font-size: 1.5rem;
+}
+
+.faq-search {
+  position: relative;
+}
+
+.faq-search-input {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-elevated, rgba(30, 41, 59, 0.5));
+  border: 1px solid var(--border-dark, rgba(255, 255, 255, 0.1));
+  border-radius: 8px;
+  color: var(--text-light, #f8fafc);
+  font-size: 0.95rem;
+}
+
+.faq-search-input:focus {
+  outline: none;
+  border-color: var(--primary-color, #06b6d4);
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+}
+
+.faq-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.faq-item {
+  margin-bottom: var(--spacing-md);
+  border: 1px solid var(--border-dark, rgba(255, 255, 255, 0.1));
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.faq-question {
+  width: 100%;
+  padding: var(--spacing-md);
+  background: var(--bg-elevated, rgba(30, 41, 59, 0.5));
+  border: none;
+  color: var(--text-light, #f8fafc);
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.faq-question:hover {
+  background: var(--bg-elevated, rgba(30, 41, 59, 0.7));
+}
+
+.faq-icon {
+  font-size: 1.5rem;
+  color: var(--primary-color, #06b6d4);
+  font-weight: 300;
+}
+
+.faq-answer {
+  padding: var(--spacing-md);
+  background: var(--bg-card, #1e293b);
+  color: var(--text-muted, #94a3b8);
+  line-height: 1.6;
+  animation: slideDown 0.2s ease-out;
+}
+
+.faq-answer p {
+  margin: 0 0 var(--spacing-sm);
+}
+
+.faq-category {
+  display: inline-block;
+  padding: 4px 8px;
+  background: rgba(6, 182, 212, 0.1);
+  color: var(--primary-color, #06b6d4);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.faq-empty {
+  text-align: center;
+  padding: var(--spacing-2xl);
+  color: var(--text-muted, #94a3b8);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+

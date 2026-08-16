@@ -22,30 +22,46 @@ function ForgotPassword() {
     setLoading(true);
 
     try {
+      // Step 1: Get CSRF token
+      const csrfResponse = await fetch('/api/csrf-token', {
+        credentials: 'include'
+      });
+      
+      if (!csrfResponse.ok) {
+        throw new Error('Failed to get CSRF token');
+      }
+      
+      const csrfData = await csrfResponse.json();
+      const csrfToken = csrfData.csrfToken;
+
+      // Step 2: Send password reset request with CSRF token
       const response = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken
         },
+        credentials: 'include',
         body: JSON.stringify({ email })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to send reset email');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to send reset email');
       }
 
       setSent(true);
       showSuccess('Password reset email sent! Check your inbox.');
     } catch (error) {
       console.error('Forgot password error:', error);
-      showError('Failed to send reset email. Please try again.');
+      showError(error.message || 'Failed to send reset email. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-page">
+    <div className="auth-page story-public">
       <Header />
       
       <main className="auth-container">

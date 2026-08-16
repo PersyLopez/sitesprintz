@@ -250,10 +250,24 @@
         <div class="error-message" id="confirmError" data-testid="register-confirm-error"></div>
       </div>
 
+      <div class="form-group" style="display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.5;color:#4b5563;">
+        <input type="checkbox" id="acceptTerms" data-testid="register-accept-terms" style="margin-top:3px;flex:0 0 auto;" required>
+        <label for="acceptTerms" style="cursor:pointer;">
+          I have read and agree to the
+          <a href="/legal/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>,
+          <a href="/legal/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>, and
+          <a href="/legal/third-party-services" target="_blank" rel="noopener noreferrer">Third-Party Services &amp; Data Handling Disclosure</a>.
+          I understand that sensitive information such as payments and login data is processed by independent
+          third-party providers, and that SiteSprintz's liability is limited as described in those documents.
+        </label>
+      </div>
+      <div class="error-message" id="termsError" data-testid="register-terms-error"></div>
+
       <button type="submit" class="btn-primary" data-testid="register-submit">Create Account</button>
     </form>
 
     <div class="auth-footer">
+      <p style="font-size:12px;color:#9ca3af;margin-bottom:12px;">SiteSprintz is currently in beta and provided &ldquo;as is.&rdquo;</p>
       <p>Already have an account? <a href="/login.html" data-testid="login-link">Sign in</a></p>
       <p style="margin-top: 15px;"><a href="/" data-testid="back-home-link">← Back to Home</a></p>
     </div>
@@ -353,15 +367,18 @@
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
+      const acceptedTerms = document.getElementById('acceptTerms').checked;
 
       const emailError = document.getElementById('emailError');
       const passwordError = document.getElementById('passwordError');
       const confirmError = document.getElementById('confirmError');
+      const termsError = document.getElementById('termsError');
 
       // Clear errors
       emailError.classList.remove('show');
       passwordError.classList.remove('show');
       confirmError.classList.remove('show');
+      termsError.classList.remove('show');
 
       // Validate passwords match
       if (password !== confirmPassword) {
@@ -377,6 +394,13 @@
         return;
       }
 
+      // Require acceptance of the legal agreements (clickwrap)
+      if (!acceptedTerms) {
+        termsError.textContent = 'Please accept the Terms, Privacy Policy, and Third-Party Services Disclosure to continue';
+        termsError.classList.add('show');
+        return;
+      }
+
       // Check if there's a plan parameter in the URL
       const urlParams = new URLSearchParams(window.location.search);
       const selectedPlan = urlParams.get('plan');
@@ -388,7 +412,7 @@
             'Content-Type': 'application/json',
             'X-CSRF-Token': csrfToken
           },
-          body: JSON.stringify({ email, password })
+          body: JSON.stringify({ email, password, acceptedTerms })
         });
 
         const result = await response.json();
@@ -423,7 +447,7 @@
           }
 
           // Default redirect to dashboard
-          window.location.href = '/dashboard.html';
+          window.location.href = '/dashboard';  // Redirect to React app
         } else {
           if (result.error.includes('already exists')) {
             emailError.textContent = result.error;

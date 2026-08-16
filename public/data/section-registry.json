@@ -1,0 +1,596 @@
+{
+  "version": "1.0",
+  "description": "Unified section registry for plug-and-play features across all templates",
+  "sections": [
+    {
+      "type": "hero",
+      "name": "Hero Section",
+      "category": "core",
+      "icon": "🎯",
+      "requiredTier": "trial",
+      "description": "Full-width hero with title, subtitle, and CTA",
+      "removable": false,
+      "repeatable": false,
+      "defaultSettings": {
+        "backgroundColor": "#ffffff",
+        "textColor": "#000000",
+        "ctaLabel": "Get Started"
+      },
+      "defaultContent": {
+        "title": "Welcome to Your Business",
+        "subtitle": "Tell your story here",
+        "image": null,
+        "ctaText": "Get Started",
+        "ctaLink": "#contact"
+      }
+    },
+    {
+      "type": "stats",
+      "name": "Statistics/Metrics",
+      "category": "core",
+      "icon": "📊",
+      "requiredTier": "starter",
+      "description": "Display key business metrics or achievements",
+      "removable": true,
+      "repeatable": false,
+      "defaultSettings": {},
+      "defaultContent": {
+        "stats": [
+          { "label": "Clients Served", "value": "1000+" },
+          { "label": "Years in Business", "value": "5+" },
+          { "label": "Projects Completed", "value": "500+" }
+        ]
+      }
+    },
+    {
+      "type": "services",
+      "name": "Services/Products",
+      "category": "core",
+      "icon": "🛍️",
+      "requiredTier": "trial",
+      "description": "Display services or products in a grid",
+      "removable": false,
+      "repeatable": false,
+      "defaultSettings": {
+        "layout": "grid",
+        "columns": 3
+      },
+      "defaultContent": {
+        "title": "Our Services",
+        "items": []
+      }
+    },
+    {
+      "type": "about",
+      "name": "About Section",
+      "category": "core",
+      "icon": "👤",
+      "requiredTier": "starter",
+      "description": "Tell your business story",
+      "removable": true,
+      "repeatable": false,
+      "defaultSettings": {},
+      "defaultContent": {
+        "title": "About Us",
+        "description": "Tell your story here",
+        "image": null
+      }
+    },
+    {
+      "type": "gallery",
+      "name": "Gallery",
+      "category": "media",
+      "icon": "🖼️",
+      "requiredTier": "starter",
+      "description": "Image gallery with lightbox",
+      "removable": true,
+      "repeatable": true,
+      "defaultSettings": {
+        "columns": 3,
+        "enableLightbox": true
+      },
+      "defaultContent": {
+        "title": "Gallery",
+        "images": []
+      }
+    },
+    {
+      "type": "before-after",
+      "name": "Before/After Gallery",
+      "category": "media",
+      "icon": "🔄",
+      "requiredTier": "starter",
+      "description": "Side-by-side before/after comparison",
+      "removable": true,
+      "repeatable": true,
+      "defaultSettings": {},
+      "defaultContent": {
+        "title": "Transformations",
+        "pairs": []
+      }
+    },
+    {
+      "type": "team",
+      "name": "Team Profiles",
+      "category": "people",
+      "icon": "👥",
+      "requiredTier": "starter",
+      "description": "Display team member profiles",
+      "removable": true,
+      "repeatable": false,
+      "defaultSettings": {
+        "layout": "grid",
+        "columns": 3
+      },
+      "defaultContent": {
+        "title": "Our Team",
+        "members": []
+      }
+    },
+    {
+      "type": "testimonials",
+      "name": "Testimonials",
+      "category": "social-proof",
+      "icon": "⭐",
+      "requiredTier": "starter",
+      "description": "Customer testimonials and reviews",
+      "removable": true,
+      "repeatable": false,
+      "defaultSettings": {
+        "layout": "carousel",
+        "showRatings": true
+      },
+      "defaultContent": {
+        "title": "What Clients Say",
+        "testimonials": []
+      }
+    },
+    {
+      "type": "faq",
+      "name": "FAQ/Accordion",
+      "category": "content",
+      "icon": "❓",
+      "requiredTier": "starter",
+      "description": "Collapsible FAQ section",
+      "removable": true,
+      "repeatable": false,
+      "defaultSettings": {},
+      "defaultContent": {
+        "title": "Frequently Asked Questions",
+        "items": []
+      }
+    },
+    {
+      "type": "credentials",
+      "name": "Credentials/Badges",
+      "category": "trust",
+      "icon": "✓",
+      "requiredTier": "trial",
+      "description": "Display certifications and trust badges",
+      "removable": true,
+      "repeatable": false,
+      "defaultSettings": {},
+      "defaultContent": {
+        "title": "Certifications",
+        "items": []
+      }
+    },
+    {
+      "type": "menu",
+      "name": "Menu (Restaurants)",
+      "category": "niche",
+      "icon": "🍽️",
+      "requiredTier": "starter",
+      "description": "Restaurant menu with categories",
+      "removable": true,
+      "repeatable": false,
+      "applicableTo": ["restaurant"],
+      "defaultSettings": {
+        "showPrices": true,
+        "groupByCategory": true
+      },
+      "defaultContent": {
+        "title": "Menu",
+        "sections": []
+      }
+    },
+    {
+      "type": "contact",
+      "name": "Contact Section",
+      "category": "core",
+      "icon": "📞",
+      "requiredTier": "trial",
+      "description": "Contact information and form",
+      "removable": false,
+      "repeatable": false,
+      "defaultSettings": {
+        "showForm": true,
+        "showMap": false
+      },
+      "defaultContent": {
+        "email": "",
+        "phone": "",
+        "address": "",
+        "hours": ""
+      }
+    },
+    {
+      "type": "booking",
+      "name": "Booking Widget",
+      "category": "features",
+      "icon": "📅",
+      "requiredTier": "growth",
+      "description": "Built-in appointment booking (same as native-booking)",
+      "removable": true,
+      "repeatable": false,
+      "defaultSettings": {
+        "businessMode": "solo",
+        "showStaffSelection": false,
+        "allowNoPreference": true
+      },
+      "defaultContent": {
+        "title": "Book an Appointment",
+        "enabled": true,
+        "bookingProvider": "native"
+      }
+    },
+    {
+      "type": "catalog",
+      "name": "Catalog / Menu Grid",
+      "category": "core",
+      "icon": "🛒",
+      "requiredTier": "trial",
+      "description": "Product or menu catalog. Checkout is gated separately on Growth.",
+      "removable": false,
+      "repeatable": false,
+      "defaultSettings": {
+        "layout": "grid"
+      },
+      "defaultContent": {
+        "title": "Catalog",
+        "items": []
+      }
+    },
+    {
+      "type": "service-areas",
+      "name": "Service Areas",
+      "category": "core",
+      "icon": "📍",
+      "requiredTier": "trial",
+      "description": "Neighborhoods or regions you serve",
+      "removable": true,
+      "repeatable": false,
+      "defaultContent": {
+        "title": "Service Areas",
+        "areas": []
+      }
+    },
+    {
+      "type": "process",
+      "name": "Process / How We Work",
+      "category": "core",
+      "icon": "📋",
+      "requiredTier": "starter",
+      "description": "Step-by-step process",
+      "removable": true,
+      "repeatable": false,
+      "defaultContent": {
+        "title": "How We Work",
+        "steps": []
+      }
+    },
+    {
+      "type": "case-studies",
+      "name": "Case Studies",
+      "category": "core",
+      "icon": "📁",
+      "requiredTier": "starter",
+      "description": "Proof of work and results",
+      "removable": true,
+      "repeatable": false,
+      "defaultContent": {
+        "title": "Case Studies",
+        "items": []
+      }
+    },
+    {
+      "type": "industries",
+      "name": "Industries Served",
+      "category": "core",
+      "icon": "🏢",
+      "requiredTier": "starter",
+      "description": "Industries or client types",
+      "removable": true,
+      "repeatable": false,
+      "defaultContent": {
+        "title": "Industries",
+        "items": []
+      }
+    },
+    {
+      "type": "how-to-order",
+      "name": "How to Order",
+      "category": "core",
+      "icon": "📝",
+      "requiredTier": "trial",
+      "description": "Ordering instructions for pop-ups and shops",
+      "removable": true,
+      "repeatable": false,
+      "defaultContent": {
+        "title": "How to Order",
+        "steps": []
+      }
+    },
+    {
+      "type": "hours",
+      "name": "Hours",
+      "category": "core",
+      "icon": "🕐",
+      "requiredTier": "trial",
+      "description": "Open hours for a stall or shop",
+      "removable": true,
+      "repeatable": false,
+      "defaultContent": {
+        "title": "Hours",
+        "hours": ""
+      }
+    },
+    {
+      "type": "location",
+      "name": "Location",
+      "category": "core",
+      "icon": "📌",
+      "requiredTier": "trial",
+      "description": "Where to find the business",
+      "removable": true,
+      "repeatable": false,
+      "defaultContent": {
+        "title": "Find Us",
+        "address": ""
+      }
+    },
+    {
+      "type": "native-booking",
+      "name": "Native Booking Widget",
+      "category": "features",
+      "icon": "📅",
+      "requiredTier": "growth",
+      "description": "Built-in appointment booking system with business mode support",
+      "removable": true,
+      "repeatable": false,
+      "defaultSettings": {
+        "businessMode": "solo",
+        "showStaffSelection": false,
+        "allowNoPreference": true,
+        "noPreferenceText": "Any Available"
+      },
+      "defaultContent": {
+        "enabled": false,
+        "bookingProvider": "native"
+      }
+    },
+    {
+      "type": "checkout",
+      "name": "Stripe Checkout",
+      "category": "features",
+      "icon": "💳",
+      "requiredTier": "growth",
+      "description": "Stripe payment processing and shopping cart",
+      "removable": true,
+      "repeatable": false,
+      "defaultSettings": {
+        "allowCheckout": false,
+        "allowOrders": false,
+        "currency": "USD"
+      },
+      "defaultContent": {
+        "enabled": false
+      }
+    },
+    {
+      "type": "reviews",
+      "name": "Google Reviews",
+      "category": "social-proof",
+      "icon": "⭐",
+      "requiredTier": "growth",
+      "description": "Display Google Business reviews",
+      "removable": true,
+      "repeatable": false,
+      "defaultSettings": {
+        "limit": 5,
+        "showRatings": true
+      },
+      "defaultContent": {
+        "enabled": false,
+        "businessId": ""
+      }
+    },
+    {
+      "type": "interactive-calculator",
+      "name": "Interactive Calculator",
+      "category": "premium-modules",
+      "icon": "🧮",
+      "requiredTier": "growth",
+      "description": "Dynamic pricing or cost calculator",
+      "removable": true,
+      "repeatable": true,
+      "defaultSettings": {
+        "inputs": [],
+        "formula": ""
+      },
+      "defaultContent": {
+        "title": "Price Calculator",
+        "description": "Calculate custom pricing"
+      }
+    },
+    {
+      "type": "class-scheduler",
+      "name": "Class Schedule",
+      "category": "premium-modules",
+      "icon": "📅",
+      "requiredTier": "growth",
+      "description": "Display recurring classes or group sessions",
+      "removable": true,
+      "repeatable": false,
+      "applicableTo": ["gym", "salon"],
+      "defaultSettings": {
+        "viewType": "weekly",
+        "showInstructor": true
+      },
+      "defaultContent": {
+        "title": "Class Schedule",
+        "classes": []
+      }
+    },
+    {
+      "type": "subscription-booking",
+      "name": "Subscription/Membership Booking",
+      "category": "premium-modules",
+      "icon": "🔄",
+      "requiredTier": "growth",
+      "description": "Recurring subscription or membership plans",
+      "removable": true,
+      "repeatable": false,
+      "applicableTo": ["gym", "salon", "plumbing"],
+      "defaultSettings": {
+        "showPricing": true,
+        "showFeatures": true
+      },
+      "defaultContent": {
+        "title": "Membership Plans",
+        "plans": []
+      }
+    },
+    {
+      "type": "diagnostic-quiz",
+      "name": "Diagnostic Quiz",
+      "category": "premium-modules",
+      "icon": "❓",
+      "requiredTier": "growth",
+      "description": "Interactive quiz for diagnostics or matching",
+      "removable": true,
+      "repeatable": true,
+      "applicableTo": ["tech-repair", "consultant", "gym"],
+      "defaultSettings": {
+        "showResults": true,
+        "sendResultsEmail": false
+      },
+      "defaultContent": {
+        "title": "Device Diagnostic",
+        "questions": []
+      }
+    },
+    {
+      "type": "progress-tracker",
+      "name": "Progress/Status Tracker",
+      "category": "premium-modules",
+      "icon": "📈",
+      "requiredTier": "growth",
+      "description": "Show repair status, transformation progress, or project stages",
+      "removable": true,
+      "repeatable": false,
+      "applicableTo": ["tech-repair", "gym", "salon"],
+      "defaultSettings": {
+        "stages": 5,
+        "showTimeline": true
+      },
+      "defaultContent": {
+        "title": "Repair Status",
+        "stages": []
+      }
+    },
+    {
+      "type": "resource-center",
+      "name": "Resource Center/Knowledge Base",
+      "category": "premium-modules",
+      "icon": "📚",
+      "requiredTier": "growth",
+      "description": "Curated resources, guides, or educational content",
+      "removable": true,
+      "repeatable": false,
+      "applicableTo": ["consultant", "electrician", "plumbing"],
+      "defaultSettings": {
+        "layout": "grid",
+        "searchable": true
+      },
+      "defaultContent": {
+        "title": "Resources",
+        "items": []
+      }
+    },
+    {
+      "type": "video-gallery",
+      "name": "Video Gallery",
+      "category": "premium-modules",
+      "icon": "🎥",
+      "requiredTier": "growth",
+      "description": "YouTube/Vimeo video embedding gallery",
+      "removable": true,
+      "repeatable": true,
+      "defaultSettings": {
+        "layout": "grid",
+        "columns": 3
+      },
+      "defaultContent": {
+        "title": "Videos",
+        "videos": []
+      }
+    },
+    {
+      "type": "zip-checker",
+      "name": "ZIP Code Service Area Checker",
+      "category": "premium-modules",
+      "icon": "📍",
+      "requiredTier": "growth",
+      "description": "Allow customers to check if you serve their area",
+      "removable": true,
+      "repeatable": false,
+      "applicableTo": ["electrician", "plumbing", "cleaning", "tech-repair"],
+      "defaultSettings": {
+        "serviceZips": [],
+        "messageIfServing": "Yes, we serve your area!",
+        "messageIfNotServing": "Sorry, we don't serve your area yet."
+      },
+      "defaultContent": {
+        "title": "Check Service Area",
+        "description": "Enter your ZIP code"
+      }
+    },
+    {
+      "type": "enhanced-profiles",
+      "name": "Enhanced Staff/Artisan Profiles",
+      "category": "premium-modules",
+      "icon": "🎭",
+      "requiredTier": "growth",
+      "description": "Rich profiles with specialties, credentials, and portfolios",
+      "removable": true,
+      "repeatable": false,
+      "defaultSettings": {
+        "showSpecialties": true,
+        "showCredentials": true,
+        "showRatings": true
+      },
+      "defaultContent": {
+        "title": "Meet Our Team",
+        "profiles": []
+      }
+    },
+    {
+      "type": "service-filters",
+      "name": "Service/Menu Filters",
+      "category": "features",
+      "icon": "🔍",
+      "requiredTier": "growth",
+      "description": "Filter services by category, price, duration, etc.",
+      "removable": true,
+      "repeatable": false,
+      "defaultSettings": {
+        "filterBy": ["category", "price"],
+        "showSearch": true
+      },
+      "defaultContent": {
+        "enabled": false
+      }
+    }
+  ]
+}

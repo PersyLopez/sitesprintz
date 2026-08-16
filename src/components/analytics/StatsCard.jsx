@@ -4,7 +4,7 @@ import './StatsCard.css';
 function StatsCard({ icon, label, value, change, changeLabel, invertChange = false }) {
   const getChangeClass = () => {
     if (!change) return '';
-    
+
     const isPositive = change > 0;
     // If invertChange is true (e.g., for bounce rate), flip the color logic
     if (invertChange) {

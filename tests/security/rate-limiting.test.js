@@ -122,7 +122,8 @@ describe('Security - Rate Limiting', () => {
           .send({
             email: `test${i}@example.com`,
             password: 'TestPassword123!',
-            name: 'Test User'
+            name: 'Test User',
+            acceptedTerms: true
           });
         
         responses.push(response.status);

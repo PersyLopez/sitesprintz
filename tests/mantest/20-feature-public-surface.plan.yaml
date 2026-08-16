@@ -1,0 +1,66 @@
+url: http://localhost:5173/
+goal: Deep-dive public landing, pricing (Starter/Growth only), templates, showcase — no Stripe/Google
+steps:
+  - action: Landing loads
+    wait_for: { text: SiteSprintz, timeout: 20000 }
+    settle_ms: 800
+    assert:
+      - text contains SiteSprintz
+
+  - action: Pricing section visible
+    code: |
+      await page.locator('#pricing').scrollIntoViewIfNeeded().catch(() => {});
+      await page.waitForTimeout(400);
+    settle_ms: 500
+
+  - action: Two-plan pricing present
+    expect:
+      - text contains Starter
+      - text contains Growth
+      - text contains $10
+      - text contains $35
+
+  - action: Pro not sold as a card
+    code: |
+      const pricing = page.locator('#pricing');
+      const text = await pricing.innerText();
+      if (/\$55/.test(text)) throw new Error('Pro $55 still shown in pricing');
+      if (/Upgrade to Pro/i.test(text)) throw new Error('Upgrade to Pro CTA still present');
+    settle_ms: 200
+
+  - action: Jump to templates
+    code: |
+      const chip = page.getByRole('button', { name: /Templates/i });
+      if (await chip.count()) await chip.first().click();
+      else await page.locator('#templates').scrollIntoViewIfNeeded();
+    settle_ms: 1000
+
+  - action: Templates gallery content
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/Salon|Restaurant|Freelancer|Template/i.test(t)) {
+        throw new Error('Templates section missing expected niches: ' + t.slice(0, 280));
+      }
+    settle_ms: 500
+
+  - action: Open showcase
+    goto: http://localhost:5173/showcase
+    settle_ms: 1500
+
+  - action: Showcase gallery loads
+    expect:
+      - url contains /showcase
+    settle_ms: 800
+
+  - action: About page
+    goto: http://localhost:5173/about
+    settle_ms: 1000
+    assert:
+      - url contains /about
+
+  - action: Contact page
+    goto: http://localhost:5173/contact
+    settle_ms: 1000
+    assert:
+      - url contains /contact
+      - text contains hello@sitesprintz.com

@@ -1,0 +1,148 @@
+url: http://localhost:5173/login
+goal: Gallery owner can manage template-created sites from dashboard workspaces
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter gallery email
+    fill: { testId: login-email, value: "gallery@sitesprintz.com", clear: true }
+
+  - action: Enter gallery password
+    fill: { testId: login-password, value: "GalleryDemo123!", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard with template sites
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 1200
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/Welcome back/i.test(t)) throw new Error('Dashboard greeting missing: ' + t.slice(0, 240));
+      const needed = ['Luxe Beauty Studio', 'The Grand Table', 'Brightline Electric', 'Sunset Tacos'];
+      const missing = needed.filter((name) => !t.includes(name));
+      if (missing.length) throw new Error('Dashboard missing template sites: ' + missing.join(', '));
+      const cards = page.getByTestId('site-card');
+      if ((await cards.count()) < 8) {
+        throw new Error('Expected at least 8 gallery site cards, got ' + (await cards.count()));
+      }
+
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+    settle_ms: 400
+
+  - action: Manage salon site
+    code: |
+      const card = page.locator('[data-testid="site-card"][data-subdomain="gallery-salon"]');
+      if ((await card.count()) === 0) {
+        throw new Error('Missing salon site card on dashboard');
+      }
+      await card.getByTestId('manage-site-button').click();
+    settle_ms: 1500
+
+  - action: Site workspace overview
+    wait_for: { selector: '[data-testid="site-dashboard"]', timeout: 15000 }
+    settle_ms: 600
+    assert:
+      - text contains Luxe Beauty Studio
+      - text contains Published
+    code: |
+      const t = await page.locator('body').innerText();
+      if ((await page.getByTestId('site-dashboard-not-found').count()) > 0) {
+        throw new Error('Salon workspace not found');
+      }
+      for (const id of ['site-nav-overview', 'site-nav-orders', 'site-nav-appointments', 'site-nav-products', 'site-nav-settings', 'site-nav-analytics']) {
+        if ((await page.getByTestId(id).count()) === 0) throw new Error('Missing nav ' + id);
+      }
+      if ((await page.getByTestId('site-overview').count()) === 0) {
+        throw new Error('Site overview grid missing');
+      }
+
+  - action: Appointments workspace
+    click: { testId: site-nav-appointments }
+    settle_ms: 1500
+    code: |
+      const t = await page.locator('body').innerText();
+      const ok = /Appointment|Booking|Service|Schedule|Upgrade|Growth/i.test(t);
+      if (!ok) throw new Error('Unexpected appointments panel: ' + t.slice(0, 280));
+
+  - action: Products workspace
+    click: { testId: site-nav-products }
+    settle_ms: 1500
+    code: |
+      const t = await page.locator('body').innerText();
+      const ok = /Product|Catalog|Add|Import|No products/i.test(t);
+      if (!ok) throw new Error('Unexpected products panel: ' + t.slice(0, 280));
+
+  - action: Orders workspace
+    click: { testId: site-nav-orders }
+    settle_ms: 1200
+    code: |
+      const t = await page.locator('body').innerText();
+      const ok = /Order|No orders|inbox|Growth|Upgrade/i.test(t);
+      if (!ok) throw new Error('Unexpected orders panel: ' + t.slice(0, 280));
+
+  - action: Settings workspace
+    click: { testId: site-nav-settings }
+    settle_ms: 1200
+    code: |
+      const t = await page.locator('body').innerText();
+      const ok = /Settings|Payment|Domain|Foundation|Account/i.test(t);
+      if (!ok) throw new Error('Unexpected settings panel: ' + t.slice(0, 280));
+
+  - action: Analytics workspace
+    click: { testId: site-nav-analytics }
+    settle_ms: 1500
+    code: |
+      const t = await page.locator('body').innerText();
+      const ok = /Analytic|Views|Visitor|Growth|Upgrade|Performance/i.test(t);
+      if (!ok) throw new Error('Unexpected analytics panel: ' + t.slice(0, 280));
+
+  - action: Restaurant site workspace
+    goto: http://localhost:5173/dashboard/sites/gallery-restaurant
+    settle_ms: 1800
+  - action: Restaurant workspace loads
+    wait_for: { selector: '[data-testid="site-dashboard"]', timeout: 15000 }
+    settle_ms: 500
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/The Grand Table/i.test(t)) throw new Error('Restaurant workspace missing identity: ' + t.slice(0, 240));
+      if ((await page.getByTestId('site-dashboard-not-found').count()) > 0) {
+        throw new Error('Restaurant workspace not found');
+      }
+
+  - action: Open restaurant products from overview
+    click: { testId: site-overview-products }
+    settle_ms: 1500
+    code: |
+      const t = await page.locator('body').innerText();
+      const ok = /Product|Catalog|Add|Menu|Grand Table/i.test(t);
+      if (!ok) throw new Error('Restaurant products unexpected: ' + t.slice(0, 280));
+
+  - action: Edit salon from dashboard
+    goto: http://localhost:5173/setup?site=gallery-salon
+    settle_ms: 2000
+  - action: Editor or wizard for existing site
+    code: |
+      const t = await page.locator('body').innerText();
+      const ok = /Quick Start|Page Builder|Preview|Sections|Luxe|Salon|Business essentials|What type of business/i.test(t);
+      if (!ok) throw new Error('Unexpected setup/editor: ' + t.slice(0, 300));
+
+  - action: Global booking dashboard
+    goto: http://localhost:5173/booking-dashboard
+    settle_ms: 1500
+  - action: Booking console for gallery owner
+    code: |
+      const t = await page.locator('body').innerText();
+      const ok = /Booking|Appointment|Service|Schedule|Luxe|Forge|Paws/i.test(t);
+      if (!ok) throw new Error('Unexpected booking dashboard: ' + t.slice(0, 300));
+      if (/Upgrade to Pro/i.test(t) && !/Service|Appointment/i.test(t)) {
+        throw new Error('Gallery growth owner hit a Pro wall');
+      }

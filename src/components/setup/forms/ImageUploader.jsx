@@ -1,17 +1,23 @@
 import React, { useState, useRef } from 'react';
 import { useToast } from '../../../hooks/useToast';
+import { api } from '../../../services/api';
 import './ImageUploader.css';
 
-function ImageUploader({ value, onChange, aspectRatio, label }) {
+const ACCEPTED_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+const ACCEPTED_EXT = /\.(jpe?g|png|gif|webp)$/i;
+
+function ImageUploader({ value, onChange, aspectRatio, label, allowUrl = true }) {
   const { showError, showSuccess } = useToast();
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const [urlDraft, setUrlDraft] = useState('');
   const fileInputRef = useRef(null);
 
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (e.type === 'dragenter' || e.type === 'dragover') {
       setDragActive(true);
     } else if (e.type === 'dragleave') {
@@ -23,30 +29,34 @@ function ImageUploader({ value, onChange, aspectRatio, label }) {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+
+    if (e.dataTransfer.files?.[0]) {
       handleFile(e.dataTransfer.files[0]);
     }
   };
 
   const handleChange = (e) => {
     e.preventDefault();
-    if (e.target.files && e.target.files[0]) {
+    if (e.target.files?.[0]) {
       handleFile(e.target.files[0]);
     }
   };
 
   const handleFile = async (file) => {
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      showError('Please upload an image file');
+    const typeOk = ACCEPTED_TYPES.has(file.type) || ACCEPTED_EXT.test(file.name);
+    if (!typeOk) {
+      showError('Please upload a JPEG, PNG, GIF, or WebP image');
       return;
     }
 
-    // Validate file size (5MB max)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      showError('Image must be less than 5MB');
+      showError('Image must be less than 5MB. Try compressing your image first.', {
+        action: {
+          label: 'Compress',
+          onClick: () => window.open('https://tinypng.com', '_blank')
+        }
+      });
       return;
     }
 
@@ -54,24 +64,16 @@ function ImageUploader({ value, onChange, aspectRatio, label }) {
 
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('image', file);
 
-      const response = await fetch('/api/uploads', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: formData
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Upload failed');
+      const data = await api.upload('/api/sites/upload', formData);
+      const url = data.url || data.data?.url;
+      if (!url) {
+        throw new Error('Upload succeeded but no image URL was returned');
       }
-
-      const data = await response.json();
-      onChange(data.url);
-      showSuccess('Image uploaded successfully');
+      onChange(url);
+      showSuccess('Image uploaded');
+      setShowUrlInput(false);
     } catch (error) {
       console.error('Upload error:', error);
       showError(error.message || 'Failed to upload image');
@@ -82,6 +84,7 @@ function ImageUploader({ value, onChange, aspectRatio, label }) {
 
   const handleRemove = () => {
     onChange('');
+    setUrlDraft('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -91,8 +94,34 @@ function ImageUploader({ value, onChange, aspectRatio, label }) {
     fileInputRef.current?.click();
   };
 
+  const applyUrl = () => {
+    const trimmed = urlDraft.trim();
+    if (!trimmed) {
+      showError('Enter an image URL');
+      return;
+    }
+    try {
+      // Allow absolute http(s) or site-relative /uploads paths
+      if (trimmed.startsWith('/')) {
+        onChange(trimmed);
+      } else {
+        const parsed = new URL(trimmed);
+        if (!['http:', 'https:'].includes(parsed.protocol)) {
+          throw new Error('Invalid URL');
+        }
+        onChange(trimmed);
+      }
+      setShowUrlInput(false);
+      showSuccess('Image URL added');
+    } catch {
+      showError('Enter a valid image URL (https://… or /uploads/…)');
+    }
+  };
+
   return (
-    <div className="image-uploader">
+    <div className="image-uploader" data-testid="image-uploader">
+      {label ? <span className="uploader-label">{label}</span> : null}
+
       {value ? (
         <div className="image-preview">
           <img src={value} alt="Preview" />
@@ -102,14 +131,16 @@ function ImageUploader({ value, onChange, aspectRatio, label }) {
               onClick={handleClick}
               className="btn btn-secondary btn-sm"
               disabled={uploading}
+              data-testid="change-image-btn"
             >
-              Change Image
+              Change
             </button>
             <button
               type="button"
               onClick={handleRemove}
               className="btn btn-danger btn-sm"
               disabled={uploading}
+              data-testid="remove-image-btn"
             >
               Remove
             </button>
@@ -123,22 +154,31 @@ function ImageUploader({ value, onChange, aspectRatio, label }) {
           onDragOver={handleDrag}
           onDrop={handleDrop}
           onClick={handleClick}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleClick();
+            }
+          }}
+          data-testid="image-upload-zone"
         >
           {uploading ? (
             <div className="upload-progress">
-              <div className="loading-spinner"></div>
-              <p>Uploading...</p>
+              <div className="loading-spinner" />
+              <p>Uploading…</p>
             </div>
           ) : (
             <>
-              <div className="upload-icon">📤</div>
+              <div className="upload-icon" aria-hidden="true">📷</div>
               <p className="upload-text">
                 <strong>Click to upload</strong> or drag and drop
               </p>
-              <p className="upload-hint">PNG, JPG, or WebP (max. 5MB)</p>
-              {aspectRatio && (
+              <p className="upload-hint">JPEG, PNG, GIF, or WebP · max 5MB</p>
+              {aspectRatio ? (
                 <p className="upload-hint">Recommended: {aspectRatio} aspect ratio</p>
-              )}
+              ) : null}
             </>
           )}
         </div>
@@ -147,13 +187,51 @@ function ImageUploader({ value, onChange, aspectRatio, label }) {
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/gif,image/webp,.jpg,.jpeg,.png,.gif,.webp"
         onChange={handleChange}
         style={{ display: 'none' }}
+        data-testid="image-file-input"
       />
+
+      {allowUrl ? (
+        <div className="url-fallback">
+          {!showUrlInput ? (
+            <button
+              type="button"
+              className="btn-link"
+              onClick={() => {
+                setUrlDraft(value || '');
+                setShowUrlInput(true);
+              }}
+              data-testid="use-image-url-btn"
+            >
+              Or paste an image URL
+            </button>
+          ) : (
+            <div className="url-fallback-row">
+              <input
+                type="url"
+                value={urlDraft}
+                onChange={(e) => setUrlDraft(e.target.value)}
+                placeholder="https://… or /uploads/…"
+                data-testid="image-url-input"
+              />
+              <button type="button" className="btn btn-secondary btn-sm" onClick={applyUrl} data-testid="apply-image-url-btn">
+                Use URL
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => setShowUrlInput(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }
 
 export default ImageUploader;
-

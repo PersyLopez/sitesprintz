@@ -1,0 +1,398 @@
+/* Landing Gallery — warm story theme (inherits landing-page tokens when nested) */
+
+.gl-section {
+  background: transparent;
+  padding: var(--space-5xl, 100px) 0;
+  scroll-margin-top: 130px;
+}
+
+#templates {
+  scroll-margin-top: 130px;
+}
+
+.gl-inner {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 var(--space-lg, 24px);
+}
+
+.gl-header {
+  text-align: center;
+  margin-bottom: var(--space-3xl, 64px);
+  max-width: 36rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.gl-header h2 {
+  font-family: var(--font-display, 'Outfit', sans-serif);
+  color: var(--ink, #1c140f);
+  font-size: clamp(1.75rem, 3.2vw, 2.4rem);
+  font-weight: 800;
+  margin: 0 0 var(--space-md, 16px);
+  letter-spacing: -0.02em;
+}
+
+.gl-header p {
+  color: var(--text-secondary, #5c4a3d);
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.gl-tabs {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: var(--space-3xl, 64px);
+}
+
+.gl-tab {
+  padding: 8px 16px;
+  min-height: 40px;
+  background: var(--surface, #fff);
+  color: var(--text-secondary, #5c4a3d);
+  border: 1.5px solid var(--border, #f0d7b5);
+  border-radius: 50px;
+  font-family: var(--font-display, 'Outfit', sans-serif);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 180ms ease;
+}
+
+.gl-tab:hover {
+  border-color: var(--accent, #e87b1e);
+  color: var(--accent-deep, #c45a0a);
+  transform: translateY(-1px);
+}
+
+.gl-tab:focus-visible {
+  outline: 2px solid var(--accent, #e87b1e);
+  outline-offset: 2px;
+}
+
+.gl-tab--active {
+  background: var(--ink, #1c140f);
+  border-color: var(--ink, #1c140f);
+  color: #fff8ef;
+  box-shadow: 0 4px 14px rgba(28, 20, 15, 0.16);
+}
+
+.gl-grid {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 0 0 12px;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+.gl-grid::-webkit-scrollbar {
+  height: 5px;
+}
+
+.gl-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.gl-grid::-webkit-scrollbar-thumb {
+  background: var(--border, #f0d7b5);
+  border-radius: 3px;
+}
+
+.gl-card {
+  display: flex;
+  flex-direction: column;
+  min-width: min(100%, 270px);
+  flex-shrink: 0;
+  background: var(--surface, #fff);
+  border: 1.5px solid var(--border, #f0d7b5);
+  border-radius: 18px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 180ms ease;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  box-shadow: 0 2px 10px rgba(28, 20, 15, 0.05);
+  animation: glCardIn 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes glCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.gl-card:hover {
+  border-color: var(--accent, #e87b1e);
+  transform: translateY(-5px);
+  box-shadow: 0 14px 34px rgba(28, 20, 15, 0.12);
+}
+
+.gl-card:hover .gl-section-block {
+  opacity: 0.55;
+}
+
+.gl-card:hover .gl-card-cta span {
+  gap: 6px;
+  letter-spacing: 0.01em;
+}
+
+.gl-card:focus-visible {
+  outline: 2px solid var(--accent, #e87b1e);
+  outline-offset: 2px;
+}
+
+.gl-card--selected {
+  border-color: var(--accent, #e87b1e);
+  box-shadow: 0 0 0 3px rgba(232, 123, 30, 0.2);
+}
+
+.gl-card-preview {
+  background: linear-gradient(160deg, #fff1de, #ffe8c8);
+  padding: 16px;
+  min-height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border-bottom: 1px solid var(--border, #f0d7b5);
+}
+
+.gl-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  max-width: 160px;
+}
+
+.gl-section-block {
+  border-radius: 3px;
+  height: 12px;
+  background: var(--accent, #e87b1e);
+  opacity: 0.35;
+  transition: opacity 220ms ease;
+}
+
+.gl-card-emoji-wrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gl-card-emoji {
+  font-size: 2.5rem;
+}
+
+.gl-card-info {
+  padding: 14px 16px;
+  flex: 1;
+}
+
+.gl-card-title {
+  font-family: var(--font-display, 'Outfit', sans-serif);
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--ink, #1c140f);
+  margin: 0 0 4px;
+}
+
+.gl-card-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary, #5c4a3d);
+  margin: 0 0 10px;
+  font-weight: 600;
+}
+
+.gl-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.gl-tag {
+  background: var(--accent-soft, #fff1de);
+  color: var(--accent-deep, #c45a0a);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border: 1px solid var(--border, #f0d7b5);
+}
+
+.gl-card-cta {
+  padding: 0 16px 14px;
+}
+
+.gl-card-cta span {
+  display: block;
+  font-family: var(--font-display, 'Outfit', sans-serif);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-deep, #c45a0a);
+  transition: letter-spacing 180ms ease;
+}
+
+.gl-footer {
+  text-align: center;
+  padding-top: var(--space-2xl, 48px);
+}
+
+.gl-see-all {
+  color: var(--sp-accent-deep, var(--accent-deep, #c45a0a));
+  font-family: var(--font-display, 'Outfit', sans-serif);
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: gap 0.2s ease;
+}
+
+.gl-see-all:hover {
+  gap: 8px;
+}
+
+.gl-see-all:focus-visible {
+  outline: 2px solid var(--sp-accent, var(--accent, #e87b1e));
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Live showcase strip — bridges landing → /showcase */
+
+.gl-live {
+  margin-top: var(--space-3xl, 64px);
+  padding: var(--space-xl, 32px);
+  border-radius: 22px;
+  border: 1.5px solid var(--sp-border, var(--border, #f0d7b5));
+  background:
+    radial-gradient(ellipse 60% 80% at 0% 0%, rgba(244, 162, 97, 0.16), transparent 55%),
+    var(--sp-surface, var(--surface, #fff));
+  box-shadow: 0 8px 28px rgba(28, 20, 15, 0.05);
+}
+
+.gl-live-header {
+  text-align: center;
+  max-width: 34rem;
+  margin: 0 auto 24px;
+}
+
+.gl-live-header h3 {
+  font-family: var(--font-display, 'Outfit', sans-serif);
+  font-size: clamp(1.25rem, 2.5vw, 1.55rem);
+  font-weight: 800;
+  margin: 0 0 8px;
+  color: var(--sp-ink, var(--ink, #1c140f));
+  letter-spacing: -0.02em;
+}
+
+.gl-live-header p:last-child {
+  margin: 0;
+  color: var(--sp-muted, var(--text-secondary, #5c4a3d));
+  font-weight: 600;
+  font-size: 0.98rem;
+}
+
+.gl-live-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.gl-live-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1.5px solid var(--sp-border, var(--border, #f0d7b5));
+  background: var(--sp-bg, #fff8ef);
+  text-decoration: none;
+  color: inherit;
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 180ms ease,
+    box-shadow 220ms ease;
+}
+
+.gl-live-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--sp-accent, var(--accent, #e87b1e));
+  box-shadow: 0 10px 24px rgba(28, 20, 15, 0.08);
+}
+
+.gl-live-card:focus-visible {
+  outline: 2px solid var(--sp-accent, var(--accent, #e87b1e));
+  outline-offset: 2px;
+}
+
+.gl-live-emoji {
+  font-size: 1.35rem;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.gl-live-title {
+  font-family: var(--font-display, 'Outfit', sans-serif);
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--sp-ink, var(--ink, #1c140f));
+}
+
+.gl-live-meta {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--sp-muted, var(--text-secondary, #5c4a3d));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 639px) {
+  .gl-grid {
+    margin-left: calc(-1 * var(--space-lg, 24px));
+    margin-right: calc(-1 * var(--space-lg, 24px));
+    padding-left: var(--space-lg, 24px);
+    padding-right: var(--space-lg, 24px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gl-card,
+  .gl-tab,
+  .gl-see-all,
+  .gl-section-block,
+  .gl-card-cta span,
+  .gl-live-card {
+    transition: none;
+    animation: none;
+  }
+
+  .gl-card:hover,
+  .gl-tab:hover,
+  .gl-live-card:hover {
+    transform: none;
+  }
+}

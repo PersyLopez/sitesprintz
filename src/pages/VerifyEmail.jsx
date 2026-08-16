@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
 import { useToast } from '../hooks/useToast';
 import './Auth.css';
 
@@ -84,7 +85,7 @@ function VerifyEmail() {
   };
 
   return (
-    <div className="auth-page">
+    <div className="auth-page story-public">
       <Header />
 
       <div className="auth-container">
@@ -135,11 +136,15 @@ function VerifyEmail() {
           )}
         </div>
       </div>
+      <Footer />
     </div>
   );
 }
 
 export default VerifyEmail;
+
+
+
 
 
 

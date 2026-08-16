@@ -71,3 +71,16 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
+.connect-more-providers {
+  margin: 1rem 0 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.connect-more-providers a {
+  color: white;
+  font-weight: 700;
+  text-decoration: underline;
+}
+

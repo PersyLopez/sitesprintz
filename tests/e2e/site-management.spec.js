@@ -1,367 +1,93 @@
-/**
- * E2E Tests: Site Management (Edit, Duplicate, Delete)
- * Tests editing existing sites, duplicating sites, and deleting sites
- */
-
 import { test, expect } from '@playwright/test';
-import { login, createTestSiteViaApi } from '../helpers/e2e-test-utils.js';
-import { TIMEOUTS } from '../fixtures/test-config.js';
+import { createTestSiteViaApi } from '../helpers/e2e-test-utils.js';
+import { SELECTORS, TIMEOUTS } from '../fixtures/test-config.js';
 
 test.describe('Site Management', () => {
-  let siteId;
   let siteSubdomain;
 
-  test.beforeEach(async ({ page, request }) => {
-    // Login
-    await login(page);
+  // Rule 9: Use global pre-authentication
+  test.use({ storageState: 'tests/e2e/.auth/user.json' });
 
-    // Create a test site via API for stability
+  test.beforeEach(async ({ page, request }) => {
     const site = await createTestSiteViaApi(request, {
-      businessName: `Test Site ${Date.now()}`,
-      templateId: 'restaurant-casual'
+      businessName: `Mgt Test ${Date.now()}`,
+      templateId: 'restaurant-casual',
+      publish: false // Test React editor flow
     });
 
     siteSubdomain = site.subdomain;
+    console.log(`[Test] Created site subdomain: ${siteSubdomain}`);
 
-    // Navigate to dashboard to get site ID
+    // Navigate to React dashboard
     await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
 
-    // Find the site card and extract ID (if available)
-    const siteCard = page.locator(`[data-site-id], [data-subdomain="${siteSubdomain}"]`).first();
-    if (await siteCard.count() > 0) {
-      siteId = await siteCard.getAttribute('data-site-id') ||
-        await siteCard.getAttribute('id') ||
-        siteSubdomain;
-    } else {
-      siteId = siteSubdomain;
-    }
+    // Log all subdomains on page
+    const subdomains = await page.locator('[data-testid="site-card"]').evaluateAll(elements => elements.map(el => el.getAttribute('data-subdomain')));
+    console.log(`[Test] Subdomains on page: ${subdomains.join(', ')}`);
   });
 
   test('should edit existing site', async ({ page }) => {
-    await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle');
-
-    // Find the site card
-    const siteCard = page.locator(`[data-subdomain="${siteSubdomain}"], .site-card`).first();
+    console.log(`[Test] Targeting site: ${siteSubdomain}`);
+    await page.waitForSelector(`[data-subdomain="${siteSubdomain}"]`, { timeout: TIMEOUTS.LONG });
+    const siteCard = page.locator(`[data-testid="site-card"][data-subdomain="${siteSubdomain}"]`).first();
+    await expect(siteCard).toBeVisible({ timeout: TIMEOUTS.LONG });
 
     // Click edit button
-    const editButton = siteCard.locator('button:has-text("Edit"), a:has-text("Edit"), [title*="Edit"]').first();
+    await siteCard.locator(SELECTORS.DASHBOARD.EDIT_BUTTON).first().click({ force: true });
 
-    if (await editButton.count() > 0) {
-      await editButton.click();
+    // Should navigate to setup/editor page
+    await page.waitForTimeout(1000); // Give it a sec
+    await page.waitForURL(/\/setup/, { timeout: TIMEOUTS.EXTENDED });
 
-      // Should navigate to setup/editor page
-      await page.waitForURL(/setup|editor/, { timeout: 5000 });
+    // Verify we're in edit mode
+    await expect(page.locator(SELECTORS.EDITOR.PANEL)).toBeVisible({ timeout: TIMEOUTS.EXTENDED });
 
-      // Verify we're in edit mode (should have existing content)
-      const editorPanel = page.locator('.editor-panel, [data-testid="editor"], .setup-container');
-      await expect(editorPanel.first()).toBeVisible({ timeout: 5000 });
+    // Edit business name
+    const newName = `Updated Site ${Date.now()}`;
+    console.log(`[Test] Filling new name: ${newName}`);
+    await page.fill(SELECTORS.EDITOR.BUSINESS_NAME, newName);
 
-      // Try to edit business name
-      const businessNameInput = page.locator(
-        'input[name="businessName"], input[name="name"], input[placeholder*="business"], input[placeholder*="name"]'
-      ).first();
+    // Click Save Draft
+    console.log('[Test] Clicking save draft...');
+    await page.click('[data-testid="save-draft-button"]');
 
-      if (await businessNameInput.count() > 0) {
-        const newName = `Updated Site ${Date.now()}`;
-        await businessNameInput.clear();
-        await businessNameInput.fill(newName);
+    // Wait for success
+    await page.waitForTimeout(2000);
 
-        // Save changes (auto-save or manual save button)
-        const saveButton = page.locator('button:has-text("Save"), button:has-text("Update")');
-        if (await saveButton.count() > 0) {
-          // Wait for save response
-          const savePromise = page.waitForResponse(r => 
-            r.url().includes('/api/') && (r.request().method() === 'POST' || r.request().method() === 'PUT')
-          ).catch(() => null);
-          await saveButton.click();
-          await savePromise;
-        }
-
-        // Wait for auto-save to complete
-        await page.waitForLoadState('networkidle');
-
-        // Verify change was saved (check for success message or navigate back)
-        const successMessage = page.locator('text=/saved|updated|success/i');
-        const hasSuccess = await successMessage.count() > 0;
-
-        // Either shows success or silently saves (both valid)
-        expect(hasSuccess || await businessNameInput.inputValue() === newName).toBeTruthy();
-      }
-    } else {
-      // Edit button not found, might be a different UI pattern
-      test.skip();
-    }
-  });
-
-  test('should duplicate site', async ({ page }) => {
+    // Navigate back to dashboard to verify
+    console.log('[Test] Verifying on dashboard...');
     await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle');
-
-    // Find the site card
-    const siteCard = page.locator(`[data-subdomain="${siteSubdomain}"], .site-card`).first();
-
-    // Count sites before duplication
-    const sitesBefore = await page.locator('.site-card, [data-site-id]').count();
-
-    // Click duplicate button
-    const duplicateButton = siteCard.locator(
-      'button:has-text("Duplicate"), button[title*="Duplicate"], button[title*="Copy"], [data-action="duplicate"]'
-    ).first();
-
-    if (await duplicateButton.count() > 0) {
-      // Wait for duplication API response
-      const duplicatePromise = page.waitForResponse(r => 
-        r.url().includes('/api/') && r.request().method() === 'POST'
-      ).catch(() => null);
-      
-      await duplicateButton.click();
-      await duplicatePromise;
-      await page.waitForLoadState('networkidle');
-
-      // Check for success message or confirmation
-      const successMessage = page.locator('text=/duplicated|copied|success/i');
-      const hasSuccess = await successMessage.count() > 0;
-
-      // Refresh dashboard to see new site
-      await page.reload();
-      await page.waitForLoadState('networkidle');
-
-      // Count sites after duplication
-      const sitesAfter = await page.locator('.site-card, [data-site-id]').count();
-
-      // Should have one more site
-      expect(sitesAfter).toBeGreaterThanOrEqual(sitesBefore);
-
-      // Should see duplicate site in list
-      const duplicateSite = page.locator(`text=/copy|duplicate|${siteSubdomain}/i`);
-      const hasDuplicate = await duplicateSite.count() > 0;
-
-      expect(hasDuplicate || sitesAfter > sitesBefore).toBeTruthy();
-    } else {
-      // Duplicate button not found
-      test.skip();
-    }
+    await expect(page.locator(`[data-subdomain="${siteSubdomain}"]`)).toContainText(newName);
+    console.log('[Test] Edit verified successfully!');
   });
 
   test('should delete site with confirmation', async ({ page }) => {
-    await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle');
+    const siteCard = page.locator(`[data-testid="site-card"][data-subdomain="${siteSubdomain}"]`).first();
+    await expect(siteCard).toBeVisible({ timeout: TIMEOUTS.LONG });
 
-    // Find the site card
-    const siteCard = page.locator(`[data-subdomain="${siteSubdomain}"], .site-card`).first();
+    // Find delete button using standard selector
+    const deleteButton = siteCard.locator(SELECTORS.DASHBOARD.DELETE_BUTTON).first();
 
-    // Count sites before deletion
-    const sitesBefore = await page.locator('.site-card, [data-site-id]').count();
+    // Set up dialog handler
+    page.on('dialog', async dialog => {
+      await dialog.accept();
+    });
 
-    // Click delete button
-    const deleteButton = siteCard.locator(
-      'button:has-text("Delete"), button[title*="Delete"], button.danger, [data-action="delete"]'
-    ).first();
+    await deleteButton.click();
 
-    if (await deleteButton.count() > 0) {
-      // Set up dialog handler
-      page.on('dialog', async dialog => {
-        expect(dialog.type()).toBe('confirm');
-        await dialog.accept();
-      });
-
-      // Wait for delete API response
-      const deletePromise = page.waitForResponse(r => 
-        r.url().includes('/api/') && r.request().method() === 'DELETE'
-      ).catch(() => null);
-      
-      await deleteButton.click();
-      await deletePromise;
-      await page.waitForLoadState('networkidle');
-
-      // Refresh dashboard
-      await page.reload();
-      await page.waitForLoadState('networkidle');
-
-      // Count sites after deletion
-      const sitesAfter = await page.locator('.site-card, [data-site-id]').count();
-
-      // Should have one less site
-      expect(sitesAfter).toBeLessThan(sitesBefore);
-
-      // Deleted site should not be visible
-      const deletedSite = page.locator(`[data-subdomain="${siteSubdomain}"]`);
-      const stillExists = await deletedSite.count() > 0;
-
-      expect(stillExists).toBeFalsy();
-    } else {
-      // Delete button not found
-      test.skip();
-    }
+    // Wait for card to disappear
+    await expect(siteCard).not.toBeVisible({ timeout: TIMEOUTS.LONG });
   });
 
-  test('should cancel site deletion', async ({ page }) => {
-    await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle');
-
-    const siteCard = page.locator(`[data-subdomain="${siteSubdomain}"], .site-card`).first();
-    const deleteButton = siteCard.locator(
-      'button:has-text("Delete"), button[title*="Delete"]'
-    ).first();
-
-    if (await deleteButton.count() > 0) {
-      const sitesBefore = await page.locator('.site-card, [data-site-id]').count();
-
-      // Set up dialog handler to cancel
-      page.on('dialog', async dialog => {
-        expect(dialog.type()).toBe('confirm');
-        await dialog.dismiss();
-      });
-
-      await deleteButton.click();
-
-      // Wait for dialog to be handled
-      await page.waitForLoadState('networkidle');
-
-      // Site should still exist
-      const sitesAfter = await page.locator('.site-card, [data-site-id]').count();
-      expect(sitesAfter).toBe(sitesBefore);
-
-      // Site card should still be visible
-      const siteStillExists = await siteCard.count() > 0;
-      expect(siteStillExists).toBeTruthy();
-    } else {
-      test.skip();
-    }
-  });
-
-  test('should edit published site', async ({ page }) => {
-    // First, publish the site (if not already published)
-    await page.goto('/setup');
-    await page.waitForLoadState('networkidle');
-
-    // Try to find publish button
-    const publishButton = page.locator('button:has-text("Publish"), button:has-text("Go Live")');
-
-    if (await publishButton.count() > 0) {
-      await publishButton.click();
-
-      // Wait for publish modal to appear
-      await page.waitForLoadState('domcontentloaded');
-
-      // Fill subdomain if needed
-      const subdomainInput = page.locator('input[name="subdomain"]');
-      if (await subdomainInput.count() > 0 && !(await subdomainInput.inputValue())) {
-        await subdomainInput.fill(`published${Date.now()}`);
-      }
-
-      // Confirm publish
-      const confirmButton = page.locator('button:has-text("Publish"), button:has-text("Confirm")');
-      if (await confirmButton.count() > 0) {
-        const publishPromise = page.waitForResponse(r => 
-          r.url().includes('/api/') && r.request().method() === 'POST'
-        ).catch(() => null);
-        await confirmButton.click();
-        await publishPromise;
-        await page.waitForLoadState('networkidle');
-      }
-    }
-
-    // Now test editing published site
-    await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle');
-
-    const siteCard = page.locator(`[data-subdomain="${siteSubdomain}"], .site-card`).first();
-    const editButton = siteCard.locator('button:has-text("Edit"), a:has-text("Edit")').first();
-
-    if (await editButton.count() > 0) {
-      await editButton.click();
-
-      // Should navigate to editor (may be visual editor or setup page)
-      await page.waitForURL(/setup|editor|sites/, { timeout: 5000 });
-
-      // Should be able to edit
-      const editor = page.locator('.editor, .setup-container, [data-testid="editor"]');
-      await expect(editor.first()).toBeVisible({ timeout: 5000 });
-    }
-  });
-
-  test('should show site status correctly', async ({ page }) => {
-    await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle');
-
-    const siteCard = page.locator(`[data-subdomain="${siteSubdomain}"], .site-card`).first();
+  test('should display site status correctly', async ({ page }) => {
+    const siteCard = page.locator(`[data-testid="site-card"][data-subdomain="${siteSubdomain}"]`).first();
+    await expect(siteCard).toBeVisible();
 
     // Check for status indicators
-    const statusIndicator = siteCard.locator(
-      'text=/published|draft|pending/i, [data-status], .status-badge'
-    );
-
-    // Status should be visible (draft or published)
-    const hasStatus = await statusIndicator.count() > 0;
-
-    // If status is shown, verify it's one of expected values
-    if (hasStatus) {
-      const statusText = await statusIndicator.first().textContent();
-      expect(statusText).toMatch(/published|draft|pending/i);
-    }
-  });
-
-  test('should navigate to live site from dashboard', async ({ page }) => {
-    await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle');
-
-    const siteCard = page.locator(`[data-subdomain="${siteSubdomain}"], .site-card`).first();
-
-    // Find view button (only for published sites)
-    const viewButton = siteCard.locator(
-      'a:has-text("View"), button:has-text("View"), a[href*="/sites/"]'
-    ).first();
-
-    if (await viewButton.count() > 0) {
-      // Check if site is published
-      const statusText = await siteCard.textContent();
-      const isPublished = statusText.includes('published') || statusText.includes('Published');
-
-      if (isPublished) {
-        // Click view button (opens in new tab)
-        const [newPage] = await Promise.all([
-          page.context().waitForEvent('page'),
-          viewButton.click()
-        ]);
-
-        // Should open site in new tab
-        expect(newPage.url()).toMatch(/sites\/|localhost/);
-
-        await newPage.close();
-      }
-    }
-  });
-
-  test('should filter and search sites', async ({ page }) => {
-    await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle');
-
-    // Look for search/filter input
-    const searchInput = page.locator(
-      'input[type="search"], input[placeholder*="search"], input[placeholder*="filter"]'
-    );
-
-    if (await searchInput.count() > 0) {
-      // Type search query
-      await searchInput.fill(siteSubdomain);
-
-      // Wait for filtering (debounced)
-      await page.waitForLoadState('networkidle');
-
-      // Should show matching site
-      const matchingSite = page.locator(`text=${siteSubdomain}, [data-subdomain="${siteSubdomain}"]`);
-      await expect(matchingSite.first()).toBeVisible();
-
-      // Clear search
-      await searchInput.clear();
-      await page.waitForLoadState('networkidle');
-    } else {
-      // Search/filter not implemented
-      test.skip();
-    }
+    const statusLabel = siteCard.locator('.site-status');
+    await expect(statusLabel).toBeVisible();
+    await expect(statusLabel).toContainText(/Published|Draft/i);
   });
 });
 

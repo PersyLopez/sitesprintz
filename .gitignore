@@ -65,6 +65,10 @@ tests/e2e/.auth/
 # Hermes local plans/evidence (do not commit unless explicitly requested)
 .hermes/
 
+# mantest generated runs (plans in tests/mantest/ are source)
+.mantest/runs/
+.mantest/snapshots/
+
 # Runtime/debug logs (already tracked files may need explicit untrack)
 csrf_debug.log
 server.log
@@ -81,11 +85,31 @@ verification-*.json
 *_SUMMARY.txt
 *_COMPLETE.txt
 
+# Generated knowledge graphs and local session dumps
+graphify-out/
+graphify-processes/
+SESSION_*.txt
+*_retry.txt
+products_orders_retry*.txt
+
 # Generated demo/public site artifacts
 public/data/templates.backup-*/
 public/data/templates/backup/
+public/legacy/
+public/index.html.legacy
 
-# Draft files (user-generated)
+# Draft files (user-generated — never commit)
 public/drafts/*.json
+storage/drafts/
+storage/drafts/*.json
 public/sites/*/
 public/showcases/*/
+
+# Graphify knowledge-graph artifacts (generated; never commit)
+graphify-out/
+
+# Session and retry logs (temporary test artifacts)
+SESSION_*.txt
+final_batch_retry.txt
+site_creation_retry.txt
+products_orders_retry*.txt

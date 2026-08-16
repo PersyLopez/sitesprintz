@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS sites (
   
   -- Status
   status VARCHAR(50) DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'expired', 'suspended')),
-  plan VARCHAR(50) DEFAULT 'free' CHECK (plan IN ('free', 'starter', 'pro', 'premium')),
+  plan VARCHAR(50) DEFAULT 'free' CHECK (plan IN ('free', 'trial', 'starter', 'growth', 'pro', 'premium', 'business', 'enterprise')),
   
   -- Timestamps
   published_at TIMESTAMP WITH TIME ZONE,
@@ -94,10 +94,7 @@ CREATE INDEX IF NOT EXISTS idx_sites_data ON sites USING GIN (site_data);
 
 -- Updated_at trigger
 DROP TRIGGER IF EXISTS sites_updated_at ON sites;
-CREATE TRIGGER sites_updated_at
-  BEFORE UPDATE ON sites
-  FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at_column();
+-- sites table has no updated_at column; do not attach update_updated_at_column()
 
 -- ============================================
 -- SUBMISSIONS TABLE

@@ -51,7 +51,8 @@ describe('API Integration Tests - Authentication', () => {
         .send({
           email: `test${timestamp}@example.com`,
           password: 'TestPassword123!',
-          name: 'Test User'
+          name: 'Test User',
+          acceptedTerms: true
         });
 
       expect([200, 201]).toContain(response.status);
@@ -70,7 +71,8 @@ describe('API Integration Tests - Authentication', () => {
         .send({
           email: 'invalid-email',
           password: 'TestPassword123!',
-          name: 'Test User'
+          name: 'Test User',
+          acceptedTerms: true
         });
 
       expect([400, 422]).toContain(response.status);
@@ -99,7 +101,8 @@ describe('API Integration Tests - Authentication', () => {
         .send({
           email,
           password: 'TestPassword123!',
-          name: 'Test User'
+          name: 'Test User',
+          acceptedTerms: true
         });
 
       // Second registration with same email
@@ -108,7 +111,8 @@ describe('API Integration Tests - Authentication', () => {
         .send({
           email,
           password: 'TestPassword123!',
-          name: 'Test User 2'
+          name: 'Test User 2',
+          acceptedTerms: true
         });
 
       expect([400, 409]).toContain(response.status);
@@ -125,7 +129,7 @@ describe('API Integration Tests - Authentication', () => {
 
       await request(app)
         .post('/api/auth/register')
-        .send({ email, password, name: 'Test User' });
+        .send({ email, password, name: 'Test User', acceptedTerms: true });
 
       // Now login
       const response = await request(app)
@@ -224,7 +228,8 @@ describe('API Integration Tests - Authentication', () => {
         .send({
           email,
           password: 'TestPassword123!',
-          name: 'Test User'
+          name: 'Test User',
+          acceptedTerms: true
         });
 
       const token = registerResponse.body.token;
@@ -264,7 +269,8 @@ describe('API Integration Tests - Authentication', () => {
         .send({
           email: `profile${timestamp}@example.com`,
           password: 'TestPassword123!',
-          name: 'Test User'
+          name: 'Test User',
+          acceptedTerms: true
         });
 
       const token = registerResponse.body.token;
@@ -292,7 +298,8 @@ describe('API Integration Tests - Authentication', () => {
         .send({
           email: `logout${timestamp}@example.com`,
           password: 'TestPassword123!',
-          name: 'Test User'
+          name: 'Test User',
+          acceptedTerms: true
         });
 
       const token = registerResponse.body.token;

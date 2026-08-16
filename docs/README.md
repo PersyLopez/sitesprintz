@@ -1,159 +1,74 @@
-# 📚 SiteSprintz Documentation
+# SiteSprintz Documentation
 
-**Complete documentation organized by category.**
+Single entry point. Each subfolder has its own `README.md` with canonical docs for that area.
 
----
-
-## 🚀 Quick Start
-
-| Doc | Purpose | Time |
-|-----|---------|------|
-| [Project README](../README.md) | Project overview & features | 3 min |
-| [Quick Start](setup/QUICK-START.md) | Deploy in 15 minutes | 5 min |
-| [Git Strategy](setup/GIT-STRATEGY.md) | Daily workflow | 3 min |
-| [Git Workflow Best Practices](setup/GIT-WORKFLOW-BEST-PRACTICES.md) | Complete workflow guide | 10 min |
+**Agents**: read [`../AGENTS.md`](../AGENTS.md) first.
 
 ---
 
-## 📁 Documentation by Category
+## Start Here
 
-### 🛠️ Setup & Deployment
-
-- [Production Setup Guide](setup/PRODUCTION-SETUP-GUIDE.md) - **Complete production deployment guide with checkboxes** ⭐
-- [Quick Start](setup/QUICK-START.md) - 15-minute deployment guide
-- [Railway Deploy](setup/RAILWAY-DEPLOY.md) - Production deployment
-- [Git Strategy](setup/GIT-STRATEGY.md) - Quick workflow reference
-- [Git Workflow Best Practices](setup/GIT-WORKFLOW-BEST-PRACTICES.md) - Complete workflow guide
-- [Integration Setup](setup/INTEGRATION-SETUP.md) - API status
-- [Ngrok Setup](setup/NGROK-SETUP.md) - Local webhooks
-- [Test Credentials](setup/TEST-CREDENTIALS.md) - Test accounts
-- [Admin Setup](ADMIN-SETUP.md) - Admin accounts
-
-### 📖 User Guides
-
-- [LLM Chat Guide](guides/LLM-CHAT-GUIDE.md) - AI assistance
-- [Local AI Setup](guides/LOCAL-AI-SETUP.md) - Ollama configuration
-- [Restaurant Pro Demo](guides/RESTAURANT-PRO-DEMO-GUIDE.md) - Pro template walkthrough
-- [Demo Content System](guides/DEMO-CONTENT-SYSTEM.md) - Demo data
-- [Tiered Demo Content](guides/TIERED-DEMO-CONTENT.md) - Content by tier
-
-### 💻 Development
-
-**Core Documentation:**
-- [Architecture Overview](ARCHITECTURE.md) - **System architecture & design patterns** ⭐
-- [Backend Documentation](BACKEND.md) - **API routes, services, middleware** ⭐
-- [Frontend Documentation](FRONTEND.md) - **React components, pages, hooks** ⭐
-- [Database Schema](DATABASE.md) - **Models, relationships, Prisma usage** ⭐
-- [Integrations](INTEGRATIONS.md) - **Stripe, Email, OAuth integrations** ⭐
-- [Testing Guide](TESTING.md) - **Test structure, running tests, best practices** ⭐
-
-**Coding Standards:**
-- [JS Standards](JS-STANDARDS.md) - JavaScript conventions
-- [TDD Guidelines](TDD-GUIDELINES.md) - Testing approach
-
-**Templates:**
-- [Template Creation Guide](TEMPLATE-CREATION-GUIDE.md) - How to create templates
-- [Template Checklist](TEMPLATE-CHECKLIST.md) - Requirements
-- [Template Tier Limitations](TEMPLATE-TIER-LIMITATIONS.md) - **Complete tier comparison & limitations** ⭐
-- [Configuring Tier Features](CONFIGURING-TEMPLATE-TIER-FEATURES.md) - **How to change what each tier allows** ⭐
-- [Quick Feature Config](QUICK-FEATURE-CONFIG-GUIDE.md) - Quick reference for feature changes
-- [Starter Template Standard](development/STARTER-TEMPLATE-STANDARD.md) - Starter specs
-- [Starter vs Premium](development/STARTER-VS-PREMIUM.md) - Tier comparison
-
-**Architecture:**
-- [Free Editing Strategy](development/FREE-EDITING-STRATEGY.md) - Freemium model
-- [Pro Standards Compliance](development/PRO-STANDARDS-COMPLIANCE.md) - Pro requirements
-- [Site Rendering Analysis](development/SITE-RENDERING-ANALYSIS.md) - Publishing
-- [Pro Templates Analysis](development/PRO-TEMPLATES-ANALYSIS.md) - Template architecture
-
-**Integrations:**
-- [Webhook Implementation](WEBHOOK-IMPLEMENTATION.md) - Stripe webhooks
-
-### 🎯 Plans & Roadmap
-
-**Current & Future Plans:**
-- [Strategic Master Plan](plans/STRATEGIC-MASTER-PLAN.md) - 3-year vision (2025-2028)
-- [Backlog](plans/BACKLOG.md) - Current roadmap
-- [Manual Testing Plan](plans/MANUAL-TESTING-PLAN.md) - QA checklist
-- [Test Automation Strategy](plans/TEST-AUTOMATION-STRATEGY.md) - Automating manual tests
-
-**Unimplemented Features:**
-- 🚧 **Booking System** (62.5% - Phase 1 MVP)
-- 📅 **FormFlow** (Q2 2026) - Form builder
-- 📅 **TrustKit** (Q3 2026) - Trust signals
-- 📅 **ChatStack** (2027) - Messaging
-- 📅 **SEOPulse** (2027) - SEO monitoring
-- 📅 **BookFlow** (2027) - Advanced booking
-- 📅 **PayStack** (2027) - Payments
-- 📅 **SiteStack** (2028) - Platform bundle
-
-### 📊 Reports & Status
-
-- [Test Coverage Report](reports/TEST-COVERAGE-REPORT.md) - 85% passing
-- [Test Execution Report](reports/TEST-EXECUTION-REPORT.md) - Latest results
-
-### 🔒 Security & Stability
-
-- [Security Gaps Analysis](security/SECURITY-GAPS-ANALYSIS.md) - **⚠️ Critical security gaps identified** 🔴
-- [Bot Protection Analysis](security/BOT-PROTECTION-ANALYSIS.md) - **Account creation security & bot attacks** ⭐
-- [Quick Start Security](security/QUICK-START-SECURITY.md) - Security basics
-- [Security Assessment](security/SECURITY-ASSESSMENT.md) - Security audit
-- [Production Readiness](stability/PRODUCTION-READINESS.md) - Deployment checklist
-- [Patterns](stability/PATTERNS.md) - Best practices
-- [Antipatterns](stability/ANTIPATTERNS.md) - What to avoid
-- [Security Checklist](stability/SECURITY-CHECKLIST.md) - Verification
-
-### 🗄️ Archive
-
-Completed work summaries (455+ docs) - see `archive/` directory
+| I need to… | Go to |
+|------------|-------|
+| Run the project locally | [`setup/QUICK-START.md`](./setup/QUICK-START.md) or [`setup/README.md`](./setup/README.md) |
+| Understand the architecture | [`ARCHITECTURE.md`](./ARCHITECTURE.md) |
+| Find a file or folder | [`PROJECT_STRUCTURE.md`](./PROJECT_STRUCTURE.md) |
+| See feature implementation status | [`features/QUICK_REFERENCE_STATUS.md`](./features/QUICK_REFERENCE_STATUS.md) |
+| Write or avoid redundant docs | [`governance/AGENT_DOCUMENTATION_GUIDE.md`](./governance/AGENT_DOCUMENTATION_GUIDE.md) |
+| Doc placement rules | [`governance/DOCUMENTATION_POLICIES.md`](./governance/DOCUMENTATION_POLICIES.md) |
 
 ---
 
-## 🎯 Quick Navigation
+## By Area
 
-**"I want to..."**
-
-- **Understand the system** → [Architecture Overview](ARCHITECTURE.md) ⭐
-- **Work on backend** → [Backend Documentation](BACKEND.md) ⭐
-- **Work on frontend** → [Frontend Documentation](FRONTEND.md) ⭐
-- **Understand database** → [Database Schema](DATABASE.md) ⭐
-- **Deploy to production** → [Production Setup Guide](setup/PRODUCTION-SETUP-GUIDE.md) ⭐
-- **Quick deploy** → [Quick Start](setup/QUICK-START.md)
-- **See roadmap** → [Strategic Plan](plans/STRATEGIC-MASTER-PLAN.md) + [Backlog](plans/BACKLOG.md)
-- **Create template** → [Template Guide](TEMPLATE-CREATION-GUIDE.md)
-- **Test locally** → [Test Credentials](setup/TEST-CREDENTIALS.md)
-- **Set up webhooks** → [Ngrok](setup/NGROK-SETUP.md) + [Webhooks](WEBHOOK-IMPLEMENTATION.md)
-- **Become admin** → [Admin Setup](ADMIN-SETUP.md)
-- **Understand code** → [JS Standards](JS-STANDARDS.md) + [TDD Guidelines](TDD-GUIDELINES.md)
-
----
-
-## 📊 Project Status
-
-| Area | Status |
-|------|--------|
-| Core Features | ✅ Complete |
-| Integrations | ✅ Complete |
-| Templates | ✅ 12 base + 36 layouts |
-| Tests | ✅ 85% passing |
-| Deployment | ✅ Ready |
-| Booking System | 🟡 62.5% (Phase 1) |
-| FormFlow | 📅 Q2 2026 |
-| Multi-Product | 📅 2027-2028 |
+| Folder | Contents |
+|--------|----------|
+| [`setup/`](./setup/) | Local dev, deploy, OAuth, Stripe, integrations |
+| [`development/`](./development/) | JS standards, templates, backend/frontend guides |
+| [`features/`](./features/) | Page builder, booking, admin plan features |
+| [`ecommerce/`](./ecommerce/) | Cart, checkout, tier gating, E2E tests |
+| [`verification/`](./verification/) | Site creation flow verification |
+| [`testing/`](./testing/) | Test runbooks and infrastructure |
+| [`security/`](./security/) | Security assessment and policies |
+| [`plans/`](./plans/) | Backlog and roadmap |
+| [`guides/`](./guides/) | Demo and user guides |
+| [`reports/`](./reports/) | Report templates only |
+| [`governance/`](./governance/) | Documentation policies |
+| [`archive/`](./archive/) | Historical docs (read-only) |
 
 ---
 
-## 📞 Support
+## Canonical Docs (no duplicates elsewhere)
 
-**Email:** persylopez9@gmail.com  
-**Admin:** `/admin` (requires ADMIN_TOKEN)
+| Topic | Canonical doc |
+|-------|---------------|
+| Site creation flow | `verification/SITE_CREATION_PROCESS_VERIFICATION.md` |
+| E-commerce testing | `ecommerce/ECOMMERCE_TESTING_GUIDE.md` |
+| E-commerce tiers | `ecommerce/ECOMMERCE_TIER_CONSOLIDATION.md` |
+| Page builder | `features/PLUG_AND_PLAY_IMPLEMENTATION.md` |
+| Booking modes | `features/BUSINESS_MODE_CORE_SOLUTION.md` |
+| Feature status | `features/QUICK_REFERENCE_STATUS.md` |
+| JS standards | `development/JS-STANDARDS.md` |
+| Testing standards | `development/TESTING.md` |
+| Google OAuth + ngrok | `setup/GOOGLE-OAUTH-NGROK.md` |
+| Admin setup | `ADMIN-SETUP.md` |
+| Doc efficiency (agents) | `governance/AGENT_DOCUMENTATION_GUIDE.md` |
 
 ---
 
-**Last Updated:** December 2025  
-**Version:** 2.1  
-**Total Docs:** 460+ organized (outdated docs removed)
+## Maintaining Documentation
+
+1. **Update canonical docs** — do not create parallel `*_SUMMARY`, `*_REPORT`, or index files
+2. **Feature status changes** → update `features/QUICK_REFERENCE_STATUS.md`
+3. **New primary doc** → add one line to folder `README.md` + row in canonical table above
+4. Full rules: [`governance/AGENT_DOCUMENTATION_GUIDE.md`](./governance/AGENT_DOCUMENTATION_GUIDE.md)
+
+## Archive Policy
+
+- **Do not** add new files to `archive/`
+- Redundant snapshots: `archive/consolidated-2026/`
+- Legacy root docs: `archive/legacy-root/`
 
 ---
 
-**Ready?** → [Quick Start](setup/QUICK-START.md) 🚀
+**Last updated**: June 2026

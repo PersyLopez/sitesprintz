@@ -50,7 +50,9 @@ describe('authService', () => {
 
       expect(api.post).toHaveBeenCalledWith('/api/auth/register', {
         email: 'new@example.com',
-        password: 'password123'
+        password: 'password123',
+        captchaToken: null,
+        acceptedTerms: false
       });
       expect(result).toEqual(mockResponse);
       expect(localStorage.getItem('authToken')).toBe('fake-jwt-token');

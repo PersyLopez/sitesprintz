@@ -47,7 +47,7 @@ test.describe('Public Showcase Gallery E2E Tests', () => {
     });
     test('should load showcase gallery page successfully', async ({ page }) => {
       await page.goto('/showcase');
-      await expect(page.locator('h1')).toContainText('Made with SiteSprintz');
+      await expect(page.locator('h1')).toContainText('See how your site could look');
     });
 
     test('should display site cards in grid layout', async ({ page }) => {
@@ -389,16 +389,31 @@ test.describe('Public Showcase Gallery E2E Tests', () => {
   test.describe('Accessibility', () => {
     test('should be keyboard navigable', async ({ page, isMobile }) => {
       await page.goto('/showcase');
+      await page.waitForLoadState('networkidle');
+
+      // Check if we're actually on mobile by checking viewport
+      const viewport = page.viewportSize();
+      const isActuallyMobile = viewport && viewport.width < 768;
+      
+      // Skip on mobile/tablet as keyboard nav behavior varies
+      if (isMobile || isActuallyMobile) {
+        test.skip();
+        return;
+      }
+
+      // Wait for interactive elements to be ready
+      await page.waitForSelector('a, button, input', { timeout: 5000 });
 
       // Tab through elements
       await page.keyboard.press('Tab');
+      await page.waitForTimeout(100); // Small delay for focus
       await page.keyboard.press('Tab');
+      await page.waitForTimeout(100);
 
       // Should be able to navigate
-      // Skip on mobile/tablet as keyboard nav behavior varies
-      if (isMobile) test.skip();
-
       await page.keyboard.press('Tab');
+      await page.waitForTimeout(100);
+      
       const focusedElement = await page.evaluate(() => document.activeElement.tagName);
       expect(['A', 'BUTTON', 'INPUT']).toContain(focusedElement);
     });

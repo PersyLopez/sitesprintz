@@ -31,47 +31,26 @@
   border: none; /* Remove border */
   border-bottom: 1px solid var(--border-dark); /* Only bottom border */
   border-radius: 0; /* Remove radius for full width */
-  padding: var(--spacing-xs) var(--spacing-md); /* Minimal padding */
+  padding: var(--spacing-sm) var(--spacing-md); /* Minimal padding */
   margin-bottom: 0; /* Remove margin */
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs); /* Minimal gap */
+  gap: var(--spacing-sm); /* Minimal gap */
   z-index: 100;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
-  max-height: 45px; /* Collapsed height - only shows search */
-  overflow: hidden;
-  transition: max-height 0.3s ease, padding 0.3s ease;
-  cursor: pointer;
+  max-height: none; /* Always show - no collapse */
+  overflow: visible;
+  transition: box-shadow 0.3s ease;
+  cursor: default;
 }
 
 .template-controls:hover,
 .template-controls:focus-within {
-  max-height: 300px; /* Expanded height */
-  padding: var(--spacing-sm) var(--spacing-md);
-  gap: var(--spacing-sm);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  cursor: default;
 }
 
-/* Hint for collapsible controls */
-.template-controls::after {
-  content: '▼ Hover to see filters';
-  position: absolute;
-  right: var(--spacing-md);
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  opacity: 1;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
-
-.template-controls:hover::after,
-.template-controls:focus-within::after {
-  opacity: 0;
-}
+/* Hint for collapsible controls - removed since always visible */
 
 /* Search Bar */
 .template-search {
@@ -238,6 +217,23 @@
 /* ============================================
    TEMPLATE SECTIONS - SCROLLABLE
    ============================================ */
+.recommended-section {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.05) 0%, rgba(8, 145, 178, 0.05) 100%);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  border-radius: 12px;
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.recommended-badge {
+  font-size: 0.75rem;
+  color: var(--primary-color, #06b6d4);
+  background: rgba(6, 182, 212, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
 .template-tier-section {
   margin-bottom: var(--spacing-lg); /* Reduced */
   background: linear-gradient(180deg, 
@@ -667,3 +663,53 @@
 .template-cards::-webkit-scrollbar-thumb:hover {
   background: var(--primary-color);
 }
+
+/* ============================================
+   CUSTOM TEMPLATE STYLES
+   ============================================ */
+
+.custom-template-section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.custom-template-card {
+  position: relative;
+  background: linear-gradient(135deg,
+    rgba(6, 182, 212, 0.1) 0%,
+    rgba(8, 145, 178, 0.05) 100%);
+  border: 2px dashed var(--primary-color);
+  cursor: pointer;
+}
+
+.custom-template-card:hover {
+  background: linear-gradient(135deg,
+    rgba(6, 182, 212, 0.15) 0%,
+    rgba(8, 145, 178, 0.1) 100%);
+  border: 2px solid var(--primary-color);
+}
+
+.custom-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  background: linear-gradient(135deg, 
+    rgba(6, 182, 212, 0.1) 0%,
+    rgba(8, 145, 178, 0.05) 100%);
+}
+
+.custom-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: linear-gradient(135deg, var(--primary-color), #0891b2);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+}
+

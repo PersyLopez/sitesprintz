@@ -8,6 +8,29 @@ vi.mock('../../src/hooks/useSite', () => ({
   useSite: vi.fn(),
 }));
 
+vi.mock('../../src/hooks/useToast', () => ({
+  useToast: vi.fn(() => ({
+    showSuccess: vi.fn(),
+    showError: vi.fn(),
+    showInfo: vi.fn()
+  }))
+}));
+
+vi.mock('../../src/hooks/usePlan', () => ({
+  usePlan: vi.fn(() => ({
+    plan: 'growth',
+    features: { payments: true }
+  }))
+}));
+
+vi.mock('../../src/components/ecommerce/PaymentStatusCard', () => ({
+  default: () => <div data-testid="payment-status-card">Payment Status</div>
+}));
+
+vi.mock('../../src/components/products/ImportModal', () => ({
+  default: () => <div data-testid="import-modal">Import Modal</div>
+}));
+
 vi.mock('../../src/components/setup/forms/ImageUploader', () => ({
   default: ({ value, onChange }) => (
     <div data-testid="image-uploader">

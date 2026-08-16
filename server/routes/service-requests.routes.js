@@ -11,6 +11,7 @@ import { getTemplateService } from '../services/templates/index.js';
 import { prisma } from '../../database/db.js';
 import { parseSiteData } from '../utils/parseSiteData.js';
 import { hasServiceRequestFeature } from '../constants/subscription.js';
+import { resolveUserPlan } from '../utils/resolveUserPlan.js';
 import {
   sendSuccess,
   sendCreated,
@@ -34,7 +35,7 @@ async function getSiteBySubdomain(subdomain) {
       site_data: true,
       user_id: true,
       users: {
-        select: { id: true, email: true, subscription_plan: true }
+        select: { id: true, email: true, subscription_plan: true, plan: true }
       }
     }
   });
@@ -63,8 +64,8 @@ router.post('/submit', asyncHandler(async (req, res) => {
     return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
   }
 
-  // Check if site owner has Growth tier or higher (for booking/request features)
-  const userPlan = site.users?.subscription_plan || 'free';
+  // Check if site owner has Growth tier (for booking/request features)
+  const userPlan = resolveUserPlan(site.users);
   if (!hasServiceRequestFeature(userPlan)) {
     return sendBadRequest(
       res,

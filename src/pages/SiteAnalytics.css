@@ -88,6 +88,64 @@
   border-color: #6366f1;
 }
 
+/* Performance Section */
+.performance-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.performance-section h2 {
+  margin: 0 0 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.performance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.performance-card {
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.performance-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.performance-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.performance-value.good {
+  color: #10b981;
+}
+
+.performance-value.needs-improvement {
+  color: #f59e0b;
+}
+
+.performance-value.poor {
+  color: #ef4444;
+}
+
+.performance-target {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
 /* Stats Grid */
 .stats-grid {
   display: grid;

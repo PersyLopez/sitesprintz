@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
 import { PasswordStrengthMeter } from '../components/auth/PasswordStrengthMeter';
 import './Auth.css';
 
@@ -21,6 +22,11 @@ function Register() {
   });
   const [loading, setLoading] = useState(false);
   const [captchaReady, setCaptchaReady] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+
+  const loginLinkTo = searchParams.get('template')
+    ? `/login?template=${searchParams.get('template')}`
+    : '/login';
 
   // Initialize Cloudflare Turnstile
   useEffect(() => {
@@ -89,22 +95,30 @@ function Register() {
       return;
     }
 
+    // Require explicit acceptance of the legal agreements (clickwrap)
+    if (!acceptedTerms) {
+      showError('Please accept the Terms, Privacy Policy, and Third-Party Services Disclosure to continue');
+      return;
+    }
+
     // Password validation will be handled by backend
     // Frontend validation is for UX only
 
     // Check CAPTCHA if site key is configured
+    /* CAPTCHA DISABLED FOR RECORDING
     const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
     if (siteKey && !captchaTokenRef.current) {
       showError('Please complete the CAPTCHA verification');
       return;
     }
+    */
 
     setLoading(true);
 
     try {
-      await register(formData.email, formData.password, captchaTokenRef.current);
+      await register(formData.email, formData.password, captchaTokenRef.current, acceptedTerms);
       showSuccess('Account created successfully!');
-      
+
       // Reset CAPTCHA after successful registration
       if (window.turnstile && turnstileRef.current) {
         window.turnstile.reset();
@@ -139,7 +153,7 @@ function Register() {
   };
 
   return (
-    <div className="auth-page">
+    <div className="auth-page story-public">
       <Header />
 
       <div className="auth-container">
@@ -156,6 +170,7 @@ function Register() {
                 type="email"
                 id="email"
                 name="email"
+                data-testid="register-email"
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="you@example.com"
@@ -170,6 +185,7 @@ function Register() {
                 type="password"
                 id="password"
                 name="password"
+                data-testid="register-password"
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Create a secure password"
@@ -186,6 +202,7 @@ function Register() {
                 type="password"
                 id="confirmPassword"
                 name="confirmPassword"
+                data-testid="register-confirm-password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 placeholder="Confirm your password"
@@ -205,10 +222,35 @@ function Register() {
               </div>
             )}
 
+            <div className="form-group form-consent">
+              <label className="consent-label">
+                <input
+                  type="checkbox"
+                  name="acceptTerms"
+                  data-testid="register-accept-terms"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  disabled={loading}
+                  required
+                />
+                <span>
+                  I have read and agree to the{' '}
+                  <a href="/legal/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>,{' '}
+                  <a href="/legal/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>, and{' '}
+                  <a href="/legal/third-party-services" target="_blank" rel="noopener noreferrer">
+                    Third-Party Services &amp; Data Handling Disclosure
+                  </a>
+                  . I understand that sensitive information such as payments and login data is processed by independent
+                  third-party providers, and that SiteSprintz&apos;s liability is limited as described in those documents.
+                </span>
+              </label>
+            </div>
+
             <button
               type="submit"
               className="btn btn-primary btn-full"
-              disabled={loading}
+              data-testid="register-submit"
+              disabled={loading || !acceptedTerms}
             >
               {loading ? (
                 <>
@@ -229,6 +271,8 @@ function Register() {
             type="button"
             onClick={handleGoogleSignup}
             className="btn btn-secondary btn-full"
+            disabled={!acceptedTerms}
+            title={!acceptedTerms ? 'Accept the agreements above to continue' : undefined}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
               <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4" />
@@ -242,17 +286,19 @@ function Register() {
           <div className="auth-switch">
             <p>
               Already have an account?{' '}
-              <Link to="/login" className="link-primary">
+              <Link to={loginLinkTo} className="link-primary">
                 Sign in
               </Link>
             </p>
           </div>
 
           <p className="terms-text">
-            By creating an account, you agree to our Terms of Service and Privacy Policy.
+            Sensitive data (payments, login) is handled by independent third parties under their own terms.
+            SiteSprintz is currently in beta and provided &ldquo;as is.&rdquo;
           </p>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

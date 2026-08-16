@@ -58,14 +58,21 @@ function AdminUsers() {
       }
 
       const data = await response.json();
-      setUsers(data.users || getMockUsers());
-      calculateStats(data.users || getMockUsers());
+      setUsers(data.users || []);
+      calculateStats(data.users || []);
     } catch (error) {
       console.error('Load users error:', error);
-      // Use mock data for development
-      const mockUsers = getMockUsers();
-      setUsers(mockUsers);
-      calculateStats(mockUsers);
+      // In production, show error instead of mock data
+      if (import.meta.env.PROD) {
+        showError('Failed to load users');
+        setUsers([]);
+        calculateStats([]);
+      } else {
+        // Use mock data for development only
+        const mockUsers = getMockUsers();
+        setUsers(mockUsers);
+        calculateStats(mockUsers);
+      }
     } finally {
       setLoading(false);
     }
@@ -270,16 +277,19 @@ function AdminUsers() {
 
     let confirmMessage = '';
     let endpoint = '';
-    let method = 'POST';
+    let method = 'PATCH';
+    let body = {};
 
     switch (action) {
       case 'suspend':
         confirmMessage = `Suspend user ${userToUpdate.email}?`;
-        endpoint = `/api/admin/users/${userId}/suspend`;
+        endpoint = `/api/admin/users/${userId}/status`;
+        body = { status: 'suspended' };
         break;
       case 'activate':
         confirmMessage = `Activate user ${userToUpdate.email}?`;
-        endpoint = `/api/admin/users/${userId}/activate`;
+        endpoint = `/api/admin/users/${userId}/status`;
+        body = { status: 'active' };
         break;
       case 'delete':
         confirmMessage = `Delete user ${userToUpdate.email}? This cannot be undone.`;
@@ -289,6 +299,7 @@ function AdminUsers() {
       case 'make-admin':
         confirmMessage = `Grant admin privileges to ${userToUpdate.email}?`;
         endpoint = `/api/admin/users/${userId}/role`;
+        body = { role: 'admin' };
         break;
       default:
         return;
@@ -303,7 +314,7 @@ function AdminUsers() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token || localStorage.getItem('accessToken')}`
         },
-        body: action === 'make-admin' ? JSON.stringify({ role: 'admin' }) : undefined
+        body: Object.keys(body).length > 0 ? JSON.stringify(body) : undefined
       });
 
       if (!response.ok) {
@@ -444,8 +455,7 @@ function AdminUsers() {
               >
                 <option value="trial">Trial</option>
                 <option value="starter">Starter</option>
-                <option value="checkout">Checkout</option>
-                <option value="pro">Pro</option>
+                <option value="growth">Growth</option>
               </select>
             </div>
 
@@ -502,8 +512,7 @@ function AdminUsers() {
                 <option value="all">All Plans</option>
                 <option value="trial">Trial</option>
                 <option value="starter">Starter</option>
-                <option value="checkout">Checkout</option>
-                <option value="pro">Pro</option>
+                <option value="growth">Growth</option>
               </select>
             </div>
           </div>
@@ -515,7 +524,7 @@ function AdminUsers() {
             </div>
           ) : filteredUsers.length > 0 ? (
             <div className="users-table-container">
-              <table className="users-table">
+              <table className="users-table" data-testid="users-table">
                 <thead>
                   <tr>
                     <th>User</th>
@@ -530,7 +539,7 @@ function AdminUsers() {
                 </thead>
                 <tbody>
                   {filteredUsers.map((userItem) => (
-                    <tr key={userItem.id}>
+                    <tr key={userItem.id} data-testid={`user-item-${userItem.id}`} data-user-id={userItem.id}>
                       <td>
                         <div className="user-cell">
                           <div className="user-avatar">
@@ -566,6 +575,7 @@ function AdminUsers() {
                             onClick={() => viewUserDetails(userItem.id)}
                             className="btn-action btn-view"
                             title="View Details"
+                            data-testid={`view-details-btn-${userItem.id}`}
                           >
                             👁️
                           </button>
@@ -575,6 +585,7 @@ function AdminUsers() {
                               onClick={() => handleUserAction(userItem.id, 'suspend')}
                               className="btn-action btn-suspend"
                               title="Suspend User"
+                              data-testid={`suspend-btn-${userItem.id}`}
                             >
                               ⏸️
                             </button>
@@ -585,6 +596,7 @@ function AdminUsers() {
                               onClick={() => handleUserAction(userItem.id, 'activate')}
                               className="btn-action btn-activate"
                               title="Activate User"
+                              data-testid={`activate-btn-${userItem.id}`}
                             >
                               ▶️
                             </button>
@@ -595,6 +607,7 @@ function AdminUsers() {
                               onClick={() => handleUserAction(userItem.id, 'make-admin')}
                               className="btn-action btn-promote"
                               title="Make Admin"
+                              data-testid={`promote-btn-${userItem.id}`}
                             >
                               👑
                             </button>
@@ -604,6 +617,7 @@ function AdminUsers() {
                             onClick={() => handleUserAction(userItem.id, 'delete')}
                             className="btn-action btn-delete"
                             title="Delete User"
+                            data-testid={`delete-btn-${userItem.id}`}
                           >
                             🗑️
                           </button>

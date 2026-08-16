@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const isCI = !!process.env.CI;
 const runAllBrowsers = process.env.PLAYWRIGHT_ALL_BROWSERS === 'true';
+const skipWebServer = process.env.PLAYWRIGHT_SKIP_WEBSERVER === 'true';
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -22,23 +23,34 @@ export default defineConfig({
     navigationTimeout: 30_000,
     testIdAttribute: 'data-testid',
     reducedMotion: 'reduce',
-    reducedMotion: 'reduce',
   },
 
   projects: [
-    // Setup project
+    // 1. Seed Database
     {
-      name: 'setup',
+      name: 'db-setup',
+      testMatch: /db\.setup\.js/,
+    },
+    // 2. Authenticate User (Depends on DB being seeded)
+    {
+      name: 'auth-setup',
       testMatch: /auth\.setup\.js/,
+      dependencies: ['db-setup'],
+    },
+    // 3. Authenticate Admin (Depends on DB being seeded)
+    {
+      name: 'admin-setup',
+      testMatch: /admin\.setup\.js/,
+      dependencies: ['db-setup'],
     },
     {
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
-        // Use prepared auth state.
+        // Default to user auth state.
         storageState: 'tests/e2e/.auth/user.json',
       },
-      dependencies: ['setup'],
+      dependencies: ['auth-setup', 'admin-setup'],
     },
     ...(runAllBrowsers ? [
       {
@@ -47,7 +59,7 @@ export default defineConfig({
           ...devices['Desktop Firefox'],
           storageState: 'tests/e2e/.auth/user.json',
         },
-        dependencies: ['setup'],
+        dependencies: ['auth-setup'],
       },
       {
         name: 'webkit',
@@ -55,7 +67,7 @@ export default defineConfig({
           ...devices['Desktop Safari'],
           storageState: 'tests/e2e/.auth/user.json',
         },
-        dependencies: ['setup'],
+        dependencies: ['auth-setup'],
       },
       // Mobile viewports
       {
@@ -77,12 +89,13 @@ export default defineConfig({
     ] : []),
   ],
 
-  webServer: {
+  webServer: skipWebServer ? undefined : {
     // server.js serves ./dist, so ensure build exists before starting.
-    command: 'npm run build && NODE_ENV=test USE_MOCK_EMAIL=true CLIENT_URL=http://localhost:3000 PORT=3000 npm run start',
+    // Skip build if dist/index.html exists (already built)
+    command: '([ -f dist/index.html ] || npm run build) && NODE_ENV=test USE_MOCK_EMAIL=true CLIENT_URL=http://localhost:3000 PORT=3000 npm run start',
     url: 'http://localhost:3000',
     reuseExistingServer: !isCI,
-    timeout: 120 * 1000,
+    timeout: 180 * 1000, // 3 minutes (build skipped if exists)
   },
 });
 

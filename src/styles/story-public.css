@@ -1,0 +1,254 @@
+/* ══════════════════════════════════════════════════════════════
+   Story Public Theme — warm neighborhood look for public surfaces
+   Scoped to .story-public / .public-page so dashboard stays Ocean Blue.
+   ════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap');
+
+.story-public,
+.public-page {
+  --sp-bg: #fff8ef;
+  --sp-surface: #ffffff;
+  --sp-ink: #1c140f;
+  --sp-muted: #5c4a3d;
+  --sp-border: #f0d7b5;
+  --sp-accent: #e87b1e;
+  --sp-accent-deep: #c45a0a;
+  --sp-accent-soft: #fff1de;
+  --sp-teal: #0f766e;
+  --sp-hero: #142428;
+  --sp-glow: #f4a261;
+  --sp-font-display: 'Outfit', system-ui, sans-serif;
+  --sp-font-body: 'Nunito', system-ui, sans-serif;
+
+  font-family: var(--sp-font-body);
+  background:
+    radial-gradient(ellipse 80% 40% at 0% 0%, rgba(251, 191, 36, 0.14), transparent 50%),
+    radial-gradient(ellipse 50% 40% at 100% 10%, rgba(15, 118, 110, 0.08), transparent 45%),
+    var(--sp-bg);
+  color: var(--sp-ink);
+}
+
+.public-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.public-page main {
+  flex: 1;
+}
+
+/* Header — warm story chrome */
+.story-public .site-header,
+.public-page .site-header {
+  background: rgba(255, 248, 239, 0.9);
+  border-bottom: 1px solid var(--sp-border);
+  backdrop-filter: blur(12px);
+}
+
+.story-public .site-header.scrolled,
+.public-page .site-header.scrolled {
+  background: rgba(255, 248, 239, 0.97);
+  box-shadow: 0 4px 20px rgba(28, 20, 15, 0.06);
+  border-bottom-color: var(--sp-border);
+}
+
+.story-public .logo,
+.public-page .logo {
+  color: var(--sp-ink);
+  font-family: var(--sp-font-display);
+}
+
+.story-public .logo:focus,
+.public-page .logo:focus {
+  outline-color: var(--sp-accent);
+}
+
+.story-public .logo-text,
+.public-page .logo-text {
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: var(--sp-accent-deep) !important;
+  color: var(--sp-accent-deep) !important;
+}
+
+.story-public .nav-link::after,
+.public-page .nav-link::after {
+  background: var(--sp-accent);
+}
+
+.story-public .nav-link:hover,
+.public-page .nav-link:hover,
+.story-public .nav-link.active,
+.public-page .nav-link.active,
+.story-public .nav-link:focus,
+.public-page .nav-link:focus {
+  color: var(--sp-accent-deep);
+}
+
+.story-public .user-name,
+.public-page .user-name {
+  background: var(--sp-accent-soft);
+  border-color: var(--sp-border);
+  color: var(--sp-ink);
+}
+
+.story-public .nav-link,
+.public-page .nav-link {
+  color: var(--sp-muted);
+  font-family: var(--sp-font-display);
+  font-weight: 600;
+}
+
+.story-public .nav-link:hover,
+.public-page .nav-link:hover {
+  color: var(--sp-accent-deep);
+  background: var(--sp-accent-soft);
+}
+
+.story-public .nav-link:focus,
+.public-page .nav-link:focus {
+  outline-color: var(--sp-accent);
+}
+
+.story-public .btn.btn-primary,
+.public-page .btn.btn-primary {
+  background: var(--sp-accent) !important;
+  background-image: none !important;
+  border: none;
+  color: #fffaf3 !important;
+  font-family: var(--sp-font-display);
+  font-weight: 700;
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(232, 123, 30, 0.3);
+}
+
+.story-public .btn.btn-secondary,
+.public-page .btn.btn-secondary {
+  border: 1.5px solid var(--sp-border);
+  color: var(--sp-accent-deep);
+  background: transparent;
+  background-image: none !important;
+  border-radius: 999px;
+  font-family: var(--sp-font-display);
+  font-weight: 700;
+}
+
+.story-public .mobile-menu-toggle,
+.public-page .mobile-menu-toggle {
+  color: var(--sp-ink);
+  border-color: var(--sp-border);
+  background: var(--sp-surface);
+}
+
+.story-public .mobile-nav-link,
+.public-page .mobile-nav-link {
+  color: var(--sp-ink);
+  font-family: var(--sp-font-display);
+  font-weight: 600;
+}
+
+.story-public .mobile-nav-link:hover,
+.public-page .mobile-nav-link:hover,
+.story-public .mobile-nav-link.active,
+.public-page .mobile-nav-link.active {
+  background: var(--sp-accent-soft);
+  color: var(--sp-accent-deep);
+}
+
+.story-public .mobile-cta,
+.public-page .mobile-cta {
+  background: var(--sp-accent) !important;
+  color: #fffaf3 !important;
+  border-radius: 999px;
+}
+
+.story-public .logo-mark,
+.public-page .logo-mark {
+  color: var(--sp-accent-deep);
+  fill: currentColor;
+}
+
+.story-public .mobile-nav,
+.public-page .mobile-nav {
+  background: var(--sp-bg);
+  border-color: var(--sp-border);
+}
+
+.story-public .user-menu-btn,
+.public-page .user-menu-btn {
+  color: var(--sp-ink);
+  border-color: var(--sp-border);
+  background: var(--sp-surface);
+}
+
+.story-public .dropdown-menu,
+.public-page .dropdown-menu {
+  background: var(--sp-surface);
+  border-color: var(--sp-border);
+  box-shadow: 0 12px 32px rgba(28, 20, 15, 0.1);
+}
+
+.story-public .dropdown-item,
+.public-page .dropdown-item {
+  color: var(--sp-ink);
+}
+
+.story-public .dropdown-item:hover,
+.public-page .dropdown-item:hover {
+  background: var(--sp-accent-soft);
+  color: var(--sp-accent-deep);
+}
+
+/* Footer */
+.story-public .site-footer,
+.public-page .site-footer {
+  background: var(--sp-hero);
+  border-top: 1px solid rgba(244, 162, 97, 0.2);
+  color: #f5d9b8;
+}
+
+.story-public .footer-brand .logo-text,
+.public-page .footer-brand .logo-text,
+.story-public .footer-brand .logo-icon,
+.public-page .footer-brand .logo-icon {
+  color: var(--sp-glow);
+}
+
+.story-public .footer-tagline,
+.public-page .footer-tagline,
+.story-public .footer-copyright,
+.public-page .footer-copyright {
+  color: #c4a484;
+}
+
+.story-public .footer-column .footer-heading,
+.public-page .footer-column .footer-heading,
+.story-public .footer-column h4,
+.public-page .footer-column h4 {
+  color: #fffaf3;
+  font-family: var(--sp-font-display);
+}
+
+.story-public .footer-column a,
+.public-page .footer-column a {
+  color: #f5d9b8;
+}
+
+.story-public .footer-column a:hover,
+.public-page .footer-column a:hover {
+  color: var(--sp-glow);
+}
+
+.story-public .footer-bottom,
+.public-page .footer-bottom {
+  border-top-color: rgba(244, 162, 97, 0.2);
+}
+
+.story-public .skip-to-content,
+.public-page .skip-to-content {
+  background: var(--sp-accent-deep);
+  color: #fffaf3;
+}

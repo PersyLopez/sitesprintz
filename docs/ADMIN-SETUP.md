@@ -176,5 +176,16 @@ UPDATE users SET role = 'user' WHERE email = 'email@example.com';
 
 ---
 
-**Created:** November 16, 2025  
-**Last Updated:** November 20, 2025
+---
+
+## Related Documentation
+
+| Topic | Doc |
+|-------|-----|
+| Local setup | [setup/QUICK-START.md](./setup/QUICK-START.md) |
+| Admin plan features | [features/ADMIN-PLAN-FEATURES-UI.md](./features/ADMIN-PLAN-FEATURES-UI.md) |
+| Security | [security/QUICK-START-SECURITY.md](./security/QUICK-START-SECURITY.md) |
+
+**Doc index**: [README.md](./README.md)
+
+**Last updated**: June 2026

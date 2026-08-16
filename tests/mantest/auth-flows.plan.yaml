@@ -1,0 +1,67 @@
+url: http://localhost:5173/login
+goal: Pro user login, protected app pages, admin gate, logout
+
+steps:
+  - action: Login page ready
+    wait_for: { text: Welcome Back }
+    settle_ms: 500
+
+  - action: Fill pro user email
+    fill: { testId: login-email, value: "test@example.com", clear: true }
+
+  - action: Fill pro user password
+    fill: { testId: login-password, value: "SecurePass!2024", clear: true }
+
+  - action: Sign in as pro user
+    press: Enter
+    settle_ms: 3000
+    assert:
+      - url contains /dashboard
+      - text contains Welcome back
+
+  - action: Dashboard content
+    expect:
+      - text contains Create New Site
+      - text contains Analytics
+
+  - action: Setup page loads when authenticated
+    goto: http://localhost:5173/setup
+    settle_ms: 2500
+    assert:
+      - url contains /setup
+
+  - action: Settings page loads
+    goto: http://localhost:5173/settings
+    settle_ms: 2000
+    assert:
+      - url contains /settings
+
+  - action: Products page loads
+    goto: http://localhost:5173/products
+    settle_ms: 2000
+    assert:
+      - url contains /products
+
+  - action: Orders page loads
+    goto: http://localhost:5173/orders
+    settle_ms: 2000
+    assert:
+      - url contains /orders
+
+  - action: Analytics page loads
+    goto: http://localhost:5173/analytics
+    settle_ms: 2000
+    assert:
+      - url contains /analytics
+
+  - action: Non-admin redirected from admin to dashboard
+    goto: http://localhost:5173/admin
+    settle_ms: 2000
+    assert:
+      - url contains /dashboard
+
+  - action: Logout
+    click: { role: button, name: Logout }
+    settle_ms: 1500
+    assert:
+      - url contains /login

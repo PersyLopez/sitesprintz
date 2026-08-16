@@ -1,0 +1,150 @@
+/* Staff Card Styles */
+.staff-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.staff-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #2563eb;
+}
+
+.staff-card.selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.staff-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 15px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.staff-card-photo,
+.staff-card-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.staff-card-avatar {
+  background: #2563eb;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.staff-card-title {
+  flex: 1;
+}
+
+.staff-card-title h4 {
+  margin: 0 0 5px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.default-badge {
+  display: inline-block;
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.staff-card-body {
+  padding: 15px;
+  flex: 1;
+}
+
+.staff-bio {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.staff-specialties {
+  font-size: 12px;
+  color: #2563eb;
+  background: #f0f9ff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  border-left: 3px solid #2563eb;
+}
+
+.staff-contact {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+  font-size: 13px;
+}
+
+.contact-label {
+  font-weight: 500;
+  color: #6b7280;
+  min-width: 50px;
+}
+
+.staff-contact a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.staff-contact a:hover {
+  text-decoration: underline;
+}
+
+.staff-card-footer {
+  padding: 12px 15px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.btn-select,
+.btn-selected {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.btn-select {
+  background: #2563eb;
+  color: white;
+}
+
+.btn-select:hover {
+  background: #1d4ed8;
+}
+
+.btn-selected {
+  background: #10b981;
+  color: white;
+}
+
+.btn-selected:hover {
+  background: #059669;
+}
+
+

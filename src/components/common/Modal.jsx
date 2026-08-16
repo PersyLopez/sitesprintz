@@ -121,6 +121,7 @@ export function Modal({
           onClick={onClose}
           aria-label="Close dialog"
           type="button"
+          data-testid="modal-close-btn"
         >
           ×
         </button>
@@ -132,4 +133,5 @@ export function Modal({
 }
 
 export default Modal;
+
 

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
+import { api } from '../../services/api';
 import './PricingManagement.css';
 
 function PricingManagement() {
   const { user } = useAuth();
   const { showSuccess, showError } = useToast();
-  
+
   const [pricing, setPricing] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -21,13 +22,7 @@ function PricingManagement() {
 
   const loadPricing = async () => {
     try {
-      const response = await fetch('/api/pricing/admin/all', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      const data = await response.json();
+      const data = await api.get('/api/pricing/admin/all');
       if (data.success) {
         setPricing(data.pricing);
       }
@@ -41,13 +36,7 @@ function PricingManagement() {
 
   const loadHistory = async (plan) => {
     try {
-      const response = await fetch(`/api/pricing/admin/history/${plan}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      const data = await response.json();
+      const data = await api.get(`/api/pricing/admin/history/${plan}`);
       if (data.success) {
         setHistory(prev => ({ ...prev, [plan]: data.history }));
       }
@@ -64,26 +53,18 @@ function PricingManagement() {
   const handleSave = async (plan) => {
     setSaving(true);
     try {
-      const response = await fetch(`/api/pricing/admin/${plan.plan}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          price_monthly: plan.price_monthly_dollars, // Send as dollars
-          price_annual: plan.price_annual_dollars,
-          name: plan.name,
-          description: plan.description,
-          features: plan.features,
-          trial_days: plan.trial_days,
-          is_active: plan.is_active,
-          is_popular: plan.is_popular,
-          display_order: plan.display_order
-        })
+      const data = await api.put(`/api/pricing/admin/${plan.plan}`, {
+        price_monthly: plan.price_monthly_dollars,
+        price_annual: plan.price_annual_dollars,
+        name: plan.name,
+        description: plan.description,
+        features: plan.features,
+        trial_days: plan.trial_days,
+        is_active: plan.is_active,
+        is_popular: plan.is_popular,
+        display_order: plan.display_order
       });
 
-      const data = await response.json();
       if (data.success) {
         showSuccess('Pricing updated successfully');
         setEditingPlan(null);
@@ -103,23 +84,13 @@ function PricingManagement() {
     setSaving(true);
     try {
       const starterPrice = pricing.find(p => p.plan === 'starter')?.price_monthly_dollars;
-      const proPrice = pricing.find(p => p.plan === 'pro')?.price_monthly_dollars;
-      const premiumPrice = pricing.find(p => p.plan === 'premium')?.price_monthly_dollars;
+      const growthPrice = pricing.find(p => p.plan === 'growth')?.price_monthly_dollars;
 
-      const response = await fetch('/api/pricing/admin/quick-update', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          starter: starterPrice,
-          pro: proPrice,
-          premium: premiumPrice
-        })
+      const data = await api.post('/api/pricing/admin/quick-update', {
+        starter: starterPrice,
+        growth: growthPrice
       });
 
-      const data = await response.json();
       if (data.success) {
         showSuccess('All pricing updated successfully');
         loadPricing();
@@ -135,8 +106,8 @@ function PricingManagement() {
   };
 
   const updatePlanPrice = (planName, field, value) => {
-    setPricing(prev => prev.map(p => 
-      p.plan === planName 
+    setPricing(prev => prev.map(p =>
+      p.plan === planName
         ? { ...p, [field]: parseFloat(value) || 0 }
         : p
     ));
@@ -191,7 +162,7 @@ function PricingManagement() {
             </div>
           ))}
         </div>
-        <button 
+        <button
           className="btn btn-primary"
           onClick={handleQuickUpdate}
           disabled={saving}
@@ -225,8 +196,8 @@ function PricingManagement() {
                   <span className="price-cents">({plan.price_monthly} cents)</span>
                 </td>
                 <td className="price-cell">
-                  {plan.price_annual_dollars 
-                    ? `$${plan.price_annual_dollars}/yr` 
+                  {plan.price_annual_dollars
+                    ? `$${plan.price_annual_dollars}/yr`
                     : '—'}
                 </td>
                 <td>{plan.trial_days} days</td>
@@ -239,7 +210,7 @@ function PricingManagement() {
                   {plan.is_popular && <span className="popular-badge">⭐ Popular</span>}
                 </td>
                 <td>
-                  <button 
+                  <button
                     className="btn btn-small btn-secondary"
                     onClick={() => handleEdit(plan)}
                   >
@@ -259,7 +230,7 @@ function PricingManagement() {
               <h2>Edit {editingPlan.name} Plan</h2>
               <button className="close-btn" onClick={() => setEditingPlan(null)}>×</button>
             </div>
-            
+
             <div className="modal-body">
               <div className="form-grid">
                 <div className="form-group">
@@ -279,9 +250,9 @@ function PricingManagement() {
                     step="1"
                     min="0"
                     value={editingPlan.price_monthly_dollars || ''}
-                    onChange={(e) => setEditingPlan({ 
-                      ...editingPlan, 
-                      price_monthly_dollars: parseFloat(e.target.value) || 0 
+                    onChange={(e) => setEditingPlan({
+                      ...editingPlan,
+                      price_monthly_dollars: parseFloat(e.target.value) || 0
                     })}
                     className="form-control"
                   />
@@ -295,14 +266,14 @@ function PricingManagement() {
                     step="1"
                     min="0"
                     value={editingPlan.price_annual_dollars || ''}
-                    onChange={(e) => setEditingPlan({ 
-                      ...editingPlan, 
-                      price_annual_dollars: parseFloat(e.target.value) || 0 
+                    onChange={(e) => setEditingPlan({
+                      ...editingPlan,
+                      price_annual_dollars: parseFloat(e.target.value) || 0
                     })}
                     className="form-control"
                   />
                   <small className="form-hint">
-                    {editingPlan.price_annual_dollars 
+                    {editingPlan.price_annual_dollars
                       ? `Equivalent to $${(editingPlan.price_annual_dollars / 12).toFixed(2)}/month`
                       : 'Leave empty for no annual option'}
                   </small>
@@ -315,9 +286,9 @@ function PricingManagement() {
                     min="0"
                     max="90"
                     value={editingPlan.trial_days || 0}
-                    onChange={(e) => setEditingPlan({ 
-                      ...editingPlan, 
-                      trial_days: parseInt(e.target.value) || 0 
+                    onChange={(e) => setEditingPlan({
+                      ...editingPlan,
+                      trial_days: parseInt(e.target.value) || 0
                     })}
                     className="form-control"
                   />
@@ -379,14 +350,14 @@ function PricingManagement() {
             </div>
 
             <div className="modal-footer">
-              <button 
+              <button
                 className="btn btn-secondary"
                 onClick={() => setEditingPlan(null)}
                 disabled={saving}
               >
                 Cancel
               </button>
-              <button 
+              <button
                 className="btn btn-primary"
                 onClick={() => handleSave(editingPlan)}
                 disabled={saving}
@@ -402,4 +373,3 @@ function PricingManagement() {
 }
 
 export default PricingManagement;
-

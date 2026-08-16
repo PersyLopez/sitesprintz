@@ -152,4 +152,56 @@ export const uploadLimiter = rateLimit({
   }
 });
 
+/**
+ * Checkout Rate Limiter
+ * 
+ * Limits: 10 orders per minute per IP
+ * Purpose: Prevent order spam and abuse
+ */
+export const checkoutLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: isTest ? 1000 : 10, // Limit each IP to 10 orders per minute
+  message: {
+    error: 'Too many orders',
+    message: 'Please wait a moment before placing another order.',
+    retryAfter: 60
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => ipKeyGenerator(req),
+  handler: (req, res) => {
+    res.status(429).json({
+      error: 'Too many orders',
+      message: 'Please wait a moment before placing another order.',
+      retryAfter: 60
+    });
+  }
+});
+
+/**
+ * Order Rate Limiter (Hourly)
+ * 
+ * Limits: 100 orders per hour per IP
+ * Purpose: Prevent sustained order abuse
+ */
+export const orderLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: isTest ? 5000 : 100, // Limit each IP to 100 orders per hour
+  message: {
+    error: 'Order limit exceeded',
+    message: 'Too many orders from your location. Please try again later.',
+    retryAfter: 3600
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => ipKeyGenerator(req),
+  handler: (req, res) => {
+    res.status(429).json({
+      error: 'Order limit exceeded',
+      message: 'Too many orders from your location. Please try again later.',
+      retryAfter: 3600
+    });
+  }
+});
+
 

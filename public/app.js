@@ -289,40 +289,179 @@
     container.appendChild(el('h2', { class: 'section-title' }, [cfg.contact.title || 'Contact']));
     if (cfg.contact.subtitle) container.appendChild(el('p', { class: 'section-subtitle' }, [cfg.contact.subtitle]));
 
-    // Contact information
+    // Create two-column layout for contact info and form
+    const contentGrid = el('div', { class: 'contact-content-grid' });
+
+    // Left column: Contact information
     const contactInfo = el('div', { class: 'contact-info' });
 
     // Phone and email buttons
     const buttons = [];
-    if (cfg.contact.email) buttons.push(el('a', { href: `mailto:${cfg.contact.email}`, class: 'btn btn-secondary mt-3' }, ['Email us']));
-    if (cfg.contact.phone) buttons.push(el('a', { href: `tel:${cfg.contact.phone}`, class: 'btn btn-secondary mt-3' }, ['Call us']));
+    if (cfg.contact.email) buttons.push(el('a', { href: `mailto:${cfg.contact.email}`, class: 'btn btn-secondary mt-3', 'data-testid': 'contact-email-link' }, ['Email us']));
+    if (cfg.contact.phone) buttons.push(el('a', { href: `tel:${cfg.contact.phone}`, class: 'btn btn-secondary mt-3', 'data-testid': 'contact-phone-link' }, ['Call us']));
     contactInfo.appendChild(el('div', { class: 'cta-row' }, buttons));
 
     // Additional contact details
-    if (cfg.contact.address) contactInfo.appendChild(el('p', { class: 'mt-2' }, [
+    if (cfg.contact.address) contactInfo.appendChild(el('p', { class: 'mt-2', 'data-testid': 'contact-address' }, [
       el('strong', {}, ['Address: ']),
       cfg.contact.address
     ]));
 
     // Hours
     if (cfg.contact.hours && cfg.contact.hours.items) {
-      contactInfo.appendChild(el('div', { class: 'hours-section mt-2' }, [
+      contactInfo.appendChild(el('div', { class: 'hours-section mt-2', 'data-testid': 'contact-hours' }, [
         el('strong', {}, [cfg.contact.hours.title || 'Hours']),
         el('ul', { class: 'hours-list' }, cfg.contact.hours.items.map(hour => el('li', {}, [hour])))
       ]));
     }
 
-    container.appendChild(contactInfo);
+    contentGrid.appendChild(contactInfo);
+
+    // Right column: Contact form
+    const formContainer = el('div', { class: 'contact-form-wrapper' });
+    renderContactForm(cfg, formContainer);
+    contentGrid.appendChild(formContainer);
+
+    container.appendChild(contentGrid);
 
     // Booking widget (if configured)
     if (cfg.booking && cfg.booking.enabled !== false) {
-      renderBookingWidget(cfg.booking, container);
+      renderBookingWidget(cfg.booking, container, cfg).catch(err => {
+        console.error('Error rendering booking widget:', err);
+      });
     }
 
     contentRoot.appendChild(sec);
   }
 
-  function renderBookingWidget(booking, container) {
+  function renderContactForm(cfg, container) {
+    const form = el('form', { id: 'contact-form', class: 'contact-form', 'data-testid': 'contact-form', novalidate: 'true' });
+    
+    // Name field
+    form.appendChild(el('div', { class: 'form-group' }, [
+      el('label', { for: 'contact-name' }, ['Name *']),
+      el('input', {
+        type: 'text',
+        id: 'contact-name',
+        name: 'name',
+        required: 'true',
+        placeholder: 'Your name',
+        'data-testid': 'contact-form-name'
+      })
+    ]));
+
+    // Email field
+    form.appendChild(el('div', { class: 'form-group' }, [
+      el('label', { for: 'contact-email' }, ['Email *']),
+      el('input', {
+        type: 'email',
+        id: 'contact-email',
+        name: 'email',
+        required: 'true',
+        placeholder: 'your@email.com',
+        'data-testid': 'contact-form-email'
+      })
+    ]));
+
+    // Phone field (optional)
+    form.appendChild(el('div', { class: 'form-group' }, [
+      el('label', { for: 'contact-phone' }, ['Phone']),
+      el('input', {
+        type: 'tel',
+        id: 'contact-phone',
+        name: 'phone',
+        placeholder: '(555) 123-4567',
+        'data-testid': 'contact-form-phone'
+      })
+    ]));
+
+    // Message field
+    form.appendChild(el('div', { class: 'form-group' }, [
+      el('label', { for: 'contact-message' }, ['Message *']),
+      el('textarea', {
+        id: 'contact-message',
+        name: 'message',
+        required: 'true',
+        rows: '5',
+        placeholder: 'How can we help you?',
+        'data-testid': 'contact-form-message'
+      })
+    ]));
+
+    // Submit button
+    const submitBtn = el('button', {
+      type: 'submit',
+      class: 'btn btn-primary',
+      'data-testid': 'contact-form-submit'
+    }, ['Send Message']);
+
+    form.appendChild(submitBtn);
+
+    // Status message
+    const statusDiv = el('div', { class: 'form-status', 'data-testid': 'contact-form-status' });
+    form.appendChild(statusDiv);
+
+    // Form submission handler
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(form);
+      const data = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        phone: formData.get('phone') || '',
+        message: formData.get('message')
+      };
+
+      // Validation
+      if (!data.name || !data.email || !data.message) {
+        statusDiv.className = 'form-status error';
+        statusDiv.textContent = 'Please fill in all required fields';
+        statusDiv.setAttribute('role', 'alert');
+        return;
+      }
+
+      // Show loading state
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Sending...';
+      statusDiv.className = 'form-status loading';
+      statusDiv.textContent = 'Sending your message...';
+
+      try {
+        // Submit to contact form endpoint
+        const response = await fetch('/api/submissions/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...data,
+            subdomain: window.location.hostname.split('.')[0] // Extract subdomain from hostname
+          })
+        });
+
+        if (response.ok) {
+          statusDiv.className = 'form-status success';
+          statusDiv.textContent = 'Thank you! Your message has been sent successfully.';
+          statusDiv.setAttribute('role', 'status');
+          form.reset();
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Send Message';
+        } else {
+          throw new Error('Failed to send message');
+        }
+      } catch (error) {
+        console.error('Contact form error:', error);
+        statusDiv.className = 'form-status error';
+        statusDiv.textContent = 'Failed to send message. Please try again or contact us directly.';
+        statusDiv.setAttribute('role', 'alert');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send Message';
+      }
+    });
+
+    container.appendChild(form);
+  }
+
+  async function renderBookingWidget(booking, container, cfg) {
     const bookingSection = el('div', { class: 'booking-widget-section' });
 
     if (booking.title) {
@@ -332,11 +471,68 @@
       bookingSection.appendChild(el('p', { class: 'muted' }, [booking.subtitle]));
     }
 
-    const provider = booking.provider || 'calendly';
+    const provider = booking.provider || 'native'; // Default to native
     const style = booking.style || 'inline';
 
-    if (style === 'inline') {
-      // Inline embed
+    // Native booking widget (default)
+    if (provider === 'native' || (!booking.url && booking.enabled !== false)) {
+      const widgetContainer = el('div', { 
+        id: `native-booking-widget-${Date.now()}`,
+        class: 'booking-widget-container native-booking-widget'
+      });
+      bookingSection.appendChild(widgetContainer);
+
+      // Get userId from config or fetch from API
+      let userId = cfg?.userId || cfg?.ownerId || cfg?.meta?.userId;
+      
+      if (!userId) {
+        // Try to get from subdomain
+        const subdomain = window.location.hostname.split('.')[0] || 
+                         window.location.pathname.split('/').filter(Boolean)[1];
+        
+        if (subdomain && subdomain !== 'sites') {
+          try {
+            const siteRes = await fetch(`/api/showcases/${subdomain}`);
+            if (siteRes.ok) {
+              const siteData = await siteRes.json();
+              userId = siteData.site?.userId || siteData.site?.user_id;
+            }
+          } catch (err) {
+            console.warn('Could not fetch userId for booking widget:', err);
+          }
+        }
+      }
+
+      if (userId) {
+        // Load native booking widget script
+        if (!window.NativeBookingWidget) {
+          const script = document.createElement('script');
+          script.src = '/modules/native-booking-widget.js';
+          script.async = true;
+          await new Promise((resolve, reject) => {
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+          });
+        }
+
+        // Load booking widget CSS if not already loaded
+        if (!document.querySelector('link[href*="BookingWidget.css"]')) {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = '/styles/BookingWidget.css';
+          document.head.appendChild(link);
+        }
+
+        // Initialize widget
+        const widgetId = widgetContainer.id;
+        window.nativeBookingWidget = new window.NativeBookingWidget(widgetId, userId);
+        await window.nativeBookingWidget.init();
+      } else {
+        widgetContainer.innerHTML = '<p class="error">Booking widget: User ID not found. Please configure booking settings.</p>';
+      }
+    } else if (style === 'inline') {
+      // Third-party inline embeds (fallback)
       const embedContainer = el('div', { class: 'booking-embed-container' });
 
       if (provider === 'calendly' && booking.url) {
@@ -371,9 +567,18 @@
                   title="Square Appointments">
           </iframe>
         `;
+      } else if (booking.url && /^https:\/\//i.test(booking.url)) {
+        // Safe iframe from https URL only — never inject raw embed HTML
+        const iframe = document.createElement('iframe');
+        iframe.src = booking.url;
+        iframe.width = '100%';
+        iframe.height = '700';
+        iframe.setAttribute('frameborder', '0');
+        iframe.title = 'Schedule Appointment';
+        iframe.referrerPolicy = 'no-referrer';
+        embedContainer.appendChild(iframe);
       } else if (booking.embedCode) {
-        // Custom embed code
-        embedContainer.innerHTML = booking.embedCode;
+        embedContainer.textContent = 'Custom embed HTML is disabled for security. Use a booking URL instead.';
       }
 
       bookingSection.appendChild(embedContainer);
@@ -587,7 +792,8 @@
         const addToCartBtn = el('button', {
           class: 'btn btn-secondary btn-small btn-add-to-cart',
           type: 'button',
-          'data-product-id': prod.id || prod.name
+          'data-product-id': prod.id || prod.name,
+          'data-testid': 'add-to-cart-btn'
         }, ['🛒 Add to Cart']);
 
         addToCartBtn.addEventListener('click', () => {
@@ -671,7 +877,18 @@
   function renderClassicFooter(cfg) {
     footerRoot.innerHTML = '';
     const year = new Date().getFullYear();
-    footerRoot.appendChild(el('p', { class: 'muted' }, [cfg.footer?.text || `? ${year} ${cfg.brand?.name || ''}. All rights reserved.`]));
+    const footerText = cfg.footer?.text || `? ${year} ${cfg.brand?.name || ''}. All rights reserved.`;
+    footerRoot.appendChild(el('p', { class: 'muted' }, [footerText]));
+    
+    // Add "Powered by SiteSprintz" branding unless Growth+ (removeBranding enabled)
+    const isPro = cfg.plan === 'growth' || cfg.plan === 'pro' || cfg.plan === 'premium' || cfg.settings?.removeBranding === true;
+    if (!isPro) {
+      const poweredBy = el('p', { class: 'muted', style: 'font-size: 0.875rem; margin-top: 0.5rem;' }, [
+        'Powered by ',
+        el('a', { href: 'https://sitesprintz.com', target: '_blank', rel: 'noopener', style: 'color: inherit; text-decoration: underline;' }, ['SiteSprintz'])
+      ]);
+      footerRoot.appendChild(poweredBy);
+    }
   }
 
   // Pro Tier Features
@@ -1014,7 +1231,7 @@
   function renderCartModal() {
     let cartModal = document.querySelector('.cart-modal');
     if (!cartModal) {
-      cartModal = el('div', { class: 'cart-modal' });
+      cartModal = el('div', { class: 'cart-modal', 'data-testid': 'cart-modal' });
       document.body.appendChild(cartModal);
     }
 
@@ -1030,7 +1247,7 @@
     // Header
     const header = el('div', { class: 'cart-modal-header' }, [
       el('h3', {}, ['Shopping Cart']),
-      el('button', { class: 'cart-modal-close', type: 'button' }, ['×'])
+      el('button', { class: 'cart-modal-close', type: 'button', 'data-testid': 'close-cart-btn' }, ['×'])
     ]);
     header.querySelector('.cart-modal-close').addEventListener('click', () => {
       cartModal.style.display = 'none';
@@ -1039,23 +1256,23 @@
 
     // Cart items
     if (cart.length === 0) {
-      modal.appendChild(el('div', { class: 'cart-empty' }, ['Your cart is empty']));
+      modal.appendChild(el('div', { class: 'cart-empty', 'data-testid': 'cart-empty' }, ['Your cart is empty']));
     } else {
       const itemsList = el('div', { class: 'cart-items' });
 
       cart.forEach(item => {
-        const itemEl = el('div', { class: 'cart-item' }, [
+        const itemEl = el('div', { class: 'cart-item', 'data-testid': `cart-item-${item.id}` }, [
           el('div', { class: 'cart-item-info' }, [
             el('h4', {}, [item.name]),
             el('p', { class: 'cart-item-price' }, [`$${item.price}`])
           ]),
           el('div', { class: 'cart-item-quantity' }, [
-            el('button', { class: 'btn-quantity', type: 'button', 'data-action': 'decrease', 'data-id': item.id }, ['-']),
-            el('span', { class: 'quantity-value' }, [item.quantity.toString()]),
-            el('button', { class: 'btn-quantity', type: 'button', 'data-action': 'increase', 'data-id': item.id }, ['+'])
+            el('button', { class: 'btn-quantity', type: 'button', 'data-action': 'decrease', 'data-id': item.id, 'data-testid': 'decrease-quantity' }, ['-']),
+            el('span', { class: 'quantity-value', 'data-testid': 'quantity-value' }, [item.quantity.toString()]),
+            el('button', { class: 'btn-quantity', type: 'button', 'data-action': 'increase', 'data-id': item.id, 'data-testid': 'increase-quantity' }, ['+'])
           ]),
           el('div', { class: 'cart-item-total' }, [`$${(item.price * item.quantity).toFixed(2)}`]),
-          el('button', { class: 'btn-remove', type: 'button', 'data-id': item.id }, ['Remove'])
+          el('button', { class: 'btn-remove', type: 'button', 'data-id': item.id, 'data-testid': 'remove-item' }, ['Remove'])
         ]);
 
         itemEl.querySelectorAll('.btn-quantity').forEach(btn => {
@@ -1083,9 +1300,9 @@
       const footer = el('div', { class: 'cart-modal-footer' }, [
         el('div', { class: 'cart-total' }, [
           el('span', {}, ['Total:']),
-          el('span', { class: 'cart-total-amount' }, [`$${getCartTotal().toFixed(2)}`])
+          el('span', { class: 'cart-total-amount', 'data-testid': 'cart-total-amount' }, [`$${getCartTotal().toFixed(2)}`])
         ]),
-        el('button', { class: 'btn btn-primary btn-checkout', type: 'button' }, ['Proceed to Checkout'])
+        el('button', { class: 'btn btn-primary btn-checkout', type: 'button', 'data-testid': 'checkout-btn' }, ['Proceed to Checkout'])
       ]);
 
       footer.querySelector('.btn-checkout').addEventListener('click', () => {
@@ -1100,34 +1317,52 @@
   }
 
   async function initiateCheckout() {
-    // Use Pro Payment module if available
-    if (window.ProPayments && cart.length > 0) {
-      // For now, checkout first item (multi-product checkout coming soon)
-      const firstItem = cart[0];
-      const productIndex = state.config.products.findIndex(p =>
-        (p.id || p.name) === firstItem.id
-      );
-
-      if (productIndex >= 0) {
-        try {
-          await ProPayments.checkout(productIndex, firstItem.quantity || 1);
-        } catch (error) {
-          console.error('Checkout error:', error);
-          alert('Checkout failed: ' + error.message);
-        }
-      } else {
-        alert('Product not found');
-      }
-    } else if (!window.ProPayments) {
-      // Fallback: show setup message
-      const config = window.currentSiteConfig;
-      if (config && config.settings && config.settings.allowCheckout) {
-        alert('Payment system loading... Please try again in a moment, or contact support if the issue persists.');
-      } else {
-        alert('Checkout not configured. Connect Stripe to enable payments.');
-      }
-    } else {
+    if (cart.length === 0) {
       alert('Your cart is empty');
+      return;
+    }
+
+    const siteId = getSiteIdFromURL();
+    if (!siteId) {
+      alert('Site ID not found. Please refresh the page and try again.');
+      return;
+    }
+
+    try {
+      // Build items array for Stripe
+      const items = cart.map(item => ({
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity || 1,
+        description: item.description || '',
+        image: item.image || ''
+      }));
+
+      // Use Stripe Connect API for multi-item checkout
+      const response = await fetch('/api/stripe/connect/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          siteId: siteId,
+          items: items,
+          captchaToken: '' // CAPTCHA handled server-side if needed
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create checkout session');
+      }
+
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      alert('Checkout failed: ' + error.message);
     }
   }
 
@@ -1138,9 +1373,9 @@
     // Add cart button to header
     const nav = document.querySelector('#nav-links');
     if (nav && !document.querySelector('.cart-button')) {
-      const cartBtn = el('button', { class: 'cart-button', type: 'button' }, [
+      const cartBtn = el('button', { class: 'cart-button', type: 'button', 'data-testid': 'cart-toggle' }, [
         el('span', {}, ['🛒']),
-        el('span', { class: 'cart-badge' }, ['0'])
+        el('span', { class: 'cart-badge', 'data-testid': 'cart-badge' }, ['0'])
       ]);
 
       cartBtn.addEventListener('click', () => {
@@ -2495,6 +2730,306 @@
     contentRoot.appendChild(sectionEl);
   }
 
+  // New component renderers
+  function renderServiceFilters(section) {
+    const settings = section.settings || {};
+    const { sectionEl, container } = createPremiumSection(section, `premium-section service-filters ${section.type}`);
+    if (settings.heading) container.appendChild(el('h2', {}, [settings.heading]));
+    if (settings.subheading) container.appendChild(el('p', { class: 'lead' }, [settings.subheading]));
+    
+    const filterContainer = el('div', { id: 'service-filters-container' });
+    container.appendChild(filterContainer);
+    contentRoot.appendChild(sectionEl);
+    
+    // Load and initialize ServiceFilters
+    loadModule('/modules/service-filters.js', () => {
+      if (window.ServiceFilters) {
+        const filter = new window.ServiceFilters({
+          containerId: 'service-filters-container',
+          items: settings.items || [],
+          filters: settings.filters || ['category'],
+          filterConfig: settings.filterConfig || {},
+          onChange: (filteredItems, activeFilters) => {
+            if (settings.onFilterChange) {
+              settings.onFilterChange(filteredItems, activeFilters);
+            }
+          }
+        });
+        filter.init();
+      }
+    });
+  }
+
+  function renderInteractiveCalculator(section) {
+    const settings = section.settings || {};
+    const { sectionEl, container } = createPremiumSection(section, `premium-section calculator ${section.type}`);
+    if (settings.heading) container.appendChild(el('h2', {}, [settings.heading]));
+    if (settings.subheading) container.appendChild(el('p', { class: 'lead' }, [settings.subheading]));
+    
+    const calcContainer = el('div', { id: 'calculator-container' });
+    container.appendChild(calcContainer);
+    contentRoot.appendChild(sectionEl);
+    
+    loadModule('/modules/interactive-calculator.js', () => {
+      if (window.InteractiveCalculator) {
+        const calculator = new window.InteractiveCalculator({
+          containerId: 'calculator-container',
+          type: settings.type || 'room-by-room',
+          basePrice: settings.basePrice || 0,
+          items: settings.items || [],
+          discount: settings.discount || null,
+          onSubmit: (data) => {
+            if (settings.onSubmit) {
+              settings.onSubmit(data);
+            }
+          }
+        });
+        calculator.init();
+      }
+    });
+  }
+
+  function renderMultiStepForm(section) {
+    const settings = section.settings || {};
+    const { sectionEl, container } = createPremiumSection(section, `premium-section multi-step-form ${section.type}`);
+    
+    const formContainer = el('div', { id: 'multi-step-form-container' });
+    container.appendChild(formContainer);
+    contentRoot.appendChild(sectionEl);
+    
+    loadModule('/modules/multi-step-form.js', () => {
+      if (window.MultiStepForm) {
+        const form = new window.MultiStepForm({
+          containerId: 'multi-step-form-container',
+          steps: settings.steps || [],
+          onSubmit: (data) => {
+            if (settings.onSubmit) {
+              settings.onSubmit(data);
+            }
+          }
+        });
+        form.init();
+      }
+    });
+  }
+
+  function renderClassScheduler(section) {
+    const settings = section.settings || {};
+    const { sectionEl, container } = createPremiumSection(section, `premium-section class-scheduler ${section.type}`);
+    if (settings.heading) container.appendChild(el('h2', {}, [settings.heading]));
+    
+    const schedulerContainer = el('div', { id: 'class-scheduler-container' });
+    container.appendChild(schedulerContainer);
+    contentRoot.appendChild(sectionEl);
+    
+    loadModule('/modules/class-scheduler.js', () => {
+      if (window.ClassScheduler) {
+        const scheduler = new window.ClassScheduler({
+          containerId: 'class-scheduler-container',
+          view: settings.view || 'week',
+          classes: settings.classes || [],
+          instructors: settings.instructors || [],
+          onClassSelect: (selectedClass) => {
+            if (settings.onClassSelect) {
+              settings.onClassSelect(selectedClass);
+            }
+          }
+        });
+        scheduler.init();
+      }
+    });
+  }
+
+  function renderSubscriptionBooking(section) {
+    const settings = section.settings || {};
+    const { sectionEl, container } = createPremiumSection(section, `premium-section subscription-booking ${section.type}`);
+    
+    const bookingContainer = el('div', { id: 'subscription-booking-container' });
+    container.appendChild(bookingContainer);
+    contentRoot.appendChild(sectionEl);
+    
+    loadModule('/modules/subscription-booking.js', () => {
+      if (window.SubscriptionBooking) {
+        const booking = new window.SubscriptionBooking({
+          containerId: 'subscription-booking-container',
+          services: settings.services || [],
+          frequencies: settings.frequencies || [],
+          onSubmit: (data) => {
+            if (settings.onSubmit) {
+              settings.onSubmit(data);
+            }
+          }
+        });
+        booking.init();
+      }
+    });
+  }
+
+  function renderDiagnosticQuiz(section) {
+    const settings = section.settings || {};
+    const { sectionEl, container } = createPremiumSection(section, `premium-section diagnostic-quiz ${section.type}`);
+    
+    const quizContainer = el('div', { id: 'diagnostic-quiz-container' });
+    container.appendChild(quizContainer);
+    contentRoot.appendChild(sectionEl);
+    
+    loadModule('/modules/diagnostic-quiz.js', () => {
+      if (window.DiagnosticQuiz) {
+        const quiz = new window.DiagnosticQuiz({
+          containerId: 'diagnostic-quiz-container',
+          questions: settings.questions || [],
+          recommendations: settings.recommendations || {},
+          pricing: settings.pricing || {},
+          onSubmit: (results) => {
+            if (settings.onSubmit) {
+              settings.onSubmit(results);
+            }
+          }
+        });
+        quiz.init();
+      }
+    });
+  }
+
+  function renderProgressTracker(section) {
+    const settings = section.settings || {};
+    const { sectionEl, container } = createPremiumSection(section, `premium-section progress-tracker ${section.type}`);
+    
+    const trackerContainer = el('div', { id: 'progress-tracker-container' });
+    container.appendChild(trackerContainer);
+    contentRoot.appendChild(sectionEl);
+    
+    loadModule('/modules/progress-tracker.js', () => {
+      if (window.ProgressTracker) {
+        const tracker = new window.ProgressTracker({
+          containerId: 'progress-tracker-container',
+          orderId: settings.orderId || null,
+          statuses: settings.statuses || [],
+          currentStatus: settings.currentStatus || 'pending',
+          updates: settings.updates || []
+        });
+        tracker.init();
+      }
+    });
+  }
+
+  function renderResourceCenter(section) {
+    const settings = section.settings || {};
+    const { sectionEl, container } = createPremiumSection(section, `premium-section resource-center ${section.type}`);
+    
+    const resourceContainer = el('div', { id: 'resource-center-container' });
+    container.appendChild(resourceContainer);
+    contentRoot.appendChild(sectionEl);
+    
+    loadModule('/modules/resource-center.js', () => {
+      if (window.ResourceCenter) {
+        const resourceCenter = new window.ResourceCenter({
+          containerId: 'resource-center-container',
+          resources: settings.resources || [],
+          requireEmail: settings.requireEmail !== false,
+          onDownload: (resource, email) => {
+            if (settings.onDownload) {
+              settings.onDownload(resource, email);
+            }
+          }
+        });
+        resourceCenter.init();
+      }
+    });
+  }
+
+  function renderVideoGallery(section) {
+    const settings = section.settings || {};
+    const { sectionEl, container } = createPremiumSection(section, `premium-section video-gallery ${section.type}`);
+    
+    const galleryContainer = el('div', { id: 'video-gallery-container' });
+    container.appendChild(galleryContainer);
+    contentRoot.appendChild(sectionEl);
+    
+    loadModule('/modules/video-gallery.js', () => {
+      if (window.VideoGallery) {
+        const gallery = new window.VideoGallery({
+          containerId: 'video-gallery-container',
+          videos: settings.videos || [],
+          categories: settings.categories || [],
+          showCategories: settings.showCategories !== false
+        });
+        gallery.init();
+      }
+    });
+  }
+
+  function renderZipChecker(section) {
+    const settings = section.settings || {};
+    const { sectionEl, container } = createPremiumSection(section, `premium-section zip-checker ${section.type}`);
+    
+    const zipContainer = el('div', { id: 'zip-checker-container' });
+    container.appendChild(zipContainer);
+    contentRoot.appendChild(sectionEl);
+    
+    loadModule('/modules/zip-checker.js', () => {
+      if (window.ZipChecker) {
+        const zipChecker = new window.ZipChecker({
+          containerId: 'zip-checker-container',
+          serviceAreas: settings.serviceAreas || [],
+          serviceAreaRanges: settings.serviceAreaRanges || [],
+          onValidZip: (zip) => {
+            if (settings.onValidZip) {
+              settings.onValidZip(zip);
+            }
+          },
+          onOutOfArea: (zip, leadData) => {
+            if (settings.onOutOfArea) {
+              settings.onOutOfArea(zip, leadData);
+            }
+          }
+        });
+        zipChecker.init();
+      }
+    });
+  }
+
+  function renderEnhancedProfiles(section) {
+    const settings = section.settings || {};
+    const { sectionEl, container } = createPremiumSection(section, `premium-section enhanced-profiles ${section.type}`);
+    
+    const profilesContainer = el('div', { id: 'enhanced-profiles-container' });
+    container.appendChild(profilesContainer);
+    contentRoot.appendChild(sectionEl);
+    
+    loadModule('/modules/enhanced-profiles.js', () => {
+      if (window.EnhancedProfiles) {
+        const profiles = new window.EnhancedProfiles({
+          containerId: 'enhanced-profiles-container',
+          profiles: settings.profiles || [],
+          layout: settings.layout || 'grid',
+          showCredentials: settings.showCredentials !== false,
+          showSpecializations: settings.showSpecializations !== false
+        });
+        profiles.init();
+      }
+    });
+  }
+
+  // Helper function to load modules dynamically
+  function loadModule(src, callback) {
+    if (document.querySelector(`script[src="${src}"]`)) {
+      // Module already loaded
+      if (callback) callback();
+      return;
+    }
+    
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = () => {
+      if (callback) callback();
+    };
+    script.onerror = () => {
+      console.error(`Failed to load module: ${src}`);
+    };
+    document.head.appendChild(script);
+  }
+
   const premiumRenderers = {
     'emergency-hero': (section) => renderHeroGeneric(section, 'emergency-hero'),
     'healthcare-hero': (section) => renderHeroGeneric(section, 'healthcare-hero'),
@@ -2542,7 +3077,19 @@
     'seller-journey': renderSellerJourney,
     'buyer-journey': renderBuyerJourney,
     'market-stats': renderMarketStats,
-    'buyer-seller-resources': renderResources
+    'buyer-seller-resources': renderResources,
+    // New component renderers
+    'service-filters': renderServiceFilters,
+    'interactive-calculator': renderInteractiveCalculator,
+    'multi-step-form': renderMultiStepForm,
+    'class-scheduler': renderClassScheduler,
+    'subscription-booking': renderSubscriptionBooking,
+    'diagnostic-quiz': renderDiagnosticQuiz,
+    'progress-tracker': renderProgressTracker,
+    'resource-center': renderResourceCenter,
+    'video-gallery': renderVideoGallery,
+    'zip-checker': renderZipChecker,
+    'enhanced-profiles': renderEnhancedProfiles
   };
 
   function renderPremiumSite(cfg) {

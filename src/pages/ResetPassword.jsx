@@ -46,14 +46,29 @@ function ResetPassword() {
     setLoading(true);
 
     try {
+      // Step 1: Get CSRF token
+      const csrfResponse = await fetch('/api/csrf-token', {
+        credentials: 'include'
+      });
+      
+      if (!csrfResponse.ok) {
+        throw new Error('Failed to get CSRF token');
+      }
+      
+      const csrfData = await csrfResponse.json();
+      const csrfToken = csrfData.csrfToken;
+
+      // Step 2: Send password reset request with CSRF token
       const response = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken
         },
+        credentials: 'include',
         body: JSON.stringify({ 
           token,
-          password 
+          newPassword: password
         })
       });
 
@@ -78,7 +93,7 @@ function ResetPassword() {
 
   if (!validToken) {
     return (
-      <div className="auth-page">
+      <div className="auth-page story-public">
         <Header />
         
         <main className="auth-container">
@@ -106,7 +121,7 @@ function ResetPassword() {
   }
 
   return (
-    <div className="auth-page">
+    <div className="auth-page story-public">
       <Header />
       
       <main className="auth-container">

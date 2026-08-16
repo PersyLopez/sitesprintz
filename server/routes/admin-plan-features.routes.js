@@ -11,8 +11,12 @@ import {
   updatePlanFeatures,
   initializePlanFeatures 
 } from '../services/planFeaturesService.js';
+import { TIERS } from '../../src/config/tiers.js';
 
 const router = express.Router();
+
+// Canonical tier list from tiers.js
+const VALID_TIERS = [TIERS.TRIAL, TIERS.STARTER, TIERS.GROWTH];
 
 /**
  * GET /api/admin/plan-features
@@ -48,9 +52,8 @@ router.put('/plan-features', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Invalid planFeatures data' });
     }
 
-    // Validate plan structure
-    const validPlans = ['free', 'starter', 'pro', 'premium'];
-    for (const plan of validPlans) {
+    // Validate plan structure using canonical tiers
+    for (const plan of VALID_TIERS) {
       if (!planFeatures[plan] || !Array.isArray(planFeatures[plan])) {
         return res.status(400).json({ 
           error: `Invalid plan features for ${plan}. Must be an array.` 

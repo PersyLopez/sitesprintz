@@ -19,7 +19,7 @@ steps:
     assert:
       - url contains /dashboard
       - text contains Welcome back
-      - text contains Manage your websites
+      - text contains Your sites
 
   - action: Dismiss welcome modal if present
     code: |
@@ -50,6 +50,11 @@ steps:
     settle_ms: 2500
     assert:
       - url contains /setup
+
+  - action: Choose permanent business if asked
+    wait_for: { text: What kind of business are you setting up, timeout: 20000 }
+    click: { testId: choose-business }
+    settle_ms: 1500
 
   - action: Setup quick start present
     wait_for: { text: Quick Start, timeout: 20000 }

@@ -47,8 +47,10 @@
   line-height: 1;
   cursor: pointer;
   padding: var(--spacing-xs);
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -110,4 +112,7 @@
     right: var(--spacing-sm);
   }
 }
+
+
+
 

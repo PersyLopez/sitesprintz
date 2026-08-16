@@ -1,0 +1,81 @@
+url: http://localhost:5173/login
+goal: Setup wizard lists every catalog template including tow-truck and product-ordering
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter email
+    fill: { testId: login-email, value: "starter@example.com", clear: true }
+
+  - action: Enter password
+    fill: { testId: login-password, value: "StarterPass!2024", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Dismiss welcome
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) await dismiss.click({ timeout: 4000 }).catch(() => {});
+      else await page.keyboard.press('Escape').catch(() => {});
+    settle_ms: 400
+
+  - action: Open setup
+    goto: http://localhost:5173/setup
+    settle_ms: 1500
+
+  - action: Choose permanent business if asked
+    code: |
+      const permanent = page.getByText(/Permanent Business/i).first();
+      if (await permanent.count()) {
+        await permanent.click({ timeout: 8000 });
+      }
+    settle_ms: 1200
+
+  - action: Wizard industry step
+    wait_for: { text: Quick Start, timeout: 20000 }
+    settle_ms: 800
+
+  - action: All 14 catalog types are listed
+    code: |
+      const t = await page.locator('body').innerText();
+      const needed = [
+        'Restaurant', 'Salon & Spa', 'Fitness & Gym', 'Consultant', 'Freelancer',
+        'Cleaning', 'Electrician', 'Plumbing', 'Auto Repair', 'Pet Care',
+        'Tech Repair', 'Product Store', 'Tow Truck', 'Product Ordering'
+      ];
+      const missing = needed.filter((name) => !t.includes(name));
+      if (missing.length) {
+        throw new Error('Wizard missing business types: ' + missing.join(', '));
+      }
+
+  - action: Pick Tow Truck
+    click: { text: Tow Truck }
+    settle_ms: 1200
+
+  - action: Essentials for tow-truck
+    wait_for: { text: Business essentials, timeout: 15000 }
+    settle_ms: 500
+    assert:
+      - text contains Business essentials
+
+  - action: Fill business name
+    fill: { testId: business-name-input, value: "Mantest Tow Co", clear: true }
+
+  - action: Continue from essentials
+    code: |
+      const next = page.getByRole('button', { name: /Continue|Next/i }).first();
+      if ((await next.count()) === 0) throw new Error('No Continue on essentials');
+      await next.click();
+    settle_ms: 1200
+
+  - action: Size or look step
+    code: |
+      const t = await page.locator('body').innerText();
+      const ok = /Business size|Choose your look|Level|Studio|Solo|Preview|theme/i.test(t);
+      if (!ok) throw new Error('Unexpected wizard step after essentials: ' + t.slice(0, 280));

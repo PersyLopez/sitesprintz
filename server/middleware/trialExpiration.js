@@ -6,7 +6,6 @@
  * Maintains backward compatibility with existing code
  */
 import { query as dbQuery } from '../../database/db.js';
-import { sendEmail, EmailTypes } from '../utils/email-service-wrapper.js';
 import { trialService } from '../services/trialService.js';
 
 /**
@@ -18,20 +17,15 @@ import { trialService } from '../services/trialService.js';
  * @returns {Promise<{isExpired: boolean, daysRemaining: number, expiresAt: Date}>}
  */
 export async function checkTrialStatus(siteId) {
-  try {
-    const status = await trialService.checkSiteTrialStatus(siteId);
+  const status = await trialService.checkSiteTrialStatus(siteId);
 
-    // Return format compatible with legacy code
-    return {
-      isExpired: status.isExpired,
-      daysRemaining: status.daysRemaining,
-      expiresAt: status.expiresAt,
-      hasPaidPlan: status.hasPaidPlan
-    };
-  } catch (error) {
-    // Maintain backward compatibility with error handling
-    throw error;
-  }
+  // Return format compatible with legacy code
+  return {
+    isExpired: status.isExpired,
+    daysRemaining: status.daysRemaining,
+    expiresAt: status.expiresAt,
+    hasPaidPlan: status.hasPaidPlan
+  };
 }
 
 /**

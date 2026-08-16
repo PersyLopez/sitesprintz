@@ -113,17 +113,37 @@ class TemplateValidator {
   }
 
   validateStarterTierSettings(template) {
-    // Ensure Starter tier restrictions
-    if (template.settings?.allowCheckout !== false) {
-      this.addError('settings.allowCheckout must be false for Starter tier');
-    }
+    const tier = template.tier || 'pro';
+    
+    // Pro templates use menu.sections and features object
+    if (tier === 'pro') {
+      // Pro templates should have menu.sections (not products array)
+      if (!template.menu?.sections && !template.products) {
+        this.addWarning('Pro tier template should include menu.sections');
+      }
+      
+      // Pro templates use features object, not settings.allowOrders
+      if (template.settings?.allowOrders === true && !template.features) {
+        this.addWarning('Pro templates should use features object instead of settings.allowOrders');
+      }
+      
+      // Pro templates should have features object
+      if (!template.features) {
+        this.addWarning('Pro tier template should include features object');
+      }
+    } else if (tier === 'starter') {
+      // Starter tier restrictions (for backward compatibility)
+      if (template.settings?.allowCheckout !== false) {
+        this.addError('settings.allowCheckout must be false for Starter tier');
+      }
 
-    if (template.settings?.allowOrders !== true) {
-      this.addError('settings.allowOrders must be true for order submission');
-    }
+      if (template.settings?.allowOrders !== true) {
+        this.addError('settings.allowOrders must be true for order submission');
+      }
 
-    if (!template.settings?.orderNotificationEmail) {
-      this.addWarning('settings.orderNotificationEmail is recommended for order notifications');
+      if (!template.settings?.orderNotificationEmail) {
+        this.addWarning('settings.orderNotificationEmail is recommended for order notifications');
+      }
     }
   }
 

@@ -1,401 +1,134 @@
-# 🏗️ SiteSprintz Architecture Documentation
+# SiteSprintz Architecture
 
-**Last Updated:** December 2025  
-**Version:** 1.0.0
+**Last updated:** 15 August 2026
 
----
-
-## 📋 Table of Contents
-
-1. [System Overview](#system-overview)
-2. [Technology Stack](#technology-stack)
-3. [Architecture Patterns](#architecture-patterns)
-4. [Project Structure](#project-structure)
-5. [Data Flow](#data-flow)
-6. [Security Architecture](#security-architecture)
-7. [Deployment Architecture](#deployment-architecture)
+SiteSprintz is a small-business website builder: pick a template, edit a draft, preview, then publish a live page. Growth plans add booking and checkout. This document describes the system **as it runs on disk**, including uncommitted work on `production-readiness/audit-remediation`.
 
 ---
 
-## 🎯 System Overview
+## System overview
 
-SiteSprintz is a **Small Business Website Builder** platform that enables users to create, customize, and publish professional websites in minutes. The platform provides:
+```
+User → React (src/) → Express API (server/) → Prisma → PostgreSQL
+                    ↓
+            public/sites/, public/published/
+```
 
-- **12+ Industry Templates** with multiple layout variations
-- **Visual Editor** for drag-and-drop customization
-- **Stripe Integration** for payments and subscriptions
-- **Booking System** for appointments and reservations
-- **Email Notifications** via Resend
-- **Public Showcase** gallery
-- **Analytics Dashboard**
+| Layer | Location | Responsibility |
+|-------|----------|----------------|
+| Frontend | `src/` | React 19 + Vite 7 UI, editor, dashboard, public marketing site |
+| API | `server/routes/` | REST endpoints, auth, validation |
+| Services | `server/services/` | Business logic, Stripe, booking, email |
+| Data | `prisma/`, `database/` | PostgreSQL schema + Prisma client |
+| Published assets | `public/` | Templates, published sites, static assets |
 
-### Core Principles
+### Critical flows (do not break without explicit intent)
 
-- **Monolithic Architecture**: Single Express.js server with React frontend
-- **Database-First**: PostgreSQL with Prisma ORM
-- **API-Driven**: RESTful API endpoints
-- **Security-First**: JWT authentication, CSRF protection, rate limiting
-- **Scalable**: Designed for horizontal scaling
+1. **Site creation:** template → `POST /api/drafts` → preview → `POST /api/drafts/:id/publish`
+2. **Feature gating:** `src/config/tiers.js` + `src/utils/planFeatures.js` → applied at publish in `server/routes/drafts.routes.js`
+3. **Sections:** `public/data/section-registry.json` → canonical `sections[]` via normalizer/renderer
+4. **E-commerce:** Growth+ only for cart/checkout (`hasFeature`)
+
+### Official tiers
+
+`trial` < `starter` ($10/month) < `growth` ($35/month). Legacy names `pro`, `premium`, `business`, and `free` normalize through `TIER_ALIASES` in `src/config/tiers.js`.
 
 ---
 
-## 🛠 Technology Stack
+## Technology stack
 
-### Backend
-- **Runtime**: Node.js (ES Modules)
-- **Framework**: Express.js 5.x
-- **Database**: PostgreSQL (Neon)
-- **ORM**: Prisma 6.x
-- **Authentication**: JWT (jsonwebtoken)
-- **Password Hashing**: bcryptjs
-- **File Upload**: Multer
-- **Image Processing**: Sharp
+**Backend:** Node.js (ES modules), Express 5, PostgreSQL (Prisma), JWT + bcryptjs, Multer, Sharp.
 
-### Frontend
-- **Framework**: React 19.x
-- **Build Tool**: Vite 7.x
-- **Routing**: React Router DOM 7.x
-- **Styling**: TailwindCSS + Custom CSS
-- **State Management**: React Context API
-- **Charts**: Chart.js + react-chartjs-2
+**Frontend:** React 19, Vite 7, React Router 7, component-scoped CSS (no Tailwind), React Context.
 
-### Integrations
-- **Payments**: Stripe Connect
-- **Email**: Resend (primary), Nodemailer (fallback)
-- **CAPTCHA**: Cloudflare Turnstile
-- **OAuth**: Passport.js (Google, Apple)
+**Integrations:** Stripe Connect, Resend (email), Cloudflare Turnstile, Passport Google OAuth.
 
-### DevOps & Testing
-- **Testing**: Vitest (unit), Playwright (E2E)
-- **Deployment**: Railway.app, Docker
-- **CI/CD**: Git-based workflow (dev → staging → main)
-- **Monitoring**: Winston logging
+**Tests:** Vitest (unit/integration), Playwright (E2E).
+
+**Deploy:** Railway container + Neon Postgres. Frontend build (`vite build` → `dist/`) is served by Express.
 
 ---
 
-## 🏛 Architecture Patterns
-
-### 1. **Layered Architecture**
+## Request path
 
 ```
-┌─────────────────────────────────────┐
-│         Presentation Layer           │
-│    (React Components & Pages)       │
-├─────────────────────────────────────┤
-│         Application Layer            │
-│    (Routes, Controllers)             │
-├─────────────────────────────────────┤
-│         Business Logic Layer         │
-│    (Services, Utilities)             │
-├─────────────────────────────────────┤
-│         Data Access Layer            │
-│    (Prisma ORM, Database)            │
-└─────────────────────────────────────┘
+Request
+  → Helmet, CORS (`CORS_ORIGINS`, with `ALLOWED_ORIGINS` as a legacy alias)
+  → Rate limiting
+  → CSRF (state-changing routes)
+  → Auth / admin middleware
+  → Route handler (server/routes + server/services)
+  → Prisma
+  → Error handler
 ```
 
-### 2. **RESTful API Design**
-
-- **Resource-Based URLs**: `/api/sites/:id`, `/api/users/:id`
-- **HTTP Methods**: GET (read), POST (create), PUT (update), DELETE (remove)
-- **Status Codes**: 200 (success), 201 (created), 400 (bad request), 401 (unauthorized), 404 (not found), 500 (error)
-- **JSON Responses**: Consistent error format `{ error: string }`
-
-### 3. **Middleware Chain**
-
-```
-Request → Security (Helmet, CORS) 
-       → Rate Limiting 
-       → CSRF Protection 
-       → Authentication 
-       → Authorization 
-       → Route Handler 
-       → Error Handler 
-       → Response
-```
-
-### 4. **Context-Based State Management**
-
-- **AuthContext**: User authentication state
-- **SiteContext**: Current site editing state
-- **CartContext**: Shopping cart state
-- **ToastContext**: Notification messages
+Legal HTML is **not** part of the SPA. Express serves `/legal/terms`, `/legal/privacy`, `/legal/cookies`. Vite proxies `/legal` to the API in development.
 
 ---
 
-## 📁 Project Structure
+## Site creation data flow
 
-```
-sitesprintz/
-├── server/                    # Backend code
-│   ├── routes/               # API route handlers (23 files)
-│   ├── services/             # Business logic services (15 files)
-│   ├── middleware/           # Express middleware (7 files)
-│   └── utils/                # Helper utilities (12 files)
-│
-├── src/                      # Frontend code
-│   ├── components/           # React components (organized by feature)
-│   ├── pages/                # Page components (20 files)
-│   ├── context/              # React Context providers (4 files)
-│   ├── hooks/                # Custom React hooks (6 files)
-│   ├── services/             # API client services (5 files)
-│   └── utils/                # Frontend utilities (5 files)
-│
-├── database/                 # Database configuration
-│   └── db.js                 # Prisma client initialization
-│
-├── prisma/                   # Prisma schema & migrations
-│   └── schema.prisma         # Database schema definition
-│
-├── public/                   # Static assets
-│   ├── data/templates/       # Template JSON files
-│   ├── sites/                # Published site files
-│   └── uploads/              # User-uploaded images
-│
-├── tests/                    # Test suites
-│   ├── unit/                 # Unit tests
-│   └── e2e/                  # End-to-end tests
-│
-└── docs/                     # Documentation
-    ├── setup/                # Setup guides
-    ├── security/             # Security documentation
-    └── guides/               # User guides
-```
+1. Visitor picks a template (landing gallery or `/setup`).
+2. `POST /api/drafts` stores a 7-day draft (database, with file fallback).
+3. Editor writes through `PUT /api/drafts/:draftId`.
+4. `POST /api/drafts/:draftId/publish` loads the template, merges business data, calls `filterFeaturesByPlan()`, creates the user if needed, and writes published files under `public/`.
+5. Live site is available at `/sites/:subdomain` (and custom domain when configured).
+
+Layout families in the working tree: Atelier, Craftsman, Counsel, Mercantile, Bazaar (`src/config/layouts.js`, `layoutTokens.js`, `layoutRenderer.js`).
 
 ---
 
-## 🔄 Data Flow
+## Payments and booking
 
-### Authentication Flow
-
-```
-1. User submits credentials → POST /api/auth/login
-2. Server validates → Checks database, verifies password
-3. Server generates JWT → Returns token + user data
-4. Client stores token → localStorage/sessionStorage
-5. Client includes token → Authorization: Bearer <token>
-6. Middleware validates → requireAuth middleware checks token
-7. Request proceeds → User attached to req.user
-```
-
-### Site Creation Flow
-
-```
-1. User selects template → GET /api/templates
-2. User customizes site → POST /api/drafts/:id (save draft)
-3. User publishes site → POST /api/drafts/:id/publish
-4. Server generates files → Creates JSON + HTML files
-5. Server saves to DB → Updates sites table
-6. Site is live → Available at /sites/:subdomain
-```
-
-### Payment Flow
-
-```
-1. User selects plan → Frontend shows pricing
-2. User clicks subscribe → POST /api/create-subscription-checkout
-3. Server creates Stripe session → Returns checkout URL
-4. User completes payment → Stripe redirects to success page
-5. Stripe sends webhook → POST /api/webhooks/stripe
-6. Server processes webhook → Updates user subscription
-7. User access granted → Pro features unlocked
-```
+- **Platform subscription:** Stripe Checkout for Starter/Growth; webhooks update the user plan.
+- **Merchant checkout:** Growth-only; gated by `hasFeature` / `normalizeTier`.
+- **Booking:** `/api/booking` (core + fees + Phase 2 reminders/recurring). Reminder cron is started from `server.js`. Staff availability uses the tenant’s staff list, with `'default'` aliased to `getOrCreateDefaultStaff`.
 
 ---
 
-## 🔐 Security Architecture
+## Security architecture
 
-### Authentication
+Implemented in the working tree: Helmet, CORS, CSRF, rate limiting, env validation (`validateEnv.js`), token redaction, clickwrap on register, encryption helpers, local-only test routes.
 
-- **JWT Tokens**: 7-day expiration, stored client-side
-- **Password Hashing**: bcryptjs with 10 rounds
-- **Email Verification**: Required for account activation
-- **Password Reset**: Token-based with expiration
+Still open before a production launch (see `docs/security/SECURITY-ASSESSMENT.md`):
 
-### Authorization
-
-- **Role-Based Access Control (RBAC)**: `user`, `admin`
-- **Resource Ownership**: Users can only access their own resources
-- **Admin Routes**: Protected by `requireAdmin` middleware
-
-### Protection Layers
-
-1. **Helmet.js**: Security headers (CSP, HSTS, XSS protection)
-2. **CORS**: Configured for production domains
-3. **CSRF Protection**: Token-based for state-changing operations
-4. **Rate Limiting**: Per-endpoint limits (registration, login, API)
-5. **Input Validation**: Sanitization and validation on all inputs
-6. **SQL Injection**: Prevented by Prisma parameterized queries
-7. **XSS Protection**: HTML sanitization with sanitize-html
-8. **CAPTCHA**: Cloudflare Turnstile for registration/login
-
-### Security Headers
-
-```
-Content-Security-Policy: Strict directives
-Strict-Transport-Security: 1 year, includeSubDomains
-X-Frame-Options: DENY
-X-Content-Type-Options: nosniff
-Referrer-Policy: strict-origin-when-cross-origin
-```
+- OAuth `state` is plan/intent data, not a CSRF nonce
+- JWTs are still returned in JSON bodies (not httpOnly cookies)
+- In-memory rate-limit / CSRF / session stores (multi-instance)
 
 ---
 
-## 🚀 Deployment Architecture
+## Route map (mounted)
 
-### Production Environment
-
-```
-┌─────────────────┐
-│   Railway.app    │
-│   (Container)    │
-├─────────────────┤
-│  Express Server  │
-│  Port: 3000      │
-└────────┬─────────┘
-         │
-    ┌────┴────┐
-    │         │
-┌───▼───┐ ┌──▼────┐
-│  Neon │ │Stripe │
-│  DB   │ │ API   │
-└───────┘ └───────┘
-```
-
-### Build Process
-
-1. **Frontend Build**: `vite build` → `dist/` directory
-2. **Static Assets**: Served by Express from `dist/`
-3. **API Routes**: Handled by Express server
-4. **SPA Routing**: Fallback to `index.html` for non-API routes
-
-### Environment Variables
-
-**Required:**
-- `DATABASE_URL`: PostgreSQL connection string
-- `JWT_SECRET`: Secret for JWT token signing
-- `ADMIN_TOKEN`: Admin authentication token
-
-**Optional:**
-- `STRIPE_SECRET_KEY`: Stripe API key
-- `RESEND_API_KEY`: Email service API key
-- `TURNSTILE_SECRET_KEY`: Cloudflare Turnstile secret
-- `GOOGLE_CLIENT_ID`: Google OAuth client ID
-- `GOOGLE_CLIENT_SECRET`: Google OAuth secret
+Canonical inventory: `docs/development/BACKEND.md`. Notable overlaps: `/api/booking` is mounted three times (core, fees, phase2); `/api/sites` is shared by `sites.routes.js` and `domain.routes.js`. `admin-sections.routes.js` exists on disk but is **not mounted** — do not invent a `section_overrides` table.
 
 ---
 
-## 📊 Database Architecture
+## Frontend architecture
 
-### Core Models
+Public marketing pages use `PublicPageLayout` (skip link + Header + Footer) and `story-public.css`. Auth screens use Header + Footer on Login, Register, ForgotPassword, ResetPassword, and VerifyEmail.
 
-- **users**: User accounts, authentication, subscriptions
-- **sites**: Website instances, templates, status
-- **booking_tenants**: Booking system configuration
-- **appointments**: Booking appointments
-- **submissions**: Contact form submissions
-- **pricing**: Subscription tier definitions
-
-### Relationships
-
-```
-users (1) ──→ (many) sites
-sites (1) ──→ (1) booking_tenants
-booking_tenants (1) ──→ (many) appointments
-sites (1) ──→ (many) submissions
-```
-
-### Indexing Strategy
-
-- **Primary Keys**: UUID for users, appointments
-- **Foreign Keys**: Indexed for join performance
-- **Search Fields**: Email, subdomain, confirmation_code
-- **Time-based**: Created_at, updated_at for queries
+Tier checks must go through `normalizeTier` / `hasTierAccess` / `PLAN_FEATURES`. Do not hardcode `free` / `pro` / `premium` in new UI.
 
 ---
 
-## 🔌 API Architecture
+## Database
 
-### Endpoint Organization
+PostgreSQL via Prisma. Core models: users, sites, drafts, booking tenants/staff/appointments, orders, submissions. Details: `docs/development/DATABASE.md`.
 
-- **Authentication**: `/api/auth/*`
-- **Sites**: `/api/sites/*`, `/api/drafts/*`
-- **Payments**: `/api/payments/*`, `/api/webhooks/stripe`
-- **Booking**: `/api/booking/*`
-- **Admin**: `/api/admin/*`
-- **Showcase**: `/api/showcases/*`
-
-### Request/Response Format
-
-**Success Response:**
-```json
-{
-  "success": true,
-  "data": { ... },
-  "message": "Operation successful"
-}
-```
-
-**Error Response:**
-```json
-{
-  "error": "Error message",
-  "code": "ERROR_CODE",
-  "details": { ... }
-}
-```
+Required env: `DATABASE_URL`, `JWT_SECRET`, `ENCRYPTION_KEY`. Production also requires a non-default `ADMIN_TOKEN` and `CORS_ORIGINS` (or legacy `ALLOWED_ORIGINS`).
 
 ---
 
-## 📈 Scalability Considerations
+## Related documentation
 
-### Current Limitations
-
-- **Single Server**: Monolithic deployment
-- **File Storage**: Local filesystem (not suitable for multi-instance)
-- **Session Storage**: In-memory (not shared across instances)
-
-### Future Scaling Options
-
-1. **Horizontal Scaling**: Load balancer + multiple instances
-2. **File Storage**: S3 or similar object storage
-3. **Session Storage**: Redis for shared sessions
-4. **Database**: Read replicas for analytics queries
-5. **Caching**: Redis for template data, user sessions
-
----
-
-## 🔍 Monitoring & Logging
-
-### Logging Strategy
-
-- **Winston**: Structured logging
-- **Request Logging**: All API requests logged with timing
-- **Error Logging**: Stack traces for errors
-- **Security Events**: Failed auth attempts, rate limit hits
-
-### Health Checks
-
-- **Endpoint**: `GET /health`
-- **Database**: Connection test on startup
-- **External Services**: Stripe, Resend connectivity
-
----
-
-## 📚 Related Documentation
-
-- [API Reference](./API-REFERENCE.md)
-- [Backend Documentation](./BACKEND.md)
-- [Frontend Documentation](./FRONTEND.md)
-- [Database Schema](./DATABASE.md)
-- [Security Guide](./security/SECURITY-ASSESSMENT.md)
-
----
-
-**Last Updated:** December 2025  
-**Maintained by:** SiteSprintz Development Team
-
-
-
-
-
-
+| Topic | Doc |
+|-------|-----|
+| Backend | [development/BACKEND.md](./development/BACKEND.md) |
+| Frontend | [development/FRONTEND.md](./development/FRONTEND.md) |
+| Database | [development/DATABASE.md](./development/DATABASE.md) |
+| Security | [security/SECURITY-ASSESSMENT.md](./security/SECURITY-ASSESSMENT.md) |
+| Feature status | [features/QUICK_REFERENCE_STATUS.md](./features/QUICK_REFERENCE_STATUS.md) |
+| Backlog | [plans/BACKLOG.md](./plans/BACKLOG.md) |
+| Production launch | [setup/PRODUCTION-SETUP-GUIDE.md](./setup/PRODUCTION-SETUP-GUIDE.md) |
+| Doc index | [README.md](./README.md) |

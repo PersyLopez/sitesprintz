@@ -88,13 +88,43 @@ export function validateSubdomain(subdomain) {
     };
   }
   
-  // Reserved subdomains
-  const reserved = ['www', 'api', 'admin', 'app', 'mail', 'ftp', 'blog', 'shop', 'store', 'help', 'support', 'status'];
+  if (trimmed.includes('..') || trimmed.includes('/') || trimmed.includes('\\') || trimmed.includes('\0')) {
+    return { valid: false, error: 'Invalid subdomain format' };
+  }
+
+  // Reserved subdomains (platform routes + isolation-sensitive names)
+  const reserved = [
+    'www', 'api', 'admin', 'app', 'mail', 'ftp', 'blog', 'shop', 'store',
+    'help', 'support', 'status', 'sites', 'drafts', 'preview', 'uploads',
+    'static', 'assets', 'cdn', 'auth', 'login', 'register', 'dashboard',
+    'setup', 'showcase', 'view', 'legal', 'pricing', 'account', 'templates',
+    'data', 'users', 'health', 'metrics'
+  ];
   if (reserved.includes(trimmed)) {
     return { valid: false, error: 'This subdomain is reserved' };
   }
   
   return { valid: true, value: trimmed };
+}
+
+/**
+ * Draft ID validation — must match generateSecureId('draft')
+ * (draft-{base36-timestamp}-{16-hex}) and never contain path characters.
+ */
+export function validateDraftId(draftId) {
+  if (!draftId || typeof draftId !== 'string') {
+    return { valid: false, error: 'Draft ID is required' };
+  }
+
+  if (draftId.includes('..') || draftId.includes('/') || draftId.includes('\\') || draftId.includes('\0')) {
+    return { valid: false, error: 'Invalid draft ID format' };
+  }
+
+  if (!/^draft-[a-z0-9]+-[a-f0-9]{16}$/i.test(draftId)) {
+    return { valid: false, error: 'Invalid draft ID format' };
+  }
+
+  return { valid: true, value: draftId };
 }
 
 /**
@@ -106,6 +136,10 @@ export function validateTemplateId(templateId) {
   }
   
   const trimmed = templateId.trim().toLowerCase();
+
+  if (trimmed.includes('..') || trimmed.includes('/') || trimmed.includes('\\') || trimmed.includes('\0')) {
+    return { valid: false, error: 'Invalid template ID format' };
+  }
   
   // Alphanumeric with hyphens, 1-100 characters
   const templateRegex = /^[a-z0-9-]{1,100}$/;
@@ -118,20 +152,34 @@ export function validateTemplateId(templateId) {
 }
 
 /**
- * Plan validation
+ * Plan validation — official: trial, starter, growth
+ * Legacy names normalize to growth/trial.
  */
 export function validatePlan(plan) {
   if (!plan || typeof plan !== 'string') {
     return { valid: false, error: 'Plan is required' };
   }
-  
-  const validPlans = ['free', 'starter', 'pro', 'premium', 'business'];
-  const normalized = plan.trim().toLowerCase();
-  
-  if (!validPlans.includes(normalized)) {
-    return { valid: false, error: `Invalid plan. Must be one of: ${validPlans.join(', ')}` };
+
+  const aliases = {
+    free: 'trial',
+    trial: 'trial',
+    starter: 'starter',
+    growth: 'growth',
+    pro: 'growth',
+    premium: 'growth',
+    business: 'growth',
+    enterprise: 'growth',
+    checkout: 'growth'
+  };
+
+  const normalized = aliases[plan.trim().toLowerCase()];
+  if (!normalized) {
+    return {
+      valid: false,
+      error: 'Invalid plan. Must be one of: trial, starter, growth'
+    };
   }
-  
+
   return { valid: true, value: normalized };
 }
 
@@ -142,7 +190,41 @@ export function sanitizeString(str, maxLength = 500) {
   if (!str || typeof str !== 'string') {
     return '';
   }
-  return str.trim().substring(0, maxLength);
+  // Strip HTML tags + control chars for plain-text storage (XSS defense)
+  return str
+    .replace(/<[^>]*>/g, '')
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+    .trim()
+    .substring(0, maxLength);
+}
+
+/**
+ * Sanitize arbitrary custom form fields (whitelist size + strip HTML)
+ */
+export function sanitizeCustomFields(fields, { maxKeys = 20, maxValueLength = 500 } = {}) {
+  if (!fields || typeof fields !== 'object' || Array.isArray(fields)) {
+    return {};
+  }
+
+  const out = {};
+  const keys = Object.keys(fields).filter((k) => !['__proto__', 'constructor', 'prototype'].includes(k));
+  for (const key of keys.slice(0, maxKeys)) {
+    const safeKey = sanitizeString(key, 50);
+    if (!safeKey) continue;
+    const value = fields[key];
+    if (typeof value === 'string') {
+      out[safeKey] = sanitizeString(value, maxValueLength);
+    } else if (typeof value === 'number' && Number.isFinite(value)) {
+      out[safeKey] = value;
+    } else if (typeof value === 'boolean') {
+      out[safeKey] = value;
+    } else if (value == null) {
+      out[safeKey] = null;
+    } else {
+      out[safeKey] = sanitizeString(JSON.stringify(value), maxValueLength);
+    }
+  }
+  return out;
 }
 
 /**
@@ -202,7 +284,45 @@ export function sanitizeBusinessData(data) {
         image: sanitizeString(s.image, 500)
       }));
   }
-  
+
+  // Preserve structured editor content (Starter/Growth features)
+  const passThroughKeys = [
+    'sections',
+    'gallery',
+    'faq',
+    'team',
+    'booking',
+    'menu',
+    'products',
+    'testimonials',
+    'contact',
+    'brand',
+    'colors',
+    'theme',
+    'hero',
+    'features',
+    'settings',
+    'templateSpecific',
+    'beforeAfter',
+    'hours',
+    'social'
+  ];
+
+  for (const key of passThroughKeys) {
+    if (data[key] !== undefined) {
+      // Deep-clone via JSON to drop prototypes; size-cap nested payload
+      try {
+        const raw = JSON.stringify(data[key]);
+        if (raw && raw.length > 200_000) {
+          continue; // drop oversized nested blobs
+        }
+        sanitized[key] = raw ? JSON.parse(raw) : data[key];
+      } catch {
+        // skip non-serializable values
+      }
+    }
+  }
+
   return sanitized;
 }
 
@@ -258,14 +378,19 @@ export default {
   validatePhone,
   validateUUID,
   validateSubdomain,
+  validateDraftId,
   validateTemplateId,
   validatePlan,
   sanitizeString,
+  sanitizeCustomFields,
   sanitizeBusinessData,
   generateSecureId,
   generateSecurePassword,
   validateRequired
 };
+
+
+
 
 
 

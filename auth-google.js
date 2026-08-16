@@ -8,8 +8,9 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import jwt from 'jsonwebtoken';
 import { prisma } from './database/db.js';
 import crypto from 'crypto';
+import { getRequiredSecret } from './server/config/secrets.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this';
+const getJwtSecret = () => getRequiredSecret('JWT_SECRET', { allowTestFallback: true });
 
 /**
  * Configure Google OAuth Strategy
@@ -177,49 +178,30 @@ export function setupGoogleRoutes(app) {
     try {
       const user = req.user;
 
-      console.log('🔥🔥🔥 OAUTH CALLBACK FIRED 🔥🔥🔥');
-      console.log('User email:', user.email);
-      console.log('User ID:', user.id);
-      console.log('User role:', user.role);
-
-      // Generate JWT token
       const token = jwt.sign(
         {
           userId: user.id,
           email: user.email,
           role: user.role
         },
-        JWT_SECRET,
+        getJwtSecret(),
         { expiresIn: '7d' }
       );
 
-      console.log('Token generated:', token.substring(0, 20) + '...');
+      const paidPlans = ['starter', 'growth', 'pro', 'premium'];
 
-      console.log('🔍 Checking redirect logic...');
-      console.log('Pending intent:', user.pendingIntent);
-      console.log('Pending plan:', user.pendingPlan);
-
-      // Check if user came from publish flow
       if (user.pendingIntent === 'publish') {
-        const redirectUrl = `/auto-publish.html?token=${token}`;
-        console.log('✅ REDIRECTING TO:', redirectUrl);
-        return res.redirect(redirectUrl);
+        return res.redirect(`/auto-publish.html?token=${token}`);
       }
-      // Check if user needs to be redirected to Stripe checkout
-      else if (user.pendingPlan && (user.pendingPlan === 'starter' || user.pendingPlan === 'pro')) {
-        const redirectUrl = `/register-success.html?token=${token}&plan=${user.pendingPlan}`;
-        console.log('✅ REDIRECTING TO:', redirectUrl);
-        return res.redirect(redirectUrl);
-      } else {
-        // Free trial - redirect to React OAuth callback handler
-        const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
-        const redirectUrl = `${clientUrl}/oauth/callback?token=${token}`;
-        console.log('✅ REDIRECTING TO:', redirectUrl);
-        console.log('🚀 User should now land on React dashboard!');
-        return res.redirect(redirectUrl);
+
+      if (user.pendingPlan && paidPlans.includes(user.pendingPlan)) {
+        return res.redirect(`/register-success.html?token=${token}&plan=${user.pendingPlan}`);
       }
+
+      const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+      return res.redirect(`${clientUrl}/oauth/callback?token=${token}`);
     } catch (error) {
-      console.error('❌ OAuth callback error:', error);
+      console.error('OAuth callback error:', error);
       res.redirect('/register.html?error=auth_failed');
     }
   }

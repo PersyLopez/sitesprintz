@@ -1,0 +1,96 @@
+url: http://localhost:5173/login
+goal: Growth user — dashboard, setup, booking, products UI (no Stripe checkout, no Google)
+steps:
+  - action: Login ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Email
+    fill: { testId: login-email, value: "growth@example.com", clear: true }
+
+  - action: Password
+    fill: { testId: login-password, value: "GrowthPass!2024", clear: true }
+
+  - action: Sign in
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Dismiss welcome if any
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+    settle_ms: 600
+
+  - action: Open setup
+    goto: http://localhost:5173/setup
+    settle_ms: 1500
+
+  - action: Choose permanent business
+    code: |
+      const permanent = page.getByText(/Permanent Business/i).first();
+      await permanent.click({ timeout: 10000 });
+    settle_ms: 1500
+
+  - action: Setup wizard
+    wait_for: { text: Quick Start, timeout: 20000 }
+    assert:
+      - text contains What type of business
+
+  - action: Pick Freelancer
+    code: |
+      const card = page.getByText(/Freelancer|Consultant/i).first();
+      await card.click({ timeout: 8000 });
+    settle_ms: 1200
+
+  - action: Essentials step or editor
+    code: |
+      const body = await page.locator('body').innerText();
+      const ok = /Business essentials|Essentials|Your business|Continue|Preview/i.test(body);
+      if (!ok) throw new Error('Unexpected setup state: ' + body.slice(0, 280));
+    settle_ms: 400
+
+  - action: Booking dashboard
+    goto: http://localhost:5173/booking-dashboard
+    settle_ms: 1500
+
+  - action: Growth booking UI (not Pro upgrade wall)
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/Upgrade to Pro/i.test(t) && !/Booking|Appointments|Service|Schedule/i.test(t)) {
+        throw new Error('Still showing Pro upgrade wall without booking UI');
+      }
+      const ok = /Booking|Appointments|Add Service|Schedule|Growth|Services/i.test(t);
+      if (!ok) throw new Error('Unexpected booking page: ' + t.slice(0, 300));
+    settle_ms: 300
+
+  - action: Products page
+    goto: http://localhost:5173/products
+    settle_ms: 1500
+
+  - action: Products UI resolves
+    code: |
+      const t = await page.locator('body').innerText();
+      const ok = /Product|Add|Inventory|No products|Create|Growth|Upgrade/i.test(t);
+      if (!ok) throw new Error('Unexpected products page: ' + t.slice(0, 300));
+    settle_ms: 300
+
+  - action: Settings
+    goto: http://localhost:5173/settings
+    settle_ms: 1200
+
+  - action: Settings loads
+    expect:
+      - url contains /settings
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/Settings|Account|Password|Domain|Profile|Email/i.test(t)) {
+        throw new Error('Settings content missing: ' + t.slice(0, 250));
+      }
+    settle_ms: 300

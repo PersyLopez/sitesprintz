@@ -2,7 +2,7 @@ import BookingNotificationService from './bookingNotificationService.js';
 import TenantService from './booking/TenantService.js';
 import ServiceManagementService from './booking/ServiceManagementService.js';
 import StaffManagementService from './booking/StaffManagementService.js';
-import AvailabilityService from './booking/AvailabilityService.js';
+import { AvailabilityService } from './booking/AvailabilityServiceV2.js';
 import AppointmentService from './booking/AppointmentService.js';
 
 /**
@@ -12,7 +12,7 @@ import AppointmentService from './booking/AppointmentService.js';
  * - TenantService: Tenant management
  * - ServiceManagementService: Service CRUD
  * - StaffManagementService: Staff and availability rules
- * - AvailabilityService: Availability calculation
+ * - AvailabilityService: Availability calculation (using V2 with Luxon timezone support)
  * - AppointmentService: Appointment lifecycle
  * 
  * This maintains backward compatibility with existing routes while
@@ -24,10 +24,7 @@ class BookingService {
     this.tenantService = new TenantService();
     this.serviceManagementService = new ServiceManagementService();
     this.staffManagementService = new StaffManagementService();
-    this.availabilityService = new AvailabilityService(
-      this.serviceManagementService,
-      this.staffManagementService
-    );
+    this.availabilityService = new AvailabilityService();
     this.appointmentService = new AppointmentService(
       this.serviceManagementService,
       this.notificationService
@@ -108,6 +105,13 @@ class BookingService {
     return await this.staffManagementService.getAvailabilityRules(staffId);
   }
 
+  /**
+   * List active staff for a tenant
+   */
+  async getStaffForTenant(tenantId) {
+    return await this.staffManagementService.getStaffForTenant(tenantId);
+  }
+
   // ============================================================================
   // Availability Calculation (delegated to AvailabilityService)
   // ============================================================================
@@ -117,7 +121,13 @@ class BookingService {
    * This is the core availability algorithm
    */
   async calculateAvailableSlots(tenantId, serviceId, staffId, date, timezone = 'America/New_York') {
-    return await this.availabilityService.calculateAvailableSlots(tenantId, serviceId, staffId, date, timezone);
+    return await this.availabilityService.calculateAvailableSlots({
+      tenantId,
+      serviceId,
+      staffId,
+      date,
+      timezone
+    });
   }
 
   // ============================================================================

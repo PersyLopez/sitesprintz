@@ -25,7 +25,8 @@ test.describe('API Type Safety', () => {
         email,
         password: 'StrictPwd!2024',
         confirmPassword: 'StrictPwd!2024',
-        name: 'Type Test User'
+        name: 'Type Test User',
+        acceptedTerms: true
       }
     });
 

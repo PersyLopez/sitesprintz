@@ -4,6 +4,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { TEST_USERS } from '../fixtures/test-credentials.js';
 
 const API_URL = process.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -41,7 +42,8 @@ test.describe('Database Schema Health Checks', () => {
         email,
         password: 'StrictPwd!2024',
         confirmPassword: 'StrictPwd!2024',
-        name: 'Schema Test User'
+        name: 'Schema Test User',
+        acceptedTerms: true
       }
     });
 
@@ -106,8 +108,8 @@ test.describe('Authentication Infrastructure', () => {
 
   test('should verify login endpoint works', async ({ request }) => {
     // Use seeded test user who is active
-    const email = 'test@example.com';
-    const password = 'password123';
+    const email = TEST_USERS.PRO_USER.email;
+    const password = TEST_USERS.PRO_USER.password;
 
     const csrfTokenLogin = await getCsrfToken(request);
 
@@ -134,7 +136,8 @@ test.describe('Authentication Infrastructure', () => {
         email,
         password: 'StrictPwd!2024',
         confirmPassword: 'StrictPwd!2024',
-        name: 'Registration Test'
+        name: 'Registration Test',
+        acceptedTerms: true
       }
     });
 
@@ -159,7 +162,8 @@ test.describe('Authentication Infrastructure', () => {
         email,
         password: 'StrictPwd!2024',
         confirmPassword: 'StrictPwd!2024',
-        name: 'Session Test'
+        name: 'Session Test',
+        acceptedTerms: true
       }
     });
 
@@ -286,7 +290,8 @@ test.describe('Database Connection Stability', () => {
           email,
           password: 'SecurePass123!',
           confirmPassword: 'SecurePass123!',
-          name: `Connection Test ${i}`
+          name: `Connection Test ${i}`,
+          acceptedTerms: true
         }
       });
     }

@@ -14,7 +14,13 @@ export function AuthProvider({ children }) {
   }, []);
 
   const checkAuth = async () => {
-    const storedToken = localStorage.getItem('accessToken') || localStorage.getItem('authToken'); // Support both formats
+    let storedToken = localStorage.getItem('accessToken') || localStorage.getItem('authToken'); // Support both formats
+
+    // Sanitize token
+    if (storedToken === 'null' || storedToken === 'undefined' || storedToken === '[object Object]') {
+      storedToken = null;
+    }
+
     if (storedToken) {
       setToken(storedToken);
       try {
@@ -52,9 +58,9 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const register = async (email, password, captchaToken = null) => {
+  const register = async (email, password, captchaToken = null, acceptedTerms = false) => {
     try {
-      const data = await authService.register(email, password, captchaToken);
+      const data = await authService.register(email, password, captchaToken, acceptedTerms);
       setToken(data.accessToken || data.token); // Support both formats
       setUser(data.user);
       return data;

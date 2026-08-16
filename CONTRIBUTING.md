@@ -2,6 +2,8 @@
 
 Thank you for your interest in contributing to SiteSprintz! This document provides guidelines and instructions for contributing to the project.
 
+**AI assistants and automated agents**: read [`AGENTS.md`](./AGENTS.md) first. Cursor loads scoped rules from [`.cursor/rules/`](./.cursor/rules/).
+
 ## Getting Started
 
 1.  **Clone the repository:**
@@ -16,12 +18,12 @@ Thank you for your interest in contributing to SiteSprintz! This document provid
     ```
 
 3.  **Set up environment variables:**
-    Copy `.env.example` (if available) or create a `.env` file based on the configuration in `server.js`.
-    Required variables:
-    - `PORT` (default: 3000)
+    Copy `.env.example` → `.env` and fill in required values.
+    Minimum for local dev:
+    - `DATABASE_URL`
     - `JWT_SECRET`
-    - `STRIPE_SECRET_KEY` (optional, for payments)
-    - `STRIPE_WEBHOOK_SECRET` (optional)
+    - `ENCRYPTION_KEY`
+    - `STRIPE_SECRET_KEY` / `STRIPE_PUBLISHABLE_KEY` (for payments)
 
 4.  **Start the development server:**
     ```bash
@@ -34,6 +36,15 @@ Thank you for your interest in contributing to SiteSprintz! This document provid
 -   **Frontend:** Located in `src` (if applicable) or served from `public`. The project uses React and Vite.
 -   **Backend:** Located in `server.js` and `server/` directory.
 -   **Database:** Uses PostgreSQL. Ensure your database is running and configured in `.env`.
+
+## Agent & Documentation Standards
+
+- Read [`AGENTS.md`](../AGENTS.md) before non-trivial changes
+- **Do not create redundant docs** — [`docs/governance/AGENT_DOCUMENTATION_GUIDE.md`](./docs/governance/AGENT_DOCUMENTATION_GUIDE.md)
+- Default: update canonical docs; no new `*_SUMMARY`, `*_REPORT`, or session notes
+- Only `README.md`, `AGENTS.md`, `CONTRIBUTING.md` at repo root
+- Placement: [`docs/governance/DOCUMENTATION_POLICIES.md`](./docs/governance/DOCUMENTATION_POLICIES.md)
+- Never add files to `docs/archive/`
 
 ## Code Style
 
@@ -145,5 +156,5 @@ Refer to the `docs/` directory for more detailed documentation:
 
 - **Git Workflow:** [Git Strategy](./docs/setup/GIT-STRATEGY.md) (quick reference) | [Git Workflow Best Practices](./docs/setup/GIT-WORKFLOW-BEST-PRACTICES.md) (comprehensive guide)
 - **Setup:** [Quick Start](./docs/setup/QUICK-START.md), [Integration Setup](./docs/setup/INTEGRATION-SETUP.md)
-- **Development:** [JS Standards](./docs/JS-STANDARDS.md), [TDD Guidelines](./docs/TDD-GUIDELINES.md)
-- **Templates:** [Template Creation Guide](./docs/TEMPLATE-CREATION-GUIDE.md)
+- **Development:** [JS Standards](./docs/development/JS-STANDARDS.md), [TDD Guidelines](./docs/development/TDD-GUIDELINES.md)
+- **Templates:** [Template Creation Guide](./docs/development/TEMPLATE-CREATION-GUIDE.md)

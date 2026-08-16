@@ -65,6 +65,7 @@ describe('Register - Template Selection Flow', () => {
       await user.type(screen.getByLabelText(/email/i), 'test@example.com');
       await user.type(screen.getByLabelText(/^password$/i), 'password123');
       await user.type(screen.getByLabelText(/confirm password/i), 'password123');
+      await user.click(screen.getByTestId('register-accept-terms'));
       
       // Submit
       await user.click(screen.getByRole('button', { name: /create account/i }));
@@ -88,6 +89,7 @@ describe('Register - Template Selection Flow', () => {
       await user.type(screen.getByLabelText(/email/i), 'test@example.com');
       await user.type(screen.getByLabelText(/^password$/i), 'password123');
       await user.type(screen.getByLabelText(/confirm password/i), 'password123');
+      await user.click(screen.getByTestId('register-accept-terms'));
       
       await user.click(screen.getByRole('button', { name: /create account/i }));
 
@@ -106,6 +108,7 @@ describe('Register - Template Selection Flow', () => {
       await user.type(screen.getByLabelText(/email/i), 'test@example.com');
       await user.type(screen.getByLabelText(/^password$/i), 'password123');
       await user.type(screen.getByLabelText(/confirm password/i), 'password123');
+      await user.click(screen.getByTestId('register-accept-terms'));
       
       await user.click(screen.getByRole('button', { name: /create account/i }));
 
@@ -124,6 +127,7 @@ describe('Register - Template Selection Flow', () => {
       await user.type(screen.getByLabelText(/email/i), 'test@example.com');
       await user.type(screen.getByLabelText(/^password$/i), 'password123');
       await user.type(screen.getByLabelText(/confirm password/i), 'password123');
+      await user.click(screen.getByTestId('register-accept-terms'));
       
       await user.click(screen.getByRole('button', { name: /create account/i }));
 
@@ -142,6 +146,7 @@ describe('Register - Template Selection Flow', () => {
       await user.type(screen.getByLabelText(/email/i), 'test@example.com');
       await user.type(screen.getByLabelText(/^password$/i), 'password123');
       await user.type(screen.getByLabelText(/confirm password/i), 'password123');
+      await user.click(screen.getByTestId('register-accept-terms'));
       
       await user.click(screen.getByRole('button', { name: /create account/i }));
 
@@ -177,6 +182,7 @@ describe('Register - Template Selection Flow', () => {
       await user.type(screen.getByLabelText(/email/i), 'test@example.com');
       await user.type(screen.getByLabelText(/^password$/i), 'password123');
       await user.type(screen.getByLabelText(/confirm password/i), 'password123');
+      await user.click(screen.getByTestId('register-accept-terms'));
       
       await user.click(screen.getByRole('button', { name: /create account/i }));
 
@@ -198,6 +204,7 @@ describe('Register - Template Selection Flow', () => {
       await user.type(screen.getByLabelText(/email/i), 'existing@example.com');
       await user.type(screen.getByLabelText(/^password$/i), 'password123');
       await user.type(screen.getByLabelText(/confirm password/i), 'password123');
+      await user.click(screen.getByTestId('register-accept-terms'));
       
       await user.click(screen.getByRole('button', { name: /create account/i }));
 
@@ -219,6 +226,7 @@ describe('Register - Template Selection Flow', () => {
       await user.type(screen.getByLabelText(/email/i), 'test@example.com');
       await user.type(screen.getByLabelText(/^password$/i), 'password123');
       await user.type(screen.getByLabelText(/confirm password/i), 'password123');
+      await user.click(screen.getByTestId('register-accept-terms'));
       
       await user.click(screen.getByRole('button', { name: /create account/i }));
 
@@ -255,6 +263,7 @@ describe('Register - Template Selection Flow', () => {
       await user.type(screen.getByLabelText(/email/i), 'test@example.com');
       await user.type(screen.getByLabelText(/^password$/i), 'password123');
       await user.type(screen.getByLabelText(/confirm password/i), 'password123');
+      await user.click(screen.getByTestId('register-accept-terms'));
       
       await user.click(screen.getByRole('button', { name: /create account/i }));
 
@@ -295,6 +304,7 @@ describe('Register - Template Selection Flow', () => {
       await user.type(screen.getByLabelText(/email/i), 'test@example.com');
       await user.type(screen.getByLabelText(/^password$/i), 'password123');
       await user.type(screen.getByLabelText(/confirm password/i), 'password123');
+      await user.click(screen.getByTestId('register-accept-terms'));
       
       await user.click(screen.getByRole('button', { name: /create account/i }));
 

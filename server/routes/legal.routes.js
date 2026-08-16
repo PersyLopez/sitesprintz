@@ -1,6 +1,39 @@
 import express from 'express';
+import { POLICY_VERSION, POLICY_LAST_UPDATED, THIRD_PARTY_PROCESSORS } from '../config/policies.js';
 
 const router = express.Router();
+
+/**
+ * Escape untrusted strings before injecting into HTML responses.
+ */
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * Render the third-party processor table rows from the shared config so the
+ * public disclosure always matches the providers we actually use.
+ */
+function renderProcessorRows() {
+  return THIRD_PARTY_PROCESSORS.map((p) => {
+    const links = [
+      p.privacyUrl ? `<a href="${escapeHtml(p.privacyUrl)}" target="_blank" rel="noopener noreferrer">Privacy</a>` : '',
+      p.termsUrl ? `<a href="${escapeHtml(p.termsUrl)}" target="_blank" rel="noopener noreferrer">Terms</a>` : '',
+    ].filter(Boolean).join(' &middot; ');
+    return `
+        <tr>
+            <td><strong>${escapeHtml(p.name)}</strong></td>
+            <td>${escapeHtml(p.purpose)}</td>
+            <td>${escapeHtml(p.data)}</td>
+            <td>${links || '&mdash;'}</td>
+        </tr>`;
+  }).join('');
+}
 
 /**
  * Terms of Service
@@ -117,11 +150,12 @@ router.get('/terms', (req, res) => {
 
     <h2>6. Payment Terms</h2>
     <p>
-        <strong>6.1 Free Trial:</strong> We offer a 14-day free trial. No credit card is required during the trial period.
+        <strong>6.1 Free Trial:</strong> We offer a 7-day free trial when you publish a site. A payment method is required
+        to start the trial; you are not charged until the trial ends unless you cancel.
     </p>
     <p>
         <strong>6.2 Subscriptions:</strong> After the trial, continued use requires a paid subscription. You will be charged
-        according to your chosen plan (Starter, Pro, or Premium).
+        according to your chosen plan (Starter, Growth, Pro, or Premium).
     </p>
     <p>
         <strong>6.3 Billing:</strong> Subscriptions are billed monthly in advance. Payments are processed via Stripe.
@@ -148,6 +182,13 @@ router.get('/terms', (req, res) => {
     <p>
         <strong>7.3 Business Losses:</strong> We are not responsible for any business losses, including but not limited to
         lost revenue, lost sales, or lost customers resulting from service downtime or malfunctions.
+    </p>
+    <p>
+        <strong>7.4 Third-Party Services:</strong> Sensitive information (including payments, authentication, and contact
+        details) is handled by independent third-party providers under their own terms. We are not responsible or liable for
+        the acts, omissions, errors, outages, or security incidents of any third-party provider. See our
+        <a href="/legal/third-party-services">Third-Party Services & Data Handling Disclosure</a> for details and the
+        applicable limitations of liability.
     </p>
 
     <h2>8. Acceptable Use</h2>
@@ -203,7 +244,8 @@ router.get('/terms', (req, res) => {
         <p>
             <a href="/legal/privacy">Privacy Policy</a> |
             <a href="/legal/cookies">Cookie Policy</a> |
-            <a href="/legal/refunds">Refund Policy</a>
+            <a href="/legal/refunds">Refund Policy</a> |
+            <a href="/legal/third-party-services">Third-Party Services</a>
         </p>
     </footer>
 </body>
@@ -312,6 +354,13 @@ router.get('/privacy', (req, res) => {
     
     <p><strong>We do not sell your data to third parties.</strong></p>
 
+    <p>
+        Sensitive information (such as payment details and login credentials) is handled by these independent
+        providers under their own terms and privacy policies, not by SiteSprintz. For the full list of providers,
+        the sensitive data each handles, and the related limitations of liability, see our
+        <a href="/legal/third-party-services">Third-Party Services & Data Handling Disclosure</a>.
+    </p>
+
     <h2>4. Data Storage and Security</h2>
     <ul>
         <li><strong>Encryption:</strong> Data is encrypted in transit (HTTPS/TLS) and at rest</li>
@@ -388,7 +437,8 @@ router.get('/privacy', (req, res) => {
         <p>
             <a href="/legal/terms">Terms of Service</a> |
             <a href="/legal/cookies">Cookie Policy</a> |
-            <a href="/legal/refunds">Refund Policy</a>
+            <a href="/legal/refunds">Refund Policy</a> |
+            <a href="/legal/third-party-services">Third-Party Services</a>
         </p>
     </footer>
 </body>
@@ -527,7 +577,8 @@ router.get('/cookies', (req, res) => {
         <p>
             <a href="/legal/terms">Terms of Service</a> |
             <a href="/legal/privacy">Privacy Policy</a> |
-            <a href="/legal/refunds">Refund Policy</a>
+            <a href="/legal/refunds">Refund Policy</a> |
+            <a href="/legal/third-party-services">Third-Party Services</a>
         </p>
     </footer>
 </body>
@@ -584,16 +635,16 @@ router.get('/refunds', (req, res) => {
 
     <h2>1. Free Trial</h2>
     <ul>
-        <li><strong>Duration:</strong> 14 days</li>
-        <li><strong>Features:</strong> Full access to Starter tier features</li>
-        <li><strong>No Credit Card Required:</strong> Start for free, add payment later</li>
+        <li><strong>Duration:</strong> 7 days</li>
+        <li><strong>Features:</strong> Access aligned with your selected plan during trial</li>
+        <li><strong>Payment Method:</strong> Required to publish and start the trial; not charged until trial ends if you cancel first</li>
         <li><strong>Trial Expiration:</strong> Sites become view-only after trial ends (can reactivate by subscribing)</li>
     </ul>
 
     <h2>2. Subscriptions</h2>
     <ul>
         <li><strong>Billing:</strong> Monthly, charged on the same day each month</li>
-        <li><strong>Plans:</strong> Starter ($15/mo), Pro ($45/mo), Premium ($100/mo)</li>
+        <li><strong>Plans:</strong> Starter ($10/mo), Growth ($35/mo)</li>
         <li><strong>Auto-Renewal:</strong> Subscriptions renew automatically unless canceled</li>
         <li><strong>Currency:</strong> All prices in USD</li>
     </ul>
@@ -736,7 +787,184 @@ router.get('/refunds', (req, res) => {
         <p>
             <a href="/legal/terms">Terms of Service</a> |
             <a href="/legal/privacy">Privacy Policy</a> |
-            <a href="/legal/cookies">Cookie Policy</a>
+            <a href="/legal/cookies">Cookie Policy</a> |
+            <a href="/legal/third-party-services">Third-Party Services</a>
+        </p>
+    </footer>
+</body>
+</html>
+  `);
+});
+
+/**
+ * Third-Party Services & Data Handling Disclosure
+ * This is the agreement users affirmatively accept at registration. It
+ * discloses that sensitive information is handled by independent third-party
+ * providers and limits SiteSprintz's liability accordingly.
+ */
+router.get(['/third-party-services', '/third-party', '/data-handling'], (req, res) => {
+  res.send(`
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Third-Party Services & Data Handling Disclosure - SiteSprintz</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 { color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 10px; }
+        h2 { color: #1e40af; margin-top: 30px; }
+        .last-updated { color: #666; font-style: italic; margin-bottom: 8px; }
+        .version { color: #666; font-size: 0.9em; margin-bottom: 30px; }
+        .highlight {
+            background-color: #fef3c7;
+            padding: 15px;
+            border-left: 4px solid #f59e0b;
+            margin: 20px 0;
+        }
+        .legal {
+            background-color: #f3f4f6;
+            padding: 15px;
+            border-left: 4px solid #6b7280;
+            margin: 20px 0;
+            text-transform: none;
+        }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.95em; }
+        th, td { border: 1px solid #e5e7eb; padding: 12px; text-align: left; vertical-align: top; }
+        th { background-color: #f3f4f6; font-weight: 600; }
+        footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Third-Party Services & Data Handling Disclosure</h1>
+    <p class="last-updated">Last Updated: ${POLICY_LAST_UPDATED}</p>
+    <p class="version">Policy Version: ${POLICY_VERSION} &middot; Service provided during an ongoing beta period on an &ldquo;as is&rdquo; basis.</p>
+
+    <div class="highlight">
+        <strong>&#9888; Please read carefully.</strong> Sensitive information you and your site visitors provide &mdash;
+        including payment card details, login credentials, and contact details &mdash; is collected, processed, and
+        stored by <strong>independent third-party companies</strong>, not by SiteSprintz. By creating an account or
+        continuing to use the Service, you acknowledge and accept this disclosure and the limitations of liability below.
+    </div>
+
+    <h2>1. Acceptance</h2>
+    <p>
+        This Disclosure forms part of, and is incorporated into, our
+        <a href="/legal/terms">Terms of Service</a> and <a href="/legal/privacy">Privacy Policy</a>.
+        You accept it by checking the acceptance box during registration. We record the date, time, your IP address,
+        and the policy version at the moment of acceptance so we can evidence your agreement. If you do not agree,
+        do not use the Service. Please note the Service is currently offered during a beta period and is provided
+        &ldquo;as is&rdquo; while we continue to refine it.
+    </p>
+
+    <h2>2. Sensitive Information Is Handled by Third Parties</h2>
+    <p>
+        SiteSprintz relies on established third-party providers ("Providers") to deliver core functionality. Where the
+        Service involves sensitive information, that information is transmitted to and handled by the relevant Provider
+        under <strong>their own terms of service and privacy policies</strong>:
+    </p>
+    <ul>
+        <li><strong>Payments:</strong> We never receive or store full payment card numbers. Card data is captured and
+            processed directly by our payment Providers (e.g., Stripe), who are PCI-DSS compliant.</li>
+        <li><strong>Authentication:</strong> Optional sign-in is handled by Google OAuth; passwords are stored only as
+            salted hashes.</li>
+        <li><strong>Email & infrastructure:</strong> Email delivery, database hosting, and bot prevention are operated
+            by the Providers listed below.</li>
+    </ul>
+
+    <h2>3. Current Third-Party Providers</h2>
+    <table>
+        <tr>
+            <th>Provider</th>
+            <th>Purpose</th>
+            <th>Sensitive Data Handled</th>
+            <th>Their Policies</th>
+        </tr>
+        ${renderProcessorRows()}
+    </table>
+    <p>
+        This list may change as we add, remove, or replace Providers. The current version is always available on this page.
+    </p>
+
+    <h2>4. Your Use of Third-Party Services Is at Your Own Risk</h2>
+    <p>
+        Your use of any Provider is subject to that Provider's terms and privacy policy, in addition to ours. By using the
+        Service, <strong>you agree to be bound by the terms of the relevant Providers</strong>. We act only as a facilitator
+        that integrates these Providers; we do not control them.
+    </p>
+    <div class="legal">
+        TO THE MAXIMUM EXTENT PERMITTED BY LAW, SITESPRINTZ IS NOT RESPONSIBLE OR LIABLE FOR ANY ACT, OMISSION, ERROR,
+        DELAY, OUTAGE, SECURITY INCIDENT, DATA BREACH, LOSS, OR CHANGE IN TERMS CAUSED BY OR ARISING FROM ANY THIRD-PARTY
+        PROVIDER. THE SERVICE AND ALL THIRD-PARTY INTEGRATIONS ARE PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES
+        OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+    </div>
+
+    <h2>5. Payment Disputes</h2>
+    <p>
+        Any dispute, chargeback, refund, failed transaction, or issue relating to payment processing must be resolved
+        directly with the applicable payment Provider in accordance with their terms. We are not responsible for any error
+        by, or other acts or omissions of, a payment Provider, and we are not liable for transactions that fail or are
+        delayed for any reason, including network or Provider errors.
+    </p>
+
+    <h2>6. Limitation of Liability</h2>
+    <p>
+        To the fullest extent permitted by law, SiteSprintz and its officers, employees, and affiliates will not be liable
+        for any indirect, incidental, special, consequential, punitive, or exemplary damages, or for any loss of profits,
+        revenue, data, goodwill, or business, however caused, arising out of or relating to the Service or any third-party
+        Provider.
+    </p>
+    <p>
+        Our total aggregate liability arising out of or relating to the Service in any 12-month period will not exceed the
+        greater of (a) the total fees you paid to SiteSprintz in that period, or (b) USD $100.
+    </p>
+    <p>
+        <strong>Carve-outs:</strong> Nothing in this Disclosure excludes or limits liability that cannot lawfully be excluded
+        or limited, including liability for death or personal injury caused by negligence, fraud, or fraudulent
+        misrepresentation.
+    </p>
+
+    <h2>7. Your Responsibilities and Indemnification</h2>
+    <p>
+        You are responsible for the information you and your site visitors submit, for complying with each Provider's terms,
+        and for any laws that apply to your business (including consumer, privacy, and payment regulations). You agree to
+        indemnify and hold harmless SiteSprintz from any third-party claims, losses, liabilities, fines, costs, and
+        reasonable legal fees arising from or relating to your use of the Service or any Provider, your content, or your
+        violation of this Disclosure.
+    </p>
+
+    <h2>8. Changes to This Disclosure</h2>
+    <p>
+        We may update this Disclosure to reflect changes in our Providers or practices. Material changes will be communicated
+        through the Service or by email, and continued use after such changes constitutes acceptance of the updated version.
+    </p>
+
+    <h2>9. Contact</h2>
+    <p>
+        Questions about this Disclosure or our Providers?<br>
+        Email: privacy@sitesprintz.com &nbsp;|&nbsp; Support: support@sitesprintz.com
+    </p>
+
+    <footer>
+        <p>&copy; 2026 SiteSprintz. All rights reserved.</p>
+        <p>
+            <a href="/legal/terms">Terms of Service</a> |
+            <a href="/legal/privacy">Privacy Policy</a> |
+            <a href="/legal/cookies">Cookie Policy</a> |
+            <a href="/legal/refunds">Refund Policy</a>
         </p>
     </footer>
 </body>

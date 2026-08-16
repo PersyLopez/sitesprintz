@@ -1,17 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSite } from '../../hooks/useSite';
 import { useAuth } from '../../hooks/useAuth';
+import { useToast } from '../../hooks/useToast';
 import { sitesService } from '../../services/sites';
 import BusinessInfoForm from './forms/BusinessInfoForm';
-import ProductsEditor from './forms/ProductsEditor';
-import BookingEditor from './forms/BookingEditor';
-import PaymentSettings from './forms/PaymentSettings';
+import ServicesProductsEditor from './forms/ServicesProductsEditor';
+import ContactBookingForm from './forms/ContactBookingForm';
+import ThemePicker from './forms/ThemePicker';
 import './EditorPanel.css';
 
 function EditorPanel() {
-  const { siteData, updateField, addService, updateService, deleteService } = useSite();
+  const { siteData, updateField, addService, updateService, deleteService, undo, redo, canUndo, canRedo } = useSite();
   const { user } = useAuth();
-  const [activeSection, setActiveSection] = useState('business');
+  const { showError } = useToast();
+  const [activeSection, setActiveSection] = useState('essentials');
   const contentRef = useRef(null);
   const sectionRefs = useRef({});
   const isScrollingRef = useRef(false);
@@ -19,9 +21,8 @@ function EditorPanel() {
   const [publishedSitesCount, setPublishedSitesCount] = useState(0);
   const [loadingCount, setLoadingCount] = useState(true);
 
-  // Check if user has Pro plan for advanced features
-  // NOTE: We allow editing all features in draft mode, only gate publishing
-  const isPro = user?.plan === 'pro' || user?.plan === 'business';
+  // Growth (and legacy pro) unlock advanced publish features
+  const isPro = ['growth', 'pro', 'premium'].includes(user?.plan);
   const hasActiveTrial = user?.subscription_status === 'trial';
   const hasActiveSubscription = user?.subscription_status === 'active';
 
@@ -33,13 +34,10 @@ function EditorPanel() {
   const needsProAccess = false; // Always false - no gating during editing
 
   const sections = [
-    { id: 'business', label: 'Business Info', icon: '🏢' },
-    { id: 'services', label: 'Services', icon: '✨' },
-    { id: 'contact', label: 'Contact', icon: '📞' },
-    { id: 'colors', label: 'Colors', icon: '🎨' },
-    { id: 'products', label: 'Products', icon: '🛍️' },
-    { id: 'booking', label: 'Booking', icon: '📅' },
-    { id: 'payments', label: 'Payments', icon: '💳' },
+    { id: 'essentials', label: 'Essentials', icon: '📋' },
+    { id: 'design', label: 'Design', icon: '🎨' },
+    { id: 'services', label: 'Services & Products', icon: '✨' },
+    { id: 'contact', label: 'Contact & Booking', icon: '📞' },
   ];
 
   // Fetch user's published sites count on mount
@@ -107,7 +105,7 @@ function EditorPanel() {
       }
     } catch (error) {
       console.error('Trial/subscription start error:', error);
-      alert('Failed to start. Please try again or contact support.');
+      showError('Failed to start trial. Please try again or contact support.');
     }
   };
 
@@ -117,7 +115,7 @@ function EditorPanel() {
       return { primary: '✅ Trial Active', secondary: 'Manage Subscription' };
     }
     if (isEligibleForTrial) {
-      return { primary: '🚀 Start 15-Day Free Trial', secondary: 'No charge until trial ends' };
+      return { primary: '🚀 Start 7-Day Free Trial', secondary: 'Payment method required - no charge until trial ends' };
     }
     return { primary: '⭐ Subscribe to Pro', secondary: 'Unlock all features' };
   };
@@ -175,215 +173,19 @@ function EditorPanel() {
     }
   };
 
-  const renderServices = () => (
-    <div className="editor-section" data-section="services" ref={el => sectionRefs.current['services'] = el}>
+  const renderDesign = () => (
+    <div className="editor-section" data-section="design" ref={el => sectionRefs.current['design'] = el}>
       <div className="section-header">
-        <h2>✨ Services</h2>
-        <p className="section-description">Add and manage your service offerings</p>
+        <h2>Look</h2>
+        <p className="section-description">Pick one of six contrast-checked themes. Accents and text colors are locked together.</p>
       </div>
 
-      <div className="services-header">
-        <h3>Your Services</h3>
-        <button
-          onClick={() => addService({
-            name: '',
-            description: '',
-            price: '',
-          })}
-          className="btn btn-primary btn-sm"
-        >
-          + Add Service
-        </button>
-      </div>
-
-      {siteData.services && siteData.services.length > 0 ? (
-        <div className="services-list">
-          {siteData.services.map((service) => (
-            <div key={service.id} className="service-item">
-              <div className="form-group">
-                <input
-                  type="text"
-                  value={service.name || service.title || ''}
-                  onChange={(e) => updateService(service.id, { name: e.target.value, title: e.target.value })}
-                  placeholder="Service name"
-                />
-              </div>
-
-              <div className="form-group">
-                <textarea
-                  value={service.description || ''}
-                  onChange={(e) => updateService(service.id, { description: e.target.value })}
-                  placeholder="Service description"
-                  rows={2}
-                />
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <input
-                    type="text"
-                    value={service.price || ''}
-                    onChange={(e) => updateService(service.id, { price: e.target.value })}
-                    placeholder="$99"
-                  />
-                </div>
-
-                <button
-                  onClick={() => deleteService(service.id)}
-                  className="btn btn-danger btn-sm"
-                >
-                  🗑️
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="empty-services">
-          <p>No services added yet. Click "Add Service" to get started.</p>
-        </div>
-      )}
+      <ThemePicker templateId={siteData.template || siteData.templateId} />
     </div>
   );
 
-  const renderContact = () => (
-    <div className="editor-section" data-section="contact" ref={el => sectionRefs.current['contact'] = el}>
-      <div className="section-header">
-        <h2>📞 Contact Information</h2>
-        <p className="section-description">Update your business contact details</p>
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="contactEmail">Email</label>
-        <input
-          type="email"
-          id="contactEmail"
-          value={siteData.contact?.email || siteData.contactEmail || ''}
-          onChange={(e) => updateField('contact.email', e.target.value)}
-          placeholder="contact@yourbusiness.com"
-        />
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="contactPhone">Phone</label>
-        <input
-          type="tel"
-          id="contactPhone"
-          value={siteData.contact?.phone || siteData.contactPhone || ''}
-          onChange={(e) => updateField('contact.phone', e.target.value)}
-          placeholder="(555) 123-4567"
-        />
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="contactAddress">Address</label>
-        <textarea
-          id="contactAddress"
-          value={siteData.contact?.address || siteData.contactAddress || ''}
-          onChange={(e) => updateField('contact.address', e.target.value)}
-          placeholder="123 Main St, City, State 12345"
-          rows={2}
-        />
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="businessHours">Business Hours</label>
-        <textarea
-          id="businessHours"
-          value={siteData.contact?.hours || siteData.businessHours || ''}
-          onChange={(e) => updateField('contact.hours', e.target.value)}
-          placeholder="Mon-Fri: 9am-5pm"
-          rows={2}
-        />
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="facebookUrl">Facebook URL</label>
-        <input
-          type="url"
-          id="facebookUrl"
-          value={siteData.social?.facebook || siteData.facebookUrl || ''}
-          onChange={(e) => updateField('social.facebook', e.target.value)}
-          placeholder="https://facebook.com/yourbusiness"
-        />
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="instagramUrl">Instagram URL</label>
-        <input
-          type="url"
-          id="instagramUrl"
-          value={siteData.social?.instagram || siteData.instagramUrl || ''}
-          onChange={(e) => updateField('social.instagram', e.target.value)}
-          placeholder="https://instagram.com/yourbusiness"
-        />
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="googleMapsUrl">Google Maps URL</label>
-        <input
-          type="url"
-          id="googleMapsUrl"
-          value={siteData.social?.maps || siteData.googleMapsUrl || ''}
-          onChange={(e) => updateField('social.maps', e.target.value)}
-          placeholder="https://maps.google.com/..."
-        />
-      </div>
-    </div>
-  );
-
-  const renderColors = () => (
-    <div className="editor-section" data-section="colors" ref={el => sectionRefs.current['colors'] = el}>
-      <div className="section-header">
-        <h2>🎨 Brand Colors</h2>
-        <p className="section-description">Customize your site's color scheme</p>
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="primaryColor">Primary Color</label>
-        <div className="color-input-group">
-          <input
-            type="color"
-            id="primaryColor"
-            value={siteData.themeVars?.['color-primary'] || siteData.colors?.primary || '#06b6d4'}
-            onChange={(e) => updateField('themeVars.color-primary', e.target.value)}
-          />
-          <input
-            type="text"
-            value={siteData.themeVars?.['color-primary'] || siteData.colors?.primary || '#06b6d4'}
-            onChange={(e) => updateField('themeVars.color-primary', e.target.value)}
-            placeholder="#06b6d4"
-          />
-        </div>
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="accentColor">Accent Color</label>
-        <div className="color-input-group">
-          <input
-            type="color"
-            id="accentColor"
-            value={siteData.themeVars?.['color-accent'] || siteData.colors?.accent || '#14b8a6'}
-            onChange={(e) => updateField('themeVars.color-accent', e.target.value)}
-          />
-          <input
-            type="text"
-            value={siteData.themeVars?.['color-accent'] || siteData.colors?.accent || '#14b8a6'}
-            onChange={(e) => updateField('themeVars.color-accent', e.target.value)}
-            placeholder="#14b8a6"
-          />
-        </div>
-      </div>
-    </div>
-  );
-
-  const handleTabClickDeprecated = (sectionId, isPro) => {
-    if (isPro && !isPro) {
-      // Show upgrade prompt
-      alert('This is a Pro feature. Upgrade your plan to access it!');
-      return;
-    }
-    setActiveSection(sectionId);
+  const handleTabClickDeprecated = (sectionId) => {
+    showError('This is a Pro feature. Upgrade your plan to access it!');
   };
 
   return (
@@ -405,10 +207,10 @@ function EditorPanel() {
               </h3>
               <p>
                 {hasActiveTrial
-                  ? `Your 15-day trial is active. All pro features available until ${user?.trial_expires_at ? new Date(user.trial_expires_at).toLocaleDateString() : 'trial ends'}.`
+                  ? `Your 7-day trial is active. All features available until ${user?.trial_expires_at ? new Date(user.trial_expires_at).toLocaleDateString() : 'trial ends'}.`
                   : isEligibleForTrial
-                    ? 'Your first site qualifies for a 15-day free trial! Start now to unlock Stripe payments, booking widgets, and all premium features. No charge until trial ends.'
-                    : 'Subscribe to Pro to publish and unlock all features. Note: Free trial is only available for your first published site.'}
+                    ? 'Your first site qualifies for a 7-day free trial! Payment method required to start. You won\'t be charged until after your trial ends.'
+                    : 'Subscribe to a plan to publish and unlock all features. Note: Free trial is only available for your first published site.'}
               </p>
             </div>
             <div className="banner-actions">
@@ -425,6 +227,29 @@ function EditorPanel() {
         </div>
       )}
 
+      <div className="editor-header-actions">
+        <div className="undo-redo-buttons">
+          <button
+            className="btn btn-secondary btn-sm"
+            onClick={undo}
+            disabled={!canUndo}
+            title="Undo (Cmd+Z)"
+            aria-label="Undo last change"
+          >
+            ↶ Undo
+          </button>
+          <button
+            className="btn btn-secondary btn-sm"
+            onClick={redo}
+            disabled={!canRedo}
+            title="Redo (Cmd+Shift+Z)"
+            aria-label="Redo last undone change"
+          >
+            ↷ Redo
+          </button>
+        </div>
+      </div>
+
       <div className="editor-tabs">
         {sections.map((section) => (
           <button
@@ -439,41 +264,30 @@ function EditorPanel() {
       </div>
 
       <div className="editor-content" ref={contentRef}>
-        <div data-section="business" ref={el => sectionRefs.current['business'] = el}>
+        <div data-section="essentials" ref={el => sectionRefs.current['essentials'] = el}>
           <div className="section-header">
-            <h2>🏢 Business Information</h2>
-            <p className="section-description">Tell us about your business</p>
+            <h2>📋 Essentials</h2>
+            <p className="section-description">Basic information about your business</p>
           </div>
           <BusinessInfoForm />
         </div>
 
-        {renderServices()}
-        {renderContact()}
-        {renderColors()}
+        {renderDesign()}
 
-        {/* All features now available during editing - no upgrade prompts */}
-        <div data-section="products" ref={el => sectionRefs.current['products'] = el}>
+        <div data-section="services" ref={el => sectionRefs.current['services'] = el}>
           <div className="section-header">
-            <h2>🛍️ Products</h2>
-            <p className="section-description">Manage your product catalog</p>
+            <h2>✨ Services & Products</h2>
+            <p className="section-description">Manage your services and product catalog</p>
           </div>
-          <ProductsEditor />
+          <ServicesProductsEditor />
         </div>
 
-        <div data-section="booking" ref={el => sectionRefs.current['booking'] = el}>
+        <div data-section="contact" ref={el => sectionRefs.current['contact'] = el}>
           <div className="section-header">
-            <h2>📅 Booking</h2>
-            <p className="section-description">Configure appointment booking</p>
+            <h2>📞 Contact & Booking</h2>
+            <p className="section-description">Contact information and appointment booking</p>
           </div>
-          <BookingEditor />
-        </div>
-
-        <div data-section="payments" ref={el => sectionRefs.current['payments'] = el}>
-          <div className="section-header">
-            <h2>💳 Payments</h2>
-            <p className="section-description">Set up payment processing</p>
-          </div>
-          <PaymentSettings />
+          <ContactBookingForm />
         </div>
       </div>
     </div>

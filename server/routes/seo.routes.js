@@ -319,4 +319,105 @@ router.post('/api/seo/:subdomain/validate', authenticateToken, async (req, res) 
   }
 });
 
+/**
+ * GET /sites/:siteId/sitemap.xml
+ * Generate and serve XML sitemap for path-based published sites
+ * Access: Public
+ */
+router.get('/sites/:siteId/sitemap.xml', async (req, res) => {
+  try {
+    const { siteId } = req.params;
+
+    // Fetch site data using Prisma
+    const site = await prisma.sites.findUnique({
+      where: { id: siteId },
+      select: { site_data: true, status: true, subdomain: true }
+    });
+
+    if (!site || site.status !== 'published') {
+      return res.status(404).send('<?xml version="1.0" encoding="UTF-8"?><error>Site not found</error>');
+    }
+
+    // Build pages array based on enabled sections
+    const siteData = typeof site.site_data === 'string' ? JSON.parse(site.site_data) : site.site_data;
+    const pages = [
+      { path: '/', priority: 1.0, changefreq: 'daily' }
+    ];
+
+    // Add pages for enabled sections
+    if (siteData.sections && Array.isArray(siteData.sections)) {
+      const sectionPaths = {
+        'services': { path: '/#services', priority: 0.8 },
+        'about': { path: '/#about', priority: 0.6 },
+        'team': { path: '/#team', priority: 0.6 },
+        'gallery': { path: '/#gallery', priority: 0.7 },
+        'testimonials': { path: '/#testimonials', priority: 0.6 },
+        'contact': { path: '/#contact', priority: 0.7 },
+        'faq': { path: '/#faq', priority: 0.5 },
+        'menu': { path: '/#menu', priority: 0.8 }
+      };
+
+      siteData.sections.forEach(section => {
+        if (section.enabled !== false && sectionPaths[section.type]) {
+          pages.push({
+            ...sectionPaths[section.type],
+            changefreq: 'weekly'
+          });
+        }
+      });
+    }
+
+    // Generate sitemap using path-based URL
+    const sitemap = await seoService.generateSitemap(
+      siteId,
+      pages,
+      { customDomain: `localhost:3000/sites/${siteId}` }
+    );
+
+    res.header('Content-Type', 'application/xml');
+    res.header('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
+    res.send(sitemap);
+
+  } catch (error) {
+    console.error('Error generating path-based sitemap:', error);
+    res.status(500).send('<?xml version="1.0" encoding="UTF-8"?><error>Internal server error</error>');
+  }
+});
+
+/**
+ * GET /sites/:siteId/robots.txt
+ * Generate and serve robots.txt for path-based published sites
+ * Access: Public
+ */
+router.get('/sites/:siteId/robots.txt', async (req, res) => {
+  try {
+    const { siteId } = req.params;
+
+    // Fetch site data using Prisma
+    const site = await prisma.sites.findUnique({
+      where: { id: siteId },
+      select: { site_data: true, status: true, subdomain: true }
+    });
+
+    if (!site || site.status !== 'published') {
+      return res.status(404).send('User-agent: *\nDisallow: /');
+    }
+
+    // Generate robots.txt for path-based site
+    const robotsTxt = seoService.generateRobotsTxt(siteId, {
+      disallow: [],
+      noindex: false,
+      customDomain: `localhost:3000/sites/${siteId}`
+    });
+
+    res.header('Content-Type', 'text/plain');
+    res.header('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
+    res.send(robotsTxt);
+
+  } catch (error) {
+    console.error('Error generating path-based robots.txt:', error);
+    res.status(500).send('User-agent: *\nDisallow: /');
+  }
+});
+
 export default router;

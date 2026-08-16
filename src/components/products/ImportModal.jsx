@@ -71,7 +71,11 @@ function ImportModal({ currentProducts, onImport, onClose }) {
         product.category = product.category || 'General';
         product.description = product.description || '';
         product.image = product.image || '';
-        product.id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+        product.stock = product.stock !== undefined && product.stock !== ''
+          ? parseInt(product.stock, 10)
+          : null;
+        if (Number.isNaN(product.stock)) product.stock = null;
+        product.id = `product-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
         if (product.price > 0) {
           products.push(product);
@@ -128,10 +132,10 @@ function ImportModal({ currentProducts, onImport, onClose }) {
   };
 
   const downloadTemplate = () => {
-    const template = `name,description,price,category,image,available
-Margherita Pizza,Fresh mozzarella basil tomato sauce,12.99,Pizzas,margherita.jpg,true
-Pepperoni Pizza,Classic pepperoni with mozzarella cheese,14.99,Pizzas,pepperoni.jpg,true
-Caesar Salad,Romaine lettuce parmesan croutons,8.99,Salads,caesar.jpg,true`;
+    const template = `name,description,price,category,image,stock,available
+Margherita Pizza,Fresh mozzarella basil tomato sauce,12.99,Pizzas,https://example.com/margherita.jpg,,true
+Pepperoni Pizza,Classic pepperoni with mozzarella cheese,14.99,Pizzas,https://example.com/pepperoni.jpg,50,true
+Caesar Salad,Romaine lettuce parmesan croutons,8.99,Salads,https://example.com/caesar.jpg,,true`;
 
     const blob = new Blob([template], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -141,14 +145,14 @@ Caesar Salad,Romaine lettuce parmesan croutons,8.99,Salads,caesar.jpg,true`;
     link.click();
     URL.revokeObjectURL(url);
 
-    showSuccess('Template downloaded!');
+    showSuccess('Template downloaded');
   };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content import-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>📤 Import Products</h2>
+          <h2>Import Products</h2>
           <button className="close-btn" onClick={onClose}>×</button>
         </div>
 
@@ -158,7 +162,7 @@ Caesar Salad,Romaine lettuce parmesan croutons,8.99,Salads,caesar.jpg,true`;
               <div className="import-instructions">
                 <p>Upload a CSV file with your products</p>
                 <p className="muted">Required columns: name, price</p>
-                <p className="muted">Optional: description, category, image, available</p>
+                <p className="muted">Optional: description, category, image (URL), stock, available</p>
               </div>
 
               <label htmlFor="file-input" className="upload-area">

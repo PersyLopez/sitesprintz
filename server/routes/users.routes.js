@@ -210,8 +210,7 @@ router.get('/:userId/analytics', requireAuth, asyncHandler(async (req, res) => {
       site_data: true,
       _count: {
         select: {
-          submissions: true,
-          analytics_events: true
+          submissions: true
         }
       }
     }
@@ -224,7 +223,7 @@ router.get('/:userId/analytics', requireAuth, asyncHandler(async (req, res) => {
 
   const sitesAnalytics = sites.map(site => {
     const siteData = parseSiteData(site);
-    const views = site._count.analytics_events || 0;
+    const views = site.view_count || 0;
     
     totalViews += views;
     

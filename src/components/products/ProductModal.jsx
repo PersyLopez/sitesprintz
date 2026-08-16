@@ -1,133 +1,178 @@
 import React, { useState, useEffect } from 'react';
+import { useToast } from '../../hooks/useToast';
+import ImageUploader from '../setup/forms/ImageUploader';
 import './ProductModal.css';
 
 function ProductModal({ product, onSave, onClose }) {
+  const { showError } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: '',
     category: '',
     image: '',
+    stock: '',
     available: true
   });
 
   useEffect(() => {
     if (product) {
-      setFormData(product);
+      setFormData({
+        name: product.name || '',
+        description: product.description || '',
+        price: product.price ?? '',
+        category: product.category || '',
+        image: product.image || '',
+        stock: product.stock ?? '',
+        available: product.available !== false
+      });
     }
   }, [product]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.price) {
-      alert('Please fill in required fields');
+    if (!formData.name?.trim() || formData.price === '' || formData.price === null) {
+      showError('Name and price are required');
+      return;
+    }
+
+    const price = parseFloat(formData.price);
+    if (Number.isNaN(price) || price < 0) {
+      showError('Enter a valid price');
       return;
     }
 
     onSave({
       ...formData,
-      price: parseFloat(formData.price),
-      category: formData.category || 'General'
+      name: formData.name.trim(),
+      price,
+      category: formData.category?.trim() || 'General',
+      stock: formData.stock === '' || formData.stock === null
+        ? null
+        : parseInt(formData.stock, 10),
+      available: formData.available !== false
     });
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content product-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay" onClick={onClose} data-testid="product-modal-overlay">
+      <div
+        className="modal-content product-modal"
+        onClick={(e) => e.stopPropagation()}
+        data-testid="product-modal-content"
+        role="dialog"
+        aria-labelledby="product-modal-title"
+      >
         <div className="modal-header">
-          <h2>{product ? 'Edit Product' : 'Add Product'}</h2>
-          <button className="close-btn" onClick={onClose}>×</button>
+          <h2 id="product-modal-title">{product ? 'Edit Product' : 'Add Product'}</h2>
+          <button type="button" className="close-btn" onClick={onClose} data-testid="close-modal-btn" aria-label="Close">
+            ×
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="modal-body">
           <div className="form-group">
-            <label htmlFor="name">Product Name *</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="e.g. Margherita Pizza"
-              required
+            <label>Product image</label>
+            <ImageUploader
+              value={formData.image}
+              onChange={(url) => setFormData((prev) => ({ ...prev, image: url }))}
+              aspectRatio="1:1"
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="description">Description</label>
+            <label htmlFor="product-name">Product name *</label>
+            <input
+              type="text"
+              id="product-name"
+              name="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              data-testid="product-name-input"
+              required
+              autoFocus
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="product-description">Description</label>
             <textarea
-              id="description"
+              id="product-description"
               name="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Describe your product..."
+              placeholder="Describe your product…"
               rows="3"
+              data-testid="product-description-input"
             />
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="price">Price ($) *</label>
+              <label htmlFor="product-price">Price ($) *</label>
               <input
                 type="number"
-                id="price"
+                id="product-price"
                 name="price"
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                 placeholder="0.00"
                 step="0.01"
                 min="0"
+                data-testid="product-price-input"
                 required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="category">Category</label>
+              <label htmlFor="product-category">Category</label>
               <input
                 type="text"
-                id="category"
+                id="product-category"
                 name="category"
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 placeholder="e.g. Pizzas, Drinks"
+                data-testid="product-category-input"
               />
             </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="image">Image URL</label>
-            <input
-              type="url"
-              id="image"
-              name="image"
-              value={formData.image}
-              onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-              placeholder="https://example.com/image.jpg"
-            />
-            {formData.image && (
-              <div className="image-preview">
-                <img src={formData.image} alt="Preview" onError={(e) => e.target.style.display = 'none'} />
-              </div>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label className="checkbox-label">
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="product-stock">Stock (optional)</label>
               <input
-                type="checkbox"
-                checked={formData.available}
-                onChange={(e) => setFormData({ ...formData, available: e.target.checked })}
+                type="number"
+                id="product-stock"
+                name="stock"
+                min="0"
+                value={formData.stock}
+                onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                placeholder="Leave blank for unlimited"
+                data-testid="product-stock-input"
               />
-              <span>Available for purchase</span>
-            </label>
+            </div>
+
+            <div className="form-group">
+              <label className="checkbox-label" htmlFor="product-available">
+                <input
+                  type="checkbox"
+                  id="product-available"
+                  checked={formData.available}
+                  onChange={(e) => setFormData({ ...formData, available: e.target.checked })}
+                  data-testid="product-available-checkbox"
+                />
+                <span>Available for purchase</span>
+              </label>
+            </div>
           </div>
 
           <div className="modal-footer">
-            <button type="button" onClick={onClose} className="btn btn-secondary">
+            <button type="button" onClick={onClose} className="btn btn-secondary" data-testid="cancel-product-btn">
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary">
+            <button type="submit" className="btn btn-primary" data-testid="save-product-btn">
               {product ? 'Update Product' : 'Add Product'}
             </button>
           </div>
@@ -138,4 +183,3 @@ function ProductModal({ product, onSave, onClose }) {
 }
 
 export default ProductModal;
-

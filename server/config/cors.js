@@ -1,13 +1,13 @@
 /**
  * CORS configuration factory.
  *
- * In production, CORS_ORIGINS is required and only those origins are allowed.
+ * In production, CORS_ORIGINS (or legacy ALLOWED_ORIGINS) is required and only those origins are allowed.
  * In development, localhost ports are allowed even without explicit config.
  * Same-origin (no Origin header) requests are always allowed.
  */
 
 export function buildCorsOptions(env = process.env) {
-  const configuredOrigins = (env.CORS_ORIGINS || '')
+  const configuredOrigins = `${env.CORS_ORIGINS || ''},${env.ALLOWED_ORIGINS || ''}`
     .split(',')
     .map(origin => origin.trim())
     .filter(Boolean);

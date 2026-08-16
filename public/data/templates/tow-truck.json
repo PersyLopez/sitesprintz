@@ -1,0 +1,526 @@
+{
+  "brand": {
+    "name": "Reliable Towing & Roadside",
+    "logo": "assets/logo.svg",
+    "tagline": "24/7 Emergency Towing • Fast Response",
+    "phone": "(555) 911-TOWS",
+    "email": "dispatch@reliabletowing.com"
+  },
+  "themeVars": {
+    "color-primary": "#f59e0b",
+    "color-primary-light": "#fbbf24",
+    "color-accent": "#dc2626",
+    "color-bg": "#0f172a",
+    "color-surface": "#1e293b",
+    "color-card": "#1e293b",
+    "color-text": "#f8fafc",
+    "color-muted": "#cbd5e1"
+  },
+  "nav": [
+    {
+      "label": "Emergency",
+      "href": "#contact"
+    },
+    {
+      "label": "Services",
+      "href": "#services"
+    },
+    {
+      "label": "Service Area",
+      "href": "#coverage"
+    },
+    {
+      "label": "Fleet",
+      "href": "#fleet"
+    },
+    {
+      "label": "Call Now",
+      "href": "tel:+15559118697"
+    }
+  ],
+  "hero": {
+    "eyebrow": "🚨 24/7 Emergency Towing",
+    "title": "Fast, reliable roadside assistance when you need it most",
+    "subtitle": "Broken down? Locked out? Flat tire? We're available 24/7 for all your towing and roadside assistance needs. Licensed, insured, and ready to help. Average response time: 20-30 minutes.",
+    "cta": [
+      {
+        "label": "🚨 Call Now: (555) 911-TOWS",
+        "href": "tel:+15559118697"
+      },
+      {
+        "label": "View Services",
+        "href": "#services",
+        "variant": "secondary"
+      }
+    ],
+    "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80",
+    "imageAlt": "Professional tow truck on the road",
+    "layout": "split"
+  },
+  "about": {
+    "title": "Your Trusted Towing Partner",
+    "subtitle": "Serving the community since 2010",
+    "body": "Reliable Towing & Roadside has been providing fast, professional towing and roadside assistance services for over a decade. Our certified drivers are trained in safe vehicle recovery and handling. We're fully licensed, insured, and committed to getting you back on the road quickly and safely.",
+    "features": [
+      "🚨 24/7 emergency service",
+      "⚡ Average 20-30 minute response time",
+      "🚛 Full fleet of modern tow trucks",
+      "✅ Licensed and fully insured",
+      "💳 All major credit cards accepted",
+      "🏆 4.9-star rating from 500+ customers"
+    ],
+    "owner": {
+      "name": "Mike Johnson",
+      "title": "Owner & Operator",
+      "bio": "Mike has been in the towing industry for 15+ years. He started Reliable Towing to provide honest, reliable service with fast response times. Every driver is background-checked, drug-tested, and trained in safe vehicle recovery.",
+      "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+      "imageAlt": "Mike Johnson, Owner"
+    }
+  },
+  "menu": {
+    "sections": [
+      {
+        "id": "towing",
+        "name": "Towing Services",
+        "description": "Fast, safe towing for all vehicle types",
+        "items": [
+          {
+            "name": "Standard Towing",
+            "price": 75,
+            "description": "Local towing service for cars, SUVs, and light trucks. Up to 10 miles included, additional miles at $3/mile.",
+            "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
+            "imageAlt": "Standard towing service",
+            "duration": "20-30 min response",
+            "popular": true
+          },
+          {
+            "name": "Long Distance Towing",
+            "price": 150,
+            "description": "Extended distance towing for vehicles that need to be moved further. Includes first 25 miles, then $4/mile.",
+            "image": "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=600&q=80",
+            "imageAlt": "Long distance towing",
+            "duration": "30-45 min response"
+          },
+          {
+            "name": "Heavy Duty Towing",
+            "price": 200,
+            "description": "Towing for large vehicles: trucks, RVs, buses, and commercial vehicles. Requires specialized equipment.",
+            "image": "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&q=80",
+            "imageAlt": "Heavy duty towing",
+            "duration": "45-60 min response"
+          }
+        ]
+      },
+      {
+        "id": "roadside",
+        "name": "Roadside Assistance",
+        "description": "Emergency roadside help 24/7",
+        "items": [
+          {
+            "name": "Jump Start Service",
+            "price": 50,
+            "description": "Dead battery? We'll come jump start your vehicle and get you back on the road. Includes battery test.",
+            "image": "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=600&q=80",
+            "imageAlt": "Jump start service",
+            "duration": "15-25 min response",
+            "popular": true
+          },
+          {
+            "name": "Tire Change Service",
+            "price": 60,
+            "description": "Flat tire? We'll change it on the spot. Includes mounting your spare tire. If you need a new tire, we can arrange delivery.",
+            "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
+            "imageAlt": "Tire change service",
+            "duration": "20-30 min response",
+            "popular": true
+          },
+          {
+            "name": "Lockout Service",
+            "price": 55,
+            "description": "Locked your keys in the car? We'll safely unlock your vehicle without damage. Works on most makes and models.",
+            "image": "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=600&q=80",
+            "imageAlt": "Lockout service",
+            "duration": "15-25 min response",
+            "popular": true
+          }
+        ]
+      }
+    ]
+  },
+  "team": {
+    "title": "Meet Our Team",
+    "subtitle": "Expert drivers you can trust",
+    "members": [
+      {
+        "name": "Mike Johnson",
+        "title": "Owner & Lead Driver",
+        "bio": "With 20+ years of towing experience, Mike founded Reliable Towing to provide fast, professional service to the community. He leads by example with integrity and expertise.",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+        "imageAlt": "Mike Johnson",
+        "credentials": [
+          "20+ Years Experience",
+          "Heavy Towing Certified",
+          "Owner/Operator"
+        ]
+      },
+      {
+        "name": "Sarah Williams",
+        "title": "Lead Dispatcher",
+        "bio": "Sarah ensures every call is answered promptly and every customer gets the help they need. Her organizational skills keep our operation running smoothly 24/7.",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&q=80",
+        "imageAlt": "Sarah Williams",
+        "credentials": [
+          "15+ Years in Dispatch",
+          "Customer Service Expert",
+          "Operations Manager"
+        ]
+      },
+      {
+        "name": "David Chen",
+        "title": "Senior Tow Operator",
+        "bio": "David specializes in complex recoveries and heavy-duty towing. His technical expertise and calm demeanor make him invaluable in challenging situations.",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+        "imageAlt": "David Chen",
+        "credentials": [
+          "12+ Years Towing",
+          "Heavy Duty Specialist",
+          "Recovery Expert"
+        ]
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "What Our Customers Say",
+    "subtitle": "Real reviews from drivers we've helped",
+    "items": [
+      {
+        "text": "Fastest response I've ever had! They were at my location in 20 minutes and had my car towed safely. Professional and friendly service.",
+        "author": "Sarah M.",
+        "location": "Stranded Driver",
+        "rating": 5,
+        "date": "2 days ago",
+        "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
+        "imageAlt": "Sarah M."
+      },
+      {
+        "text": "Locked my keys in my car at 2 AM. They came out quickly and got me back in without any damage. Lifesavers!",
+        "author": "James T.",
+        "location": "Night Shift Worker",
+        "rating": 5,
+        "date": "1 week ago",
+        "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "imageAlt": "James T."
+      },
+      {
+        "text": "My truck broke down on the highway. They sent a heavy-duty tow truck and got me to the shop safely. Great service!",
+        "author": "Robert K.",
+        "location": "Commercial Driver",
+        "rating": 5,
+        "date": "3 days ago",
+        "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80",
+        "imageAlt": "Robert K."
+      },
+      {
+        "text": "Used them for a jump start. The driver was professional, tested my battery, and explained everything. Highly recommend!",
+        "author": "Maria L.",
+        "location": "Regular Customer",
+        "rating": 5,
+        "date": "5 days ago",
+        "image": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&q=80",
+        "imageAlt": "Maria L."
+      }
+    ],
+    "stats": {
+      "averageRating": 4.9,
+      "totalReviews": 523,
+      "googleRating": 4.8,
+      "yelpRating": 4.9
+    }
+  },
+  "contact": {
+    "title": "Need Help Right Now?",
+    "subtitle": "Call us 24/7 for immediate assistance",
+    "phone": "(555) 911-TOWS",
+    "email": "dispatch@reliabletowing.com",
+    "address": "123 Towing Way, Industrial District, Springfield, IL 62701",
+    "coordinates": {
+      "lat": 39.7817,
+      "lng": -89.6501
+    },
+    "parking": "Customer parking available at our facility",
+    "accessibility": "Wheelchair accessible office",
+    "hours": {
+      "title": "Dispatch Hours",
+      "items": [
+        "Monday - Sunday: 24/7",
+        "Holidays: 24/7",
+        "Emergency Service: Always Available"
+      ],
+      "note": "We never close. Call anytime for immediate assistance."
+    },
+    "booking": {
+      "phone": "(555) 911-TOWS",
+      "online": "https://calendly.com/reliabletowing",
+      "note": "For non-emergency tows, you can schedule online. For emergencies, always call directly."
+    },
+    "responseTime": {
+      "title": "Average Response Times",
+      "items": [
+        "Urban areas: 15-25 minutes",
+        "Suburban areas: 20-30 minutes",
+        "Rural areas: 30-45 minutes",
+        "Heavy traffic: May take longer"
+      ]
+    }
+  },
+  "coverage": {
+    "title": "Service Area Coverage",
+    "subtitle": "We serve the greater metro area and beyond",
+    "areas": [
+      "Springfield City Limits",
+      "All surrounding suburbs",
+      "Highway corridors (I-55, I-72, Route 66)",
+      "Rural areas within 50 miles",
+      "Airport and commercial zones"
+    ],
+    "note": "Extended distance towing available upon request. Call for coverage in your specific area."
+  },
+  "fleet": {
+    "title": "Our Fleet",
+    "subtitle": "Modern, well-maintained equipment",
+    "items": [
+      {
+        "name": "Flatbed Tow Trucks",
+        "description": "Safest towing method for all vehicle types. No wheel damage, secure transport.",
+        "count": 4
+      },
+      {
+        "name": "Wheel-Lift Tow Trucks",
+        "description": "Fast, efficient towing for standard vehicles. Quick response capability.",
+        "count": 3
+      },
+      {
+        "name": "Heavy Duty Tow Trucks",
+        "description": "Specialized equipment for large vehicles, RVs, and commercial trucks.",
+        "count": 2
+      },
+      {
+        "name": "Roadside Assistance Vans",
+        "description": "Fully equipped vans for jump starts, tire changes, and lockouts.",
+        "count": 3
+      }
+    ],
+    "note": "All vehicles are GPS-tracked for real-time dispatch and faster response times."
+  },
+  "gallery": {
+    "title": "Our Fleet & Services",
+    "subtitle": "Professional towing and roadside assistance",
+    "categories": [
+      {
+        "name": "Towing Equipment",
+        "images": [
+          {
+            "url": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
+            "alt": "Professional tow trucks"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&q=80",
+            "alt": "Heavy duty recovery equipment"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=800&q=80",
+            "alt": "Roadside assistance vehicle"
+          }
+        ]
+      },
+      {
+        "name": "On The Road",
+        "images": [
+          {
+            "url": "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=800&q=80",
+            "alt": "Emergency response service"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
+            "alt": "Professional towing in action"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&q=80",
+            "alt": "Recovery and assistance"
+          }
+        ]
+      },
+      {
+        "name": "Customer Service",
+        "images": [
+          {
+            "url": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&q=80",
+            "alt": "Professional team"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=800&q=80",
+            "alt": "Customer satisfaction"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80",
+            "alt": "Expert support"
+          }
+        ]
+      }
+    ]
+  },
+  "credentials": {
+    "title": "Why Choose Us",
+    "items": [
+      {
+        "icon": "🚨",
+        "name": "24/7 Availability",
+        "description": "Always here when you need us"
+      },
+      {
+        "icon": "⚡",
+        "name": "Fast Response",
+        "description": "Average 20-30 minute arrival"
+      },
+      {
+        "icon": "✅",
+        "name": "Licensed & Insured",
+        "description": "Fully certified and bonded"
+      },
+      {
+        "icon": "💳",
+        "name": "All Payment Methods",
+        "description": "Cash, card, insurance accepted"
+      },
+      {
+        "icon": "🏆",
+        "name": "Top Rated",
+        "description": "4.9 stars from 500+ customers"
+      },
+      {
+        "icon": "🚛",
+        "name": "Full Fleet",
+        "description": "Equipment for every situation"
+      }
+    ]
+  },
+  "process": {
+    "title": "How It Works",
+    "subtitle": "Simple, fast, and reliable",
+    "steps": [
+      {
+        "title": "Call Us",
+        "description": "Call our 24/7 dispatch line. Tell us your location and what you need."
+      },
+      {
+        "title": "We Dispatch",
+        "description": "We'll send the nearest available truck. You'll get an ETA and driver contact info."
+      },
+      {
+        "title": "We Arrive",
+        "description": "Our certified driver arrives with the right equipment for your situation."
+      },
+      {
+        "title": "We Help",
+        "description": "We get you back on the road or safely tow your vehicle to your destination."
+      }
+    ]
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "items": [
+      {
+        "question": "How fast can you get here?",
+        "answer": "Our average response time is 20-30 minutes in most areas. Urban areas may be faster (15-25 min), while rural areas may take 30-45 minutes. We'll give you an ETA when you call."
+      },
+      {
+        "question": "Do you accept insurance?",
+        "answer": "Yes! We work with most major insurance companies and can bill them directly. We also accept cash, credit cards, and debit cards."
+      },
+      {
+        "question": "What if I need a tow but don't know where to go?",
+        "answer": "No problem! We can recommend trusted auto repair shops in your area, or we can tow to your home, workplace, or any destination you choose."
+      },
+      {
+        "question": "Do you tow motorcycles?",
+        "answer": "Yes! We have specialized equipment for safe motorcycle towing. We use proper tie-downs and secure transport methods to prevent any damage."
+      },
+      {
+        "question": "What about RVs and large vehicles?",
+        "answer": "Absolutely. We have heavy-duty tow trucks capable of handling RVs, buses, commercial trucks, and other large vehicles. Call us for availability."
+      },
+      {
+        "question": "Can I schedule a non-emergency tow?",
+        "answer": "Yes! For planned tows (like moving a non-running vehicle), you can schedule online or call during business hours. We offer better rates for scheduled tows."
+      },
+      {
+        "question": "What if my car is in a dangerous location?",
+        "answer": "Safety is our priority. We'll work with law enforcement if needed and use proper traffic control to ensure everyone stays safe during the recovery."
+      },
+      {
+        "question": "Do you offer roadside assistance memberships?",
+        "answer": "Yes! We offer annual memberships that include discounted rates and priority service. Call us for details on membership plans."
+      }
+    ]
+  },
+  "stats": {
+    "items": [
+      {
+        "number": "5000+",
+        "label": "Vehicles Towed"
+      },
+      {
+        "number": "24/7",
+        "label": "Always Available"
+      },
+      {
+        "number": "20-30",
+        "label": "Min Response Time"
+      },
+      {
+        "number": "4.9",
+        "label": "Star Rating"
+      }
+    ]
+  },
+  "social": {
+    "facebook": "https://facebook.com/reliabletowing",
+    "instagram": "https://instagram.com/reliabletowing",
+    "googleMaps": "https://maps.google.com/reliabletowing-springfield",
+    "yelp": "https://yelp.com/biz/reliabletowing-springfield"
+  },
+  "footer": {
+    "text": "🚨 Reliable Towing & Roadside • 24/7 Emergency Service • Licensed & Insured",
+    "links": [
+      {
+        "label": "Privacy Policy",
+        "href": "#privacy"
+      },
+      {
+        "label": "Terms of Service",
+        "href": "#terms"
+      },
+      {
+        "label": "Service Areas",
+        "href": "#coverage"
+      }
+    ],
+    "certifications": [
+      "Licensed Towing Operator",
+      "Fully Insured & Bonded",
+      "DOT Certified",
+      "BBB Accredited"
+    ]
+  },
+  "settings": {
+    "allowCheckout": false,
+    "allowOrders": true,
+    "orderNotificationEmail": "dispatch@reliabletowing.com",
+    "productCta": "Call Now",
+    "productCtaHref": "tel:+15559118697",
+    "productNote": "Call (555) 911-TOWS for immediate assistance. We're available 24/7 for all towing and roadside needs."
+  },
+  "productsTitle": "Services & Pricing",
+  "productsSubtitle": "Fast, reliable towing and roadside assistance"
+}
+

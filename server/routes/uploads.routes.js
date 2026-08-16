@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { requireAuth } from '../middleware/auth.js';
 import { requireAdmin } from '../middleware/auth.js';
+import { resolveContainedPath, PathEscapeError } from '../utils/siteIsolation.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -85,9 +86,16 @@ router.post('/image', requireAuth, upload.single('image'), async (req, res) => {
 router.delete('/:filename', requireAdmin, async (req, res) => {
   try {
     const filename = req.params.filename;
-    await fs.unlink(path.join(uploadsDir, filename));
+    if (!/^[\w.-]+\.(jpe?g|png|gif|webp)$/i.test(filename)) {
+      return res.status(400).json({ error: 'Invalid filename' });
+    }
+    const target = resolveContainedPath(uploadsDir, filename);
+    await fs.unlink(target);
     res.json({ success: true });
   } catch (err) {
+    if (err instanceof PathEscapeError) {
+      return res.status(400).json({ error: 'Invalid filename' });
+    }
     res.status(500).json({ error: 'Failed to delete file' });
   }
 });
