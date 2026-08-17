@@ -77,6 +77,25 @@
   color: #ef4444;
 }
 
+.status-claimed {
+  background: rgba(6, 182, 212, 0.2);
+  color: #22d3ee;
+}
+
+.candidates-claim {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.candidates-claim code {
+  font-size: 0.8rem;
+  word-break: break-all;
+  color: var(--text-light);
+}
+
 @media (max-width: 768px) {
   .candidates-manual-form {
     grid-template-columns: 1fr;

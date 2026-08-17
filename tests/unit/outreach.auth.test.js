@@ -29,8 +29,18 @@ vi.mock('../../server/services/outreach/candidateFinder.js', async (importOrigin
   };
 });
 
+vi.mock('../../server/services/outreach/prospectSiteService.js', () => ({
+  createProspectFromCandidate: vi.fn().mockResolvedValue({
+    siteId: 'riverside-cuts',
+    subdomain: 'riverside-cuts',
+    claimUrl: 'http://localhost:5173/claim/ab'.padEnd(64, 'c'),
+    claimToken: 'ab'.repeat(32),
+  }),
+}));
+
 import { prisma } from '../../database/db.js';
 import { searchPlacesCandidates } from '../../server/services/outreach/candidateFinder.js';
+import { createProspectFromCandidate } from '../../server/services/outreach/prospectSiteService.js';
 import outreachRoutes from '../../server/routes/outreach.routes.js';
 
 function createApp() {
@@ -78,5 +88,55 @@ describe('outreach routes auth (requireAdmin not mocked)', () => {
 
     expect([401, 403]).toContain(response.status);
     expect(searchPlacesCandidates).not.toHaveBeenCalled();
+  });
+
+  it('returns 403 when role:user POSTs /candidates/:id/prospect', async () => {
+    prisma.users.findUnique.mockResolvedValue({
+      id: 'user-1',
+      email: 'user@example.com',
+      role: 'user',
+      status: 'active',
+      email_verified: true,
+      subscription_status: 'active',
+      subscription_plan: 'starter',
+    });
+
+    const token = signToken({ userId: 'user-1' });
+    const response = await request(createApp())
+      .post('/api/outreach/candidates/cand-1/prospect')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(response.status).toBe(403);
+    expect(createProspectFromCandidate).not.toHaveBeenCalled();
+  });
+
+  it('allows admin to POST /candidates/:id/prospect', async () => {
+    prisma.users.findUnique.mockResolvedValue({
+      id: 'admin-1',
+      email: 'admin@example.com',
+      role: 'admin',
+      status: 'active',
+      email_verified: true,
+      subscription_status: 'active',
+      subscription_plan: 'growth',
+    });
+    prisma.outreach_candidates.findUnique.mockResolvedValue({
+      id: 'cand-1',
+      name: 'Riverside Cuts',
+      status: 'queued',
+    });
+
+    const token = signToken({ userId: 'admin-1' });
+    const response = await request(createApp())
+      .post('/api/outreach/candidates/cand-1/prospect')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(response.status).toBe(201);
+    expect(createProspectFromCandidate).toHaveBeenCalled();
+    expect(response.body).toMatchObject({
+      siteId: 'riverside-cuts',
+      subdomain: 'riverside-cuts',
+    });
+    expect(response.body.claimToken).toBeTruthy();
   });
 });

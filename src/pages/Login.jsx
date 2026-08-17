@@ -1,13 +1,23 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+import { getSafeRedirect } from '../utils/safeRedirect';
 import './Auth.css';
+
+const QUERY_ERROR_MESSAGES = {
+  oauth_failed: 'Google sign-in was cancelled. Please try again.',
+  auth_error: 'Google sign-in failed. Please try again or use email.',
+  no_user: 'Google sign-in did not return a user. Please try again.',
+  auth_failed: 'Could not complete sign-in. Please try again.',
+  access_denied: 'Google sign-in was denied. Please try again.'
+};
 
 function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { login } = useAuth();
   const { showSuccess, showError } = useToast();
 
@@ -18,6 +28,16 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+
+  useEffect(() => {
+    const queryError = searchParams.get('error');
+    const storedError = localStorage.getItem('oauthError');
+    if (queryError || storedError) {
+      const message = QUERY_ERROR_MESSAGES[queryError] || storedError || 'Sign-in failed. Please try again.';
+      setErrors((prev) => ({ ...prev, submit: message }));
+      localStorage.removeItem('oauthError');
+    }
+  }, [searchParams]);
 
   const validateEmail = (email) => {
     if (!email) return 'Email is required';
@@ -96,8 +116,10 @@ function Login() {
       const data = await login(formData.email, formData.password);
       showSuccess('Login successful!');
 
-      // Redirect based on user role
-      if (data.user?.role === 'admin') {
+      const redirectTo = getSafeRedirect(searchParams.get('redirect'));
+      if (redirectTo) {
+        navigate(redirectTo);
+      } else if (data.user?.role === 'admin') {
         navigate('/admin');
       } else {
         navigate('/dashboard');
@@ -237,7 +259,7 @@ function Login() {
 
           <div className="auth-switch">
             <p>
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link to="/register" className="link-primary">
                 Sign up
               </Link>

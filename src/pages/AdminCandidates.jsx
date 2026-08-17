@@ -79,6 +79,8 @@ function AdminCandidates() {
   const [queue, setQueue] = useState([]);
   const [queueStatus, setQueueStatus] = useState('queued');
   const [queueLoading, setQueueLoading] = useState(true);
+  const [prospectingId, setProspectingId] = useState(null);
+  const [claimLinks, setClaimLinks] = useState({});
 
   const loadQueue = async (status = queueStatus) => {
     setQueueLoading(true);
@@ -251,6 +253,42 @@ function AdminCandidates() {
       await loadQueue();
     } catch {
       showError('Failed to update status');
+    }
+  };
+
+  const handleCreateProspect = async (id) => {
+    setProspectingId(id);
+    try {
+      const response = await fetch(`/api/outreach/candidates/${id}/prospect`, {
+        method: 'POST',
+        headers: authHeaders(token, true),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create prospect site');
+      }
+      const data = await response.json();
+      setClaimLinks((prev) => ({
+        ...prev,
+        [id]: {
+          claimUrl: data.claimUrl,
+          siteId: data.siteId,
+          subdomain: data.subdomain,
+        },
+      }));
+      showSuccess('Prospect site ready. Copy the claim link.');
+    } catch {
+      showError('Failed to create prospect site');
+    } finally {
+      setProspectingId(null);
+    }
+  };
+
+  const handleCopyClaimUrl = async (url) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      showSuccess('Claim link copied');
+    } catch {
+      showError('Could not copy claim link');
     }
   };
 
@@ -527,6 +565,17 @@ function AdminCandidates() {
                       </td>
                       <td>
                         <div className="action-buttons">
+                          {(item.status === 'queued' || item.status === 'saved') && (
+                            <button
+                              type="button"
+                              className="btn btn-primary"
+                              onClick={() => handleCreateProspect(item.id)}
+                              disabled={prospectingId === item.id}
+                              data-testid="candidate-create-prospect"
+                            >
+                              {prospectingId === item.id ? 'Creating...' : 'Create prospect'}
+                            </button>
+                          )}
                           {item.status !== 'saved' && (
                             <button
                               type="button"
@@ -546,6 +595,18 @@ function AdminCandidates() {
                             </button>
                           )}
                         </div>
+                        {claimLinks[item.id]?.claimUrl && (
+                          <div className="candidates-claim">
+                            <code data-testid="candidate-claim-url">{claimLinks[item.id].claimUrl}</code>
+                            <button
+                              type="button"
+                              className="btn btn-secondary"
+                              onClick={() => handleCopyClaimUrl(claimLinks[item.id].claimUrl)}
+                            >
+                              Copy
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))}

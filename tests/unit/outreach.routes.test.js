@@ -10,6 +10,15 @@ vi.mock('../../database/db.js', () => ({
       create: vi.fn(),
       update: vi.fn(),
     },
+    sites: {
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+    },
+    users: {
+      findUnique: vi.fn(),
+    },
   },
 }));
 
@@ -19,6 +28,15 @@ vi.mock('../../server/middleware/auth.js', () => ({
     next();
   },
 }));
+
+vi.mock('../../server/utils/siteIsolation.js', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    writeIsolatedSiteFiles: vi.fn().mockResolvedValue('/tmp/sites/riverside-cuts'),
+    removeIsolatedSiteFiles: vi.fn().mockResolvedValue(),
+  };
+});
 
 vi.mock('../../server/services/outreach/candidateFinder.js', async (importOriginal) => {
   const actual = await importOriginal();
@@ -277,6 +295,54 @@ describe('outreach routes (requireAdmin mocked)', () => {
 
       expect(response.status).toBe(400);
       expect(prisma.outreach_candidates.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('POST /api/outreach/candidates/:id/prospect', () => {
+    it('creates a published prospect and returns a claim token once (never the hash)', async () => {
+      prisma.outreach_candidates.findUnique.mockResolvedValue({
+        id: 'cand-1',
+        name: 'Riverside Cuts',
+        address: '12 Main St',
+        phone: '512-555-0100',
+        email: null,
+        maps_url: 'https://maps.google.com/?cid=1',
+        niche: 'salon',
+        layout_key: 'atelier',
+        status: 'queued',
+        site_id: null,
+      });
+      prisma.sites.findFirst.mockResolvedValue(null);
+      prisma.sites.create.mockImplementation(async ({ data }) => ({
+        id: data.id,
+        subdomain: data.subdomain,
+        user_id: data.user_id,
+        claim_token_hash: data.claim_token_hash,
+      }));
+      prisma.outreach_candidates.update.mockResolvedValue({ id: 'cand-1', site_id: 'riverside-cuts' });
+
+      const response = await request(createApp()).post('/api/outreach/candidates/cand-1/prospect');
+
+      expect(response.status).toBe(201);
+      expect(response.body.siteId).toBeTruthy();
+      expect(response.body.subdomain).toBeTruthy();
+      expect(response.body.claimUrl).toMatch(/\/claim\//);
+      expect(response.body.claimToken).toMatch(/^[a-f0-9]{64}$/);
+      expect(response.body).not.toHaveProperty('claim_token_hash');
+      expect(prisma.sites.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            user_id: 'admin-1',
+            status: 'published',
+            claim_token_hash: expect.stringMatching(/^[a-f0-9]{64}$/),
+          }),
+        })
+      );
+      expect(prisma.outreach_candidates.update).toHaveBeenCalledWith({
+        where: { id: 'cand-1' },
+        data: { site_id: expect.any(String) },
+      });
+      expect(prisma.outreach_candidates.update.mock.calls[0][0].data.status).toBeUndefined();
     });
   });
 });

@@ -204,4 +204,30 @@ export const orderLimiter = rateLimit({
   }
 });
 
+/**
+ * Claim-accept rate limiter
+ *
+ * Limits: 10 accept attempts per 15 minutes per IP
+ * Purpose: Slow token guessing on POST /api/claim/:token/accept
+ */
+export const claimAcceptLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: isTest ? 1000 : 10,
+  message: {
+    error: 'Too many claim attempts',
+    message: 'Please try again later.',
+    retryAfter: 15 * 60
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => ipKeyGenerator(req),
+  handler: (req, res) => {
+    res.status(429).json({
+      error: 'Too many claim attempts',
+      message: 'Please try again later.',
+      retryAfter: 15 * 60
+    });
+  }
+});
+
 

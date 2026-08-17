@@ -5,6 +5,7 @@ import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { PasswordStrengthMeter } from '../components/auth/PasswordStrengthMeter';
+import { getSafeRedirect } from '../utils/safeRedirect';
 import './Auth.css';
 
 function Register() {
@@ -24,9 +25,20 @@ function Register() {
   const [captchaReady, setCaptchaReady] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
-  const loginLinkTo = searchParams.get('template')
-    ? `/login?template=${searchParams.get('template')}`
-    : '/login';
+  useEffect(() => {
+    const storedError = localStorage.getItem('oauthError');
+    if (storedError) {
+      showError(storedError);
+      localStorage.removeItem('oauthError');
+    }
+  }, [showError]);
+
+  const safeRedirect = getSafeRedirect(searchParams.get('redirect'));
+  const loginLinkTo = safeRedirect
+    ? `/login?redirect=${encodeURIComponent(safeRedirect)}`
+    : searchParams.get('template')
+      ? `/login?template=${searchParams.get('template')}`
+      : '/login';
 
   // Initialize Cloudflare Turnstile
   useEffect(() => {
@@ -125,8 +137,11 @@ function Register() {
         captchaTokenRef.current = null;
       }
 
+      const redirectTo = getSafeRedirect(searchParams.get('redirect'));
       const template = searchParams.get('template');
-      if (template) {
+      if (redirectTo) {
+        navigate(redirectTo);
+      } else if (template) {
         navigate(`/setup?template=${template}`);
       } else {
         navigate('/dashboard');

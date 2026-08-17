@@ -136,4 +136,51 @@ describe('AdminCandidates', () => {
       expect(JSON.parse(searchCall[1].body)).toMatchObject({ city: 'Miami' });
     });
   });
+
+  it('shows create-prospect and claim URL after mock POST', async () => {
+    const user = userEvent.setup();
+    const queued = {
+      id: 'cand-1',
+      name: 'Riverside Cuts',
+      address: '12 Main St',
+      phone: '512-555-0100',
+      niche: 'salon',
+      score: 90,
+      status: 'queued',
+    };
+    global.fetch.mockImplementation((url, options) => {
+      if (options?.method === 'POST' && String(url).includes('/prospect')) {
+        return Promise.resolve(
+          jsonResponse(
+            {
+              siteId: 'riverside-cuts',
+              subdomain: 'riverside-cuts',
+              claimUrl: 'http://localhost:5173/claim/abcd',
+              claimToken: 'abcd',
+            },
+            201
+          )
+        );
+      }
+      return Promise.resolve(jsonResponse({ candidates: [queued] }));
+    });
+
+    render(
+      <MemoryRouter>
+        <AdminCandidates />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('candidate-create-prospect')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId('candidate-create-prospect'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('candidate-claim-url')).toHaveTextContent(
+        'http://localhost:5173/claim/abcd'
+      );
+    });
+  });
 });

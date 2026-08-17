@@ -15,6 +15,7 @@ import {
   scoreCandidate,
   searchPlacesCandidates,
 } from '../services/outreach/candidateFinder.js';
+import { createProspectFromCandidate } from '../services/outreach/prospectSiteService.js';
 
 const router = express.Router();
 const STATUSES = new Set(['queued', 'saved', 'rejected', 'claimed']);
@@ -314,6 +315,33 @@ router.patch('/candidates/:id', async (req, res) => {
 
     return res.json({ candidate });
   } catch (err) {
+    return handlePlacesError(err, res);
+  }
+});
+
+/**
+ * POST /api/outreach/candidates/:id/prospect
+ * Publish a prospect site from a queued/saved candidate and return a claim URL once.
+ */
+router.post('/candidates/:id/prospect', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const candidate = await prisma.outreach_candidates.findUnique({ where: { id } });
+    if (!candidate) {
+      return res.status(404).json({ error: 'Candidate not found' });
+    }
+
+    const result = await createProspectFromCandidate(candidate, req.user.id);
+    return res.status(201).json({
+      siteId: result.siteId,
+      subdomain: result.subdomain,
+      claimUrl: result.claimUrl,
+      claimToken: result.claimToken,
+    });
+  } catch (err) {
+    if (err.statusCode) {
+      return res.status(err.statusCode).json({ error: err.message });
+    }
     return handlePlacesError(err, res);
   }
 });

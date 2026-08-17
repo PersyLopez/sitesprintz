@@ -47,6 +47,7 @@ const BookingDashboard = lazy(() => import('./pages/BookingDashboard'));
 const Settings = lazy(() => import('./pages/Settings'));
 const FoundationSettingsPage = lazy(() => import('./pages/FoundationSettingsPage'));
 const StaffInviteAccept = lazy(() => import('./pages/StaffInviteAccept'));
+const ClaimSite = lazy(() => import('./pages/ClaimSite'));
 const StaffDashboard = lazy(() => import('./pages/StaffDashboard'));
 const StaffAppointments = lazy(() => import('./pages/StaffAppointments'));
 const StaffSchedule = lazy(() => import('./pages/StaffSchedule'));
@@ -223,6 +224,14 @@ function App() {
                     <StaffInviteAccept />
                   </Suspense>
                 } 
+              />
+              <Route
+                path="/claim/:token"
+                element={
+                  <Suspense fallback={<LoadingFallback message="Loading claim..." />}>
+                    <ClaimSite />
+                  </Suspense>
+                }
               />
 
               {/* Protected routes - Lazy loaded */}

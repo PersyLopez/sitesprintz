@@ -20,7 +20,7 @@ SiteSprintz is a small-business website builder: template → draft → preview 
 | E-commerce | Growth-only cart/checkout. Pay-on-site opt-in exists. |
 | Legal | `/legal/terms`, `/privacy`, `/cookies` served by Express. Footer now links them. Vite proxies `/legal`. |
 | Security | CSRF, Helmet, env validation, token redaction, local-only test routes. Google OAuth `state` is a random nonce. JWTs dual-write httpOnly cookies (JSON bodies still returned for current clients). |
-| Admin outreach finder | Admin-only Google Places search + scored candidate queue (`/api/outreach`). |
+| Admin outreach finder | Admin-only Google Places search + scored candidate queue (`/api/outreach`). Prospect site + 14-day claim link from queued/saved rows. |
 | Owner dashboard share / QR | Published sites: Share on site card + site dashboard opens ShareModal (WhatsApp, Instagram, TikTok, Facebook) and download QR PNG. |
 
 ---
