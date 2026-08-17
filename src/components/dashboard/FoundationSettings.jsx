@@ -13,8 +13,55 @@ import { api } from '../../services/api';
 import FoundationPreview from './FoundationPreview';
 import './FoundationSettings.css';
 
+const SOCIAL_PROFILE_FIELDS = [
+  { key: 'facebook', label: 'Facebook URL', placeholder: 'https://facebook.com/yourbusiness' },
+  { key: 'instagram', label: 'Instagram URL', placeholder: 'https://instagram.com/yourbusiness' },
+  { key: 'whatsapp', label: 'WhatsApp', placeholder: 'https://wa.me/15551234567', inputType: 'text' },
+  { key: 'tiktok', label: 'TikTok URL', placeholder: 'https://tiktok.com/@yourbusiness' },
+  { key: 'maps', label: 'Google Maps URL', placeholder: 'https://maps.google.com/...' },
+  { key: 'website', label: 'Website URL', placeholder: 'https://yourbusiness.com' },
+  { key: 'linkedin', label: 'LinkedIn URL', placeholder: 'https://linkedin.com/company/yourbusiness' },
+];
+
+const DEFAULT_SOCIAL_PROFILES = {
+  facebook: '',
+  instagram: '',
+  whatsapp: '',
+  tiktok: '',
+  maps: '',
+  website: '',
+  linkedin: '',
+};
+
+function filledSocial(source = {}) {
+  const out = {};
+  for (const key of Object.keys(DEFAULT_SOCIAL_PROFILES)) {
+    if (source[key]) out[key] = source[key];
+  }
+  if (source.maps || source.googleMapsUrl) out.maps = source.maps || source.googleMapsUrl;
+  if (source.twitter) out.twitter = source.twitter;
+  if (source.youtube) out.youtube = source.youtube;
+  return out;
+}
+
+function configFromSite(site) {
+  const base = site?.site_data?.foundation || getDefaultConfig();
+  return {
+    ...base,
+    socialMedia: {
+      ...getDefaultConfig().socialMedia,
+      ...base.socialMedia,
+      profiles: {
+        ...DEFAULT_SOCIAL_PROFILES,
+        ...base.socialMedia?.profiles,
+        ...filledSocial(site?.site_data?.social),
+      },
+    },
+  };
+}
+
 export default function FoundationSettings({ site, onUpdate }) {
-  const [config, setConfig] = useState(site.site_data?.foundation || getDefaultConfig());
+  const [config, setConfig] = useState(() => configFromSite(site));
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState(null);
   const [activeTab, setActiveTab] = useState('trustSignals');
@@ -23,11 +70,9 @@ export default function FoundationSettings({ site, onUpdate }) {
   const isGrowth = site.plan === 'growth' || site.plan === 'pro' || site.plan === 'premium';
   const isPro = isGrowth; // legacy alias
 
-  // Load initial config
+  // Load initial config — siteData.social wins so Foundation cannot drift
   useEffect(() => {
-    if (site.site_data?.foundation) {
-      setConfig(site.site_data.foundation);
-    }
+    setConfig(configFromSite(site));
   }, [site]);
 
   // Save configuration
@@ -369,90 +414,24 @@ export default function FoundationSettings({ site, onUpdate }) {
 
               {config.socialMedia?.enabled && (
                 <>
-                  <div className="form-group">
-                    <label>
-                      Facebook URL
-                      <input
-                        type="url"
-                        placeholder="https://facebook.com/yourbusiness"
-                        value={config.socialMedia?.profiles?.facebook || ''}
-                        onChange={(e) => updateFeature('socialMedia', {
-                          profiles: {
-                            ...config.socialMedia?.profiles,
-                            facebook: e.target.value
-                          }
-                        })}
-                      />
-                    </label>
-                  </div>
-
-                  <div className="form-group">
-                    <label>
-                      Instagram URL
-                      <input
-                        type="url"
-                        placeholder="https://instagram.com/yourbusiness"
-                        value={config.socialMedia?.profiles?.instagram || ''}
-                        onChange={(e) => updateFeature('socialMedia', {
-                          profiles: {
-                            ...config.socialMedia?.profiles,
-                            instagram: e.target.value
-                          }
-                        })}
-                      />
-                    </label>
-                  </div>
-
-                  <div className="form-group">
-                    <label>
-                      Twitter/X URL
-                      <input
-                        type="url"
-                        placeholder="https://twitter.com/yourbusiness"
-                        value={config.socialMedia?.profiles?.twitter || ''}
-                        onChange={(e) => updateFeature('socialMedia', {
-                          profiles: {
-                            ...config.socialMedia?.profiles,
-                            twitter: e.target.value
-                          }
-                        })}
-                      />
-                    </label>
-                  </div>
-
-                  <div className="form-group">
-                    <label>
-                      LinkedIn URL
-                      <input
-                        type="url"
-                        placeholder="https://linkedin.com/company/yourbusiness"
-                        value={config.socialMedia?.profiles?.linkedin || ''}
-                        onChange={(e) => updateFeature('socialMedia', {
-                          profiles: {
-                            ...config.socialMedia?.profiles,
-                            linkedin: e.target.value
-                          }
-                        })}
-                      />
-                    </label>
-                  </div>
-
-                  <div className="form-group">
-                    <label>
-                      YouTube URL
-                      <input
-                        type="url"
-                        placeholder="https://youtube.com/@yourbusiness"
-                        value={config.socialMedia?.profiles?.youtube || ''}
-                        onChange={(e) => updateFeature('socialMedia', {
-                          profiles: {
-                            ...config.socialMedia?.profiles,
-                            youtube: e.target.value
-                          }
-                        })}
-                      />
-                    </label>
-                  </div>
+                  {SOCIAL_PROFILE_FIELDS.map((field) => (
+                    <div className="form-group" key={field.key}>
+                      <label>
+                        {field.label}
+                        <input
+                          type={field.inputType || 'url'}
+                          placeholder={field.placeholder}
+                          value={config.socialMedia?.profiles?.[field.key] || ''}
+                          onChange={(e) => updateFeature('socialMedia', {
+                            profiles: {
+                              ...config.socialMedia?.profiles,
+                              [field.key]: e.target.value
+                            }
+                          })}
+                        />
+                      </label>
+                    </div>
+                  ))}
 
                   <div className="form-group">
                     <label>
@@ -599,13 +578,7 @@ function getDefaultConfig() {
     },
     socialMedia: {
       enabled: false,
-      profiles: {
-        facebook: '',
-        instagram: '',
-        twitter: '',
-        linkedin: '',
-        youtube: ''
-      },
+      profiles: { ...DEFAULT_SOCIAL_PROFILES },
       position: 'footer'
     },
     contactBar: {

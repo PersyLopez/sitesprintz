@@ -236,6 +236,26 @@ const REGISTRY_DATA = {
       repeatable: false
     },
     {
+      type: "social",
+      name: "Social Links",
+      category: "core",
+      icon: "🔗",
+      requiredTier: "trial",
+      description: "Social and map links",
+      removable: true,
+      repeatable: false,
+      defaultContent: {
+        title: "Find us",
+        facebook: "",
+        instagram: "",
+        whatsapp: "",
+        tiktok: "",
+        maps: "",
+        website: "",
+        linkedin: ""
+      }
+    },
+    {
       type: "native-booking",
       name: "Native Booking Widget",
       category: "features",

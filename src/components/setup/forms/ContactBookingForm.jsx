@@ -100,6 +100,28 @@ function ContactBookingForm() {
         </div>
 
         <div className="form-group">
+          <label htmlFor="whatsappUrl">WhatsApp</label>
+          <input
+            type="text"
+            id="whatsappUrl"
+            value={siteData.social?.whatsapp || ''}
+            onChange={(e) => updateField('social.whatsapp', e.target.value)}
+            placeholder="phone or https://wa.me/..."
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="tiktokUrl">TikTok URL</label>
+          <input
+            type="url"
+            id="tiktokUrl"
+            value={siteData.social?.tiktok || ''}
+            onChange={(e) => updateField('social.tiktok', e.target.value)}
+            placeholder="https://tiktok.com/@yourbusiness"
+          />
+        </div>
+
+        <div className="form-group">
           <label htmlFor="googleMapsUrl">Google Maps URL</label>
           <input
             type="url"
@@ -107,6 +129,28 @@ function ContactBookingForm() {
             value={siteData.social?.maps || siteData.googleMapsUrl || ''}
             onChange={(e) => updateField('social.maps', e.target.value)}
             placeholder="https://maps.google.com/..."
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="websiteUrl">Website URL</label>
+          <input
+            type="url"
+            id="websiteUrl"
+            value={siteData.social?.website || ''}
+            onChange={(e) => updateField('social.website', e.target.value)}
+            placeholder="https://yourbusiness.com"
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="linkedinUrl">LinkedIn URL</label>
+          <input
+            type="url"
+            id="linkedinUrl"
+            value={siteData.social?.linkedin || ''}
+            onChange={(e) => updateField('social.linkedin', e.target.value)}
+            placeholder="https://linkedin.com/company/yourbusiness"
           />
         </div>
       </div>

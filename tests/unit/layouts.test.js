@@ -134,7 +134,7 @@ describe('layouts — getLayoutForNiche()', () => {
 describe('layouts — getSkeleton()', () => {
   it('returns the correct section order for atelier/solo', () => {
     const skeleton = getSkeleton('atelier', 'solo');
-    expect(skeleton).toEqual(['hero', 'services', 'gallery', 'booking', 'contact']);
+    expect(skeleton).toEqual(['hero', 'services', 'gallery', 'booking', 'hours', 'location', 'contact', 'social']);
   });
 
   it('returns the correct section order for atelier/studio', () => {
@@ -162,6 +162,14 @@ describe('layouts — getSkeleton()', () => {
     expect(getSkeleton('bazaar', 'solo')).toBeDefined();
     // Bazaar always returns solo regardless of level input
     expect(getSkeleton('bazaar', 'established')).toEqual(getSkeleton('bazaar', 'solo'));
+  });
+
+  it('every layout/level skeleton ends with hours, location, contact, social', () => {
+    for (const [key, layout] of Object.entries(LAYOUTS)) {
+      for (const [level, skeleton] of Object.entries(layout.levels)) {
+        expect(skeleton.slice(-4), `${key}/${level}`).toEqual(['hours', 'location', 'contact', 'social']);
+      }
+    }
   });
 });
 

@@ -52,9 +52,11 @@ describe('FoundationSettings Component', () => {
             profiles: {
               facebook: '',
               instagram: '',
-              twitter: '',
-              linkedin: '',
-              youtube: ''
+              whatsapp: '',
+              tiktok: '',
+              maps: '',
+              website: '',
+              linkedin: ''
             },
             position: 'footer'
           },
@@ -241,6 +243,11 @@ describe('FoundationSettings Component', () => {
       // Social profile fields should appear
       await waitFor(() => {
         expect(screen.getByLabelText('Facebook URL')).toBeInTheDocument();
+        expect(screen.getByLabelText('WhatsApp')).toBeInTheDocument();
+        expect(screen.getByLabelText('TikTok URL')).toBeInTheDocument();
+        expect(screen.getByLabelText('Google Maps URL')).toBeInTheDocument();
+        expect(screen.queryByLabelText('Twitter/X URL')).not.toBeInTheDocument();
+        expect(screen.queryByLabelText('YouTube URL')).not.toBeInTheDocument();
       });
     });
 

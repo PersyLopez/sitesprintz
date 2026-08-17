@@ -41,6 +41,9 @@ export const LAYOUTS = {
       // Required (always present, cannot be removed)
       services:     { type: 'services',    required: true,  variant: 'grid' },
       contact:      { type: 'contact',     required: true },
+      hours:        { type: 'hours',       required: false },
+      location:     { type: 'location',    required: false },
+      social:       { type: 'social',      required: false },
       // Optional — included based on level
       team:         { type: 'team',        required: false, variant: 'grid',       levels: ['studio', 'established'] },
       gallery:      { type: 'gallery',      required: false, variant: 'masonry' },
@@ -53,13 +56,13 @@ export const LAYOUTS = {
     },
     levels: {
       solo: [
-        'hero', 'services', 'gallery', 'booking', 'contact',
+        'hero', 'services', 'gallery', 'booking', 'hours', 'location', 'contact', 'social',
       ],
       studio: [
-        'hero', 'services', 'team', 'gallery', 'booking', 'testimonials', 'contact',
+        'hero', 'services', 'team', 'gallery', 'booking', 'testimonials', 'hours', 'location', 'contact', 'social',
       ],
       established: [
-        'hero', 'services', 'team', 'gallery', 'booking', 'testimonials', 'reviews', 'stats', 'contact',
+        'hero', 'services', 'team', 'gallery', 'booking', 'testimonials', 'reviews', 'stats', 'hours', 'location', 'contact', 'social',
       ],
     },
     features: {
@@ -80,6 +83,9 @@ export const LAYOUTS = {
       services:      { type: 'services',      required: true,  variant: 'list' },
       'service-areas': { type: 'service-areas', required: true },
       contact:       { type: 'contact',        required: true },
+      hours:         { type: 'hours',          required: false },
+      location:      { type: 'location',       required: false },
+      social:        { type: 'social',         required: false },
       'before-after': { type: 'before-after',   required: false, variant: 'slider' },
       process:       { type: 'process',         required: false, levels: ['studio', 'established'] },
       credentials:   { type: 'credentials',     required: false, levels: ['studio', 'established'] },
@@ -91,13 +97,13 @@ export const LAYOUTS = {
     },
     levels: {
       solo: [
-        'hero', 'services', 'service-areas', 'before-after', 'faq', 'contact',
+        'hero', 'services', 'service-areas', 'before-after', 'faq', 'hours', 'location', 'contact', 'social',
       ],
       studio: [
-        'hero', 'services', 'service-areas', 'process', 'team', 'before-after', 'credentials', 'faq', 'contact',
+        'hero', 'services', 'service-areas', 'process', 'team', 'before-after', 'credentials', 'faq', 'hours', 'location', 'contact', 'social',
       ],
       established: [
-        'hero', 'services', 'service-areas', 'process', 'team', 'before-after', 'credentials', 'stats', 'testimonials', 'faq', 'contact',
+        'hero', 'services', 'service-areas', 'process', 'team', 'before-after', 'credentials', 'stats', 'testimonials', 'faq', 'hours', 'location', 'contact', 'social',
       ],
     },
     features: {
@@ -117,6 +123,9 @@ export const LAYOUTS = {
     sections: {
       services:      { type: 'services',      required: true,  variant: 'index' },
       contact:       { type: 'contact',       required: true },
+      hours:         { type: 'hours',         required: false },
+      location:      { type: 'location',      required: false },
+      social:        { type: 'social',        required: false },
       'case-studies': { type: 'case-studies',  required: false, levels: ['studio', 'established'] },
       process:       { type: 'process',       required: false, levels: ['studio', 'established'] },
       team:          { type: 'team',          required: false, levels: ['studio', 'established'] },
@@ -128,13 +137,13 @@ export const LAYOUTS = {
     },
     levels: {
       solo: [
-        'hero', 'services', 'case-studies', 'contact',
+        'hero', 'services', 'case-studies', 'hours', 'location', 'contact', 'social',
       ],
       studio: [
-        'hero', 'services', 'case-studies', 'process', 'team', 'testimonials', 'contact',
+        'hero', 'services', 'case-studies', 'process', 'team', 'testimonials', 'hours', 'location', 'contact', 'social',
       ],
       established: [
-        'hero', 'industries', 'services', 'case-studies', 'process', 'team', 'testimonials', 'stats', 'contact',
+        'hero', 'industries', 'services', 'case-studies', 'process', 'team', 'testimonials', 'stats', 'hours', 'location', 'contact', 'social',
       ],
     },
     features: {
@@ -154,6 +163,9 @@ export const LAYOUTS = {
     sections: {
       catalog:       { type: 'catalog',       required: true,  variant: 'grid' },
       contact:       { type: 'contact',       required: true },
+      hours:         { type: 'hours',         required: false },
+      location:      { type: 'location',      required: false },
+      social:        { type: 'social',        required: false },
       gallery:       { type: 'gallery',        required: false, variant: 'grid' },
       reviews:       { type: 'reviews',        required: false, levels: ['studio', 'established'] },
       team:          { type: 'team',           required: false, levels: ['studio', 'established'] },
@@ -164,13 +176,13 @@ export const LAYOUTS = {
     },
     levels: {
       solo: [
-        'hero', 'catalog', 'contact',
+        'hero', 'catalog', 'hours', 'location', 'contact', 'social',
       ],
       studio: [
-        'hero', 'catalog', 'gallery', 'team', 'reviews', 'faq', 'contact',
+        'hero', 'catalog', 'gallery', 'team', 'reviews', 'faq', 'hours', 'location', 'contact', 'social',
       ],
       established: [
-        'hero', 'catalog', 'gallery', 'team', 'reviews', 'stats', 'faq', 'contact',
+        'hero', 'catalog', 'gallery', 'team', 'reviews', 'stats', 'faq', 'hours', 'location', 'contact', 'social',
       ],
     },
     features: {
@@ -193,12 +205,13 @@ export const LAYOUTS = {
       'how-to-order': { type: 'how-to-order', required: false },
       hours:        { type: 'hours',          required: false },
       location:     { type: 'location',       required: false },
+      social:       { type: 'social',         required: false },
       gallery:      { type: 'gallery',        required: false },
     },
     // Bazaar has no levels — always solo-equivalent
     levels: {
       solo: [
-        'hero', 'catalog', 'how-to-order', 'hours', 'location', 'contact',
+        'hero', 'catalog', 'how-to-order', 'hours', 'location', 'contact', 'social',
       ],
     },
     features: {

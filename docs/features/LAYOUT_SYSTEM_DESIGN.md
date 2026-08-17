@@ -49,9 +49,9 @@ The platform separates **essential** features (offered to all, always opt-out) f
 | Gallery | Essential | On | All tiers | Yes — hide section |
 | Testimonials | Essential | On (Studio+) | All tiers | Yes — hide section |
 | Analytics | Advanced | — | Growth+ only | n/a |
-| Custom domain | Advanced | — | Pro+ only | n/a |
+| Custom domain | Advanced | — | Growth+ only | n/a |
 | Advanced booking (recurring, buffer, multi-staff scheduling) | Advanced | — | Growth+ only | Yes |
-| Reviews integration (Google Reviews) | Advanced | — | Pro+ only | Yes |
+| Reviews integration (Google Reviews) | Advanced | — | Growth+ only | Yes |
 
 **Cash-only is a first-class path.** A business that wants only cash transactions:
 - Disables online payment (one toggle) → Stripe checkout removed, no payment method collected at order/booking time.
@@ -81,27 +81,27 @@ The platform separates **essential** features (offered to all, always opt-out) f
 ### Skeletons (per layout, per level)
 
 ```
-Atelier · Solo:        hero(split, "book with me") → services → gallery → booking-panel → contact
-Atelier · Studio:      hero(split) → services → team(staff-picker) → gallery → booking-panel(staff) → testimonials → contact
-Atelier · Established: hero(split) → services → team(grid) → gallery → booking-panel(advanced) → testimonials → reviews → stats → contact
+Atelier · Solo:        hero(split, "book with me") → services → gallery → booking-panel → hours → location → contact → social
+Atelier · Studio:      hero(split) → services → team(staff-picker) → gallery → booking-panel(staff) → testimonials → hours → location → contact → social
+Atelier · Established: hero(split) → services → team(grid) → gallery → booking-panel(advanced) → testimonials → reviews → stats → hours → location → contact → social
 
-Craftsman · Solo:        hero(full-bleed, quote CTA) → service-areas → before-after → faq → contact
-Craftsman · Studio:      hero(full-bleed) → service-areas → process → before-after → credentials → faq → contact
-Craftsman · Established: hero(full-bleed) → service-areas → process → before-after → credentials → stats → testimonials → faq → contact
+Craftsman · Solo:        hero(full-bleed, quote CTA) → service-areas → before-after → faq → hours → location → contact → social
+Craftsman · Studio:      hero(full-bleed) → service-areas → process → before-after → credentials → faq → hours → location → contact → social
+Craftsman · Established: hero(full-bleed) → service-areas → process → before-after → credentials → stats → testimonials → faq → hours → location → contact → social
 
-Counsel · Solo:        hero(lead) → services(index) → case-studies → contact
-Counsel · Studio:      hero(lead) → services(index) → case-studies → process → team → testimonials → contact
-Counsel · Established: hero(lead) → industries → services(index) → case-studies → process → team → testimonials → stats → contact
+Counsel · Solo:        hero(lead) → services(index) → case-studies → hours → location → contact → social
+Counsel · Studio:      hero(lead) → services(index) → case-studies → process → team → testimonials → hours → location → contact → social
+Counsel · Established: hero(lead) → industries → services(index) → case-studies → process → team → testimonials → stats → hours → location → contact → social
 
-Mercantile · Solo:        hero(featured) → catalog-grid → reviews → contact
-Mercantile · Studio:      hero(featured) → catalog-grid → showcase-gallery → reviews → faq → contact
-Mercantile · Established: hero(featured) → catalog-grid → showcase-gallery → team → reviews → stats → faq → contact
+Mercantile · Solo:        hero(featured) → catalog-grid → hours → location → contact → social
+Mercantile · Studio:      hero(featured) → catalog-grid → showcase-gallery → team → reviews → faq → hours → location → contact → social
+Mercantile · Established: hero(featured) → catalog-grid → showcase-gallery → team → reviews → stats → faq → hours → location → contact → social
 
-Bazaar (no levels):    hero(what/where/when) → item-grid → "how to order" strip → location/hours → contact
+Bazaar (no levels):    hero(what/where/when) → item-grid → "how to order" strip → hours → location → contact → social
                        optional: countdown banner if end-date set
 ```
 
-Every skeleton = `nav | hero | content-bands | cta-strip | footer`. Layouts differ only in which sections are *required* and the hero variant. **Disabled sections simply drop out** — the layout recomposes without gaps. No feature is forced on; no layout requires booking, ordering, or online payment to render correctly.
+Every skeleton = `nav | hero | content-bands | cta-strip | footer`. Layouts differ only in which sections are *required* and the hero variant. **Every layout/level includes hours, location, contact, and social** (suffix). Social is rendered by the layout engine (`composePage` / `sectionHtmlBridge`), not only Foundation. **Disabled sections simply drop out** — the layout recomposes without gaps. No feature is forced on; no layout requires booking, ordering, or online payment to render correctly.
 
 ---
 
@@ -270,7 +270,7 @@ Built for "someone decides to sell food for the weekend." Full online business e
 |---------|----------------|--------|
 | Required fields | brand, hero, 2+ sections, contact | name + items + (location or contact) |
 | Wizard steps | 3 (industry → basics → style) + level | 2 (what + where/when) — no industry pick, no level |
-| Sections available | full registry | curated short list: items, hours, location, "how to order", gallery (optional) |
+| Sections available | full registry | curated short list: items, hours, location, social, "how to order", gallery (optional) |
 | Booking/staff | available, tier-gated | hidden entirely |
 | Online ordering | available | On by default — but fully disableable for a display-only pop-up |
 | Online payment | available when ordering on | Offable → cash-only checkout ("pay at pickup") |

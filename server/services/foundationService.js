@@ -14,6 +14,34 @@
 import { prisma } from '../../database/db.js';
 import { SimpleCache } from '../utils/cache.js';
 
+const CANONICAL_SOCIAL_KEYS = ['facebook', 'instagram', 'whatsapp', 'tiktok', 'maps', 'website', 'linkedin'];
+
+function canonicalSocial(primary = {}, fallback = {}) {
+  const social = {};
+  for (const key of CANONICAL_SOCIAL_KEYS) {
+    const fromPrimary = key === 'maps'
+      ? (primary.maps || primary.googleMapsUrl)
+      : primary[key];
+    social[key] = fromPrimary || fallback[key] || '';
+  }
+  if (primary.twitter || fallback.twitter) social.twitter = primary.twitter || fallback.twitter;
+  if (primary.youtube || fallback.youtube) social.youtube = primary.youtube || fallback.youtube;
+  return social;
+}
+
+function syncFoundationFromSiteSocial(foundation, siteSocial) {
+  if (!foundation) return foundation;
+  const hasSiteSocial = siteSocial && CANONICAL_SOCIAL_KEYS.some((key) => siteSocial[key]);
+  if (!hasSiteSocial && !siteSocial?.twitter && !siteSocial?.youtube) return foundation;
+  return {
+    ...foundation,
+    socialMedia: {
+      ...(foundation.socialMedia || {}),
+      profiles: canonicalSocial(siteSocial, foundation.socialMedia?.profiles),
+    },
+  };
+}
+
 /**
  * Default foundation configuration factory
  * @param {string} tier - Subscription tier ('starter', 'pro', 'premium')
@@ -50,9 +78,11 @@ export function getDefaultFoundationConfig(tier = 'starter') {
       profiles: {
         facebook: '',
         instagram: '',
-        twitter: '',
-        linkedin: '',
-        youtube: ''
+        whatsapp: '',
+        tiktok: '',
+        maps: '',
+        website: '',
+        linkedin: ''
       },
       position: 'footer'
     },
@@ -118,8 +148,11 @@ export class FoundationService {
         ? JSON.parse(site.site_data)
         : site.site_data;
 
-      // Get foundation config or use defaults
-      const foundation = siteData.foundation || this.getDefaultConfig(site.plan);
+      // Get foundation config or use defaults; siteData.social is canonical
+      const foundation = syncFoundationFromSiteSocial(
+        siteData.foundation || this.getDefaultConfig(site.plan),
+        siteData.social
+      );
 
       const configData = {
         foundation,
@@ -165,8 +198,11 @@ export class FoundationService {
       // Validate config
       this.validateConfig(newConfig, site.plan);
 
-      // Update foundation config
+      // Update foundation config and keep siteData.social on the same keys
       siteData.foundation = newConfig;
+      if (newConfig.socialMedia?.profiles) {
+        siteData.social = canonicalSocial(newConfig.socialMedia.profiles, siteData.social);
+      }
 
       // Save back to database
       await this.db.sites.update({
@@ -234,11 +270,17 @@ export class FoundationService {
 
     // Validate social media URLs
     if (config.socialMedia && config.socialMedia.profiles) {
-      const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
+      const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-?=&%]*)*\/?$/;
       const profiles = config.socialMedia.profiles;
 
       for (const [platform, url] of Object.entries(profiles)) {
-        if (url && !urlRegex.test(url)) {
+        if (!url) continue;
+        if (platform === 'whatsapp') {
+          const digits = String(url).replace(/\D/g, '');
+          if (/wa\.me/i.test(url) || digits.length >= 8 || urlRegex.test(url)) continue;
+          throw new Error(`Invalid social media URL for ${platform}`);
+        }
+        if (!urlRegex.test(url) && !/^https?:\/\/\S+$/i.test(url)) {
           throw new Error(`Invalid social media URL for ${platform}`);
         }
       }

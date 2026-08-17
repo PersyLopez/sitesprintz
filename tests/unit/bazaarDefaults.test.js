@@ -184,6 +184,25 @@ describe('bazaarDefaults — buildBazaarSiteData()', () => {
     expect(siteData.businessName).toBe('Just A Name');
     expect(siteData._layout).toBe('bazaar');
   });
+
+  it('seeds social after contact and siteData.social keys', () => {
+    const siteData = buildBazaarSiteData({
+      popUpType: 'food-stall',
+      businessName: 'Maria\'s Tacos',
+    });
+    const types = siteData.sections.map((s) => s.type);
+    const contactIdx = types.indexOf('contact');
+    expect(types[contactIdx + 1]).toBe('social');
+    expect(siteData.social).toEqual({
+      facebook: '',
+      instagram: '',
+      whatsapp: '',
+      tiktok: '',
+      maps: '',
+      website: '',
+      linkedin: '',
+    });
+  });
 });
 
 // ---------------------------------------------------------------------------

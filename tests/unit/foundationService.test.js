@@ -298,6 +298,39 @@ describe('FoundationService', () => {
         .toThrow('Invalid social media URL');
     });
 
+    it('should accept WhatsApp phone numbers and wa.me links', () => {
+      expect(() => service.validateConfig({
+        socialMedia: {
+          enabled: true,
+          profiles: {
+            whatsapp: '+1 555 123 4567',
+          },
+        },
+      }, 'starter')).not.toThrow();
+
+      expect(() => service.validateConfig({
+        socialMedia: {
+          enabled: true,
+          profiles: {
+            whatsapp: 'https://wa.me/15551234567',
+          },
+        },
+      }, 'starter')).not.toThrow();
+    });
+
+    it('default social profiles use the product network keys', () => {
+      const config = service.getDefaultConfig('starter');
+      expect(config.socialMedia.profiles).toEqual({
+        facebook: '',
+        instagram: '',
+        whatsapp: '',
+        tiktok: '',
+        maps: '',
+        website: '',
+        linkedin: '',
+      });
+    });
+
     it('should enforce tier limits', () => {
       const proFeatureConfig = {
         trustSignalsPro: {

@@ -318,6 +318,23 @@ export function buildBazaarSiteData({
       },
       settings: {},
     },
+    {
+      id: generateId(),
+      type: 'social',
+      enabled: true,
+      order: 6,
+      content: {
+        title: 'Find us',
+        facebook: '',
+        instagram: '',
+        whatsapp: '',
+        tiktok: '',
+        maps: '',
+        website: '',
+        linkedin: '',
+      },
+      settings: {},
+    },
   ];
 
   return {
@@ -330,6 +347,15 @@ export function buildBazaarSiteData({
     businessHours: hours,
     openUntil,
     products: defaults.items,
+    social: {
+      facebook: '',
+      instagram: '',
+      whatsapp: '',
+      tiktok: '',
+      maps: '',
+      website: '',
+      linkedin: '',
+    },
     sections,
 
     // Layout metadata consumed by the engine
