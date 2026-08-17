@@ -3,6 +3,12 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import SiteCard from '@/components/dashboard/SiteCard';
 
+vi.mock('@/components/ShareModal', () => ({
+  default: ({ subdomain }) => (
+    <div data-testid="share-modal-mock">Sharing {subdomain}</div>
+  ),
+}));
+
 const renderWithRouter = (component) => {
   return render(<BrowserRouter>{component}</BrowserRouter>);
 };
@@ -232,6 +238,43 @@ describe('SiteCard', () => {
     // Check for placeholder div rather than emoji text (appears multiple times)
     const placeholder = document.querySelector('.thumbnail-placeholder');
     expect(placeholder).toBeInTheDocument();
+  });
+
+  it('shows an enabled Share button for published sites', () => {
+    renderWithRouter(
+      <SiteCard
+        site={mockSite}
+        onDelete={mockDeleteHandler}
+      />
+    );
+
+    const share = screen.getByTestId('share-site-button');
+    expect(share).toBeInTheDocument();
+    expect(share).toBeEnabled();
+  });
+
+  it('does not enable Share for draft sites', () => {
+    renderWithRouter(
+      <SiteCard
+        site={{ ...mockSite, status: 'draft' }}
+        onDelete={mockDeleteHandler}
+      />
+    );
+
+    expect(screen.getByTestId('share-site-button')).toBeDisabled();
+  });
+
+  it('opens the share modal when Share is clicked', () => {
+    renderWithRouter(
+      <SiteCard
+        site={mockSite}
+        onDelete={mockDeleteHandler}
+      />
+    );
+
+    fireEvent.click(screen.getByTestId('share-site-button'));
+    expect(screen.getByTestId('share-modal-mock')).toBeInTheDocument();
+    expect(screen.getByText('Sharing testbusiness')).toBeInTheDocument();
   });
 });
 

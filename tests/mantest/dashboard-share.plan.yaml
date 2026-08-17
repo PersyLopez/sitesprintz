@@ -1,0 +1,118 @@
+url: http://localhost:5173/login
+goal: Dashboard Share modal shows WhatsApp, Instagram, TikTok, and Download QR for a published site
+steps:
+  - action: Login page ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Stub auth, sites list, and share APIs
+    code: |
+      const png = Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+        'base64'
+      );
+      const user = {
+        id: 'user-share-e2e',
+        email: 'test@example.com',
+        role: 'user',
+        status: 'active',
+        subscriptionStatus: 'active',
+        subscriptionPlan: 'starter',
+        name: 'Share Tester',
+      };
+      const published = {
+        id: 'site-published',
+        subdomain: 'share-demo',
+        name: 'Published Share Site',
+        businessName: 'Published Share Site',
+        status: 'published',
+        plan: 'starter',
+        template: 'salon',
+      };
+      const draft = {
+        id: 'site-draft',
+        subdomain: 'share-draft',
+        name: 'Draft Share Site',
+        businessName: 'Draft Share Site',
+        status: 'draft',
+        plan: 'starter',
+        template: 'salon',
+      };
+      await page.route(/\/api\/csrf-token(?:\?|$)/, (route) =>
+        route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ csrfToken: 'e2e-csrf' }) })
+      );
+      await page.route(/\/api\/auth\/me(?:\?|$)/, (route) =>
+        route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, user }) })
+      );
+      await page.route(/\/api\/auth\/login(?:\?|$)/, async (route) => {
+        if (route.request().method() !== 'POST') return route.continue();
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ success: true, accessToken: 'e2e-share-token', refreshToken: 'e2e-share-refresh', user }),
+        });
+      });
+      await page.route(/\/api\/users\/[^/]+\/sites(?:\?|$)/, async (route) => {
+        if (route.request().method() !== 'GET') return route.continue();
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ success: true, sites: [published, draft] }),
+        });
+      });
+      await page.route(/\/api\/share\//, (route) =>
+        route.fulfill({ status: 200, contentType: 'image/png', body: png })
+      );
+      await page.route(/\/api\/analytics\/conversion(?:\?|$)/, (route) =>
+        route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true }) })
+      );
+    settle_ms: 200
+
+  - action: Fill email
+    fill: { testId: login-email, value: "test@example.com", clear: true }
+
+  - action: Fill password
+    fill: { testId: login-password, value: "SecurePass!2024", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+    assert:
+      - url contains /dashboard
+
+  - action: Dismiss welcome modal if present
+    code: |
+      await page.evaluate(() => localStorage.setItem('hasVisitedDashboard', 'true'));
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 5000 }).catch(() => {});
+      }
+    settle_ms: 500
+
+  - action: Published Share enabled, draft Share disabled
+    wait_for: { selector: '[data-testid="site-card"][data-subdomain="share-demo"]', timeout: 15000 }
+    code: |
+      const publishedShare = page.locator('[data-testid="site-card"][data-subdomain="share-demo"] [data-testid="share-site-button"]');
+      const draftShare = page.locator('[data-testid="site-card"][data-subdomain="share-draft"] [data-testid="share-site-button"]');
+      await publishedShare.waitFor({ state: 'visible', timeout: 15000 });
+      if (await publishedShare.isDisabled()) {
+        throw new Error('Published site Share button should be enabled');
+      }
+      if (!(await draftShare.isDisabled())) {
+        throw new Error('Draft site Share button should be disabled');
+      }
+    settle_ms: 200
+
+  - action: Open Share modal from published card
+    click: { testId: share-site-button, nth: 0 }
+    settle_ms: 800
+    assert:
+      - text contains Share Your Site
+      - text contains WhatsApp
+      - text contains Instagram
+      - text contains TikTok
+      - text contains Download QR
+
+  - action: Download QR control is present
+    wait_for: { selector: '[data-testid="share-download-qr"]', timeout: 10000 }
+    assert:
+      - text contains Download QR

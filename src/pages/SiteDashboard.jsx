@@ -6,6 +6,7 @@ import { sitesService } from '../services/sites';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import SkeletonLoader from '../components/common/SkeletonLoader';
+import ShareModal from '../components/ShareModal';
 import { SiteWorkspaceProvider } from '../context/SiteWorkspaceContext';
 import {
   getSiteDisplayName,
@@ -21,6 +22,7 @@ function SiteDashboard() {
   const [site, setSite] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
     if (authLoading || !user?.id || !siteId) return undefined;
@@ -105,7 +107,7 @@ function SiteDashboard() {
   }
 
   const name = getSiteDisplayName(site);
-  const paths = getSiteWorkspacePaths(site.id);
+  const paths = getSiteWorkspacePaths(site.id, site);
   const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
   const liveUrl = site.status === 'published' && site.subdomain
     ? `${backendUrl}/sites/${site.subdomain}/`
@@ -154,9 +156,30 @@ function SiteDashboard() {
                   View site
                 </button>
               )}
-              <Link to={paths.edit} className="btn btn-primary" data-testid="site-dashboard-edit">
-                Edit site
-              </Link>
+              {site.status === 'published' && site.subdomain ? (
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  data-testid="site-dashboard-share"
+                  onClick={() => setShareOpen(true)}
+                >
+                  Share
+                </button>
+              ) : null}
+              {site.status === 'published' && site.subdomain ? (
+                <Link to={paths.liveEdit} className="btn btn-primary" data-testid="site-dashboard-edit">
+                  Edit site
+                </Link>
+              ) : (
+                <Link to={paths.edit} className="btn btn-primary" data-testid="site-dashboard-edit">
+                  Edit site
+                </Link>
+              )}
+              {site.status === 'published' && (
+                <Link to={paths.edit} className="btn btn-secondary" data-testid="site-dashboard-builder">
+                  Page builder
+                </Link>
+              )}
             </div>
           </header>
 
@@ -178,6 +201,10 @@ function SiteDashboard() {
             <Outlet />
           </section>
         </main>
+
+        {shareOpen && site.subdomain && (
+          <ShareModal subdomain={site.subdomain} onClose={() => setShareOpen(false)} />
+        )}
 
         <Footer />
       </div>

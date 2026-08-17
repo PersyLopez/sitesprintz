@@ -1,15 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { OptimizedImage } from '../common/OptimizedImage';
 import { getSiteDisplayName, getSiteWorkspacePaths } from '../../utils/siteWorkspace';
+import ShareModal from '../ShareModal';
 import './SiteCard.css';
 
 function SiteCard({ site, onDelete, onDuplicate }) {
+  const [shareOpen, setShareOpen] = useState(false);
   const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
   const siteUrl = site.subdomain ? `${backendUrl}/sites/${site.subdomain}/` : null;
   const name = getSiteDisplayName(site);
-  const paths = getSiteWorkspacePaths(site.id);
+  const paths = getSiteWorkspacePaths(site.id, site);
   const templateLabel = site.template || site.templateId || 'Custom Template';
+  const canShare = site.status === 'published' && Boolean(site.subdomain);
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -84,7 +87,22 @@ function SiteCard({ site, onDelete, onDuplicate }) {
           </button>
         )}
 
-        <Link to={paths.edit} className="btn btn-secondary btn-sm" data-testid="edit-site-button">
+        <button
+          type="button"
+          className="btn btn-secondary btn-sm"
+          data-testid="share-site-button"
+          disabled={!canShare}
+          title={canShare ? 'Share this site' : 'Publish this site to share it'}
+          onClick={() => canShare && setShareOpen(true)}
+        >
+          Share
+        </button>
+
+        <Link
+          to={site.status === 'published' && site.subdomain ? paths.liveEdit : paths.edit}
+          className="btn btn-secondary btn-sm"
+          data-testid="edit-site-button"
+        >
           Edit
         </Link>
 
@@ -105,6 +123,10 @@ function SiteCard({ site, onDelete, onDuplicate }) {
           🗑️
         </button>
       </div>
+
+      {shareOpen && canShare && (
+        <ShareModal subdomain={site.subdomain} onClose={() => setShareOpen(false)} />
+      )}
     </div>
   );
 }

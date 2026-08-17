@@ -12,6 +12,7 @@ import {
   normalizeTemplateData,
   extractFeatures,
   generateShareCard,
+  generateQrPng,
   calculateCardDimensions,
   escapeHtml,
   wrapText
@@ -538,6 +539,31 @@ describe('ShareCardService - Universal Template Support (TDD)', () => {
 
       const buffer = await generateShareCard(data, 'social');
       expect(buffer).toBeInstanceOf(Buffer);
+    });
+  });
+
+  describe('generateQrPng', () => {
+    const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+
+    it('returns a PNG buffer for a valid URL', async () => {
+      const buffer = await generateQrPng('https://share-demo.sitesprintz.com', { width: 64 });
+
+      expect(buffer).toBeInstanceOf(Buffer);
+      expect(buffer.subarray(0, 8).equals(PNG_MAGIC)).toBe(true);
+
+      const metadata = await sharp(buffer).metadata();
+      expect(metadata.format).toBe('png');
+      expect(metadata.width).toBeLessThanOrEqual(64);
+      expect(metadata.height).toBeLessThanOrEqual(64);
+      expect(buffer.length).toBeGreaterThan(32);
+      expect(buffer.length).toBeLessThan(20_000);
+    });
+
+    it('throws for invalid input', async () => {
+      await expect(generateQrPng(null)).rejects.toThrow('Invalid site URL');
+      await expect(generateQrPng(undefined)).rejects.toThrow('Invalid site URL');
+      await expect(generateQrPng('')).rejects.toThrow('Invalid site URL');
+      await expect(generateQrPng(42)).rejects.toThrow('Invalid site URL');
     });
   });
 

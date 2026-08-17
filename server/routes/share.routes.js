@@ -9,7 +9,7 @@
 
 import express from 'express';
 import NodeCache from 'node-cache';
-import { generateShareCard } from '../services/shareCardService.js';
+import { generateShareCard, generateQrPng } from '../services/shareCardService.js';
 import { prisma } from '../../database/db.js';
 import { requireAuth } from '../middleware/auth.js';
 
@@ -175,7 +175,7 @@ const getShareCard = async (req, res) => {
     const format = req.params.format || 'social';
 
     // Validate format
-    if (!['social', 'story', 'square'].includes(format)) {
+    if (!['social', 'story', 'square', 'qr'].includes(format)) {
       return res.status(400).json({
         error: 'Invalid format'
       });
@@ -187,6 +187,38 @@ const getShareCard = async (req, res) => {
       return res.status(429).json({
         error: 'Rate limit exceeded'
       });
+    }
+
+    // Dedicated QR PNG of the live production URL
+    if (format === 'qr') {
+      const cacheKey = `${subdomain}:qr`;
+      const cachedQr = shareCardCache.get(cacheKey);
+
+      if (cachedQr) {
+        res.set('Content-Type', 'image/png');
+        res.set('Cache-Control', 'public, max-age=3600');
+        res.set('X-Cache', 'HIT');
+        return res.send(cachedQr);
+      }
+
+      const qrSite = await prisma.sites.findUnique({
+        where: { subdomain },
+        select: { subdomain: true }
+      });
+
+      if (!qrSite) {
+        return res.status(404).json({
+          error: 'Site not found'
+        });
+      }
+
+      const qrBuffer = await generateQrPng(`https://${subdomain}.sitesprintz.com`);
+      shareCardCache.set(cacheKey, qrBuffer);
+
+      res.set('Content-Type', 'image/png');
+      res.set('Cache-Control', 'public, max-age=3600');
+      res.set('X-Cache', 'MISS');
+      return res.send(qrBuffer);
     }
 
     // Check cache
@@ -274,7 +306,7 @@ router.delete('/:subdomain', requireAuth, async (req, res) => {
     }
 
     // Clear all format variants
-    const formats = ['social', 'story', 'square'];
+    const formats = ['social', 'story', 'square', 'qr'];
     let cleared = 0;
 
     for (const format of formats) {

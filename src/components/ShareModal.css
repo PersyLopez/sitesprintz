@@ -211,26 +211,58 @@
   box-shadow: 0 4px 12px rgba(24, 119, 242, 0.4);
 }
 
-.share-btn.twitter {
-  background: #000;
+.share-btn.whatsapp {
+  background: #25d366;
   color: #fff;
 }
 
-.share-btn.twitter:hover {
-  background: #1a1a1a;
+.share-btn.whatsapp:hover {
+  background: #1ebe5d;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
 }
 
-.share-btn.linkedin {
-  background: #0077b5;
+.share-btn.instagram {
+  background: linear-gradient(45deg, #f58529, #dd2a7b, #8134af);
   color: #fff;
 }
 
-.share-btn.linkedin:hover {
-  background: #005e8c;
+.share-btn.instagram:hover {
+  filter: brightness(1.08);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 119, 181, 0.4);
+  box-shadow: 0 4px 12px rgba(221, 42, 123, 0.4);
+}
+
+.share-btn.tiktok {
+  background: #010101;
+  color: #fff;
+  border: 1px solid #25f4ee;
+}
+
+.share-btn.tiktok:hover {
+  background: #111;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 244, 238, 0.3);
+}
+
+.share-app-hint {
+  color: #94a3b8;
+  font-size: 13px;
+  margin: 12px 0 0;
+}
+
+.share-app-hint.copied {
+  color: #86efac;
+}
+
+.share-btn.download.qr {
+  margin-top: 10px;
+  background: #0ea5e9;
+}
+
+.share-btn.download.qr:hover:not(:disabled) {
+  background: #0284c7;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
 }
 
 .share-btn.native {

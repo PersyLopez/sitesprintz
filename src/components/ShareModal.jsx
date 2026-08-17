@@ -24,9 +24,12 @@ const ShareModal = ({ subdomain, onClose }) => {
   const [error, setError] = useState(null);
   const [cardUrl, setCardUrl] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [shareHint, setShareHint] = useState(null);
 
   const siteUrl = `https://${subdomain}.sitesprintz.com`;
+  const shareText = `Check out my site: ${siteUrl}`;
   const shareCardEndpoint = `/api/share/${subdomain}/${format}`;
+  const shareQrEndpoint = `/api/share/${subdomain}/qr`;
 
   // Pre-generate card on mount and format change
   useEffect(() => {
@@ -68,17 +71,36 @@ const ShareModal = ({ subdomain, onClose }) => {
     window.open(shareUrl, '_blank', 'width=600,height=400');
   };
 
-  const handleTwitterShare = () => {
-    trackShare('twitter');
-    const text = `Check out my site: ${subdomain}`;
-    const shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(siteUrl)}&text=${encodeURIComponent(text)}`;
+  const handleWhatsAppShare = () => {
+    trackShare('whatsapp');
+    const shareUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
     window.open(shareUrl, '_blank', 'width=600,height=400');
   };
 
-  const handleLinkedInShare = () => {
-    trackShare('linkedin');
-    const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(siteUrl)}`;
-    window.open(shareUrl, '_blank', 'width=600,height=400');
+  const copySiteUrl = async () => {
+    await navigator.clipboard.writeText(siteUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleInstagramShare = async () => {
+    try {
+      trackShare('instagram');
+      await copySiteUrl();
+      setShareHint('Link copied. Paste it in Instagram (bio, Story sticker, or DM).');
+    } catch (err) {
+      setError('Failed to copy link');
+    }
+  };
+
+  const handleTikTokShare = async () => {
+    try {
+      trackShare('tiktok');
+      await copySiteUrl();
+      setShareHint('Link copied. Paste it in TikTok (bio or comments).');
+    } catch (err) {
+      setError('Failed to copy link');
+    }
   };
 
   const handleNativeShare = async () => {
@@ -104,10 +126,9 @@ const ShareModal = ({ subdomain, onClose }) => {
 
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(siteUrl);
-      setCopied(true);
+      await copySiteUrl();
       trackShare('copy-link');
-      setTimeout(() => setCopied(false), 2000);
+      setShareHint(null);
     } catch (err) {
       console.error('Copy failed:', err);
       setError('Failed to copy link');
@@ -147,6 +168,38 @@ const ShareModal = ({ subdomain, onClose }) => {
     } catch (err) {
       console.error('Download failed:', err);
       setError('Failed to download share card');
+      setLoading(false);
+    }
+  };
+
+  const handleDownloadQr = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      trackShare('download-qr');
+
+      const response = await fetch(shareQrEndpoint);
+
+      if (!response.ok) {
+        throw new Error('Failed to generate QR code');
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${subdomain}-qr.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      setLoading(false);
+    } catch (err) {
+      console.error('QR download failed:', err);
+      setError('Failed to download QR code');
       setLoading(false);
     }
   };
@@ -212,17 +265,21 @@ const ShareModal = ({ subdomain, onClose }) => {
         <div className="share-options">
           <h3>Share Directly</h3>
           <div className="share-buttons">
-            <button onClick={handleFacebookShare} className="share-btn facebook">
+            <button onClick={handleFacebookShare} className="share-btn facebook" data-testid="share-facebook">
               <span className="icon">f</span>
               Facebook
             </button>
-            <button onClick={handleTwitterShare} className="share-btn twitter">
-              <span className="icon">𝕏</span>
-              Twitter
+            <button onClick={handleWhatsAppShare} className="share-btn whatsapp" data-testid="share-whatsapp">
+              <span className="icon">WA</span>
+              WhatsApp
             </button>
-            <button onClick={handleLinkedInShare} className="share-btn linkedin">
-              <span className="icon">in</span>
-              LinkedIn
+            <button onClick={handleInstagramShare} className="share-btn instagram" data-testid="share-instagram">
+              <span className="icon">IG</span>
+              Instagram
+            </button>
+            <button onClick={handleTikTokShare} className="share-btn tiktok" data-testid="share-tiktok">
+              <span className="icon">TT</span>
+              TikTok
             </button>
             {navigator.share && (
               <button onClick={handleNativeShare} className="share-btn native">
@@ -231,6 +288,12 @@ const ShareModal = ({ subdomain, onClose }) => {
               </button>
             )}
           </div>
+          <p className="share-app-hint">
+            Instagram and TikTok have no web sharer — copy your link and paste it in the app.
+          </p>
+          {shareHint && (
+            <p className="share-app-hint copied" data-testid="share-copy-hint">{shareHint}</p>
+          )}
         </div>
 
         {/* Link Options */}
@@ -264,6 +327,25 @@ const ShareModal = ({ subdomain, onClose }) => {
               <>
                 <span className="icon">⬇</span>
                 Download for Print
+              </>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={handleDownloadQr}
+            className="share-btn download qr"
+            data-testid="share-download-qr"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <span className="spinner-small"></span>
+                Generating...
+              </>
+            ) : (
+              <>
+                <span className="icon">▦</span>
+                Download QR
               </>
             )}
           </button>

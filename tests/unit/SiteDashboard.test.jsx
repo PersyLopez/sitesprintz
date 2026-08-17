@@ -26,6 +26,12 @@ vi.mock('../../src/hooks/usePlan', () => ({
   usePlan: () => ({ isGrowth: true, isAbove: () => true }),
 }));
 
+vi.mock('../../src/components/ShareModal', () => ({
+  default: ({ subdomain }) => (
+    <div data-testid="share-modal-mock">Sharing {subdomain}</div>
+  ),
+}));
+
 describe('SiteDashboard', () => {
   const mockUser = { id: 'user-1', name: 'Alex', email: 'alex@example.com' };
   const listedSite = {
@@ -78,6 +84,11 @@ describe('SiteDashboard', () => {
     expect(screen.getByTestId('site-overview-orders')).toBeInTheDocument();
     expect(screen.getByTestId('site-overview-appointments')).toBeInTheDocument();
     expect(screen.getByTestId('site-overview-settings')).toBeInTheDocument();
+    expect(screen.getByTestId('site-dashboard-edit')).toHaveAttribute('href', '/view/river-salon?edit=true');
+    expect(screen.getByTestId('site-dashboard-builder')).toHaveAttribute('href', '/setup?site=site-1');
+    expect(screen.getByTestId('site-overview-edit')).toHaveAttribute('href', '/view/river-salon?edit=true');
+    expect(screen.getByTestId('site-dashboard-share')).toBeInTheDocument();
+    expect(screen.getByTestId('site-dashboard-share')).toBeEnabled();
   });
 
   it('shows not found when the site is not in the account', async () => {

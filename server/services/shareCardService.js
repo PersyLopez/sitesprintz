@@ -376,8 +376,29 @@ export async function generateShareCard(templateData, format = 'social') {
   }
 }
 
+/**
+ * Generate a standalone QR PNG for a live site URL.
+ */
+export async function generateQrPng(siteUrl, { width = 512 } = {}) {
+  if (!siteUrl || typeof siteUrl !== 'string') {
+    throw new Error('Invalid site URL');
+  }
+
+  return QRCode.toBuffer(siteUrl, {
+    type: 'png',
+    width,
+    margin: 2,
+    errorCorrectionLevel: 'M',
+    color: {
+      dark: '#000000',
+      light: '#ffffff'
+    }
+  });
+}
+
 export default {
   generateShareCard,
+  generateQrPng,
   normalizeTemplateData,
   extractFeatures,
   calculateCardDimensions,
