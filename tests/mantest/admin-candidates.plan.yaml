@@ -1,0 +1,96 @@
+url: http://localhost:5173/login
+goal: Admin candidates finder, search, manual add, and queue
+steps:
+  - action: Login page ready
+    wait_for: { text: Welcome Back }
+    settle_ms: 500
+
+  - action: Fill admin email
+    fill: { testId: login-email, value: "admin@example.com", clear: true }
+
+  - action: Fill admin password
+    fill: { testId: login-password, value: "AdminPass!2024", clear: true }
+
+  - action: Submit login with Sign In button
+    click: { role: button, name: Sign In }
+    settle_ms: 3000
+    assert:
+      - url matches /admin|/dashboard
+
+  - action: Stub outreach APIs so Search does not call Google
+    code: |
+      await page.route(/\/api\/outreach\/search(?:\?|$)/, async (route) => {
+        if (route.request().method() !== 'POST') {
+          await route.continue();
+          return;
+        }
+        await route.fulfill({
+          status: 503,
+          contentType: 'application/json',
+          body: JSON.stringify({ error: 'GOOGLE_PLACES_API_KEY is not set' }),
+        });
+      });
+      await page.route(/\/api\/outreach\/candidates(?:\?|$)/, async (route) => {
+        const method = route.request().method();
+        if (method === 'GET') {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              candidates: [{ id: 'cand-1', name: 'Jane Doe', city: 'Miami', status: 'queued', score: 0 }],
+            }),
+          });
+          return;
+        }
+        if (method === 'POST') {
+          await route.fulfill({
+            status: 201,
+            contentType: 'application/json',
+            body: JSON.stringify({ id: 'cand-1', name: 'Jane Doe', status: 'queued' }),
+          });
+          return;
+        }
+        await route.continue();
+      });
+    settle_ms: 200
+
+  - action: Open admin candidates
+    goto: http://localhost:5173/admin/candidates
+    settle_ms: 2000
+    assert:
+      - url contains /admin/candidates
+      - text contains Finder
+      - text contains Someone I found
+
+  - action: Fill finder city Miami
+    fill: { selector: "#finder-city", value: "Miami", clear: true }
+
+  - action: Search Places
+    click: { testId: candidates-search }
+    settle_ms: 2000
+
+  - action: Places key message or results table
+    code: |
+      await page.waitForFunction(() => {
+        const t = document.body?.innerText || '';
+        const hasKeyMsg = /GOOGLE_PLACES_API_KEY/i.test(t)
+          || /Set GOOGLE_PLACES_API_KEY to search Places/i.test(t);
+        const hasResults = !!document.querySelector('.users-table tbody tr, table tbody tr');
+        return hasKeyMsg || hasResults;
+      }, { timeout: 15000 });
+    settle_ms: 400
+
+  - action: Fill manual name
+    fill: { selector: "#manual-name", value: "Jane Doe", clear: true }
+
+  - action: Fill manual city
+    fill: { selector: "#manual-city", value: "Miami", clear: true }
+
+  - action: Submit someone I found
+    click: { testId: candidates-manual-submit }
+    settle_ms: 2000
+
+  - action: Queue is present
+    wait_for: { selector: "[data-testid=candidates-queue]", timeout: 15000 }
+    assert:
+      - url contains /admin/candidates

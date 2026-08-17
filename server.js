@@ -35,6 +35,7 @@ import contentRoutes from './server/routes/content.routes.js';
 import showcaseRoutes from './server/routes/showcase.routes.js';
 import adminRoutes from './server/routes/admin.routes.js';
 import reviewsRoutes from './server/routes/reviews.routes.js';
+import outreachRoutes from './server/routes/outreach.routes.js';
 import shareRoutes from './server/routes/share.routes.js';
 import templatesRoutes from './server/routes/templates.routes.js';
 import staffRoutes from './server/routes/staff.routes.js';
@@ -61,6 +62,8 @@ dotenv.config();
 // Validate environment configuration
 import { validateEnv, logBootSummary } from './server/config/validateEnv.js';
 import { getRequiredSecret } from './server/config/secrets.js';
+import { createGoogleOAuthState, consumeGoogleOAuthState } from './server/services/auth/googleOAuthState.js';
+import { setAuthCookies } from './server/utils/authCookies.js';
 import { buildCorsOptions } from './server/config/cors.js';
 validateEnv();
 logBootSummary();
@@ -209,13 +212,11 @@ if (googleAuthConfigured) {
   // - Never hits external Google
   // - Always produces a valid JWT and redirects to /oauth/callback?token=...
   // This makes E2E reliable and allows testing the full redirect/token flow.
-  const JWT_SECRET = getRequiredSecret('JWT_SECRET', { allowTestFallback: true });
-
-  app.get('/auth/google', (req, res) => {
-    const plan = req.query.plan;
-    const intent = req.query.intent;
-    let state = plan || 'free';
-    if (intent) state += `,intent:${intent}`;
+  app.get('/auth/google', async (req, res) => {
+    const state = await createGoogleOAuthState({
+      plan: req.query.plan,
+      intent: req.query.intent
+    });
 
     const redirect = `/auth/google/callback?code=mock&state=${encodeURIComponent(state)}`;
     return res.redirect(redirect);
@@ -257,29 +258,27 @@ if (googleAuthConfigured) {
         });
       }
 
-      const token = jwt.sign(
+      const JWT_SECRET = getRequiredSecret('JWT_SECRET', { allowTestFallback: true });
+      const accessToken = jwt.sign(
         { userId: user.id, email: user.email, role: user.role },
         JWT_SECRET,
         { expiresIn: '7d' }
       );
+      setAuthCookies(res, { accessToken });
 
-      // Keep redirect behavior consistent with real auth-google.js logic
-      const stateStr = typeof state === 'string' ? state : '';
-      const parts = stateStr.split(',');
-      const plan = parts[0];
-      const intentPart = parts.find(p => p.startsWith('intent:'));
-      const intent = intentPart ? intentPart.split(':')[1] : null;
+      const { plan, intent } = await consumeGoogleOAuthState(state);
+      const paidPlans = ['starter', 'growth', 'pro', 'premium'];
 
       if (intent === 'publish') {
-        return res.redirect(`/auto-publish.html?token=${token}`);
+        return res.redirect(`/auto-publish.html?token=${accessToken}`);
       }
 
-      if (plan && (plan === 'starter' || plan === 'pro')) {
-        return res.redirect(`/register-success.html?token=${token}&plan=${plan}`);
+      if (plan && paidPlans.includes(plan)) {
+        return res.redirect(`/register-success.html?token=${accessToken}&plan=${plan}`);
       }
 
       const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
-      return res.redirect(`${clientUrl}/oauth/callback?token=${token}`);
+      return res.redirect(`${clientUrl}/oauth/callback?token=${accessToken}`);
     } catch (e) {
       console.error('Test-mode Google OAuth mock failed:', e);
       return res.redirect('/register.html?error=auth_failed');
@@ -308,6 +307,7 @@ app.use('/api/booking', bookingFeesRoutes);
 app.use('/api/content', contentRoutes);
 app.use('/api/showcases', showcaseRoutes);
 app.use('/api/reviews', reviewsRoutes);
+app.use('/api/outreach', outreachRoutes);
 app.use('/api/share', shareRoutes);
 import submissionsRoutes from './server/routes/submissions.routes.js';
 app.use('/api/submissions', submissionsRoutes);

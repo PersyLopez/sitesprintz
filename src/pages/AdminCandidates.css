@@ -1,0 +1,84 @@
+.candidates-manual-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--spacing-lg);
+  align-items: end;
+}
+
+.candidates-notes {
+  grid-column: 1 / -1;
+}
+
+.candidates-manual-form textarea {
+  padding: var(--spacing-md);
+  background: var(--bg-darker);
+  border: 2px solid var(--border-dark);
+  border-radius: 8px;
+  color: var(--text-light);
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 64px;
+}
+
+.candidates-manual-form textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.candidates-manual-form .btn-primary {
+  justify-self: start;
+}
+
+.candidates-banner {
+  margin: var(--spacing-lg) 0 0;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 8px;
+  color: #fcd34d;
+}
+
+.candidates-table-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin: var(--spacing-lg) 0 var(--spacing-md);
+}
+
+.candidates-reasons {
+  max-width: 220px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.candidates-chip {
+  text-transform: capitalize;
+  cursor: pointer;
+}
+
+.candidates-chip.active {
+  border-color: var(--primary-color);
+  background: rgba(6, 182, 212, 0.15);
+  color: var(--text-light);
+}
+
+.status-queued {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+.status-saved {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.status-rejected {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+@media (max-width: 768px) {
+  .candidates-manual-form {
+    grid-template-columns: 1fr;
+  }
+}

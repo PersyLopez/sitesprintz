@@ -1,5 +1,5 @@
 # Quick Reference: SiteSprintz Implementation Status
-**Updated:** 15 August 2026 (working tree on `production-readiness/audit-remediation`)
+**Updated:** 16 August 2026 (working tree on `production-readiness/audit-remediation`)
 
 This file is the live status of the product **as it runs on disk**, including uncommitted work. Older “Phase 2 research / 787 failing tests / Pro+Premium” narratives are obsolete.
 
@@ -19,7 +19,8 @@ SiteSprintz is a small-business website builder: template → draft → preview 
 | Booking | Phase 1 shipped; Phase 2 (fees, reminders, recurring, business mode) is in the working tree — keep. |
 | E-commerce | Growth-only cart/checkout. Pay-on-site opt-in exists. |
 | Legal | `/legal/terms`, `/privacy`, `/cookies` served by Express. Footer now links them. Vite proxies `/legal`. |
-| Security | CSRF, Helmet, env validation, token redaction, local-only test routes. Remaining: JWT in httpOnly cookies, OAuth nonce, CORS env-name split. |
+| Security | CSRF, Helmet, env validation, token redaction, local-only test routes. Google OAuth `state` is a random nonce. JWTs dual-write httpOnly cookies (JSON bodies still returned for current clients). |
+| Admin outreach finder | Admin-only Google Places search + scored candidate queue (`/api/outreach`). |
 
 ---
 

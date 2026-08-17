@@ -26,6 +26,7 @@ const Admin = lazy(() => import('./pages/Admin'));
 const AdminUsers = lazy(() => import('./pages/AdminUsers'));
 const AdminPlanFeatures = lazy(() => import('./pages/AdminPlanFeatures'));
 const AdminSites = lazy(() => import('./pages/AdminSites'));
+const AdminCandidates = lazy(() => import('./pages/AdminCandidates'));
 const AdminTemplates = lazy(() => import('./pages/AdminTemplates'));
 const TemplateEditor = lazy(() => import('./components/admin/template-editor/TemplateEditor'));
 const PricingManagement = lazy(() => import('./components/admin/PricingManagement'));
@@ -494,6 +495,16 @@ function App() {
                   <AdminRoute>
                     <Suspense fallback={<LoadingFallback message="Loading sites..." />}>
                       <AdminSites />
+                    </Suspense>
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/candidates"
+                element={
+                  <AdminRoute>
+                    <Suspense fallback={<LoadingFallback message="Loading candidates..." />}>
+                      <AdminCandidates />
                     </Suspense>
                   </AdminRoute>
                 }

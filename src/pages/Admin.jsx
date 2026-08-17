@@ -263,6 +263,9 @@ function Admin() {
             <Link to="/admin/users" className="btn btn-secondary">
               👥 Users
             </Link>
+            <Link to="/admin/candidates" className="btn btn-secondary">
+              Candidates
+            </Link>
             <Link to="/admin/analytics" className="btn btn-secondary">
               📊 Analytics
             </Link>
