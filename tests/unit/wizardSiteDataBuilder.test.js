@@ -119,6 +119,19 @@ describe('wizardSiteDataBuilder — buildSiteDataFromWizard', () => {
     expect(siteData._features.booking.enabled).toBe(true);
     expect(siteData._features.onlinePayment.enabled).toBe(false);
     expect(siteData._features.cashPayment.enabled).toBe(true);
+    expect(siteData.settings.payOnSite).toBe(true);
+    expect(siteData.booking.enabled).toBe(true);
+    expect(siteData.settings.bookingEnabled).toBe(true);
+  });
+
+  it('does not enable native booking for craftsman sites', () => {
+    const siteData = buildSiteDataFromWizard({
+      niche: 'plumbing',
+      businessName: 'Reliable Pipes',
+    });
+    expect(siteData._features.booking.enabled).toBe(false);
+    expect(siteData.booking?.enabled).not.toBe(true);
+    expect(siteData.settings.bookingEnabled).not.toBe(true);
   });
 
   it('returns null for an unknown niche', () => {
@@ -176,6 +189,28 @@ describe('wizardSiteDataBuilder — buildSiteDataFromWizard', () => {
     expect(siteData._themeId).toBe('ivory-navy');
     expect(siteData.colors.accent).toBe('#2c4a86');
     expect(siteData.colors.mode).toBe('light');
+  });
+
+  it('seeds canonical social keys and findability sections for salon', () => {
+    const siteData = buildSiteDataFromWizard({
+      niche: 'salon',
+      businessName: 'Studio Luxe',
+      level: 'solo',
+    });
+    const types = siteData.sections.map((s) => s.type);
+    const contactIdx = types.indexOf('contact');
+    expect(types[contactIdx - 2]).toBe('hours');
+    expect(types[contactIdx - 1]).toBe('location');
+    expect(types[contactIdx + 1]).toBe('social');
+    expect(siteData.social).toMatchObject({
+      facebook: '',
+      instagram: '',
+      whatsapp: '',
+      tiktok: '',
+      maps: '',
+      website: '',
+      linkedin: '',
+    });
   });
 
   it('ignores unknown theme ids and falls back to the niche default', () => {

@@ -4,6 +4,7 @@ import {
   resolveOperatingModel,
   getOperatingImplication,
   buildSiteNav,
+  defaultNamedTeamMembers,
 } from '../../src/config/operatingModel';
 
 describe('operatingModel — solo vs non-solo', () => {
@@ -45,6 +46,19 @@ describe('operatingModel — solo vs non-solo', () => {
     const model = resolveOperatingModel('consultant', 'studio');
     expect(model.staffAssignment).toBe(STAFF_ASSIGNMENT.PICK);
     expect(model.businessMode).toBe('team');
+  });
+});
+
+describe('operatingModel — default named team', () => {
+  it('leaves solo sites without named people', () => {
+    expect(defaultNamedTeamMembers('salon', 'solo')).toEqual([]);
+  });
+
+  it('names salon studio stylists customers can book', () => {
+    const members = defaultNamedTeamMembers('salon', 'studio');
+    expect(members.length).toBeGreaterThanOrEqual(2);
+    expect(members[0].name).toBeTruthy();
+    expect(members[0].title).toBeTruthy();
   });
 });
 

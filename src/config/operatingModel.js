@@ -45,6 +45,101 @@ const DEFAULT_COPY = {
   bookingNavLabel: 'Book',
 };
 
+const GENERIC_ROSTER = [
+  { name: 'Alex Morgan', title: 'Lead', bio: 'Experienced, detail-oriented, and easy to book with.' },
+  { name: 'Jamie Lee', title: 'Associate', bio: 'Focused on a great visit every time.' },
+  { name: 'Casey Brooks', title: 'Specialist', bio: 'Here for the details that make the difference.' },
+];
+
+const DEFAULT_ROSTERS = {
+  salon: [
+    { name: 'Sarah Williams', title: 'Master Colorist', bio: 'Balayage, color correction, and custom formulations.' },
+    { name: 'Alex Rodriguez', title: 'Lead Stylist', bio: 'Precision cuts and wearable everyday styles.' },
+    { name: 'Maya Patel', title: 'Bridal Specialist', bio: 'Extensions, updos, and wedding-day styling.' },
+    { name: 'Elena Vasquez', title: 'Colorist', bio: 'Gloss, tone, and lived-in color.' },
+  ],
+  gym: [
+    { name: 'Jordan Blake', title: 'Head Coach', bio: 'Strength programming and first-session assessments.' },
+    { name: 'Sam Ortiz', title: 'Trainer', bio: 'Small-group circuits and form coaching.' },
+    { name: 'Riley Chen', title: 'Recovery Specialist', bio: 'Mobility work and post-workout recovery.' },
+    { name: 'Quinn Walsh', title: 'Coach', bio: 'Conditioning and goal-based training plans.' },
+  ],
+  'pet-care': [
+    { name: 'Nina Brooks', title: 'Lead Groomer', bio: 'Full grooms for anxious and long-coat dogs.' },
+    { name: 'Owen Park', title: 'Groomer', bio: 'Bath, brush, and tidy trims.' },
+    { name: 'Cam Ellis', title: 'Wellness Tech', bio: 'Nails, ears, and low-stress handling.' },
+  ],
+  'tech-repair': [
+    { name: 'Priya Shah', title: 'Lead Technician', bio: 'Phones, laptops, and same-day diagnostics.' },
+    { name: 'Noah Kim', title: 'Technician', bio: 'Screen repairs and data recovery.' },
+    { name: 'Taylor Reed', title: 'Bench Tech', bio: 'Boards, batteries, and warranty work.' },
+  ],
+  cleaning: [
+    { name: 'Dana Ruiz', title: 'Crew Lead', bio: 'Move-outs and recurring commercial routes.' },
+    { name: 'Chris Hale', title: 'Cleaner', bio: 'Detail kitchens, baths, and high-touch surfaces.' },
+    { name: 'Pat Nguyen', title: 'Cleaner', bio: 'Eco-friendly products and after-hours jobs.' },
+  ],
+  electrician: [
+    { name: 'Morgan Ellis', title: 'Master Electrician', bio: 'Panels, permits, and troubleshooting.' },
+    { name: 'Drew Patel', title: 'Journeyman', bio: 'Lighting, outlets, and EV chargers.' },
+    { name: 'Sky Harmon', title: 'Apprentice', bio: 'Rough-in, punch lists, and service calls.' },
+  ],
+  plumbing: [
+    { name: 'Reese Dalton', title: 'Lead Plumber', bio: 'Leaks, water heaters, and repipes.' },
+    { name: 'Avery Cole', title: 'Plumber', bio: 'Drains, fixtures, and emergency calls.' },
+    { name: 'Lane Ortiz', title: 'Service Tech', bio: 'Cameras, snaking, and same-day fixes.' },
+  ],
+  'auto-repair': [
+    { name: 'Chris Nguyen', title: 'Shop Foreman', bio: 'Diagnostics and complex drivability.' },
+    { name: 'Sam Rivera', title: 'Technician', bio: 'Brakes, oil, and inspections.' },
+    { name: 'Jordan West', title: 'Technician', bio: 'Tires, alignments, and scheduled service.' },
+  ],
+  'tow-truck': [
+    { name: 'Dale Brooks', title: 'Lead Driver', bio: 'Highway recovery and locked-vehicle calls.' },
+    { name: 'Kim Alvarez', title: 'Driver', bio: 'Local tows and jump starts.' },
+    { name: 'Ray Chen', title: 'Driver', bio: 'Night shift and heavy recovery.' },
+  ],
+  consultant: [
+    { name: 'Amelia Hart', title: 'Principal', bio: 'Strategy, ops, and executive workshops.' },
+    { name: 'Ben Okonkwo', title: 'Advisor', bio: 'Finance and growth planning.' },
+    { name: 'Sofia Marin', title: 'Advisor', bio: 'Go-to-market and org design.' },
+  ],
+  freelancer: [
+    { name: 'Mira Chen', title: 'Creative Director', bio: 'Brand systems and campaign design.' },
+    { name: 'Luis Ortega', title: 'Designer', bio: 'Web, print, and product UI.' },
+  ],
+  restaurant: [
+    { name: 'James Chen', title: 'Executive Chef', bio: 'Seasonal menus and the chef’s counter.' },
+    { name: 'Sophie Laurent', title: 'Pastry Chef', bio: 'Dessert program and breads.' },
+    { name: 'Marcus Williams', title: 'Sommelier', bio: 'Pairings and the wine list.' },
+  ],
+  'product-ordering': [
+    { name: 'Harper Quinn', title: 'Studio Lead', bio: 'Product development and wholesale.' },
+    { name: 'Ivy Stone', title: 'Maker', bio: 'Small-batch production.' },
+    { name: 'Theo Nash', title: 'Fulfillment', bio: 'Orders, packing, and pickup.' },
+  ],
+  'product-showcase': [
+    { name: 'Harper Quinn', title: 'Studio Lead', bio: 'Collections and custom commissions.' },
+    { name: 'Ivy Stone', title: 'Maker', bio: 'Craft and finishing.' },
+    { name: 'Theo Nash', title: 'Studio', bio: 'Shows, shipping, and client visits.' },
+  ],
+};
+
+/**
+ * Named people the wizard publishes for studio / established sites.
+ * Solo sites stay owner-operated with no team grid.
+ *
+ * @param {string} [niche]
+ * @param {string} [level]
+ * @returns {{ name: string, title: string, bio: string }[]}
+ */
+export function defaultNamedTeamMembers(niche, level = 'solo') {
+  if (!level || level === 'solo') return [];
+  const roster = DEFAULT_ROSTERS[niche] || GENERIC_ROSTER;
+  const take = level === 'established' ? Math.min(roster.length, 4) : Math.min(roster.length, 3);
+  return roster.slice(0, Math.max(2, take)).map((member) => ({ ...member }));
+}
+
 function copyFor(niche) {
   return NICHE_TEAM_COPY[niche] || DEFAULT_COPY;
 }

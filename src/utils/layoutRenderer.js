@@ -249,6 +249,10 @@ const sectionPrimitives = {
       content: {
         title: c.title || 'Book an Appointment',
         enabled: c.enabled !== undefined ? c.enabled : true,
+        mode: c.mode || siteData?.booking?.mode || 'native',
+        embedded: c.embedded !== undefined ? c.embedded : siteData?.booking?.embedded,
+        url: c.url || siteData?.booking?.url || '',
+        phone: c.phone || siteData?.contactPhone || siteData?.contact?.phone || '',
         businessMode: c.businessMode
           || resolveOperatingModel(siteData?._niche, tokens?.level || siteData?._level).businessMode,
         provider: c.provider || 'native',
@@ -261,6 +265,7 @@ const sectionPrimitives = {
   // Reviews section (Google Reviews integration)
   reviews(content, siteData, _tokens) {
     const c = content || {};
+    const items = firstList(c.items, c.reviews, siteData.testimonials, siteData.reviews);
     return {
       type: 'reviews',
       content: {
@@ -269,6 +274,7 @@ const sectionPrimitives = {
         businessId: c.businessId || '',
         rating: c.rating || siteData.googleRating || null,
         reviewCount: c.reviewCount || siteData.googleReviewCount || null,
+        items,
       },
       settings: {},
       accent: false,
@@ -381,7 +387,7 @@ const sectionPrimitives = {
     };
   },
 
-  // Hours section (Bazaar)
+  // Hours section
   hours(content, siteData, _tokens) {
     const c = content || {};
     return {
@@ -396,7 +402,7 @@ const sectionPrimitives = {
     };
   },
 
-  // Location section (Bazaar)
+  // Location section
   location(content, siteData, _tokens) {
     const c = content || {};
     return {
@@ -404,8 +410,30 @@ const sectionPrimitives = {
       content: {
         title: c.title || 'Location',
         address: c.address || siteData.contactAddress || '',
-        mapUrl: c.mapUrl || siteData.googleMapsUrl || '',
+        mapUrl: c.mapUrl || siteData.social?.maps || siteData.googleMapsUrl || '',
         instructions: c.instructions || '',
+      },
+      settings: {},
+      accent: false,
+    };
+  },
+
+  social(content, siteData, _tokens) {
+    const c = content || {};
+    const social = siteData?.social && typeof siteData.social === 'object' ? siteData.social : {};
+    return {
+      type: 'social',
+      content: {
+        title: c.title || 'Find us',
+        facebook: c.facebook || social.facebook || '',
+        instagram: c.instagram || social.instagram || '',
+        whatsapp: c.whatsapp || social.whatsapp || '',
+        tiktok: c.tiktok || social.tiktok || '',
+        maps: c.maps || social.maps || siteData?.googleMapsUrl || '',
+        website: c.website || social.website || '',
+        linkedin: c.linkedin || social.linkedin || '',
+        twitter: c.twitter || social.twitter || '',
+        youtube: c.youtube || social.youtube || '',
       },
       settings: {},
       accent: false,

@@ -48,6 +48,7 @@ const EXPECTED_TYPES = [
   'how-to-order',
   'hours',
   'location',
+  'social',
   'native-booking',
   'checkout',
   'placeholder',
@@ -71,6 +72,11 @@ describe('sectionHtmlBridge', () => {
     expect(ALL_SECTION_TYPES).toContain('catalog');
     expect(ALL_SECTION_TYPES).toContain('how-to-order');
     expect(ALL_SECTION_TYPES).toContain('placeholder');
+  });
+
+  it('marks composed sections for inline editing', () => {
+    const html = renderSectionToHtml(makeSection('hero'), tokens);
+    expect(html).toContain('data-ss-edit-type="hero"');
   });
 
   it('uses tokens for inline styles on non-delegated types', () => {
@@ -134,6 +140,26 @@ describe('sectionHtmlBridge', () => {
     expect(html).not.toContain('No images yet');
   });
 
+  it('embeds a booking mount for native scheduling', () => {
+    const html = renderSectionToHtml({
+      type: 'booking',
+      content: { title: 'Book a visit', enabled: true },
+    }, tokens);
+    expect(html).toContain('data-ss-booking-mount');
+    expect(html).toContain('id="booking"');
+    expect(html).toContain(tokens.theme.accent);
+  });
+
+  it('keeps a link-only booking CTA without a widget mount', () => {
+    const html = renderSectionToHtml({
+      type: 'booking',
+      content: { title: 'Book', mode: 'link', url: 'https://cal.example/book' },
+    }, tokens);
+    expect(html).not.toContain('data-ss-booking-mount');
+    expect(html).toContain('https://cal.example/book');
+    expect(html).toContain('Book Now');
+  });
+
   it('adds add-to-cart buttons when catalog is purchasable', () => {
     const html = renderSectionToHtml({
       type: 'catalog',
@@ -146,6 +172,30 @@ describe('sectionHtmlBridge', () => {
     expect(html).toContain('data-ss-add-to-cart');
     expect(html).toContain('data-product-price="24"');
     expect(html).toContain('Add to cart');
+  });
+
+  it('renders a working contact form', () => {
+    const html = renderSectionToHtml({
+      type: 'contact',
+      content: { title: 'Contact Us', email: 'a@b.com', phone: '555' },
+    }, tokens);
+    expect(html).toContain('id="contact-form"');
+    expect(html).toContain('data-type="contact"');
+    expect(html).toContain('data-testid="contact-form-submit"');
+    expect(html).toContain('name="message"');
+  });
+
+  it('renders review quotes instead of a placeholder', () => {
+    const html = renderSectionToHtml({
+      type: 'reviews',
+      content: {
+        title: 'Reviews',
+        items: [{ quote: 'Loved it', author: 'Sam' }],
+      },
+    }, tokens);
+    expect(html).toContain('Loved it');
+    expect(html).toContain('Sam');
+    expect(html).not.toContain('will load here');
   });
 
   it('omits add-to-cart when catalog is not purchasable', () => {
@@ -189,6 +239,39 @@ describe('sectionHtmlBridge', () => {
     expect(html).toContain('Ada');
     expect(html).not.toContain('Our Team');
   });
+
+  it('renders social links for instagram and whatsapp', () => {
+    const html = renderSectionToHtml({
+      type: 'social',
+      content: {
+        title: 'Find us',
+        instagram: 'https://instagram.com/shop',
+        whatsapp: '1 (555) 123-4567',
+      },
+    }, tokens);
+    expect(html).toContain('ss-social');
+    expect(html).toContain('Find us');
+    expect(html).toContain('https://instagram.com/shop');
+    expect(html).toContain('Instagram');
+    expect(html).toContain('https://wa.me/15551234567');
+    expect(html).toContain('WhatsApp');
+    expect(html).toContain('rel="noopener noreferrer"');
+    expect(html).toContain('target="_blank"');
+    expect(html).not.toContain('Facebook');
+  });
+
+  it('uses a WhatsApp URL as-is and labels maps distinctly', () => {
+    const html = renderSectionToHtml({
+      type: 'social',
+      content: {
+        whatsapp: 'https://wa.me/15559876543',
+        maps: 'https://maps.google.com/?q=shop',
+      },
+    }, tokens);
+    expect(html).toContain('https://wa.me/15559876543');
+    expect(html).toContain('Find us on the map');
+    expect(html).not.toContain('Facebook');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -218,6 +301,7 @@ function makeSection(type) {
     'how-to-order': { title: 'How To', steps: ['Browse', 'Order'] },
     hours: { title: 'Hours', hours: 'Mon-Fri 9-5' },
     location: { title: 'Location', address: '123 Main St' },
+    social: { title: 'Find us', instagram: 'https://instagram.com/shop', whatsapp: '15551234567' },
     'native-booking': { title: 'Book', enabled: true },
     checkout: { enabled: true },
     placeholder: {},

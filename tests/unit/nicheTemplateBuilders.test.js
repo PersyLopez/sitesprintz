@@ -278,8 +278,11 @@ describe('nicheTemplateBuilders — Atelier build', () => {
     const team = studio.sections.find((s) => s.type === 'team');
     const booking = studio.sections.find((s) => s.type === 'booking');
     expect(team.content.title).toBe('Meet Our Stylists');
+    expect(team.content.members.length).toBeGreaterThanOrEqual(2);
+    expect(team.content.members[0].name).toBeTruthy();
     expect(booking.content.businessMode).toBe('team');
     expect(booking.content.noPreferenceText).toBe('Any Available Stylist');
+    expect(studio.nav.some((item) => item.href === '#team')).toBe(true);
   });
 });
 
@@ -381,5 +384,37 @@ describe('nicheTemplateBuilders — niche→layout consistency', () => {
 describe('nicheTemplateBuilders — error handling', () => {
   it('throws for unknown niche', () => {
     expect(() => buildNicheSiteData('nonexistent', { businessName: 'Test' })).toThrow();
+  });
+});
+
+describe('nicheTemplateBuilders — hours, location, social seeds', () => {
+  const SOCIAL_KEYS = ['facebook', 'instagram', 'whatsapp', 'tiktok', 'maps', 'website', 'linkedin'];
+
+  it('seeds hours, location, and social around contact for every niche', () => {
+    for (const nicheId of Object.keys(NICHE_CONFIGS)) {
+      const siteData = buildNicheSiteData(nicheId, { businessName: 'Test' });
+      const types = siteData.sections.map((s) => s.type);
+      const contactIdx = types.indexOf('contact');
+      expect(types[contactIdx - 2], `${nicheId} hours before contact`).toBe('hours');
+      expect(types[contactIdx - 1], `${nicheId} location before contact`).toBe('location');
+      expect(types[contactIdx + 1], `${nicheId} social after contact`).toBe('social');
+
+      const hours = siteData.sections.find((s) => s.type === 'hours');
+      expect(hours.content.hours).toBe(NICHE_CONFIGS[nicheId].defaultHours);
+
+      const social = siteData.sections.find((s) => s.type === 'social');
+      expect(social.content.title).toBe('Find us');
+      for (const key of SOCIAL_KEYS) {
+        expect(social.content).toHaveProperty(key);
+        expect(siteData.social).toHaveProperty(key);
+      }
+    }
+  });
+
+  it('rewrites salon hero copy away from generic luxury language', () => {
+    const salon = getNicheConfig('salon');
+    expect(salon.heroTitle).not.toMatch(/artistry/i);
+    expect(salon.heroTitle).toMatch(/hours|book/i);
+    expect(salon.defaultHours).toMatch(/Tue/);
   });
 });

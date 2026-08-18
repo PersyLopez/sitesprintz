@@ -18,7 +18,7 @@
 import { resolveTheme, suggestLevel } from './layoutTokens.js';
 import { resolveFeatures, getLayoutForNiche } from './layouts.js';
 import { resolveVoiceCopy } from '../utils/businessScale.js';
-import { resolveOperatingModel, buildSiteNav } from './operatingModel.js';
+import { resolveOperatingModel, buildSiteNav, defaultNamedTeamMembers } from './operatingModel.js';
 
 // ---------------------------------------------------------------------------
 // Atelier niches (booking-forward services)
@@ -30,8 +30,9 @@ const ATELIER_NICHES = [
     name: 'Salon & Spa',
     icon: '💇',
     accent: 'studio', // oxblood
-    heroTitle: 'Where Beauty Meets Artistry',
-    heroSubtitle: 'Premium services tailored to you. Book your appointment today.',
+    heroTitle: 'Hours, styles, and a way to book',
+    heroSubtitle: 'People already like the cut — this page shows when you\'re open and how to get on the chair.',
+    defaultHours: 'Tue–Sat 9am–6pm',
     services: [
       { name: 'Haircut & Style', price: '$45', description: 'Precision cut and blow-dry' },
       { name: 'Color Treatment', price: '$85', description: 'Full color or highlights' },
@@ -48,9 +49,10 @@ const ATELIER_NICHES = [
     name: 'Fitness & Gym',
     icon: '💪',
     accent: 'club', // graphite
-    heroTitle: 'Transform Your Body & Mind',
-    heroSubtitle: 'Join our community and achieve your goals with expert trainers.',
-    soloHeroSubtitle: 'Personal training tailored to your goals. Book a session and let\'s get started.',
+    heroTitle: 'Class times and a clear way in',
+    heroSubtitle: 'See when the floor is open, how to book a session, and where to show up.',
+    soloHeroSubtitle: 'Personal training with hours you can find. Book a session and let\'s get started.',
+    defaultHours: 'Mon–Fri 5am–9pm, Sat–Sun 7am–2pm',
     services: [
       { name: 'Personal Training', price: '$60/session', description: '1-on-1 coaching' },
       { name: 'Group Classes', price: '$20/class', description: 'Yoga, HIIT, spin, and more' },
@@ -67,8 +69,9 @@ const ATELIER_NICHES = [
     name: 'Pet Care',
     icon: '🐾',
     accent: 'hearth', // forest
-    heroTitle: 'Care for Your Furry Family',
-    heroSubtitle: 'Professional pet services — grooming, boarding, and veterinary care.',
+    heroTitle: 'Grooming hours and easy booking',
+    heroSubtitle: 'Bath, board, and checkups — see when we\'re open and how to schedule.',
+    defaultHours: 'Tue–Sat 8am–5pm',
     services: [
       { name: 'Grooming', price: '$40', description: 'Bath, brush, and trim' },
       { name: 'Boarding', price: '$35/night', description: 'Safe, comfortable stay' },
@@ -85,8 +88,9 @@ const ATELIER_NICHES = [
     name: 'Tech Repair',
     icon: '💻',
     accent: 'trade', // steel
-    heroTitle: 'Fast, Reliable Tech Repair',
-    heroSubtitle: 'Phone, computer, and device repair — done right, done fast.',
+    heroTitle: 'Drop-off hours and a clear repair path',
+    heroSubtitle: 'Phone and computer repair — see when the bench is open and how to reach us.',
+    defaultHours: 'Mon–Sat 10am–7pm',
     services: [
       { name: 'Screen Repair', price: 'from $59', description: 'Phone & tablet screens' },
       { name: 'Diagnostic', price: '$25', description: 'Full system check' },
@@ -110,8 +114,9 @@ const CRAFTSMAN_NICHES = [
     name: 'Cleaning',
     icon: '🧹',
     accent: 'hearth', // forest
-    heroTitle: 'Spotless Results, Every Time',
-    heroSubtitle: 'Professional cleaning services for your home or business.',
+    heroTitle: 'A clean, booked without the chase',
+    heroSubtitle: 'Service areas, weekday hours, and a simple way to request a quote.',
+    defaultHours: 'Mon–Fri 8am–5pm',
     services: [
       { name: 'Deep Clean', price: 'from $120', description: 'Top-to-bottom thorough clean' },
       { name: 'Regular Service', price: 'from $80', description: 'Weekly or bi-weekly' },
@@ -125,9 +130,10 @@ const CRAFTSMAN_NICHES = [
     name: 'Electrician',
     icon: '⚡',
     accent: 'trade', // steel
-    heroTitle: 'Expert Electrical Services',
-    heroSubtitle: 'Licensed professionals ready to handle all your electrical needs.',
-    soloHeroSubtitle: 'Licensed electrician ready to handle all your electrical needs.',
+    heroTitle: 'Electrical work you can actually schedule',
+    heroSubtitle: 'Licensed professionals, weekday hours, and a clear way to request a quote.',
+    soloHeroSubtitle: 'Licensed electrician — hours, service area, and how to reach me.',
+    defaultHours: 'Mon–Fri 7am–5pm',
     services: [
       { name: 'Panel Upgrade', price: 'from $800', description: 'Modernize your electrical panel' },
       { name: 'Wiring & Rewiring', price: 'from $300', description: 'Safe, code-compliant wiring' },
@@ -141,8 +147,9 @@ const CRAFTSMAN_NICHES = [
     name: 'Plumbing',
     icon: '🔧',
     accent: 'trade', // steel
-    heroTitle: 'Reliable Plumbing Solutions',
-    heroSubtitle: 'Fast, professional plumbing services when you need them most.',
+    heroTitle: 'Plumbing help with hours you can find',
+    heroSubtitle: 'Drain, leak, and heater work — see when we\'re available and how to call.',
+    defaultHours: 'Mon–Fri 7am–5pm',
     services: [
       { name: 'Drain Cleaning', price: 'from $99', description: 'Clear stubborn blockages' },
       { name: 'Leak Repair', price: 'from $150', description: 'Find and fix leaks fast' },
@@ -156,9 +163,10 @@ const CRAFTSMAN_NICHES = [
     name: 'Auto Repair',
     icon: '🚗',
     accent: 'workshop', // bronze
-    heroTitle: 'Quality Auto Repair You Can Trust',
-    heroSubtitle: 'Expert mechanics, honest pricing, fast turnaround.',
-    soloHeroSubtitle: 'Expert repair, honest pricing, fast turnaround.',
+    heroTitle: 'Shop hours, honest estimates, a number to call',
+    heroSubtitle: 'Expert mechanics, honest pricing, fast turnaround — see when the bay is open.',
+    soloHeroSubtitle: 'Expert repair, honest pricing, and hours you can find.',
+    defaultHours: 'Mon–Fri 8am–6pm, Sat 8am–2pm',
     services: [
       { name: 'Oil Change', price: 'from $39', description: 'Synthetic or conventional' },
       { name: 'Brake Service', price: 'from $199', description: 'Pads, rotors, inspection' },
@@ -172,8 +180,9 @@ const CRAFTSMAN_NICHES = [
     name: 'Tow Truck',
     icon: '🚙',
     accent: 'workshop', // bronze
-    heroTitle: '24/7 Towing & Roadside Assistance',
-    heroSubtitle: 'Fast, reliable help when you need it most.',
+    heroTitle: '24/7 towing — call when you need a lift',
+    heroSubtitle: 'Fast roadside help with a number to call and the area we cover.',
+    defaultHours: 'Open 24/7',
     services: [
       { name: 'Local Tow', price: 'from $75', description: 'Up to 10 miles' },
       { name: 'Roadside Assistance', price: 'from $49', description: 'Jump-start, lockout, tire' },
@@ -194,8 +203,9 @@ const COUNSEL_NICHES = [
     name: 'Consultant',
     icon: '💼',
     accent: 'counsel', // indigo
-    heroTitle: 'Strategic Solutions for Your Business',
-    heroSubtitle: 'Expert consulting services to help your business grow and succeed.',
+    heroTitle: 'Strategy work, booked by appointment',
+    heroSubtitle: 'See how to reach us, what we work on, and request a conversation.',
+    defaultHours: 'By appointment',
     services: [
       { name: 'Strategy Consulting', price: '$200/hr', description: 'Business strategy and planning' },
       { name: 'Process Optimization', price: '$5,000/project', description: 'Streamline operations' },
@@ -212,8 +222,9 @@ const COUNSEL_NICHES = [
     name: 'Freelancer',
     icon: '👔',
     accent: 'counsel', // indigo
-    heroTitle: 'Creative Solutions, Delivered',
-    heroSubtitle: 'Professional services tailored to your unique needs and vision.',
+    heroTitle: 'Creative work with a clear way to start',
+    heroSubtitle: 'Services, examples, and how to get in touch.',
+    defaultHours: 'By appointment',
     services: [
       { name: 'Web Design', price: 'from $2,500', description: 'Custom, responsive websites' },
       { name: 'Brand Identity', price: 'from $1,500', description: 'Logo, palette, guidelines' },
@@ -237,8 +248,9 @@ const MERCANTILE_NICHES = [
     name: 'Restaurant',
     icon: '🍽️',
     accent: 'table', // amber
-    heroTitle: 'An Unforgettable Culinary Journey',
-    heroSubtitle: 'Modern cuisine, elevated dining. Reserve your table or order online.',
+    heroTitle: 'Menu, hours, and where to find us',
+    heroSubtitle: 'See what we\'re serving, when the kitchen is open, and how to get here.',
+    defaultHours: 'Tue–Sun 5pm–10pm',
     menuSections: [
       {
         name: 'Mains',
@@ -262,8 +274,9 @@ const MERCANTILE_NICHES = [
     name: 'Product Ordering',
     icon: '📦',
     accent: 'table', // amber
-    heroTitle: 'Quality Products, Easy Ordering',
-    heroSubtitle: 'Browse our catalog and order online for pickup or delivery.',
+    heroTitle: 'Order online or pick up in person',
+    heroSubtitle: 'Browse the catalog, see hours, and know where to collect your order.',
+    defaultHours: 'Mon–Sat 10am–6pm',
     products: [
       { name: 'Bestseller Item', price: '$29', description: 'Our most popular product' },
       { name: 'Gift Set', price: '$49', description: 'A curated bundle' },
@@ -276,8 +289,9 @@ const MERCANTILE_NICHES = [
     name: 'Product Showcase',
     icon: '🛍️',
     accent: 'table', // amber
-    heroTitle: 'Discover Our Collection',
-    heroSubtitle: 'Browse our curated selection — order online or visit us.',
+    heroTitle: 'See the collection, then visit or order',
+    heroSubtitle: 'Hours, location, and a simple way to request what you want.',
+    defaultHours: 'Tue–Sat 11am–7pm',
     products: [
       { name: 'Featured Piece', price: '$59', description: 'A standout from our collection' },
       { name: 'Classic Edition', price: '$39', description: 'Timeless and versatile' },
@@ -316,8 +330,53 @@ export function getNicheConfig(id) {
 // ID generator
 // ---------------------------------------------------------------------------
 
+export const DEFAULT_SOCIAL = {
+  facebook: '',
+  instagram: '',
+  whatsapp: '',
+  tiktok: '',
+  maps: '',
+  website: '',
+  linkedin: '',
+};
+
 function generateId(prefix) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function pushHoursLocationContactSocial(sections, order, niche, contactTitle) {
+  sections.push({
+    id: generateId('hours'),
+    type: 'hours',
+    enabled: true,
+    order: order++,
+    content: { title: 'Hours', hours: niche.defaultHours || '' },
+    settings: {},
+  });
+  sections.push({
+    id: generateId('location'),
+    type: 'location',
+    enabled: true,
+    order: order++,
+    content: { title: 'Find us', address: '', mapUrl: '' },
+    settings: {},
+  });
+  sections.push({
+    id: generateId('contact'),
+    type: 'contact',
+    enabled: true,
+    order: order++,
+    content: { title: contactTitle, phone: '', email: '', address: '' },
+    settings: {},
+  });
+  sections.push({
+    id: generateId('social'),
+    type: 'social',
+    enabled: true,
+    order: order++,
+    content: { title: 'Find us', ...DEFAULT_SOCIAL },
+    settings: {},
+  });
 }
 
 function resolveNicheHero(niche, isSolo) {
@@ -401,7 +460,7 @@ function buildAtelierSections(niche, level, features) {
       variant: level === 'established' ? 'grid' : 'staff-picker',
       enabled: true,
       order: order++,
-      content: { title: model.teamTitle, members: [] },
+      content: { title: model.teamTitle, members: defaultNamedTeamMembers(niche.id, level) },
       settings: {},
     });
   }
@@ -470,14 +529,7 @@ function buildAtelierSections(niche, level, features) {
     });
   }
 
-  sections.push({
-    id: generateId('contact'),
-    type: 'contact',
-    enabled: true,
-    order: order++,
-    content: { title: 'Contact Us', phone: '', email: '', address: '' },
-    settings: {},
-  });
+  pushHoursLocationContactSocial(sections, order, niche, 'Contact Us');
 
   return sections;
 }
@@ -544,7 +596,7 @@ function buildCraftsmanSections(niche, level, _features) {
       variant: 'grid',
       enabled: true,
       order: order++,
-      content: { title: model.teamTitle, members: [] },
+      content: { title: model.teamTitle, members: defaultNamedTeamMembers(niche.id, level) },
       settings: {},
     });
   }
@@ -599,14 +651,7 @@ function buildCraftsmanSections(niche, level, _features) {
     settings: {},
   });
 
-  sections.push({
-    id: generateId('contact'),
-    type: 'contact',
-    enabled: true,
-    order: order++,
-    content: { title: 'Contact Us', phone: '', email: '', address: '' },
-    settings: {},
-  });
+  pushHoursLocationContactSocial(sections, order, niche, 'Contact Us');
 
   return sections;
 }
@@ -685,7 +730,7 @@ function buildCounselSections(niche, level, _features) {
       variant: 'grid',
       enabled: true,
       order: order++,
-      content: { title: model.teamTitle, members: [] },
+      content: { title: model.teamTitle, members: defaultNamedTeamMembers(niche.id, level) },
       settings: {},
     });
   }
@@ -713,14 +758,7 @@ function buildCounselSections(niche, level, _features) {
     });
   }
 
-  sections.push({
-    id: generateId('contact'),
-    type: 'contact',
-    enabled: true,
-    order: order++,
-    content: { title: 'Get in Touch', phone: '', email: '', address: '' },
-    settings: {},
-  });
+  pushHoursLocationContactSocial(sections, order, niche, 'Get in Touch');
 
   return sections;
 }
@@ -789,7 +827,7 @@ function buildMercantileSections(niche, level, features) {
       variant: 'grid',
       enabled: true,
       order: order++,
-      content: { title: model.teamTitle, members: [] },
+      content: { title: model.teamTitle, members: defaultNamedTeamMembers(niche.id, level) },
       settings: {},
     });
   }
@@ -842,14 +880,7 @@ function buildMercantileSections(niche, level, features) {
     settings: {},
   });
 
-  sections.push({
-    id: generateId('contact'),
-    type: 'contact',
-    enabled: true,
-    order: order++,
-    content: { title: 'Contact Us', phone: '', email: '', address: '' },
-    settings: {},
-  });
+  pushHoursLocationContactSocial(sections, order, niche, 'Contact Us');
 
   return sections;
 }
@@ -927,8 +958,19 @@ export function buildNicheSiteData(nicheId, opts = {}) {
     contactPhone: opts.contactPhone || '',
     contactEmail: opts.contactEmail || '',
     contactAddress: opts.contactAddress || '',
+    businessHours: niche.defaultHours || '',
+    social: { ...DEFAULT_SOCIAL },
     products,
     sections,
+    team: { members: defaultNamedTeamMembers(nicheId, level) },
+    booking: {
+      enabled: features.booking?.enabled === true,
+      embedded: features.booking?.enabled === true,
+      provider: 'native',
+      businessMode: operatingModel.businessMode,
+      noPreferenceText: operatingModel.noPreferenceText,
+      staffAssignment: operatingModel.staffAssignment,
+    },
 
     // Layout metadata consumed by the engine
     _layout: layoutKey,

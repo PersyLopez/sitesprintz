@@ -14,6 +14,7 @@ import { buildBazaarSiteData } from '../config/bazaarDefaults';
 import { buildNicheSiteData, getNicheConfig, NICHE_CONFIGS } from '../config/nicheTemplateBuilders';
 import { getLayoutForNiche } from '../config/layouts';
 import { colorsFromSiteTheme, normalizeSiteThemeId } from '../config/siteThemes';
+import { applyVisitorExperienceDefaults } from './visitorExperience.js';
 
 /**
  * All niche IDs backed by the Refined character builders (i.e. NOT Bazaar).
@@ -89,6 +90,24 @@ function injectContact(siteData, contact) {
   return siteData;
 }
 
+function ensureSocial(siteData) {
+  if (!siteData) return siteData;
+  siteData.social = {
+    facebook: '',
+    instagram: '',
+    whatsapp: '',
+    tiktok: '',
+    maps: '',
+    website: '',
+    linkedin: '',
+    ...(siteData.social || {}),
+  };
+  if (siteData.social.googleMapsUrl && !siteData.social.maps) {
+    siteData.social.maps = siteData.social.googleMapsUrl;
+  }
+  return siteData;
+}
+
 /**
  * Build a complete siteData object from QuickStart Wizard form state.
  *
@@ -121,7 +140,9 @@ export function buildSiteDataFromWizard(formState = {}) {
       contactPhone: formState.contactPhone || '',
       contactEmail: formState.contactEmail || '',
     });
-    return applyTheme(injectContact(siteData, formState), formState.themeId, niche);
+    return applyVisitorExperienceDefaults(
+      applyTheme(ensureSocial(injectContact(siteData, formState)), formState.themeId, niche)
+    );
   }
 
   // Refined niches → niche builder
@@ -137,7 +158,9 @@ export function buildSiteDataFromWizard(formState = {}) {
     features: formState.features,
   });
 
-  return applyTheme(injectContact(siteData, formState), formState.themeId, niche);
+  return applyVisitorExperienceDefaults(
+    applyTheme(ensureSocial(injectContact(siteData, formState)), formState.themeId, niche)
+  );
 }
 
 function applyTheme(siteData, themeId, niche) {

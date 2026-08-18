@@ -37,6 +37,7 @@ export const ALL_SECTION_TYPES = [
   'how-to-order',
   'hours',
   'location',
+  'social',
   'native-booking',
   'checkout',
   'placeholder',
@@ -408,18 +409,38 @@ function renderContact(section, tokens) {
   const phone = c.phone || '';
   const address = c.address || '';
   const hours = c.hours || '';
+  const details = [
+    email ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">Email</strong><a href="mailto:${escapeAttr(email)}" style="color: ${getText(tokens)}; text-decoration: none;">${escapeHtml(email)}</a></div>` : '',
+    phone ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">Phone</strong><a href="tel:${escapeAttr(phone)}" style="color: ${getText(tokens)}; text-decoration: none;">${escapeHtml(phone)}</a></div>` : '',
+    address ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">Address</strong>${escapeHtml(address)}</div>` : '',
+    hours ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">Hours</strong>${escapeHtml(typeof hours === 'string' ? hours : '')}</div>` : '',
+  ].filter(Boolean).join('\n');
 
-  return `<section class="ss-contact" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
+  return `<section id="contact" class="ss-contact" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
   <div class="ss-container" style="max-width: 800px; margin: 0 auto;">
     <h2 style="text-align: center; color: ${getAccent(tokens)}; margin-bottom: 40px;">${escapeHtml(title)}</h2>
-    <div style="background: ${getSurface(tokens)}; padding: 40px; border-radius: 12px; border: 1px solid ${getTokens(tokens).theme.hairline};">
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px;">
-        ${email ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">📧 Email</strong><a href="mailto:${escapeAttr(email)}" style="color: ${getText(tokens)}; text-decoration: none;">${escapeHtml(email)}</a></div>` : ''}
-        ${phone ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">📞 Phone</strong><a href="tel:${escapeAttr(phone)}" style="color: ${getText(tokens)}; text-decoration: none;">${escapeHtml(phone)}</a></div>` : ''}
-        ${address ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">📍 Address</strong>${escapeHtml(address)}</div>` : ''}
-        ${hours ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">🕒 Hours</strong>${escapeHtml(typeof hours === 'string' ? hours : '')}</div>` : ''}
-      </div>
-    </div>
+    ${details ? `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; margin-bottom: 32px;">${details}</div>` : ''}
+    <form id="contact-form" class="ss-contact-form" data-testid="contact-form" data-type="contact" novalidate>
+      <input type="hidden" name="subdomain" value="" />
+      <p class="ss-form-status" data-testid="contact-form-status" role="status" aria-live="polite"></p>
+      <label class="ss-field">
+        <span>Name</span>
+        <input type="text" name="name" autocomplete="name" data-testid="contact-form-name" maxlength="200" />
+      </label>
+      <label class="ss-field">
+        <span>Email</span>
+        <input type="email" name="email" autocomplete="email" required data-testid="contact-form-email" maxlength="254" />
+      </label>
+      <label class="ss-field">
+        <span>Phone <span class="ss-optional">(optional)</span></span>
+        <input type="tel" name="phone" autocomplete="tel" data-testid="contact-form-phone" maxlength="40" />
+      </label>
+      <label class="ss-field">
+        <span>Message</span>
+        <textarea name="message" required rows="5" data-testid="contact-form-message" maxlength="2000"></textarea>
+      </label>
+      <button type="submit" class="ss-btn" data-testid="contact-form-submit" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)}; border: 0; cursor: pointer;">Send Message</button>
+    </form>
   </div>
 </section>`;
 }
@@ -486,14 +507,34 @@ function renderCatalog(section, tokens) {
 function renderBooking(section, tokens) {
   const c = section.content || {};
   const title = c.title || 'Book an Appointment';
+  const isLinkOnly = c.mode === 'link' || c.embedded === false;
+  const href = isLinkOnly
+    ? (c.url || (c.phone ? `tel:${c.phone}` : '#contact'))
+    : '#booking';
+  const cta = isLinkOnly
+    ? (c.url ? 'Book Now' : (c.phone ? 'Call to Book' : 'Contact Us'))
+    : 'Book Now';
+  const copy = isLinkOnly
+    ? 'Reach out to reserve a time — we will confirm your appointment.'
+    : 'Book your appointment online — fast and easy.';
 
-  return `<section class="ss-booking" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
+  if (isLinkOnly) {
+    return `<section class="ss-booking ss-section" style="background: ${getBg(tokens)}; color: ${getText(tokens)};">
   <div class="ss-container" style="max-width: 600px; margin: 0 auto; text-align: center;">
-    <h2 style="color: ${getAccent(tokens)}; margin-bottom: 16px;">${escapeHtml(title)}</h2>
-    <div style="background: ${getSurface(tokens)}; padding: 40px; border-radius: 12px; border: 2px solid ${getAccent(tokens)};">
-      <p style="color: ${getText(tokens)}; margin-bottom: 24px;">Book your appointment online — fast and easy.</p>
-      <a href="#booking" class="ss-btn" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)};">Book Now</a>
+    <h2 class="ss-h2" style="color: ${getAccent(tokens)};">${escapeHtml(title)}</h2>
+    <div style="background: ${getSurface(tokens)}; padding: 40px; border-radius: 12px; border: 1px solid ${getTokens(tokens).theme.hairline};">
+      <p style="color: ${getMuted(tokens)}; margin-bottom: 24px;">${escapeHtml(copy)}</p>
+      <a href="${escapeAttr(href)}" class="ss-btn" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)};">${escapeHtml(cta)}</a>
     </div>
+  </div>
+</section>`;
+  }
+
+  return `<section id="booking" class="ss-booking ss-section booking-section" style="background: ${getBg(tokens)}; color: ${getText(tokens)};">
+  <div class="ss-container" style="max-width: 800px; margin: 0 auto;">
+    <h2 class="ss-h2" style="color: ${getAccent(tokens)};">${escapeHtml(title)}</h2>
+    <p class="ss-lead" style="text-align: center; margin: -24px auto 28px;">${escapeHtml(copy)}</p>
+    <div class="ss-booking-mount booking-widget-container" data-ss-booking-mount data-testid="live-booking-widget"></div>
   </div>
 </section>`;
 }
@@ -503,13 +544,22 @@ function renderReviews(section, tokens) {
   const title = c.title || 'Reviews';
   const rating = c.rating;
   const reviewCount = c.reviewCount;
+  const items = Array.isArray(c.items) ? c.items : [];
+  const itemsHtml = items.map((item) => {
+    const quote = typeof item === 'string' ? item : (item.quote || item.text || item.review || '');
+    const author = typeof item === 'string' ? '' : (item.author || item.name || '');
+    return `<blockquote style="background: ${getSurface(tokens)}; padding: 24px; border-radius: 12px; border: 1px solid ${getTokens(tokens).theme.hairline}; margin: 0;">
+  <p style="color: ${getText(tokens)}; margin: 0 0 12px;">${escapeHtml(quote)}</p>
+  ${author ? `<footer style="color: ${getMuted(tokens)};">— ${escapeHtml(author)}</footer>` : ''}
+</blockquote>`;
+  }).join('\n');
 
   return `<section class="ss-reviews" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
   <div class="ss-container" style="max-width: 800px; margin: 0 auto; text-align: center;">
     <h2 style="color: ${getAccent(tokens)}; margin-bottom: 16px;">${escapeHtml(title)}</h2>
     ${rating ? `<div style="font-size: 2rem; margin-bottom: 8px;">⭐ ${escapeHtml(String(rating))}</div>` : ''}
     ${reviewCount ? `<p style="color: ${getMuted(tokens)};">${escapeHtml(String(reviewCount))} reviews</p>` : ''}
-    <p style="color: ${getMuted(tokens)};">Customer reviews will load here.</p>
+    ${itemsHtml ? `<div style="display: grid; gap: 16px; text-align: left; margin-top: 24px;">${itemsHtml}</div>` : ''}
   </div>
 </section>`;
 }
@@ -776,6 +826,52 @@ function renderLocation(section, tokens) {
 </section>`;
 }
 
+function whatsappHref(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (/^https?:\/\//i.test(raw)) return raw;
+  const digits = raw.replace(/\D/g, '');
+  if (digits && digits.length >= raw.replace(/\s/g, '').length * 0.5) {
+    return `https://wa.me/${digits}`;
+  }
+  return raw;
+}
+
+function renderSocial(section, tokens) {
+  const c = section.content || {};
+  const platforms = [
+    { key: 'facebook', label: 'Facebook' },
+    { key: 'instagram', label: 'Instagram' },
+    { key: 'whatsapp', label: 'WhatsApp', href: whatsappHref },
+    { key: 'tiktok', label: 'TikTok' },
+    { key: 'maps', label: 'Find us on the map' },
+    { key: 'website', label: 'Website' },
+    { key: 'linkedin', label: 'LinkedIn' },
+    { key: 'twitter', label: 'Twitter' },
+    { key: 'youtube', label: 'YouTube' },
+  ];
+
+  const links = platforms
+    .filter((platform) => String(c[platform.key] || '').trim())
+    .map((platform) => {
+      const href = platform.href ? platform.href(c[platform.key]) : String(c[platform.key]).trim();
+      return `<a href="${escapeAttr(href)}" target="_blank" rel="noopener noreferrer" style="color: ${getAccent(tokens)}; display: block; margin: 8px 0;">${escapeHtml(platform.label)}</a>`;
+    })
+    .join('');
+
+  const title = c.title || (links ? 'Find us' : '');
+  if (!links && !title) return '';
+
+  return `<section class="ss-social" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
+  <div class="ss-container" style="max-width: 600px; margin: 0 auto; text-align: center;">
+    ${title ? `<h2 style="color: ${getAccent(tokens)}; margin-bottom: 24px;">${escapeHtml(title)}</h2>` : ''}
+    <div style="background: ${getSurface(tokens)}; padding: 32px; border-radius: 12px;">
+      ${links}
+    </div>
+  </div>
+</section>`;
+}
+
 function renderCheckout(section, tokens) {
   const c = section.content || {};
   const enabled = c.enabled !== false;
@@ -826,6 +922,7 @@ const RENDERERS = {
   'how-to-order': renderHowToOrder,
   hours: renderHours,
   location: renderLocation,
+  social: renderSocial,
   'native-booking': renderBooking,
   checkout: renderCheckout,
   placeholder: renderPlaceholder,
@@ -847,13 +944,13 @@ export function renderSectionToHtml(section, tokens) {
     return renderPlaceholder({ type: 'unknown' }, tokens);
   }
 
-  const renderer = RENDERERS[section.type];
-  if (renderer) {
-    return renderer(section, tokens);
-  }
-
-  // Unknown type → placeholder, never null
-  return renderPlaceholder(section, tokens);
+  const renderer = RENDERERS[section.type] || renderPlaceholder;
+  const html = renderer(section, tokens);
+  if (!html || !html.startsWith('<section')) return html;
+  return html.replace(
+    /^<section\b/,
+    `<section data-ss-edit-type="${escapeAttr(section.type)}"`
+  );
 }
 
 /**

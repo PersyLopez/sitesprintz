@@ -26,7 +26,7 @@ describe('layoutRenderer — renderSection() known types', () => {
     'hero', 'services', 'about', 'gallery', 'before-after', 'team',
     'testimonials', 'faq', 'credentials', 'contact', 'catalog', 'booking',
     'reviews', 'stats', 'menu', 'service-areas', 'process', 'case-studies',
-    'industries', 'how-to-order', 'hours', 'location',
+    'industries', 'how-to-order', 'hours', 'location', 'social',
   ];
 
   it.each(knownTypes)('renders %s with valid descriptor', (type) => {
@@ -302,6 +302,23 @@ describe('layoutRenderer — tolerant data access', () => {
     expect(result.content.title).toBe('Hours');
   });
 
+  it('location mapUrl falls back to siteData.social.maps', () => {
+    const result = renderSection('location', {}, {
+      social: { maps: 'https://maps.example/shop' },
+    }, {});
+    expect(result.content.mapUrl).toBe('https://maps.example/shop');
+  });
+
+  it('social primitive resolves from siteData.social', () => {
+    const result = renderSection('social', {}, {
+      social: { instagram: 'https://instagram.com/shop', whatsapp: '15551234567' },
+    }, {});
+    expect(result.type).toBe('social');
+    expect(result.content.title).toBe('Find us');
+    expect(result.content.instagram).toBe('https://instagram.com/shop');
+    expect(result.content.whatsapp).toBe('15551234567');
+  });
+
   it('how-to-order renders with empty steps', () => {
     const result = renderSection('how-to-order', {}, {}, {});
     expect(result.content.steps).toEqual([]);
@@ -353,11 +370,11 @@ describe('layoutRenderer — sectionPrimitives map', () => {
       // Inline require won't work in ESM test, so we hardcode the check
       // against the known layouts
       {
-        atelier: { levels: { solo: ['hero', 'services', 'gallery', 'booking', 'contact'] } },
-        craftsman: { levels: { solo: ['hero', 'services', 'service-areas', 'before-after', 'faq', 'contact'] } },
-        counsel: { levels: { solo: ['hero', 'services', 'case-studies', 'contact'] } },
-        mercantile: { levels: { solo: ['hero', 'catalog', 'contact'] } },
-        bazaar: { levels: { solo: ['hero', 'catalog', 'how-to-order', 'hours', 'location', 'contact'] } },
+        atelier: { levels: { solo: ['hero', 'services', 'gallery', 'booking', 'hours', 'location', 'contact', 'social'] } },
+        craftsman: { levels: { solo: ['hero', 'services', 'service-areas', 'before-after', 'faq', 'hours', 'location', 'contact', 'social'] } },
+        counsel: { levels: { solo: ['hero', 'services', 'case-studies', 'hours', 'location', 'contact', 'social'] } },
+        mercantile: { levels: { solo: ['hero', 'catalog', 'hours', 'location', 'contact', 'social'] } },
+        bazaar: { levels: { solo: ['hero', 'catalog', 'how-to-order', 'hours', 'location', 'contact', 'social'] } },
       }
     )) {
       for (const level of Object.values(layout.levels)) {
