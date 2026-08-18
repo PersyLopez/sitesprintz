@@ -18,10 +18,18 @@ import {
   buildDemoConfirmationCode,
   buildDemoOrderId,
 } from '../utils/showcaseDemo.js';
+import { ensurePublishedBooking } from '../services/booking/ensurePublishedBooking.js';
 
 const router = express.Router();
 const bookingService = new BookingService();
 const paymentAdapter = new BookingPaymentAdapter();
+
+function requestedStaffId(value) {
+  if (!value || value === 'default' || value === 'no_preference' || value === 'any') {
+    return null;
+  }
+  return String(value);
+}
 
 /** Public-safe appointment payload (no customer PII / staff email) */
 function toPublicAppointment(appointment) {
@@ -125,7 +133,14 @@ router.get('/tenants/:userId/services', asyncHandler(async (req, res) => {
   const tenant = await resolvePublicTenant(userId, publicSiteId(req));
 
   // Get active services
-  const services = await bookingService.getServices(tenant.id, false);
+  let services = await bookingService.getServices(tenant.id, false);
+  if (!services.length) {
+    await ensurePublishedBooking({
+      userId,
+      siteId: publicSiteId(req) || tenant.site_id,
+    }).catch(() => {});
+    services = await bookingService.getServices(tenant.id, false);
+  }
 
   sendSuccess(res, {
     services: services.map((s) => ({
@@ -191,7 +206,7 @@ router.get('/tenants/:userId/availability', asyncHandler(async (req, res) => {
   const tenant = await resolvePublicTenant(userId, publicSiteId(req));
 
   // Get or use default staff
-  let staffIdToUse = staff_id;
+  let staffIdToUse = requestedStaffId(staff_id);
   if (!staffIdToUse) {
     const defaultStaff = await bookingService.getOrCreateDefaultStaff(tenant.id);
     staffIdToUse = defaultStaff.id;
@@ -241,7 +256,7 @@ router.post('/tenants/:userId/appointments', asyncHandler(async (req, res) => {
   const tenant = await resolvePublicTenant(userId, siteId);
 
   // Get or use default staff
-  let staffId = appointmentData.staff_id;
+  let staffId = requestedStaffId(appointmentData.staff_id);
   if (!staffId || staffId === 'default') {
     const defaultStaff = await bookingService.getOrCreateDefaultStaff(tenant.id);
     staffId = defaultStaff.id;

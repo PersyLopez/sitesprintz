@@ -1,43 +1,126 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { get, post } from '../utils/api';
+import {
+  shouldShowStaffSelection,
+  resolveAutoAssignedStaffId,
+} from '../utils/bookingStaffFlow';
 import './BookingWidget.css';
 
-const BookingWidget = ({ userId: propUserId, siteId = null, demoMode = false }) => {
+const NO_PREFERENCE = 'no_preference';
+
+function bookingSteps(showStaff) {
+  return [
+    { id: 'services', label: 'Service' },
+    ...(showStaff ? [{ id: 'staff', label: 'Provider' }] : []),
+    { id: 'date', label: 'Date & time' },
+    { id: 'form', label: 'Your details' },
+  ];
+}
+
+function formatLocalDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function formatAppointmentWhen(iso, dateFallback) {
+  const parsed = iso ? new Date(iso) : null;
+  if (parsed && !Number.isNaN(parsed.getTime())) {
+    return parsed.toLocaleString(undefined, {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+  }
+  return dateFallback || iso || '';
+}
+
+function stepStatus(step, id, showStaff) {
+  const order = showStaff
+    ? ['services', 'staff', 'date', 'form', 'confirmation']
+    : ['services', 'date', 'form', 'confirmation'];
+  const current = order.indexOf(step);
+  const index = order.indexOf(id);
+  if (index < current) return 'is-done';
+  if (index === current) return 'is-current';
+  return '';
+}
+
+function BookingShell({ step, showStaff = false, children }) {
+  const showProgress = step !== 'confirmation';
+  const steps = bookingSteps(showStaff);
+  return (
+    <div className="booking-widget" data-testid="booking-widget">
+      {showProgress && (
+        <ol className="booking-progress" aria-label="Booking steps">
+          {steps.map((item) => (
+            <li key={item.id} className={stepStatus(step, item.id, showStaff)}>
+              {item.label}
+            </li>
+          ))}
+        </ol>
+      )}
+      {children}
+    </div>
+  );
+}
+
+const BookingWidget = ({
+  userId: propUserId,
+  siteId = null,
+  demoMode = false,
+  businessMode = 'solo',
+  noPreferenceText = 'Any available',
+}) => {
   const { userId: paramUserId } = useParams();
   const userId = propUserId || paramUserId;
   const [step, setStep] = useState('services'); // services, date, time, form, confirmation
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Services data
   const [services, setServices] = useState([]);
   const [servicesLoading, setServicesLoading] = useState(true);
 
-  // Selected data
   const [selectedService, setSelectedService] = useState(null);
+  const [staff, setStaff] = useState([]);
+  const [staffLoading, setStaffLoading] = useState(true);
+  const [selectedStaff, setSelectedStaff] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
 
-  // Time slots
   const [timeSlots, setTimeSlots] = useState([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
+  const slotsRequestRef = useRef(0);
 
-  // Customer data
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerNotes, setCustomerNotes] = useState('');
   const [formErrors, setFormErrors] = useState({});
 
-  // Booking result
   const [appointment, setAppointment] = useState(null);
 
   const siteQuery = siteId ? { siteId } : undefined;
 
-  // Fetch services on mount
+  const showStaff = useMemo(() => shouldShowStaffSelection({
+    effectiveMode: businessMode,
+    isSoloOperation: businessMode === 'solo' || staff.length <= 1,
+    showStaffSelection: businessMode === 'team',
+    staffForService: staff,
+  }), [businessMode, staff]);
+
+  const selectedStaffRecord = staff.find((member) => member.id === selectedStaff);
+  const selectedStaffLabel = selectedStaff === NO_PREFERENCE
+    ? noPreferenceText
+    : selectedStaffRecord?.name;
+
   useEffect(() => {
     fetchServices();
+    fetchStaff();
   }, [userId, siteId]);
 
   const fetchServices = async () => {
@@ -56,12 +139,45 @@ const BookingWidget = ({ userId: propUserId, siteId = null, demoMode = false }) 
     }
   };
 
+  const fetchStaff = async () => {
+    try {
+      setStaffLoading(true);
+      const response = await get(`/api/booking/tenants/${userId}/staff`, {
+        params: siteQuery,
+      });
+      setStaff(response.staff || []);
+    } catch {
+      setStaff([]);
+    } finally {
+      setStaffLoading(false);
+    }
+  };
+
   const handleServiceSelect = (service) => {
     setSelectedService(service);
   };
 
   const handleNextFromServices = () => {
-    if (selectedService) {
+    if (!selectedService) return;
+    if (showStaff) {
+      setStep('staff');
+      return;
+    }
+    setSelectedStaff(resolveAutoAssignedStaffId({
+      isSoloOperation: businessMode === 'solo' || staff.length <= 1,
+      effectiveMode: businessMode,
+      staffForService: staff,
+      allStaff: staff,
+    }));
+    setStep('date');
+  };
+
+  const handleStaffSelect = (staffId) => {
+    setSelectedStaff(staffId);
+  };
+
+  const handleNextFromStaff = () => {
+    if (selectedStaff) {
       setStep('date');
     }
   };
@@ -73,27 +189,43 @@ const BookingWidget = ({ userId: propUserId, siteId = null, demoMode = false }) 
     setTimeSlots([]);
   };
 
+  const handleBackFromDate = () => {
+    setSelectedDate(null);
+    setSelectedTime(null);
+    setTimeSlots([]);
+    setStep(showStaff ? 'staff' : 'services');
+  };
+
   const handleDateSelect = async (date) => {
     setSelectedDate(date);
+    setSelectedTime(null);
+    setTimeSlots([]);
     await fetchTimeSlots(date);
   };
 
   const fetchTimeSlots = async (date) => {
+    const requestId = slotsRequestRef.current + 1;
+    slotsRequestRef.current = requestId;
     try {
       setSlotsLoading(true);
       const response = await get(`/api/booking/tenants/${userId}/availability`, {
         params: {
           service_id: selectedService.id,
-          date: date,
+          date,
           ...(siteId ? { siteId } : {}),
+          ...(selectedStaff && selectedStaff !== NO_PREFERENCE ? { staff_id: selectedStaff } : {}),
         },
       });
+      if (requestId !== slotsRequestRef.current) return;
       setTimeSlots(response.slots || []);
     } catch (err) {
       console.error('Error fetching time slots:', err);
+      if (requestId !== slotsRequestRef.current) return;
       setTimeSlots([]);
     } finally {
-      setSlotsLoading(false);
+      if (requestId === slotsRequestRef.current) {
+        setSlotsLoading(false);
+      }
     }
   };
 
@@ -142,6 +274,7 @@ const BookingWidget = ({ userId: propUserId, siteId = null, demoMode = false }) 
         customer_phone: customerPhone,
         notes: customerNotes,
         ...(siteId ? { siteId } : {}),
+        ...(selectedStaff && selectedStaff !== NO_PREFERENCE ? { staff_id: selectedStaff } : {}),
       };
 
       const response = await post(
@@ -159,7 +292,6 @@ const BookingWidget = ({ userId: propUserId, siteId = null, demoMode = false }) 
     }
   };
 
-  // Render loading state
   if (servicesLoading) {
     return (
       <div className="booking-widget">
@@ -168,19 +300,17 @@ const BookingWidget = ({ userId: propUserId, siteId = null, demoMode = false }) 
     );
   }
 
-  // Render error state
   if (error && step === 'services') {
     return (
       <div className="booking-widget">
         <div data-testid="error-message" className="error">
           {error}
         </div>
-        <button onClick={fetchServices}>Try Again</button>
+        <button type="button" onClick={fetchServices}>Try Again</button>
       </div>
     );
   }
 
-  // Render empty state
   if (services.length === 0 && step === 'services') {
     return (
       <div className="booking-widget">
@@ -191,11 +321,10 @@ const BookingWidget = ({ userId: propUserId, siteId = null, demoMode = false }) 
     );
   }
 
-  // Step 1: Service Selection
   if (step === 'services') {
     return (
-      <div className="booking-widget">
-        <h2>Select a Service</h2>
+      <BookingShell step={step} showStaff={showStaff}>
+        <h2>Select a service</h2>
 
         <div data-testid="services-list" className="services-list">
           {services.map((service) => (
@@ -228,33 +357,38 @@ const BookingWidget = ({ userId: propUserId, siteId = null, demoMode = false }) 
         {selectedService && (
           <div className="actions">
             <button
+              type="button"
               data-testid="next-button"
               onClick={handleNextFromServices}
               className="btn-primary"
+              disabled={businessMode === 'team' && staffLoading}
             >
-              Next
+              Continue
             </button>
           </div>
         )}
 
         {selectedService && (
           <div data-testid="booking-summary" className="booking-summary">
-            <h3>Booking Summary</h3>
+            <h3>Booking summary</h3>
             <p><strong>Service:</strong> {selectedService.name}</p>
+            {selectedStaffLabel && (
+              <p><strong>Provider:</strong> {selectedStaffLabel}</p>
+            )}
             <p><strong>Price:</strong> ${(selectedService.price_cents / 100).toFixed(2)}</p>
           </div>
         )}
-      </div>
+      </BookingShell>
     );
   }
 
-  // Step 2: Date Selection
-  if (step === 'date') {
+  if (step === 'staff') {
     return (
-      <div className="booking-widget">
-        <h2>Select a Date</h2>
+      <BookingShell step={step} showStaff={showStaff}>
+        <h2>Choose a provider</h2>
 
         <button
+          type="button"
           data-testid="back-button"
           onClick={handleBackToServices}
           className="btn-secondary"
@@ -262,49 +396,141 @@ const BookingWidget = ({ userId: propUserId, siteId = null, demoMode = false }) 
           ← Back
         </button>
 
+        <div data-testid="staff-selection-step" className="staff-list">
+          <div
+            data-testid="staff-card-no-preference"
+            className={`service-card ${selectedStaff === NO_PREFERENCE ? 'selected' : ''}`}
+            onClick={() => handleStaffSelect(NO_PREFERENCE)}
+            tabIndex="0"
+            role="button"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleStaffSelect(NO_PREFERENCE);
+              }
+            }}
+          >
+            <h3>{noPreferenceText}</h3>
+            <p>We’ll match you with the next available provider.</p>
+          </div>
+
+          {staff.map((member) => (
+            <div
+              key={member.id}
+              data-testid={`staff-card-${member.id}`}
+              className={`service-card ${selectedStaff === member.id ? 'selected' : ''}`}
+              onClick={() => handleStaffSelect(member.id)}
+              tabIndex="0"
+              role="button"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleStaffSelect(member.id);
+                }
+              }}
+            >
+              <h3>{member.name}</h3>
+              {member.title && <p>{member.title}</p>}
+            </div>
+          ))}
+        </div>
+
+        {selectedStaff && (
+          <div className="actions">
+            <button
+              type="button"
+              data-testid="next-button"
+              onClick={handleNextFromStaff}
+              className="btn-primary"
+            >
+              Continue
+            </button>
+          </div>
+        )}
+      </BookingShell>
+    );
+  }
+
+  if (step === 'date') {
+    const visibleSlots = timeSlots.filter((slot) => slot.available !== false);
+
+    return (
+      <BookingShell step={step} showStaff={showStaff}>
+        <h2>Select a date and time</h2>
+
+        <button
+          type="button"
+          data-testid="back-button"
+          onClick={handleBackFromDate}
+          className="btn-secondary"
+        >
+          ← Back
+        </button>
+
         <div data-testid="date-picker" className="date-picker">
-          <p>Select a date for your appointment</p>
+          <p>Choose a day, then pick an open time.</p>
           <DatePicker
             selectedDate={selectedDate}
             onDateSelect={handleDateSelect}
           />
         </div>
 
-        {selectedDate && timeSlots.length > 0 && (
+        {selectedDate && slotsLoading && (
+          <p className="booking-slots-status" data-testid="slots-loading">Finding available times…</p>
+        )}
+
+        {selectedDate && !slotsLoading && visibleSlots.length === 0 && (
+          <p className="booking-slots-status" data-testid="slots-empty">
+            No times available this day. Try another date.
+          </p>
+        )}
+
+        {selectedDate && !slotsLoading && visibleSlots.length > 0 && (
           <div data-testid="time-slots" className="time-slots">
-            <h3>Available Times</h3>
-            {timeSlots.map((slot) => (
-              <button
-                key={slot.start_time}
-                data-testid={`time-slot-${slot.start_time}`}
-                className={`time-slot ${selectedTime === slot.start_time ? 'selected' : ''}`}
-                onClick={() => handleTimeSelect(slot.start_time)}
-                disabled={!slot.available}
-              >
-                {slot.display_time}
-              </button>
-            ))}
+            <h3>Available times</h3>
+            <div className="time-slot-grid">
+              {visibleSlots.map((slot) => (
+                <button
+                  type="button"
+                  key={slot.start_time}
+                  data-testid={`time-slot-${slot.start_time}`}
+                  className={`time-slot ${selectedTime === slot.start_time ? 'selected' : ''}`}
+                  onClick={() => handleTimeSelect(slot.start_time)}
+                >
+                  {slot.display_time}
+                </button>
+              ))}
+            </div>
 
             {selectedTime && (
               <button
+                type="button"
                 data-testid="next-button"
                 onClick={handleNextFromTime}
                 className="btn-primary"
               >
-                Next
+                Continue
               </button>
             )}
           </div>
         )}
-      </div>
+      </BookingShell>
     );
   }
 
-  // Step 3: Customer Information
   if (step === 'form') {
     return (
-      <div className="booking-widget">
-        <h2>Your Information</h2>
+      <BookingShell step={step} showStaff={showStaff}>
+        <h2>Your information</h2>
+
+        <button
+          type="button"
+          data-testid="back-button"
+          onClick={() => setStep('date')}
+          className="btn-secondary"
+        >
+          ← Back
+        </button>
 
         <div data-testid="customer-form" className="customer-form">
           <div className="form-group">
@@ -313,6 +539,7 @@ const BookingWidget = ({ userId: propUserId, siteId = null, demoMode = false }) 
               id="customer-name"
               data-testid="customer-name"
               type="text"
+              autoComplete="name"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
               className={formErrors.name ? 'error' : ''}
@@ -330,6 +557,7 @@ const BookingWidget = ({ userId: propUserId, siteId = null, demoMode = false }) 
               id="customer-email"
               data-testid="customer-email"
               type="email"
+              autoComplete="email"
               value={customerEmail}
               onChange={(e) => setCustomerEmail(e.target.value)}
               className={formErrors.email ? 'error' : ''}
@@ -347,13 +575,14 @@ const BookingWidget = ({ userId: propUserId, siteId = null, demoMode = false }) 
               id="customer-phone"
               data-testid="customer-phone"
               type="tel"
+              autoComplete="tel"
               value={customerPhone}
               onChange={(e) => setCustomerPhone(e.target.value)}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="customer-notes">Additional Notes</label>
+            <label htmlFor="customer-notes">Additional notes</label>
             <textarea
               id="customer-notes"
               data-testid="customer-notes"
@@ -374,43 +603,47 @@ const BookingWidget = ({ userId: propUserId, siteId = null, demoMode = false }) 
           )}
 
           <button
+            type="button"
             data-testid="book-now-button"
             onClick={handleBooking}
             disabled={loading}
             className="btn-primary"
           >
-            {loading ? 'Booking...' : 'Book Now'}
+            {loading ? 'Booking...' : 'Confirm booking'}
           </button>
         </div>
-      </div>
+      </BookingShell>
     );
   }
 
-  // Step 4: Confirmation
   if (step === 'confirmation') {
     const isDemo = demoMode || appointment?.demo === true;
     return (
-      <div className="booking-widget">
+      <BookingShell step={step} showStaff={showStaff}>
         <div data-testid="confirmation-page" className="confirmation">
-          <h2>{isDemo ? 'Demo booking confirmed' : 'Booking Confirmed!'}</h2>
+          <h2>{isDemo ? 'Demo booking confirmed' : 'Booking confirmed'}</h2>
 
           <div data-testid="confirmation-message" className="success-message">
             <p>
               {isDemo
-                ? 'This is a gallery demo — your appointment was simulated and was not saved.'
+                ? 'Example site — your appointment was confirmed here so you can see the flow. It was not saved to a real calendar, and card payment is not available on example sites.'
                 : 'Your appointment has been successfully booked.'}
             </p>
           </div>
 
           <div className="confirmation-details">
-            <p><strong>Confirmation Code:</strong></p>
+            <p><strong>Confirmation code:</strong></p>
             <p data-testid="confirmation-code" className="confirmation-code">
               {appointment?.confirmation_code}
             </p>
 
             <p><strong>Service:</strong> {appointment?.service_name || selectedService?.name}</p>
-            <p><strong>Date:</strong> {selectedDate}</p>
-            <p><strong>Time:</strong> {selectedTime}</p>
+            {(appointment?.staff_name || selectedStaffLabel) && (
+              <p data-testid="confirmation-staff">
+                <strong>Provider:</strong> {appointment?.staff_name || selectedStaffLabel}
+              </p>
+            )}
+            <p><strong>When:</strong> {formatAppointmentWhen(selectedTime, selectedDate)}</p>
           </div>
 
           {!isDemo && (
@@ -419,75 +652,93 @@ const BookingWidget = ({ userId: propUserId, siteId = null, demoMode = false }) 
             </p>
           )}
         </div>
-      </div>
+      </BookingShell>
     );
   }
 
   return null;
 };
 
-// DatePicker component
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
 const DatePicker = ({ selectedDate, onDateSelect }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  const year = currentMonth.getFullYear();
+  const month = currentMonth.getMonth();
+  const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
   const monthYear = currentMonth.toLocaleString('default', {
     month: 'long',
-    year: 'numeric'
+    year: 'numeric',
   });
 
-  const getDaysInMonth = (date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
+  const firstWeekday = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cells = [];
 
-    const days = [];
-    for (let i = 1; i <= lastDay.getDate(); i++) {
-      const day = new Date(year, month, i);
-      days.push(day);
-    }
-    return days;
-  };
+  for (let i = 0; i < firstWeekday; i += 1) {
+    cells.push(
+      <span key={`pad-${i}`} className="calendar-day calendar-day--pad" aria-hidden="true" />
+    );
+  }
 
-  const days = getDaysInMonth(currentMonth);
+  for (let dayNum = 1; dayNum <= daysInMonth; dayNum += 1) {
+    const day = new Date(year, month, dayNum);
+    const dateString = formatLocalDate(day);
+    const isPast = day < today;
+    const isSelected = selectedDate === dateString;
+
+    cells.push(
+      <button
+        type="button"
+        key={dateString}
+        data-testid={`date-${dateString}`}
+        onClick={() => !isPast && onDateSelect(dateString)}
+        disabled={isPast}
+        className={`calendar-day ${isPast ? 'disabled' : ''} ${isSelected ? 'selected' : ''}`}
+      >
+        {dayNum}
+      </button>
+    );
+  }
 
   return (
     <div data-testid="calendar" className="calendar">
       <div className="calendar-header">
-        <button data-testid="prev-month" onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}>
+        <button
+          type="button"
+          data-testid="prev-month"
+          onClick={() => setCurrentMonth(new Date(year, month - 1, 1))}
+          disabled={isCurrentMonth}
+          aria-label="Previous month"
+        >
           ←
         </button>
         <h3>{monthYear}</h3>
-        <button data-testid="next-month" onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}>
+        <button
+          type="button"
+          data-testid="next-month"
+          onClick={() => setCurrentMonth(new Date(year, month + 1, 1))}
+          aria-label="Next month"
+        >
           →
         </button>
       </div>
 
-      <div className="calendar-grid">
-        {days.map((day) => {
-          const dateString = day.toISOString().split('T')[0];
-          const isPast = day < today;
-          const isSelected = selectedDate === dateString;
+      <div className="calendar-weekdays" aria-hidden="true">
+        {WEEKDAYS.map((label) => (
+          <span key={label}>{label}</span>
+        ))}
+      </div>
 
-          return (
-            <button
-              key={dateString}
-              data-testid={`date-${dateString}`}
-              onClick={() => !isPast && onDateSelect(dateString)}
-              disabled={isPast}
-              className={`calendar-day ${isPast ? 'disabled' : ''} ${isSelected ? 'selected' : ''}`}
-            >
-              {day.getDate()}
-            </button>
-          );
-        })}
+      <div className="calendar-grid">
+        {cells}
       </div>
     </div>
   );
 };
 
 export default BookingWidget;
-

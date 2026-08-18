@@ -12,6 +12,10 @@ steps:
     click: { selector: '[data-ss-add-to-cart]' }
     settle_ms: 800
 
+  - action: Open the cart
+    click: { testId: cart-toggle-button }
+    settle_ms: 500
+
   - action: Cart shows the added item
     wait_for: { selector: '[data-testid="cart-item"]', timeout: 8000 }
 
@@ -74,9 +78,27 @@ steps:
     click: { selector: '[data-testid^="service-card-"]' }
     settle_ms: 400
 
-  - action: Continue to date picker
+  - action: Continue from service
     click: { testId: next-button }
     settle_ms: 800
+
+  - action: Continue through optional staff step
+    code: |
+      await page.waitForTimeout(600);
+      const staffStep = page.getByTestId('staff-selection-step');
+      if (await staffStep.count()) {
+        const staffCards = page.locator('[data-testid^="staff-card-"]').filter({ hasNot: page.getByTestId('staff-card-no-preference') });
+        if (await staffCards.count()) {
+          await staffCards.first().click({ timeout: 3000 });
+        } else {
+          const noPref = page.getByTestId('staff-card-no-preference');
+          if (await noPref.count()) await noPref.click({ timeout: 3000 });
+        }
+        const next = page.getByTestId('next-button').first();
+        await next.waitFor({ timeout: 5000 });
+        await next.click();
+      }
+    settle_ms: 1000
 
   - action: Calendar is visible
     wait_for: { selector: '[data-testid="calendar"]', timeout: 8000 }

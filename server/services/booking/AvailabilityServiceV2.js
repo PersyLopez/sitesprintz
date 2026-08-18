@@ -5,6 +5,7 @@
 
 import { DateTime } from 'luxon';
 import { prisma } from '../../../database/db.js';
+import { wallClockOnDate } from './wallClock.js';
 
 export class AvailabilityService {
   /**
@@ -82,11 +83,9 @@ export class AvailabilityService {
       return []; // Closed this day
     }
 
-    // Parse business hours (stored as Time objects, convert to DateTime for the target day)
-    const startTime = DateTime.fromJSDate(rule.start_time, { zone: tenantTz })
-      .set({ year: targetDate.year, month: targetDate.month, day: targetDate.day });
-    const endTime = DateTime.fromJSDate(rule.end_time, { zone: tenantTz })
-      .set({ year: targetDate.year, month: targetDate.month, day: targetDate.day });
+    // Parse business hours as tenant wall-clock (TIME is stored as a dummy UTC date)
+    const startTime = wallClockOnDate(rule.start_time, targetDate);
+    const endTime = wallClockOnDate(rule.end_time, targetDate);
 
     if (!startTime || !endTime || startTime >= endTime) {
       console.warn(`Invalid business hours for staff ${staffId} on day ${dayOfWeek}`);
@@ -125,9 +124,15 @@ export class AvailabilityService {
     const slots = [];
     let current = startTime;
     const slotDuration = 30; // minutes
+    const earliest = now.plus({ hours: minAdvanceHours });
 
     while (current.plus({ minutes: serviceDuration }) <= endTime) {
       const slotEnd = current.plus({ minutes: serviceDuration });
+
+      if (current < earliest) {
+        current = current.plus({ minutes: slotDuration });
+        continue;
+      }
 
       // Check if this slot overlaps any unavailable interval
       const overlaps = unavailableIntervals.some(interval =>

@@ -14,22 +14,21 @@ class TenantService {
    */
   async getOrCreateTenant(userId, siteId) {
     try {
-      if (siteId) {
+      const scopedSiteId = siteId ? String(siteId) : null;
+
+      if (scopedSiteId) {
         const bySite = await prisma.booking_tenants.findFirst({
           where: {
             user_id: userId,
-            OR: [{ site_id: siteId }, { site_id: String(siteId) }],
+            OR: [{ site_id: scopedSiteId }, { site_id: siteId }],
           },
         });
         if (bySite) return bySite;
-      }
-
-      const existingTenant = await prisma.booking_tenants.findFirst({
-        where: { user_id: userId },
-      });
-
-      if (existingTenant) {
-        return existingTenant;
+      } else {
+        const existingTenant = await prisma.booking_tenants.findFirst({
+          where: { user_id: userId },
+        });
+        if (existingTenant) return existingTenant;
       }
 
       const user = await prisma.users.findUnique({
@@ -43,7 +42,7 @@ class TenantService {
       return prisma.booking_tenants.create({
         data: {
           user_id: userId,
-          site_id: siteId || null,
+          site_id: scopedSiteId,
           business_name: 'My Business',
           email: user.email,
           status: 'active',

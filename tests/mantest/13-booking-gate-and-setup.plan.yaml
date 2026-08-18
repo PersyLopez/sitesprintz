@@ -24,11 +24,11 @@ steps:
     wait_for: { url: /booking-dashboard, timeout: 15000 }
     settle_ms: 1200
 
-  - action: Booking UI or Pro gate
+  - action: Booking UI or Growth gate
     code: |
       const t = await page.locator('body').innerText();
       const ok =
-        /Booking Dashboard|Pro Feature|Upgrade to Pro|Appointments|Add Service/i.test(t);
+        /Booking Dashboard|Growth Feature|Upgrade to Growth|Appointments|Add Service/i.test(t);
       if (!ok) throw new Error('Unexpected booking dashboard content: ' + t.slice(0, 300));
     settle_ms: 300
 

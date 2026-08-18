@@ -1,13 +1,20 @@
 /**
  * Native Booking Widget
- * 
+ *
  * Full inline booking widget for SiteSprintz templates
  * Supports: service selection, date picker, time slots, customer form, confirmation
- * 
+ *
  * Usage:
  *   const widget = new NativeBookingWidget('container-id', userId);
  *   await widget.init();
  */
+
+function formatLocalDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
 class NativeBookingWidget {
   constructor(containerId, userId) {
@@ -348,6 +355,9 @@ class NativeBookingWidget {
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     
+    const firstWeekday = firstDay.getDay();
+    const pad = Array.from({ length: firstWeekday }, () => '<span class="calendar-day calendar-day--pad" aria-hidden="true"></span>').join('');
+
     const days = [];
     for (let i = 1; i <= lastDay.getDate(); i++) {
       const day = new Date(year, month, i);
@@ -355,10 +365,10 @@ class NativeBookingWidget {
     }
 
     const calendarDays = days.map(day => {
-      const dateString = day.toISOString().split('T')[0];
+      const dateString = formatLocalDate(day);
       const isPast = day < today;
       const isSelected = this.state.selectedDate === dateString;
-      
+
       return `
         <button
           data-testid="date-${dateString}"
@@ -406,8 +416,11 @@ class NativeBookingWidget {
               <h3>${monthYear}</h3>
               <button onclick="window.nativeBookingWidget?.nextMonth()">→</button>
             </div>
+            <div class="calendar-weekdays" aria-hidden="true">
+              <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+            </div>
             <div class="calendar-grid">
-              ${calendarDays}
+              ${pad}${calendarDays}
             </div>
           </div>
         </div>
