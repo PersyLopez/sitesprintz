@@ -6,7 +6,18 @@ import {
   mergeSiteDataSettings,
   extractSiteCatalog
 } from '../../server/utils/payOnSite.js';
-import { isPayOnSiteEnabled as isPayOnSiteEnabledClient } from '../../src/utils/payOnSite.js';
+import { describe, it, expect } from 'vitest';
+import {
+  isPayOnSiteEnabled,
+  applyPayOnSiteSetting,
+  buildPayOnSiteOrderItems,
+  mergeSiteDataSettings,
+  extractSiteCatalog
+} from '../../server/utils/payOnSite.js';
+import {
+  isPayOnSiteEnabled as isPayOnSiteEnabledClient,
+  resolvePayOnSiteForPublish
+} from '../../src/utils/payOnSite.js';
 import { buildPublishableContent } from '../../src/services/publishService.js';
 
 describe('pay on site helpers', () => {
@@ -15,6 +26,16 @@ describe('pay on site helpers', () => {
     expect(isPayOnSiteEnabled({ _features: { cashPayment: { enabled: true } } })).toBe(false);
     expect(isPayOnSiteEnabled({ settings: { payOnSite: true } })).toBe(true);
     expect(isPayOnSiteEnabledClient({ settings: { payOnSite: true } })).toBe(true);
+  });
+
+  it('defaults created-site checkout to pay-on-site unless cash was turned off', () => {
+    expect(resolvePayOnSiteForPublish({}, true)).toBe(true);
+    expect(resolvePayOnSiteForPublish({ settings: { payOnSite: true } }, true)).toBe(true);
+    expect(resolvePayOnSiteForPublish({ settings: { payOnSite: false } }, true)).toBe(false);
+    expect(resolvePayOnSiteForPublish({
+      _features: { cashPayment: { offered: true, enabled: false } }
+    }, true)).toBe(false);
+    expect(resolvePayOnSiteForPublish({ settings: { payOnSite: true } }, false)).toBe(false);
   });
 
   it('enables checkout when turning pay on site on', () => {
@@ -86,5 +107,26 @@ describe('pay on site helpers', () => {
     };
     expect(buildPublishableContent(draft, 'growth').settings.payOnSite).toBe(true);
     expect(buildPublishableContent(draft, 'starter').settings.payOnSite).toBe(false);
+  });
+
+  it('defaults Growth checkout to pay-on-site so created sites are not blocked on Stripe', () => {
+    const draft = {
+      id: 'draft-2',
+      businessName: 'Cafe',
+      sections: [{ id: '1', type: 'hero', enabled: true, order: 0 }],
+      settings: { allowCheckout: true }
+    };
+    expect(buildPublishableContent(draft, 'growth').settings.payOnSite).toBe(true);
+  });
+
+  it('keeps pay-on-site off when the owner disabled cash', () => {
+    const draft = {
+      id: 'draft-3',
+      businessName: 'Cafe',
+      sections: [{ id: '1', type: 'hero', enabled: true, order: 0 }],
+      settings: { allowCheckout: true, payOnSite: false },
+      _features: { cashPayment: { offered: true, enabled: false } }
+    };
+    expect(buildPublishableContent(draft, 'growth').settings.payOnSite).toBe(false);
   });
 });

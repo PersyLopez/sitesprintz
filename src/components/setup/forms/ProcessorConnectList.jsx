@@ -163,7 +163,9 @@ function ProcessorConnectList({
     return false;
   };
 
-  const available = status?.available || { stripe: true, square: true, paypal: true };
+  const available = status?.available || { stripe: false, square: false, paypal: false };
+  const stripeConfigured = available.stripe === true;
+  const stripeTestMode = stripeConfigured && status?.stripe?.testMode === true;
 
   return (
     <div className="processor-connect-list">
@@ -172,6 +174,26 @@ function ProcessorConnectList({
         {' '}Stripe, Square, and PayPal handle identity checks and payouts.
         SiteSprintz never sees card numbers, bank details, or KYC documents.
       </div>
+
+      {stripeTestMode && (
+        <div className="processor-test-banner" data-testid="stripe-test-banner">
+          Stripe is running in test mode. Use{' '}
+          <a
+            href="https://docs.stripe.com/testing#cards"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Stripe test cards
+          </a>{' '}
+          for checkout; no real money moves.
+        </div>
+      )}
+
+      {!stripeConfigured && isGrowth && (
+        <div className="processor-test-banner processor-test-disabled" data-testid="stripe-not-configured-banner">
+          Stripe is not configured on this platform. Add STRIPE_SECRET_KEY to the server environment to enable test-mode checkout.
+        </div>
+      )}
 
       {actionError && (
         <p className="processor-action-error" data-testid="processor-connect-error">{actionError}</p>

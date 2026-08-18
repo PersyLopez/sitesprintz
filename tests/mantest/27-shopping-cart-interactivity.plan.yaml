@@ -1,0 +1,160 @@
+url: http://localhost:5173/view/gallery-products
+goal: Shopping cart add, quantity, close/reopen, remove, and pay-on-site checkout all work on a live shop
+steps:
+  - action: Live shop loads
+    wait_for: { selector: '[data-testid="published-composed-site"]', timeout: 20000 }
+    settle_ms: 1200
+
+  - action: Cart toggle is present
+    wait_for: { selector: '[data-testid="cart-toggle-button"]', timeout: 8000 }
+
+  - action: Add-to-cart buttons exist
+    wait_for: { selector: '[data-ss-add-to-cart]', timeout: 8000 }
+
+  - action: Add the first catalog item
+    click: { selector: '[data-ss-add-to-cart]', nth: 0 }
+    settle_ms: 900
+
+  - action: Product grid stays clickable after add
+    code: |
+      const overlay = page.getByTestId('cart-overlay');
+      if (await overlay.count()) {
+        throw new Error('Cart overlay must not exist until the bag is opened');
+      }
+      const btn = page.locator('[data-ss-add-to-cart]').nth(1);
+      if (await btn.count()) {
+        const hit = await btn.evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          const top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+          return Boolean(top && (top === el || el.contains(top) || top.closest('[data-ss-add-to-cart]')));
+        });
+        if (!hit) throw new Error('Second add-to-cart button is covered after adding the first item');
+      }
+
+  - action: Open cart from the bag button
+    click: { testId: cart-toggle-button }
+    settle_ms: 500
+
+  - action: Cart drawer shows the item
+    wait_for: { selector: '[data-testid="cart-item"]', timeout: 8000 }
+
+  - action: Badge shows at least one item
+    code: |
+      const countText = await page.getByTestId('cart-item-count').textContent();
+      const count = Number((countText || '').trim());
+      if (count < 1) throw new Error('Cart badge did not increment, got ' + count);
+
+  - action: Increase quantity
+    click: { testId: cart-item-increase-qty }
+    settle_ms: 400
+
+  - action: Quantity is two
+    code: |
+      const qty = Number(await page.getByTestId('cart-item-quantity').innerText());
+      if (qty < 2) throw new Error('Quantity did not increase, got ' + qty);
+
+  - action: Decrease quantity
+    click: { testId: cart-item-decrease-qty }
+    settle_ms: 400
+
+  - action: Quantity is one again
+    code: |
+      const qty = Number(await page.getByTestId('cart-item-quantity').innerText());
+      if (qty !== 1) throw new Error('Quantity did not decrease to 1, got ' + qty);
+
+  - action: Continue shopping closes the drawer
+    click: { testId: continue-shopping-button }
+    settle_ms: 500
+
+  - action: Drawer is closed
+    code: |
+      const sidebar = page.getByTestId('cart-sidebar');
+      const open = await sidebar.evaluate((el) => el.classList.contains('open'));
+      if (open) throw new Error('Cart stayed open after Continue shopping');
+
+  - action: Reopen cart from the floating button
+    click: { testId: cart-toggle-button }
+    settle_ms: 500
+
+  - action: Cart item is still there
+    wait_for: { selector: '[data-testid="cart-item"]', timeout: 5000 }
+
+  - action: Escape closes the cart
+    press: Escape
+    settle_ms: 400
+
+  - action: Drawer closed after Escape
+    code: |
+      const sidebar = page.getByTestId('cart-sidebar');
+      const open = await sidebar.evaluate((el) => el.classList.contains('open'));
+      if (open) throw new Error('Cart stayed open after Escape');
+
+  - action: Add a second distinct item if available
+    code: |
+      const buttons = page.locator('[data-ss-add-to-cart]');
+      const count = await buttons.count();
+      if (count > 1) {
+        await buttons.nth(1).click();
+      } else {
+        await buttons.first().click();
+      }
+    settle_ms: 900
+
+  - action: Reopen cart after second add
+    click: { testId: cart-toggle-button }
+    settle_ms: 500
+
+  - action: Cart has items after second add
+    wait_for: { selector: '[data-testid="cart-item"]', timeout: 8000 }
+
+  - action: Line items or quantity increased
+    code: |
+      const lines = await page.getByTestId('cart-item').count();
+      const badge = Number((await page.getByTestId('cart-item-count').textContent() || '').trim());
+      if (lines < 1) throw new Error('No cart lines after second add');
+      if (badge < 2) throw new Error('Expected at least 2 units in cart, badge=' + badge);
+
+  - action: Remove the first line
+    code: |
+      const btn = page.getByTestId('cart-item-remove').nth(0);
+      await btn.scrollIntoViewIfNeeded();
+      await btn.click();
+    settle_ms: 400
+
+  - action: Cart still usable after remove
+    code: |
+      const empty = await page.getByTestId('cart-empty-state').count();
+      const lines = await page.getByTestId('cart-item').count();
+      if (!empty && lines < 1) throw new Error('Cart neither empty nor showing remaining items after remove');
+
+  - action: If empty, add an item back for checkout
+    code: |
+      const empty = await page.getByTestId('cart-empty-state').count();
+      if (empty) {
+        await page.getByTestId('continue-shopping-empty').click();
+        await page.locator('[data-ss-add-to-cart]').first().click();
+        await page.getByTestId('cart-item').first().waitFor({ timeout: 8000 });
+      }
+
+  - action: Pay-on-site checkout is reachable
+    wait_for: { selector: '[data-testid="pay-on-site-checkout"]', timeout: 8000 }
+
+  - action: Fill pay-on-site name
+    fill: { testId: pay-on-site-name, value: "Jordan Hale", clear: true }
+
+  - action: Fill pay-on-site email
+    fill: { testId: pay-on-site-email, value: "jordan.hale@example.com", clear: true }
+
+  - action: Fill pay-on-site phone
+    fill: { testId: pay-on-site-phone, value: "555-014-2200", clear: true }
+
+  - action: Place the pay-on-site order
+    code: |
+      const btn = page.getByTestId('pay-on-site-place-order');
+      await btn.scrollIntoViewIfNeeded();
+      await btn.click();
+    settle_ms: 1500
+
+  - action: Order confirmation is shown
+    wait_for: { selector: '[data-testid="pay-on-site-confirmation"]', timeout: 12000 }
+    assert: [text contains Order placed]

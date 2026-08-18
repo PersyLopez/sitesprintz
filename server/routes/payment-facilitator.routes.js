@@ -236,7 +236,6 @@ router.post('/checkout/create-session', asyncHandler(async (req, res) => {
   const site = await prisma.sites.findUnique({
     where: { id: siteId },
     include: {
-      payment_method: true,
       users: {
         select: {
           email: true,
@@ -251,7 +250,11 @@ router.post('/checkout/create-session', asyncHandler(async (req, res) => {
     return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
   }
 
-  if (!site.payment_method?.is_active) {
+  const paymentMethod = await prisma.site_payment_method.findUnique({
+    where: { site_id: siteId }
+  });
+
+  if (!paymentMethod?.is_active) {
     return sendBadRequest(res,
       'Payments not configured for this site',
       'PAYMENT_NOT_CONFIGURED'
@@ -259,7 +262,7 @@ router.post('/checkout/create-session', asyncHandler(async (req, res) => {
   }
 
   // Route to appropriate processor
-  const { provider, account_id } = site.payment_method;
+  const { provider, account_id } = paymentMethod;
 
   try {
     if (provider === 'stripe') {

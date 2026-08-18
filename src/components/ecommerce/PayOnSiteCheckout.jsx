@@ -4,7 +4,29 @@ import { api } from '../../services/api';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function PayOnSiteCheckout({ siteId, showAsAlternative = false }) {
+export function PayOnSiteConfirmation({ confirmation }) {
+  if (!confirmation) return null;
+  const displayTotal = Number(confirmation.total);
+  const isDemo = confirmation.demo === true;
+  return (
+    <div className="pay-on-site-success" data-testid="pay-on-site-confirmation">
+      <p><strong>{isDemo ? 'Demo order placed' : 'Order placed'}</strong></p>
+      <p>
+        {isDemo
+          ? 'Example site — no card was charged. This order was not saved to a real shop.'
+          : 'Pay when you pick up or visit. No card was charged.'}
+      </p>
+      {confirmation.orderId && (
+        <p className="pay-on-site-order-id">Order {String(confirmation.orderId).slice(0, 8)}</p>
+      )}
+      {Number.isFinite(displayTotal) && (
+        <p>Amount due: ${displayTotal.toFixed(2)}</p>
+      )}
+    </div>
+  );
+}
+
+function PayOnSiteCheckout({ siteId, showAsAlternative = false, onConfirmed }) {
   const { cartItems, getCartTotal, clearCart } = useCart();
   const submittingRef = useRef(false);
   const [customerName, setCustomerName] = useState('');
@@ -45,13 +67,17 @@ function PayOnSiteCheckout({ siteId, showAsAlternative = false }) {
         }))
       });
 
-      clearCart();
       const confirmedTotal = Number.parseFloat(String(data.order?.total ?? total));
-      setConfirmation({
+      const placed = {
         orderId: data.order?.id,
         total: Number.isFinite(confirmedTotal) ? confirmedTotal : total,
         demo: data.order?.demo === true || String(data.order?.id || '').startsWith('demo-'),
-      });
+      };
+      onConfirmed?.(placed);
+      clearCart();
+      if (!onConfirmed) {
+        setConfirmation(placed);
+      }
     } catch (err) {
       submittingRef.current = false;
       setError(err.message || 'Could not place this order. Please try again.');
@@ -60,24 +86,7 @@ function PayOnSiteCheckout({ siteId, showAsAlternative = false }) {
   };
 
   if (confirmation) {
-    const displayTotal = Number(confirmation.total);
-    const isDemo = confirmation.demo === true;
-    return (
-      <div className="pay-on-site-success" data-testid="pay-on-site-confirmation">
-        <p><strong>{isDemo ? 'Demo order placed' : 'Order placed'}</strong></p>
-        <p>
-          {isDemo
-            ? 'Gallery demo — this order was simulated and was not saved. No card was charged.'
-            : 'Pay when you pick up or visit. No card was charged.'}
-        </p>
-        {confirmation.orderId && (
-          <p className="pay-on-site-order-id">Order {String(confirmation.orderId).slice(0, 8)}</p>
-        )}
-        {Number.isFinite(displayTotal) && (
-          <p>Amount due: ${displayTotal.toFixed(2)}</p>
-        )}
-      </div>
-    );
+    return <PayOnSiteConfirmation confirmation={confirmation} />;
   }
 
   return (

@@ -1,0 +1,25 @@
+url: http://localhost:5173/view/gallery-products
+goal: Adding one product does not block selecting another
+steps:
+  - action: Shop loads
+    wait_for: { selector: '[data-ss-add-to-cart]', timeout: 20000 }
+    settle_ms: 800
+
+  - action: Add Featured Piece
+    click: { selector: '[data-ss-add-to-cart]', nth: 0 }
+    settle_ms: 600
+
+  - action: Drawer stays closed
+    code: |
+      const sidebar = page.getByTestId('cart-sidebar');
+      const open = await sidebar.evaluate((el) => el.classList.contains('open'));
+      if (open) throw new Error('Cart overlay opened and is blocking the product grid');
+
+  - action: Add Classic Edition
+    click: { selector: '[data-ss-add-to-cart]', nth: 1 }
+    settle_ms: 600
+
+  - action: Badge shows two items
+    code: |
+      const count = Number((await page.getByTestId('cart-item-count').textContent() || '').trim());
+      if (count < 2) throw new Error('Expected 2 items after selecting both products, got ' + count);

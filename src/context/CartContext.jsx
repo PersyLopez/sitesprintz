@@ -68,9 +68,6 @@ export function CartProvider({ children, siteId = null }) {
         }];
       }
     });
-
-    // Show cart after adding an item so checkout is reachable
-    setIsCartOpen(true);
   };
 
   // Update item quantity

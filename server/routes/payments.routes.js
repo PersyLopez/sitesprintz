@@ -24,13 +24,10 @@ import {
   getApiOrigin,
   getFrontendOrigin,
   resolveOwnedSiteId,
-  getConnectedProcessors,
-  isProcessorConfigured,
+  getPaymentConnectStatus,
   normalizeApplyTo,
-  deactivateProcessor,
-  getFuturePaymentDefaults
+  deactivateProcessor
 } from '../services/payments/processorConnectHelpers.js';
-import { isPayPalConfigured } from '../services/payments/PayPalOAuthService.js';
 
 const router = express.Router();
 
@@ -793,108 +790,8 @@ router.post('/connect/onboard', requireAuth, asyncHandler(async (req, res) => {
 
 // Get Stripe Connect status
 router.get('/connect/status', requireAuth, asyncHandler(async (req, res) => {
-    if (!stripe) {
-        return sendSuccess(res, { connected: false, message: 'Stripe not configured' });
-    }
-
-    const userEmail = req.user.email;
-    const user = await prisma.users.findUnique({
-        where: { email: userEmail }
-    });
-
-    if (!user) {
-        return sendSuccess(res, { connected: false, accountId: null });
-    }
-
-    const siteId = await resolveOwnedSiteId(user.id, req.query.siteId);
-    const extra = await getConnectedProcessors(user.id, siteId);
-    const futureDefaults = extra.futureDefaults || await getFuturePaymentDefaults(user.id);
-    const available = {
-        stripe: Boolean(stripe),
-        stripeOAuth: isStripeOAuthConfigured(),
-        square: isProcessorConfigured('square'),
-        paypal: isPayPalConfigured()
-    };
-    const square = {
-        connected: Boolean(extra.byProcessor.square),
-        accountId: extra.byProcessor.square?.account_id || null
-    };
-    const paypal = {
-        connected: Boolean(extra.byProcessor.paypal),
-        accountId: extra.byProcessor.paypal?.account_id || null
-    };
-
-    if (!user.stripe_account_id) {
-        return sendSuccess(res, {
-            connected: false,
-            accountId: null,
-            siteId,
-            square,
-            paypal,
-            defaultProcessor: extra.defaultProcessor,
-            futureDefaults,
-            available,
-            stripe: {
-                connected: Boolean(extra.byProcessor.stripe),
-                accountAvailable: false,
-                accountId: extra.byProcessor.stripe?.account_id || null
-            }
-        });
-    }
-
-    try {
-        const account = await stripe.accounts.retrieve(user.stripe_account_id);
-        const isConnected = account.charges_enabled && account.payouts_enabled;
-
-        if (user.stripe_connected !== isConnected) {
-            await prisma.users.update({
-                where: { email: userEmail },
-                data: { stripe_connected: isConnected }
-            });
-        }
-
-        sendSuccess(res, {
-            connected: isConnected,
-            accountId: account.id,
-            siteId,
-            status: isConnected ? 'active' : 'pending',
-            chargesEnabled: account.charges_enabled,
-            payoutsEnabled: account.payouts_enabled,
-            detailsSubmitted: account.details_submitted,
-            email: account.email,
-            businessProfile: {
-                name: account.business_profile?.name,
-                url: account.business_profile?.url
-            },
-            square,
-            paypal,
-            defaultProcessor: extra.defaultProcessor || (extra.byProcessor.stripe && isConnected ? 'stripe' : extra.defaultProcessor),
-            futureDefaults,
-            available,
-            stripe: {
-                connected: Boolean(extra.byProcessor.stripe),
-                accountAvailable: true,
-                accountId: extra.byProcessor.stripe?.account_id || account.id
-            }
-        });
-    } catch (error) {
-        console.error('Failed to retrieve Connect account:', error);
-        sendSuccess(res, {
-            connected: false,
-            error: 'Failed to verify account status',
-            accountId: user.stripe_account_id,
-            siteId,
-            square,
-            paypal,
-            futureDefaults,
-            available,
-            stripe: {
-                connected: Boolean(extra.byProcessor.stripe),
-                accountAvailable: true,
-                accountId: extra.byProcessor.stripe?.account_id || user.stripe_account_id
-            }
-        });
-    }
+    const payload = await getPaymentConnectStatus(req.user.id, req.query.siteId);
+    return sendSuccess(res, payload);
 }));
 
 // Refresh Connect account link (if onboarding incomplete)

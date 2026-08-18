@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useCart } from '../../hooks/useCart';
+import { api } from '../../services/api';
 import PayOnSiteCheckout from './PayOnSiteCheckout';
 import './CheckoutButton.css';
 
@@ -9,7 +10,8 @@ function CheckoutButton({
   buttonText = 'Proceed to Checkout',
   className = '',
   paymentsReady = false,
-  payOnSite = false
+  payOnSite = false,
+  onConfirmed
 }) {
   const { cartItems, getCartTotal } = useCart();
   const [processing, setProcessing] = useState(false);
@@ -19,8 +21,8 @@ function CheckoutButton({
     return (
       <div className="checkout-button-container" data-testid="checkout-upgrade-container">
         <div className="checkout-upgrade-notice" data-testid="checkout-upgrade-notice">
-          <p>Payments are not yet set up for this site</p>
-          <p className="notice-subtext">The site owner needs to connect Stripe or enable pay on site.</p>
+          <p>Online card checkout is not connected for this site</p>
+          <p className="notice-subtext">The owner can take pay-on-site orders, or connect Stripe for card payments.</p>
         </div>
       </div>
     );
@@ -36,28 +38,24 @@ function CheckoutButton({
     setError(null);
 
     try {
-      const response = await fetch('/api/payments/checkout/create-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          siteId,
-          items: cartItems.map(item => ({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity
-          })),
-          successUrl: `${window.location.origin}/sites/${siteId}/?order=success`,
-          cancelUrl: `${window.location.origin}/sites/${siteId}/?order=cancelled`
-        })
+      const data = await api.post('/api/payments/checkout/create-session', {
+        siteId,
+        items: cartItems.map(item => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          description: item.description,
+          options: item.options
+        })),
+        successUrl: `${window.location.origin}/sites/${siteId}/?order=success`,
+        cancelUrl: `${window.location.origin}/sites/${siteId}/?order=cancelled`
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Checkout failed');
+      const redirectUrl = data.redirectUrl || data.url;
+      if (!redirectUrl) {
+        throw new Error('Checkout session did not return a redirect URL');
       }
-
-      const { redirectUrl } = await response.json();
       window.location.href = redirectUrl;
     } catch (err) {
       setError(err.message || 'Checkout failed. Please try again.');
@@ -91,7 +89,7 @@ function CheckoutButton({
       )}
 
       {payOnSite && (
-        <PayOnSiteCheckout siteId={siteId} showAsAlternative={paymentsReady} />
+        <PayOnSiteCheckout siteId={siteId} showAsAlternative={paymentsReady} onConfirmed={onConfirmed} />
       )}
 
       {error && (

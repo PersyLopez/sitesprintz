@@ -156,14 +156,15 @@ describe('CartContext', () => {
       expect(result.current.cartItems).toHaveLength(2);
     });
 
-    it('should keep the cart open after adding so checkout is reachable', () => {
+    it('should leave the cart closed after adding so more products stay clickable', () => {
       const { result } = renderCartHook();
 
       act(() => {
         result.current.addToCart(mockProduct, 1);
       });
 
-      expect(result.current.isCartOpen).toBe(true);
+      expect(result.current.isCartOpen).toBe(false);
+      expect(result.current.getItemCount()).toBe(1);
     });
 
     it('should save to localStorage after adding', () => {

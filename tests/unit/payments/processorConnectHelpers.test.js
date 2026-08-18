@@ -178,4 +178,31 @@ describe('site-specific processor connections', () => {
 
     expect(connected.byProcessor.paypal.account_id).toBe('paypal_merchant');
   });
+
+  it('skips site_payment_method when the Prisma client has no model', async () => {
+    const { getConnectedProcessors } = await import('../../../server/services/payments/processorConnectHelpers.js');
+    const original = mockPrisma.site_payment_method;
+    mockPrisma.site_payment_method = undefined;
+    mockPrisma.users.findUnique.mockResolvedValue({ stripe_account_id: null, stripe_connected: false });
+    mockPrisma.payment_processor_credentials.findMany.mockResolvedValue([]);
+
+    await expect(getConnectedProcessors('user-1', 'site-1')).resolves.toMatchObject({
+      byProcessor: {}
+    });
+
+    mockPrisma.site_payment_method = original;
+  });
+
+  it('returns a disconnected payload when processor lookup throws', async () => {
+    const { getPaymentConnectStatus } = await import('../../../server/services/payments/processorConnectHelpers.js');
+    mockPrisma.sites.findFirst.mockResolvedValue({ id: 'site-1' });
+    mockPrisma.users.findUnique.mockRejectedValue(new Error('db down'));
+
+    const status = await getPaymentConnectStatus('user-1', 'site-1');
+
+    expect(status.connected).toBe(false);
+    expect(status.chargesEnabled).toBe(false);
+    expect(status.square.connected).toBe(false);
+    expect(status.available).toBeDefined();
+  });
 });

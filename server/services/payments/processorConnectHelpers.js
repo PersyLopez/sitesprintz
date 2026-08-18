@@ -472,7 +472,7 @@ export async function getConnectedProcessors(userId, siteId) {
     }
   });
 
-  const paymentMethod = siteId
+  const paymentMethod = siteId && typeof prisma.site_payment_method?.findUnique === 'function'
     ? await prisma.site_payment_method.findUnique({
         where: { site_id: siteId },
         select: { provider: true, account_id: true, is_active: true }
@@ -511,4 +511,91 @@ export async function getConnectedProcessors(userId, siteId) {
       : byProcessor.stripe?.account_id || null,
     futureDefaults
   };
+}
+
+/**
+ * Payment-status payload for dashboard cards. Never throws; never calls Stripe.
+ */
+export async function getPaymentConnectStatus(userId, requestedSiteId) {
+  const stripeSecret = process.env.STRIPE_SECRET_KEY || '';
+  const stripePublishable = process.env.STRIPE_PUBLISHABLE_KEY || '';
+  const available = {
+    stripe: isProcessorConfigured('stripe'),
+    stripeOAuth: Boolean(stripeSecret && process.env.STRIPE_CLIENT_ID),
+    square: isProcessorConfigured('square'),
+    paypal: isProcessorConfigured('paypal')
+  };
+  const stripeTestMode = available.stripe
+    && (stripeSecret.startsWith('sk_test_') || stripePublishable.startsWith('pk_test_'));
+
+  const EMPTY_CONNECT_STATUS = {
+    connected: false,
+    accountId: null,
+    siteId: null,
+    chargesEnabled: false,
+    payoutsEnabled: false,
+    square: { connected: false, accountId: null },
+    paypal: { connected: false, accountId: null },
+    stripe: { connected: false, accountAvailable: false, accountId: null, testMode: stripeTestMode },
+    defaultProcessor: null,
+    futureDefaults: { enabled: false, sourceSiteId: null },
+    available: {
+      stripe: false,
+      stripeOAuth: false,
+      square: false,
+      paypal: false
+    }
+  };
+
+  try {
+    const siteId = await resolveOwnedSiteId(userId, requestedSiteId);
+    let extra;
+    try {
+      extra = await getConnectedProcessors(userId, siteId);
+    } catch (error) {
+      console.error('Failed to load connected processors:', error);
+      extra = {
+        user: null,
+        byProcessor: {},
+        defaultProcessor: null,
+        futureDefaults: EMPTY_CONNECT_STATUS.futureDefaults
+      };
+    }
+
+    const stripeAccountId = extra.user?.stripe_account_id
+      || extra.byProcessor.stripe?.account_id
+      || null;
+    const stripeReady = extra.user?.stripe_connected === true;
+    const squareConnected = Boolean(extra.byProcessor.square);
+    const paypalConnected = Boolean(extra.byProcessor.paypal);
+
+    return {
+      connected: stripeReady || squareConnected || paypalConnected,
+      accountId: stripeAccountId,
+      siteId,
+      chargesEnabled: stripeReady,
+      payoutsEnabled: stripeReady,
+      status: stripeReady ? 'active' : (stripeAccountId ? 'pending' : undefined),
+      square: {
+        connected: squareConnected,
+        accountId: extra.byProcessor.square?.account_id || null
+      },
+      paypal: {
+        connected: paypalConnected,
+        accountId: extra.byProcessor.paypal?.account_id || null
+      },
+      stripe: {
+        connected: Boolean(extra.byProcessor.stripe),
+        accountAvailable: Boolean(stripeAccountId),
+        accountId: extra.byProcessor.stripe?.account_id || stripeAccountId,
+        testMode: stripeTestMode
+      },
+      defaultProcessor: extra.defaultProcessor,
+      futureDefaults: extra.futureDefaults || EMPTY_CONNECT_STATUS.futureDefaults,
+      available
+    };
+  } catch (error) {
+    console.error('Failed to build payment connect status:', error);
+    return { ...EMPTY_CONNECT_STATUS, available };
+  }
 }

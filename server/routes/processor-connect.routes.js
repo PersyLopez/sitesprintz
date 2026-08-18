@@ -31,12 +31,12 @@ import {
   resolveOwnedSiteId,
   deactivateProcessor,
   getConnectedProcessors,
+  getPaymentConnectStatus,
   listOwnedSiteIds,
   normalizeApplyTo,
   recordProcessorConnection,
   copyPaymentSetupToSites,
-  saveFuturePaymentDefaults,
-  getFuturePaymentDefaults
+  saveFuturePaymentDefaults
 } from '../services/payments/processorConnectHelpers.js';
 
 const router = express.Router();
@@ -383,37 +383,11 @@ router.post(['/disconnect/stripe', '/stripe/disconnect'], requireAuth, asyncHand
 }));
 
 /**
- * GET /processors/status — providers for the selected site
+ * GET /status — dashboard payment card (also /processors/status)
  */
-router.get('/processors/status', requireAuth, asyncHandler(async (req, res) => {
-  const siteId = await resolveOwnedSiteId(req.user.id, req.query.siteId);
-  const connected = await getConnectedProcessors(req.user.id, siteId);
-  const futureDefaults = connected.futureDefaults || await getFuturePaymentDefaults(req.user.id);
-
-  sendSuccess(res, {
-    siteId,
-    defaultProcessor: connected.defaultProcessor,
-    futureDefaults,
-    available: {
-      stripe: isProcessorConfigured('stripe'),
-      stripeOAuth: isStripeOAuthConfigured(),
-      square: isProcessorConfigured('square'),
-      paypal: isPayPalConfigured()
-    },
-    stripe: {
-      connected: Boolean(connected.byProcessor.stripe),
-      accountAvailable: Boolean(connected.user?.stripe_account_id),
-      accountId: connected.byProcessor.stripe?.account_id || connected.user?.stripe_account_id || null
-    },
-    square: {
-      connected: Boolean(connected.byProcessor.square),
-      accountId: connected.byProcessor.square?.account_id || null
-    },
-    paypal: {
-      connected: Boolean(connected.byProcessor.paypal),
-      accountId: connected.byProcessor.paypal?.account_id || null
-    }
-  });
+router.get(['/status', '/processors/status'], requireAuth, asyncHandler(async (req, res) => {
+  const payload = await getPaymentConnectStatus(req.user.id, req.query.siteId);
+  sendSuccess(res, payload);
 }));
 
 export default router;
