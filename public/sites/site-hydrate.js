@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Initialize booking widgets
   initializeBooking();
+
+  initializeReviews();
 });
 
 /**
@@ -142,6 +144,43 @@ function initializeMobileMenu() {
 function initializeBooking() {
   // Native booking is hydrated by the React published-site viewer.
   // SSR crawler HTML keeps the Book Now CTA pointing at #booking / contact.
+}
+
+function initializeReviews() {
+  const el = document.querySelector('[data-testid="reviews-widget"]');
+  const placeId = el && el.getAttribute('data-place-id');
+  if (!el || !placeId) return;
+
+  fetch(`/api/reviews/${encodeURIComponent(placeId)}`, { credentials: 'include' })
+    .then((response) => (response.ok ? response.json() : null))
+    .then((payload) => {
+      if (!payload || !el) return;
+      const reviews = Array.isArray(payload.reviews) ? payload.reviews : [];
+      const rating = Number(payload.rating) || 0;
+      const total = payload.user_ratings_total || reviews.length;
+      const mount = el.querySelector('[data-google-reviews-live]') || el;
+      if (rating) {
+        const header = document.createElement('p');
+        header.setAttribute('data-testid', 'google-reviews-rating');
+        header.textContent = `${rating.toFixed(1)} · ${total} Google reviews`;
+        mount.appendChild(header);
+      }
+      reviews.slice(0, 5).forEach((review) => {
+        const block = document.createElement('blockquote');
+        const p = document.createElement('p');
+        p.textContent = review.text || review.quote || '';
+        block.appendChild(p);
+        if (review.author_name || review.author) {
+          const footer = document.createElement('footer');
+          footer.textContent = `— ${review.author_name || review.author}`;
+          block.appendChild(footer);
+        }
+        mount.appendChild(block);
+      });
+    })
+    .catch(() => {
+      // Fail closed: keep any static quotes already in the section.
+    });
 }
 
 /**

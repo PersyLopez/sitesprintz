@@ -451,4 +451,23 @@ describe('layoutRenderer — catalog-shaped site data', () => {
     const about = page.sections.find((s) => s.type === 'about');
     expect(about.content.body).toContain('2018');
   });
+
+  it('passes Google placeId onto the reviews section', () => {
+    const result = renderSection('reviews', { items: [] }, {
+      features: { reviews: { enabled: true, placeId: 'ChIJ-salon' } },
+    }, {});
+    expect(result.content.placeId).toBe('ChIJ-salon');
+  });
+
+  it('strips Unsplash hero images unless the site is a demo seed', () => {
+    const live = renderSection('hero', {}, {
+      heroImage: 'https://images.unsplash.com/photo-1',
+    }, {});
+    expect(live.content.image).toBe('');
+    const demo = renderSection('hero', {}, {
+      _demo: true,
+      heroImage: 'https://images.unsplash.com/photo-1',
+    }, {});
+    expect(demo.content.image).toContain('unsplash.com');
+  });
 });

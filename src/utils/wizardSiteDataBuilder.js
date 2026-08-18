@@ -156,6 +156,7 @@ export function buildSiteDataFromWizard(formState = {}) {
     contactEmail: formState.contactEmail,
     contactAddress: formState.contactAddress,
     features: formState.features,
+    includeStockPhotos: false,
   });
 
   return applyVisitorExperienceDefaults(

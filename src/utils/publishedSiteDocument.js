@@ -6,6 +6,7 @@
 import { composePage } from './layoutRenderer.js';
 import { renderSectionToHtml } from './sectionHtmlBridge.js';
 import { buildSiteNav } from '../config/operatingModel.js';
+import { getLayout } from '../config/layouts.js';
 
 function escapeHtml(text) {
   if (!text) return '';
@@ -39,7 +40,7 @@ function isEmptyOptional(section) {
     case 'menu':
       return list(c.items).length === 0 && list(c.sections).length === 0;
     case 'gallery':
-      return list(c.images).length === 0;
+      return false;
     case 'team':
       return list(c.members).length === 0;
     case 'testimonials':
@@ -48,8 +49,9 @@ function isEmptyOptional(section) {
     case 'stats':
     case 'case-studies':
     case 'industries':
-    case 'reviews':
       return list(c.items).length === 0 && !c.rating;
+    case 'reviews':
+      return list(c.items).length === 0 && !c.rating && !c.placeId;
     case 'before-after':
       return list(c.pairs).length === 0;
     case 'about':
@@ -232,6 +234,22 @@ export function getLiveSiteCss(tokens = {}) {
 .ss-add-to-cart { cursor: pointer; border: 0; font: inherit; }
 .ss-add-to-cart.is-added { filter: brightness(1.08); }
 .ss-booking-mount { margin-top: 4px; }
+.ss-live { padding-bottom: 76px; }
+.ss-sticky-cta {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+  display: flex; gap: 8px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+  background: var(--ss-bg);
+  border-top: 1px solid var(--ss-hairline);
+}
+.ss-sticky-cta a {
+  flex: 1; min-height: 44px; display: flex; align-items: center; justify-content: center;
+  text-decoration: none; font-weight: 600; border-radius: 4px; font-size: 0.95rem;
+  background: var(--ss-accent); color: var(--ss-on-accent);
+}
+.ss-sticky-cta a[href^="tel"] {
+  background: var(--ss-surface); color: var(--ss-text);
+  border: 1px solid var(--ss-hairline);
+}
 .ss-footer {
   border-top: 1px solid var(--ss-hairline);
   padding: 28px 0 40px; color: var(--ss-muted); font-size: 0.9rem;
@@ -280,6 +298,50 @@ function renderFooter(siteData) {
 </footer>`;
 }
 
+function resolveStickyPhone(siteData) {
+  const fromSection = (Array.isArray(siteData?.sections) ? siteData.sections : [])
+    .find((section) => section?.type === 'contact')?.content?.phone;
+  return siteData?.contactPhone || siteData?.contact?.phone || fromSection || '';
+}
+
+function telHref(phone) {
+  const digits = String(phone || '').replace(/[^\d+]/g, '');
+  return digits ? `tel:${digits}` : '';
+}
+
+/**
+ * Sticky Call / Book / Quote bar. Omitted only when there is no phone and
+ * no in-page action target.
+ */
+export function buildStickyCtaBar(siteData, page) {
+  const layoutKey = page?.layout || siteData?._layout;
+  const intent = getLayout(layoutKey)?.hero?.ctaDefault || 'contact';
+  const phoneHref = telHref(resolveStickyPhone(siteData));
+  const actions = [];
+
+  if (intent === 'booking') {
+    actions.push({ href: '#booking', label: 'Book', testId: 'sticky-cta-book' });
+  } else if (intent === 'quote') {
+    actions.push({ href: '#contact', label: 'Get a Quote', testId: 'sticky-cta-quote' });
+  } else if (intent === 'ordering') {
+    actions.push({ href: '#catalog', label: 'Order', testId: 'sticky-cta-order' });
+  } else {
+    actions.push({ href: '#contact', label: 'Contact', testId: 'sticky-cta-contact' });
+  }
+
+  if (phoneHref) {
+    actions.unshift({ href: phoneHref, label: 'Call', testId: 'sticky-cta-call' });
+  }
+
+  if (!actions.length) return '';
+
+  const links = actions
+    .map((action) => `<a data-testid="${escapeAttr(action.testId)}" href="${escapeAttr(action.href)}">${escapeHtml(action.label)}</a>`)
+    .join('');
+
+  return `<nav class="ss-sticky-cta" data-testid="sticky-cta-bar" aria-label="Quick actions">${links}</nav>`;
+}
+
 export function buildLiveSiteMarkup(siteData, options = {}) {
   const page = composePage({
     siteData,
@@ -301,7 +363,8 @@ export function buildLiveSiteMarkup(siteData, options = {}) {
 <main id="top" class="ss-main">
   ${sectionsHtml}
 </main>
-${renderFooter(siteData)}`;
+${renderFooter(siteData)}
+${buildStickyCtaBar(siteData, page)}`;
 
   return { css, html, page, tokens: page.tokens };
 }

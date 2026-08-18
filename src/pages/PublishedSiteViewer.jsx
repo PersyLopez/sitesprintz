@@ -15,6 +15,7 @@ import { useCart } from '../hooks/useCart';
 import { useAuth } from '../hooks/useAuth';
 import { usePublishedSeamlessEdit } from '../hooks/usePublishedSeamlessEdit';
 import { buildLiveSiteMarkup, getLiveSiteThemeVars } from '../utils/publishedSiteDocument';
+import { mountGoogleReviews } from '../utils/mountGoogleReviews';
 import { isPayOnSiteEnabled } from '../utils/payOnSite';
 import { siteWantsEmbeddedBooking, subdomainFromLivePath } from '../utils/visitorExperience';
 import '../styles/published-site-viewer.css';
@@ -150,6 +151,7 @@ function PublishedSiteViewerContent({ onSiteId }) {
     }
     const node = bookingEnabled ? root.querySelector('[data-ss-booking-mount]') : null;
     setBookingMount((current) => (current === node ? current : node));
+    mountGoogleReviews(root);
     return undefined;
   }, [markup, bookingEnabled]);
 

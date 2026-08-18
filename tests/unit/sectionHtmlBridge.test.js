@@ -122,7 +122,7 @@ describe('sectionHtmlBridge', () => {
     expect(html).toContain('ss-hero');
   });
 
-  it('buildLiveSiteMarkup includes nav brand and skips empty gallery', () => {
+  it('buildLiveSiteMarkup includes nav brand and an empty-gallery prompt', () => {
     const { html, css } = buildLiveSiteMarkup({
       businessName: 'Harbor Goods',
       brand: { name: 'Harbor Goods' },
@@ -137,7 +137,7 @@ describe('sectionHtmlBridge', () => {
     expect(css).toContain('--ss-accent');
     expect(html).toContain('Harbor Goods');
     expect(html).toContain('Shop');
-    expect(html).not.toContain('No images yet');
+    expect(html).toContain('Add photos of your work');
   });
 
   it('embeds a booking mount for native scheduling', () => {
@@ -271,6 +271,97 @@ describe('sectionHtmlBridge', () => {
     expect(html).toContain('https://wa.me/15559876543');
     expect(html).toContain('Find us on the map');
     expect(html).not.toContain('Facebook');
+  });
+
+  it('mounts a Google reviews widget when placeId is set', () => {
+    const html = renderSectionToHtml({
+      type: 'reviews',
+      content: { title: 'Reviews', placeId: 'ChIJ-test', items: [] },
+    }, tokens);
+    expect(html).toContain('data-testid="reviews-widget"');
+    expect(html).toContain('data-place-id="ChIJ-test"');
+  });
+});
+
+describe('buildLiveSiteMarkup conversion chrome', () => {
+  it('renders a sticky Call + Book bar for salon with a phone', () => {
+    const { html, css } = buildLiveSiteMarkup({
+      businessName: 'Studio Luxe',
+      contactPhone: '555-0100',
+      _layout: 'atelier',
+      _niche: 'salon',
+      _level: 'solo',
+      sections: [
+        { type: 'hero', enabled: true, content: { title: 'Studio Luxe' } },
+        { type: 'contact', enabled: true, content: { phone: '555-0100' } },
+        { type: 'booking', enabled: true, content: { enabled: true } },
+      ],
+    });
+    expect(html).toContain('data-testid="sticky-cta-bar"');
+    expect(html).toContain('data-testid="sticky-cta-call"');
+    expect(html).toContain('tel:5550100');
+    expect(html).toContain('data-testid="sticky-cta-book"');
+    expect(css).toContain('.ss-sticky-cta');
+  });
+
+  it('keeps a reviews section when only a Google placeId is present', () => {
+    const { html } = buildLiveSiteMarkup({
+      businessName: 'Riverside Cuts',
+      _layout: 'atelier',
+      _niche: 'salon',
+      _level: 'established',
+      features: { reviews: { enabled: true, placeId: 'ChIJ-salon' } },
+      sections: [
+        { type: 'hero', enabled: true, content: { title: 'Riverside Cuts' } },
+        { type: 'reviews', enabled: true, content: { title: 'Reviews', items: [] } },
+        { type: 'contact', enabled: true, content: { phone: '555-0100' } },
+      ],
+    });
+    expect(html).toContain('data-testid="reviews-widget"');
+    expect(html).toContain('ChIJ-salon');
+  });
+
+  it('does not publish Unsplash gallery URLs on customer sites', () => {
+    const { html } = buildLiveSiteMarkup({
+      businessName: 'Studio Luxe',
+      _layout: 'atelier',
+      _niche: 'salon',
+      _level: 'solo',
+      sections: [
+        { type: 'hero', enabled: true, content: { title: 'Studio Luxe' } },
+        {
+          type: 'gallery',
+          enabled: true,
+          content: {
+            title: 'Gallery',
+            images: [{ src: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800', alt: 'Stock' }],
+          },
+        },
+      ],
+    });
+    expect(html).not.toContain('unsplash.com');
+    expect(html).toContain('Add photos of your work');
+  });
+
+  it('keeps Unsplash on demo seeds', () => {
+    const { html } = buildLiveSiteMarkup({
+      businessName: 'Demo Salon',
+      _demo: true,
+      _layout: 'atelier',
+      _niche: 'salon',
+      _level: 'solo',
+      sections: [
+        {
+          type: 'gallery',
+          enabled: true,
+          content: {
+            title: 'Gallery',
+            images: [{ src: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800', alt: 'Demo' }],
+          },
+        },
+      ],
+    });
+    expect(html).toContain('unsplash.com');
   });
 });
 

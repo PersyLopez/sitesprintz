@@ -420,7 +420,7 @@ function counselProcessSteps(isSolo) {
 // Section builders per layout
 // ---------------------------------------------------------------------------
 
-function buildAtelierSections(niche, level, features) {
+function buildAtelierSections(niche, level, features, opts = {}) {
   const sections = [];
   let order = 0;
   const voice = resolveVoiceCopy({ teamSize: level === 'solo' ? 1 : 2 }, level);
@@ -473,7 +473,7 @@ function buildAtelierSections(niche, level, features) {
     order: order++,
     content: {
       title: 'Gallery',
-      images: (niche.galleryImages || []).map((img) => (
+      images: (opts.includeStockPhotos === false ? [] : (niche.galleryImages || [])).map((img) => (
         typeof img === 'string' ? { src: img, url: img, alt: niche.name } : img
       )),
     },
@@ -942,7 +942,11 @@ export function buildNicheSiteData(nicheId, opts = {}) {
 
   // Build sections using the layout's section builder
   const buildSections = SECTION_BUILDERS[layoutKey];
-  const sections = buildSections ? buildSections(niche, level, features) : [];
+  const sections = buildSections
+    ? buildSections(niche, level, features, {
+      includeStockPhotos: opts.includeStockPhotos !== false,
+    })
+    : [];
 
   // Flatten products/menu for legacy top-level access
   const products = niche.products || (niche.menuSections

@@ -29,6 +29,7 @@ import {
 } from '../config/layouts.js';
 import { resolveVoiceCopy, resolveTeamHeading } from './businessScale.js';
 import { resolveOperatingModel } from '../config/operatingModel.js';
+import { filterStockImages, isStockImageUrl } from './stockPhotos.js';
 
 // ---------------------------------------------------------------------------
 // Section primitives — one per type, variant-aware, tolerant data access
@@ -57,7 +58,7 @@ const sectionPrimitives = {
         eyebrow: c.eyebrow || catalogHero.eyebrow || siteData?.brand?.name || '',
         title: c.title || catalogHero.title || siteData.heroTitle || siteData.businessName || siteData?.brand?.name || 'Welcome',
         subtitle: c.subtitle || catalogHero.subtitle || siteData.heroSubtitle || siteData?.brand?.tagline || '',
-        image: c.image || catalogHero.image || siteData.heroImage || '',
+        image: liveHeroImage(c.image || catalogHero.image || siteData.heroImage || '', siteData),
         imageAlt: c.imageAlt || catalogHero.imageAlt || '',
         ctaText: c.ctaText || ctaFromCatalog || resolveHeroCta(heroVariant, siteData),
         ctaLink: c.ctaLink || catalogHero.cta?.[0]?.href || '#contact',
@@ -108,9 +109,10 @@ const sectionPrimitives = {
 
   gallery(content, siteData, tokens, variant) {
     const c = content || {};
-    const images = flattenGalleryImages(c).length
+    const rawImages = flattenGalleryImages(c).length
       ? flattenGalleryImages(c)
       : flattenGalleryImages(siteData.gallery);
+    const images = filterStockImages(rawImages, { allowStock: siteData?._demo === true });
     const catalogGallery = siteData?.gallery && typeof siteData.gallery === 'object' ? siteData.gallery : {};
     return {
       type: 'gallery',
@@ -266,12 +268,18 @@ const sectionPrimitives = {
   reviews(content, siteData, _tokens) {
     const c = content || {};
     const items = firstList(c.items, c.reviews, siteData.testimonials, siteData.reviews);
+    const reviewsFeature = siteData?.features?.reviews || {};
+    const placeId = c.placeId || reviewsFeature.placeId || siteData.googlePlaceId || '';
+    const enabled = c.enabled !== undefined
+      ? c.enabled
+      : (reviewsFeature.enabled !== undefined ? reviewsFeature.enabled : true);
     return {
       type: 'reviews',
       content: {
         title: c.title || 'Reviews',
-        enabled: c.enabled !== undefined ? c.enabled : true,
+        enabled,
         businessId: c.businessId || '',
+        placeId,
         rating: c.rating || siteData.googleRating || null,
         reviewCount: c.reviewCount || siteData.googleReviewCount || null,
         items,
@@ -525,6 +533,12 @@ function firstList(...candidates) {
     if (list.length) return list;
   }
   return [];
+}
+
+function liveHeroImage(url, siteData) {
+  if (!url) return '';
+  if (siteData?._demo === true) return url;
+  return isStockImageUrl(url) ? '' : url;
 }
 
 function normalizeImage(img) {

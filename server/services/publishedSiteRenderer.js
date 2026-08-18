@@ -8,6 +8,7 @@
 import SEOService from './seoService.js';
 import { sectionHtmlBuilder } from '../rendering/sectionHtml.js';
 import { renderSectionToHtml } from '../../src/utils/sectionHtmlBridge.js';
+import { buildStickyCtaBar } from '../../src/utils/publishedSiteDocument.js';
 
 class PublishedSiteRenderer {
   constructor() {
@@ -34,9 +35,11 @@ class PublishedSiteRenderer {
 
     // Build visible sections HTML — prefer bridge (token-aware), fallback to builder
     let sectionsHtml;
+    let pageForCta = null;
     try {
       const { composePage } = await import('../../src/utils/layoutRenderer.js');
       const page = composePage({ siteData });
+      pageForCta = page;
       const tokens = page.tokens;
       const enabledSections = (page.sections || []).filter(s => s && s.enabled !== false);
       sectionsHtml = enabledSections
@@ -50,6 +53,7 @@ class PublishedSiteRenderer {
 
     // Build theme variables if custom theme is configured
     const themeVars = this._buildThemeVariables(siteData);
+    const stickyCta = buildStickyCtaBar(siteData, pageForCta);
 
     // Assemble complete HTML document
     return this._buildHtmlDocument({
@@ -58,6 +62,7 @@ class PublishedSiteRenderer {
       canonicalUrl,
       themeVars,
       sectionsHtml,
+      stickyCta,
       siteData,
       baseUrl
     });
@@ -74,6 +79,7 @@ class PublishedSiteRenderer {
       canonicalUrl,
       themeVars,
       sectionsHtml,
+      stickyCta = '',
       siteData,
       baseUrl
     } = components;
@@ -136,6 +142,7 @@ ${JSON.stringify(schema, null, 2).replace(/</g, '\\u003c')}
   <main id="app">
     ${sectionsHtml}
   </main>
+  ${stickyCta}
   
   <!-- Minimal Hydration Script -->
   <script src="/sites/site-hydrate.js" defer></script>
@@ -270,19 +277,26 @@ ${JSON.stringify(schema, null, 2).replace(/</g, '\\u003c')}
         display: block;
       }
       
-      /* Responsive */
-      @media (max-width: 768px) {
-        .hero-content h1 {
-          font-size: 2rem;
-        }
-        
-        .hero-content p {
-          font-size: 1rem;
-        }
-        
-        section h2 {
-          font-size: 1.75rem;
-        }
+      /* Sticky conversion bar */
+      body { padding-bottom: 76px; }
+      .ss-sticky-cta {
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+        display: flex; gap: 8px;
+        padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+        background: var(--color-bg);
+        border-top: 1px solid rgba(248, 250, 252, 0.12);
+      }
+      .ss-sticky-cta a {
+        flex: 1; min-height: 44px; display: flex; align-items: center; justify-content: center;
+        text-decoration: none; font-weight: 600; border-radius: 4px;
+        background: var(--color-primary); color: #fff;
+      }
+      .ss-sticky-cta a[href^="tel"] {
+        background: transparent; color: var(--color-text);
+        border: 1px solid rgba(248, 250, 252, 0.2);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; transition: none !important; }
       }
     `;
   }

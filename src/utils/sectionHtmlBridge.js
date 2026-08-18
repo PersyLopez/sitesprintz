@@ -225,7 +225,7 @@ function renderGallery(section, tokens) {
     return `<section class="ss-gallery" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
   <div class="ss-container" style="max-width: 1200px; margin: 0 auto;">
     <h2 style="text-align: center; color: ${getAccent(tokens)};">${escapeHtml(title)}</h2>
-    <p style="text-align: center; color: ${getMuted(tokens)};">No images yet.</p>
+    <p style="text-align: center; color: ${getMuted(tokens)};">Add photos of your work</p>
   </div>
 </section>`;
   }
@@ -474,7 +474,7 @@ function renderCatalog(section, tokens) {
   const purchasable = Boolean(c.purchasable);
 
   if (!items.length) {
-    return `<section class="ss-catalog" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
+    return `<section id="catalog" class="ss-catalog" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
   <div class="ss-container" style="max-width: 1200px; margin: 0 auto;">
     <h2 style="text-align: center; color: ${getAccent(tokens)};">${escapeHtml(title)}</h2>
     <p style="text-align: center; color: ${getMuted(tokens)};">No items available yet.</p>
@@ -494,7 +494,7 @@ function renderCatalog(section, tokens) {
 </article>`)
     .join('\n');
 
-  return `<section class="ss-catalog ss-section" style="background: ${getBg(tokens)}; color: ${getText(tokens)};">
+  return `<section id="catalog" class="ss-catalog ss-section" style="background: ${getBg(tokens)}; color: ${getText(tokens)};">
   <div class="ss-container">
     <h2 class="ss-h2" style="color: ${getAccent(tokens)};">${escapeHtml(title)}</h2>
     <div class="ss-card-grid">
@@ -544,6 +544,7 @@ function renderReviews(section, tokens) {
   const title = c.title || 'Reviews';
   const rating = c.rating;
   const reviewCount = c.reviewCount;
+  const placeId = c.placeId || '';
   const items = Array.isArray(c.items) ? c.items : [];
   const itemsHtml = items.map((item) => {
     const quote = typeof item === 'string' ? item : (item.quote || item.text || item.review || '');
@@ -554,11 +555,16 @@ function renderReviews(section, tokens) {
 </blockquote>`;
   }).join('\n');
 
+  const widget = placeId
+    ? `<div id="reviews-container" class="ss-google-reviews" data-testid="reviews-widget" data-place-id="${escapeAttr(placeId)}"><div data-google-reviews-live></div></div>`
+    : '';
+
   return `<section class="ss-reviews" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
   <div class="ss-container" style="max-width: 800px; margin: 0 auto; text-align: center;">
     <h2 style="color: ${getAccent(tokens)}; margin-bottom: 16px;">${escapeHtml(title)}</h2>
     ${rating ? `<div style="font-size: 2rem; margin-bottom: 8px;">⭐ ${escapeHtml(String(rating))}</div>` : ''}
     ${reviewCount ? `<p style="color: ${getMuted(tokens)};">${escapeHtml(String(reviewCount))} reviews</p>` : ''}
+    ${widget}
     ${itemsHtml ? `<div style="display: grid; gap: 16px; text-align: left; margin-top: 24px;">${itemsHtml}</div>` : ''}
   </div>
 </section>`;

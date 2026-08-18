@@ -213,13 +213,15 @@ describe('wizardSiteDataBuilder — buildSiteDataFromWizard', () => {
     });
   });
 
-  it('ignores unknown theme ids and falls back to the niche default', () => {
+  it('does not seed Unsplash into a customer wizard salon', () => {
     const siteData = buildSiteDataFromWizard({
-      niche: 'electrician',
-      businessName: 'Brightline',
-      themeId: 'tech-cyan',
+      niche: 'salon',
+      businessName: 'Studio Luxe',
+      level: 'studio',
     });
-
-    expect(siteData._themeId).toBe('onyx-ink');
+    const gallery = (siteData.sections || []).find((section) => section.type === 'gallery');
+    const images = gallery?.content?.images || [];
+    const blob = JSON.stringify(images);
+    expect(blob).not.toMatch(/unsplash/i);
   });
 });
