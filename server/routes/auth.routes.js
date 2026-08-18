@@ -23,6 +23,7 @@ import {
     asyncHandler
 } from '../utils/apiResponse.js';
 import { getRequiredSecret } from '../config/secrets.js';
+import { setAuthCookies, clearAuthCookies, readRefreshToken } from '../utils/authCookies.js';
 
 const validator = new ValidationService();
 
@@ -192,6 +193,7 @@ router.post('/register', registrationLimiter, asyncHandler(async (req, res) => {
     }
 
     // Step 7: Return success with verification status
+    setAuthCookies(res, { accessToken, refreshToken });
     sendSuccess(res, {
         accessToken,
         refreshToken,
@@ -253,6 +255,7 @@ router.post('/login', loginLimiter, asyncHandler(async (req, res) => {
     });
 
     // Step 7: Return success
+    setAuthCookies(res, { accessToken, refreshToken });
     return sendSuccess(res, {
         accessToken,
         refreshToken,
@@ -328,6 +331,7 @@ router.post('/quick-register', asyncHandler(async (req, res) => {
         }
     }
 
+    setAuthCookies(res, { accessToken, refreshToken });
     sendSuccess(res, {
         accessToken,
         refreshToken,
@@ -555,7 +559,7 @@ router.post('/send-magic-link', asyncHandler(async (req, res) => {
  * Error handling: Returns 401 for invalid/expired tokens
  */
 router.post('/refresh', asyncHandler(async (req, res) => {
-    const { refreshToken } = req.body;
+    const refreshToken = readRefreshToken(req);
 
     if (!refreshToken) {
         return sendBadRequest(res, 'Refresh token is required', 'MISSING_REFRESH_TOKEN');
@@ -568,6 +572,7 @@ router.post('/refresh', asyncHandler(async (req, res) => {
         // Generate new access token
         const { generateAccessToken } = await import('../services/tokenService.js');
         const accessToken = generateAccessToken(user);
+        setAuthCookies(res, { accessToken });
 
         return sendSuccess(res, { accessToken });
     } catch (err) {
@@ -591,7 +596,7 @@ router.post('/refresh', asyncHandler(async (req, res) => {
  * Revokes refresh token
  */
 router.post('/logout', requireAuth, asyncHandler(async (req, res) => {
-    const { refreshToken } = req.body;
+    const refreshToken = readRefreshToken(req);
     const userId = req.user.id || req.user.userId;
 
     if (refreshToken) {
@@ -602,6 +607,7 @@ router.post('/logout', requireAuth, asyncHandler(async (req, res) => {
         await revokeAllUserTokens(userId);
     }
 
+    clearAuthCookies(res);
     return sendSuccess(res, {}, 'Logged out successfully');
 }));
 

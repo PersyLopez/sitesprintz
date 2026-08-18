@@ -22,7 +22,7 @@ steps:
   - action: Dashboard content
     expect:
       - text contains Create New Site
-      - text contains Analytics
+      - text contains Your Sites
 
   - action: Setup page loads when authenticated
     goto: http://localhost:5173/setup

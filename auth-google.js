@@ -5,12 +5,11 @@
 
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import jwt from 'jsonwebtoken';
 import { prisma } from './database/db.js';
 import crypto from 'crypto';
-import { getRequiredSecret } from './server/config/secrets.js';
-
-const getJwtSecret = () => getRequiredSecret('JWT_SECRET', { allowTestFallback: true });
+import { createGoogleOAuthState, consumeGoogleOAuthState } from './server/services/auth/googleOAuthState.js';
+import { createTokenPair } from './server/services/tokenService.js';
+import { setAuthCookies } from './server/utils/authCookies.js';
 
 /**
  * Configure Google OAuth Strategy
@@ -94,18 +93,11 @@ export function configureGoogleAuth() {
           console.log(`✅ New user created via Google: ${email}`);
         }
 
-        // Parse state parameter for plan and intent
-        const state = req.query.state || '';
-        const stateParts = state.split(',');
-        const plan = stateParts[0];
-        const intentPart = stateParts.find(p => p.startsWith('intent:'));
-        const intent = intentPart ? intentPart.split(':')[1] : null;
-
-        // Store plan and intent temporarily (for redirect logic)
-        if (plan && (plan === 'starter' || plan === 'pro')) {
+        const { plan, intent } = await consumeGoogleOAuthState(req.query.state);
+        const paidPlans = ['starter', 'growth', 'pro', 'premium'];
+        if (paidPlans.includes(plan)) {
           user.pendingPlan = plan;
         }
-
         if (intent) {
           user.pendingIntent = intent;
         }
@@ -128,33 +120,43 @@ export function configureGoogleAuth() {
  * Google OAuth Routes
  */
 export function setupGoogleRoutes(app) {
-  // Initiate Google OAuth
-  app.get('/auth/google', (req, res, next) => {
-    const plan = req.query.plan;
-    const intent = req.query.intent;
+  const clientUrl = () => process.env.CLIENT_URL || process.env.FRONTEND_URL || 'http://localhost:5173';
 
-    // Pass both plan and intent via state (comma-separated)
-    let state = plan || 'free';
-    if (intent) {
-      state += `,intent:${intent}`;
-    }
+  // Initiate Google OAuth
+  app.get('/auth/google', async (req, res, next) => {
+    const state = await createGoogleOAuthState({
+      plan: req.query.plan,
+      intent: req.query.intent
+    });
 
     console.log('🚀 Initiating Google OAuth...');
     console.log('Callback URL:', process.env.GOOGLE_CALLBACK_URL);
 
     passport.authenticate('google', {
       scope: ['profile', 'email'],
-      state: state,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL  // Explicitly use our callback URL
+      state,
+      callbackURL: process.env.GOOGLE_CALLBACK_URL
     })(req, res, next);
   });
 
   // Google OAuth callback
   app.get('/auth/google/callback', (req, res, next) => {
     console.log('🎯 CALLBACK HIT - Starting passport authentication...');
+
+    if (req.query.error) {
+      const error = String(req.query.error);
+      console.error('❌ Google returned an error:', error);
+      return res.redirect(`${clientUrl()}/login?error=${encodeURIComponent(error)}`);
+    }
+
+    if (!req.query.code) {
+      console.error('❌ Google callback missing authorization code');
+      return res.redirect(`${clientUrl()}/login?error=oauth_failed`);
+    }
+
     passport.authenticate('google', {
       session: false,
-      failureRedirect: '/register.html?error=oauth_failed'
+      failureRedirect: `${clientUrl()}/login?error=oauth_failed`
     }, (err, user, info) => {
       console.log('🎯 Passport authenticate callback fired');
       console.log('Error:', err);
@@ -163,46 +165,43 @@ export function setupGoogleRoutes(app) {
 
       if (err) {
         console.error('❌ Passport authentication error:', err);
-        return res.redirect('/register.html?error=auth_error');
+        return res.redirect(`${clientUrl()}/login?error=auth_error`);
       }
 
       if (!user) {
         console.error('❌ No user returned from passport');
-        return res.redirect('/register.html?error=no_user');
+        return res.redirect(`${clientUrl()}/login?error=no_user`);
       }
 
       req.user = user;
       next();
     })(req, res, next);
-  }, (req, res) => {
+  }, async (req, res) => {
     try {
       const user = req.user;
 
-      const token = jwt.sign(
-        {
-          userId: user.id,
-          email: user.email,
-          role: user.role
-        },
-        getJwtSecret(),
-        { expiresIn: '7d' }
-      );
+      const { accessToken, refreshToken } = await createTokenPair({
+        id: user.id,
+        email: user.email,
+        role: user.role
+      });
+      setAuthCookies(res, { accessToken, refreshToken });
 
       const paidPlans = ['starter', 'growth', 'pro', 'premium'];
+      const frontend = clientUrl();
 
       if (user.pendingIntent === 'publish') {
-        return res.redirect(`/auto-publish.html?token=${token}`);
+        return res.redirect(`${frontend}/oauth/callback?token=${accessToken}&intent=publish`);
       }
 
       if (user.pendingPlan && paidPlans.includes(user.pendingPlan)) {
-        return res.redirect(`/register-success.html?token=${token}&plan=${user.pendingPlan}`);
+        return res.redirect(`${frontend}/oauth/callback?token=${accessToken}&plan=${user.pendingPlan}`);
       }
 
-      const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
-      return res.redirect(`${clientUrl}/oauth/callback?token=${token}`);
+      return res.redirect(`${frontend}/oauth/callback?token=${accessToken}`);
     } catch (error) {
       console.error('OAuth callback error:', error);
-      res.redirect('/register.html?error=auth_failed');
+      res.redirect(`${clientUrl()}/login?error=auth_failed`);
     }
   }
   );

@@ -2,16 +2,30 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../../database/db.js';
 import { redactValue } from '../utils/redaction.js';
 import { getRequiredSecret } from '../config/secrets.js';
+import { getAccessTokenCookieName } from '../utils/authCookies.js';
 
 // function to get secret to avoid ESM hoisting issues
 const getJwtSecret = () => getRequiredSecret('JWT_SECRET', { allowTestFallback: true });
 
 /**
- * Extract token from Authorization header
+ * Extract token from Authorization header, then httpOnly cookie.
  */
 function extractToken(req) {
   const authHeader = req.headers['authorization'];
-  return authHeader && authHeader.split(' ')[1];
+  if (authHeader && typeof authHeader === 'string') {
+    const parts = authHeader.split(' ');
+    const headerToken = parts.length === 2 ? parts[1] : null;
+    if (headerToken && headerToken !== 'null' && headerToken !== 'undefined') {
+      return headerToken;
+    }
+  }
+
+  const cookieToken = req.cookies?.[getAccessTokenCookieName()];
+  if (cookieToken && cookieToken !== 'null' && cookieToken !== 'undefined') {
+    return cookieToken;
+  }
+
+  return null;
 }
 
 /**

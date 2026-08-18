@@ -1,6 +1,15 @@
 import React, { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { authService } from '../services/auth';
+
+const ERROR_MESSAGES = {
+  oauth_failed: 'Google sign-in was cancelled. Please try again.',
+  auth_error: 'Google sign-in failed. Please try again or use email.',
+  no_user: 'Google sign-in did not return a user. Please try again.',
+  auth_failed: 'Could not complete sign-in. Please try again.',
+  access_denied: 'Google sign-in was denied. Please try again.'
+};
 
 function OAuthCallback() {
   const [searchParams] = useSearchParams();
@@ -9,22 +18,31 @@ function OAuthCallback() {
 
   useEffect(() => {
     const handleCallback = async () => {
-      const token = searchParams.get('token');
-      
-      if (token) {
-        // Store token
-        localStorage.setItem('authToken', token);
-        
-        // Wait a moment for storage to complete
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Reinitialize auth
-        if (checkAuth) {
-          await checkAuth();
-        }
-      } else {
-        // No token, redirect to login
+      const error = searchParams.get('error');
+      if (error) {
+        const message = ERROR_MESSAGES[error] || 'Sign-in failed. Please try again.';
+        localStorage.setItem('oauthError', message);
         navigate('/login', { replace: true });
+        return;
+      }
+
+      const token = searchParams.get('token');
+
+      if (token) {
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('accessToken', token);
+        localStorage.setItem('token', token);
+      }
+
+      if (checkAuth) {
+        await checkAuth({ allowCookieSession: !token });
+      }
+
+      if (!token) {
+        const userData = await authService.getCurrentUser().catch(() => null);
+        if (!userData) {
+          navigate('/login', { replace: true });
+        }
       }
     };
 
@@ -43,10 +61,10 @@ function OAuthCallback() {
   }, [loading, user, navigate]);
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center', 
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
       minHeight: '100vh',
       flexDirection: 'column',
       gap: '20px'

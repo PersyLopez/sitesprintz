@@ -13,7 +13,7 @@ export function AuthProvider({ children }) {
     checkAuth();
   }, []);
 
-  const checkAuth = async () => {
+  const checkAuth = async ({ allowCookieSession = false } = {}) => {
     let storedToken = localStorage.getItem('accessToken') || localStorage.getItem('authToken'); // Support both formats
 
     // Sanitize token
@@ -41,6 +41,18 @@ export function AuthProvider({ children }) {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('authToken'); // Clean up old format
+        setToken(null);
+        setUser(null);
+      }
+    } else if (allowCookieSession) {
+      try {
+        const userData = await authService.getCurrentUser();
+        const nextUser = userData.user || userData;
+        if (nextUser?.id) {
+          setUser(nextUser);
+        }
+      } catch {
+        setUser(null);
         setToken(null);
       }
     }
