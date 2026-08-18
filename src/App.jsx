@@ -63,6 +63,7 @@ import AdminRoute from './components/auth/AdminRoute';
 import LoadingFallback from './components/common/LoadingFallback';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import FeedbackWidget from './components/common/FeedbackWidget';
+import CustomDomainGate from './components/published/CustomDomainGate';
 
 import api from './services/api';
 import { useEffect } from 'react';
@@ -83,6 +84,7 @@ function App() {
             <TipsProvider>
               <CartProvider>
               <StaffProvider>
+              <CustomDomainGate>
               <Routes>
               {/* Public routes */}
               <Route path="/" element={<Landing />} />
@@ -573,6 +575,7 @@ function App() {
                 } 
               />
               </Routes>
+              </CustomDomainGate>
             </StaffProvider>
             </CartProvider>
             </TipsProvider>

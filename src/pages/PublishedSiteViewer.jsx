@@ -20,8 +20,9 @@ import { isPayOnSiteEnabled } from '../utils/payOnSite';
 import { siteWantsEmbeddedBooking, subdomainFromLivePath } from '../utils/visitorExperience';
 import '../styles/published-site-viewer.css';
 
-function PublishedSiteViewerContent({ onSiteId }) {
-  const { subdomain } = useParams();
+function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
+  const { subdomain: paramSubdomain } = useParams();
+  const subdomain = forcedSubdomain || paramSubdomain;
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
@@ -330,12 +331,12 @@ function PublishedSiteViewerContent({ onSiteId }) {
   );
 }
 
-function PublishedSiteViewer() {
+function PublishedSiteViewer({ forcedSubdomain } = {}) {
   const [siteId, setSiteId] = useState(null);
 
   return (
     <CartProvider siteId={siteId}>
-      <PublishedSiteViewerContent onSiteId={setSiteId} />
+      <PublishedSiteViewerContent onSiteId={setSiteId} forcedSubdomain={forcedSubdomain} />
     </CartProvider>
   );
 }

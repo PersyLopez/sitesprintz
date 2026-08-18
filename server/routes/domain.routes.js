@@ -152,3 +152,22 @@ router.post('/:subdomain/domain/verify', requireAuth, requireCustomDomainAccess,
 
 export default router;
 
+/**
+ * GET /api/domain/lookup?host=
+ * Public: map a request Host to a published site subdomain.
+ */
+export const domainPublicRouter = express.Router();
+
+domainPublicRouter.get('/lookup', asyncHandler(async (req, res) => {
+  const host = req.query.host || req.hostname;
+  const site = await domainService.lookupByHost(host);
+  if (!site) {
+    return sendNotFound(res, 'Site', 'DOMAIN_NOT_CONNECTED');
+  }
+  return sendSuccess(res, {
+    subdomain: site.subdomain,
+    domain: site.custom_domain,
+    status: site.custom_domain_status,
+  });
+}));
+
