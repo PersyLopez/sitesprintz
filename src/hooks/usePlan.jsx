@@ -45,7 +45,7 @@ export function usePlan() {
       booking: hasTierAccess(plan, TIERS.GROWTH),
       nativeBooking: hasTierAccess(plan, TIERS.GROWTH),
       premiumModules: hasTierAccess(plan, TIERS.GROWTH),
-      removeBranding: hasTierAccess(plan, TIERS.GROWTH),
+      removeBranding: false,
     },
 
     subscriptionStatus: user?.subscription?.status || null,

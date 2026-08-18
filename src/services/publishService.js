@@ -7,6 +7,7 @@
 import { normalizeTemplateSections, denormalizeSections } from '../utils/sectionNormalizer.js';
 import { canAccessSection } from '../config/sectionRegistry.js';
 import { hasTierAccess } from '../config/tiers.js';
+import { FEATURES, hasFeature } from '../utils/planFeatures.js';
 import { resolvePayOnSiteForPublish } from '../utils/payOnSite.js';
 import { siteWantsEmbeddedBooking } from '../utils/visitorExperience.js';
 
@@ -123,7 +124,7 @@ export function buildPublishableContent(draftData, userTier = 'trial') {
           : false,
         payOnSite,
         bookingEnabled: canCheckout && siteWantsEmbeddedBooking(draftData),
-        removeBranding: canCheckout
+        removeBranding: hasFeature(userTier, FEATURES.REMOVE_BRANDING)
           ? Boolean(draftData.settings?.removeBranding)
           : false,
         tier: userTier

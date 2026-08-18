@@ -146,7 +146,7 @@ export const PRICING_CONFIG = {
       summary: [
         'Everything in Starter',
         'Booking, cart & Stripe checkout',
-        'Custom domain & remove branding'
+        'Custom domain'
       ],
       
       // Value badge for pricing card
@@ -163,7 +163,6 @@ export const PRICING_CONFIG = {
         'Shopping cart & Stripe checkout',
         'Order & product management',
         'Custom domain',
-        'Remove “Powered by” branding',
         'Basic + sales analytics',
         'Email notifications'
       ],
@@ -272,7 +271,7 @@ export const PRICING_CONFIG = {
     bookingWidget: { starter: false, growth: true },
     serviceRequestForms: { starter: false, growth: true },
     analytics: { starter: false, growth: true },
-    removeBranding: { starter: false, growth: true }
+    removeBranding: { starter: false, growth: false }
   }
 };
 

@@ -62,9 +62,9 @@ describe('Feature Access Gating', () => {
       expect(hasFeature('growth', FEATURES.EMBEDDED_BOOKING)).toBe(true);
     });
 
-    test('Growth should have custom domain and remove branding', () => {
+    test('Growth should have custom domain but keep SiteSprintz branding', () => {
       expect(hasFeature('growth', FEATURES.CUSTOM_DOMAIN)).toBe(true);
-      expect(hasFeature('growth', FEATURES.REMOVE_BRANDING)).toBe(true);
+      expect(hasFeature('growth', FEATURES.REMOVE_BRANDING)).toBe(false);
     });
 
     test('Legacy pro maps to Growth features', () => {

@@ -95,7 +95,7 @@ export const TIER_INFO = {
     features: [
       'Everything in Starter',
       'Booking, cart & Stripe checkout',
-      'Custom domain & remove branding'
+      'Custom domain'
     ]
   }
 };

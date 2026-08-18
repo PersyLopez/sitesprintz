@@ -44,7 +44,7 @@ describe('planFeatures Utility', () => {
       expect(hasFeature('growth', FEATURES.STRIPE_CHECKOUT)).toBe(true);
       expect(hasFeature('growth', FEATURES.SHOPPING_CART)).toBe(true);
       expect(hasFeature('growth', FEATURES.CUSTOM_DOMAIN)).toBe(true);
-      expect(hasFeature('growth', FEATURES.REMOVE_BRANDING)).toBe(true);
+      expect(hasFeature('growth', FEATURES.REMOVE_BRANDING)).toBe(false);
     });
 
     it('should treat legacy pro as growth', () => {

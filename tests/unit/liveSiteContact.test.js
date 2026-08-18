@@ -25,9 +25,9 @@ describe('liveSiteContact', () => {
     })).toBe('555-2');
   });
 
-  it('removes branding on Growth and when the setting is set', () => {
-    expect(shouldRemoveBranding({ plan: 'growth' })).toBe(true);
-    expect(shouldRemoveBranding({ settings: { removeBranding: true } })).toBe(true);
+  it('keeps the SiteSprintz badge on Growth even if an old setting asks to hide it', () => {
+    expect(shouldRemoveBranding({ plan: 'growth', settings: { removeBranding: true } })).toBe(false);
+    expect(shouldRemoveBranding({ settings: { removeBranding: true } })).toBe(false);
     expect(shouldRemoveBranding({ plan: 'starter' })).toBe(false);
   });
 });

@@ -3,6 +3,7 @@
  */
 
 import { getLayout } from '../config/layouts.js';
+import { FEATURES, hasFeature } from './planFeatures.js';
 
 const PRIMARY_BY_INTENT = {
   booking: { href: '#booking', label: 'Book', stickyTestId: 'sticky-cta-book' },
@@ -35,7 +36,6 @@ export function resolvePrimaryCta(siteData, page) {
 }
 
 export function shouldRemoveBranding(siteData) {
-  if (siteData?.settings?.removeBranding === true) return true;
-  const plan = String(siteData?.plan || siteData?.settings?.tier || '').toLowerCase();
-  return plan === 'growth' || plan === 'pro' || plan === 'premium';
+  if (siteData?.settings?.removeBranding !== true) return false;
+  return hasFeature(siteData?.plan || siteData?.settings?.tier, FEATURES.REMOVE_BRANDING);
 }

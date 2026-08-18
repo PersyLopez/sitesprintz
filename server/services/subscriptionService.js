@@ -48,7 +48,7 @@ export const PLAN_LIMITS = {
     booking: true,
     payments: true,
     orderManagement: true,
-    removeBranding: true,
+    removeBranding: false,
     support: 'email',
     stripeFee: 0.05
   }

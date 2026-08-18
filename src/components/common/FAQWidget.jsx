@@ -35,7 +35,7 @@ const FAQ_DATA = [
   {
     id: 'customization',
     question: 'How much can I customize my site?',
-    answer: 'You can customize colors, fonts, content, images, and layout. Growth plans also allow a custom domain and remove branding.',
+    answer: 'You can customize colors, fonts, content, images, and layout. Growth plans also allow a custom domain.',
     category: 'Customization'
   }
 ];

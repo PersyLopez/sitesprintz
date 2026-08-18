@@ -880,15 +880,13 @@
     const footerText = cfg.footer?.text || `? ${year} ${cfg.brand?.name || ''}. All rights reserved.`;
     footerRoot.appendChild(el('p', { class: 'muted' }, [footerText]));
     
-    // Add "Powered by SiteSprintz" branding unless Growth+ (removeBranding enabled)
-    const isPro = cfg.plan === 'growth' || cfg.plan === 'pro' || cfg.plan === 'premium' || cfg.settings?.removeBranding === true;
-    if (!isPro) {
-      const poweredBy = el('p', { class: 'muted', style: 'font-size: 0.875rem; margin-top: 0.5rem;' }, [
-        'Powered by ',
-        el('a', { href: 'https://sitesprintz.com', target: '_blank', rel: 'noopener', style: 'color: inherit; text-decoration: underline;' }, ['SiteSprintz'])
-      ]);
-      footerRoot.appendChild(poweredBy);
-    }
+    // Keep SiteSprintz attribution on Trial / Starter / Growth.
+    // The next paid tier can hide it from the management dashboard.
+    const poweredBy = el('p', { class: 'muted', style: 'font-size: 0.875rem; margin-top: 0.5rem;' }, [
+      'Powered by ',
+      el('a', { href: 'https://sitesprintz.com', target: '_blank', rel: 'noopener', style: 'color: inherit; text-decoration: underline;' }, ['SiteSprintz'])
+    ]);
+    footerRoot.appendChild(poweredBy);
   }
 
   // Pro Tier Features

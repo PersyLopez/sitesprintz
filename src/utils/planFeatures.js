@@ -33,7 +33,7 @@ export const FEATURES = {
   RECURRING_PRICING: 'recurring_pricing',
   SALES_ANALYTICS: 'sales_analytics',
   CUSTOM_DOMAIN: 'custom_domain',
-  REMOVE_BRANDING: 'remove_branding',
+  REMOVE_BRANDING: 'remove_branding', // next paid tier; dashboard toggle, not Growth
   PRIORITY_SUPPORT: 'priority_support',
   
   // Premium features
@@ -87,7 +87,6 @@ const GROWTH_FEATURES = [
   FEATURES.RECURRING_PRICING,
   FEATURES.SALES_ANALYTICS,
   FEATURES.CUSTOM_DOMAIN,
-  FEATURES.REMOVE_BRANDING,
   // Niche modules
   FEATURES.INTERACTIVE_CALCULATOR,
   FEATURES.CLASS_SCHEDULER,

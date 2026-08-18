@@ -345,12 +345,13 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(html).toContain('tel:5550100');
   });
 
-  it('hides the SiteSprintz badge on Growth and keeps NAP in the footer', () => {
+  it('keeps the SiteSprintz badge on Growth and still shows NAP in the footer', () => {
     const { html } = buildLiveSiteMarkup({
       businessName: 'Studio Luxe',
       contactPhone: '555-0100',
       contactAddress: '12 Maple St',
       plan: 'growth',
+      settings: { removeBranding: true },
       _layout: 'atelier',
       _niche: 'salon',
       _level: 'solo',
@@ -359,7 +360,7 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
         { type: 'contact', enabled: true, content: { phone: '555-0100', address: '12 Maple St' } },
       ],
     });
-    expect(html).not.toContain('Made with SiteSprintz');
+    expect(html).toContain('data-testid="sitesprintz-badge"');
     expect(html).toContain('data-testid="footer-call"');
     expect(html).toContain('data-testid="footer-address"');
   });
