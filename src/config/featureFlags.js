@@ -5,8 +5,9 @@
  * *essential* features that can be opted out of. Cash-only, no-booking,
  * and no-orders are first-class configurations.
  *
- * Advanced features (analytics, custom domains, advanced booking) are
- * gated by subscription tier (via planFeatures.js).
+ * Advanced features (analytics, advanced booking) are
+ * gated by subscription tier (via planFeatures.js). Custom domains are
+ * available on every plan.
  *
  * This module is used by:
  *   - composePage() in layoutRenderer.js (to include/skip sections)

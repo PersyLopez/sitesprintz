@@ -71,7 +71,7 @@ export const TIER_INFO = {
     billingPeriod: 'month',
     description: '7-day free trial when you publish',
     color: '#64748b',
-    features: ['Contact forms', 'Service display', 'Basic booking link']
+    features: ['Contact forms', 'Service display', 'Bring your own domain']
   },
   starter: {
     name: 'Starter',
@@ -81,7 +81,7 @@ export const TIER_INFO = {
     billingPeriod: 'month',
     description: 'Get found — site, hours, contact',
     color: '#22c55e',
-    features: ['Website + templates', 'Contact form & shareable link', 'Hours, menu, photos']
+    features: ['Website + templates', 'Contact form & shareable link', 'Hours, menu, photos', 'Bring your own domain']
   },
   growth: {
     name: 'Growth',
@@ -94,8 +94,7 @@ export const TIER_INFO = {
     popular: true,
     features: [
       'Everything in Starter',
-      'Booking, cart & Stripe checkout',
-      'Custom domain'
+      'Booking, cart & Stripe checkout'
     ]
   }
 };

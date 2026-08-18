@@ -28,7 +28,8 @@ export const PRICING_CONFIG = {
       summary: [
         'Your website + templates',
         'Contact form & shareable link',
-        'Hours, menu, photos'
+        'Hours, menu, photos',
+        'Bring your own domain'
       ],
       
       // Value badge for pricing card
@@ -45,6 +46,7 @@ export const PRICING_CONFIG = {
         'Mobile-responsive design',
         'SSL certificate (HTTPS)',
         'Shareable published site link',
+        'Bring your own domain',
         'Service/product listings (display only)',
         'Basic booking / contact link',
         'Pricing tables',
@@ -145,8 +147,7 @@ export const PRICING_CONFIG = {
       // Short list for landing / comparison UIs
       summary: [
         'Everything in Starter',
-        'Booking, cart & Stripe checkout',
-        'Custom domain'
+        'Booking, cart & Stripe checkout'
       ],
       
       // Value badge for pricing card
@@ -162,7 +163,6 @@ export const PRICING_CONFIG = {
         'Service & quote request forms',
         'Shopping cart & Stripe checkout',
         'Order & product management',
-        'Custom domain',
         'Basic + sales analytics',
         'Email notifications'
       ],
@@ -261,7 +261,7 @@ export const PRICING_CONFIG = {
   featureMatrix: {
     websiteBuilder: { starter: true, growth: true },
     templates: { starter: '14 industries', growth: '14 industries' },
-    customDomain: { starter: 'Shareable link', growth: 'Connect your own' },
+    customDomain: { starter: 'Connect your own', growth: 'Connect your own' },
     ssl: { starter: true, growth: true },
     contactForms: { starter: true, growth: true },
     mobileResponsive: { starter: true, growth: true },

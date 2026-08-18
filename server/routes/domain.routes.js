@@ -1,6 +1,6 @@
 /**
  * Domain Routes
- * Handles custom domain management for Pro tier users
+ * Custom domain management — available on every plan.
  */
 
 import express from 'express';
@@ -14,16 +14,16 @@ import {
   sendServerError,
   asyncHandler
 } from '../utils/apiResponse.js';
-import { getPlanLimits } from '../services/subscriptionService.js';
+import { FEATURES, hasFeature } from '../../src/utils/planFeatures.js';
 import { resolveUserPlan } from '../utils/resolveUserPlan.js';
 import { prisma } from '../../database/db.js';
 
 const router = express.Router();
 
 /**
- * Check if user has Growth plan (required for custom domain)
+ * Confirm the signed-in plan can attach a custom domain (every live plan can).
  */
-async function requireProPlan(req, res, next) {
+async function requireCustomDomainAccess(req, res, next) {
   try {
     const userId = req.user.id || req.user.userId;
     const user = await prisma.users.findUnique({
@@ -32,10 +32,8 @@ async function requireProPlan(req, res, next) {
     });
 
     const plan = resolveUserPlan(user);
-    const limits = getPlanLimits(plan);
-
-    if (!limits.customDomain) {
-      return sendForbidden(res, 'Custom domain requires Growth plan', 'GROWTH_PLAN_REQUIRED');
+    if (!hasFeature(plan, FEATURES.CUSTOM_DOMAIN)) {
+      return sendForbidden(res, 'Custom domain is not available on this plan', 'CUSTOM_DOMAIN_UNAVAILABLE');
     }
 
     next();
@@ -48,7 +46,7 @@ async function requireProPlan(req, res, next) {
  * POST /api/sites/:subdomain/domain
  * Add custom domain to site
  */
-router.post('/:subdomain/domain', requireAuth, requireProPlan, asyncHandler(async (req, res) => {
+router.post('/:subdomain/domain', requireAuth, requireCustomDomainAccess, asyncHandler(async (req, res) => {
   const { subdomain } = req.params;
   const { domain } = req.body;
   const userId = req.user.id || req.user.userId;
@@ -106,7 +104,7 @@ router.get('/:subdomain/domain', requireAuth, asyncHandler(async (req, res) => {
  * DELETE /api/sites/:subdomain/domain
  * Remove custom domain from site
  */
-router.delete('/:subdomain/domain', requireAuth, requireProPlan, asyncHandler(async (req, res) => {
+router.delete('/:subdomain/domain', requireAuth, requireCustomDomainAccess, asyncHandler(async (req, res) => {
   const { subdomain } = req.params;
   const userId = req.user.id || req.user.userId;
 
@@ -125,7 +123,7 @@ router.delete('/:subdomain/domain', requireAuth, requireProPlan, asyncHandler(as
  * POST /api/sites/:subdomain/domain/verify
  * Verify DNS records are correctly configured
  */
-router.post('/:subdomain/domain/verify', requireAuth, requireProPlan, asyncHandler(async (req, res) => {
+router.post('/:subdomain/domain/verify', requireAuth, requireCustomDomainAccess, asyncHandler(async (req, res) => {
   const { subdomain } = req.params;
   const userId = req.user.id || req.user.userId;
 

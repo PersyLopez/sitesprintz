@@ -32,7 +32,7 @@ export const FEATURES = {
   SHOPPING_CART: 'shopping_cart',
   RECURRING_PRICING: 'recurring_pricing',
   SALES_ANALYTICS: 'sales_analytics',
-  CUSTOM_DOMAIN: 'custom_domain',
+  CUSTOM_DOMAIN: 'custom_domain', // available on every plan
   REMOVE_BRANDING: 'remove_branding', // next paid tier; dashboard toggle, not Growth
   PRIORITY_SUPPORT: 'priority_support',
   
@@ -63,7 +63,8 @@ const TRIAL_FEATURES = [
   FEATURES.CONTACT_FORMS,
   FEATURES.SERVICE_DISPLAY,
   FEATURES.BASIC_BOOKING_LINK,
-  FEATURES.IMAGE_GALLERY
+  FEATURES.IMAGE_GALLERY,
+  FEATURES.CUSTOM_DOMAIN
 ];
 
 const STARTER_FEATURES = [
@@ -86,7 +87,6 @@ const GROWTH_FEATURES = [
   FEATURES.SHOPPING_CART,
   FEATURES.RECURRING_PRICING,
   FEATURES.SALES_ANALYTICS,
-  FEATURES.CUSTOM_DOMAIN,
   // Niche modules
   FEATURES.INTERACTIVE_CALCULATOR,
   FEATURES.CLASS_SCHEDULER,
@@ -126,7 +126,7 @@ export const PLAN_INFO = {
     price: 35,
     duration: 'month',
     color: '#f59e0b',
-    description: 'Bookings, checkout, custom domain',
+    description: 'Bookings and checkout',
     ctaText: 'Upgrade to Growth',
     popular: true
   }

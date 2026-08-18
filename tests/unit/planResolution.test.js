@@ -29,7 +29,9 @@ describe('Plan resolution and validation', () => {
     });
   });
 
-  it('gives Growth custom domain and payments limits', () => {
+  it('gives every plan custom domain; Growth also gets payments', () => {
+    expect(getPlanLimits('trial').customDomain).toBe(true);
+    expect(getPlanLimits('starter').customDomain).toBe(true);
     const limits = getPlanLimits('pro');
     expect(limits.customDomain).toBe(true);
     expect(limits.payments).toBe(true);

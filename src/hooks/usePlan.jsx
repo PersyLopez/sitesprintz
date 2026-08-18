@@ -36,7 +36,7 @@ export function usePlan() {
     },
 
     features: {
-      customDomain: hasTierAccess(plan, TIERS.GROWTH),
+      customDomain: true,
       analytics: hasTierAccess(plan, TIERS.GROWTH),
       support: plan === TIERS.TRIAL ? 'community' : 'email',
       maxSites: plan === TIERS.TRIAL || plan === TIERS.STARTER ? 1 : 5,

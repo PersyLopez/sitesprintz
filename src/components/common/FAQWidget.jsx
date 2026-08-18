@@ -17,7 +17,7 @@ const FAQ_DATA = [
   {
     id: 'plans',
     question: 'What\'s included in each plan?',
-    answer: 'Starter: your website, hours, menu, and contact. Growth: booking, checkout, order management, and a custom domain.',
+    answer: 'Starter: your website, hours, menu, contact, and your own domain. Growth: booking, checkout, and order management.',
     category: 'Plans'
   },
   {
@@ -35,7 +35,7 @@ const FAQ_DATA = [
   {
     id: 'customization',
     question: 'How much can I customize my site?',
-    answer: 'You can customize colors, fonts, content, images, and layout. Growth plans also allow a custom domain.',
+    answer: 'You can customize colors, fonts, content, images, and layout. Connect your own domain from Settings whenever you want.',
     category: 'Customization'
   }
 ];

@@ -422,7 +422,7 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
             growth: {
                 name: 'SiteSprintz Growth',
                 amount: 3500, // $35.00 in cents
-                description: 'Booking, checkout, and custom domain'
+                description: 'Booking and checkout'
             }
         };
 

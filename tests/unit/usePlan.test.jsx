@@ -148,5 +148,16 @@ describe('usePlan Hook', () => {
       expect(result.current.features.customDomain).toBe(true);
       expect(result.current.features.removeBranding).toBe(false);
     });
+
+    it('should expose custom domain on Starter', () => {
+      const wrapper = createAuthWrapper({
+        email: 'user@example.com',
+        plan: 'starter'
+      });
+      const { result } = renderHook(() => usePlan(), { wrapper });
+
+      expect(result.current.features.customDomain).toBe(true);
+      expect(result.current.features.payments).toBe(false);
+    });
   });
 });

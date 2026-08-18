@@ -37,13 +37,20 @@ describe('planFeatures Utility', () => {
 
     it('should deny growth features for starter plan', () => {
       expect(hasFeature('starter', FEATURES.STRIPE_CHECKOUT)).toBe(false);
-      expect(hasFeature('starter', FEATURES.CUSTOM_DOMAIN)).toBe(false);
+    });
+
+    it('should allow a custom domain on trial, starter, and growth', () => {
+      expect(hasFeature('trial', FEATURES.CUSTOM_DOMAIN)).toBe(true);
+      expect(hasFeature('starter', FEATURES.CUSTOM_DOMAIN)).toBe(true);
+      expect(hasFeature('growth', FEATURES.CUSTOM_DOMAIN)).toBe(true);
     });
 
     it('should allow commerce and domain features for growth', () => {
       expect(hasFeature('growth', FEATURES.STRIPE_CHECKOUT)).toBe(true);
       expect(hasFeature('growth', FEATURES.SHOPPING_CART)).toBe(true);
       expect(hasFeature('growth', FEATURES.CUSTOM_DOMAIN)).toBe(true);
+      expect(hasFeature('starter', FEATURES.CUSTOM_DOMAIN)).toBe(true);
+      expect(hasFeature('trial', FEATURES.CUSTOM_DOMAIN)).toBe(true);
       expect(hasFeature('growth', FEATURES.REMOVE_BRANDING)).toBe(false);
     });
 
@@ -61,7 +68,7 @@ describe('planFeatures Utility', () => {
 
     it('should return growth for checkout and domain', () => {
       expect(getRequiredPlan(FEATURES.STRIPE_CHECKOUT)).toBe('growth');
-      expect(getRequiredPlan(FEATURES.CUSTOM_DOMAIN)).toBe('growth');
+      expect(getRequiredPlan(FEATURES.CUSTOM_DOMAIN)).toBe('trial');
     });
   });
 

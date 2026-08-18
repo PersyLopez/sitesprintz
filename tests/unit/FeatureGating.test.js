@@ -39,8 +39,9 @@ describe('Feature Access Gating', () => {
       expect(hasFeature('starter', FEATURES.ORDER_MANAGEMENT)).toBe(false);
     });
 
-    test('Starter should NOT have custom domain', () => {
-      expect(hasFeature('starter', FEATURES.CUSTOM_DOMAIN)).toBe(false);
+    test('Starter should have custom domain', () => {
+      expect(hasFeature('starter', FEATURES.CUSTOM_DOMAIN)).toBe(true);
+      expect(hasFeature('trial', FEATURES.CUSTOM_DOMAIN)).toBe(true);
     });
   });
 
@@ -82,8 +83,8 @@ describe('Feature Access Gating', () => {
       expect(getRequiredPlan(FEATURES.STRIPE_CHECKOUT)).toBe('growth');
     });
 
-    test('Custom domain should require Growth', () => {
-      expect(getRequiredPlan(FEATURES.CUSTOM_DOMAIN)).toBe('growth');
+    test('Custom domain is available on every plan', () => {
+      expect(getRequiredPlan(FEATURES.CUSTOM_DOMAIN)).toBe('trial');
     });
   });
 

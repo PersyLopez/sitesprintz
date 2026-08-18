@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { Modal } from '../common/Modal';
-import { hasFeature, FEATURES } from '../../utils/planFeatures.js';
 import './CustomDomainSettings.css';
 
 /**
- * CustomDomainSettings Component
- * Allows Pro tier users to connect their own custom domain
+ * CustomDomainSettings — connect a registrar domain. Available on every plan.
  */
 export default function CustomDomainSettings({ subdomain }) {
-  const { user } = useAuth();
   const { showSuccess } = useToast();
   const [domain, setDomain] = useState('');
   const [domainStatus, setDomainStatus] = useState(null);
@@ -19,20 +15,12 @@ export default function CustomDomainSettings({ subdomain }) {
   const [success, setSuccess] = useState(null);
   const [showConfirmRemove, setShowConfirmRemove] = useState(false);
 
-  const plan =
-    user?.subscriptionPlan ||
-    user?.subscription_plan ||
-    user?.subscription?.plan ||
-    user?.plan ||
-    'trial';
-  const hasCustomDomainFeature = hasFeature(plan, FEATURES.CUSTOM_DOMAIN);
-
   // Load domain status on mount
   useEffect(() => {
-    if (hasCustomDomainFeature && subdomain) {
+    if (subdomain) {
       loadDomainStatus();
     }
-  }, [subdomain, hasCustomDomainFeature]);
+  }, [subdomain]);
 
   const loadDomainStatus = async () => {
     try {
@@ -153,18 +141,6 @@ export default function CustomDomainSettings({ subdomain }) {
   const handleRemoveClick = () => {
     setShowConfirmRemove(true);
   };
-
-  if (!hasCustomDomainFeature) {
-    return (
-      <div className="custom-domain-upgrade">
-        <h3>Custom Domain</h3>
-        <p>Connect your own domain (e.g., yourdomain.com) to your site.</p>
-        <p className="upgrade-note">
-          <strong>Growth plan required.</strong> Upgrade to Growth to connect your custom domain.
-        </p>
-      </div>
-    );
-  }
 
   const instructions = domainStatus?.instructions;
 
