@@ -127,8 +127,7 @@ export function usePolling({
 
       setLoading(false);
     } catch (err) {
-      // Don't set error for aborted requests
-      if (err.name === 'AbortError') {
+      if (err.name === 'AbortError' || err.code === 'ERR_CANCELED' || err.originalError?.name === 'AbortError') {
         return;
       }
 
@@ -156,6 +155,12 @@ export function usePolling({
     if (enabled && endpoint) {
       fetchData(true);
     }
+
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [enabled, endpoint]); // Only run on mount or when endpoint changes
 
   // Set up polling interval

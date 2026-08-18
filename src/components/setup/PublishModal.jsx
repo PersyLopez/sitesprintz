@@ -213,7 +213,7 @@ function PublishModal({ siteData, onClose }) {
       const isValidEmail = cleanEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail);
 
       const draftData = {
-        templateId: siteData.template || siteData.id,
+        templateId: siteData.template || siteData.id || siteData._niche,
         businessData: {
           businessName: siteData.brand?.name || siteData.businessName,
           heroTitle: siteData.hero?.title || siteData.heroTitle,
@@ -227,6 +227,9 @@ function PublishModal({ siteData, onClose }) {
           facebookUrl: siteData.social?.facebook || siteData.facebookUrl,
           instagramUrl: siteData.social?.instagram || siteData.instagramUrl,
           googleMapsUrl: siteData.social?.maps || siteData.googleMapsUrl,
+          whatsappUrl: siteData.social?.whatsapp,
+          tiktokUrl: siteData.social?.tiktok,
+          linkedinUrl: siteData.social?.linkedin,
           services: siteData.services || siteData.products || [],
           colors: siteData.colors || siteData.themeVars,
           templateSpecific: siteData.custom || {},

@@ -33,10 +33,12 @@ describe('siteWorkspace helpers', () => {
   });
 
   it('builds per-site dashboard paths', () => {
-    const paths = getSiteWorkspacePaths('site-9');
+    const paths = getSiteWorkspacePaths('site-9', { subdomain: 'river-salon' });
     expect(paths.overview).toBe('/dashboard/sites/site-9');
     expect(paths.orders).toBe('/dashboard/sites/site-9/orders');
     expect(paths.appointments).toBe('/dashboard/sites/site-9/appointments');
     expect(paths.settings).toBe('/dashboard/sites/site-9/settings');
+    expect(paths.liveEdit).toBe('/view/river-salon?edit=true');
+    expect(paths.edit).toBe('/setup?site=site-9');
   });
 });

@@ -452,10 +452,14 @@ const SECTION_FIELD_DEFINITIONS = {
     ]},
   ],
   social: [
-    { key: 'links', label: 'Social Links', type: 'array', itemFields: [
-      { key: 'platform', label: 'Platform', type: 'select', options: ['facebook', 'instagram', 'twitter', 'linkedin', 'youtube', 'tiktok'] },
-      { key: 'url', label: 'URL', type: 'text' },
-    ]},
+    { key: 'title', label: 'Title', type: 'text' },
+    { key: 'facebook', label: 'Facebook URL', type: 'text' },
+    { key: 'instagram', label: 'Instagram URL', type: 'text' },
+    { key: 'whatsapp', label: 'WhatsApp', type: 'text' },
+    { key: 'tiktok', label: 'TikTok URL', type: 'text' },
+    { key: 'maps', label: 'Google Maps URL', type: 'text' },
+    { key: 'website', label: 'Website URL', type: 'text' },
+    { key: 'linkedin', label: 'LinkedIn URL', type: 'text' },
   ],
   'featured-services': [
     { key: 'items', label: 'Featured Services', type: 'array', itemFields: [

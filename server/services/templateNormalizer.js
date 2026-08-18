@@ -123,13 +123,16 @@ export class TemplateNormalizer {
       credentials: source.credentials || { items: [] },
 
       // Social
-      social: source.social || {
-        website: '',
-        facebook: '',
-        instagram: '',
-        twitter: '',
-        linkedin: '',
-        googleMapsUrl: '',
+      social: {
+        facebook: source.social?.facebook || '',
+        instagram: source.social?.instagram || '',
+        whatsapp: source.social?.whatsapp || '',
+        tiktok: source.social?.tiktok || '',
+        maps: source.social?.maps || source.social?.googleMapsUrl || '',
+        website: source.social?.website || '',
+        linkedin: source.social?.linkedin || '',
+        ...(source.social?.twitter ? { twitter: source.social.twitter } : {}),
+        ...(source.social?.youtube ? { youtube: source.social.youtube } : {}),
       },
 
       // Settings
@@ -240,7 +243,7 @@ export class TemplateNormalizer {
       faq: { items: [] },
       features: { bookingWidget: { enabled: false }, tabbedMenu: false },
       booking: { enabled: false, provider: 'calendly', url: '' },
-      social: { website: '', facebook: '', instagram: '' },
+      social: { facebook: '', instagram: '', whatsapp: '', tiktok: '', maps: '', website: '', linkedin: '' },
       settings: { allowOrders: false },
     };
   }

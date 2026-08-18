@@ -41,12 +41,12 @@ steps:
       - url contains /showcase
       - text contains See how your site could look
 
-  - action: Showcase search and empty state
-    wait_for: { text: Example sites }
-    settle_ms: 500
+  - action: Search gallery for a nonexistent term
+    fill: { testId: showcase-search, value: "xyznonexistent", clear: true }
+    settle_ms: 2000
     assert:
-      - text contains Create your site free
       - text contains No examples found
+      - text contains Create your site free
 
   # --- About / Contact ---
   - action: About page loads

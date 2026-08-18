@@ -1,6 +1,7 @@
 /**
  * Gallery / showcase demo helpers.
- * Demo sites look and behave like real shops, but never persist orders or appointments.
+ * Demo sites look and behave like real shops. Persistence is skipped only
+ * when settings.demoMode is explicitly true.
  */
 
 export function isShowcaseDemoSiteData(siteData) {
@@ -24,9 +25,6 @@ export function parseSiteDataJson(site) {
  */
 export function isShowcaseDemoSite(site) {
   if (!site) return false;
-  if (typeof site.subdomain === 'string' && site.subdomain.startsWith('gallery-')) {
-    return true;
-  }
   return isShowcaseDemoSiteData(parseSiteDataJson(site));
 }
 

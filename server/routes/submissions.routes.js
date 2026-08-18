@@ -21,9 +21,13 @@ import {
   validateEmail,
   validatePhone,
   sanitizeString,
-  sanitizeCustomFields,
-  generateSecureId
+  sanitizeCustomFields
 } from '../utils/validators.js';
+import {
+  isShowcaseDemoSite,
+  isShowcaseDemoSiteData,
+  buildDemoOrderId,
+} from '../utils/showcaseDemo.js';
 
 const router = express.Router();
 
@@ -101,6 +105,13 @@ router.post('/contact', asyncHandler(async (req, res) => {
   }
 
   const siteData = parseSiteData(site);
+  if (isShowcaseDemoSite(site) || isShowcaseDemoSiteData(siteData)) {
+    return sendCreated(res, {
+      submissionId: buildDemoOrderId(),
+      demo: true,
+    }, 'Your message has been sent successfully');
+  }
+
   const siteOwnerEmail = siteData.published?.email || siteData.contact?.email || site.users?.email;
   const businessName = siteData.brand?.name || 'Your Business';
 

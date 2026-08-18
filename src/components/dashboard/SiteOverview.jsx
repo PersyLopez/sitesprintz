@@ -8,7 +8,7 @@ function SiteOverview() {
   const { isGrowth } = usePlan();
   if (!site) return null;
   const features = getSiteFeatures(site);
-  const paths = getSiteWorkspacePaths(site.id);
+  const paths = getSiteWorkspacePaths(site.id, site);
   const name = getSiteDisplayName(site);
   const orderingOn = features.onlineOrdering?.enabled !== false;
   const bookingOn = features.booking?.enabled !== false;
@@ -54,10 +54,12 @@ function SiteOverview() {
       testId: 'site-overview-analytics',
     },
     {
-      to: paths.edit,
-      title: 'Editor',
-      body: 'Change pages, sections, and content for this site.',
-      meta: 'Open page builder',
+      to: site.status === 'published' && site.subdomain ? paths.liveEdit : paths.edit,
+      title: site.status === 'published' ? 'Edit on site' : 'Editor',
+      body: site.status === 'published'
+        ? 'Click text on your live site to change it. Edits auto-save, and you can restore a previous version.'
+        : 'Change pages, sections, and content for this site.',
+      meta: site.status === 'published' ? 'Inline editor' : 'Open page builder',
       testId: 'site-overview-edit',
     },
   ];

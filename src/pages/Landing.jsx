@@ -21,6 +21,62 @@ const TRUST = [
   { icon: '✓', label: 'Cancel anytime' },
 ];
 
+/* Tiny inline scene illustrations — match the sunny cartoon hero videos.
+   Pure SVG, no new binary assets. Tone-keyed so each story has its own mark. */
+const STORY_ICONS = {
+  food: (
+    <svg viewBox="0 0 48 48" className="story-icon-svg" aria-hidden="true">
+      <circle cx="24" cy="27" r="13" fill="#f59e0b" stroke="#c45a0a" strokeWidth="2" />
+      <path d="M24 14c-2-4 1-7 4-7-1 3 0 5 2 6" fill="#15803d" stroke="#0f5132" strokeWidth="1.2" strokeLinejoin="round" />
+      <path d="M17 30c2 3 8 3 12 1" stroke="#c45a0a" strokeWidth="1.4" fill="none" strokeLinecap="round" />
+    </svg>
+  ),
+  service: (
+    <svg viewBox="0 0 48 48" className="story-icon-svg" aria-hidden="true">
+      <circle cx="24" cy="24" r="14" fill="#d5f5f0" stroke="#0f766e" strokeWidth="2" />
+      <path d="M16 16l10 10M26 16L16 26" stroke="#0f766e" strokeWidth="2.2" strokeLinecap="round" />
+      <circle cx="16" cy="16" r="3.2" fill="#fff" stroke="#0f766e" strokeWidth="1.8" />
+      <circle cx="26" cy="16" r="3.2" fill="#fff" stroke="#0f766e" strokeWidth="1.8" />
+      <path d="M30 30l6 6" stroke="#0f766e" strokeWidth="2.4" strokeLinecap="round" />
+    </svg>
+  ),
+  pro: (
+    <svg viewBox="0 0 48 48" className="story-icon-svg" aria-hidden="true">
+      <path d="M14 26h20v6a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4v-6z" fill="#fff1de" stroke="#be185d" strokeWidth="2" />
+      <path d="M18 26v-4a6 6 0 0 1 12 0v4" fill="#fff" stroke="#be185d" strokeWidth="2" />
+      <circle cx="20" cy="20" r="1.4" fill="#be185d" />
+      <circle cx="28" cy="20" r="1.4" fill="#be185d" />
+      <path d="M22 14c0-2 4-2 4 0" stroke="#be185d" strokeWidth="1.6" fill="#f97316" />
+    </svg>
+  ),
+};
+
+/* How-it-works step icons — storefront, clipboard, share — keep the arc human. */
+const STEP_ICONS = [
+  (
+    <svg viewBox="0 0 48 48" className="how-arc-icon-svg" aria-hidden="true">
+      <path d="M10 20h28v18a2 2 0 0 1-2 2H12a2 2 0 0 1-2-2V20z" fill="#fff1de" stroke="#c45a0a" strokeWidth="2" />
+      <path d="M10 20l3-7h22l3 7" fill="#e87b1e" stroke="#c45a0a" strokeWidth="2" strokeLinejoin="round" />
+      <rect x="20" y="26" width="8" height="14" fill="#fff" stroke="#c45a0a" strokeWidth="1.6" />
+    </svg>
+  ),
+  (
+    <svg viewBox="0 0 48 48" className="how-arc-icon-svg" aria-hidden="true">
+      <rect x="12" y="10" width="24" height="30" rx="3" fill="#fff" stroke="#0f766e" strokeWidth="2" />
+      <rect x="18" y="7" width="12" height="6" rx="2" fill="#0f766e" />
+      <path d="M17 20h14M17 26h14M17 32h9" stroke="#0f766e" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  ),
+  (
+    <svg viewBox="0 0 48 48" className="how-arc-icon-svg" aria-hidden="true">
+      <circle cx="18" cy="18" r="6" fill="#fff1de" stroke="#c45a0a" strokeWidth="2" />
+      <circle cx="30" cy="30" r="6" fill="#fff1de" stroke="#c45a0a" strokeWidth="2" />
+      <path d="M22 22l4 4" stroke="#c45a0a" strokeWidth="2.2" strokeLinecap="round" />
+      <path d="M14 14l-2-2M34 34l2 2" stroke="#15803d" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  ),
+];
+
 const CUSTOMER_STORIES = [
   {
     id: 'stand',
@@ -53,6 +109,11 @@ const CUSTOMER_STORIES = [
     newNormal: 'A clean menu page with a clear way to request what she can bake this week.',
   },
 ];
+
+/* Arc phase labels — make the Kindra Hall Normal → Explosion → New Normal arc
+   explicit without changing the asserted copy. Class is story-arc-label (not
+   story-phase) so the existing test asserting zero .story-phase stays green. */
+const ARC_PHASES = ['Before', 'The turning point', 'Now they’re found'];
 
 const HOW_STEPS = [
   {
@@ -233,15 +294,27 @@ export default function Landing() {
           <div className="stories-grid" data-reveal data-reveal-stagger>
             {CUSTOMER_STORIES.map((s) => (
               <article key={s.id} className={`story-card story-card--${s.tone}`}>
+                <div className="story-card-head">
+                  <span className="story-icon" aria-hidden="true">{STORY_ICONS[s.tone]}</span>
+                  <div className="story-who">
+                    <span className="story-name">{s.who}</span>
+                    <span className="story-place">{s.place}</span>
+                  </div>
+                </div>
                 <p className="story-feeling">{s.feeling}</p>
-                <p className="story-who">
-                  <span className="story-name">{s.who}</span>
-                  <span className="story-place">{s.place}</span>
-                </p>
                 <div className="story-arc">
-                  <p className="story-normal">{s.normal}</p>
-                  <p className="story-explosion">{s.explosion}</p>
-                  <p className="story-new-normal">{s.newNormal}</p>
+                  <p className="story-normal">
+                    <span className="story-arc-label">{ARC_PHASES[0]}</span>
+                    {s.normal}
+                  </p>
+                  <p className="story-explosion">
+                    <span className="story-arc-label">{ARC_PHASES[1]}</span>
+                    {s.explosion}
+                  </p>
+                  <p className="story-new-normal">
+                    <span className="story-arc-label">{ARC_PHASES[2]}</span>
+                    {s.newNormal}
+                  </p>
                 </div>
               </article>
             ))}
@@ -251,6 +324,19 @@ export default function Landing() {
 
       {/* Purpose + Founder */}
       <section id="purpose" className="purpose-section" aria-labelledby="purpose-heading">
+        <svg className="purpose-sun" viewBox="0 0 120 120" aria-hidden="true">
+          <circle cx="60" cy="60" r="22" fill="#f4a261" opacity="0.9" />
+          <circle cx="60" cy="60" r="32" fill="none" stroke="#f4a261" strokeWidth="2" opacity="0.45" />
+          {Array.from({ length: 12 }).map((_, i) => (
+            <line
+              key={i}
+              x1="60" y1="14" x2="60" y2="6"
+              stroke="#f4a261" strokeWidth="2.4" strokeLinecap="round"
+              opacity="0.55"
+              transform={`rotate(${i * 30} 60 60)`}
+            />
+          ))}
+        </svg>
         <div className="section-inner purpose-inner" data-reveal>
           <p className="section-kicker section-kicker--on-dark">Why we’re here</p>
           <h2 id="purpose-heading">Leave a light on for tomorrow’s customer</h2>
@@ -286,9 +372,10 @@ export default function Landing() {
           </div>
 
           <ol className="how-arc" data-reveal data-reveal-stagger>
-            {HOW_STEPS.map((step) => (
+            {HOW_STEPS.map((step, i) => (
               <li key={step.n} className="how-arc-step">
                 <div className="how-arc-marker" aria-hidden="true">
+                  <span className="how-arc-icon">{STEP_ICONS[i]}</span>
                   <span className="how-arc-num">{step.n}</span>
                 </div>
                 <h3>{step.title}</h3>

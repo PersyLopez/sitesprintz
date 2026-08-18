@@ -2,6 +2,13 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
+function isAbortError(error) {
+  if (!error) return false;
+  if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') return true;
+  if (error.originalError) return isAbortError(error.originalError);
+  return false;
+}
+
 class APIClient {
   constructor(baseURL = API_BASE_URL) {
     this.baseURL = baseURL;
@@ -136,6 +143,10 @@ class APIClient {
 
         return data;
       } catch (error) {
+        if (isAbortError(error)) {
+          throw error;
+        }
+
         if (retries === 0 || error.message === 'Unauthorized') {
           console.error('API request failed:', error);
           // Enhance error with more context
@@ -187,6 +198,14 @@ class APIClient {
     return this.request(endpoint, {
       ...options,
       method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  patch(endpoint, data, options = {}) {
+    return this.request(endpoint, {
+      ...options,
+      method: 'PATCH',
       body: JSON.stringify(data),
     });
   }

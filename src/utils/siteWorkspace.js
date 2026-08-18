@@ -48,8 +48,9 @@ export function getSiteFeatures(site) {
   return resolveFeatures(layoutKey, site?.data?.features);
 }
 
-export function getSiteWorkspacePaths(siteId) {
+export function getSiteWorkspacePaths(siteId, site = {}) {
   const base = `/dashboard/sites/${siteId}`;
+  const subdomain = site?.subdomain;
   return {
     overview: base,
     orders: `${base}/orders`,
@@ -58,5 +59,6 @@ export function getSiteWorkspacePaths(siteId) {
     settings: `${base}/settings`,
     analytics: `${base}/analytics`,
     edit: `/setup?site=${siteId}`,
+    liveEdit: subdomain ? `/view/${encodeURIComponent(subdomain)}?edit=true` : `/setup?site=${siteId}`,
   };
 }

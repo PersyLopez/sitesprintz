@@ -25,6 +25,15 @@ export function SiteProvider({ children }) {
     facebookUrl: '',
     instagramUrl: '',
     googleMapsUrl: '',
+    social: {
+      facebook: '',
+      instagram: '',
+      whatsapp: '',
+      tiktok: '',
+      maps: '',
+      website: '',
+      linkedin: '',
+    },
     services: [],
     colors: colorsFromSiteTheme(DEFAULT_SITE_THEME_ID),
   });
@@ -253,15 +262,17 @@ export function SiteProvider({ children }) {
   const loadTemplate = useCallback((templateData) => {
     // For Pro/Premium templates with existing content, use template content FIRST
     // Only use demo content as fallback for missing fields
-    const hasRichContent = templateData.menu || templateData.team || templateData.gallery || templateData.testimonials;
+    const templateKey = templateData.id || templateData.template || templateData._niche;
+    const hasRichContent = templateData.menu || templateData.team || templateData.gallery || templateData.testimonials
+      || (Array.isArray(templateData.sections) && templateData.sections.length > 0);
 
     const fullTemplateData = hasRichContent ? {
       // Use actual template data as primary source for Pro templates
       ...templateData,
       // Ensure core IDs are set
-      template: templateData.id || templateData.template,
-      templateId: templateData.id || templateData.template,
-      id: templateData.id || templateData.template,
+      template: templateKey,
+      templateId: templateKey,
+      id: templateKey,
       // Map brand fields to expected format
       businessName: templateData.brand?.name || templateData.businessName,
       heroTitle: templateData.hero?.title || templateData.heroTitle,
@@ -294,17 +305,27 @@ export function SiteProvider({ children }) {
       chefSpecials: templateData.chefSpecials,
       privateEvents: templateData.privateEvents,
       contact: templateData.contact,
-      social: templateData.social,
+      social: {
+        facebook: templateData.social?.facebook || templateData.facebookUrl || '',
+        instagram: templateData.social?.instagram || templateData.instagramUrl || '',
+        whatsapp: templateData.social?.whatsapp || '',
+        tiktok: templateData.social?.tiktok || '',
+        maps: templateData.social?.maps || templateData.googleMapsUrl || templateData.social?.googleMapsUrl || '',
+        website: templateData.social?.website || templateData.websiteUrl || '',
+        linkedin: templateData.social?.linkedin || '',
+        ...(templateData.social?.twitter ? { twitter: templateData.social.twitter } : {}),
+        ...(templateData.social?.youtube ? { youtube: templateData.social.youtube } : {}),
+      },
       features: templateData.features,
       // Keep nav and other features
       nav: templateData.nav
     } : {
       // For Starter templates without rich content, use demo content
-      ...generateDemoContent(templateData.id || templateData.template),
+      ...(templateKey ? generateDemoContent(templateKey) : {}),
       ...templateData,
-      template: templateData.id || templateData.template,
-      templateId: templateData.id || templateData.template,
-      id: templateData.id || templateData.template
+      template: templateKey,
+      templateId: templateKey,
+      id: templateKey
     };
 
     const nicheId = fullTemplateData.template || fullTemplateData.id;
@@ -332,6 +353,15 @@ export function SiteProvider({ children }) {
       facebookUrl: '',
       instagramUrl: '',
       googleMapsUrl: '',
+      social: {
+        facebook: '',
+        instagram: '',
+        whatsapp: '',
+        tiktok: '',
+        maps: '',
+        website: '',
+        linkedin: '',
+      },
       services: [],
       colors: colorsFromSiteTheme(DEFAULT_SITE_THEME_ID),
     });

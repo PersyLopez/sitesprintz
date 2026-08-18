@@ -13,6 +13,9 @@ import { sendEmail, EmailTypes } from '../utils/email-service-wrapper.js';
 import { sanitizeSiteDataForStorage } from '../utils/siteDataSanitizer.js';
 import { TemplateNormalizer } from '../services/templateNormalizer.js';
 import { hasFeature, FEATURES } from '../../src/utils/planFeatures.js';
+import { resolvePayOnSiteForPublish } from '../../src/utils/payOnSite.js';
+import { siteWantsEmbeddedBooking } from '../../src/utils/visitorExperience.js';
+import { ensurePublishedBooking } from '../services/booking/ensurePublishedBooking.js';
 import { normalizeTier } from '../../src/config/tiers.js';
 import { resolveUserPlan } from '../utils/resolveUserPlan.js';
 import { inheritPaymentAccountsForSite } from '../services/payments/processorConnectHelpers.js';
@@ -115,8 +118,10 @@ function mergeBusinessDataWithTemplate(template, businessData) {
     };
   }
 
-  // Team members
-  if (businessData.team?.members) {
+  // Team members (array or { members })
+  if (Array.isArray(businessData.team) && businessData.team.length) {
+    merged.team = { members: businessData.team };
+  } else if (businessData.team?.members) {
     merged.team = businessData.team;
   } else if (businessData.staff) {
     merged.team = { members: businessData.staff };
@@ -303,13 +308,22 @@ function filterFeaturesByPlan(siteData, userPlan) {
   }
   
   // Booking: keep basic link for Starter; full widget only for Growth
+  const hasBookingIntent = Boolean(
+    filtered.booking
+    || filtered.settings?.bookingEnabled
+    || filtered._features?.booking?.enabled
+    || (Array.isArray(filtered.sections) && filtered.sections.some((section) => (
+      section?.type === 'booking' || section?.type === 'native-booking'
+    )))
+  );
+
   if (!hasFeature(plan, FEATURES.EMBEDDED_BOOKING)) {
-    if (hasFeature(plan, FEATURES.BASIC_BOOKING_LINK) && filtered.booking) {
+    if (hasFeature(plan, FEATURES.BASIC_BOOKING_LINK) && hasBookingIntent) {
       filtered.booking = {
-        ...filtered.booking,
+        ...(filtered.booking || {}),
         enabled: true,
         mode: 'link',
-        provider: filtered.booking.provider || filtered.booking.url ? (filtered.booking.provider || 'external') : 'link',
+        provider: filtered.booking?.provider || filtered.booking?.url ? (filtered.booking.provider || 'external') : 'link',
         embedded: false
       };
       if (filtered.features?.bookingWidget) {
@@ -321,9 +335,18 @@ function filterFeaturesByPlan(siteData, userPlan) {
         filtered.features.bookingWidget.enabled = false;
       }
     }
-  } else if (filtered.booking) {
-    filtered.booking.enabled = true;
-    filtered.booking.embedded = true;
+  } else if (hasBookingIntent || siteWantsEmbeddedBooking(filtered)) {
+    filtered.booking = {
+      ...(filtered.booking || {}),
+      enabled: true,
+      embedded: true,
+      mode: 'native',
+      provider: filtered.booking?.provider || 'native'
+    };
+    filtered.settings = {
+      ...(filtered.settings || {}),
+      bookingEnabled: true
+    };
   }
 
   if (Array.isArray(filtered.sections) && !hasFeature(plan, FEATURES.EMBEDDED_BOOKING)) {
@@ -388,7 +411,7 @@ function filterFeaturesByPlan(siteData, userPlan) {
       ...(filtered.settings || {}),
       allowCheckout: true,
       allowOrders: hasFeature(plan, FEATURES.ORDER_MANAGEMENT),
-      payOnSite: filtered.settings?.payOnSite === true
+      payOnSite: resolvePayOnSiteForPublish(filtered, true)
     };
 
     if ((!filtered.products || filtered.products.length === 0) && filtered.menu?.sections?.length) {
@@ -910,6 +933,9 @@ router.post('/:draftId/publish', asyncHandler(async (req, res) => {
         }
       });
       await inheritPaymentAccountsForSite(userId, siteId).catch(() => {});
+      await ensurePublishedBooking({ userId, siteId, siteData }).catch((error) => {
+        console.error('[PUBLISH] Booking setup failed:', error.message);
+      });
       break;
     } catch (error) {
       await removeIsolatedSiteFiles(subdomain).catch(() => {});

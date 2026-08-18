@@ -9,6 +9,14 @@ import express from 'express';
 import path from 'path';
 import { visualEditorService } from '../services/visualEditorService.js';
 import { requireAuth } from '../middleware/auth.js';
+import {
+  applyPublishedChanges,
+  canEditPublishedSite,
+  findPublishedSite,
+  getPublishedHistory,
+  publishedSessionInfo,
+  restorePublishedVersion,
+} from '../services/publishedSiteEdit.js';
 
 const router = express.Router();
 
@@ -41,6 +49,29 @@ export async function patchSiteWithVersion(req, res) {
           error: 'Each change must have field and value' 
         });
       }
+    }
+
+    const dbSite = await findPublishedSite(subdomain).catch(() => null);
+    if (dbSite) {
+      if (!canEditPublishedSite(dbSite, req.user)) {
+        return res.status(403).json({ error: 'User does not have permission to edit this site' });
+      }
+      const published = await applyPublishedChanges(dbSite, changes, version);
+      if (published.conflict) {
+        return res.status(409).json({
+          error: 'Version conflict detected',
+          currentVersion: published.currentVersion,
+          expectedVersion: published.expectedVersion,
+          serverData: published.serverData,
+          message: 'Another update was made since you started editing. Please review the changes.'
+        });
+      }
+      return res.json({
+        success: true,
+        version: published.version,
+        timestamp: published.timestamp,
+        message: 'Changes saved successfully'
+      });
     }
     
     const siteDir = path.join(process.cwd(), 'public', 'sites', subdomain);
@@ -103,6 +134,15 @@ export async function getVersionHistory(req, res) {
     if (!userEmail) {
       return res.status(401).json({ error: 'Authentication required' });
     }
+
+    const dbSite = await findPublishedSite(subdomain).catch(() => null);
+    if (dbSite) {
+      if (!canEditPublishedSite(dbSite, req.user)) {
+        return res.status(403).json({ error: 'User does not have permission to edit this site' });
+      }
+      const history = await getPublishedHistory(dbSite);
+      return res.json({ success: true, history });
+    }
     
     const siteDir = path.join(process.cwd(), 'public', 'sites', subdomain);
     
@@ -140,6 +180,20 @@ export async function restoreVersion(req, res) {
     
     if (!userEmail) {
       return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const dbSite = await findPublishedSite(subdomain).catch(() => null);
+    if (dbSite) {
+      if (!canEditPublishedSite(dbSite, req.user)) {
+        return res.status(403).json({ error: 'User does not have permission to edit this site' });
+      }
+      const result = await restorePublishedVersion(dbSite, versionId);
+      return res.json({
+        success: true,
+        restoredVersion: result.restoredVersion,
+        newVersion: result.newVersion,
+        message: 'Version restored successfully'
+      });
     }
     
     const siteDir = path.join(process.cwd(), 'public', 'sites', subdomain);
@@ -230,6 +284,17 @@ export async function getEditSession(req, res) {
     
     if (!userEmail) {
       return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const dbSite = await findPublishedSite(subdomain).catch(() => null);
+    if (dbSite) {
+      if (!canEditPublishedSite(dbSite, req.user)) {
+        return res.status(403).json({ error: 'User does not have permission to edit this site' });
+      }
+      return res.json({
+        success: true,
+        session: publishedSessionInfo(dbSite),
+      });
     }
     
     const siteDir = path.join(process.cwd(), 'public', 'sites', subdomain);

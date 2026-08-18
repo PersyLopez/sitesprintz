@@ -7,6 +7,23 @@
 import { normalizeTemplateSections, denormalizeSections } from '../utils/sectionNormalizer.js';
 import { canAccessSection } from '../config/sectionRegistry.js';
 import { hasTierAccess } from '../config/tiers.js';
+import { resolvePayOnSiteForPublish } from '../utils/payOnSite.js';
+import { siteWantsEmbeddedBooking } from '../utils/visitorExperience.js';
+
+function canonicalSocial(social = {}, fallback = {}) {
+  const merged = {
+    facebook: social.facebook || fallback.facebook || '',
+    instagram: social.instagram || fallback.instagram || '',
+    whatsapp: social.whatsapp || fallback.whatsapp || '',
+    tiktok: social.tiktok || fallback.tiktok || '',
+    maps: social.maps || social.googleMapsUrl || fallback.maps || '',
+    website: social.website || fallback.website || '',
+    linkedin: social.linkedin || fallback.linkedin || '',
+  };
+  if (social.twitter || fallback.twitter) merged.twitter = social.twitter || fallback.twitter;
+  if (social.youtube || fallback.youtube) merged.youtube = social.youtube || fallback.youtube;
+  return merged;
+}
 
 /**
  * Build a publishable site.json from draft data
@@ -60,13 +77,19 @@ export function buildPublishableContent(draftData, userTier = 'trial') {
       hours: draftData.businessHours || ''
     },
     
-    // Social links
-    social: draftData.social || {
-      facebook: '',
-      instagram: '',
-      twitter: '',
-      linkedin: ''
-    },
+    // Social links — same keys as wizard, Foundation, and the social section
+    social: canonicalSocial(draftData.social),
+    foundation: (() => {
+      const foundation = { ...(draftData.foundation || {}) };
+      const profiles = canonicalSocial(draftData.social, foundation.socialMedia?.profiles);
+      const hasProfiles = Object.values(profiles).some(Boolean);
+      foundation.socialMedia = {
+        ...(foundation.socialMedia || {}),
+        profiles,
+        enabled: foundation.socialMedia?.enabled || hasProfiles,
+      };
+      return foundation;
+    })(),
     
     // Theme & colors
     colors: draftData.colors || {
@@ -87,23 +110,25 @@ export function buildPublishableContent(draftData, userTier = 'trial') {
     // Backward compatibility: denormalized fields
     ...denormalizeSections(allowedSections),
     
-    // Settings
-    settings: {
-      allowCheckout: ['growth', 'pro', 'premium'].includes(userTier)
-        ? (draftData.settings?.allowCheckout || false)
-        : false,
-      allowOrders: ['growth', 'pro', 'premium'].includes(userTier)
-        ? (draftData.settings?.allowOrders || false)
-        : false,
-      payOnSite: ['growth', 'pro', 'premium'].includes(userTier)
-        ? (draftData.settings?.payOnSite === true)
-        : false,
-      bookingEnabled: draftData.settings?.bookingEnabled !== false,
-      removeBranding: ['growth', 'pro', 'premium'].includes(userTier)
-        ? (draftData.settings?.removeBranding || false)
-        : false,
-      tier: userTier
-    },
+    // Settings — Growth checkout works via pay-on-site until Stripe is connected
+    settings: (() => {
+      const canCheckout = ['growth', 'pro', 'premium'].includes(userTier);
+      const payOnSite = resolvePayOnSiteForPublish(draftData, canCheckout);
+      return {
+        allowCheckout: canCheckout
+          ? Boolean(draftData.settings?.allowCheckout || payOnSite)
+          : false,
+        allowOrders: canCheckout
+          ? Boolean(draftData.settings?.allowOrders)
+          : false,
+        payOnSite,
+        bookingEnabled: canCheckout && siteWantsEmbeddedBooking(draftData),
+        removeBranding: canCheckout
+          ? Boolean(draftData.settings?.removeBranding)
+          : false,
+        tier: userTier
+      };
+    })(),
     
     // Publishing metadata
     publishedAt: new Date().toISOString(),
