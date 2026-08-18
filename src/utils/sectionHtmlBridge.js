@@ -9,6 +9,7 @@
  */
 
 import { resolveTeamHeading, shouldRenderTeam, getNamedTeamMembers } from './businessScale.js';
+import { telHref } from './liveSiteContact.js';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -124,6 +125,25 @@ function getOnAccent(tokens) {
 // Section renderers
 // ---------------------------------------------------------------------------
 
+function renderHeroMeta(content) {
+  const parts = [];
+  if (content.hoursLine) {
+    parts.push(`<span data-testid="hero-hours">${escapeHtml(content.hoursLine)}</span>`);
+  }
+  if (content.addressLine) {
+    parts.push(`<span data-testid="hero-address">${escapeHtml(content.addressLine)}</span>`);
+  }
+  const phoneHref = telHref(content.phone);
+  if (content.phone && phoneHref) {
+    parts.push(`<a data-testid="hero-phone" href="${escapeAttr(phoneHref)}">${escapeHtml(content.phone)}</a>`);
+  }
+  if (content.rating && content.reviewCount) {
+    parts.push(`<span data-testid="hero-rating">${escapeHtml(String(content.rating))} from ${escapeHtml(String(content.reviewCount))} Google reviews</span>`);
+  }
+  if (!parts.length) return '';
+  return `<p class="ss-hero-meta">${parts.join('<span aria-hidden="true"> · </span>')}</p>`;
+}
+
 function renderHero(section, tokens) {
   const c = section.content || {};
   const title = c.title || 'Welcome';
@@ -136,20 +156,21 @@ function renderHero(section, tokens) {
   const accent = getAccent(tokens);
   const onAccent = getOnAccent(tokens);
   const bg = getBg(tokens);
-
-  const backgroundStyle = image
-    ? `background-image: linear-gradient(180deg, rgba(8,8,10,0.42) 0%, rgba(8,8,10,0.78) 100%), url('${escapeAttr(image)}'); background-size: cover; background-position: center;`
-    : `background: ${bg};`;
   const photoClass = image ? ' ss-hero--photo' : '';
+  const photo = image
+    ? `<img class="ss-hero-photo" src="${escapeAttr(image)}" alt="${escapeAttr(imageAlt)}" width="1600" height="900" fetchpriority="high" decoding="async" />`
+    : '';
+  const backgroundStyle = image ? '' : ` style="background: ${bg};"`;
 
-  return `<section class="ss-hero${photoClass}" style="${backgroundStyle}">
+  return `<section class="ss-hero${photoClass}"${backgroundStyle}>
+  ${photo}
   <div class="ss-hero-inner ss-container">
     ${eyebrow ? `<p class="ss-eyebrow">${escapeHtml(eyebrow)}</p>` : ''}
     <h1 class="ss-hero-title">${escapeHtml(title)}</h1>
     ${subtitle ? `<p class="ss-hero-sub">${escapeHtml(subtitle)}</p>` : ''}
+    ${renderHeroMeta(c)}
     ${ctaText ? `<a class="ss-btn" href="${escapeAttr(ctaLink)}" style="background: ${accent}; color: ${onAccent};">${escapeHtml(ctaText)}</a>` : ''}
   </div>
-  ${image ? `<span class="ss-sr-only">${escapeHtml(imageAlt)}</span>` : ''}
 </section>`;
 }
 
@@ -411,7 +432,7 @@ function renderContact(section, tokens) {
   const hours = c.hours || '';
   const details = [
     email ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">Email</strong><a href="mailto:${escapeAttr(email)}" style="color: ${getText(tokens)}; text-decoration: none;">${escapeHtml(email)}</a></div>` : '',
-    phone ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">Phone</strong><a href="tel:${escapeAttr(phone)}" style="color: ${getText(tokens)}; text-decoration: none;">${escapeHtml(phone)}</a></div>` : '',
+    phone && telHref(phone) ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">Phone</strong><a href="${escapeAttr(telHref(phone))}" style="color: ${getText(tokens)}; text-decoration: none;">${escapeHtml(phone)}</a></div>` : '',
     address ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">Address</strong>${escapeHtml(address)}</div>` : '',
     hours ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">Hours</strong>${escapeHtml(typeof hours === 'string' ? hours : '')}</div>` : '',
   ].filter(Boolean).join('\n');
@@ -824,7 +845,7 @@ function renderLocation(section, tokens) {
   <div class="ss-container" style="max-width: 600px; margin: 0 auto; text-align: center;">
     <h2 style="color: ${getAccent(tokens)}; margin-bottom: 24px;">${escapeHtml(title)}</h2>
     <div style="background: ${getSurface(tokens)}; padding: 32px; border-radius: 12px;">
-      ${address ? `<p style="font-size: 1.1rem; margin-bottom: 12px; color: ${getText(tokens)};">📍 ${escapeHtml(address)}</p>` : ''}
+      ${address ? `<p style="font-size: 1.1rem; margin-bottom: 12px; color: ${getText(tokens)};">${escapeHtml(address)}</p>` : ''}
       ${instructions ? `<p style="color: ${getMuted(tokens)};">${escapeHtml(instructions)}</p>` : ''}
       ${c.mapUrl ? `<a href="${escapeAttr(c.mapUrl)}" target="_blank" rel="noopener" class="ss-btn" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)};">View on Map</a>` : ''}
     </div>

@@ -6,7 +6,13 @@
 import { composePage } from './layoutRenderer.js';
 import { renderSectionToHtml } from './sectionHtmlBridge.js';
 import { buildSiteNav } from '../config/operatingModel.js';
-import { getLayout } from '../config/layouts.js';
+import {
+  resolvePrimaryCta,
+  resolveSiteAddress,
+  resolveSitePhone,
+  shouldRemoveBranding,
+  telHref,
+} from './liveSiteContact.js';
 
 function escapeHtml(text) {
   if (!text) return '';
@@ -133,6 +139,15 @@ export function getLiveSiteCss(tokens = {}) {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
 }
+.ss-skip {
+  position: absolute; left: 12px; top: -48px; z-index: 60;
+  padding: 10px 14px; background: var(--ss-accent); color: var(--ss-on-accent);
+  font-weight: 600; text-decoration: none; border-radius: 4px;
+}
+.ss-skip:focus { top: 12px; }
+.ss-live a:focus-visible, .ss-live button:focus-visible {
+  outline: 2px solid var(--ss-accent); outline-offset: 3px;
+}
 .ss-container { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
 .ss-nav {
   position: sticky; top: 0; z-index: 30;
@@ -150,9 +165,21 @@ export function getLiveSiteCss(tokens = {}) {
 .ss-nav-links { display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: flex-end; }
 .ss-nav-links a { color: var(--ss-muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
 .ss-nav-links a:hover { color: var(--ss-text); }
+.ss-nav-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.ss-nav-phone {
+  color: var(--ss-text); text-decoration: none; font-weight: 600; font-size: 0.95rem;
+  white-space: nowrap;
+}
+.ss-nav-cta {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; padding: 10px 18px; color: var(--ss-on-accent); text-decoration: none;
+  font-weight: 600; border-radius: 4px; background: var(--ss-accent); white-space: nowrap;
+}
 .ss-hero {
   --ss-hero-text: var(--ss-text);
   --ss-hero-muted: var(--ss-muted);
+  position: relative;
+  overflow: hidden;
   min-height: min(88vh, 760px);
   display: grid; place-items: center;
   padding: 96px 20px 80px;
@@ -160,9 +187,24 @@ export function getLiveSiteCss(tokens = {}) {
 }
 .ss-hero.ss-hero--photo {
   --ss-hero-text: #f4f2ee;
-  --ss-hero-muted: rgba(244,242,238,0.88);
+  --ss-hero-muted: rgba(244,242,238,0.92);
 }
-.ss-hero-inner { max-width: 820px; }
+.ss-hero--photo::after {
+  content: "";
+  position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(180deg, rgba(8,8,10,0.52) 0%, rgba(8,8,10,0.78) 100%);
+}
+.ss-hero-photo {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; z-index: 0;
+}
+.ss-hero-inner { position: relative; z-index: 2; max-width: 820px; }
+.ss-hero-meta {
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+  gap: 6px 0; margin: 0 auto 24px; max-width: 640px;
+  color: var(--ss-hero-muted); font-size: 0.95rem; font-weight: 500;
+}
+.ss-hero-meta a { color: var(--ss-hero-text); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 .ss-eyebrow {
   text-transform: uppercase; letter-spacing: 0.16em; font-size: 0.75rem;
   font-weight: 600; margin-bottom: 16px; color: var(--ss-hero-muted);
@@ -254,10 +296,13 @@ export function getLiveSiteCss(tokens = {}) {
   border-top: 1px solid var(--ss-hairline);
   padding: 28px 0 40px; color: var(--ss-muted); font-size: 0.9rem;
 }
+.ss-footer-nap { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; }
+.ss-footer-nap a { color: var(--ss-text); text-decoration: none; font-weight: 600; }
 @media (max-width: 800px) {
   .ss-about-grid--media { grid-template-columns: 1fr; }
   .ss-nav-links { display: none; }
   .ss-hero { min-height: 72vh; padding: 72px 20px 56px; }
+  .ss-nav-phone { max-width: 42vw; overflow: hidden; text-overflow: ellipsis; }
 }
 @media (prefers-reduced-motion: reduce) {
   .ss-live * { animation: none !important; transition: none !important; }
@@ -280,33 +325,44 @@ function renderNav(siteData, page) {
   const linkHtml = links
     .map((item) => `<a href="${escapeAttr(item.href || '#')}">${escapeHtml(item.label || '')}</a>`)
     .join('');
-  return `<nav class="ss-nav" aria-label="Site">
+  const phone = resolveSitePhone(siteData);
+  const phoneHref = telHref(phone);
+  const primary = resolvePrimaryCta(siteData, page);
+  const phoneLink = phoneHref
+    ? `<a class="ss-nav-phone" data-testid="header-call" href="${escapeAttr(phoneHref)}">${escapeHtml(phone)}</a>`
+    : '';
+  const ctaLink = `<a class="ss-nav-cta" data-testid="header-cta" href="${escapeAttr(primary.href)}">${escapeHtml(primary.label)}</a>`;
+
+  return `<a class="ss-skip" href="#main">Skip to content</a>
+<nav class="ss-nav" aria-label="Site">
   <div class="ss-nav-inner">
-    <a class="ss-brand" href="#top" data-editable="brand.name">${escapeHtml(brand)}</a>
+    <a class="ss-brand" href="#main" data-editable="brand.name">${escapeHtml(brand)}</a>
     ${linkHtml ? `<div class="ss-nav-links">${linkHtml}</div>` : ''}
+    <div class="ss-nav-actions">${phoneLink}${ctaLink}</div>
   </div>
 </nav>`;
 }
 
 function renderFooter(siteData) {
   const brand = siteData?.brand?.name || siteData?.businessName || '';
+  const phone = resolveSitePhone(siteData);
+  const phoneHref = telHref(phone);
+  const address = resolveSiteAddress(siteData);
+  const nap = [
+    brand ? `<span>${escapeHtml(brand)}</span>` : '',
+    phoneHref ? `<a data-testid="footer-call" href="${escapeAttr(phoneHref)}">${escapeHtml(phone)}</a>` : '',
+    address ? `<span data-testid="footer-address">${escapeHtml(address)}</span>` : '',
+  ].filter(Boolean).join('');
+  const badge = shouldRemoveBranding(siteData)
+    ? ''
+    : '<span data-testid="sitesprintz-badge">Made with SiteSprintz</span>';
+
   return `<footer class="ss-footer">
   <div class="ss-footer-inner">
-    <span>${escapeHtml(brand)}</span>
-    <span>Made with SiteSprintz</span>
+    <div class="ss-footer-nap">${nap}</div>
+    ${badge}
   </div>
 </footer>`;
-}
-
-function resolveStickyPhone(siteData) {
-  const fromSection = (Array.isArray(siteData?.sections) ? siteData.sections : [])
-    .find((section) => section?.type === 'contact')?.content?.phone;
-  return siteData?.contactPhone || siteData?.contact?.phone || fromSection || '';
-}
-
-function telHref(phone) {
-  const digits = String(phone || '').replace(/[^\d+]/g, '');
-  return digits ? `tel:${digits}` : '';
 }
 
 /**
@@ -314,20 +370,11 @@ function telHref(phone) {
  * no in-page action target.
  */
 export function buildStickyCtaBar(siteData, page) {
-  const layoutKey = page?.layout || siteData?._layout;
-  const intent = getLayout(layoutKey)?.hero?.ctaDefault || 'contact';
-  const phoneHref = telHref(resolveStickyPhone(siteData));
+  const primary = resolvePrimaryCta(siteData, page);
+  const phoneHref = telHref(resolveSitePhone(siteData));
   const actions = [];
 
-  if (intent === 'booking') {
-    actions.push({ href: '#booking', label: 'Book', testId: 'sticky-cta-book' });
-  } else if (intent === 'quote') {
-    actions.push({ href: '#contact', label: 'Get a Quote', testId: 'sticky-cta-quote' });
-  } else if (intent === 'ordering') {
-    actions.push({ href: '#catalog', label: 'Order', testId: 'sticky-cta-order' });
-  } else {
-    actions.push({ href: '#contact', label: 'Contact', testId: 'sticky-cta-contact' });
-  }
+  actions.push({ href: primary.href, label: primary.label, testId: primary.stickyTestId });
 
   if (phoneHref) {
     actions.unshift({ href: phoneHref, label: 'Call', testId: 'sticky-cta-call' });
@@ -360,7 +407,7 @@ export function buildLiveSiteMarkup(siteData, options = {}) {
 
   const css = getLiveSiteCss(page.tokens);
   const html = `${renderNav(siteData, page)}
-<main id="top" class="ss-main">
+<main id="main" class="ss-main">
   ${sectionsHtml}
 </main>
 ${renderFooter(siteData)}

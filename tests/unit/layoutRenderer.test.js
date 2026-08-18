@@ -442,6 +442,8 @@ describe('layoutRenderer — catalog-shaped site data', () => {
     const result = renderSection('hero', {}, catalogSite, {}, 'split');
     expect(result.content.image).toContain('hero.jpg');
     expect(result.content.title).toMatch(/Beauty|Luxe/);
+    expect(result.content.ctaLink).toBe('#booking');
+    expect(result.content.phone).toBe('555-0100');
   });
 
   it('inserts about from catalog when composing', () => {

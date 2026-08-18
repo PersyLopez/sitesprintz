@@ -302,6 +302,78 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(html).toContain('tel:5550100');
     expect(html).toContain('data-testid="sticky-cta-book"');
     expect(css).toContain('.ss-sticky-cta');
+    expect(html).toContain('data-testid="header-cta"');
+    expect(html).toContain('data-testid="header-call"');
+    expect(html).toContain('Skip to content');
+    expect(html).toContain('id="main"');
+    expect(css).toContain('.ss-nav-actions');
+    expect(css).toContain('.ss-nav-cta');
+  });
+
+  it('keeps header actions visible on small screens when page links hide', () => {
+    const { css } = buildLiveSiteMarkup({
+      businessName: 'Studio Luxe',
+      contactPhone: '555-0100',
+      _layout: 'atelier',
+      _niche: 'salon',
+      _level: 'solo',
+      sections: [{ type: 'hero', enabled: true, content: { title: 'Studio Luxe' } }],
+    });
+    expect(css).toMatch(/@media \(max-width: 800px\)[\s\S]*\.ss-nav-links \{ display: none; \}/);
+    expect(css).not.toMatch(/@media \(max-width: 800px\)[\s\S]*\.ss-nav-actions \{ display: none/);
+  });
+
+  it('puts hours, address, and tap-to-call in the hero', () => {
+    const { html } = buildLiveSiteMarkup({
+      businessName: 'Studio Luxe',
+      contactPhone: '555-0100',
+      contactAddress: '12 Maple St',
+      businessHours: 'Tue–Sat 10am–7pm',
+      _layout: 'atelier',
+      _niche: 'salon',
+      _level: 'solo',
+      sections: [
+        { type: 'hero', enabled: true, content: { title: 'Studio Luxe' } },
+        { type: 'contact', enabled: true, content: { phone: '555-0100' } },
+      ],
+    });
+    expect(html).toContain('data-testid="hero-hours"');
+    expect(html).toContain('Tue–Sat 10am–7pm');
+    expect(html).toContain('data-testid="hero-address"');
+    expect(html).toContain('12 Maple St');
+    expect(html).toContain('data-testid="hero-phone"');
+    expect(html).toContain('tel:5550100');
+  });
+
+  it('hides the SiteSprintz badge on Growth and keeps NAP in the footer', () => {
+    const { html } = buildLiveSiteMarkup({
+      businessName: 'Studio Luxe',
+      contactPhone: '555-0100',
+      contactAddress: '12 Maple St',
+      plan: 'growth',
+      _layout: 'atelier',
+      _niche: 'salon',
+      _level: 'solo',
+      sections: [
+        { type: 'hero', enabled: true, content: { title: 'Studio Luxe' } },
+        { type: 'contact', enabled: true, content: { phone: '555-0100', address: '12 Maple St' } },
+      ],
+    });
+    expect(html).not.toContain('Made with SiteSprintz');
+    expect(html).toContain('data-testid="footer-call"');
+    expect(html).toContain('data-testid="footer-address"');
+  });
+
+  it('keeps the SiteSprintz badge on Starter', () => {
+    const { html } = buildLiveSiteMarkup({
+      businessName: 'Harbor Goods',
+      plan: 'starter',
+      _layout: 'mercantile',
+      _niche: 'product-showcase',
+      _level: 'solo',
+      sections: [{ type: 'hero', enabled: true, content: { title: 'Harbor Goods' } }],
+    });
+    expect(html).toContain('data-testid="sitesprintz-badge"');
   });
 
   it('keeps a reviews section when only a Google placeId is present', () => {

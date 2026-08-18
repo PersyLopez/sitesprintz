@@ -109,7 +109,9 @@ describe('siteThemes in compose and live markup', () => {
     expect(css).toContain('--ss-on-accent: #140808');
     expect(css).toContain('--ss-accent:');
     expect(html).toContain('ss-hero--photo');
-    expect(html).toContain('rgba(8,8,10,0.78)');
+    expect(css).toContain('rgba(8,8,10,0.78)');
+    expect(html).toContain('ss-hero-photo');
+    expect(html).toContain('width="1600"');
   });
 
   it('canvas heroes (no photo) use theme text, not forced white', () => {

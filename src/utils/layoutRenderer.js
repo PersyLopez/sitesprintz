@@ -30,6 +30,7 @@ import {
 import { resolveVoiceCopy, resolveTeamHeading } from './businessScale.js';
 import { resolveOperatingModel } from '../config/operatingModel.js';
 import { filterStockImages, isStockImageUrl } from './stockPhotos.js';
+import { resolvePrimaryCta, resolveSiteAddress, resolveSitePhone } from './liveSiteContact.js';
 
 // ---------------------------------------------------------------------------
 // Section primitives — one per type, variant-aware, tolerant data access
@@ -61,7 +62,12 @@ const sectionPrimitives = {
         image: liveHeroImage(c.image || catalogHero.image || siteData.heroImage || '', siteData),
         imageAlt: c.imageAlt || catalogHero.imageAlt || '',
         ctaText: c.ctaText || ctaFromCatalog || resolveHeroCta(heroVariant, siteData),
-        ctaLink: c.ctaLink || catalogHero.cta?.[0]?.href || '#contact',
+        ctaLink: c.ctaLink || catalogHero.cta?.[0]?.href || resolvePrimaryCta(siteData).href,
+        hoursLine: c.hoursLine || formatHours(c.hours || siteData.businessHours || siteData.contact?.hours || ''),
+        addressLine: c.addressLine || resolveSiteAddress(siteData),
+        phone: c.phone || resolveSitePhone(siteData),
+        rating: c.rating || siteData.googleRating || '',
+        reviewCount: c.reviewCount || siteData.googleReviewCount || '',
       },
       settings: {
         overlay: c.overlay !== undefined ? c.overlay : (heroVariant === 'full-bleed'),
@@ -402,7 +408,7 @@ const sectionPrimitives = {
       type: 'hours',
       content: {
         title: c.title || 'Hours',
-        hours: c.hours || siteData.businessHours || '',
+        hours: formatHours(c.hours || siteData.businessHours || siteData.contact?.hours || ''),
         openUntil: c.openUntil || siteData.openUntil || null,
       },
       settings: {},
