@@ -4,25 +4,35 @@
  * with cart overlay when checkout is enabled.
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useLayoutEffect, useMemo, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import BookingWidget from '../components/BookingWidget';
 import ShoppingCart from '../components/ecommerce/ShoppingCart';
+import SeamlessEditToolbar from '../components/published/SeamlessEditToolbar';
 import { CartProvider } from '../context/CartContext';
 import { useCart } from '../hooks/useCart';
-import { buildLiveSiteMarkup } from '../utils/publishedSiteDocument';
+import { useAuth } from '../hooks/useAuth';
+import { usePublishedSeamlessEdit } from '../hooks/usePublishedSeamlessEdit';
+import { buildLiveSiteMarkup, getLiveSiteThemeVars } from '../utils/publishedSiteDocument';
 import { isPayOnSiteEnabled } from '../utils/payOnSite';
+import { siteWantsEmbeddedBooking, subdomainFromLivePath } from '../utils/visitorExperience';
 import '../styles/published-site-viewer.css';
 
 function PublishedSiteViewerContent({ onSiteId }) {
   const { subdomain } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { clearCart, addToCart } = useCart();
+  const liveRef = useRef(null);
+  const appliedHtmlRef = useRef('');
   const [site, setSite] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userId, setUserId] = useState(null);
   const [siteId, setSiteId] = useState(null);
+  const [bookingMount, setBookingMount] = useState(null);
 
   useEffect(() => {
     const fetchSite = async () => {
@@ -79,6 +89,7 @@ function PublishedSiteViewerContent({ onSiteId }) {
   }, [clearCart]);
 
   const payload = site?.data || site?.site_data || {};
+  const ownerUserId = userId || site?.userId || site?.user_id || null;
   const markup = useMemo(() => {
     if (!payload || Object.keys(payload).length === 0) return null;
     try {
@@ -87,6 +98,60 @@ function PublishedSiteViewerContent({ onSiteId }) {
       return null;
     }
   }, [payload]);
+  const bookingEnabled = Boolean(
+    ownerUserId
+    && (
+      siteWantsEmbeddedBooking(payload)
+      || Boolean(markup?.html?.includes('data-ss-booking-mount'))
+    )
+  );
+  const themeVars = markup?.tokens ? getLiveSiteThemeVars(markup.tokens) : undefined;
+  const wantsEdit = searchParams.get('edit') === 'true';
+  const isOwner = Boolean(user?.id && ownerUserId && user.id === ownerUserId);
+  const editEnabled = Boolean(wantsEdit && isOwner && markup && !authLoading);
+
+  const reloadPublishedSite = useCallback(async () => {
+    if (!subdomain) return;
+    appliedHtmlRef.current = '';
+    const response = await fetch(`/api/showcases/${subdomain}`);
+    if (!response.ok) throw new Error('Site not found');
+    const data = await response.json();
+    const siteData = data.site || data;
+    setSite(siteData);
+    if (siteData.id || siteData.subdomain) {
+      const resolvedSiteId = siteData.id || siteData.subdomain;
+      setSiteId(resolvedSiteId);
+      onSiteId?.(resolvedSiteId);
+      setUserId(siteData.userId || siteData.user_id);
+    }
+  }, [subdomain, onSiteId]);
+
+  const edit = usePublishedSeamlessEdit({
+    enabled: editEnabled,
+    subdomain,
+    liveRef,
+    siteData: payload,
+    bindKey: markup?.html || '',
+    onRestored: reloadPublishedSite,
+  });
+
+  useLayoutEffect(() => {
+    const root = liveRef.current;
+    const nextHtml = markup?.html || '';
+    if (!root) {
+      setBookingMount((current) => (current == null ? current : null));
+      return undefined;
+    }
+    // Apply composed HTML ourselves. dangerouslySetInnerHTML re-writes the
+    // container on later renders and detaches a portaled booking widget.
+    if (appliedHtmlRef.current !== nextHtml || (nextHtml && !root.firstChild)) {
+      root.innerHTML = nextHtml;
+      appliedHtmlRef.current = nextHtml;
+    }
+    const node = bookingEnabled ? root.querySelector('[data-ss-booking-mount]') : null;
+    setBookingMount((current) => (current === node ? current : node));
+    return undefined;
+  }, [markup, bookingEnabled]);
 
   if (loading) {
     return (
@@ -120,19 +185,104 @@ function PublishedSiteViewerContent({ onSiteId }) {
       price: Number.isFinite(price) ? price : 0,
       image: button.getAttribute('data-product-image') || undefined,
     });
+    const original = button.textContent;
+    button.classList.add('is-added');
+    button.textContent = 'Added';
+    window.setTimeout(() => {
+      button.classList.remove('is-added');
+      if (button.isConnected) button.textContent = original;
+    }, 1400);
+  };
+
+  const handleContactSubmit = async (event) => {
+    const form = event.target.closest('form[data-type="contact"], form#contact-form');
+    if (!form) return;
+    event.preventDefault();
+    const status = form.querySelector('[data-testid="contact-form-status"]');
+    const formData = new FormData(form);
+    const body = Object.fromEntries(formData.entries());
+    body.subdomain = body.subdomain || subdomain || subdomainFromLivePath(window.location.pathname);
+    if (status) {
+      status.textContent = 'Sending…';
+      status.setAttribute('data-state', '');
+    }
+    try {
+      const response = await fetch('/api/submissions/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || data.message || 'Failed to send message');
+      }
+      form.reset();
+      if (status) {
+        status.textContent = data.message || 'Your message has been sent.';
+        status.setAttribute('data-state', 'success');
+      }
+    } catch (err) {
+      if (status) {
+        status.textContent = err.message || 'Failed to send message. Please try again.';
+        status.setAttribute('data-state', 'error');
+      }
+    }
   };
 
   const checkoutEnabled = Boolean(payload.settings?.allowCheckout && siteId);
-  const bookingEnabled = Boolean(
-    (payload.booking?.enabled || payload.settings?.bookingEnabled) && userId
+  const demoMode = payload.settings?.demoMode === true;
+  const bookingSection = (payload.sections || []).find(
+    (section) => section?.type === 'booking' || section?.type === 'native-booking'
   );
-  const demoMode = Boolean(payload.settings?.demoMode) || String(subdomain || '').startsWith('gallery-');
+  const bookingMode = payload.booking?.businessMode
+    || bookingSection?.content?.businessMode
+    || payload._operatingModel?.businessMode
+    || 'solo';
+  const bookingNoPreference = payload.booking?.noPreferenceText
+    || bookingSection?.content?.noPreferenceText
+    || payload._operatingModel?.noPreferenceText
+    || 'Any available';
+  const bookingWidget = bookingEnabled ? (
+    <BookingWidget
+      userId={ownerUserId}
+      siteId={siteId}
+      demoMode={demoMode}
+      businessMode={bookingMode}
+      noPreferenceText={bookingNoPreference}
+    />
+  ) : null;
+
+  const portalTarget = bookingMount?.isConnected ? bookingMount : null;
 
   return (
-    <div className="published-site-viewer">
+    <div className="published-site-viewer" style={themeVars}>
+      {wantsEdit && !authLoading && !isAuthenticated && (
+        <div className="seamless-edit-login" data-testid="seamless-edit-login">
+          <a href={`/login?redirect=${encodeURIComponent(`/view/${subdomain}?edit=true`)}`}>Log in</a>
+          {' '}to edit this site.
+        </div>
+      )}
+      {editEnabled && (
+        <SeamlessEditToolbar
+          saveState={edit.saveState}
+          canUndo={edit.canUndo}
+          onUndo={edit.undo}
+          onOpenHistory={edit.openHistory}
+          historyOpen={edit.historyOpen}
+          history={edit.history}
+          historyError={edit.historyError}
+          selectedVersion={edit.selectedVersion}
+          onSelectVersion={edit.setSelectedVersion}
+          onCloseHistory={edit.closeHistory}
+          onRestore={edit.restore}
+          restoring={edit.restoring}
+          formatHistoryTime={edit.formatHistoryTime}
+          dashboardHref={siteId ? `/dashboard/sites/${siteId}` : '/dashboard'}
+        />
+      )}
       {demoMode && (
         <div className="showcase-demo-banner" data-testid="showcase-demo-banner" role="status">
-          Gallery demo — this is an example of how your site could look. Cart and booking work as a visitor would experience them; orders and appointments are simulated and not saved.
+          Gallery demo — this is an example of how your site could look. Try the full visitor experience. The only thing you cannot do here is pay by card.
         </div>
       )}
 
@@ -149,10 +299,11 @@ function PublishedSiteViewerContent({ onSiteId }) {
         <>
           <style>{markup.css}</style>
           <div
+            ref={liveRef}
             className="ss-live"
             data-testid="published-composed-site"
             onClick={handleLiveClick}
-            dangerouslySetInnerHTML={{ __html: markup.html }}
+            onSubmit={handleContactSubmit}
           />
         </>
       ) : (
@@ -162,13 +313,14 @@ function PublishedSiteViewerContent({ onSiteId }) {
         </div>
       )}
 
-      {bookingEnabled && (
+      {bookingWidget && portalTarget && createPortal(bookingWidget, portalTarget)}
+      {bookingWidget && markup && !portalTarget && (
         <section id="booking" className="site-section booking-section" data-testid="live-booking-section">
           <div className="section-header">
             <h2>{payload.settings?.bookingTitle || 'Book an Appointment'}</h2>
           </div>
           <div className="booking-widget-container" data-testid="live-booking-widget">
-            <BookingWidget userId={userId} siteId={siteId} demoMode={demoMode} />
+            {bookingWidget}
           </div>
         </section>
       )}

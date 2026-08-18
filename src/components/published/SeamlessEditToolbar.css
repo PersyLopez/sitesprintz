@@ -1,0 +1,199 @@
+.seamless-edit-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 11000;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: #111318;
+  border-bottom: 1px solid rgba(244, 242, 238, 0.12);
+  color: #f4f2ee;
+}
+
+.seamless-edit-toolbar-cluster,
+.seamless-edit-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.seamless-edit-kicker {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #93c5fd;
+  font-weight: 700;
+}
+
+.seamless-edit-save {
+  font-size: 0.9rem;
+  color: #86efac;
+}
+
+.seamless-edit-save.is-pending,
+.seamless-edit-save.is-saving {
+  color: #fde68a;
+}
+
+.seamless-edit-save.is-error {
+  color: #fca5a5;
+}
+
+.seamless-edit-btn {
+  border: 1px solid rgba(244, 242, 238, 0.18);
+  background: #1a1d24;
+  color: inherit;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.seamless-edit-btn:hover:not(:disabled),
+.seamless-edit-btn:focus-visible {
+  border-color: #60a5fa;
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+.seamless-edit-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.seamless-edit-btn-primary {
+  background: #2563eb;
+  border-color: #2563eb;
+  width: 100%;
+  margin-top: 12px;
+}
+
+.seamless-edit-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+}
+
+.ss-live--editing [data-editable] {
+  cursor: text;
+  outline: 2px dashed transparent;
+  outline-offset: 3px;
+  transition: outline-color 0.15s ease;
+}
+
+.ss-live--editing [data-editable]:hover,
+.ss-live--editing [data-editable].is-editing {
+  outline-color: rgba(96, 165, 250, 0.9);
+}
+
+.ss-live--editing [data-editable].is-editing,
+.ss-live--editing [data-editable][contenteditable="true"],
+.ss-live--editing [data-editable][contenteditable="plaintext-only"] {
+  caret-color: currentColor;
+  -webkit-text-fill-color: currentColor;
+  mix-blend-mode: normal;
+  background-clip: border-box;
+  -webkit-background-clip: border-box;
+  overflow: visible;
+}
+
+.ss-live--editing [data-editable].is-editing *,
+.ss-live--editing [data-editable][contenteditable] * {
+  color: inherit !important;
+  -webkit-text-fill-color: inherit !important;
+  background: transparent !important;
+}
+
+.ss-live--editing [data-editable].is-editing::selection,
+.ss-live--editing [data-editable].is-editing *::selection {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.seamless-history {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  background: rgba(8, 8, 10, 0.72);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.seamless-history-card {
+  width: min(480px, 100%);
+  background: #16181f;
+  color: #f4f2ee;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(244, 242, 238, 0.12);
+}
+
+.seamless-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.seamless-history-header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.seamless-history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 320px;
+  overflow: auto;
+  display: grid;
+  gap: 8px;
+}
+
+.seamless-history-item {
+  width: 100%;
+  text-align: left;
+  background: #111318;
+  border: 1px solid rgba(244, 242, 238, 0.12);
+  color: inherit;
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  display: grid;
+  gap: 4px;
+}
+
+.seamless-history-item span {
+  color: #9ca3af;
+  font-size: 0.85rem;
+}
+
+.seamless-history-item.is-selected {
+  border-color: #60a5fa;
+}
+
+.seamless-history-empty,
+.seamless-history-error {
+  margin: 0;
+  color: #d1d5db;
+}
+
+.seamless-history-error {
+  color: #fca5a5;
+  margin-bottom: 12px;
+}
+
+.seamless-edit-login {
+  position: sticky;
+  top: 0;
+  z-index: 11000;
+  padding: 12px 16px;
+  background: #1e293b;
+  color: #f8fafc;
+  text-align: center;
+}

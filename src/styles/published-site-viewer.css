@@ -38,8 +38,8 @@
 
 .published-site-viewer {
   min-height: 100vh;
-  background: #0c0c0e;
-  color: #f8fafc;
+  background: var(--ss-bg, #0c0c0e);
+  color: var(--ss-text, #f8fafc);
 }
 
 .showcase-demo-banner {

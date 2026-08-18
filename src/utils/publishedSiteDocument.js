@@ -58,6 +58,9 @@ function isEmptyOptional(section) {
       return !c.hours;
     case 'location':
       return !c.address;
+    case 'social':
+      return !['facebook', 'instagram', 'whatsapp', 'tiktok', 'maps', 'website', 'linkedin', 'twitter', 'youtube']
+        .some((key) => c[key]);
     case 'service-areas':
       return list(c.areas).length === 0;
     case 'process':
@@ -68,6 +71,33 @@ function isEmptyOptional(section) {
     default:
       return false;
   }
+}
+
+export function getLiveSiteThemeVars(tokens = {}) {
+  const theme = tokens.theme || {};
+  const accent = themeAccent(tokens);
+  const bg = theme.bg || '#0c0c0e';
+  const text = theme.text || '#f4f2ee';
+  const muted = theme.muted || '#8a8a8f';
+  const surface = theme.surface || '#141417';
+  const hairline = theme.hairline || 'rgba(244,242,238,.10)';
+  const onAccent = theme.onAccent || '#f4f2ee';
+  return {
+    '--ss-bg': bg,
+    '--ss-text': text,
+    '--ss-muted': muted,
+    '--ss-surface': surface,
+    '--ss-accent': accent,
+    '--ss-on-accent': onAccent,
+    '--ss-hairline': hairline,
+    '--primary-color': accent,
+    '--bg-card': surface,
+    '--bg-elevated': surface,
+    '--bg-darker': bg,
+    '--text-light': text,
+    '--text-muted': muted,
+    '--border-dark': hairline,
+  };
 }
 
 export function getLiveSiteCss(tokens = {}) {
@@ -180,6 +210,28 @@ export function getLiveSiteCss(tokens = {}) {
   border: 1px solid var(--ss-hairline); padding: 8px 12px; border-radius: 999px;
   font-size: 0.85rem; color: var(--ss-muted);
 }
+.ss-contact-form {
+  display: grid; gap: 16px; text-align: left;
+  background: var(--ss-surface); padding: 32px; border-radius: 12px;
+  border: 1px solid var(--ss-hairline);
+}
+.ss-field { display: grid; gap: 6px; font-weight: 600; font-size: 0.9rem; }
+.ss-field span .ss-optional { font-weight: 400; color: var(--ss-muted); }
+.ss-contact-form input, .ss-contact-form textarea {
+  width: 100%; padding: 12px 14px; border-radius: 8px;
+  border: 1px solid var(--ss-hairline); background: var(--ss-bg); color: var(--ss-text);
+  font: inherit;
+}
+.ss-contact-form input:focus, .ss-contact-form textarea:focus {
+  outline: 2px solid var(--ss-accent); outline-offset: 2px;
+}
+.ss-form-status { min-height: 1.25em; margin: 0; font-weight: 500; }
+.ss-form-status[data-state="success"] { color: #34d399; }
+.ss-form-status[data-state="error"] { color: #f87171; }
+.ss-contact-form .ss-btn { justify-self: start; }
+.ss-add-to-cart { cursor: pointer; border: 0; font: inherit; }
+.ss-add-to-cart.is-added { filter: brightness(1.08); }
+.ss-booking-mount { margin-top: 4px; }
 .ss-footer {
   border-top: 1px solid var(--ss-hairline);
   padding: 28px 0 40px; color: var(--ss-muted); font-size: 0.9rem;
@@ -212,7 +264,7 @@ function renderNav(siteData, page) {
     .join('');
   return `<nav class="ss-nav" aria-label="Site">
   <div class="ss-nav-inner">
-    <a class="ss-brand" href="#top">${escapeHtml(brand)}</a>
+    <a class="ss-brand" href="#top" data-editable="brand.name">${escapeHtml(brand)}</a>
     ${linkHtml ? `<div class="ss-nav-links">${linkHtml}</div>` : ''}
   </div>
 </nav>`;
