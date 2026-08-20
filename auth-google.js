@@ -10,6 +10,7 @@ import crypto from 'crypto';
 import { createGoogleOAuthState, consumeGoogleOAuthState } from './server/services/auth/googleOAuthState.js';
 import { createTokenPair } from './server/services/tokenService.js';
 import { setAuthCookies } from './server/utils/authCookies.js';
+import { betaAllowsPublicSignups } from './server/config/betaMode.js';
 
 /**
  * Configure Google OAuth Strategy
@@ -64,6 +65,10 @@ export function configureGoogleAuth() {
             });
           }
         } else {
+          if (!betaAllowsPublicSignups()) {
+            return done(null, false, { code: 'BETA_INVITE_ONLY' });
+          }
+
           // New user - create account in database
           const userId = crypto.randomUUID();
 
@@ -169,6 +174,9 @@ export function setupGoogleRoutes(app) {
       }
 
       if (!user) {
+        if (info?.code === 'BETA_INVITE_ONLY') {
+          return res.redirect(`${clientUrl()}/register?error=beta_invite_only`);
+        }
         console.error('❌ No user returned from passport');
         return res.redirect(`${clientUrl()}/login?error=no_user`);
       }

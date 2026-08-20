@@ -6,6 +6,7 @@ import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { PasswordStrengthMeter } from '../components/auth/PasswordStrengthMeter';
 import { getSafeRedirect } from '../utils/safeRedirect';
+import { useLocale } from '../i18n/LocaleContext.jsx';
 import './Auth.css';
 
 function Register() {
@@ -13,6 +14,7 @@ function Register() {
   const [searchParams] = useSearchParams();
   const { register } = useAuth();
   const { showSuccess, showError } = useToast();
+  const { t } = useLocale();
   const turnstileRef = useRef(null);
   const captchaTokenRef = useRef(null);
 
@@ -24,6 +26,22 @@ function Register() {
   const [loading, setLoading] = useState(false);
   const [captchaReady, setCaptchaReady] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [inviteOnly, setInviteOnly] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/health')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.beta?.enabled && data.beta.allowSignups === false) {
+          setInviteOnly(true);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const storedError = localStorage.getItem('oauthError');
@@ -88,6 +106,11 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (inviteOnly) {
+      showError('Signups are invite-only during closed beta');
+      return;
+    }
 
     // Validate email
     if (!formData.email) {
@@ -174,13 +197,31 @@ function Register() {
       <div className="auth-container">
         <div className="auth-card">
           <div className="auth-header">
-            <h1>Create Your Account</h1>
-            <p>Start building your website today</p>
+            <h1>{t('auth.register.h')}</h1>
+            <p>{t('auth.register.p')}</p>
           </div>
+
+          {inviteOnly && (
+            <div
+              className="auth-notice"
+              data-testid="register-invite-only"
+              role="alert"
+              style={{
+                background: '#fef3c7',
+                border: '1px solid #f59e0b',
+                borderRadius: '8px',
+                padding: '0.75rem 1rem',
+                marginBottom: '1rem',
+                color: '#92400e',
+              }}
+            >
+              Signups are invite-only during our closed beta. Contact us if you need access.
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="auth-form" noValidate>
             <div className="form-group">
-              <label htmlFor="email">Email</label>
+              <label htmlFor="email">{t('auth.email')}</label>
               <input
                 type="email"
                 id="email"
@@ -190,12 +231,12 @@ function Register() {
                 onChange={handleChange}
                 placeholder="you@example.com"
                 required
-                disabled={loading}
+                disabled={loading || inviteOnly}
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="password">Password</label>
+              <label htmlFor="password">{t('auth.password')}</label>
               <input
                 type="password"
                 id="password"
@@ -205,14 +246,14 @@ function Register() {
                 onChange={handleChange}
                 placeholder="Create a secure password"
                 required
-                disabled={loading}
+                disabled={loading || inviteOnly}
                 minLength={12}
               />
               <PasswordStrengthMeter password={formData.password} />
             </div>
 
             <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password</label>
+              <label htmlFor="confirmPassword">{t('auth.confirmPassword')}</label>
               <input
                 type="password"
                 id="confirmPassword"
@@ -222,7 +263,7 @@ function Register() {
                 onChange={handleChange}
                 placeholder="Confirm your password"
                 required
-                disabled={loading}
+                disabled={loading || inviteOnly}
                 minLength={12}
               />
             </div>
@@ -245,7 +286,7 @@ function Register() {
                   data-testid="register-accept-terms"
                   checked={acceptedTerms}
                   onChange={(e) => setAcceptedTerms(e.target.checked)}
-                  disabled={loading}
+                  disabled={loading || inviteOnly}
                   required
                 />
                 <span>
@@ -265,15 +306,15 @@ function Register() {
               type="submit"
               className="btn btn-primary btn-full"
               data-testid="register-submit"
-              disabled={loading || !acceptedTerms}
+              disabled={loading || inviteOnly || !acceptedTerms}
             >
               {loading ? (
                 <>
                   <span className="loading-spinner-sm"></span>
-                  Creating account...
+                  {t('auth.creating')}
                 </>
               ) : (
-                'Create Account'
+                t('auth.create')
               )}
             </button>
           </form>
@@ -286,8 +327,8 @@ function Register() {
             type="button"
             onClick={handleGoogleSignup}
             className="btn btn-secondary btn-full"
-            disabled={!acceptedTerms}
-            title={!acceptedTerms ? 'Accept the agreements above to continue' : undefined}
+            disabled={inviteOnly || !acceptedTerms}
+            title={inviteOnly ? 'Signups are invite-only during closed beta' : (!acceptedTerms ? 'Accept the agreements above to continue' : undefined)}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
               <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4" />
@@ -295,14 +336,14 @@ function Register() {
               <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957C.347 6.175 0 7.55 0 9.002c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05" />
               <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.426 0 9.003 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335" />
             </svg>
-            Continue with Google
+            {t('auth.google')}
           </button>
 
           <div className="auth-switch">
             <p>
-              Already have an account?{' '}
+              {t('auth.haveAccount')}{' '}
               <Link to={loginLinkTo} className="link-primary">
-                Sign in
+                {t('auth.signIn')}
               </Link>
             </p>
           </div>

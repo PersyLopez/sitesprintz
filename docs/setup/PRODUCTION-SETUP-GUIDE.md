@@ -76,7 +76,7 @@ Create a `.env.production` file from `.env.production.example` and fill in every
 
 ### Stripe (live mode required for production)
 
-Production deployments must use live Stripe keys. The validation script specifically checks that `STRIPE_SECRET_KEY` starts with `sk_live_`.
+Production deployments must use live Stripe keys. The validation script specifically checks that `STRIPE_SECRET_KEY` starts with `sk_live_`. Closed beta: set `BETA_MODE=true` and use `sk_test_` keys; live keys are still required when `BETA_MODE` is off.
 
 - `STRIPE_SECRET_KEY=sk_live_...`
 - `STRIPE_PUBLISHABLE_KEY=pk_live_...`
@@ -84,7 +84,7 @@ Production deployments must use live Stripe keys. The validation script specific
 - `STRIPE_PRICE_GROWTH` — live price ID for the Growth plan
 - `STRIPE_PRICE_STARTER` — recommended live price ID for the Starter plan
 
-For staging or local development, test keys (`sk_test_...`) can be used, but do not set `NODE_ENV=production` with test keys.
+For staging or local development, use test keys (`sk_test_...`). On a closed-beta Railway deploy, keep `NODE_ENV=production` and set `BETA_MODE=true` so test keys are allowed. Do not use test keys in public production (`BETA_MODE` off).
 
 ### Email
 

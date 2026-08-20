@@ -1,5 +1,6 @@
 import express from 'express';
 import { prisma } from '../../database/db.js';
+import { isBetaMode, betaAllowsPublicSignups, stripeKeyMode } from '../config/betaMode.js';
 
 const router = express.Router();
 const startTime = Date.now();
@@ -34,6 +35,11 @@ router.get('/', async (req, res) => {
       },
       performance: {
         database_latency_ms: dbLatency
+      },
+      beta: {
+        enabled: isBetaMode(),
+        allowSignups: betaAllowsPublicSignups(),
+        stripeMode: stripeKeyMode(process.env.STRIPE_SECRET_KEY)
       }
     });
   } catch (error) {

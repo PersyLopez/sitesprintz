@@ -43,8 +43,7 @@ function FeedbackWidget() {
       } else {
         throw new Error('Failed to submit feedback');
       }
-    } catch (error) {
-      console.error('Feedback submission error:', error);
+    } catch {
       showError('Failed to submit feedback. Please try again.');
     } finally {
       setSubmitting(false);
@@ -146,6 +145,7 @@ function FeedbackWidget() {
                   type="submit"
                   className="btn btn-primary"
                   disabled={submitting || !message.trim()}
+                  data-testid="feedback-submit"
                 >
                   {submitting ? 'Sending...' : 'Send Feedback'}
                 </button>

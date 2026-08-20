@@ -23,6 +23,7 @@ import {
     asyncHandler
 } from '../utils/apiResponse.js';
 import { getRequiredSecret } from '../config/secrets.js';
+import { betaAllowsPublicSignups } from '../config/betaMode.js';
 import { setAuthCookies, clearAuthCookies, readRefreshToken } from '../utils/authCookies.js';
 
 const validator = new ValidationService();
@@ -36,6 +37,10 @@ const getJwtSecret = () => getRequiredSecret('JWT_SECRET', { allowTestFallback: 
  * Protected by rate limiting: 3 registrations per 15 minutes per IP
  */
 router.post('/register', registrationLimiter, asyncHandler(async (req, res) => {
+    if (!betaAllowsPublicSignups()) {
+        return sendForbidden(res, 'Signups are invite-only during closed beta', 'BETA_INVITE_ONLY');
+    }
+
     const { email, password, captchaToken, acceptedTerms } = req.body;
 
     // Step 1: Validate input
@@ -275,6 +280,10 @@ router.post('/login', loginLimiter, asyncHandler(async (req, res) => {
  * QUICK REGISTER ENDPOINT
  */
 router.post('/quick-register', asyncHandler(async (req, res) => {
+    if (!betaAllowsPublicSignups()) {
+        return sendForbidden(res, 'Signups are invite-only during closed beta', 'BETA_INVITE_ONLY');
+    }
+
     const { email, skipPassword } = req.body;
 
     if (!email) {

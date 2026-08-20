@@ -29,6 +29,17 @@ describe('Health Endpoints Integration Tests', () => {
       expect(response.body.services).toHaveProperty('api');
       expect(response.body.services).toHaveProperty('database');
     });
+
+    it('should include beta flags', async () => {
+      const response = await request(app)
+        .get('/health');
+
+      expect(response.body.beta).toEqual({
+        enabled: expect.any(Boolean),
+        allowSignups: expect.any(Boolean),
+        stripeMode: expect.stringMatching(/^(live|test|missing|invalid)$/),
+      });
+    });
   });
 
   describe('GET /health/ready', () => {
