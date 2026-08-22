@@ -8,6 +8,13 @@ import {
   isClaimExpired,
   isClaimTokenShape,
 } from '../services/claimTokenService.js';
+import {
+  completeClaimTrialCheckout,
+  createClaimTrialCheckout,
+  isSubscribedStatus,
+  normalizeClaimPlan,
+  validateClaimOwnership,
+} from '../services/claimTrialService.js';
 
 const router = express.Router();
 
@@ -56,6 +63,103 @@ router.get('/:token', async (req, res) => {
 });
 
 /**
+ * POST /api/claim/:token/trial-checkout
+ * Start Stripe Checkout with 7-day trial before claiming.
+ */
+router.post('/:token/trial-checkout', claimAcceptLimiter, requireAuth, async (req, res) => {
+  try {
+    const site = await findSiteByClaimToken(req.params.token);
+    if (!site) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    if (isClaimExpired(site.claim_token_expires)) {
+      return res.status(410).json({ error: 'Claim link expired' });
+    }
+
+    const claimant = req.user;
+    const ownershipError = await validateClaimOwnership(site, claimant);
+    if (ownershipError) {
+      return res.status(ownershipError.status).json(ownershipError.body);
+    }
+
+    const plan = normalizeClaimPlan(req.body?.plan);
+    if (!plan) {
+      return res.status(400).json({ error: 'Invalid plan. Must be "starter" or "growth"' });
+    }
+
+    const status = claimant.subscriptionStatus || claimant.subscription_status;
+    if (isSubscribedStatus(status)) {
+      return res.json({ alreadySubscribed: true });
+    }
+
+    const { url } = await createClaimTrialCheckout({
+      user: claimant,
+      site,
+      plan,
+      claimToken: req.params.token,
+      req,
+    });
+
+    return res.json({ url });
+  } catch (err) {
+    if (err.code === 'STRIPE_NOT_CONFIGURED') {
+      return res.status(503).json({
+        error: 'Stripe not configured',
+        code: 'STRIPE_NOT_CONFIGURED',
+      });
+    }
+    return res.status(500).json({ error: 'Trial checkout failed' });
+  }
+});
+
+/**
+ * POST /api/claim/:token/trial-complete
+ * Sync subscription after Stripe Checkout return (covers webhook lag).
+ */
+router.post('/:token/trial-complete', requireAuth, async (req, res) => {
+  try {
+    const site = await findSiteByClaimToken(req.params.token);
+    if (!site) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    if (isClaimExpired(site.claim_token_expires)) {
+      return res.status(410).json({ error: 'Claim link expired' });
+    }
+
+    const sessionId = req.body?.sessionId;
+    if (!sessionId || typeof sessionId !== 'string') {
+      return res.status(400).json({ error: 'sessionId is required' });
+    }
+
+    const result = await completeClaimTrialCheckout({
+      user: req.user,
+      site,
+      sessionId,
+    });
+
+    return res.json(result);
+  } catch (err) {
+    if (err.code === 'STRIPE_NOT_CONFIGURED') {
+      return res.status(503).json({
+        error: 'Stripe not configured',
+        code: 'STRIPE_NOT_CONFIGURED',
+      });
+    }
+    if (
+      err.code === 'SESSION_INCOMPLETE' ||
+      err.code === 'SESSION_USER_MISMATCH' ||
+      err.code === 'INVALID_SOURCE' ||
+      err.code === 'SESSION_SITE_MISMATCH' ||
+      err.code === 'MISSING_SUBSCRIPTION' ||
+      err.code === 'INVALID_SUBSCRIPTION_STATUS'
+    ) {
+      return res.status(400).json({ error: err.message, code: err.code });
+    }
+    return res.status(500).json({ error: 'Trial completion failed' });
+  }
+});
+
+/**
  * POST /api/claim/:token/accept
  * Transfer prospect site to the authenticated user after trial/active subscription.
  */
@@ -70,23 +174,13 @@ router.post('/:token/accept', claimAcceptLimiter, requireAuth, async (req, res) 
     }
 
     const claimant = req.user;
-    const owner = site.user_id
-      ? await prisma.users.findUnique({
-          where: { id: site.user_id },
-          select: { id: true, role: true },
-        })
-      : null;
-
-    if (owner && owner.role !== 'admin' && owner.id !== claimant.id) {
-      return res.status(403).json({ error: 'Site already owned' });
-    }
-
-    if (claimant.role === 'admin' && owner && owner.id !== claimant.id) {
-      return res.status(403).json({ error: 'Not allowed' });
+    const ownershipError = await validateClaimOwnership(site, claimant);
+    if (ownershipError) {
+      return res.status(ownershipError.status).json(ownershipError.body);
     }
 
     const status = claimant.subscriptionStatus || claimant.subscription_status;
-    if (status !== 'trialing' && status !== 'active') {
+    if (!isSubscribedStatus(status)) {
       return res.status(403).json({
         error: 'Start a 7-day trial before claiming this site',
         code: 'SUBSCRIPTION_REQUIRED',

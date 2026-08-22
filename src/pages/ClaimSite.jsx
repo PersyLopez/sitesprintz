@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
@@ -13,18 +13,31 @@ function authHeaders(token) {
   };
 }
 
+function hasActiveSubscription(user) {
+  const status = user?.subscriptionStatus || user?.subscription_status;
+  return status === 'trialing' || status === 'active';
+}
+
 function ClaimSite() {
   const { token } = useParams();
-  const { user, isAuthenticated, token: authToken } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { user, isAuthenticated, token: authToken, setUser } = useAuth();
   const { showSuccess, showError } = useToast();
   const [loading, setLoading] = useState(true);
   const [accepting, setAccepting] = useState(false);
+  const [startingTrial, setStartingTrial] = useState(false);
+  const [completingTrial, setCompletingTrial] = useState(false);
   const [preview, setPreview] = useState(null);
   const [error, setError] = useState(null);
+  const [selectedPlan, setSelectedPlan] = useState('growth');
+  const [subscriptionReady, setSubscriptionReady] = useState(false);
+  const [needsTrial, setNeedsTrial] = useState(false);
 
   const claimPath = `/claim/${token}`;
   const loginTo = `/login?redirect=${encodeURIComponent(claimPath)}`;
   const registerTo = `/register?redirect=${encodeURIComponent(claimPath)}`;
+  const subscribed =
+    subscriptionReady || (isAuthenticated && hasActiveSubscription(user));
 
   useEffect(() => {
     let cancelled = false;
@@ -73,6 +86,86 @@ function ClaimSite() {
     };
   }, [token]);
 
+  useEffect(() => {
+    const sessionId = searchParams.get('session_id');
+    if (!sessionId || !isAuthenticated || !token) {
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    async function completeTrial() {
+      setCompletingTrial(true);
+      try {
+        const response = await fetch(`/api/claim/${token}/trial-complete`, {
+          method: 'POST',
+          headers: authHeaders(authToken),
+          body: JSON.stringify({ sessionId }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to confirm trial');
+        }
+        if (!cancelled) {
+          setSubscriptionReady(true);
+          setNeedsTrial(false);
+          setUser((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  subscriptionStatus: data.subscriptionStatus,
+                  subscription_status: data.subscriptionStatus,
+                }
+              : prev
+          );
+          showSuccess('Your 7-day trial is active. You can claim this site now.');
+          const nextParams = new URLSearchParams(searchParams);
+          nextParams.delete('session_id');
+          setSearchParams(nextParams, { replace: true });
+        }
+      } catch (err) {
+        if (!cancelled) {
+          showError(err.message || 'Failed to confirm trial');
+        }
+      } finally {
+        if (!cancelled) setCompletingTrial(false);
+      }
+    }
+
+    completeTrial();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams, isAuthenticated, token, authToken, setUser, showSuccess, showError, setSearchParams]);
+
+  const handleStartTrial = async () => {
+    setStartingTrial(true);
+    try {
+      const response = await fetch(`/api/claim/${token}/trial-checkout`, {
+        method: 'POST',
+        headers: authHeaders(authToken),
+        body: JSON.stringify({ plan: selectedPlan }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to start trial checkout');
+      }
+      if (data.alreadySubscribed) {
+        setSubscriptionReady(true);
+        setNeedsTrial(false);
+        return;
+      }
+      if (data.url) {
+        window.location.assign(data.url);
+      }
+    } catch (err) {
+      showError(err.message || 'Failed to start trial checkout');
+    } finally {
+      setStartingTrial(false);
+    }
+  };
+
   const handleAccept = async () => {
     setAccepting(true);
     try {
@@ -81,6 +174,11 @@ function ClaimSite() {
         headers: authHeaders(authToken),
       });
       const data = await response.json().catch(() => ({}));
+      if (response.status === 403 && data.code === 'SUBSCRIPTION_REQUIRED') {
+        setNeedsTrial(true);
+        setSubscriptionReady(false);
+        throw new Error(data.error || 'Start a 7-day trial before claiming this site');
+      }
       if (!response.ok) {
         throw new Error(data.error || 'Failed to claim site');
       }
@@ -91,6 +189,8 @@ function ClaimSite() {
       setAccepting(false);
     }
   };
+
+  const showTrialFlow = isAuthenticated && (!subscribed || needsTrial);
 
   return (
     <div className="auth-page story-public">
@@ -131,11 +231,53 @@ function ClaimSite() {
                     </Link>
                   </div>
                 </div>
+              ) : showTrialFlow ? (
+                <div>
+                  <p>
+                    Signed in as <strong>{user?.email}</strong>. Add a card to start your 7-day
+                    trial, then this site moves to your account.
+                  </p>
+                  <fieldset style={{ marginTop: '20px', border: 'none', padding: 0 }}>
+                    <legend className="sr-only">Choose a plan</legend>
+                    <label style={{ display: 'block', marginBottom: '10px' }}>
+                      <input
+                        type="radio"
+                        name="claim-plan"
+                        value="starter"
+                        checked={selectedPlan === 'starter'}
+                        onChange={() => setSelectedPlan('starter')}
+                        data-testid="claim-plan-starter"
+                      />{' '}
+                      Starter — $10/month after trial
+                    </label>
+                    <label style={{ display: 'block', marginBottom: '10px' }}>
+                      <input
+                        type="radio"
+                        name="claim-plan"
+                        value="growth"
+                        checked={selectedPlan === 'growth'}
+                        onChange={() => setSelectedPlan('growth')}
+                        data-testid="claim-plan-growth"
+                      />{' '}
+                      Growth — $35/month after trial
+                    </label>
+                  </fieldset>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-full"
+                    onClick={handleStartTrial}
+                    disabled={startingTrial || completingTrial}
+                    data-testid="claim-start-trial"
+                    style={{ marginTop: '20px' }}
+                  >
+                    {startingTrial || completingTrial ? 'Starting trial...' : 'Start 7-day trial'}
+                  </button>
+                </div>
               ) : (
                 <div>
                   <p>
-                    Signed in as <strong>{user?.email}</strong>. Add a card, start the 7-day trial,
-                    then this site moves to your account.
+                    Signed in as <strong>{user?.email}</strong>. Your trial is active — claim this
+                    site to move it to your account.
                   </p>
                   <button
                     type="button"

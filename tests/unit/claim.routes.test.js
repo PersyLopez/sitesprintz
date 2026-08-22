@@ -10,6 +10,7 @@ vi.mock('../../database/db.js', () => ({
   prisma: {
     users: {
       findUnique: vi.fn(),
+      update: vi.fn(),
     },
     sites: {
       findUnique: vi.fn(),
@@ -22,8 +23,21 @@ vi.mock('../../database/db.js', () => ({
   },
 }));
 
+vi.mock('../../server/services/claimTrialService.js', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    createClaimTrialCheckout: vi.fn(),
+    completeClaimTrialCheckout: vi.fn(),
+  };
+});
+
 import { prisma } from '../../database/db.js';
 import claimRoutes from '../../server/routes/claim.routes.js';
+import {
+  createClaimTrialCheckout,
+  completeClaimTrialCheckout,
+} from '../../server/services/claimTrialService.js';
 
 function createApp() {
   const app = express();
@@ -74,6 +88,11 @@ describe('claim routes', () => {
       if (where.id === 'user-1') return Promise.resolve(claimant);
       if (where.id === 'admin-1') return Promise.resolve({ id: 'admin-1', role: 'admin' });
       return Promise.resolve(null);
+    });
+    createClaimTrialCheckout.mockResolvedValue({ url: 'https://checkout.stripe.com/test' });
+    completeClaimTrialCheckout.mockResolvedValue({
+      ready: true,
+      subscriptionStatus: 'trialing',
     });
   });
 
@@ -128,5 +147,77 @@ describe('claim routes', () => {
 
     expect(response.status).toBe(404);
     expect(JSON.stringify(response.body)).not.toMatch(/claim_token_hash/);
+  });
+
+  it('returns 401 for trial-checkout without auth', async () => {
+    const response = await request(createApp())
+      .post(`/api/claim/${CLAIM_TOKEN}/trial-checkout`)
+      .send({ plan: 'growth' });
+
+    expect(response.status).toBe(401);
+    expect(createClaimTrialCheckout).not.toHaveBeenCalled();
+  });
+
+  it('returns 404 for trial-checkout with unknown token', async () => {
+    prisma.sites.findUnique.mockResolvedValue(null);
+
+    const response = await request(createApp())
+      .post(`/api/claim/${CLAIM_TOKEN}/trial-checkout`)
+      .set('Authorization', `Bearer ${signToken({ userId: 'user-1' })}`)
+      .send({ plan: 'growth' });
+
+    expect(response.status).toBe(404);
+    expect(createClaimTrialCheckout).not.toHaveBeenCalled();
+  });
+
+  it('returns alreadySubscribed when user is trialing', async () => {
+    prisma.sites.findUnique.mockResolvedValue({ ...prospectSite });
+
+    const response = await request(createApp())
+      .post(`/api/claim/${CLAIM_TOKEN}/trial-checkout`)
+      .set('Authorization', `Bearer ${signToken({ userId: 'user-1' })}`)
+      .send({ plan: 'growth' });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ alreadySubscribed: true });
+    expect(createClaimTrialCheckout).not.toHaveBeenCalled();
+  });
+
+  it('returns checkout url for unsubscribed user', async () => {
+    prisma.sites.findUnique.mockResolvedValue({ ...prospectSite });
+    prisma.users.findUnique.mockImplementation(({ where }) => {
+      if (where.id === 'user-1') {
+        return Promise.resolve({ ...claimant, subscription_status: 'inactive' });
+      }
+      if (where.id === 'admin-1') return Promise.resolve({ id: 'admin-1', role: 'admin' });
+      return Promise.resolve(null);
+    });
+
+    const response = await request(createApp())
+      .post(`/api/claim/${CLAIM_TOKEN}/trial-checkout`)
+      .set('Authorization', `Bearer ${signToken({ userId: 'user-1' })}`)
+      .send({ plan: 'starter' });
+
+    expect(response.status).toBe(200);
+    expect(response.body.url).toBe('https://checkout.stripe.com/test');
+    expect(createClaimTrialCheckout).toHaveBeenCalled();
+  });
+
+  it('trial-complete syncs subscription for authenticated user', async () => {
+    prisma.sites.findUnique.mockResolvedValue({ ...prospectSite });
+
+    const response = await request(createApp())
+      .post(`/api/claim/${CLAIM_TOKEN}/trial-complete`)
+      .set('Authorization', `Bearer ${signToken({ userId: 'user-1' })}`)
+      .send({ sessionId: 'cs_test_123' });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ ready: true, subscriptionStatus: 'trialing' });
+    expect(completeClaimTrialCheckout).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sessionId: 'cs_test_123',
+        site: expect.objectContaining({ id: 'riverside-cuts' }),
+      })
+    );
   });
 });
