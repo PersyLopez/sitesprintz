@@ -202,7 +202,6 @@ export async function fulfillPlatformSubscription(session, options = {}) {
     plan,
     subscription_plan: plan,
     subscription_status: subscriptionStatus,
-    updated_at: new Date(),
   };
 
   if (customerId) {

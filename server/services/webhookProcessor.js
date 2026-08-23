@@ -429,7 +429,6 @@ export class WebhookProcessor {
       const mappedStatus = stripeStatus === 'trialing' ? 'trialing' : 'active';
       const updateData = {
         subscription_status: mappedStatus,
-        updated_at: new Date(),
       };
 
       if (subscriptionId) {
@@ -531,7 +530,6 @@ export class WebhookProcessor {
       where: { id: user.id },
       data: {
         subscription_status: status,
-        updated_at: new Date(),
       },
     });
 
@@ -586,7 +584,6 @@ export class WebhookProcessor {
         where: { id: user.id },
         data: {
           subscription_status: subStatus,
-          updated_at: new Date(),
         },
       });
 

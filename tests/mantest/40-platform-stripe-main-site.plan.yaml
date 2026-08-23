@@ -131,10 +131,10 @@ steps:
     settle_ms: 1000
 
   - action: Payment success page
-    wait_for: { text: Payment Successful!, timeout: 20000 }
+    wait_for: { text: Payment successful, timeout: 20000 }
     assert:
       - url contains /payment-success
-      - text contains Payment Successful!
+      - text contains Payment successful
 
   - action: Open billing settings
     goto: http://localhost:5173/settings/billing

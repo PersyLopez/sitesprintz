@@ -421,7 +421,6 @@ describe('WebhookProcessor subscription status (users only)', () => {
       where: { id: 'user-async-fail' },
       data: {
         subscription_status: 'unpaid',
-        updated_at: expect.any(Date),
       },
     });
     const updateData = mockDb.users.update.mock.calls[0][0].data;
