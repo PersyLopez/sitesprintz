@@ -307,8 +307,8 @@ class BookingWidget {
         return baseUrl;
 
       case 'acuity':
-        // Acuity Scheduling embed format
-        if (baseUrl.includes('acuityscheduling.com')) {
+        // Acuity Scheduling embed format (acuityscheduling.com and .as.me)
+        if (baseUrl.includes('acuityscheduling.com') || baseUrl.includes('.as.me')) {
           // Acuity uses iframe parameter
           if (!baseUrl.includes('embed=true')) {
             return `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}embed=true`;

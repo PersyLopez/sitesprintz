@@ -4,7 +4,7 @@
  */
 
 import { prisma } from '../../../database/db.js';
-import { siteWantsEmbeddedBooking } from '../../../src/utils/visitorExperience.js';
+import { siteWantsNativeBooking } from '../../../src/utils/visitorExperience.js';
 import { getNamedTeamMembers } from '../../../src/utils/businessScale.js';
 import { resolveOperatingModel } from '../../../src/config/operatingModel.js';
 import { parseSiteDataJson } from '../../utils/showcaseDemo.js';
@@ -165,7 +165,7 @@ export async function ensurePublishedBooking({ userId, siteId, siteData } = {}) 
     const site = await loadSiteRecord(userId, siteId);
     data = parseSiteDataJson(site);
   }
-  if (!siteWantsEmbeddedBooking(data)) return null;
+  if (!siteWantsNativeBooking(data)) return null;
 
   const tenant = await tenantService.getOrCreateTenant(userId, String(siteId));
   const businessName = data.brand?.name || data.businessName || tenant.business_name;

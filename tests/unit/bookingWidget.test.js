@@ -187,6 +187,16 @@ describe('BookingWidget', () => {
       expect(embedUrl).toBe('https://acuityscheduling.com/schedule.php?embed=true');
     });
 
+    it('should add embed parameter to Acuity .as.me URL', () => {
+      const widget = new BookingWidget({
+        provider: 'acuity',
+        url: 'https://dhmakeupartistry.as.me/schedule/8ffea782',
+      });
+
+      const embedUrl = widget.getEmbedUrl();
+      expect(embedUrl).toBe('https://dhmakeupartistry.as.me/schedule/8ffea782?embed=true');
+    });
+
     it('should use custom URL as-is', () => {
       const widget = new BookingWidget({
         provider: 'custom',
