@@ -21,8 +21,43 @@ function AdminPlanFeatures() {
     growth: [...(PLAN_FEATURES.growth || [])],
   });
 
-  // Get all available features
-  const allFeatures = Object.values(FEATURES);
+  const loadPlanFeatures = async () => {
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/admin/plan-features', {
+        headers: {
+          'Authorization': `Bearer ${token || localStorage.getItem('accessToken')}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load plan features');
+      }
+
+      const data = await response.json();
+      if (data.planFeatures) {
+        setPlanFeatures({
+          trial: [...(data.planFeatures.trial || [])],
+          starter: [...(data.planFeatures.starter || [])],
+          growth: [...(data.planFeatures.growth || [])],
+        });
+      }
+    } catch (error) {
+      console.error('Load plan features error:', error);
+      showError('Failed to load plan features');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      loadPlanFeatures();
+    } else {
+      setLoading(false);
+    }
+  }, [token]);
 
   // Check if a feature is enabled for a plan
   const isFeatureEnabled = (plan, feature) => {
@@ -198,6 +233,13 @@ function AdminPlanFeatures() {
           </div>
         </div>
 
+        {loading ? (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading plan features...</p>
+          </div>
+        ) : (
+          <>
         {/* Plan Headers */}
         <div className="plans-header">
           <div className="feature-column-header">Feature</div>
@@ -282,6 +324,8 @@ function AdminPlanFeatures() {
             ))}
           </div>
         </div>
+          </>
+        )}
       </main>
 
       <Footer />
