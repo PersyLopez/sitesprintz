@@ -82,30 +82,47 @@ function mockSiteAnalyticsFetch(overrides = {}) {
   });
 }
 
+function mockAccountRollupFetch(sites = [
+  { id: '1', subdomain: 'main-site', name: 'Main Site' },
+  { id: '2', subdomain: 'second-site', name: 'Second Site' },
+]) {
+  const siteStats = {
+    'main-site': { pageViews: 3200, uniqueVisitors: 1100, orders: 8, revenue: 320 },
+    'second-site': { pageViews: 1800, uniqueVisitors: 650, orders: 4, revenue: 160 },
+  };
+
+  global.fetch.mockImplementation((url) => {
+    const urlString = String(url);
+
+    if (urlString.includes('/api/users/') && urlString.includes('/sites')) {
+      return Promise.resolve({ ok: true, json: async () => ({ success: true, sites }) });
+    }
+
+    for (const [subdomain, stats] of Object.entries(siteStats)) {
+      if (urlString.includes(`/api/analytics/stats/${subdomain}`)) {
+        return Promise.resolve({ ok: true, json: async () => ({ success: true, ...stats }) });
+      }
+      if (urlString.includes(`/api/analytics/timeseries/${subdomain}`)) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            success: true,
+            timeSeries: [
+              { date: '2026-01-01', pageViews: stats.pageViews / 2, uniqueVisitors: stats.uniqueVisitors / 2, orders: 2, revenue: 80 },
+              { date: '2026-01-02', pageViews: stats.pageViews / 2, uniqueVisitors: stats.uniqueVisitors / 2, orders: 2, revenue: 80 },
+            ],
+          }),
+        });
+      }
+    }
+
+    return Promise.resolve({ ok: true, json: async () => ({}) });
+  });
+}
+
 describe('Analytics Page', () => {
   let mockUser;
   let mockShowError;
-
-  const mockAccountAnalytics = {
-    totalViews: 500,
-    totalVisitors: 120,
-    avgDuration: '2m 34s',
-    bounceRate: 42.5,
-    trends: {
-      views: 15.2,
-      visitors: 8.7,
-      duration: -3.1,
-      bounceRate: -5.4,
-    },
-    chartData: {
-      views: [850, 920, 1100],
-      visitors: [320, 350, 390],
-      orders: [12, 15, 18],
-      revenue: [480, 600, 720],
-    },
-    labels: ['Jan 1', 'Jan 3', 'Jan 5'],
-    sites: [{ id: '1', name: 'Main Site', views: 5234, visitors: 1543 }],
-  };
 
   beforeEach(() => {
     mockUser = { id: 'user1', email: 'user@test.com' };
@@ -205,10 +222,7 @@ describe('Analytics Page', () => {
         siteId: null,
         site: null,
       });
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => mockAccountAnalytics,
-      });
+      mockAccountRollupFetch();
 
       render(
         <MemoryRouter initialEntries={['/analytics']}>
@@ -218,7 +232,35 @@ describe('Analytics Page', () => {
 
       await waitFor(() => {
         expect(screen.getByText(/All Sites/i)).toBeInTheDocument();
+        expect(screen.getByText(/5,?000/)).toBeInTheDocument();
+        expect(screen.getByText(/1,?750/)).toBeInTheDocument();
+        expect(screen.getByText('Main Site')).toBeInTheDocument();
+        expect(screen.getByText('Second Site')).toBeInTheDocument();
       });
+    });
+
+    it('should not call legacy user analytics endpoint for account rollup', async () => {
+      useSiteWorkspace.mockReturnValue({
+        embedded: false,
+        siteId: null,
+        site: null,
+      });
+      mockAccountRollupFetch();
+
+      render(
+        <MemoryRouter initialEntries={['/analytics']}>
+          <Analytics />
+        </MemoryRouter>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('workspace-analytics-panel')).toBeInTheDocument();
+      });
+
+      const urls = global.fetch.mock.calls.map(([url]) => String(url));
+      expect(urls.some((url) => url.includes('/api/users/user1/analytics'))).toBe(false);
+      expect(urls.some((url) => url.includes('/api/users/user1/sites'))).toBe(true);
+      expect(urls.some((url) => url.includes('/api/analytics/stats/main-site'))).toBe(true);
     });
   });
 

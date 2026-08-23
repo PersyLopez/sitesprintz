@@ -8,7 +8,6 @@ import Footer from '../components/layout/Footer';
 import ProductModal from '../components/products/ProductModal';
 import ImportModal from '../components/products/ImportModal';
 import DeleteConfirmModal from '../components/products/DeleteConfirmModal';
-import PaymentStatusCard from '../components/ecommerce/PaymentStatusCard';
 import SkeletonLoader from '../components/common/SkeletonLoader';
 import { OptimizedImage } from '../components/common/OptimizedImage';
 import { api } from '../services/api';
@@ -348,8 +347,6 @@ function Products() {
             )}
           </div>
         </div>
-
-        <PaymentStatusCard className="products-payment-status" />
 
         <div className="products-filters">
           <input

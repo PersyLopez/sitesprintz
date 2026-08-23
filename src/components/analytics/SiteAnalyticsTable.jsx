@@ -27,10 +27,12 @@ function SiteAnalyticsTable({ sites }) {
               {site.visitors?.toLocaleString() || '0'}
             </span>
             <span className="table-col-bounce">
-              {site.bounceRate ? `${site.bounceRate}%` : 'N/A'}
+              {site.bounceRate === null || site.bounceRate === undefined
+                ? '—'
+                : `${site.bounceRate}%`}
             </span>
             <span className="table-col-duration">
-              {site.avgDuration || 'N/A'}
+              {site.avgDuration || '—'}
             </span>
             <span className="table-col-actions">
               <Link

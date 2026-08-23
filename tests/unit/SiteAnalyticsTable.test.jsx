@@ -157,8 +157,8 @@ describe('SiteAnalyticsTable Component', () => {
       );
 
       expect(screen.getByText('Incomplete Site')).toBeInTheDocument();
-      const naElements = screen.getAllByText('N/A');
-      expect(naElements.length).toBeGreaterThan(0);
+      const dashElements = screen.getAllByText('—');
+      expect(dashElements.length).toBeGreaterThan(0);
     });
 
     it('should render single site', () => {

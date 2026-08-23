@@ -20,7 +20,7 @@ function StatsCard({ icon, label, value, change, changeLabel, invertChange = fal
 
   return (
     <div className="stats-card">
-      <div className="stat-icon">{icon}</div>
+      {icon ? <div className="stat-icon">{icon}</div> : null}
       <div className="stat-label">{label}</div>
       <div className="stat-value">{value}</div>
       {change !== undefined && change !== null && (

@@ -329,7 +329,7 @@ function Admin() {
                 className={`admin-tab ${activeTab === 'overview' ? 'active' : ''}`}
                 onClick={() => setActiveTab('overview')}
               >
-                📊 Overview
+                Overview
               </button>
               <button
                 className={`admin-tab ${activeTab === 'activity' ? 'active' : ''}`}
@@ -350,11 +350,10 @@ function Admin() {
               <>
                 {/* Platform Overview */}
                 <div className="admin-section">
-                  <h2>📊 Platform Overview</h2>
+                  <h2>Platform Overview</h2>
                   <div className="stats-grid">
                     <div className="stat-item" data-testid="stat-item-users">
                       <StatsCard
-                        icon="👥"
                         label="Total Users"
                         value={(adminData.platform?.totalUsers || 0).toLocaleString()}
                         change={adminData.platform?.userGrowth}
@@ -364,7 +363,6 @@ function Admin() {
 
                     <div className="stat-item" data-testid="stat-item-sites">
                       <StatsCard
-                        icon="🌐"
                         label="Total Sites"
                         value={(adminData.platform?.totalSites || 0).toLocaleString()}
                         change={adminData.platform?.siteGrowth}
@@ -374,7 +372,6 @@ function Admin() {
 
                     <div className="stat-item" data-testid="stat-item-revenue">
                       <StatsCard
-                        icon="💰"
                         label="Total Revenue"
                         value={`$${(adminData.platform?.totalRevenue || 0).toLocaleString()}`}
                         change={adminData.platform?.revenueGrowth}
@@ -384,7 +381,6 @@ function Admin() {
 
                     <div className="stat-item" data-testid="stat-item-conversion">
                       <StatsCard
-                        icon="📈"
                         label="Conversion Rate"
                         value={`${adminData.platform?.conversionRate || 0}%`}
                         change={adminData.platform?.conversionChange}
@@ -396,10 +392,9 @@ function Admin() {
 
                 {/* Growth Metrics */}
                 <div className="admin-section">
-                  <h2>📈 Growth Metrics</h2>
+                  <h2>Growth Metrics</h2>
                   <div className="growth-grid" data-testid="sites-grid">
                     <div className="growth-card">
-                      <div className="growth-icon">👤</div>
                       <div className="growth-value">{adminData.growth.newUsersToday}</div>
                       <div className="growth-label">New Users Today</div>
                       <div className="growth-sublabel">
@@ -408,7 +403,6 @@ function Admin() {
                     </div>
 
                     <div className="growth-card">
-                      <div className="growth-icon">🌐</div>
                       <div className="growth-value">{adminData.growth.newSitesToday}</div>
                       <div className="growth-label">New Sites Today</div>
                       <div className="growth-sublabel">
@@ -417,7 +411,6 @@ function Admin() {
                     </div>
 
                     <div className="growth-card">
-                      <div className="growth-icon">⏱️</div>
                       <div className="growth-value">{adminData.growth.activeTrials}</div>
                       <div className="growth-label">Active Trials</div>
                       <div className="growth-sublabel">
@@ -426,7 +419,6 @@ function Admin() {
                     </div>
 
                     <div className="growth-card">
-                      <div className="growth-icon">🚀</div>
                       <div className="growth-value">{adminData.growth.publishedToday}</div>
                       <div className="growth-label">Published Today</div>
                       <div className="growth-sublabel">
@@ -488,7 +480,7 @@ function Admin() {
 
                 {/* Top Users & Recent Signups */}
                 <div className="admin-section">
-                  <h2>👥 User Insights</h2>
+                  <h2>User Insights</h2>
                   <div className="user-insights-grid" data-testid="users-table">
                     {/* Top Users */}
                     <div className="insight-card">

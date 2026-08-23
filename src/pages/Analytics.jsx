@@ -11,6 +11,7 @@ import SiteAnalyticsTable from '../components/analytics/SiteAnalyticsTable';
 import LoadingFallback from '../components/common/LoadingFallback';
 import FeatureGate from '../components/common/FeatureGate';
 import { api } from '../services/api';
+import { sitesService } from '../services/sites';
 import { FEATURES, hasFeature } from '../utils/planFeatures';
 import './Analytics.css';
 
@@ -25,6 +26,20 @@ function formatChartLabels(timeSeries) {
     const date = new Date(point.date);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   });
+}
+
+function parseStatsPayload(statsPayload) {
+  return {
+    pageViews: statsPayload.pageViews ?? statsPayload.stats?.pageViews ?? 0,
+    uniqueVisitors: statsPayload.uniqueVisitors ?? statsPayload.stats?.uniqueVisitors ?? 0,
+    orders: statsPayload.orders ?? statsPayload.stats?.orders ?? 0,
+    revenue: statsPayload.revenue ?? statsPayload.stats?.revenue ?? 0,
+  };
+}
+
+function parseTimeSeriesPayload(timeSeriesPayload) {
+  const series = timeSeriesPayload?.timeSeries ?? timeSeriesPayload;
+  return Array.isArray(series) ? series : [];
 }
 
 function normalizeSiteAnalytics(stats, timeSeries) {
@@ -46,27 +61,132 @@ function normalizeSiteAnalytics(stats, timeSeries) {
   };
 }
 
+function mergeTimeSeries(seriesList) {
+  const byDate = new Map();
+
+  for (const series of seriesList) {
+    for (const point of series || []) {
+      if (!point?.date) continue;
+      const existing = byDate.get(point.date) || {
+        date: point.date,
+        pageViews: 0,
+        uniqueVisitors: 0,
+        orders: 0,
+        revenue: 0,
+      };
+      existing.pageViews += point.pageViews ?? 0;
+      existing.uniqueVisitors += point.uniqueVisitors ?? point.pageViews ?? 0;
+      existing.orders += point.orders ?? 0;
+      existing.revenue += point.revenue ?? 0;
+      byDate.set(point.date, existing);
+    }
+  }
+
+  return Array.from(byDate.values()).sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+  );
+}
+
+async function fetchSiteTraffic(subdomain, days) {
+  const period = daysToPeriod(days);
+
+  const [statsPayload, timeSeriesPayload] = await Promise.all([
+    api.get(`/api/analytics/stats/${subdomain}`, { params: { period } }),
+    api.get(`/api/analytics/timeseries/${subdomain}`, { params: { period } }),
+  ]);
+
+  return {
+    stats: parseStatsPayload(statsPayload),
+    timeSeries: parseTimeSeriesPayload(timeSeriesPayload),
+  };
+}
+
 async function fetchSiteAnalytics(subdomain, days) {
   const period = daysToPeriod(days);
 
-  const [statsPayload, timeSeriesPayload, topPagesPayload, referrersPayload] = await Promise.all([
-    api.get(`/api/analytics/stats/${subdomain}`, { params: { period } }),
-    api.get(`/api/analytics/timeseries/${subdomain}`, { params: { period } }),
+  const [traffic, topPagesPayload, referrersPayload] = await Promise.all([
+    fetchSiteTraffic(subdomain, days),
     api.get(`/api/analytics/top-pages/${subdomain}`, { params: { period, limit: 10 } }),
     api.get(`/api/analytics/referrers/${subdomain}`, { params: { period } }),
   ]);
 
   const stats = {
-    pageViews: statsPayload.pageViews ?? statsPayload.stats?.pageViews ?? 0,
-    uniqueVisitors: statsPayload.uniqueVisitors ?? statsPayload.stats?.uniqueVisitors ?? 0,
-    orders: statsPayload.orders ?? statsPayload.stats?.orders ?? 0,
-    revenue: statsPayload.revenue ?? statsPayload.stats?.revenue ?? 0,
+    ...traffic.stats,
     topPages: topPagesPayload.pages ?? topPagesPayload.topPages ?? topPagesPayload,
     referrers: referrersPayload.referrers ?? referrersPayload,
   };
 
-  const timeSeries = timeSeriesPayload.timeSeries ?? timeSeriesPayload;
-  return normalizeSiteAnalytics(stats, timeSeries);
+  return normalizeSiteAnalytics(stats, traffic.timeSeries);
+}
+
+async function fetchAccountAnalytics(userId, days) {
+  const sitesPayload = await sitesService.getUserSites(userId);
+  const sites = sitesPayload?.sites ?? (Array.isArray(sitesPayload) ? sitesPayload : []);
+
+  if (sites.length === 0) {
+    return {
+      totalViews: 0,
+      totalVisitors: 0,
+      avgDuration: '—',
+      bounceRate: null,
+      chartData: { views: [], visitors: [], orders: [], revenue: [] },
+      labels: [],
+      sites: [],
+    };
+  }
+
+  const siteResults = await Promise.allSettled(
+    sites
+      .filter((site) => site.subdomain)
+      .map(async (site) => {
+        const traffic = await fetchSiteTraffic(site.subdomain, days);
+        return { site, ...traffic };
+      }),
+  );
+
+  const siteRows = [];
+  const allSeries = [];
+  let totalViews = 0;
+  let totalVisitors = 0;
+  let totalOrders = 0;
+  let totalRevenue = 0;
+
+  for (const result of siteResults) {
+    if (result.status !== 'fulfilled') continue;
+
+    const { site, stats, timeSeries } = result.value;
+    totalViews += stats.pageViews;
+    totalVisitors += stats.uniqueVisitors;
+    totalOrders += stats.orders;
+    totalRevenue += stats.revenue;
+    allSeries.push(timeSeries);
+
+    siteRows.push({
+      id: site.id,
+      subdomain: site.subdomain,
+      name: site.name || site.subdomain,
+      views: stats.pageViews,
+      visitors: stats.uniqueVisitors,
+      bounceRate: null,
+      avgDuration: '—',
+    });
+  }
+
+  siteRows.sort((a, b) => b.views - a.views);
+
+  const mergedSeries = mergeTimeSeries(allSeries);
+  return {
+    ...normalizeSiteAnalytics(
+      {
+        pageViews: totalViews,
+        uniqueVisitors: totalVisitors,
+        orders: totalOrders,
+        revenue: totalRevenue,
+      },
+      mergedSeries,
+    ),
+    sites: siteRows,
+  };
 }
 
 function Analytics() {
@@ -103,8 +223,7 @@ function Analytics() {
         return;
       }
 
-      const endpoint = `/api/users/${user.id}/analytics?days=${timeRange}`;
-      const data = await api.get(endpoint);
+      const data = await fetchAccountAnalytics(user.id, timeRange);
       setAnalyticsData(data);
       setLastUpdated(new Date());
     } catch {
@@ -155,7 +274,6 @@ function Analytics() {
     <>
       <div className="stats-grid" data-testid="workspace-analytics-panel">
         <StatsCard
-          icon="👁️"
           label="Total Views"
           value={analyticsData.totalViews?.toLocaleString() || '0'}
           change={analyticsData.trends?.views}
@@ -163,7 +281,6 @@ function Analytics() {
         />
 
         <StatsCard
-          icon="👥"
           label="Unique Visitors"
           value={analyticsData.totalVisitors?.toLocaleString() || '0'}
           change={analyticsData.trends?.visitors}
@@ -171,7 +288,6 @@ function Analytics() {
         />
 
         <StatsCard
-          icon="⏱️"
           label="Avg. Duration"
           value={analyticsData.avgDuration || '—'}
           change={analyticsData.trends?.duration}
@@ -179,7 +295,6 @@ function Analytics() {
         />
 
         <StatsCard
-          icon="📈"
           label="Bounce Rate"
           value={bounceRateDisplay}
           change={analyticsData.trends?.bounceRate}
@@ -192,14 +307,14 @@ function Analytics() {
         <Suspense fallback={<LoadingFallback message="Loading charts..." />}>
           <div className="chart-grid">
             <AnalyticsChart
-              title="📈 Site Views Over Time"
+              title="Site Views Over Time"
               data={analyticsData.chartData?.views || []}
               labels={analyticsData.labels || []}
               color="#06b6d4"
             />
 
             <AnalyticsChart
-              title="👥 Unique Visitors"
+              title="Unique Visitors"
               data={analyticsData.chartData?.visitors || []}
               labels={analyticsData.labels || []}
               color="#8b5cf6"
@@ -208,14 +323,14 @@ function Analytics() {
 
           <div className="chart-grid">
             <AnalyticsChart
-              title="📦 Orders Over Time"
+              title="Orders Over Time"
               data={analyticsData.chartData?.orders || []}
               labels={analyticsData.labels || []}
               color="#22c55e"
             />
 
             <AnalyticsChart
-              title="💰 Revenue Trend"
+              title="Revenue Trend"
               data={analyticsData.chartData?.revenue || []}
               labels={analyticsData.labels || []}
               color="#f59e0b"
@@ -247,22 +362,18 @@ function Analytics() {
 
       {!siteAnalyticsMode && (
         <div className="coming-soon-section">
-          <h3>🚀 Coming Soon</h3>
+          <h3>Coming Soon</h3>
           <div className="coming-soon-grid">
             <div className="coming-soon-item">
-              <span>🗺️</span>
               <p>Geographic Heatmap</p>
             </div>
             <div className="coming-soon-item">
-              <span>📱</span>
               <p>Device Breakdown</p>
             </div>
             <div className="coming-soon-item">
-              <span>🔗</span>
               <p>Referral Sources</p>
             </div>
             <div className="coming-soon-item">
-              <span>⏰</span>
               <p>Real-time Visitors</p>
             </div>
           </div>
@@ -271,7 +382,6 @@ function Analytics() {
     </>
   ) : (
     <div className="empty-state" data-testid="analytics-empty">
-      <div className="empty-icon">📊</div>
       <h2>No Analytics Data</h2>
       <p>Analytics data will appear here once your site receives visitors.</p>
     </div>

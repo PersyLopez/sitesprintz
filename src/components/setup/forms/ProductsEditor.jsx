@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useSite } from '../../../hooks/useSite';
 import ImageUploader from './ImageUploader';
 import ImportModal from '../../products/ImportModal';
-import PaymentStatusCard from '../../ecommerce/PaymentStatusCard';
 import { useToast } from '../../../hooks/useToast';
 import './ProductsEditor.css';
 
@@ -115,8 +114,6 @@ function ProductsEditor() {
           </button>
         </div>
       </div>
-
-      <PaymentStatusCard compact className="products-editor-payment-status" />
 
       {products.length === 0 ? (
         <div className="empty-state">

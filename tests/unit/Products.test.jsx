@@ -69,10 +69,6 @@ vi.mock('../../src/components/products/DeleteConfirmModal', () => ({
   )
 }));
 
-vi.mock('../../src/components/ecommerce/PaymentStatusCard', () => ({
-  default: () => <div data-testid="payment-status-card">Payment Status</div>
-}));
-
 vi.mock('../../src/components/common/OptimizedImage', () => ({
   OptimizedImage: ({ src, alt }) => <img src={src} alt={alt} />
 }));
@@ -174,14 +170,13 @@ describe('Products Page', () => {
   });
 
   describe('Page Display', () => {
-    it('should render products page with header and payment status', async () => {
+    it('should render products page with header', async () => {
       renderProducts();
 
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: /Products/i })).toBeInTheDocument();
       });
 
-      expect(screen.getByTestId('payment-status-card')).toBeInTheDocument();
       expect(screen.getByTestId('header')).toBeInTheDocument();
       expect(screen.getByTestId('footer')).toBeInTheDocument();
       expect(document.querySelector('.products-header.pane-quiet-header')).not.toBeInTheDocument();

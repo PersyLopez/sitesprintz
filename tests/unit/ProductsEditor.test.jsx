@@ -23,10 +23,6 @@ vi.mock('../../src/hooks/usePlan', () => ({
   }))
 }));
 
-vi.mock('../../src/components/ecommerce/PaymentStatusCard', () => ({
-  default: () => <div data-testid="payment-status-card">Payment Status</div>
-}));
-
 vi.mock('../../src/components/products/ImportModal', () => ({
   default: () => <div data-testid="import-modal">Import Modal</div>
 }));
