@@ -1,0 +1,347 @@
+url: "http://localhost:5173/login"
+goal: Live Edit mode on published sites — gallery owner can enter from the workspace, edit a real field, auto-save, undo, and public view without ?edit never shows the toolbar
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter gallery email
+    fill: { testId: login-email, value: "gallery@sitesprintz.com", clear: true }
+
+  - action: Enter gallery password
+    fill: { testId: login-password, value: "GalleryDemo123!", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard loads
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 1200
+
+  - action: Dashboard shows Mira site card
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/Mira Design Studio/i.test(t)) {
+        throw new Error('Dashboard missing solo site: ' + t.slice(0, 280));
+      }
+
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+    settle_ms: 400
+
+  - action: Open Mira Design Studio workspace
+    code: |
+      const card = page.locator('[data-testid="site-card"][data-subdomain="gallery-freelancer"]');
+      if ((await card.count()) === 0) throw new Error('Missing gallery-freelancer site card');
+      await card.getByTestId('manage-site-button').click();
+    settle_ms: 1500
+
+  - action: Workspace dashboard ready
+    wait_for: { selector: '[data-testid="site-dashboard"]', timeout: 15000 }
+    settle_ms: 600
+
+  - action: Workspace Edit entry points to live edit
+    code: |
+      const headerEdit = page.getByTestId('site-dashboard-edit');
+      const overviewEdit = page.getByTestId('site-overview-edit');
+      if ((await headerEdit.count()) === 0) throw new Error('Missing site-dashboard-edit');
+      if ((await overviewEdit.count()) === 0) throw new Error('Missing site-overview-edit');
+      const href = await headerEdit.getAttribute('href');
+      const overviewHref = await overviewEdit.getAttribute('href');
+      if (!/\/view\/gallery-freelancer\?edit=true/.test(href || '')) {
+        throw new Error('site-dashboard-edit href not live edit: ' + href);
+      }
+      if (!/\/view\/gallery-freelancer\?edit=true/.test(overviewHref || '')) {
+        throw new Error('site-overview-edit href not live edit: ' + overviewHref);
+      }
+
+  - action: Open live Edit from workspace header
+    click: { testId: site-dashboard-edit }
+    settle_ms: 2000
+    wait_for: { selector: '[data-testid="seamless-edit-toolbar"]', timeout: 20000 }
+
+  - action: Live edit toolbar a11y and idle state
+    code: |
+      const toolbar = page.getByTestId('seamless-edit-toolbar');
+      const role = await toolbar.getAttribute('role');
+      const label = await toolbar.getAttribute('aria-label');
+      if (role !== 'region' || !/Site editor/i.test(label || '')) {
+        throw new Error('Toolbar a11y missing region/Site editor');
+      }
+      const save = (await page.getByTestId('seamless-edit-save-state').innerText()).trim();
+      if (!/All changes saved/i.test(save)) {
+        throw new Error('Idle save state unexpected: ' + save);
+      }
+      const undo = page.getByTestId('seamless-edit-undo');
+      if (!(await undo.isDisabled())) throw new Error('Undo should be disabled before any commit');
+      if ((await page.getByTestId('seamless-edit-history').count()) === 0) {
+        throw new Error('History/Restore button missing');
+      }
+      const dash = page.getByRole('link', { name: 'Dashboard' });
+      if ((await dash.count()) === 0) throw new Error('Toolbar Dashboard link missing');
+
+  - action: Published composed site ready
+    wait_for: { selector: '[data-testid="published-composed-site"]', timeout: 15000 }
+
+  - action: Mira has brand.name binding and forms are skipped
+    code: |
+      const brand = page.locator('[data-editable="brand.name"]').first();
+      if ((await brand.count()) === 0) {
+        throw new Error('No data-editable=brand.name on Mira live edit');
+      }
+      const t = await brand.innerText();
+      if (!/Mira Design Studio/i.test(t) && !/Mira/i.test(t)) {
+        throw new Error('brand.name was not Mira: ' + t.slice(0, 80));
+      }
+      const live = page.getByTestId('published-composed-site');
+      const editableInForms = await live.locator('form [data-editable]').count();
+      if (editableInForms > 0) {
+        throw new Error('Starter skip failed: form contains data-editable (' + editableInForms + ')');
+      }
+
+  - action: Escape cancels an in-progress edit
+    code: |
+      const brand = page.locator('[data-editable="brand.name"]').first();
+      const original = (await brand.innerText()).trim();
+      await brand.click();
+      await page.waitForFunction(() => {
+        const el = document.querySelector('[data-editable="brand.name"]');
+        return Boolean(el && el.getAttribute('contenteditable'));
+      }, { timeout: 8000 });
+      await page.keyboard.type(' junk');
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(400);
+      const after = (await brand.innerText()).trim();
+      if (after !== original) {
+        throw new Error('Escape did not restore original. had=' + original + ' now=' + after);
+      }
+      if (await brand.getAttribute('contenteditable')) {
+        throw new Error('Escape left contenteditable on');
+      }
+      const save = (await page.getByTestId('seamless-edit-save-state').innerText()).trim();
+      if (/Saving|pending|failed/i.test(save) && !/All changes saved/i.test(save)) {
+        throw new Error('Escape left a non-saved save state: ' + save);
+      }
+
+  - action: Commit then undo in the same session
+    code: |
+      const MARKER = ' · t32';
+      const brand = page.locator('[data-editable="brand.name"]').first();
+      let original = (await brand.innerText()).trim();
+      if (original.endsWith(MARKER)) original = original.slice(0, -MARKER.length).trim();
+      await brand.click();
+      await page.waitForFunction(() => {
+        const el = document.querySelector('[data-editable="brand.name"]');
+        return Boolean(el && el.getAttribute('contenteditable'));
+      }, { timeout: 8000 });
+      await page.keyboard.type(MARKER);
+      await page.keyboard.press('Enter');
+      await page.getByTestId('seamless-edit-undo').waitFor({ timeout: 8000 });
+      const undo = page.getByTestId('seamless-edit-undo');
+      if (await undo.isDisabled()) throw new Error('Undo stayed disabled after commit');
+      await undo.click();
+      await page.waitForTimeout(900);
+      const after = (await brand.innerText()).trim();
+      if (after.includes(MARKER)) {
+        throw new Error('Undo did not remove marker; leftover=' + after);
+      }
+      await page.waitForFunction(() => {
+        const el = document.querySelector('[data-testid="seamless-edit-save-state"]');
+        return /All changes saved|Save failed/i.test(el?.textContent || '');
+      }, { timeout: 12000 });
+
+  - action: Persist a reversible brand tweak
+    code: |
+      const MARKER = ' · t32';
+      const brand = page.locator('[data-editable="brand.name"]').first();
+      const current = (await brand.innerText()).trim();
+      if (!current.endsWith(MARKER)) {
+        await brand.click();
+        await page.waitForFunction(() => {
+          const el = document.querySelector('[data-editable="brand.name"]');
+          return Boolean(el && el.getAttribute('contenteditable'));
+        }, { timeout: 8000 });
+        await page.keyboard.type(MARKER);
+        await page.keyboard.press('Enter');
+      }
+      await page.waitForFunction(() => {
+        const el = document.querySelector('[data-testid="seamless-edit-save-state"]');
+        return /All changes saved|Save failed/i.test(el?.textContent || '');
+      }, { timeout: 15000 });
+      const save = (await page.getByTestId('seamless-edit-save-state').innerText()).trim();
+      const now = (await brand.innerText()).trim();
+      if (/Save failed/i.test(save)) {
+        throw new Error('LEFTOVER persist broken: save failed with local text ' + now);
+      }
+      if (!now.includes(MARKER)) {
+        throw new Error('Marker missing after commit: ' + now);
+      }
+
+  - action: Reload keeps the tweak then restore original
+    code: |
+      const MARKER = ' · t32';
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.getByTestId('seamless-edit-toolbar').waitFor({ timeout: 20000 });
+      const brand = page.locator('[data-editable="brand.name"]').first();
+      await brand.waitFor({ timeout: 15000 });
+      const afterReload = (await brand.innerText()).trim();
+      if (!afterReload.includes(MARKER)) {
+        throw new Error('LEFTOVER persist did not survive reload; got ' + afterReload);
+      }
+      const undo = page.getByTestId('seamless-edit-undo');
+      if (!(await undo.isDisabled())) {
+        throw new Error('Undo should be disabled after reload (in-memory stack)');
+      }
+      const original = afterReload.endsWith(MARKER)
+        ? afterReload.slice(0, -MARKER.length).trim()
+        : 'Mira Design Studio';
+      await brand.click();
+      await page.waitForFunction(() => {
+        const el = document.querySelector('[data-editable="brand.name"]');
+        return Boolean(el && el.getAttribute('contenteditable'));
+      }, { timeout: 8000 });
+      await page.evaluate((text) => {
+        const el = document.querySelector('[data-editable="brand.name"]');
+        if (!el) throw new Error('missing brand.name');
+        el.focus();
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+        document.execCommand('insertText', false, text);
+      }, original);
+      await page.keyboard.press('Enter');
+      await page.waitForFunction(() => {
+        const el = document.querySelector('[data-testid="seamless-edit-save-state"]');
+        return /All changes saved|Save failed/i.test(el?.textContent || '');
+      }, { timeout: 15000 });
+      const restored = (await brand.innerText()).trim();
+      if (restored.includes(MARKER)) {
+        const save = (await page.getByTestId('seamless-edit-save-state').innerText()).trim();
+        throw new Error('LEFTOVER brand still has marker after restore attempt (' + save + '): ' + restored);
+      }
+
+  - action: Open history panel
+    click: { testId: seamless-edit-history }
+    settle_ms: 800
+    wait_for: { selector: '[data-testid="seamless-edit-history-panel"]', timeout: 10000 }
+
+  - action: History panel opens without restoring
+    code: |
+      const panel = page.getByTestId('seamless-edit-history-panel');
+      if ((await panel.getAttribute('role')) !== 'dialog') {
+        throw new Error('History panel missing role=dialog');
+      }
+      const restore = page.getByTestId('seamless-edit-restore');
+      if ((await restore.count()) === 0) throw new Error('Restore selected missing');
+      if (!(await restore.isDisabled())) {
+        throw new Error('Restore selected should stay disabled with no version chosen');
+      }
+      await page.getByRole('button', { name: 'Close' }).click();
+      await panel.waitFor({ state: 'detached', timeout: 8000 });
+
+  - action: Open public Mira view
+    goto: "http://localhost:5173/view/gallery-freelancer"
+    settle_ms: 1800
+    wait_for: { text: Mira Design Studio, timeout: 20000 }
+
+  - action: Public Mira view without edit hides toolbar
+    code: |
+      if ((await page.getByTestId('seamless-edit-toolbar').count()) > 0) {
+        throw new Error('Toolbar leaked onto public Mira view');
+      }
+      if ((await page.getByTestId('seamless-edit-login').count()) > 0) {
+        throw new Error('Login gate shown on public view without edit');
+      }
+
+  - action: Open Luxe live edit view
+    goto: "http://localhost:5173/view/gallery-salon?edit=true"
+    settle_ms: 2000
+    wait_for: { selector: '[data-testid="seamless-edit-toolbar"]', timeout: 20000 }
+
+  - action: Growth Luxe live edit skips booking and cart
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/Luxe/i.test(t)) throw new Error('Luxe identity missing in edit mode: ' + t.slice(0, 240));
+      const mounts = page.locator('[data-ss-booking-mount], [data-testid="live-booking-widget"]');
+      const mountCount = await mounts.count();
+      if (mountCount === 0) throw new Error('Growth booking mount missing — cannot prove skip zone');
+      const editableInBooking = await page.locator('[data-ss-booking-mount] [data-editable], [data-testid="live-booking-widget"] [data-editable]').count();
+      if (editableInBooking > 0) {
+        throw new Error('Booking skip failed: data-editable inside widget (' + editableInBooking + ')');
+      }
+      const widget = mounts.first();
+      await widget.click({ timeout: 4000 }).catch(() => {});
+      const ce = await page.locator('[data-ss-booking-mount] [contenteditable], [data-testid="live-booking-widget"] [contenteditable]').count();
+      if (ce > 0) throw new Error('Booking widget became contenteditable');
+      const cart = page.getByTestId('cart-toggle-button');
+      if (await cart.count()) {
+        if (await cart.getAttribute('contenteditable')) {
+          throw new Error('Cart toggle is contenteditable');
+        }
+        if (await cart.getAttribute('data-editable')) {
+          throw new Error('Cart toggle is data-editable');
+        }
+      }
+
+  - action: Open public Luxe view
+    goto: "http://localhost:5173/view/gallery-salon"
+    settle_ms: 1800
+    wait_for: { selector: '[data-testid="published-composed-site"]', timeout: 20000 }
+
+  - action: Public Luxe view without edit hides toolbar
+    code: |
+      if ((await page.getByTestId('seamless-edit-toolbar').count()) > 0) {
+        throw new Error('Toolbar leaked onto public Luxe view');
+      }
+      if ((await page.getByTestId('seamless-edit-login').count()) > 0) {
+        throw new Error('Login gate shown on public Luxe view');
+      }
+
+  - action: Clear gallery session
+    code: |
+      await page.evaluate(() => {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('token');
+      });
+      await page.context().clearCookies();
+    settle_ms: 300
+
+  - action: Open logged-out edit query
+    goto: "http://localhost:5173/view/gallery-freelancer?edit=true"
+    settle_ms: 1800
+    wait_for: { selector: '[data-testid="seamless-edit-login"]', timeout: 20000 }
+
+  - action: Logged-out edit query shows login gate
+    code: |
+      if ((await page.getByTestId('seamless-edit-toolbar').count()) > 0) {
+        throw new Error('Toolbar shown to logged-out visitor');
+      }
+      const gate = page.getByTestId('seamless-edit-login');
+      const href = await gate.locator('a').first().getAttribute('href');
+      if (!href || !/\/login\?redirect=/.test(href) || !/edit=true/.test(decodeURIComponent(href))) {
+        throw new Error('Login gate redirect missing edit=true: ' + href);
+      }
+
+  - action: Open logged-out public Mira view
+    goto: "http://localhost:5173/view/gallery-freelancer"
+    settle_ms: 1500
+    wait_for: { text: Mira Design Studio, timeout: 20000 }
+
+  - action: Logged-out public view has neither toolbar nor gate
+    code: |
+      if ((await page.getByTestId('seamless-edit-toolbar').count()) > 0) {
+        throw new Error('Toolbar shown on logged-out public view');
+      }
+      if ((await page.getByTestId('seamless-edit-login').count()) > 0) {
+        throw new Error('Login gate shown without ?edit=true');
+      }

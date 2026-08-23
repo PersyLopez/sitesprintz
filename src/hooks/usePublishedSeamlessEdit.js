@@ -31,11 +31,14 @@ export function usePublishedSeamlessEdit({
   const [historyError, setHistoryError] = useState('');
   const [selectedVersion, setSelectedVersion] = useState(null);
   const [restoring, setRestoring] = useState(false);
-  const versionRef = useRef(1);
+  const siteVersion = getSiteDataVersion(siteData);
+  const versionRef = useRef(siteVersion);
   const queueRef = useRef(new Map());
   const timerRef = useRef(null);
 
-  versionRef.current = getSiteDataVersion(siteData);
+  useEffect(() => {
+    versionRef.current = siteVersion;
+  }, [subdomain, siteVersion]);
 
   const flush = useCallback(async () => {
     if (!subdomain || queueRef.current.size === 0) return;
