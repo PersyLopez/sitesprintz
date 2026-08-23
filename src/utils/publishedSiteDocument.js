@@ -198,6 +198,58 @@ export function getLiveSiteCss(tokens = {}) {
   position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover; z-index: 0;
 }
+.ss-photo-placeholder {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  background: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, var(--ss-muted) 10%, var(--ss-surface)) 0 14px,
+    color-mix(in srgb, var(--ss-muted) 20%, var(--ss-surface)) 14px 28px
+  );
+  border: 1px dashed color-mix(in srgb, var(--ss-muted) 40%, transparent);
+}
+.ss-photo-placeholder-mark {
+  max-width: 16rem;
+  padding: 10px 14px;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+  text-transform: uppercase;
+  color: var(--ss-text);
+  opacity: 0.62;
+  background: color-mix(in srgb, var(--ss-bg) 78%, transparent);
+}
+.ss-photo-placeholder--hero {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border: 0;
+  align-items: end;
+  padding-bottom: min(10vh, 72px);
+}
+.ss-photo-placeholder--hero .ss-photo-placeholder-mark {
+  font-size: 0.8rem;
+}
+.ss-photo-placeholder--card {
+  width: 100%;
+  height: 220px;
+  flex-shrink: 0;
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+}
+.ss-photo-placeholder--tile {
+  min-height: 240px;
+  border-radius: 4px;
+}
+.ss-photo-placeholder--about {
+  width: 100%;
+  min-height: 280px;
+  border-radius: 4px;
+}
 .ss-hero-inner { position: relative; z-index: 2; max-width: 820px; }
 .ss-hero-meta {
   display: flex; flex-wrap: wrap; justify-content: center; align-items: center;

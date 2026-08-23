@@ -138,7 +138,26 @@ describe('sectionHtmlBridge', () => {
     expect(html).toContain('ss-hero');
   });
 
-  it('buildLiveSiteMarkup includes nav brand and an empty-gallery prompt', () => {
+  it('renders labeled photo slots when images are missing', () => {
+    const hero = renderSectionToHtml({ type: 'hero', content: { title: 'Hello' } }, tokens);
+    expect(hero).toContain('Use your business photo here');
+    expect(hero).toContain('ss-hero--slot');
+    expect(hero).not.toContain('unsplash.com');
+
+    const services = renderSectionToHtml({
+      type: 'services',
+      content: { items: [{ name: 'Cut', price: '45' }] },
+    }, tokens);
+    expect(services).toContain('Use a photo of this service here');
+
+    const catalog = renderSectionToHtml({
+      type: 'catalog',
+      content: { items: [{ name: 'Mug', price: '$24' }] },
+    }, tokens);
+    expect(catalog).toContain('Use your product photo here');
+  });
+
+  it('buildLiveSiteMarkup includes nav brand and labeled photo slots', () => {
     const { html, css } = buildLiveSiteMarkup({
       businessName: 'Harbor Goods',
       brand: { name: 'Harbor Goods' },
@@ -153,7 +172,8 @@ describe('sectionHtmlBridge', () => {
     expect(css).toContain('--ss-accent');
     expect(html).toContain('Harbor Goods');
     expect(html).toContain('Shop');
-    expect(html).toContain('Add photos of your work');
+    expect(html).toContain('data-testid="photo-placeholder"');
+    expect(html).toContain('Use your product photo here');
   });
 
   it('embeds a booking mount for native scheduling', () => {
@@ -473,7 +493,8 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
       ],
     });
     expect(html).not.toContain('unsplash.com');
-    expect(html).toContain('Add photos of your work');
+    expect(html).toContain('data-testid="photo-placeholder"');
+    expect(html).toContain('Use a photo of your work here');
   });
 
   it('keeps Unsplash on demo seeds', () => {

@@ -11,6 +11,7 @@
 import { resolveTeamHeading, shouldRenderTeam, getNamedTeamMembers } from './businessScale.js';
 import { telHref } from './liveSiteContact.js';
 import { getBookingEmbedUrl, isExternalBookingProvider } from './bookingEmbed.js';
+import { renderGalleryWorkPlaceholders, renderPhotoPlaceholder } from './photoPlaceholder.js';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -182,10 +183,10 @@ function renderHero(section, tokens) {
   const accent = getAccent(tokens);
   const onAccent = getOnAccent(tokens);
   const bg = getBg(tokens);
-  const photoClass = image ? ' ss-hero--photo' : '';
+  const photoClass = image ? ' ss-hero--photo' : ' ss-hero--slot';
   const photo = image
     ? `<img class="ss-hero-photo" src="${escapeAttr(image)}" alt="${escapeAttr(imageAlt)}" width="1600" height="900" fetchpriority="high" decoding="async" />`
-    : '';
+    : renderPhotoPlaceholder('business', { className: 'ss-photo-placeholder--hero' });
   const backgroundStyle = image ? '' : ` style="background: ${bg};"`;
 
   return `<section class="ss-hero${photoClass}"${backgroundStyle}>
@@ -238,7 +239,9 @@ function renderServices(section, tokens) {
       const duration = item.duration || item.duration_minutes;
       const serviceId = serviceKey(item, index);
       return `<article class="ss-card" data-service-id="${escapeAttr(serviceId)}" data-service-name="${escapeAttr(name)}" style="background: ${getSurface(tokens)}; border: 1px solid ${getTokens(tokens).theme.hairline};">
-  ${image ? `<img class="ss-card-media" src="${escapeAttr(image)}" alt="${escapeAttr(item.imageAlt || name)}" loading="lazy" />` : ''}
+  ${image
+    ? `<img class="ss-card-media" src="${escapeAttr(image)}" alt="${escapeAttr(item.imageAlt || name)}" loading="lazy" />`
+    : renderPhotoPlaceholder('service', { className: 'ss-photo-placeholder--card' })}
   <div class="ss-card-body">
     <h3 style="color: ${getAccent(tokens)};">${escapeHtml(name)}</h3>
     ${desc ? `<p style="color: ${getMuted(tokens)};">${escapeHtml(desc)}</p>` : ''}
@@ -271,8 +274,10 @@ function renderAbout(section, tokens) {
     .join('');
 
   return `<section class="ss-about ss-section" style="background: ${getBg(tokens)}; color: ${getText(tokens)};">
-  <div class="ss-container ss-about-grid${image ? ' ss-about-grid--media' : ''}">
-    ${image ? `<img class="ss-about-media" src="${escapeAttr(image)}" alt="${escapeAttr(title)}" loading="lazy" />` : ''}
+  <div class="ss-container ss-about-grid ss-about-grid--media">
+    ${image
+      ? `<img class="ss-about-media" src="${escapeAttr(image)}" alt="${escapeAttr(title)}" loading="lazy" />`
+      : renderPhotoPlaceholder('shop', { className: 'ss-photo-placeholder--about' })}
     <div>
       <h2 class="ss-h2" style="color: ${getAccent(tokens)}; text-align: left;">${escapeHtml(title)}</h2>
       <p class="ss-lead">${escapeHtml(body)}</p>
@@ -288,10 +293,12 @@ function renderGallery(section, tokens) {
   const images = c.images || [];
 
   if (!images.length) {
-    return `<section class="ss-gallery" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
-  <div class="ss-container" style="max-width: 1200px; margin: 0 auto;">
-    <h2 style="text-align: center; color: ${getAccent(tokens)};">${escapeHtml(title)}</h2>
-    <p style="text-align: center; color: ${getMuted(tokens)};">Add photos of your work</p>
+    return `<section class="ss-gallery ss-section" style="background: ${getBg(tokens)}; color: ${getText(tokens)};">
+  <div class="ss-container">
+    <h2 class="ss-h2" style="color: ${getAccent(tokens)};">${escapeHtml(title)}</h2>
+    <div class="ss-gallery-grid" data-testid="photo-placeholder-gallery">
+      ${renderGalleryWorkPlaceholders(3)}
+    </div>
   </div>
 </section>`;
   }
@@ -550,7 +557,9 @@ function renderCatalog(section, tokens) {
 
   const cardsHtml = items
     .map((item, index) => `<article class="ss-card" style="background: ${getSurface(tokens)}; border: 1px solid ${getTokens(tokens).theme.hairline};">
-  ${item.image ? `<img class="ss-card-media" src="${escapeAttr(item.image)}" alt="${escapeAttr(item.imageAlt || item.name || '')}" loading="lazy" />` : ''}
+  ${item.image
+    ? `<img class="ss-card-media" src="${escapeAttr(item.image)}" alt="${escapeAttr(item.imageAlt || item.name || '')}" loading="lazy" />`
+    : renderPhotoPlaceholder('product', { className: 'ss-photo-placeholder--card' })}
   <div class="ss-card-body">
     <h3 style="color: ${getAccent(tokens)};">${escapeHtml(item.name || '')}</h3>
     <p style="color: ${getMuted(tokens)};">${escapeHtml(item.description || '')}</p>
