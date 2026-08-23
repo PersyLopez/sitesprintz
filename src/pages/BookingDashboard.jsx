@@ -230,7 +230,7 @@ const BookingDashboard = () => {
                 aria-label="Refresh"
                 data-testid="dashboard-refresh-btn"
               >
-                🔄 Refresh
+                {embedded ? 'Refresh' : '🔄 Refresh'}
               </button>
 
               {!embedded && window.innerWidth <= 768 && (
@@ -284,7 +284,7 @@ const BookingDashboard = () => {
                 data-testid="add-service-button"
                 onClick={handleAddService}
               >
-                ➕ Add Service
+                {embedded ? 'Add Service' : '➕ Add Service'}
               </button>
               {!embedded && (
                 <button
@@ -306,7 +306,7 @@ const BookingDashboard = () => {
                 className={`tab ${activeTab === 'appointments' ? 'active' : ''}`}
                 onClick={() => handleTabChange('appointments')}
               >
-                📅 Appointments
+                {embedded ? 'Appointments' : '📅 Appointments'}
               </button>
               {!embedded && (
                 <button
@@ -324,7 +324,7 @@ const BookingDashboard = () => {
                 className={`tab ${activeTab === 'services' ? 'active' : ''}`}
                 onClick={() => handleTabChange('services')}
               >
-                🛠️ Services
+                {embedded ? 'Services' : '🛠️ Services'}
               </button>
               <button
                 role="tab"
@@ -332,7 +332,7 @@ const BookingDashboard = () => {
                 className={`tab ${activeTab === 'schedule' ? 'active' : ''}`}
                 onClick={() => handleTabChange('schedule')}
               >
-                ⏰ Schedule
+                {embedded ? 'Schedule' : '⏰ Schedule'}
               </button>
               <button
                 role="tab"
@@ -340,7 +340,7 @@ const BookingDashboard = () => {
                 className={`tab ${activeTab === 'phase2' ? 'active' : ''}`}
                 onClick={() => handleTabChange('phase2')}
               >
-                🔔 Phase 2 Settings
+                {embedded ? 'Phase 2 Settings' : '🔔 Phase 2 Settings'}
               </button>
             </div>
 

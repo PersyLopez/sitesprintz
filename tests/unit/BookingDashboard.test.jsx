@@ -284,6 +284,8 @@ describe('BookingDashboard Component - TDD', () => {
         expect(screen.queryByTestId('calendar-board-tab')).not.toBeInTheDocument();
         expect(page.querySelector('.dashboard-tabs')).not.toBeInTheDocument();
         expect(page.querySelector('.pane-subnav')).toBeInTheDocument();
+        expect(screen.getByTestId('appointments-tab')).toHaveAccessibleName(/^Appointments$/);
+        expect(screen.getByTestId('dashboard-refresh-btn')).toBeInTheDocument();
       });
     });
 
