@@ -10,7 +10,11 @@ import AdminTemplates from '../../src/pages/AdminTemplates';
 
 // Mock useAuth
 vi.mock('../../src/hooks/useAuth', () => ({
-  useAuth: () => ({ isAuthenticated: true, user: { id: 'admin-1' } }),
+  useAuth: () => ({
+    isAuthenticated: true,
+    user: { id: 'admin-1' },
+    token: 'test-token',
+  }),
 }));
 
 // Mock fetch
@@ -28,6 +32,7 @@ function renderAdminTemplates() {
 describe('AdminTemplates', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    global.fetch = mockFetch;
     mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({ templates: [], total: 0 }),
@@ -57,7 +62,7 @@ describe('AdminTemplates', () => {
       { id: '1', name: '💇 Salon', slug: 'salon', industry: 'service', description: 'Salon template', layout_key: 'atelier', status: 'active', version: 1, is_default: true },
       { id: '2', name: '🍽️ Restaurant', slug: 'restaurant', industry: 'food', description: 'Restaurant template', layout_key: 'mercantile', status: 'active', version: 1, is_default: true },
     ];
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({ templates: mockTemplates, total: 2 }),
     });
@@ -74,7 +79,7 @@ describe('AdminTemplates', () => {
     const mockTemplates = [
       { id: '1', name: '💇 Salon', slug: 'salon', industry: 'service', description: 'Salon template', layout_key: 'atelier', status: 'active', version: 1, is_default: true },
     ];
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({ templates: mockTemplates, total: 1 }),
     });
@@ -92,9 +97,9 @@ describe('AdminTemplates', () => {
 
   it('renders action buttons on each card', async () => {
     const mockTemplates = [
-      { id: '1', name: '💇 Salon', slug: 'salon', industry: 'service', description: 'Salon template', layout_key: 'atelier', status: 'active', version: 1, is_default: true },
+      { id: '1', name: '💇 Salon', slug: 'salon', industry: 'service', description: 'Salon template', layout_key: 'atelier', status: 'draft', version: 1, is_default: true },
     ];
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({ templates: mockTemplates, total: 1 }),
     });
@@ -114,7 +119,7 @@ describe('AdminTemplates', () => {
       { id: '1', name: '💇 Salon', slug: 'salon', industry: 'service', description: 'Salon template', layout_key: 'atelier', status: 'active', version: 1, is_default: true },
       { id: '2', name: '🍽️ Restaurant', slug: 'restaurant', industry: 'food', description: 'Restaurant template', layout_key: 'mercantile', status: 'draft', version: 1, is_default: true },
     ];
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({ templates: mockTemplates, total: 2 }),
     });
@@ -133,7 +138,7 @@ describe('AdminTemplates', () => {
     const mockTemplates = [
       { id: '1', name: '💇 Salon', slug: 'salon', industry: 'service', description: 'Salon template', layout_key: 'atelier', status: 'active', version: 1, is_default: true },
     ];
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({ templates: mockTemplates, total: 1 }),
     });
@@ -146,7 +151,7 @@ describe('AdminTemplates', () => {
   });
 
   it('shows empty state when no templates', async () => {
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({ templates: [], total: 0 }),
     });
@@ -154,7 +159,7 @@ describe('AdminTemplates', () => {
     renderAdminTemplates();
     
     await waitFor(() => {
-      expect(screen.getByText('No templates found')).toBeTruthy();
+      expect(screen.getByText(/No templates found/i)).toBeTruthy();
     });
   });
 
@@ -170,7 +175,7 @@ describe('AdminTemplates', () => {
       version: 1,
       is_default: false,
     }));
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({ templates: mockTemplates.slice(0, 20), total: 25 }),
     });
