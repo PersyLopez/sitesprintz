@@ -1,5 +1,5 @@
 url: http://localhost:5173/login
-goal: Multi-staff site owner (Luxe Beauty Studio / gallery-salon) can use every owner surface including team calendar, staff picker, services, and schedule
+goal: Multi-staff site owner (Luxe Beauty Studio / gallery-salon) can use every owner surface including staff picker, services, and schedule
 steps:
   - action: Login form ready
     wait_for: { text: Welcome Back, timeout: 20000 }
@@ -133,29 +133,6 @@ steps:
       const t = await page.locator('body').innerText();
       if (!/Appointment|No appointments|pending|confirmed|Booking/i.test(t)) {
         throw new Error('Appointments tab empty/unexpected: ' + t.slice(0, 240));
-      }
-
-  - action: Team calendar tab
-    code: |
-      const tab = page.getByTestId('calendar-board-tab');
-      if ((await tab.count()) === 0) throw new Error('Team calendar tab missing');
-      await tab.click({ timeout: 8000 });
-      await page.waitForTimeout(1500);
-      const board = (await page.getByTestId('team-calendar').count()) + (await page.getByTestId('schedule-board').count());
-      if (!board) {
-        const t = await page.locator('body').innerText();
-        throw new Error('Team calendar/schedule board missing: ' + t.slice(0, 240));
-      }
-      const teamScope = page.getByTestId('schedule-scope-team');
-      if (await teamScope.count()) await teamScope.click({ timeout: 4000 }).catch(() => {});
-
-  - action: Team calendar week view
-    code: |
-      const week = page.getByTestId('schedule-view-week');
-      if (await week.count()) await week.click({ timeout: 4000 });
-      await page.waitForTimeout(600);
-      if ((await page.getByTestId('schedule-board').count()) === 0 && (await page.getByTestId('team-calendar').count()) === 0) {
-        throw new Error('Schedule board disappeared after week toggle');
       }
 
   - action: Services tab

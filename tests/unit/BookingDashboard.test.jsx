@@ -183,14 +183,11 @@ describe('BookingDashboard Component - TDD', () => {
       });
     });
 
-    it('should render TeamCalendar in the team calendar tab', async () => {
+    it('does not show team calendar tab on owner dashboard', async () => {
       renderWithProviders(<BookingDashboard />);
 
-      const calendarTab = screen.getByTestId('calendar-board-tab');
-      calendarTab.click();
-
       await waitFor(() => {
-        expect(screen.getByTestId('schedule-board')).toBeInTheDocument();
+        expect(screen.queryByTestId('calendar-board-tab')).not.toBeInTheDocument();
       });
     });
   });
@@ -200,7 +197,7 @@ describe('BookingDashboard Component - TDD', () => {
       renderWithProviders(<BookingDashboard />);
 
       expect(screen.getByRole('button', { name: /add service/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /view calendar/i })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /view calendar/i })).not.toBeInTheDocument();
     });
 
     it('should open service manager when "Add Service" is clicked', async () => {

@@ -9,7 +9,6 @@ import Footer from '../components/layout/Footer';
 import ServiceManager from '../components/booking/ServiceManager';
 import AppointmentList from '../components/booking/AppointmentList';
 import AvailabilityScheduler from '../components/booking/AvailabilityScheduler';
-import TeamCalendar from '../components/booking/TeamCalendar';
 import './BookingDashboard.css';
 
 const BookingDashboard = () => {
@@ -104,10 +103,6 @@ const BookingDashboard = () => {
 
   const handleAddService = () => {
     setActiveTab('services');
-  };
-
-  const handleViewCalendar = () => {
-    setActiveTab('calendar');
   };
 
   const loadPhase2Settings = async () => {
@@ -294,14 +289,6 @@ const BookingDashboard = () => {
               >
                 Add Service
               </button>
-              {!embedded && (
-                <button
-                  className="action-btn"
-                  onClick={handleViewCalendar}
-                >
-                  View Calendar
-                </button>
-              )}
             </div>
 
             {/* Navigation Tabs */}
@@ -316,16 +303,6 @@ const BookingDashboard = () => {
               >
                 Appointments
               </button>
-              {!embedded && (
-                <button
-                  role="tab"
-                  data-testid="calendar-board-tab"
-                  className={`tab ${activeTab === 'calendar' ? 'active' : ''}`}
-                  onClick={() => handleTabChange('calendar')}
-                >
-                  Team calendar
-                </button>
-              )}
               <button
                 role="tab"
                 data-testid="services-tab"
@@ -356,9 +333,6 @@ const BookingDashboard = () => {
             <div className="tab-content">
               {activeTab === 'appointments' && (
                 <AppointmentList userId={user?.id} siteId={siteId} onRefresh={fetchStats} />
-              )}
-              {!embedded && activeTab === 'calendar' && (
-                <TeamCalendar userId={user?.id} siteId={siteId} />
               )}
               {activeTab === 'services' && (
                 <ServiceManager userId={user?.id} siteId={siteId} onRefresh={fetchStats} />
