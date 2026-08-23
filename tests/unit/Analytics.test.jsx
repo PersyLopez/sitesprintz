@@ -234,6 +234,7 @@ describe('Analytics Page', () => {
         expect(screen.getByText(/All Sites/i)).toBeInTheDocument();
         expect(screen.getByText(/5,?000/)).toBeInTheDocument();
         expect(screen.getByText(/1,?750/)).toBeInTheDocument();
+        expect(screen.getByText('Unique visitors (summed by site)')).toBeInTheDocument();
         expect(screen.getByText('Main Site')).toBeInTheDocument();
         expect(screen.getByText('Second Site')).toBeInTheDocument();
       });
@@ -286,7 +287,7 @@ describe('Analytics Page', () => {
       });
     });
 
-    it('should display visitors count', async () => {
+    it('should display visitors count with site label', async () => {
       render(
         <MemoryRouter initialEntries={['/dashboard/sites/site123/analytics']}>
           <Analytics />
@@ -294,6 +295,7 @@ describe('Analytics Page', () => {
       );
 
       await waitFor(() => {
+        expect(screen.getAllByText('Unique Visitors').length).toBeGreaterThan(0);
         expect(screen.getByText(/3,?876/)).toBeInTheDocument();
       });
     });
@@ -311,7 +313,7 @@ describe('Analytics Page', () => {
       });
     });
 
-    it('should display unavailable bounce rate placeholder', async () => {
+    it('should display unavailable bounce rate placeholder when API omits metrics', async () => {
       render(
         <MemoryRouter initialEntries={['/dashboard/sites/site123/analytics']}>
           <Analytics />
@@ -320,6 +322,26 @@ describe('Analytics Page', () => {
 
       await waitFor(() => {
         expect(screen.getAllByText('—').length).toBeGreaterThan(0);
+      });
+    });
+
+    it('should display bounce rate and duration when API returns them', async () => {
+      mockSiteAnalyticsFetch({
+        stats: {
+          bounceRate: 42.5,
+          avgDurationSeconds: 192,
+        },
+      });
+
+      render(
+        <MemoryRouter initialEntries={['/dashboard/sites/site123/analytics']}>
+          <Analytics />
+        </MemoryRouter>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('42.5%')).toBeInTheDocument();
+        expect(screen.getByText('3m 12s')).toBeInTheDocument();
       });
     });
 

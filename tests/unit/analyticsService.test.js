@@ -212,16 +212,69 @@ describe('AnalyticsService', () => {
     });
   });
 
+  describe('computeSessionMetrics()', () => {
+    it('returns null metrics when there are no page views', () => {
+      const metrics = AnalyticsService.computeSessionMetrics([]);
+
+      expect(metrics.bounceRate).toBeNull();
+      expect(metrics.avgDurationSeconds).toBeNull();
+    });
+
+    it('returns 100% bounce for a single-page session', () => {
+      const metrics = AnalyticsService.computeSessionMetrics([
+        {
+          timestamp: '2026-01-01T10:00:00.000Z',
+          ip_address: '1.2.3.4',
+          user_agent: 'Mozilla/5.0',
+        },
+      ]);
+
+      expect(metrics.bounceRate).toBe(100);
+      expect(metrics.avgDurationSeconds).toBe(0);
+    });
+
+    it('returns duration > 0 for a two-page session', () => {
+      const metrics = AnalyticsService.computeSessionMetrics([
+        {
+          timestamp: '2026-01-01T10:00:00.000Z',
+          ip_address: '1.2.3.4',
+          user_agent: 'Mozilla/5.0',
+        },
+        {
+          timestamp: '2026-01-01T10:05:00.000Z',
+          ip_address: '1.2.3.4',
+          user_agent: 'Mozilla/5.0',
+        },
+      ]);
+
+      expect(metrics.bounceRate).toBe(0);
+      expect(metrics.avgDurationSeconds).toBeGreaterThan(0);
+    });
+  });
+
   describe('getStats()', () => {
     it('should query aggregated stats by site_id', async () => {
-      vi.mocked(prisma.$queryRawUnsafe).mockResolvedValueOnce([{
-        total_page_views: 150,
-        unique_visitors: 45,
-        total_orders: 12,
-        total_revenue: 56788,
-        avg_order_value: 4732,
-        conversion_rate: 0.08
-      }]);
+      vi.mocked(prisma.$queryRawUnsafe)
+        .mockResolvedValueOnce([{
+          total_page_views: 150,
+          unique_visitors: 45,
+          total_orders: 12,
+          total_revenue: 56788,
+          avg_order_value: 4732,
+          conversion_rate: 0.08,
+        }])
+        .mockResolvedValueOnce([
+          {
+            timestamp: '2026-01-01T10:00:00.000Z',
+            ip_address: '1.2.3.4',
+            user_agent: 'Mozilla/5.0',
+          },
+          {
+            timestamp: '2026-01-01T10:05:00.000Z',
+            ip_address: '1.2.3.4',
+            user_agent: 'Mozilla/5.0',
+          },
+        ]);
 
       const stats = await AnalyticsService.getStats('mybusiness', { period: '7d' });
 
@@ -230,9 +283,29 @@ describe('AnalyticsService', () => {
       expect(stats.orders).toBe(12);
       expect(stats.revenue).toBe(56788);
       expect(stats.conversionRate).toBe(8);
-      
+      expect(stats.bounceRate).toBe(0);
+      expect(stats.avgDurationSeconds).toBeGreaterThan(0);
+
       const sqlCall = vi.mocked(prisma.$queryRawUnsafe).mock.calls[0];
       expect(sqlCall[0]).toContain('pv.site_id = $1');
+    });
+
+    it('returns null bounce and duration when there are zero page views', async () => {
+      vi.mocked(prisma.$queryRawUnsafe).mockResolvedValueOnce([{
+        total_page_views: 0,
+        unique_visitors: 0,
+        total_orders: 0,
+        total_revenue: 0,
+        avg_order_value: 0,
+        conversion_rate: 0,
+      }]);
+
+      const stats = await AnalyticsService.getStats('mybusiness', { period: '7d' });
+
+      expect(stats.pageViews).toBe(0);
+      expect(stats.bounceRate).toBeNull();
+      expect(stats.avgDurationSeconds).toBeNull();
+      expect(prisma.$queryRawUnsafe).toHaveBeenCalledTimes(1);
     });
   });
 

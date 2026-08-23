@@ -167,6 +167,67 @@ class AnalyticsService {
   }
 
   /**
+   * Session metrics from page views.
+   * Session = site_id + ip_address + user_agent; new session if gap from previous view > 30 minutes.
+   */
+  static computeSessionMetrics(pageViews) {
+    const SESSION_GAP_MS = 30 * 60 * 1000;
+
+    if (!pageViews?.length) {
+      return { bounceRate: null, avgDurationSeconds: null };
+    }
+
+    const visitorGroups = new Map();
+
+    for (const view of pageViews) {
+      const key = `${view.ip_address ?? ''}|${view.user_agent ?? ''}`;
+      if (!visitorGroups.has(key)) {
+        visitorGroups.set(key, []);
+      }
+      visitorGroups.get(key).push(new Date(view.timestamp).getTime());
+    }
+
+    const sessions = [];
+
+    for (const timestamps of visitorGroups.values()) {
+      timestamps.sort((a, b) => a - b);
+
+      let sessionTimestamps = [timestamps[0]];
+
+      for (let i = 1; i < timestamps.length; i += 1) {
+        if (timestamps[i] - timestamps[i - 1] > SESSION_GAP_MS) {
+          sessions.push(sessionTimestamps);
+          sessionTimestamps = [timestamps[i]];
+        } else {
+          sessionTimestamps.push(timestamps[i]);
+        }
+      }
+
+      sessions.push(sessionTimestamps);
+    }
+
+    if (sessions.length === 0) {
+      return { bounceRate: null, avgDurationSeconds: null };
+    }
+
+    let bounceCount = 0;
+    let totalDurationSeconds = 0;
+
+    for (const session of sessions) {
+      if (session.length === 1) {
+        bounceCount += 1;
+      } else {
+        totalDurationSeconds += (session[session.length - 1] - session[0]) / 1000;
+      }
+    }
+
+    const bounceRate = Math.round((bounceCount / sessions.length) * 1000) / 10;
+    const avgDurationSeconds = totalDurationSeconds / sessions.length;
+
+    return { bounceRate, avgDurationSeconds };
+  }
+
+  /**
    * Get aggregated stats for a subdomain
    */
   static async getStats(subdomain, options = {}) {
@@ -213,14 +274,36 @@ class AnalyticsService {
     );
 
     const row = result[0] || {};
+    const pageViews = Number(row.total_page_views) || 0;
+
+    let bounceRate = null;
+    let avgDurationSeconds = null;
+
+    if (pageViews > 0) {
+      const viewRows = await prisma.$queryRawUnsafe(
+        `SELECT pv.timestamp, pv.ip_address, pv.user_agent
+        FROM analytics_page_views pv
+        WHERE pv.site_id = $1
+        ${dateFilter}
+        ORDER BY pv.ip_address, pv.user_agent, pv.timestamp`,
+        siteId,
+        ...params
+      );
+
+      const sessionMetrics = this.computeSessionMetrics(viewRows);
+      bounceRate = sessionMetrics.bounceRate;
+      avgDurationSeconds = sessionMetrics.avgDurationSeconds;
+    }
 
     return {
-      pageViews: Number(row.total_page_views) || 0,
+      pageViews,
       uniqueVisitors: Number(row.unique_visitors) || 0,
       orders: Number(row.total_orders) || 0,
       revenue: Number(row.total_revenue) || 0,
       avgOrderValue: Number(row.avg_order_value) || 0,
-      conversionRate: Number((Number(row.conversion_rate) * 100).toFixed(2)) || 0
+      conversionRate: Number((Number(row.conversion_rate) * 100).toFixed(2)) || 0,
+      bounceRate,
+      avgDurationSeconds
     };
   }
 

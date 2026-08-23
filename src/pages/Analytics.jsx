@@ -28,12 +28,57 @@ function formatChartLabels(timeSeries) {
   });
 }
 
+function formatDurationSeconds(seconds) {
+  if (seconds === null || seconds === undefined || Number.isNaN(seconds)) {
+    return '—';
+  }
+
+  const total = Math.round(seconds);
+  if (total <= 0) {
+    return '0s';
+  }
+
+  const minutes = Math.floor(total / 60);
+  const secs = total % 60;
+
+  if (minutes === 0) {
+    return `${secs}s`;
+  }
+
+  return `${minutes}m ${secs.toString().padStart(2, '0')}s`;
+}
+
+function computeViewWeightedMetric(rows, valueKey, weightKey = 'views') {
+  let weightedSum = 0;
+  let totalWeight = 0;
+
+  for (const row of rows) {
+    const value = row[valueKey];
+    if (value === null || value === undefined) {
+      continue;
+    }
+
+    const weight = row[weightKey] ?? 0;
+    if (weight <= 0) {
+      continue;
+    }
+
+    weightedSum += value * weight;
+    totalWeight += weight;
+  }
+
+  return totalWeight > 0 ? weightedSum / totalWeight : null;
+}
+
 function parseStatsPayload(statsPayload) {
   return {
     pageViews: statsPayload.pageViews ?? statsPayload.stats?.pageViews ?? 0,
     uniqueVisitors: statsPayload.uniqueVisitors ?? statsPayload.stats?.uniqueVisitors ?? 0,
     orders: statsPayload.orders ?? statsPayload.stats?.orders ?? 0,
     revenue: statsPayload.revenue ?? statsPayload.stats?.revenue ?? 0,
+    bounceRate: statsPayload.bounceRate ?? statsPayload.stats?.bounceRate ?? null,
+    avgDurationSeconds:
+      statsPayload.avgDurationSeconds ?? statsPayload.stats?.avgDurationSeconds ?? null,
   };
 }
 
@@ -47,8 +92,8 @@ function normalizeSiteAnalytics(stats, timeSeries) {
   return {
     totalViews: stats?.pageViews ?? 0,
     totalVisitors: stats?.uniqueVisitors ?? 0,
-    avgDuration: '—',
-    bounceRate: null,
+    avgDuration: formatDurationSeconds(stats?.avgDurationSeconds),
+    bounceRate: stats?.bounceRate ?? null,
     chartData: {
       views: series.map((point) => point.pageViews ?? 0),
       visitors: series.map((point) => point.uniqueVisitors ?? point.pageViews ?? 0),
@@ -167,12 +212,16 @@ async function fetchAccountAnalytics(userId, days) {
       name: site.name || site.subdomain,
       views: stats.pageViews,
       visitors: stats.uniqueVisitors,
-      bounceRate: null,
-      avgDuration: '—',
+      bounceRate: stats.bounceRate ?? null,
+      avgDurationSeconds: stats.avgDurationSeconds ?? null,
+      avgDuration: formatDurationSeconds(stats.avgDurationSeconds),
     });
   }
 
   siteRows.sort((a, b) => b.views - a.views);
+
+  const weightedBounceRate = computeViewWeightedMetric(siteRows, 'bounceRate');
+  const weightedAvgDurationSeconds = computeViewWeightedMetric(siteRows, 'avgDurationSeconds');
 
   const mergedSeries = mergeTimeSeries(allSeries);
   return {
@@ -182,6 +231,9 @@ async function fetchAccountAnalytics(userId, days) {
         uniqueVisitors: totalVisitors,
         orders: totalOrders,
         revenue: totalRevenue,
+        bounceRate:
+          weightedBounceRate === null ? null : Math.round(weightedBounceRate * 10) / 10,
+        avgDurationSeconds: weightedAvgDurationSeconds,
       },
       mergedSeries,
     ),
@@ -281,7 +333,7 @@ function Analytics() {
         />
 
         <StatsCard
-          label="Unique Visitors"
+          label={siteAnalyticsMode ? 'Unique Visitors' : 'Unique visitors (summed by site)'}
           value={analyticsData.totalVisitors?.toLocaleString() || '0'}
           change={analyticsData.trends?.visitors}
           changeLabel="vs previous period"
