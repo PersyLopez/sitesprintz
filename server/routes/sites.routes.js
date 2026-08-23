@@ -446,20 +446,9 @@ router.put('/:siteId/products', requireAuth, asyncHandler(async (req, res) => {
     available: p.available !== false && p.available !== 'false' && p.available !== 0 && p.available !== '0'
   }));
 
-  // Get existing data and update products
+  // Get existing data and update products only (never mirror into booking services)
   const existingData = parseSiteData(ownership.site);
   existingData.products = sanitizedProducts;
-
-  // Also update services if they exist (for templates that use services)
-  if (existingData.services?.items) {
-    existingData.services.items = sanitizedProducts.map(p => ({
-      id: p.id,
-      title: p.name,
-      description: p.description,
-      price: p.price,
-      image: p.image
-    }));
-  }
 
   // Save to database
   await prisma.sites.update({

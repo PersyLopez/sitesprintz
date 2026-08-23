@@ -1,0 +1,136 @@
+url: http://localhost:5173/login
+goal: Products catalog PUT updates site_data.products without clobbering booking services
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter gallery email
+    fill: { testId: login-email, value: "gallery@sitesprintz.com", clear: true }
+
+  - action: Enter gallery password
+    fill: { testId: login-password, value: "GalleryDemo123!", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 5000
+
+  - action: Dashboard loaded
+    wait_for: { url: /dashboard, timeout: 30000 }
+    settle_ms: 1500
+
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      }
+
+  - action: Open salon products workspace
+    goto: http://localhost:5173/dashboard/sites/gallery-salon/products
+    settle_ms: 2000
+
+  - action: Products workspace loads
+    wait_for: { selector: '[data-testid="site-nav-products"]', timeout: 15000 }
+    settle_ms: 800
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/Product|Catalog|Add|Import|No products/i.test(t)) {
+        throw new Error('Products workspace missing expected copy: ' + t.slice(0, 240));
+      }
+
+  - action: Snapshot site catalog and services.items before save
+    code: |
+      const result = await page.evaluate(async () => {
+        const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+        if (!token) throw new Error('No auth token after gallery login');
+        const resp = await fetch('/api/sites/luxe-beauty-studio', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const body = await resp.json().catch(() => ({}));
+        const data = body.site?.data || body.data?.site?.data || {};
+        return {
+          status: resp.status,
+          productCount: Array.isArray(data.products) ? data.products.length : 0,
+          serviceItems: Array.isArray(data.services?.items) ? data.services.items.map((s) => s.title || s.name) : [],
+        };
+      });
+      if (result.status !== 200 || result.productCount < 1) {
+        throw new Error('Could not load gallery-salon site data: ' + JSON.stringify(result));
+      }
+      await page.evaluate((snapshot) => sessionStorage.setItem('mantestSiteSnapshotBefore', JSON.stringify(snapshot)), result);
+    settle_ms: 400
+
+  - action: Harmless catalog PUT via products API
+    code: |
+      const result = await page.evaluate(async () => {
+        const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+        if (!token) throw new Error('No auth token for products PUT');
+        const getResp = await fetch('/api/sites/luxe-beauty-studio/products', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const getBody = await getResp.json().catch(() => ({}));
+        const products = getBody.products || getBody.data?.products || [];
+        if (!Array.isArray(products) || products.length === 0) {
+          throw new Error('Expected gallery-salon catalog products before PUT');
+        }
+        const putResp = await fetch('/api/sites/luxe-beauty-studio/products', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ products }),
+        });
+        const putBody = await putResp.json().catch(() => ({}));
+        return { status: putResp.status, count: (putBody.products || putBody.data?.products || []).length };
+      });
+      if (result.status !== 200 || result.count < 1) {
+        throw new Error('Products PUT failed: ' + JSON.stringify(result));
+      }
+    settle_ms: 500
+
+  - action: Site services.items unchanged after catalog PUT
+    code: |
+      const before = JSON.parse(await page.evaluate(() => sessionStorage.getItem('mantestSiteSnapshotBefore') || '{}'));
+      const result = await page.evaluate(async () => {
+        const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+        const resp = await fetch('/api/sites/luxe-beauty-studio', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const body = await resp.json().catch(() => ({}));
+        const data = body.site?.data || body.data?.site?.data || {};
+        return {
+          productCount: Array.isArray(data.products) ? data.products.length : 0,
+          serviceItems: Array.isArray(data.services?.items) ? data.services.items.map((s) => s.title || s.name) : [],
+        };
+      });
+      if (result.productCount < 1) throw new Error('Catalog missing after PUT');
+      const beforeItems = before.serviceItems || [];
+      const afterItems = result.serviceItems || [];
+      if (JSON.stringify(beforeItems) !== JSON.stringify(afterItems)) {
+        throw new Error('services.items changed after products PUT: before=' + JSON.stringify(beforeItems) + ' after=' + JSON.stringify(afterItems));
+      }
+    settle_ms: 400
+
+  - action: Open appointments workspace
+    click: { testId: site-nav-appointments }
+    settle_ms: 2000
+
+  - action: Open services tab in booking console
+    code: |
+      const tab = page.getByTestId('services-tab');
+      if ((await tab.count()) === 0) {
+        const t = await page.locator('body').innerText();
+        throw new Error('Services tab missing in appointments workspace: ' + t.slice(0, 240));
+      }
+      await tab.click({ timeout: 8000 });
+    settle_ms: 1200
+
+  - action: Booking service names still visible
+    code: |
+      const t = await page.locator('body').innerText();
+      const ok = /Haircut|Color Treatment|Manicure|Signature Haircut|Blowout/i.test(t);
+      if (!ok) {
+        throw new Error('No booking service names visible after catalog PUT: ' + t.slice(0, 280));
+      }
+    settle_ms: 400
