@@ -66,8 +66,7 @@ tests/e2e/.auth/
 .hermes/
 
 # mantest generated runs (plans in tests/mantest/ are source)
-.mantest/runs/
-.mantest/snapshots/
+.mantest/
 
 # Runtime/debug logs (already tracked files may need explicit untrack)
 csrf_debug.log
@@ -84,6 +83,8 @@ verification-*.json
 *_results.txt
 *_SUMMARY.txt
 *_COMPLETE.txt
+docs/tech-debt/report-*.md
+tmp/
 
 # Generated knowledge graphs and local session dumps
 graphify-out/
