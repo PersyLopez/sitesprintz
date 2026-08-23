@@ -151,6 +151,11 @@ export const createMockPrisma = () => {
         if (where.subdomain) return Promise.resolve(findByField(mockData.sites, 'subdomain', where.subdomain));
         return Promise.resolve(null);
       }),
+      findFirst: vi.fn(({ where } = {}) => {
+        if (where?.id) return Promise.resolve(findById(mockData.sites, where.id));
+        if (where?.subdomain) return Promise.resolve(findByField(mockData.sites, 'subdomain', where.subdomain));
+        return Promise.resolve(null);
+      }),
       findMany: vi.fn(({ where, orderBy } = {}) => {
         let results = Array.from(mockData.sites.values());
         if (where) {

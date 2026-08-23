@@ -452,7 +452,7 @@ router.put('/:siteId/products', requireAuth, asyncHandler(async (req, res) => {
 
   // Save to database
   await prisma.sites.update({
-    where: { id: siteId },
+    where: { id: ownership.site.id },
     data: {
       site_data: existingData
     }

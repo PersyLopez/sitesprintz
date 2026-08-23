@@ -154,5 +154,48 @@ describe('API Integration Tests - Site products', () => {
       expect(siteData.services.items[0].title).toBe('Haircut & Style');
       expect(siteData.services.items[1].title).toBe('Color Treatment');
     });
+
+    it('updates products when siteId param is subdomain', async () => {
+      const realId = 'site-uuid-products-1';
+      seedPrismaData({
+        sites: [
+          createTestSite({
+            id: realId,
+            user_id: TEST_USER_ID,
+            subdomain: 'products-by-subdomain',
+            site_data: {
+              products: catalogProducts,
+              services: { items: bookingServices },
+            },
+          }),
+        ],
+      });
+
+      const updatedCatalog = [
+        ...catalogProducts,
+        {
+          id: 'prod-conditioner',
+          name: 'Salon Conditioner',
+          description: 'Retail bottle',
+          price: 22,
+          category: 'Retail',
+          available: true,
+        },
+      ];
+
+      const response = await request(app)
+        .put('/api/sites/products-by-subdomain/products')
+        .send({ products: updatedCatalog });
+
+      expect(response.status).toBe(200);
+      expect(response.body.products).toHaveLength(2);
+
+      const site = await prisma.sites.findUnique({ where: { id: realId } });
+      const siteData = typeof site.site_data === 'string' ? JSON.parse(site.site_data) : site.site_data;
+
+      expect(siteData.products).toHaveLength(2);
+      expect(siteData.products[1].name).toBe('Salon Conditioner');
+      expect(siteData.services.items).toEqual(bookingServices);
+    });
   });
 });
