@@ -5,6 +5,7 @@ const PaymentSuccess = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const sessionId = searchParams.get('session_id');
+    const draftId = searchParams.get('draftId');
 
     useEffect(() => {
         if (!sessionId) {
@@ -12,16 +13,18 @@ const PaymentSuccess = () => {
         }
     }, [sessionId, navigate]);
 
+    const continueTo = draftId ? '/setup' : '/dashboard';
+
     return (
         <div className="payment-success-page" style={{ padding: '40px', textAlign: 'center', color: 'white' }}>
             <h1>Payment Successful!</h1>
             <p>Thank you for your purchase.</p>
             <p>Your subscription has been confirmed.</p>
             <button
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate(continueTo)}
                 style={{ marginTop: '20px', padding: '10px 20px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '5px' }}
             >
-                Go to Dashboard
+                {draftId ? 'Continue setup' : 'Go to Dashboard'}
             </button>
         </div>
     );

@@ -51,6 +51,7 @@ function BillingSection({ user, token }) {
           onClick={openBillingPortal}
           disabled={loading}
           className="btn btn-primary"
+          data-testid="open-billing-portal"
         >
           {loading ? '⏳ Loading...' : '📊 Open Billing Portal'}
         </button>

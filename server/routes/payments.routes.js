@@ -28,6 +28,7 @@ import {
   normalizeApplyTo,
   deactivateProcessor
 } from '../services/payments/processorConnectHelpers.js';
+import { resolveStripeRedirectUrl, subscriptionCheckoutUrls } from '../utils/stripeReturnUrls.js';
 
 const router = express.Router();
 
@@ -229,6 +230,17 @@ router.post('/checkout/create-session', checkoutLimiter, orderLimiter, authentic
         })
     };
 
+    sessionParams.success_url = resolveStripeRedirectUrl(
+        req,
+        successUrl,
+        `/view/${site.subdomain || siteId}?order=success`
+    );
+    sessionParams.cancel_url = resolveStripeRedirectUrl(
+        req,
+        cancelUrl,
+        `/view/${site.subdomain || siteId}?order=cancelled`
+    );
+
     // Direct charge on the owner's Standard account — funds never settle on SiteSprintz
     const session = await stripe.checkout.sessions.create(sessionParams, {
         stripeAccount: stripeAccountId
@@ -271,6 +283,7 @@ router.post('/payments/checkout-sessions', checkoutLimiter, orderLimiter, requir
 
     let siteData = null;
     let siteOwner = null;
+    let liveSlug = siteId;
 
     try {
         const site = await prisma.sites.findUnique({
@@ -280,6 +293,7 @@ router.post('/payments/checkout-sessions', checkoutLimiter, orderLimiter, requir
         if (site) {
             siteData = typeof site.site_data === 'string' ? JSON.parse(site.site_data) : site.site_data;
             siteOwner = site.users;
+            liveSlug = site.subdomain || siteId;
         }
     } catch (err) {
         console.error(`[Payments] Failed to find site by ID '${siteId}':`, err.message);
@@ -327,15 +341,9 @@ router.post('/payments/checkout-sessions', checkoutLimiter, orderLimiter, requir
         const curr = (currency || 'usd').toLowerCase();
 
         // Determine return URLs
-        const origin = `${req.protocol}://${req.get('host')}`;
-        let success, cancel;
-        if (siteId) {
-            success = successUrl || `${origin}/sites/${siteId}/?order=success`;
-            cancel = cancelUrl || `${origin}/sites/${siteId}/?order=cancelled`;
-        } else {
-            success = successUrl || `${origin}/?checkout=success`;
-            cancel = cancelUrl || `${origin}/?checkout=cancel`;
-        }
+        const sitePath = `/view/${liveSlug}`;
+        const success = resolveStripeRedirectUrl(req, successUrl, `${sitePath}?order=success`);
+        const cancel = resolveStripeRedirectUrl(req, cancelUrl, `${sitePath}?order=cancelled`);
 
         // Check if site owner has Stripe Connect configured
         let stripeAccountId = null;
@@ -402,7 +410,7 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
         return sendServiceUnavailable(res, 'Stripe not configured. Add STRIPE_SECRET_KEY to .env', 'STRIPE_NOT_CONFIGURED');
     }
 
-    const { plan: rawPlan, draftId } = req.body;
+    const { plan: rawPlan, draftId, successUrl, cancelUrl } = req.body;
     const userEmail = req.user.email;
     const plan = rawPlan === 'pro' || rawPlan === 'premium' ? 'growth' : rawPlan;
 
@@ -427,6 +435,12 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
         };
 
         const selectedPlan = planDetails[plan];
+        const redirects = subscriptionCheckoutUrls(req, {
+            plan,
+            draftId,
+            successUrl,
+            cancelUrl,
+        });
 
         // Create or retrieve Stripe customer
         let customer;
@@ -448,7 +462,7 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
         const session = await stripe.checkout.sessions.create({
             customer: customer.id,
             mode: 'subscription',
-            payment_method_types: ['card', 'paypal', 'link'], // Multiple payment methods
+            payment_method_types: ['card'],
             line_items: [{
                 price_data: {
                     currency: 'usd',
@@ -463,8 +477,8 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
                 },
                 quantity: 1,
             }],
-            success_url: `${process.env.SITE_URL || 'http://localhost:3000'}/payment-success.html?session_id={CHECKOUT_SESSION_ID}&plan=${plan}`,
-            cancel_url: `${process.env.SITE_URL || 'http://localhost:3000'}/payment-cancel.html?plan=${plan}`,
+            success_url: redirects.successUrl,
+            cancel_url: redirects.cancelUrl,
             allow_promotion_codes: true,
             billing_address_collection: 'auto',
             // Enable Apple Pay and Google Pay automatically for supported devices
@@ -659,36 +673,43 @@ router.post('/trial/create-subscription', requireAuth, asyncHandler(async (req, 
 }));
 
 // Create billing portal session
-router.post('/create-portal-session', requireAuth, asyncHandler(async (req, res) => {
+const createPortalSessionHandler = asyncHandler(async (req, res) => {
     if (!stripe) {
         return sendServiceUnavailable(res, 'Stripe not configured', 'STRIPE_NOT_CONFIGURED');
     }
 
     const { returnUrl } = req.body;
     const userEmail = req.user.email;
-    
+    const portalReturnUrl = resolveStripeRedirectUrl(req, returnUrl, '/settings/billing');
+
+    const dbUser = await prisma.users.findUnique({
+        where: { email: userEmail },
+        select: { stripe_customer_id: true }
+    });
+
     // Get or create Stripe customer ID for user
-    let stripeCustomerId = req.user.stripe_customer_id;
+    let stripeCustomerId = dbUser?.stripe_customer_id;
     if (!stripeCustomerId) {
         const customer = await stripe.customers.create({
             email: userEmail
         });
         stripeCustomerId = customer.id;
-        // Store in database
         await prisma.users.update({
             where: { email: userEmail },
             data: { stripe_customer_id: stripeCustomerId }
         });
     }
-    
-    // Create billing portal session
+
     const session = await stripe.billingPortal.sessions.create({
         customer: stripeCustomerId,
-        return_url: returnUrl || `${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard`
+        return_url: portalReturnUrl
     });
-    
+
     sendSuccess(res, { url: session.url });
-}));
+});
+
+router.post('/create-portal-session', requireAuth, createPortalSessionHandler);
+router.post('/payments/create-portal-session', requireAuth, createPortalSessionHandler);
 
 // Get user's subscription status
 router.get('/subscription/status', requireAuth, asyncHandler(async (req, res) => {
@@ -858,7 +879,7 @@ router.post('/connect/create-checkout', checkoutLimiter, orderLimiter, requirePr
         return sendBadRequest(res, 'CAPTCHA verification failed', 'CAPTCHA_FAILED');
     }
 
-    const { connectedAccountId, lineItems, metadata } = req.body;
+    const { connectedAccountId, lineItems, metadata, successUrl, cancelUrl } = req.body;
 
     if (!connectedAccountId) {
         return sendBadRequest(res, 'Connected account ID required', 'MISSING_ACCOUNT_ID');
@@ -880,14 +901,16 @@ router.post('/connect/create-checkout', checkoutLimiter, orderLimiter, requirePr
     }, 0);
     const platformFee = Math.min(Math.max(Math.round(total * 0.01), 50), 500);
 
-    const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
-
     // Create checkout session on behalf of connected account
     const session = await stripe.checkout.sessions.create({
         mode: 'payment',
         line_items: lineItems,
-        success_url: `${origin}/success.html?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/cancel.html`,
+        success_url: resolveStripeRedirectUrl(
+            req,
+            successUrl,
+            '/payment-success?session_id={CHECKOUT_SESSION_ID}'
+        ),
+        cancel_url: resolveStripeRedirectUrl(req, cancelUrl, '/payment-cancel'),
         payment_intent_data: {
             application_fee_amount: platformFee,
             metadata: {

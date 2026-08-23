@@ -43,6 +43,7 @@ function CheckoutButton({
     setError(null);
 
     try {
+      const pagePath = window.location.pathname || '/';
       const data = await api.post('/api/payments/checkout/create-session', {
         siteId,
         items: cartItems.map(item => ({
@@ -53,8 +54,8 @@ function CheckoutButton({
           description: item.description,
           options: item.options
         })),
-        successUrl: `${window.location.origin}/sites/${siteId}/?order=success`,
-        cancelUrl: `${window.location.origin}/sites/${siteId}/?order=cancelled`
+        successUrl: `${window.location.origin}${pagePath}?order=success`,
+        cancelUrl: `${window.location.origin}${pagePath}?order=cancelled`
       });
 
       const redirectUrl = data.redirectUrl || data.url;

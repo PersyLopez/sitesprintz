@@ -83,16 +83,25 @@ function EditorPanel() {
       }
 
       // Create checkout session with trial
+      const origin = window.location?.origin;
+      const payload = {
+        plan: 'pro',
+        draftId: siteData.id,
+      };
+      if (origin) {
+        payload.successUrl = `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}&plan=growth&draftId=${encodeURIComponent(siteData.id || '')}`;
+      }
+      if (window.location?.href) {
+        payload.cancelUrl = window.location.href;
+      }
+
       const response = await fetch('/api/payments/create-subscription-checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          plan: 'pro',
-          draftId: siteData.id
-        })
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();

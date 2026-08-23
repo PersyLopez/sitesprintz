@@ -95,12 +95,9 @@ describe('CheckoutButton', () => {
   });
 
   it('redirects to the payment processor on Stripe checkout', async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ redirectUrl: 'https://checkout.example/session' })
-    });
+    api.post.mockResolvedValue({ redirectUrl: 'https://checkout.example/session' });
     delete window.location;
-    window.location = { href: '', origin: 'http://localhost:5173' };
+    window.location = { href: '', origin: 'http://localhost:5173', pathname: '/view/site-1' };
 
     render(<CheckoutButton siteId="site-1" paymentsReady />);
     fireEvent.click(screen.getByTestId('checkout-button'));
