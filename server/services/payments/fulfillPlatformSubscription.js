@@ -2,16 +2,25 @@ import { prisma } from '../../../database/db.js';
 
 const VALID_PLANS = new Set(['starter', 'growth']);
 
+const BLOCKED_SUBSCRIPTION_STATUSES = new Set([
+  'incomplete',
+  'incomplete_expired',
+  'past_due',
+  'canceled',
+  'unpaid',
+]);
+
 /**
  * Normalize legacy plan names to platform tiers.
  * @param {string|undefined|null} rawPlan
- * @returns {'starter'|'growth'}
+ * @returns {'starter'|'growth'|null}
  */
 export function normalizePlatformPlan(rawPlan) {
-  const plan = String(rawPlan || 'growth').toLowerCase();
+  if (rawPlan == null || rawPlan === '') return null;
+  const plan = String(rawPlan).toLowerCase();
   if (plan === 'pro' || plan === 'premium') return 'growth';
   if (VALID_PLANS.has(plan)) return plan;
-  return 'growth';
+  return null;
 }
 
 /**
@@ -19,16 +28,11 @@ export function normalizePlatformPlan(rawPlan) {
  * @returns {string|null}
  */
 export function resolveEmailFromSession(session) {
-  return (
-    session.metadata?.user_email
-    || session.customer_details?.email
-    || session.customer_email
-    || null
-  );
+  return session.metadata?.user_email || null;
 }
 
 /**
- * Resolve platform user from checkout session metadata or email fallbacks.
+ * Resolve platform user from checkout session metadata or account email fallback.
  * @param {import('stripe').Stripe.Checkout.Session} session
  * @param {import('@prisma/client').PrismaClient} [db]
  * @returns {Promise<object|null>}
@@ -50,6 +54,39 @@ export async function resolveUserForSession(session, db = prisma) {
 }
 
 /**
+ * @param {import('stripe').Stripe.Checkout.Session} session
+ * @returns {boolean}
+ */
+function isSubscriptionSession(session) {
+  const hasSubscriptionContext = Boolean(
+    session.subscription
+    || session.metadata?.plan
+    || session.subscription_data?.metadata?.plan,
+  );
+  return session.mode === 'subscription'
+    || (session.mode == null && hasSubscriptionContext);
+}
+
+/**
+ * @param {import('stripe').Stripe.Checkout.Session} session
+ * @returns {boolean}
+ */
+function isSessionPaid(session) {
+  const status = session.payment_status;
+  return status === 'paid' || status === 'no_payment_required';
+}
+
+/**
+ * @param {string} stripeStatus
+ * @returns {'active'|'trialing'|null}
+ */
+function mapFulfillmentStatus(stripeStatus) {
+  if (stripeStatus === 'trialing') return 'trialing';
+  if (stripeStatus === 'active') return 'active';
+  return null;
+}
+
+/**
  * Fulfill a platform subscription checkout — updates users only (no subscriptions table).
  * Idempotent: safe to call multiple times for the same paid session.
  *
@@ -61,6 +98,14 @@ export async function fulfillPlatformSubscription(session, options = {}) {
   const db = options.db || prisma;
   const stripe = options.stripe || null;
 
+  if (!isSubscriptionSession(session)) {
+    return { fulfilled: false, reason: 'invalid_session_mode' };
+  }
+
+  if (!isSessionPaid(session)) {
+    return { fulfilled: false, reason: 'not_paid' };
+  }
+
   const user = await resolveUserForSession(session, db);
   if (!user) {
     return { fulfilled: false, reason: 'user_not_found' };
@@ -69,39 +114,55 @@ export async function fulfillPlatformSubscription(session, options = {}) {
   const rawPlan = session.metadata?.plan
     || session.subscription_data?.metadata?.plan;
   const plan = normalizePlatformPlan(rawPlan);
+  if (!plan) {
+    return { fulfilled: false, reason: 'invalid_plan' };
+  }
 
   const subscriptionId = typeof session.subscription === 'string'
     ? session.subscription
     : session.subscription?.id || user.stripe_subscription_id;
+
+  let subscriptionStatus = 'active';
+  let currentPeriodEnd = null;
+
+  if (stripe && subscriptionId) {
+    try {
+      const sub = await stripe.subscriptions.retrieve(subscriptionId);
+      if (BLOCKED_SUBSCRIPTION_STATUSES.has(sub.status)) {
+        return { fulfilled: false, reason: 'subscription_not_active' };
+      }
+      const mapped = mapFulfillmentStatus(sub.status);
+      if (!mapped) {
+        return { fulfilled: false, reason: 'subscription_not_active' };
+      }
+      subscriptionStatus = mapped;
+      if (sub.current_period_end) {
+        currentPeriodEnd = new Date(sub.current_period_end * 1000);
+      }
+    } catch {
+      // Non-fatal when Stripe is unavailable — rely on session paid state
+    }
+  }
 
   if (
     user.stripe_subscription_id
     && subscriptionId
     && user.stripe_subscription_id === subscriptionId
     && user.plan === plan
-    && user.subscription_status === 'active'
+    && (user.subscription_status === 'active' || user.subscription_status === 'trialing')
+    && user.subscription_status === subscriptionStatus
   ) {
     return {
       fulfilled: true,
       plan,
-      status: 'active',
+      status: subscriptionStatus,
       userId: user.id,
       idempotent: true,
     };
   }
 
-  let currentPeriodEnd = null;
-  if (session.current_period_end) {
+  if (!currentPeriodEnd && session.current_period_end) {
     currentPeriodEnd = new Date(session.current_period_end * 1000);
-  } else if (stripe && subscriptionId) {
-    try {
-      const sub = await stripe.subscriptions.retrieve(subscriptionId);
-      if (sub.current_period_end) {
-        currentPeriodEnd = new Date(sub.current_period_end * 1000);
-      }
-    } catch {
-      // Non-fatal — period end is optional
-    }
   }
 
   const customerId = typeof session.customer === 'string'
@@ -111,7 +172,7 @@ export async function fulfillPlatformSubscription(session, options = {}) {
   const updateData = {
     plan,
     subscription_plan: plan,
-    subscription_status: 'active',
+    subscription_status: subscriptionStatus,
     updated_at: new Date(),
   };
 
@@ -133,7 +194,7 @@ export async function fulfillPlatformSubscription(session, options = {}) {
   return {
     fulfilled: true,
     plan,
-    status: 'active',
+    status: subscriptionStatus,
     userId: user.id,
   };
 }

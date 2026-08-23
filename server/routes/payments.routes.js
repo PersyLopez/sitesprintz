@@ -13,6 +13,7 @@ import {
   sendNotFound,
   sendServerError,
   sendServiceUnavailable,
+  sendConflict,
   asyncHandler
 } from '../utils/apiResponse.js';
 import {
@@ -445,8 +446,24 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
 
         const dbUser = await prisma.users.findUnique({
             where: { email: userEmail },
-            select: { stripe_customer_id: true, id: true },
+            select: {
+                stripe_customer_id: true,
+                id: true,
+                subscription_status: true,
+                stripe_subscription_id: true,
+            },
         });
+
+        if (
+            dbUser?.stripe_subscription_id
+            && ['active', 'trialing'].includes(dbUser.subscription_status)
+        ) {
+            return sendConflict(
+                res,
+                'You already have an active subscription. Manage it in the billing portal.',
+                'ALREADY_SUBSCRIBED',
+            );
+        }
 
         let customerId = dbUser?.stripe_customer_id || null;
         if (customerId) {
@@ -518,13 +535,15 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
                 draft_id: draftId || '',
                 source: 'sitesprintz_subscription',
             },
+        }, {
+            idempotencyKey: `plat-sub:${userId}:${plan}`,
         });
 
     sendSuccess(res, { sessionId: session.id, url: session.url });
 });
 
-router.post('/payments/create-subscription-checkout', requireAuth, createSubscriptionCheckout);
-router.post('/create-subscription-checkout', requireAuth, createSubscriptionCheckout);
+router.post('/payments/create-subscription-checkout', checkoutLimiter, requireAuth, createSubscriptionCheckout);
+router.post('/create-subscription-checkout', checkoutLimiter, requireAuth, createSubscriptionCheckout);
 
 const confirmCheckoutSession = asyncHandler(async (req, res) => {
     if (!stripe) {
@@ -535,6 +554,9 @@ const confirmCheckoutSession = asyncHandler(async (req, res) => {
     if (!sessionId || typeof sessionId !== 'string') {
         return sendBadRequest(res, 'sessionId is required', 'MISSING_SESSION_ID');
     }
+    if (!sessionId.startsWith('cs_')) {
+        return sendBadRequest(res, 'Invalid checkout session id', 'INVALID_SESSION_ID');
+    }
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
@@ -542,26 +564,23 @@ const confirmCheckoutSession = asyncHandler(async (req, res) => {
         return sendBadRequest(res, 'Not a subscription checkout session', 'INVALID_SESSION_MODE');
     }
 
-    const isComplete = session.status === 'complete'
-        || session.payment_status === 'paid';
-    if (!isComplete) {
+    const paid = session.payment_status === 'paid'
+        || session.payment_status === 'no_payment_required';
+    if (session.status !== 'complete' || !paid) {
         return sendBadRequest(res, 'Checkout session is not complete', 'CHECKOUT_INCOMPLETE');
     }
 
     const sessionUserId = session.metadata?.userId || session.client_reference_id;
-    const sessionEmail = (
-        session.metadata?.user_email
-        || session.customer_details?.email
-        || session.customer_email
-        || ''
-    ).toLowerCase();
-    const userEmail = (req.user.email || '').toLowerCase();
-
-    const userMatches = (sessionUserId && sessionUserId === req.user.id)
-        || (sessionEmail && sessionEmail === userEmail);
-
-    if (!userMatches) {
+    if (!sessionUserId || sessionUserId !== req.user.id) {
         return sendForbidden(res, 'Checkout session does not belong to this user', 'SESSION_USER_MISMATCH');
+    }
+
+    if (session.metadata?.user_email) {
+        const metaEmail = session.metadata.user_email.toLowerCase();
+        const userEmail = (req.user.email || '').toLowerCase();
+        if (metaEmail !== userEmail) {
+            return sendForbidden(res, 'Checkout session does not belong to this user', 'SESSION_USER_MISMATCH');
+        }
     }
 
     const result = await fulfillPlatformSubscription(session, { db: prisma, stripe });
@@ -572,8 +591,8 @@ const confirmCheckoutSession = asyncHandler(async (req, res) => {
     sendSuccess(res, { plan: result.plan, status: result.status });
 });
 
-router.post('/payments/confirm-checkout-session', requireAuth, confirmCheckoutSession);
-router.post('/confirm-checkout-session', requireAuth, confirmCheckoutSession);
+router.post('/payments/confirm-checkout-session', checkoutLimiter, requireAuth, confirmCheckoutSession);
+router.post('/confirm-checkout-session', checkoutLimiter, requireAuth, confirmCheckoutSession);
 
 // Create Setup Intent for trial payment method collection
 router.post('/trial/setup-intent', requireAuth, asyncHandler(async (req, res) => {

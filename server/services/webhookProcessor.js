@@ -83,7 +83,7 @@ export class WebhookProcessor {
       return !!result;
     } catch (error) {
       console.error('Error checking event processing status:', error);
-      return false; // Fail open - allow processing on error
+      throw error;
     }
   }
 
@@ -380,46 +380,37 @@ export class WebhookProcessor {
     const subscription = event.data.object;
 
     try {
-      await this.updateSubscriptionStatus(subscription.id, subscription.status);
+      const user = await this.getUserBySubscriptionId(subscription.id);
+      if (!user) {
+        console.warn('User not found for subscription:', subscription.id);
+        return { action: 'user_not_found' };
+      }
 
-      // Check if this is a plan change
+      const updateData = {
+        subscription_status: subscription.status,
+        updated_at: new Date(),
+      };
+
+      if (subscription.status === 'canceled' || subscription.status === 'unpaid') {
+        updateData.plan = null;
+        updateData.subscription_plan = null;
+      }
+
+      await this.db.users.update({
+        where: { id: user.id },
+        data: updateData,
+      });
+
       if (event.data.previous_attributes?.items) {
         return { action: 'plan_change' };
       }
 
-      // Send notification for status changes
       if (subscription.status === 'past_due') {
-        const user = await this.getUserBySubscriptionId(subscription.id);
-        if (user) {
-          // Assuming EmailTypes is imported or available, but it wasn't in original file imports visible.
-          // The original file used EmailTypes but didn't import it? 
-          // Ah, it might be a global or I missed it. 
-          // Wait, the original file had `import { emailService } from './emailService.js';`
-          // And used `EmailTypes.PAYMENT_FAILED`.
-          // I should probably import EmailTypes if it's exported from emailService.
-          // Or just pass string if that's what it expects.
-          // Let's assume emailService handles it or I should import it.
-          // Checking original file imports: `import { emailService } from './emailService.js';`
-          // It didn't import EmailTypes. Maybe it's a property of emailService?
-          // Or maybe it was missing in original file too?
-          // I'll leave it as is, assuming it works or I'll fix if it breaks.
-          // Actually, I should check emailService.js to be sure.
-          // But for now, I'll just use the string literals if I can guess them, or keep the code.
-          // The original code used `EmailTypes`. If it wasn't imported, it would crash.
-          // Maybe it was imported and I missed it in the view?
-          // Let's check the view again.
-          // Line 9: `import { emailService } from './emailService.js';`
-          // No EmailTypes.
-          // This suggests `EmailTypes` might be undefined in the original code unless it's a global.
-          // I'll assume it's available or I should import it.
-          // I'll add `import { emailService, EmailTypes } from './emailService.js';` just in case.
-
-          await this.emailService.sendEmail({
-            to: user.email,
-            template: 'paymentFailed', // Guessing template name based on usage
-            data: {}
-          });
-        }
+        await this.emailService.sendEmail({
+          to: user.email,
+          template: 'paymentFailed',
+          data: {},
+        });
       }
 
       return { action: 'status_updated', status: subscription.status };
@@ -436,17 +427,25 @@ export class WebhookProcessor {
     const subscription = event.data.object;
 
     try {
-      // Update status (don't delete row)
-      await this.updateSubscriptionStatus(subscription.id, 'canceled');
-
-      // Send cancellation confirmation
       const user = await this.getUserBySubscriptionId(subscription.id);
       if (user) {
+        await this.db.users.update({
+          where: { id: user.id },
+          data: {
+            subscription_status: 'canceled',
+            plan: null,
+            subscription_plan: null,
+            updated_at: new Date(),
+          },
+        });
+
         await this.emailService.sendEmail({
           to: user.email,
           template: 'subscriptionCanceled',
           data: {}
         });
+      } else {
+        console.warn('User not found for subscription:', subscription.id);
       }
 
       return { action: 'subscription_canceled' };
@@ -463,15 +462,48 @@ export class WebhookProcessor {
     const invoice = event.data.object;
 
     try {
-      // Send notification but don't cancel immediately
-      await this.emailService.sendEmail({
-        to: invoice.customer_email,
-        template: 'paymentFailed',
-        data: {
-          amount: invoice.amount_due,
-          attemptCount: invoice.attempt_count
+      let user = null;
+      if (invoice.subscription) {
+        const subscriptionId = typeof invoice.subscription === 'string'
+          ? invoice.subscription
+          : invoice.subscription.id;
+        user = await this.getUserBySubscriptionId(subscriptionId);
+      }
+
+      if (!user && invoice.customer) {
+        const customerId = typeof invoice.customer === 'string'
+          ? invoice.customer
+          : invoice.customer.id;
+        user = await this.db.users.findFirst({
+          where: { stripe_customer_id: customerId },
+        });
+      }
+
+      if (user) {
+        await this.db.users.update({
+          where: { id: user.id },
+          data: {
+            subscription_status: 'past_due',
+            updated_at: new Date(),
+          },
+        });
+      }
+
+      try {
+        const emailTo = user?.email || invoice.customer_email;
+        if (emailTo) {
+          await this.emailService.sendEmail({
+            to: emailTo,
+            template: 'paymentFailed',
+            data: {
+              amount: invoice.amount_due,
+              attemptCount: invoice.attempt_count,
+            },
+          });
         }
-      });
+      } catch (emailError) {
+        console.error('Error sending payment failure email:', emailError);
+      }
 
       return { action: 'payment_failure_notified' };
     } catch (error) {

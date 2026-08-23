@@ -70,7 +70,7 @@ describe('createSubscriptionCheckout metadata', () => {
     expect(response.status).toBe(200);
     expect(mockSessionsCreate).toHaveBeenCalledTimes(1);
 
-    const [sessionOptions] = mockSessionsCreate.mock.calls[0];
+    const [sessionOptions, requestOptions] = mockSessionsCreate.mock.calls[0];
     expect(sessionOptions.metadata.userId).toBe('user-checkout-1');
     expect(sessionOptions.metadata.user_email).toBe('checkout@example.com');
     expect(sessionOptions.client_reference_id).toBe('user-checkout-1');
@@ -78,5 +78,25 @@ describe('createSubscriptionCheckout metadata', () => {
       plan: 'starter',
       userId: 'user-checkout-1',
     });
+    expect(requestOptions).toEqual({
+      idempotencyKey: 'plat-sub:user-checkout-1:starter',
+    });
+  });
+
+  it('returns 409 when user already has active subscription', async () => {
+    mockUsersFindUnique.mockResolvedValue({
+      stripe_customer_id: 'cus_existing',
+      id: 'user-checkout-1',
+      subscription_status: 'active',
+      stripe_subscription_id: 'sub_existing',
+    });
+
+    const response = await request(app)
+      .post('/api/payments/create-subscription-checkout')
+      .send({ plan: 'growth' });
+
+    expect(response.status).toBe(409);
+    expect(response.body.code).toBe('ALREADY_SUBSCRIBED');
+    expect(mockSessionsCreate).not.toHaveBeenCalled();
   });
 });
