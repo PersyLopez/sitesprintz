@@ -9,6 +9,7 @@
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { pathToFileURL } from 'url';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import { prisma } from '../database/db.js';
@@ -33,7 +34,7 @@ const GALLERY_PASSWORD = 'GalleryDemo123!';
  * shows template variety — salon, trades, dining, products, bazaar, etc.
  * themeId is the locked SiteSprintz palette applied at publish.
  */
-const EXAMPLES = [
+export const EXAMPLES = [
   // ── Full theme lineup (each SITE_THEMES id exactly once as the lead) ──
   {
     subdomain: 'gallery-salon',
@@ -341,7 +342,6 @@ function assembleSiteData(example) {
         allowCheckout: true,
         bookingEnabled: false,
         payOnSite: true,
-        demoMode: true,
       },
     };
   }
@@ -433,7 +433,6 @@ function assembleSiteData(example) {
       bookingWidget: isBooking ? 'native' : undefined,
       bookingTitle: example.niche === 'restaurant' ? 'Reserve a Table' : 'Book an Appointment',
       payOnSite: isCommerce,
-      demoMode: true,
     },
   };
 }
@@ -719,8 +718,12 @@ async function main() {
   await prisma.$disconnect();
 }
 
-main().catch(async (error) => {
-  console.error(error);
-  await prisma.$disconnect();
-  process.exit(1);
-});
+const isDirectRun = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isDirectRun) {
+  main().catch(async (error) => {
+    console.error(error);
+    await prisma.$disconnect();
+    process.exit(1);
+  });
+}
