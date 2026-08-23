@@ -165,6 +165,9 @@ export default function Landing() {
 
   const ctaTo = isAuthenticated ? '/setup' : '/register';
   const ctaLabel = isAuthenticated ? t('landing.cta.auth') : t('landing.cta.guest');
+  const pricingCtaTo = (planId) => (
+    isAuthenticated ? `/settings/billing?plan=${planId}` : `/register?plan=${planId}`
+  );
   const trustItems = TRUST_KEYS.map((item) => ({ icon: item.icon, label: t(item.key) }));
   const customerStories = CUSTOMER_STORY_IDS.map((story) => ({
     ...story,
@@ -386,9 +389,10 @@ export default function Landing() {
                   ))}
                 </ul>
                 <Link
-                  to={ctaTo}
+                  to={pricingCtaTo(plan.id)}
                   className={`pricing-btn ${plan.popular ? 'pricing-btn-primary' : 'pricing-btn-secondary'}`}
                   onClick={handleGetStarted}
+                  data-testid={`pricing-cta-${plan.id}`}
                 >
                   {ctaLabel}
                 </Link>

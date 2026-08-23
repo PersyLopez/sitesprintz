@@ -1,24 +1,38 @@
 import React from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import PublicPageLayout from '../components/layout/PublicPageLayout';
+import './PaymentPages.css';
 
 const PaymentCancel = () => {
-    const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-    const draftId = searchParams.get('draftId');
-    const returnTo = draftId ? '/setup' : '/dashboard';
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const draftId = searchParams.get('draftId');
+  const returnTo = draftId ? '/setup' : '/dashboard';
 
-    return (
-        <div className="payment-cancel-page" style={{ padding: '40px', textAlign: 'center', color: 'white' }}>
-            <h1>Payment Cancelled</h1>
-            <p>Your payment was cancelled.</p>
+  return (
+    <PublicPageLayout className="payment-cancel-page">
+      <div className="payment-result-page">
+        <div className="payment-result-card" data-testid="payment-cancel-card">
+          <h1>Payment cancelled</h1>
+          <p>Your subscription checkout was not completed.</p>
+          <p>No charges were made.</p>
+          <div className="payment-result-actions">
+            <Link to="/#pricing" className="btn btn-primary" data-testid="payment-cancel-pricing">
+              View plans
+            </Link>
             <button
-                onClick={() => navigate(returnTo)}
-                style={{ marginTop: '20px', padding: '10px 20px', background: '#4b5563', color: 'white', border: 'none', borderRadius: '5px' }}
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => navigate(returnTo)}
+              data-testid="payment-cancel-return"
             >
-                {draftId ? 'Return to setup' : 'Return to Dashboard'}
+              {draftId ? 'Return to setup' : 'Return to dashboard'}
             </button>
+          </div>
         </div>
-    );
+      </div>
+    </PublicPageLayout>
+  );
 };
 
 export default PaymentCancel;

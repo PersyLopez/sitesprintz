@@ -198,7 +198,7 @@ describe('EditorPanel - Trial & Subscription System', () => {
         user: {
           id: 1,
           email: 'test@example.com',
-          plan: 'pro',
+          plan: 'growth',
           subscription_status: 'active'
         }
       }, []);
@@ -360,7 +360,7 @@ describe('EditorPanel - Trial & Subscription System', () => {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer mock-auth-token'
             }),
-            body: expect.stringContaining('"plan":"pro"')
+            body: expect.stringContaining('"plan":"growth"')
           })
         );
       });
@@ -422,7 +422,7 @@ describe('EditorPanel - Trial & Subscription System', () => {
       await user.click(trialButton);
       
       await waitFor(() => {
-        expect(window.location.href).toBe('/register.html?plan=pro');
+        expect(window.location.href).toBe('/register?plan=growth');
       });
     });
 
@@ -478,7 +478,7 @@ describe('EditorPanel - Trial & Subscription System', () => {
           '/api/payments/create-subscription-checkout',
           expect.objectContaining({
             method: 'POST',
-            body: expect.stringContaining('"plan":"pro"')
+            body: expect.stringContaining('"plan":"growth"')
           })
         );
       });
@@ -536,7 +536,7 @@ describe('EditorPanel - Trial & Subscription System', () => {
       await waitFor(() => {
         const call = global.fetch.mock.calls[0];
         const body = JSON.parse(call[1].body);
-        expect(body.plan).toBe('pro');
+        expect(body.plan).toBe('growth');
       });
     });
   });
@@ -677,7 +677,7 @@ describe('EditorPanel - Trial & Subscription System', () => {
         user: {
           id: 1,
           email: 'test@example.com',
-          plan: 'pro',
+          plan: 'growth',
           subscription_status: 'active'
         }
       }, []);

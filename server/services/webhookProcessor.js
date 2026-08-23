@@ -8,6 +8,10 @@
 import { prisma } from '../../database/db.js';
 import { emailService } from './emailService.js';
 import BookingPaymentAdapter from './booking/BookingPaymentAdapter.js';
+import {
+  fulfillPlatformSubscription,
+  resolveUserForSession,
+} from './payments/fulfillPlatformSubscription.js';
 
 export class WebhookProcessor {
   constructor(db = null, emailSvc = null, stripe = null, paymentAdapter = null) {
@@ -223,43 +227,40 @@ export class WebhookProcessor {
    */
   async handleSubscriptionCheckout(session) {
     try {
-      const userId = session.metadata?.userId;
-      const plan = session.metadata?.plan || 'pro';
+      const existingUser = await resolveUserForSession(session, this.db);
+      const previousPlan = existingUser?.plan;
 
-      if (!userId) {
-        // Race condition - user might not be created yet
-        const user = await this.findUserWithRetry(session.customer_email);
-        if (!user) {
-          throw new Error('User not found for subscription');
-        }
-      }
-
-      // Check if this is an upgrade
-      const existingUser = await this.db.users.findUnique({
-        where: { id: userId },
-        select: { plan: true, stripe_subscription_id: true }
+      const result = await fulfillPlatformSubscription(session, {
+        db: this.db,
+        stripe: this.stripe,
       });
 
-      const isUpgrade = existingUser && existingUser.plan !== plan;
+      if (!result.fulfilled) {
+        throw new Error('User not found for subscription');
+      }
 
-      // Create subscription
-      await this.createSubscription(session);
+      const { plan } = result;
+      const isUpgrade = Boolean(previousPlan && previousPlan !== plan);
 
-      // Send welcome/upgrade email
       try {
         const template = isUpgrade ? 'subscriptionUpgraded' : 'subscriptionCreated';
-        await this.emailService.sendEmail({
-          to: session.customer_email,
-          template,
-          data: { plan }
-        });
+        const to = session.customer_email
+          || session.customer_details?.email
+          || existingUser?.email;
+        if (to) {
+          await this.emailService.sendEmail({
+            to,
+            template,
+            data: { plan },
+          });
+        }
       } catch (emailError) {
         console.error('Subscription email failed:', emailError);
       }
 
       return {
         action: isUpgrade ? 'upgrade' : 'subscription_created',
-        plan
+        plan,
       };
     } catch (error) {
       console.error('Error handling subscription checkout:', error);
@@ -359,44 +360,17 @@ export class WebhookProcessor {
   }
 
   /**
-   * Create subscription in database
+   * Create subscription in database (users table only)
    */
   async createSubscription(session) {
-    return await this.db.$transaction(async (tx) => {
-      // Upsert subscription record
-      await tx.subscriptions.upsert({
-        where: { id: session.subscription },
-        update: {
-          stripe_subscription_id: session.subscription,
-          plan: session.metadata.plan,
-          status: 'active',
-          updated_at: new Date()
-        },
-        create: {
-          id: session.subscription,
-          user_id: session.metadata.userId,
-          stripe_customer_id: session.customer,
-          stripe_subscription_id: session.subscription,
-          plan: session.metadata.plan,
-          status: 'active',
-          created_at: new Date(),
-          updated_at: new Date()
-        }
-      });
-
-      // Update user record (keep plan + subscription_plan in sync)
-      await tx.users.update({
-        where: { id: session.metadata.userId },
-        data: {
-          plan: session.metadata.plan,
-          subscription_plan: session.metadata.plan,
-          stripe_customer_id: session.customer,
-          stripe_subscription_id: session.subscription,
-          subscription_status: 'active',
-          updated_at: new Date()
-        }
-      });
+    const result = await fulfillPlatformSubscription(session, {
+      db: this.db,
+      stripe: this.stripe,
     });
+    if (!result.fulfilled) {
+      throw new Error('User not found for subscription');
+    }
+    return result;
   }
 
   /**
@@ -507,51 +481,35 @@ export class WebhookProcessor {
   }
 
   /**
-   * Update subscription status in database
+   * Update subscription status on users (no subscriptions table)
    */
   async updateSubscriptionStatus(subscriptionId, status) {
-    // Get user ID first
-    const subscription = await this.db.subscriptions.findFirst({
+    const user = await this.db.users.findFirst({
       where: { stripe_subscription_id: subscriptionId },
-      select: { user_id: true }
+      select: { id: true },
     });
 
-    if (!subscription) {
-      console.warn('Subscription not found:', subscriptionId);
+    if (!user) {
+      console.warn('User not found for subscription:', subscriptionId);
       return;
     }
 
-    const userId = subscription.user_id;
-
-    // Update subscription
-    await this.db.subscriptions.updateMany({
-      where: { stripe_subscription_id: subscriptionId },
-      data: {
-        status: status,
-        updated_at: new Date()
-      }
-    });
-
-    // Update user
     await this.db.users.update({
-      where: { id: userId },
+      where: { id: user.id },
       data: {
         subscription_status: status,
-        updated_at: new Date()
-      }
+        updated_at: new Date(),
+      },
     });
   }
 
   /**
-   * Get user by subscription ID
+   * Get user by Stripe subscription ID
    */
   async getUserBySubscriptionId(subscriptionId) {
-    const subscription = await this.db.subscriptions.findFirst({
+    return this.db.users.findFirst({
       where: { stripe_subscription_id: subscriptionId },
-      include: { users: true }
     });
-
-    return subscription?.users || null;
   }
 
   /**

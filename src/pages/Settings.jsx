@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Routes, Route, Link, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
@@ -12,6 +12,13 @@ import './Settings.css';
 
 function BillingSection({ user, token }) {
   const [loading, setLoading] = useState(false);
+  const [searchParams] = useSearchParams();
+  const highlightedPlan = searchParams.get('plan');
+
+  const currentPlan = (user?.subscriptionPlan || user?.plan || '').toLowerCase();
+  const subscriptionStatus = (user?.subscriptionStatus || user?.subscription_status || '').toLowerCase();
+  const hasActivePlan = subscriptionStatus === 'active'
+    && ['starter', 'growth'].includes(currentPlan);
 
   const openBillingPortal = async () => {
     try {
@@ -34,6 +41,32 @@ function BillingSection({ user, token }) {
     } catch (error) {
       console.error('Error opening billing portal:', error);
       alert('Failed to open billing portal. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubscribe = async (plan) => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/payments/create-subscription-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ plan }),
+      });
+
+      const data = await response.json();
+      if (response.ok && data.url) {
+        window.location.href = data.url;
+        return;
+      }
+      throw new Error(data.error || 'Failed to create checkout session');
+    } catch (error) {
+      console.error('Error starting subscription checkout:', error);
+      alert('Failed to start checkout. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -66,7 +99,7 @@ function BillingSection({ user, token }) {
           </div>
           <div className="info-row">
             <span className="label">Status:</span>
-            <span className="value">{user?.subscriptionStatus || 'Inactive'}</span>
+            <span className="value">{user?.subscriptionStatus || user?.subscription_status || 'Inactive'}</span>
           </div>
           {user?.currentPeriodEnd && (
             <div className="info-row">
@@ -75,6 +108,34 @@ function BillingSection({ user, token }) {
             </div>
           )}
         </div>
+
+        {!hasActivePlan && (
+          <div className="billing-subscribe-actions" style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => handleSubscribe('starter')}
+              disabled={loading}
+              className={`btn btn-secondary ${highlightedPlan === 'starter' ? 'btn-primary' : ''}`}
+              data-testid="subscribe-starter"
+            >
+              {loading ? 'Loading…' : 'Subscribe to Starter'}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSubscribe('growth')}
+              disabled={loading}
+              className={`btn btn-primary ${highlightedPlan === 'growth' ? 'featured' : ''}`}
+              data-testid="subscribe-growth"
+            >
+              {loading ? 'Loading…' : 'Subscribe to Growth'}
+            </button>
+          </div>
+        )}
+        {highlightedPlan && !hasActivePlan && (
+          <p className="section-description" style={{ marginTop: '0.75rem' }}>
+            You selected the {highlightedPlan} plan — choose a subscribe button above to continue.
+          </p>
+        )}
       </div>
     </div>
   );

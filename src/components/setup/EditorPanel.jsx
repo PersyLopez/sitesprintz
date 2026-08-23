@@ -78,14 +78,14 @@ function EditorPanel() {
     try {
       const token = localStorage.getItem('authToken');
       if (!token) {
-        window.location.href = '/register.html?plan=pro';
+        window.location.href = '/register?plan=growth';
         return;
       }
 
       // Create checkout session with trial
       const origin = window.location?.origin;
       const payload = {
-        plan: 'pro',
+        plan: 'growth',
         draftId: siteData.id,
       };
       if (origin) {
@@ -126,7 +126,7 @@ function EditorPanel() {
     if (isEligibleForTrial) {
       return { primary: '🚀 Start 7-Day Free Trial', secondary: 'Payment method required - no charge until trial ends' };
     }
-    return { primary: '⭐ Subscribe to Pro', secondary: 'Unlock all features' };
+    return { primary: '⭐ Subscribe to Growth', secondary: 'Unlock all features' };
   };
 
   const ctaText = getCtaText();
@@ -228,7 +228,7 @@ function EditorPanel() {
                   {ctaText.primary}
                 </button>
               )}
-              <a href={hasActiveTrial ? '/dashboard' : '/pricing'} className="btn btn-secondary-link">
+              <a href={hasActiveTrial ? '/dashboard' : '/#pricing'} className="btn btn-secondary-link">
                 {hasActiveTrial ? 'View Dashboard' : 'Learn More'}
               </a>
             </div>

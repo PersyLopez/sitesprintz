@@ -1,0 +1,49 @@
+.payment-result-page {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1.5rem;
+}
+
+.payment-result-card {
+  max-width: 32rem;
+  width: 100%;
+  text-align: center;
+  padding: 2rem;
+  border-radius: 0.75rem;
+  background: var(--surface-elevated, #1e293b);
+  color: var(--text-primary, #f8fafc);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+.payment-result-card h1 {
+  margin: 0 0 0.75rem;
+  font-size: 1.75rem;
+}
+
+.payment-result-card p {
+  margin: 0.5rem 0;
+  color: var(--text-secondary, #cbd5e1);
+}
+
+.payment-result-status {
+  font-weight: 600;
+  color: var(--accent, #38bdf8);
+}
+
+.payment-result-error {
+  color: #f87171;
+}
+
+.payment-result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.payment-result-actions .btn {
+  min-width: 10rem;
+}

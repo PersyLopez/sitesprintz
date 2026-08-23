@@ -92,7 +92,7 @@ describe('Landing Page - Pricing', () => {
   it('shows the growth tagline and features', () => {
     renderLanding();
     expect(screen.getByText('Get booked & paid')).toBeInTheDocument();
-    expect(screen.getByText('Booking, cart & Stripe checkout')).toBeInTheDocument();
+    expect(screen.getByText('Embedded booking')).toBeInTheDocument();
   });
 
   it('shows the trial note', () => {
@@ -100,21 +100,15 @@ describe('Landing Page - Pricing', () => {
     expect(screen.getByText(/7-day trial when you publish/i)).toBeInTheDocument();
   });
 
-  it('pricing CTAs route unauthenticated users to register', () => {
+  it('pricing CTAs route unauthenticated users to register with plan', () => {
     renderLanding();
-    const ctas = screen.getAllByRole('link', { name: /Get Your Page Free/i });
-    expect(ctas.length).toBeGreaterThan(0);
-    ctas.forEach((cta) => {
-      expect(cta).toHaveAttribute('href', '/register');
-    });
+    expect(screen.getByTestId('pricing-cta-starter')).toHaveAttribute('href', '/register?plan=starter');
+    expect(screen.getByTestId('pricing-cta-growth')).toHaveAttribute('href', '/register?plan=growth');
   });
 
-  it('pricing CTAs route authenticated users to setup', () => {
+  it('pricing CTAs route authenticated users to billing with plan', () => {
     renderLanding({ isAuthenticated: true });
-    const ctas = screen.getAllByRole('link', { name: /Create Your Page/i });
-    expect(ctas.length).toBeGreaterThan(0);
-    ctas.forEach((cta) => {
-      expect(cta).toHaveAttribute('href', '/setup');
-    });
+    expect(screen.getByTestId('pricing-cta-starter')).toHaveAttribute('href', '/settings/billing?plan=starter');
+    expect(screen.getByTestId('pricing-cta-growth')).toHaveAttribute('href', '/settings/billing?plan=growth');
   });
 });

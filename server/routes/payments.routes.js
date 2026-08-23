@@ -29,6 +29,7 @@ import {
   deactivateProcessor
 } from '../services/payments/processorConnectHelpers.js';
 import { resolveStripeRedirectUrl, subscriptionCheckoutUrls } from '../utils/stripeReturnUrls.js';
+import { fulfillPlatformSubscription } from '../services/payments/fulfillPlatformSubscription.js';
 
 const router = express.Router();
 
@@ -442,30 +443,47 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
             cancelUrl,
         });
 
-        // Create or retrieve Stripe customer
-        let customer;
-        const existingCustomers = await stripe.customers.list({ email: userEmail, limit: 1 });
+        const dbUser = await prisma.users.findUnique({
+            where: { email: userEmail },
+            select: { stripe_customer_id: true, id: true },
+        });
 
-        if (existingCustomers.data.length > 0) {
-            customer = existingCustomers.data[0];
-        } else {
-            customer = await stripe.customers.create({
-                email: userEmail,
-                metadata: {
-                    source: 'sitesprintz',
-                    signupDate: new Date().toISOString()
-                }
-            });
+        let customerId = dbUser?.stripe_customer_id || null;
+        if (customerId) {
+            try {
+                await stripe.customers.retrieve(customerId);
+            } catch {
+                customerId = null;
+            }
+        }
+
+        if (!customerId) {
+            const existingCustomers = await stripe.customers.list({ email: userEmail, limit: 1 });
+            if (existingCustomers.data.length > 0) {
+                customerId = existingCustomers.data[0].id;
+            } else {
+                const created = await stripe.customers.create({
+                    email: userEmail,
+                    metadata: {
+                        source: 'sitesprintz',
+                        signupDate: new Date().toISOString(),
+                    },
+                });
+                customerId = created.id;
+            }
         }
 
         await prisma.users.update({
             where: { email: userEmail },
-            data: { stripe_customer_id: customer.id }
+            data: { stripe_customer_id: customerId },
         });
+
+        const userId = req.user.id;
 
         // Create checkout session with dynamic pricing
         const session = await stripe.checkout.sessions.create({
-            customer: customer.id,
+            customer: customerId,
+            client_reference_id: userId,
             mode: 'subscription',
             payment_method_types: ['card'],
             line_items: [{
@@ -486,22 +504,76 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
             cancel_url: redirects.cancelUrl,
             allow_promotion_codes: true,
             billing_address_collection: 'auto',
-            // Enable Apple Pay and Google Pay automatically for supported devices
-            automatic_tax: { enabled: false }, // Set to true if you have tax calculation enabled
+            automatic_tax: { enabled: false },
+            subscription_data: {
+                metadata: {
+                    plan,
+                    userId,
+                },
+            },
             metadata: {
                 plan,
+                userId,
                 user_email: userEmail,
                 draft_id: draftId || '',
-                source: 'sitesprintz_subscription'
-            }
+                source: 'sitesprintz_subscription',
+            },
         });
 
-    console.log(`Created subscription checkout session for ${userEmail}, plan: ${plan}, session: ${session.id}`);
     sendSuccess(res, { sessionId: session.id, url: session.url });
 });
 
 router.post('/payments/create-subscription-checkout', requireAuth, createSubscriptionCheckout);
 router.post('/create-subscription-checkout', requireAuth, createSubscriptionCheckout);
+
+const confirmCheckoutSession = asyncHandler(async (req, res) => {
+    if (!stripe) {
+        return sendServiceUnavailable(res, 'Stripe not configured. Add STRIPE_SECRET_KEY to .env', 'STRIPE_NOT_CONFIGURED');
+    }
+
+    const { sessionId } = req.body;
+    if (!sessionId || typeof sessionId !== 'string') {
+        return sendBadRequest(res, 'sessionId is required', 'MISSING_SESSION_ID');
+    }
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    if (session.mode !== 'subscription') {
+        return sendBadRequest(res, 'Not a subscription checkout session', 'INVALID_SESSION_MODE');
+    }
+
+    const isComplete = session.status === 'complete'
+        || session.payment_status === 'paid';
+    if (!isComplete) {
+        return sendBadRequest(res, 'Checkout session is not complete', 'CHECKOUT_INCOMPLETE');
+    }
+
+    const sessionUserId = session.metadata?.userId || session.client_reference_id;
+    const sessionEmail = (
+        session.metadata?.user_email
+        || session.customer_details?.email
+        || session.customer_email
+        || ''
+    ).toLowerCase();
+    const userEmail = (req.user.email || '').toLowerCase();
+
+    const userMatches = (sessionUserId && sessionUserId === req.user.id)
+        || (sessionEmail && sessionEmail === userEmail);
+
+    if (!userMatches) {
+        return sendForbidden(res, 'Checkout session does not belong to this user', 'SESSION_USER_MISMATCH');
+    }
+
+    const result = await fulfillPlatformSubscription(session, { db: prisma, stripe });
+    if (!result.fulfilled) {
+        return sendServerError(res, 'Could not activate subscription', 'FULFILL_FAILED');
+    }
+
+    sendSuccess(res, { plan: result.plan, status: result.status });
+});
+
+router.post('/payments/confirm-checkout-session', requireAuth, confirmCheckoutSession);
+router.post('/confirm-checkout-session', requireAuth, confirmCheckoutSession);
 
 // Create Setup Intent for trial payment method collection
 router.post('/trial/setup-intent', requireAuth, asyncHandler(async (req, res) => {
