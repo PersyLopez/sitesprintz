@@ -57,7 +57,7 @@ function SiteOverview() {
       to: site.status === 'published' && site.subdomain ? paths.liveEdit : paths.edit,
       title: site.status === 'published' ? 'Edit on site' : 'Editor',
       body: site.status === 'published'
-        ? 'Click text on your live site to change it. Edits auto-save, and you can restore a previous version.'
+        ? 'Click outlined text on your live site to change it. Phone, hours, photos, and booking live in Site settings, Page builder, Appointments, and Products — live edit is outlined text only. Edits auto-save, and you can restore a previous version.'
         : 'Change pages, sections, and content for this site.',
       meta: site.status === 'published' ? 'Inline editor' : 'Open page builder',
       testId: 'site-overview-edit',

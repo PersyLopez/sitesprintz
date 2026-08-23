@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   annotateEditableMarkup,
   applyEditingVisibility,
+  bindSeamlessEditing,
   editingSurface,
   startEditableSession,
   textLuminance,
@@ -72,5 +73,32 @@ describe('annotateEditableMarkup', () => {
     expect(document.querySelector('h1').getAttribute('data-editable')).toBe('hero.title');
     expect(document.querySelector('form input')).not.toHaveAttribute('data-editable');
     expect(document.querySelector('.cart-sidebar h3')).not.toHaveAttribute('data-editable');
+  });
+});
+
+describe('bindSeamlessEditing', () => {
+  it('starts a session on data-editable clicks', () => {
+    document.body.innerHTML = '<div class="ss-live"><h1 data-editable="hero.title">Welcome</h1></div>';
+    const root = document.querySelector('.ss-live');
+    const commits = [];
+    bindSeamlessEditing(root, { onCommit: (change) => commits.push(change) });
+    root.querySelector('h1').click();
+    expect(root.querySelector('h1').getAttribute('contenteditable')).toBeTruthy();
+    expect(commits).toHaveLength(0);
+  });
+
+  it('reports classify key for unbound phone and photo clicks', () => {
+    document.body.innerHTML = `
+      <div class="ss-live">
+        <a data-testid="hero-phone" href="tel:555">555</a>
+        <img src="/photo.jpg" alt="Hero" />
+      </div>
+    `;
+    const root = document.querySelector('.ss-live');
+    const unbound = [];
+    bindSeamlessEditing(root, { onUnboundClick: (result) => unbound.push(result) });
+    root.querySelector('[data-testid="hero-phone"]').click();
+    root.querySelector('img').click();
+    expect(unbound.map((item) => item.key)).toEqual(['settings', 'edit']);
   });
 });

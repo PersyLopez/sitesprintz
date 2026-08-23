@@ -2,6 +2,11 @@
  * Click-to-edit bindings for composed published-site HTML.
  */
 
+import {
+  classifyUnboundLiveEditTarget,
+  getUnboundHintForKey,
+} from './liveEditScope';
+
 const SKIP_SELECTOR = '[data-ss-booking-mount], .booking-widget, .shopping-cart, .cart-sidebar, [data-testid="cart-sidebar"], form';
 
 function mark(el, path) {
@@ -190,20 +195,35 @@ export function startEditableSession(element, onCommit) {
 
 /**
  * @param {ParentNode} root
- * @param {{ onCommit: Function }} handlers
+ * @param {{ onCommit: Function, onUnboundClick?: Function }} handlers
  * @returns {() => void} unbind
  */
-export function bindSeamlessEditing(root, { onCommit } = {}) {
+export function bindSeamlessEditing(root, { onCommit, onUnboundClick } = {}) {
   if (!root) return () => {};
   annotateEditableMarkup(root);
 
   const onClick = (event) => {
-    const target = event.target.closest('[data-editable]');
-    if (!target || !root.contains(target)) return;
-    if (target.classList.contains('is-editing') || target.hasAttribute('contenteditable')) return;
-    event.preventDefault();
-    event.stopPropagation();
-    startEditableSession(target, onCommit);
+    const editable = event.target.closest('[data-editable]');
+    if (editable && root.contains(editable)) {
+      if (editable.classList.contains('is-editing') || editable.hasAttribute('contenteditable')) return;
+      event.preventDefault();
+      event.stopPropagation();
+      startEditableSession(editable, onCommit);
+      return;
+    }
+
+    const classified = classifyUnboundLiveEditTarget(event.target);
+    if (!classified) return;
+
+    if (classified.key === 'settings' || classified.key === 'edit') {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    onUnboundClick?.({
+      ...classified,
+      hint: getUnboundHintForKey(classified.key),
+    });
   };
 
   root.addEventListener('click', onClick, true);

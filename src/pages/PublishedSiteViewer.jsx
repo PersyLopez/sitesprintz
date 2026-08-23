@@ -16,6 +16,7 @@ import { useAuth } from '../hooks/useAuth';
 import { usePublishedSeamlessEdit } from '../hooks/usePublishedSeamlessEdit';
 import { buildLiveSiteMarkup, getLiveSiteThemeVars } from '../utils/publishedSiteDocument';
 import { mountGoogleReviews } from '../utils/mountGoogleReviews';
+import { getSiteWorkspacePaths } from '../utils/siteWorkspace';
 import { isPayOnSiteEnabled } from '../utils/payOnSite';
 import { siteWantsNativeBooking, subdomainFromLivePath } from '../utils/visitorExperience';
 import '../styles/published-site-viewer.css';
@@ -256,6 +257,7 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
 
   const checkoutEnabled = Boolean(payload.settings?.allowCheckout && siteId);
   const demoMode = payload.settings?.demoMode === true;
+  const workspacePaths = siteId ? getSiteWorkspacePaths(siteId, site) : null;
   const pageCatalogMode = Boolean(markup?.html?.includes('data-ss-book-service'));
   const bookingSection = (payload.sections || []).find(
     (section) => section?.type === 'booking' || section?.type === 'native-booking'
@@ -304,7 +306,12 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
           onRestore={edit.restore}
           restoring={edit.restoring}
           formatHistoryTime={edit.formatHistoryTime}
-          dashboardHref={siteId ? `/dashboard/sites/${siteId}` : '/dashboard'}
+          dashboardHref={workspacePaths?.overview || '/dashboard'}
+          settingsHref={workspacePaths?.settings}
+          builderHref={workspacePaths?.edit}
+          appointmentsHref={workspacePaths?.appointments}
+          productsHref={workspacePaths?.products}
+          unboundHint={edit.unboundHint}
         />
       )}
       {demoMode && (

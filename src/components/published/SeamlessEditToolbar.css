@@ -13,6 +13,66 @@
   color: #f4f2ee;
 }
 
+.seamless-edit-scope-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.seamless-edit-scope-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #d1d5db;
+  line-height: 1.4;
+}
+
+.seamless-edit-scope-toggle {
+  flex-shrink: 0;
+  font-size: 0.85rem;
+}
+
+.seamless-edit-scope-panel {
+  width: 100%;
+  margin-top: -4px;
+  padding: 10px 12px;
+  background: #1a1d24;
+  border: 1px solid rgba(244, 242, 238, 0.12);
+  border-radius: 8px;
+}
+
+.seamless-edit-scope-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.seamless-edit-scope-link {
+  display: block;
+  padding: 6px 8px;
+  border-radius: 6px;
+  color: inherit;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.seamless-edit-scope-link:hover,
+.seamless-edit-scope-link:focus-visible {
+  background: rgba(96, 165, 250, 0.12);
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+.seamless-edit-scope-unbound {
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+  color: #fde68a;
+}
+
 .seamless-edit-toolbar-cluster,
 .seamless-edit-toolbar-actions {
   display: flex;

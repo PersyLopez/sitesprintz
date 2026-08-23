@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { LIVE_EDIT_HELP_ROWS, LIVE_EDIT_SCOPE_HINT } from '../../utils/liveEditScope';
 import './SeamlessEditToolbar.css';
 
 function saveLabel(saveState) {
@@ -6,6 +8,13 @@ function saveLabel(saveState) {
   if (saveState === 'error') return 'Save failed — retrying';
   return 'All changes saved';
 }
+
+const SCOPE_LINK_TEST_IDS = {
+  settings: 'seamless-edit-scope-settings',
+  edit: 'seamless-edit-scope-edit',
+  appointments: 'seamless-edit-scope-appointments',
+  products: 'seamless-edit-scope-products',
+};
 
 function SeamlessEditToolbar({
   saveState,
@@ -22,7 +31,21 @@ function SeamlessEditToolbar({
   restoring,
   formatHistoryTime,
   dashboardHref = '/dashboard',
+  settingsHref,
+  builderHref,
+  appointmentsHref,
+  productsHref,
+  unboundHint = '',
 }) {
+  const [scopeOpen, setScopeOpen] = useState(false);
+
+  const scopeHrefs = {
+    settings: settingsHref,
+    edit: builderHref,
+    appointments: appointmentsHref,
+    products: productsHref,
+  };
+
   return (
     <>
       <div className="seamless-edit-toolbar" data-testid="seamless-edit-toolbar" role="region" aria-label="Site editor">
@@ -32,6 +55,49 @@ function SeamlessEditToolbar({
             {saveLabel(saveState)}
           </span>
         </div>
+        <div className="seamless-edit-scope-row">
+          <p className="seamless-edit-scope-hint" data-testid="seamless-edit-scope">
+            {unboundHint || LIVE_EDIT_SCOPE_HINT}
+          </p>
+          <button
+            type="button"
+            className="seamless-edit-btn seamless-edit-scope-toggle"
+            onClick={() => setScopeOpen((open) => !open)}
+            aria-expanded={scopeOpen}
+            aria-controls="seamless-edit-scope-panel"
+            data-testid="seamless-edit-scope-toggle"
+          >
+            Where to edit
+          </button>
+        </div>
+        {scopeOpen && (
+          <div
+            id="seamless-edit-scope-panel"
+            className="seamless-edit-scope-panel"
+            data-testid="seamless-edit-scope-panel"
+            role="region"
+            aria-label="Where to edit site content"
+          >
+            <ul className="seamless-edit-scope-links">
+              {LIVE_EDIT_HELP_ROWS.map((row) => (
+                <li key={row.key}>
+                  <Link
+                    to={scopeHrefs[row.key] || dashboardHref}
+                    className="seamless-edit-scope-link"
+                    data-testid={SCOPE_LINK_TEST_IDS[row.key]}
+                  >
+                    <strong>{row.title}</strong>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            {unboundHint ? (
+              <p className="seamless-edit-scope-unbound" data-testid="seamless-edit-scope-unbound">
+                {unboundHint}
+              </p>
+            ) : null}
+          </div>
+        )}
         <div className="seamless-edit-toolbar-actions">
           <button type="button" className="seamless-edit-btn" onClick={onUndo} disabled={!canUndo} data-testid="seamless-edit-undo">
             Undo

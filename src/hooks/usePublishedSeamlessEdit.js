@@ -34,6 +34,7 @@ export function usePublishedSeamlessEdit({
   const [historyError, setHistoryError] = useState('');
   const [selectedVersion, setSelectedVersion] = useState(null);
   const [restoring, setRestoring] = useState(false);
+  const [unboundHint, setUnboundHint] = useState('');
   const siteVersion = getSiteDataVersion(siteData);
   const versionRef = useRef(siteVersion);
   const queueRef = useRef(new Map());
@@ -131,15 +132,22 @@ export function usePublishedSeamlessEdit({
     queueChange(change.field, change.value);
   }, [queueChange]);
 
+  const handleUnboundClick = useCallback((classified) => {
+    if (classified?.hint) setUnboundHint(classified.hint);
+  }, []);
+
   useEffect(() => {
     if (!enabled || !liveRef.current) return undefined;
     liveRef.current.classList.add('ss-live--editing');
-    const unbind = bindSeamlessEditing(liveRef.current, { onCommit: handleCommit });
+    const unbind = bindSeamlessEditing(liveRef.current, {
+      onCommit: handleCommit,
+      onUnboundClick: handleUnboundClick,
+    });
     return () => {
       liveRef.current?.classList.remove('ss-live--editing');
       unbind();
     };
-  }, [enabled, handleCommit, liveRef, bindKey]);
+  }, [enabled, handleCommit, handleUnboundClick, liveRef, bindKey]);
 
   useEffect(() => () => {
     if (timerRef.current) window.clearTimeout(timerRef.current);
@@ -198,5 +206,6 @@ export function usePublishedSeamlessEdit({
     restore,
     restoring,
     formatHistoryTime,
+    unboundHint,
   };
 }

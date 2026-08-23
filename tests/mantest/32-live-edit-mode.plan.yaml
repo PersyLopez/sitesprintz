@@ -85,6 +85,14 @@ steps:
       }
       const dash = page.getByRole('link', { name: 'Dashboard' });
       if ((await dash.count()) === 0) throw new Error('Toolbar Dashboard link missing');
+      const scopeHint = page.getByTestId('seamless-edit-scope');
+      const scopeText = (await scopeHint.innerText()).trim();
+      if (!/outlined text/i.test(scopeText)) {
+        throw new Error('Scope hint missing outlined text: ' + scopeText);
+      }
+      if (!/phone|hours|photos/i.test(scopeText) || !/not edited here/i.test(scopeText)) {
+        throw new Error('Scope hint missing exclusions: ' + scopeText);
+      }
 
   - action: Published composed site ready
     wait_for: { selector: '[data-testid="published-composed-site"]', timeout: 15000 }

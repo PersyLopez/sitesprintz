@@ -13,6 +13,7 @@ import {
   getSiteWorkspacePaths,
   normalizeSiteRecord,
 } from '../utils/siteWorkspace';
+import { LIVE_EDIT_SCOPE_HINT } from '../utils/liveEditScope';
 import './SiteDashboard.css';
 
 function SiteDashboard() {
@@ -175,7 +176,12 @@ function SiteDashboard() {
                 </button>
               ) : null}
               {site.status === 'published' && site.subdomain ? (
-                <Link to={paths.liveEdit} className="btn btn-primary" data-testid="site-dashboard-edit">
+                <Link
+                  to={paths.liveEdit}
+                  className="btn btn-primary"
+                  data-testid="site-dashboard-edit"
+                  title={LIVE_EDIT_SCOPE_HINT}
+                >
                   Edit site
                 </Link>
               ) : (

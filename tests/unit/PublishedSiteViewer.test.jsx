@@ -101,6 +101,7 @@ describe('PublishedSiteViewer booking portal', () => {
       expect(screen.getByTestId('seamless-edit-toolbar')).toBeInTheDocument();
     });
     expect(screen.getByTestId('seamless-edit-save-state').textContent).toMatch(/saved/i);
+    expect(screen.getByTestId('seamless-edit-scope').textContent).toMatch(/outlined text/i);
   });
 
   it('shows the edit toolbar for admin who is not the owner', async () => {
