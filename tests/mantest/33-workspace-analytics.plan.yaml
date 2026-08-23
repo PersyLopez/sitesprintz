@@ -1,0 +1,90 @@
+url: http://localhost:5173/login
+goal: Workspace Analytics tab loads real subdomain analytics without legacy sites route errors
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter gallery email
+    fill: { testId: login-email, value: "gallery@sitesprintz.com", clear: true }
+
+  - action: Enter gallery password
+    fill: { testId: login-password, value: "GalleryDemo123!", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard with gallery sites
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 1000
+
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+    settle_ms: 400
+
+  - action: Open Luxe Beauty Studio workspace
+    code: |
+      const card = page.locator('[data-testid="site-card"][data-subdomain="gallery-salon"]');
+      if ((await card.count()) === 0) {
+        throw new Error('Missing gallery-salon site card on dashboard');
+      }
+      await card.getByTestId('manage-site-button').click();
+    settle_ms: 1500
+
+  - action: Site workspace shell visible
+    wait_for: { selector: '[data-testid="site-dashboard"]', timeout: 15000 }
+    settle_ms: 600
+
+  - action: Open Analytics workspace tab
+    click: { testId: site-nav-analytics }
+    settle_ms: 1800
+
+  - action: Analytics panel loaded
+    wait_for: { selector: '[data-testid="workspace-analytics-panel"]', timeout: 15000 }
+    settle_ms: 800
+
+  - action: Real analytics content present
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/Failed to load analytics/i.test(t)) {
+        throw new Error('Analytics tab showed load failure toast');
+      }
+      const ok = /Total Views|Unique Visitors|Site Views Over Time/i.test(t);
+      if (!ok) throw new Error('Analytics panel missing expected metrics: ' + t.slice(0, 320));
+    settle_ms: 400
+
+  - action: No legacy sites analytics API calls
+    code: |
+      const bad = [];
+      page.on('request', (req) => {
+        const url = req.url();
+        if (/\/api\/sites\/[^/]+\/analytics/.test(url)) bad.push(url);
+      });
+      await page.getByRole('button', { name: /Refresh/i }).click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      if (bad.length) {
+        throw new Error('Nested analytics still called legacy route: ' + bad.join(', '));
+      }
+    settle_ms: 300
+
+  - action: Subdomain analytics endpoints used
+    code: |
+      const hits = [];
+      page.on('request', (req) => {
+        const url = req.url();
+        if (/\/api\/analytics\/(stats|timeseries|top-pages|referrers)\/gallery-salon/.test(url)) {
+          hits.push(url);
+        }
+      });
+      await page.getByRole('button', { name: /Refresh/i }).click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      if (!hits.length) {
+        throw new Error('Expected /api/analytics/* gallery-salon requests on refresh');
+      }
+    settle_ms: 300

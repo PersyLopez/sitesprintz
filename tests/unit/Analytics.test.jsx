@@ -5,10 +5,13 @@ import { MemoryRouter } from 'react-router-dom';
 import Analytics from '../../src/pages/Analytics';
 import { useAuth } from '../../src/hooks/useAuth';
 import { useToast } from '../../src/hooks/useToast';
+import { usePlan } from '../../src/hooks/usePlan';
+import { useSiteWorkspace } from '../../src/context/SiteWorkspaceContext';
 
-// Mock modules
 vi.mock('../../src/hooks/useAuth');
 vi.mock('../../src/hooks/useToast');
+vi.mock('../../src/hooks/usePlan');
+vi.mock('../../src/context/SiteWorkspaceContext');
 vi.mock('../../src/components/layout/Header', () => ({
   default: () => <div data-testid="header">Header</div>,
 }));
@@ -33,58 +36,95 @@ vi.mock('../../src/components/analytics/AnalyticsChart', () => ({
 vi.mock('../../src/components/analytics/SiteAnalyticsTable', () => ({
   default: ({ sites }) => (
     <div className="site-analytics-table">
-      {sites.map(site => (
+      {sites.map((site) => (
         <div key={site.id}>{site.name}</div>
       ))}
     </div>
   ),
 }));
+vi.mock('../../src/components/common/FeatureGate', () => ({
+  default: ({ children, upgradeMessage }) => (
+    <div data-testid="analytics-upgrade-gate">{upgradeMessage || children}</div>
+  ),
+}));
+
+function mockSiteAnalyticsFetch(overrides = {}) {
+  const stats = {
+    pageViews: 12458,
+    uniqueVisitors: 3876,
+    orders: 22,
+    revenue: 880,
+    ...overrides.stats,
+  };
+  const timeSeries = overrides.timeSeries || [
+    { date: '2026-01-01', pageViews: 850, orders: 12, revenue: 480 },
+    { date: '2026-01-03', pageViews: 920, orders: 15, revenue: 600 },
+    { date: '2026-01-05', pageViews: 1100, orders: 18, revenue: 720 },
+    { date: '2026-01-07', pageViews: 980, orders: 14, revenue: 560 },
+    { date: '2026-01-09', pageViews: 1050, orders: 16, revenue: 640 },
+    { date: '2026-01-11', pageViews: 1200, orders: 22, revenue: 880 },
+  ];
+
+  global.fetch.mockImplementation((url) => {
+    if (url.includes('/api/analytics/stats/')) {
+      return Promise.resolve({ ok: true, json: async () => ({ success: true, ...stats }) });
+    }
+    if (url.includes('/api/analytics/timeseries/')) {
+      return Promise.resolve({ ok: true, json: async () => ({ success: true, timeSeries }) });
+    }
+    if (url.includes('/api/analytics/top-pages/')) {
+      return Promise.resolve({ ok: true, json: async () => ({ success: true, pages: [] }) });
+    }
+    if (url.includes('/api/analytics/referrers/')) {
+      return Promise.resolve({ ok: true, json: async () => ({ success: true, referrers: [] }) });
+    }
+    return Promise.resolve({ ok: true, json: async () => ({}) });
+  });
+}
 
 describe('Analytics Page', () => {
   let mockUser;
-  let mockShowSuccess;
   let mockShowError;
-  let mockAnalytics;
+
+  const mockAccountAnalytics = {
+    totalViews: 500,
+    totalVisitors: 120,
+    avgDuration: '2m 34s',
+    bounceRate: 42.5,
+    trends: {
+      views: 15.2,
+      visitors: 8.7,
+      duration: -3.1,
+      bounceRate: -5.4,
+    },
+    chartData: {
+      views: [850, 920, 1100],
+      visitors: [320, 350, 390],
+      orders: [12, 15, 18],
+      revenue: [480, 600, 720],
+    },
+    labels: ['Jan 1', 'Jan 3', 'Jan 5'],
+    sites: [{ id: '1', name: 'Main Site', views: 5234, visitors: 1543 }],
+  };
 
   beforeEach(() => {
     mockUser = { id: 'user1', email: 'user@test.com' };
-    mockShowSuccess = vi.fn();
     mockShowError = vi.fn();
 
-    mockAnalytics = {
-      totalViews: 12458,
-      totalVisitors: 3876,
-      avgDuration: '2m 34s',
-      bounceRate: 42.5,
-      trends: {
-        views: 15.2,
-        visitors: 8.7,
-        duration: -3.1,
-        bounceRate: -5.4
-      },
-      chartData: {
-        views: [850, 920, 1100, 980, 1050, 1200],
-        visitors: [320, 350, 390, 360, 380, 420],
-        orders: [12, 15, 18, 14, 16, 22],
-        revenue: [480, 600, 720, 560, 640, 880]
-      },
-      labels: ['Jan 1', 'Jan 3', 'Jan 5', 'Jan 7', 'Jan 9', 'Jan 11'],
-      sites: [
-        {
-          id: '1',
-          name: 'Main Site',
-          views: 5234,
-          visitors: 1543,
-          bounceRate: 38.2,
-          avgDuration: '3m 12s'
-        }
-      ]
-    };
-
-    useAuth.mockReturnValue({ user: mockUser });
+    useAuth.mockReturnValue({ user: mockUser, loading: false });
     useToast.mockReturnValue({
-      showSuccess: mockShowSuccess,
+      showSuccess: vi.fn(),
       showError: mockShowError,
+    });
+    usePlan.mockReturnValue({
+      plan: 'growth',
+      isGrowth: true,
+      features: { analytics: true },
+    });
+    useSiteWorkspace.mockReturnValue({
+      embedded: false,
+      siteId: null,
+      site: null,
     });
 
     global.fetch = vi.fn();
@@ -97,31 +137,33 @@ describe('Analytics Page', () => {
     vi.restoreAllMocks();
   });
 
-  // Page Rendering (4 tests)
   describe('Page Rendering', () => {
     beforeEach(() => {
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => mockAnalytics,
+      useSiteWorkspace.mockReturnValue({
+        embedded: true,
+        siteId: 'site123',
+        site: { id: 'site123', subdomain: 'test-salon' },
       });
+      mockSiteAnalyticsFetch();
     });
 
     it('should render analytics page', async () => {
       render(
-        <MemoryRouter initialEntries={['/analytics?siteId=site123']}>
+        <MemoryRouter initialEntries={['/dashboard/sites/site123/analytics']}>
           <Analytics />
-        </MemoryRouter>
+        </MemoryRouter>,
       );
 
-      expect(screen.getByTestId('header')).toBeInTheDocument();
-      expect(screen.getByTestId('footer')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId('workspace-analytics-panel')).toBeInTheDocument();
+      });
     });
 
     it('should show page title', async () => {
       render(
-        <MemoryRouter initialEntries={['/analytics?siteId=site123']}>
+        <MemoryRouter initialEntries={['/dashboard/sites/site123/analytics']}>
           <Analytics />
-        </MemoryRouter>
+        </MemoryRouter>,
       );
 
       await waitFor(() => {
@@ -133,42 +175,52 @@ describe('Analytics Page', () => {
       global.fetch.mockReturnValue(new Promise(() => {}));
 
       render(
-        <MemoryRouter initialEntries={['/analytics?siteId=site123']}>
+        <MemoryRouter initialEntries={['/dashboard/sites/site123/analytics']}>
           <Analytics />
-        </MemoryRouter>
+        </MemoryRouter>,
       );
 
-      expect(screen.getByText(/loading/i)).toBeInTheDocument();
+      expect(screen.getByTestId('analytics-loading')).toBeInTheDocument();
     });
 
-    it('should handle no site ID', async () => {
+    it('should handle account rollup without site ID', async () => {
+      useSiteWorkspace.mockReturnValue({
+        embedded: false,
+        siteId: null,
+        site: null,
+      });
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => mockAccountAnalytics,
+      });
+
       render(
         <MemoryRouter initialEntries={['/analytics']}>
           <Analytics />
-        </MemoryRouter>
+        </MemoryRouter>,
       );
 
       await waitFor(() => {
-        // When there's no siteId, the component still loads and shows "All Sites"
         expect(screen.getByText(/All Sites/i)).toBeInTheDocument();
       });
     });
   });
 
-  // Metrics Display (6 tests)
   describe('Metrics Display', () => {
     beforeEach(() => {
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => mockAnalytics,
+      useSiteWorkspace.mockReturnValue({
+        embedded: true,
+        siteId: 'site123',
+        site: { id: 'site123', subdomain: 'test-salon' },
       });
+      mockSiteAnalyticsFetch();
     });
 
     it('should display views count', async () => {
       render(
-        <MemoryRouter initialEntries={['/analytics?siteId=site123']}>
+        <MemoryRouter initialEntries={['/dashboard/sites/site123/analytics']}>
           <Analytics />
-        </MemoryRouter>
+        </MemoryRouter>,
       );
 
       await waitFor(() => {
@@ -178,9 +230,9 @@ describe('Analytics Page', () => {
 
     it('should display visitors count', async () => {
       render(
-        <MemoryRouter initialEntries={['/analytics?siteId=site123']}>
+        <MemoryRouter initialEntries={['/dashboard/sites/site123/analytics']}>
           <Analytics />
-        </MemoryRouter>
+        </MemoryRouter>,
       );
 
       await waitFor(() => {
@@ -188,75 +240,59 @@ describe('Analytics Page', () => {
       });
     });
 
-    it('should display orders count', async () => {
-      // The component doesn't show orders in stats, only in charts
-      // Skip this test or modify component to add orders stat
+    it('should render chart section for site analytics', async () => {
       render(
-        <MemoryRouter initialEntries={['/analytics?siteId=site123']}>
+        <MemoryRouter initialEntries={['/dashboard/sites/site123/analytics']}>
           <Analytics />
-        </MemoryRouter>
+        </MemoryRouter>,
       );
 
       await waitFor(() => {
-        // Component renders analytics page successfully
         expect(screen.getByText(/Analytics Dashboard/i)).toBeInTheDocument();
+        expect(screen.getByText(/Site Views Over Time/i)).toBeInTheDocument();
       });
     });
 
-    it('should display revenue', async () => {
-      // The component doesn't show revenue in stats, only in charts
-      // Skip this test or modify component to add revenue stat
+    it('should display unavailable bounce rate placeholder', async () => {
       render(
-        <MemoryRouter initialEntries={['/analytics?siteId=site123']}>
+        <MemoryRouter initialEntries={['/dashboard/sites/site123/analytics']}>
           <Analytics />
-        </MemoryRouter>
+        </MemoryRouter>,
       );
 
       await waitFor(() => {
-        // Component renders analytics page successfully
-        expect(screen.getByText(/Analytics Dashboard/i)).toBeInTheDocument();
+        expect(screen.getAllByText('—').length).toBeGreaterThan(0);
       });
     });
 
-    it('should display bounce rate', async () => {
+    it('should display average session duration placeholder', async () => {
       render(
-        <MemoryRouter initialEntries={['/analytics?siteId=site123']}>
+        <MemoryRouter initialEntries={['/dashboard/sites/site123/analytics']}>
           <Analytics />
-        </MemoryRouter>
+        </MemoryRouter>,
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/42\.5%/)).toBeInTheDocument();
-      });
-    });
-
-    it('should display average session duration', async () => {
-      render(
-        <MemoryRouter initialEntries={['/analytics?siteId=site123']}>
-          <Analytics />
-        </MemoryRouter>
-      );
-
-      await waitFor(() => {
-        expect(screen.getByText(/2m 34s/i)).toBeInTheDocument();
+        expect(screen.getByText(/Avg\. Duration/i)).toBeInTheDocument();
       });
     });
   });
 
-  // Date Filters (5 tests)
   describe('Date Filters', () => {
     beforeEach(() => {
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => mockAnalytics,
+      useSiteWorkspace.mockReturnValue({
+        embedded: true,
+        siteId: 'site123',
+        site: { id: 'site123', subdomain: 'test-salon' },
       });
+      mockSiteAnalyticsFetch();
     });
 
     it('should have date filter options', async () => {
       render(
-        <MemoryRouter initialEntries={['/analytics?siteId=site123']}>
+        <MemoryRouter initialEntries={['/dashboard/sites/site123/analytics']}>
           <Analytics />
-        </MemoryRouter>
+        </MemoryRouter>,
       );
 
       await waitFor(() => {
@@ -270,9 +306,9 @@ describe('Analytics Page', () => {
       const user = userEvent.setup();
 
       render(
-        <MemoryRouter initialEntries={['/analytics?siteId=site123']}>
+        <MemoryRouter initialEntries={['/dashboard/sites/site123/analytics']}>
           <Analytics />
-        </MemoryRouter>
+        </MemoryRouter>,
       );
 
       await waitFor(() => {
@@ -283,10 +319,14 @@ describe('Analytics Page', () => {
       await user.selectOptions(dateFilter, '7');
 
       await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-          expect.stringContaining('days=7'),
-        expect.any(Object)
-      );
+        expect(global.fetch).toHaveBeenCalledWith(
+          expect.stringContaining('/api/analytics/stats/test-salon'),
+          expect.any(Object),
+        );
+        expect(global.fetch).toHaveBeenCalledWith(
+          expect.stringContaining('period=7d'),
+          expect.any(Object),
+        );
       });
     });
 
@@ -294,9 +334,9 @@ describe('Analytics Page', () => {
       const user = userEvent.setup();
 
       render(
-        <MemoryRouter initialEntries={['/analytics?siteId=site123']}>
+        <MemoryRouter initialEntries={['/dashboard/sites/site123/analytics']}>
           <Analytics />
-        </MemoryRouter>
+        </MemoryRouter>,
       );
 
       await waitFor(() => {
@@ -307,22 +347,21 @@ describe('Analytics Page', () => {
       await user.selectOptions(dateFilter, '30');
 
       await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-          expect.stringContaining('days=30'),
-        expect.any(Object)
-      );
+        expect(global.fetch).toHaveBeenCalledWith(
+          expect.stringContaining('period=30d'),
+          expect.any(Object),
+        );
       });
     });
 
-    it('should have custom date range option', async () => {
+    it('should have 90 day option', async () => {
       render(
-        <MemoryRouter initialEntries={['/analytics?siteId=site123']}>
+        <MemoryRouter initialEntries={['/dashboard/sites/site123/analytics']}>
           <Analytics />
-        </MemoryRouter>
+        </MemoryRouter>,
       );
 
       await waitFor(() => {
-        // The component has 90 days option, not "custom" - test what's actually there
         expect(screen.getByRole('option', { name: /Last 90 Days/i })).toBeInTheDocument();
       });
     });
@@ -331,75 +370,108 @@ describe('Analytics Page', () => {
       const user = userEvent.setup();
 
       render(
-        <MemoryRouter initialEntries={['/analytics?siteId=site123']}>
+        <MemoryRouter initialEntries={['/dashboard/sites/site123/analytics']}>
           <Analytics />
-        </MemoryRouter>
+        </MemoryRouter>,
       );
 
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledTimes(1);
+        expect(global.fetch).toHaveBeenCalled();
       });
 
+      const initialCalls = global.fetch.mock.calls.length;
       const dateFilter = screen.getByRole('combobox');
       await user.selectOptions(dateFilter, '7');
 
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledTimes(2);
+        expect(global.fetch.mock.calls.length).toBeGreaterThan(initialCalls);
       });
     });
   });
 
-  // Charts/Visualization (2 tests)
   describe('Charts', () => {
     beforeEach(() => {
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => mockAnalytics,
+      useSiteWorkspace.mockReturnValue({
+        embedded: true,
+        siteId: 'site123',
+        site: { id: 'site123', subdomain: 'test-salon' },
       });
+      mockSiteAnalyticsFetch();
     });
 
     it('should display chart titles', async () => {
       render(
-        <MemoryRouter initialEntries={['/analytics?siteId=site123']}>
+        <MemoryRouter initialEntries={['/dashboard/sites/site123/analytics']}>
           <Analytics />
-        </MemoryRouter>
+        </MemoryRouter>,
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/📈 Site Views Over Time/i)).toBeInTheDocument();
-        expect(screen.getByText(/📦 Orders Over Time/i)).toBeInTheDocument();
-        expect(screen.getByText(/💰 Revenue Trend/i)).toBeInTheDocument();
+        expect(screen.getByText(/Site Views Over Time/i)).toBeInTheDocument();
+        expect(screen.getByText(/Orders Over Time/i)).toBeInTheDocument();
+        expect(screen.getByText(/Revenue Trend/i)).toBeInTheDocument();
       });
     });
 
-    it('should display site analytics table when no siteId', async () => {
+    it('should not call legacy sites analytics route', async () => {
       render(
-        <MemoryRouter initialEntries={['/analytics']}>
+        <MemoryRouter initialEntries={['/dashboard/sites/site123/analytics']}>
           <Analytics />
-        </MemoryRouter>
+        </MemoryRouter>,
       );
 
       await waitFor(() => {
-        // Without siteId, should show "All Sites" and sites table
-        expect(screen.getByText(/All Sites/i)).toBeInTheDocument();
+        expect(screen.getByTestId('workspace-analytics-panel')).toBeInTheDocument();
       });
+
+      const urls = global.fetch.mock.calls.map(([url]) => String(url));
+      expect(urls.some((url) => url.includes('/api/sites/'))).toBe(false);
     });
   });
 
-  // Actions (3 tests)
+  describe('Growth gate', () => {
+    it('should show upgrade gate for starter on workspace analytics', async () => {
+      usePlan.mockReturnValue({
+        plan: 'starter',
+        isGrowth: false,
+        features: { analytics: false },
+      });
+      useSiteWorkspace.mockReturnValue({
+        embedded: true,
+        siteId: 'site123',
+        site: { id: 'site123', subdomain: 'test-salon' },
+      });
+
+      render(
+        <MemoryRouter initialEntries={['/dashboard/sites/site123/analytics']}>
+          <Analytics />
+        </MemoryRouter>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('analytics-upgrade-gate')).toBeInTheDocument();
+      });
+
+      expect(global.fetch).not.toHaveBeenCalled();
+      expect(mockShowError).not.toHaveBeenCalled();
+    });
+  });
+
   describe('Actions', () => {
     beforeEach(() => {
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => mockAnalytics,
+      useSiteWorkspace.mockReturnValue({
+        embedded: false,
+        siteId: 'site123',
+        site: { id: 'site123', subdomain: 'test-salon' },
       });
+      mockSiteAnalyticsFetch();
     });
 
     it('should have refresh button', async () => {
       render(
         <MemoryRouter initialEntries={['/analytics?siteId=site123']}>
           <Analytics />
-        </MemoryRouter>
+        </MemoryRouter>,
       );
 
       await waitFor(() => {
@@ -413,26 +485,27 @@ describe('Analytics Page', () => {
       render(
         <MemoryRouter initialEntries={['/analytics?siteId=site123']}>
           <Analytics />
-        </MemoryRouter>
+        </MemoryRouter>,
       );
 
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledTimes(1);
+        expect(global.fetch).toHaveBeenCalled();
       });
 
+      const initialCalls = global.fetch.mock.calls.length;
       const refreshButton = screen.getByRole('button', { name: /refresh/i });
       await user.click(refreshButton);
 
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledTimes(2);
+        expect(global.fetch.mock.calls.length).toBeGreaterThan(initialCalls);
       });
     });
 
-    it('should have link to dashboard', async () => {
+    it('should have link to dashboard when standalone', async () => {
       render(
         <MemoryRouter initialEntries={['/analytics?siteId=site123']}>
           <Analytics />
-        </MemoryRouter>
+        </MemoryRouter>,
       );
 
       await waitFor(() => {
@@ -443,4 +516,3 @@ describe('Analytics Page', () => {
     });
   });
 });
-
