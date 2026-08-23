@@ -96,6 +96,69 @@ router.get('/users', requireAdmin, asyncHandler(async (req, res) => {
 }));
 
 /**
+ * GET /api/admin/sites
+ * List sites for admin management (admin only)
+ */
+router.get('/sites', requireAdmin, asyncHandler(async (req, res) => {
+  const { status, search, limit = 100, offset = 0 } = req.query;
+
+  const where = {};
+  if (status) where.status = status;
+  if (search) {
+    const term = String(search).trim();
+    if (term) {
+      where.OR = [
+        { subdomain: { contains: term, mode: 'insensitive' } },
+        { id: { contains: term, mode: 'insensitive' } }
+      ];
+    }
+  }
+
+  const take = Math.min(parseInt(limit) || 100, 500);
+  const skip = parseInt(offset) || 0;
+
+  const [sites, total] = await Promise.all([
+    prisma.sites.findMany({
+      where,
+      select: {
+        id: true,
+        subdomain: true,
+        status: true,
+        plan: true,
+        published_at: true,
+        created_at: true,
+        user_id: true,
+        users: {
+          select: { email: true }
+        }
+      },
+      orderBy: { created_at: 'desc' },
+      take,
+      skip
+    }),
+    prisma.sites.count({ where })
+  ]);
+
+  const formattedSites = sites.map(site => ({
+    id: site.id,
+    subdomain: site.subdomain,
+    status: site.status,
+    plan: site.plan,
+    userId: site.user_id,
+    userEmail: site.users?.email ?? null,
+    publishedAt: site.published_at,
+    createdAt: site.created_at
+  }));
+
+  return sendSuccess(res, {
+    sites: formattedSites,
+    total,
+    limit: take,
+    offset: skip
+  });
+}));
+
+/**
  * GET /api/admin/users/:userId
  * Get single user details (admin only)
  */

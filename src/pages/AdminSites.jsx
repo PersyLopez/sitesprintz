@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
 import './AdminUsers.css';
 
 function AdminSites() {
+  const { token } = useAuth();
   const { showError } = useToast();
   const [sites, setSites] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,10 +19,9 @@ function AdminSites() {
   const loadSites = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch('/api/admin/analytics', {
+      const response = await fetch('/api/admin/sites', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token || localStorage.getItem('accessToken')}`
         }
       });
 
@@ -29,9 +30,8 @@ function AdminSites() {
       }
 
       const data = await response.json();
-      setSites(data.recentSites || []);
+      setSites(data.sites || []);
     } catch (error) {
-      console.error('Error loading sites:', error);
       showError('Failed to load sites');
     } finally {
       setLoading(false);
