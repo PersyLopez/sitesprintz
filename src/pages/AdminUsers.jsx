@@ -379,7 +379,7 @@ function AdminUsers() {
         {/* Page Header */}
         <div className="admin-users-header">
           <div className="header-content">
-            <h1>👥 User Management</h1>
+            <h1>User Management</h1>
             <p>Invite users and manage accounts • {stats.total} total users</p>
           </div>
 
@@ -393,25 +393,21 @@ function AdminUsers() {
         {/* Stats Cards */}
         <div className="user-stats-grid">
           <div className="stat-card">
-            <div className="stat-icon">👥</div>
             <div className="stat-value">{stats.total}</div>
             <div className="stat-label">Total Users</div>
           </div>
 
           <div className="stat-card">
-            <div className="stat-icon">✅</div>
             <div className="stat-value">{stats.active}</div>
             <div className="stat-label">Active Users</div>
           </div>
 
           <div className="stat-card">
-            <div className="stat-icon">👑</div>
             <div className="stat-value">{stats.admins}</div>
             <div className="stat-label">Admins</div>
           </div>
 
           <div className="stat-card">
-            <div className="stat-icon">⏱️</div>
             <div className="stat-value">{stats.trial}</div>
             <div className="stat-label">Trial Users</div>
           </div>
@@ -607,9 +603,8 @@ function AdminUsers() {
                               className="btn-action btn-promote"
                               title="Make Admin"
                               data-testid={`promote-btn-${userItem.id}`}
-                            >
-                              👑
-                            </button>
+                              aria-label="Make Admin"
+                            />
                           )}
 
                           <button
@@ -629,7 +624,6 @@ function AdminUsers() {
             </div>
           ) : (
             <div className="empty-state">
-              <div className="empty-icon">🔍</div>
               <h3>No Users Found</h3>
               <p>Try adjusting your filters or search term.</p>
             </div>

@@ -167,8 +167,8 @@ describe('Orders Page', () => {
     it('should show loading state', () => {
       renderOrders();
       
-      expect(screen.getByText(/Loading orders/i)).toBeInTheDocument();
-      expect(document.querySelector('.loading-spinner')).toBeInTheDocument();
+      expect(screen.getByText(/Loading orders/i, { selector: '.sr-only' })).toBeInTheDocument();
+      expect(document.querySelector('.skeleton-loader')).toBeInTheDocument();
     });
 
     it('should show empty state when no site selected', async () => {

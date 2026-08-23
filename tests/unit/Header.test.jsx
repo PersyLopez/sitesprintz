@@ -85,6 +85,21 @@ describe('Header Component', () => {
       expect(dashboardLink).toHaveAttribute('href', '/dashboard');
     });
 
+    it('should mark Dashboard as current on account dashboard', () => {
+      renderHeader(true, '/dashboard');
+
+      const dashboardLink = screen.getByTestId('nav-dashboard');
+      expect(dashboardLink).toHaveAttribute('aria-current', 'page');
+    });
+
+    it('should not mark Dashboard as current on site workspace routes', () => {
+      renderHeader(true, '/dashboard/sites/site-1/orders');
+
+      const dashboardLink = screen.getByTestId('nav-dashboard');
+      expect(dashboardLink).toBeInTheDocument();
+      expect(dashboardLink).not.toHaveAttribute('aria-current', 'page');
+    });
+
     it('should show Create Site link when authenticated', () => {
       renderHeader(true, '/dashboard');
 

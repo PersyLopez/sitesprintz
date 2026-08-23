@@ -36,7 +36,7 @@
 }
 
 .pro-badge {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--primary-800) 0%, var(--primary-600) 100%);
   color: white;
   padding: 0.25rem 0.75rem;
   border-radius: 12px;
@@ -351,9 +351,9 @@
 
 .booking-dashboard.embedded-page .pane-subnav .tab.active {
   background: transparent;
-  color: #667eea;
+  color: var(--primary-600);
   box-shadow: none;
-  border-bottom-color: #667eea;
+  border-bottom-color: var(--primary-600);
 }
 
 @media (max-width: 768px) {

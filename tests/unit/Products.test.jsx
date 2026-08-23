@@ -191,7 +191,8 @@ describe('Products Page', () => {
       api.get.mockImplementation(() => new Promise(() => {}));
       renderProducts();
 
-      expect(screen.getByText(/Loading products/i)).toBeInTheDocument();
+      expect(screen.getByText(/Loading products/i, { selector: '.sr-only' })).toBeInTheDocument();
+      expect(document.querySelector('.skeleton-loader')).toBeInTheDocument();
     });
 
     it('should show empty state when no products exist', async () => {

@@ -152,7 +152,8 @@ describe('Admin Page', () => {
         </MemoryRouter>
       );
 
-      expect(screen.getByText(/loading/i)).toBeInTheDocument();
+      expect(screen.getByText(/loading admin data/i, { selector: '.sr-only' })).toBeInTheDocument();
+      expect(document.querySelector('.skeleton-loader')).toBeInTheDocument();
     });
 
     it('should load admin data on mount', async () => {

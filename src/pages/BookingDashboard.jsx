@@ -230,7 +230,7 @@ const BookingDashboard = () => {
                 aria-label="Refresh"
                 data-testid="dashboard-refresh-btn"
               >
-                {embedded ? 'Refresh' : '🔄 Refresh'}
+                Refresh
               </button>
 
               {!embedded && window.innerWidth <= 768 && (
@@ -284,14 +284,14 @@ const BookingDashboard = () => {
                 data-testid="add-service-button"
                 onClick={handleAddService}
               >
-                {embedded ? 'Add Service' : '➕ Add Service'}
+                Add Service
               </button>
               {!embedded && (
                 <button
                   className="action-btn"
                   onClick={handleViewCalendar}
                 >
-                  📅 View Calendar
+                  View Calendar
                 </button>
               )}
             </div>
@@ -306,7 +306,7 @@ const BookingDashboard = () => {
                 className={`tab ${activeTab === 'appointments' ? 'active' : ''}`}
                 onClick={() => handleTabChange('appointments')}
               >
-                {embedded ? 'Appointments' : '📅 Appointments'}
+                Appointments
               </button>
               {!embedded && (
                 <button
@@ -315,7 +315,7 @@ const BookingDashboard = () => {
                   className={`tab ${activeTab === 'calendar' ? 'active' : ''}`}
                   onClick={() => handleTabChange('calendar')}
                 >
-                  🗓️ Team calendar
+                  Team calendar
                 </button>
               )}
               <button
@@ -324,7 +324,7 @@ const BookingDashboard = () => {
                 className={`tab ${activeTab === 'services' ? 'active' : ''}`}
                 onClick={() => handleTabChange('services')}
               >
-                {embedded ? 'Services' : '🛠️ Services'}
+                Services
               </button>
               <button
                 role="tab"
@@ -332,7 +332,7 @@ const BookingDashboard = () => {
                 className={`tab ${activeTab === 'schedule' ? 'active' : ''}`}
                 onClick={() => handleTabChange('schedule')}
               >
-                {embedded ? 'Schedule' : '⏰ Schedule'}
+                Schedule
               </button>
               <button
                 role="tab"
@@ -340,7 +340,7 @@ const BookingDashboard = () => {
                 className={`tab ${activeTab === 'phase2' ? 'active' : ''}`}
                 onClick={() => handleTabChange('phase2')}
               >
-                {embedded ? 'Phase 2 Settings' : '🔔 Phase 2 Settings'}
+                Phase 2 Settings
               </button>
             </div>
 

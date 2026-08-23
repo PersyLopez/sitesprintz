@@ -9,6 +9,7 @@ import ProductModal from '../components/products/ProductModal';
 import ImportModal from '../components/products/ImportModal';
 import DeleteConfirmModal from '../components/products/DeleteConfirmModal';
 import PaymentStatusCard from '../components/ecommerce/PaymentStatusCard';
+import SkeletonLoader from '../components/common/SkeletonLoader';
 import { OptimizedImage } from '../components/common/OptimizedImage';
 import { api } from '../services/api';
 import './Products.css';
@@ -375,9 +376,11 @@ function Products() {
         </div>
 
         {loading ? (
-          <div className="loading-container">
-            <div className="loading-spinner" />
-            <p>Loading products…</p>
+          <div className="products-grid products-loading" aria-busy="true" aria-label="Loading products...">
+            <span className="sr-only">Loading products…</span>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <SkeletonLoader key={i} variant="card" width="100%" height="280px" />
+            ))}
           </div>
         ) : filteredProducts.length > 0 ? (
           <div className="products-grid" data-testid="products-grid">

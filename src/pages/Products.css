@@ -18,10 +18,10 @@
   align-items: center;
   margin-bottom: var(--spacing-xl);
   padding: var(--spacing-xl);
-  background: linear-gradient(135deg, #f97316, #ea580c);
-  color: white;
+  background: linear-gradient(135deg, var(--primary-800) 0%, var(--primary-600) 50%, var(--primary-500) 100%);
+  color: var(--text-light);
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(249, 115, 22, 0.3);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--primary-600) 30%, transparent);
   flex-wrap: wrap;
   gap: var(--spacing-lg);
 }

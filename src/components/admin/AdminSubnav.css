@@ -26,8 +26,8 @@
 }
 
 .admin-subnav-link.active {
-  background-color: var(--color-primary-light, #ede9fe);
-  color: var(--color-primary, #7c3aed);
+  background-color: var(--primary-100);
+  color: var(--primary-700);
   font-weight: 600;
 }
 

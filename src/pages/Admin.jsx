@@ -5,6 +5,7 @@ import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
 import AdminSubnav from '../components/admin/AdminSubnav';
 import Footer from '../components/layout/Footer';
+import SkeletonLoader from '../components/common/SkeletonLoader';
 import StatsCard from '../components/analytics/StatsCard';
 import './Admin.css';
 
@@ -263,13 +264,13 @@ function Admin() {
 
           <div className="header-actions">
             <Link to="/admin/users" className="btn btn-secondary">
-              👥 Users
+              Users
             </Link>
             <Link to="/admin/candidates" className="btn btn-secondary">
               Candidates
             </Link>
             <button onClick={loadAdminData} className="btn btn-secondary">
-              🔄 Refresh
+              Refresh
             </button>
             <Link to="/dashboard" className="btn btn-secondary">
               ← Back
@@ -278,9 +279,13 @@ function Admin() {
         </div>
 
         {loading ? (
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-            <p>Loading admin data...</p>
+          <div className="admin-loading" aria-busy="true" aria-label="Loading admin data...">
+            <span className="sr-only">Loading admin data...</span>
+            <div className="admin-loading-grid">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <SkeletonLoader key={i} variant="card" width="100%" height="140px" />
+              ))}
+            </div>
           </div>
         ) : adminData ? (
           <>
@@ -302,7 +307,6 @@ function Admin() {
             {/* Quick Actions */}
             <div className="quick-actions">
               <Link to="/admin/users" className="quick-action-btn">
-                <span className="action-icon">👥</span>
                 <span className="action-label">Manage Users</span>
               </Link>
               <button
@@ -312,11 +316,9 @@ function Admin() {
                   if (email) showSuccess(`Email queued for: ${email}`);
                 }}
               >
-                <span className="action-icon">📧</span>
                 <span className="action-label">Email Users</span>
               </button>
               <Link to="/admin/plan-features" className="quick-action-btn">
-                <span className="action-icon">⚙️</span>
                 <span className="action-label">Plan Features</span>
               </Link>
             </div>

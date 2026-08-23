@@ -32,10 +32,10 @@
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-xl);
   padding: var(--spacing-lg);
-  background: linear-gradient(135deg, #6366f1, #4f46e5);
-  color: white;
+  background: linear-gradient(135deg, var(--primary-800) 0%, var(--primary-600) 50%, var(--primary-500) 100%);
+  color: var(--text-light);
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--primary-600) 30%, transparent);
 }
 
 /* Tablet+: Horizontal layout */

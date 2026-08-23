@@ -7,6 +7,7 @@ import { useSiteWorkspace } from '../context/SiteWorkspaceContext';
 import { getSiteWorkspacePaths } from '../utils/siteWorkspace';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+import SkeletonLoader from '../components/common/SkeletonLoader';
 import OrderCard from '../components/orders/OrderCard';
 import OrderDetailsModal from '../components/orders/OrderDetailsModal';
 import { api } from '../services/api';
@@ -355,9 +356,9 @@ function Orders() {
 
         {/* Orders List */}
         {loading ? (
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-            <p>Loading orders...</p>
+          <div className="orders-loading" aria-busy="true" aria-label="Loading orders...">
+            <span className="sr-only">Loading orders...</span>
+            <SkeletonLoader variant="table" lines={5} />
           </div>
         ) : loadError ? (
           <div className="empty-state orders-error-state" data-testid="orders-load-error">

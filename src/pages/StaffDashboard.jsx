@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useStaff } from '../context/StaffContext';
 import { useToast } from '../hooks/useToast';
 import { usePolling } from '../hooks/usePolling';
+import SkeletonLoader from '../components/common/SkeletonLoader';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import api from '../services/api';
@@ -92,11 +93,9 @@ function StaffDashboard() {
       <div className="staff-dashboard">
         <Header />
         <main className="dashboard-container">
-          <div className="dashboard-card">
-            <div className="loading-message">
-              <div className="spinner"></div>
-              <p>Loading dashboard...</p>
-            </div>
+          <div className="dashboard-card" aria-busy="true" aria-label="Loading dashboard...">
+            <span className="sr-only">Loading dashboard...</span>
+            <SkeletonLoader variant="card" width="100%" height="200px" />
           </div>
         </main>
         <Footer />

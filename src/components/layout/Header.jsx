@@ -12,7 +12,9 @@ function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const menuRef = useRef(null);
   const location = useLocation();
-  const isDashboard = location.pathname === '/dashboard' || location.pathname.startsWith('/dashboard/');
+  const isAccountDashboard =
+    location.pathname === '/dashboard' ||
+    (location.pathname.startsWith('/dashboard/') && !location.pathname.startsWith('/dashboard/sites/'));
   const isStaffRoute = location.pathname === '/staff' || location.pathname.startsWith('/staff/');
   const showOwnerNav = isAuthenticated && !isStaffRoute;
 
@@ -91,8 +93,8 @@ function Header() {
                 <>
                   <Link 
                     to="/dashboard" 
-                    className={`nav-link ${isDashboard ? 'active' : ''}`}
-                    aria-current={isDashboard ? 'page' : undefined}
+                    className={`nav-link ${isAccountDashboard ? 'active' : ''}`}
+                    aria-current={isAccountDashboard ? 'page' : undefined}
                     data-testid="nav-dashboard"
                   >
                     {t('nav.dashboard')}
@@ -221,9 +223,9 @@ function Header() {
               <>
                 <Link 
                   to="/dashboard" 
-                  className={`mobile-nav-link ${isDashboard ? 'active' : ''}`}
+                  className={`mobile-nav-link ${isAccountDashboard ? 'active' : ''}`}
                   onClick={() => setMobileMenuOpen(false)}
-                  aria-current={isDashboard ? 'page' : undefined}
+                  aria-current={isAccountDashboard ? 'page' : undefined}
                   data-testid="mobile-nav-dashboard"
                 >
                   {t('nav.dashboard')}

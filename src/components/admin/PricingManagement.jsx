@@ -139,7 +139,7 @@ function PricingManagement() {
       <Header />
       <AdminSubnav />
       <div className="pricing-header">
-        <h1>💰 Pricing Management</h1>
+        <h1>Pricing Management</h1>
         <p>Manage subscription pricing for all plans</p>
       </div>
 

@@ -64,7 +64,8 @@ describe('StaffDashboard', () => {
       loading: true,
     });
 
-    expect(screen.getByText(/loading dashboard/i)).toBeInTheDocument();
+    expect(screen.getByText(/loading dashboard/i, { selector: '.sr-only' })).toBeInTheDocument();
+    expect(document.querySelector('.skeleton-loader')).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: /no staff assignments/i })).not.toBeInTheDocument();
   });
 });
