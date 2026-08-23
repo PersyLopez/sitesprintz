@@ -64,13 +64,15 @@ function PaymentStatusCard({ className = '', compact = false }) {
     [STATUS.INCOMPLETE]: {
       icon: '⚠️',
       title: 'Payments incomplete',
-      message: 'Finish setup in Payment Settings so customers can check out.',
+      message: statusData?.chargesEnabled && !statusData?.payoutsEnabled
+        ? 'You can take cards, but payouts are off. Finish identity verification on Stripe so money can reach your bank. Never paste API keys here.'
+        : 'Finish identity verification on Stripe (Continue Setup in Payment Settings). Coming back from Stripe is not enough — cards cannot charge until Stripe shows the account as ready. Never paste API keys.',
       badgeClass: 'incomplete'
     },
     [STATUS.NOT_STARTED]: {
       icon: '💳',
       title: 'Connect payments in Settings',
-      message: 'Connect Stripe, Square, or PayPal per site in Payment Settings. You can reuse a setup on future sites.',
+      message: 'Connect Stripe, Square, or PayPal per site in Payment Settings. Never paste API keys. Identity checks happen on the provider. You can reuse a setup on future sites.',
       badgeClass: 'not-started'
     },
     [STATUS.ERROR]: {
@@ -88,7 +90,7 @@ function PaymentStatusCard({ className = '', compact = false }) {
   }[stripeStatus] || {
     icon: '💳',
     title: 'Connect payments in Settings',
-    message: 'Connect Stripe, Square, or PayPal per site in Payment Settings. You can reuse a setup on future sites.',
+    message: 'Connect Stripe, Square, or PayPal per site in Payment Settings. Never paste API keys. Identity checks happen on the provider. You can reuse a setup on future sites.',
     badgeClass: 'not-started'
   };
 

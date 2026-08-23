@@ -85,6 +85,8 @@ describe('PaymentStatusCard', () => {
       expect(screen.getByText(/Payments incomplete/i)).toBeInTheDocument();
     });
 
+    expect(screen.getByText(/identity verification on Stripe/i)).toBeInTheDocument();
+    expect(screen.getByText(/never paste API keys/i)).toBeInTheDocument();
     expect(screen.getByTestId('payment-status-action')).toHaveAttribute('href', '/settings/payments');
   });
 

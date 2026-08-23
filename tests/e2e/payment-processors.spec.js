@@ -57,7 +57,7 @@ test.describe('Payment Processor Selection', () => {
     await expect(stripeCard.getByText(/instant payouts/i)).toBeVisible();
     
     const squareCard = page.getByTestId('processor-square');
-    await expect(squareCard.getByText(/2.6% \+ 10¢/i)).toBeVisible();
+    await expect(squareCard.getByText(/2.9% \+ 30¢/i)).toBeVisible();
     
     const paypalCard = page.getByTestId('processor-paypal');
     await expect(paypalCard.getByText(/2.99% \+ 49¢/i)).toBeVisible();

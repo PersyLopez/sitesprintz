@@ -37,7 +37,10 @@ describe('PaymentSettings', () => {
     usePlan.mockReturnValue({ isGrowth: true });
     api.get.mockImplementation((url) => {
       if (url === '/api/connect/status') {
-        return Promise.resolve({ accountId: null });
+        return Promise.resolve({
+          accountId: null,
+          available: { stripe: true, square: true, paypal: true }
+        });
       }
       if (url === '/api/sites') {
         return Promise.resolve({
@@ -61,10 +64,12 @@ describe('PaymentSettings', () => {
     expect(screen.getByTestId('processor-square')).toBeInTheDocument();
     expect(screen.getByTestId('processor-paypal')).toBeInTheDocument();
     expect(screen.getByTestId('processor-trust-banner')).toBeInTheDocument();
-    expect(screen.getByText(/2\.9% \+ 30¢/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/2\.9% \+ 30¢/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/instant payouts/i)).toBeInTheDocument();
-    expect(screen.getByText(/2\.6% \+ 10¢/i)).toBeInTheDocument();
+    expect(screen.getByText(/3\.3% \+ 30¢/i)).toBeInTheDocument();
     expect(screen.getByText(/2\.99% \+ 49¢/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/never paste API keys/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText(/STRIPE_SECRET_KEY/)).not.toBeInTheDocument();
   });
 
   it('saves pay on site for the owner sites', async () => {

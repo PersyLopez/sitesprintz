@@ -5,9 +5,9 @@ const PROCESSORS = [
   {
     id: 'stripe',
     name: 'Stripe',
-    fee: '2.9% + 30¢',
+    fee: 'Typical US online 2.9% + 30¢ (live rate in Stripe)',
     highlight: 'Instant payouts',
-    description: 'Cards, Apple Pay, Link, and more. Connect the Stripe account you already use.',
+    description: 'Cards, Apple Pay, Link, and more. Connect the Stripe account you already use. Identity checks happen on Stripe — never paste API keys here.',
     connectTestId: 'stripe-connect-button',
     defaultTestId: 'stripe-set-default-button',
     attachTestId: 'stripe-attach-button',
@@ -16,18 +16,18 @@ const PROCESSORS = [
   {
     id: 'square',
     name: 'Square',
-    fee: '2.6% + 10¢',
-    highlight: 'In-person + online',
-    description: 'Authorize SiteSprintz to send checkout to your Square account.',
+    fee: 'Typical US Square API 2.9% + 30¢ (Square Online/invoices on Free is 3.3% + 30¢; live rate in Square)',
+    highlight: 'Online checkout',
+    description: 'Authorize SiteSprintz to send checkout to your Square account. This is Square Payments, not Square Appointments. Never paste Application secrets here.',
     connectTestId: 'square-connect-button',
     defaultTestId: 'square-set-default-button'
   },
   {
     id: 'paypal',
     name: 'PayPal',
-    fee: '2.99% + 49¢',
+    fee: 'Typical US PayPal Checkout 2.99% + 49¢ (live rate in PayPal)',
     highlight: 'PayPal checkout',
-    description: 'Customers pay with PayPal. Money goes to your PayPal business account.',
+    description: 'Customers pay with PayPal. Use a PayPal Business account — personal wallets cannot run checkout. Never paste Client Secret here.',
     connectTestId: 'paypal-connect-button',
     defaultTestId: 'paypal-set-default-button'
   }
@@ -163,7 +163,7 @@ function ProcessorConnectList({
     return false;
   };
 
-  const available = status?.available || { stripe: false, square: false, paypal: false };
+  const available = status?.available || {};
   const stripeConfigured = available.stripe === true;
   const stripeTestMode = stripeConfigured && status?.stripe?.testMode === true;
 
@@ -171,8 +171,8 @@ function ProcessorConnectList({
     <div className="processor-connect-list">
       <div className="processor-trust-banner" data-testid="processor-trust-banner">
         <strong>Payments are set per site.</strong>
-        {' '}Stripe, Square, and PayPal handle identity checks and payouts.
-        SiteSprintz never sees card numbers, bank details, or KYC documents.
+        {' '}Stripe, Square, and PayPal handle identity checks and payouts on their sites.
+        SiteSprintz never sees card numbers, bank details, or KYC documents — never paste API keys or secrets here.
       </div>
 
       {stripeTestMode && (
@@ -189,9 +189,9 @@ function ProcessorConnectList({
         </div>
       )}
 
-      {!stripeConfigured && isGrowth && (
+      {available.stripe === false && isGrowth && (
         <div className="processor-test-banner processor-test-disabled" data-testid="stripe-not-configured-banner">
-          Stripe is not configured on this platform. Add STRIPE_SECRET_KEY to the server environment to enable test-mode checkout.
+          Stripe is not available on this platform yet. Contact SiteSprintz support. Never paste API keys into this page.
         </div>
       )}
 
