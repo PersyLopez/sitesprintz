@@ -619,7 +619,6 @@ export class WebhookProcessor {
 
       const updateData = {
         subscription_status: subscription.status,
-        updated_at: new Date(),
       };
 
       if (subscription.status === 'canceled' || subscription.status === 'unpaid') {
@@ -666,7 +665,6 @@ export class WebhookProcessor {
             subscription_status: 'canceled',
             plan: null,
             subscription_plan: null,
-            updated_at: new Date(),
           },
         });
 
@@ -715,7 +713,6 @@ export class WebhookProcessor {
           where: { id: user.id },
           data: {
             subscription_status: 'past_due',
-            updated_at: new Date(),
           },
         });
       }
@@ -761,7 +758,6 @@ export class WebhookProcessor {
       where: { id: user.id },
       data: {
         subscription_status: status,
-        updated_at: new Date(),
       },
     });
   }

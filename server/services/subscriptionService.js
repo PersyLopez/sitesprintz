@@ -152,7 +152,6 @@ export class SubscriptionService {
               data: {
                 subscription_status: stripeStatus,
                 current_period_end: stripePeriodEnd,
-                updated_at: new Date()
               }
             });
           }
@@ -283,7 +282,6 @@ export class SubscriptionService {
         where: { id: userId },
         data: {
           subscription_status: status,
-          updated_at: new Date()
         }
       });
 
@@ -306,7 +304,6 @@ export class SubscriptionService {
         where: { id: userId },
         data: {
           plan: plan,
-          updated_at: new Date()
         }
       });
 
