@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthContext } from '../../src/context/AuthContext';
 import { ToastProvider } from '../../src/context/ToastContext';
@@ -280,6 +280,28 @@ describe('BookingDashboard Component - TDD', () => {
         expect(screen.getByTestId('appointments-tab')).toBeVisible();
         expect(screen.getByTestId('calendar-board-tab')).toBeVisible();
         expect(screen.getByTestId('phase2-tab')).toBeVisible();
+      });
+    });
+
+    it('uses pane semantics when embedded', async () => {
+      render(
+        <BrowserRouter>
+          <AuthContext.Provider value={mockAuthContext}>
+            <ToastProvider>
+              <SiteWorkspaceProvider site={{ id: 'site-1' }} siteId="site-1">
+                <BookingDashboard />
+              </SiteWorkspaceProvider>
+            </ToastProvider>
+          </AuthContext.Provider>
+        </BrowserRouter>
+      );
+
+      await waitFor(() => {
+        const page = screen.getByTestId('booking-dashboard-page');
+        expect(within(page).queryByRole('main')).not.toBeInTheDocument();
+        expect(screen.queryByRole('heading', { level: 1, name: /booking dashboard/i })).not.toBeInTheDocument();
+        const dashboardHeader = page.querySelector('.dashboard-header');
+        expect(within(dashboardHeader).getByRole('heading', { level: 2, name: 'Appointments' })).toBeInTheDocument();
       });
     });
   });

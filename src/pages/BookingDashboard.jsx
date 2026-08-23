@@ -180,11 +180,13 @@ const BookingDashboard = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const PageContainer = embedded ? 'div' : 'main';
+
   return (
     <div className={`booking-dashboard${embedded ? ' embedded-page' : ''}`}>
       {!embedded && <Header />}
 
-      <div className="dashboard-container">
+      <PageContainer className="dashboard-container" data-testid="booking-dashboard-page">
         {/* Growth Access Gate */}
         {!hasBookingAccess ? (
           <div className="access-denied">
@@ -215,7 +217,11 @@ const BookingDashboard = () => {
           <>
             <div className="dashboard-header">
               <div>
-                <h1>Booking Dashboard</h1>
+                {embedded ? (
+                  <h2>Appointments</h2>
+                ) : (
+                  <h1>Booking Dashboard</h1>
+                )}
                 <span className="pro-badge">GROWTH</span>
               </div>
               <button
@@ -408,7 +414,7 @@ const BookingDashboard = () => {
             </div>
           </>
         )}
-      </div>
+      </PageContainer>
 
       {!embedded && <Footer />}
     </div>
