@@ -24,7 +24,7 @@ vi.mock('../../src/components/orders/OrderCard', () => ({
       <div>Total: ${(order.total / 100).toFixed(2)}</div>
       <div>Status: {order.status}</div>
       <button onClick={onToggleSelect}>Select</button>
-      <button onClick={() => onUpdateStatus(order.orderId, 'completed')}>Complete</button>
+      <button onClick={() => onUpdateStatus(order.orderId, 'fulfilled')}>Complete</button>
       <button onClick={onViewDetails}>View Details</button>
     </div>
   )
@@ -63,7 +63,7 @@ describe('Orders Page', () => {
         orderId: 'ORD-002',
         customer: { name: 'Jane Smith', email: 'jane@example.com' },
         total: 7500, // $75.00
-        status: 'completed',
+        status: 'fulfilled',
         createdAt: '2024-01-14T09:00:00Z',
         items: []
       },
@@ -236,7 +236,7 @@ describe('Orders Page', () => {
       
       await waitFor(() => {
         expect(screen.getByText('Status: new')).toBeInTheDocument();
-        expect(screen.getByText('Status: completed')).toBeInTheDocument();
+        expect(screen.getByText('Status: fulfilled')).toBeInTheDocument();
         expect(screen.getByText('Status: cancelled')).toBeInTheDocument();
       });
     });
@@ -389,7 +389,7 @@ describe('Orders Page', () => {
       
       fetchSpy.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ order: { ...mockOrders[0], status: 'completed' } })
+        json: async () => ({ order: { ...mockOrders[0], status: 'fulfilled' } })
       });
       
       const orderCard = screen.getByTestId('order-card-ORD-001');
@@ -398,10 +398,10 @@ describe('Orders Page', () => {
       
       await waitFor(() => {
         expect(fetchSpy).toHaveBeenCalledWith(
-          '/api/sites/123/orders/ORD-001',
+          expect.stringContaining('/api/orders/123/orders/ORD-001/status'),
           expect.objectContaining({
-            method: 'PATCH',
-            body: JSON.stringify({ status: 'completed' })
+            method: 'PUT',
+            body: JSON.stringify({ status: 'fulfilled' })
           })
         );
       });
@@ -417,7 +417,7 @@ describe('Orders Page', () => {
       
       fetchSpy.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ order: { ...mockOrders[0], status: 'completed' } })
+        json: async () => ({ order: { ...mockOrders[0], status: 'fulfilled' } })
       });
       
       const orderCard = screen.getByTestId('order-card-ORD-001');
@@ -564,7 +564,7 @@ describe('Orders Page', () => {
       
       fetchSpy.mockResolvedValue({
         ok: true,
-        json: async () => ({ order: { ...mockOrders[0], status: 'completed' } })
+        json: async () => ({ order: { ...mockOrders[0], status: 'fulfilled' } })
       });
       
       const completeButton = screen.getByRole('button', { name: /Mark Completed/i });
@@ -572,8 +572,8 @@ describe('Orders Page', () => {
       
       await waitFor(() => {
         expect(fetchSpy).toHaveBeenCalledWith(
-          expect.stringContaining('/orders/ORD-001'),
-          expect.objectContaining({ method: 'PATCH' })
+          expect.stringContaining('/api/orders/123/orders/ORD-001/status'),
+          expect.objectContaining({ method: 'PUT' })
         );
       });
     });
@@ -604,9 +604,9 @@ describe('Orders Page', () => {
       
       await waitFor(() => {
         expect(fetchSpy).toHaveBeenCalledWith(
-          expect.stringContaining('/orders/ORD-001'),
+          expect.stringContaining('/api/orders/123/orders/ORD-001/status'),
           expect.objectContaining({
-            method: 'PATCH',
+            method: 'PUT',
             body: JSON.stringify({ status: 'cancelled' })
           })
         );
@@ -652,6 +652,24 @@ describe('Orders Page', () => {
       });
       
       expect(window.URL.createObjectURL).toHaveBeenCalled();
+    });
+  });
+
+  describe('Load errors', () => {
+    it('should show load error instead of empty inbox', async () => {
+      fetchSpy.mockReset();
+      fetchSpy.mockResolvedValue({
+        ok: false,
+        json: async () => ({ error: 'Server error' })
+      });
+
+      renderOrders();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('orders-load-error')).toBeInTheDocument();
+        expect(screen.getByText('Could Not Load Orders')).toBeInTheDocument();
+        expect(screen.queryByTestId('orders-empty-state')).not.toBeInTheDocument();
+      });
     });
   });
 });

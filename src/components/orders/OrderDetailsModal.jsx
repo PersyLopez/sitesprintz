@@ -1,4 +1,11 @@
 import React from 'react';
+import {
+  isOwnerActionableOrder,
+  ownerMarkCompleteApiStatus,
+  ownerCancelApiStatus,
+  formatOwnerOrderStatusLabel,
+  ownerOrderStatusCssClass,
+} from '../../utils/orderOwnerStatus';
 import './OrderDetailsModal.css';
 
 function OrderDetailsModal({ order, onClose, onUpdateStatus }) {
@@ -18,18 +25,7 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus }) {
     return `$${(cents / 100).toFixed(2)}`;
   };
 
-  const getStatusClass = (status) => {
-    switch (status) {
-      case 'new':
-        return 'status-new';
-      case 'completed':
-        return 'status-completed';
-      case 'cancelled':
-        return 'status-cancelled';
-      default:
-        return '';
-    }
-  };
+  const statusLabel = formatOwnerOrderStatusLabel(order.status);
 
   const handleStatusUpdate = (newStatus) => {
     onUpdateStatus(order.orderId, newStatus);
@@ -39,17 +35,16 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content order-details-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>×</button>
+        <button type="button" className="modal-close" onClick={onClose}>×</button>
         
         <div className="modal-header">
           <h2>Order Details</h2>
-          <div className={`order-status-badge ${getStatusClass(order.status)}`}>
-            {order.status}
+          <div className={`order-status-badge ${ownerOrderStatusCssClass(order.status)}`}>
+            {statusLabel}
           </div>
         </div>
 
         <div className="modal-body">
-          {/* Order Info Section */}
           <div className="detail-section">
             <h3>📦 Order Information</h3>
             <div className="detail-grid">
@@ -64,8 +59,8 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus }) {
               <div className="detail-row">
                 <span className="detail-label">Status:</span>
                 <span className="detail-value">
-                  <span className={`status-pill ${getStatusClass(order.status)}`}>
-                    {order.status}
+                  <span className={`status-pill ${ownerOrderStatusCssClass(order.status)}`}>
+                    {statusLabel}
                   </span>
                 </span>
               </div>
@@ -78,7 +73,6 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus }) {
             </div>
           </div>
 
-          {/* Customer Section */}
           <div className="detail-section">
             <h3>👤 Customer Information</h3>
             <div className="detail-grid">
@@ -109,7 +103,6 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus }) {
             </div>
           </div>
 
-          {/* Items Section */}
           <div className="detail-section">
             <h3>🛒 Order Items</h3>
             <div className="items-table">
@@ -158,7 +151,6 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus }) {
             </div>
           </div>
 
-          {/* Notes Section */}
           {order.notes && (
             <div className="detail-section">
               <h3>📝 Order Notes</h3>
@@ -168,19 +160,20 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus }) {
             </div>
           )}
 
-          {/* Actions Section */}
-          {order.status === 'new' && (
+          {isOwnerActionableOrder(order) && (
             <div className="detail-section">
               <h3>⚡ Actions</h3>
               <div className="action-buttons">
                 <button
-                  onClick={() => handleStatusUpdate('completed')}
+                  type="button"
+                  onClick={() => handleStatusUpdate(ownerMarkCompleteApiStatus())}
                   className="btn btn-success"
                 >
                   ✅ Mark as Completed
                 </button>
                 <button
-                  onClick={() => handleStatusUpdate('cancelled')}
+                  type="button"
+                  onClick={() => handleStatusUpdate(ownerCancelApiStatus())}
                   className="btn btn-danger"
                 >
                   ❌ Cancel Order
@@ -205,7 +198,7 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus }) {
               📞 Call Customer
             </a>
           )}
-          <button onClick={onClose} className="btn btn-secondary">
+          <button type="button" onClick={onClose} className="btn btn-secondary">
             Close
           </button>
         </div>
@@ -215,4 +208,3 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus }) {
 }
 
 export default OrderDetailsModal;
-

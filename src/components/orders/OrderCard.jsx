@@ -1,4 +1,12 @@
 import React from 'react';
+import {
+  isOwnerActionableOrder,
+  ownerMarkCompleteApiStatus,
+  ownerCancelApiStatus,
+  formatOwnerOrderStatusLabel,
+  ownerOrderStatusCssClass,
+  ownerOrderStatusIcon,
+} from '../../utils/orderOwnerStatus';
 import './OrderCard.css';
 
 function OrderCard({ order, selected, onToggleSelect, onUpdateStatus, onViewDetails }) {
@@ -17,31 +25,7 @@ function OrderCard({ order, selected, onToggleSelect, onUpdateStatus, onViewDeta
     return `$${(cents / 100).toFixed(2)}`;
   };
 
-  const getStatusClass = (status) => {
-    switch (status) {
-      case 'new':
-        return 'status-new';
-      case 'completed':
-        return 'status-completed';
-      case 'cancelled':
-        return 'status-cancelled';
-      default:
-        return '';
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'new':
-        return '🔔';
-      case 'completed':
-        return '✅';
-      case 'cancelled':
-        return '❌';
-      default:
-        return '📦';
-    }
-  };
+  const statusLabel = formatOwnerOrderStatusLabel(order.status);
 
   return (
     <div className={`order-card ${selected ? 'selected' : ''}`}>
@@ -64,9 +48,9 @@ function OrderCard({ order, selected, onToggleSelect, onUpdateStatus, onViewDeta
           </div>
         </div>
         
-        <div className={`order-status ${getStatusClass(order.status)}`}>
-          <span className="status-icon">{getStatusIcon(order.status)}</span>
-          <span className="status-text">{order.status}</span>
+        <div className={`order-status ${ownerOrderStatusCssClass(order.status)}`}>
+          <span className="status-icon">{ownerOrderStatusIcon(order.status)}</span>
+          <span className="status-text">{statusLabel}</span>
         </div>
       </div>
 
@@ -112,20 +96,22 @@ function OrderCard({ order, selected, onToggleSelect, onUpdateStatus, onViewDeta
       </div>
 
       <div className="order-card-actions">
-        <button onClick={onViewDetails} className="btn btn-secondary btn-sm">
+        <button type="button" onClick={onViewDetails} className="btn btn-secondary btn-sm">
           👁️ View Details
         </button>
         
-        {order.status === 'new' && (
+        {isOwnerActionableOrder(order) && (
           <>
             <button
-              onClick={() => onUpdateStatus(order.orderId, 'completed')}
+              type="button"
+              onClick={() => onUpdateStatus(order.orderId, ownerMarkCompleteApiStatus())}
               className="btn btn-success btn-sm"
             >
               ✅ Mark Completed
             </button>
             <button
-              onClick={() => onUpdateStatus(order.orderId, 'cancelled')}
+              type="button"
+              onClick={() => onUpdateStatus(order.orderId, ownerCancelApiStatus())}
               className="btn btn-danger btn-sm"
             >
               ❌ Cancel
@@ -154,4 +140,3 @@ function OrderCard({ order, selected, onToggleSelect, onUpdateStatus, onViewDeta
 }
 
 export default OrderCard;
-

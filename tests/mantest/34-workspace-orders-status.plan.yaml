@@ -1,0 +1,62 @@
+url: http://localhost:5173/login
+goal: Owner workspace Orders filters use API statuses without hiding pending or fulfilled orders
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter gallery email
+    fill: { testId: login-email, value: "gallery@sitesprintz.com", clear: true }
+
+  - action: Enter gallery password
+    fill: { testId: login-password, value: "GalleryDemo123!", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard loaded
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 1200
+
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      }
+
+  - action: Open salon orders workspace
+    goto: http://localhost:5173/dashboard/sites/gallery-salon/orders
+    settle_ms: 2000
+
+  - action: Orders inbox loads for site
+    wait_for: { selector: '[data-testid="orders-filter-all"]', timeout: 15000 }
+    settle_ms: 800
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/No Site Selected/i.test(t)) throw new Error('Orders showed No Site Selected');
+      if (!/Orders/i.test(t)) throw new Error('Orders heading missing: ' + t.slice(0, 200));
+
+  - action: Exercise All filter chip
+    click: { testId: orders-filter-all }
+    settle_ms: 500
+
+  - action: Exercise New filter chip
+    click: { testId: orders-filter-new }
+    settle_ms: 500
+    code: |
+      if ((await page.getByTestId('orders-load-error').count()) > 0) {
+        throw new Error('Load error shown on New filter');
+      }
+
+  - action: Exercise Completed filter chip
+    click: { testId: orders-filter-completed }
+    settle_ms: 500
+
+  - action: Exercise Cancelled filter chip
+    click: { testId: orders-filter-cancelled }
+    settle_ms: 500
+
+  - action: Return to All orders
+    click: { testId: orders-filter-all }
+    settle_ms: 500

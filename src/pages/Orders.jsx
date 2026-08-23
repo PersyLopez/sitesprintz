@@ -10,6 +10,15 @@ import Footer from '../components/layout/Footer';
 import OrderCard from '../components/orders/OrderCard';
 import OrderDetailsModal from '../components/orders/OrderDetailsModal';
 import { api } from '../services/api';
+import {
+  OWNER_ORDER_FILTERS,
+  ownerFilterToApiQueryStatus,
+  orderMatchesOwnerFilter,
+  countOrdersForOwnerFilter,
+  ownerMarkCompleteApiStatus,
+  ownerCancelApiStatus,
+  formatOwnerOrderStatusLabel,
+} from '../utils/orderOwnerStatus';
 import './Orders.css';
 
 function Orders() {
@@ -21,7 +30,8 @@ function Orders() {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [loadError, setLoadError] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState(OWNER_ORDER_FILTERS.ALL);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedOrders, setSelectedOrders] = useState(new Set());
   const [searchTerm, setSearchTerm] = useState('');
@@ -30,14 +40,17 @@ function Orders() {
   const backTo = embedded && siteId ? getSiteWorkspacePaths(siteId).overview : '/dashboard';
 
   // Poll for order updates
-  const { data: polledData, lastUpdated } = usePolling({
+  const pollStatusParam = ownerFilterToApiQueryStatus(selectedStatus);
+
+  const { data: polledData } = usePolling({
     endpoint: siteId ? `/api/orders/${siteId}/orders` : null,
     interval: 30000,
     enabled: !!siteId && !authLoading,
-    params: { status: selectedStatus !== 'all' ? selectedStatus : undefined },
+    params: pollStatusParam ? { status: pollStatusParam } : undefined,
     onUpdate: (newData) => {
       if (newData.orders) {
         setOrders(newData.orders);
+        setLoadError(null);
       }
     }
   });
@@ -65,12 +78,13 @@ function Orders() {
 
   const loadOrders = async () => {
     setLoading(true);
+    setLoadError(null);
 
     try {
       const data = await api.get(`/api/orders/${siteId}/orders`);
       setOrders(data.orders || []);
     } catch (error) {
-      console.error('Load orders error:', error);
+      setLoadError('Failed to load orders. Please try again.');
       showError('Failed to load orders');
     } finally {
       setLoading(false);
@@ -80,9 +94,8 @@ function Orders() {
   const filterOrders = () => {
     let filtered = [...orders];
 
-    // Filter by status
-    if (selectedStatus !== 'all') {
-      filtered = filtered.filter(order => order.status === selectedStatus);
+    if (selectedStatus !== OWNER_ORDER_FILTERS.ALL) {
+      filtered = filtered.filter((order) => orderMatchesOwnerFilter(order, selectedStatus));
     }
 
     // Filter by search term
@@ -112,7 +125,7 @@ function Orders() {
         (order.orderId || order.id) === orderId ? { ...order, ...data.order } : order
       ));
 
-      showSuccess(`Order ${orderId} marked as ${newStatus}`);
+      showSuccess(`Order ${orderId} marked as ${formatOwnerOrderStatusLabel(newStatus)}`);
     } catch (error) {
       console.error('Update order error:', error);
       showError('Failed to update order');
@@ -142,9 +155,9 @@ function Orders() {
   const bulkUpdateStatus = async (newStatus) => {
     if (selectedOrders.size === 0) return;
 
-    const confirmMessage = newStatus === 'cancelled'
+    const confirmMessage = newStatus === ownerCancelApiStatus()
       ? `Cancel ${selectedOrders.size} order(s)?`
-      : `Mark ${selectedOrders.size} order(s) as ${newStatus}?`;
+      : `Mark ${selectedOrders.size} order(s) as ${formatOwnerOrderStatusLabel(newStatus)}?`;
 
     if (!confirm(confirmMessage)) return;
 
@@ -200,11 +213,17 @@ function Orders() {
   };
 
   const statusCounts = {
-    all: orders.length,
-    new: orders.filter(o => o.status === 'new').length,
-    completed: orders.filter(o => o.status === 'completed').length,
-    cancelled: orders.filter(o => o.status === 'cancelled').length,
+    [OWNER_ORDER_FILTERS.ALL]: countOrdersForOwnerFilter(orders, OWNER_ORDER_FILTERS.ALL),
+    [OWNER_ORDER_FILTERS.NEW]: countOrdersForOwnerFilter(orders, OWNER_ORDER_FILTERS.NEW),
+    [OWNER_ORDER_FILTERS.COMPLETED]: countOrdersForOwnerFilter(orders, OWNER_ORDER_FILTERS.COMPLETED),
+    [OWNER_ORDER_FILTERS.CANCELLED]: countOrdersForOwnerFilter(orders, OWNER_ORDER_FILTERS.CANCELLED),
   };
+
+  const selectedStatusLabel = selectedStatus === OWNER_ORDER_FILTERS.ALL
+    ? 'total'
+    : formatOwnerOrderStatusLabel(
+      selectedStatus === OWNER_ORDER_FILTERS.NEW ? 'pending' : selectedStatus === OWNER_ORDER_FILTERS.COMPLETED ? 'fulfilled' : selectedStatus
+    ).toLowerCase();
 
   if (!siteId) {
     return (
@@ -234,7 +253,7 @@ function Orders() {
         <div className="page-header">
           <div className="header-title">
             <h1>📦 Orders</h1>
-            <p>{filteredOrders.length} {selectedStatus === 'all' ? 'total' : selectedStatus} orders</p>
+            <p>{filteredOrders.length} {selectedStatusLabel} orders</p>
           </div>
 
           <div className="header-actions">
@@ -263,32 +282,48 @@ function Orders() {
         {/* Filters */}
         <div className="filters">
           <button
-            className={`filter-btn ${selectedStatus === 'all' ? 'active' : ''}`}
-            onClick={() => setSelectedStatus('all')}
+            type="button"
+            data-testid="orders-filter-all"
+            className={`filter-btn ${selectedStatus === OWNER_ORDER_FILTERS.ALL ? 'active' : ''}`}
+            onClick={() => setSelectedStatus(OWNER_ORDER_FILTERS.ALL)}
           >
             All Orders
-            {statusCounts.all > 0 && <span className="count">{statusCounts.all}</span>}
+            {statusCounts[OWNER_ORDER_FILTERS.ALL] > 0 && (
+              <span className="count">{statusCounts[OWNER_ORDER_FILTERS.ALL]}</span>
+            )}
           </button>
           <button
-            className={`filter-btn ${selectedStatus === 'new' ? 'active' : ''}`}
-            onClick={() => setSelectedStatus('new')}
+            type="button"
+            data-testid="orders-filter-new"
+            className={`filter-btn ${selectedStatus === OWNER_ORDER_FILTERS.NEW ? 'active' : ''}`}
+            onClick={() => setSelectedStatus(OWNER_ORDER_FILTERS.NEW)}
           >
             New Orders
-            {statusCounts.new > 0 && <span className="count badge-new">{statusCounts.new}</span>}
+            {statusCounts[OWNER_ORDER_FILTERS.NEW] > 0 && (
+              <span className="count badge-new">{statusCounts[OWNER_ORDER_FILTERS.NEW]}</span>
+            )}
           </button>
           <button
-            className={`filter-btn ${selectedStatus === 'completed' ? 'active' : ''}`}
-            onClick={() => setSelectedStatus('completed')}
+            type="button"
+            data-testid="orders-filter-completed"
+            className={`filter-btn ${selectedStatus === OWNER_ORDER_FILTERS.COMPLETED ? 'active' : ''}`}
+            onClick={() => setSelectedStatus(OWNER_ORDER_FILTERS.COMPLETED)}
           >
             Completed
-            {statusCounts.completed > 0 && <span className="count">{statusCounts.completed}</span>}
+            {statusCounts[OWNER_ORDER_FILTERS.COMPLETED] > 0 && (
+              <span className="count">{statusCounts[OWNER_ORDER_FILTERS.COMPLETED]}</span>
+            )}
           </button>
           <button
-            className={`filter-btn ${selectedStatus === 'cancelled' ? 'active' : ''}`}
-            onClick={() => setSelectedStatus('cancelled')}
+            type="button"
+            data-testid="orders-filter-cancelled"
+            className={`filter-btn ${selectedStatus === OWNER_ORDER_FILTERS.CANCELLED ? 'active' : ''}`}
+            onClick={() => setSelectedStatus(OWNER_ORDER_FILTERS.CANCELLED)}
           >
             Cancelled
-            {statusCounts.cancelled > 0 && <span className="count">{statusCounts.cancelled}</span>}
+            {statusCounts[OWNER_ORDER_FILTERS.CANCELLED] > 0 && (
+              <span className="count">{statusCounts[OWNER_ORDER_FILTERS.CANCELLED]}</span>
+            )}
           </button>
         </div>
 
@@ -299,10 +334,10 @@ function Orders() {
               <span className="selected-count">{selectedOrders.size}</span> orders selected
             </div>
             <div className="bulk-actions">
-              <button onClick={() => bulkUpdateStatus('completed')} className="bulk-btn success">
+              <button onClick={() => bulkUpdateStatus(ownerMarkCompleteApiStatus())} className="bulk-btn success">
                 ✓ Mark Completed
               </button>
-              <button onClick={() => bulkUpdateStatus('cancelled')} className="bulk-btn danger">
+              <button onClick={() => bulkUpdateStatus(ownerCancelApiStatus())} className="bulk-btn danger">
                 ✕ Cancel Orders
               </button>
               <button onClick={selectAll} className="bulk-btn">
@@ -321,20 +356,29 @@ function Orders() {
             <div className="loading-spinner"></div>
             <p>Loading orders...</p>
           </div>
+        ) : loadError ? (
+          <div className="empty-state orders-error-state" data-testid="orders-load-error">
+            <div className="empty-icon">⚠️</div>
+            <h2>Could Not Load Orders</h2>
+            <p>{loadError}</p>
+            <button type="button" onClick={loadOrders} className="btn btn-primary">
+              Retry
+            </button>
+          </div>
         ) : filteredOrders.length === 0 ? (
-          <div className="empty-state">
+          <div className="empty-state" data-testid="orders-empty-state">
             <div className="empty-icon">📦</div>
             <h2>No Orders Found</h2>
             <p>
               {searchTerm
                 ? 'No orders match your search.'
-                : selectedStatus === 'all'
+                : selectedStatus === OWNER_ORDER_FILTERS.ALL
                   ? 'You haven\'t received any orders yet.'
-                  : `No ${selectedStatus} orders.`
+                  : `No ${selectedStatusLabel} orders.`
               }
             </p>
             {searchTerm && (
-              <button onClick={() => setSearchTerm('')} className="btn btn-secondary">
+              <button type="button" onClick={() => setSearchTerm('')} className="btn btn-secondary">
                 Clear Search
               </button>
             )}
