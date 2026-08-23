@@ -6,6 +6,7 @@
  */
 
 import { getNamedTeamMembers, resolveTeamHeading, shouldRenderTeam } from '../../src/utils/businessScale.js';
+import { sectionListHasNativeBooking } from '../../src/utils/sectionHtmlBridge.js';
 
 class SectionHtmlBuilder {
   /**
@@ -136,19 +137,29 @@ class SectionHtmlBuilder {
 
     if (!items || items.length === 0) return null;
 
+    const bookable = sectionListHasNativeBooking(siteData?.sections);
     const servicesHtml = items
-      .map(item => `
-      <div class="service-card">
-        ${item.image ? `<img src="${this._escapeAttr(item.image)}" alt="${this._escapeAttr(item.title || 'Service')}">` : ''}
-        <h3>${this._escapeHtml(item.title || '')}</h3>
+      .map((item, index) => {
+        const name = item.name || item.title || '';
+        const slug = String(name || 'service').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'service';
+        const serviceId = item.id ? String(item.id) : `${slug}-${index}`;
+        const bookLink = bookable
+          ? `<a href="#booking" data-ss-book-service data-service-id="${this._escapeAttr(serviceId)}" data-service-name="${this._escapeAttr(name)}">Book</a>`
+          : '';
+        return `
+      <div class="service-card" data-service-id="${this._escapeAttr(serviceId)}" data-service-name="${this._escapeAttr(name)}">
+        ${item.image ? `<img src="${this._escapeAttr(item.image)}" alt="${this._escapeAttr(name || 'Service')}">` : ''}
+        <h3>${this._escapeHtml(name)}</h3>
         <p>${this._escapeHtml(item.description || '')}</p>
         ${item.price ? `<div class="service-price">${this._escapeHtml(item.price)}</div>` : ''}
+        ${bookLink}
       </div>
-      `)
+      `;
+      })
       .join('\n');
 
     return `
-<section class="services">
+<section id="services" class="services">
   <div class="container">
     <h2>${this._escapeHtml(title)}</h2>
     <div class="services-grid">

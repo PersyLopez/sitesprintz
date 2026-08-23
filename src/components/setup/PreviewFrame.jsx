@@ -8,7 +8,7 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { useSite } from '../../hooks/useSite';
 import { composePage } from '../../utils/layoutRenderer';
-import { renderSectionToHtml } from '../../utils/sectionHtmlBridge';
+import { renderSectionToHtml, withNativeBookingTokens } from '../../utils/sectionHtmlBridge';
 import './PreviewFrame.css';
 
 function PreviewFrame() {
@@ -72,8 +72,9 @@ function PreviewFrame() {
     const muted = t.muted || siteData.colors?.muted || '#8a8a8f';
 
     const enabledSections = sections.filter(s => s && s.enabled !== false);
+    const renderTokens = withNativeBookingTokens(tokens, enabledSections);
     const sectionsHtml = enabledSections
-      .map(section => renderSectionToHtml(section, tokens))
+      .map(section => renderSectionToHtml(section, renderTokens))
       .filter(Boolean)
       .join('\n');
 

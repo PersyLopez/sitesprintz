@@ -79,6 +79,22 @@ describe('sectionHtmlBridge', () => {
     expect(html).toContain('data-ss-edit-type="hero"');
   });
 
+  it('services section exposes catalog anchors when native booking is on', () => {
+    const html = renderSectionToHtml(makeSection('services'), { ...tokens, _nativeBooking: true });
+    expect(html).toContain('id="services"');
+    expect(html).toContain('data-ss-book-service');
+    expect(html).toContain('data-service-id');
+    expect(html).toContain('data-service-name');
+    expect(html).toContain('href="#booking"');
+    expect(html).toContain('>Book</a>');
+  });
+
+  it('services section omits Book when native booking is off', () => {
+    const html = renderSectionToHtml(makeSection('services'), tokens);
+    expect(html).toContain('id="services"');
+    expect(html).not.toContain('data-ss-book-service');
+  });
+
   it('uses tokens for inline styles on non-delegated types', () => {
     const section = makeSection('catalog');
     const html = renderSectionToHtml(section, tokens);
@@ -158,6 +174,50 @@ describe('sectionHtmlBridge', () => {
     expect(html).not.toContain('data-ss-booking-mount');
     expect(html).toContain('https://cal.example/book');
     expect(html).toContain('Book Now');
+  });
+
+  it('renders an iframe for external Acuity booking', () => {
+    const html = renderSectionToHtml({
+      type: 'booking',
+      content: {
+        title: 'Book',
+        provider: 'acuity',
+        url: 'https://dhmakeupartistry.as.me/schedule/8ffea782',
+      },
+    }, tokens);
+    expect(html).not.toContain('data-ss-booking-mount');
+    expect(html).toContain('data-testid="live-booking-embed"');
+    expect(html).toContain('https://dhmakeupartistry.as.me/schedule/8ffea782?embed=true');
+  });
+
+  it('uses a booking link instead of an iframe when mode is link', () => {
+    const html = renderSectionToHtml({
+      type: 'booking',
+      content: {
+        title: 'Book',
+        provider: 'acuity',
+        mode: 'link',
+        url: 'https://dhmakeupartistry.as.me/schedule/8ffea782',
+      },
+    }, tokens);
+    expect(html).not.toContain('iframe');
+    expect(html).not.toContain('data-testid="live-booking-embed"');
+    expect(html).toContain('https://dhmakeupartistry.as.me/schedule/8ffea782');
+    expect(html).toContain('id="booking"');
+  });
+
+  it('uses booking section description for link-only copy', () => {
+    const html = renderSectionToHtml({
+      type: 'booking',
+      content: {
+        title: 'Book',
+        mode: 'link',
+        url: 'https://cal.example/book',
+        description: 'Deposits are non-refundable.',
+      },
+    }, tokens);
+    expect(html).toContain('Deposits are non-refundable.');
+    expect(html).not.toContain('we will confirm your appointment');
   });
 
   it('adds add-to-cart buttons when catalog is purchasable', () => {

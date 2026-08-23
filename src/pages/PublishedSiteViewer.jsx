@@ -17,7 +17,7 @@ import { usePublishedSeamlessEdit } from '../hooks/usePublishedSeamlessEdit';
 import { buildLiveSiteMarkup, getLiveSiteThemeVars } from '../utils/publishedSiteDocument';
 import { mountGoogleReviews } from '../utils/mountGoogleReviews';
 import { isPayOnSiteEnabled } from '../utils/payOnSite';
-import { siteWantsEmbeddedBooking, subdomainFromLivePath } from '../utils/visitorExperience';
+import { siteWantsNativeBooking, subdomainFromLivePath } from '../utils/visitorExperience';
 import '../styles/published-site-viewer.css';
 
 function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
@@ -103,7 +103,7 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
   const bookingEnabled = Boolean(
     ownerUserId
     && (
-      siteWantsEmbeddedBooking(payload)
+      siteWantsNativeBooking(payload)
       || Boolean(markup?.html?.includes('data-ss-booking-mount'))
     )
   );
@@ -178,6 +178,24 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
   }
 
   const handleLiveClick = (event) => {
+    const bookTarget = event.target.closest('[data-ss-book-service]');
+    if (bookTarget) {
+      event.preventDefault();
+      const card = bookTarget.closest('[data-service-id]');
+      const serviceId = bookTarget.getAttribute('data-service-id')
+        || card?.getAttribute('data-service-id');
+      const serviceName = bookTarget.getAttribute('data-service-name')
+        || card?.getAttribute('data-service-name');
+      window.dispatchEvent(new CustomEvent('ss-book-service-select', {
+        detail: { id: serviceId, name: serviceName },
+      }));
+      const bookingEl = liveRef.current?.querySelector('#booking') || document.getElementById('booking');
+      if (bookingEl) {
+        bookingEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      return;
+    }
+
     const button = event.target.closest('[data-ss-add-to-cart]');
     if (!button) return;
     event.preventDefault();
@@ -234,6 +252,7 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
 
   const checkoutEnabled = Boolean(payload.settings?.allowCheckout && siteId);
   const demoMode = payload.settings?.demoMode === true;
+  const pageCatalogMode = Boolean(markup?.html?.includes('data-ss-book-service'));
   const bookingSection = (payload.sections || []).find(
     (section) => section?.type === 'booking' || section?.type === 'native-booking'
   );
@@ -252,6 +271,7 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
       demoMode={demoMode}
       businessMode={bookingMode}
       noPreferenceText={bookingNoPreference}
+      pageCatalogMode={pageCatalogMode}
     />
   ) : null;
 

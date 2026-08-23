@@ -256,6 +256,7 @@ const sectionPrimitives = {
       variant: variant || 'panel',
       content: {
         title: c.title || 'Book an Appointment',
+        description: c.description || c.subtitle || '',
         enabled: c.enabled !== undefined ? c.enabled : true,
         mode: c.mode || siteData?.booking?.mode || 'native',
         embedded: c.embedded !== undefined ? c.embedded : siteData?.booking?.embedded,
@@ -263,7 +264,7 @@ const sectionPrimitives = {
         phone: c.phone || siteData?.contactPhone || siteData?.contact?.phone || '',
         businessMode: c.businessMode
           || resolveOperatingModel(siteData?._niche, tokens?.level || siteData?._level).businessMode,
-        provider: c.provider || 'native',
+        provider: c.provider || siteData?.booking?.provider || 'native',
       },
       settings: {},
       accent: true,

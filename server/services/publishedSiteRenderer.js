@@ -7,7 +7,7 @@
 
 import SEOService from './seoService.js';
 import { sectionHtmlBuilder } from '../rendering/sectionHtml.js';
-import { renderSectionToHtml } from '../../src/utils/sectionHtmlBridge.js';
+import { renderSectionToHtml, withNativeBookingTokens } from '../../src/utils/sectionHtmlBridge.js';
 import { buildStickyCtaBar } from '../../src/utils/publishedSiteDocument.js';
 
 class PublishedSiteRenderer {
@@ -40,8 +40,8 @@ class PublishedSiteRenderer {
       const { composePage } = await import('../../src/utils/layoutRenderer.js');
       const page = composePage({ siteData });
       pageForCta = page;
-      const tokens = page.tokens;
       const enabledSections = (page.sections || []).filter(s => s && s.enabled !== false);
+      const tokens = withNativeBookingTokens(page.tokens, enabledSections);
       sectionsHtml = enabledSections
         .map(section => renderSectionToHtml(section, tokens))
         .filter(Boolean)

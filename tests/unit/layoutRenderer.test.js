@@ -63,6 +63,16 @@ describe('layoutRenderer — renderSection() known types', () => {
     expect(result.content.enabled).toBe(false);
   });
 
+  it('booking section preserves description copy', () => {
+    const result = renderSection('booking', {
+      title: 'Book',
+      description: 'Deposits are non-refundable.',
+      mode: 'link',
+      url: 'https://cal.example/book',
+    }, {}, {});
+    expect(result.content.description).toBe('Deposits are non-refundable.');
+  });
+
   it('contact section resolves from siteData top-level keys', () => {
     const result = renderSection('contact', {}, {
       contactEmail: 'a@b.com',

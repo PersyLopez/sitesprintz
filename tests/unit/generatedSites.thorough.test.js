@@ -13,11 +13,12 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { composePage } from '../../src/utils/layoutRenderer.js';
-import { renderSectionToHtml } from '../../src/utils/sectionHtmlBridge.js';
+import { renderSectionToHtml, withNativeBookingTokens } from '../../src/utils/sectionHtmlBridge.js';
 import { getLayoutForNiche, getSkeleton, LAYOUTS } from '../../src/config/layouts.js';
 import { NICHE_CONFIGS, buildNicheSiteData } from '../../src/config/nicheTemplateBuilders.js';
 import { BAZAAR_TYPES, buildBazaarSiteData } from '../../src/config/bazaarDefaults.js';
 import { PublishedSiteRenderer } from '../../server/services/publishedSiteRenderer.js';
+import { buildLiveSiteMarkup } from '../../src/utils/publishedSiteDocument.js';
 
 const TEMPLATES_DIR = join(process.cwd(), 'public/data/templates');
 const INDEX = JSON.parse(readFileSync(join(TEMPLATES_DIR, 'index.json'), 'utf-8'));
@@ -52,9 +53,10 @@ function catalogToSiteData(id, template, extras = {}) {
 }
 
 function htmlFromPage(page) {
+  const tokens = withNativeBookingTokens(page.tokens, page.sections);
   return (page.sections || [])
     .filter((s) => s && s.enabled !== false)
-    .map((section) => renderSectionToHtml(section, page.tokens))
+    .map((section) => renderSectionToHtml(section, tokens))
     .filter(Boolean)
     .join('\n');
 }
@@ -246,5 +248,71 @@ describe('generated sites — layout skeletons stay renderable', () => {
         }
       }
     }
+  });
+});
+
+describe('generated sites — one-catalog booking across layouts', () => {
+  it('every atelier niche with booking uses page Book CTAs, not a second menu only in the widget', () => {
+    for (const niche of LAYOUTS.atelier.niches) {
+      const siteData = buildNicheSiteData(niche, { businessName: `Acme ${niche}`, level: 'solo' });
+      const { html } = buildLiveSiteMarkup(siteData);
+      expect(html, niche).toContain('id="services"');
+      expect(html, niche).toContain('data-ss-book-service');
+      expect(html, niche).toContain('data-ss-booking-mount');
+    }
+  });
+
+  it('craftsman and counsel services stay informational unless booking is on', () => {
+    const niches = [...LAYOUTS.craftsman.niches, ...LAYOUTS.counsel.niches];
+    for (const niche of niches) {
+      const siteData = buildNicheSiteData(niche, { businessName: `Acme ${niche}`, level: 'solo' });
+      const { html } = buildLiveSiteMarkup(siteData);
+      expect(html, niche).not.toContain('data-ss-book-service');
+    }
+  });
+
+  it('mercantile catalog stays cart; bazaar never emits Book', () => {
+    const restaurant = buildNicheSiteData('restaurant', { businessName: 'The Grand Table', level: 'solo' });
+    const restaurantHtml = buildLiveSiteMarkup(restaurant).html;
+    expect(restaurantHtml).not.toContain('data-ss-book-service');
+
+    const bazaar = buildBazaarSiteData({
+      popUpType: BAZAAR_TYPES[0].id,
+      businessName: 'Pop-up stall',
+      location: 'Main St',
+      hours: 'Sat 9–2',
+    });
+    expect(buildLiveSiteMarkup(bazaar).html).not.toContain('data-ss-book-service');
+  });
+
+  it('non-atelier layout with native booking still uses the page services catalog', () => {
+    const siteData = buildNicheSiteData('plumbing', {
+      businessName: 'Pipe Pros',
+      level: 'solo',
+      features: { booking: { enabled: true } },
+    });
+    siteData.booking = {
+      ...(siteData.booking || {}),
+      enabled: true,
+      embedded: true,
+      provider: 'native',
+    };
+    siteData.sections = [
+      ...(siteData.sections || []),
+      {
+        id: 'booking',
+        type: 'booking',
+        enabled: true,
+        content: {
+          enabled: true,
+          provider: 'native',
+          embedded: true,
+          title: 'Book a visit',
+        },
+      },
+    ];
+    const { html } = buildLiveSiteMarkup(siteData);
+    expect(html).toContain('data-ss-book-service');
+    expect(html).toContain('data-ss-booking-mount');
   });
 });

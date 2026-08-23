@@ -57,29 +57,16 @@ steps:
   - action: Booking widget mounted
     wait_for: { selector: '[data-testid="live-booking-widget"]', timeout: 10000 }
 
-  - action: Bookable services are listed
-    wait_for: { selector: '[data-testid="services-list"]', timeout: 15000 }
+  - action: Page services catalog is visible
+    wait_for: { selector: '#services [data-ss-book-service]', timeout: 10000 }
 
-  - action: Services list is not empty
+  - action: Widget does not duplicate service card grid
     code: |
-      const empty = await page.getByTestId('services-empty').count();
-      if (empty) throw new Error('Salon booking widget has no services');
-      const err = await page.getByTestId('error-message').count();
-      if (err) {
-        const t = await page.getByTestId('error-message').innerText();
-        throw new Error('Salon booking failed to load services: ' + t);
-      }
-      const cards = page.locator('[data-testid^="service-card-"]');
-      if ((await cards.count()) < 1) {
-        throw new Error('Expected at least one bookable service');
-      }
+      const grid = await page.getByTestId('services-list').count();
+      if (grid) throw new Error('Salon should use page catalog, not widget services-list');
 
-  - action: Select the first service
-    click: { selector: '[data-testid^="service-card-"]' }
-    settle_ms: 400
-
-  - action: Continue from service
-    click: { testId: next-button }
+  - action: Pick service from page catalog
+    click: { selector: '#services [data-ss-book-service]' }
     settle_ms: 800
 
   - action: Continue through optional staff step

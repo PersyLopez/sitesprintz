@@ -4,7 +4,7 @@
  */
 
 import { composePage } from './layoutRenderer.js';
-import { renderSectionToHtml } from './sectionHtmlBridge.js';
+import { renderSectionToHtml, withNativeBookingTokens } from './sectionHtmlBridge.js';
 import { buildSiteNav } from '../config/operatingModel.js';
 import {
   resolvePrimaryCta,
@@ -399,9 +399,12 @@ export function buildLiveSiteMarkup(siteData, options = {}) {
     overrides: options.overrides || {},
   });
 
-  const sectionsHtml = (page.sections || [])
-    .filter((section) => section && section.enabled !== false && !isEmptyOptional(section))
-    .map((section) => renderSectionToHtml(section, page.tokens))
+  const enabledSections = (page.sections || [])
+    .filter((section) => section && section.enabled !== false && !isEmptyOptional(section));
+  const renderTokens = withNativeBookingTokens(page.tokens, enabledSections);
+
+  const sectionsHtml = enabledSections
+    .map((section) => renderSectionToHtml(section, renderTokens))
     .filter(Boolean)
     .join('\n');
 

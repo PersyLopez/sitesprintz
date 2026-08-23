@@ -5,17 +5,29 @@ import {
   shouldShowStaffSelection,
   resolveAutoAssignedStaffId,
 } from '../utils/bookingStaffFlow';
+import { useLocale } from '../i18n/LocaleContext.jsx';
+import { tLive } from '../i18n/liveChrome/index.js';
 import './BookingWidget.css';
 
 const NO_PREFERENCE = 'no_preference';
 
-function bookingSteps(showStaff) {
-  return [
-    { id: 'services', label: 'Service' },
-    ...(showStaff ? [{ id: 'staff', label: 'Provider' }] : []),
-    { id: 'date', label: 'Date & time' },
-    { id: 'form', label: 'Your details' },
-  ];
+function useLiveT() {
+  const { locale } = useLocale();
+  return {
+    locale,
+    t: (key, vars) => tLive(locale, key, vars),
+  };
+}
+
+function bookingSteps(showStaff, t, skipServiceStep = false) {
+  const steps = [];
+  if (!skipServiceStep) {
+    steps.push({ id: 'services', label: t('booking.service') });
+  }
+  if (showStaff) steps.push({ id: 'staff', label: t('booking.provider') });
+  steps.push({ id: 'date', label: t('booking.datetime') });
+  steps.push({ id: 'form', label: t('booking.details') });
+  return steps;
 }
 
 function formatLocalDate(date) {
@@ -39,10 +51,14 @@ function formatAppointmentWhen(iso, dateFallback) {
   return dateFallback || iso || '';
 }
 
-function stepStatus(step, id, showStaff) {
+function stepStatus(step, id, showStaff, skipServiceStep = false) {
   const order = showStaff
-    ? ['services', 'staff', 'date', 'form', 'confirmation']
-    : ['services', 'date', 'form', 'confirmation'];
+    ? (skipServiceStep
+      ? ['staff', 'date', 'form', 'confirmation']
+      : ['services', 'staff', 'date', 'form', 'confirmation'])
+    : (skipServiceStep
+      ? ['date', 'form', 'confirmation']
+      : ['services', 'date', 'form', 'confirmation']);
   const current = order.indexOf(step);
   const index = order.indexOf(id);
   if (index < current) return 'is-done';
@@ -50,15 +66,50 @@ function stepStatus(step, id, showStaff) {
   return '';
 }
 
-function BookingShell({ step, showStaff = false, children }) {
+function normalizeServiceName(name) {
+  return String(name || '').toLowerCase().trim().replace(/\s+/g, ' ');
+}
+
+function matchBookableService(services, id, name) {
+  if (id) {
+    const byId = services.find((service) => String(service.id) === String(id));
+    if (byId) return byId;
+  }
+  const normalized = normalizeServiceName(name);
+  if (!normalized) return null;
+  return services.find((service) => normalizeServiceName(service.name) === normalized);
+}
+
+function advanceAfterServicePick({
+  showStaff,
+  businessMode,
+  staff,
+  setSelectedStaff,
+  setStep,
+}) {
+  if (showStaff) {
+    setStep('staff');
+    return;
+  }
+  setSelectedStaff(resolveAutoAssignedStaffId({
+    isSoloOperation: businessMode === 'solo' || staff.length <= 1,
+    effectiveMode: businessMode,
+    staffForService: staff,
+    allStaff: staff,
+  }));
+  setStep('date');
+}
+
+function BookingShell({ step, showStaff = false, skipServiceStep = false, children }) {
+  const { t } = useLiveT();
   const showProgress = step !== 'confirmation';
-  const steps = bookingSteps(showStaff);
+  const steps = bookingSteps(showStaff, t, skipServiceStep);
   return (
     <div className="booking-widget" data-testid="booking-widget">
       {showProgress && (
-        <ol className="booking-progress" aria-label="Booking steps">
+        <ol className="booking-progress" aria-label={t('bookingSteps')}>
           {steps.map((item) => (
-            <li key={item.id} className={stepStatus(step, item.id, showStaff)}>
+            <li key={item.id} className={stepStatus(step, item.id, showStaff, skipServiceStep)}>
               {item.label}
             </li>
           ))}
@@ -69,15 +120,46 @@ function BookingShell({ step, showStaff = false, children }) {
   );
 }
 
+function CatalogServiceSelect({ services, selectedService, onChange, t, showBrowseHint = false }) {
+  return (
+    <div className="catalog-service-picker">
+      {showBrowseHint && !selectedService && (
+        <p className="catalog-service-hint">
+          {t('booking.chooseFromList')}{' '}
+          <a href="#services">{t('booking.browseServices')}</a>
+        </p>
+      )}
+      <label className="catalog-service-label" htmlFor="booking-service-select">
+        {t('booking.selectService')}
+      </label>
+      <select
+        id="booking-service-select"
+        data-testid="booking-service-select"
+        value={selectedService?.id || ''}
+        onChange={(e) => onChange(e.target.value)}
+      >
+        <option value="">{t('booking.selectService')}</option>
+        {services.map((service) => (
+          <option key={service.id} value={service.id}>
+            {service.name}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 const BookingWidget = ({
   userId: propUserId,
   siteId = null,
   demoMode = false,
   businessMode = 'solo',
   noPreferenceText = 'Any available',
+  pageCatalogMode = false,
 }) => {
   const { userId: paramUserId } = useParams();
   const userId = propUserId || paramUserId;
+  const { t } = useLiveT();
   const [step, setStep] = useState('services'); // services, date, time, form, confirmation
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -103,6 +185,8 @@ const BookingWidget = ({
   const [formErrors, setFormErrors] = useState({});
 
   const [appointment, setAppointment] = useState(null);
+  const [serviceFromPage, setServiceFromPage] = useState(false);
+  const pendingPagePickRef = useRef(null);
 
   const siteQuery = siteId ? { siteId } : undefined;
 
@@ -115,13 +199,47 @@ const BookingWidget = ({
 
   const selectedStaffRecord = staff.find((member) => member.id === selectedStaff);
   const selectedStaffLabel = selectedStaff === NO_PREFERENCE
-    ? noPreferenceText
+    ? (noPreferenceText === 'Any available' ? t('booking.any') : noPreferenceText)
     : selectedStaffRecord?.name;
+
+  const skipServiceStep = pageCatalogMode && serviceFromPage && Boolean(selectedService);
 
   useEffect(() => {
     fetchServices();
     fetchStaff();
   }, [userId, siteId]);
+
+  useEffect(() => {
+    if (!pageCatalogMode) return undefined;
+
+    const applyPick = (detail) => {
+      if (!detail) return;
+      if (!services.length) {
+        pendingPagePickRef.current = detail;
+        return;
+      }
+      const matched = matchBookableService(services, detail.id, detail.name);
+      pendingPagePickRef.current = null;
+      if (!matched) return;
+      setSelectedService(matched);
+      setServiceFromPage(true);
+      advanceAfterServicePick({
+        showStaff,
+        businessMode,
+        staff,
+        setSelectedStaff,
+        setStep,
+      });
+    };
+
+    if (pendingPagePickRef.current) {
+      applyPick(pendingPagePickRef.current);
+    }
+
+    const onPagePick = (event) => applyPick(event.detail || {});
+    window.addEventListener('ss-book-service-select', onPagePick);
+    return () => window.removeEventListener('ss-book-service-select', onPagePick);
+  }, [pageCatalogMode, services, showStaff, businessMode, staff]);
 
   const fetchServices = async () => {
     try {
@@ -133,7 +251,7 @@ const BookingWidget = ({
       setServices(response.services || []);
     } catch (err) {
       console.error('Error fetching services:', err);
-      setError('Failed to load services. Please try again.');
+      setError(t('booking.loadFail'));
     } finally {
       setServicesLoading(false);
     }
@@ -153,8 +271,15 @@ const BookingWidget = ({
     }
   };
 
-  const handleServiceSelect = (service) => {
+  const handleServiceSelect = (service, fromPage = false) => {
     setSelectedService(service);
+    setServiceFromPage(fromPage);
+  };
+
+  const handleCatalogServiceChange = (serviceId) => {
+    const service = services.find((item) => String(item.id) === String(serviceId));
+    if (!service) return;
+    handleServiceSelect(service, false);
   };
 
   const handleNextFromServices = () => {
@@ -184,6 +309,7 @@ const BookingWidget = ({
 
   const handleBackToServices = () => {
     setStep('services');
+    setServiceFromPage(false);
     setSelectedDate(null);
     setSelectedTime(null);
     setTimeSlots([]);
@@ -243,13 +369,13 @@ const BookingWidget = ({
     const errors = {};
 
     if (!customerName.trim()) {
-      errors.name = 'Name is required';
+      errors.name = t('booking.nameRequired');
     }
 
     if (!customerEmail.trim()) {
-      errors.email = 'Email is required';
+      errors.email = t('booking.emailRequired');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
-      errors.email = 'Please enter a valid email address';
+      errors.email = t('booking.emailInvalid');
     }
 
     setFormErrors(errors);
@@ -285,7 +411,7 @@ const BookingWidget = ({
       setAppointment(response.appointment);
       setStep('confirmation');
     } catch (err) {
-      setError(err.message || 'Failed to create booking. Please try again.');
+      setError(err.message || t('booking.createFail'));
       console.error('Error creating appointment:', err);
     } finally {
       setLoading(false);
@@ -295,7 +421,7 @@ const BookingWidget = ({
   if (servicesLoading) {
     return (
       <div className="booking-widget">
-        <div data-testid="services-loading">Loading services...</div>
+        <div data-testid="services-loading">{t('booking.loading')}</div>
       </div>
     );
   }
@@ -306,7 +432,7 @@ const BookingWidget = ({
         <div data-testid="error-message" className="error">
           {error}
         </div>
-        <button type="button" onClick={fetchServices}>Try Again</button>
+        <button type="button" onClick={fetchServices}>{t('tryAgain')}</button>
       </div>
     );
   }
@@ -315,7 +441,7 @@ const BookingWidget = ({
     return (
       <div className="booking-widget">
         <div data-testid="services-empty">
-          No services available at this time.
+          {t('booking.emptyNow')}
         </div>
       </div>
     );
@@ -323,36 +449,46 @@ const BookingWidget = ({
 
   if (step === 'services') {
     return (
-      <BookingShell step={step} showStaff={showStaff}>
-        <h2>Select a service</h2>
+      <BookingShell step={step} showStaff={showStaff} skipServiceStep={skipServiceStep}>
+        <h2>{t('booking.selectService')}</h2>
 
-        <div data-testid="services-list" className="services-list">
-          {services.map((service) => (
-            <div
-              key={service.id}
-              data-testid={`service-card-${service.id}`}
-              className={`service-card ${selectedService?.id === service.id ? 'selected' : ''}`}
-              onClick={() => handleServiceSelect(service)}
-              tabIndex="0"
-              role="button"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  handleServiceSelect(service);
-                }
-              }}
-            >
-              <h3>{service.name}</h3>
-              {service.description && <p>{service.description}</p>}
-              <div className="service-details">
-                <span className="duration">{service.duration_minutes} min</span>
-                <span className="price">
-                  ${(service.price_cents / 100).toFixed(2)}
-                </span>
+        {pageCatalogMode ? (
+          <CatalogServiceSelect
+            services={services}
+            selectedService={selectedService}
+            onChange={handleCatalogServiceChange}
+            t={t}
+            showBrowseHint
+          />
+        ) : (
+          <div data-testid="services-list" className="services-list">
+            {services.map((service) => (
+              <div
+                key={service.id}
+                data-testid={`service-card-${service.id}`}
+                className={`service-card ${selectedService?.id === service.id ? 'selected' : ''}`}
+                onClick={() => handleServiceSelect(service)}
+                tabIndex="0"
+                role="button"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleServiceSelect(service);
+                  }
+                }}
+              >
+                <h3>{service.name}</h3>
+                {service.description && <p>{service.description}</p>}
+                <div className="service-details">
+                  <span className="duration">{service.duration_minutes} min</span>
+                  <span className="price">
+                    ${(service.price_cents / 100).toFixed(2)}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {selectedService && (
           <div className="actions">
@@ -363,19 +499,19 @@ const BookingWidget = ({
               className="btn-primary"
               disabled={businessMode === 'team' && staffLoading}
             >
-              Continue
+              {t('booking.continue')}
             </button>
           </div>
         )}
 
         {selectedService && (
           <div data-testid="booking-summary" className="booking-summary">
-            <h3>Booking summary</h3>
-            <p><strong>Service:</strong> {selectedService.name}</p>
+            <h3>{t('booking.summary')}</h3>
+            <p><strong>{t('booking.service')}:</strong> {selectedService.name}</p>
             {selectedStaffLabel && (
-              <p><strong>Provider:</strong> {selectedStaffLabel}</p>
+              <p><strong>{t('booking.provider')}:</strong> {selectedStaffLabel}</p>
             )}
-            <p><strong>Price:</strong> ${(selectedService.price_cents / 100).toFixed(2)}</p>
+            <p><strong>{t('booking.price')}</strong> ${(selectedService.price_cents / 100).toFixed(2)}</p>
           </div>
         )}
       </BookingShell>
@@ -384,8 +520,8 @@ const BookingWidget = ({
 
   if (step === 'staff') {
     return (
-      <BookingShell step={step} showStaff={showStaff}>
-        <h2>Choose a provider</h2>
+      <BookingShell step={step} showStaff={showStaff} skipServiceStep={skipServiceStep}>
+        <h2>{t('booking.chooseProvider')}</h2>
 
         <button
           type="button"
@@ -393,8 +529,17 @@ const BookingWidget = ({
           onClick={handleBackToServices}
           className="btn-secondary"
         >
-          ← Back
+          {t('booking.back')}
         </button>
+
+        {pageCatalogMode && (
+          <CatalogServiceSelect
+            services={services}
+            selectedService={selectedService}
+            onChange={handleCatalogServiceChange}
+            t={t}
+          />
+        )}
 
         <div data-testid="staff-selection-step" className="staff-list">
           <div
@@ -411,7 +556,7 @@ const BookingWidget = ({
             }}
           >
             <h3>{noPreferenceText}</h3>
-            <p>We’ll match you with the next available provider.</p>
+            <p>{t('booking.matchProvider')}</p>
           </div>
 
           {staff.map((member) => (
@@ -443,7 +588,7 @@ const BookingWidget = ({
               onClick={handleNextFromStaff}
               className="btn-primary"
             >
-              Continue
+              {t('booking.continue')}
             </button>
           </div>
         )}
@@ -455,8 +600,8 @@ const BookingWidget = ({
     const visibleSlots = timeSlots.filter((slot) => slot.available !== false);
 
     return (
-      <BookingShell step={step} showStaff={showStaff}>
-        <h2>Select a date and time</h2>
+      <BookingShell step={step} showStaff={showStaff} skipServiceStep={skipServiceStep}>
+        <h2>{t('booking.selectDate')}</h2>
 
         <button
           type="button"
@@ -464,11 +609,20 @@ const BookingWidget = ({
           onClick={handleBackFromDate}
           className="btn-secondary"
         >
-          ← Back
+          {t('booking.back')}
         </button>
 
+        {pageCatalogMode && (
+          <CatalogServiceSelect
+            services={services}
+            selectedService={selectedService}
+            onChange={handleCatalogServiceChange}
+            t={t}
+          />
+        )}
+
         <div data-testid="date-picker" className="date-picker">
-          <p>Choose a day, then pick an open time.</p>
+          <p>{t('booking.chooseDay')}</p>
           <DatePicker
             selectedDate={selectedDate}
             onDateSelect={handleDateSelect}
@@ -476,18 +630,18 @@ const BookingWidget = ({
         </div>
 
         {selectedDate && slotsLoading && (
-          <p className="booking-slots-status" data-testid="slots-loading">Finding available times…</p>
+          <p className="booking-slots-status" data-testid="slots-loading">{t('booking.slotsLoading')}</p>
         )}
 
         {selectedDate && !slotsLoading && visibleSlots.length === 0 && (
           <p className="booking-slots-status" data-testid="slots-empty">
-            No times available this day. Try another date.
+            {t('booking.noSlots')}
           </p>
         )}
 
         {selectedDate && !slotsLoading && visibleSlots.length > 0 && (
           <div data-testid="time-slots" className="time-slots">
-            <h3>Available times</h3>
+            <h3>{t('booking.availableTimes')}</h3>
             <div className="time-slot-grid">
               {visibleSlots.map((slot) => (
                 <button
@@ -509,7 +663,7 @@ const BookingWidget = ({
                 onClick={handleNextFromTime}
                 className="btn-primary"
               >
-                Continue
+                {t('booking.continue')}
               </button>
             )}
           </div>
@@ -520,8 +674,8 @@ const BookingWidget = ({
 
   if (step === 'form') {
     return (
-      <BookingShell step={step} showStaff={showStaff}>
-        <h2>Your information</h2>
+      <BookingShell step={step} showStaff={showStaff} skipServiceStep={skipServiceStep}>
+        <h2>{t('booking.yourInfo')}</h2>
 
         <button
           type="button"
@@ -529,12 +683,12 @@ const BookingWidget = ({
           onClick={() => setStep('date')}
           className="btn-secondary"
         >
-          ← Back
+          {t('booking.back')}
         </button>
 
         <div data-testid="customer-form" className="customer-form">
           <div className="form-group">
-            <label htmlFor="customer-name">Name *</label>
+            <label htmlFor="customer-name">{t('booking.nameLabel')}</label>
             <input
               id="customer-name"
               data-testid="customer-name"
@@ -552,7 +706,7 @@ const BookingWidget = ({
           </div>
 
           <div className="form-group">
-            <label htmlFor="customer-email">Email *</label>
+            <label htmlFor="customer-email">{t('booking.emailLabel')}</label>
             <input
               id="customer-email"
               data-testid="customer-email"
@@ -570,7 +724,7 @@ const BookingWidget = ({
           </div>
 
           <div className="form-group">
-            <label htmlFor="customer-phone">Phone</label>
+            <label htmlFor="customer-phone">{t('booking.phoneLabel')}</label>
             <input
               id="customer-phone"
               data-testid="customer-phone"
@@ -582,7 +736,7 @@ const BookingWidget = ({
           </div>
 
           <div className="form-group">
-            <label htmlFor="customer-notes">Additional notes</label>
+            <label htmlFor="customer-notes">{t('booking.notesLabel')}</label>
             <textarea
               id="customer-notes"
               data-testid="customer-notes"
@@ -599,7 +753,7 @@ const BookingWidget = ({
           )}
 
           {loading && (
-            <div data-testid="booking-loading">Processing your booking...</div>
+            <div data-testid="booking-loading">{t('booking.processing')}</div>
           )}
 
           <button
@@ -609,7 +763,7 @@ const BookingWidget = ({
             disabled={loading}
             className="btn-primary"
           >
-            {loading ? 'Booking...' : 'Confirm booking'}
+            {loading ? t('booking.booking') : t('booking.confirm')}
           </button>
         </div>
       </BookingShell>
@@ -619,36 +773,36 @@ const BookingWidget = ({
   if (step === 'confirmation') {
     const isDemo = demoMode || appointment?.demo === true;
     return (
-      <BookingShell step={step} showStaff={showStaff}>
+      <BookingShell step={step} showStaff={showStaff} skipServiceStep={skipServiceStep}>
         <div data-testid="confirmation-page" className="confirmation">
-          <h2>{isDemo ? 'Demo booking confirmed' : 'Booking confirmed'}</h2>
+          <h2>{isDemo ? t('booking.demoConfirmed') : t('booking.confirmed')}</h2>
 
           <div data-testid="confirmation-message" className="success-message">
             <p>
               {isDemo
-                ? 'Example site — your appointment was confirmed here so you can see the flow. It was not saved to a real calendar, and card payment is not available on example sites.'
-                : 'Your appointment has been successfully booked.'}
+                ? t('booking.demoNote')
+                : t('booking.success')}
             </p>
           </div>
 
           <div className="confirmation-details">
-            <p><strong>Confirmation code:</strong></p>
+            <p><strong>{t('booking.code')}</strong></p>
             <p data-testid="confirmation-code" className="confirmation-code">
               {appointment?.confirmation_code}
             </p>
 
-            <p><strong>Service:</strong> {appointment?.service_name || selectedService?.name}</p>
+            <p><strong>{t('booking.service')}:</strong> {appointment?.service_name || selectedService?.name}</p>
             {(appointment?.staff_name || selectedStaffLabel) && (
               <p data-testid="confirmation-staff">
-                <strong>Provider:</strong> {appointment?.staff_name || selectedStaffLabel}
+                <strong>{t('booking.provider')}:</strong> {appointment?.staff_name || selectedStaffLabel}
               </p>
             )}
-            <p><strong>When:</strong> {formatAppointmentWhen(selectedTime, selectedDate)}</p>
+            <p><strong>{t('booking.when')}</strong> {formatAppointmentWhen(selectedTime, selectedDate)}</p>
           </div>
 
           {!isDemo && (
             <p className="email-notice">
-              A confirmation email has been sent to {customerEmail}
+              {t('booking.emailNotice', { email: customerEmail })}
             </p>
           )}
         </div>
@@ -659,9 +813,8 @@ const BookingWidget = ({
   return null;
 };
 
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
 const DatePicker = ({ selectedDate, onDateSelect }) => {
+  const { locale, t } = useLiveT();
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const today = new Date();
@@ -670,10 +823,14 @@ const DatePicker = ({ selectedDate, onDateSelect }) => {
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
   const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
-  const monthYear = currentMonth.toLocaleString('default', {
+  const dateLocale = locale === 'es' ? 'es' : 'en';
+  const monthYear = currentMonth.toLocaleString(dateLocale, {
     month: 'long',
     year: 'numeric',
   });
+  const WEEKDAYS = Array.from({ length: 7 }, (_, index) => (
+    new Date(Date.UTC(2024, 5, 2 + index)).toLocaleDateString(dateLocale, { weekday: 'short', timeZone: 'UTC' })
+  ));
 
   const firstWeekday = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -713,7 +870,7 @@ const DatePicker = ({ selectedDate, onDateSelect }) => {
           data-testid="prev-month"
           onClick={() => setCurrentMonth(new Date(year, month - 1, 1))}
           disabled={isCurrentMonth}
-          aria-label="Previous month"
+          aria-label={t('booking.prevMonth')}
         >
           ←
         </button>
@@ -722,7 +879,7 @@ const DatePicker = ({ selectedDate, onDateSelect }) => {
           type="button"
           data-testid="next-month"
           onClick={() => setCurrentMonth(new Date(year, month + 1, 1))}
-          aria-label="Next month"
+          aria-label={t('booking.nextMonth')}
         >
           →
         </button>

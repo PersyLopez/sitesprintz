@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   siteWantsEmbeddedBooking,
+  siteWantsNativeBooking,
   applyVisitorExperienceDefaults,
   subdomainFromLivePath,
 } from '../../src/utils/visitorExperience.js';
@@ -18,6 +19,19 @@ describe('visitorExperience', () => {
       booking: { enabled: true, mode: 'link', embedded: false },
       _features: { booking: { enabled: true } },
     })).toBe(false);
+  });
+
+  it('uses external Acuity booking without mounting the native widget', () => {
+    const site = {
+      booking: {
+        enabled: true,
+        provider: 'acuity',
+        url: 'https://dhmakeupartistry.as.me/schedule/8ffea782',
+      },
+      sections: [{ type: 'booking', content: { enabled: true, provider: 'acuity', url: 'https://dhmakeupartistry.as.me/schedule/8ffea782' } }],
+    };
+    expect(siteWantsEmbeddedBooking(site)).toBe(true);
+    expect(siteWantsNativeBooking(site)).toBe(false);
   });
 
   it('stamps booking flags onto salon wizard data', () => {

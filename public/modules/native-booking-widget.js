@@ -16,6 +16,20 @@ function formatLocalDate(date) {
   return `${year}-${month}-${day}`;
 }
 
+function normalizeServiceName(name) {
+  return String(name || '').toLowerCase().trim().replace(/\s+/g, ' ');
+}
+
+function matchBookableService(services, id, name) {
+  if (id) {
+    const byId = services.find((service) => String(service.id) === String(id));
+    if (byId) return byId;
+  }
+  const normalized = normalizeServiceName(name);
+  if (!normalized) return null;
+  return services.find((service) => normalizeServiceName(service.name) === normalized);
+}
+
 class NativeBookingWidget {
   constructor(containerId, userId) {
     this.container = document.getElementById(containerId);
@@ -44,11 +58,44 @@ class NativeBookingWidget {
       formErrors: {},
       loading: false,
       error: null,
-      appointment: null
+      appointment: null,
+      pageCatalogMode: Boolean(document.querySelector('[data-ss-book-service]')),
+      serviceFromPage: false,
+    };
+    this._pendingPagePick = null;
+
+    this._applyPagePick = (id, name) => {
+      if (!this.state.services.length) {
+        this._pendingPagePick = { id, name };
+        return false;
+      }
+      const matched = matchBookableService(this.state.services, id, name);
+      this._pendingPagePick = null;
+      if (!matched) return false;
+      this.state.selectedService = matched;
+      this.state.serviceFromPage = true;
+      this.state.step = 'date';
+      return true;
+    };
+
+    this._onPageBookClick = (event) => {
+      const target = event.target.closest('[data-ss-book-service]');
+      if (!target) return;
+      event.preventDefault();
+      const card = target.closest('[data-service-id]');
+      const id = target.getAttribute('data-service-id') || card?.getAttribute('data-service-id');
+      const name = target.getAttribute('data-service-name') || card?.getAttribute('data-service-name');
+      this._applyPagePick(id, name);
+      const bookingEl = document.getElementById('booking');
+      if (bookingEl) bookingEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      this.render();
     };
   }
 
   async init() {
+    if (this.state.pageCatalogMode) {
+      document.addEventListener('click', this._onPageBookClick);
+    }
     await this.loadBusinessMode();
     await this.loadServices();
     this.render();
@@ -87,6 +134,9 @@ class NativeBookingWidget {
       
       const data = await response.json();
       this.state.services = data.services || [];
+      if (this._pendingPagePick) {
+        this._applyPagePick(this._pendingPagePick.id, this._pendingPagePick.name);
+      }
     } catch (err) {
       console.error('Error fetching services:', err);
       this.state.error = 'Failed to load services. Please try again.';
@@ -177,9 +227,16 @@ class NativeBookingWidget {
     return Object.keys(errors).length === 0;
   }
 
-  handleServiceSelect(service) {
+  handleServiceSelect(service, fromPage = false) {
     this.state.selectedService = service;
+    this.state.serviceFromPage = fromPage;
     this.render();
+  }
+
+  handleCatalogServiceChange(serviceId) {
+    const service = this.state.services.find((item) => String(item.id) === String(serviceId));
+    if (!service) return;
+    this.handleServiceSelect(service, false);
   }
 
   handleServiceSelectByIndex(index) {
@@ -197,6 +254,7 @@ class NativeBookingWidget {
 
   handleBackToServices() {
     this.state.step = 'services';
+    this.state.serviceFromPage = false;
     this.state.selectedDate = null;
     this.state.selectedTime = null;
     this.state.timeSlots = [];
@@ -279,7 +337,55 @@ class NativeBookingWidget {
     }
   }
 
+  renderCatalogServiceSelect(showBrowseHint = false) {
+    const options = this.state.services.map((service) => {
+      const selected = this.state.selectedService?.id === service.id ? 'selected' : '';
+      return `<option value="${this.escapeHtml(String(service.id))}" ${selected}>${this.escapeHtml(service.name)}</option>`;
+    }).join('');
+
+    const hint = showBrowseHint && !this.state.selectedService
+      ? `<p class="catalog-service-hint">Choose a service below, or <a href="#services">Browse services</a></p>`
+      : '';
+
+    return `
+      <div class="catalog-service-picker">
+        ${hint}
+        <label for="booking-service-select">Select a service</label>
+        <select id="booking-service-select" data-testid="booking-service-select" onchange="window.nativeBookingWidget?.handleCatalogServiceChange(this.value)">
+          <option value="">Select a service</option>
+          ${options}
+        </select>
+      </div>
+    `;
+  }
+
   renderServices() {
+    if (this.state.pageCatalogMode) {
+      const summaryHtml = this.state.selectedService ? `
+        <div data-testid="booking-summary" class="booking-summary">
+          <h3>Booking Summary</h3>
+          <p><strong>Service:</strong> ${this.escapeHtml(this.state.selectedService.name)}</p>
+          <p><strong>Price:</strong> $${(this.state.selectedService.price_cents / 100).toFixed(2)}</p>
+        </div>
+      ` : '';
+
+      this.container.innerHTML = `
+        <div class="booking-widget">
+          <h2>Select a Service</h2>
+          ${this.renderCatalogServiceSelect(true)}
+          ${this.state.selectedService ? `
+            <div class="actions">
+              <button data-testid="next-button" class="btn-primary" onclick="window.nativeBookingWidget?.handleNextFromServices()">
+                Next
+              </button>
+            </div>
+          ` : ''}
+          ${summaryHtml}
+        </div>
+      `;
+      return;
+    }
+
     const servicesHtml = this.state.services.map((service, index) => {
       const isSelected = this.state.selectedService?.id === service.id;
       return `
@@ -344,6 +450,7 @@ class NativeBookingWidget {
   }
 
   renderDatePicker() {
+    const catalogSelect = this.state.pageCatalogMode ? this.renderCatalogServiceSelect() : '';
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
@@ -408,6 +515,7 @@ class NativeBookingWidget {
         <button data-testid="back-button" class="btn-secondary" onclick="window.nativeBookingWidget?.handleBackToServices()">
           ← Back
         </button>
+        ${catalogSelect}
         <div data-testid="date-picker" class="date-picker">
           <p>Select a date for your appointment</p>
           <div data-testid="calendar" class="calendar">

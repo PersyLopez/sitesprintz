@@ -4,8 +4,11 @@
  */
 
 import { resolvePayOnSiteForPublish } from './payOnSite.js';
+import { siteHasExternalBooking } from './bookingEmbed.js';
 
 const BOOKING_SECTION_TYPES = new Set(['booking', 'native-booking']);
+
+export { siteHasExternalBooking } from './bookingEmbed.js';
 
 /**
  * True when the published site should run the native booking widget
@@ -16,6 +19,7 @@ const BOOKING_SECTION_TYPES = new Set(['booking', 'native-booking']);
  */
 export function siteWantsEmbeddedBooking(siteData) {
   if (!siteData) return false;
+  if (siteHasExternalBooking(siteData)) return true;
   if (siteData.booking?.mode === 'link' || siteData.booking?.embedded === false) {
     return false;
   }
@@ -37,6 +41,16 @@ export function siteWantsEmbeddedBooking(siteData) {
 }
 
 /**
+ * True when the live site should mount the native SiteSprintz booking widget.
+ *
+ * @param {object|null|undefined} siteData
+ * @returns {boolean}
+ */
+export function siteWantsNativeBooking(siteData) {
+  return siteWantsEmbeddedBooking(siteData) && !siteHasExternalBooking(siteData);
+}
+
+/**
  * Stamp pay-on-site and native booking flags onto wizard / template siteData
  * so visitors get a complete experience before Stripe is connected.
  *
@@ -50,10 +64,12 @@ export function applyVisitorExperienceDefaults(siteData) {
     payOnSite: resolvePayOnSiteForPublish(siteData, true),
   };
   if (siteWantsEmbeddedBooking(siteData)) {
+    const external = siteHasExternalBooking(siteData);
     siteData.booking = {
       ...(siteData.booking || {}),
       enabled: true,
-      embedded: true,
+      embedded: external ? false : true,
+      mode: external ? 'embed' : (siteData.booking?.mode || 'native'),
       provider: siteData.booking?.provider || 'native',
     };
     siteData.settings.bookingEnabled = true;

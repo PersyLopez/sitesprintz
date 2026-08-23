@@ -10,6 +10,7 @@
 
 import { resolveTeamHeading, shouldRenderTeam, getNamedTeamMembers } from './businessScale.js';
 import { telHref } from './liveSiteContact.js';
+import { getBookingEmbedUrl, isExternalBookingProvider } from './bookingEmbed.js';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -59,6 +60,31 @@ const DEFAULT_TOKENS = {
     hairline: 'rgba(244,242,238,.10)',
   },
 };
+
+/**
+ * True when the composed page mounts the native booking widget (not Calendly/link/phone).
+ * Page service cards only become the catalog when this is true.
+ */
+export function sectionListHasNativeBooking(sections) {
+  return (Array.isArray(sections) ? sections : []).some((section) => {
+    if (!section || section.enabled === false) return false;
+    if (section.type !== 'booking' && section.type !== 'native-booking') return false;
+    const content = section.content || {};
+    if (content.enabled === false) return false;
+    const provider = content.provider || 'native';
+    const externalUrl = content.url || '';
+    const isExternal = isExternalBookingProvider(provider) && Boolean(externalUrl);
+    const isLinkOnly = content.mode === 'link' || (!isExternal && content.embedded === false);
+    return !isExternal && !isLinkOnly;
+  });
+}
+
+export function withNativeBookingTokens(tokens, sections) {
+  return {
+    ...(tokens || DEFAULT_TOKENS),
+    _nativeBooking: sectionListHasNativeBooking(sections),
+  };
+}
 
 // ---------------------------------------------------------------------------
 // HTML escaping
@@ -174,13 +200,28 @@ function renderHero(section, tokens) {
 </section>`;
 }
 
+function serviceKey(item, index) {
+  if (item?.id) return String(item.id);
+  const slug = String(item?.name || item?.title || 'service')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'service';
+  return `${slug}-${index}`;
+}
+
+function bookServiceLink(item, index, tokens) {
+  const id = serviceKey(item, index);
+  const name = item.name || item.title || '';
+  return `<a class="ss-btn" href="#booking" data-ss-book-service data-service-id="${escapeAttr(id)}" data-service-name="${escapeAttr(name)}" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)}; margin-top: 12px; display: inline-block; text-decoration: none;">Book</a>`;
+}
+
 function renderServices(section, tokens) {
   const c = section.content || {};
   const title = c.title || 'Our Services';
   const items = c.items || [];
 
   if (!items.length) {
-    return `<section class="ss-services" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
+    return `<section id="services" class="ss-services" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
   <div class="ss-container" style="max-width: 1200px; margin: 0 auto;">
     <h2 style="text-align: center; color: ${getAccent(tokens)};">${escapeHtml(title)}</h2>
     <p style="text-align: center; color: ${getMuted(tokens)};">No services listed yet.</p>
@@ -189,23 +230,27 @@ function renderServices(section, tokens) {
   }
 
   const cardsHtml = items
-    .map((item) => {
+    .map((item, index) => {
       const name = item.name || item.title || '';
       const desc = item.description || '';
       const price = item.price === 0 || item.price ? String(item.price) : '';
       const image = item.image || item.src || '';
-      return `<article class="ss-card" style="background: ${getSurface(tokens)}; border: 1px solid ${getTokens(tokens).theme.hairline};">
+      const duration = item.duration || item.duration_minutes;
+      const serviceId = serviceKey(item, index);
+      return `<article class="ss-card" data-service-id="${escapeAttr(serviceId)}" data-service-name="${escapeAttr(name)}" style="background: ${getSurface(tokens)}; border: 1px solid ${getTokens(tokens).theme.hairline};">
   ${image ? `<img class="ss-card-media" src="${escapeAttr(image)}" alt="${escapeAttr(item.imageAlt || name)}" loading="lazy" />` : ''}
   <div class="ss-card-body">
     <h3 style="color: ${getAccent(tokens)};">${escapeHtml(name)}</h3>
     ${desc ? `<p style="color: ${getMuted(tokens)};">${escapeHtml(desc)}</p>` : ''}
+    ${duration ? `<p class="ss-duration" style="color: ${getMuted(tokens)};">${escapeHtml(String(duration))} min</p>` : ''}
     ${price ? `<div class="ss-price" style="color: ${getAccent(tokens)};">${escapeHtml(price)}</div>` : ''}
+    ${tokens?._nativeBooking ? bookServiceLink(item, index, tokens) : ''}
   </div>
 </article>`;
     })
     .join('\n');
 
-  return `<section class="ss-services ss-section" style="background: ${getBg(tokens)}; color: ${getText(tokens)};">
+  return `<section id="services" class="ss-services ss-section" style="background: ${getBg(tokens)}; color: ${getText(tokens)};">
   <div class="ss-container">
     <h2 class="ss-h2" style="color: ${getAccent(tokens)};">${escapeHtml(title)}</h2>
     <div class="ss-card-grid">
@@ -528,19 +573,35 @@ function renderCatalog(section, tokens) {
 function renderBooking(section, tokens) {
   const c = section.content || {};
   const title = c.title || 'Book an Appointment';
-  const isLinkOnly = c.mode === 'link' || c.embedded === false;
+  const provider = c.provider || 'native';
+  const externalUrl = c.url || '';
+  const isExternal = isExternalBookingProvider(provider) && Boolean(externalUrl);
+  const isLinkOnly = c.mode === 'link' || (!isExternal && c.embedded === false);
+  if (isExternal && !isLinkOnly) {
+    const embedUrl = getBookingEmbedUrl(provider, externalUrl);
+    return `<section id="booking" class="ss-booking ss-section booking-section" style="background: ${getBg(tokens)}; color: ${getText(tokens)};">
+  <div class="ss-container" style="max-width: 900px; margin: 0 auto;">
+    <h2 class="ss-h2" style="color: ${getAccent(tokens)};">${escapeHtml(title)}</h2>
+    <p class="ss-lead" style="text-align: center; margin: -24px auto 28px;">Book your appointment online — fast and easy.</p>
+    <div class="ss-booking-embed" data-testid="live-booking-embed" style="background: ${getSurface(tokens)}; border-radius: 12px; overflow: hidden; border: 1px solid ${getTokens(tokens).theme.hairline};">
+      <iframe src="${escapeAttr(embedUrl)}" title="Book an Appointment" loading="lazy" style="width: 100%; min-height: 700px; border: 0; display: block;"></iframe>
+    </div>
+    <p style="text-align: center; margin-top: 16px;"><a href="${escapeAttr(externalUrl)}" target="_blank" rel="noopener noreferrer" style="color: ${getAccent(tokens)};">Open scheduler</a></p>
+  </div>
+</section>`;
+  }
   const href = isLinkOnly
     ? (c.url || (c.phone ? `tel:${c.phone}` : '#contact'))
     : '#booking';
   const cta = isLinkOnly
     ? (c.url ? 'Book Now' : (c.phone ? 'Call to Book' : 'Contact Us'))
     : 'Book Now';
-  const copy = isLinkOnly
+  const copy = c.description || c.subtitle || (isLinkOnly
     ? 'Reach out to reserve a time — we will confirm your appointment.'
-    : 'Book your appointment online — fast and easy.';
+    : 'Book your appointment online — fast and easy.');
 
   if (isLinkOnly) {
-    return `<section class="ss-booking ss-section" style="background: ${getBg(tokens)}; color: ${getText(tokens)};">
+    return `<section id="booking" class="ss-booking ss-section" style="background: ${getBg(tokens)}; color: ${getText(tokens)};">
   <div class="ss-container" style="max-width: 600px; margin: 0 auto; text-align: center;">
     <h2 class="ss-h2" style="color: ${getAccent(tokens)};">${escapeHtml(title)}</h2>
     <div style="background: ${getSurface(tokens)}; padding: 40px; border-radius: 12px; border: 1px solid ${getTokens(tokens).theme.hairline};">
@@ -1001,8 +1062,9 @@ export function renderPageToHtml(page = {}, tokens) {
   const muted = brand.muted || t.muted;
 
   const enabled = sections.filter((s) => s && s.enabled !== false);
+  const renderTokens = withNativeBookingTokens(tokens || DEFAULT_TOKENS, enabled);
   const sectionsHtml = enabled
-    .map((section) => renderSectionToHtml(section, tokens || DEFAULT_TOKENS))
+    .map((section) => renderSectionToHtml(section, renderTokens))
     .filter(Boolean)
     .join('\n');
 

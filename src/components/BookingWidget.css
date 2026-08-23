@@ -37,6 +37,44 @@
   opacity: 0.72;
 }
 
+.catalog-service-picker {
+  margin-bottom: 1.25rem;
+}
+
+.catalog-service-hint {
+  margin: 0 0 0.75rem;
+  color: var(--ss-muted, #64748b);
+  font-size: 0.95rem;
+}
+
+.catalog-service-hint a {
+  color: var(--ss-accent, #2563eb);
+}
+
+.catalog-service-label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+}
+
+.catalog-service-picker select {
+  width: 100%;
+  max-width: 28rem;
+  padding: 0.75rem;
+  border: 1px solid var(--ss-hairline, #e2e8f0);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 1rem;
+  background: var(--ss-bg, #fff);
+  color: var(--ss-text, #1e293b);
+}
+
+.catalog-service-picker select:focus {
+  outline: 2px solid var(--ss-accent, #2563eb);
+  outline-offset: 2px;
+  border-color: var(--ss-accent, #2563eb);
+}
+
 .services-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
