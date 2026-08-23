@@ -1,0 +1,45 @@
+url: http://localhost:5173/login
+goal: Staff dashboard shows empty-assignments UI for users with no staff assignments
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter gallery email
+    fill: { testId: login-email, value: "gallery@sitesprintz.com", clear: true }
+
+  - action: Enter gallery password
+    fill: { testId: login-password, value: "GalleryDemo123!", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Land on dashboard
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 1200
+
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+    settle_ms: 400
+
+  - action: Open staff dashboard
+    goto: http://localhost:5173/staff/dashboard
+    settle_ms: 1500
+
+  - action: Empty assignments UI visible
+    wait_for: { text: No Staff Assignments, timeout: 15000 }
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/Loading dashboard/i.test(t)) {
+        throw new Error('Staff dashboard stuck on loading spinner');
+      }
+      if (!/No Staff Assignments/i.test(t)) {
+        throw new Error('Expected empty-assignments UI: ' + t.slice(0, 280));
+      }
+    settle_ms: 300

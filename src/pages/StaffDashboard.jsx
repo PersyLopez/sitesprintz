@@ -70,6 +70,23 @@ function StaffDashboard() {
     );
   }
 
+  if (!contextLoading && assignments.length === 0) {
+    return (
+      <div className="staff-dashboard">
+        <Header />
+        <main className="dashboard-container">
+          <div className="dashboard-card">
+            <div className="empty-state">
+              <h2>No Staff Assignments</h2>
+              <p>You haven't been assigned to any businesses yet.</p>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   if (contextLoading || loading) {
     return (
       <div className="staff-dashboard">
@@ -79,23 +96,6 @@ function StaffDashboard() {
             <div className="loading-message">
               <div className="spinner"></div>
               <p>Loading dashboard...</p>
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (assignments.length === 0) {
-    return (
-      <div className="staff-dashboard">
-        <Header />
-        <main className="dashboard-container">
-          <div className="dashboard-card">
-            <div className="empty-state">
-              <h2>No Staff Assignments</h2>
-              <p>You haven't been assigned to any businesses yet.</p>
             </div>
           </div>
         </main>
