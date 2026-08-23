@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom';
 import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+import { useLocale } from '../i18n/LocaleContext.jsx';
 import './Auth.css';
 
 function ForgotPassword() {
   const { showSuccess, showError } = useToast();
+  const { t } = useLocale();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -67,14 +69,14 @@ function ForgotPassword() {
       <main className="auth-container">
         <div className="auth-card">
           <div className="auth-header">
-            <h1>🔑 Forgot Password</h1>
-            <p>Enter your email and we'll send you a reset link</p>
+            <h1>🔑 {t('auth.forgot.h')}</h1>
+            <p>{t('auth.forgot.p')}</p>
           </div>
 
           {!sent ? (
             <form onSubmit={handleSubmit} className="auth-form">
               <div className="form-group">
-                <label htmlFor="email">Email Address</label>
+                <label htmlFor="email">{t('auth.forgot.email')}</label>
                 <input
                   type="email"
                   id="email"
@@ -93,33 +95,32 @@ function ForgotPassword() {
                 data-testid="forgot-password-submit"
                 disabled={loading}
               >
-                {loading ? 'Sending...' : 'Send Reset Link'}
+                {loading ? t('auth.forgot.sending') : t('auth.forgot.send')}
               </button>
 
               <div className="auth-links">
-                <Link to="/login">← Back to Login</Link>
+                <Link to="/login">{t('auth.forgot.back')}</Link>
               </div>
             </form>
           ) : (
             <div className="success-message" data-testid="forgot-password-success">
               <div className="success-icon">✅</div>
-              <h2>Check Your Email</h2>
+              <h2>{t('auth.forgot.check')}</h2>
               <p>
-                We've sent a password reset link to <strong>{email}</strong>.
-                Click the link in the email to reset your password.
+                {t('auth.forgot.sent', { email })}
               </p>
               <p className="text-muted">
-                Didn't receive the email? Check your spam folder or{' '}
+                {t('auth.forgot.spam')}{' '}
                 <button 
                   onClick={() => setSent(false)}
                   className="link-button"
                   data-testid="forgot-password-try-again"
                 >
-                  try again
+                  {t('auth.forgot.retry')}
                 </button>
               </p>
               <div className="auth-links">
-                <Link to="/login">← Back to Login</Link>
+                <Link to="/login">{t('auth.forgot.back')}</Link>
               </div>
             </div>
           )}

@@ -1,16 +1,18 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useLocale } from '../../i18n/LocaleContext.jsx';
 import './Footer.css';
 
 function Footer() {
   const currentYear = new Date().getFullYear();
+  const { t } = useLocale();
 
   return (
     <footer className="site-footer">
       <div className="footer-container">
         <div className="footer-content">
           <div className="footer-brand">
-            <Link to="/" className="logo" aria-label="SiteSprintz Home">
+            <Link to="/" className="logo" aria-label={t('header.home')}>
               <span className="logo-icon" aria-hidden="true">
                 <svg className="logo-mark" viewBox="0 0 24 24" width="1em" height="1em" focusable="false">
                   <path
@@ -21,41 +23,41 @@ function Footer() {
               </span>
               <span className="logo-text">SiteSprintz</span>
             </Link>
-            <p className="footer-tagline">A simple page so tomorrow’s customer can find you</p>
+            <p className="footer-tagline">{t('footer.tagline')}</p>
           </div>
           
           <div className="footer-links">
             <div className="footer-column">
-              <p className="footer-heading">Product</p>
-              <Link to="/#templates">Templates</Link>
-              <Link to="/showcase">Gallery</Link>
-              <Link to="/#pricing">Pricing</Link>
-              <Link to="/#how-it-works">How It Works</Link>
+              <p className="footer-heading">{t('footer.product')}</p>
+              <Link to="/#templates">{t('footer.templates')}</Link>
+              <Link to="/showcase">{t('footer.gallery')}</Link>
+              <Link to="/#pricing">{t('footer.pricing')}</Link>
+              <Link to="/#how-it-works">{t('footer.howItWorks')}</Link>
             </div>
             
             <div className="footer-column">
-              <p className="footer-heading">Company</p>
-              <Link to="/about">About</Link>
-              <Link to="/contact">Contact</Link>
+              <p className="footer-heading">{t('footer.company')}</p>
+              <Link to="/about">{t('footer.about')}</Link>
+              <Link to="/contact">{t('footer.contact')}</Link>
             </div>
             
             <div className="footer-column">
-              <p className="footer-heading">Account</p>
-              <Link to="/register">Create Account</Link>
-              <Link to="/login">Login</Link>
+              <p className="footer-heading">{t('footer.account')}</p>
+              <Link to="/register">{t('footer.register')}</Link>
+              <Link to="/login">{t('footer.login')}</Link>
             </div>
 
             <div className="footer-column">
-              <p className="footer-heading">Legal</p>
-              <a href="/legal/terms">Terms of Service</a>
-              <a href="/legal/privacy">Privacy Policy</a>
-              <a href="/legal/cookies">Cookie Policy</a>
+              <p className="footer-heading">{t('footer.legal')}</p>
+              <a href="/legal/terms">{t('footer.terms')}</a>
+              <a href="/legal/privacy">{t('footer.privacy')}</a>
+              <a href="/legal/cookies">{t('footer.cookies')}</a>
             </div>
           </div>
         </div>
         
         <div className="footer-bottom">
-          <p>&copy; {currentYear} SiteSprintz. All rights reserved.</p>
+          <p>{t('footer.rights', { year: currentYear })}</p>
         </div>
       </div>
     </footer>

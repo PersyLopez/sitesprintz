@@ -9,6 +9,7 @@ import { parseSiteData } from '../utils/parseSiteData.js';
 import { sanitizeSiteDataForStorage } from '../utils/siteDataSanitizer.js';
 import { applyEditableField, getSiteDataVersion } from '../../src/utils/seamlessEditFields.js';
 import { visualEditorService } from './visualEditorService.js';
+import { attachSpanishLocale } from './siteTranslationService.js';
 
 export async function findPublishedSite(subdomain) {
   if (!subdomain) return null;
@@ -34,7 +35,7 @@ function siteDirFor(subdomain) {
 }
 
 async function persistSiteData(site, siteData) {
-  const sanitized = sanitizeSiteDataForStorage(siteData);
+  const sanitized = await attachSpanishLocale(sanitizeSiteDataForStorage(siteData));
   await prisma.sites.update({
     where: { id: site.id },
     data: { site_data: sanitized },

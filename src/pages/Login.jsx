@@ -5,6 +5,7 @@ import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { getSafeRedirect } from '../utils/safeRedirect';
+import { useLocale } from '../i18n/LocaleContext.jsx';
 import './Auth.css';
 
 const QUERY_ERROR_MESSAGES = {
@@ -20,6 +21,7 @@ function Login() {
   const [searchParams] = useSearchParams();
   const { login } = useAuth();
   const { showSuccess, showError } = useToast();
+  const { t } = useLocale();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -33,22 +35,24 @@ function Login() {
     const queryError = searchParams.get('error');
     const storedError = localStorage.getItem('oauthError');
     if (queryError || storedError) {
-      const message = QUERY_ERROR_MESSAGES[queryError] || storedError || 'Sign-in failed. Please try again.';
+      const message = t(`auth.oauth.${queryError}`) !== `auth.oauth.${queryError}`
+        ? t(`auth.oauth.${queryError}`)
+        : (QUERY_ERROR_MESSAGES[queryError] || storedError || t('auth.oauth.generic'));
       setErrors((prev) => ({ ...prev, submit: message }));
       localStorage.removeItem('oauthError');
     }
-  }, [searchParams]);
+  }, [searchParams, t]);
 
   const validateEmail = (email) => {
-    if (!email) return 'Email is required';
+    if (!email) return t('auth.emailRequired');
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) return 'Please enter a valid email address';
+    if (!emailRegex.test(email)) return t('auth.emailInvalid');
     return '';
   };
 
   const validatePassword = (password) => {
-    if (!password) return 'Password is required';
-    if (password.length < 6) return 'Password must be at least 6 characters';
+    if (!password) return t('auth.passwordRequired');
+    if (password.length < 6) return t('auth.passwordShort');
     return '';
   };
 
@@ -114,7 +118,7 @@ function Login() {
 
     try {
       const data = await login(formData.email, formData.password);
-      showSuccess('Login successful!');
+      showSuccess(t('auth.loginOk'));
 
       const redirectTo = getSafeRedirect(searchParams.get('redirect'));
       if (redirectTo) {
@@ -125,10 +129,10 @@ function Login() {
         navigate('/dashboard');
       }
     } catch (error) {
-      showError(error.message || 'Login failed. Please check your credentials.');
+      showError(error.message || t('auth.loginFail'));
       setErrors({
         ...errors,
-        submit: error.message || 'Login failed. Please check your credentials.',
+        submit: error.message || t('auth.loginFail'),
       });
     } finally {
       setLoading(false);
@@ -150,8 +154,8 @@ function Login() {
       <div className="auth-container">
         <div className="auth-card">
           <div className="auth-header">
-            <h1>Welcome Back</h1>
-            <p>Sign in to your account to continue</p>
+            <h1>{t('auth.login.h')}</h1>
+            <p>{t('auth.login.p')}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="auth-form" noValidate>
@@ -164,7 +168,7 @@ function Login() {
 
             <div className="form-group">
               <label htmlFor="email" className={errors.email && touched.email ? 'required' : ''}>
-                Email
+                {t('auth.email')}
               </label>
               <input
                 type="email"
@@ -191,7 +195,7 @@ function Login() {
 
             <div className="form-group">
               <label htmlFor="password" className={errors.password && touched.password ? 'required' : ''}>
-                Password
+                {t('auth.password')}
               </label>
               <input
                 type="password"
@@ -218,7 +222,7 @@ function Login() {
 
             <div className="form-footer">
               <Link to="/forgot-password" className="link-text">
-                Forgot password?
+                {t('auth.forgot')}
               </Link>
             </div>
 
@@ -231,16 +235,16 @@ function Login() {
               {loading ? (
                 <>
                   <span className="loading-spinner-sm"></span>
-                  Signing in...
+                  {t('auth.signingIn')}
                 </>
               ) : (
-                'Sign In'
+                t('auth.signIn')
               )}
             </button>
           </form>
 
           <div className="divider">
-            <span>or</span>
+            <span>{t('auth.or')}</span>
           </div>
 
           <button
@@ -254,14 +258,14 @@ function Login() {
               <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957C.347 6.175 0 7.55 0 9.002c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05" />
               <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.426 0 9.003 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335" />
             </svg>
-            Continue with Google
+            {t('auth.google')}
           </button>
 
           <div className="auth-switch">
             <p>
-              Don&apos;t have an account?{' '}
+              {t('auth.noAccount')}{' '}
               <Link to="/register" className="link-primary">
-                Sign up
+                {t('auth.signUp')}
               </Link>
             </p>
           </div>

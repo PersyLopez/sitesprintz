@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useLocale } from '../../i18n/LocaleContext.jsx';
+import LanguageSwitcher from '../i18n/LanguageSwitcher';
 import './Header.css';
 
 function Header() {
   const { isAuthenticated, logout, user } = useAuth();
+  const { t } = useLocale();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const menuRef = useRef(null);
@@ -64,7 +67,7 @@ function Header() {
         <Link 
           to="/" 
           className="logo"
-          aria-label="SiteSprintz Home"
+          aria-label={t('header.home')}
           data-testid="header-logo"
         >
           <span className="logo-icon" aria-hidden="true">
@@ -88,7 +91,7 @@ function Header() {
                 aria-current={isDashboard ? 'page' : undefined}
                 data-testid="nav-dashboard"
               >
-                Dashboard
+                {t('nav.dashboard')}
               </Link>
               <Link 
                 to="/setup" 
@@ -96,7 +99,7 @@ function Header() {
                 aria-current={location.pathname === '/setup' ? 'page' : undefined}
                 data-testid="nav-create-site"
               >
-                Create Site
+                {t('nav.createSite')}
               </Link>
               <Link
                 to="/showcase"
@@ -104,20 +107,20 @@ function Header() {
                 aria-current={location.pathname.startsWith('/showcase') ? 'page' : undefined}
                 data-testid="nav-gallery"
               >
-                Gallery
+                {t('nav.gallery')}
               </Link>
               {user?.name && (
-                <span className="user-name" aria-label={`Logged in as ${user.name}`} data-testid="user-name">
+                <span className="user-name" aria-label={t('header.loggedInAs', { name: user.name })} data-testid="user-name">
                   {user.name}
                 </span>
               )}
               <button 
                 onClick={handleLogout} 
                 className="btn btn-secondary"
-                aria-label="Logout"
+                aria-label={t('nav.logout')}
                 data-testid="nav-logout-button"
               >
-                Logout
+                {t('nav.logout')}
               </button>
             </>
           ) : (
@@ -127,14 +130,14 @@ function Header() {
                 className="nav-link"
                 data-testid="nav-templates"
               >
-                Templates
+                {t('nav.templates')}
               </Link>
               <Link
                 to="/#how-it-works"
                 className="nav-link"
                 data-testid="nav-how-it-works"
               >
-                How It Works
+                {t('nav.howItWorks')}
               </Link>
               <Link
                 to="/showcase"
@@ -142,14 +145,14 @@ function Header() {
                 aria-current={location.pathname === '/showcase' ? 'page' : undefined}
                 data-testid="nav-gallery"
               >
-                Gallery
+                {t('nav.gallery')}
               </Link>
               <Link
                 to="/#pricing"
                 className="nav-link"
                 data-testid="nav-pricing"
               >
-                Pricing
+                {t('nav.pricing')}
               </Link>
               <Link 
                 to="/login" 
@@ -157,25 +160,26 @@ function Header() {
                 aria-current={location.pathname === '/login' ? 'page' : undefined}
                 data-testid="nav-login"
               >
-                Login
+                {t('nav.login')}
               </Link>
               <Link 
                 to="/register" 
                 className="btn btn-primary"
-                aria-label="Get Started - Create Account"
+                aria-label={t('nav.getStarted')}
                 data-testid="nav-get-started"
               >
-                Get Started
+                {t('nav.getStarted')}
               </Link>
             </>
           )}
         </nav>
+        <LanguageSwitcher className="header-language-switcher header-language-switcher--desktop" />
 
         {/* Mobile Menu Button */}
         <button
           className={`mobile-menu-toggle ${mobileMenuOpen ? 'open' : ''}`}
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle mobile menu"
+          aria-label={t('nav.menu')}
           aria-expanded={mobileMenuOpen}
           aria-controls="mobile-menu"
           onKeyDown={handleKeyDown}
@@ -206,6 +210,7 @@ function Header() {
                 )}
               </div>
             )}
+            <LanguageSwitcher className="header-language-switcher header-language-switcher--mobile" />
             <Link 
               to="/dashboard" 
               className={`mobile-nav-link ${isDashboard ? 'active' : ''}`}
@@ -213,7 +218,7 @@ function Header() {
               aria-current={isDashboard ? 'page' : undefined}
               data-testid="mobile-nav-dashboard"
             >
-              Dashboard
+              {t('nav.dashboard')}
             </Link>
             <Link 
               to="/setup" 
@@ -222,7 +227,7 @@ function Header() {
               aria-current={location.pathname === '/setup' ? 'page' : undefined}
               data-testid="mobile-nav-create-site"
             >
-              Create Site
+              {t('nav.createSite')}
             </Link>
             <Link
               to="/showcase"
@@ -231,26 +236,27 @@ function Header() {
               aria-current={location.pathname.startsWith('/showcase') ? 'page' : undefined}
               data-testid="mobile-nav-gallery"
             >
-              Gallery
+              {t('nav.gallery')}
             </Link>
             <button 
               onClick={handleLogout} 
               className="mobile-nav-link mobile-logout"
-              aria-label="Logout"
+              aria-label={t('nav.logout')}
               data-testid="mobile-nav-logout"
             >
-              Logout
+              {t('nav.logout')}
             </button>
           </>
         ) : (
           <>
+            <LanguageSwitcher className="header-language-switcher header-language-switcher--mobile" />
             <Link
               to="/#templates"
               className="mobile-nav-link"
               onClick={() => setMobileMenuOpen(false)}
               data-testid="mobile-nav-templates"
             >
-              Templates
+              {t('nav.templates')}
             </Link>
             <Link
               to="/#how-it-works"
@@ -258,7 +264,7 @@ function Header() {
               onClick={() => setMobileMenuOpen(false)}
               data-testid="mobile-nav-how-it-works"
             >
-              How It Works
+              {t('nav.howItWorks')}
             </Link>
             <Link
               to="/showcase"
@@ -266,7 +272,7 @@ function Header() {
               onClick={() => setMobileMenuOpen(false)}
               data-testid="mobile-nav-gallery"
             >
-              Gallery
+              {t('nav.gallery')}
             </Link>
             <Link
               to="/#pricing"
@@ -274,7 +280,7 @@ function Header() {
               onClick={() => setMobileMenuOpen(false)}
               data-testid="mobile-nav-pricing"
             >
-              Pricing
+              {t('nav.pricing')}
             </Link>
             <Link 
               to="/login" 
@@ -283,7 +289,7 @@ function Header() {
               aria-current={location.pathname === '/login' ? 'page' : undefined}
               data-testid="mobile-nav-login"
             >
-              Login
+              {t('nav.login')}
             </Link>
             <Link 
               to="/register" 
@@ -291,7 +297,7 @@ function Header() {
               onClick={() => setMobileMenuOpen(false)}
               data-testid="mobile-nav-register"
             >
-              Get Started
+              {t('nav.getStarted')}
             </Link>
           </>
         )}

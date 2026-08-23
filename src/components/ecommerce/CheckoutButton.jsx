@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useCart } from '../../hooks/useCart';
+import { useLocale } from '../../i18n/LocaleContext.jsx';
+import { tLive } from '../../i18n/liveChrome/index.js';
 import { api } from '../../services/api';
 import PayOnSiteCheckout from './PayOnSiteCheckout';
 import './CheckoutButton.css';
@@ -7,12 +9,15 @@ import './CheckoutButton.css';
 function CheckoutButton({
   stripePublishableKey,
   siteId,
-  buttonText = 'Proceed to Checkout',
+  buttonText,
   className = '',
   paymentsReady = false,
   payOnSite = false,
   onConfirmed
 }) {
+  const { locale } = useLocale();
+  const t = (key, vars) => tLive(locale, key, vars);
+  const checkoutLabel = buttonText || t('proceedToCheckout');
   const { cartItems, getCartTotal } = useCart();
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
@@ -21,8 +26,8 @@ function CheckoutButton({
     return (
       <div className="checkout-button-container" data-testid="checkout-upgrade-container">
         <div className="checkout-upgrade-notice" data-testid="checkout-upgrade-notice">
-          <p>Online card checkout is not connected for this site</p>
-          <p className="notice-subtext">The owner can take pay-on-site orders, or connect Stripe for card payments.</p>
+          <p>{t('checkoutNotConnected')}</p>
+          <p className="notice-subtext">{t('checkoutNotConnectedSub')}</p>
         </div>
       </div>
     );
@@ -30,7 +35,7 @@ function CheckoutButton({
 
   const handleCheckout = async () => {
     if (cartItems.length === 0) {
-      setError('Your cart is empty');
+      setError(t('checkoutEmpty'));
       return;
     }
 
@@ -58,7 +63,7 @@ function CheckoutButton({
       }
       window.location.href = redirectUrl;
     } catch (err) {
-      setError(err.message || 'Checkout failed. Please try again.');
+      setError(err.message || t('checkoutFailed'));
       setProcessing(false);
     }
   };
@@ -78,11 +83,11 @@ function CheckoutButton({
           {processing ? (
             <>
               <span className="checkout-spinner" data-testid="checkout-spinner"></span>
-              Redirecting to payment processor...
+              {t('checkoutRedirecting')}
             </>
           ) : (
             <>
-              {buttonText} • ${total.toFixed(2)}
+              {checkoutLabel} • ${total.toFixed(2)}
             </>
           )}
         </button>

@@ -19,6 +19,7 @@ import { ensurePublishedBooking } from '../services/booking/ensurePublishedBooki
 import { normalizeTier } from '../../src/config/tiers.js';
 import { resolveUserPlan } from '../utils/resolveUserPlan.js';
 import { inheritPaymentAccountsForSite } from '../services/payments/processorConnectHelpers.js';
+import { attachSpanishLocale } from '../services/siteTranslationService.js';
 import { validateFeaturesForSave, resolvePaymentMethods } from '../../src/config/featureFlags.js';
 import {
   sendSuccess,
@@ -909,6 +910,10 @@ router.post('/:draftId/publish', asyncHandler(async (req, res) => {
       templateId: templateValidation.value
     });
     sanitizedSiteData = sanitizeSiteDataForStorage(siteData);
+    sanitizedSiteData = await attachSpanishLocale(sanitizedSiteData);
+    if (sanitizedSiteData?.locales) {
+      siteData = { ...siteData, locales: sanitizedSiteData.locales };
+    }
 
     try {
       await writeIsolatedSiteFiles(subdomain, siteData);

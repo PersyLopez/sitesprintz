@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useCart } from '../../hooks/useCart';
+import { useLocale } from '../../i18n/LocaleContext.jsx';
+import { tLive } from '../../i18n/liveChrome/index.js';
 import CheckoutButton from './CheckoutButton';
 import { PayOnSiteConfirmation } from './PayOnSiteCheckout';
 import './ShoppingCart.css';
 
 function ShoppingCart({ stripePublishableKey, siteId, paymentsReady = false, payOnSite = false }) {
+  const { locale } = useLocale();
+  const t = (key, vars) => tLive(locale, key, vars);
   const {
     cartItems,
     isCartOpen,
@@ -46,7 +50,7 @@ function ShoppingCart({ stripePublishableKey, siteId, paymentsReady = false, pay
         type="button"
         className={`cart-toggle-btn ${itemCount > 0 ? 'has-items' : ''}`}
         onClick={() => setIsCartOpen(!isCartOpen)}
-        aria-label="Shopping Cart"
+        aria-label={t('cartToggle')}
         aria-expanded={isCartOpen}
         aria-controls="ss-cart-panel"
         data-testid="cart-toggle-button"
@@ -73,15 +77,15 @@ function ShoppingCart({ stripePublishableKey, siteId, paymentsReady = false, pay
           role="dialog"
           aria-modal={isCartOpen}
           aria-hidden={!isCartOpen}
-          aria-label="Shopping cart"
+          aria-label={t('cartLabel')}
         >
           <div className="cart-header">
-            <h3>Your cart</h3>
+            <h3>{t('yourCart')}</h3>
             <button
               type="button"
               className="cart-close-btn"
               onClick={() => setIsCartOpen(false)}
-              aria-label="Close Cart"
+              aria-label={t('closeCart')}
               data-testid="cart-close-button"
             >
               ✕
@@ -101,7 +105,7 @@ function ShoppingCart({ stripePublishableKey, siteId, paymentsReady = false, pay
                   className="cart-continue-btn"
                   data-testid="continue-shopping-button"
                 >
-                  Continue shopping
+                  {t('continueShopping')}
                 </button>
               </div>
             ) : (
@@ -110,14 +114,14 @@ function ShoppingCart({ stripePublishableKey, siteId, paymentsReady = false, pay
                   {cartItems.length === 0 ? (
                     <div className="cart-empty" data-testid="cart-empty-state">
                       <div className="empty-icon">🛍️</div>
-                      <p>Your cart is empty</p>
+                      <p>{t('cartEmpty')}</p>
                       <button
                         type="button"
                         onClick={() => setIsCartOpen(false)}
                         className="cart-continue-btn"
                         data-testid="continue-shopping-empty"
                       >
-                        Continue Shopping
+                        {t('cartEmptyBtn')}
                       </button>
                     </div>
                   ) : (
@@ -152,7 +156,7 @@ function ShoppingCart({ stripePublishableKey, siteId, paymentsReady = false, pay
                                 type="button"
                                 onClick={() => updateQuantity(item.id, item.quantity - 1, item.options)}
                                 className="qty-btn"
-                                aria-label="Decrease quantity"
+                                aria-label={t('cartDecrease')}
                                 data-testid="cart-item-decrease-qty"
                               >
                                 -
@@ -162,7 +166,7 @@ function ShoppingCart({ stripePublishableKey, siteId, paymentsReady = false, pay
                                 type="button"
                                 onClick={() => updateQuantity(item.id, item.quantity + 1, item.options)}
                                 className="qty-btn"
-                                aria-label="Increase quantity"
+                                aria-label={t('cartIncrease')}
                                 data-testid="cart-item-increase-qty"
                               >
                                 +
@@ -174,7 +178,7 @@ function ShoppingCart({ stripePublishableKey, siteId, paymentsReady = false, pay
                             type="button"
                             onClick={() => removeFromCart(item.id, item.options)}
                             className="cart-item-remove"
-                            aria-label="Remove item"
+                            aria-label={t('cartRemove')}
                             data-testid="cart-item-remove"
                           >
                             🗑️
@@ -188,7 +192,7 @@ function ShoppingCart({ stripePublishableKey, siteId, paymentsReady = false, pay
                         className="clear-cart-btn"
                         data-testid="clear-cart-button"
                       >
-                        Clear Cart
+                        {t('clearCart')}
                       </button>
                     </>
                   )}
@@ -197,7 +201,7 @@ function ShoppingCart({ stripePublishableKey, siteId, paymentsReady = false, pay
                 {cartItems.length > 0 && (
                   <div className="cart-footer" data-testid="cart-footer">
                     <div className="cart-total" data-testid="cart-total">
-                      <span>Subtotal:</span>
+                      <span>{t('subtotal')}</span>
                       <strong data-testid="cart-total-amount">{formatPrice(total)}</strong>
                     </div>
 
@@ -207,13 +211,13 @@ function ShoppingCart({ stripePublishableKey, siteId, paymentsReady = false, pay
                       className="cart-continue-btn"
                       data-testid="continue-shopping-button"
                     >
-                      Continue shopping
+                      {t('continueShopping')}
                     </button>
 
                     <CheckoutButton
                       stripePublishableKey={stripePublishableKey}
                       siteId={siteId}
-                      buttonText="Proceed to Checkout"
+                      buttonText={t('proceedToCheckout')}
                       paymentsReady={paymentsReady}
                       payOnSite={payOnSite}
                       onConfirmed={setPlacedOrder}

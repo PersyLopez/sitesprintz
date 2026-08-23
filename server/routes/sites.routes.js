@@ -22,6 +22,7 @@ import {
   asyncHandler
 } from '../utils/apiResponse.js';
 import { sanitizeSiteDataForStorage } from '../utils/siteDataSanitizer.js';
+import { attachSpanishLocale } from '../services/siteTranslationService.js';
 import { applyPayOnSiteSetting, mergeSiteDataSettings } from '../utils/payOnSite.js';
 import { resolvePlanLimits } from '../utils/resolveUserPlan.js';
 import AnalyticsService from '../services/analyticsService.js';
@@ -341,8 +342,8 @@ router.put('/:siteId', requireAuth, asyncHandler(async (req, res) => {
   const existingData = parseSiteData(ownership.site);
   const mergedData = mergeSiteDataSettings(existingData, newData);
 
-  // Sanitize and save
-  const sanitizedData = sanitizeSiteDataForStorage(mergedData);
+  // Sanitize, draft Spanish overlay, and save
+  const sanitizedData = await attachSpanishLocale(sanitizeSiteDataForStorage(mergedData));
 
   await prisma.sites.update({
     where: { id: siteId },
@@ -658,9 +659,12 @@ router.post('/guest-publish', asyncHandler(async (req, res) => {
     subdomain,
     templateId: templateValidation.value
   });
-  const sanitizedSiteData = sanitizeSiteDataForStorage(isolatedData);
+  const sanitizedSiteData = await attachSpanishLocale(sanitizeSiteDataForStorage(isolatedData));
+  const siteFilesData = sanitizedSiteData?.locales
+    ? { ...isolatedData, locales: sanitizedSiteData.locales }
+    : isolatedData;
 
-  await writeIsolatedSiteFiles(subdomain, isolatedData);
+  await writeIsolatedSiteFiles(subdomain, siteFilesData);
 
   // Create site record
   let site;

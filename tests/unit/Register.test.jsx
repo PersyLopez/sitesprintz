@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import Register from '../../src/pages/Register';
@@ -207,11 +207,13 @@ describe('Register Component', () => {
     expect(screen.getByTestId('register-accept-terms')).toBeInTheDocument();
     expect(screen.getByTestId('register-accept-terms')).not.toBeChecked();
 
-    const disclosureLink = screen.getByRole('link', { name: /third-party services/i });
+    const consent = document.querySelector('.form-consent');
+    expect(consent).toBeTruthy();
+    const disclosureLink = within(consent).getByRole('link', { name: /third-party services/i });
     expect(disclosureLink).toHaveAttribute('href', '/legal/third-party-services');
 
-    expect(screen.getByRole('link', { name: /terms of service/i })).toHaveAttribute('href', '/legal/terms');
-    expect(screen.getByRole('link', { name: /privacy policy/i })).toHaveAttribute('href', '/legal/privacy');
+    expect(within(consent).getByRole('link', { name: /terms of service/i })).toHaveAttribute('href', '/legal/terms');
+    expect(within(consent).getByRole('link', { name: /privacy policy/i })).toHaveAttribute('href', '/legal/privacy');
   });
 
   it('should block submission and warn when terms are not accepted', async () => {

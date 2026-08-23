@@ -1,32 +1,38 @@
 import React, { useRef, useState } from 'react';
 import { useCart } from '../../hooks/useCart';
+import { useLocale } from '../../i18n/LocaleContext.jsx';
+import { tLive } from '../../i18n/liveChrome/index.js';
 import { api } from '../../services/api';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function PayOnSiteConfirmation({ confirmation }) {
+  const { locale } = useLocale();
+  const t = (key, vars) => tLive(locale, key, vars);
   if (!confirmation) return null;
   const displayTotal = Number(confirmation.total);
   const isDemo = confirmation.demo === true;
   return (
     <div className="pay-on-site-success" data-testid="pay-on-site-confirmation">
-      <p><strong>{isDemo ? 'Demo order placed' : 'Order placed'}</strong></p>
+      <p><strong>{isDemo ? t('demoOrderPlaced') : t('orderPlaced')}</strong></p>
       <p>
         {isDemo
-          ? 'Example site — no card was charged. This order was not saved to a real shop.'
-          : 'Pay when you pick up or visit. No card was charged.'}
+          ? t('demoOrderNote')
+          : t('payOnPickup')}
       </p>
       {confirmation.orderId && (
-        <p className="pay-on-site-order-id">Order {String(confirmation.orderId).slice(0, 8)}</p>
+        <p className="pay-on-site-order-id">{t('orderId', { id: String(confirmation.orderId).slice(0, 8) })}</p>
       )}
       {Number.isFinite(displayTotal) && (
-        <p>Amount due: ${displayTotal.toFixed(2)}</p>
+        <p>{t('amountDue', { amount: displayTotal.toFixed(2) })}</p>
       )}
     </div>
   );
 }
 
 function PayOnSiteCheckout({ siteId, showAsAlternative = false, onConfirmed }) {
+  const { locale } = useLocale();
+  const t = (key, vars) => tLive(locale, key, vars);
   const { cartItems, getCartTotal, clearCart } = useCart();
   const submittingRef = useRef(false);
   const [customerName, setCustomerName] = useState('');
@@ -80,7 +86,7 @@ function PayOnSiteCheckout({ siteId, showAsAlternative = false, onConfirmed }) {
       }
     } catch (err) {
       submittingRef.current = false;
-      setError(err.message || 'Could not place this order. Please try again.');
+      setError(err.message || t('orderError'));
       setProcessing(false);
     }
   };
@@ -96,15 +102,15 @@ function PayOnSiteCheckout({ siteId, showAsAlternative = false, onConfirmed }) {
       data-testid="pay-on-site-checkout"
     >
       {showAsAlternative ? (
-        <p className="pay-on-site-heading">Or pay on site (cash or in person)</p>
+        <p className="pay-on-site-heading">{t('orPayOnSite')}</p>
       ) : (
-        <p className="pay-on-site-heading">Place order — pay on site</p>
+        <p className="pay-on-site-heading">{t('placeOrder')}</p>
       )}
       <p className="pay-on-site-note">
-        You will pay in cash or in person when you pick up or visit. No card is charged online.
+        {t('payOnSiteNote')}
       </p>
 
-      <label htmlFor="pay-on-site-name">Name</label>
+      <label htmlFor="pay-on-site-name">{t('name')}</label>
       <input
         id="pay-on-site-name"
         type="text"
@@ -116,7 +122,7 @@ function PayOnSiteCheckout({ siteId, showAsAlternative = false, onConfirmed }) {
         data-testid="pay-on-site-name"
       />
 
-      <label htmlFor="pay-on-site-email">Email</label>
+      <label htmlFor="pay-on-site-email">{t('email')}</label>
       <input
         id="pay-on-site-email"
         type="email"
@@ -128,7 +134,7 @@ function PayOnSiteCheckout({ siteId, showAsAlternative = false, onConfirmed }) {
         data-testid="pay-on-site-email"
       />
 
-      <label htmlFor="pay-on-site-phone">Phone (optional)</label>
+      <label htmlFor="pay-on-site-phone">{t('phoneOptional')}</label>
       <input
         id="pay-on-site-phone"
         type="tel"
@@ -139,7 +145,7 @@ function PayOnSiteCheckout({ siteId, showAsAlternative = false, onConfirmed }) {
         data-testid="pay-on-site-phone"
       />
 
-      <label htmlFor="pay-on-site-notes">Notes (optional)</label>
+      <label htmlFor="pay-on-site-notes">{t('notesOptional')}</label>
       <textarea
         id="pay-on-site-notes"
         name="notes"
@@ -155,7 +161,7 @@ function PayOnSiteCheckout({ siteId, showAsAlternative = false, onConfirmed }) {
         disabled={isDisabled}
         data-testid="pay-on-site-place-order"
       >
-        {processing ? 'Placing order...' : `Place order • $${Number(total).toFixed(2)}`}
+        {processing ? t('placingOrder') : t('placeOrderWithTotal', { amount: Number(total).toFixed(2) })}
       </button>
 
       {error && (

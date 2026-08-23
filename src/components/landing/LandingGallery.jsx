@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useLocale } from '../../i18n/LocaleContext.jsx';
 import './LandingGallery.css';
 
 /* ──────────────────────────────────────────────
@@ -216,7 +217,7 @@ function SectionPreview({ sections, accent }) {
 /* ──────────────────────────────────────────────
    Template card
    ────────────────────────────────────────────── */
-function TemplateCard({ template, ctaTo, onNavigate, isSelected, style }) {
+function TemplateCard({ template, ctaTo, onNavigate, isSelected, style, t }) {
   const [hovered, setHovered] = useState(false);
 
   return (
@@ -239,8 +240,8 @@ function TemplateCard({ template, ctaTo, onNavigate, isSelected, style }) {
 
       {/* Card info */}
       <div className="gl-card-info">
-        <h3 className="gl-card-title">{template.title}</h3>
-        <p className="gl-card-desc">{template.description}</p>
+        <h3 className="gl-card-title">{t(`gallery.tpl.${template.id}.title`)}</h3>
+        <p className="gl-card-desc">{t(`gallery.tpl.${template.id}.desc`)}</p>
         <div className="gl-card-tags">
           {template.tags.map((tag) => (
             <span key={tag} className="gl-tag">{tag}</span>
@@ -250,7 +251,7 @@ function TemplateCard({ template, ctaTo, onNavigate, isSelected, style }) {
 
       {/* Hover CTA */}
       <div className="gl-card-cta">
-        <span>Use this template →</span>
+        <span>{t('gallery.useTemplate')}</span>
       </div>
     </Link>
   );
@@ -263,6 +264,7 @@ export default function LandingGallery({ selectedTemplateId, onSelectTemplate })
   const [activeCategory, setActiveCategory] = useState('all');
   const [liveSites, setLiveSites] = useState([]);
   const { isAuthenticated } = useAuth();
+  const { t } = useLocale();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -307,21 +309,20 @@ export default function LandingGallery({ selectedTemplateId, onSelectTemplate })
     site.site_data?.hero?.title ||
     site.site_data?.brand?.name ||
     site.subdomain ||
-    'Live site';
+    t('gallery.liveTitle');
 
   return (
-    <section id="templates" className="gl-section" aria-label="Template gallery" data-testid="landing-gallery">
+    <section id="templates" className="gl-section" aria-label={t('gallery.sectionAria')} data-testid="landing-gallery">
       <div className="gl-inner">
         <div className="gl-header" data-reveal>
-          <p className="section-kicker">Start from a chapter that fits</p>
-          <h2>A layout that already feels like your business</h2>
+          <p className="section-kicker">{t('gallery.kicker')}</p>
+          <h2>{t('gallery.heading')}</h2>
           <p>
-            Fruit stand, salon, bakery, or services — pick a page shaped like your
-            world, then make it yours.
+            {t('gallery.lead')}
           </p>
         </div>
 
-        <div className="gl-tabs" role="tablist" aria-label="Filter templates" data-reveal>
+        <div className="gl-tabs" role="tablist" aria-label={t('gallery.filterAria')} data-reveal>
           {CATEGORIES.map((cat) => (
             <button
               key={cat.id}
@@ -331,7 +332,7 @@ export default function LandingGallery({ selectedTemplateId, onSelectTemplate })
               onClick={() => setActiveCategory(cat.id)}
               data-testid={`gallery-tab-${cat.id}`}
             >
-              {cat.label}
+              {t(`gallery.tab.${cat.id}`)}
             </button>
           ))}
         </div>
@@ -344,6 +345,7 @@ export default function LandingGallery({ selectedTemplateId, onSelectTemplate })
               ctaTo={ctaTo(template.id)}
               onNavigate={(e) => handleNavigate(e, template.id)}
               isSelected={selectedTemplateId === template.id}
+              t={t}
               style={{ animationDelay: `${i * 60}ms` }}
             />
           ))}
@@ -352,9 +354,9 @@ export default function LandingGallery({ selectedTemplateId, onSelectTemplate })
         {liveSites.length > 0 && (
           <div className="gl-live" data-reveal data-testid="landing-live-showcase">
             <div className="gl-live-header">
-              <p className="section-kicker">See it live</p>
-              <h3>How a SiteSprintz page can look</h3>
-              <p>Open an example — industry, theme, and layout — then start from a matching template.</p>
+              <p className="section-kicker">{t('gallery.live.kicker')}</p>
+              <h3>{t('gallery.live.heading')}</h3>
+              <p>{t('gallery.live.lead')}</p>
             </div>
             <div className="gl-live-grid">
               {liveSites.map((site) => (

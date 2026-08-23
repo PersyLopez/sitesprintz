@@ -85,6 +85,20 @@
     align-items: center;
     gap: var(--spacing-lg);
   }
+
+  .header-language-switcher--desktop {
+    display: inline-flex;
+    margin-left: 12px;
+  }
+}
+
+.header-language-switcher--desktop {
+  display: none;
+}
+
+.header-language-switcher--mobile {
+  margin: 8px 16px 16px;
+  align-self: flex-start;
 }
 
 .nav-link {

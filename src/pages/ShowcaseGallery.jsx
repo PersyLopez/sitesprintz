@@ -7,6 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { OptimizedImage } from '../components/common/OptimizedImage';
 import PublicPageLayout from '../components/layout/PublicPageLayout';
 import { useAuth } from '../hooks/useAuth';
+import { useLocale } from '../i18n/LocaleContext.jsx';
 import './ShowcaseGallery.css';
 
 const CATEGORY_META = {
@@ -62,6 +63,7 @@ function categoryMeta(templateOrId) {
 
 function ShowcaseGallery() {
   const { isAuthenticated } = useAuth();
+  const { t } = useLocale();
   const navigate = useNavigate();
   const [sites, setSites] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -76,7 +78,7 @@ function ShowcaseGallery() {
   const sitesPerPage = 12;
   const totalPages = Math.max(1, Math.ceil(totalSites / sitesPerPage) || 1);
   const ctaTo = isAuthenticated ? '/setup' : '/register';
-  const ctaLabel = isAuthenticated ? 'Create your page' : 'Create your site free';
+  const ctaLabel = isAuthenticated ? t('showcase.cta.auth') : t('showcase.cta.guest');
 
   const handleCta = useCallback((e) => {
     if (isAuthenticated) {
@@ -86,7 +88,7 @@ function ShowcaseGallery() {
   }, [isAuthenticated, navigate]);
 
   useEffect(() => {
-    document.title = 'Gallery — See how your SiteSprintz site could look';
+    document.title = t('showcase.title');
 
     let metaDescription = document.querySelector('meta[name="description"]');
     if (!metaDescription) {
@@ -96,9 +98,9 @@ function ShowcaseGallery() {
     }
     metaDescription.setAttribute(
       'content',
-      'Browse example SiteSprintz sites by industry and theme. Open a live preview to see how your page could look — then build yours.'
+      t('showcase.meta')
     );
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -158,7 +160,7 @@ function ShowcaseGallery() {
       setTotalSites(data.total || 0);
     } catch (err) {
       if (err?.name === 'AbortError') return;
-      setError('Failed to load showcase. Please try again later.');
+      setError(t('showcase.error'));
       setSites([]);
     } finally {
       if (!controller.signal.aborted) {
@@ -196,7 +198,7 @@ function ShowcaseGallery() {
     site.name ||
     site.site_data?.hero?.title ||
     site.site_data?.brand?.name ||
-    'Untitled Site';
+    t('showcase.untitled');
 
   const getSiteCategory = (site) => {
     if (!site.template || typeof site.template !== 'string') return 'Unknown';
@@ -216,27 +218,26 @@ function ShowcaseGallery() {
           <div className="showcase-hero-inner">
             <span className="showcase-hero-badge">
               <span className="showcase-hero-badge-dot" aria-hidden="true" />
-              Example sites
+              {t('showcase.badge')}
             </span>
-            <h1>See how your site could look</h1>
+            <h1>{t('showcase.heading')}</h1>
             <p className="showcase-hero-lead">
-              Browse live examples by industry and theme. Open one, click around,
-              and picture your name on the door — then start your own draft.
+              {t('showcase.lead')}
             </p>
             <div className="showcase-hero-stats">
               {totalSites > 0 && (
                 <div className="showcase-stat" data-testid="showcase-count">
                   <strong>{totalSites}</strong>
-                  <span>example {totalSites === 1 ? 'site' : 'sites'}</span>
+                  <span>{totalSites === 1 ? t('showcase.sitesOne') : t('showcase.sitesMany')}</span>
                 </div>
               )}
               <div className="showcase-stat">
                 <strong>{categories.length || '12+'}</strong>
-                <span>industries</span>
+                <span>{t('showcase.industries')}</span>
               </div>
               <div className="showcase-stat">
-                <strong>6 themes</strong>
-                <span>light &amp; dark</span>
+                <strong>{t('showcase.themes')}</strong>
+                <span>{t('showcase.themesMeta')}</span>
               </div>
             </div>
             <div className="showcase-hero-actions">
@@ -244,7 +245,7 @@ function ShowcaseGallery() {
                 {ctaLabel}
               </Link>
               <a href="#showcase-browse" className="showcase-btn-ghost">
-                Browse examples
+                {t('showcase.browse')}
               </a>
             </div>
           </div>
@@ -254,7 +255,7 @@ function ShowcaseGallery() {
         <section
           id="showcase-browse"
           className="showcase-filters"
-          aria-label="Search and filter showcase"
+          aria-label={t('showcase.filterAria')}
         >
           <div className="search-box">
             <span className="search-icon" aria-hidden="true">
@@ -265,15 +266,15 @@ function ShowcaseGallery() {
             </span>
             <input
               type="search"
-              placeholder="Search by name or industry…"
+              placeholder={t('showcase.search')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              aria-label="Search sites"
+              aria-label={t('showcase.searchAria')}
               data-testid="showcase-search"
             />
           </div>
 
-          <div className="category-filters" role="group" aria-label="Filter by category">
+          <div className="category-filters" role="group" aria-label={t('showcase.categoryAria')}>
             <button
               type="button"
               className={`category-btn ${!selectedCategory ? 'active' : ''}`}
@@ -281,7 +282,7 @@ function ShowcaseGallery() {
               data-testid="category-btn-all"
             >
               <span className="category-btn-emoji" aria-hidden="true">✦</span>
-              All
+              {t('showcase.all')}
               {totalSites > 0 && <span className="category-btn-count">{totalSites}</span>}
             </button>
             {categories.map((cat) => {
@@ -314,19 +315,19 @@ function ShowcaseGallery() {
         {!loading && !error && totalSites > 0 && (
           <div className="showcase-toolbar">
             <p className="showcase-results-label">
-              Showing <strong>{rangeStart}–{rangeEnd}</strong> of <strong>{totalSites}</strong>
+              {t('showcase.showing', { start: rangeStart, end: rangeEnd, total: totalSites })}
               {selectedCategory && (
-                <> in <strong>{formatLabel(selectedCategory)}</strong></>
+                <> {t('showcase.in', { category: formatLabel(selectedCategory) })}</>
               )}
               {searchQuery.trim() && (
-                <> matching “{searchQuery.trim()}”</>
+                <> {t('showcase.matching', { query: searchQuery.trim() })}</>
               )}
             </p>
           </div>
         )}
 
         {loading && (
-          <div className="showcase-skeleton-grid" role="status" aria-live="polite" aria-label="Loading showcase">
+          <div className="showcase-skeleton-grid" role="status" aria-live="polite" aria-label={t('showcase.loading')}>
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="showcase-skeleton-card">
                 <div className="showcase-skeleton-image" />
@@ -350,14 +351,14 @@ function ShowcaseGallery() {
         {!loading && !error && sites.length === 0 && (
           <div className="empty-state">
             <div className="empty-icon" aria-hidden="true">🔍</div>
-            <h2>No examples found</h2>
+            <h2>{t('showcase.empty.h')}</h2>
             <p>
               {searchQuery || selectedCategory
-                ? 'Try a different search or category filter.'
-                : 'Example sites will appear here soon.'}
+                ? t('showcase.empty.filter')
+                : t('showcase.empty.soon')}
             </p>
             <Link to={ctaTo} className="empty-state-cta" data-testid="showcase-empty-cta" onClick={handleCta}>
-              Start your site →
+              {t('showcase.empty.cta')}
             </Link>
           </div>
         )}
@@ -445,7 +446,7 @@ function ShowcaseGallery() {
                         className="visit-site-btn"
                         data-testid={`visit-site-${site.subdomain}`}
                       >
-                        Open live preview
+                        {t('showcase.open')}
                         <span aria-hidden="true">↗</span>
                       </Link>
                     </div>
@@ -457,27 +458,27 @@ function ShowcaseGallery() {
             {totalPages > 1 && (
               <nav
                 className="pagination"
-                aria-label="Gallery pagination"
+                aria-label={t('showcase.pagination')}
                 data-testid="showcase-pagination"
               >
                 <button
                   type="button"
                   onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
                   disabled={currentPage === 1}
-                  aria-label="Previous page"
+                  aria-label={t('showcase.prevAria')}
                 >
-                  ← Previous
+                  {t('showcase.prev')}
                 </button>
                 <span className="page-info">
-                  Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
+                  {t('showcase.page', { current: currentPage, total: totalPages })}
                 </span>
                 <button
                   type="button"
                   onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
                   disabled={currentPage >= totalPages}
-                  aria-label="Next page"
+                  aria-label={t('showcase.nextAria')}
                 >
-                  Next →
+                  {t('showcase.next')}
                 </button>
               </nav>
             )}
@@ -485,19 +486,18 @@ function ShowcaseGallery() {
         )}
 
         {/* Bottom CTA */}
-        <section className="showcase-bottom-cta" aria-label="Get started">
+        <section className="showcase-bottom-cta" aria-label={t('showcase.bottomAria')}>
           <div className="showcase-bottom-cta-inner">
-            <h2>Like what you see? Make it yours.</h2>
+            <h2>{t('showcase.bottom.h')}</h2>
             <p>
-              These are example pages — start a draft, pick a theme, and shape it
-              for your stall, shop, or service.
+              {t('showcase.bottom.p')}
             </p>
             <div className="showcase-hero-actions">
               <Link to={ctaTo} className="showcase-btn-primary" onClick={handleCta}>
                 {ctaLabel}
               </Link>
               <Link to="/#templates" className="showcase-btn-ghost">
-                See templates
+                {t('showcase.seeTemplates')}
               </Link>
             </div>
           </div>
