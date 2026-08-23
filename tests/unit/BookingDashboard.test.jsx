@@ -263,7 +263,7 @@ describe('BookingDashboard Component - TDD', () => {
   });
 
   describe('Embedded workspace', () => {
-    it('keeps dashboard tabs in the DOM when embedded in site workspace', async () => {
+    it('uses pane subnav without team calendar when embedded', async () => {
       render(
         <BrowserRouter>
           <AuthContext.Provider value={mockAuthContext}>
@@ -277,9 +277,13 @@ describe('BookingDashboard Component - TDD', () => {
       );
 
       await waitFor(() => {
+        const page = screen.getByTestId('booking-dashboard-page');
         expect(screen.getByTestId('appointments-tab')).toBeVisible();
-        expect(screen.getByTestId('calendar-board-tab')).toBeVisible();
+        expect(screen.getByTestId('services-tab')).toBeVisible();
         expect(screen.getByTestId('phase2-tab')).toBeVisible();
+        expect(screen.queryByTestId('calendar-board-tab')).not.toBeInTheDocument();
+        expect(page.querySelector('.dashboard-tabs')).not.toBeInTheDocument();
+        expect(page.querySelector('.pane-subnav')).toBeInTheDocument();
       });
     });
 

@@ -233,7 +233,7 @@ const BookingDashboard = () => {
                 🔄 Refresh
               </button>
 
-              {window.innerWidth <= 768 && (
+              {!embedded && window.innerWidth <= 768 && (
                 <button
                   className="mobile-menu-toggle"
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -286,16 +286,20 @@ const BookingDashboard = () => {
               >
                 ➕ Add Service
               </button>
-              <button
-                className="action-btn"
-                onClick={handleViewCalendar}
-              >
-                📅 View Calendar
-              </button>
+              {!embedded && (
+                <button
+                  className="action-btn"
+                  onClick={handleViewCalendar}
+                >
+                  📅 View Calendar
+                </button>
+              )}
             </div>
 
             {/* Navigation Tabs */}
-            <div className={`dashboard-tabs ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+            <div
+              className={`${embedded ? 'pane-subnav' : 'dashboard-tabs'}${mobileMenuOpen ? ' mobile-open' : ''}`}
+            >
               <button
                 role="tab"
                 data-testid="appointments-tab"
@@ -304,14 +308,16 @@ const BookingDashboard = () => {
               >
                 📅 Appointments
               </button>
-              <button
-                role="tab"
-                data-testid="calendar-board-tab"
-                className={`tab ${activeTab === 'calendar' ? 'active' : ''}`}
-                onClick={() => handleTabChange('calendar')}
-              >
-                🗓️ Team calendar
-              </button>
+              {!embedded && (
+                <button
+                  role="tab"
+                  data-testid="calendar-board-tab"
+                  className={`tab ${activeTab === 'calendar' ? 'active' : ''}`}
+                  onClick={() => handleTabChange('calendar')}
+                >
+                  🗓️ Team calendar
+                </button>
+              )}
               <button
                 role="tab"
                 data-testid="services-tab"
@@ -343,7 +349,7 @@ const BookingDashboard = () => {
               {activeTab === 'appointments' && (
                 <AppointmentList userId={user?.id} siteId={siteId} onRefresh={fetchStats} />
               )}
-              {activeTab === 'calendar' && (
+              {!embedded && activeTab === 'calendar' && (
                 <TeamCalendar userId={user?.id} siteId={siteId} />
               )}
               {activeTab === 'services' && (

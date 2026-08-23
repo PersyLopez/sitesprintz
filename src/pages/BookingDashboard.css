@@ -321,20 +321,47 @@
     padding: 1rem;
   }
 
-  .booking-dashboard.embedded-page .dashboard-tabs {
+}
+
+/* Embedded workspace: quiet pane subnav (not nested dashboard chrome) */
+.pane-subnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-bottom: 1.5rem;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.booking-dashboard.embedded-page .pane-subnav .tab {
+  flex: 0 1 auto;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  border-radius: 0;
+  border-bottom: 2px solid transparent;
+}
+
+.booking-dashboard.embedded-page .pane-subnav .tab:hover {
+  background: transparent;
+  color: #333;
+}
+
+.booking-dashboard.embedded-page .pane-subnav .tab.active {
+  background: transparent;
+  color: #667eea;
+  box-shadow: none;
+  border-bottom-color: #667eea;
+}
+
+@media (max-width: 768px) {
+  .pane-subnav {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
   }
-
-  .booking-dashboard.embedded-page .mobile-menu-toggle {
-    display: none;
-  }
-}
-
-.booking-dashboard.embedded-page .dashboard-tabs {
-  display: flex;
-  flex-wrap: wrap;
 }
 
 @media (max-width: 480px) {
