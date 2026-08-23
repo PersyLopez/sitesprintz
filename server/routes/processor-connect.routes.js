@@ -113,7 +113,10 @@ router.get(['/square/callback', '/connect/square/callback'], asyncHandler(async 
     if (callbackError.message.includes('Failed to connect Square account')) {
       return redirectToSettings(res, req, { connect: 'error', processor: 'square', message: 'token_exchange' });
     }
-    throw callbackError;
+    if (callbackError.message.includes('active location')) {
+      return redirectToSettings(res, req, { connect: 'error', processor: 'square', message: 'no_location' });
+    }
+    return redirectToSettings(res, req, { connect: 'error', processor: 'square', message: 'token_exchange' });
   }
 }));
 
@@ -173,6 +176,9 @@ router.get(['/paypal/callback', '/connect/paypal/callback'], asyncHandler(async 
   } catch (callbackError) {
     if (callbackError.message.includes('Invalid or expired state token')) {
       return redirectToSettings(res, req, { connect: 'error', processor: 'paypal', message: 'expired' });
+    }
+    if (callbackError.message.includes('Business account')) {
+      return redirectToSettings(res, req, { connect: 'error', processor: 'paypal', message: 'paypal_not_business' });
     }
     return redirectToSettings(res, req, { connect: 'error', processor: 'paypal', message: 'token_exchange' });
   }

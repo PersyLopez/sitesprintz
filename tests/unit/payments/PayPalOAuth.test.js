@@ -105,7 +105,11 @@ describe('PayPal OAuth Flow', () => {
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ payer_id: 'PAYPALMERCHANT', email: 'owner@example.com' })
+        json: async () => ({
+          payer_id: 'PAYPALMERCHANT',
+          email: 'owner@example.com',
+          account_type: 'BUSINESS'
+        })
       });
 
     const { handlePayPalCallback } = await import('../../../server/services/payments/PayPalOAuthService.js');
@@ -115,5 +119,65 @@ describe('PayPal OAuth Flow', () => {
     expect(mockEncrypt).toHaveBeenCalledWith('paypal_at');
     expect(mockPrisma.payment_processor_credentials.upsert).toHaveBeenCalled();
     expect(mockRedis.del).toHaveBeenCalledWith('paypal_oauth_state:valid_state');
+  });
+
+  it('does not persist a payments-ready connection for PERSONAL userinfo', async () => {
+    mockRedis.get.mockResolvedValue(JSON.stringify({
+      userId: 'user_123',
+      siteId: 'site_123',
+      redirectUri: 'http://localhost:3000/api/connect/paypal/callback'
+    }));
+
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          access_token: 'paypal_at',
+          refresh_token: 'paypal_rt',
+          expires_in: 3600
+        })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          payer_id: 'PERSONALPAYER',
+          email: 'personal@example.com',
+          account_type: 'PERSONAL'
+        })
+      });
+
+    const { handlePayPalCallback } = await import('../../../server/services/payments/PayPalOAuthService.js');
+
+    await expect(handlePayPalCallback('valid-code', 'valid_state'))
+      .rejects.toThrow(/Business account/);
+    expect(mockPrisma.payment_processor_credentials.upsert).not.toHaveBeenCalled();
+  });
+
+  it('fails closed when userinfo has no business indicator', async () => {
+    mockRedis.get.mockResolvedValue(JSON.stringify({
+      userId: 'user_123',
+      siteId: 'site_123',
+      redirectUri: 'http://localhost:3000/api/connect/paypal/callback'
+    }));
+
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          access_token: 'paypal_at',
+          refresh_token: 'paypal_rt',
+          expires_in: 3600
+        })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ payer_id: 'UNKNOWNPAYER', email: 'owner@example.com' })
+      });
+
+    const { handlePayPalCallback } = await import('../../../server/services/payments/PayPalOAuthService.js');
+
+    await expect(handlePayPalCallback('valid-code', 'valid_state'))
+      .rejects.toThrow(/Business account/);
+    expect(mockPrisma.payment_processor_credentials.upsert).not.toHaveBeenCalled();
   });
 });

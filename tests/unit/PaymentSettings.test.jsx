@@ -140,6 +140,44 @@ describe('PaymentSettings', () => {
     expect(await screen.findByTestId('processor-connect-success')).toHaveTextContent(/square set as default/i);
   });
 
+  it('shows Use existing Stripe account next to Connect Stripe', async () => {
+    renderSettings();
+    expect(await screen.findByTestId('stripe-connect-button')).toBeInTheDocument();
+    expect(screen.getByTestId('stripe-existing-oauth-button')).toHaveTextContent(/use existing stripe account/i);
+  });
+
+  it('Connect Stripe still starts Account Links onboarding', async () => {
+    const user = userEvent.setup();
+    const hrefSetter = vi.fn();
+    const originalLocation = window.location;
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...originalLocation, href: '' }
+    });
+    Object.defineProperty(window.location, 'href', {
+      configurable: true,
+      set: hrefSetter,
+      get: () => ''
+    });
+    api.post.mockResolvedValue({ url: 'https://connect.stripe.com/setup/s/test' });
+
+    renderSettings();
+    await user.click(await screen.findByTestId('stripe-connect-button'));
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/api/connect/onboard', {
+        siteId: 'site-1',
+        applyTo: 'site'
+      });
+    });
+    expect(api.get).not.toHaveBeenCalledWith('/api/connect/stripe/oauth', expect.anything());
+
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: originalLocation
+    });
+  });
+
   it('lets the owner pick this site, future sites, or all sites', async () => {
     const user = userEvent.setup();
     renderSettings();

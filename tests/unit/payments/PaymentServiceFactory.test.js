@@ -159,6 +159,29 @@ describe('PaymentServiceFactory', () => {
       // Should use first location
       expect(processor.locationId).toBe('loc_123');
     });
+
+    it('should use metadata.location_id as the Square default', async () => {
+      mockPrisma.sites.findFirst.mockResolvedValue({
+        id: 'site_123',
+        default_payment_processor: 'square'
+      });
+
+      mockPrisma.payment_processor_credentials.findFirst.mockResolvedValue({
+        processor: 'square',
+        access_token_encrypted: 'encrypted_token',
+        metadata: {
+          location_id: 'loc_default',
+          location_ids: [
+            { id: 'loc_123', name: 'Main' },
+            { id: 'loc_456', name: 'Second' }
+          ]
+        }
+      });
+
+      const processor = await PaymentServiceFactory.getProcessor('site_123');
+
+      expect(processor.locationId).toBe('loc_default');
+    });
   });
 
   describe('createCheckoutForSite()', () => {

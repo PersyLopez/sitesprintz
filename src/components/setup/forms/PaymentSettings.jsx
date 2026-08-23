@@ -68,7 +68,12 @@ function PaymentSettings({ site: siteProp = null }) {
       setConnectBanner(`${processor} connected successfully`);
       loadStripeStatus(searchParams.get('site') || site?.id);
     } else if (result === 'error') {
-      setConnectBanner('Could not finish connecting. Try again from the provider card.');
+      const code = searchParams.get('message');
+      const connectErrors = {
+        no_location: 'Square needs an active location. Add one in Square Dashboard, then reconnect.',
+        paypal_not_business: 'PayPal checkout needs a Business account. Upgrade to PayPal Business, then reconnect.'
+      };
+      setConnectBanner(connectErrors[code] || 'Could not finish connecting. Try again from the provider card.');
     }
 
     searchParams.delete('connect');

@@ -7,8 +7,9 @@ const PROCESSORS = [
     name: 'Stripe',
     fee: 'Typical US online 2.9% + 30¢ (live rate in Stripe)',
     highlight: 'Instant payouts',
-    description: 'Cards, Apple Pay, Link, and more. Connect the Stripe account you already use. Identity checks happen on Stripe — never paste API keys here.',
+    description: 'New to Stripe? Connect Stripe to create an account. Already have Stripe? Use your existing account. Identity checks happen on Stripe — never paste API keys here.',
     connectTestId: 'stripe-connect-button',
+    existingTestId: 'stripe-existing-oauth-button',
     defaultTestId: 'stripe-set-default-button',
     attachTestId: 'stripe-attach-button',
     heading: 'Stripe Connect'
@@ -18,7 +19,7 @@ const PROCESSORS = [
     name: 'Square',
     fee: 'Typical US Square API 2.9% + 30¢ (Square Online/invoices on Free is 3.3% + 30¢; live rate in Square)',
     highlight: 'Online checkout',
-    description: 'Authorize SiteSprintz to send checkout to your Square account. This is Square Payments, not Square Appointments. Never paste Application secrets here.',
+    description: 'Authorize SiteSprintz to send checkout to your Square account. This is Square Payments, not Square Appointments. Checkout needs an active Square location. Never paste Application secrets here.',
     connectTestId: 'square-connect-button',
     defaultTestId: 'square-set-default-button'
   },
@@ -85,6 +86,26 @@ function ProcessorConnectList({
       window.location.href = url;
     } catch (error) {
       setActionError(error.message || `Could not start ${processorId} connection`);
+      setIsProcessing(false);
+    }
+  };
+
+  const startStripeExistingOAuth = async () => {
+    if (!isGrowth || isProcessing) return;
+    setActionError(null);
+    setIsProcessing(true);
+    try {
+      const data = await api.get('/api/connect/stripe/oauth', {
+        params: {
+          ...(siteId ? { siteId } : {}),
+          applyTo
+        }
+      });
+      const url = redirectUrl(data);
+      if (!url) throw new Error('Stripe did not return a connect URL');
+      window.location.href = url;
+    } catch (error) {
+      setActionError(error.message || 'Could not start Stripe connection');
       setIsProcessing(false);
     }
   };
@@ -280,6 +301,18 @@ function ProcessorConnectList({
                     disabled={isProcessing}
                   >
                     {isProcessing ? 'Opening…' : `Connect ${processor.name}`}
+                  </button>
+                )}
+
+                {isGrowth && enabled && processor.id === 'stripe' && !connected && !incomplete && !canAttachStripe && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    data-testid={processor.existingTestId}
+                    onClick={startStripeExistingOAuth}
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? 'Opening…' : 'Use existing Stripe account'}
                   </button>
                 )}
 

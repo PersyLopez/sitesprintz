@@ -103,41 +103,58 @@ export async function handleSquareCallback(code, state) {
 
   const tokenData = await tokenResponse.json();
 
-  // Get merchant locations
-  let locations = [];
+  try {
+    const activeLocations = await listActiveSquareLocations(tokenData.access_token);
+    if (activeLocations.length === 0) {
+      throw new Error(
+        'Square needs an active location. Add one in Square Dashboard, then reconnect.'
+      );
+    }
+
+    const defaultLocation = activeLocations[0];
+
+    await recordProcessorConnection({
+      siteId,
+      userId,
+      processor: 'square',
+      accountId: tokenData.merchant_id,
+      accessToken: tokenData.access_token,
+      refreshToken: tokenData.refresh_token,
+      expiresAt: tokenData.expires_at,
+      metadata: {
+        location_id: defaultLocation.id,
+        location_ids: activeLocations.map((loc) => ({ id: loc.id, name: loc.name }))
+      },
+      applyTo
+    });
+
+    return {
+      siteId,
+      merchantId: tokenData.merchant_id
+    };
+  } finally {
+    await redis.del(`square_oauth_state:${state}`);
+  }
+}
+
+function isActiveSquareLocation(location) {
+  if (!location?.id) return false;
+  const status = location.status ? String(location.status).toUpperCase() : 'ACTIVE';
+  return status === 'ACTIVE';
+}
+
+async function listActiveSquareLocations(accessToken) {
   try {
     const squareClient = new Client({
-      accessToken: tokenData.access_token,
+      accessToken,
       environment: process.env.NODE_ENV === 'production' ? Environment.Production : Environment.Sandbox
     });
 
     const locationsResponse = await squareClient.locationsApi.listLocations();
-    locations = locationsResponse.result.locations || [];
-  } catch (error) {
-    console.warn('Failed to fetch Square locations:', error);
-    // Continue without locations
+    const locations = locationsResponse.result?.locations || [];
+    return locations.filter(isActiveSquareLocation);
+  } catch {
+    return [];
   }
-
-  await recordProcessorConnection({
-    siteId,
-    userId,
-    processor: 'square',
-    accountId: tokenData.merchant_id,
-    accessToken: tokenData.access_token,
-    refreshToken: tokenData.refresh_token,
-    expiresAt: tokenData.expires_at,
-    metadata: {
-      location_ids: locations.map(loc => ({ id: loc.id, name: loc.name }))
-    },
-    applyTo
-  });
-
-  // Delete state token (prevent replay)
-  await redis.del(`square_oauth_state:${state}`);
-
-  return {
-    siteId,
-    merchantId: tokenData.merchant_id
-  };
 }
 

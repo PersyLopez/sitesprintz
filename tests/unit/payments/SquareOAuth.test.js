@@ -212,10 +212,34 @@ describe('Square OAuth Flow', () => {
       
       const { handleSquareCallback } = await import('../../../server/services/payments/SquareOAuthService.js');
       
-      await handleSquareCallback('valid-code', state);
+      await expect(handleSquareCallback('valid-code', state))
+        .rejects.toThrow('active location');
       
-      // Verify state token was deleted
+      expect(mockPrisma.payment_processor_credentials.upsert).not.toHaveBeenCalled();
       expect(mockRedis.del).toHaveBeenCalledWith(`square_oauth_state:${state}`);
+    });
+
+    it('fails closed when Square locations are inactive', async () => {
+      const state = 'valid_state_token';
+      const stateData = JSON.stringify({ userId: 'user_123', siteId: 'site_123' });
+
+      mockRedis.get.mockResolvedValue(stateData);
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          access_token: 'sq0atp-xxx',
+          merchant_id: 'merchant_123'
+        })
+      });
+      mockLocationsApi.listLocations.mockResolvedValue({
+        result: { locations: [{ id: 'loc_inactive', name: 'Closed', status: 'INACTIVE' }] }
+      });
+
+      const { handleSquareCallback } = await import('../../../server/services/payments/SquareOAuthService.js');
+
+      await expect(handleSquareCallback('valid-code', state))
+        .rejects.toThrow('active location');
+      expect(mockPrisma.payment_processor_credentials.upsert).not.toHaveBeenCalled();
     });
 
     it('should store location IDs in metadata', async () => {
@@ -233,8 +257,8 @@ describe('Square OAuth Flow', () => {
       mockLocationsApi.listLocations.mockResolvedValue({
         result: {
           locations: [
-            { id: 'loc_123', name: 'Main Location' },
-            { id: 'loc_456', name: 'Second Location' }
+            { id: 'loc_123', name: 'Main Location', status: 'ACTIVE' },
+            { id: 'loc_456', name: 'Second Location', status: 'ACTIVE' }
           ]
         }
       });
@@ -245,8 +269,8 @@ describe('Square OAuth Flow', () => {
       
       await handleSquareCallback('valid-code', state);
       
-      // Verify locations stored in metadata
       const upsertCall = mockPrisma.payment_processor_credentials.upsert.mock.calls[0][0];
+      expect(upsertCall.create.metadata.location_id).toBe('loc_123');
       expect(upsertCall.create.metadata.location_ids).toEqual([
         { id: 'loc_123', name: 'Main Location' },
         { id: 'loc_456', name: 'Second Location' }
@@ -266,7 +290,7 @@ describe('Square OAuth Flow', () => {
         })
       });
       mockLocationsApi.listLocations.mockResolvedValue({
-        result: { locations: [] }
+        result: { locations: [{ id: 'loc_123', name: 'Main Location', status: 'ACTIVE' }] }
       });
       mockPrisma.payment_processor_credentials.upsert.mockResolvedValue({});
       mockPrisma.sites.update.mockResolvedValue({});
@@ -275,7 +299,7 @@ describe('Square OAuth Flow', () => {
       
       await handleSquareCallback('valid-code', state);
       
-      // Verify site updated
+      expect(mockRedis.del).toHaveBeenCalledWith(`square_oauth_state:${state}`);
       expect(mockPrisma.sites.update).toHaveBeenCalledWith({
         where: { id: 'site_123' },
         data: {

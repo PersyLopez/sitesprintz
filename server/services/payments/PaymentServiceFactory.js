@@ -18,6 +18,17 @@ import { StripeProcessor } from './StripeProcessor.js';
 
 const SUPPORTED_PROCESSORS = ['stripe', 'square', 'paypal'];
 
+function resolveSquareLocationId(metadata) {
+  if (!metadata || typeof metadata !== 'object') return null;
+  if (typeof metadata.location_id === 'string' && metadata.location_id) {
+    return metadata.location_id;
+  }
+  const ids = Array.isArray(metadata.location_ids) ? metadata.location_ids : [];
+  const first = ids[0];
+  if (typeof first === 'string' && first) return first;
+  return first?.id || null;
+}
+
 /**
  * Payment Service Factory
  * Static factory for creating payment processor instances
@@ -88,9 +99,7 @@ export class PaymentServiceFactory {
     // Decrypt access token
     const accessToken = decrypt(credentials.access_token_encrypted);
 
-    // Get first location ID from metadata
-    const locationIds = credentials.metadata?.location_ids || [];
-    const locationId = locationIds.length > 0 ? locationIds[0].id : null;
+    const locationId = resolveSquareLocationId(credentials.metadata);
 
     // Return mock processor until SquareProcessor is implemented (Track A)
     return {

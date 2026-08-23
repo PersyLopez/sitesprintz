@@ -8,6 +8,24 @@ import { getRedis } from '../../utils/redis.js';
 import { recordProcessorConnection } from './processorConnectHelpers.js';
 
 const STATE_TTL_SECONDS = 600;
+const PAYPAL_BUSINESS_TYPES = new Set(['BUSINESS', 'PREMIER', 'BUSINESS_ACCOUNT']);
+export const PAYPAL_NOT_BUSINESS_MESSAGE =
+  'PayPal checkout needs a Business account. Upgrade to PayPal Business, then reconnect.';
+
+function paypalAccountType(profile) {
+  const raw = profile?.account_type
+    || profile?.accountType
+    || profile?.payer?.account_type
+    || profile?.['https://uri.paypal.com/webapps/auth/schema/payer/account_type'];
+  return typeof raw === 'string' ? raw.trim().toUpperCase() : '';
+}
+
+export function isPayPalBusinessAccount(profile) {
+  if (!profile || typeof profile !== 'object') return false;
+  const type = paypalAccountType(profile);
+  if (!type) return false;
+  return PAYPAL_BUSINESS_TYPES.has(type);
+}
 
 function paypalAuthBase() {
   return process.env.NODE_ENV === 'production'
@@ -98,43 +116,50 @@ export async function handlePayPalCallback(code, state) {
 
   const tokenData = await tokenResponse.json();
 
-  const userInfoResponse = await fetch(
-    `${paypalApiBase()}/v1/identity/oauth2/userinfo?schema=paypalv1.1`,
-    {
-      headers: { Authorization: `Bearer ${tokenData.access_token}` }
+  try {
+    const userInfoResponse = await fetch(
+      `${paypalApiBase()}/v1/identity/oauth2/userinfo?schema=paypalv1.1`,
+      {
+        headers: { Authorization: `Bearer ${tokenData.access_token}` }
+      }
+    );
+
+    if (!userInfoResponse.ok) {
+      throw new Error(PAYPAL_NOT_BUSINESS_MESSAGE);
     }
-  );
 
-  let merchantId = null;
-  let email = null;
-  if (userInfoResponse.ok) {
     const profile = await userInfoResponse.json();
-    merchantId = profile.payer_id || profile.user_id || null;
-    email = profile.email || profile.emails?.[0]?.value || null;
+    if (!isPayPalBusinessAccount(profile)) {
+      throw new Error(PAYPAL_NOT_BUSINESS_MESSAGE);
+    }
+
+    const merchantId = profile.payer_id || profile.user_id || tokenData.payer_id;
+    if (!merchantId) {
+      throw new Error(PAYPAL_NOT_BUSINESS_MESSAGE);
+    }
+
+    const email = profile.email || profile.emails?.[0]?.value || null;
+
+    await recordProcessorConnection({
+      siteId,
+      userId,
+      processor: 'paypal',
+      accountId: merchantId,
+      accessToken: tokenData.access_token,
+      refreshToken: tokenData.refresh_token,
+      expiresAt: tokenData.expires_in
+        ? new Date(Date.now() + tokenData.expires_in * 1000)
+        : null,
+      metadata: {
+        email,
+        account_type: paypalAccountType(profile),
+        token_type: tokenData.token_type || 'Bearer'
+      },
+      applyTo
+    });
+
+    return { siteId, merchantId };
+  } finally {
+    await redis.del(`paypal_oauth_state:${state}`);
   }
-
-  if (!merchantId) {
-    merchantId = tokenData.payer_id || `paypal_${siteId}`;
-  }
-
-  await recordProcessorConnection({
-    siteId,
-    userId,
-    processor: 'paypal',
-    accountId: merchantId,
-    accessToken: tokenData.access_token,
-    refreshToken: tokenData.refresh_token,
-    expiresAt: tokenData.expires_in
-      ? new Date(Date.now() + tokenData.expires_in * 1000)
-      : null,
-    metadata: {
-      email,
-      token_type: tokenData.token_type || 'Bearer'
-    },
-    applyTo
-  });
-
-  await redis.del(`paypal_oauth_state:${state}`);
-
-  return { siteId, merchantId };
 }
