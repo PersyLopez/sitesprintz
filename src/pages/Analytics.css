@@ -57,7 +57,8 @@
   }
 }
 
-.header-content h1 {
+.header-content h1,
+.header-content h2 {
   margin: 0 0 var(--spacing-xs);
   font-size: clamp(1.5rem, 4vw + 0.5rem, 2rem); /* Fluid typography */
   font-weight: 800;

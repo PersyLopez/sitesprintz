@@ -277,14 +277,20 @@ function Analytics() {
     </div>
   );
 
+  const PageContainer = embedded ? 'div' : 'main';
+
   return (
     <div className={`analytics-page${embedded ? ' embedded-page' : ''}`}>
       {!embedded && <Header />}
 
-      <main className="analytics-container" data-testid="analytics-page">
+      <PageContainer className="analytics-container" data-testid="analytics-page">
         <div className="analytics-header">
           <div className="header-content">
-            <h1>📊 Analytics Dashboard</h1>
+            {embedded ? (
+              <h2>Analytics</h2>
+            ) : (
+              <h1>Analytics Dashboard</h1>
+            )}
             <p>
               {siteId ? 'Site Performance' : 'All Sites'} •
               {' '}
@@ -324,7 +330,7 @@ function Analytics() {
         </div>
 
         {analyticsBody}
-      </main>
+      </PageContainer>
 
       {!embedded && <Footer />}
     </div>

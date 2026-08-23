@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import Analytics from '../../src/pages/Analytics';
@@ -167,7 +167,22 @@ describe('Analytics Page', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /Analytics Dashboard/i })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { level: 2, name: 'Analytics' })).toBeInTheDocument();
+      });
+    });
+
+    it('should use pane semantics when embedded', async () => {
+      render(
+        <MemoryRouter initialEntries={['/dashboard/sites/site123/analytics']}>
+          <Analytics />
+        </MemoryRouter>,
+      );
+
+      await waitFor(() => {
+        const page = screen.getByTestId('analytics-page');
+        expect(within(page).queryByRole('main')).not.toBeInTheDocument();
+        expect(screen.queryByRole('heading', { level: 1, name: /Analytics/i })).not.toBeInTheDocument();
+        expect(screen.getByRole('heading', { level: 2, name: 'Analytics' })).toBeInTheDocument();
       });
     });
 
@@ -248,7 +263,7 @@ describe('Analytics Page', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/Analytics Dashboard/i)).toBeInTheDocument();
+        expect(screen.getByRole('heading', { level: 2, name: 'Analytics' })).toBeInTheDocument();
         expect(screen.getByText(/Site Views Over Time/i)).toBeInTheDocument();
       });
     });
