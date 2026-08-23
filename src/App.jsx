@@ -65,6 +65,7 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import FeedbackWidget from './components/common/FeedbackWidget';
 import BetaBanner from './components/common/BetaBanner';
 import CustomDomainGate from './components/published/CustomDomainGate';
+import LegacySitePaneRedirect from './components/dashboard/LegacySitePaneRedirect';
 import { LocaleProvider } from './i18n/LocaleContext.jsx';
 
 import api from './services/api';
@@ -366,9 +367,7 @@ function App() {
                 path="/orders"
                 element={
                   <ProtectedRoute>
-                    <Suspense fallback={<LoadingFallback message="Loading orders..." />}>
-                      <Orders />
-                    </Suspense>
+                    <LegacySitePaneRedirect pane="orders" />
                   </ProtectedRoute>
                 }
               />
@@ -416,9 +415,7 @@ function App() {
                 path="/products"
                 element={
                   <ProtectedRoute>
-                    <Suspense fallback={<LoadingFallback message="Loading products..." />}>
-                      <Products />
-                    </Suspense>
+                    <LegacySitePaneRedirect pane="products" />
                   </ProtectedRoute>
                 }
               />
@@ -426,9 +423,7 @@ function App() {
                 path="/booking-dashboard"
                 element={
                   <ProtectedRoute>
-                    <Suspense fallback={<LoadingFallback message="Loading booking dashboard..." />}>
-                      <BookingDashboard />
-                    </Suspense>
+                    <LegacySitePaneRedirect pane="appointments" />
                   </ProtectedRoute>
                 }
               />
@@ -488,9 +483,7 @@ function App() {
                 path="/admin/analytics"
                 element={
                   <AdminRoute>
-                    <Suspense fallback={<LoadingFallback message="Loading admin analytics..." />}>
-                      <Admin />
-                    </Suspense>
+                    <Navigate to="/admin" replace />
                   </AdminRoute>
                 }
               />
