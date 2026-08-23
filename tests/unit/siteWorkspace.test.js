@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   getSiteDisplayName,
   getSiteNiche,
+  getPublishedSiteUrl,
   getSiteWorkspacePaths,
   normalizeSiteRecord,
 } from '../../src/utils/siteWorkspace';
@@ -40,5 +41,10 @@ describe('siteWorkspace helpers', () => {
     expect(paths.settings).toBe('/dashboard/sites/site-9/settings');
     expect(paths.liveEdit).toBe('/view/river-salon?edit=true');
     expect(paths.edit).toBe('/setup?site=site-9');
+  });
+
+  it('builds a same-origin published site path when VITE_API_URL is empty', () => {
+    expect(getPublishedSiteUrl(null)).toBeNull();
+    expect(getPublishedSiteUrl('river-salon')).toMatch(/\/sites\/river-salon\/$/);
   });
 });

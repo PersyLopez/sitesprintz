@@ -58,43 +58,64 @@ function Register() {
       ? `/login?template=${searchParams.get('template')}`
       : '/login';
 
-  // Initialize Cloudflare Turnstile
+  // Mount Turnstile only when the site key exists and the container is a real DOM node.
+  // index.html always loads the script; without a key the widget div is omitted and
+  // render(null) throws and takes down the whole registration page.
   useEffect(() => {
-    // Check if Turnstile is loaded
-    if (window.turnstile) {
+    const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
+    if (!siteKey) {
       setCaptchaReady(true);
-      // Render Turnstile widget
-      const widgetId = window.turnstile.render(turnstileRef.current, {
-        sitekey: import.meta.env.VITE_TURNSTILE_SITE_KEY || '',
-        callback: (token) => {
-          captchaTokenRef.current = token;
-        },
-        'error-callback': () => {
-          captchaTokenRef.current = null;
-          showError('CAPTCHA verification failed. Please try again.');
-        },
-        'expired-callback': () => {
-          captchaTokenRef.current = null;
-        },
-      });
+      return undefined;
+    }
 
+    let widgetId = null;
+    let cancelled = false;
+
+    const mountWidget = () => {
+      if (cancelled || widgetId != null) return true;
+      const container = turnstileRef.current;
+      if (!window.turnstile || !(container instanceof HTMLElement)) return false;
+      try {
+        widgetId = window.turnstile.render(container, {
+          sitekey: siteKey,
+          callback: (token) => {
+            captchaTokenRef.current = token;
+          },
+          'error-callback': () => {
+            captchaTokenRef.current = null;
+            showError('CAPTCHA verification failed. Please try again.');
+          },
+          'expired-callback': () => {
+            captchaTokenRef.current = null;
+          },
+        });
+        setCaptchaReady(true);
+        return true;
+      } catch {
+        return false;
+      }
+    };
+
+    if (mountWidget()) {
       return () => {
-        // Cleanup widget on unmount
-        if (window.turnstile && widgetId) {
+        cancelled = true;
+        if (widgetId != null && window.turnstile) {
           window.turnstile.remove(widgetId);
         }
       };
-    } else {
-      // Wait for Turnstile to load
-      const checkTurnstile = setInterval(() => {
-        if (window.turnstile) {
-          setCaptchaReady(true);
-          clearInterval(checkTurnstile);
-        }
-      }, 100);
-
-      return () => clearInterval(checkTurnstile);
     }
+
+    const intervalId = setInterval(() => {
+      if (mountWidget()) clearInterval(intervalId);
+    }, 100);
+
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+      if (widgetId != null && window.turnstile) {
+        window.turnstile.remove(widgetId);
+      }
+    };
   }, [showError]);
 
   const handleChange = (e) => {

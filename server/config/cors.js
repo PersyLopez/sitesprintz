@@ -2,19 +2,51 @@
  * CORS configuration factory.
  *
  * In production, CORS_ORIGINS (or legacy ALLOWED_ORIGINS) is required and only those origins are allowed.
+ * SITE_URL / CLIENT_URL / BASE_URL / Railway public host are also allowed so a stale
+ * CORS_ORIGINS list cannot lock the live app out of its own API.
  * In development, localhost ports are allowed even without explicit config.
  * Same-origin (no Origin header) requests are always allowed.
  */
 
-export function buildCorsOptions(env = process.env) {
-  const configuredOrigins = `${env.CORS_ORIGINS || ''},${env.ALLOWED_ORIGINS || ''}`
-    .split(',')
-    .map(origin => origin.trim())
-    .filter(Boolean);
+function originFromEnvValue(value) {
+  if (!value || typeof value !== 'string') return '';
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.includes('.railway.internal')) return '';
+  try {
+    if (trimmed.includes('://')) {
+      const parsed = new URL(trimmed);
+      return `${parsed.protocol}//${parsed.host}`;
+    }
+  } catch {
+    return '';
+  }
+  if (/^[a-z0-9.-]+$/i.test(trimmed) && trimmed.includes('.')) {
+    return `https://${trimmed}`;
+  }
+  return '';
+}
 
-  const allowedOrigins = env.NODE_ENV === 'production'
-    ? configuredOrigins
-    : configuredOrigins;
+export function collectAllowedOrigins(env = process.env) {
+  const listed = `${env.CORS_ORIGINS || ''},${env.ALLOWED_ORIGINS || ''}`
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+    .map((origin) => originFromEnvValue(origin) || origin);
+
+  const implied = [
+    env.CLIENT_URL,
+    env.FRONTEND_URL,
+    env.SITE_URL,
+    env.BASE_URL,
+    env.RAILWAY_PUBLIC_DOMAIN,
+    env.RAILWAY_STATIC_URL,
+  ].map(originFromEnvValue);
+
+  return [...new Set([...listed, ...implied].filter(Boolean))];
+}
+
+export function buildCorsOptions(env = process.env) {
+  const allowedOrigins = collectAllowedOrigins(env);
 
   if (env.NODE_ENV === 'production' && allowedOrigins.length === 0) {
     throw new Error('CORS_ORIGINS is required in production');

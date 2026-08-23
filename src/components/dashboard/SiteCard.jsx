@@ -2,14 +2,13 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { OptimizedImage } from '../common/OptimizedImage';
 import { LIVE_EDIT_SCOPE_HINT } from '../../utils/liveEditScope';
-import { getSiteDisplayName, getSiteWorkspacePaths } from '../../utils/siteWorkspace';
+import { getSiteDisplayName, getPublishedSiteUrl, getSiteWorkspacePaths } from '../../utils/siteWorkspace';
 import ShareModal from '../ShareModal';
 import './SiteCard.css';
 
 function SiteCard({ site, onDelete, onDuplicate }) {
   const [shareOpen, setShareOpen] = useState(false);
-  const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-  const siteUrl = site.subdomain ? `${backendUrl}/sites/${site.subdomain}/` : null;
+  const siteUrl = getPublishedSiteUrl(site.subdomain);
   const name = getSiteDisplayName(site);
   const paths = getSiteWorkspacePaths(site.id, site);
   const templateLabel = site.template || site.templateId || 'Custom Template';

@@ -9,6 +9,12 @@ describe('CORS configuration', () => {
     delete process.env.NODE_ENV;
     delete process.env.CORS_ORIGINS;
     delete process.env.ALLOWED_ORIGINS;
+    delete process.env.CLIENT_URL;
+    delete process.env.FRONTEND_URL;
+    delete process.env.SITE_URL;
+    delete process.env.BASE_URL;
+    delete process.env.RAILWAY_PUBLIC_DOMAIN;
+    delete process.env.RAILWAY_STATIC_URL;
   });
 
   afterEach(() => {
@@ -60,6 +66,30 @@ describe('CORS configuration', () => {
       const callback = opts.origin;
 
       callback(null, (err, allowed) => {
+        expect(err).toBeNull();
+        expect(allowed).toBe(true);
+      });
+    });
+
+    it('allows SITE_URL even when CORS_ORIGINS is stale', () => {
+      process.env.CORS_ORIGINS = 'https://web-production-85d41.up.railway.app';
+      process.env.SITE_URL = 'https://sitesprintz-production.up.railway.app';
+      const opts = buildCorsOptions(process.env);
+      const callback = opts.origin;
+
+      callback('https://sitesprintz-production.up.railway.app', (err, allowed) => {
+        expect(err).toBeNull();
+        expect(allowed).toBe(true);
+      });
+    });
+
+    it('allows the Railway public hostname without a scheme', () => {
+      process.env.CORS_ORIGINS = 'https://sitesprintz-production.up.railway.app';
+      process.env.RAILWAY_PUBLIC_DOMAIN = 'sitesprintz.com';
+      const opts = buildCorsOptions(process.env);
+      const callback = opts.origin;
+
+      callback('https://sitesprintz.com', (err, allowed) => {
         expect(err).toBeNull();
         expect(allowed).toBe(true);
       });

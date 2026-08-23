@@ -10,6 +10,7 @@ import ShareModal from '../components/ShareModal';
 import { SiteWorkspaceProvider } from '../context/SiteWorkspaceContext';
 import {
   getSiteDisplayName,
+  getPublishedSiteUrl,
   getSiteWorkspacePaths,
   normalizeSiteRecord,
 } from '../utils/siteWorkspace';
@@ -115,9 +116,8 @@ function SiteDashboard() {
 
   const name = getSiteDisplayName(site);
   const paths = getSiteWorkspacePaths(site.id, site);
-  const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-  const liveUrl = site.status === 'published' && site.subdomain
-    ? `${backendUrl}/sites/${site.subdomain}/`
+  const liveUrl = site.status === 'published'
+    ? getPublishedSiteUrl(site.subdomain)
     : null;
 
   const navItems = [

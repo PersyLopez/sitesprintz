@@ -48,6 +48,13 @@ export function getSiteFeatures(site) {
   return resolveFeatures(layoutKey, site?.data?.features);
 }
 
+/** Live published URL. Empty VITE_API_URL means same-origin (production). */
+export function getPublishedSiteUrl(subdomain) {
+  if (!subdomain) return null;
+  const origin = String(import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+  return `${origin}/sites/${subdomain}/`;
+}
+
 export function getSiteWorkspacePaths(siteId, site = {}) {
   const base = `/dashboard/sites/${siteId}`;
   const subdomain = site?.subdomain;

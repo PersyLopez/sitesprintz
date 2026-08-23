@@ -260,4 +260,22 @@ describe('Register Component', () => {
     expect(passwordInput).toHaveAttribute('minLength', '12');
     expect(confirmPasswordInput).toHaveAttribute('minLength', '12');
   });
+
+  it('does not pass a null container to Turnstile', () => {
+    const renderSpy = vi.fn((container) => {
+      if (!(container instanceof HTMLElement)) {
+        throw new Error('[Cloudflare Turnstile] Invalid type for parameter "container"');
+      }
+      return 'widget-1';
+    });
+    window.turnstile = { render: renderSpy, remove: vi.fn() };
+
+    expect(() => renderRegister()).not.toThrow();
+    expect(screen.getByText('Create Your Account')).toBeInTheDocument();
+    renderSpy.mock.calls.forEach(([container]) => {
+      expect(container).toBeInstanceOf(HTMLElement);
+    });
+
+    delete window.turnstile;
+  });
 });
