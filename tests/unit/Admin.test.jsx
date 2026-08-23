@@ -327,7 +327,7 @@ describe('Admin Page', () => {
       });
     });
 
-    it('should have link to analytics', async () => {
+    it('should render admin subnav with hub link', async () => {
       render(
         <MemoryRouter>
           <Admin />
@@ -335,7 +335,8 @@ describe('Admin Page', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/view analytics/i)).toBeInTheDocument();
+        expect(screen.getByTestId('admin-subnav')).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Hub' })).toHaveAttribute('href', '/admin');
       });
     });
 

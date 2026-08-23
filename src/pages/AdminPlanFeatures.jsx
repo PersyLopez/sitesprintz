@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
+import AdminSubnav from '../components/admin/AdminSubnav';
 import Footer from '../components/layout/Footer';
 import { FEATURES, PLAN_FEATURES, FEATURE_NAMES, PLAN_INFO } from '../utils/planFeatures';
 import { TIER_HIERARCHY } from '../config/tiers';
@@ -200,7 +201,8 @@ function AdminPlanFeatures() {
   return (
     <div className="admin-plan-features-page">
       <Header />
-      
+      <AdminSubnav />
+
       <main className="admin-container">
         <div className="admin-header">
           <div>
@@ -218,9 +220,6 @@ function AdminPlanFeatures() {
             >
               {saving ? 'Saving...' : '💾 Save Changes'}
             </button>
-            <a href="/admin" className="btn btn-secondary">
-              ← Back to Admin
-            </a>
           </div>
         </div>
 

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
+import AdminSubnav from '../components/admin/AdminSubnav';
 import Footer from '../components/layout/Footer';
 import StatsCard from '../components/analytics/StatsCard';
 import './Admin.css';
@@ -250,12 +251,13 @@ function Admin() {
   return (
     <div className="admin-page">
       <Header />
+      <AdminSubnav />
 
       <main className="admin-container">
         {/* Page Header */}
         <div className="admin-header">
           <div className="header-content">
-            <h1>👑 Admin Dashboard</h1>
+            <h1>Admin Dashboard</h1>
             <p>Platform management and insights • Updated: {formatTime()}</p>
           </div>
 
@@ -265,9 +267,6 @@ function Admin() {
             </Link>
             <Link to="/admin/candidates" className="btn btn-secondary">
               Candidates
-            </Link>
-            <Link to="/admin/analytics" className="btn btn-secondary">
-              📊 Analytics
             </Link>
             <button onClick={loadAdminData} className="btn btn-secondary">
               🔄 Refresh
@@ -305,10 +304,6 @@ function Admin() {
               <Link to="/admin/users" className="quick-action-btn">
                 <span className="action-icon">👥</span>
                 <span className="action-label">Manage Users</span>
-              </Link>
-              <Link to="/admin/analytics" className="quick-action-btn">
-                <span className="action-icon">📊</span>
-                <span className="action-label">View Analytics</span>
               </Link>
               <button
                 className="quick-action-btn"

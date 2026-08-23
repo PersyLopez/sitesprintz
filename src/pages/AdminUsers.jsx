@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
+import AdminSubnav from '../components/admin/AdminSubnav';
 import Footer from '../components/layout/Footer';
 import UserDetailsModal from '../components/admin/UserDetailsModal';
 import './AdminUsers.css';
@@ -372,6 +373,7 @@ function AdminUsers() {
   return (
     <div className="admin-users-page">
       <Header />
+      <AdminSubnav />
 
       <main className="admin-users-container">
         {/* Page Header */}
@@ -382,9 +384,6 @@ function AdminUsers() {
           </div>
 
           <div className="header-actions">
-            <Link to="/admin" className="btn btn-secondary">
-              📊 Admin Dashboard
-            </Link>
             <Link to="/dashboard" className="btn btn-secondary">
               ← Back
             </Link>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
+import AdminSubnav from '../components/admin/AdminSubnav';
 import './AdminUsers.css';
 
 function AdminSites() {
@@ -76,6 +77,7 @@ function AdminSites() {
   return (
     <div className="admin-sites-page">
       <Header />
+      <AdminSubnav />
 
       <main className="admin-sites-container">
         {/* Page Header */}

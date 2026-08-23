@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import PublicPageLayout from '../components/layout/PublicPageLayout';
+import AdminSubnav from '../components/admin/AdminSubnav';
 import './AdminTemplates.css';
 
 const STATUS_COLORS = {
@@ -217,6 +218,7 @@ export default function AdminTemplates() {
 
   return (
     <PublicPageLayout className="admin-templates-page" data-testid="admin-templates-page">
+      <AdminSubnav />
       <div className="admin-header">
         <div className="admin-header-left">
           <h1>Template Management</h1>
