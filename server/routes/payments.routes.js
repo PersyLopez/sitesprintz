@@ -458,6 +458,11 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
             });
         }
 
+        await prisma.users.update({
+            where: { email: userEmail },
+            data: { stripe_customer_id: customer.id }
+        });
+
         // Create checkout session with dynamic pricing
         const session = await stripe.checkout.sessions.create({
             customer: customer.id,

@@ -1,0 +1,154 @@
+url: http://localhost:5173/
+goal: Platform Stripe - landing pricing, register, Checkout 4242, payment-success, billing portal
+steps:
+  - action: Landing loads with pricing section
+    wait_for: { text: SiteSprintz, timeout: 20000 }
+    settle_ms: 600
+
+  - action: Scroll to pricing section
+    goto: http://localhost:5173/#pricing
+    settle_ms: 800
+    wait_for: { text: Two plans. Pick what you need., timeout: 15000 }
+    assert:
+      - text contains Starter
+      - text contains Growth
+
+  - action: Pricing CTA goes to register
+    click: { testId: nav-get-started }
+    settle_ms: 800
+    assert:
+      - url contains /register
+      - text contains Create Your Account
+
+  - action: Fill throwaway account
+    code: |
+      const email = `mantest-platform-stripe-${Date.now()}@example.com`;
+      await page.evaluate((e) => sessionStorage.setItem('mantestStripeEmail', e), email);
+      await page.getByTestId('register-email').fill(email);
+      await page.getByTestId('register-password').fill('SecurePass!2024');
+      await page.getByTestId('register-confirm-password').fill('SecurePass!2024');
+      const terms = page.getByTestId('register-accept-terms');
+      if (!(await terms.isChecked())) await terms.check();
+    settle_ms: 300
+
+  - action: Submit registration
+    click: { testId: register-submit }
+    settle_ms: 3000
+
+  - action: Land on dashboard after signup
+    wait_for: { url: /dashboard, timeout: 25000 }
+    settle_ms: 800
+    assert:
+      - url contains /dashboard
+
+  - action: Create subscription Checkout session via API
+    code: |
+      const result = await page.evaluate(async () => {
+        const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+        if (!token) throw new Error('No auth token after registration');
+        const resp = await fetch('/api/payments/create-subscription-checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ plan: 'starter' }),
+        });
+        const body = await resp.json().catch(() => ({}));
+        return { status: resp.status, body };
+      });
+      if (result.status !== 200 || !result.body?.url) {
+        throw new Error('Checkout session failed: ' + JSON.stringify(result));
+      }
+      await page.evaluate((url) => sessionStorage.setItem('mantestCheckoutUrl', url), result.body.url);
+    settle_ms: 400
+
+  - action: Open Stripe hosted Checkout
+    code: |
+      const url = await page.evaluate(() => sessionStorage.getItem('mantestCheckoutUrl'));
+      if (!url) throw new Error('Missing checkout URL');
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
+    settle_ms: 2000
+
+  - action: Complete Checkout with test card 4242
+    code: |
+      await page.waitForURL(/checkout\.stripe\.com/, { timeout: 45000 });
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForTimeout(2500);
+      const fillStripeCheckout = async () => {
+        const cardByPlaceholder = page.getByPlaceholder('1234 1234 1234 1234');
+        if (await cardByPlaceholder.count()) {
+          await cardByPlaceholder.fill('4242 4242 4242 4242');
+          const exp = page.getByPlaceholder('MM / YY');
+          if (await exp.count()) await exp.fill('12 / 34');
+          const cvc = page.getByPlaceholder('CVC');
+          if (await cvc.count()) await cvc.fill('123');
+          return true;
+        }
+        for (const frame of page.frames()) {
+          const card = frame.locator(
+            'input[name="cardNumber"], input[name="cardnumber"], input[autocomplete="cc-number"]'
+          );
+          if (await card.count()) {
+            await card.first().fill('4242424242424242');
+            const exp = frame.locator('input[name="cardExpiry"], input[autocomplete="cc-exp"]');
+            if (await exp.count()) await exp.first().fill('1234');
+            const cvc = frame.locator('input[name="cardCvc"], input[autocomplete="cc-csc"]');
+            if (await cvc.count()) await cvc.first().fill('123');
+            return true;
+          }
+        }
+        return false;
+      };
+      if (!(await fillStripeCheckout())) {
+        throw new Error('Could not find Stripe card fields on checkout page');
+      }
+      const cardholder = page.getByPlaceholder('Full name on card');
+      if (await cardholder.count()) await cardholder.fill('Mantest Platform Stripe');
+      const zip = page.getByPlaceholder('ZIP');
+      if (await zip.count()) await zip.fill('10001');
+      const linkSave = page.getByLabel('Save my information for faster checkout');
+      if (await linkSave.count() && await linkSave.isChecked()) await linkSave.uncheck();
+      const pay = page.locator('button').filter({ hasText: /Subscribe|Pay|Start trial/i }).first();
+      await pay.waitFor({ state: 'visible', timeout: 15000 });
+      await pay.click({ timeout: 15000 });
+      let checkoutComplete = false;
+      try {
+        await page.waitForURL(/payment-success/, { timeout: 45000 });
+        checkoutComplete = true;
+      } catch {
+        checkoutComplete = /payment-success/.test(page.url());
+      }
+      if (!checkoutComplete) {
+        if (!/checkout\.stripe\.com/.test(page.url())) {
+          throw new Error('Checkout did not reach payment-success and left Stripe hosted page');
+        }
+        const body = await page.locator('body').innerText();
+        if (!/error processing your request/i.test(body)) {
+          throw new Error('Checkout submit did not succeed: ' + body.slice(0, 200));
+        }
+      }
+    settle_ms: 1000
+
+  - action: Payment success page
+    wait_for: { text: Payment Successful!, timeout: 20000 }
+    assert:
+      - url contains /payment-success
+      - text contains Payment Successful!
+
+  - action: Open billing settings
+    goto: http://localhost:5173/settings/billing
+    settle_ms: 1200
+    assert:
+      - url contains /settings/billing
+      - text contains Billing Management
+
+  - action: Open Stripe Customer Portal
+    click: { testId: open-billing-portal }
+    settle_ms: 4000
+
+  - action: Stripe billing portal loaded
+    wait_for: { url: /billing.stripe.com/, timeout: 45000 }
+    settle_ms: 1000
+    assert:
+      - url contains billing.stripe.com
