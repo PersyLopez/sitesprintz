@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet, useParams } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { sitesService } from '../services/sites';
@@ -17,12 +17,19 @@ import './SiteDashboard.css';
 
 function SiteDashboard() {
   const { siteId } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { showError } = useToast();
   const [site, setSite] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.getElementById('site-workspace-main')?.scrollIntoView({ block: 'start' });
+  }, [location.pathname]);
 
   useEffect(() => {
     if (authLoading || !user?.id || !siteId) return undefined;
@@ -135,6 +142,7 @@ function SiteDashboard() {
             <span>{name}</span>
           </nav>
 
+          <div className="site-workspace-toolbar">
           <header className="site-workspace-header">
             <div className="site-workspace-identity">
               <p className="site-workspace-kicker">{site.template || site.templateId || 'Site'}</p>
@@ -191,11 +199,16 @@ function SiteDashboard() {
                 end={item.end}
                 data-testid={item.testId}
                 className={({ isActive }) => `site-workspace-nav-link${isActive ? ' active' : ''}`}
+                onClick={(event) => {
+                  event.preventDefault();
+                  navigate(item.to);
+                }}
               >
                 {item.label}
               </NavLink>
             ))}
           </nav>
+          </div>
 
           <section className="site-workspace-panel">
             <Outlet />

@@ -318,6 +318,21 @@
   .tab-content {
     padding: 1rem;
   }
+
+  .booking-dashboard.embedded-page .dashboard-tabs {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .booking-dashboard.embedded-page .mobile-menu-toggle {
+    display: none;
+  }
+}
+
+.booking-dashboard.embedded-page .dashboard-tabs {
+  display: flex;
+  flex-wrap: wrap;
 }
 
 @media (max-width: 480px) {

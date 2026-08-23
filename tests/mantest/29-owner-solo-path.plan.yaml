@@ -1,0 +1,235 @@
+url: http://localhost:5173/login
+goal: Solo site owner (Mira Design Studio / gallery-freelancer) can use every owner surface — dashboard, workspace, settings, analytics, products, booking console, live site
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter gallery email
+    fill: { testId: login-email, value: "gallery@sitesprintz.com", clear: true }
+
+  - action: Enter gallery password
+    fill: { testId: login-password, value: "GalleryDemo123!", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard loads
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 1200
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/Welcome back|Your Sites|Mira Design Studio/i.test(t)) {
+        throw new Error('Dashboard missing solo site: ' + t.slice(0, 280));
+      }
+
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+    settle_ms: 400
+
+  - action: Open Mira Design Studio workspace
+    code: |
+      const card = page.locator('[data-testid="site-card"][data-subdomain="gallery-freelancer"]');
+      if ((await card.count()) === 0) throw new Error('Missing gallery-freelancer site card');
+      await card.getByTestId('manage-site-button').click();
+    settle_ms: 1500
+
+  - action: Solo workspace overview
+    wait_for: { selector: '[data-testid="site-dashboard"]', timeout: 15000 }
+    settle_ms: 600
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/Mira Design Studio/i.test(t)) throw new Error('Solo workspace identity missing: ' + t.slice(0, 240));
+      for (const id of ['site-nav-overview', 'site-nav-orders', 'site-nav-appointments', 'site-nav-products', 'site-nav-settings', 'site-nav-analytics']) {
+        if ((await page.getByTestId(id).count()) === 0) throw new Error('Missing nav ' + id);
+      }
+      if ((await page.getByTestId('site-overview').count()) === 0) throw new Error('Overview grid missing');
+      for (const id of ['site-overview-orders', 'site-overview-appointments', 'site-overview-settings', 'site-overview-products', 'site-overview-analytics', 'site-overview-edit']) {
+        if ((await page.getByTestId(id).count()) === 0) throw new Error('Missing overview card ' + id);
+      }
+
+  - action: Share modal from workspace
+    code: |
+      const share = page.getByTestId('site-dashboard-share');
+      if ((await share.count()) === 0) throw new Error('Share button missing on published solo site');
+      await share.scrollIntoViewIfNeeded();
+      await share.click();
+    settle_ms: 400
+    wait_for: { selector: '[data-testid="share-whatsapp"]', timeout: 10000 }
+
+  - action: Share channels present
+    code: |
+      for (const id of ['share-whatsapp', 'share-instagram', 'share-tiktok', 'share-facebook', 'share-download-qr']) {
+        if ((await page.getByTestId(id).count()) === 0) throw new Error('Share missing ' + id);
+      }
+      await page.keyboard.press('Escape').catch(() => {});
+      await page.getByTestId('share-modal').waitFor({ state: 'detached', timeout: 5000 }).catch(async () => {
+        const close = page.locator('.share-modal-close');
+        if (await close.count()) await close.click();
+      });
+    settle_ms: 400
+
+  - action: Orders workspace
+    code: |
+      const nav = page.getByTestId('site-nav-orders');
+      await nav.scrollIntoViewIfNeeded();
+      await nav.click();
+      if ((await page.getByTestId('site-overview').count()) > 0) {
+        throw new Error('Still on overview after orders nav click');
+      }
+      const t = await page.locator('body').innerText();
+      const ok = /Order|No orders|inbox|Growth|Upgrade|catalog/i.test(t);
+      if (!ok) throw new Error('Unexpected orders panel: ' + t.slice(0, 280));
+    settle_ms: 1200
+    wait_for: { url: /\/orders(?:\?|$)/, timeout: 15000 }
+
+  - action: Appointments workspace
+    code: |
+      const nav = page.getByTestId('site-nav-appointments');
+      await nav.scrollIntoViewIfNeeded();
+      await nav.click();
+      await page.waitForTimeout(800);
+      if ((await page.getByTestId('site-overview').count()) > 0) {
+        throw new Error('Still on overview after appointments nav click');
+      }
+      const tab = page.getByTestId('appointments-tab');
+      const add = page.getByTestId('add-service-button');
+      if ((await tab.count()) === 0 && (await add.count()) === 0) {
+        const t = await page.locator('body').innerText();
+        throw new Error('Booking console not in appointments workspace: ' + t.slice(0, 280));
+      }
+    settle_ms: 800
+    wait_for: { url: /\/appointments(?:\?|$)/, timeout: 15000 }
+
+  - action: Products workspace
+    click: { testId: site-nav-products }
+    settle_ms: 1500
+    code: |
+      const t = await page.locator('body').innerText();
+      const ok = /Product|Catalog|Add|Import|No products/i.test(t);
+      if (!ok) throw new Error('Unexpected products panel: ' + t.slice(0, 280));
+
+  - action: Settings workspace
+    click: { testId: site-nav-settings }
+    settle_ms: 1200
+    code: |
+      const t = await page.locator('body').innerText();
+      const ok = /Settings|Payment|Domain|Foundation|Account/i.test(t);
+      if (!ok) throw new Error('Unexpected settings panel: ' + t.slice(0, 280));
+
+  - action: Analytics workspace
+    click: { testId: site-nav-analytics }
+    settle_ms: 1500
+    code: |
+      const t = await page.locator('body').innerText();
+      const ok = /Analytic|Views|Visitor|Growth|Upgrade|Performance/i.test(t);
+      if (!ok) throw new Error('Unexpected analytics panel: ' + t.slice(0, 280));
+
+  - action: Edit site / page builder
+    click: { testId: site-dashboard-builder }
+    settle_ms: 2000
+    code: |
+      const t = await page.locator('body').innerText();
+      const ok = /Quick Start|Page Builder|Preview|Sections|Mira|Business essentials|What type of business|Edit/i.test(t);
+      if (!ok) throw new Error('Unexpected editor: ' + t.slice(0, 300));
+
+  - action: Account settings shell
+    goto: http://localhost:5173/settings
+    settle_ms: 1200
+    wait_for: { text: Select a setting category from the sidebar, timeout: 15000 }
+    assert:
+      - text contains Payment Settings
+      - text contains Billing
+      - text contains Foundation Settings
+      - text contains Custom Domain
+
+  - action: Foundation settings
+    code: |
+      const link = page.locator('[data-testid="settings-nav-foundation"]');
+      if (await link.count()) {
+        await link.first().click({ force: true, timeout: 10000 });
+      } else {
+        await page.goto('http://localhost:5173/settings/foundation', { waitUntil: 'load' });
+      }
+    settle_ms: 1200
+    assert:
+      - url contains /settings/foundation
+      - text contains Foundation Settings
+
+  - action: Custom domain tab
+    code: |
+      const link = page.locator('[data-testid="settings-nav-domain"]');
+      if (await link.count()) {
+        await link.first().click({ force: true, timeout: 10000 });
+      } else {
+        await page.goto('http://localhost:5173/settings/domain', { waitUntil: 'load' });
+      }
+    settle_ms: 1200
+    assert:
+      - url contains /settings/domain
+      - text contains Custom Domain
+
+  - action: Billing tab UI only
+    code: |
+      const link = page.locator('[data-testid="settings-nav-billing"]');
+      if (await link.count()) {
+        await link.first().click({ force: true, timeout: 10000 });
+      } else {
+        await page.goto('http://localhost:5173/settings/billing', { waitUntil: 'load' });
+      }
+    settle_ms: 1000
+    assert:
+      - url contains /settings/billing
+      - text contains Billing
+
+  - action: Global analytics
+    code: |
+      await page.goto('http://localhost:5173/analytics', { waitUntil: 'domcontentloaded' });
+      await page.waitForURL(/\/analytics/, { timeout: 15000 });
+      await page.waitForTimeout(1200);
+      const t = await page.locator('body').innerText();
+      const ok = /Analytic|TOTAL VIEWS|UNIQUE VISITORS|Performance|Views/i.test(t);
+      if (!ok) throw new Error('Unexpected global analytics: ' + t.slice(0, 280));
+
+  - action: Global products tools
+    goto: http://localhost:5173/products
+    settle_ms: 1200
+    code: |
+      const t = await page.locator('body').innerText();
+      const ok = /Product|Import CSV|Export CSV|Add Product/i.test(t);
+      if (!ok) throw new Error('Unexpected products page: ' + t.slice(0, 280));
+
+  - action: Global booking console
+    goto: http://localhost:5173/booking-dashboard
+    settle_ms: 1800
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/Upgrade to Pro/i.test(t) && !/Service|Appointment|Booking Dashboard/i.test(t)) {
+        throw new Error('Gallery growth owner hit a Pro wall');
+      }
+      const ok = /Booking Dashboard|Growth Feature|Appointment|Service|Schedule/i.test(t);
+      if (!ok) throw new Error('Unexpected booking console: ' + t.slice(0, 300));
+
+  - action: Solo live site
+    goto: http://localhost:5173/view/gallery-freelancer
+    settle_ms: 2000
+    wait_for: { text: Mira Design Studio, timeout: 20000 }
+
+  - action: Solo live site has no multi-staff picker
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/Mira Design Studio/i.test(t)) throw new Error('Live solo identity missing');
+      const staffStep = await page.getByTestId('staff-selection-step').count();
+      const namedStaff = await page.locator('[data-testid^="staff-card-"]').filter({ hasNot: page.getByTestId('staff-card-no-preference') }).count();
+      if (staffStep && namedStaff > 0) {
+        throw new Error('Solo live site showed a named staff picker (' + namedStaff + ' cards)');
+      }
+      const contact = /Contact|Email|Get in touch|Send/i.test(t);
+      const book = (await page.getByTestId('live-booking-widget').count()) > 0;
+      if (!contact && !book) throw new Error('Solo live site has neither contact nor booking: ' + t.slice(0, 240));

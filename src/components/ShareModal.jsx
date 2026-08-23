@@ -204,6 +204,18 @@ const ShareModal = ({ subdomain, onClose }) => {
     }
   };
 
+  useEffect(() => {
+    document.querySelector('[data-testid="share-modal"] .share-options')?.scrollIntoView({ block: 'nearest' });
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   // Cleanup blob URL on unmount
   useEffect(() => {
     return () => {
@@ -215,13 +227,48 @@ const ShareModal = ({ subdomain, onClose }) => {
 
   return (
     <div className="share-modal-overlay" onClick={onClose}>
-      <div className="share-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="share-modal" data-testid="share-modal" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="share-modal-header">
           <h2>Share Your Site</h2>
           <button className="share-modal-close" onClick={onClose} aria-label="Close">
             ×
           </button>
+        </div>
+
+        {/* Share Options — above preview so channels stay in viewport */}
+        <div className="share-options">
+          <h3>Share Directly</h3>
+          <div className="share-buttons">
+            <button onClick={handleFacebookShare} className="share-btn facebook" data-testid="share-facebook">
+              <span className="icon">f</span>
+              Facebook
+            </button>
+            <button onClick={handleWhatsAppShare} className="share-btn whatsapp" data-testid="share-whatsapp">
+              <span className="icon">WA</span>
+              WhatsApp
+            </button>
+            <button onClick={handleInstagramShare} className="share-btn instagram" data-testid="share-instagram">
+              <span className="icon">IG</span>
+              Instagram
+            </button>
+            <button onClick={handleTikTokShare} className="share-btn tiktok" data-testid="share-tiktok">
+              <span className="icon">TT</span>
+              TikTok
+            </button>
+            {navigator.share && (
+              <button onClick={handleNativeShare} className="share-btn native">
+                <span className="icon">⤴</span>
+                More...
+              </button>
+            )}
+          </div>
+          <p className="share-app-hint">
+            Instagram and TikTok have no web sharer — copy your link and paste it in the app.
+          </p>
+          {shareHint && (
+            <p className="share-app-hint copied" data-testid="share-copy-hint">{shareHint}</p>
+          )}
         </div>
 
         {/* Preview */}
@@ -259,41 +306,6 @@ const ShareModal = ({ subdomain, onClose }) => {
               Square (1080×1080)
             </button>
           </div>
-        </div>
-
-        {/* Share Options */}
-        <div className="share-options">
-          <h3>Share Directly</h3>
-          <div className="share-buttons">
-            <button onClick={handleFacebookShare} className="share-btn facebook" data-testid="share-facebook">
-              <span className="icon">f</span>
-              Facebook
-            </button>
-            <button onClick={handleWhatsAppShare} className="share-btn whatsapp" data-testid="share-whatsapp">
-              <span className="icon">WA</span>
-              WhatsApp
-            </button>
-            <button onClick={handleInstagramShare} className="share-btn instagram" data-testid="share-instagram">
-              <span className="icon">IG</span>
-              Instagram
-            </button>
-            <button onClick={handleTikTokShare} className="share-btn tiktok" data-testid="share-tiktok">
-              <span className="icon">TT</span>
-              TikTok
-            </button>
-            {navigator.share && (
-              <button onClick={handleNativeShare} className="share-btn native">
-                <span className="icon">⤴</span>
-                More...
-              </button>
-            )}
-          </div>
-          <p className="share-app-hint">
-            Instagram and TikTok have no web sharer — copy your link and paste it in the app.
-          </p>
-          {shareHint && (
-            <p className="share-app-hint copied" data-testid="share-copy-hint">{shareHint}</p>
-          )}
         </div>
 
         {/* Link Options */}

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import SiteDashboard from '../../src/pages/SiteDashboard';
 import SiteOverview from '../../src/components/dashboard/SiteOverview';
@@ -28,7 +29,10 @@ vi.mock('../../src/hooks/usePlan', () => ({
 
 vi.mock('../../src/components/ShareModal', () => ({
   default: ({ subdomain }) => (
-    <div data-testid="share-modal-mock">Sharing {subdomain}</div>
+    <div data-testid="share-modal">
+      <span>Sharing {subdomain}</span>
+      <button type="button" data-testid="share-whatsapp">WhatsApp</button>
+    </div>
   ),
 }));
 
@@ -51,6 +55,12 @@ describe('SiteDashboard', () => {
             <Routes>
               <Route path="/dashboard/sites/:siteId" element={<SiteDashboard />}>
                 <Route index element={<SiteOverview />} />
+                <Route path="appointments" element={
+                  <div data-testid="booking-dashboard-embedded">
+                    <button type="button" data-testid="appointments-tab">Appointments</button>
+                    <button type="button" data-testid="add-service-button">Add Service</button>
+                  </div>
+                } />
               </Route>
             </Routes>
           </ToastContext.Provider>
@@ -97,6 +107,38 @@ describe('SiteDashboard', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('site-dashboard-not-found')).toBeInTheDocument();
+    });
+  });
+
+  it('opens share modal with WhatsApp channel', async () => {
+    const user = userEvent.setup();
+    renderDashboard();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('site-dashboard-share')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId('site-dashboard-share'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('share-modal')).toBeInTheDocument();
+      expect(screen.getByTestId('share-whatsapp')).toBeInTheDocument();
+    });
+  });
+
+  it('renders booking console on nested appointments route', async () => {
+    const user = userEvent.setup();
+    renderDashboard();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('site-nav-appointments')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId('site-nav-appointments'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('booking-dashboard-embedded')).toBeInTheDocument();
+      expect(screen.getByTestId('appointments-tab')).toBeInTheDocument();
     });
   });
 });

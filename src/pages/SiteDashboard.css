@@ -38,11 +38,20 @@
   text-decoration: underline;
 }
 
+.site-workspace-toolbar {
+  position: sticky;
+  top: 72px;
+  z-index: 50;
+  margin-bottom: var(--spacing-lg);
+  background: var(--bg-dark, #0f172a);
+  padding-bottom: var(--spacing-xs);
+}
+
 .site-workspace-header {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
   padding: var(--spacing-lg);
   background: linear-gradient(135deg, var(--primary-800) 0%, var(--primary-600) 50%, var(--primary-500) 100%);
   color: var(--text-light);
@@ -108,7 +117,7 @@
   display: flex;
   gap: var(--spacing-xs);
   overflow-x: auto;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: 0;
   padding-bottom: var(--spacing-xs);
   border-bottom: 1px solid var(--border-dark);
 }

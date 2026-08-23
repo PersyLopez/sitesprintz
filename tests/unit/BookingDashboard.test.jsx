@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthContext } from '../../src/context/AuthContext';
 import { ToastProvider } from '../../src/context/ToastContext';
+import { SiteWorkspaceProvider } from '../../src/context/SiteWorkspaceContext';
 import BookingDashboard from '../../src/pages/BookingDashboard';
 import * as api from '../../src/utils/api';
 
@@ -52,7 +53,6 @@ const renderWithProviders = (component) => {
 describe('BookingDashboard Component - TDD', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Default mock implementation to prevent undefined errors
     api.get.mockResolvedValue({ success: true, appointments: [], services: [] });
   });
 
@@ -258,6 +258,28 @@ describe('BookingDashboard Component - TDD', () => {
 
       await waitFor(() => {
         expect(api.get.mock.calls.length).toBeGreaterThanOrEqual(5);
+      });
+    });
+  });
+
+  describe('Embedded workspace', () => {
+    it('keeps dashboard tabs in the DOM when embedded in site workspace', async () => {
+      render(
+        <BrowserRouter>
+          <AuthContext.Provider value={mockAuthContext}>
+            <ToastProvider>
+              <SiteWorkspaceProvider site={{ id: 'site-1' }} siteId="site-1">
+                <BookingDashboard />
+              </SiteWorkspaceProvider>
+            </ToastProvider>
+          </AuthContext.Provider>
+        </BrowserRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('appointments-tab')).toBeVisible();
+        expect(screen.getByTestId('calendar-board-tab')).toBeVisible();
+        expect(screen.getByTestId('phase2-tab')).toBeVisible();
       });
     });
   });

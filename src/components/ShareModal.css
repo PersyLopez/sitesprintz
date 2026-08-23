@@ -33,6 +33,8 @@
   overflow-y: auto;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   animation: slideUp 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes slideUp {
@@ -82,12 +84,14 @@
 }
 
 .share-modal-preview {
-  padding: 24px;
+  padding: 16px 24px;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 200px;
+  min-height: 120px;
+  max-height: 180px;
   background: rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
 }
 
 .share-modal-preview img {
@@ -164,6 +168,7 @@
 .share-print-section {
   padding: 20px 24px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
 }
 
 .share-options h3,
