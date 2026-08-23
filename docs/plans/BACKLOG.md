@@ -1,6 +1,6 @@
 # SiteSprintz Backlog
 
-**Updated:** 15 August 2026 (working tree on `production-readiness/audit-remediation`)
+**Updated:** 16 August 2026 (working tree on `production-readiness/audit-remediation`)
 
 This backlog is the remaining work after the 15 Aug 2026 pillar audit. Older “787 failing tests / Pro+Premium / production ready” snapshots are obsolete. Do not treat this file as a launch certificate.
 
@@ -15,7 +15,7 @@ This backlog is the remaining work after the 15 Aug 2026 pillar audit. Older “
 | Public marketing | Mostly working | Story landing, 14 gallery templates, legal footer, OG image. |
 | Booking | Working | Phase 1 + Phase 2 in the working tree. Staff id no longer hardcoded. |
 | Payments | Working locally | Stripe test mode. Live keys are a launch step, not a code gap. |
-| Security | Hardened, not finished | CSRF, Helmet, env validation. Remaining: OAuth nonce, httpOnly JWT cookies. |
+| Security | Hardened, not finished | CSRF, Helmet, env validation. OAuth nonce shipped. JWTs dual-write httpOnly cookies; JSON bodies remain until clients drop localStorage. |
 | Docs | Rewritten 15 Aug 2026 | Canonical files in `docs/development`, `docs/security`, `docs/ecommerce`. |
 | Production launch | Not done | Domain, Railway, Stripe live, monitoring. |
 
@@ -51,10 +51,12 @@ This backlog is the remaining work after the 15 Aug 2026 pillar audit. Older “
 
 ## P1 — before public launch
 
-- [ ] OAuth `state` as a random nonce (Redis or session), not plan/intent plaintext
-- [ ] Move JWTs to httpOnly cookies; stop returning them in JSON bodies
-- [ ] Re-run landing / showcase Playwright after the storytelling rewrite
+- [x] OAuth `state` as a random nonce (Redis or memory fallback), not plan/intent plaintext
+- [x] Dual-write JWTs to httpOnly cookies (JSON bodies still returned for current clients)
+- [x] Re-run landing / showcase Playwright after the storytelling rewrite (`tests/e2e/landing-page.spec.js`)
+- [x] `GET /api/connect/status` no longer 500s (DB status, no live Stripe retrieve)
 - [ ] Confirm `node_modules` is not tracked (`git rm --cached -r node_modules` if needed)
+- [ ] Stop returning JWTs in JSON bodies once clients use cookies only
 
 ---
 
@@ -63,6 +65,7 @@ This backlog is the remaining work after the 15 Aug 2026 pillar audit. Older “
 - [ ] Replace emoji gallery cards with live showcase thumbnails
 - [ ] Structured data / drop unused Inter font / cookie-consent if analytics ship
 - [ ] Do **not** mount `admin-sections.routes.js` until a real persistence model exists
+- [x] Booking dashboard poll abort no longer logs/retries as an API failure
 - [ ] Redis-backed rate limit, CSRF, and session stores for multi-instance
 - [ ] Webhook idempotency should fail closed (503) on DB errors
 
