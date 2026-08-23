@@ -264,6 +264,39 @@ describe('SiteCard', () => {
     expect(screen.getByTestId('share-site-button')).toBeDisabled();
   });
 
+  it('links published sites to live edit and page builder separately', () => {
+    renderWithRouter(
+      <SiteCard
+        site={mockSite}
+        onDelete={mockDeleteHandler}
+      />
+    );
+
+    const liveEdit = screen.getByTestId('edit-site-button');
+    expect(liveEdit).toHaveAttribute('href', '/view/testbusiness?edit=true');
+    expect(liveEdit).toHaveAccessibleName(/Edit text on site/i);
+    expect(liveEdit.getAttribute('title')).toMatch(/outlined text/i);
+
+    const builder = screen.getByTestId('site-card-page-builder');
+    expect(builder).toHaveAttribute('href', '/setup?site=site-1');
+    expect(builder).toHaveTextContent('Page builder');
+  });
+
+  it('keeps draft sites on a single page builder edit link', () => {
+    renderWithRouter(
+      <SiteCard
+        site={{ ...mockSite, status: 'draft' }}
+        onDelete={mockDeleteHandler}
+      />
+    );
+
+    const edit = screen.getByTestId('edit-site-button');
+    expect(edit).toHaveAttribute('href', '/setup?site=site-1');
+    expect(edit).toHaveTextContent('Edit');
+    expect(screen.queryByTestId('site-card-page-builder')).not.toBeInTheDocument();
+    expect(edit.getAttribute('href')).not.toMatch(/edit=true/);
+  });
+
   it('opens the share modal when Share is clicked', () => {
     renderWithRouter(
       <SiteCard

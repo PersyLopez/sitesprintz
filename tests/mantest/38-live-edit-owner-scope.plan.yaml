@@ -1,0 +1,86 @@
+url: "http://localhost:5173/login"
+goal: Account dashboard separates live text edit from page builder for published sites
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter gallery email
+    fill: { testId: login-email, value: "gallery@sitesprintz.com", clear: true }
+
+  - action: Enter gallery password
+    fill: { testId: login-password, value: "GalleryDemo123!", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard loads
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 1200
+
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+    settle_ms: 400
+
+  - action: Mira card shows live edit and page builder links
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/Mira Design Studio/i.test(t)) {
+        throw new Error('Dashboard missing solo site: ' + t.slice(0, 280));
+      }
+      const card = page.locator('[data-testid="site-card"][data-subdomain="gallery-freelancer"]');
+      if ((await card.count()) === 0) throw new Error('Missing gallery-freelancer site card');
+      const liveEdit = card.getByTestId('edit-site-button');
+      const builder = card.getByTestId('site-card-page-builder');
+      if ((await liveEdit.count()) === 0) throw new Error('Missing edit-site-button on Mira card');
+      if ((await builder.count()) === 0) throw new Error('Missing site-card-page-builder on Mira card');
+      const liveHref = await liveEdit.getAttribute('href');
+      const builderHref = await builder.getAttribute('href');
+      if (!/\/view\/gallery-freelancer\?edit=true/.test(liveHref || '')) {
+        throw new Error('Live edit href not on Mira card: ' + liveHref);
+      }
+      if (!/\/setup\?site=/.test(builderHref || '')) {
+        throw new Error('Page builder href not on Mira card: ' + builderHref);
+      }
+
+  - action: Open live edit from Mira card
+    code: |
+      const card = page.locator('[data-testid="site-card"][data-subdomain="gallery-freelancer"]');
+      await card.getByTestId('edit-site-button').click();
+    settle_ms: 2000
+
+  - action: Live edit scope hint on page
+    code: |
+      const scope = page.getByTestId('seamless-edit-scope');
+      try {
+        await scope.waitFor({ timeout: 20000 });
+      } catch {
+        throw new Error('LEFTOVER toolbar scope not on page yet');
+      }
+
+  - action: Open where-to-edit panel when toggle present
+    code: |
+      const toggle = page.getByTestId('seamless-edit-scope-toggle');
+      if (await toggle.count()) {
+        await toggle.click();
+      }
+    settle_ms: 500
+
+  - action: Scope panel lists settings and page builder
+    code: |
+      const toggle = page.getByTestId('seamless-edit-scope-toggle');
+      if ((await toggle.count()) === 0) return;
+      const settings = page.getByTestId('seamless-edit-scope-settings');
+      const builder = page.getByTestId('seamless-edit-scope-edit');
+      if ((await settings.count()) === 0) throw new Error('Missing seamless-edit-scope-settings');
+      if ((await builder.count()) === 0) throw new Error('Missing seamless-edit-scope-edit');
+      const builderHref = await builder.getAttribute('href');
+      if (!/\/setup\?site=/.test(builderHref || '')) {
+        throw new Error('Scope page builder href wrong: ' + builderHref);
+      }

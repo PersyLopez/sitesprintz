@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { OptimizedImage } from '../common/OptimizedImage';
+import { LIVE_EDIT_SCOPE_HINT } from '../../utils/liveEditScope';
 import { getSiteDisplayName, getSiteWorkspacePaths } from '../../utils/siteWorkspace';
 import ShareModal from '../ShareModal';
 import './SiteCard.css';
@@ -13,6 +14,7 @@ function SiteCard({ site, onDelete, onDuplicate }) {
   const paths = getSiteWorkspacePaths(site.id, site);
   const templateLabel = site.template || site.templateId || 'Custom Template';
   const canShare = site.status === 'published' && Boolean(site.subdomain);
+  const canLiveEdit = site.status === 'published' && Boolean(site.subdomain);
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -98,13 +100,36 @@ function SiteCard({ site, onDelete, onDuplicate }) {
           Share
         </button>
 
-        <Link
-          to={site.status === 'published' && site.subdomain ? paths.liveEdit : paths.edit}
-          className="btn btn-secondary btn-sm"
-          data-testid="edit-site-button"
-        >
-          Edit
-        </Link>
+        {canLiveEdit ? (
+          <>
+            <Link
+              to={paths.liveEdit}
+              className="btn btn-secondary btn-sm"
+              data-testid="edit-site-button"
+              title={LIVE_EDIT_SCOPE_HINT}
+              aria-label={`Edit text on site. ${LIVE_EDIT_SCOPE_HINT}`}
+            >
+              Edit text
+            </Link>
+            <Link
+              to={paths.edit}
+              className="btn btn-secondary btn-sm"
+              data-testid="site-card-page-builder"
+              title="Photos, sections, FAQ, and menu"
+              aria-label="Page builder for photos, sections, FAQ, and menu"
+            >
+              Page builder
+            </Link>
+          </>
+        ) : (
+          <Link
+            to={paths.edit}
+            className="btn btn-secondary btn-sm"
+            data-testid="edit-site-button"
+          >
+            Edit
+          </Link>
+        )}
 
         {onDuplicate && (
           <button type="button" onClick={onDuplicate} className="btn btn-secondary btn-sm" title="Duplicate site" aria-label="Duplicate site">
