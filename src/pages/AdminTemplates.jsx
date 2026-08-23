@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import PublicPageLayout from '../components/layout/PublicPageLayout';
+import Header from '../components/layout/Header';
 import AdminSubnav from '../components/admin/AdminSubnav';
 import './AdminTemplates.css';
 
@@ -211,13 +211,14 @@ export default function AdminTemplates() {
   };
 
   if (!isAuthenticated) {
-    return <PublicPageLayout>Access denied. Admin only.</PublicPageLayout>;
+    return <p>Access denied. Admin only.</p>;
   }
 
   const totalPages = Math.ceil(total / limit);
 
   return (
-    <PublicPageLayout className="admin-templates-page" data-testid="admin-templates-page">
+    <div className="admin-templates-page" data-testid="admin-templates-page">
+      <Header />
       <AdminSubnav />
       <div className="admin-header">
         <div className="admin-header-left">
@@ -313,6 +314,6 @@ export default function AdminTemplates() {
           )}
         </>
       )}
-    </PublicPageLayout>
+    </div>
   );
 }

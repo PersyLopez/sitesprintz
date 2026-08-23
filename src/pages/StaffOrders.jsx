@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useStaff } from '../context/StaffContext';
 import { useToast } from '../hooks/useToast';
 import { usePolling } from '../hooks/usePolling';
 import Header from '../components/layout/Header';
@@ -8,20 +9,42 @@ import Footer from '../components/layout/Footer';
 import api from '../services/api';
 import './StaffDashboard.css';
 
+function isToday(dateValue) {
+  if (!dateValue) return false;
+  const date = new Date(dateValue);
+  const now = new Date();
+  return (
+    date.getFullYear() === now.getFullYear()
+    && date.getMonth() === now.getMonth()
+    && date.getDate() === now.getDate()
+  );
+}
+
 function StaffOrders() {
   const { tenantId } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { assignments, loading: contextLoading } = useStaff();
   const { showSuccess, showError } = useToast();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
 
+  const assignment = assignments.find((a) => a.tenantId === tenantId);
+  const canViewOrders = assignment?.permissions?.canViewOrders === true;
+  const canFetchOrders = Boolean(
+    tenantId && isAuthenticated && !contextLoading && assignment && canViewOrders
+  );
+  const todayOrders = useMemo(
+    () => orders.filter((order) => isToday(order.created_at || order.createdAt)),
+    [orders]
+  );
+
   // Poll for orders
   const { data: polledData, lastUpdated } = usePolling({
     endpoint: `/api/staff/orders/${tenantId}`,
     interval: 15000,
-    enabled: !!tenantId && isAuthenticated,
+    enabled: canFetchOrders,
     params: { status: statusFilter },
     onUpdate: (newData) => {
       setOrders(newData.orders || []);
@@ -35,10 +58,10 @@ function StaffOrders() {
   }, [polledData]);
 
   useEffect(() => {
-    if (tenantId && isAuthenticated) {
+    if (canFetchOrders) {
       loadOrders();
     }
-  }, [tenantId, statusFilter, isAuthenticated]);
+  }, [tenantId, statusFilter, canFetchOrders]);
 
   const loadOrders = async () => {
     try {
@@ -84,13 +107,61 @@ function StaffOrders() {
     );
   }
 
+  if (!contextLoading && !assignment) {
+    return (
+      <div className="staff-dashboard">
+        <Header />
+        <main className="dashboard-container">
+          <div className="dashboard-card">
+            <div className="empty-state">
+              <h2>Not assigned to this business</h2>
+              <p>Orders are only shown for businesses you are assigned to.</p>
+              <button
+                type="button"
+                onClick={() => navigate('/staff/dashboard')}
+                className="btn btn-secondary"
+              >
+                ← Back to Dashboard
+              </button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!contextLoading && assignment && !canViewOrders) {
+    return (
+      <div className="staff-dashboard">
+        <Header />
+        <main className="dashboard-container">
+          <div className="dashboard-card">
+            <div className="empty-state">
+              <h2>Orders not available</h2>
+              <p>Your staff role does not include permission to view orders.</p>
+              <button
+                type="button"
+                onClick={() => navigate('/staff/dashboard')}
+                className="btn btn-secondary"
+              >
+                ← Back to Dashboard
+              </button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="staff-dashboard">
       <Header />
       <main className="dashboard-container">
         <div className="dashboard-card">
           <div className="dashboard-header">
-            <h1>Orders</h1>
+            <h1>Today&apos;s Orders</h1>
             <button
               onClick={() => navigate('/staff/dashboard')}
               className="btn btn-secondary"
@@ -121,13 +192,13 @@ function StaffOrders() {
               <div className="spinner"></div>
               <p>Loading orders...</p>
             </div>
-          ) : orders.length === 0 ? (
-            <div className="empty-state">
-              <p>No orders found.</p>
+          ) : todayOrders.length === 0 ? (
+            <div className="empty-state" data-testid="staff-orders-empty">
+              <p>No orders for today on your assigned businesses.</p>
             </div>
           ) : (
             <div className="orders-list">
-              {orders.map(order => (
+              {todayOrders.map(order => (
                 <div key={order.id} className="order-card">
                   <div className="order-header">
                     <div className="order-id">Order #{order.id}</div>

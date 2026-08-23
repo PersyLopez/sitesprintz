@@ -17,6 +17,10 @@ vi.mock('../../src/hooks/useAuth', () => ({
   }),
 }));
 
+vi.mock('../../src/components/layout/Header', () => ({
+  default: () => <div data-testid="header">Header</div>,
+}));
+
 // Mock fetch
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
@@ -41,6 +45,7 @@ describe('AdminTemplates', () => {
 
   it('renders the page header', () => {
     renderAdminTemplates();
+    expect(screen.getByTestId('admin-subnav')).toBeTruthy();
     expect(screen.getByText('Template Management')).toBeTruthy();
     expect(screen.getByText('Create, edit, and manage website templates')).toBeTruthy();
   });
