@@ -6,6 +6,15 @@ import userEvent from '@testing-library/user-event';
 import Orders from '../../src/pages/Orders';
 import { AuthContext } from '../../src/context/AuthContext';
 import { ToastContext } from '../../src/context/ToastContext';
+import { useSiteWorkspace } from '../../src/context/SiteWorkspaceContext';
+
+vi.mock('../../src/context/SiteWorkspaceContext', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    useSiteWorkspace: vi.fn(),
+  };
+});
 
 // Mock components
 vi.mock('../../src/components/layout/Header', () => ({
@@ -90,6 +99,12 @@ describe('Orders Page', () => {
       showInfo: vi.fn()
     };
 
+    useSiteWorkspace.mockReturnValue({
+      embedded: false,
+      siteId: null,
+      site: null,
+    });
+
     // Mock localStorage
     Storage.prototype.getItem = vi.fn(() => 'fake-token');
 
@@ -136,7 +151,7 @@ describe('Orders Page', () => {
       
       expect(screen.getByTestId('header')).toBeInTheDocument();
       await waitFor(() => {
-        expect(screen.getByText('📦 Orders')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { level: 1, name: 'Orders' })).toBeInTheDocument();
       });
     });
 
@@ -652,6 +667,30 @@ describe('Orders Page', () => {
       });
       
       expect(window.URL.createObjectURL).toHaveBeenCalled();
+    });
+  });
+
+  describe('Embedded workspace', () => {
+    beforeEach(() => {
+      useSiteWorkspace.mockReturnValue({
+        embedded: true,
+        siteId: 'site-1',
+        site: { id: 'site-1', subdomain: 'test-site' },
+      });
+    });
+
+    it('does not render a nested main landmark or page h1', async () => {
+      renderOrders('/orders?siteId=site-1');
+
+      await waitFor(() => {
+        expect(screen.getByTestId('order-card-ORD-001')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByRole('main')).toBeNull();
+      expect(screen.queryByRole('heading', { level: 1, name: 'Orders' })).toBeNull();
+      expect(screen.getByRole('heading', { level: 2, name: 'Orders' })).toBeInTheDocument();
+      expect(screen.queryByTestId('header')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('footer')).not.toBeInTheDocument();
     });
   });
 

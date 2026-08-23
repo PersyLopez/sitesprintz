@@ -21,7 +21,8 @@
   gap: var(--spacing-lg);
 }
 
-.header-title h1 {
+.header-title h1,
+.header-title h2 {
   font-size: 2.2rem;
   margin: 0 0 var(--spacing-xs);
   color: var(--text-light);

@@ -225,6 +225,9 @@ function Orders() {
       selectedStatus === OWNER_ORDER_FILTERS.NEW ? 'pending' : selectedStatus === OWNER_ORDER_FILTERS.COMPLETED ? 'fulfilled' : selectedStatus
     ).toLowerCase();
 
+  const Container = embedded ? 'div' : 'main';
+  const PageTitle = embedded ? 'h2' : 'h1';
+
   if (!siteId) {
     return (
       <div className={`orders-page${embedded ? ' embedded-page' : ''}`}>
@@ -248,11 +251,11 @@ function Orders() {
     <div className={`orders-page${embedded ? ' embedded-page' : ''}`}>
       {!embedded && <Header />}
 
-      <main className="orders-container">
+      <Container className="orders-container">
         {/* Page Header */}
         <div className="page-header">
           <div className="header-title">
-            <h1>📦 Orders</h1>
+            <PageTitle>Orders</PageTitle>
             <p>{filteredOrders.length} {selectedStatusLabel} orders</p>
           </div>
 
@@ -397,7 +400,7 @@ function Orders() {
             ))}
           </div>
         )}
-      </main>
+      </Container>
 
       {!embedded && <Footer />}
 
