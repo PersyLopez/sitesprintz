@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { api } from '../../services/api';
+import Header from '../layout/Header';
+import AdminSubnav from './AdminSubnav';
 import './PricingManagement.css';
 
 function PricingManagement() {
@@ -134,6 +136,8 @@ function PricingManagement() {
 
   return (
     <div className="pricing-management">
+      <Header />
+      <AdminSubnav />
       <div className="pricing-header">
         <h1>💰 Pricing Management</h1>
         <p>Manage subscription pricing for all plans</p>
