@@ -1,0 +1,358 @@
+{
+  "generated": "2026-08-18",
+  "scope": "US only; New Jersey first (SiteSprintz LLC turf)",
+  "method": "Public directories + listing pages. Google Places search skipped: GOOGLE_PLACES_API_KEY unset. Frozen scorer treats Fresha/Groupon/Squire/Grubhub as real hosts; this file overrides those as directory-only (still no owned site).",
+  "import": "POST /api/outreach/candidates/import with items[].import",
+  "rejected_examples": [
+    "Glamour's Beauty Salon Newark — glamours-beautysalon.com",
+    "Glamour Pet Salon JC — glamourpetsalon.com",
+    "Paws and Suds — pawsandsuds.com",
+    "Torta Truck — tortatrucknj.com",
+    "Tripleta Pollo Loky — tripletapolloloky.com",
+    "LV Auto Tech — lvautotech.com",
+    "ADD Auto Body — addbodyshop.com",
+    "Gerardo's Auto Repair — gerardosauto.com",
+    "Cronin Plumbing — croninplumbingandheating.com",
+    "Born & Raised Electric — born-raisedelectric.com",
+    "Phoenex Electric — phoenexelectric.com",
+    "Alhamadanya Sweets — permanently closed",
+    "Scissorhands New Brunswick — replaced by True Cuts",
+    "Beauty Image Salon Newark — permanently closed, 2 reviews"
+  ],
+  "stats": {
+    "first_wave": 13,
+    "watchlist": 5,
+    "rejected_with_real_sites": 13
+  },
+  "items": [
+    {
+      "priority": 1,
+      "wave": "first-call",
+      "score": 95,
+      "fit": true,
+      "import": {
+        "name": "A & J Auto Repairs LLC",
+        "address": "361 S Broad St, Elizabeth, NJ 07201",
+        "city": "Elizabeth, NJ",
+        "phone": "(908) 937-8003",
+        "website": "",
+        "niche": "auto-repair",
+        "layout_key": "craftsman",
+        "types": ["car_repair"],
+        "rating": 4.9,
+        "review_count": 70,
+        "has_hours": true,
+        "photo_count": 1,
+        "notes": "No independent website. Alt phone (908) 937-8063. Hours Mon–Fri 8am–6pm, Sat 8am–3pm, Sun closed. Owners/staff named in reviews: Martin, Adonai. Spanish + English reviews. Services: general repair, oil, lights, brakes, honest second opinions. Plan: Growth if they want estimates form; else Starter with Call CTA. Photos: Google listing. Voice: bilingual NAP footer."
+      }
+    },
+    {
+      "priority": 2,
+      "wave": "first-call",
+      "score": 95,
+      "fit": true,
+      "import": {
+        "name": "S.M. AUTO REPAIRS",
+        "address": "967 S Elmora Ave, Elizabeth, NJ 07202",
+        "city": "Elizabeth, NJ",
+        "phone": "(908) 662-6413",
+        "website": "",
+        "niche": "auto-repair",
+        "layout_key": "craftsman",
+        "types": ["car_repair"],
+        "rating": 4.7,
+        "review_count": 115,
+        "has_hours": true,
+        "photo_count": 1,
+        "notes": "No independent website (AutoTechIQ website empty). Hours Mon–Fri 9am–5pm, Sat 9am–4pm, Sun closed. Family-owned 20+ years. Services: oil, tires, brakes, suspension, transmission, general. One negative review alleged cash-only / receipt issues — confirm payment methods before publishing. Spanish-capable. Staff named: Lino."
+      }
+    },
+    {
+      "priority": 3,
+      "wave": "first-call",
+      "score": 95,
+      "fit": true,
+      "import": {
+        "name": "Hair Salon Caribbean",
+        "address": "595 N 6th St, Newark, NJ 07107",
+        "city": "Newark, NJ",
+        "phone": "(973) 268-9555",
+        "website": "",
+        "niche": "salon",
+        "layout_key": "atelier",
+        "types": ["beauty_salon", "hair_care"],
+        "rating": 4.5,
+        "review_count": 39,
+        "has_hours": true,
+        "photo_count": 1,
+        "notes": "No dedicated website. Hours (Waze/Belliata): Mon–Wed/Sat 9am–7pm, Thu–Fri 9am–8pm, Sun 8am–12pm. Birdeye lists shorter hours — confirm before publish. Services: hair, nails, waxing, unisex. CTA: Book by phone until booking widget. Starter."
+      }
+    },
+    {
+      "priority": 4,
+      "wave": "first-call",
+      "score": 95,
+      "fit": true,
+      "import": {
+        "name": "Kebab King Food Truck",
+        "address": "1 Nelson Ave, Jersey City, NJ 07307",
+        "city": "Jersey City, NJ",
+        "phone": "(201) 936-7565",
+        "website": "",
+        "niche": "food-stall",
+        "layout_key": "bazaar",
+        "types": ["food_truck"],
+        "rating": 4.6,
+        "review_count": 211,
+        "has_hours": true,
+        "photo_count": 1,
+        "notes": "No owned site. Lives on Grubhub/Uber Eats (directory, not a website). Alt phone (201) 688-9455. Hours daily ~11am–8:45pm. Menu: chicken/lamb over rice, mixed grill platter ~$17, gyros, falafel, fries. Growth if they want their own ordering page instead of 30% app fees. Entity: KEBAB KING LLC, also 3507 JFK Blvd."
+      }
+    },
+    {
+      "priority": 5,
+      "wave": "first-call",
+      "score": 85,
+      "fit": true,
+      "import": {
+        "name": "ACJ Auto Repair",
+        "address": "570 Maple Ave, Elizabeth, NJ 07202",
+        "city": "Elizabeth, NJ",
+        "phone": "(908) 827-6185",
+        "website": "https://www.instagram.com/",
+        "niche": "auto-repair",
+        "layout_key": "craftsman",
+        "types": ["car_repair"],
+        "rating": 5.0,
+        "review_count": 66,
+        "has_hours": false,
+        "photo_count": 1,
+        "notes": "No live owned domain (acjautorepair.com does not resolve). CARFAX Top-rated, 5.0 from 66 verified. Alt MapQuest phone (908) 527-9734. Makes: Honda, Toyota, Ford, Chevy, Nissan. Services: brakes, oil, steering/suspension. Confirm Instagram handle and hours on call. Starter with Call CTA."
+      }
+    },
+    {
+      "priority": 6,
+      "wave": "first-call",
+      "score": 85,
+      "fit": true,
+      "import": {
+        "name": "Studio 17 Beauty Salon",
+        "address": "269 Newark Ave, Jersey City, NJ 07302",
+        "city": "Jersey City, NJ",
+        "phone": "(201) 610-1515",
+        "website": "https://www.facebook.com/Studio17BeautySalon/",
+        "niche": "salon",
+        "layout_key": "atelier",
+        "types": ["beauty_salon", "hair_care"],
+        "rating": 4.7,
+        "review_count": 199,
+        "has_hours": false,
+        "photo_count": 1,
+        "notes": "Facebook listed as website; MapQuest points at Groupon. Instagram @studio17jc. Stylists named in reviews: Cindy, Ken. Color + cut. One review complained about 10-minute late cancellation — publish a clear late/no-show policy. Confirm hours. Starter + booking."
+      }
+    },
+    {
+      "priority": 7,
+      "wave": "first-call",
+      "score": 85,
+      "fit": true,
+      "import": {
+        "name": "Mary Dominican Beauty Salon",
+        "address": "763 Broadway, Newark, NJ 07104",
+        "city": "Newark, NJ",
+        "phone": "(973) 485-7676",
+        "website": "",
+        "niche": "salon",
+        "layout_key": "atelier",
+        "types": ["beauty_salon"],
+        "rating": 4.5,
+        "review_count": 163,
+        "has_hours": false,
+        "photo_count": 1,
+        "notes": "No owned site; Fresha listing only. Dominican blowout, color, laser mentioned. Stylist Guillermina named for bridal. Bilingual Spanish/English. Steam deep conditioner called out in reviews. Confirm hours + Instagram. Starter + booking."
+      }
+    },
+    {
+      "priority": 8,
+      "wave": "first-call",
+      "score": 85,
+      "fit": true,
+      "import": {
+        "name": "True Cuts Barbershop",
+        "address": "353 George Street, New Brunswick, NJ 08901",
+        "city": "New Brunswick, NJ",
+        "phone": "(732) 317-1087",
+        "website": "",
+        "niche": "salon",
+        "layout_key": "atelier",
+        "types": ["hair_care"],
+        "rating": 4.9,
+        "review_count": 25,
+        "has_hours": true,
+        "photo_count": 1,
+        "notes": "No owned site; books on Squire. Owner Joseph 'True' Ciafullo (former Scissorhands employee, opened own shop here). Hours Mon–Thu 10am–9pm, Fri–Sat 10am–10pm, Sun 12–7pm. Services/prices: basic $35, fade $40, haircut+beard $45, college ID $35, kids $25, shape-up $20, beard $15, hot towel shave $30. Rutgers student discount. Walk-ins + appointments. Four chairs. Starter + booking. Do not confuse with other True Cuts locations."
+      }
+    },
+    {
+      "priority": 9,
+      "wave": "first-call",
+      "score": 85,
+      "fit": true,
+      "import": {
+        "name": "Djura Grill",
+        "address": "20 Montgomery St, Jersey City, NJ 07302",
+        "city": "Jersey City, NJ",
+        "phone": "(201) 952-3974",
+        "website": "https://www.instagram.com/djuraexpress/",
+        "niche": "food-stall",
+        "layout_key": "bazaar",
+        "types": ["food_truck"],
+        "rating": 4.8,
+        "review_count": 113,
+        "has_hours": true,
+        "photo_count": 1,
+        "notes": "No owned site. Facebook/Instagram @djuraexpress. Entity: Djura Grill LLC, 481 Manila Ave. Hours Mon–Sat 11am–8pm, Sun 2–8pm. Menu: chicken/lamb/falafel over rice ~$10, gyros. Yelp also lists 50 Christopher Columbus Dr and (718) 249-3788 — confirm current pin on call. Growth if they want owned ordering."
+      }
+    },
+    {
+      "priority": 10,
+      "wave": "first-call",
+      "score": 85,
+      "fit": true,
+      "import": {
+        "name": "Chennai Flavors Food Truck",
+        "address": "55 Christopher Columbus Dr, Jersey City, NJ 07302",
+        "city": "Jersey City, NJ",
+        "phone": "(201) 668-9685",
+        "website": "https://www.instagram.com/chennaiflavorsfoodtruck/",
+        "niche": "food-stall",
+        "layout_key": "bazaar",
+        "types": ["food_truck"],
+        "rating": 4.4,
+        "review_count": 83,
+        "has_hours": true,
+        "photo_count": 1,
+        "notes": "Instagram-primary. Hours Wed–Mon 6:30–10:30pm, Tue closed. South Indian: masala dosa, kothu parotta, veg biryani, paneer, sambar/chutney. Family-run. Evening-only hours are the product story. Starter or Growth for catering requests."
+      }
+    },
+    {
+      "priority": 11,
+      "wave": "first-call",
+      "score": 80,
+      "fit": true,
+      "import": {
+        "name": "Neptune Bakery & Deli",
+        "address": "1612 John F. Kennedy Blvd, Jersey City, NJ 07305",
+        "city": "Jersey City, NJ",
+        "phone": "(201) 333-2374",
+        "website": "https://www.instagram.com/neptunebakery/",
+        "niche": "restaurant",
+        "layout_key": "mercantile",
+        "types": ["bakery"],
+        "rating": 4.5,
+        "review_count": 175,
+        "has_hours": true,
+        "photo_count": 1,
+        "notes": "Press: follow Instagram until the website is up. Owners Kevin and Janel Santos; Portuguese family since 1980s. Hours 5:00am–8:30pm daily. Famous custard cups, Taylor ham sandwiches, custom cakes, breakfast/lunch. Delivery via UberEats/Grubhub. Growth for cake-order form + hours. Do not steal Unsplash; use their IG/Google photos with permission."
+      }
+    },
+    {
+      "priority": 12,
+      "wave": "first-call",
+      "score": 75,
+      "fit": true,
+      "import": {
+        "name": "Second Street Bakery",
+        "address": "402 2nd St, Jersey City, NJ 07302",
+        "city": "Jersey City, NJ",
+        "phone": "(201) 420-1793",
+        "website": "https://www.instagram.com/2ndstreetbakery/",
+        "niche": "restaurant",
+        "layout_key": "mercantile",
+        "types": ["bakery"],
+        "rating": 4.6,
+        "review_count": 256,
+        "has_hours": true,
+        "photo_count": 1,
+        "notes": "No owned site. Instagram @2ndstreetbakery. Owner Gino Siniscalchi; founded 1927 by Antonio Siniscalchi. Hours Tue–Sun 9am–2pm, closed Mon. Recently started taking cards. Bread, cinnamon/chocolate bread, downtown sandwich. Heritage-quality story but sell Starter first (do not pitch Heritage SKU unless asked). Confirm they still want a site — old-school shops sometimes refuse."
+      }
+    },
+    {
+      "priority": 13,
+      "wave": "verify-then-call",
+      "score": 80,
+      "fit": true,
+      "import": {
+        "name": "The Luchy's Style Beauty Salon",
+        "address": "1400 Summit Ave, Union City, NJ 07087",
+        "city": "Union City, NJ",
+        "phone": "(201) 864-4453",
+        "website": "",
+        "niche": "salon",
+        "layout_key": "atelier",
+        "types": ["beauty_salon"],
+        "rating": 4.7,
+        "review_count": 20,
+        "has_hours": true,
+        "photo_count": 0,
+        "notes": "No website found. Hours listed daily 10:00am–6:30pm. Hair + nails. Google rating 4.7/20 is from a secondary directory — confirm on Maps before outreach. Spanish-first neighborhood. Starter."
+      }
+    }
+  ],
+  "watchlist": [
+    {
+      "name": "Killa Fitness (The Mecca)",
+      "city": "Newark, NJ",
+      "niche": "gym",
+      "why": "Instagram-forward independent gym on South Street; article mentioned a website we could not confirm. Need phone, hours, Google rating.",
+      "contact": "Owner Khalif Sharrieff; possible phone 973-307-0302 unverified"
+    },
+    {
+      "name": "El Carretero Bakery",
+      "city": "Union City, NJ",
+      "address": "4602 Bergenline Ave",
+      "phone": "(201) 348-4822",
+      "niche": "restaurant",
+      "why": "OSM listed linktr.ee/elcarreterobakery. Mixed reviews at this pin; other El Carretero locations (3500/4112) are larger and may already order online. Confirm this storefront is independent."
+    },
+    {
+      "name": "Los Brothers Barbershop",
+      "city": "Paterson, NJ",
+      "address": "520 Union Ave",
+      "phone": "(862) 235-3891",
+      "niche": "salon",
+      "why": "Booksy only, 5.0 but only 6 Google reviews — below the 8-review floor."
+    },
+    {
+      "name": "Figueredo Auto Repair",
+      "city": "Union City, NJ",
+      "address": "403 14th Street",
+      "phone": "(201) 348-0478",
+      "niche": "auto-repair",
+      "why": "No website in OSM; no public review volume found."
+    },
+    {
+      "name": "Salem & Sons Bakery",
+      "city": "Union City, NJ",
+      "address": "611 Palisade Avenue",
+      "phone": "(201) 348-2882",
+      "niche": "restaurant",
+      "why": "OSM 24/7, no website. Need Google rating/hours confirmation."
+    }
+  ],
+  "build_rules": {
+    "layouts": {
+      "salon": "atelier — hours, services, booking, gallery from their photos",
+      "auto-repair": "craftsman — Call CTA, hours, service list, NAP, bilingual if reviews are Spanish",
+      "bakery_restaurant": "mercantile — hours, menu/favorites, location, optional ordering on Growth",
+      "food-stall": "bazaar — pin, hours, menu, catering; Growth if they want to escape app fees"
+    },
+    "quality": [
+      "Confirm hours and phone on the call before publishing a prospect site",
+      "Ask permission before using Instagram/Google photos; no Unsplash on customer sites",
+      "Spanish copy for Elizabeth, Newark Broadway, Union City Bergenline/Summit",
+      "NAP in footer; tel: links; hours in hero for Growth chrome",
+      "Do not pitch a replacement site to anyone who already has a real domain"
+    ]
+  }
+}

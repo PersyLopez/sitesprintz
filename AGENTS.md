@@ -88,6 +88,7 @@ Create a doc **only if** the user asked, OR all of:
 | Area | Primary files | Doc |
 |------|---------------|-----|
 | Site creation | `server/routes/drafts.routes.js`, `src/services/drafts.js` | `docs/verification/SITE_CREATION_PROCESS_VERIFICATION.md` |
+| Claimable prospects | `server/services/claimTokenService.js`, `server/services/booking/ensurePublishedBooking.js` | `.agent/workflows/claimable_prospect.md` + `.cursor/rules/demo-from-sources.mdc` |
 | E-commerce | `src/components/ecommerce/`, `server/routes/orders.routes.js` | `docs/ecommerce/README.md` |
 | Tiers & features | `src/config/tiers.js`, `src/utils/planFeatures.js` | `docs/ecommerce/ECOMMERCE_TIER_CONSOLIDATION.md` |
 | Page builder | `src/components/setup/PageBuilder.jsx`, `src/config/sectionRegistry.js` | `docs/features/PLUG_AND_PLAY_IMPLEMENTATION.md` |
@@ -150,4 +151,4 @@ Skill rules live in `.cursorrules` and `.cursor/GLOBAL_RULES_FOR_CURSOR.md`.
 
 ---
 
-**Version**: 1.2 | **Last updated**: June 2026
+**Version**: 1.3 | **Last updated**: August 2026
