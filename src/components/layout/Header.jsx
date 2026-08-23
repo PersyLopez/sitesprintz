@@ -13,6 +13,8 @@ function Header() {
   const menuRef = useRef(null);
   const location = useLocation();
   const isDashboard = location.pathname === '/dashboard' || location.pathname.startsWith('/dashboard/');
+  const isStaffRoute = location.pathname === '/staff' || location.pathname.startsWith('/staff/');
+  const showOwnerNav = isAuthenticated && !isStaffRoute;
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -85,22 +87,26 @@ function Header() {
         <nav className="nav-menu desktop-nav" aria-label="Main navigation" data-testid="desktop-nav">
           {isAuthenticated ? (
             <>
-              <Link 
-                to="/dashboard" 
-                className={`nav-link ${isDashboard ? 'active' : ''}`}
-                aria-current={isDashboard ? 'page' : undefined}
-                data-testid="nav-dashboard"
-              >
-                {t('nav.dashboard')}
-              </Link>
-              <Link 
-                to="/setup" 
-                className={`nav-link ${location.pathname === '/setup' ? 'active' : ''}`}
-                aria-current={location.pathname === '/setup' ? 'page' : undefined}
-                data-testid="nav-create-site"
-              >
-                {t('nav.createSite')}
-              </Link>
+              {showOwnerNav && (
+                <>
+                  <Link 
+                    to="/dashboard" 
+                    className={`nav-link ${isDashboard ? 'active' : ''}`}
+                    aria-current={isDashboard ? 'page' : undefined}
+                    data-testid="nav-dashboard"
+                  >
+                    {t('nav.dashboard')}
+                  </Link>
+                  <Link 
+                    to="/setup" 
+                    className={`nav-link ${location.pathname === '/setup' ? 'active' : ''}`}
+                    aria-current={location.pathname === '/setup' ? 'page' : undefined}
+                    data-testid="nav-create-site"
+                  >
+                    {t('nav.createSite')}
+                  </Link>
+                </>
+              )}
               <Link
                 to="/showcase"
                 className={`nav-link ${location.pathname === '/showcase' || location.pathname.startsWith('/showcase/') ? 'active' : ''}`}
@@ -211,24 +217,28 @@ function Header() {
               </div>
             )}
             <LanguageSwitcher className="header-language-switcher header-language-switcher--mobile" />
-            <Link 
-              to="/dashboard" 
-              className={`mobile-nav-link ${isDashboard ? 'active' : ''}`}
-              onClick={() => setMobileMenuOpen(false)}
-              aria-current={isDashboard ? 'page' : undefined}
-              data-testid="mobile-nav-dashboard"
-            >
-              {t('nav.dashboard')}
-            </Link>
-            <Link 
-              to="/setup" 
-              className={`mobile-nav-link ${location.pathname === '/setup' ? 'active' : ''}`}
-              onClick={() => setMobileMenuOpen(false)}
-              aria-current={location.pathname === '/setup' ? 'page' : undefined}
-              data-testid="mobile-nav-create-site"
-            >
-              {t('nav.createSite')}
-            </Link>
+            {showOwnerNav && (
+              <>
+                <Link 
+                  to="/dashboard" 
+                  className={`mobile-nav-link ${isDashboard ? 'active' : ''}`}
+                  onClick={() => setMobileMenuOpen(false)}
+                  aria-current={isDashboard ? 'page' : undefined}
+                  data-testid="mobile-nav-dashboard"
+                >
+                  {t('nav.dashboard')}
+                </Link>
+                <Link 
+                  to="/setup" 
+                  className={`mobile-nav-link ${location.pathname === '/setup' ? 'active' : ''}`}
+                  onClick={() => setMobileMenuOpen(false)}
+                  aria-current={location.pathname === '/setup' ? 'page' : undefined}
+                  data-testid="mobile-nav-create-site"
+                >
+                  {t('nav.createSite')}
+                </Link>
+              </>
+            )}
             <Link
               to="/showcase"
               className={`mobile-nav-link ${location.pathname.startsWith('/showcase') ? 'active' : ''}`}

@@ -1,16 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { BrowserRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import Header from '../../src/components/layout/Header';
 import { AuthContext } from '../../src/context/AuthContext';
 
 describe('Header Component', () => {
   const mockLogout = vi.fn();
 
-  const renderHeader = (isAuthenticated = false) => {
+  const renderHeader = (isAuthenticated = false, initialRoute = '/') => {
     return render(
-      <BrowserRouter>
+      <MemoryRouter initialEntries={[initialRoute]}>
         <AuthContext.Provider
           value={{
             isAuthenticated,
@@ -21,7 +21,7 @@ describe('Header Component', () => {
         >
           <Header />
         </AuthContext.Provider>
-      </BrowserRouter>
+      </MemoryRouter>
     );
   };
 
@@ -86,7 +86,7 @@ describe('Header Component', () => {
     });
 
     it('should show Create Site link when authenticated', () => {
-      renderHeader(true);
+      renderHeader(true, '/dashboard');
 
       const createSiteLink = screen.getByRole('link', { name: /Create Site/i });
       expect(createSiteLink).toBeInTheDocument();
@@ -118,6 +118,37 @@ describe('Header Component', () => {
       renderHeader(true);
 
       expect(screen.queryByRole('link', { name: /Get Started/i })).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Staff route navigation', () => {
+    it('should not show Create Site on /staff', () => {
+      renderHeader(true, '/staff');
+
+      expect(screen.queryByTestId('nav-create-site')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('mobile-nav-create-site')).not.toBeInTheDocument();
+      expect(screen.getByTestId('nav-logout-button')).toBeInTheDocument();
+    });
+
+    it('should not show Create Site on /staff/orders', () => {
+      renderHeader(true, '/staff/orders/tenant-1');
+
+      expect(screen.queryByTestId('nav-create-site')).not.toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: /Create Site/i })).not.toBeInTheDocument();
+    });
+
+    it('should not show Dashboard on staff routes', () => {
+      renderHeader(true, '/staff/dashboard');
+
+      expect(screen.queryByTestId('nav-dashboard')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('mobile-nav-dashboard')).not.toBeInTheDocument();
+    });
+
+    it('should show Create Site on /dashboard for owners', () => {
+      renderHeader(true, '/dashboard');
+
+      expect(screen.getByTestId('nav-create-site')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /Create Site/i })).toHaveAttribute('href', '/setup');
     });
   });
 
@@ -207,7 +238,7 @@ describe('Header Component', () => {
     });
 
     it('should have descriptive link text', () => {
-      renderHeader(true);
+      renderHeader(true, '/dashboard');
 
       expect(screen.getByRole('link', { name: /Dashboard/i })).toHaveAccessibleName();
       expect(screen.getByRole('link', { name: /Create Site/i })).toHaveAccessibleName();
