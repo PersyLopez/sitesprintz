@@ -19,6 +19,11 @@ function renderRedirect(initialEntry, pane) {
         <Route path="/dashboard/sites/:siteId/orders" element={<LocationDisplay />} />
         <Route path="/dashboard/sites/:siteId/products" element={<LocationDisplay />} />
         <Route path="/dashboard/sites/:siteId/appointments" element={<LocationDisplay />} />
+        <Route
+          path="/analytics/:subdomain"
+          element={<LegacySitePaneRedirect pane="analytics" fromParam />}
+        />
+        <Route path="/dashboard/sites/:siteId/analytics" element={<LocationDisplay />} />
       </Routes>
     </MemoryRouter>,
   );
@@ -38,5 +43,20 @@ describe('LegacySitePaneRedirect', () => {
   it('redirects /booking-dashboard?siteId=abc to appointments workspace', () => {
     renderRedirect('/booking-dashboard?siteId=abc', 'appointments');
     expect(screen.getByTestId('location')).toHaveTextContent('/dashboard/sites/abc/appointments');
+  });
+
+  it('redirects /analytics/mira to site analytics workspace', () => {
+    render(
+      <MemoryRouter initialEntries={['/analytics/mira']}>
+        <Routes>
+          <Route
+            path="/analytics/:subdomain"
+            element={<LegacySitePaneRedirect pane="analytics" fromParam />}
+          />
+          <Route path="/dashboard/sites/:siteId/analytics" element={<LocationDisplay />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    expect(screen.getByTestId('location')).toHaveTextContent('/dashboard/sites/mira/analytics');
   });
 });

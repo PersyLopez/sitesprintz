@@ -131,8 +131,8 @@ describe('SiteAnalyticsTable Component', () => {
       );
 
       const links = screen.getAllByText(/View Analytics/);
-      expect(links[0]).toHaveAttribute('href', '/analytics/main-site');
-      expect(links[1]).toHaveAttribute('href', '/analytics/restaurant-site');
+      expect(links[0]).toHaveAttribute('href', '/dashboard/sites/1/analytics');
+      expect(links[1]).toHaveAttribute('href', '/dashboard/sites/2/analytics');
     });
   });
 

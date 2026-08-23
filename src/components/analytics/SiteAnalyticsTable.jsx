@@ -34,7 +34,7 @@ function SiteAnalyticsTable({ sites }) {
             </span>
             <span className="table-col-actions">
               <Link
-                to={`/analytics/${site.subdomain}`}
+                to={`/dashboard/sites/${site.id || site.subdomain}/analytics`}
                 className="btn btn-sm btn-primary"
               >
                 View Analytics →

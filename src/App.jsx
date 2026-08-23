@@ -55,7 +55,6 @@ const StaffOrders = lazy(() => import('./pages/StaffOrders'));
 const TrackLookup = lazy(() => import('./pages/TrackLookup'));
 const TrackOrder = lazy(() => import('./pages/TrackOrder'));
 const TrackAppointment = lazy(() => import('./pages/TrackAppointment'));
-const SiteAnalytics = lazy(() => import('./pages/SiteAnalytics'));
 
 // Components
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -385,9 +384,7 @@ function App() {
                 path="/analytics/:subdomain"
                 element={
                   <ProtectedRoute>
-                    <Suspense fallback={<LoadingFallback message="Loading site analytics..." />}>
-                      <SiteAnalytics />
-                    </Suspense>
+                    <LegacySitePaneRedirect pane="analytics" fromParam />
                   </ProtectedRoute>
                 }
               />
