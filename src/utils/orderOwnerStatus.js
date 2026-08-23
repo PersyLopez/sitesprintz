@@ -21,7 +21,8 @@ export const OWNER_CANCELLED_STATUSES = ['cancelled'];
 /** API status sent on GET ?status= for a UI filter chip (undefined = load all) */
 export function ownerFilterToApiQueryStatus(filter) {
   if (filter === OWNER_ORDER_FILTERS.NEW) {
-    return 'pending';
+    // New spans pending/new/processing — load all and filter client-side
+    return undefined;
   }
   if (filter === OWNER_ORDER_FILTERS.CANCELLED) {
     return 'cancelled';

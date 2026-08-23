@@ -13,8 +13,8 @@ import {
 
 describe('orderOwnerStatus', () => {
   describe('ownerFilterToApiQueryStatus', () => {
-    it('maps New to pending', () => {
-      expect(ownerFilterToApiQueryStatus(OWNER_ORDER_FILTERS.NEW)).toBe('pending');
+    it('does not narrow New to a single API status', () => {
+      expect(ownerFilterToApiQueryStatus(OWNER_ORDER_FILTERS.NEW)).toBeUndefined();
     });
 
     it('maps Cancelled to cancelled', () => {
@@ -28,9 +28,10 @@ describe('orderOwnerStatus', () => {
   });
 
   describe('orderMatchesOwnerFilter', () => {
-    it('matches pending and new for New filter', () => {
+    it('matches pending, new, and processing for New filter', () => {
       expect(orderMatchesOwnerFilter({ status: 'pending' }, OWNER_ORDER_FILTERS.NEW)).toBe(true);
       expect(orderMatchesOwnerFilter({ status: 'new' }, OWNER_ORDER_FILTERS.NEW)).toBe(true);
+      expect(orderMatchesOwnerFilter({ status: 'processing' }, OWNER_ORDER_FILTERS.NEW)).toBe(true);
       expect(orderMatchesOwnerFilter({ status: 'fulfilled' }, OWNER_ORDER_FILTERS.NEW)).toBe(false);
     });
 

@@ -133,19 +133,27 @@ const BookingDashboard = () => {
     
     try {
       setSavingPhase2(true);
-      await put(`/api/booking/tenants/${user.id}/reminder-settings`, {
-        enabled: phase2Settings.reminders_enabled,
-        hoursBefore: phase2Settings.reminder_hours,
-      });
+      await put(
+        `/api/booking/tenants/${user.id}/reminder-settings`,
+        {
+          enabled: phase2Settings.reminders_enabled,
+          hoursBefore: phase2Settings.reminder_hours,
+        },
+        { params: siteQuery }
+      );
 
       const servicesRes = await get(`/api/booking/tenants/${user.id}/services`, { params: siteQuery });
       const services = servicesRes.services || [];
       await Promise.all(
         services.map((svc) =>
-          put(`/api/booking/services/${svc.id}/buffer-settings`, {
-            before: phase2Settings.buffer_minutes || 0,
-            after: phase2Settings.buffer_minutes || 0,
-          })
+          put(
+            `/api/booking/services/${svc.id}/buffer-settings`,
+            {
+              before: phase2Settings.buffer_minutes || 0,
+              after: phase2Settings.buffer_minutes || 0,
+            },
+            { params: siteQuery }
+          )
         )
       );
 

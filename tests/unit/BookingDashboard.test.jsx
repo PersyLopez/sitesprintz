@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor, within, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthContext } from '../../src/context/AuthContext';
 import { ToastProvider } from '../../src/context/ToastContext';
@@ -258,6 +258,56 @@ describe('BookingDashboard Component - TDD', () => {
 
       await waitFor(() => {
         expect(api.get.mock.calls.length).toBeGreaterThanOrEqual(5);
+      });
+    });
+  });
+
+  describe('Phase 2 settings', () => {
+    it('includes siteId when saving reminder and buffer settings', async () => {
+      api.get.mockImplementation((url) => {
+        if (url.includes('reminder-settings')) {
+          return Promise.resolve({ enabled: true, hoursBefore: 24 });
+        }
+        if (url.includes('services')) {
+          return Promise.resolve({ services: [{ id: 9, buffer_minutes_after: 15 }] });
+        }
+        if (url.includes('appointments')) {
+          return Promise.resolve({ appointments: [] });
+        }
+        return Promise.resolve({});
+      });
+      api.put.mockResolvedValue({ success: true });
+
+      render(
+        <BrowserRouter>
+          <AuthContext.Provider value={mockAuthContext}>
+            <ToastProvider>
+              <SiteWorkspaceProvider site={{ id: 'site-1' }} siteId="site-1">
+                <BookingDashboard />
+              </SiteWorkspaceProvider>
+            </ToastProvider>
+          </AuthContext.Provider>
+        </BrowserRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('phase2-tab')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByTestId('phase2-tab'));
+      fireEvent.click(screen.getByTestId('save-phase2-settings-btn'));
+
+      await waitFor(() => {
+        expect(api.put).toHaveBeenCalledWith(
+          `/api/booking/tenants/${mockUser.id}/reminder-settings`,
+          { enabled: true, hoursBefore: 24 },
+          { params: { siteId: 'site-1' } }
+        );
+        expect(api.put).toHaveBeenCalledWith(
+          '/api/booking/services/9/buffer-settings',
+          { before: 15, after: 15 },
+          { params: { siteId: 'site-1' } }
+        );
       });
     });
   });
