@@ -4,6 +4,15 @@ import userEvent from '@testing-library/user-event';
 import Products from '../../src/pages/Products';
 import { renderWithAllProviders } from '../utils/testWrapper.jsx';
 import { api } from '../../src/services/api';
+import { useSiteWorkspace } from '../../src/context/SiteWorkspaceContext';
+
+vi.mock('../../src/context/SiteWorkspaceContext', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    useSiteWorkspace: vi.fn(),
+  };
+});
 
 // Mock dependencies
 vi.mock('../../src/services/api', async () => {
@@ -148,6 +157,11 @@ describe('Products Page', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     setupApiMocks();
+    useSiteWorkspace.mockReturnValue({
+      embedded: false,
+      siteId: null,
+      site: null,
+    });
     global.localStorage = {
       getItem: vi.fn((key) => {
         if (['token', 'authToken', 'accessToken'].includes(key)) return 'mock-token';
@@ -423,6 +437,30 @@ describe('Products Page', () => {
         expect(screen.queryByText('Basic Gadget')).not.toBeInTheDocument();
         expect(screen.queryByText('Deluxe Tool')).not.toBeInTheDocument();
       });
+    });
+  });
+
+  describe('Embedded workspace', () => {
+    beforeEach(() => {
+      useSiteWorkspace.mockReturnValue({
+        embedded: true,
+        siteId: 'site-123',
+        site: { id: 'site-123', subdomain: 'test-store' },
+      });
+    });
+
+    it('does not render a nested main landmark or page h1', async () => {
+      renderProducts();
+
+      await waitFor(() => {
+        expect(screen.getByText('Premium Widget')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByRole('main')).toBeNull();
+      expect(screen.queryByRole('heading', { level: 1, name: /Products/i })).toBeNull();
+      expect(screen.getByRole('heading', { level: 2, name: 'Products' })).toBeInTheDocument();
+      expect(screen.queryByTestId('header')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('footer')).not.toBeInTheDocument();
     });
   });
 });

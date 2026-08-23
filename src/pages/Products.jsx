@@ -248,14 +248,16 @@ function Products() {
   });
 
   const categories = ['all', ...new Set(products.map((p) => p.category || 'General'))];
+  const Container = embedded ? 'div' : 'main';
+  const PageTitle = embedded ? 'h2' : 'h1';
 
   if (needsSitePick) {
     return (
       <div className={`products-page${embedded ? ' embedded-page' : ''}`}>
         {!embedded && <Header />}
-        <main className="products-container">
+        <Container className="products-container">
           <div className="site-picker" data-testid="products-site-picker">
-            <h1>Choose a site</h1>
+            <PageTitle>Choose a site</PageTitle>
             <p>Select which site’s product catalog you want to manage.</p>
             <div className="site-picker-grid">
               {sites.map((site) => (
@@ -273,7 +275,7 @@ function Products() {
             </div>
             <Link to="/dashboard" className="btn btn-secondary">← Dashboard</Link>
           </div>
-        </main>
+        </Container>
         {!embedded && <Footer />}
       </div>
     );
@@ -283,10 +285,12 @@ function Products() {
     <div className={`products-page${embedded ? ' embedded-page' : ''}`}>
       {!embedded && <Header />}
 
-      <main className="products-container">
+      <Container className="products-container">
         <div className="products-header">
           <div className="header-content">
-            <h1>Products{siteName ? ` — ${siteName}` : ''}</h1>
+            <PageTitle>
+              Products{!embedded && siteName ? ` — ${siteName}` : ''}
+            </PageTitle>
             <p>
               {products.length} product{products.length === 1 ? '' : 's'}
               {!embedded && sites.length > 1 ? (
@@ -467,7 +471,7 @@ function Products() {
             </div>
           </div>
         )}
-      </main>
+      </Container>
 
       {!embedded && <Footer />}
 
