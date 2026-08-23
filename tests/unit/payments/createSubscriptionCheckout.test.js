@@ -83,6 +83,21 @@ describe('createSubscriptionCheckout metadata', () => {
     });
   });
 
+  it('uses configured Stripe Price ID when env is set', async () => {
+    process.env.STRIPE_PRICE_STARTER = 'price_starter_env_test';
+
+    const response = await request(app)
+      .post('/api/payments/create-subscription-checkout')
+      .send({ plan: 'starter' });
+
+    expect(response.status).toBe(200);
+    const [sessionOptions] = mockSessionsCreate.mock.calls[0];
+    expect(sessionOptions.line_items).toEqual([{ price: 'price_starter_env_test', quantity: 1 }]);
+    expect(sessionOptions.line_items[0].price_data).toBeUndefined();
+
+    delete process.env.STRIPE_PRICE_STARTER;
+  });
+
   it('returns 409 when user already has active subscription', async () => {
     mockUsersFindUnique.mockResolvedValue({
       stripe_customer_id: 'cus_existing',

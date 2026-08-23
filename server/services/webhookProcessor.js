@@ -11,6 +11,7 @@ import BookingPaymentAdapter from './booking/BookingPaymentAdapter.js';
 import {
   fulfillPlatformSubscription,
   resolveUserForSession,
+  resolvePlanFromSubscription,
 } from './payments/fulfillPlatformSubscription.js';
 
 export class WebhookProcessor {
@@ -24,9 +25,13 @@ export class WebhookProcessor {
     // Event handler mapping
     this.handlers = {
       'checkout.session.completed': this.handleCheckoutCompleted.bind(this),
+      'checkout.session.async_payment_succeeded': this.handleAsyncPaymentSucceeded.bind(this),
+      'checkout.session.async_payment_failed': this.handleAsyncPaymentFailed.bind(this),
       'customer.subscription.updated': this.handleSubscriptionUpdated.bind(this),
       'customer.subscription.deleted': this.handleSubscriptionDeleted.bind(this),
+      'invoice.paid': this.handleInvoicePaid.bind(this),
       'invoice.payment_failed': this.handlePaymentFailed.bind(this),
+      'invoice.payment_action_required': this.handleInvoicePaymentActionRequired.bind(this),
       'charge.refunded': this.handleChargeRefunded.bind(this),
       'payment_intent.payment_failed': this.handlePaymentIntentFailed.bind(this),
     };
@@ -371,6 +376,235 @@ export class WebhookProcessor {
       throw new Error('User not found for subscription');
     }
     return result;
+  }
+
+  /**
+   * Handle invoice.paid — renewals and recurring charge confirmation
+   */
+  async handleInvoicePaid(event) {
+    const invoice = event.data.object;
+
+    try {
+      let subscription = null;
+      let subscriptionId = null;
+
+      if (invoice.subscription) {
+        subscriptionId = typeof invoice.subscription === 'string'
+          ? invoice.subscription
+          : invoice.subscription.id;
+
+        if (this.stripe && subscriptionId) {
+          try {
+            subscription = await this.stripe.subscriptions.retrieve(subscriptionId);
+          } catch (retrieveError) {
+            console.error('Failed to retrieve subscription for invoice.paid:', retrieveError);
+          }
+        }
+      }
+
+      let user = null;
+      if (subscriptionId) {
+        user = await this.getUserBySubscriptionId(subscriptionId);
+      }
+
+      if (!user && invoice.customer) {
+        const customerId = typeof invoice.customer === 'string'
+          ? invoice.customer
+          : invoice.customer.id;
+        user = await this.db.users.findFirst({
+          where: { stripe_customer_id: customerId },
+        });
+      }
+
+      if (!user) {
+        console.warn('User not found for invoice.paid:', invoice.id);
+        return { action: 'user_not_found' };
+      }
+
+      const stripeStatus = subscription?.status;
+      if (stripeStatus !== 'active' && stripeStatus !== 'trialing') {
+        return { action: 'invoice_paid_ignored', status: stripeStatus };
+      }
+
+      const mappedStatus = stripeStatus === 'trialing' ? 'trialing' : 'active';
+      const updateData = {
+        subscription_status: mappedStatus,
+        updated_at: new Date(),
+      };
+
+      if (subscriptionId) {
+        updateData.stripe_subscription_id = subscriptionId;
+      }
+
+      if (subscription?.current_period_end) {
+        updateData.current_period_end = new Date(subscription.current_period_end * 1000);
+      }
+
+      if (subscription) {
+        const plan = resolvePlanFromSubscription(subscription);
+        if (plan) {
+          updateData.plan = plan;
+          updateData.subscription_plan = plan;
+        }
+      }
+
+      await this.db.users.update({
+        where: { id: user.id },
+        data: updateData,
+      });
+
+      try {
+        if (user.email) {
+          await this.emailService.sendEmail({
+            to: user.email,
+            template: 'subscriptionRenewed',
+            data: {
+              amount: invoice.amount_paid,
+              plan: updateData.plan || user.plan,
+            },
+          });
+        }
+      } catch (emailError) {
+        console.error('Invoice paid email failed:', emailError);
+      }
+
+      return {
+        action: 'invoice_paid_updated',
+        status: mappedStatus,
+        plan: updateData.plan,
+      };
+    } catch (error) {
+      console.error('Error handling invoice.paid:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Handle deferred subscription checkout success (async payment methods)
+   */
+  async handleAsyncPaymentSucceeded(event) {
+    let session = event.data.object;
+
+    if (this.stripe && session?.id) {
+      try {
+        session = await this.stripe.checkout.sessions.retrieve(session.id);
+      } catch (retrieveError) {
+        console.error('Failed to retrieve session for async_payment_succeeded:', retrieveError);
+      }
+    }
+
+    if (session.mode !== 'subscription') {
+      return { action: 'ignored_non_subscription' };
+    }
+
+    const result = await fulfillPlatformSubscription(session, {
+      db: this.db,
+      stripe: this.stripe,
+    });
+
+    return {
+      action: result.fulfilled ? 'async_payment_fulfilled' : 'async_payment_not_fulfilled',
+      ...result,
+    };
+  }
+
+  /**
+   * Handle deferred subscription checkout failure — never grant a plan
+   */
+  async handleAsyncPaymentFailed(event) {
+    const session = event.data.object;
+    const userId = session.metadata?.userId;
+
+    if (!userId) {
+      console.warn('async_payment_failed missing metadata.userId:', session.id);
+      return { action: 'user_not_found' };
+    }
+
+    const user = await this.db.users.findUnique({ where: { id: userId } });
+    if (!user) {
+      return { action: 'user_not_found' };
+    }
+
+    const status = session.payment_status === 'unpaid' ? 'unpaid' : 'incomplete';
+
+    await this.db.users.update({
+      where: { id: user.id },
+      data: {
+        subscription_status: status,
+        updated_at: new Date(),
+      },
+    });
+
+    return { action: 'async_payment_failed_updated', status };
+  }
+
+  /**
+   * Handle invoice requiring customer action (e.g. 3DS on renewal)
+   */
+  async handleInvoicePaymentActionRequired(event) {
+    const invoice = event.data.object;
+
+    try {
+      let subscription = null;
+      let subscriptionId = null;
+
+      if (invoice.subscription) {
+        subscriptionId = typeof invoice.subscription === 'string'
+          ? invoice.subscription
+          : invoice.subscription.id;
+
+        if (this.stripe && subscriptionId) {
+          try {
+            subscription = await this.stripe.subscriptions.retrieve(subscriptionId);
+          } catch (retrieveError) {
+            console.error('Failed to retrieve subscription for payment_action_required:', retrieveError);
+          }
+        }
+      }
+
+      let user = null;
+      if (subscriptionId) {
+        user = await this.getUserBySubscriptionId(subscriptionId);
+      }
+
+      if (!user && invoice.customer) {
+        const customerId = typeof invoice.customer === 'string'
+          ? invoice.customer
+          : invoice.customer.id;
+        user = await this.db.users.findFirst({
+          where: { stripe_customer_id: customerId },
+        });
+      }
+
+      if (!user) {
+        return { action: 'user_not_found' };
+      }
+
+      const subStatus = subscription?.status || 'past_due';
+
+      await this.db.users.update({
+        where: { id: user.id },
+        data: {
+          subscription_status: subStatus,
+          updated_at: new Date(),
+        },
+      });
+
+      try {
+        await this.emailService.sendEmail({
+          to: user.email,
+          template: 'paymentFailed',
+          data: { amount: invoice.amount_due },
+        });
+      } catch (emailError) {
+        console.error('payment_action_required email failed:', emailError);
+      }
+
+      return { action: 'payment_action_required', status: subStatus };
+    } catch (error) {
+      console.error('Error handling payment_action_required:', error);
+      throw error;
+    }
   }
 
   /**

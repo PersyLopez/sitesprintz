@@ -24,6 +24,35 @@ export function normalizePlatformPlan(rawPlan) {
 }
 
 /**
+ * Map Stripe Price ID to platform plan via env configuration.
+ * Unknown IDs return null — never default to growth.
+ * @param {string|undefined|null} priceId
+ * @returns {'starter'|'growth'|null}
+ */
+export function mapPlanFromPriceId(priceId) {
+  if (!priceId || typeof priceId !== 'string') return null;
+  const starter = process.env.STRIPE_PRICE_STARTER;
+  const growth = process.env.STRIPE_PRICE_GROWTH;
+  if (starter && priceId === starter) return 'starter';
+  if (growth && priceId === growth) return 'growth';
+  return null;
+}
+
+/**
+ * Resolve plan from subscription metadata or first line item price id.
+ * @param {import('stripe').Stripe.Subscription} subscription
+ * @returns {'starter'|'growth'|null}
+ */
+export function resolvePlanFromSubscription(subscription) {
+  const fromMeta = normalizePlatformPlan(subscription?.metadata?.plan);
+  if (fromMeta) return fromMeta;
+
+  const item = subscription?.items?.data?.[0];
+  const priceId = item?.price?.id || item?.plan?.id;
+  return mapPlanFromPriceId(priceId);
+}
+
+/**
  * @param {import('stripe').Stripe.Checkout.Session} session
  * @returns {string|null}
  */

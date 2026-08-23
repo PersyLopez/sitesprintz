@@ -497,13 +497,18 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
 
         const userId = req.user.id;
 
-        // Create checkout session with dynamic pricing
-        const session = await stripe.checkout.sessions.create({
-            customer: customerId,
-            client_reference_id: userId,
-            mode: 'subscription',
-            payment_method_types: ['card'],
-            line_items: [{
+        const envPriceId = plan === 'starter'
+            ? process.env.STRIPE_PRICE_STARTER
+            : process.env.STRIPE_PRICE_GROWTH;
+        const configuredPriceId = typeof envPriceId === 'string'
+            && envPriceId.startsWith('price_')
+            && envPriceId.length > 6
+            ? envPriceId
+            : null;
+
+        const lineItems = configuredPriceId
+            ? [{ price: configuredPriceId, quantity: 1 }]
+            : [{
                 price_data: {
                     currency: 'usd',
                     product_data: {
@@ -516,12 +521,21 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
                     },
                 },
                 quantity: 1,
-            }],
+            }];
+
+        const automaticTaxEnabled = process.env.STRIPE_AUTOMATIC_TAX === 'true';
+
+        const session = await stripe.checkout.sessions.create({
+            customer: customerId,
+            client_reference_id: userId,
+            mode: 'subscription',
+            payment_method_types: ['card'],
+            line_items: lineItems,
             success_url: redirects.successUrl,
             cancel_url: redirects.cancelUrl,
             allow_promotion_codes: true,
-            billing_address_collection: 'auto',
-            automatic_tax: { enabled: false },
+            billing_address_collection: automaticTaxEnabled ? 'required' : 'auto',
+            automatic_tax: { enabled: automaticTaxEnabled },
             subscription_data: {
                 metadata: {
                     plan,
@@ -796,10 +810,16 @@ const createPortalSessionHandler = asyncHandler(async (req, res) => {
         });
     }
 
-    const session = await stripe.billingPortal.sessions.create({
+    const portalSessionOptions = {
         customer: stripeCustomerId,
-        return_url: portalReturnUrl
-    });
+        return_url: portalReturnUrl,
+    };
+
+    if (process.env.STRIPE_PORTAL_CONFIGURATION_ID) {
+        portalSessionOptions.configuration = process.env.STRIPE_PORTAL_CONFIGURATION_ID;
+    }
+
+    const session = await stripe.billingPortal.sessions.create(portalSessionOptions);
 
     sendSuccess(res, { url: session.url });
 });

@@ -3,6 +3,8 @@ import {
   normalizePlatformPlan,
   fulfillPlatformSubscription,
   resolveUserForSession,
+  mapPlanFromPriceId,
+  resolvePlanFromSubscription,
 } from '../../../server/services/payments/fulfillPlatformSubscription.js';
 
 const paidSession = (overrides = {}) => ({
@@ -106,6 +108,23 @@ describe('fulfillPlatformSubscription', () => {
     expect(normalizePlatformPlan(null)).toBeNull();
     expect(normalizePlatformPlan(undefined)).toBeNull();
     expect(normalizePlatformPlan('')).toBeNull();
+  });
+
+  it('mapPlanFromPriceId returns null for unknown price id (not growth)', () => {
+    process.env.STRIPE_PRICE_STARTER = 'price_starter_known';
+    process.env.STRIPE_PRICE_GROWTH = 'price_growth_known';
+    expect(mapPlanFromPriceId('price_unknown_xyz')).toBeNull();
+    expect(mapPlanFromPriceId('price_starter_known')).toBe('starter');
+    expect(mapPlanFromPriceId('price_growth_known')).toBe('growth');
+  });
+
+  it('resolvePlanFromSubscription prefers metadata over price id', () => {
+    process.env.STRIPE_PRICE_STARTER = 'price_starter_known';
+    const sub = {
+      metadata: { plan: 'growth' },
+      items: { data: [{ price: { id: 'price_starter_known' } }] },
+    };
+    expect(resolvePlanFromSubscription(sub)).toBe('growth');
   });
 
   it('rejects unknown plan without granting growth', async () => {
@@ -249,11 +268,23 @@ describe('fulfillPlatformSubscription', () => {
 describe('WebhookProcessor subscription status (users only)', () => {
   let processor;
   let mockDb;
+  let mockStripe;
 
   beforeEach(async () => {
+    mockStripe = {
+      subscriptions: {
+        retrieve: vi.fn(),
+      },
+      checkout: {
+        sessions: {
+          retrieve: vi.fn(),
+        },
+      },
+    };
     mockDb = {
       users: {
         findFirst: vi.fn(),
+        findUnique: vi.fn(),
         update: vi.fn(),
       },
       webhook_events: {
@@ -261,7 +292,7 @@ describe('WebhookProcessor subscription status (users only)', () => {
       },
     };
     const { WebhookProcessor } = await import('../../../server/services/webhookProcessor.js');
-    processor = new WebhookProcessor(mockDb);
+    processor = new WebhookProcessor(mockDb, null, mockStripe);
     processor.emailService = { sendEmail: vi.fn().mockResolvedValue({}) };
   });
 
@@ -322,5 +353,79 @@ describe('WebhookProcessor subscription status (users only)', () => {
     mockDb.webhook_events.findUnique.mockRejectedValue(new Error('db down'));
 
     await expect(processor.isEventProcessed('evt_1')).rejects.toThrow('db down');
+  });
+
+  it('handleInvoicePaid updates period and status for active subscription', async () => {
+    process.env.STRIPE_PRICE_STARTER = 'price_starter_env';
+    const periodEnd = Math.floor(Date.now() / 1000) + 86400;
+    mockStripe.subscriptions.retrieve.mockResolvedValue({
+      id: 'sub_invoice',
+      status: 'active',
+      current_period_end: periodEnd,
+      metadata: { plan: 'starter' },
+      items: { data: [{ price: { id: 'price_starter_env' } }] },
+    });
+    mockDb.users.findFirst.mockResolvedValue({
+      id: 'user-invoice',
+      email: 'invoice@example.com',
+      plan: 'starter',
+      stripe_subscription_id: 'sub_invoice',
+    });
+    mockDb.users.update.mockResolvedValue({});
+
+    const result = await processor.handleInvoicePaid({
+      data: {
+        object: {
+          id: 'in_1',
+          subscription: 'sub_invoice',
+          customer: 'cus_invoice',
+          amount_paid: 1000,
+        },
+      },
+    });
+
+    expect(result.action).toBe('invoice_paid_updated');
+    expect(mockDb.users.update).toHaveBeenCalledWith({
+      where: { id: 'user-invoice' },
+      data: expect.objectContaining({
+        subscription_status: 'active',
+        stripe_subscription_id: 'sub_invoice',
+        plan: 'starter',
+        current_period_end: new Date(periodEnd * 1000),
+      }),
+    });
+  });
+
+  it('handleAsyncPaymentFailed does not grant a plan', async () => {
+    mockDb.users.findUnique.mockResolvedValue({
+      id: 'user-async-fail',
+      email: 'fail@example.com',
+      plan: 'trial',
+      subscription_plan: null,
+    });
+    mockDb.users.update.mockResolvedValue({});
+
+    const result = await processor.handleAsyncPaymentFailed({
+      data: {
+        object: {
+          id: 'cs_fail',
+          mode: 'subscription',
+          payment_status: 'unpaid',
+          metadata: { userId: 'user-async-fail', plan: 'growth' },
+        },
+      },
+    });
+
+    expect(result.action).toBe('async_payment_failed_updated');
+    expect(mockDb.users.update).toHaveBeenCalledWith({
+      where: { id: 'user-async-fail' },
+      data: {
+        subscription_status: 'unpaid',
+        updated_at: expect.any(Date),
+      },
+    });
+    const updateData = mockDb.users.update.mock.calls[0][0].data;
+    expect(updateData.plan).toBeUndefined();
+    expect(updateData.subscription_plan).toBeUndefined();
   });
 });
