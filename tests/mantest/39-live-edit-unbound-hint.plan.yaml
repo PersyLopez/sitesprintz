@@ -1,0 +1,49 @@
+url: "http://localhost:5173/login"
+goal: Live edit shows Site settings hint when owner clicks a non-editable phone link
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter gallery email
+    fill: { testId: login-email, value: "gallery@sitesprintz.com", clear: true }
+
+  - action: Enter gallery password
+    fill: { testId: login-password, value: "GalleryDemo123!", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard loads
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Open Mira live edit
+    goto: "http://localhost:5173/view/gallery-freelancer?edit=true"
+    settle_ms: 1500
+    wait_for: { selector: '[data-testid="seamless-edit-toolbar"]', timeout: 20000 }
+
+  - action: Published site ready
+    wait_for: { selector: '[data-testid="published-composed-site"]', timeout: 15000 }
+
+  - action: Click header phone link without navigation
+    code: |
+      const phone = page.getByTestId('header-call');
+      if ((await phone.count()) === 0) {
+        const hero = page.getByTestId('hero-phone');
+        if ((await hero.count()) === 0) {
+          throw new Error('LEFTOVER no phone link on Mira (header-call or hero-phone)');
+        }
+        await hero.click({ noWaitAfter: true });
+      } else {
+        await phone.click({ noWaitAfter: true });
+      }
+    settle_ms: 500
+
+  - action: Scope hint mentions Site settings
+    code: |
+      const scope = page.getByTestId('seamless-edit-scope');
+      const text = (await scope.innerText()).trim();
+      if (!/Site settings/i.test(text)) {
+        throw new Error('Unbound hint missing Site settings: ' + text);
+      }
