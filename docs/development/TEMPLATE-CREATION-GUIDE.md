@@ -1,5 +1,8 @@
 # Template Creation Guide
 
+**Scope:** creating a new template file in `/public/data/templates/`.  
+Filling that template into a customer or claimable site: [`SITE-FROM-TEMPLATE-STANDARD.md`](./SITE-FROM-TEMPLATE-STANDARD.md). Unsplash is for gallery examples only — never on a live customer site.
+
 ## Introduction
 
 This guide walks you through creating a new Starter tier template for SiteSprintz. Following these steps ensures your template meets platform standards and provides a great user experience.

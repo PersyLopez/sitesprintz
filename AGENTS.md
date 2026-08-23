@@ -88,6 +88,7 @@ Create a doc **only if** the user asked, OR all of:
 | Area | Primary files | Doc |
 |------|---------------|-----|
 | Site creation | `server/routes/drafts.routes.js`, `src/services/drafts.js` | `docs/verification/SITE_CREATION_PROCESS_VERIFICATION.md` |
+| Site from template | named template JSON + publish | `docs/development/SITE-FROM-TEMPLATE-STANDARD.md` |
 | Claimable prospects | `server/services/claimTokenService.js`, `server/services/booking/ensurePublishedBooking.js` | `.agent/workflows/claimable_prospect.md` + `.cursor/rules/demo-from-sources.mdc` |
 | E-commerce | `src/components/ecommerce/`, `server/routes/orders.routes.js` | `docs/ecommerce/README.md` |
 | Tiers & features | `src/config/tiers.js`, `src/utils/planFeatures.js` | `docs/ecommerce/ECOMMERCE_TIER_CONSOLIDATION.md` |

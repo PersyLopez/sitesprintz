@@ -1,6 +1,6 @@
 # Template Creation Checklist
 
-Quick reference checklist for creating Starter templates. Print this out and check off items as you go!
+Quick reference for **authoring** Starter template JSON. Live sites filled from a template: [`SITE-FROM-TEMPLATE-STANDARD.md`](./SITE-FROM-TEMPLATE-STANDARD.md).
 
 ## Pre-Creation Research
 

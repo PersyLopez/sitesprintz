@@ -10,8 +10,9 @@ Coding standards and technical guides.
 | [BACKEND.md](./BACKEND.md) | Backend patterns |
 | [FRONTEND.md](./FRONTEND.md) | Frontend patterns |
 | [DATABASE.md](./DATABASE.md) | Database & Prisma |
-| [TEMPLATE-CREATION-GUIDE.md](./TEMPLATE-CREATION-GUIDE.md) | Creating templates |
-| [TEMPLATE-CHECKLIST.md](./TEMPLATE-CHECKLIST.md) | Template creation checklist |
+| [SITE-FROM-TEMPLATE-STANDARD.md](./SITE-FROM-TEMPLATE-STANDARD.md) | Quality bar when creating a live site from a template |
+| [TEMPLATE-CREATION-GUIDE.md](./TEMPLATE-CREATION-GUIDE.md) | Authoring a new template JSON |
+| [TEMPLATE-CHECKLIST.md](./TEMPLATE-CHECKLIST.md) | Template JSON authoring checklist |
 | [TEMPLATE_NICHE_ANALYSIS.md](./TEMPLATE_NICHE_ANALYSIS.md) | Niche template roadmap |
 | [CONFIGURING-TEMPLATE-TIER-FEATURES.md](./CONFIGURING-TEMPLATE-TIER-FEATURES.md) | Tier feature configuration |
 | [TEMPLATE-TIER-LIMITATIONS.md](./TEMPLATE-TIER-LIMITATIONS.md) | Tier limits per template |

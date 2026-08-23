@@ -43,6 +43,7 @@ Single entry point. Each subfolder has its own `README.md` with canonical docs f
 | Topic | Canonical doc |
 |-------|---------------|
 | Site creation flow | `verification/SITE_CREATION_PROCESS_VERIFICATION.md` |
+| Site from template (quality bar) | `development/SITE-FROM-TEMPLATE-STANDARD.md` |
 | E-commerce testing | `ecommerce/ECOMMERCE_TESTING_GUIDE.md` |
 | E-commerce tiers | `ecommerce/ECOMMERCE_TIER_CONSOLIDATION.md` |
 | Page builder | `features/PLUG_AND_PLAY_IMPLEMENTATION.md` |
