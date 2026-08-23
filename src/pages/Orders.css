@@ -365,3 +365,25 @@
   }
 }
 
+/* Embedded site workspace: quiet pane header, not standalone hero */
+.embedded-page .page-header,
+.page-header.pane-quiet-header {
+  margin-bottom: var(--spacing-lg);
+  padding: 0;
+}
+
+.embedded-page .page-header .header-title h1,
+.embedded-page .page-header .header-title h2,
+.page-header.pane-quiet-header .header-title h1,
+.page-header.pane-quiet-header .header-title h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-light);
+}
+
+.embedded-page .page-header .header-title p,
+.page-header.pane-quiet-header .header-title p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+

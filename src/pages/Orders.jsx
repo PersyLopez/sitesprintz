@@ -253,7 +253,7 @@ function Orders() {
 
       <Container className="orders-container">
         {/* Page Header */}
-        <div className="page-header">
+        <div className={`page-header${embedded ? ' pane-quiet-header' : ''}`}>
           <div className="header-title">
             <PageTitle>Orders</PageTitle>
             <p>{filteredOrders.length} {selectedStatusLabel} orders</p>

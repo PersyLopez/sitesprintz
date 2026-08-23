@@ -184,6 +184,7 @@ describe('Products Page', () => {
       expect(screen.getByTestId('payment-status-card')).toBeInTheDocument();
       expect(screen.getByTestId('header')).toBeInTheDocument();
       expect(screen.getByTestId('footer')).toBeInTheDocument();
+      expect(document.querySelector('.products-header.pane-quiet-header')).not.toBeInTheDocument();
     });
 
     it('should show loading state while fetching products', async () => {
@@ -461,6 +462,9 @@ describe('Products Page', () => {
       expect(screen.getByRole('heading', { level: 2, name: 'Products' })).toBeInTheDocument();
       expect(screen.queryByTestId('header')).not.toBeInTheDocument();
       expect(screen.queryByTestId('footer')).not.toBeInTheDocument();
+      const page = document.querySelector('.products-page.embedded-page');
+      expect(page).toBeInTheDocument();
+      expect(page.querySelector('.products-header.pane-quiet-header')).toBeInTheDocument();
     });
   });
 });

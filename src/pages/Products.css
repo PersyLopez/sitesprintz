@@ -421,3 +421,53 @@
   color: var(--text-muted, #94a3b8);
   font-size: 0.9rem;
 }
+
+/* Embedded site workspace: quiet pane header, not standalone hero */
+.embedded-page .products-header,
+.products-header.pane-quiet-header {
+  background: transparent;
+  color: var(--text-light);
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  margin-bottom: var(--spacing-lg);
+}
+
+.embedded-page .products-header .header-content h1,
+.embedded-page .products-header .header-content h2,
+.products-header.pane-quiet-header .header-content h1,
+.products-header.pane-quiet-header .header-content h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-light);
+}
+
+.embedded-page .products-header .header-content p,
+.products-header.pane-quiet-header .header-content p {
+  opacity: 1;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.embedded-page .products-header .btn-secondary,
+.products-header.pane-quiet-header .btn-secondary {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-dark);
+  color: var(--text-light);
+}
+
+.embedded-page .products-header .btn-secondary:hover,
+.products-header.pane-quiet-header .btn-secondary:hover {
+  background: var(--bg-card);
+}
+
+.embedded-page .products-header .btn-primary,
+.products-header.pane-quiet-header .btn-primary {
+  background: var(--primary-600);
+  color: var(--text-light);
+}
+
+.embedded-page .products-header .btn-primary:hover,
+.products-header.pane-quiet-header .btn-primary:hover {
+  background: var(--primary-500);
+}

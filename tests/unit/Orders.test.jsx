@@ -152,6 +152,7 @@ describe('Orders Page', () => {
       expect(screen.getByTestId('header')).toBeInTheDocument();
       await waitFor(() => {
         expect(screen.getByRole('heading', { level: 1, name: 'Orders' })).toBeInTheDocument();
+        expect(document.querySelector('.page-header.pane-quiet-header')).not.toBeInTheDocument();
       });
     });
 
@@ -691,6 +692,9 @@ describe('Orders Page', () => {
       expect(screen.getByRole('heading', { level: 2, name: 'Orders' })).toBeInTheDocument();
       expect(screen.queryByTestId('header')).not.toBeInTheDocument();
       expect(screen.queryByTestId('footer')).not.toBeInTheDocument();
+      const page = document.querySelector('.orders-page.embedded-page');
+      expect(page).toBeInTheDocument();
+      expect(page.querySelector('.page-header.pane-quiet-header')).toBeInTheDocument();
     });
   });
 

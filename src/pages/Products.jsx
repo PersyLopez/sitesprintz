@@ -286,7 +286,7 @@ function Products() {
       {!embedded && <Header />}
 
       <Container className="products-container">
-        <div className="products-header">
+        <div className={`products-header${embedded ? ' pane-quiet-header' : ''}`}>
           <div className="header-content">
             <PageTitle>
               Products{!embedded && siteName ? ` — ${siteName}` : ''}

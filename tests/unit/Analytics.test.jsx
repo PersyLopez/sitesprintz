@@ -183,6 +183,7 @@ describe('Analytics Page', () => {
         expect(within(page).queryByRole('main')).not.toBeInTheDocument();
         expect(screen.queryByRole('heading', { level: 1, name: /Analytics/i })).not.toBeInTheDocument();
         expect(screen.getByRole('heading', { level: 2, name: 'Analytics' })).toBeInTheDocument();
+        expect(page.querySelector('.analytics-header.pane-quiet-header')).toBeInTheDocument();
       });
     });
 
@@ -527,6 +528,7 @@ describe('Analytics Page', () => {
         const dashboardLink = screen.getByRole('link', { name: /← Dashboard/i });
         expect(dashboardLink).toBeInTheDocument();
         expect(dashboardLink).toHaveAttribute('href', '/dashboard');
+        expect(document.querySelector('.analytics-header.pane-quiet-header')).not.toBeInTheDocument();
       });
     });
   });

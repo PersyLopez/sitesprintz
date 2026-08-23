@@ -284,7 +284,7 @@ function Analytics() {
       {!embedded && <Header />}
 
       <PageContainer className="analytics-container" data-testid="analytics-page">
-        <div className="analytics-header">
+        <div className={`analytics-header${embedded ? ' pane-quiet-header' : ''}`}>
           <div className="header-content">
             {embedded ? (
               <h2>Analytics</h2>
