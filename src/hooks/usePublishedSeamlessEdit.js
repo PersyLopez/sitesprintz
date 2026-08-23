@@ -4,6 +4,9 @@ import api from '../services/api';
 import { bindSeamlessEditing } from '../utils/seamlessEdit';
 import { getSiteDataVersion } from '../utils/seamlessEditFields';
 
+const MAX_DELAYED_FLUSH_RETRIES = 3;
+const DELAYED_FLUSH_MS = 3000;
+
 function formatHistoryTime(timestamp) {
   if (!timestamp) return 'Saved version';
   const date = new Date(timestamp);
@@ -35,12 +38,26 @@ export function usePublishedSeamlessEdit({
   const versionRef = useRef(siteVersion);
   const queueRef = useRef(new Map());
   const timerRef = useRef(null);
+  const delayedFlushRetriesRef = useRef(0);
 
   useEffect(() => {
     versionRef.current = siteVersion;
   }, [subdomain, siteVersion]);
 
-  const flush = useCallback(async () => {
+  const scheduleDelayedFlush = useCallback((flushFn) => {
+    if (delayedFlushRetriesRef.current >= MAX_DELAYED_FLUSH_RETRIES) {
+      setSaveState('error');
+      return;
+    }
+    delayedFlushRetriesRef.current += 1;
+    setSaveState('error');
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+    timerRef.current = window.setTimeout(() => {
+      flushFn({ fromDelayedRetry: true });
+    }, DELAYED_FLUSH_MS);
+  }, []);
+
+  const flush = useCallback(async (opts = {}) => {
     if (!subdomain || queueRef.current.size === 0) return;
     const changes = [...queueRef.current.entries()].map(([field, value]) => ({ field, value }));
     queueRef.current.clear();
@@ -51,12 +68,54 @@ export function usePublishedSeamlessEdit({
         changes,
       });
       if (result?.version) versionRef.current = result.version;
+      delayedFlushRetriesRef.current = 0;
       setSaveState('saved');
     } catch (error) {
+      const statusCode = error.statusCode;
+      const payload = error.payload;
+
+      if (statusCode === 409 && !opts.conflictRetried) {
+        let nextVersion = payload?.currentVersion;
+        if (typeof nextVersion !== 'number') {
+          try {
+            const sessionData = await api.get(`/api/sites/${encodeURIComponent(subdomain)}/session`);
+            nextVersion = sessionData?.session?.currentVersion;
+          } catch {
+            nextVersion = undefined;
+          }
+        }
+        if (typeof nextVersion === 'number') {
+          versionRef.current = nextVersion;
+          changes.forEach((change) => queueRef.current.set(change.field, change.value));
+          return flush({ conflictRetried: true });
+        }
+      }
+
       changes.forEach((change) => queueRef.current.set(change.field, change.value));
+
+      if (statusCode === 403) {
+        setSaveState('error');
+        return;
+      }
+
+      const retryable = !statusCode
+        || statusCode >= 500
+        || statusCode === 429
+        || error.isNetworkError;
+
+      if (retryable && !opts.fromDelayedRetry) {
+        scheduleDelayedFlush(flush);
+        return;
+      }
+
+      if (retryable && opts.fromDelayedRetry) {
+        scheduleDelayedFlush(flush);
+        return;
+      }
+
       setSaveState('error');
     }
-  }, [subdomain]);
+  }, [subdomain, scheduleDelayedFlush]);
 
   const queueChange = useCallback((field, value) => {
     queueRef.current.set(field, value);

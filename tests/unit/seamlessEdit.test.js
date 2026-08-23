@@ -57,4 +57,20 @@ describe('annotateEditableMarkup', () => {
     expect(['true', 'plaintext-only']).toContain(heading.getAttribute('contenteditable'));
     expect(window.getSelection()?.toString() || '').not.toBe('Welcome');
   });
+
+  it('skips form and cart sidebar markup inside ss-live', () => {
+    document.body.innerHTML = `
+      <div class="ss-live">
+        <section data-ss-edit-type="hero">
+          <h1>Welcome</h1>
+          <form><input name="email" /></form>
+        </section>
+        <div class="cart-sidebar" data-testid="cart-sidebar"><h3>Cart</h3></div>
+      </div>
+    `;
+    annotateEditableMarkup(document.querySelector('.ss-live'));
+    expect(document.querySelector('h1').getAttribute('data-editable')).toBe('hero.title');
+    expect(document.querySelector('form input')).not.toHaveAttribute('data-editable');
+    expect(document.querySelector('.cart-sidebar h3')).not.toHaveAttribute('data-editable');
+  });
 });

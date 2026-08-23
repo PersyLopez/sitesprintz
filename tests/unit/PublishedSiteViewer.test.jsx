@@ -102,4 +102,17 @@ describe('PublishedSiteViewer booking portal', () => {
     });
     expect(screen.getByTestId('seamless-edit-save-state').textContent).toMatch(/saved/i);
   });
+
+  it('shows the edit toolbar for admin who is not the owner', async () => {
+    useAuth.mockReturnValue({
+      user: { id: 'admin-1', role: 'admin', email: 'admin@example.com' },
+      isAuthenticated: true,
+      loading: false,
+    });
+    renderViewer('/view/gallery-salon?edit=true');
+
+    await waitFor(() => {
+      expect(screen.getByTestId('seamless-edit-toolbar')).toBeInTheDocument();
+    });
+  });
 });

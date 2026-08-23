@@ -121,10 +121,37 @@ class APIClient {
   }
 
   /**
+   * Build a structured API error from a non-OK response.
+   */
+  buildApiError(response, data) {
+    const message = data?.message || data?.error || 'Request failed';
+    const apiError = new Error(message);
+    apiError.statusCode = response.status;
+    apiError.payload = data;
+    return apiError;
+  }
+
+  /**
+   * Whether executeWithRetry should attempt another fetch for this failure.
+   */
+  isRetryableApiFailure(error, retriesLeft) {
+    if (retriesLeft <= 0) return false;
+    if (error.message === 'Unauthorized') return false;
+    if (typeof error.statusCode === 'number') {
+      if (error.statusCode === 429) return true;
+      if (error.statusCode >= 500) return true;
+      return false;
+    }
+    return true;
+  }
+
+  /**
    * Execute request with retry logic
    */
   async executeWithRetry(url, options, retries, delay = 1000) {
-    while (retries >= 0) {
+    let retriesLeft = retries;
+
+    while (retriesLeft >= 0) {
       try {
         const response = await fetch(url, {
           ...options,
@@ -138,7 +165,15 @@ class APIClient {
         const data = await this.parseResponse(response);
 
         if (!response.ok) {
-          throw new Error(data.message || data.error || 'Request failed');
+          const apiError = this.buildApiError(response, data);
+          if (!this.isRetryableApiFailure(apiError, retriesLeft)) {
+            throw apiError;
+          }
+          console.warn(`API request failed, retrying (${retriesLeft} left)...`, apiError);
+          retriesLeft--;
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          delay *= 2;
+          continue;
         }
 
         return data;
@@ -147,25 +182,41 @@ class APIClient {
           throw error;
         }
 
-        if (retries === 0 || error.message === 'Unauthorized') {
+        if (error.message === 'Unauthorized') {
+          const authError = new Error(error.message || 'Unauthorized');
+          authError.isAuthError = true;
+          authError.originalError = error;
+          throw authError;
+        }
+
+        if (typeof error.statusCode === 'number') {
+          if (!this.isRetryableApiFailure(error, retriesLeft)) {
+            throw error;
+          }
+          console.warn(`API request failed, retrying (${retriesLeft} left)...`, error);
+          retriesLeft--;
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          delay *= 2;
+          continue;
+        }
+
+        if (retriesLeft === 0) {
           console.error('API request failed:', error);
-          // Enhance error with more context
           const enhancedError = new Error(error.message || 'Request failed');
-          enhancedError.isNetworkError = error.message?.includes('fetch') || 
-                                       error.message?.includes('network') ||
-                                       error.message?.includes('Failed to fetch') ||
-                                       error.name === 'TypeError';
-          enhancedError.isAuthError = error.message?.includes('Unauthorized') ||
-                                     error.message?.includes('401') ||
-                                     error.message?.includes('token');
+          enhancedError.isNetworkError = error.message?.includes('fetch')
+            || error.message?.includes('network')
+            || error.message?.includes('Failed to fetch')
+            || error.name === 'TypeError';
+          enhancedError.isAuthError = error.message?.includes('Unauthorized')
+            || error.message?.includes('401')
+            || error.message?.includes('token');
           enhancedError.originalError = error;
-          enhancedError.statusCode = error.status || error.response?.status;
           throw enhancedError;
         }
 
-        console.warn(`API request failed, retrying (${retries} left)...`, error);
-        retries--;
-        await new Promise(resolve => setTimeout(resolve, delay));
+        console.warn(`API request failed, retrying (${retriesLeft} left)...`, error);
+        retriesLeft--;
+        await new Promise((resolve) => setTimeout(resolve, delay));
         delay *= 2;
       }
     }

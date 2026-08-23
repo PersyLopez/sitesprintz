@@ -1,0 +1,162 @@
+url: "http://localhost:5173/login"
+goal: Live Edit Restore reloads the pre-edit checkpoint on Mira without leaving gallery brand.name dirty
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter gallery email
+    fill: { testId: login-email, value: "gallery@sitesprintz.com", clear: true }
+
+  - action: Enter gallery password
+    fill: { testId: login-password, value: "GalleryDemo123!", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard loads
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 1200
+
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+    settle_ms: 400
+
+  - action: Open Mira live edit
+    goto: "http://localhost:5173/view/gallery-freelancer?edit=true"
+    settle_ms: 2000
+    wait_for: { selector: '[data-testid="seamless-edit-toolbar"]', timeout: 20000 }
+
+  - action: Published composed site ready
+    wait_for: { selector: '[data-testid="published-composed-site"]', timeout: 15000 }
+
+  - action: Ensure clean baseline and capture original brand.name
+    code: |
+      const MARKER = ' · t37';
+      const brand = page.locator('[data-editable="brand.name"]').first();
+      if ((await brand.count()) === 0) throw new Error('No data-editable=brand.name on Mira');
+      let current = (await brand.innerText()).trim();
+      if (!/Mira/i.test(current)) throw new Error('brand.name was not Mira: ' + current.slice(0, 80));
+      if (current.includes(MARKER)) {
+        const original = current.endsWith(MARKER)
+          ? current.slice(0, -MARKER.length).trim()
+          : current.replace(MARKER, '').trim();
+        await brand.click();
+        await page.waitForFunction(() => {
+          const el = document.querySelector('[data-editable="brand.name"]');
+          return Boolean(el && el.getAttribute('contenteditable'));
+        }, { timeout: 8000 });
+        await page.evaluate((text) => {
+          const el = document.querySelector('[data-editable="brand.name"]');
+          if (!el) throw new Error('missing brand.name');
+          el.focus();
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          const sel = window.getSelection();
+          sel?.removeAllRanges();
+          sel?.addRange(range);
+          document.execCommand('insertText', false, text);
+        }, original);
+        await page.keyboard.press('Enter');
+        await page.waitForFunction(() => {
+          const el = document.querySelector('[data-testid="seamless-edit-save-state"]');
+          return /All changes saved|Save failed/i.test(el?.textContent || '');
+        }, { timeout: 15000 });
+        current = (await brand.innerText()).trim();
+      }
+      if (current.includes(MARKER)) {
+        throw new Error('LEFTOVER baseline still has marker: ' + current);
+      }
+
+  - action: Commit reversible brand tweak with t37 marker
+    code: |
+      const MARKER = ' · t37';
+      const brand = page.locator('[data-editable="brand.name"]').first();
+      const original = (await brand.innerText()).trim();
+      if (original.includes(MARKER)) throw new Error('Baseline not clean before marker commit');
+      await brand.click();
+      await page.waitForFunction(() => {
+        const el = document.querySelector('[data-editable="brand.name"]');
+        return Boolean(el && el.getAttribute('contenteditable'));
+      }, { timeout: 8000 });
+      await page.keyboard.type(MARKER);
+      await page.keyboard.press('Enter');
+      await page.waitForFunction(() => {
+        const el = document.querySelector('[data-testid="seamless-edit-save-state"]');
+        return /All changes saved|Save failed/i.test(el?.textContent || '');
+      }, { timeout: 15000 });
+      const save = (await page.getByTestId('seamless-edit-save-state').innerText()).trim();
+      const now = (await brand.innerText()).trim();
+      if (/Save failed/i.test(save)) throw new Error('Save failed after marker commit: ' + now);
+      if (!now.endsWith(MARKER)) throw new Error('Marker missing after commit: ' + now);
+
+  - action: Open history panel
+    click: { testId: seamless-edit-history }
+    settle_ms: 800
+    wait_for: { selector: '[data-testid="seamless-edit-history-panel"]', timeout: 10000 }
+
+  - action: Select newest history checkpoint
+    code: |
+      const panel = page.getByTestId('seamless-edit-history-panel');
+      if ((await panel.getAttribute('role')) !== 'dialog') {
+        throw new Error('History panel missing role=dialog');
+      }
+      const items = panel.locator('.seamless-history-item');
+      const count = await items.count();
+      if (count === 0) throw new Error('No history items after save — checkpoint missing');
+      await items.first().click();
+      const restore = page.getByTestId('seamless-edit-restore');
+      if (await restore.isDisabled()) {
+        throw new Error('Restore selected stayed disabled after choosing newest item');
+      }
+
+  - action: Restore selected checkpoint
+    click: { testId: seamless-edit-restore }
+    settle_ms: 2000
+
+  - action: Assert restore reverted brand.name
+    code: |
+      const MARKER = ' · t37';
+      await page.getByTestId('seamless-edit-toolbar').waitFor({ timeout: 20000 });
+      const brand = page.locator('[data-editable="brand.name"]').first();
+      await brand.waitFor({ timeout: 15000 });
+      let text = (await brand.innerText()).trim();
+      const saveEl = page.getByTestId('seamless-edit-save-state');
+      await saveEl.waitFor({ timeout: 10000 });
+      let save = (await saveEl.innerText()).trim();
+      if (text.includes(MARKER) || !/All changes saved/i.test(save)) {
+        const original = text.endsWith(MARKER)
+          ? text.slice(0, -MARKER.length).trim()
+          : text.replace(MARKER, '').trim() || 'Mira Design Studio';
+        await brand.click();
+        await page.waitForFunction(() => {
+          const el = document.querySelector('[data-editable="brand.name"]');
+          return Boolean(el && el.getAttribute('contenteditable'));
+        }, { timeout: 8000 });
+        await page.evaluate((value) => {
+          const el = document.querySelector('[data-editable="brand.name"]');
+          if (!el) throw new Error('missing brand.name');
+          el.focus();
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          const sel = window.getSelection();
+          sel?.removeAllRanges();
+          sel?.addRange(range);
+          document.execCommand('insertText', false, value);
+        }, original);
+        await page.keyboard.press('Enter');
+        await page.waitForFunction(() => {
+          const el = document.querySelector('[data-testid="seamless-edit-save-state"]');
+          return /All changes saved|Save failed/i.test(el?.textContent || '');
+        }, { timeout: 15000 });
+        throw new Error(
+          'Restore failed; cleaned up brand. had=' + text + ' save=' + save
+        );
+      }
+      if (!/Mira/i.test(text)) throw new Error('Brand unexpected after restore: ' + text);

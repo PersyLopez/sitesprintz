@@ -109,8 +109,12 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
   );
   const themeVars = markup?.tokens ? getLiveSiteThemeVars(markup.tokens) : undefined;
   const wantsEdit = searchParams.get('edit') === 'true';
-  const isOwner = Boolean(user?.id && ownerUserId && user.id === ownerUserId);
-  const editEnabled = Boolean(wantsEdit && isOwner && markup && !authLoading);
+  const canEditPublished = Boolean(
+    user?.id
+    && ownerUserId
+    && (user.id === ownerUserId || user.role === 'admin')
+  );
+  const editEnabled = Boolean(wantsEdit && canEditPublished && markup && !authLoading);
 
   const reloadPublishedSite = useCallback(async () => {
     if (!subdomain) return;

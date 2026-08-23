@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { apiClient } from '../../src/services/api';
+import { api as apiClient } from '../../src/services/api';
 
 // Mock fetch
 global.fetch = vi.fn();
@@ -11,11 +11,18 @@ const localStorageMock = {
   removeItem: vi.fn(),
   clear: vi.fn()
 };
-global.localStorage = localStorageMock;
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
+  writable: true,
+  configurable: true,
+});
 
 // Mock window.location
-delete window.location;
-window.location = { href: '' };
+const locationMock = { href: '', pathname: '/dashboard' };
+Object.defineProperty(window, 'location', {
+  get: () => locationMock,
+  configurable: true,
+});
 
 // Mock console methods
 global.console = {
@@ -28,6 +35,11 @@ global.console = {
 describe('API Client Service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true,
+      configurable: true,
+    });
     localStorageMock.getItem.mockReturnValue(null);
   });
 
@@ -111,7 +123,10 @@ describe('API Client Service', () => {
   // Authentication (3 tests)
   describe('Authentication', () => {
     it('should include auth token if available', async () => {
-      localStorageMock.getItem.mockReturnValue('test-token-123');
+      localStorageMock.getItem.mockImplementation((key) => {
+        if (key === 'accessToken') return 'test-token-123';
+        return null;
+      });
 
       global.fetch.mockResolvedValueOnce({
         ok: true,
@@ -132,6 +147,8 @@ describe('API Client Service', () => {
     });
 
     it('should handle 401 unauthorized', async () => {
+      localStorageMock.getItem.mockReturnValue(null);
+
       global.fetch.mockResolvedValueOnce({
         ok: false,
         status: 401,
@@ -139,6 +156,7 @@ describe('API Client Service', () => {
       });
 
       await expect(apiClient.get('/api/protected')).rejects.toThrow();
+      expect(localStorageMock.removeItem).toHaveBeenCalledWith('accessToken');
       expect(localStorageMock.removeItem).toHaveBeenCalledWith('authToken');
       expect(window.location.href).toBe('/login');
     });
@@ -195,6 +213,51 @@ describe('API Client Service', () => {
       });
 
       await expect(apiClient.get('/api/test')).rejects.toThrow();
+    });
+
+    it('should attach statusCode and payload without retrying 409', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 409,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ error: 'Version conflict detected', currentVersion: 3 }),
+      });
+
+      await expect(apiClient.get('/api/test', { retries: 3 })).rejects.toMatchObject({
+        statusCode: 409,
+        payload: { currentVersion: 3 },
+      });
+      expect(fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not retry other 4xx but should retry 429', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ error: 'Bad request' }),
+      });
+
+      await expect(apiClient.get('/api/test', { retries: 3 })).rejects.toThrow();
+      expect(fetch).toHaveBeenCalledTimes(1);
+
+      global.fetch
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 429,
+          headers: { get: () => 'application/json' },
+          json: async () => ({ error: 'Rate limited' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          headers: { get: () => 'application/json' },
+          json: async () => ({ ok: true }),
+        });
+
+      const result = await apiClient.get('/api/test', { retries: 3 });
+      expect(result).toEqual({ ok: true });
+      expect(fetch).toHaveBeenCalledTimes(3);
     });
   });
 

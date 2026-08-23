@@ -2,7 +2,7 @@
  * Click-to-edit bindings for composed published-site HTML.
  */
 
-const SKIP_SELECTOR = '[data-ss-booking-mount], .booking-widget, .shopping-cart, form';
+const SKIP_SELECTOR = '[data-ss-booking-mount], .booking-widget, .shopping-cart, .cart-sidebar, [data-testid="cart-sidebar"], form';
 
 function mark(el, path) {
   if (!el || el.closest(SKIP_SELECTOR)) return;
