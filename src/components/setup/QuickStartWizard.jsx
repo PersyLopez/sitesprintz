@@ -184,7 +184,9 @@ function QuickStartWizard({ onComplete, onSkip }) {
               {INDUSTRIES.map(industry => (
                 <button
                   key={industry.id}
+                  type="button"
                   className={`industry-card ${selectedIndustry === industry.id ? 'selected' : ''}`}
+                  data-testid={`wizard-industry-${industry.id}`}
                   onClick={() => handleIndustrySelect(industry.id)}
                 >
                   <span className="industry-icon">{industry.icon}</span>
@@ -303,11 +305,11 @@ function QuickStartWizard({ onComplete, onSkip }) {
   };
 
   return (
-    <div className="quickstart-wizard">
+    <div className="quickstart-wizard" data-testid="quickstart-wizard">
       <div className="wizard-header">
         <h1>✨ Quick Start</h1>
         <p>Get your website ready in a few simple steps</p>
-        <button className="wizard-skip" onClick={onSkip}>
+        <button type="button" className="wizard-skip" data-testid="wizard-skip" onClick={onSkip}>
           Skip to Full Editor →
         </button>
       </div>
@@ -332,27 +334,31 @@ function QuickStartWizard({ onComplete, onSkip }) {
 
       <div className="wizard-actions">
         {currentStep > 0 && (
-          <button className="btn btn-secondary" onClick={handleBack}>
+          <button type="button" className="btn btn-secondary" data-testid="wizard-back" onClick={handleBack}>
             ← Back
           </button>
         )}
         <div className="wizard-actions-right">
-          {currentStep < WIZARD_STEPS.length - 1 ? (
+          {currentStep > 0 && currentStep < WIZARD_STEPS.length - 1 ? (
             <button
+              type="button"
               className="btn btn-primary"
-              onClick={currentStep === 1 ? handleBasicsNext : currentStep === 2 ? handleLevelNext : () => setCurrentStep(currentStep + 1)}
+              data-testid="wizard-next"
+              onClick={currentStep === 1 ? handleBasicsNext : handleLevelNext}
             >
               Next →
             </button>
-          ) : (
+          ) : currentStep === WIZARD_STEPS.length - 1 ? (
             <button
+              type="button"
               className="btn btn-primary btn-large"
+              data-testid="wizard-create"
               onClick={handleComplete}
               disabled={loading || !selectedTheme}
             >
               {loading ? 'Creating...' : '✨ Create My Website'}
             </button>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

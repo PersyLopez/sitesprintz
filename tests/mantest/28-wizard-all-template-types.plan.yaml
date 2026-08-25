@@ -29,14 +29,6 @@ steps:
     goto: http://localhost:5173/setup
     settle_ms: 1500
 
-  - action: Choose permanent business if asked
-    code: |
-      const permanent = page.getByText(/Permanent Business/i).first();
-      if (await permanent.count()) {
-        await permanent.click({ timeout: 8000 });
-      }
-    settle_ms: 1200
-
   - action: Wizard industry step
     wait_for: { text: Quick Start, timeout: 20000 }
     settle_ms: 800
@@ -66,6 +58,9 @@ steps:
 
   - action: Fill business name
     fill: { testId: business-name-input, value: "Mantest Tow Co", clear: true }
+
+  - action: Fill phone
+    fill: { testId: contact-phone-input, value: "555-0100", clear: true }
 
   - action: Continue from essentials
     code: |

@@ -1,5 +1,5 @@
 url: http://localhost:5173/login
-goal: Authenticated user can open setup and pick a business type in Quick Start
+goal: Create Site opens Quick Start; wizard scrolls and every control lands on the right step
 steps:
   - action: Login form ready
     wait_for: { text: Welcome Back, timeout: 20000 }
@@ -19,26 +19,114 @@ steps:
     assert:
       - text contains Welcome back
 
-  - action: Go to setup
-    goto: http://localhost:5173/setup
-    settle_ms: 800
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) await dismiss.click({ timeout: 4000 }).catch(() => {});
+      else await page.keyboard.press('Escape').catch(() => {});
+    settle_ms: 400
 
-  - action: Choose permanent business if asked
-    wait_for: { text: What kind of business are you setting up, timeout: 20000 }
-    click: { testId: choose-business }
+  - action: Create Site from dashboard
+    code: |
+      const nav = page.getByTestId('nav-create-site');
+      const createBtn = page.getByTestId('create-site-button');
+      const firstBtn = page.getByTestId('create-first-site-button');
+      if (await nav.count()) await nav.first().click({ force: true });
+      else if (await createBtn.count()) await createBtn.first().click({ force: true });
+      else if (await firstBtn.count()) await firstBtn.first().click({ force: true });
+      else await page.goto('http://localhost:5173/setup', { waitUntil: 'load' });
     settle_ms: 1500
-
-  - action: Quick Start loaded
-    wait_for: { text: Quick Start, timeout: 20000 }
-    settle_ms: 1000
     assert:
       - url contains /setup
+
+  - action: Quick Start not a permanent-business choice
+    wait_for: { selector: '[data-testid="quickstart-wizard"]', timeout: 20000 }
+    settle_ms: 500
+    assert:
+      - text contains Quick Start
       - text contains What type of business are you creating
 
-  - action: Choose Restaurant business type
-    click: { text: Restaurant }
+  - action: Choice screen is gone
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/Permanent Business/i.test(t)) throw new Error('Permanent Business choice still shown');
+      if (/What kind of business are you setting up/i.test(t)) throw new Error('Mode choice heading still shown');
+    settle_ms: 200
+
+  - action: Skip to Full Editor
+    click: { testId: wizard-skip }
+    settle_ms: 1500
+    assert:
+      - url contains /setup
+      - text contains Publish
+
+  - action: Open setup again for full wizard
+    goto: http://localhost:5173/setup
     settle_ms: 1200
 
-  - action: Advanced past business type
-    expect:
+  - action: Wizard industry grid
+    wait_for: { selector: '[data-testid="quickstart-wizard"]', timeout: 20000 }
+    settle_ms: 400
+
+  - action: Scroll to a lower industry card
+    code: |
+      const card = page.getByTestId('wizard-industry-tow-truck');
+      await card.scrollIntoViewIfNeeded();
+      if (!(await card.isVisible())) throw new Error('Tow Truck card not visible after scroll');
+    settle_ms: 400
+
+  - action: Click Tow Truck
+    click: { testId: wizard-industry-tow-truck }
+    settle_ms: 1200
+    assert:
+      - url contains /setup
       - text contains Business essentials
+
+  - action: Back returns to industry list
+    click: { testId: wizard-back }
+    settle_ms: 800
+    assert:
+      - text contains What type of business are you creating
+
+  - action: Pick Tow Truck again
+    click: { testId: wizard-industry-tow-truck }
+    settle_ms: 800
+
+  - action: Fill business name
+    fill: { testId: business-name-input, value: "Mantest Tow Co", clear: true }
+
+  - action: Fill phone
+    fill: { testId: contact-phone-input, value: "555-0100", clear: true }
+
+  - action: Next to size
+    click: { testId: wizard-next }
+    settle_ms: 1200
+    assert:
+      - text contains Business size
+
+  - action: Next to look
+    click: { testId: wizard-next }
+    settle_ms: 1200
+    assert:
+      - text contains Choose your look
+
+  - action: Pick first theme
+    code: |
+      const theme = page.getByTestId(/^wizard-theme-/).first();
+      if ((await theme.count()) === 0) throw new Error('No theme cards');
+      await theme.click({ timeout: 8000 });
+    settle_ms: 600
+
+  - action: Create My Website
+    click: { testId: wizard-create }
+    settle_ms: 4000
+    assert:
+      - url contains /setup
+
+  - action: Editor after create
+    code: |
+      const t = await page.locator('body').innerText();
+      const ok = /Publish|Page Builder|Preview|Save Draft|Template/i.test(t);
+      if (!ok) throw new Error('Expected setup editor after create: ' + t.slice(0, 400));
+      if (/Permanent Business/i.test(t)) throw new Error('Choice screen after create');
+    settle_ms: 300

@@ -52,6 +52,12 @@
   animation: fadeIn 0.6s ease-out;
 }
 
+/* Wizard is taller than the viewport (14 industry cards + actions). */
+.setup-page-wizard {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 /* Progress Bar */
 .progress-bar {
   width: 100%;

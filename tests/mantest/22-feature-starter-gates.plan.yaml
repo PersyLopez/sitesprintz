@@ -42,14 +42,6 @@ steps:
     goto: http://localhost:5173/setup
     settle_ms: 1500
 
-  - action: Choose permanent business
-    code: |
-      const permanent = page.getByText(/Permanent Business/i).first();
-      if (await permanent.count()) {
-        await permanent.click({ timeout: 10000 });
-      }
-    settle_ms: 1500
-
   - action: Setup works for Starter
     wait_for: { text: Quick Start, timeout: 20000 }
     assert:

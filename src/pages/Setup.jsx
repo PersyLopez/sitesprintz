@@ -8,7 +8,6 @@ import TemplateGrid from '../components/setup/TemplateGrid';
 import EditorPanel from '../components/setup/EditorPanel';
 import PublishModal from '../components/setup/PublishModal';
 import QuickStartWizard from '../components/setup/QuickStartWizard';
-import BazaarWizard from '../components/setup/BazaarWizard';
 import CustomTemplateBuilder from '../components/setup/CustomTemplateBuilder';
 import LoadingFallback from '../components/common/LoadingFallback';
 import SaveIndicator from '../components/common/SaveIndicator';
@@ -32,7 +31,6 @@ function Setup() {
   const [showWizard, setShowWizard] = useState(true);
   const [wizardCompleted, setWizardCompleted] = useState(false);
   const [showCustomBuilder, setShowCustomBuilder] = useState(false);
-  const [setupMode, setSetupMode] = useState('choice'); // 'choice' | 'bazaar' | 'business'
 
   // Calculate progress percentage
   const progressPercentage = () => {
@@ -99,6 +97,7 @@ function Setup() {
   const handleWizardSkip = () => {
     setShowWizard(false);
     setWizardCompleted(true);
+    setActiveTab('editor');
   };
 
   const handleCustomBuilderComplete = async (customTemplate) => {
@@ -151,78 +150,8 @@ function Setup() {
 
   // Show wizard if not completed and no existing site
   if (showWizard && !wizardCompleted && !searchParams.get('site')) {
-    // Mode choice screen
-    if (setupMode === 'choice') {
-      return (
-        <div className="setup-page">
-          <Header />
-          <div data-testid="setup-mode-choice" style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '60vh',
-            gap: '32px',
-            padding: '48px 24px',
-          }}>
-            <h1 style={{ fontSize: '2rem', textAlign: 'center' }}>What kind of business are you setting up?</h1>
-            <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', justifyContent: 'center' }}>
-              <button
-                data-testid="choose-bazaar"
-                onClick={() => setSetupMode('bazaar')}
-                style={{
-                  padding: '24px 32px',
-                  fontSize: '1.1rem',
-                  borderRadius: '12px',
-                  border: '2px solid var(--color-accent, #c2683a)',
-                  background: 'var(--color-surface, #141417)',
-                  color: 'var(--color-text, #f4f2ee)',
-                  cursor: 'pointer',
-                  minWidth: '220px',
-                  textAlign: 'center',
-                }}
-              >
-                🛍️ Pop-up / Yard Sale / Food Stall
-              </button>
-              <button
-                data-testid="choose-business"
-                onClick={() => setSetupMode('business')}
-                style={{
-                  padding: '24px 32px',
-                  fontSize: '1.1rem',
-                  borderRadius: '12px',
-                  border: '2px solid var(--color-accent, #c2683a)',
-                  background: 'var(--color-surface, #141417)',
-                  color: 'var(--color-text, #f4f2ee)',
-                  cursor: 'pointer',
-                  minWidth: '220px',
-                  textAlign: 'center',
-                }}
-              >
-                🏢 Permanent Business
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // Bazaar wizard (pop-up path)
-    if (setupMode === 'bazaar') {
-      return (
-        <div className="setup-page">
-          <Header />
-          <BazaarWizard
-            onComplete={handleWizardComplete}
-            onCancel={() => setSetupMode('choice')}
-          />
-        </div>
-      );
-    }
-
-    // QuickStart wizard (permanent business path)
     return (
-      <div className="setup-page">
+      <div className="setup-page setup-page-wizard">
         <Header />
         <QuickStartWizard
           onComplete={handleWizardComplete}

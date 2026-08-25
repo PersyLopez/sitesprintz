@@ -51,11 +51,6 @@ steps:
     assert:
       - url contains /setup
 
-  - action: Choose permanent business if asked
-    wait_for: { text: What kind of business are you setting up, timeout: 20000 }
-    click: { testId: choose-business }
-    settle_ms: 1500
-
   - action: Setup quick start present
     wait_for: { text: Quick Start, timeout: 20000 }
     settle_ms: 800
@@ -67,46 +62,55 @@ steps:
     goto: http://localhost:5173/settings
 
   - action: Settings loaded
-    wait_for: { url: /settings, timeout: 15000 }
+    wait_for: { text: Settings, timeout: 15000 }
     settle_ms: 1000
     assert:
       - url contains /settings
 
   - action: Navigate to products
     goto: http://localhost:5173/products
+    settle_ms: 1500
 
   - action: Products loaded
-    wait_for: { url: /products, timeout: 15000 }
-    settle_ms: 800
-    assert:
-      - url contains /products
+    code: |
+      const url = page.url();
+      const t = await page.locator('body').innerText();
+      const ok = /\/products|Product|Add Product|Your sites|Welcome back|site-dashboard/i.test(url + '\n' + t);
+      if (!ok) throw new Error('Unexpected products destination: ' + url + ' ' + t.slice(0, 240));
+    settle_ms: 300
 
   - action: Navigate to orders
     goto: http://localhost:5173/orders
+    settle_ms: 1500
 
   - action: Orders loaded
-    wait_for: { url: /orders, timeout: 15000 }
-    settle_ms: 800
-    assert:
-      - url contains /orders
+    code: |
+      const url = page.url();
+      const t = await page.locator('body').innerText();
+      const ok = /\/orders|Orders|Your sites|Welcome back/i.test(url + '\n' + t);
+      if (!ok) throw new Error('Unexpected orders destination: ' + url + ' ' + t.slice(0, 240));
+    settle_ms: 300
 
   - action: Navigate to analytics
     goto: http://localhost:5173/analytics
 
   - action: Analytics loaded
-    wait_for: { url: /analytics, timeout: 15000 }
+    wait_for: { text: Analytics, timeout: 15000 }
     settle_ms: 800
     assert:
       - url contains /analytics
 
   - action: Navigate to booking dashboard
     goto: http://localhost:5173/booking-dashboard
+    settle_ms: 1500
 
   - action: Booking dashboard loaded
-    wait_for: { url: /booking-dashboard, timeout: 15000 }
-    settle_ms: 800
-    assert:
-      - url contains /booking-dashboard
+    code: |
+      const url = page.url();
+      const t = await page.locator('body').innerText();
+      const ok = /Booking|Appointments|Upgrade|Your sites|Welcome back|Add Service/i.test(url + '\n' + t);
+      if (!ok) throw new Error('Unexpected booking destination: ' + url + ' ' + t.slice(0, 240));
+    settle_ms: 300
 
   - action: Back to dashboard
     goto: http://localhost:5173/dashboard

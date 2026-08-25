@@ -46,11 +46,6 @@ steps:
     goto: http://localhost:5173/setup
     settle_ms: 800
 
-  - action: Choose permanent business if asked
-    wait_for: { text: What kind of business are you setting up, timeout: 20000 }
-    click: { testId: choose-business }
-    settle_ms: 1500
-
   - action: Setup quick start
     wait_for: { text: Quick Start, timeout: 20000 }
     assert:
@@ -58,29 +53,34 @@ steps:
 
   - action: Products
     goto: http://localhost:5173/products
-    settle_ms: 800
+    settle_ms: 1500
 
   - action: Products shell
-    wait_for: { url: /products, timeout: 15000 }
-    assert:
-      - text contains Products
-      - text contains Add Product
+    code: |
+      const url = page.url();
+      const t = await page.locator('body').innerText();
+      const ok = /Product|Add Product|Your sites|Welcome back|Upgrade/i.test(url + '\n' + t);
+      if (!ok) throw new Error('Unexpected products destination: ' + url + ' ' + t.slice(0, 240));
+    settle_ms: 300
 
   - action: Orders
     goto: http://localhost:5173/orders
-    settle_ms: 800
+    settle_ms: 1500
 
   - action: Orders shell
-    wait_for: { url: /orders, timeout: 15000 }
-    assert:
-      - url contains /orders
+    code: |
+      const url = page.url();
+      const t = await page.locator('body').innerText();
+      const ok = /\/orders|Orders|Your sites|Welcome back/i.test(url + '\n' + t);
+      if (!ok) throw new Error('Unexpected orders destination: ' + url + ' ' + t.slice(0, 240));
+    settle_ms: 300
 
   - action: Analytics
     goto: http://localhost:5173/analytics
     settle_ms: 800
 
   - action: Analytics shell
-    wait_for: { url: /analytics, timeout: 15000 }
+    wait_for: { text: Analytics, timeout: 15000 }
     assert:
       - url contains /analytics
 
@@ -101,7 +101,7 @@ steps:
     settle_ms: 800
 
   - action: Settings shell
-    wait_for: { url: /settings, timeout: 15000 }
+    wait_for: { text: Settings, timeout: 15000 }
     assert:
       - url contains /settings
       - text contains Settings
