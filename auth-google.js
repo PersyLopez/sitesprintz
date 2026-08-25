@@ -5,6 +5,7 @@
 
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import bcrypt from 'bcryptjs';
 import { prisma } from './database/db.js';
 import crypto from 'crypto';
 import { createGoogleOAuthState, consumeGoogleOAuthState } from './server/services/auth/googleOAuthState.js';
@@ -12,6 +13,15 @@ import { createTokenPair } from './server/services/tokenService.js';
 import { setAuthCookies } from './server/utils/authCookies.js';
 import { betaAllowsPublicSignups } from './server/config/betaMode.js';
 import { paidPlanFromQuery } from './src/config/tiers.js';
+
+/**
+ * Unusable hash so Google-only users satisfy required users.password_hash.
+ * Same idea as the test-mode Google mock in server.js; bcrypt so /login compare stays valid.
+ * @returns {Promise<string>}
+ */
+export async function unusableGooglePasswordHash() {
+  return bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10);
+}
 
 /**
  * Configure Google OAuth Strategy
@@ -84,6 +94,7 @@ export function configureGoogleAuth() {
               name: name,
               google_id: googleId,
               picture: picture,
+              password_hash: await unusableGooglePasswordHash(),
               role: 'user',
               status: 'active',
               subscription_status: 'trial',
