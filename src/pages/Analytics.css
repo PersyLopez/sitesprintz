@@ -32,10 +32,11 @@
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-xl);
   padding: var(--spacing-lg);
-  background: linear-gradient(135deg, var(--primary-800) 0%, var(--primary-600) 50%, var(--primary-500) 100%);
+  background: var(--bg-elevated);
   color: var(--text-light);
-  border-radius: 12px;
-  box-shadow: 0 10px 30px color-mix(in srgb, var(--primary-600) 30%, transparent);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius-xl, 16px);
+  box-shadow: none;
 }
 
 /* Tablet+: Horizontal layout */
@@ -79,10 +80,10 @@
 .time-range-select {
   padding: var(--spacing-sm) var(--spacing-md);
   min-height: 44px; /* Touch target */
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: var(--bg-card);
+  border: 1px solid var(--border-dark);
   border-radius: 8px;
-  color: white;
+  color: var(--text-light);
   font-size: clamp(0.85rem, 1vw, 0.9rem); /* Fluid typography */
   font-weight: 500;
   cursor: pointer;
@@ -90,22 +91,12 @@
 }
 
 .time-range-select:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--bg-hover);
 }
 
 .time-range-select option {
   background: var(--bg-card);
   color: var(--text-light);
-}
-
-.analytics-header .btn-secondary {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-}
-
-.analytics-header .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.3);
 }
 
 .stats-grid {

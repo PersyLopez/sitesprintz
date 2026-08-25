@@ -9,13 +9,13 @@
 .form-section h3 {
   font-size: 1.2rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-light);
   margin: 0 0 4px 0;
 }
 
 .section-subtitle {
   font-size: 0.9rem;
-  color: #64748b;
+  color: var(--text-muted);
   margin: 0 0 20px 0;
 }
 
@@ -26,7 +26,7 @@
 .form-group label {
   display: block;
   font-weight: 500;
-  color: #1e293b;
+  color: var(--text-light);
   margin-bottom: 8px;
   font-size: 0.95rem;
 }
@@ -45,14 +45,14 @@
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #6366f1;
+  border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .form-help {
   display: block;
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--text-muted);
   margin-top: 6px;
 }
 
@@ -108,7 +108,7 @@
 }
 
 .toggle-switch input:checked + .toggle-slider {
-  background-color: #6366f1;
+  background-color: var(--primary-color);
 }
 
 .toggle-switch input:checked + .toggle-slider:before {
@@ -145,11 +145,11 @@
 }
 
 .provider-option:hover {
-  border-color: #6366f1;
+  border-color: var(--primary-color);
 }
 
 .provider-option.selected {
-  border-color: #6366f1;
+  border-color: var(--primary-color);
   background: rgba(99, 102, 241, 0.05);
 }
 
@@ -160,14 +160,14 @@
 .provider-label {
   font-size: 0.85rem;
   font-weight: 500;
-  color: #1e293b;
+  color: var(--text-light);
 }
 
 .selected-badge {
   position: absolute;
   top: 4px;
   right: 4px;
-  background: #6366f1;
+  background: var(--primary-color);
   color: white;
   width: 20px;
   height: 20px;
@@ -196,7 +196,7 @@
 }
 
 .radio-option:hover {
-  border-color: #6366f1;
+  border-color: var(--primary-color);
 }
 
 .radio-option input[type="radio"] {
@@ -206,7 +206,7 @@
 }
 
 .radio-option input[type="radio"]:checked + .radio-content {
-  color: #6366f1;
+  color: var(--primary-color);
 }
 
 .radio-content {
@@ -216,14 +216,14 @@
 .radio-content strong {
   display: block;
   font-size: 0.95rem;
-  color: #1e293b;
+  color: var(--text-light);
   margin-bottom: 4px;
 }
 
 .radio-content span {
   display: block;
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .booking-preview {
@@ -235,7 +235,7 @@
 .booking-preview h4 {
   font-size: 1rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-light);
   margin: 0 0 12px 0;
 }
 
@@ -259,12 +259,12 @@
 .preview-text p {
   margin: 0 0 4px 0;
   font-size: 0.95rem;
-  color: #1e293b;
+  color: var(--text-light);
 }
 
 .preview-text small {
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .address-privacy-callout {
@@ -293,7 +293,7 @@
   align-items: flex-start;
   gap: 10px;
   font-size: 0.95rem;
-  color: #1e293b;
+  color: var(--text-light);
   cursor: pointer;
 }
 
@@ -308,7 +308,7 @@
   padding: 0;
   border: 0;
   background: none;
-  color: #2563eb;
+  color: var(--primary-color);
   font-size: 0.85rem;
   cursor: pointer;
   text-decoration: underline;

@@ -73,7 +73,7 @@
 
 .admin-btn--secondary:hover:not(:disabled) {
   border-color: var(--skyline-primary-light);
-  background: #eff6ff;
+  background: var(--bg-hover);
 }
 
 .admin-btn--danger {
@@ -241,7 +241,7 @@
 
 .admin-template-default {
   color: var(--skyline-primary);
-  background: #eff6ff;
+  background: var(--bg-hover);
   padding: 3px 8px;
   border-radius: 50px;
   font-weight: 600;

@@ -43,7 +43,7 @@
   top: 72px;
   z-index: 50;
   margin-bottom: var(--spacing-lg);
-  background: var(--bg-dark, #0f172a);
+  background: var(--bg-dark);
   padding-bottom: var(--spacing-xs);
 }
 
@@ -53,9 +53,11 @@
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-md);
   padding: var(--spacing-lg);
-  background: linear-gradient(135deg, var(--primary-800) 0%, var(--primary-600) 50%, var(--primary-500) 100%);
+  background: var(--bg-elevated);
   color: var(--text-light);
-  border-radius: 16px;
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius-xl, 16px);
+  box-shadow: none;
 }
 
 @media (min-width: 768px) {
@@ -94,8 +96,8 @@
   border-radius: 999px;
   font-size: 0.8rem;
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--bg-hover);
+  border: 1px solid var(--border-dark);
 }
 
 .site-status-pill.published {

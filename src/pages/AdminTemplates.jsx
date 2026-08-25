@@ -30,7 +30,7 @@ function StatusBadge({ status }) {
   return (
     <span 
       className="admin-badge" 
-      style={{ backgroundColor: STATUS_COLORS[status] || 'var(--skyline-border)' }}
+      style={{ backgroundColor: STATUS_COLORS[status] || 'var(--border-dark)' }}
     >
       {status}
     </span>
@@ -39,15 +39,15 @@ function StatusBadge({ status }) {
 
 function IndustryBadge({ industry }) {
   const colors = {
-    service: 'var(--skyline-primary)',
-    food: '#f59e0b',
-    professional: '#6366f1',
-    product: '#ec4899',
+    service: 'var(--primary-color)',
+    food: 'var(--warning-color)',
+    professional: 'var(--primary-dark)',
+    product: 'var(--accent-color)',
   };
   return (
     <span 
       className="admin-badge admin-badge--industry"
-      style={{ backgroundColor: colors[industry] || 'var(--skyline-text-muted)' }}
+      style={{ backgroundColor: colors[industry] || 'var(--text-muted)' }}
     >
       {industry}
     </span>
