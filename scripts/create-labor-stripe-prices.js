@@ -3,11 +3,16 @@
  * Create Stripe Dashboard Prices for labor extras.
  * Prints env lines. Does not write .env. Never creates claim_setup unless --internal.
  *
- * Usage: node scripts/create-labor-stripe-prices.js
+ * Usage:
+ *   node scripts/create-labor-stripe-prices.js
+ *   node scripts/create-labor-stripe-prices.js --internal
  */
+import dotenv from 'dotenv';
 import Stripe from 'stripe';
 import { LABOR_SKUS, CUSTOMER_LABOR_SKUS } from '../server/config/platformPlans.js';
 import { PRICING_CONFIG } from '../src/config/pricing.config.js';
+
+dotenv.config();
 
 const CENTS = {
   managed_care: Math.round(Number(PRICING_CONFIG.labor.managedCare.price) * 100),

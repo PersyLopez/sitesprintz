@@ -38,7 +38,9 @@
     "graphify:processes:vault": "bash scripts/graphify-processes.sh --vault",
     "graphify:obsidian": "bash scripts/graphify-processes.sh --vault --hub",
     "graphify:obsidian:open": "bash scripts/graphify-processes.sh --vault --hub --open",
-    "graphify:hub": "bash scripts/graphify-processes.sh --hub-only"
+    "graphify:hub": "bash scripts/graphify-processes.sh --hub-only",
+    "stripe:labor-prices": "node scripts/create-labor-stripe-prices.js",
+    "stripe:labor-prices:internal": "node scripts/create-labor-stripe-prices.js --internal"
   },
   "repository": {
     "type": "git",
