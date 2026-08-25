@@ -24,6 +24,27 @@ export async function unusableGooglePasswordHash() {
 }
 
 /**
+ * Prisma users.create payload for a first-time Google signup.
+ * Only columns on prisma.users — not name, auth_provider, or trial_expires_at.
+ */
+export async function googleSignupUserData({ id, email, googleId, picture }) {
+  return {
+    id,
+    email,
+    password_hash: await unusableGooglePasswordHash(),
+    role: 'user',
+    status: 'active',
+    subscription_status: 'trial',
+    subscription_plan: 'free',
+    google_id: googleId,
+    picture: picture || null,
+    email_verified: true,
+    created_at: new Date(),
+    last_login: new Date()
+  };
+}
+
+/**
  * Configure Google OAuth Strategy
  */
 export function configureGoogleAuth() {
@@ -46,7 +67,6 @@ export function configureGoogleAuth() {
     async function (req, accessToken, refreshToken, profile, done) {
       try {
         const email = profile.emails[0].value;
-        const name = profile.displayName;
         const googleId = profile.id;
         const picture = profile.photos[0]?.value;
 
@@ -80,31 +100,13 @@ export function configureGoogleAuth() {
             return done(null, false, { code: 'BETA_INVITE_ONLY' });
           }
 
-          // New user - create account in database
-          const userId = crypto.randomUUID();
-
-          // Set trial expiration to 7 days from now
-          const trialExpiration = new Date();
-          trialExpiration.setDate(trialExpiration.getDate() + 7);
-
           user = await prisma.users.create({
-            data: {
-              id: userId,
-              email: email,
-              name: name,
-              google_id: googleId,
-              picture: picture,
-              password_hash: await unusableGooglePasswordHash(),
-              role: 'user',
-              status: 'active',
-              subscription_status: 'trial',
-              subscription_plan: 'free',
-              trial_expires_at: trialExpiration,
-              auth_provider: 'google',
-              email_verified: true,
-              created_at: new Date(),
-              last_login: new Date()
-            }
+            data: await googleSignupUserData({
+              id: crypto.randomUUID(),
+              email,
+              googleId,
+              picture
+            })
           });
 
           console.log(`✅ New user created via Google: ${email}`);
