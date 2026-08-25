@@ -18,8 +18,9 @@ export const PRICING_CONFIG = {
     contactEmail: 'hello@sitesprintz.com',
     claimSetup: {
       billed: 'one_time',
+      customerFacing: false,
       envPriceKey: 'STRIPE_PRICE_CLAIM_SETUP',
-      description: 'One-time research, fill, and publish of a prospect site (inbound only)'
+      description: 'Internal only — inbound greenfield build. Never charged on targeted claimable sites.'
     },
     managedCare: {
       billed: 'month',

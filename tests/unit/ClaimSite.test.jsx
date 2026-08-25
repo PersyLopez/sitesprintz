@@ -90,7 +90,7 @@ describe('ClaimSite', () => {
     expect(screen.getByTestId('claim-plan-starter')).toBeInTheDocument();
     expect(screen.getByTestId('claim-plan-growth')).toBeInTheDocument();
     expect(screen.getByText(/add a card/i)).toBeInTheDocument();
-    expect(screen.getByTestId('labor-extras')).toBeInTheDocument();
+    expect(screen.getByTestId('labor-extras')).toHaveTextContent(/no setup fee/i);
     expect(screen.queryByTestId('claim-accept')).not.toBeInTheDocument();
   });
 

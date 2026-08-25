@@ -5,6 +5,7 @@ const ALLOWED_TOPICS = new Set([
   'managed care',
   'brand match',
   'unique look',
+  'build on request',
 ]);
 
 const EMAIL_PATTERN = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;

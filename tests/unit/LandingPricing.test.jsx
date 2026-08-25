@@ -95,6 +95,11 @@ describe('Landing Page - Pricing', () => {
     expect(screen.getByText('Embedded booking')).toBeInTheDocument();
   });
 
+  it('shows the pricing lead without a claimable setup fee', () => {
+    renderLanding();
+    expect(screen.getAllByText(/sites we prepare for you have no setup fee/i).length).toBeGreaterThanOrEqual(1);
+  });
+
   it('shows the trial note', () => {
     renderLanding();
     expect(screen.getByText(/7-day trial when you publish/i)).toBeInTheDocument();
@@ -110,6 +115,8 @@ describe('Landing Page - Pricing', () => {
     renderLanding();
     const extras = screen.getByTestId('labor-extras');
     expect(extras).toHaveAttribute('id', 'pricing-extras');
+    expect(extras).toHaveTextContent(/no setup fee/i);
+    expect(extras).toHaveTextContent(/on request/i);
     expect(extras).toHaveTextContent(/Managed care/i);
     expect(extras).toHaveTextContent(/\$49/);
     expect(extras).toHaveTextContent(/\$99/);
@@ -119,5 +126,11 @@ describe('Landing Page - Pricing', () => {
       expect.stringMatching(/^mailto:hello@sitesprintz\.com/),
     );
     expect(document.querySelectorAll('.pricing-card')).toHaveLength(2);
+  });
+
+  it('pricing CTAs route authenticated users to billing with plan', () => {
+    renderLanding({ isAuthenticated: true });
+    expect(screen.getByTestId('pricing-cta-starter')).toHaveAttribute('href', '/settings/billing?plan=starter');
+    expect(screen.getByTestId('pricing-cta-growth')).toHaveAttribute('href', '/settings/billing?plan=growth');
   });
 });

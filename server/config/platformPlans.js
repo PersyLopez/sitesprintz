@@ -34,7 +34,7 @@ export const LABOR_SKUS = {
   claim_setup: {
     id: 'claim_setup',
     name: 'Claimable site setup',
-    description: 'One-time research, fill, and publish of a prospect site',
+    description: 'Inbound greenfield only — never charged on targeted claimable sites',
     envPriceKey: 'STRIPE_PRICE_CLAIM_SETUP',
     metadataType: 'claim_setup',
   },

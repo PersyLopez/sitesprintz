@@ -1,4 +1,3 @@
-import { PRICING_CONFIG } from '../../config/pricing.config';
 import { useLocale } from '../../i18n/LocaleContext.jsx';
 import { laborDisplayVars, laborInquiryMailto } from '../../utils/laborInquiryMailto';
 import './LaborExtrasNote.css';
@@ -7,15 +6,16 @@ import './LaborExtrasNote.css';
  * Quiet extras under hosting plans — not a third subscription column.
  * Only landing should pass anchor so #pricing-extras is unique.
  */
-function LaborExtrasNote({ compact = false, anchor = false }) {
+function LaborExtrasNote({ compact = false, anchor = false, variant = 'default' }) {
   const { t } = useLocale();
   const vars = laborDisplayVars();
   if (!vars) {
     return null;
   }
 
-  const href = laborInquiryMailto();
+  const href = laborInquiryMailto(variant === 'claim' ? 'build on request' : 'optional extras');
   const headingId = compact ? 'labor-extras-heading-compact' : 'labor-extras-heading';
+  const leadKey = variant === 'claim' ? 'labor.extras.claimLead' : 'labor.extras.lead';
 
   return (
     <aside
@@ -25,8 +25,9 @@ function LaborExtrasNote({ compact = false, anchor = false }) {
       aria-labelledby={headingId}
     >
       <h2 id={headingId} className="labor-extras-kicker">{t('labor.extras.kicker')}</h2>
-      <p className="labor-extras-lead">{t('labor.extras.lead')}</p>
+      <p className="labor-extras-lead">{t(leadKey)}</p>
       <ul className="labor-extras-list">
+        <li>{t('labor.extras.buildOnRequest', vars)}</li>
         <li>{t('labor.extras.care', vars)}</li>
         <li>{t('labor.extras.brand', vars)}</li>
         <li>{t('labor.extras.look', vars)}</li>

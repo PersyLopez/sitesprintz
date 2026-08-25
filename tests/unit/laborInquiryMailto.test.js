@@ -19,7 +19,7 @@ describe('laborInquiryMailto', () => {
   });
 
   it('allowlists inquiry topics', () => {
-    expect(sanitizeLaborTopic('brand match')).toBe('brand match');
+    expect(sanitizeLaborTopic('build on request')).toBe('build on request');
     expect(sanitizeLaborTopic('UNIQUE LOOK')).toBe('unique look');
     expect(sanitizeLaborTopic('http://evil.example/x')).toBe('optional extras');
   });

@@ -294,7 +294,7 @@ function ClaimSite() {
               )}
             </>
           )}
-          {!loading && !error && <LaborExtrasNote compact />}
+          {!loading && !error && <LaborExtrasNote compact variant="claim" />}
         </div>
       </main>
       <Footer />
