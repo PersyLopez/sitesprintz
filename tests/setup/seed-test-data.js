@@ -27,28 +27,14 @@ async function seedTestData() {
         console.log('👤 Creating test users...');
 
         // Import centralized credentials
-        const { TEST_USERS } = await import('../fixtures/test-credentials.js');
+        const { TEST_USERS, AGENT_TESTERS } = await import('../fixtures/test-credentials.js');
 
-        const testUsers = [
-            {
-                email: TEST_USERS.ADMIN.email,
-                password: TEST_USERS.ADMIN.password,
-                role: TEST_USERS.ADMIN.role,
-                plan: TEST_USERS.ADMIN.plan
-            },
-            {
-                email: TEST_USERS.PRO_USER.email,
-                password: TEST_USERS.PRO_USER.password,
-                role: TEST_USERS.PRO_USER.role,
-                plan: TEST_USERS.PRO_USER.plan
-            },
-            {
-                email: TEST_USERS.FREE_USER.email,
-                password: TEST_USERS.FREE_USER.password,
-                role: TEST_USERS.FREE_USER.role,
-                plan: TEST_USERS.FREE_USER.plan
-            }
-        ];
+        const testUsers = AGENT_TESTERS.map((user) => ({
+            email: user.email,
+            password: user.password,
+            role: user.role,
+            plan: user.plan
+        }));
 
         const userIds = {};
 
@@ -71,7 +57,8 @@ async function seedTestData() {
                         role: user.role,
                         subscription_plan: user.plan,
                         subscription_status: 'active',
-                        status: 'active'
+                        status: 'active',
+                        email_verified: true
                     }
                 });
             } else {
@@ -84,7 +71,8 @@ async function seedTestData() {
                         status: 'active',
                         subscription_status: 'active',
                         subscription_plan: user.plan,
-                        created_at: new Date()
+                        created_at: new Date(),
+                        email_verified: true
                     }
                 });
                 userIds[user.email] = newUser.id;

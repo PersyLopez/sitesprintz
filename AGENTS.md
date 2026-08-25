@@ -57,6 +57,7 @@ Deep dive: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - E2E: `npm run test:e2e` (Playwright)
 - Selector priority: `data-testid` → `getByRole` → `getByText` — never CSS classes or XPath
 - Mock external deps in unit tests; use transaction rollback or isolated fixtures for integration
+- **Turnstile is on for production email signup.** Agents must **log in**, not register. Seed with `npm run seed:testers` (uses `DATABASE_URL`). Credentials: `tests/fixtures/test-credentials.js` — `gallery@sitesprintz.com`, `test@example.com`, `admin@example.com`, `growth@example.com`, `starter@example.com`. Leave `VITE_TURNSTILE_SITE_KEY` unset in local `.env`.
 
 ### Documentation (essential only — no redundancy)
 

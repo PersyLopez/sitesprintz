@@ -160,14 +160,14 @@ function Register() {
     // Password validation will be handled by backend
     // Frontend validation is for UX only
 
-    // Check CAPTCHA if site key is configured
-    /* CAPTCHA DISABLED FOR RECORDING
+    // Production builds with a site key require a token. Vitest and `vite` dev
+    // (MODE !== production) skip this so agents can still exercise /register
+    // locally. Production agents log in as seeded testers instead.
     const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
-    if (siteKey && !captchaTokenRef.current) {
+    if (import.meta.env.PROD && siteKey && !captchaTokenRef.current) {
       showError('Please complete the CAPTCHA verification');
       return;
     }
-    */
 
     setLoading(true);
 

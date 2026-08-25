@@ -42,8 +42,23 @@ export const TEST_USERS = {
     password: 'GrowthPass!2024',
     role: 'user',
     plan: 'growth'
+  },
+  STARTER_USER: {
+    email: 'starter@example.com',
+    password: 'StarterPass!2024',
+    role: 'user',
+    plan: 'starter'
+  },
+  GALLERY: {
+    email: 'gallery@sitesprintz.com',
+    password: 'GalleryDemo123!',
+    role: 'user',
+    plan: 'growth'
   }
 };
+
+/** Accounts agents and E2E must log in with. Do not register these through Turnstile. */
+export const AGENT_TESTERS = Object.values(TEST_USERS);
 
 /**
  * Generate a unique test email for registration tests
@@ -55,7 +70,7 @@ export function generateTestEmail(prefix = 'test') {
 
 /**
  * Get credentials for a specific user type
- * @param {'ADMIN' | 'PRO_USER' | 'FREE_USER' | 'GROWTH_USER'} userType 
+ * @param {'ADMIN' | 'PRO_USER' | 'FREE_USER' | 'GROWTH_USER' | 'STARTER_USER' | 'GALLERY'} userType 
  * @returns {object} User credentials
  */
 export function getTestUser(userType) {
@@ -69,6 +84,7 @@ export function getTestUser(userType) {
 export default {
   STRONG_PASSWORD,
   TEST_USERS,
+  AGENT_TESTERS,
   generateTestEmail,
   getTestUser
 };

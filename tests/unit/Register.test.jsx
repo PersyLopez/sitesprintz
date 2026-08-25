@@ -168,6 +168,22 @@ describe('Register Component', () => {
     expect(screen.getByLabelText(/confirm password/i)).toBeDisabled();
   });
 
+  it('does not require a CAPTCHA token when Turnstile is not configured', async () => {
+    const user = userEvent.setup();
+    mockRegister.mockResolvedValue({});
+    renderRegister();
+
+    await user.type(screen.getByLabelText(/email/i), 'new@example.com');
+    await user.type(screen.getByLabelText(/^password$/i), VALID_PASSWORD);
+    await user.type(screen.getByLabelText(/confirm password/i), VALID_PASSWORD);
+    await acceptTerms(user);
+    await user.click(screen.getByRole('button', { name: /create account/i }));
+
+    await waitFor(() => {
+      expect(mockRegister).toHaveBeenCalled();
+    });
+  });
+
   it('should have Google signup button', () => {
     renderRegister();
 
