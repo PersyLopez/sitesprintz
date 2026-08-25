@@ -31,7 +31,7 @@ User → React (src/) → Express API (server/) → Prisma → PostgreSQL
 
 ### Official tiers
 
-`trial` < `starter` ($10/month) < `growth` ($35/month). Legacy names `pro`, `premium`, `business`, and `free` normalize through `TIER_ALIASES` in `src/config/tiers.js`.
+`trial` < `starter` ($10/month) < `growth` ($35/month) < `growth_managed` ($75/month). Growth Managed is the same software as Growth; we take the list. Legacy names `pro`, `premium`, `business`, and `free` normalize through `TIER_ALIASES` in `src/config/tiers.js`. Alias `managed` → `growth_managed`.
 
 ---
 

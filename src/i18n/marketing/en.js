@@ -169,7 +169,7 @@ export default {
   'about.who.li1': 'A page shaped like your business, not a generic brochure',
   'about.who.li2': 'Draft free, preview fast, publish when you’re ready',
   'about.who.li3': 'Booking and checkout when you need them on Growth',
-  'about.who.li4': 'Starter at $10/month, Growth at $35/month',
+  'about.who.li4': 'Starter at $10/month, Growth at $35/month, Growth Managed at $75/month',
   'about.how.h': 'How it works',
   'about.how.1.h': 'Tell us what you sell',
   'about.how.1.p': 'Stall, shop, chair, or kitchen — we start a page that fits your world.',

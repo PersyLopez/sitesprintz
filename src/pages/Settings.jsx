@@ -10,6 +10,7 @@ import HelpPanel from '../components/common/HelpPanel';
 import FAQWidget from '../components/common/FAQWidget';
 import LaborExtrasNote from '../components/pricing/LaborExtrasNote';
 import LaborCheckoutButtons from '../components/pricing/LaborCheckoutButtons';
+import { isPaidHostingPlan, isTrialingStatus } from '../config/tiers.js';
 import './Settings.css';
 
 function BillingSection({ user, token }) {
@@ -19,8 +20,8 @@ function BillingSection({ user, token }) {
 
   const currentPlan = (user?.subscriptionPlan || user?.plan || '').toLowerCase();
   const subscriptionStatus = (user?.subscriptionStatus || user?.subscription_status || '').toLowerCase();
-  const hasActivePlan = subscriptionStatus === 'active'
-    && ['starter', 'growth'].includes(currentPlan);
+  const hasActivePlan = (subscriptionStatus === 'active' || isTrialingStatus(subscriptionStatus))
+    && isPaidHostingPlan(currentPlan);
 
   const openBillingPortal = async () => {
     try {

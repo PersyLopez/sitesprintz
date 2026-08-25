@@ -1,14 +1,14 @@
 # E-Commerce Tier Consolidation
 
 **Date**: August 15, 2026
-**Status**: ✅ Current — reflects the 2-paid-tier model (Starter / Growth) in the working tree
+**Status**: ✅ Current — three hosting plans (Starter / Growth / Growth Managed); e-commerce stays Growth software
 **Source of truth**: `src/config/tiers.js` → consumed by `src/utils/planFeatures.js` and `src/config/pricing.config.js`
 
 ---
 
 ## Summary
 
-SiteSprintz sells two paid tiers: **Starter** ($10/mo) and **Growth** ($35/mo), plus a 7-day **Trial** (Starter-equivalent, payment method required to publish). All e-commerce — cart, Stripe checkout, order management, product management, custom domain, remove-branding — is gated to **Growth**. Legacy `pro` / `premium` / `business` / `enterprise` / `checkout` plan names normalize to `growth` via `TIER_ALIASES`, so existing DB rows and old Stripe subscriptions keep working without a migration.
+SiteSprintz sells three hosting plans: **Starter** ($10/mo), **Growth** ($35/mo, you edit), and **Growth Managed** ($75/mo, we take the list), plus a 7-day **Trial** (Starter-equivalent, payment method required to publish). Growth Managed is the same booking/checkout software as Growth. All e-commerce — cart, Stripe checkout, order management, product management — is gated to **Growth software** (`growth` and `growth_managed`). Legacy `pro` / `premium` / `business` / `enterprise` / `checkout` plan names normalize to `growth` via `TIER_ALIASES`. Alias `managed` → `growth_managed`.
 
 The earlier "e-commerce moved from Pro to Growth" change (June 2026) is now superseded: Pro and Premium tiers no longer exist as purchasable plans. This document replaces that narrative.
 
@@ -20,9 +20,10 @@ The earlier "e-commerce moved from Pro to Growth" change (June 2026) is now supe
 |------|-------|----------|-----------|
 | `trial` | $0 (7 days) | below Starter | ❌ blocked |
 | `starter` | $10/mo ($96/yr) | base paid | ❌ blocked |
-| `growth` | $35/mo ($336/yr) | top paid | ✅ full e-commerce |
+| `growth` | $35/mo ($336/yr) | DIY paid | ✅ full e-commerce |
+| `growth_managed` | $75/mo | same software as Growth | ✅ full e-commerce |
 
-Legacy aliases (`pro`, `premium`, `business`, `enterprise`, `checkout`) all resolve to `growth` in `normalizeTier()`. There is no longer a separate Pro or Premium feature set — `PLAN_FEATURES` only contains `trial`, `starter`, `growth`.
+Legacy aliases (`pro`, `premium`, `business`, `enterprise`, `checkout`) all resolve to `growth` in `normalizeTier()`. Alias `managed` → `growth_managed`. `PLAN_FEATURES` keys are `trial`, `starter`, `growth`, and `growth_managed` (Managed copies Growth).
 
 ---
 

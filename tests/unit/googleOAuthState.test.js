@@ -42,6 +42,17 @@ describe('Google OAuth state', () => {
     expect(mockRedis.del).toHaveBeenCalled();
   });
 
+  it('stores Growth Managed behind a random nonce', async () => {
+    const { createGoogleOAuthState } = await import('../../server/services/auth/googleOAuthState.js');
+    const state = await createGoogleOAuthState({ plan: 'managed', intent: null });
+
+    expect(mockRedis.setex).toHaveBeenCalledWith(
+      `google_oauth_state:${state}`,
+      600,
+      JSON.stringify({ plan: 'growth_managed', intent: null })
+    );
+  });
+
   it('ignores legacy plaintext state values', async () => {
     const { consumeGoogleOAuthState } = await import('../../server/services/auth/googleOAuthState.js');
     const result = await consumeGoogleOAuthState('starter,intent:publish');

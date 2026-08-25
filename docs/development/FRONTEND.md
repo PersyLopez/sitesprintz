@@ -237,7 +237,7 @@ Legacy aliases (`free`, `pro`, `premium`, `business`, `enterprise`, `checkout`) 
 
 The `FeatureGate` component in `src/components/common/FeatureGate.jsx` conditionally renders content or an upgrade prompt based on the user's plan and the feature key. `PageBuilder` uses the same logic to show available vs. locked sections.
 
-`AdminPlanFeatures.jsx` uses `TIER_HIERARCHY` and `PLAN_FEATURES` keys `trial` / `starter` / `growth`. Legacy `pro` / `premium` aliases are handled by `normalizeTier` elsewhere, not as separate admin columns.
+`AdminPlanFeatures.jsx` uses software plans `trial` / `starter` / `growth` (`TIER_HIERARCHY` minus `growth_managed`). Growth Managed uses the same features as Growth. Legacy `pro` / `premium` aliases are handled by `normalizeTier` elsewhere, not as separate admin columns.
 
 ---
 

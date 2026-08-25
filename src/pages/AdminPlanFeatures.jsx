@@ -5,8 +5,10 @@ import Header from '../components/layout/Header';
 import AdminSubnav from '../components/admin/AdminSubnav';
 import Footer from '../components/layout/Footer';
 import { FEATURES, PLAN_FEATURES, FEATURE_NAMES, PLAN_INFO } from '../utils/planFeatures';
-import { TIER_HIERARCHY } from '../config/tiers';
+import { TIER_HIERARCHY, TIERS } from '../config/tiers';
 import './AdminPlanFeatures.css';
+
+const SOFTWARE_PLANS = TIER_HIERARCHY.filter((plan) => plan !== TIERS.GROWTH_MANAGED);
 
 function AdminPlanFeatures() {
   const { token } = useAuth();
@@ -65,7 +67,7 @@ function AdminPlanFeatures() {
     return planFeatures[plan]?.includes(feature) || false;
   };
 
-  const planHierarchy = [...TIER_HIERARCHY];
+  const planHierarchy = [...SOFTWARE_PLANS];
 
   // Toggle feature for a plan
   const toggleFeature = (plan, feature) => {
@@ -191,7 +193,7 @@ function AdminPlanFeatures() {
     ]
   };
 
-  const plans = [...TIER_HIERARCHY];
+  const plans = [...SOFTWARE_PLANS];
   const planColors = {
     trial: PLAN_INFO.trial.color,
     starter: PLAN_INFO.starter.color,
@@ -228,6 +230,7 @@ function AdminPlanFeatures() {
           <span className="warning-icon">ℹ️</span>
           <div>
             <strong>Note:</strong> Changes here will affect what features users can access.
+            Growth Managed uses the same software features as Growth.
             Make sure to test changes before saving. Changes are saved to the database and take effect immediately.
           </div>
         </div>

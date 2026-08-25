@@ -212,7 +212,8 @@ function Register() {
     const apiUrl = import.meta.env.DEV
       ? 'http://localhost:3000/auth/google'
       : '/auth/google';
-    window.location.href = apiUrl;
+    const plan = paidPlanFromQuery(searchParams.get('plan'));
+    window.location.href = plan ? `${apiUrl}?plan=${encodeURIComponent(plan)}` : apiUrl;
   };
 
   return (

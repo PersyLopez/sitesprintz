@@ -11,7 +11,7 @@ This backlog is the remaining work after the 15 Aug 2026 pillar audit. Older “
 | Area | Status | Notes |
 |------|--------|--------|
 | Site creation | Working | Draft → preview → publish. Keep the drafts rewrite. |
-| Tiers | Working | trial / starter ($10) / growth ($35). Aliases for pro/premium. |
+| Tiers | Working | trial / starter ($10) / growth ($35) / growth_managed ($75). Aliases for pro/premium. |
 | Public marketing | Mostly working | Story landing, 14 gallery templates, legal footer, OG image. |
 | Booking | Working | Phase 1 + Phase 2 in the working tree. Staff id no longer hardcoded. |
 | Payments | Working locally | Stripe test mode. Live keys are a launch step, not a code gap. |

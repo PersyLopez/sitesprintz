@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isTrialingStatus, paidPlanFromQuery } from '../../src/config/tiers.js';
+import { isTrialingStatus, paidPlanFromQuery, isPaidHostingPlan } from '../../src/config/tiers.js';
 
 describe('isTrialingStatus', () => {
   it('treats local trial and Stripe trialing as in-progress', () => {
@@ -22,5 +22,8 @@ describe('paidPlanFromQuery', () => {
     expect(paidPlanFromQuery(null)).toBeNull();
     expect(paidPlanFromQuery('trial')).toBeNull();
     expect(paidPlanFromQuery('garbage')).toBeNull();
+    expect(isPaidHostingPlan('growth_managed')).toBe(true);
+    expect(isPaidHostingPlan('managed')).toBe(true);
+    expect(isPaidHostingPlan('trial')).toBe(false);
   });
 });

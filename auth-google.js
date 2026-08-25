@@ -11,6 +11,7 @@ import { createGoogleOAuthState, consumeGoogleOAuthState } from './server/servic
 import { createTokenPair } from './server/services/tokenService.js';
 import { setAuthCookies } from './server/utils/authCookies.js';
 import { betaAllowsPublicSignups } from './server/config/betaMode.js';
+import { paidPlanFromQuery } from './src/config/tiers.js';
 
 /**
  * Configure Google OAuth Strategy
@@ -99,9 +100,9 @@ export function configureGoogleAuth() {
         }
 
         const { plan, intent } = await consumeGoogleOAuthState(req.query.state);
-        const paidPlans = ['starter', 'growth', 'pro', 'premium'];
-        if (paidPlans.includes(plan)) {
-          user.pendingPlan = plan;
+        const paid = paidPlanFromQuery(plan);
+        if (paid) {
+          user.pendingPlan = paid;
         }
         if (intent) {
           user.pendingIntent = intent;
@@ -195,14 +196,13 @@ export function setupGoogleRoutes(app) {
       });
       setAuthCookies(res, { accessToken, refreshToken });
 
-      const paidPlans = ['starter', 'growth', 'pro', 'premium'];
       const frontend = clientUrl();
 
       if (user.pendingIntent === 'publish') {
         return res.redirect(`${frontend}/oauth/callback?token=${accessToken}&intent=publish`);
       }
 
-      if (user.pendingPlan && paidPlans.includes(user.pendingPlan)) {
+      if (paidPlanFromQuery(user.pendingPlan)) {
         return res.redirect(`${frontend}/oauth/callback?token=${accessToken}&plan=${user.pendingPlan}`);
       }
 

@@ -63,6 +63,7 @@ dotenv.config();
 // Validate environment configuration
 import { validateEnv, logBootSummary } from './server/config/validateEnv.js';
 import { getRequiredSecret } from './server/config/secrets.js';
+import { paidPlanFromQuery } from './src/config/tiers.js';
 import { createGoogleOAuthState, consumeGoogleOAuthState } from './server/services/auth/googleOAuthState.js';
 import { setAuthCookies } from './server/utils/authCookies.js';
 import { buildCorsOptions } from './server/config/cors.js';
@@ -268,13 +269,12 @@ if (googleAuthConfigured) {
       setAuthCookies(res, { accessToken });
 
       const { plan, intent } = await consumeGoogleOAuthState(state);
-      const paidPlans = ['starter', 'growth', 'pro', 'premium'];
 
       if (intent === 'publish') {
         return res.redirect(`/auto-publish.html?token=${accessToken}`);
       }
 
-      if (plan && paidPlans.includes(plan)) {
+      if (paidPlanFromQuery(plan)) {
         return res.redirect(`/register-success.html?token=${accessToken}&plan=${plan}`);
       }
 

@@ -226,6 +226,22 @@ describe('Register Component', () => {
     window.location = originalLocation;
   });
 
+  it('passes Growth Managed through Google OAuth', async () => {
+    const user = userEvent.setup();
+    const originalLocation = window.location;
+    delete window.location;
+    window.location = { href: '' };
+
+    renderRegister('/register?plan=growth_managed');
+
+    await acceptTerms(user);
+    await user.click(screen.getByRole('button', { name: /continue with google/i }));
+
+    expect(window.location.href).toBe('http://localhost:3000/auth/google?plan=growth_managed');
+
+    window.location = originalLocation;
+  });
+
   it('should have link to login page', () => {
     renderRegister();
 

@@ -5,15 +5,17 @@
 
 import crypto from 'crypto';
 import { getRedis } from '../../utils/redis.js';
+import { paidPlanFromQuery } from '../../../src/config/tiers.js';
 
 const STATE_TTL_SECONDS = 600;
 const KEY_PREFIX = 'google_oauth_state:';
-const ALLOWED_PLANS = new Set(['free', 'trial', 'starter', 'growth', 'pro', 'premium']);
 
 function normalizePlan(plan) {
   if (typeof plan !== 'string') return 'free';
+  const paid = paidPlanFromQuery(plan);
+  if (paid) return paid;
   const normalized = plan.trim().toLowerCase();
-  return ALLOWED_PLANS.has(normalized) ? normalized : 'free';
+  return normalized === 'free' || normalized === 'trial' ? normalized : 'free';
 }
 
 function normalizeIntent(intent) {

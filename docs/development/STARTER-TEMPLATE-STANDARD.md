@@ -1,7 +1,7 @@
 # Starter Template Standard
 
 **Scope:** authoring Starter **template JSON** (gallery / wizard catalog).  
-For filling a **live site** from a template, use [`SITE-FROM-TEMPLATE-STANDARD.md`](./SITE-FROM-TEMPLATE-STANDARD.md). Live tiers are trial / Starter ($10) / Growth ($35) — not the Premium/Checkout names below.
+For filling a **live site** from a template, use [`SITE-FROM-TEMPLATE-STANDARD.md`](./SITE-FROM-TEMPLATE-STANDARD.md). Live hosting is trial / Starter ($10) / Growth ($35) / Growth Managed ($75) — not the Premium/Checkout names below.
 
 ## Overview
 

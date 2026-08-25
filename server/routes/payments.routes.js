@@ -35,6 +35,7 @@ import { stripeSubscriptionLineItem, STRIPE_TRIAL_DAYS, normalizePaidPlan, CUSTO
 import { createLaborCheckout } from '../services/labor/laborCheckoutService.js';
 
 const router = express.Router();
+const INVALID_PAID_PLAN = 'Invalid plan. Must be "starter", "growth", or "growth_managed"';
 
 /**
  * Middleware: Require Growth plan for payments
@@ -419,7 +420,7 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
     const plan = normalizePaidPlan(rawPlan);
 
     if (!plan) {
-        return sendBadRequest(res, 'Invalid plan. Must be "starter" or "growth"', 'INVALID_PLAN');
+        return sendBadRequest(res, INVALID_PAID_PLAN, 'INVALID_PLAN');
     }
 
         const redirects = subscriptionCheckoutUrls(req, {
@@ -621,12 +622,10 @@ router.post('/trial/setup-intent', requireAuth, asyncHandler(async (req, res) =>
 
   const userEmail = req.user.email;
   const { plan: rawPlan } = req.body;
-  const plan = rawPlan === 'pro' || rawPlan === 'premium' ? 'growth' : rawPlan;
+  const plan = normalizePaidPlan(rawPlan);
 
-  // Validate plan
-  const validPlans = ['starter', 'growth'];
-  if (!validPlans.includes(plan)) {
-    return sendBadRequest(res, 'Invalid plan. Must be "starter" or "growth"', 'INVALID_PLAN');
+  if (!plan) {
+    return sendBadRequest(res, INVALID_PAID_PLAN, 'INVALID_PLAN');
   }
 
   // Create or retrieve Stripe customer
@@ -681,7 +680,7 @@ router.post('/trial/create-subscription', requireAuth, asyncHandler(async (req, 
   const plan = normalizePaidPlan(rawPlan);
 
   if (!plan) {
-    return sendBadRequest(res, 'Invalid plan. Must be "starter" or "growth"', 'INVALID_PLAN');
+    return sendBadRequest(res, INVALID_PAID_PLAN, 'INVALID_PLAN');
   }
 
   if (!paymentMethodId) {

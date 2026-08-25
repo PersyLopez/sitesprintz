@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { authService } from '../services/auth';
+import { paidPlanFromQuery } from '../config/tiers.js';
 
 const ERROR_MESSAGES = {
   oauth_failed: 'Google sign-in was cancelled. Please try again.',
@@ -55,10 +56,11 @@ function OAuthCallback() {
       if (user.role === 'admin') {
         navigate('/admin', { replace: true });
       } else {
-        navigate('/dashboard', { replace: true });
+        const plan = paidPlanFromQuery(searchParams.get('plan'));
+        navigate(plan ? `/settings/billing?plan=${plan}` : '/dashboard', { replace: true });
       }
     }
-  }, [loading, user, navigate]);
+  }, [loading, user, navigate, searchParams]);
 
   return (
     <div style={{

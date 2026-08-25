@@ -67,6 +67,11 @@ export function paidPlanFromQuery(raw) {
   return null;
 }
 
+/** True for Starter, Growth, or Growth Managed (including `managed` / legacy aliases). */
+export function isPaidHostingPlan(raw) {
+  return paidPlanFromQuery(raw) != null;
+}
+
 /**
  * Check if a tier has access to a feature required at a certain tier level
  * @param {string} userTier - User's subscription tier

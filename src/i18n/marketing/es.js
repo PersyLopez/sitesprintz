@@ -168,7 +168,7 @@ export default {
   'about.who.li1': 'Una página con la forma de tu negocio, no un folleto genérico',
   'about.who.li2': 'Borrador gratis, vista previa rápida, publica cuando estés listo',
   'about.who.li3': 'Reservas y checkout cuando los necesites en Growth',
-  'about.who.li4': 'Starter a $10/mes, Growth a $35/mes',
+  'about.who.li4': 'Starter a $10/mes, Growth a $35/mes, Growth Managed a $75/mes',
   'about.how.h': 'Cómo funciona',
   'about.how.1.h': 'Dinos qué vendes',
   'about.how.1.p': 'Puesto, tienda, silla o cocina — empezamos una página que se parece a tu mundo.',

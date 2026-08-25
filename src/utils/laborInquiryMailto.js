@@ -3,6 +3,7 @@ import { PRICING_CONFIG } from '../config/pricing.config';
 const ALLOWED_TOPICS = new Set([
   'optional extras',
   'managed care',
+  'growth managed',
   'brand match',
   'unique look',
   'build on request',

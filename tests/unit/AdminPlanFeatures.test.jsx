@@ -74,6 +74,8 @@ describe('AdminPlanFeatures Page', () => {
     expect(screen.getByText('1 features')).toBeInTheDocument();
     expect(screen.getByText('2 features')).toBeInTheDocument();
     expect(screen.getByText('3 features')).toBeInTheDocument();
+    expect(screen.getByText(/Growth Managed uses the same software features as Growth/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Growth_managed/i)).not.toBeInTheDocument();
   });
 
   it('saves with PUT then reloads via GET without throwing', async () => {
