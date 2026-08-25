@@ -12,7 +12,7 @@ const BLOCKED_SUBSCRIPTION_STATUSES = new Set([
 /**
  * Normalize legacy plan names to platform tiers.
  * @param {string|undefined|null} rawPlan
- * @returns {'starter'|'growth'|null}
+ * @returns {'starter'|'growth'|'growth_managed'|null}
  */
 export function normalizePlatformPlan(rawPlan) {
   if (rawPlan == null || rawPlan === '') return null;
@@ -23,21 +23,23 @@ export function normalizePlatformPlan(rawPlan) {
  * Map Stripe Price ID to platform plan via env configuration.
  * Unknown IDs return null — never default to growth.
  * @param {string|undefined|null} priceId
- * @returns {'starter'|'growth'|null}
+ * @returns {'starter'|'growth'|'growth_managed'|null}
  */
 export function mapPlanFromPriceId(priceId) {
   if (!priceId || typeof priceId !== 'string') return null;
   const starter = process.env.STRIPE_PRICE_STARTER;
   const growth = process.env.STRIPE_PRICE_GROWTH;
+  const growthManaged = process.env.STRIPE_PRICE_GROWTH_MANAGED;
   if (starter && priceId === starter) return 'starter';
   if (growth && priceId === growth) return 'growth';
+  if (growthManaged && priceId === growthManaged) return 'growth_managed';
   return null;
 }
 
 /**
  * Resolve plan from subscription metadata or first line item price id.
  * @param {import('stripe').Stripe.Subscription} subscription
- * @returns {'starter'|'growth'|null}
+ * @returns {'starter'|'growth'|'growth_managed'|null}
  */
 export function resolvePlanFromSubscription(subscription) {
   const fromMeta = normalizePlatformPlan(subscription?.metadata?.plan);

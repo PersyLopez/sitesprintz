@@ -24,10 +24,11 @@ export const PRICING_CONFIG = {
     },
     managedCare: {
       billed: 'month',
-      price: 49,
+      customerFacing: false,
+      price: 75,
       batchesPerMonth: 2,
       envPriceKey: 'STRIPE_PRICE_MANAGED_CARE',
-      description: 'Convenience updates if you skip the editor; a batch can be the whole catalog'
+      description: 'Superseded by Growth Managed ($75/mo). Kept for batch counts and legacy ledger rows.'
     },
     extraBatch: {
       billed: 'one_time',
@@ -263,6 +264,30 @@ export const PRICING_CONFIG = {
       cta: 'Upgrade to Growth',
       available: true,
       popular: true
+    },
+
+    growth_managed: {
+      id: 'growth_managed',
+      name: 'Growth Managed',
+      price: 75,
+      billingPeriod: 'monthly',
+      tagline: 'We take the list',
+      description: 'Same booking and checkout as Growth. We apply two catalog batches a month. First month includes the initial fill.',
+      summary: [
+        'Everything in Growth',
+        'We apply two catalog batches a month',
+        'First month includes the initial fill'
+      ],
+      features: [
+        'Everything in Growth',
+        'We take the list — two catalog batches a month',
+        'First month includes the initial fill',
+        'Extra batch, Brand match, and Unique look stay optional'
+      ],
+      color: '#0ea5e9',
+      cta: 'Get Growth Managed',
+      available: true,
+      popular: false
     }
   },
   // Overall value proposition

@@ -91,6 +91,7 @@ describe('ClaimSite', () => {
       expect(screen.getByTestId('claim-start-trial')).toBeInTheDocument();
     });
     expect(screen.getByTestId('claim-plan-growth')).toBeInTheDocument();
+    expect(screen.getByTestId('claim-plan-growth-managed')).toBeInTheDocument();
     expect(screen.queryByTestId('claim-plan-starter')).not.toBeInTheDocument();
     expect(screen.getByText(/add a card/i)).toBeInTheDocument();
     expect(screen.getByTestId('labor-extras')).toHaveTextContent(/no setup fee/i);

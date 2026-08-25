@@ -3,7 +3,7 @@ import { normalizeTier, hasTierAccess, TIERS, TIER_HIERARCHY } from '../config/t
 
 /**
  * Hook to access user's plan information
- * Official tiers: trial, starter, growth (legacy pro/premium → growth)
+ * Official tiers: trial, starter, growth, growth_managed (legacy pro/premium → growth)
  */
 export function usePlan() {
   const { user } = useAuth();
@@ -22,11 +22,12 @@ export function usePlan() {
     isTrial: plan === TIERS.TRIAL,
     isFree: plan === TIERS.TRIAL,
     isStarter: plan === TIERS.STARTER,
-    isGrowth: plan === TIERS.GROWTH,
-    // Legacy aliases — Pro folded into Growth
-    isPro: plan === TIERS.GROWTH,
-    isPremium: plan === TIERS.GROWTH,
-    isEnterprise: plan === TIERS.GROWTH,
+    isGrowth: hasTierAccess(plan, TIERS.GROWTH),
+    isGrowthManaged: plan === TIERS.GROWTH_MANAGED,
+    // Legacy aliases — Pro folded into Growth software
+    isPro: hasTierAccess(plan, TIERS.GROWTH),
+    isPremium: hasTierAccess(plan, TIERS.GROWTH),
+    isEnterprise: hasTierAccess(plan, TIERS.GROWTH),
 
     isAbove: (tier) => hasTierAccess(plan, tier),
     isBelow: (tier) => {

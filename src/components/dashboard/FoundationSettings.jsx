@@ -67,7 +67,7 @@ export default function FoundationSettings({ site, onUpdate }) {
   const [activeTab, setActiveTab] = useState('trustSignals');
   const [showPreview, setShowPreview] = useState(true);
 
-  const isGrowth = site.plan === 'growth' || site.plan === 'pro' || site.plan === 'premium';
+  const isGrowth = site.plan === 'growth' || site.plan === 'growth_managed' || site.plan === 'pro' || site.plan === 'premium';
   const isPro = isGrowth; // legacy alias
 
   // Load initial config — siteData.social wins so Foundation cannot drift

@@ -2,8 +2,8 @@
  * Canonical SiteSprintz SaaS catalog for Stripe Checkout.
  * Monthly amounts match src/config/tiers.js TIER_INFO (cents).
  *
- * Monthly Starter/Growth is hosting + monitoring (software access still
- * gated by plan). Labor SKUs use Dashboard Price IDs only — never client cents.
+ * Monthly Starter / Growth / Growth Managed is hosting + monitoring (software
+ * access still gated by plan). Labor SKUs use Dashboard Price IDs only — never client cents.
  *
  * Two clocks (do not conflate):
  * - STRIPE_TRIAL_DAYS: card-required Checkout trial
@@ -12,8 +12,9 @@
 
 export const STRIPE_TRIAL_DAYS = 7;
 
-/** Targeted claimables always check out on Growth. Starter is self-serve only. */
+/** Targeted claimables default to DIY Growth. Starter is self-serve only. */
 export const CLAIM_PLAN = 'growth';
+export const CLAIM_PLANS = ['growth', 'growth_managed'];
 
 export const PLATFORM_PLAN_DETAILS = {
   starter: {
@@ -30,6 +31,13 @@ export const PLATFORM_PLAN_DETAILS = {
     description: 'Hosting and monitoring plus booking and checkout',
     envPriceKey: 'STRIPE_PRICE_GROWTH',
   },
+  growth_managed: {
+    id: 'growth_managed',
+    name: 'SiteSprintz Growth Managed',
+    amount: 7500,
+    description: 'Same software as Growth; we take the list (two catalog batches a month)',
+    envPriceKey: 'STRIPE_PRICE_GROWTH_MANAGED',
+  },
 };
 
 /** Labor extras. Amounts are in src/config/pricing.config.js; Stripe Price IDs here. */
@@ -43,8 +51,8 @@ export const LABOR_SKUS = {
   },
   managed_care: {
     id: 'managed_care',
-    name: 'Managed care',
-    description: 'Monthly convenience batches if the owner skips the editor',
+    name: 'Managed care (legacy add-on)',
+    description: 'Superseded by the Growth Managed plan — keep for webhook/ledger rows only',
     envPriceKey: 'STRIPE_PRICE_MANAGED_CARE',
     metadataType: 'managed_care',
   },
@@ -73,10 +81,13 @@ export const LABOR_SKUS = {
 
 /**
  * @param {string} [rawPlan]
- * @returns {'starter'|'growth'|null}
+ * @returns {'starter'|'growth'|'growth_managed'|null}
  */
 export function normalizePaidPlan(rawPlan) {
-  const plan = rawPlan === 'pro' || rawPlan === 'premium' ? 'growth' : rawPlan;
+  if (rawPlan == null || rawPlan === '') return null;
+  let plan = String(rawPlan).toLowerCase().trim();
+  if (plan === 'pro' || plan === 'premium') plan = 'growth';
+  if (plan === 'managed') plan = 'growth_managed';
   if (!Object.prototype.hasOwnProperty.call(PLATFORM_PLAN_DETAILS, plan)) {
     return null;
   }
@@ -97,7 +108,7 @@ export function configuredStripePriceId(envPriceId) {
 
 /**
  * Prefer Dashboard Price IDs when set; otherwise inline price_data.
- * @param {'starter'|'growth'} plan
+ * @param {'starter'|'growth'|'growth_managed'} plan
  * @param {NodeJS.ProcessEnv} [env]
  */
 export function stripeSubscriptionLineItem(plan, env = process.env) {
@@ -146,9 +157,8 @@ export function stripeLaborLineItem(skuId, env = process.env) {
   return { price: configuredPriceId, quantity: 1 };
 }
 
-/** Customer-facing extras. claim_setup is never sold on this path. */
+/** Customer-facing extras. Care is the Growth Managed plan, not a labor SKU. */
 export const CUSTOMER_LABOR_SKUS = [
-  'managed_care',
   'managed_edit',
   'brand_match',
   'unique_look',

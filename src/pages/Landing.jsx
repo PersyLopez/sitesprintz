@@ -96,8 +96,8 @@ const HOW_STEP_KEYS = [
   { n: 3, title: 'landing.how.3.title', body: 'landing.how.3.body' },
 ];
 
-/** Two choices on the landing: get found, or get booked & paid. */
-const LANDING_PLAN_KEYS = ['starter', 'growth'];
+/** Three hosting choices: brochure, DIY Growth, or we take the list. */
+const LANDING_PLAN_KEYS = ['starter', 'growth', 'growth_managed'];
 
 export default function Landing() {
   const { isAuthenticated } = useAuth();

@@ -2,21 +2,24 @@
  * Single source of truth for subscription tier definitions
  * All tier checks, gating, and comparisons flow through this file
  *
- * Official tiers: trial < starter < growth
+ * Official tiers: trial < starter < growth < growth_managed
  * Legacy "pro" / "premium" / "business" normalize to growth
+ * Alias "managed" → growth_managed (flat $75 recurring, same software as Growth)
  */
 
 export const TIERS = {
   TRIAL: 'trial',
   STARTER: 'starter',
-  GROWTH: 'growth'
+  GROWTH: 'growth',
+  GROWTH_MANAGED: 'growth_managed',
 };
 
 // Ordered list for tier comparisons
 export const TIER_HIERARCHY = [
   TIERS.TRIAL,
   TIERS.STARTER,
-  TIERS.GROWTH
+  TIERS.GROWTH,
+  TIERS.GROWTH_MANAGED,
 ];
 
 // Tier aliases for backward compatibility (DB rows, old Stripe plans, UI)
@@ -26,7 +29,8 @@ export const TIER_ALIASES = {
   business: TIERS.GROWTH,
   premium: TIERS.GROWTH,
   enterprise: TIERS.GROWTH,
-  checkout: TIERS.GROWTH
+  checkout: TIERS.GROWTH,
+  managed: TIERS.GROWTH_MANAGED,
 };
 
 /**
@@ -105,6 +109,20 @@ export const TIER_INFO = {
     features: [
       'Everything in Starter',
       'Booking, cart & Stripe checkout'
+    ]
+  },
+  growth_managed: {
+    name: 'Growth Managed',
+    displayName: 'Growth Managed',
+    price: 75,
+    currency: 'USD',
+    billingPeriod: 'month',
+    description: 'Same software as Growth; we take the list (2 catalog batches a month)',
+    color: '#0ea5e9',
+    features: [
+      'Everything in Growth',
+      'We apply two catalog batches a month',
+      'First month includes the initial fill'
     ]
   }
 };

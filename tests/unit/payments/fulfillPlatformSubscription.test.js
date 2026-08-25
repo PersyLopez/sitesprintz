@@ -116,6 +116,8 @@ describe('fulfillPlatformSubscription', () => {
     expect(mapPlanFromPriceId('price_unknown_xyz')).toBeNull();
     expect(mapPlanFromPriceId('price_starter_known')).toBe('starter');
     expect(mapPlanFromPriceId('price_growth_known')).toBe('growth');
+    process.env.STRIPE_PRICE_GROWTH_MANAGED = 'price_managed_known';
+    expect(mapPlanFromPriceId('price_managed_known')).toBe('growth_managed');
   });
 
   it('resolvePlanFromSubscription prefers metadata over price id', () => {

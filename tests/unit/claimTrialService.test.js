@@ -46,10 +46,12 @@ describe('claimTrialService', () => {
     prisma.users.update.mockResolvedValue({});
   });
 
-  it('normalizes claim plans to Growth only', () => {
+  it('normalizes claim plans to Growth or Growth Managed', () => {
     expect(normalizeClaimPlan('pro')).toBe('growth');
     expect(normalizeClaimPlan('premium')).toBe('growth');
     expect(normalizeClaimPlan(undefined)).toBe('growth');
+    expect(normalizeClaimPlan('growth_managed')).toBe('growth_managed');
+    expect(normalizeClaimPlan('managed')).toBe('growth_managed');
     expect(normalizeClaimPlan('starter')).toBeNull();
     expect(normalizeClaimPlan('invalid')).toBeNull();
   });
@@ -60,11 +62,17 @@ describe('claimTrialService', () => {
     expect(isSubscribedStatus('canceled')).toBe(false);
   });
 
-  it('only treats Growth as claim-ready', () => {
+  it('treats Growth and Growth Managed as claim-ready', () => {
     expect(
       hasClaimableGrowthSubscription({
         subscription_status: 'trialing',
         subscription_plan: 'growth',
+      })
+    ).toBe(true);
+    expect(
+      hasClaimableGrowthSubscription({
+        subscriptionStatus: 'active',
+        subscriptionPlan: 'growth_managed',
       })
     ).toBe(true);
     expect(
@@ -115,6 +123,25 @@ describe('claimTrialService', () => {
     expect(call.metadata).not.toHaveProperty('claimToken');
   });
 
+  it('creates Growth Managed claim checkout at $75', async () => {
+    const user = { id: 'user-1', email: 'owner@example.com' };
+    const site = { id: 'site-1', subdomain: 'riverside-cuts' };
+
+    await createClaimTrialCheckout({
+      user,
+      site,
+      plan: 'growth_managed',
+      claimToken: 'ab'.repeat(32),
+      req: { headers: { origin: 'http://localhost:3000' } },
+      stripe: mockStripe,
+    });
+
+    const call = mockStripe.checkout.sessions.create.mock.calls[0][0];
+    expect(call.line_items[0].price_data.unit_amount).toBe(7500);
+    expect(call.metadata.plan).toBe('growth_managed');
+    expect(call.subscription_data.metadata.plan).toBe('growth_managed');
+  });
+
   it('uses configured Growth Price ID when env is set', async () => {
     process.env.STRIPE_PRICE_GROWTH = 'price_growth_claim_test';
     const user = { id: 'user-1', email: 'owner@example.com' };
@@ -158,7 +185,7 @@ describe('claimTrialService', () => {
       stripe: mockStripe,
     });
 
-    expect(result).toEqual({ ready: true, subscriptionStatus: 'trialing' });
+    expect(result).toEqual({ ready: true, subscriptionStatus: 'trialing', plan: 'growth' });
     expect(prisma.users.update).toHaveBeenCalledWith({
       where: { id: 'user-1' },
       data: expect.objectContaining({

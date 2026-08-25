@@ -83,6 +83,7 @@ Production deployments must use live Stripe keys. The validation script specific
 - `STRIPE_WEBHOOK_SECRET=whsec_...` (live webhook signing secret)
 - `STRIPE_PRICE_GROWTH` — live price ID for the Growth plan
 - `STRIPE_PRICE_STARTER` — recommended live price ID for the Starter plan
+- `STRIPE_PRICE_GROWTH_MANAGED` — recommended live price ID for Growth Managed ($75/mo)
 
 For staging or local development, use test keys (`sk_test_...`). On a closed-beta Railway deploy, keep `NODE_ENV=production` and set `BETA_MODE=true` so test keys are allowed. Do not use test keys in public production (`BETA_MODE` off).
 
@@ -130,7 +131,7 @@ Railway can run migrations automatically via the `start` command if configured.
    - `invoice.payment_succeeded`
    - `invoice.payment_failed`
 5. Copy the webhook signing secret (`whsec_...`) into `STRIPE_WEBHOOK_SECRET`.
-6. Create live products and price IDs for the Starter and Growth plans, then set `STRIPE_PRICE_GROWTH` (required) and `STRIPE_PRICE_STARTER` (recommended).
+6. Create live products and price IDs for Starter, Growth, and Growth Managed, then set `STRIPE_PRICE_GROWTH` (required), `STRIPE_PRICE_STARTER` (recommended), and `STRIPE_PRICE_GROWTH_MANAGED` (recommended).
 
 ## Step 5: Email service setup
 

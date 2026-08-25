@@ -72,19 +72,16 @@ describe('createLaborCheckout', () => {
     expect(stripe.checkout.sessions.create).not.toHaveBeenCalled();
   });
 
-  it('creates a subscription session for managed care', async () => {
-    await createLaborCheckout({
+  it('rejects managed_care — care is the Growth Managed plan', async () => {
+    await expect(createLaborCheckout({
       user: { id: 'user-1', email: 'owner@example.com' },
       sku: 'managed_care',
       stripe,
       prisma: prismaClient,
       resolveOwnedSiteId,
       env: { STRIPE_PRICE_MANAGED_CARE: 'price_care_env' },
-    });
-    const [params] = stripe.checkout.sessions.create.mock.calls[0];
-    expect(params.mode).toBe('subscription');
-    expect(params.subscription_data.metadata.source).toBe('labor_extra');
-    expect(params.subscription_data.metadata).not.toHaveProperty('plan');
+    })).rejects.toMatchObject({ code: 'INVALID_LABOR_SKU' });
+    expect(stripe.checkout.sessions.create).not.toHaveBeenCalled();
   });
 
   it('attaches siteId only when the user owns the site', async () => {

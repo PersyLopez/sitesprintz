@@ -8,7 +8,7 @@ steps:
   - action: Scroll to pricing section
     goto: http://localhost:5173/#pricing
     settle_ms: 800
-    wait_for: { text: Two plans. Pick what you need., timeout: 15000 }
+    wait_for: { text: Three plans. Pick how you run it., timeout: 15000 }
     assert:
       - text contains Starter
       - text contains Growth

@@ -34,7 +34,7 @@ describe('laborInquiryMailto', () => {
 
   it('returns catalog dollars when finite', () => {
     expect(laborDisplayVars()).toEqual({
-      care: 49,
+      care: 75,
       extra: 39,
       brand: 99,
       look: 250,

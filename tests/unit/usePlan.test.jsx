@@ -84,7 +84,8 @@ describe('usePlan Hook', () => {
       const cases = [
         { plan: 'trial', isTrial: true, isStarter: false, isGrowth: false },
         { plan: 'starter', isTrial: false, isStarter: true, isGrowth: false },
-        { plan: 'growth', isTrial: false, isStarter: false, isGrowth: true }
+        { plan: 'growth', isTrial: false, isStarter: false, isGrowth: true },
+        { plan: 'growth_managed', isTrial: false, isStarter: false, isGrowth: true }
       ];
 
       cases.forEach(({ plan, isTrial, isStarter, isGrowth }) => {

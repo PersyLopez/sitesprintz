@@ -58,6 +58,11 @@ describe('planFeatures Utility', () => {
       expect(hasFeature('pro', FEATURES.STRIPE_CHECKOUT)).toBe(true);
       expect(hasFeature('pro', FEATURES.CUSTOM_DOMAIN)).toBe(true);
     });
+
+    it('should allow commerce features for Growth Managed', () => {
+      expect(hasFeature('growth_managed', FEATURES.STRIPE_CHECKOUT)).toBe(true);
+      expect(hasFeature('managed', FEATURES.SHOPPING_CART)).toBe(true);
+    });
   });
 
   describe('getRequiredPlan', () => {
@@ -73,9 +78,10 @@ describe('planFeatures Utility', () => {
   });
 
   describe('isPlanHigherThan', () => {
-    it('should compare starter and growth', () => {
+    it('should compare starter, growth, and Growth Managed', () => {
       expect(isPlanHigherThan('starter', 'growth')).toBe(false);
       expect(isPlanHigherThan('growth', 'starter')).toBe(true);
+      expect(isPlanHigherThan('growth_managed', 'growth')).toBe(true);
     });
 
     it('should treat pro as growth level', () => {
@@ -85,15 +91,18 @@ describe('planFeatures Utility', () => {
   });
 
   describe('getUpgradeOptions', () => {
-    it('should return growth as upgrade from starter', () => {
+    it('should return growth then Growth Managed as upgrades from starter', () => {
       const options = getUpgradeOptions('starter');
-      expect(options).toHaveLength(1);
-      expect(options[0].plan).toBe('growth');
+      expect(options.map((option) => option.plan)).toEqual(['growth', 'growth_managed']);
     });
 
-    it('should return empty array for growth (highest paid tier)', () => {
-      expect(getUpgradeOptions('growth')).toEqual([]);
-      expect(getUpgradeOptions('pro')).toEqual([]);
+    it('should return Growth Managed as upgrade from DIY Growth', () => {
+      expect(getUpgradeOptions('growth').map((option) => option.plan)).toEqual(['growth_managed']);
+      expect(getUpgradeOptions('pro').map((option) => option.plan)).toEqual(['growth_managed']);
+    });
+
+    it('should return empty array for Growth Managed (highest paid tier)', () => {
+      expect(getUpgradeOptions('growth_managed')).toEqual([]);
     });
   });
 
@@ -103,6 +112,8 @@ describe('planFeatures Utility', () => {
       expect(growth.name).toBe('Growth');
       expect(growth.price).toBe(35);
       expect(getPlanInfo('pro').name).toBe('Growth');
+      expect(getPlanInfo('growth_managed').name).toBe('Growth Managed');
+      expect(getPlanInfo('growth_managed').price).toBe(75);
     });
 
     it('should return trial plan for invalid input', () => {

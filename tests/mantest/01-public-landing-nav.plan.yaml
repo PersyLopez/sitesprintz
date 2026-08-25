@@ -8,7 +8,7 @@ steps:
       - text contains They love what you make
       - text contains Get Your Page Free
       - text contains Read their stories
-      - text contains Two plans. Pick what you need.
+      - text contains Three plans. Pick how you run it.
       - text contains Starter
       - text contains Growth
 
@@ -27,7 +27,7 @@ steps:
     click: { testId: nav-pricing }
     settle_ms: 400
     assert:
-      - text contains Two plans. Pick what you need.
+      - text contains Three plans. Pick how you run it.
 
   - action: Open Login from header
     click: { testId: nav-login }

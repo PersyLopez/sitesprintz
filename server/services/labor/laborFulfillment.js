@@ -1,10 +1,10 @@
-import { LABOR_SKUS, normalizeCustomerLaborSku } from '../../config/platformPlans.js';
+import { LABOR_SKUS } from '../../config/platformPlans.js';
 import { createLaborLedger } from './laborLedger.js';
 import { redactLaborSecrets } from './laborSecrets.js';
 
 function laborSkuFromSession(session) {
-  const type = session?.metadata?.type;
-  return normalizeCustomerLaborSku(type);
+  const type = typeof session?.metadata?.type === 'string' ? session.metadata.type : '';
+  return Object.prototype.hasOwnProperty.call(LABOR_SKUS, type) ? type : null;
 }
 
 function customerEmailFromSession(session) {

@@ -102,10 +102,11 @@ const GROWTH_FEATURES = [
 export const PLAN_FEATURES = {
   [TIERS.TRIAL]: TRIAL_FEATURES,
   [TIERS.STARTER]: STARTER_FEATURES,
-  [TIERS.GROWTH]: GROWTH_FEATURES
+  [TIERS.GROWTH]: GROWTH_FEATURES,
+  [TIERS.GROWTH_MANAGED]: GROWTH_FEATURES,
 };
 
-// Plan metadata (2 paid tiers)
+// Plan metadata (3 paid hosting plans)
 export const PLAN_INFO = {
   trial: {
     name: 'Free Trial',
@@ -129,6 +130,14 @@ export const PLAN_INFO = {
     description: 'Hosting and monitoring plus booking and checkout',
     ctaText: 'Upgrade to Growth',
     popular: true
+  },
+  growth_managed: {
+    name: 'Growth Managed',
+    price: 75,
+    duration: 'month',
+    color: '#0ea5e9',
+    description: 'Same software as Growth; we take the list',
+    ctaText: 'Upgrade to Growth Managed'
   }
 };
 

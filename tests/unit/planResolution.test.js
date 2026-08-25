@@ -9,6 +9,8 @@ import { getPlanLimits } from '../../server/services/subscriptionService.js';
 describe('Plan resolution and validation', () => {
   it('accepts growth and normalizes legacy pro', () => {
     expect(validatePlan('growth').value).toBe('growth');
+    expect(validatePlan('growth_managed').value).toBe('growth_managed');
+    expect(validatePlan('managed').value).toBe('growth_managed');
     expect(validatePlan('pro').value).toBe('growth');
     expect(validatePlan('premium').value).toBe('growth');
     expect(validatePlan('starter').value).toBe('starter');

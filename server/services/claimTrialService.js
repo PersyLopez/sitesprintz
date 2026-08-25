@@ -3,22 +3,23 @@ import { prisma } from '../../database/db.js';
 import { getFrontendOrigin } from './payments/processorConnectHelpers.js';
 import {
   CLAIM_PLAN,
+  CLAIM_PLANS,
   STRIPE_TRIAL_DAYS,
   normalizePaidPlan,
   stripeSubscriptionLineItem,
 } from '../config/platformPlans.js';
 
-export { CLAIM_PLAN };
+export { CLAIM_PLAN, CLAIM_PLANS };
 
 /**
- * Claim Checkout is Growth only. Empty body defaults to Growth; Starter is rejected.
+ * Claim Checkout is Growth or Growth Managed. Empty body defaults to DIY Growth; Starter is rejected.
  * @param {string} [rawPlan]
- * @returns {'growth'|null}
+ * @returns {'growth'|'growth_managed'|null}
  */
 export function normalizeClaimPlan(rawPlan) {
   const plan =
     rawPlan == null || rawPlan === '' ? CLAIM_PLAN : normalizePaidPlan(rawPlan);
-  return plan === CLAIM_PLAN ? CLAIM_PLAN : null;
+  return CLAIM_PLANS.includes(plan) ? plan : null;
 }
 
 export function hasClaimableGrowthSubscription(user) {
@@ -27,7 +28,8 @@ export function hasClaimableGrowthSubscription(user) {
     return false;
   }
   const raw = user?.subscriptionPlan || user?.subscription_plan || user?.plan;
-  return normalizePaidPlan(raw) === CLAIM_PLAN;
+  const plan = normalizePaidPlan(raw);
+  return CLAIM_PLANS.includes(plan);
 }
 
 export function isSubscribedStatus(status) {
@@ -94,16 +96,15 @@ export async function createClaimTrialCheckout({
     error.code = 'STRIPE_NOT_CONFIGURED';
     throw error;
   }
-  if (plan && plan !== CLAIM_PLAN) {
-    const error = new Error('Claim trial must be Growth');
+  const claimPlan = plan ? normalizeClaimPlan(plan) : CLAIM_PLAN;
+  if (!claimPlan) {
+    const error = new Error('Claim trial must be Growth or Growth Managed');
     error.code = 'INVALID_PLAN';
     throw error;
   }
 
   const origin = getFrontendOrigin(req);
   const customer = await getOrCreateStripeCustomer(stripe, user.email, user.id);
-
-  const claimPlan = CLAIM_PLAN;
 
   const session = await stripe.checkout.sessions.create({
     customer: customer.id,
@@ -186,7 +187,7 @@ export async function completeClaimTrialCheckout({
 
   const plan = normalizeClaimPlan(metadata.plan);
   if (!plan) {
-    const error = new Error('Claim trial must be Growth');
+    const error = new Error('Claim trial must be Growth or Growth Managed');
     error.code = 'INVALID_PLAN';
     throw error;
   }
@@ -207,5 +208,5 @@ export async function completeClaimTrialCheckout({
     },
   });
 
-  return { ready: true, subscriptionStatus: subscription.status };
+  return { ready: true, subscriptionStatus: subscription.status, plan };
 }

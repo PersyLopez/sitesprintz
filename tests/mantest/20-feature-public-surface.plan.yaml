@@ -1,5 +1,5 @@
 url: http://localhost:5173/
-goal: Deep-dive public landing, pricing (Starter/Growth only), templates, showcase — no Stripe/Google
+goal: Deep-dive public landing, pricing (Starter/Growth/Growth Managed), templates, showcase — no Stripe/Google
 steps:
   - action: Landing loads
     wait_for: { text: SiteSprintz, timeout: 20000 }

@@ -4,8 +4,7 @@ import { laborDisplayVars, laborInquiryMailto } from '../../utils/laborInquiryMa
 import './LaborExtrasNote.css';
 
 /**
- * Quiet extras under hosting plans — not a third subscription column.
- * Only landing should pass anchor so #pricing-extras is unique.
+ * Quiet extras under hosting plans — Brand match, Unique look, extra batch.
  */
 function LaborExtrasNote({ compact = false, anchor = false, variant = 'default' }) {
   const { t } = useLocale();

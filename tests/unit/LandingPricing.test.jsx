@@ -59,10 +59,11 @@ describe('Landing Page - Pricing', () => {
     vi.restoreAllMocks();
   });
 
-  it('renders the two published tiers', () => {
+  it('renders the three published tiers', () => {
     renderLanding();
     expect(screen.getByText('Starter')).toBeInTheDocument();
     expect(screen.getByText('Growth')).toBeInTheDocument();
+    expect(screen.getByText('Growth Managed')).toBeInTheDocument();
   });
 
   it('displays the correct prices', () => {
@@ -70,7 +71,11 @@ describe('Landing Page - Pricing', () => {
     const prices = Array.from(document.querySelectorAll('.pricing-price')).map(
       (el) => el.textContent
     );
-    expect(prices).toEqual(expect.arrayContaining([expect.stringContaining('10'), expect.stringContaining('35')]));
+    expect(prices).toEqual(expect.arrayContaining([
+      expect.stringContaining('10'),
+      expect.stringContaining('35'),
+      expect.stringContaining('75'),
+    ]));
   });
 
   it('marks the Growth tier as the featured plan', () => {
@@ -109,25 +114,26 @@ describe('Landing Page - Pricing', () => {
     renderLanding();
     expect(screen.getByTestId('pricing-cta-starter')).toHaveAttribute('href', '/register?plan=starter');
     expect(screen.getByTestId('pricing-cta-growth')).toHaveAttribute('href', '/register?plan=growth');
+    expect(screen.getByTestId('pricing-cta-growth_managed')).toHaveAttribute('href', '/register?plan=growth_managed');
   });
 
-  it('shows optional extras under hosting, not as a third plan', () => {
+  it('shows optional extras under hosting plans', () => {
     renderLanding();
     const extras = screen.getByTestId('labor-extras');
     expect(extras).toHaveAttribute('id', 'pricing-extras');
     expect(extras).toHaveTextContent(/no setup fee/i);
-    expect(extras).toHaveTextContent(/on request/i);
-    expect(extras).toHaveTextContent(/Managed care/i);
-    expect(extras).toHaveTextContent(/\$49/);
+    expect(extras).toHaveTextContent(/Growth Managed/i);
+    expect(extras).toHaveTextContent(/\$75/);
     expect(extras).toHaveTextContent(/\$99/);
     expect(extras).toHaveTextContent(/\$250/);
     expect(screen.getByTestId('labor-extras-cta')).toHaveAttribute('href', '/build');
-    expect(document.querySelectorAll('.pricing-card')).toHaveLength(2);
+    expect(document.querySelectorAll('.pricing-card')).toHaveLength(3);
   });
 
   it('pricing CTAs route authenticated users to billing with plan', () => {
     renderLanding({ isAuthenticated: true });
     expect(screen.getByTestId('pricing-cta-starter')).toHaveAttribute('href', '/settings/billing?plan=starter');
     expect(screen.getByTestId('pricing-cta-growth')).toHaveAttribute('href', '/settings/billing?plan=growth');
+    expect(screen.getByTestId('pricing-cta-growth_managed')).toHaveAttribute('href', '/settings/billing?plan=growth_managed');
   });
 });

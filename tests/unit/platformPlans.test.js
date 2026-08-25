@@ -15,17 +15,20 @@ import {
 } from '../../server/config/platformPlans.js';
 
 describe('platformPlans', () => {
-  it('keeps monthly amounts at $10 and $35', () => {
+  it('keeps monthly amounts at $10, $35, and $75', () => {
     expect(STRIPE_TRIAL_DAYS).toBe(7);
     expect(CLAIM_PLAN).toBe('growth');
     expect(PLATFORM_PLAN_DETAILS.starter.amount).toBe(1000);
     expect(PLATFORM_PLAN_DETAILS.growth.amount).toBe(3500);
+    expect(PLATFORM_PLAN_DETAILS.growth_managed.amount).toBe(7500);
   });
 
   it('normalizes legacy paid plans', () => {
     expect(normalizePaidPlan('pro')).toBe('growth');
     expect(normalizePaidPlan('premium')).toBe('growth');
     expect(normalizePaidPlan('starter')).toBe('starter');
+    expect(normalizePaidPlan('managed')).toBe('growth_managed');
+    expect(normalizePaidPlan('growth_managed')).toBe('growth_managed');
     expect(normalizePaidPlan('invalid')).toBeNull();
   });
 
@@ -33,6 +36,11 @@ describe('platformPlans', () => {
     const item = stripeSubscriptionLineItem('growth', {});
     expect(item.price_data.unit_amount).toBe(3500);
     expect(item.price_data.product_data.description).toMatch(/hosting/i);
+  });
+
+  it('uses inline price_data for Growth Managed when Price IDs are unset', () => {
+    const item = stripeSubscriptionLineItem('growth_managed', {});
+    expect(item.price_data.unit_amount).toBe(7500);
   });
 
   it('prefers Dashboard Price IDs', () => {
@@ -51,9 +59,11 @@ describe('platformPlans', () => {
     expect(LABOR_SKUS.managed_care.metadataType).toBe('managed_care');
   });
 
-  it('keeps claim_setup off the customer extras list', () => {
+  it('keeps claim_setup and managed_care off the customer extras list', () => {
     expect(CUSTOMER_LABOR_SKUS).not.toContain('claim_setup');
+    expect(CUSTOMER_LABOR_SKUS).not.toContain('managed_care');
     expect(normalizeCustomerLaborSku('claim_setup')).toBeNull();
+    expect(normalizeCustomerLaborSku('managed_care')).toBeNull();
     expect(normalizeCustomerLaborSku('brand_match')).toBe('brand_match');
     expect(laborCheckoutMode('managed_care')).toBe('subscription');
     expect(laborCheckoutMode('unique_look')).toBe('payment');

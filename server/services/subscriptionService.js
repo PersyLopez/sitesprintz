@@ -51,6 +51,20 @@ export const PLAN_LIMITS = {
     removeBranding: false,
     support: 'email',
     stripeFee: 0.05
+  },
+  growth_managed: {
+    templates: ['*'],
+    maxSites: 5,
+    maxProducts: -1,
+    maxOrdersPerMonth: -1,
+    customDomain: true,
+    analytics: 'advanced',
+    booking: true,
+    payments: true,
+    orderManagement: true,
+    removeBranding: false,
+    support: 'email',
+    stripeFee: 0.05
   }
 };
 
@@ -70,6 +84,7 @@ export function normalizeTierName(tierName) {
     premium: 'growth',
     enterprise: 'growth',
     business: 'growth',
+    managed: 'growth_managed',
     checkout: 'growth'
   };
 

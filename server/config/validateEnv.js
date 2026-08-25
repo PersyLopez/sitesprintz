@@ -55,6 +55,10 @@ export function collectEnvIssues(env = process.env) {
       warnings.push('STRIPE_PRICE_STARTER is missing. Starter plan checkout may not work.');
     }
 
+    if (!env.STRIPE_PRICE_GROWTH_MANAGED) {
+      warnings.push('STRIPE_PRICE_GROWTH_MANAGED is missing. Growth Managed checkout uses inline price_data until set.');
+    }
+
     if (env.GOOGLE_CALLBACK_URL) {
       if (env.GOOGLE_CALLBACK_URL.includes('ngrok') || !env.GOOGLE_CALLBACK_URL.startsWith('https://')) {
         errors.push('GOOGLE_CALLBACK_URL must be an HTTPS production URL (ngrok tunnels are not allowed).');
@@ -77,6 +81,10 @@ export function collectEnvIssues(env = process.env) {
 
     if (!env.STRIPE_PRICE_STARTER) {
       warnings.push('STRIPE_PRICE_STARTER is missing. Recommended for Starter plan checkout.');
+    }
+
+    if (!env.STRIPE_PRICE_GROWTH_MANAGED) {
+      warnings.push('STRIPE_PRICE_GROWTH_MANAGED is missing. Recommended for Growth Managed checkout.');
     }
 
     if (!env.GOOGLE_CALLBACK_URL || env.GOOGLE_CALLBACK_URL.includes('ngrok')) {
@@ -149,6 +157,7 @@ function logBootSummary() {
   console.log(`  STRIPE_WEBHOOK_SECRET:   ${env.STRIPE_WEBHOOK_SECRET ? '✓ Set' : '✗ Missing'}`);
   console.log(`  STRIPE_PRICE_STARTER:    ${env.STRIPE_PRICE_STARTER ? '✓ Set' : '✗ Missing'}`);
   console.log(`  STRIPE_PRICE_GROWTH:     ${env.STRIPE_PRICE_GROWTH ? '✓ Set' : '✗ Missing'}`);
+  console.log(`  STRIPE_PRICE_GROWTH_MANAGED: ${env.STRIPE_PRICE_GROWTH_MANAGED ? '✓ Set' : '✗ Missing'}`);
 
   console.log('\nAuthentication & Authorization:');
   console.log(`  GOOGLE_CALLBACK_URL:     ${env.GOOGLE_CALLBACK_URL ? '✓ Set' : '✗ Missing'}`);

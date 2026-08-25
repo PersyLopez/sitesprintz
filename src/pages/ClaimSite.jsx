@@ -20,7 +20,7 @@ function hasGrowthClaimSubscription(user) {
     return false;
   }
   const plan = user?.subscriptionPlan || user?.subscription_plan || user?.plan;
-  return plan === 'growth' || plan === 'pro' || plan === 'premium';
+  return plan === 'growth' || plan === 'growth_managed' || plan === 'pro' || plan === 'premium';
 }
 
 function ClaimSite() {
@@ -28,6 +28,7 @@ function ClaimSite() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, isAuthenticated, token: authToken, setUser } = useAuth();
   const { showSuccess, showError } = useToast();
+  const [claimPlan, setClaimPlan] = useState('growth');
   const [loading, setLoading] = useState(true);
   const [accepting, setAccepting] = useState(false);
   const [startingTrial, setStartingTrial] = useState(false);
@@ -119,9 +120,9 @@ function ClaimSite() {
                   ...prev,
                   subscriptionStatus: data.subscriptionStatus,
                   subscription_status: data.subscriptionStatus,
-                  plan: 'growth',
-                  subscriptionPlan: 'growth',
-                  subscription_plan: 'growth',
+                  plan: data.plan || 'growth',
+                  subscriptionPlan: data.plan || 'growth',
+                  subscription_plan: data.plan || 'growth',
                 }
               : prev
           );
@@ -152,7 +153,7 @@ function ClaimSite() {
       const response = await fetch(`/api/claim/${token}/trial-checkout`, {
         method: 'POST',
         headers: authHeaders(authToken),
-          body: JSON.stringify({ plan: 'growth' }),
+          body: JSON.stringify({ plan: claimPlan }),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
@@ -227,8 +228,9 @@ function ClaimSite() {
               {!isAuthenticated ? (
                 <div>
                   <p>
-                    Register or log in to continue. This site is on Growth ($35/month hosting after
-                    a 7-day trial). Brochure Starter sites are self-serve.
+                    Register or log in to continue. Pick Growth ($35/month, you edit) or Growth
+                    Managed ($75/month, we take the list) after a 7-day trial. No setup fee.
+                    Brochure Starter sites are self-serve.
                   </p>
                   <div className="auth-links" style={{ marginTop: '20px' }}>
                     <Link to={registerTo} className="btn btn-primary btn-full" data-testid="claim-register">
@@ -247,12 +249,33 @@ function ClaimSite() {
               ) : showTrialFlow ? (
                 <div>
                   <p>
-                    Signed in as <strong>{user?.email}</strong>. Add a card to start a 7-day Growth
-                    trial ($35/month hosting after trial). Booking and checkout stay on this site.
+                    Signed in as <strong>{user?.email}</strong>. Add a card to start a 7-day trial.
+                    Choose DIY Growth or Growth Managed. Booking and checkout stay on this site.
+                    No setup fee.
                   </p>
-                  <p data-testid="claim-plan-growth" style={{ marginTop: '16px' }}>
-                    Growth — $35/month hosting & monitoring after trial
-                  </p>
+                  <fieldset style={{ marginTop: '16px', border: 0, padding: 0 }}>
+                    <legend className="sr-only">Hosting plan</legend>
+                    <label data-testid="claim-plan-growth" style={{ display: 'block' }}>
+                      <input
+                        type="radio"
+                        name="claim-plan"
+                        value="growth"
+                        checked={claimPlan === 'growth'}
+                        onChange={() => setClaimPlan('growth')}
+                      />
+                      {' '}Growth — $35/month, you edit
+                    </label>
+                    <label data-testid="claim-plan-growth-managed" style={{ display: 'block', marginTop: '8px' }}>
+                      <input
+                        type="radio"
+                        name="claim-plan"
+                        value="growth_managed"
+                        checked={claimPlan === 'growth_managed'}
+                        onChange={() => setClaimPlan('growth_managed')}
+                      />
+                      {' '}Growth Managed — $75/month, we take the list
+                    </label>
+                  </fieldset>
                   <button
                     type="button"
                     className="btn btn-primary btn-full"

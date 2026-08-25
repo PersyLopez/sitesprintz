@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { laborDisplayVars, laborInquiryMailto } from '../../utils/laborInquiryMailto';
 
 const SKU_LABELS = {
-  managed_care: 'Managed care',
   managed_edit: 'Extra batch',
   brand_match: 'Brand match',
   unique_look: 'Unique look',

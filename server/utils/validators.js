@@ -152,8 +152,8 @@ export function validateTemplateId(templateId) {
 }
 
 /**
- * Plan validation — official: trial, starter, growth
- * Legacy names normalize to growth/trial.
+ * Plan validation — official: trial, starter, growth, growth_managed
+ * Legacy names normalize to growth/trial/growth_managed.
  */
 export function validatePlan(plan) {
   if (!plan || typeof plan !== 'string') {
@@ -165,6 +165,8 @@ export function validatePlan(plan) {
     trial: 'trial',
     starter: 'starter',
     growth: 'growth',
+    growth_managed: 'growth_managed',
+    managed: 'growth_managed',
     pro: 'growth',
     premium: 'growth',
     business: 'growth',
@@ -176,7 +178,7 @@ export function validatePlan(plan) {
   if (!normalized) {
     return {
       valid: false,
-      error: 'Invalid plan. Must be one of: trial, starter, growth'
+      error: 'Invalid plan. Must be one of: trial, starter, growth, growth_managed'
     };
   }
 

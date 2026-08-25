@@ -131,6 +131,15 @@ function BillingSection({ user, token }) {
             >
               {loading ? 'Loading…' : 'Subscribe to Growth'}
             </button>
+            <button
+              type="button"
+              onClick={() => handleSubscribe('growth_managed')}
+              disabled={loading}
+              className={`btn btn-secondary ${highlightedPlan === 'growth_managed' ? 'btn-primary' : ''}`}
+              data-testid="subscribe-growth-managed"
+            >
+              {loading ? 'Loading…' : 'Subscribe to Growth Managed'}
+            </button>
           </div>
         )}
         {highlightedPlan && !hasActivePlan && (

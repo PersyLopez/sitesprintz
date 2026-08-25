@@ -122,11 +122,12 @@ describe('Landing Page', () => {
     expect(howSection.querySelectorAll('.how-arc-step').length).toBe(3);
   });
 
-  it('renders the pricing section with two tiers', () => {
+  it('renders the pricing section with three tiers', () => {
     renderLanding();
-    expect(screen.getByRole('heading', { name: /Two plans\. Pick what you need\./i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Three plans\. Pick how you run it\./i })).toBeInTheDocument();
     expect(screen.getByText('Starter')).toBeInTheDocument();
     expect(screen.getByText('Growth')).toBeInTheDocument();
+    expect(screen.getByText('Growth Managed')).toBeInTheDocument();
   });
 
   it('renders the final CTA section', () => {

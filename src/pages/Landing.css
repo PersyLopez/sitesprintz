@@ -825,7 +825,7 @@
 }
 
 .pricing-grid--simple {
-  max-width: 640px;
+  max-width: 1040px;
 }
 
 @media (min-width: 768px) {
@@ -834,7 +834,7 @@
   }
 
   .pricing-grid--simple {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
