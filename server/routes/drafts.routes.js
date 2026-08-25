@@ -20,6 +20,7 @@ import { normalizeTier } from '../../src/config/tiers.js';
 import { resolveUserPlan } from '../utils/resolveUserPlan.js';
 import { inheritPaymentAccountsForSite } from '../services/payments/processorConnectHelpers.js';
 import { attachSpanishLocale } from '../services/siteTranslationService.js';
+import { prepareOwnerSiteData } from '../utils/prepareSiteLocation.js';
 import { validateFeaturesForSave, resolvePaymentMethods } from '../../src/config/featureFlags.js';
 import {
   sendSuccess,
@@ -605,6 +606,11 @@ router.put('/:draftId', asyncHandler(async (req, res) => {
 
   // Sanitize business data
   const businessData = sanitizeBusinessData(updateData.businessData || updateData.data || {});
+  try {
+    await prepareOwnerSiteData(businessData, { siteId: draftId });
+  } catch {
+    // geocode is best-effort
+  }
 
   // Try database first
   let useDatabase = true;
@@ -909,6 +915,14 @@ router.post('/:draftId/publish', asyncHandler(async (req, res) => {
       subdomain,
       templateId: templateValidation.value
     });
+    try {
+      siteData = await prepareOwnerSiteData(siteData, { siteId, forPublish: true });
+    } catch (error) {
+      if (error.code === 'AREA_LOCATION_INCOMPLETE') {
+        return sendBadRequest(res, error.message, error.code);
+      }
+      throw error;
+    }
     sanitizedSiteData = sanitizeSiteDataForStorage(siteData);
     sanitizedSiteData = await attachSpanishLocale(sanitizedSiteData);
     if (sanitizedSiteData?.locales) {

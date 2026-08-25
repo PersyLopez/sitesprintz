@@ -13,6 +13,8 @@ import {
   resolveUserForSession,
   resolvePlanFromSubscription,
 } from './payments/fulfillPlatformSubscription.js';
+import { resolvePrivateAddressForBuyer } from '../../src/utils/liveSiteContact.js';
+import { parseSiteData } from '../utils/parseSiteData.js';
 
 export class WebhookProcessor {
   constructor(db = null, emailSvc = null, stripe = null, paymentAdapter = null) {
@@ -233,7 +235,8 @@ export class WebhookProcessor {
           orderId: order.orderId,
           customerEmail: session.customer_email,
           amount: session.amount_total,
-          items: JSON.parse(session.metadata.order_items || '[]')
+          items: JSON.parse(session.metadata.order_items || '[]'),
+          siteId: session.metadata.site_id,
         });
 
         await this.sendOwnerNotification({
@@ -804,13 +807,27 @@ export class WebhookProcessor {
    */
   async sendOrderConfirmation(orderData) {
     try {
+      let businessAddress = '';
+      try {
+        if (orderData.siteId) {
+          const site = await this.db.sites.findUnique({
+            where: { id: orderData.siteId },
+            select: { site_data: true },
+          });
+          businessAddress = resolvePrivateAddressForBuyer(parseSiteData(site?.site_data));
+        }
+      } catch {
+        businessAddress = '';
+      }
+
       await this.emailService.sendEmail({
         to: orderData.customerEmail,
         template: 'orderConfirmation',
         data: {
           orderId: orderData.orderId,
           amount: orderData.amount,
-          items: orderData.items
+          items: orderData.items,
+          businessAddress,
         }
       });
     } catch (error) {

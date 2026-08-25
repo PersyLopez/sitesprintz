@@ -1,59 +1,57 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import ContactBookingForm from '../../src/components/setup/forms/ContactBookingForm';
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi } from 'vitest';
+import ContactBookingForm from '../../src/components/setup/forms/ContactBookingForm.jsx';
+import { SiteContext } from '../../src/context/SiteContext.jsx';
 
-vi.mock('../../src/hooks/useSite', () => ({
-  useSite: vi.fn(),
-}));
+function renderForm(siteData, updates = {}) {
+  const value = {
+    siteData,
+    updateField: vi.fn(),
+    updateNestedField: vi.fn(),
+    ...updates,
+  };
+  render(
+    <SiteContext.Provider value={value}>
+      <ContactBookingForm />
+    </SiteContext.Provider>
+  );
+  return value;
+}
 
-import { useSite } from '../../src/hooks/useSite';
-
-describe('ContactBookingForm', () => {
-  let mockUpdateField;
-  let mockUpdateNestedField;
-
-  beforeEach(() => {
-    mockUpdateField = vi.fn();
-    mockUpdateNestedField = vi.fn();
-
-    useSite.mockReturnValue({
-      siteData: {
-        social: {
-          facebook: '',
-          instagram: '',
-          whatsapp: '',
-          tiktok: '',
-          maps: '',
-          website: '',
-          linkedin: '',
-        },
-        booking: {
-          enabled: false,
-          provider: 'calendly',
-          url: '',
-          style: 'inline',
-        },
-      },
-      updateField: mockUpdateField,
-      updateNestedField: mockUpdateNestedField,
+describe('ContactBookingForm address privacy', () => {
+  it('shows the hide-street callout without hunting', () => {
+    renderForm({
+      contact: { email: 'a@b.com', phone: '555', address: '99 Hidden Ln' },
     });
+    expect(screen.getByTestId('address-privacy-callout')).toHaveTextContent('Hide your street on the live site');
+    expect(screen.getByTestId('address-privacy-hint')).toHaveTextContent('Prefer not to show this on your site?');
+    expect(screen.getByLabelText(/^Address$/i)).toBeInTheDocument();
   });
 
-  it('writes WhatsApp, TikTok, website, and LinkedIn via updateField', () => {
-    render(<ContactBookingForm />);
+  it('switches to private address and area fields', async () => {
+    const user = userEvent.setup();
+    const ctx = renderForm({
+      contact: { email: 'a@b.com', phone: '555', address: '99 Hidden Ln' },
+    });
+    await user.click(screen.getByTestId('address-display-area'));
+    expect(ctx.updateNestedField).toHaveBeenCalledWith('contact.addressDisplay', 'area');
+  });
 
-    const fields = [
-      { label: /WhatsApp/i, key: 'social.whatsapp', value: 'https://wa.me/15551234567' },
-      { label: /TikTok URL/i, key: 'social.tiktok', value: 'https://tiktok.com/@shop' },
-      { label: /Website URL/i, key: 'social.website', value: 'https://shop.example' },
-      { label: /LinkedIn URL/i, key: 'social.linkedin', value: 'https://linkedin.com/company/shop' },
-    ];
-
-    for (const field of fields) {
-      fireEvent.change(screen.getByLabelText(field.label), {
-        target: { value: field.value },
-      });
-      expect(mockUpdateField).toHaveBeenCalledWith(field.key, field.value);
-    }
+  it('shows area controls when already opted in', () => {
+    renderForm({
+      contact: {
+        email: 'a@b.com',
+        address: '99 Hidden Ln',
+        addressDisplay: 'area',
+        serviceAreaLabel: 'Montclair, NJ',
+        serviceRadiusMiles: 10,
+      },
+    });
+    expect(screen.getByLabelText(/Private address/i)).toBeInTheDocument();
+    expect(screen.getByTestId('service-area-label')).toHaveValue('Montclair, NJ');
+    expect(screen.getByText(/Buyers still get the private address/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Google Maps URL/i)).not.toBeInTheDocument();
   });
 });

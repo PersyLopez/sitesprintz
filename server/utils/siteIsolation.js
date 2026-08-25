@@ -15,6 +15,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import { validateDraftId, validateSubdomain, validateTemplateId } from './validators.js';
+import { toPublicSiteData } from '../../src/utils/liveSiteContact.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -236,8 +237,9 @@ export async function writeIsolatedSiteFiles(subdomain, siteData) {
   const siteDir = getSiteDirectory(subdomain);
   await fs.mkdir(resolveContainedPath(siteDir, 'data'), { recursive: true });
 
+  const publicData = toPublicSiteData(siteData);
   const siteJsonPath = resolveContainedPath(siteDir, 'data', 'site.json');
-  await fs.writeFile(siteJsonPath, JSON.stringify(siteData, null, 2));
+  await fs.writeFile(siteJsonPath, JSON.stringify(publicData, null, 2));
 
   try {
     const indexSource = path.join(PROJECT_ROOT, 'public', 'site-template.html');

@@ -160,6 +160,25 @@ describe('SEOService', () => {
       expect(schema.address.streetAddress).toBeTruthy();
     });
 
+    it('uses a GeoCircle and no streetAddress in area mode', () => {
+      const schema = seoService.generateSchemaMarkup('salon', {
+        businessName: 'Best Salon',
+        businessAddress: '99 Hidden Ln Unit 4B, Montclair, NJ 07042',
+        contact: {
+          addressDisplay: 'area',
+          serviceAreaLabel: 'Montclair, NJ',
+          serviceRadiusMiles: 10,
+          publicGeo: { lat: 40.82, lng: -74.21 },
+        },
+        category: 'salon',
+      });
+
+      expect(schema.address?.streetAddress).toBeUndefined();
+      expect(schema.address?.addressLocality).toBe('Montclair, NJ');
+      expect(schema.areaServed['@type']).toBe('GeoCircle');
+      expect(JSON.stringify(schema)).not.toContain('99 Hidden');
+    });
+
     it('should generate Product schema for product showcase', () => {
       const productData = {
         name: 'Premium Widget',

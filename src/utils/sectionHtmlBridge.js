@@ -475,6 +475,15 @@ function renderCredentials(section, tokens) {
 </section>`;
 }
 
+function serviceAreaMapHtml(content) {
+  const geo = content?.publicGeo;
+  const miles = Number(content?.serviceRadiusMiles);
+  if (!geo || !Number.isFinite(Number(geo.lat)) || !Number.isFinite(Number(geo.lng)) || !Number.isFinite(miles) || miles <= 0) {
+    return '';
+  }
+  return `<div class="ss-service-area-map" data-testid="service-area-map" data-lat="${escapeAttr(String(geo.lat))}" data-lng="${escapeAttr(String(geo.lng))}" data-radius-miles="${escapeAttr(String(miles))}" role="img" aria-label="Approximate service area"></div>`;
+}
+
 function renderContact(section, tokens) {
   const c = section.content || {};
   const title = c.title || 'Contact Us';
@@ -485,7 +494,7 @@ function renderContact(section, tokens) {
   const details = [
     email ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">Email</strong><a href="mailto:${escapeAttr(email)}" style="color: ${getText(tokens)}; text-decoration: none;">${escapeHtml(email)}</a></div>` : '',
     phone && telHref(phone) ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">Phone</strong><a href="${escapeAttr(telHref(phone))}" style="color: ${getText(tokens)}; text-decoration: none;">${escapeHtml(phone)}</a></div>` : '',
-    address ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">Address</strong>${escapeHtml(address)}</div>` : '',
+    address ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">${c.addressDisplay === 'area' ? 'Service area' : 'Address'}</strong>${escapeHtml(address)}</div>` : '',
     hours ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">Hours</strong>${escapeHtml(typeof hours === 'string' ? hours : '')}</div>` : '',
   ].filter(Boolean).join('\n');
 
@@ -493,6 +502,7 @@ function renderContact(section, tokens) {
   <div class="ss-container" style="max-width: 800px; margin: 0 auto;">
     <h2 style="text-align: center; color: ${getAccent(tokens)}; margin-bottom: 40px;">${escapeHtml(title)}</h2>
     ${details ? `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; margin-bottom: 32px;">${details}</div>` : ''}
+    ${serviceAreaMapHtml(c)}
     <form id="contact-form" class="ss-contact-form" data-testid="contact-form" data-type="contact" novalidate>
       <input type="hidden" name="subdomain" value="" />
       <p class="ss-form-status" data-testid="contact-form-status" role="status" aria-live="polite"></p>
@@ -917,6 +927,7 @@ function renderLocation(section, tokens) {
     <div style="background: ${getSurface(tokens)}; padding: 32px; border-radius: 12px;">
       ${address ? `<p style="font-size: 1.1rem; margin-bottom: 12px; color: ${getText(tokens)};">${escapeHtml(address)}</p>` : ''}
       ${instructions ? `<p style="color: ${getMuted(tokens)};">${escapeHtml(instructions)}</p>` : ''}
+      ${serviceAreaMapHtml(c)}
       ${c.mapUrl ? `<a href="${escapeAttr(c.mapUrl)}" target="_blank" rel="noopener" class="ss-btn" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)};">View on Map</a>` : ''}
     </div>
   </div>

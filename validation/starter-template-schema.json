@@ -259,6 +259,25 @@
         "address": {
           "type": "string"
         },
+        "addressDisplay": {
+          "type": "string",
+          "enum": ["street", "area"]
+        },
+        "serviceAreaLabel": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "serviceRadiusMiles": {
+          "type": "number",
+          "enum": [5, 10, 15, 25, 50]
+        },
+        "publicGeo": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          }
+        },
         "hours": {
           "type": "object",
           "properties": {

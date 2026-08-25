@@ -1,5 +1,6 @@
 import { prisma } from '../../database/db.js';
 import { DateTime } from 'luxon';
+import { buyerLocationEmailRow } from '../utils/buyerLocationEmail.js';
 
 // Get email service
 let emailService = null;
@@ -11,10 +12,6 @@ async function getEmailService() {
   return emailService;
 }
 
-/**
- * Booking Notification Service
- * Handles all email notifications for appointments
- */
 class BookingNotificationService {
   /**
    * Format date/time for email display
@@ -61,6 +58,7 @@ class BookingNotificationService {
         business_name,
         business_email,
         business_phone,
+        location_address,
       } = appointmentData;
 
       const datetime = this.formatDateTime(start_time, timezone);
@@ -120,6 +118,7 @@ class BookingNotificationService {
                     <code style="background: #fef3c7; padding: 6px 12px; border-radius: 6px; font-weight: 600; color: #92400e;">${confirmation_code}</code>
                   </td>
                 </tr>
+                ${buyerLocationEmailRow(requires_approval, location_address)}
               </table>
             </div>
 

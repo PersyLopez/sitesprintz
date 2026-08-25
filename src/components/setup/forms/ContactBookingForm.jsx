@@ -33,6 +33,30 @@ function ContactBookingForm() {
         <h3>Contact Information</h3>
         <p className="section-subtitle">How customers can reach you</p>
 
+        <div className="address-privacy-callout" data-testid="address-privacy-callout">
+          <h4>Hide your street on the live site</h4>
+          <p>
+            Save your real address here. Visitors see an area and radius instead.
+            After someone books or places an order, we send them the exact address
+            in the confirmation email.
+          </p>
+          <label className="address-privacy-toggle" htmlFor="addressDisplayArea">
+            <input
+              type="checkbox"
+              id="addressDisplayArea"
+              data-testid="address-display-area"
+              checked={(siteData.contact?.addressDisplay || 'street') === 'area'}
+              onChange={(e) => {
+                updateNestedField('contact.addressDisplay', e.target.checked ? 'area' : 'street');
+                if (e.target.checked && !siteData.contact?.serviceRadiusMiles) {
+                  updateNestedField('contact.serviceRadiusMiles', 10);
+                }
+              }}
+            />
+            <span>Show a service area instead of my street address</span>
+          </label>
+        </div>
+
         <div className="form-group">
           <label htmlFor="contactEmail">Email</label>
           <input
@@ -56,7 +80,11 @@ function ContactBookingForm() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="contactAddress">Address</label>
+          <label htmlFor="contactAddress">
+            {(siteData.contact?.addressDisplay || 'street') === 'area'
+              ? 'Private address (not shown on your site)'
+              : 'Address'}
+          </label>
           <textarea
             id="contactAddress"
             value={siteData.contact?.address || siteData.contactAddress || ''}
@@ -64,7 +92,65 @@ function ContactBookingForm() {
             placeholder="123 Main St, City, State 12345"
             rows={2}
           />
+          {(siteData.contact?.addressDisplay || 'street') !== 'area'
+            && (siteData.contact?.address || siteData.contactAddress) ? (
+              <button
+                type="button"
+                className="address-privacy-hint"
+                data-testid="address-privacy-hint"
+                onClick={() => {
+                  const toggle = document.getElementById('addressDisplayArea');
+                  toggle?.focus();
+                }}
+              >
+                Prefer not to show this on your site?
+              </button>
+            ) : null}
+          {(siteData.contact?.addressDisplay || 'street') === 'area'
+            && !(siteData.contact?.address || siteData.contactAddress) ? (
+              <small className="form-help">
+                Add the private address so buyers receive it in their confirmation email.
+              </small>
+            ) : null}
         </div>
+
+        {(siteData.contact?.addressDisplay || 'street') === 'area' && (
+          <>
+            <div className="form-group">
+              <label htmlFor="serviceAreaLabel">Area visitors see</label>
+              <input
+                type="text"
+                id="serviceAreaLabel"
+                data-testid="service-area-label"
+                value={siteData.contact?.serviceAreaLabel || ''}
+                onChange={(e) => updateNestedField('contact.serviceAreaLabel', e.target.value)}
+                placeholder="Montclair, NJ"
+                maxLength={80}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="serviceRadiusMiles">Service radius</label>
+              <select
+                id="serviceRadiusMiles"
+                data-testid="service-radius-miles"
+                value={siteData.contact?.serviceRadiusMiles || 10}
+                onChange={(e) => updateNestedField('contact.serviceRadiusMiles', Number(e.target.value))}
+              >
+                <option value={5}>5 miles</option>
+                <option value={10}>10 miles</option>
+                <option value={15}>15 miles</option>
+                <option value={25}>25 miles</option>
+                <option value={50}>50 miles</option>
+              </select>
+              <small className="form-help">
+                Public site shows: {siteData.contact?.serviceAreaLabel
+                  ? `Serving ${siteData.contact.serviceAreaLabel} · within ${siteData.contact.serviceRadiusMiles || 10} miles`
+                  : 'Serving your area · within the selected radius'}
+                . Buyers still get the private address after they book or order.
+              </small>
+            </div>
+          </>
+        )}
 
         <div className="form-group">
           <label htmlFor="businessHours">Business Hours</label>
@@ -121,6 +207,7 @@ function ContactBookingForm() {
           />
         </div>
 
+        {(siteData.contact?.addressDisplay || 'street') !== 'area' && (
         <div className="form-group">
           <label htmlFor="googleMapsUrl">Google Maps URL</label>
           <input
@@ -131,6 +218,7 @@ function ContactBookingForm() {
             placeholder="https://maps.google.com/..."
           />
         </div>
+        )}
 
         <div className="form-group">
           <label htmlFor="websiteUrl">Website URL</label>

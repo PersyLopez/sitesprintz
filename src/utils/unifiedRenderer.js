@@ -7,6 +7,7 @@
  */
 
 import { getSectionByType, getAllSections } from '../config/sectionRegistry.js';
+import { resolvePublicLocation } from './liveSiteContact.js';
 
 /**
  * Unified renderer factory
@@ -239,18 +240,20 @@ function renderHours(section, siteData, ctx) {
 
 function renderLocation(section, siteData, ctx) {
   const { content = {} } = section;
+  const location = resolvePublicLocation(siteData);
   return {
     type: 'location',
     title: content.title || 'Find Us',
-    address: content.address || siteData.contactAddress || '',
+    address: location.displayLine || '',
   };
 }
 
 function renderContact(section, siteData, ctx) {
   const { content = {} } = section;
+  const location = resolvePublicLocation(siteData);
   const email = content.email || siteData.contactEmail || '';
   const phone = content.phone || siteData.contactPhone || '';
-  const address = content.address || siteData.contactAddress || '';
+  const address = location.displayLine || '';
   const hours = content.hours || siteData.businessHours || '';
   
   return { type: 'contact', email, phone, address, hours };

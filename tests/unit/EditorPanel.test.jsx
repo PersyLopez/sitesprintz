@@ -56,6 +56,7 @@ describe('EditorPanel Component', () => {
         }
       },
       updateField: vi.fn(),
+      updateNestedField: vi.fn(),
       addService: vi.fn(),
       updateService: vi.fn(),
       deleteService: vi.fn()

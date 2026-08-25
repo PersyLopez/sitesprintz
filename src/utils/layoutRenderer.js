@@ -20,6 +20,7 @@
 
 import { resolveTheme, suggestLevel } from '../config/layoutTokens.js';
 import { normalizeSiteThemeId } from '../config/siteThemes.js';
+import { isUniqueLookTheme } from '../config/uniqueLook.js';
 import {
   getLayout,
   getSkeleton,
@@ -30,7 +31,7 @@ import {
 import { resolveVoiceCopy, resolveTeamHeading } from './businessScale.js';
 import { resolveOperatingModel } from '../config/operatingModel.js';
 import { filterStockImages, isStockImageUrl } from './stockPhotos.js';
-import { resolvePrimaryCta, resolveSiteAddress, resolveSitePhone } from './liveSiteContact.js';
+import { isAreaDisplay, resolvePrimaryCta, resolvePublicLocation, resolveSiteAddress, resolveSitePhone } from './liveSiteContact.js';
 
 // ---------------------------------------------------------------------------
 // Section primitives — one per type, variant-aware, tolerant data access
@@ -212,15 +213,19 @@ const sectionPrimitives = {
 
   contact(content, siteData, _tokens) {
     const c = content || {};
+    const location = resolvePublicLocation(siteData);
     return {
       type: 'contact',
       content: {
         title: c.title || 'Contact Us',
         email: c.email || siteData.contactEmail || siteData.contact?.email || '',
         phone: c.phone || siteData.contactPhone || siteData.contact?.phone || '',
-        address: c.address || siteData.contactAddress || siteData.contact?.address || '',
+        address: location.displayLine,
         hours: formatHours(c.hours || siteData.businessHours || siteData.contact?.hours || ''),
-        mapUrl: c.mapUrl || siteData.googleMapsUrl || '',
+        mapUrl: location.mode === 'area' ? '' : (c.mapUrl || siteData.googleMapsUrl || ''),
+        addressDisplay: location.mode,
+        publicGeo: location.publicGeo,
+        serviceRadiusMiles: location.radiusMiles,
       },
       settings: {},
       accent: false,
@@ -420,13 +425,17 @@ const sectionPrimitives = {
   // Location section
   location(content, siteData, _tokens) {
     const c = content || {};
+    const location = resolvePublicLocation(siteData);
     return {
       type: 'location',
       content: {
         title: c.title || 'Location',
-        address: c.address || siteData.contactAddress || '',
-        mapUrl: c.mapUrl || siteData.social?.maps || siteData.googleMapsUrl || '',
+        address: location.displayLine || c.address || '',
+        mapUrl: location.mode === 'area' ? '' : (c.mapUrl || siteData.social?.maps || siteData.googleMapsUrl || ''),
         instructions: c.instructions || '',
+        addressDisplay: location.mode,
+        publicGeo: location.publicGeo,
+        serviceRadiusMiles: location.radiusMiles,
       },
       settings: {},
       accent: false,
@@ -444,7 +453,7 @@ const sectionPrimitives = {
         instagram: c.instagram || social.instagram || '',
         whatsapp: c.whatsapp || social.whatsapp || '',
         tiktok: c.tiktok || social.tiktok || '',
-        maps: c.maps || social.maps || siteData?.googleMapsUrl || '',
+        maps: isAreaDisplay(siteData) ? '' : (c.maps || social.maps || siteData?.googleMapsUrl || ''),
         website: c.website || social.website || '',
         linkedin: c.linkedin || social.linkedin || '',
         twitter: c.twitter || social.twitter || '',
@@ -682,16 +691,20 @@ export function composePage({
     'refined';
 
   // Resolve theme tokens
+  const uniqueLook = isUniqueLookTheme(siteData?._uniqueLook) ? siteData._uniqueLook : null;
   const tokens = resolveTheme({
     layout: resolvedLayoutKey,
     character: resolvedCharacter,
     level: resolvedLevel,
     niche: niche || siteData?._niche,
     overrides: {
-      themeId: normalizeSiteThemeId(
-        siteData?._themeId || siteData?.themeId || siteData?.colors?.themeId,
-        niche || siteData?._niche
-      ),
+      uniqueLook,
+      themeId: uniqueLook
+        ? undefined
+        : normalizeSiteThemeId(
+          siteData?._themeId || siteData?.themeId || siteData?.colors?.themeId,
+          niche || siteData?._niche
+        ),
       ...(overrides || {}),
     },
   });

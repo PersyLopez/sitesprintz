@@ -3,6 +3,8 @@ import { DateTime } from 'luxon';
 import crypto from 'crypto';
 import { availabilityService } from './AvailabilityServiceV2.js';
 import AppointmentCancellationService from './AppointmentCancellationService.js';
+import { resolvePrivateAddressForBuyer } from '../../../src/utils/liveSiteContact.js';
+import { parseSiteData } from '../../utils/parseSiteData.js';
 
 /**
  * Appointment Service - Manages appointments
@@ -460,6 +462,19 @@ class AppointmentService {
         throw new Error('Appointment not found');
       }
 
+      let locationAddress = '';
+      try {
+        if (!appt.requires_approval && appt.booking_tenants?.site_id) {
+          const site = await prisma.sites.findUnique({
+            where: { id: appt.booking_tenants.site_id },
+            select: { site_data: true },
+          });
+          locationAddress = resolvePrivateAddressForBuyer(parseSiteData(site?.site_data));
+        }
+      } catch {
+        locationAddress = '';
+      }
+
       await this.notificationService.sendConfirmationEmail({
         confirmation_code: appt.confirmation_code,
         customer_name: appt.customer_name,
@@ -476,6 +491,7 @@ class AppointmentService {
         business_name: appt.booking_tenants?.business_name,
         business_email: appt.booking_tenants?.email,
         business_phone: appt.booking_tenants?.phone,
+        location_address: locationAddress,
       });
 
       return true;

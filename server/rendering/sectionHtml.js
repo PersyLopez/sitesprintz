@@ -7,6 +7,7 @@
 
 import { getNamedTeamMembers, resolveTeamHeading, shouldRenderTeam } from '../../src/utils/businessScale.js';
 import { sectionListHasNativeBooking } from '../../src/utils/sectionHtmlBridge.js';
+import { resolvePublicLocation } from '../../src/utils/liveSiteContact.js';
 
 class SectionHtmlBuilder {
   /**
@@ -336,9 +337,10 @@ class SectionHtmlBuilder {
    * @private
    */
   _buildContactHtml(content, siteData, settings) {
+    const location = resolvePublicLocation(siteData);
     const email = content.email || siteData.contactEmail || siteData.businessEmail || '';
     const phone = content.phone || siteData.contactPhone || siteData.businessPhone || '';
-    const address = content.address || siteData.contactAddress || siteData.businessAddress || '';
+    const address = location.displayLine || '';
     const hours = content.hours || siteData.businessHours || '';
 
     if (!email && !phone && !address) return null;
@@ -350,7 +352,7 @@ class SectionHtmlBuilder {
     <div class="contact-info">
       ${email ? `<p><strong>Email:</strong> <a href="mailto:${this._escapeAttr(email)}">${this._escapeHtml(email)}</a></p>` : ''}
       ${phone ? `<p><strong>Phone:</strong> <a href="tel:${this._escapeAttr(phone)}">${this._escapeHtml(phone)}</a></p>` : ''}
-      ${address ? `<p><strong>Address:</strong> ${this._escapeHtml(address)}</p>` : ''}
+      ${address ? `<p><strong>${location.mode === 'area' ? 'Service area' : 'Address'}:</strong> ${this._escapeHtml(address)}</p>` : ''}
       ${hours ? `<p><strong>Hours:</strong> ${this._sanitizeHtml(hours)}</p>` : ''}
     </div>
   </div>

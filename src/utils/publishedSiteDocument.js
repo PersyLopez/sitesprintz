@@ -65,7 +65,7 @@ function isEmptyOptional(section) {
     case 'hours':
       return !c.hours;
     case 'location':
-      return !c.address;
+      return !c.address && !c.publicGeo;
     case 'social':
       return !['facebook', 'instagram', 'whatsapp', 'tiktok', 'maps', 'website', 'linkedin', 'twitter', 'youtube']
         .some((key) => c[key]);
@@ -350,6 +350,44 @@ export function getLiveSiteCss(tokens = {}) {
 }
 .ss-footer-nap { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; }
 .ss-footer-nap a { color: var(--ss-text); text-decoration: none; font-weight: 600; }
+.ss-service-area-map {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  margin: 16px auto 0;
+  height: 256px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--ss-surface);
+}
+.ss-service-area-map-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 256px);
+  width: 768px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+.ss-service-area-map-tiles img { display: block; }
+.ss-service-area-map-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: rgba(37, 99, 235, 0.22);
+  border: 2px solid rgba(37, 99, 235, 0.85);
+  pointer-events: none;
+}
+.ss-service-area-map-attr {
+  position: absolute;
+  right: 8px;
+  bottom: 6px;
+  margin: 0;
+  font-size: 0.7rem;
+  color: var(--ss-muted);
+}
 @media (max-width: 800px) {
   .ss-about-grid--media { grid-template-columns: 1fr; }
   .ss-nav-links { display: none; }
@@ -461,12 +499,17 @@ export function buildLiveSiteMarkup(siteData, options = {}) {
     .join('\n');
 
   const css = getLiveSiteCss(page.tokens);
+  const needsMap = enabledSections.some((section) => section?.content?.publicGeo);
+  const mapScript = needsMap
+    ? '<script src="/vendor/service-area-map.js" defer></script>'
+    : '';
   const html = `${renderNav(siteData, page)}
 <main id="main" class="ss-main">
   ${sectionsHtml}
 </main>
 ${renderFooter(siteData)}
-${buildStickyCtaBar(siteData, page)}`;
+${buildStickyCtaBar(siteData, page)}
+${mapScript}`;
 
   return { css, html, page, tokens: page.tokens };
 }

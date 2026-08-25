@@ -12,6 +12,7 @@ import NodeCache from 'node-cache';
 import { generateShareCard, generateQrPng } from '../services/shareCardService.js';
 import { prisma } from '../../database/db.js';
 import { requireAuth } from '../middleware/auth.js';
+import { toPublicSiteData } from '../../src/utils/liveSiteContact.js';
 
 const router = express.Router();
 
@@ -126,9 +127,9 @@ router.post('/generate', async (req, res) => {
       });
     }
 
-    const templateData = typeof site.site_data === 'string'
+    const templateData = toPublicSiteData(typeof site.site_data === 'string'
       ? JSON.parse(site.site_data)
-      : site.site_data;
+      : site.site_data);
 
     // Add subdomain to template data if not present
     if (!templateData.subdomain) {
@@ -244,9 +245,9 @@ const getShareCard = async (req, res) => {
       });
     }
 
-    const templateData = typeof site.site_data === 'string'
+    const templateData = toPublicSiteData(typeof site.site_data === 'string'
       ? JSON.parse(site.site_data)
-      : site.site_data;
+      : site.site_data);
 
     if (!templateData.subdomain) {
       templateData.subdomain = subdomain;

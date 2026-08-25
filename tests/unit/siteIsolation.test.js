@@ -221,4 +221,28 @@ describe('site isolation — published site directories', () => {
     expect(jsonB._isolation.siteId).toBe('iso-tenant-beta');
     expect(jsonA._isolation.sourceTemplateId).toBe('salon');
   });
+
+  it('redacts the private street from published site.json in area mode', async () => {
+    const subdomain = 'iso-area-privacy';
+    const street = '99 Hidden Ln Unit 4B';
+    createdSubdomains.push(subdomain);
+
+    const dir = await writeIsolatedSiteFiles(subdomain, {
+      brand: { name: 'Area Privacy Shop' },
+      contact: {
+        address: street,
+        privateStreet: street,
+        addressDisplay: 'area',
+        serviceAreaLabel: 'Montclair, NJ',
+        serviceRadiusMiles: 10,
+      },
+    });
+
+    const json = JSON.parse(await fs.readFile(path.join(dir, 'data', 'site.json'), 'utf-8'));
+    const serialized = JSON.stringify(json);
+    expect(serialized).not.toContain('99 Hidden');
+    expect(serialized).not.toContain(street);
+    expect(json.contact.address).toBe('Serving Montclair, NJ · within 10 miles');
+    expect(json.contact.privateStreet).toBeUndefined();
+  });
 });

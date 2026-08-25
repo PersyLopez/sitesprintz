@@ -10,6 +10,7 @@ import { sanitizeSiteDataForStorage } from '../utils/siteDataSanitizer.js';
 import { applyEditableField, getSiteDataVersion } from '../../src/utils/seamlessEditFields.js';
 import { visualEditorService } from './visualEditorService.js';
 import { attachSpanishLocale } from './siteTranslationService.js';
+import { toPublicSiteData, preservePrivateLocation } from '../../src/utils/liveSiteContact.js';
 
 export async function findPublishedSite(subdomain) {
   if (!subdomain) return null;
@@ -41,7 +42,7 @@ async function persistSiteData(site, siteData) {
     data: { site_data: sanitized },
   });
   const siteDir = siteDirFor(site.subdomain);
-  await visualEditorService.saveSite(siteDir, sanitized);
+  await visualEditorService.saveSite(siteDir, toPublicSiteData(sanitized));
   return sanitized;
 }
 
@@ -60,7 +61,7 @@ export async function applyPublishedChanges(site, changes, expectedVersion) {
   }
 
   const siteDir = siteDirFor(site.subdomain);
-  await visualEditorService.createCheckpoint(siteDir, currentData);
+  await visualEditorService.createCheckpoint(siteDir, toPublicSiteData(currentData));
 
   for (const change of changes) {
     applyEditableField(currentData, change.field, change.value);
@@ -84,7 +85,7 @@ export async function restorePublishedVersion(site, versionId) {
   await persistSiteData(site, currentData);
   const siteDir = siteDirFor(site.subdomain);
   const result = await visualEditorService.restoreVersion(siteDir, versionId);
-  const restored = await visualEditorService.loadSite(siteDir);
+  const restored = preservePrivateLocation(currentData, await visualEditorService.loadSite(siteDir));
   await prisma.sites.update({
     where: { id: site.id },
     data: { site_data: sanitizeSiteDataForStorage(restored) },

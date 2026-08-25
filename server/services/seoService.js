@@ -320,6 +320,36 @@ class SEOService {
 
   // Private helper methods
 
+  _applyPublicPlace(schema, data) {
+    const contact = data?.contact && typeof data.contact === 'object' ? data.contact : {};
+    if (contact.addressDisplay === 'area') {
+      const label = String(contact.serviceAreaLabel || '').trim();
+      const miles = Number(contact.serviceRadiusMiles);
+      const geo = contact.publicGeo;
+      if (label) {
+        schema.address = {
+          '@type': 'PostalAddress',
+          addressLocality: label,
+        };
+      }
+      if (geo && Number.isFinite(Number(geo.lat)) && Number.isFinite(Number(geo.lng)) && Number.isFinite(miles) && miles > 0) {
+        schema.areaServed = {
+          '@type': 'GeoCircle',
+          geoMidpoint: {
+            '@type': 'GeoCoordinates',
+            latitude: Number(geo.lat),
+            longitude: Number(geo.lng),
+          },
+          geoRadius: String(Math.round(miles * 1609.344)),
+        };
+      }
+      return;
+    }
+    if (data.businessAddress) {
+      schema.address = this.parseAddress(data.businessAddress);
+    }
+  }
+
   _generateRestaurantSchema(data) {
     const schema = {
       '@context': 'https://schema.org',
@@ -328,9 +358,7 @@ class SEOService {
       description: data.businessDescription
     };
 
-    if (data.businessAddress) {
-      schema.address = this.parseAddress(data.businessAddress);
-    }
+    this._applyPublicPlace(schema, data);
 
     if (data.businessPhone) {
       schema.telephone = data.businessPhone;
@@ -370,9 +398,7 @@ class SEOService {
       description: data.businessDescription
     };
 
-    if (data.businessAddress) {
-      schema.address = this.parseAddress(data.businessAddress);
-    }
+    this._applyPublicPlace(schema, data);
 
     if (data.businessPhone) {
       schema.telephone = data.businessPhone;

@@ -445,6 +445,49 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(html).toContain('data-testid="footer-address"');
   });
 
+  it('shows a service area line and map mount without the private street', () => {
+    const { html } = buildLiveSiteMarkup({
+      businessName: 'Studio Luxe',
+      contact: {
+        address: '99 Hidden Ln Unit 4B',
+        addressDisplay: 'area',
+        serviceAreaLabel: 'Montclair, NJ',
+        serviceRadiusMiles: 10,
+        publicGeo: { lat: 40.82, lng: -74.21 },
+      },
+      _layout: 'atelier',
+      _niche: 'salon',
+      _level: 'solo',
+      sections: [
+        { type: 'hero', enabled: true, content: { title: 'Studio Luxe' } },
+        { type: 'contact', enabled: true, content: { phone: '555-0100' } },
+      ],
+    });
+    expect(html).toContain('Serving Montclair, NJ');
+    expect(html).toContain('data-testid="service-area-map"');
+    expect(html).toContain('/vendor/service-area-map.js');
+    expect(html).not.toContain('99 Hidden');
+    expect(html).toContain('data-testid="footer-address"');
+  });
+
+  it('omits the map mount when publicGeo is missing', () => {
+    const { html } = buildLiveSiteMarkup({
+      businessName: 'Studio Luxe',
+      contact: {
+        address: '99 Hidden Ln Unit 4B',
+        addressDisplay: 'area',
+        serviceAreaLabel: 'Montclair, NJ',
+        serviceRadiusMiles: 10,
+      },
+      _layout: 'atelier',
+      sections: [
+        { type: 'contact', enabled: true, content: { phone: '555-0100' } },
+      ],
+    });
+    expect(html).not.toContain('data-testid="service-area-map"');
+    expect(html).not.toContain('99 Hidden');
+  });
+
   it('keeps the SiteSprintz badge on Starter', () => {
     const { html } = buildLiveSiteMarkup({
       businessName: 'Harbor Goods',

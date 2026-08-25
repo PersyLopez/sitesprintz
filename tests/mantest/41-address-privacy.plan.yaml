@@ -1,0 +1,101 @@
+url: http://localhost:5173/login
+goal: Owner can see Hide your street on the live site in Contact without hunting; live view does not show the privacy editor
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter gallery email
+    fill: { testId: login-email, value: "gallery@sitesprintz.com", clear: true }
+
+  - action: Enter gallery password
+    fill: { testId: login-password, value: "GalleryDemo123!", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard loads
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 1200
+
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+    settle_ms: 400
+
+  - action: Open salon workspace
+    code: |
+      const card = page.locator('[data-testid="site-card"][data-subdomain="gallery-salon"]');
+      if ((await card.count()) === 0) {
+        throw new Error('Missing salon site card on dashboard');
+      }
+      await card.getByTestId('manage-site-button').click();
+    settle_ms: 1500
+
+  - action: Site workspace ready
+    wait_for: { selector: '[data-testid="site-dashboard"]', timeout: 15000 }
+    settle_ms: 600
+
+  - action: Open page builder
+    click: { testId: site-dashboard-builder }
+    settle_ms: 2500
+
+  - action: Customize panel loads
+    wait_for: { selector: '[data-testid="customize-panel"]', timeout: 20000 }
+    settle_ms: 800
+
+  - action: Open Contact and Booking tab
+    code: |
+      const tab = page.getByRole('button', { name: /Contact & Booking/i });
+      if ((await tab.count()) === 0) {
+        throw new Error('Contact & Booking tab missing');
+      }
+      await tab.click();
+    settle_ms: 800
+
+  - action: Privacy callout is visible
+    wait_for: { selector: '[data-testid="address-privacy-callout"]', timeout: 10000 }
+    assert:
+      - text contains Hide your street on the live site
+    code: |
+      const callout = page.getByTestId('address-privacy-callout');
+      if ((await callout.count()) === 0) {
+        throw new Error('Address privacy callout missing from Contact tab');
+      }
+      const text = await callout.innerText();
+      if (!/Hide your street on the live site/i.test(text)) {
+        throw new Error('Callout copy missing: ' + text.slice(0, 240));
+      }
+      if ((await page.getByTestId('address-display-area').count()) === 0) {
+        throw new Error('Area-mode toggle missing');
+      }
+
+  - action: Open public salon view
+    goto: "http://localhost:5173/view/gallery-salon"
+    settle_ms: 1800
+    wait_for: { url: /view/gallery-salon, timeout: 20000 }
+
+  - action: Public live view does not include the editor callout
+    wait_for: { text: Luxe Beauty Studio, timeout: 20000 }
+    code: |
+      if (!page.url().includes('/view/gallery-salon')) {
+        throw new Error('Did not navigate to live view: ' + page.url());
+      }
+      if ((await page.getByTestId('customize-panel').count()) > 0) {
+        throw new Error('Still on page builder instead of public view');
+      }
+      if ((await page.getByTestId('address-privacy-callout').count()) > 0) {
+        throw new Error('Privacy callout rendered on public view');
+      }
+      if ((await page.getByTestId('address-display-area').count()) > 0) {
+        throw new Error('Area-mode toggle rendered on public view');
+      }
+      const t = await page.locator('body').innerText();
+      if (/Hide your street on the live site/i.test(t)) {
+        throw new Error('Privacy editor copy leaked onto the live site');
+      }

@@ -200,6 +200,23 @@ describe('EmailService', () => {
       expect(emailCall.html).toContain('$45.99');
     });
 
+    it('includes the private location on order confirmation when provided', async () => {
+      await emailService.sendEmail({
+        to: 'customer@example.com',
+        template: 'orderConfirmation',
+        data: {
+          orderId: 'ORD-99',
+          amount: 4500,
+          items: [{ name: 'Cake', price: 4500 }],
+          businessAddress: '99 Hidden Ln Unit 4B',
+        }
+      });
+
+      const emailCall = mockResend.emails.send.mock.calls[0][0];
+      expect(emailCall.subject).toContain('Order Confirmation');
+      expect(emailCall.html).toContain('99 Hidden Ln Unit 4B');
+    });
+
     it('should render contact form submission email', async () => {
       const result = await emailService.sendEmail({
         to: 'owner@business.com',

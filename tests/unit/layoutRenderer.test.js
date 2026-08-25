@@ -319,6 +319,15 @@ describe('layoutRenderer — tolerant data access', () => {
     expect(result.content.mapUrl).toBe('https://maps.example/shop');
   });
 
+  it('location mapUrl is omitted in area display mode', () => {
+    const result = renderSection('location', {}, {
+      contact: { addressDisplay: 'area', serviceAreaLabel: 'Montclair, NJ', serviceRadiusMiles: 10 },
+      social: { maps: 'https://maps.example/shop' },
+    }, {});
+    expect(result.content.mapUrl).toBe('');
+    expect(result.content.address).toContain('Montclair');
+  });
+
   it('social primitive resolves from siteData.social', () => {
     const result = renderSection('social', {}, {
       social: { instagram: 'https://instagram.com/shop', whatsapp: '15551234567' },

@@ -267,5 +267,53 @@
   color: #64748b;
 }
 
+.address-privacy-callout {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+}
+
+.address-privacy-callout h4 {
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+  color: #1e3a8a;
+}
+
+.address-privacy-callout p {
+  margin: 0 0 12px 0;
+  font-size: 0.9rem;
+  color: #1e40af;
+  line-height: 1.5;
+}
+
+.address-privacy-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.95rem;
+  color: #1e293b;
+  cursor: pointer;
+}
+
+.address-privacy-toggle input {
+  width: auto;
+  margin-top: 3px;
+}
+
+.address-privacy-hint {
+  display: block;
+  margin-top: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #2563eb;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 
 

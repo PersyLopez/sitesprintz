@@ -13,6 +13,7 @@ import {
   asyncHandler
 } from '../utils/apiResponse.js';
 import { validateSubdomain } from '../utils/validators.js';
+import { toPublicSiteData } from '../../src/utils/liveSiteContact.js';
 
 const router = express.Router();
 
@@ -342,7 +343,7 @@ router.get('/:subdomain', asyncHandler(async (req, res) => {
     return sendNotFound(res, 'Site not found or not public', 'SITE_NOT_FOUND');
   }
 
-  const siteData = parseSiteData(site);
+  const siteData = toPublicSiteData(parseSiteData(site));
 
   return sendSuccess(res, {
     site: {

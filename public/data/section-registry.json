@@ -211,6 +211,9 @@
         "email": "",
         "phone": "",
         "address": "",
+        "addressDisplay": "street",
+        "serviceAreaLabel": "",
+        "serviceRadiusMiles": 10,
         "hours": ""
       }
     },

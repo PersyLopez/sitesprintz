@@ -24,6 +24,8 @@ import {
 import { sanitizeSiteDataForStorage } from '../utils/siteDataSanitizer.js';
 import { attachSpanishLocale } from '../services/siteTranslationService.js';
 import { applyPayOnSiteSetting, mergeSiteDataSettings } from '../utils/payOnSite.js';
+import { toPublicSiteData } from '../../src/utils/liveSiteContact.js';
+import { prepareOwnerSiteData } from '../utils/prepareSiteLocation.js';
 import { resolvePlanLimits } from '../utils/resolveUserPlan.js';
 import AnalyticsService from '../services/analyticsService.js';
 import { validateTemplateId } from '../utils/validators.js';
@@ -250,7 +252,8 @@ router.get('/:siteId', asyncHandler(async (req, res) => {
       return sendForbidden(res, 'Site is not publicly available', 'SITE_PRIVATE');
     }
 
-    const siteData = parseSiteData(site);
+    const rawSiteData = parseSiteData(site);
+    const siteData = isOwner ? rawSiteData : toPublicSiteData(rawSiteData);
 
     return sendSuccess(res, {
       site: {
@@ -341,16 +344,29 @@ router.put('/:siteId', requireAuth, asyncHandler(async (req, res) => {
   // Merge with existing data
   const existingData = parseSiteData(ownership.site);
   const mergedData = mergeSiteDataSettings(existingData, newData);
+  let preparedData = mergedData;
+  try {
+    preparedData = await prepareOwnerSiteData(mergedData, { siteId: ownership.site.id });
+  } catch (error) {
+    if (error.code === 'AREA_LOCATION_INCOMPLETE') {
+      return sendBadRequest(res, error.message, error.code);
+    }
+    throw error;
+  }
 
   // Sanitize, draft Spanish overlay, and save
-  const sanitizedData = await attachSpanishLocale(sanitizeSiteDataForStorage(mergedData));
+  const sanitizedData = await attachSpanishLocale(sanitizeSiteDataForStorage(preparedData));
 
   await prisma.sites.update({
-    where: { id: siteId },
+    where: { id: ownership.site.id },
     data: {
       site_data: sanitizedData
     }
   });
+
+  if (ownership.site.status === 'published' && ownership.site.subdomain) {
+    await writeIsolatedSiteFiles(ownership.site.subdomain, sanitizedData);
+  }
 
   return sendSuccess(res, {
     site: {
@@ -648,10 +664,19 @@ router.post('/guest-publish', asyncHandler(async (req, res) => {
     subdomain,
     templateId: templateValidation.value
   });
-  const sanitizedSiteData = await attachSpanishLocale(sanitizeSiteDataForStorage(isolatedData));
+  let preparedData = isolatedData;
+  try {
+    preparedData = await prepareOwnerSiteData(isolatedData, { siteId: subdomain, forPublish: true });
+  } catch (error) {
+    if (error.code === 'AREA_LOCATION_INCOMPLETE') {
+      return sendBadRequest(res, error.message, error.code);
+    }
+    throw error;
+  }
+  const sanitizedSiteData = await attachSpanishLocale(sanitizeSiteDataForStorage(preparedData));
   const siteFilesData = sanitizedSiteData?.locales
-    ? { ...isolatedData, locales: sanitizedSiteData.locales }
-    : isolatedData;
+    ? { ...preparedData, locales: sanitizedSiteData.locales }
+    : preparedData;
 
   await writeIsolatedSiteFiles(subdomain, siteFilesData);
 
