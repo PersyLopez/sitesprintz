@@ -214,7 +214,8 @@ For known niches, the wizard delegates to `wizardSiteDataBuilder.js` and the new
 
 ### Editor
 
-- `EditorPanel` provides tabs for Essentials, Design, Services and Products, and Contact and Booking.
+- `EditorPanel` tabs switch exclusive panes for Essentials, Design, Services and Products, and Contact and Booking.
+- After a template is selected, Setup hides the template column (editor | preview) until Change template.
 - `BusinessInfoForm`, `ServicesProductsEditor`, `ContactBookingForm`, and `ThemePicker` are the primary editing forms.
 - `PageBuilder` (via `components/setup/PageBuilder.jsx`) allows users to add, remove, reorder, and toggle sections; locked sections are gated by tier.
 - `SectionEditors.jsx` exports specialized editors for `native-booking`, `checkout`, `reviews`, and premium modules (calculator, class scheduler, quiz, etc.).
@@ -251,7 +252,7 @@ The `FeatureGate` component in `src/components/common/FeatureGate.jsx` condition
 - `LevelSelector` — solo/studio/established selector with niche-aware layout preview.
 - `PageBuilder` — drag-and-drop section management.
 - `SectionEditors` — registry of section-specific editors.
-- `EditorPanel` — scrollable tabbed editor with undo/redo.
+- `EditorPanel` — exclusive tab panels (Essentials, Design, Services & Products, Contact & Booking) with undo/redo.
 - `PreviewFrame` — iframe preview with device and zoom controls.
 - `PublishModal` — publish confirmation and configuration.
 - `TemplateGrid` — template selection grid.

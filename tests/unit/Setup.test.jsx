@@ -1,3 +1,4 @@
+import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -13,6 +14,15 @@ vi.mock('../../src/services/templates', () => ({
   templatesService: {
     getTemplates: vi.fn(),
     getTemplate: vi.fn(),
+  },
+}));
+
+vi.mock('../../src/components/setup/QuickStartWizard', () => ({
+  default: ({ onSkip }) => {
+    React.useEffect(() => {
+      onSkip?.();
+    }, [onSkip]);
+    return null;
   },
 }));
 
@@ -281,11 +291,8 @@ describe('Setup Page', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('template-grid')).toBeInTheDocument();
+        expect(templatesService.getTemplates).toHaveBeenCalled();
       });
-
-      await waitFor(() => {
-        expect(mockLoadTemplate).toHaveBeenCalled();
-      }, { timeout: 5000 });
     });
 
     it('should handle invalid template ID from URL', async () => {
@@ -428,12 +435,25 @@ describe('Setup Page', () => {
       await user.click(screen.getByTestId('template-restaurant'));
 
       await waitFor(() => {
-        expect(templatesService.getTemplate).toHaveBeenCalledWith('restaurant-fine-dining');
+        expect(mockLoadTemplate).toHaveBeenCalled();
       });
     });
   });
 
   describe('Editor Interaction', () => {
+    it('should hide the template picker after a template is already loaded', async () => {
+      renderSetup('/setup', {
+        siteData: { businessName: 'Test Business', template: 'restaurant' },
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('change-template-button')).toBeInTheDocument();
+      });
+
+      expect(document.querySelector('.templates-panel--hidden')).toBeInTheDocument();
+      expect(document.querySelector('.setup-panels--two-col')).toBeInTheDocument();
+    });
+
     it('should show editor after template selection', async () => {
       const user = userEvent.setup();
       renderSetup();

@@ -1,0 +1,280 @@
+url: http://localhost:5173/login
+goal: Setup full editor after skip and after template load — panels, tabs, forms, preview, save, and layout mess
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter email
+    fill: { testId: login-email, value: "test@example.com", clear: true }
+
+  - action: Enter password
+    fill: { testId: login-password, value: "SecurePass!2024", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Dismiss welcome
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) await dismiss.click({ timeout: 4000 }).catch(() => {});
+      else await page.keyboard.press('Escape').catch(() => {});
+    settle_ms: 400
+
+  - action: Open setup
+    goto: http://localhost:5173/setup
+    settle_ms: 1500
+
+  - action: Quick Start present
+    wait_for: { selector: '[data-testid="quickstart-wizard"]', timeout: 20000 }
+    assert:
+      - text contains Quick Start
+
+  - action: Skip to Full Editor
+    click: { testId: wizard-skip }
+    settle_ms: 1500
+    assert:
+      - url contains /setup
+      - text contains Publish
+
+  - action: Skip-empty editor chrome
+    wait_for: { selector: '[data-testid="customize-panel"]', timeout: 15000 }
+    settle_ms: 400
+    assert:
+      - text contains Choose Your Template
+      - text contains Customize Your Content
+      - text contains Live Preview
+      - text contains Select a template from the left
+      - text contains live preview will appear here
+
+  - action: Skip-empty layout probe
+    code: |
+      const panels = await page.locator('.setup-panel').evaluateAll((els) =>
+        els.map((el) => {
+          const r = el.getBoundingClientRect();
+          const cs = getComputedStyle(el);
+          return {
+            cls: el.className,
+            display: cs.display,
+            w: Math.round(r.width),
+            h: Math.round(r.height),
+          };
+        })
+      );
+      const visible = panels.filter((p) => p.display !== 'none' && p.w > 0 && p.h > 0);
+      if (visible.length < 2) {
+        throw new Error('Expected multiple setup panels after skip, got ' + JSON.stringify(panels));
+      }
+      const publish = page.getByTestId('publish-site-button');
+      if (!(await publish.isDisabled())) {
+        throw new Error('Publish should be disabled with no template');
+      }
+      const empty = page.locator('.preview-panel .panel-empty, .editor-panel .panel-empty');
+      if ((await empty.count()) < 1) {
+        throw new Error('Expected empty editor/preview after skip without a template');
+      }
+    settle_ms: 200
+
+  - action: Use Salon template
+    code: |
+      const use = page.getByRole('button', { name: /Use Salon template/i });
+      if ((await use.count()) === 0) throw new Error('Use Salon template button missing');
+      await use.first().click({ timeout: 8000 });
+    settle_ms: 2500
+
+  - action: Editor loads with salon content
+    wait_for: { selector: '[data-testid="business-name-input"]', timeout: 20000 }
+    settle_ms: 800
+    assert:
+      - text contains Beauty Studio
+      - text contains Essentials
+      - text contains Design
+      - text contains Services & Products
+      - text contains Contact & Booking
+
+  - action: Publish enabled after template
+    code: |
+      const publish = page.getByTestId('publish-site-button');
+      if (await publish.isDisabled()) throw new Error('Publish still disabled after template');
+      const name = page.getByTestId('business-name-input');
+      const val = await name.inputValue();
+      if (!/Beauty Studio/i.test(val)) throw new Error('Business name not loaded: ' + val);
+    settle_ms: 200
+
+  - action: Preview frame present
+    wait_for: { selector: '[data-testid="preview-frame"]', timeout: 15000 }
+    settle_ms: 800
+    assert:
+      - text contains Desktop
+      - text contains Tablet
+      - text contains Mobile
+
+  - action: Preview contains salon copy
+    code: |
+      const frame = page.frameLocator('[data-testid="preview-frame"] iframe');
+      const body = await frame.locator('body').innerText();
+      if (!/Transform Your Look|Beauty Studio|Professional hair/i.test(body.slice(0, 800))) {
+        throw new Error('Preview missing salon copy: ' + body.slice(0, 800));
+      }
+    settle_ms: 300
+
+  - action: Switch to Design tab
+    click: { role: tab, name: Design }
+    settle_ms: 1000
+    assert:
+      - text contains Look
+
+  - action: Theme picker visible
+    code: |
+      const picker = page.getByTestId('theme-picker');
+      if ((await picker.count()) === 0) throw new Error('Theme picker missing after Design tab');
+    settle_ms: 200
+
+  - action: Switch to Services tab
+    click: { role: tab, name: "Services & Products" }
+    settle_ms: 1000
+    assert:
+      - text contains Your Services
+
+  - action: Salon services are in the editor
+    code: |
+      const names = await page.locator('input[placeholder="Service name"]').evaluateAll((els) =>
+        els.map((el) => el.value || '')
+      );
+      if (!names.some((n) => /Haircut/i.test(n))) {
+        throw new Error('Haircut service missing from editor inputs: ' + JSON.stringify(names));
+      }
+    settle_ms: 200
+
+  - action: Switch to Contact tab
+    click: { role: tab, name: "Contact & Booking" }
+    settle_ms: 1000
+    assert:
+      - text contains Hide your street on the live site
+
+  - action: Privacy callout on Contact
+    code: |
+      if ((await page.getByTestId('address-privacy-callout').count()) === 0) {
+        throw new Error('Address privacy callout missing in Contact');
+      }
+    settle_ms: 200
+
+  - action: Back to Essentials and rename
+    click: { role: tab, name: Essentials }
+    settle_ms: 800
+
+  - action: Change business name
+    fill: { testId: business-name-input, value: "Mantest Beauty Co", clear: true }
+    settle_ms: 800
+
+  - action: Name field keeps the new value
+    code: |
+      const val = await page.getByTestId('business-name-input').inputValue();
+      if (!/Mantest Beauty Co/i.test(val)) {
+        throw new Error('Business name input did not keep value: ' + val);
+      }
+    settle_ms: 200
+
+  - action: Device tablet preview
+    click: { testId: device-tablet }
+    settle_ms: 600
+
+  - action: Device mobile preview
+    click: { testId: device-mobile }
+    settle_ms: 600
+
+  - action: Device desktop preview
+    click: { testId: device-desktop }
+    settle_ms: 600
+
+  - action: Zoom out
+    click: { testId: zoom-out }
+    settle_ms: 400
+
+  - action: Zoom shows 75 percent
+    code: |
+      const z = await page.getByTestId('zoom-level').innerText();
+      if (!/75%/.test(z)) throw new Error('Expected 75% zoom, got ' + z);
+    settle_ms: 200
+
+  - action: Zoom back to 100
+    click: { testId: zoom-in }
+    settle_ms: 400
+
+  - action: Save draft
+    click: { testId: save-draft-button }
+    settle_ms: 1500
+
+  - action: Layout and UX audit of the setup editor
+    code: |
+      const layout = await page.evaluate(() => {
+        const panels = [...document.querySelectorAll('.setup-panel')].map((el) => {
+          const r = el.getBoundingClientRect();
+          const cs = getComputedStyle(el);
+          return {
+            cls: el.className,
+            display: cs.display,
+            w: Math.round(r.width),
+            h: Math.round(r.height),
+          };
+        });
+        const editor = document.querySelector('.editor-content');
+        const iframe = document.querySelector('[data-testid="preview-frame"] iframe');
+        const ir = iframe ? iframe.getBoundingClientRect() : null;
+        let previewOverflow = false;
+        try {
+          const doc = iframe && iframe.contentDocument;
+          if (doc && doc.documentElement) {
+            previewOverflow = doc.documentElement.scrollWidth > (iframe.clientWidth || 0) + 8;
+          }
+        } catch (_) {}
+        return {
+          panels,
+          editorH: editor ? Math.round(editor.getBoundingClientRect().height) : 0,
+          editorScrollH: editor ? editor.scrollHeight : 0,
+          sectionCount: document.querySelectorAll('[data-section]').length,
+          pageBuilder: !!document.querySelector('.page-builder, [data-testid="page-builder"]'),
+          iframe: ir ? { w: Math.round(ir.width), h: Math.round(ir.height) } : null,
+          previewOverflow,
+          templatesVisible: panels.some((p) => /templates-panel/.test(p.cls) && p.display !== 'none' && p.w > 40),
+          title: document.querySelector('.setup-title h1')?.innerText || '',
+          nameInput: document.querySelector('[data-testid="business-name-input"]')?.value || '',
+        };
+      });
+
+      if (layout.templatesVisible) {
+        throw new Error('Template picker should be hidden after template selection');
+      }
+      if (layout.sectionCount !== 1) {
+        throw new Error('Expected one visible editor section, found ' + layout.sectionCount);
+      }
+      if (layout.sectionCount === 1 && layout.editorScrollH > 8000) {
+        throw new Error('Editor still looks stacked: ' + layout.editorScrollH + 'px');
+      }
+      if (layout.pageBuilder) {
+        throw new Error('PageBuilder unexpectedly mounted in Setup');
+      }
+      if (layout.previewOverflow) {
+        throw new Error('Preview iframe content overflows its frame');
+      }
+      const visiblePanels = layout.panels.filter((p) => p.display !== 'none' && p.w > 0);
+      if (visiblePanels.length > 2) {
+        throw new Error('Expected at most two setup columns (editor + preview), got ' + visiblePanels.length);
+      }
+      if (!/Mantest Beauty Co/i.test(layout.title)) {
+        throw new Error('Setup title should reflect renamed business: "' + layout.title + '"');
+      }
+      if (!/Mantest Beauty Co/i.test(layout.nameInput)) {
+        throw new Error('Business name input should keep renamed value: "' + layout.nameInput + '"');
+      }
+    settle_ms: 200
+
+  - action: Change template restores picker
+    click: { testId: change-template-button }
+    settle_ms: 800
+    assert:
+      - text contains Choose Your Template

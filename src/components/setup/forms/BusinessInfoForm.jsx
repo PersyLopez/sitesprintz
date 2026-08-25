@@ -37,7 +37,7 @@ function BusinessInfoForm() {
               data-testid="business-name-input"
               value={siteData.brand?.name || siteData.businessName || ''}
               onChange={(e) => handleChange('brand.name', e.target.value)}
-              placeholder="e.g., Acme Restaurant"
+              placeholder="e.g., Acme Co."
               required
               aria-describedby="businessName-hint"
             />
@@ -54,7 +54,7 @@ function BusinessInfoForm() {
             id="tagline"
             value={siteData.brand?.tagline || ''}
             onChange={(e) => handleChange('brand.tagline', e.target.value)}
-            placeholder="e.g., Fresh food, fast service"
+            placeholder="e.g., Quality service you can trust"
             maxLength={100}
           />
         </div>
@@ -73,7 +73,7 @@ function BusinessInfoForm() {
             id="heroTitle"
             value={siteData.hero?.title || ''}
             onChange={(e) => handleChange('hero.title', e.target.value)}
-            placeholder="e.g., Welcome to Our Restaurant"
+            placeholder="e.g., Welcome to Our Business"
             required
           />
         </div>
@@ -87,7 +87,7 @@ function BusinessInfoForm() {
             id="heroSubtitle"
             value={siteData.hero?.subtitle || ''}
             onChange={(e) => handleChange('hero.subtitle', e.target.value)}
-            placeholder="e.g., Experience the finest dining in the city"
+            placeholder="e.g., Serving our community with care"
             rows={3}
             maxLength={200}
           />

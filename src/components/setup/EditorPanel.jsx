@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useSite } from '../../hooks/useSite';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
@@ -11,28 +11,17 @@ import ThemePicker from './forms/ThemePicker';
 import './EditorPanel.css';
 
 function EditorPanel() {
-  const { siteData, updateField, addService, updateService, deleteService, undo, redo, canUndo, canRedo } = useSite();
+  const { siteData, undo, redo, canUndo, canRedo } = useSite();
   const { user } = useAuth();
   const { showError } = useToast();
   const [activeSection, setActiveSection] = useState('essentials');
-  const contentRef = useRef(null);
-  const sectionRefs = useRef({});
-  const isScrollingRef = useRef(false);
   const [showUpgradeBanner, setShowUpgradeBanner] = useState(false);
   const [publishedSitesCount, setPublishedSitesCount] = useState(0);
   const [loadingCount, setLoadingCount] = useState(true);
 
-  // Growth (and legacy pro) unlock advanced publish features
-  const isPro = ['growth', 'pro', 'premium'].includes(user?.plan);
   const hasActiveTrial = isTrialingStatus(user?.subscription_status);
   const hasActiveSubscription = user?.subscription_status === 'active';
-
-  // Determine trial eligibility: first site publish only
   const isEligibleForTrial = publishedSitesCount === 0 && !hasActiveTrial && !hasActiveSubscription;
-
-  // Allow all editing - don't gate any features during draft/editing
-  // Only require subscription when publishing
-  const needsProAccess = false; // Always false - no gating during editing
 
   const sections = [
     { id: 'essentials', label: 'Essentials', icon: '📋' },
@@ -41,8 +30,7 @@ function EditorPanel() {
     { id: 'contact', label: 'Contact & Booking', icon: '📞' },
   ];
 
-  // Fetch user's published sites count on mount
-  useEffect(() => {
+  React.useEffect(() => {
     const fetchPublishedCount = async () => {
       if (!user?.id) {
         setLoadingCount(false);
@@ -51,7 +39,6 @@ function EditorPanel() {
 
       try {
         const sites = await sitesService.getUserSites(user.id);
-        // Count only published sites (not drafts)
         const published = Array.isArray(sites)
           ? sites.filter(site => site.status === 'published' || site.publishedAt).length
           : 0;
@@ -67,14 +54,11 @@ function EditorPanel() {
     fetchPublishedCount();
   }, [user?.id]);
 
-  // Don't show upgrade banner during editing - only at publish time
-  useEffect(() => {
+  React.useEffect(() => {
     if (loadingCount) return;
-    // Never show banner during editing phase
     setShowUpgradeBanner(false);
   }, [siteData.template, loadingCount]);
 
-  // Handle upgrade/trial start
   const handleStartTrial = async () => {
     try {
       const token = localStorage.getItem('authToken');
@@ -83,7 +67,6 @@ function EditorPanel() {
         return;
       }
 
-      // Create checkout session with trial
       const origin = window.location?.origin;
       const payload = {
         plan: 'growth',
@@ -108,7 +91,6 @@ function EditorPanel() {
       const data = await response.json();
 
       if (response.ok && data.url) {
-        // Redirect to Stripe Checkout
         window.location.href = data.url;
       } else {
         throw new Error(data.error || 'Failed to create checkout session');
@@ -119,7 +101,6 @@ function EditorPanel() {
     }
   };
 
-  // Get appropriate CTA text based on trial eligibility
   const getCtaText = () => {
     if (hasActiveTrial) {
       return { primary: '✅ Trial Active', secondary: 'Manage Subscription' };
@@ -132,75 +113,72 @@ function EditorPanel() {
 
   const ctaText = getCtaText();
 
-  // Scroll spy: Update active tab based on scroll position
-  useEffect(() => {
-    const handleScroll = () => {
-      if (isScrollingRef.current || !contentRef.current) return;
-
-      const scrollPosition = contentRef.current.scrollTop;
-      const sections = Object.keys(sectionRefs.current);
-
-      // Find which section is currently in view
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const sectionId = sections[i];
-        const element = sectionRefs.current[sectionId];
-
-        if (element) {
-          const { offsetTop } = element;
-          // Consider section active if we're within 100px of it
-          if (scrollPosition >= offsetTop - 100) {
-            setActiveSection(sectionId);
-            break;
-          }
-        }
-      }
-    };
-
-    const contentElement = contentRef.current;
-    if (contentElement) {
-      contentElement.addEventListener('scroll', handleScroll);
-      return () => contentElement.removeEventListener('scroll', handleScroll);
-    }
-  }, []);
-
-  // Smooth scroll to section when tab is clicked
   const handleTabClick = (sectionId) => {
-    const element = sectionRefs.current[sectionId];
-    if (element && contentRef.current) {
-      isScrollingRef.current = true;
+    setActiveSection(sectionId);
+  };
 
-      element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
+  const handleTabKeyDown = (event) => {
+    const currentIndex = sections.findIndex((section) => section.id === activeSection);
+    if (currentIndex < 0) return;
 
-      setActiveSection(sectionId);
-
-      // Reset scrolling flag after animation
-      setTimeout(() => {
-        isScrollingRef.current = false;
-      }, 1000);
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      setActiveSection(sections[(currentIndex + 1) % sections.length].id);
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      setActiveSection(sections[(currentIndex - 1 + sections.length) % sections.length].id);
     }
   };
 
-  const renderDesign = () => (
-    <div className="editor-section" data-section="design" ref={el => sectionRefs.current['design'] = el}>
-      <div className="section-header">
-        <h2>Look</h2>
-        <p className="section-description">Pick one of six contrast-checked themes. Accents and text colors are locked together.</p>
-      </div>
-
-      <ThemePicker templateId={siteData.template || siteData.templateId} />
-    </div>
-  );
-
-  const handleTabClickDeprecated = (sectionId) => {
-    showError('This is a Pro feature. Upgrade your plan to access it!');
+  const renderActiveSection = () => {
+    switch (activeSection) {
+      case 'essentials':
+        return (
+          <>
+            <div className="section-header">
+              <h2>📋 Essentials</h2>
+              <p className="section-description">Basic information about your business</p>
+            </div>
+            <BusinessInfoForm />
+          </>
+        );
+      case 'design':
+        return (
+          <div className="editor-section">
+            <div className="section-header">
+              <h2>Look</h2>
+              <p className="section-description">Pick one of six contrast-checked themes. Accents and text colors are locked together.</p>
+            </div>
+            <ThemePicker templateId={siteData.template || siteData.templateId} />
+          </div>
+        );
+      case 'services':
+        return (
+          <>
+            <div className="section-header">
+              <h2>✨ Services & Products</h2>
+              <p className="section-description">Manage your services and product catalog</p>
+            </div>
+            <ServicesProductsEditor />
+          </>
+        );
+      case 'contact':
+        return (
+          <>
+            <div className="section-header">
+              <h2>📞 Contact & Booking</h2>
+              <p className="section-description">Contact information and appointment booking</p>
+            </div>
+            <ContactBookingForm />
+          </>
+        );
+      default:
+        return null;
+    }
   };
 
   return (
     <div className="editor-panel-container">
-      {/* Upgrade Banner - Shows when Pro template selected without Pro plan */}
       {showUpgradeBanner && (
         <div className="upgrade-banner">
           <div className="banner-content">
@@ -260,10 +238,21 @@ function EditorPanel() {
         </div>
       </div>
 
-      <div className="editor-tabs">
+      <div
+        className="editor-tabs"
+        role="tablist"
+        aria-label="Editor sections"
+        onKeyDown={handleTabKeyDown}
+      >
         {sections.map((section) => (
           <button
             key={section.id}
+            type="button"
+            role="tab"
+            id={`editor-tab-${section.id}`}
+            aria-selected={activeSection === section.id}
+            aria-controls={`editor-panel-${section.id}`}
+            tabIndex={activeSection === section.id ? 0 : -1}
             className={`editor-tab ${activeSection === section.id ? 'active' : ''}`}
             onClick={() => handleTabClick(section.id)}
           >
@@ -273,37 +262,18 @@ function EditorPanel() {
         ))}
       </div>
 
-      <div className="editor-content" ref={contentRef}>
-        <div data-section="essentials" ref={el => sectionRefs.current['essentials'] = el}>
-          <div className="section-header">
-            <h2>📋 Essentials</h2>
-            <p className="section-description">Basic information about your business</p>
-          </div>
-          <BusinessInfoForm />
-        </div>
-
-        {renderDesign()}
-
-        <div data-section="services" ref={el => sectionRefs.current['services'] = el}>
-          <div className="section-header">
-            <h2>✨ Services & Products</h2>
-            <p className="section-description">Manage your services and product catalog</p>
-          </div>
-          <ServicesProductsEditor />
-        </div>
-
-        <div data-section="contact" ref={el => sectionRefs.current['contact'] = el}>
-          <div className="section-header">
-            <h2>📞 Contact & Booking</h2>
-            <p className="section-description">Contact information and appointment booking</p>
-          </div>
-          <ContactBookingForm />
+      <div className="editor-content">
+        <div
+          role="tabpanel"
+          id={`editor-panel-${activeSection}`}
+          aria-labelledby={`editor-tab-${activeSection}`}
+          data-section={activeSection}
+        >
+          {renderActiveSection()}
         </div>
       </div>
     </div>
   );
 }
-
-// Removed renderUpgradePrompt - no longer needed
 
 export default EditorPanel;

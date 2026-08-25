@@ -126,16 +126,22 @@ export function SiteProvider({ children }) {
   const updateNestedField = useCallback((path, value) => {
     setSiteData(prev => {
       addToHistory(prev);
-      const newData = { ...prev };
       const keys = path.split('.');
+      const newData = { ...prev };
       let current = newData;
 
       for (let i = 0; i < keys.length - 1; i++) {
-        if (!current[keys[i]]) current[keys[i]] = {};
-        current = current[keys[i]];
+        const key = keys[i];
+        current[key] = current[key] ? { ...current[key] } : {};
+        current = current[key];
       }
 
       current[keys[keys.length - 1]] = value;
+
+      if (path === 'brand.name') {
+        newData.businessName = value;
+      }
+
       return newData;
     });
 

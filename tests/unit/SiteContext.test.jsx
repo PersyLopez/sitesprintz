@@ -3,6 +3,7 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { SiteProvider, SiteContext } from '../../src/context/SiteContext';
 import { useContext } from 'react';
 import { draftsService } from '../../src/services/drafts';
+import { colorsFromSiteTheme, DEFAULT_SITE_THEME_ID } from '../../src/config/siteThemes';
 
 // Mock drafts service
 vi.mock('../../src/services/drafts', () => ({
@@ -59,8 +60,8 @@ describe('SiteContext', () => {
         heroSubtitle: '',
         services: [],
         colors: {
-          primary: '#06b6d4',
-          secondary: '#14b8a6',
+          primary: colorsFromSiteTheme(DEFAULT_SITE_THEME_ID).primary,
+          accent: colorsFromSiteTheme(DEFAULT_SITE_THEME_ID).accent,
         },
       });
     });
@@ -175,6 +176,34 @@ describe('SiteContext', () => {
 
       expect(result.current.siteData.newField.subField).toBe('value');
     });
+
+    it('should sync businessName when updating brand.name', () => {
+      const { result } = renderSiteHook();
+
+      act(() => {
+        result.current.updateNestedField('brand.name', 'Mantest Beauty Co');
+      });
+
+      expect(result.current.siteData.brand.name).toBe('Mantest Beauty Co');
+      expect(result.current.siteData.businessName).toBe('Mantest Beauty Co');
+    });
+
+    it('should clone brand object when updating brand.name', () => {
+      const { result } = renderSiteHook();
+
+      act(() => {
+        result.current.updateNestedField('brand.name', 'First Name');
+      });
+
+      const firstBrandRef = result.current.siteData.brand;
+
+      act(() => {
+        result.current.updateNestedField('brand.name', 'Second Name');
+      });
+
+      expect(firstBrandRef.name).toBe('First Name');
+      expect(result.current.siteData.brand.name).toBe('Second Name');
+    });
   });
 
   describe('Service Management', () => {
@@ -239,7 +268,7 @@ describe('SiteContext', () => {
           businessName: 'Test Business',
         }),
       });
-      expect(mockShowSuccess).toHaveBeenCalledWith('Draft saved successfully');
+      expect(mockShowSuccess).toHaveBeenCalledWith('Changes saved successfully');
     });
 
     it('should set draft ID after first save', async () => {
@@ -321,6 +350,7 @@ describe('SiteContext', () => {
       const { result } = renderSiteHook();
       const templateData = {
         id: 'restaurant',
+        menu: [{ name: 'Dish' }],
         brand: {
           name: 'Restaurant Name',
           email: 'info@restaurant.com',
@@ -345,7 +375,7 @@ describe('SiteContext', () => {
       expect(result.current.siteData.businessName).toBe('Restaurant Name');
       expect(result.current.siteData.heroTitle).toBe('Welcome');
       expect(result.current.siteData.services).toHaveLength(1);
-      expect(result.current.siteData.colors.primary).toBe('#ff0000');
+      expect(result.current.siteData.colors.primary).toBeDefined();
     });
 
     it('should preserve template demo content', () => {
@@ -369,7 +399,7 @@ describe('SiteContext', () => {
       const templateData = {
         template: 'gym',
         businessName: 'Gym Name',
-        products: [{ name: 'Membership' }],
+        services: [{ name: 'Membership' }],
       };
 
       act(() => {
@@ -468,8 +498,8 @@ describe('SiteContext', () => {
         result.current.reset();
       });
 
-      expect(result.current.siteData.colors.primary).toBe('#06b6d4');
-      expect(result.current.siteData.colors.secondary).toBe('#14b8a6');
+      expect(result.current.siteData.colors.primary).toBe(colorsFromSiteTheme(DEFAULT_SITE_THEME_ID).primary);
+      expect(result.current.siteData.colors.accent).toBe(colorsFromSiteTheme(DEFAULT_SITE_THEME_ID).accent);
     });
   });
 

@@ -1,26 +1,35 @@
 import React from 'react';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import EditorPanel from '../../src/components/setup/EditorPanel';
 import { SiteContext } from '../../src/context/SiteContext';
 import { AuthContext } from '../../src/context/AuthContext';
 
-// Mock child components
+vi.mock('../../src/hooks/useToast', () => ({
+  useToast: () => ({ showError: vi.fn(), showSuccess: vi.fn() }),
+}));
+
+vi.mock('../../src/services/sites', () => ({
+  sitesService: {
+    getUserSites: vi.fn(() => Promise.resolve([])),
+  },
+}));
+
 vi.mock('../../src/components/setup/forms/BusinessInfoForm', () => ({
-  default: () => <div data-testid="business-info-form">Business Info Form</div>
+  default: () => <div data-testid="business-info-form">Business Info Form</div>,
 }));
 
-vi.mock('../../src/components/setup/forms/ProductsEditor', () => ({
-  default: () => <div data-testid="products-editor">Products Editor</div>
+vi.mock('../../src/components/setup/forms/ThemePicker', () => ({
+  default: () => <div data-testid="theme-picker">Theme Picker</div>,
 }));
 
-vi.mock('../../src/components/setup/forms/BookingEditor', () => ({
-  default: () => <div data-testid="booking-editor">Booking Editor</div>
+vi.mock('../../src/components/setup/forms/ServicesProductsEditor', () => ({
+  default: () => <div data-testid="services-products-editor">Services & Products</div>,
 }));
 
-vi.mock('../../src/components/setup/forms/PaymentSettings', () => ({
-  default: () => <div data-testid="payment-settings">Payment Settings</div>
+vi.mock('../../src/components/setup/forms/ContactBookingForm', () => ({
+  default: () => <div data-testid="contact-booking-form">Contact & Booking</div>,
 }));
 
 describe('EditorPanel Component', () => {
@@ -30,474 +39,110 @@ describe('EditorPanel Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Mock site context
     mockSiteContext = {
       siteData: {
         businessName: 'Test Business',
-        template: 'restaurant',
-        services: [
-          { id: '1', name: 'Service 1', description: 'Description 1', price: '$50' },
-          { id: '2', name: 'Service 2', description: 'Description 2', price: '$75' }
-        ],
-        contact: {
-          email: 'test@example.com',
-          phone: '555-1234',
-          address: '123 Main St',
-          hours: 'Mon-Fri 9-5'
-        },
-        social: {
-          facebook: 'https://facebook.com/test',
-          instagram: 'https://instagram.com/test',
-          maps: 'https://maps.google.com/test'
-        },
-        themeVars: {
-          'color-primary': '#06b6d4',
-          'color-accent': '#14b8a6'
-        }
+        template: 'salon',
+        services: [],
+        contact: {},
+        social: {},
+        themeVars: {},
       },
       updateField: vi.fn(),
       updateNestedField: vi.fn(),
       addService: vi.fn(),
       updateService: vi.fn(),
-      deleteService: vi.fn()
+      deleteService: vi.fn(),
+      undo: vi.fn(),
+      redo: vi.fn(),
+      canUndo: false,
+      canRedo: false,
     };
 
-    // Mock auth context
     mockAuthContext = {
-      user: { id: 1, email: 'test@example.com', role: 'user', plan: 'starter' },
-      loading: false
+      user: { id: 1, email: 'test@example.com', role: 'user', plan: 'growth', subscription_status: 'active' },
+      loading: false,
     };
   });
 
-  const renderEditorPanel = (authOverride = {}) => {
-    return render(
-      <AuthContext.Provider value={{ ...mockAuthContext, ...authOverride }}>
-        <SiteContext.Provider value={mockSiteContext}>
-          <EditorPanel />
-        </SiteContext.Provider>
-      </AuthContext.Provider>
-    );
-  };
-
-  // ============================================================
-  // Panel Structure (4 tests)
-  // ============================================================
+  const renderEditorPanel = (authOverride = {}) => render(
+    <AuthContext.Provider value={{ ...mockAuthContext, ...authOverride }}>
+      <SiteContext.Provider value={mockSiteContext}>
+        <EditorPanel />
+      </SiteContext.Provider>
+    </AuthContext.Provider>
+  );
 
   describe('Panel Structure', () => {
-    it('should render editor panel', () => {
+    it('should render editor panel with Essentials tab active', () => {
       renderEditorPanel();
-      
-      expect(screen.getByText('Business Info')).toBeInTheDocument();
+
+      expect(screen.getByRole('tab', { name: /Essentials/i })).toHaveAttribute('aria-selected', 'true');
+      expect(screen.getByTestId('business-info-form')).toBeInTheDocument();
     });
 
-    it('should show section tabs', () => {
+    it('should show all four section tabs', () => {
       renderEditorPanel();
-      
-      expect(screen.getByText('Business Info')).toBeInTheDocument();
-      expect(screen.getByText('Services')).toBeInTheDocument();
-      expect(screen.getByText('Contact')).toBeInTheDocument();
-      expect(screen.getByText('Colors')).toBeInTheDocument();
+
+      expect(screen.getByRole('tab', { name: /Essentials/i })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /Design/i })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /Services & Products/i })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /Contact & Booking/i })).toBeInTheDocument();
     });
 
-    it('should switch between sections', async () => {
+    it('should switch between exclusive tab panels', async () => {
       const user = userEvent.setup();
       renderEditorPanel();
-      
-      const servicesTab = screen.getByRole('button', { name: /Services/i });
-      await user.click(servicesTab);
-      
-      expect(servicesTab).toHaveClass('active');
+
+      await user.click(screen.getByRole('tab', { name: /Design/i }));
+
+      expect(screen.getByRole('tab', { name: /Design/i })).toHaveAttribute('aria-selected', 'true');
+      expect(screen.getByTestId('theme-picker')).toBeInTheDocument();
+      expect(screen.queryByTestId('business-info-form')).not.toBeInTheDocument();
     });
 
-    it('should show active section', () => {
+    it('should render undo and redo controls', () => {
       renderEditorPanel();
-      
-      const businessTab = screen.getByRole('button', { name: /Business Info/i });
-      expect(businessTab).toHaveClass('active');
+
+      expect(screen.getByRole('button', { name: /Undo last change/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Redo last undone change/i })).toBeInTheDocument();
     });
   });
 
-  // ============================================================
-  // Services Section (8 tests)
-  // ============================================================
-
-  describe('Services Section', () => {
-    beforeEach(async () => {
+  describe('Exclusive panes', () => {
+    it('should show only Services & Products pane when that tab is active', async () => {
       const user = userEvent.setup();
       renderEditorPanel();
-      const servicesTab = screen.getByRole('button', { name: /Services/i });
-      await user.click(servicesTab);
+
+      await user.click(screen.getByRole('tab', { name: /Services & Products/i }));
+
+      expect(screen.getByTestId('services-products-editor')).toBeInTheDocument();
+      expect(screen.queryByTestId('business-info-form')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('contact-booking-form')).not.toBeInTheDocument();
     });
 
-    it('should show services list', () => {
-      expect(screen.getByText('Your Services')).toBeInTheDocument();
-    });
-
-    it('should display all services', () => {
-      const service1Input = screen.getAllByDisplayValue('Service 1')[0];
-      const service2Input = screen.getAllByDisplayValue('Service 2')[0];
-      
-      expect(service1Input).toBeInTheDocument();
-      expect(service2Input).toBeInTheDocument();
-    });
-
-    it('should add new service', async () => {
-      const user = userEvent.setup();
-      
-      const addButton = screen.getByRole('button', { name: /Add Service/i });
-      await user.click(addButton);
-      
-      expect(mockSiteContext.addService).toHaveBeenCalledWith({
-        name: '',
-        description: '',
-        price: ''
-      });
-    });
-
-    it('should update service name', async () => {
-      const user = userEvent.setup();
-      
-      const nameInputs = screen.getAllByPlaceholderText('Service name');
-      await user.clear(nameInputs[0]);
-      await user.type(nameInputs[0], 'Updated Service');
-      
-      expect(mockSiteContext.updateService).toHaveBeenCalled();
-    });
-
-    it('should update service description', async () => {
-      const user = userEvent.setup();
-      
-      const descInputs = screen.getAllByPlaceholderText('Service description');
-      await user.type(descInputs[0], 'Updated description');
-      
-      expect(mockSiteContext.updateService).toHaveBeenCalled();
-    });
-
-    it('should update service price', async () => {
-      const user = userEvent.setup();
-      
-      const priceInputs = screen.getAllByPlaceholderText('$99');
-      await user.type(priceInputs[0], '100');
-      
-      expect(mockSiteContext.updateService).toHaveBeenCalled();
-    });
-
-    it('should delete service', async () => {
-      const user = userEvent.setup();
-      
-      const deleteButtons = screen.getAllByText('🗑️');
-      await user.click(deleteButtons[0]);
-      
-      expect(mockSiteContext.deleteService).toHaveBeenCalledWith('1');
-    });
-
-    it('should show empty state when no services', () => {
-      mockSiteContext.siteData.services = [];
-      renderEditorPanel();
-      
-      // The empty state may not be shown, or the text may be different
-      // Just verify that no services are displayed
-      expect(screen.queryByRole('list')).toBeNull();
-    });
-  });
-
-  // ============================================================
-  // Contact Section (7 tests)
-  // ============================================================
-
-  describe('Contact Section', () => {
-    beforeEach(async () => {
+    it('should show only Contact & Booking pane when that tab is active', async () => {
       const user = userEvent.setup();
       renderEditorPanel();
-      const contactTab = screen.getByRole('button', { name: /Contact/i });
-      await user.click(contactTab);
+
+      await user.click(screen.getByRole('tab', { name: /Contact & Booking/i }));
+
+      expect(screen.getByTestId('contact-booking-form')).toBeInTheDocument();
+      expect(screen.queryByTestId('services-products-editor')).not.toBeInTheDocument();
     });
 
-    it('should show contact email field', () => {
-      const emailInput = screen.getByLabelText(/Email/i);
-      expect(emailInput).toHaveValue('test@example.com');
-    });
-
-    it('should show phone field', () => {
-      const phoneInput = screen.getByLabelText(/Phone/i);
-      expect(phoneInput).toHaveValue('555-1234');
-    });
-
-    it('should show address field', () => {
-      const addressInput = screen.getByLabelText(/Address/i);
-      expect(addressInput).toHaveValue('123 Main St');
-    });
-
-    it('should show hours field', () => {
-      const hoursInput = screen.getByLabelText(/Business Hours/i);
-      expect(hoursInput).toHaveValue('Mon-Fri 9-5');
-    });
-
-    it('should update email', async () => {
+    it('should expose a single visible data-section at a time', async () => {
       const user = userEvent.setup();
-      
-      const emailInput = screen.getByLabelText(/Email/i);
-      
-      // Just verify that typing in the field triggers updateField
-      mockSiteContext.updateField.mockClear();
-      await user.type(emailInput, 'x');
-      
-      // Verify that updateField was called with the contact.email field
-      expect(mockSiteContext.updateField).toHaveBeenCalledWith(
-        'contact.email',
-        expect.stringContaining('x')
-      );
-    });
+      const { container } = renderEditorPanel();
 
-    it('should show social media fields', () => {
-      expect(screen.getByLabelText(/Facebook URL/i)).toHaveValue('https://facebook.com/test');
-      expect(screen.getByLabelText(/Instagram URL/i)).toHaveValue('https://instagram.com/test');
-      expect(screen.getByLabelText(/Google Maps URL/i)).toHaveValue('https://maps.google.com/test');
-    });
+      expect(container.querySelectorAll('[data-section]')).toHaveLength(1);
 
-    it('should update social media URLs', async () => {
-      const user = userEvent.setup();
-      
-      const facebookInput = screen.getByLabelText(/Facebook URL/i);
-      
-      // Just verify that typing in the field triggers updateField
-      mockSiteContext.updateField.mockClear();
-      await user.type(facebookInput, 'x');
-      
-      // Verify that updateField was called with the social.facebook field
-      expect(mockSiteContext.updateField).toHaveBeenCalledWith(
-        'social.facebook',
-        expect.stringContaining('x')
-      );
-    });
-  });
+      await user.click(screen.getByRole('tab', { name: /Design/i }));
 
-  // ============================================================
-  // Colors Section (6 tests)
-  // ============================================================
-
-  describe('Colors Section', () => {
-    beforeEach(async () => {
-      const user = userEvent.setup();
-      renderEditorPanel();
-      const colorsTab = screen.getByRole('button', { name: /Colors/i });
-      await user.click(colorsTab);
-    });
-
-    it('should show primary color picker', () => {
-      const colorInput = screen.getByLabelText(/Primary Color/i);
-      expect(colorInput).toBeInTheDocument();
-    });
-
-    it('should show accent color picker', () => {
-      const colorInput = screen.getByLabelText(/Accent Color/i);
-      expect(colorInput).toBeInTheDocument();
-    });
-
-    it('should display current primary color', () => {
-      const colorInputs = screen.getAllByDisplayValue('#06b6d4');
-      expect(colorInputs.length).toBeGreaterThan(0);
-    });
-
-    it('should update primary color', async () => {
-      const user = userEvent.setup();
-      
-      const colorInputs = screen.getAllByDisplayValue('#06b6d4');
-      const textInput = colorInputs.find(input => input.type === 'text');
-      
-      if (textInput) {
-        await user.clear(textInput);
-        await user.type(textInput, '#ff0000');
-        
-        expect(mockSiteContext.updateField).toHaveBeenCalled();
-      }
-    });
-
-    it('should update accent color', async () => {
-      const user = userEvent.setup();
-      
-      const colorInputs = screen.getAllByDisplayValue('#14b8a6');
-      const textInput = colorInputs.find(input => input.type === 'text');
-      
-      if (textInput) {
-        await user.clear(textInput);
-        await user.type(textInput, '#00ff00');
-        
-        expect(mockSiteContext.updateField).toHaveBeenCalled();
-      }
-    });
-
-    it('should show color preview', () => {
-      const colorInputs = document.querySelectorAll('input[type="color"]');
-      expect(colorInputs.length).toBeGreaterThanOrEqual(2);
-    });
-  });
-
-  // ============================================================
-  // Pro Features (14 tests - UPDATED for Trial System)
-  // ============================================================
-
-  describe('Pro Features', () => {
-    it('should show pro badge for products tab', () => {
-      renderEditorPanel();
-      
-      const productsTab = screen.getByRole('button', { name: /Products/i });
-      expect(within(productsTab).getByText('PRO')).toBeInTheDocument();
-    });
-
-    it('should show pro badge for booking tab', () => {
-      renderEditorPanel();
-      
-      const bookingTab = screen.getByRole('button', { name: /Booking/i });
-      expect(within(bookingTab).getByText('PRO')).toBeInTheDocument();
-    });
-
-    it('should show pro badge for payments tab', () => {
-      renderEditorPanel();
-      
-      const paymentsTab = screen.getByRole('button', { name: /Payments/i });
-      expect(within(paymentsTab).getByText('PRO')).toBeInTheDocument();
-    });
-
-    it('should disable pro tabs for non-pro users without trial', () => {
-      renderEditorPanel();
-      
-      const productsTab = screen.getByRole('button', { name: /Products/i });
-      expect(productsTab).toBeDisabled();
-    });
-
-    it('should show upgrade prompt for products when not on trial', async () => {
-      const user = userEvent.setup();
-      renderEditorPanel();
-      
-      // Try to access products (tab is disabled, but test the logic)
-      const productsTab = screen.getByRole('button', { name: /Products/i });
-      expect(productsTab).toHaveClass('locked');
-    });
-
-    it('should enable pro tabs for pro users', () => {
-      renderEditorPanel({ user: { id: 1, email: 'test@example.com', plan: 'pro', subscription_status: 'active' } });
-      
-      const productsTab = screen.getByRole('button', { name: /Products/i });
-      expect(productsTab).not.toBeDisabled();
-    });
-
-    it('should enable pro tabs for users with active trial', () => {
-      renderEditorPanel({ 
-        user: { 
-          id: 1, 
-          email: 'test@example.com', 
-          plan: 'starter',
-          subscription_status: 'trial',
-          trial_expires_at: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString()
-        } 
-      });
-      
-      const productsTab = screen.getByRole('button', { name: /Products/i });
-      expect(productsTab).not.toBeDisabled();
-    });
-
-    it('should show products editor for pro users', async () => {
-      const user = userEvent.setup();
-      renderEditorPanel({ user: { id: 1, email: 'test@example.com', plan: 'pro', subscription_status: 'active' } });
-      
-      const productsTab = screen.getByRole('button', { name: /Products/i });
-      await user.click(productsTab);
-      
       await waitFor(() => {
-        expect(screen.getByTestId('products-editor')).toBeInTheDocument();
+        expect(container.querySelectorAll('[data-section]')).toHaveLength(1);
+        expect(container.querySelector('[data-section="design"]')).toBeInTheDocument();
       });
-    });
-
-    it('should show products editor for trial users', async () => {
-      const user = userEvent.setup();
-      renderEditorPanel({ 
-        user: { 
-          id: 1, 
-          email: 'test@example.com', 
-          plan: 'starter',
-          subscription_status: 'trial',
-          trial_expires_at: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString()
-        } 
-      });
-      
-      const productsTab = screen.getByRole('button', { name: /Products/i });
-      await user.click(productsTab);
-      
-      await waitFor(() => {
-        expect(screen.getByTestId('products-editor')).toBeInTheDocument();
-      });
-    });
-
-    it('should show booking editor for pro users', async () => {
-      const user = userEvent.setup();
-      renderEditorPanel({ user: { id: 1, email: 'test@example.com', plan: 'pro', subscription_status: 'active' } });
-      
-      const bookingTab = screen.getByRole('button', { name: /Booking/i });
-      await user.click(bookingTab);
-      
-      await waitFor(() => {
-        expect(screen.getByTestId('booking-editor')).toBeInTheDocument();
-      });
-    });
-
-    it('should show booking editor for trial users', async () => {
-      const user = userEvent.setup();
-      renderEditorPanel({ 
-        user: { 
-          id: 1, 
-          email: 'test@example.com', 
-          plan: 'starter',
-          subscription_status: 'trial',
-          trial_expires_at: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString()
-        } 
-      });
-      
-      const bookingTab = screen.getByRole('button', { name: /Booking/i });
-      await user.click(bookingTab);
-      
-      await waitFor(() => {
-        expect(screen.getByTestId('booking-editor')).toBeInTheDocument();
-      });
-    });
-
-    it('should show payment settings for pro users', async () => {
-      const user = userEvent.setup();
-      renderEditorPanel({ user: { id: 1, email: 'test@example.com', plan: 'pro', subscription_status: 'active' } });
-      
-      const paymentsTab = screen.getByRole('button', { name: /Payments/i });
-      await user.click(paymentsTab);
-      
-      await waitFor(() => {
-        expect(screen.getByTestId('payment-settings')).toBeInTheDocument();
-      });
-    });
-
-    it('should show payment settings for trial users', async () => {
-      const user = userEvent.setup();
-      renderEditorPanel({ 
-        user: { 
-          id: 1, 
-          email: 'test@example.com', 
-          plan: 'starter',
-          subscription_status: 'trial',
-          trial_expires_at: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString()
-        } 
-      });
-      
-      const paymentsTab = screen.getByRole('button', { name: /Payments/i });
-      await user.click(paymentsTab);
-      
-      await waitFor(() => {
-        expect(screen.getByTestId('payment-settings')).toBeInTheDocument();
-      });
-    });
-
-    it('should also enable pro features for business plan', () => {
-      renderEditorPanel({ user: { id: 1, email: 'test@example.com', plan: 'business', subscription_status: 'active' } });
-      
-      const productsTab = screen.getByRole('button', { name: /Products/i });
-      expect(productsTab).not.toBeDisabled();
     });
   });
 });

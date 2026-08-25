@@ -266,6 +266,23 @@
   }
 }
 
+/* Two-column layout when template picker is hidden */
+@media (min-width: 640px) {
+  .setup-panels.setup-panels--two-col {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .setup-panels.setup-panels--two-col .templates-panel--hidden {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .setup-panels.setup-panels--two-col {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .setup-panel {
   display: flex;
   flex-direction: column;
@@ -284,6 +301,10 @@
 }
 
 .panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
   padding: var(--spacing-lg);
   background: var(--bg-elevated);
   border-bottom: 1px solid var(--border-dark);
@@ -302,6 +323,14 @@
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--text-light);
+}
+
+.change-template-button {
+  flex-shrink: 0;
+}
+
+.templates-panel--hidden {
+  display: none !important;
 }
 
 .panel-content {

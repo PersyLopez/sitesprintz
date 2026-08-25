@@ -205,20 +205,14 @@ describe('BusinessInfoForm Component', () => {
       });
     });
 
-    it('should update theme colors', async () => {
+    it('should update tagline through brand field', async () => {
       const user = userEvent.setup();
       render(<BusinessInfoForm />);
 
-      const primaryColorPicker = screen.getByTestId('color-picker-primary-color');
-      const colorInput = primaryColorPicker.querySelector('input[type="text"]');
-      
-      await user.click(colorInput);
-      await user.type(colorInput, 'a');
+      const taglineInput = screen.getByLabelText(/Tagline/i);
+      await user.type(taglineInput, 'Quality care');
 
-      expect(mockUpdateNestedField).toHaveBeenCalled();
-      const calls = mockUpdateNestedField.mock.calls;
-      const lastCall = calls[calls.length - 1];
-      expect(lastCall[0]).toBe('themeVars.color-primary');
+      expect(mockUpdateNestedField).toHaveBeenCalledWith('brand.tagline', expect.any(String));
     });
   });
 

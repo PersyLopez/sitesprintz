@@ -1,416 +1,199 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import EditorPanel from '../../src/components/setup/EditorPanel';
 import { SiteContext } from '../../src/context/SiteContext';
 import { AuthContext } from '../../src/context/AuthContext';
 
-// Mock services
+vi.mock('../../src/hooks/useToast', () => ({
+  useToast: () => ({ showError: vi.fn(), showSuccess: vi.fn() }),
+}));
+
 vi.mock('../../src/services/sites', () => ({
   sitesService: {
     getUserSites: vi.fn(() => Promise.resolve([])),
   },
 }));
 
-// Mock child components
 vi.mock('../../src/components/setup/forms/BusinessInfoForm', () => ({
-  default: () => <div data-testid="business-info-form">Business Info Form</div>
+  default: () => <div data-testid="business-info-form">Business Info Form</div>,
 }));
 
-vi.mock('../../src/components/setup/forms/ProductsEditor', () => ({
-  default: () => <div data-testid="products-editor">Products Editor</div>
+vi.mock('../../src/components/setup/forms/ThemePicker', () => ({
+  default: () => <div data-testid="theme-picker">Theme Picker</div>,
 }));
 
-vi.mock('../../src/components/setup/forms/BookingEditor', () => ({
-  default: () => <div data-testid="booking-editor">Booking Editor</div>
+vi.mock('../../src/components/setup/forms/ServicesProductsEditor', () => ({
+  default: () => <div data-testid="services-products-editor">Services & Products</div>,
 }));
 
-vi.mock('../../src/components/setup/forms/PaymentSettings', () => ({
-  default: () => <div data-testid="payment-settings">Payment Settings</div>
+vi.mock('../../src/components/setup/forms/ContactBookingForm', () => ({
+  default: () => <div data-testid="contact-booking-form">Contact & Booking</div>,
 }));
 
-describe('EditorPanel - Scroll Navigation', () => {
+describe('EditorPanel - Exclusive Tab Navigation', () => {
   let mockSiteContext;
   let mockAuthContext;
 
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Mock site context
     mockSiteContext = {
       siteData: {
         businessName: 'Test Business',
-        template: 'restaurant',
+        template: 'salon',
         services: [],
         contact: {},
         social: {},
-        themeVars: {}
+        themeVars: {},
       },
       updateField: vi.fn(),
       addService: vi.fn(),
       updateService: vi.fn(),
-      deleteService: vi.fn()
+      deleteService: vi.fn(),
+      undo: vi.fn(),
+      redo: vi.fn(),
+      canUndo: false,
+      canRedo: false,
     };
 
-    // Mock auth context with pro plan (to avoid upgrade prompts)
     mockAuthContext = {
       user: {
         id: 1,
         email: 'test@example.com',
-        plan: 'pro',
-        subscription_status: 'active'
+        plan: 'growth',
+        subscription_status: 'active',
       },
-      loading: false
+      loading: false,
     };
 
-    // Mock localStorage
     Storage.prototype.getItem = vi.fn(() => 'mock-auth-token');
   });
 
-  const renderEditorPanel = (authOverride = {}) => {
-    return render(
-      <AuthContext.Provider value={{ ...mockAuthContext, ...authOverride }}>
-        <SiteContext.Provider value={mockSiteContext}>
-          <EditorPanel />
-        </SiteContext.Provider>
-      </AuthContext.Provider>
-    );
-  };
+  const renderEditorPanel = (authOverride = {}) => render(
+    <AuthContext.Provider value={{ ...mockAuthContext, ...authOverride }}>
+      <SiteContext.Provider value={mockSiteContext}>
+        <EditorPanel />
+      </SiteContext.Provider>
+    </AuthContext.Provider>
+  );
 
-  // ============================================================
-  // Scroll Spy Functionality (10 tests)
-  // ============================================================
+  describe('Tablist accessibility', () => {
+    it('should render a tablist with four tabs', () => {
+      renderEditorPanel();
 
-  describe('Scroll Spy Functionality', () => {
-    it.skip('should update active tab when scrolling to a section', async () => {
-      const { container } = renderEditorPanel();
-
-      await waitFor(() => {
-        const businessTab = screen.getByRole('button', { name: /Business Info/i });
-        expect(businessTab).toHaveClass('active');
-      });
-
-      // Get the content container and sections
-      const contentContainer = container.querySelector('.editor-content');
-      const servicesSection = container.querySelector('[data-section="services"]'); // Section for services
-
-      if (contentContainer && servicesSection) {
-        // Mock getBoundingClientRect for scroll spy
-        servicesSection.getBoundingClientRect = vi.fn(() => ({
-          top: 50, // Within viewport
-          bottom: 400,
-          height: 350,
-          left: 0,
-          right: 800,
-          width: 800,
-          x: 0,
-          y: 50
-        }));
-
-        // Mock offsetTop which is used by the scroll handler
-        Object.defineProperty(servicesSection, 'offsetTop', {
-          configurable: true,
-          value: 100 // Set offsetTop to match scroll logic
-        });
-
-        // Fire scroll event using fireEvent
-        fireEvent.scroll(contentContainer, { target: { scrollTop: 150 } });
-
-        await waitFor(() => {
-          const servicesTab = screen.getByRole('button', { name: /Services/i });
-          // The scroll spy should update the active tab
-          expect(servicesTab).toHaveClass('active');
-        }, { timeout: 2000 });
-      }
+      expect(screen.getByRole('tablist', { name: /Editor sections/i })).toBeInTheDocument();
+      expect(screen.getAllByRole('tab')).toHaveLength(4);
     });
 
-    it('should have sticky tabs during scroll', () => {
-      const { container } = renderEditorPanel();
-
-      const tabsContainer = container.querySelector('.editor-tabs');
-      expect(tabsContainer).toBeInTheDocument();
-      // CSS file testing in unit tests is unreliable, skipping style check
-    });
-
-    it('should smooth scroll to section when clicking tab', async () => {
-      const user = userEvent.setup();
-      const { container } = renderEditorPanel();
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Services/i })).toBeInTheDocument();
-      });
-
-      const servicesTab = screen.getByRole('button', { name: /Services/i });
-
-      // Mock scrollIntoView
-      Element.prototype.scrollIntoView = vi.fn();
-
-      await user.click(servicesTab);
-
-      // scrollIntoView should be called
-      await waitFor(() => {
-        expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
-      });
-    });
-
-    it('should use smooth scroll behavior', async () => {
+    it('should mark only the active tab as selected', async () => {
       const user = userEvent.setup();
       renderEditorPanel();
 
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Contact/i })).toBeInTheDocument();
-      });
+      const essentialsTab = screen.getByRole('tab', { name: /Essentials/i });
+      const designTab = screen.getByRole('tab', { name: /Design/i });
 
-      const contactTab = screen.getByRole('button', { name: /Contact/i });
+      expect(essentialsTab).toHaveAttribute('aria-selected', 'true');
+      expect(designTab).toHaveAttribute('aria-selected', 'false');
 
-      // Mock scrollIntoView
-      const scrollIntoViewMock = vi.fn();
-      Element.prototype.scrollIntoView = scrollIntoViewMock;
+      await user.click(designTab);
 
-      await user.click(contactTab);
-
-      await waitFor(() => {
-        expect(scrollIntoViewMock).toHaveBeenCalledWith({
-          behavior: 'smooth',
-          block: 'start'
-        });
-      });
+      expect(designTab).toHaveAttribute('aria-selected', 'true');
+      expect(essentialsTab).toHaveAttribute('aria-selected', 'false');
     });
 
-    it('should prevent scroll spy updates during manual scroll', async () => {
-      const user = userEvent.setup();
-      const { container } = renderEditorPanel();
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Colors/i })).toBeInTheDocument();
-      });
-
-      const colorsTab = screen.getByRole('button', { name: /Colors/i });
-      Element.prototype.scrollIntoView = vi.fn();
-
-      await user.click(colorsTab);
-
-      // During the manual scroll, scroll spy should be temporarily disabled
-      // This prevents tab jumping during smooth scroll
-      await waitFor(() => {
-        expect(colorsTab).toHaveClass('active');
-      });
-    });
-
-    it('should have scroll-margin-top on sections for sticky tabs', () => {
-      const { container } = renderEditorPanel();
-
-      // Check that editor sections have scroll-margin-top in CSS
-      const sections = container.querySelectorAll('.editor-section');
-      sections.forEach(section => {
-        const styles = window.getComputedStyle(section);
-        // scroll-margin-top should be defined (value varies by CSS)
-        expect(styles.scrollMarginTop).toBeDefined();
-      });
-    });
-
-    it('should render section headers with titles', async () => {
+    it('should render the active tabpanel with matching aria-labelledby', () => {
       renderEditorPanel();
 
-      expect(await screen.findByText(/🏢 Business Information/i)).toBeInTheDocument();
-      expect(await screen.findByText(/✨ Services/i)).toBeInTheDocument();
-      expect(await screen.findByText(/📞 Contact Information/i)).toBeInTheDocument();
-      expect(await screen.findByText(/🎨 Brand Colors/i)).toBeInTheDocument();
-    });
-
-    it('should render section descriptions', async () => {
-      renderEditorPanel();
-
-      expect(await screen.findByText(/Tell us about your business/i)).toBeInTheDocument();
-      expect(await screen.findByText(/Add and manage your service offerings/i)).toBeInTheDocument();
-      expect(await screen.findByText(/Update your business contact details/i)).toBeInTheDocument();
-      expect(await screen.findByText(/Customize your site's color scheme/i)).toBeInTheDocument();
-    });
-
-    it('should attach refs to all scrollable sections', async () => {
-      const { container } = renderEditorPanel();
-
-      await waitFor(() => {
-        // Check that sections have data-section attributes
-        const sections = container.querySelectorAll('[data-section]');
-        expect(sections.length).toBeGreaterThan(0);
-      });
-    });
-
-    it('should maintain active tab state across re-renders', async () => {
-      const user = userEvent.setup();
-      const { rerender } = renderEditorPanel();
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Services/i })).toBeInTheDocument();
-      });
-
-      const servicesTab = screen.getByRole('button', { name: /Services/i });
-      await user.click(servicesTab);
-
-      await waitFor(() => {
-        expect(servicesTab).toHaveClass('active');
-      });
-
-      // Re-render
-      rerender(
-        <AuthContext.Provider value={mockAuthContext}>
-          <SiteContext.Provider value={mockSiteContext}>
-            <EditorPanel />
-          </SiteContext.Provider>
-        </AuthContext.Provider>
-      );
-
-      // Active state should persist
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Services/i })).toHaveClass('active');
-      });
+      const panel = screen.getByRole('tabpanel');
+      expect(panel).toHaveAttribute('id', 'editor-panel-essentials');
+      expect(panel).toHaveAttribute('aria-labelledby', 'editor-tab-essentials');
     });
   });
 
-  // ============================================================
-  // Section Navigation (8 tests)
-  // ============================================================
+  describe('Exclusive pane switching', () => {
+    it('should show Essentials content by default', () => {
+      renderEditorPanel();
 
-  describe('Section Navigation', () => {
-    it('should navigate to Business Info section', async () => {
+      expect(screen.getByTestId('business-info-form')).toBeInTheDocument();
+      expect(screen.queryByTestId('theme-picker')).not.toBeInTheDocument();
+    });
+
+    it('should switch to Design pane without scrolling', async () => {
+      const user = userEvent.setup();
+      const scrollSpy = vi.spyOn(Element.prototype, 'scrollIntoView');
+      renderEditorPanel();
+
+      await user.click(screen.getByRole('tab', { name: /Design/i }));
+
+      expect(screen.getByTestId('theme-picker')).toBeInTheDocument();
+      expect(screen.queryByTestId('business-info-form')).not.toBeInTheDocument();
+      expect(scrollSpy).not.toHaveBeenCalled();
+      scrollSpy.mockRestore();
+    });
+
+    it('should switch to Services & Products pane', async () => {
       const user = userEvent.setup();
       renderEditorPanel();
 
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Business Info/i })).toBeInTheDocument();
-      });
+      await user.click(screen.getByRole('tab', { name: /Services & Products/i }));
 
-      const businessTab = screen.getByRole('button', { name: /Business Info/i });
-      await user.click(businessTab);
+      expect(screen.getByTestId('services-products-editor')).toBeInTheDocument();
+      expect(screen.queryByTestId('business-info-form')).not.toBeInTheDocument();
+    });
+
+    it('should switch to Contact & Booking pane', async () => {
+      const user = userEvent.setup();
+      renderEditorPanel();
+
+      await user.click(screen.getByRole('tab', { name: /Contact & Booking/i }));
+
+      expect(screen.getByTestId('contact-booking-form')).toBeInTheDocument();
+    });
+
+    it('should keep only one data-section in the DOM', async () => {
+      const user = userEvent.setup();
+      const { container } = renderEditorPanel();
+
+      await user.click(screen.getByRole('tab', { name: /Services & Products/i }));
 
       await waitFor(() => {
-        expect(screen.getByTestId('business-info-form')).toBeInTheDocument();
+        expect(container.querySelectorAll('[data-section]')).toHaveLength(1);
+        expect(container.querySelector('[data-section="services"]')).toBeInTheDocument();
       });
     });
 
-    it('should navigate to Services section', async () => {
+    it('should support arrow-key navigation on the tablist', async () => {
       const user = userEvent.setup();
       renderEditorPanel();
 
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Services/i })).toBeInTheDocument();
-      });
+      const essentialsTab = screen.getByRole('tab', { name: /Essentials/i });
+      essentialsTab.focus();
 
-      const servicesTab = screen.getByRole('button', { name: /Services/i });
-      await user.click(servicesTab);
+      await user.keyboard('{ArrowRight}');
 
-      await waitFor(() => {
-        expect(servicesTab).toHaveClass('active');
-      });
-    });
-
-    it('should navigate to Contact section', async () => {
-      const user = userEvent.setup();
-      renderEditorPanel();
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Contact/i })).toBeInTheDocument();
-      });
-
-      const contactTab = screen.getByRole('button', { name: /Contact/i });
-      await user.click(contactTab);
-
-      await waitFor(() => {
-        expect(contactTab).toHaveClass('active');
-      });
-    });
-
-    it('should navigate to Colors section', async () => {
-      const user = userEvent.setup();
-      renderEditorPanel();
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Colors/i })).toBeInTheDocument();
-      });
-
-      const colorsTab = screen.getByRole('button', { name: /Colors/i });
-      await user.click(colorsTab);
-
-      await waitFor(() => {
-        expect(colorsTab).toHaveClass('active');
-      });
-    });
-
-    it('should navigate to Products section (pro user)', async () => {
-      const user = userEvent.setup();
-      renderEditorPanel();
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Products/i })).toBeInTheDocument();
-      });
-
-      const productsTab = screen.getByRole('button', { name: /Products/i });
-      await user.click(productsTab);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('products-editor')).toBeInTheDocument();
-      });
-    });
-
-    it('should navigate to Booking section (pro user)', async () => {
-      const user = userEvent.setup();
-      renderEditorPanel();
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Booking/i })).toBeInTheDocument();
-      });
-
-      const bookingTab = screen.getByRole('button', { name: /Booking/i });
-      await user.click(bookingTab);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('booking-editor')).toBeInTheDocument();
-      });
-    });
-
-    it('should navigate to Payments section (pro user)', async () => {
-      const user = userEvent.setup();
-      renderEditorPanel();
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Payments/i })).toBeInTheDocument();
-      });
-
-      const paymentsTab = screen.getByRole('button', { name: /Payments/i });
-      await user.click(paymentsTab);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('payment-settings')).toBeInTheDocument();
-      });
+      expect(screen.getByRole('tab', { name: /Design/i })).toHaveAttribute('aria-selected', 'true');
+      expect(screen.getByTestId('theme-picker')).toBeInTheDocument();
     });
 
     it('should allow rapid tab switching without errors', async () => {
       const user = userEvent.setup();
       renderEditorPanel();
 
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Services/i })).toBeInTheDocument();
-      });
-
-      // Rapidly click different tabs
       const tabs = [
-        screen.getByRole('button', { name: /Services/i }),
-        screen.getByRole('button', { name: /Contact/i }),
-        screen.getByRole('button', { name: /Colors/i }),
-        screen.getByRole('button', { name: /Business Info/i }),
+        screen.getByRole('tab', { name: /Services & Products/i }),
+        screen.getByRole('tab', { name: /Contact & Booking/i }),
+        screen.getByRole('tab', { name: /Design/i }),
+        screen.getByRole('tab', { name: /Essentials/i }),
       ];
 
       for (const tab of tabs) {
         await user.click(tab);
       }
 
-      // Should end on last clicked tab
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Business Info/i })).toHaveClass('active');
-      });
+      expect(screen.getByRole('tab', { name: /Essentials/i })).toHaveAttribute('aria-selected', 'true');
+      expect(screen.getByTestId('business-info-form')).toBeInTheDocument();
     });
   });
 });
-

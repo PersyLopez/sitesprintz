@@ -31,6 +31,10 @@ function Setup() {
   const [showWizard, setShowWizard] = useState(true);
   const [wizardCompleted, setWizardCompleted] = useState(false);
   const [showCustomBuilder, setShowCustomBuilder] = useState(false);
+  const [showTemplatePicker, setShowTemplatePicker] = useState(true);
+
+  const templatesPanelVisible = showTemplatePicker || !siteData.template;
+  const twoColumnLayout = Boolean(siteData.template) && !showTemplatePicker;
 
   // Calculate progress percentage
   const progressPercentage = () => {
@@ -50,6 +54,7 @@ function Setup() {
         setActiveTab('editor');
         setShowWizard(false); // Don't show wizard when editing existing site
         setWizardCompleted(true);
+        setShowTemplatePicker(false);
       }).catch(err => {
         console.error('Failed to load site:', err);
       });
@@ -57,6 +62,7 @@ function Setup() {
       // If template already loaded, skip wizard
       setShowWizard(false);
       setWizardCompleted(true);
+      setShowTemplatePicker(false);
     }
   }, [searchParams]);
 
@@ -75,6 +81,7 @@ function Setup() {
   const handleTemplateSelect = async (template) => {
     // Load template directly (no layout variations)
     loadTemplate(template);
+    setShowTemplatePicker(false);
     setActiveTab('editor');
     showSuccess(`✨ ${template.name || template.businessName} template selected!`);
   };
@@ -90,6 +97,7 @@ function Setup() {
   const handleWizardComplete = (wizardData) => {
     setWizardCompleted(true);
     setShowWizard(false);
+    setShowTemplatePicker(false);
     setActiveTab('editor');
     showSuccess('✨ Your website is ready! Customize it further or publish now.');
   };
@@ -104,8 +112,14 @@ function Setup() {
     // Load the custom template like a regular template
     setShowCustomBuilder(false);
     await loadTemplate(customTemplate);
+    setShowTemplatePicker(false);
     setActiveTab('editor');
     showSuccess(`✨ ${customTemplate.businessName} - Ready to customize!`);
+  };
+
+  const handleShowTemplatePicker = () => {
+    setShowTemplatePicker(true);
+    setActiveTab('templates');
   };
 
   const handleCustomBuilderCancel = () => {
@@ -209,7 +223,7 @@ function Setup() {
         <div className="mobile-tabs">
           <button
             className={`mobile-tab ${activeTab === 'templates' ? 'active' : ''}`}
-            onClick={() => setActiveTab('templates')}
+            onClick={handleShowTemplatePicker}
           >
             🎨 Templates
           </button>
@@ -230,9 +244,11 @@ function Setup() {
         </div>
 
         {/* Desktop three-column layout */}
-        <div className="setup-panels">
+        <div className={`setup-panels ${twoColumnLayout ? 'setup-panels--two-col' : ''}`}>
           {/* Templates Panel */}
-          <div className={`setup-panel templates-panel ${activeTab === 'templates' ? 'active' : ''}`}>
+          <div
+            className={`setup-panel templates-panel ${activeTab === 'templates' ? 'active' : ''} ${!templatesPanelVisible ? 'templates-panel--hidden' : ''}`}
+          >
             <div className="panel-header">
               <h2>🎨 Choose Your Template</h2>
             </div>
@@ -266,6 +282,16 @@ function Setup() {
           >
             <div className="panel-header">
               <h2>✏️ Customize Your Content</h2>
+              {siteData.template && (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm change-template-button"
+                  data-testid="change-template-button"
+                  onClick={handleShowTemplatePicker}
+                >
+                  Change template
+                </button>
+              )}
             </div>
             <div className="panel-content">
               {siteData.template ? (
