@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   STRIPE_TRIAL_DAYS,
+  CLAIM_PLAN,
   PLATFORM_PLAN_DETAILS,
   LABOR_SKUS,
   normalizePaidPlan,
@@ -11,6 +12,7 @@ import {
 describe('platformPlans', () => {
   it('keeps monthly amounts at $10 and $35', () => {
     expect(STRIPE_TRIAL_DAYS).toBe(7);
+    expect(CLAIM_PLAN).toBe('growth');
     expect(PLATFORM_PLAN_DETAILS.starter.amount).toBe(1000);
     expect(PLATFORM_PLAN_DETAILS.growth.amount).toBe(3500);
   });

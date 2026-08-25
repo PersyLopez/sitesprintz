@@ -14,9 +14,13 @@ function authHeaders(token) {
   };
 }
 
-function hasActiveSubscription(user) {
+function hasGrowthClaimSubscription(user) {
   const status = user?.subscriptionStatus || user?.subscription_status;
-  return status === 'trialing' || status === 'active';
+  if (status !== 'trialing' && status !== 'active') {
+    return false;
+  }
+  const plan = user?.subscriptionPlan || user?.subscription_plan || user?.plan;
+  return plan === 'growth' || plan === 'pro' || plan === 'premium';
 }
 
 function ClaimSite() {
@@ -30,15 +34,14 @@ function ClaimSite() {
   const [completingTrial, setCompletingTrial] = useState(false);
   const [preview, setPreview] = useState(null);
   const [error, setError] = useState(null);
-  const [selectedPlan, setSelectedPlan] = useState('growth');
   const [subscriptionReady, setSubscriptionReady] = useState(false);
   const [needsTrial, setNeedsTrial] = useState(false);
 
   const claimPath = `/claim/${token}`;
   const loginTo = `/login?redirect=${encodeURIComponent(claimPath)}`;
-  const registerTo = `/register?redirect=${encodeURIComponent(claimPath)}`;
+  const registerTo = `/register?plan=growth&redirect=${encodeURIComponent(claimPath)}`;
   const subscribed =
-    subscriptionReady || (isAuthenticated && hasActiveSubscription(user));
+    subscriptionReady || (isAuthenticated && hasGrowthClaimSubscription(user));
 
   useEffect(() => {
     let cancelled = false;
@@ -116,6 +119,9 @@ function ClaimSite() {
                   ...prev,
                   subscriptionStatus: data.subscriptionStatus,
                   subscription_status: data.subscriptionStatus,
+                  plan: 'growth',
+                  subscriptionPlan: 'growth',
+                  subscription_plan: 'growth',
                 }
               : prev
           );
@@ -146,7 +152,7 @@ function ClaimSite() {
       const response = await fetch(`/api/claim/${token}/trial-checkout`, {
         method: 'POST',
         headers: authHeaders(authToken),
-        body: JSON.stringify({ plan: selectedPlan }),
+          body: JSON.stringify({ plan: 'growth' }),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
@@ -175,10 +181,13 @@ function ClaimSite() {
         headers: authHeaders(authToken),
       });
       const data = await response.json().catch(() => ({}));
-      if (response.status === 403 && data.code === 'SUBSCRIPTION_REQUIRED') {
+      if (
+        response.status === 403 &&
+        (data.code === 'SUBSCRIPTION_REQUIRED' || data.code === 'GROWTH_REQUIRED')
+      ) {
         setNeedsTrial(true);
         setSubscriptionReady(false);
-        throw new Error(data.error || 'Start a 7-day trial before claiming this site');
+        throw new Error(data.error || 'Start a 7-day Growth trial before claiming this site');
       }
       if (!response.ok) {
         throw new Error(data.error || 'Failed to claim site');
@@ -217,7 +226,10 @@ function ClaimSite() {
 
               {!isAuthenticated ? (
                 <div>
-                  <p>Register or log in to continue. You will return to this page.</p>
+                  <p>
+                    Register or log in to continue. This site is on Growth ($35/month hosting after
+                    a 7-day trial). Brochure Starter sites are self-serve.
+                  </p>
                   <div className="auth-links" style={{ marginTop: '20px' }}>
                     <Link to={registerTo} className="btn btn-primary btn-full" data-testid="claim-register">
                       Create account
@@ -235,34 +247,12 @@ function ClaimSite() {
               ) : showTrialFlow ? (
                 <div>
                   <p>
-                    Signed in as <strong>{user?.email}</strong>. Add a card to start your 7-day
-                    trial, then this site moves to your account.
+                    Signed in as <strong>{user?.email}</strong>. Add a card to start a 7-day Growth
+                    trial ($35/month hosting after trial). Booking and checkout stay on this site.
                   </p>
-                  <fieldset style={{ marginTop: '20px', border: 'none', padding: 0 }}>
-                    <legend className="sr-only">Choose a plan</legend>
-                    <label style={{ display: 'block', marginBottom: '10px' }}>
-                      <input
-                        type="radio"
-                        name="claim-plan"
-                        value="starter"
-                        checked={selectedPlan === 'starter'}
-                        onChange={() => setSelectedPlan('starter')}
-                        data-testid="claim-plan-starter"
-                      />{' '}
-                      Starter — $10/month hosting & monitoring after trial
-                    </label>
-                    <label style={{ display: 'block', marginBottom: '10px' }}>
-                      <input
-                        type="radio"
-                        name="claim-plan"
-                        value="growth"
-                        checked={selectedPlan === 'growth'}
-                        onChange={() => setSelectedPlan('growth')}
-                        data-testid="claim-plan-growth"
-                      />{' '}
-                      Growth — $35/month hosting & monitoring after trial
-                    </label>
-                  </fieldset>
+                  <p data-testid="claim-plan-growth" style={{ marginTop: '16px' }}>
+                    Growth — $35/month hosting & monitoring after trial
+                  </p>
                   <button
                     type="button"
                     className="btn btn-primary btn-full"

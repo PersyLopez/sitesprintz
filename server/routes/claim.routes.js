@@ -9,12 +9,13 @@ import {
   isClaimTokenShape,
 } from '../services/claimTokenService.js';
 import {
-  completeClaimTrialCheckout,
-  createClaimTrialCheckout,
-  isSubscribedStatus,
-  normalizeClaimPlan,
-  validateClaimOwnership,
-} from '../services/claimTrialService.js';
+    completeClaimTrialCheckout,
+    createClaimTrialCheckout,
+    hasClaimableGrowthSubscription,
+    isSubscribedStatus,
+    normalizeClaimPlan,
+    validateClaimOwnership,
+  } from '../services/claimTrialService.js';
 
 const router = express.Router();
 
@@ -84,11 +85,13 @@ router.post('/:token/trial-checkout', claimAcceptLimiter, requireAuth, async (re
 
     const plan = normalizeClaimPlan(req.body?.plan);
     if (!plan) {
-      return res.status(400).json({ error: 'Invalid plan. Must be "starter" or "growth"' });
+      return res.status(400).json({
+        error: 'Claimable sites are Growth only',
+        code: 'INVALID_PLAN',
+      });
     }
 
-    const status = claimant.subscriptionStatus || claimant.subscription_status;
-    if (isSubscribedStatus(status)) {
+    if (hasClaimableGrowthSubscription(claimant)) {
       return res.json({ alreadySubscribed: true });
     }
 
@@ -151,7 +154,8 @@ router.post('/:token/trial-complete', requireAuth, async (req, res) => {
       err.code === 'INVALID_SOURCE' ||
       err.code === 'SESSION_SITE_MISMATCH' ||
       err.code === 'MISSING_SUBSCRIPTION' ||
-      err.code === 'INVALID_SUBSCRIPTION_STATUS'
+      err.code === 'INVALID_SUBSCRIPTION_STATUS' ||
+      err.code === 'INVALID_PLAN'
     ) {
       return res.status(400).json({ error: err.message, code: err.code });
     }
@@ -179,11 +183,13 @@ router.post('/:token/accept', claimAcceptLimiter, requireAuth, async (req, res) 
       return res.status(ownershipError.status).json(ownershipError.body);
     }
 
-    const status = claimant.subscriptionStatus || claimant.subscription_status;
-    if (!isSubscribedStatus(status)) {
+    if (!hasClaimableGrowthSubscription(claimant)) {
+      const status = claimant.subscriptionStatus || claimant.subscription_status;
       return res.status(403).json({
-        error: 'Start a 7-day trial before claiming this site',
-        code: 'SUBSCRIPTION_REQUIRED',
+        error: isSubscribedStatus(status)
+          ? 'This site is on Growth. Start a Growth trial to claim it'
+          : 'Start a 7-day Growth trial before claiming this site',
+        code: isSubscribedStatus(status) ? 'GROWTH_REQUIRED' : 'SUBSCRIPTION_REQUIRED',
       });
     }
 

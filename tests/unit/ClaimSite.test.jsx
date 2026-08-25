@@ -68,7 +68,10 @@ describe('ClaimSite', () => {
     await waitFor(() => {
       expect(screen.getByText('This site was prepared for you')).toBeInTheDocument();
     });
-    expect(screen.getByTestId('claim-register')).toBeInTheDocument();
+    expect(screen.getByTestId('claim-register')).toHaveAttribute(
+      'href',
+      expect.stringContaining('plan=growth')
+    );
     expect(screen.getByTestId('claim-login')).toBeInTheDocument();
     expect(screen.queryByTestId('claim-accept')).not.toBeInTheDocument();
     expect(screen.queryByTestId('claim-start-trial')).not.toBeInTheDocument();
@@ -87,8 +90,8 @@ describe('ClaimSite', () => {
     await waitFor(() => {
       expect(screen.getByTestId('claim-start-trial')).toBeInTheDocument();
     });
-    expect(screen.getByTestId('claim-plan-starter')).toBeInTheDocument();
     expect(screen.getByTestId('claim-plan-growth')).toBeInTheDocument();
+    expect(screen.queryByTestId('claim-plan-starter')).not.toBeInTheDocument();
     expect(screen.getByText(/add a card/i)).toBeInTheDocument();
     expect(screen.getByTestId('labor-extras')).toHaveTextContent(/no setup fee/i);
     expect(screen.queryByTestId('claim-accept')).not.toBeInTheDocument();
@@ -101,6 +104,8 @@ describe('ClaimSite', () => {
         email: 'owner@example.com',
         role: 'user',
         subscription_status: 'trialing',
+        plan: 'growth',
+        subscription_plan: 'growth',
       },
       token: 'fake-token',
       isAuthenticated: true,
@@ -142,5 +147,31 @@ describe('ClaimSite', () => {
     await waitFor(() => {
       expect(assignMock).toHaveBeenCalledWith('https://checkout.stripe.com/session');
     });
+    const checkoutCall = global.fetch.mock.calls.find(([url]) =>
+      String(url).includes('/trial-checkout')
+    );
+    expect(JSON.parse(checkoutCall[1].body)).toEqual({ plan: 'growth' });
+  });
+
+  it('keeps Starter subscribers on the Growth trial step', async () => {
+    useAuth.mockReturnValue({
+      user: {
+        id: 'user-1',
+        email: 'owner@example.com',
+        role: 'user',
+        subscription_status: 'trialing',
+        subscription_plan: 'starter',
+      },
+      token: 'fake-token',
+      isAuthenticated: true,
+      setUser: vi.fn(),
+    });
+
+    renderClaim();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('claim-start-trial')).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId('claim-accept')).not.toBeInTheDocument();
   });
 });

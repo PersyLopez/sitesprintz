@@ -2,13 +2,32 @@ import Stripe from 'stripe';
 import { prisma } from '../../database/db.js';
 import { getFrontendOrigin } from './payments/processorConnectHelpers.js';
 import {
+  CLAIM_PLAN,
   STRIPE_TRIAL_DAYS,
   normalizePaidPlan,
   stripeSubscriptionLineItem,
 } from '../config/platformPlans.js';
 
+export { CLAIM_PLAN };
+
+/**
+ * Claim Checkout is Growth only. Empty body defaults to Growth; Starter is rejected.
+ * @param {string} [rawPlan]
+ * @returns {'growth'|null}
+ */
 export function normalizeClaimPlan(rawPlan) {
-  return normalizePaidPlan(rawPlan);
+  const plan =
+    rawPlan == null || rawPlan === '' ? CLAIM_PLAN : normalizePaidPlan(rawPlan);
+  return plan === CLAIM_PLAN ? CLAIM_PLAN : null;
+}
+
+export function hasClaimableGrowthSubscription(user) {
+  const status = user?.subscriptionStatus || user?.subscription_status;
+  if (!isSubscribedStatus(status)) {
+    return false;
+  }
+  const raw = user?.subscriptionPlan || user?.subscription_plan || user?.plan;
+  return normalizePaidPlan(raw) === CLAIM_PLAN;
 }
 
 export function isSubscribedStatus(status) {
@@ -75,20 +94,27 @@ export async function createClaimTrialCheckout({
     error.code = 'STRIPE_NOT_CONFIGURED';
     throw error;
   }
+  if (plan && plan !== CLAIM_PLAN) {
+    const error = new Error('Claim trial must be Growth');
+    error.code = 'INVALID_PLAN';
+    throw error;
+  }
 
   const origin = getFrontendOrigin(req);
   const customer = await getOrCreateStripeCustomer(stripe, user.email, user.id);
+
+  const claimPlan = CLAIM_PLAN;
 
   const session = await stripe.checkout.sessions.create({
     customer: customer.id,
     mode: 'subscription',
     payment_method_collection: 'always',
     payment_method_types: ['card'],
-    line_items: [stripeSubscriptionLineItem(plan)],
+    line_items: [stripeSubscriptionLineItem(claimPlan)],
     subscription_data: {
       trial_period_days: STRIPE_TRIAL_DAYS,
       metadata: {
-        plan,
+        plan: claimPlan,
         userId: user.id,
       },
     },
@@ -96,7 +122,7 @@ export async function createClaimTrialCheckout({
     cancel_url: `${origin}/claim/${claimToken}`,
     metadata: {
       userId: user.id,
-      plan,
+      plan: claimPlan,
       siteId: site.id,
       source: 'claim_trial',
     },
@@ -158,7 +184,12 @@ export async function completeClaimTrialCheckout({
     throw error;
   }
 
-  const plan = normalizeClaimPlan(metadata.plan) || metadata.plan;
+  const plan = normalizeClaimPlan(metadata.plan);
+  if (!plan) {
+    const error = new Error('Claim trial must be Growth');
+    error.code = 'INVALID_PLAN';
+    throw error;
+  }
   const customerId =
     typeof session.customer === 'string' ? session.customer : session.customer?.id;
 

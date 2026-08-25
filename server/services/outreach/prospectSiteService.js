@@ -138,7 +138,7 @@ async function persistNewSite({ adminUserId, candidate, siteData }) {
           subdomain,
           template_id: nicheId,
           status: 'published',
-          plan: 'trial',
+          plan: 'growth',
           published_at: new Date(),
           is_public: true,
           site_data: sanitized,

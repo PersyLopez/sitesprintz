@@ -12,6 +12,9 @@
 
 export const STRIPE_TRIAL_DAYS = 7;
 
+/** Targeted claimables always check out on Growth. Starter is self-serve only. */
+export const CLAIM_PLAN = 'growth';
+
 export const PLATFORM_PLAN_DETAILS = {
   starter: {
     id: 'starter',

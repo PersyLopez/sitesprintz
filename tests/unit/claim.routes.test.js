@@ -60,7 +60,7 @@ const claimant = {
   status: 'active',
   email_verified: true,
   subscription_status: 'trialing',
-  subscription_plan: 'starter',
+  subscription_plan: 'growth',
 };
 
 const prospectSite = {
@@ -196,11 +196,70 @@ describe('claim routes', () => {
     const response = await request(createApp())
       .post(`/api/claim/${CLAIM_TOKEN}/trial-checkout`)
       .set('Authorization', `Bearer ${signToken({ userId: 'user-1' })}`)
-      .send({ plan: 'starter' });
+      .send({ plan: 'growth' });
 
     expect(response.status).toBe(200);
     expect(response.body.url).toBe('https://checkout.stripe.com/test');
     expect(createClaimTrialCheckout).toHaveBeenCalled();
+  });
+
+  it('rejects Starter on claim trial-checkout', async () => {
+    prisma.sites.findUnique.mockResolvedValue({ ...prospectSite });
+    prisma.users.findUnique.mockImplementation(({ where }) => {
+      if (where.id === 'user-1') {
+        return Promise.resolve({ ...claimant, subscription_status: 'inactive' });
+      }
+      if (where.id === 'admin-1') return Promise.resolve({ id: 'admin-1', role: 'admin' });
+      return Promise.resolve(null);
+    });
+
+    const response = await request(createApp())
+      .post(`/api/claim/${CLAIM_TOKEN}/trial-checkout`)
+      .set('Authorization', `Bearer ${signToken({ userId: 'user-1' })}`)
+      .send({ plan: 'starter' });
+
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe('INVALID_PLAN');
+    expect(createClaimTrialCheckout).not.toHaveBeenCalled();
+  });
+
+  it('does not treat a Starter subscriber as already claimed-ready', async () => {
+    prisma.sites.findUnique.mockResolvedValue({ ...prospectSite });
+    prisma.users.findUnique.mockImplementation(({ where }) => {
+      if (where.id === 'user-1') {
+        return Promise.resolve({ ...claimant, subscription_plan: 'starter' });
+      }
+      if (where.id === 'admin-1') return Promise.resolve({ id: 'admin-1', role: 'admin' });
+      return Promise.resolve(null);
+    });
+
+    const response = await request(createApp())
+      .post(`/api/claim/${CLAIM_TOKEN}/trial-checkout`)
+      .set('Authorization', `Bearer ${signToken({ userId: 'user-1' })}`)
+      .send({ plan: 'growth' });
+
+    expect(response.status).toBe(200);
+    expect(response.body.url).toBe('https://checkout.stripe.com/test');
+    expect(createClaimTrialCheckout).toHaveBeenCalled();
+  });
+
+  it('rejects accept when the subscriber is on Starter', async () => {
+    prisma.sites.findUnique.mockResolvedValue({ ...prospectSite });
+    prisma.users.findUnique.mockImplementation(({ where }) => {
+      if (where.id === 'user-1') {
+        return Promise.resolve({ ...claimant, subscription_plan: 'starter' });
+      }
+      if (where.id === 'admin-1') return Promise.resolve({ id: 'admin-1', role: 'admin' });
+      return Promise.resolve(null);
+    });
+
+    const response = await request(createApp())
+      .post(`/api/claim/${CLAIM_TOKEN}/accept`)
+      .set('Authorization', `Bearer ${signToken({ userId: 'user-1' })}`);
+
+    expect(response.status).toBe(403);
+    expect(response.body.code).toBe('GROWTH_REQUIRED');
+    expect(prisma.sites.update).not.toHaveBeenCalled();
   });
 
   it('trial-complete syncs subscription for authenticated user', async () => {

@@ -26,6 +26,7 @@ import { prisma } from '../../database/db.js';
 import {
   createClaimTrialCheckout,
   completeClaimTrialCheckout,
+  hasClaimableGrowthSubscription,
   isSubscribedStatus,
   normalizeClaimPlan,
 } from '../../server/services/claimTrialService.js';
@@ -45,10 +46,11 @@ describe('claimTrialService', () => {
     prisma.users.update.mockResolvedValue({});
   });
 
-  it('normalizes pro/premium to growth', () => {
+  it('normalizes claim plans to Growth only', () => {
     expect(normalizeClaimPlan('pro')).toBe('growth');
     expect(normalizeClaimPlan('premium')).toBe('growth');
-    expect(normalizeClaimPlan('starter')).toBe('starter');
+    expect(normalizeClaimPlan(undefined)).toBe('growth');
+    expect(normalizeClaimPlan('starter')).toBeNull();
     expect(normalizeClaimPlan('invalid')).toBeNull();
   });
 
@@ -56,6 +58,21 @@ describe('claimTrialService', () => {
     expect(isSubscribedStatus('trialing')).toBe(true);
     expect(isSubscribedStatus('active')).toBe(true);
     expect(isSubscribedStatus('canceled')).toBe(false);
+  });
+
+  it('only treats Growth as claim-ready', () => {
+    expect(
+      hasClaimableGrowthSubscription({
+        subscription_status: 'trialing',
+        subscription_plan: 'growth',
+      })
+    ).toBe(true);
+    expect(
+      hasClaimableGrowthSubscription({
+        subscriptionStatus: 'active',
+        subscriptionPlan: 'starter',
+      })
+    ).toBe(false);
   });
 
   it('creates checkout session with 7-day trial and required metadata', async () => {
@@ -123,7 +140,7 @@ describe('claimTrialService', () => {
       customer: 'cus_123',
       metadata: {
         userId: 'user-1',
-        plan: 'starter',
+        plan: 'growth',
         siteId: 'site-1',
         source: 'claim_trial',
       },
@@ -147,9 +164,37 @@ describe('claimTrialService', () => {
       data: expect.objectContaining({
         stripe_subscription_id: 'sub_123',
         subscription_status: 'trialing',
-        plan: 'starter',
-        subscription_plan: 'starter',
+        plan: 'growth',
+        subscription_plan: 'growth',
       }),
     });
+  });
+
+  it('rejects trial-complete metadata that is not Growth', async () => {
+    mockStripe.checkout.sessions.retrieve.mockResolvedValue({
+      status: 'complete',
+      customer: 'cus_123',
+      metadata: {
+        userId: 'user-1',
+        plan: 'starter',
+        siteId: 'site-1',
+        source: 'claim_trial',
+      },
+      subscription: {
+        id: 'sub_123',
+        status: 'trialing',
+        current_period_end: 1_700_000_000,
+      },
+    });
+
+    await expect(
+      completeClaimTrialCheckout({
+        user: { id: 'user-1' },
+        site: { id: 'site-1' },
+        sessionId: 'cs_123',
+        stripe: mockStripe,
+      })
+    ).rejects.toMatchObject({ code: 'INVALID_PLAN' });
+    expect(prisma.users.update).not.toHaveBeenCalled();
   });
 });

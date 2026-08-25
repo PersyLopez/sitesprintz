@@ -12,7 +12,7 @@ Tiers: trial → Starter ($10) → Growth ($35). Gating: `src/config/tiers.js` +
 
 | If this is… | Then… |
 |-------------|--------|
-| A real business (URLs, photos, Acuity, Instagram) | Claimable prospect. Intake first. This standard **plus** the claimable workflow. |
+| A real business (URLs, photos, Acuity, Instagram) | Claimable prospect on **Growth**. Intake first. This standard **plus** the claimable workflow. Do not seed Starter/flyer claimables — those are self-serve. |
 | An owner filling the wizard | Customer site. Map their answers onto the template. Do not leave gallery leftovers. |
 | A gallery / example (`gallery@`) | Demo. Example staff and photos are allowed **only** here. `demoMode` stays off on customer sites. |
 
@@ -47,7 +47,7 @@ Automatic functional fails: widget missing/empty/error, broken images, dead cont
 
 ## Fill the template — do not fight it
 
-1. Pick the **named** template for the niche and plan (Growth salon, Starter plumber, etc.).
+1. Pick the **named** template for the niche and plan. Targeted claimables are **Growth** only (Starter flyers are self-serve).
 2. Map every known fact onto an **existing** field (`public/data/section-registry.json` + that template’s JSON). Do not add a one-off section type to finish one site.
 3. Rebuild **nav** to the sections that remain. Remove hrefs to stripped sections.
 4. Strip every gallery leftover that is not a found fact.
