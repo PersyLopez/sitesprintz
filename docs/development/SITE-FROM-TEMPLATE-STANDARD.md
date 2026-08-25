@@ -4,7 +4,7 @@ Use this whenever a **live site** is created from a named template (wizard, agen
 
 Claimable sites from real sources also follow [`.agent/workflows/claimable_prospect.md`](../../.agent/workflows/claimable_prospect.md). This file is the quality floor for every customer site.
 
-Tiers: trial → Starter ($10) → Growth ($35). Gating: `src/config/tiers.js` + `src/utils/planFeatures.js`.
+Tiers: trial → Starter ($10) → Growth ($35) → Growth Managed ($75). Gating: `src/config/tiers.js` + `src/utils/planFeatures.js`.
 
 ---
 
@@ -12,7 +12,7 @@ Tiers: trial → Starter ($10) → Growth ($35). Gating: `src/config/tiers.js` +
 
 | If this is… | Then… |
 |-------------|--------|
-| A real business (URLs, photos, Acuity, Instagram) | Claimable prospect on **Growth**. Intake first. This standard **plus** the claimable workflow. Do not seed Starter/flyer claimables — those are self-serve. |
+| A real business (URLs, photos, Acuity, Instagram) | Claimable prospect on **Growth** software. Intake first. Claim = hosting trial (Growth $35 DIY or Growth Managed $75). No setup fee. This standard **plus** the claimable workflow. Do not seed Starter/flyer claimables — those are self-serve. |
 | An owner filling the wizard | Customer site. Map their answers onto the template. Do not leave gallery leftovers. |
 | A gallery / example (`gallery@`) | Demo. Example staff and photos are allowed **only** here. `demoMode` stays off on customer sites. |
 
@@ -47,7 +47,7 @@ Automatic functional fails: widget missing/empty/error, broken images, dead cont
 
 ## Fill the template — do not fight it
 
-1. Pick the **named** template for the niche and plan. Targeted claimables are **Growth** only (Starter flyers are self-serve).
+1. Pick the **named** template for the niche and plan. Targeted claimables are **Growth** software only (Starter flyers are self-serve). Claim hosting is Growth $35 or Growth Managed $75.
 2. Map every known fact onto an **existing** field (`public/data/section-registry.json` + that template’s JSON). Do not add a one-off section type to finish one site.
 3. Rebuild **nav** to the sections that remain. Remove hrefs to stripped sections.
 4. Strip every gallery leftover that is not a found fact.

@@ -20,7 +20,7 @@ export function sanitizeLaborTopic(topic) {
 }
 
 export function laborDisplayVars(labor = PRICING_CONFIG.labor) {
-  const care = Number(labor?.managedCare?.price ?? PRICING_CONFIG.tiers?.growth_managed?.price);
+  const care = Number(PRICING_CONFIG.tiers?.growth_managed?.price);
   const extra = Number(labor?.extraBatch?.price);
   const brand = Number(labor?.brandMatch?.price);
   const look = Number(labor?.uniqueLook?.price);

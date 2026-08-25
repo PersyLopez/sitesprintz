@@ -6,6 +6,7 @@ import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { PasswordStrengthMeter } from '../components/auth/PasswordStrengthMeter';
 import { getSafeRedirect } from '../utils/safeRedirect';
+import { paidPlanFromQuery } from '../config/tiers.js';
 import { useLocale } from '../i18n/LocaleContext.jsx';
 import './Auth.css';
 
@@ -183,10 +184,13 @@ function Register() {
 
       const redirectTo = getSafeRedirect(searchParams.get('redirect'));
       const template = searchParams.get('template');
+      const plan = paidPlanFromQuery(searchParams.get('plan'));
       if (redirectTo) {
         navigate(redirectTo);
       } else if (template) {
         navigate(`/setup?template=${template}`);
+      } else if (plan) {
+        navigate(`/settings/billing?plan=${plan}`);
       } else {
         navigate('/dashboard');
       }

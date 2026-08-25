@@ -3,6 +3,7 @@
  */
 
 import { FEATURES } from '../utils/planFeatures.js';
+import { TIERS, TIER_INFO } from './tiers.js';
 import {
   SERVICE_RADIUS_MILES,
   SERVICE_AREA_LABEL_MAX,
@@ -18,6 +19,8 @@ const HTTPS_URL = /^https:\/\/.+/i;
 const EMAIL_PATTERN = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
 
 export const BUILD_INTAKE_FORM_TYPE = 'build_intake';
+export const BUILD_INTAKE_PLAN = TIERS.GROWTH_MANAGED;
+export const BUILD_INTAKE_PLAN_PRICE = TIER_INFO[TIERS.GROWTH_MANAGED].price;
 
 export const OPERATING_MODELS = Object.freeze(['solo', 'team']);
 export const FULFILLMENT_MODES = Object.freeze(['pickup', 'shipping', 'both']);
@@ -129,6 +132,13 @@ export function sanitizeBuildIntake(body) {
   if (!businessName) {
     return { ok: false, error: 'Business name is required', code: 'MISSING_BUSINESS_NAME' };
   }
+  if (!sanitizeBoolean(body.acceptedManagedPlan)) {
+    return {
+      ok: false,
+      error: 'Growth Managed at $75/month must be accepted',
+      code: 'MISSING_PLAN_ACK',
+    };
+  }
 
   const features = sanitizeFeatures(body);
   const byAppointment = sanitizeBoolean(body.byAppointment);
@@ -176,6 +186,9 @@ export function sanitizeBuildIntake(body) {
     brandFileUrl: sanitizeHttpsUrl(body.brandFileUrl),
     referenceUrls: sanitizeText(body.referenceUrls, MAX_MEDIUM),
     vibeSentence: sanitizeText(body.vibeSentence, MAX_SHORT),
+    plan: BUILD_INTAKE_PLAN,
+    planPriceMonthly: BUILD_INTAKE_PLAN_PRICE,
+    acceptedManagedPlan: true,
     submittedAt: new Date().toISOString(),
   };
 

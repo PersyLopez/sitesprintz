@@ -98,6 +98,19 @@ describe('createSubscriptionCheckout metadata', () => {
     delete process.env.STRIPE_PRICE_STARTER;
   });
 
+  it('checks out Growth Managed at $75 when Price ID is unset', async () => {
+    delete process.env.STRIPE_PRICE_GROWTH_MANAGED;
+
+    const response = await request(app)
+      .post('/api/payments/create-subscription-checkout')
+      .send({ plan: 'growth_managed' });
+
+    expect(response.status).toBe(200);
+    const [sessionOptions] = mockSessionsCreate.mock.calls[0];
+    expect(sessionOptions.subscription_data.metadata.plan).toBe('growth_managed');
+    expect(sessionOptions.line_items[0].price_data.unit_amount).toBe(7500);
+  });
+
   it('returns 409 when user already has active subscription', async () => {
     mockUsersFindUnique.mockResolvedValue({
       stripe_customer_id: 'cus_existing',

@@ -13,12 +13,14 @@ steps:
       await page.waitForTimeout(400);
     settle_ms: 500
 
-  - action: Two-plan pricing present
+  - action: Three-plan pricing present
     expect:
       - text contains Starter
       - text contains Growth
+      - text contains Growth Managed
       - text contains $10
       - text contains $35
+      - text contains $75
 
   - action: Pro not sold as a card
     code: |

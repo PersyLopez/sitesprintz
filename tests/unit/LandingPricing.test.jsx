@@ -4,6 +4,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import Landing from '../../src/pages/Landing';
 import { AuthContext } from '../../src/context/AuthContext';
@@ -135,5 +136,12 @@ describe('Landing Page - Pricing', () => {
     expect(screen.getByTestId('pricing-cta-starter')).toHaveAttribute('href', '/settings/billing?plan=starter');
     expect(screen.getByTestId('pricing-cta-growth')).toHaveAttribute('href', '/settings/billing?plan=growth');
     expect(screen.getByTestId('pricing-cta-growth_managed')).toHaveAttribute('href', '/settings/billing?plan=growth_managed');
+  });
+
+  it('does not send authenticated users to setup from a plan card', async () => {
+    const user = userEvent.setup();
+    renderLanding({ isAuthenticated: true });
+    await user.click(screen.getByTestId('pricing-cta-growth_managed'));
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 });

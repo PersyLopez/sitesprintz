@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { BrowserRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import Register from '../../src/pages/Register';
 import { AuthContext } from '../../src/context/AuthContext';
 import { ToastContext } from '../../src/context/ToastContext';
@@ -23,9 +23,9 @@ describe('Register Component', () => {
   const mockShowSuccess = vi.fn();
   const mockShowError = vi.fn();
 
-  const renderRegister = () => {
+  const renderRegister = (initialEntry = '/register') => {
     return render(
-      <BrowserRouter>
+      <MemoryRouter initialEntries={[initialEntry]}>
         <AuthContext.Provider value={{
           register: mockRegister,
           loading: false,
@@ -39,7 +39,7 @@ describe('Register Component', () => {
             <Register />
           </ToastContext.Provider>
         </AuthContext.Provider>
-      </BrowserRouter>
+      </MemoryRouter>
     );
   };
 
@@ -129,6 +129,23 @@ describe('Register Component', () => {
       expect(mockRegister).toHaveBeenCalledWith('test@example.com', VALID_PASSWORD, null, true);
       expect(mockShowSuccess).toHaveBeenCalledWith('Account created successfully!');
       expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
+    });
+  });
+
+  it('sends Growth Managed signups to billing with that plan', async () => {
+    const user = userEvent.setup();
+    mockRegister.mockResolvedValueOnce({ user: { email: 'test@example.com' } });
+    renderRegister('/register?plan=growth_managed');
+
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com');
+    await user.type(screen.getByLabelText(/^password$/i), VALID_PASSWORD);
+    await user.type(screen.getByLabelText(/confirm password/i), VALID_PASSWORD);
+    await acceptTerms(user);
+
+    await user.click(screen.getByRole('button', { name: /create account/i }));
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/settings/billing?plan=growth_managed');
     });
   });
 

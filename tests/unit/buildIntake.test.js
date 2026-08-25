@@ -6,6 +6,7 @@ const basePayload = {
   contactEmail: 'jane@example.com',
   businessName: 'Jane Salon',
   website: '',
+  acceptedManagedPlan: true,
 };
 
 describe('sanitizeBuildIntake', () => {
@@ -14,6 +15,15 @@ describe('sanitizeBuildIntake', () => {
     expect(sanitizeBuildIntake({ ...basePayload, contactEmail: 'bad' }).ok).toBe(false);
     expect(sanitizeBuildIntake({ ...basePayload, businessName: '' }).ok).toBe(false);
     expect(sanitizeBuildIntake(basePayload).ok).toBe(true);
+  });
+
+  it('requires Growth Managed plan acknowledgement and stamps $75', () => {
+    expect(sanitizeBuildIntake({ ...basePayload, acceptedManagedPlan: false }).code).toBe('MISSING_PLAN_ACK');
+    const result = sanitizeBuildIntake({ ...basePayload, plan: 'starter' });
+    expect(result.ok).toBe(true);
+    expect(result.data.plan).toBe('growth_managed');
+    expect(result.data.planPriceMonthly).toBe(75);
+    expect(result.data.acceptedManagedPlan).toBe(true);
   });
 
   it('rejects honeypot when website field is filled', () => {

@@ -55,6 +55,19 @@ export function isTrialingStatus(status) {
 }
 
 /**
+ * Paid hosting plan from a query string (?plan=). Unknown values stay null.
+ * @param {string|undefined|null} raw
+ * @returns {'starter'|'growth'|'growth_managed'|null}
+ */
+export function paidPlanFromQuery(raw) {
+  const plan = normalizeTier(raw);
+  if (plan === TIERS.STARTER || plan === TIERS.GROWTH || plan === TIERS.GROWTH_MANAGED) {
+    return plan;
+  }
+  return null;
+}
+
+/**
  * Check if a tier has access to a feature required at a certain tier level
  * @param {string} userTier - User's subscription tier
  * @param {string} requiredTier - Minimum tier needed for feature
@@ -135,4 +148,5 @@ export default {
   normalizeTier,
   hasTierAccess,
   isTrialingStatus,
+  paidPlanFromQuery,
 };

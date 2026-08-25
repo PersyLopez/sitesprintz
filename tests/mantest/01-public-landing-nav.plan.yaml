@@ -11,6 +11,7 @@ steps:
       - text contains Three plans. Pick how you run it.
       - text contains Starter
       - text contains Growth
+      - text contains Growth Managed
 
   - action: Open Gallery from header
     click: { testId: nav-gallery }

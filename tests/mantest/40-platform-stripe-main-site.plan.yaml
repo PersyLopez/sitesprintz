@@ -12,6 +12,8 @@ steps:
     assert:
       - text contains Starter
       - text contains Growth
+      - text contains Growth Managed
+      - text contains $75
 
   - action: Pricing CTA goes to register
     click: { testId: nav-get-started }

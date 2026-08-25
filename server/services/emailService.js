@@ -581,7 +581,8 @@ export class EmailService {
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <p>Hi ${name},</p>
-          <p>Thanks — we received what you sent for your Growth site build. We only use the details you provided; anything you left blank stays blank on the site.</p>
+          <p>Thanks — we received your Growth Managed request ($75/month). The first month includes the initial fill. After that we apply two catalog batches a month. Booking and checkout are the same software as DIY Growth.</p>
+          <p>Brand match and Unique look are extra if you asked for them. We only use the details you provided; anything you left blank stays blank on the site.</p>
           <p>Send your own photos via Drive, Dropbox, or https links only. We do not invent hours, staff, or stock images.</p>
           <p>Your street stays private on the live site unless you asked us to publish it. If hidden, visitors see your service area and radius; customers get the exact address in booking or order confirmations.</p>
           <p>We will follow up from hello@sitesprintz.com. You can add more anytime at <a href="${siteUrl}/build">${siteUrl}/build</a>.</p>
@@ -665,9 +666,10 @@ export class EmailService {
     const missing = '<p>Anything left blank in the form was intentionally unknown — do not invent.</p>';
 
     return {
-      subject: `Build intake — ${esc(data.businessName)}`,
+      subject: `Growth Managed intake — ${esc(data.businessName)}`,
       html: `
         <div style="font-family: sans-serif; max-width: 640px; margin: 0 auto; padding: 20px;">
+          <p><strong>Plan:</strong> Growth Managed — $${esc(String(data.planPriceMonthly || 75))}/mo (first month includes the fill)</p>
           <p><strong>Submission:</strong> ${esc(String(data.submissionId || ''))}</p>
           <p><strong>Requested modules:</strong> ${esc(requested)}</p>
           <p><strong>Locale:</strong> ${esc(data.preferredLocale)}</p>

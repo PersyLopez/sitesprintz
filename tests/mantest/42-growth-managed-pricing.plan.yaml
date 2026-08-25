@@ -1,0 +1,65 @@
+url: http://localhost:5173/#pricing
+goal: Growth Managed is a flat $75 hosting plan — three cards, no $49 care add-on
+steps:
+  - action: Pricing heading and three cards
+    wait_for: { text: Three plans. Pick how you run it., timeout: 20000 }
+    settle_ms: 600
+    assert:
+      - text contains Starter
+      - text contains Growth Managed
+      - text contains $10
+      - text contains $35
+      - text contains $75
+      - text contains We take the list
+
+  - action: Three pricing cards and Managed CTA
+    code: |
+      const cards = page.locator('.pricing-card');
+      const n = await cards.count();
+      if (n !== 3) throw new Error('Expected 3 pricing cards, got ' + n);
+      const prices = await page.locator('.pricing-price').allTextContents();
+      const joined = prices.join(' | ');
+      if (!/\$10/.test(joined) || !/\$35/.test(joined) || !/\$75/.test(joined)) {
+        throw new Error('Missing $10/$35/$75 on cards: ' + joined);
+      }
+      const extras = page.getByTestId('labor-extras');
+      const extraText = await extras.innerText();
+      if (/\$49/.test(extraText)) throw new Error('Legacy $49 care still shown in extras');
+      if (!/Growth Managed/i.test(extraText)) throw new Error('Extras should mention Growth Managed');
+
+  - action: Growth Managed CTA goes to register with plan
+    click: { testId: pricing-cta-growth_managed }
+    settle_ms: 800
+    assert:
+      - url contains /register
+      - url contains plan=growth_managed
+
+  - action: Open build intake
+    goto: http://localhost:5173/build
+    wait_for: { text: Build my site for me, timeout: 15000 }
+    settle_ms: 400
+    assert:
+      - text contains $75
+      - text contains Growth Managed
+      - text contains first month includes the initial fill
+
+  - action: Build intake requires Growth Managed acknowledgement
+    code: |
+      const ack = page.getByTestId('build-plan-ack');
+      if (!(await ack.count())) throw new Error('Missing Growth Managed acknowledgement');
+      const submit = page.getByTestId('build-intake-submit');
+      if (!(await submit.isDisabled())) throw new Error('Submit should stay disabled until plan is accepted');
+      const diy = page.getByRole('link', { name: /edit it myself on Growth/i });
+      const href = await diy.getAttribute('href');
+      if (!href || !href.includes('plan=growth')) throw new Error('DIY Growth link missing: ' + href);
+
+  - action: Open contact
+    goto: http://localhost:5173/contact
+    wait_for: { text: hello@sitesprintz.com, timeout: 15000 }
+    settle_ms: 400
+
+  - action: Contact FAQ is Growth Managed not $49 care
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/\$75/.test(t)) throw new Error('Contact FAQ missing $75 Managed price');
+      if (/Managed care is \$49/i.test(t)) throw new Error('Contact still sells $49 managed care');

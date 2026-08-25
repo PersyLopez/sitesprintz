@@ -46,6 +46,7 @@ describe('POST /api/build-intake', () => {
         serviceRadiusMiles: 10,
         features: { booking: true },
         servicesText: 'Cut $40',
+        acceptedManagedPlan: true,
       });
 
     expect(response.status).toBe(201);
@@ -59,6 +60,8 @@ describe('POST /api/build-intake', () => {
             contactEmail: 'jane@example.com',
             locationPublic: false,
             serviceAreaLabel: 'Montclair, NJ',
+            plan: 'growth_managed',
+            planPriceMonthly: 75,
           }),
         }),
       }),
@@ -72,6 +75,21 @@ describe('POST /api/build-intake', () => {
     expect(sendEmailMock.mock.calls.some(([opts]) => opts.template === 'buildIntakeOps')).toBe(true);
   });
 
+  it('rejects missing Growth Managed acknowledgement', async () => {
+    const app = createApp();
+    const response = await request(app)
+      .post('/api/build-intake')
+      .send({
+        contactName: 'Jane',
+        contactEmail: 'jane@example.com',
+        businessName: 'Salon',
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe('MISSING_PLAN_ACK');
+    expect(prisma.submissions.create).not.toHaveBeenCalled();
+  });
+
   it('rejects missing business name', async () => {
     const app = createApp();
     const response = await request(app)
@@ -79,6 +97,7 @@ describe('POST /api/build-intake', () => {
       .send({
         contactName: 'Jane',
         contactEmail: 'jane@example.com',
+        acceptedManagedPlan: true,
       });
 
     expect(response.status).toBe(400);

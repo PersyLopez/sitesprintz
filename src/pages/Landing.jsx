@@ -392,7 +392,6 @@ export default function Landing() {
                 <Link
                   to={pricingCtaTo(plan.id)}
                   className={`pricing-btn ${plan.popular ? 'pricing-btn-primary' : 'pricing-btn-secondary'}`}
-                  onClick={handleGetStarted}
                   data-testid={`pricing-cta-${plan.id}`}
                 >
                   {ctaLabel}

@@ -1,9 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+import { Link } from 'react-router-dom';
 import { useLocale } from '../i18n/LocaleContext.jsx';
 import api from '../services/api';
 import { FEATURE_MODULE_KEYS, SERVICE_RADIUS_MILES } from '../config/buildIntake.js';
+import { laborDisplayVars } from '../utils/laborInquiryMailto';
 import './ContentPage.css';
 import './BuildIntake.css';
 
@@ -53,6 +55,8 @@ function BuildIntake() {
   const [features, setFeatures] = useState(() => (
     Object.fromEntries(FEATURE_MODULE_KEYS.map((key) => [key, false]))
   ));
+  const extras = laborDisplayVars() || { care: 75, extra: 39, brand: 99, look: 250, batches: 2 };
+  const [acceptedManagedPlan, setAcceptedManagedPlan] = useState(false);
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
 
@@ -177,6 +181,10 @@ function BuildIntake() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (!acceptedManagedPlan) {
+      setError(t('build.planAckRequired'));
+      return;
+    }
     setStatus('submitting');
     setError('');
     try {
@@ -185,10 +193,12 @@ function BuildIntake() {
         ...form,
         features,
         preferredLocale: locale === 'es' ? 'es' : 'en',
+        acceptedManagedPlan,
       });
       setStatus('success');
       setForm(INITIAL_FORM);
       setFeatures(Object.fromEntries(FEATURE_MODULE_KEYS.map((key) => [key, false])));
+      setAcceptedManagedPlan(false);
     } catch (err) {
       setStatus('error');
       setError(err.message || t('build.error'));
@@ -201,7 +211,15 @@ function BuildIntake() {
       <main className="page-content">
         <div className="content-container">
           <h1>{t('build.title')}</h1>
-          <p className="build-intake-intro">{t('build.intro')}</p>
+          <p className="build-intake-intro">{t('build.intro', extras)}</p>
+
+          <div className="build-intake-privacy-callout" data-testid="build-plan-callout">
+            <p><strong>{t('build.planCallout.title', extras)}</strong></p>
+            <p>{t('build.planCallout.body', extras)}</p>
+            <p>
+              <Link to="/register?plan=growth">{t('build.planCallout.diyLink')}</Link>
+            </p>
+          </div>
 
           <form className="build-intake-form" onSubmit={handleSubmit} data-testid="build-intake-form" noValidate>
             <div className="build-intake-honeypot" aria-hidden="true">
@@ -387,7 +405,7 @@ function BuildIntake() {
                         checked={features[key]}
                         onChange={() => toggleFeature(key)}
                       />
-                      <span>{t(`build.features.${key}`)}</span>
+                      <span>{t(`build.features.${key}`, extras)}</span>
                     </label>
                     {featurePanels[key]}
                   </div>
@@ -396,6 +414,17 @@ function BuildIntake() {
             </section>
 
             <div className="build-intake-actions">
+              <label className="build-intake-plan-ack" htmlFor="acceptedManagedPlan">
+                <input
+                  id="acceptedManagedPlan"
+                  type="checkbox"
+                  required
+                  checked={acceptedManagedPlan}
+                  onChange={(e) => setAcceptedManagedPlan(e.target.checked)}
+                  data-testid="build-plan-ack"
+                />
+                <span>{t('build.planAck', extras)}</span>
+              </label>
               {error && (
                 <div className="build-intake-message build-intake-message--error" role="alert">
                   {error}
@@ -409,7 +438,7 @@ function BuildIntake() {
               <button
                 type="submit"
                 className="btn-primary-large"
-                disabled={status === 'submitting'}
+                disabled={status === 'submitting' || !acceptedManagedPlan}
                 data-testid="build-intake-submit"
               >
                 {status === 'submitting' ? t('build.submitting') : t('build.submit')}

@@ -142,6 +142,20 @@
   margin: 0 0 0.5rem;
 }
 
+.build-intake-plan-ack {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  color: var(--sp-ink, #1c140f);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+
+.build-intake-plan-ack input {
+  margin-top: 0.2rem;
+}
+
 .build-intake-visibility {
   border: none;
   margin: 1rem 0 0;

@@ -1,5 +1,5 @@
 /**
- * Build-on-request intake (Growth targeted builds)
+ * Build-on-request intake (Growth Managed $75/mo — first month includes the fill)
  */
 
 import express from 'express';

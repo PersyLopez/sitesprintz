@@ -41,5 +41,9 @@ describe('laborInquiryMailto', () => {
       batches: 2,
     });
     expect(laborDisplayVars({ managedCare: { price: 'nope' } })).toBeNull();
+    expect(laborDisplayVars({
+      ...PRICING_CONFIG.labor,
+      managedCare: { ...PRICING_CONFIG.labor.managedCare, price: 49 },
+    }).care).toBe(75);
   });
 });

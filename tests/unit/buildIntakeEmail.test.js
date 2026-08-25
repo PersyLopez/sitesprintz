@@ -9,9 +9,21 @@ describe('build intake and labor purchase emails', () => {
     expect(rendered.html).toContain('/build');
   });
 
-  it('build intake customer email explains address privacy', () => {
+  it('build intake customer email explains Growth Managed and address privacy', () => {
     const rendered = emailService.renderBuildIntakeCustomerTemplate({ contactName: 'Jane' });
+    expect(rendered.html).toMatch(/Growth Managed/i);
+    expect(rendered.html).toMatch(/\$75/);
     expect(rendered.html).toMatch(/street stays private|service area/i);
     expect(rendered.html).toContain('/build');
+  });
+
+  it('build intake ops email names Growth Managed', () => {
+    const rendered = emailService.renderBuildIntakeOpsTemplate({
+      businessName: 'Jane Salon',
+      planPriceMonthly: 75,
+      features: {},
+    });
+    expect(rendered.subject).toMatch(/Growth Managed/);
+    expect(rendered.html).toMatch(/\$75\/mo/);
   });
 });
