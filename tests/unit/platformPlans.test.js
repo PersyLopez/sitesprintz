@@ -40,6 +40,7 @@ describe('platformPlans', () => {
     expect(stripeLaborLineItem('managed_edit', {
       STRIPE_PRICE_MANAGED_EDIT: 'price_edit_abc',
     })).toEqual({ price: 'price_edit_abc', quantity: 1 });
-    expect(LABOR_SKUS.claim_setup.metadataType).toBe('claim_setup');
+    expect(LABOR_SKUS.unique_look.envPriceKey).toBe('STRIPE_PRICE_UNIQUE_LOOK');
+    expect(LABOR_SKUS.managed_care.metadataType).toBe('managed_care');
   });
 });

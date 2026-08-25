@@ -8,6 +8,7 @@ import FoundationSettings from '../components/dashboard/FoundationSettings';
 import CustomDomainSettings from '../components/dashboard/CustomDomainSettings';
 import HelpPanel from '../components/common/HelpPanel';
 import FAQWidget from '../components/common/FAQWidget';
+import LaborExtrasNote from '../components/pricing/LaborExtrasNote';
 import './Settings.css';
 
 function BillingSection({ user, token }) {
@@ -137,6 +138,8 @@ function BillingSection({ user, token }) {
           </p>
         )}
       </div>
+
+      <LaborExtrasNote compact />
     </div>
   );
 }

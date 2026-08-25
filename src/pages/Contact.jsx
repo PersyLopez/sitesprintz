@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { useLocale } from '../i18n/LocaleContext.jsx';
+import { laborDisplayVars } from '../utils/laborInquiryMailto';
 import './ContentPage.css';
 
 function Contact() {
   const { t } = useLocale();
+  const laborVars = laborDisplayVars();
   return (
     <div className="content-page story-public">
       <Header />
@@ -58,6 +60,12 @@ function Contact() {
                 <h3>{t('contact.faq.3.q')}</h3>
                 <p>{t('contact.faq.3.a')}</p>
               </div>
+              {laborVars && (
+                <div className="faq-item">
+                  <h3>{t('contact.faq.4.q')}</h3>
+                  <p>{t('contact.faq.4.a', laborVars)}</p>
+                </div>
+              )}
             </div>
           </section>
 

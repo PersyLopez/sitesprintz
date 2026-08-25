@@ -349,6 +349,23 @@
   line-height: 1.5;
 }
 
+.theme-picker-extras {
+  margin: -8px 0 20px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #94a3b8;
+}
+
+.theme-picker-extras a {
+  font-weight: 600;
+  color: #5eead4;
+}
+
+.theme-picker-extras a:focus-visible {
+  outline: 2px solid #5eead4;
+  outline-offset: 2px;
+}
+
 .theme-card-desc {
   margin: 6px 0 0;
   font-size: 0.8rem;

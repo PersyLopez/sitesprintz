@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+import LaborExtrasNote from '../components/pricing/LaborExtrasNote';
 import './Auth.css';
 
 function authHeaders(token) {
@@ -293,6 +294,7 @@ function ClaimSite() {
               )}
             </>
           )}
+          {!loading && !error && <LaborExtrasNote compact />}
         </div>
       </main>
       <Footer />

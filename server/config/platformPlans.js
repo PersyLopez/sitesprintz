@@ -3,8 +3,7 @@
  * Monthly amounts match src/config/tiers.js TIER_INFO (cents).
  *
  * Monthly Starter/Growth is hosting + monitoring (software access still
- * gated by plan). Labor is separate one-time SKUs — create Dashboard
- * prices and set STRIPE_PRICE_CLAIM_SETUP / STRIPE_PRICE_MANAGED_EDIT.
+ * gated by plan). Labor SKUs use Dashboard Price IDs only — never client cents.
  *
  * Two clocks (do not conflate):
  * - STRIPE_TRIAL_DAYS: card-required Checkout trial
@@ -30,7 +29,7 @@ export const PLATFORM_PLAN_DETAILS = {
   },
 };
 
-/** One-time labor. Amounts live in Stripe Dashboard, not here. */
+/** Labor extras. Amounts are in src/config/pricing.config.js; Stripe Price IDs here. */
 export const LABOR_SKUS = {
   claim_setup: {
     id: 'claim_setup',
@@ -39,12 +38,33 @@ export const LABOR_SKUS = {
     envPriceKey: 'STRIPE_PRICE_CLAIM_SETUP',
     metadataType: 'claim_setup',
   },
+  managed_care: {
+    id: 'managed_care',
+    name: 'Managed care',
+    description: 'Monthly convenience batches if the owner skips the editor',
+    envPriceKey: 'STRIPE_PRICE_MANAGED_CARE',
+    metadataType: 'managed_care',
+  },
   managed_edit: {
     id: 'managed_edit',
-    name: 'Done-for-you site change',
-    description: 'One billed change when the owner does not edit the site themselves',
+    name: 'Extra catalog batch',
+    description: 'One extra product/service/price batch beyond monthly care',
     envPriceKey: 'STRIPE_PRICE_MANAGED_EDIT',
     metadataType: 'managed_edit',
+  },
+  brand_match: {
+    id: 'brand_match',
+    name: 'Brand match',
+    description: 'Logo and colors on a locked palette',
+    envPriceKey: 'STRIPE_PRICE_BRAND_MATCH',
+    metadataType: 'brand_match',
+  },
+  unique_look: {
+    id: 'unique_look',
+    name: 'Unique look',
+    description: 'Site-specific paper, type, and accent on this layout',
+    envPriceKey: 'STRIPE_PRICE_UNIQUE_LOOK',
+    metadataType: 'unique_look',
   },
 };
 

@@ -1,5 +1,8 @@
 import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useSite } from '../../../hooks/useSite';
+import { useLocale } from '../../../i18n/LocaleContext.jsx';
+import { laborDisplayVars } from '../../../utils/laborInquiryMailto';
 import {
   getRecommendedSiteThemes,
   getSiteTheme,
@@ -9,6 +12,8 @@ import {
 import './ThemePicker.css';
 
 function ThemePicker({ templateId }) {
+  const { t } = useLocale();
+  const extras = laborDisplayVars();
   const { siteData, updateField } = useSite();
   const niche = templateId || siteData._niche || siteData.template || siteData.templateId;
   const currentThemeId = siteData._themeId || siteData.colors?.themeId || DEFAULT_SITE_THEME_ID;
@@ -29,6 +34,13 @@ function ThemePicker({ templateId }) {
       <p className="theme-picker-lede">
         Six locked palettes. Contrast is already set — pick a look, not a hex code.
       </p>
+      {extras && (
+        <p className="theme-picker-extras">
+          {t('labor.extras.themeHint', extras)}
+          {' '}
+          <Link to="/#pricing-extras">{t('labor.extras.themeHintLink')}</Link>
+        </p>
+      )}
 
       <div className="theme-grid">
         {themes.map((theme) => (

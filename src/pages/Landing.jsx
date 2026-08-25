@@ -6,6 +6,7 @@ import LandingGallery from '../components/landing/LandingGallery';
 import HeroStoryVideo from '../components/landing/HeroStoryVideo';
 import { PRICING_CONFIG } from '../config/pricing.config';
 import { useLocale } from '../i18n/LocaleContext.jsx';
+import LaborExtrasNote from '../components/pricing/LaborExtrasNote';
 import './Landing.css';
 
 /**
@@ -403,6 +404,7 @@ export default function Landing() {
           <p className="pricing-trial-note">
             {t('landing.pricing.trial', { days: PRICING_CONFIG.trial.duration })}
           </p>
+          <LaborExtrasNote anchor />
         </div>
       </section>
 

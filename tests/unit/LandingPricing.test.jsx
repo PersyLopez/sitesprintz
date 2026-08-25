@@ -106,9 +106,18 @@ describe('Landing Page - Pricing', () => {
     expect(screen.getByTestId('pricing-cta-growth')).toHaveAttribute('href', '/register?plan=growth');
   });
 
-  it('pricing CTAs route authenticated users to billing with plan', () => {
-    renderLanding({ isAuthenticated: true });
-    expect(screen.getByTestId('pricing-cta-starter')).toHaveAttribute('href', '/settings/billing?plan=starter');
-    expect(screen.getByTestId('pricing-cta-growth')).toHaveAttribute('href', '/settings/billing?plan=growth');
+  it('shows optional extras under hosting, not as a third plan', () => {
+    renderLanding();
+    const extras = screen.getByTestId('labor-extras');
+    expect(extras).toHaveAttribute('id', 'pricing-extras');
+    expect(extras).toHaveTextContent(/Managed care/i);
+    expect(extras).toHaveTextContent(/\$49/);
+    expect(extras).toHaveTextContent(/\$99/);
+    expect(extras).toHaveTextContent(/\$250/);
+    expect(screen.getByTestId('labor-extras-cta')).toHaveAttribute(
+      'href',
+      expect.stringMatching(/^mailto:hello@sitesprintz\.com/),
+    );
+    expect(document.querySelectorAll('.pricing-card')).toHaveLength(2);
   });
 });

@@ -13,17 +13,38 @@ export const PRICING_CONFIG = {
     paymentMethodRequired: true
   },
 
-  // One-time labor (not the monthly hosting subscription). Amounts live in Stripe.
+  // Optional labor (not hosting). Display amounts; Stripe Price IDs later.
   labor: {
+    contactEmail: 'hello@sitesprintz.com',
     claimSetup: {
       billed: 'one_time',
       envPriceKey: 'STRIPE_PRICE_CLAIM_SETUP',
-      description: 'One-time research, fill, and publish of a claimable site'
+      description: 'One-time research, fill, and publish of a prospect site (inbound only)'
     },
-    managedEdit: {
+    managedCare: {
+      billed: 'month',
+      price: 49,
+      batchesPerMonth: 2,
+      envPriceKey: 'STRIPE_PRICE_MANAGED_CARE',
+      description: 'Convenience updates if you skip the editor; a batch can be the whole catalog'
+    },
+    extraBatch: {
       billed: 'one_time',
+      price: 39,
       envPriceKey: 'STRIPE_PRICE_MANAGED_EDIT',
-      description: 'One billed change when the owner does not edit the site themselves'
+      description: 'One extra catalog batch beyond the monthly two'
+    },
+    brandMatch: {
+      billed: 'one_time',
+      price: 99,
+      envPriceKey: 'STRIPE_PRICE_BRAND_MATCH',
+      description: 'Logo, favicon, and your colors on a locked palette'
+    },
+    uniqueLook: {
+      billed: 'one_time',
+      price: 250,
+      envPriceKey: 'STRIPE_PRICE_UNIQUE_LOOK',
+      description: 'Site-specific paper, type, and accent on this layout'
     }
   },
 
