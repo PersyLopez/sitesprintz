@@ -4,7 +4,12 @@ import {
   CLAIM_PLAN,
   PLATFORM_PLAN_DETAILS,
   LABOR_SKUS,
+  CUSTOMER_LABOR_SKUS,
   normalizePaidPlan,
+  normalizeCustomerLaborSku,
+  laborCheckoutMode,
+  laborIdempotencyKey,
+  isCustomerLaborSkuConfigured,
   stripeSubscriptionLineItem,
   stripeLaborLineItem,
 } from '../../server/config/platformPlans.js';
@@ -44,5 +49,19 @@ describe('platformPlans', () => {
     })).toEqual({ price: 'price_edit_abc', quantity: 1 });
     expect(LABOR_SKUS.unique_look.envPriceKey).toBe('STRIPE_PRICE_UNIQUE_LOOK');
     expect(LABOR_SKUS.managed_care.metadataType).toBe('managed_care');
+  });
+
+  it('keeps claim_setup off the customer extras list', () => {
+    expect(CUSTOMER_LABOR_SKUS).not.toContain('claim_setup');
+    expect(normalizeCustomerLaborSku('claim_setup')).toBeNull();
+    expect(normalizeCustomerLaborSku('brand_match')).toBe('brand_match');
+    expect(laborCheckoutMode('managed_care')).toBe('subscription');
+    expect(laborCheckoutMode('unique_look')).toBe('payment');
+    expect(laborIdempotencyKey('user-1', 'brand_match', new Date('2026-08-25T12:00:00Z')))
+      .toBe('labor:user-1:brand_match:2026-08-25');
+    expect(isCustomerLaborSkuConfigured('brand_match', {})).toBe(false);
+    expect(isCustomerLaborSkuConfigured('brand_match', {
+      STRIPE_PRICE_BRAND_MATCH: 'price_brand_ok',
+    })).toBe(true);
   });
 });

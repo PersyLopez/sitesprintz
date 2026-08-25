@@ -145,3 +145,50 @@ export function stripeLaborLineItem(skuId, env = process.env) {
 
   return { price: configuredPriceId, quantity: 1 };
 }
+
+/** Customer-facing extras. claim_setup is never sold on this path. */
+export const CUSTOMER_LABOR_SKUS = [
+  'managed_care',
+  'managed_edit',
+  'brand_match',
+  'unique_look',
+];
+
+/**
+ * @param {string} [rawSku]
+ * @returns {typeof CUSTOMER_LABOR_SKUS[number]|null}
+ */
+export function normalizeCustomerLaborSku(rawSku) {
+  const sku = typeof rawSku === 'string' ? rawSku.trim() : '';
+  return CUSTOMER_LABOR_SKUS.includes(sku) ? sku : null;
+}
+
+/**
+ * @param {typeof CUSTOMER_LABOR_SKUS[number]} skuId
+ * @returns {'subscription'|'payment'}
+ */
+export function laborCheckoutMode(skuId) {
+  return skuId === 'managed_care' ? 'subscription' : 'payment';
+}
+
+/**
+ * @param {string} userId
+ * @param {string} skuId
+ * @param {Date} [now]
+ */
+export function laborIdempotencyKey(userId, skuId, now = new Date()) {
+  const day = now.toISOString().slice(0, 10);
+  return `labor:${userId}:${skuId}:${day}`;
+}
+
+/**
+ * @param {string} skuId
+ * @param {NodeJS.ProcessEnv} [env]
+ */
+export function isCustomerLaborSkuConfigured(skuId, env = process.env) {
+  if (!CUSTOMER_LABOR_SKUS.includes(skuId)) {
+    return false;
+  }
+  const sku = LABOR_SKUS[skuId];
+  return Boolean(configuredStripePriceId(env[sku.envPriceKey]));
+}

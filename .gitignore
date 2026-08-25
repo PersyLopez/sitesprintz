@@ -109,6 +109,9 @@ public/showcases/*/
 # Graphify knowledge-graph artifacts (generated; never commit)
 graphify-out/
 
+# Labor extras ops ledger (JSONL; not source)
+data/ops/*.jsonl
+
 # Session and retry logs (temporary test artifacts)
 SESSION_*.txt
 final_batch_retry.txt

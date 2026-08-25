@@ -15,6 +15,7 @@ import {
 } from './payments/fulfillPlatformSubscription.js';
 import { resolvePrivateAddressForBuyer } from '../../src/utils/liveSiteContact.js';
 import { parseSiteData } from '../utils/parseSiteData.js';
+import { fulfillLaborSession } from './labor/laborFulfillment.js';
 
 export class WebhookProcessor {
   constructor(db = null, emailSvc = null, stripe = null, paymentAdapter = null) {
@@ -158,6 +159,10 @@ export class WebhookProcessor {
   async handleCheckoutCompleted(event) {
     const session = event.data.object;
 
+    if (session.metadata?.source === 'labor_extra') {
+      return await this.handleLaborCheckout(session);
+    }
+
     if (session.mode === 'payment') {
       // Check if this is a booking payment (Phase 2)
       if (session.metadata?.type === 'booking') {
@@ -171,6 +176,12 @@ export class WebhookProcessor {
     }
 
     return { action: 'unknown_mode' };
+  }
+
+  async handleLaborCheckout(session) {
+    return fulfillLaborSession(session, {
+      emailService: this.emailService,
+    });
   }
 
   /**
@@ -433,6 +444,10 @@ export class WebhookProcessor {
         }
       }
 
+      if (subscription?.metadata?.source === 'labor_extra') {
+        return { action: 'labor_invoice_ignored' };
+      }
+
       let user = null;
       if (subscriptionId) {
         user = await this.getUserBySubscriptionId(subscriptionId);
@@ -521,6 +536,10 @@ export class WebhookProcessor {
       } catch (retrieveError) {
         console.error('Failed to retrieve session for async_payment_succeeded:', retrieveError);
       }
+    }
+
+    if (session.metadata?.source === 'labor_extra') {
+      return await this.handleLaborCheckout(session);
     }
 
     if (session.mode !== 'subscription') {

@@ -115,7 +115,9 @@ export class EmailService {
       bookingPaymentFailed: (data) => this.renderBookingPaymentFailedTemplate(data),
       contactFormSubmission: (data) => this.renderContactFormTemplate(data),
       trialExpiring: (data) => this.renderTrialExpiringTemplate(data),
-      subscriptionCreated: (data) => this.renderSubscriptionTemplate(data)
+      subscriptionCreated: (data) => this.renderSubscriptionTemplate(data),
+      laborPurchaseCustomer: (data) => this.renderLaborPurchaseCustomerTemplate(data),
+      laborPurchaseOps: (data) => this.renderLaborPurchaseOpsTemplate(data),
     };
   }
 
@@ -519,6 +521,45 @@ export class EmailService {
         </div>
       `,
       provider: 'smtp'
+    };
+  }
+
+  renderLaborPurchaseCustomerTemplate(data) {
+    const skuName = String(data?.skuName || 'optional extra').slice(0, 80)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;');
+    return {
+      subject: `SiteSprintz — ${skuName} received`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <p>We received your ${skuName} request. We will follow up from hello@sitesprintz.com. The editor stays available if you want to keep going yourself.</p>
+        </div>
+      `,
+      provider: 'resend'
+    };
+  }
+
+  renderLaborPurchaseOpsTemplate(data) {
+    const skuName = String(data?.skuName || 'optional extra').slice(0, 80)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;');
+    const userId = String(data?.userId || '').slice(0, 80)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;');
+    const siteId = String(data?.siteId || '').slice(0, 80)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;');
+    return {
+      subject: `Labor extra paid — ${skuName}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <p>${skuName}</p>
+          <p>user: ${userId}</p>
+          <p>site: ${siteId || 'none'}</p>
+          <p>Two batches/month. Decline drips. Do not include claim links in replies.</p>
+        </div>
+      `,
+      provider: 'resend'
     };
   }
 

@@ -27,6 +27,7 @@ function ThemePicker({ templateId }) {
   const applyTheme = (themeId) => {
     updateField('_themeId', themeId);
     updateField('colors', colorsFromSiteTheme(themeId));
+    updateField('_uniqueLook', null);
   };
 
   return (
@@ -39,6 +40,11 @@ function ThemePicker({ templateId }) {
           {t('labor.extras.themeHint', extras)}
           {' '}
           <Link to="/#pricing-extras">{t('labor.extras.themeHintLink')}</Link>
+        </p>
+      )}
+      {siteData._uniqueLook?.id === 'unique-look' && (
+        <p className="theme-picker-extras" data-testid="unique-look-active">
+          This site has a unique look. Picking a palette below replaces it with a locked theme.
         </p>
       )}
 

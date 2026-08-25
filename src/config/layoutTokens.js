@@ -7,6 +7,7 @@
  */
 
 import { getSiteTheme } from './siteThemes.js';
+import { isUniqueLookTheme } from './uniqueLook.js';
 import { countTeamSlots } from '../utils/businessScale.js';
 
 // ---------------------------------------------------------------------------
@@ -191,12 +192,18 @@ export const LEVELS = {
  */
 export function resolveTheme({ layout, character, level, niche, overrides } = {}) {
   const charDef = CHARACTERS[character] || CHARACTERS.refined;
-  const themeId = overrides?.themeId;
+  const uniqueLook = isUniqueLookTheme(overrides?.uniqueLook) ? overrides.uniqueLook : null;
+  const themeId = uniqueLook ? uniqueLook.id : overrides?.themeId;
 
-  if (themeId) {
-    const siteTheme = getSiteTheme(themeId);
+  if (uniqueLook || themeId) {
+    const siteTheme = uniqueLook || getSiteTheme(themeId);
     const tokens = siteTheme.tokens;
     const elevation = ELEVATION[siteTheme.mode === 'light' ? 'ivory' : 'onyx'];
+    const displayFamily = uniqueLook?.typography?.display;
+    const bodyFamily = uniqueLook?.typography?.body;
+    const radii = uniqueLook?.radii
+      ? { ...charDef.radii, ...uniqueLook.radii }
+      : charDef.radii;
     return {
       layout,
       character,
@@ -216,14 +223,18 @@ export function resolveTheme({ layout, character, level, niche, overrides } = {}
         hairline: tokens.hairline,
       },
       typography: {
-        display: charDef.display,
-        body: TYPOGRAPHY.body,
+        display: displayFamily
+          ? { ...charDef.display, family: displayFamily }
+          : charDef.display,
+        body: bodyFamily
+          ? { ...TYPOGRAPHY.body, family: bodyFamily }
+          : TYPOGRAPHY.body,
         label: TYPOGRAPHY.label,
         scale: TYPOGRAPHY.scale,
       },
       spacing: SPACING,
       sectionPadding: SECTION_PADDING,
-      radii: charDef.radii,
+      radii,
       elevation,
       motion: charDef.motion,
     };

@@ -31,7 +31,8 @@ import {
 } from '../services/payments/processorConnectHelpers.js';
 import { resolveStripeRedirectUrl, subscriptionCheckoutUrls } from '../utils/stripeReturnUrls.js';
 import { fulfillPlatformSubscription } from '../services/payments/fulfillPlatformSubscription.js';
-import { stripeSubscriptionLineItem, STRIPE_TRIAL_DAYS, normalizePaidPlan } from '../config/platformPlans.js';
+import { stripeSubscriptionLineItem, STRIPE_TRIAL_DAYS, normalizePaidPlan, CUSTOMER_LABOR_SKUS, isCustomerLaborSkuConfigured } from '../config/platformPlans.js';
+import { createLaborCheckout } from '../services/labor/laborCheckoutService.js';
 
 const router = express.Router();
 
@@ -519,6 +520,46 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
 router.post('/payments/create-subscription-checkout', checkoutLimiter, requireAuth, createSubscriptionCheckout);
 router.post('/create-subscription-checkout', checkoutLimiter, requireAuth, createSubscriptionCheckout);
 
+const createLaborCheckoutHandler = asyncHandler(async (req, res) => {
+    if (!stripe) {
+        return sendServiceUnavailable(res, 'Stripe not configured. Add STRIPE_SECRET_KEY to .env', 'STRIPE_NOT_CONFIGURED');
+    }
+
+    try {
+        const result = await createLaborCheckout({
+            user: { id: req.user.id, email: req.user.email },
+            sku: req.body?.sku,
+            siteId: req.body?.siteId,
+            req,
+            stripe,
+            prisma,
+            resolveOwnedSiteId,
+        });
+        return sendSuccess(res, result);
+    } catch (err) {
+        if (err.code === 'INVALID_LABOR_SKU') {
+            return sendBadRequest(res, 'Unknown labor SKU', 'INVALID_LABOR_SKU');
+        }
+        if (err.code === 'LABOR_PRICE_NOT_CONFIGURED') {
+            return sendServiceUnavailable(res, 'Labor extras are not configured', 'LABOR_PRICE_NOT_CONFIGURED');
+        }
+        if (err.code === 'SITE_NOT_OWNED') {
+            return sendForbidden(res, 'Site not found', 'SITE_NOT_OWNED');
+        }
+        throw err;
+    }
+});
+
+router.post('/payments/labor-checkout', checkoutLimiter, requireAuth, createLaborCheckoutHandler);
+
+router.get('/payments/labor-skus', requireAuth, asyncHandler(async (_req, res) => {
+    const skus = {};
+    for (const id of CUSTOMER_LABOR_SKUS) {
+        skus[id] = isCustomerLaborSkuConfigured(id);
+    }
+    return sendSuccess(res, { skus });
+}));
+
 const confirmCheckoutSession = asyncHandler(async (req, res) => {
     if (!stripe) {
         return sendServiceUnavailable(res, 'Stripe not configured. Add STRIPE_SECRET_KEY to .env', 'STRIPE_NOT_CONFIGURED');
@@ -534,6 +575,15 @@ const confirmCheckoutSession = asyncHandler(async (req, res) => {
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
+    const sessionUserId = session.metadata?.userId || session.client_reference_id;
+    if (!sessionUserId || sessionUserId !== req.user.id) {
+        return sendForbidden(res, 'Checkout session does not belong to this user', 'SESSION_USER_MISMATCH');
+    }
+
+    if (session.metadata?.source === 'labor_extra') {
+        return sendSuccess(res, { labor: true, granted: false });
+    }
+
     if (session.mode !== 'subscription') {
         return sendBadRequest(res, 'Not a subscription checkout session', 'INVALID_SESSION_MODE');
     }
@@ -542,11 +592,6 @@ const confirmCheckoutSession = asyncHandler(async (req, res) => {
         || session.payment_status === 'no_payment_required';
     if (session.status !== 'complete' || !paid) {
         return sendBadRequest(res, 'Checkout session is not complete', 'CHECKOUT_INCOMPLETE');
-    }
-
-    const sessionUserId = session.metadata?.userId || session.client_reference_id;
-    if (!sessionUserId || sessionUserId !== req.user.id) {
-        return sendForbidden(res, 'Checkout session does not belong to this user', 'SESSION_USER_MISMATCH');
     }
 
     if (session.metadata?.user_email) {
