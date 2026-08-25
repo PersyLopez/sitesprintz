@@ -1,26 +1,14 @@
 import Stripe from 'stripe';
 import { prisma } from '../../database/db.js';
 import { getFrontendOrigin } from './payments/processorConnectHelpers.js';
-
-const PLAN_DETAILS = {
-  starter: {
-    name: 'SiteSprintz Starter',
-    amount: 1000,
-    description: 'Professional website — get found',
-  },
-  growth: {
-    name: 'SiteSprintz Growth',
-    amount: 3500,
-    description: 'Booking and checkout',
-  },
-};
+import {
+  STRIPE_TRIAL_DAYS,
+  normalizePaidPlan,
+  stripeSubscriptionLineItem,
+} from '../config/platformPlans.js';
 
 export function normalizeClaimPlan(rawPlan) {
-  const plan = rawPlan === 'pro' || rawPlan === 'premium' ? 'growth' : rawPlan;
-  if (!['starter', 'growth'].includes(plan)) {
-    return null;
-  }
-  return plan;
+  return normalizePaidPlan(rawPlan);
 }
 
 export function isSubscribedStatus(status) {
@@ -88,7 +76,6 @@ export async function createClaimTrialCheckout({
     throw error;
   }
 
-  const selectedPlan = PLAN_DETAILS[plan];
   const origin = getFrontendOrigin(req);
   const customer = await getOrCreateStripeCustomer(stripe, user.email, user.id);
 
@@ -97,22 +84,13 @@ export async function createClaimTrialCheckout({
     mode: 'subscription',
     payment_method_collection: 'always',
     payment_method_types: ['card'],
-    line_items: [
-      {
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: selectedPlan.name,
-            description: selectedPlan.description,
-          },
-          unit_amount: selectedPlan.amount,
-          recurring: { interval: 'month' },
-        },
-        quantity: 1,
-      },
-    ],
+    line_items: [stripeSubscriptionLineItem(plan)],
     subscription_data: {
-      trial_period_days: 7,
+      trial_period_days: STRIPE_TRIAL_DAYS,
+      metadata: {
+        plan,
+        userId: user.id,
+      },
     },
     success_url: `${origin}/claim/${claimToken}?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/claim/${claimToken}`,

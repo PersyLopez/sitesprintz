@@ -3,6 +3,7 @@ import { useSite } from '../../hooks/useSite';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { sitesService } from '../../services/sites';
+import { isTrialingStatus } from '../../config/tiers';
 import BusinessInfoForm from './forms/BusinessInfoForm';
 import ServicesProductsEditor from './forms/ServicesProductsEditor';
 import ContactBookingForm from './forms/ContactBookingForm';
@@ -23,7 +24,7 @@ function EditorPanel() {
 
   // Growth (and legacy pro) unlock advanced publish features
   const isPro = ['growth', 'pro', 'premium'].includes(user?.plan);
-  const hasActiveTrial = user?.subscription_status === 'trial';
+  const hasActiveTrial = isTrialingStatus(user?.subscription_status);
   const hasActiveSubscription = user?.subscription_status === 'active';
 
   // Determine trial eligibility: first site publish only
@@ -209,14 +210,14 @@ function EditorPanel() {
             <div className="banner-text">
               <h3>
                 {hasActiveTrial
-                  ? 'Trial Active - All Features Unlocked!'
+                  ? 'Trial Active — Starter features'
                   : isEligibleForTrial
                     ? "Start Your Free Trial!"
                     : 'Subscribe to Publish Your Site'}
               </h3>
               <p>
                 {hasActiveTrial
-                  ? `Your 7-day trial is active. All features available until ${user?.trial_expires_at ? new Date(user.trial_expires_at).toLocaleDateString() : 'trial ends'}.`
+                  ? `Your 7-day trial is active. Starter features (site, contact, hours) until ${user?.trial_expires_at ? new Date(user.trial_expires_at).toLocaleDateString() : 'trial ends'}.`
                   : isEligibleForTrial
                     ? 'Your first site qualifies for a 7-day free trial! Payment method required to start. You won\'t be charged until after your trial ends.'
                     : 'Subscribe to a plan to publish and unlock all features. Note: Free trial is only available for your first published site.'}

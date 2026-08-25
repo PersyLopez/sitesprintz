@@ -41,6 +41,16 @@ export function normalizeTier(tier) {
 }
 
 /**
+ * Local signup used `trial`; Stripe Checkout writes `trialing`.
+ * Treat both as an in-progress trial.
+ * @param {string|undefined|null} status
+ * @returns {boolean}
+ */
+export function isTrialingStatus(status) {
+  return status === 'trial' || status === 'trialing';
+}
+
+/**
  * Check if a tier has access to a feature required at a certain tier level
  * @param {string} userTier - User's subscription tier
  * @param {string} requiredTier - Minimum tier needed for feature
@@ -79,7 +89,7 @@ export const TIER_INFO = {
     price: 10,
     currency: 'USD',
     billingPeriod: 'month',
-    description: 'Get found — site, hours, contact',
+    description: 'Hosting and monitoring for a brochure site',
     color: '#22c55e',
     features: ['Website + templates', 'Contact form & shareable link', 'Hours, menu, photos', 'Bring your own domain']
   },
@@ -89,7 +99,7 @@ export const TIER_INFO = {
     price: 35,
     currency: 'USD',
     billingPeriod: 'month',
-    description: 'Get booked and paid',
+    description: 'Hosting and monitoring plus booking and checkout',
     color: '#f59e0b',
     popular: true,
     features: [
@@ -105,5 +115,6 @@ export default {
   TIER_ALIASES,
   TIER_INFO,
   normalizeTier,
-  hasTierAccess
+  hasTierAccess,
+  isTrialingStatus,
 };

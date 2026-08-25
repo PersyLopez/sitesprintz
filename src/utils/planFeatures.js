@@ -118,7 +118,7 @@ export const PLAN_INFO = {
     price: 10,
     duration: 'month',
     color: '#22c55e',
-    description: 'Get found — site, hours, contact',
+    description: 'Hosting and monitoring for a brochure site',
     ctaText: 'Upgrade to Starter'
   },
   growth: {
@@ -126,7 +126,7 @@ export const PLAN_INFO = {
     price: 35,
     duration: 'month',
     color: '#f59e0b',
-    description: 'Bookings and checkout',
+    description: 'Hosting and monitoring plus booking and checkout',
     ctaText: 'Upgrade to Growth',
     popular: true
   }

@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { usePlan } from '../hooks/usePlan';
+import { isTrialingStatus } from '../config/tiers';
 import { sitesService } from '../services/sites';
 import api from '../services/api';
 import Header from '../components/layout/Header';
@@ -135,7 +136,7 @@ function Dashboard() {
 
       <main id="dashboard-main" className="dashboard-container">
         {/* Trial Banner */}
-        {(user?.subscriptionStatus === 'trial' || user?.subscription_status === 'trial') && (
+        {(isTrialingStatus(user?.subscriptionStatus) || isTrialingStatus(user?.subscription_status)) && (
           <TrialBanner user={user} />
         )}
 

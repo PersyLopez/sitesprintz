@@ -13,16 +13,30 @@ export const PRICING_CONFIG = {
     paymentMethodRequired: true
   },
 
+  // One-time labor (not the monthly hosting subscription). Amounts live in Stripe.
+  labor: {
+    claimSetup: {
+      billed: 'one_time',
+      envPriceKey: 'STRIPE_PRICE_CLAIM_SETUP',
+      description: 'One-time research, fill, and publish of a claimable site'
+    },
+    managedEdit: {
+      billed: 'one_time',
+      envPriceKey: 'STRIPE_PRICE_MANAGED_EDIT',
+      description: 'One billed change when the owner does not edit the site themselves'
+    }
+  },
+
   // Pricing tiers with full details
   tiers: {
     starter: {
       id: 'starter',
       name: 'Starter',
       price: 10,
-      priceAnnual: 96, // $8/month when paid annually
+      priceAnnual: 96, // Marketing figure only — no Stripe annual Price ID yet
       billingPeriod: 'monthly',
-      tagline: 'Get found',
-      description: 'A simple page for hours, menu, and how to reach you',
+      tagline: 'Hosting & monitoring',
+      description: 'A simple page for hours, menu, and how to reach you. Monthly price is hosting and monitoring; you edit the site yourself.',
       
       // Short list for landing / comparison UIs
       summary: [
@@ -56,7 +70,7 @@ export const PRICING_CONFIG = {
         'Business hours display',
         'Testimonials section',
         'Custom theme colors',
-        'Unlimited edits'
+        'Self-serve editor (done-for-you changes billed separately)',
       ],
       
       // What's NOT included (limitations)
@@ -139,10 +153,10 @@ export const PRICING_CONFIG = {
       id: 'growth',
       name: 'Growth',
       price: 35,
-      priceAnnual: 336, // $28/month when paid annually
+      priceAnnual: 336, // Marketing figure only — no Stripe annual Price ID yet
       billingPeriod: 'monthly',
-      tagline: 'Get booked & paid',
-      description: 'Everything in Starter, plus booking, cart, and Stripe checkout',
+      tagline: 'Hosting, booking & checkout',
+      description: 'Hosting and monitoring, plus booking, cart, and Stripe checkout. Setup and done-for-you edits are billed separately.',
       
       // Short list for landing / comparison UIs
       summary: [
@@ -231,7 +245,7 @@ export const PRICING_CONFIG = {
   },
   // Overall value proposition
   valueProps: {
-    noHiddenFees: 'No transaction fees, no hidden costs, no surprises',
+    noHiddenFees: 'Monthly price is hosting and monitoring. Shop checkout uses Stripe on your connected account.',
     cancel: 'Cancel anytime, no long-term contracts',
     support: 'Email support for all plans',
     updates: 'Regular updates and new features included',

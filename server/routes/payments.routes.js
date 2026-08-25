@@ -31,6 +31,7 @@ import {
 } from '../services/payments/processorConnectHelpers.js';
 import { resolveStripeRedirectUrl, subscriptionCheckoutUrls } from '../utils/stripeReturnUrls.js';
 import { fulfillPlatformSubscription } from '../services/payments/fulfillPlatformSubscription.js';
+import { stripeSubscriptionLineItem, STRIPE_TRIAL_DAYS, normalizePaidPlan } from '../config/platformPlans.js';
 
 const router = express.Router();
 
@@ -414,29 +415,12 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
 
     const { plan: rawPlan, draftId, successUrl, cancelUrl } = req.body;
     const userEmail = req.user.email;
-    const plan = rawPlan === 'pro' || rawPlan === 'premium' ? 'growth' : rawPlan;
+    const plan = normalizePaidPlan(rawPlan);
 
-    // Validate plan and get pricing details
-    const validPlans = ['starter', 'growth'];
-    if (!validPlans.includes(plan)) {
+    if (!plan) {
         return sendBadRequest(res, 'Invalid plan. Must be "starter" or "growth"', 'INVALID_PLAN');
     }
 
-        // Define plan details (dynamic pricing - no need for pre-created products!)
-        const planDetails = {
-            starter: {
-                name: 'SiteSprintz Starter',
-                amount: 1000, // $10.00 in cents
-                description: 'Professional website — get found'
-            },
-            growth: {
-                name: 'SiteSprintz Growth',
-                amount: 3500, // $35.00 in cents
-                description: 'Booking and checkout'
-            }
-        };
-
-        const selectedPlan = planDetails[plan];
         const redirects = subscriptionCheckoutUrls(req, {
             plan,
             draftId,
@@ -497,31 +481,7 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
 
         const userId = req.user.id;
 
-        const envPriceId = plan === 'starter'
-            ? process.env.STRIPE_PRICE_STARTER
-            : process.env.STRIPE_PRICE_GROWTH;
-        const configuredPriceId = typeof envPriceId === 'string'
-            && envPriceId.startsWith('price_')
-            && envPriceId.length > 6
-            ? envPriceId
-            : null;
-
-        const lineItems = configuredPriceId
-            ? [{ price: configuredPriceId, quantity: 1 }]
-            : [{
-                price_data: {
-                    currency: 'usd',
-                    product_data: {
-                        name: selectedPlan.name,
-                        description: selectedPlan.description,
-                    },
-                    unit_amount: selectedPlan.amount,
-                    recurring: {
-                        interval: 'month',
-                    },
-                },
-                quantity: 1,
-            }];
+        const lineItems = [stripeSubscriptionLineItem(plan)];
 
         const automaticTaxEnabled = process.env.STRIPE_AUTOMATIC_TAX === 'true';
 
@@ -673,25 +633,15 @@ router.post('/trial/create-subscription', requireAuth, asyncHandler(async (req, 
 
   const userEmail = req.user.email;
   const { plan: rawPlan, paymentMethodId, draftId } = req.body;
-  const plan = rawPlan === 'pro' || rawPlan === 'premium' ? 'growth' : rawPlan;
+  const plan = normalizePaidPlan(rawPlan);
 
-  // Validate plan
-  const validPlans = ['starter', 'growth'];
-  if (!validPlans.includes(plan)) {
+  if (!plan) {
     return sendBadRequest(res, 'Invalid plan. Must be "starter" or "growth"', 'INVALID_PLAN');
   }
 
   if (!paymentMethodId) {
     return sendBadRequest(res, 'Payment method ID is required', 'MISSING_PAYMENT_METHOD');
   }
-
-  // Get plan pricing
-  const planDetails = {
-    starter: { name: 'SiteSprintz Starter', amount: 1000 }, // $10.00
-    growth: { name: 'SiteSprintz Growth', amount: 3500 } // $35.00
-  };
-
-  const selectedPlan = planDetails[plan];
 
   // Get or create customer
   const user = await prisma.users.findUnique({
@@ -732,20 +682,8 @@ router.post('/trial/create-subscription', requireAuth, asyncHandler(async (req, 
   // Create subscription with 7-day trial
   const subscription = await stripe.subscriptions.create({
     customer: customerId,
-    items: [{
-      price_data: {
-        currency: 'usd',
-        product_data: {
-          name: selectedPlan.name,
-          description: `7-day free trial, then ${selectedPlan.name}`
-        },
-        unit_amount: selectedPlan.amount,
-        recurring: {
-          interval: 'month'
-        }
-      }
-    }],
-    trial_period_days: 7,
+    items: [stripeSubscriptionLineItem(plan)],
+    trial_period_days: STRIPE_TRIAL_DAYS,
     payment_behavior: 'default_incomplete',
     payment_settings: {
       payment_method_types: ['card'],

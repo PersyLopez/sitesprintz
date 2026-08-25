@@ -34,6 +34,8 @@ describe('claimTrialService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.STRIPE_SECRET_KEY = 'sk_test_mock';
+    delete process.env.STRIPE_PRICE_STARTER;
+    delete process.env.STRIPE_PRICE_GROWTH;
     mockStripe.customers.list.mockResolvedValue({ data: [] });
     mockStripe.customers.create.mockResolvedValue({ id: 'cus_123' });
     mockStripe.checkout.sessions.create.mockResolvedValue({
@@ -74,7 +76,13 @@ describe('claimTrialService', () => {
       expect.objectContaining({
         mode: 'subscription',
         payment_method_collection: 'always',
-        subscription_data: { trial_period_days: 7 },
+        subscription_data: {
+          trial_period_days: 7,
+          metadata: {
+            plan: 'growth',
+            userId: 'user-1',
+          },
+        },
         metadata: {
           userId: 'user-1',
           plan: 'growth',
@@ -88,6 +96,25 @@ describe('claimTrialService', () => {
     const call = mockStripe.checkout.sessions.create.mock.calls[0][0];
     expect(call.line_items[0].price_data.unit_amount).toBe(3500);
     expect(call.metadata).not.toHaveProperty('claimToken');
+  });
+
+  it('uses configured Growth Price ID when env is set', async () => {
+    process.env.STRIPE_PRICE_GROWTH = 'price_growth_claim_test';
+    const user = { id: 'user-1', email: 'owner@example.com' };
+    const site = { id: 'site-1', subdomain: 'riverside-cuts' };
+
+    await createClaimTrialCheckout({
+      user,
+      site,
+      plan: 'growth',
+      claimToken: 'ab'.repeat(32),
+      req: { headers: { origin: 'http://localhost:3000' } },
+      stripe: mockStripe,
+    });
+
+    const call = mockStripe.checkout.sessions.create.mock.calls[0][0];
+    expect(call.line_items).toEqual([{ price: 'price_growth_claim_test', quantity: 1 }]);
+    delete process.env.STRIPE_PRICE_GROWTH;
   });
 
   it('syncs user subscription on trial-complete', async () => {

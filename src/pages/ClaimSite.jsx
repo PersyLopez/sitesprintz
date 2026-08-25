@@ -248,7 +248,7 @@ function ClaimSite() {
                         onChange={() => setSelectedPlan('starter')}
                         data-testid="claim-plan-starter"
                       />{' '}
-                      Starter — $10/month after trial
+                      Starter — $10/month hosting & monitoring after trial
                     </label>
                     <label style={{ display: 'block', marginBottom: '10px' }}>
                       <input
@@ -259,7 +259,7 @@ function ClaimSite() {
                         onChange={() => setSelectedPlan('growth')}
                         data-testid="claim-plan-growth"
                       />{' '}
-                      Growth — $35/month after trial
+                      Growth — $35/month hosting & monitoring after trial
                     </label>
                   </fieldset>
                   <button

@@ -85,13 +85,13 @@ describe('Landing Page - Pricing', () => {
 
   it('shows the starter tagline and features', () => {
     renderLanding();
-    expect(screen.getByText('Get found')).toBeInTheDocument();
+    expect(screen.getByText('Hosting & monitoring')).toBeInTheDocument();
     expect(screen.getByText('Your website + templates')).toBeInTheDocument();
   });
 
   it('shows the growth tagline and features', () => {
     renderLanding();
-    expect(screen.getByText('Get booked & paid')).toBeInTheDocument();
+    expect(screen.getByText('Hosting, booking & checkout')).toBeInTheDocument();
     expect(screen.getByText('Embedded booking')).toBeInTheDocument();
   });
 

@@ -1,6 +1,5 @@
 import { prisma } from '../../../database/db.js';
-
-const VALID_PLANS = new Set(['starter', 'growth']);
+import { normalizePaidPlan } from '../../config/platformPlans.js';
 
 const BLOCKED_SUBSCRIPTION_STATUSES = new Set([
   'incomplete',
@@ -17,10 +16,7 @@ const BLOCKED_SUBSCRIPTION_STATUSES = new Set([
  */
 export function normalizePlatformPlan(rawPlan) {
   if (rawPlan == null || rawPlan === '') return null;
-  const plan = String(rawPlan).toLowerCase();
-  if (plan === 'pro' || plan === 'premium') return 'growth';
-  if (VALID_PLANS.has(plan)) return plan;
-  return null;
+  return normalizePaidPlan(String(rawPlan).toLowerCase());
 }
 
 /**
