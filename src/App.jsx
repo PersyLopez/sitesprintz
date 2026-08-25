@@ -67,6 +67,7 @@ import BetaBanner from './components/common/BetaBanner';
 import CustomDomainGate from './components/published/CustomDomainGate';
 import LegacySitePaneRedirect from './components/dashboard/LegacySitePaneRedirect';
 import { LocaleProvider } from './i18n/LocaleContext.jsx';
+import { ThemeProvider } from './context/ThemeContext.jsx';
 
 import api from './services/api';
 import { useEffect } from 'react';
@@ -83,6 +84,7 @@ function App() {
     <ErrorBoundary>
       <Router>
         <LocaleProvider>
+        <ThemeProvider>
         <AuthProvider>
           <ToastProvider>
             <TipsProvider>
@@ -585,6 +587,7 @@ function App() {
             </TipsProvider>
           </ToastProvider>
         </AuthProvider>
+        </ThemeProvider>
         </LocaleProvider>
       </Router>
     </ErrorBoundary>

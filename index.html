@@ -5,6 +5,16 @@
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SiteSprintz — A page so customers can find you again</title>
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('ss_theme');
+          var theme = stored === 'dark' || stored === 'light' ? stored : 'light';
+          document.documentElement.setAttribute('data-theme', theme);
+          document.documentElement.style.colorScheme = theme;
+        } catch (e) { /* private mode */ }
+      })();
+    </script>
     <meta name="description" content="A simple page for your hours, menu, and how to find you — so the people who already care can come back." />
     
     <!-- Open Graph / Facebook -->

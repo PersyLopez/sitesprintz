@@ -10,9 +10,9 @@
 }
 
 .site-header.scrolled {
-  background: rgba(15, 23, 42, 0.98);
-  box-shadow: var(--shadow-md), 0 0 30px rgba(59, 130, 246, 0.08);
-  border-bottom-color: rgba(59, 130, 246, 0.2);
+  background: color-mix(in srgb, var(--bg-card) 96%, transparent);
+  box-shadow: var(--shadow-md);
+  border-bottom-color: var(--border-dark);
 }
 
 .header-container {
@@ -64,12 +64,13 @@
 
 .logo-icon {
   font-size: 2rem;
+  color: var(--primary-light);
   animation: float 3s ease-in-out infinite;
 }
 
 .logo-text {
   /* Solid color (not transparent clipped gradient) so WCAG contrast is measurable */
-  color: #93c5fd;
+  color: var(--primary-light);
   font-weight: 800;
 }
 
@@ -86,17 +87,20 @@
     gap: var(--spacing-lg);
   }
 
-  .header-language-switcher--desktop {
+  .header-language-switcher--desktop,
+  .header-theme-switcher--desktop {
     display: inline-flex;
     margin-left: 12px;
   }
 }
 
-.header-language-switcher--desktop {
+.header-language-switcher--desktop,
+.header-theme-switcher--desktop {
   display: none;
 }
 
-.header-language-switcher--mobile {
+.header-language-switcher--mobile,
+.header-theme-switcher--mobile {
   margin: 8px 16px 16px;
   align-self: flex-start;
 }

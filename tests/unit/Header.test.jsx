@@ -258,6 +258,13 @@ describe('Header Component', () => {
       expect(screen.getByRole('link', { name: /Dashboard/i })).toHaveAccessibleName();
       expect(screen.getByRole('link', { name: /Create Site/i })).toHaveAccessibleName();
     });
+
+    it('should show light and dark theme controls', () => {
+      renderHeader(true);
+
+      expect(screen.getAllByTestId('theme-switcher-light').length).toBeGreaterThan(0);
+      expect(screen.getAllByTestId('theme-switcher-dark').length).toBeGreaterThan(0);
+    });
   });
 });
 

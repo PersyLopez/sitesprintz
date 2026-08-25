@@ -1,5 +1,8 @@
 export default {
   'lang.label': 'Language',
+  'theme.label': 'Theme',
+  'theme.light': 'Light',
+  'theme.dark': 'Dark',
   'skip': 'Skip to main content',
   'nav.templates': 'Templates',
   'nav.howItWorks': 'How It Works',

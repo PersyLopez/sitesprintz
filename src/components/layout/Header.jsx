@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useLocale } from '../../i18n/LocaleContext.jsx';
 import LanguageSwitcher from '../i18n/LanguageSwitcher';
+import ThemeSwitcher from './ThemeSwitcher';
 import './Header.css';
 
 function Header() {
@@ -77,7 +78,7 @@ function Header() {
           <span className="logo-icon" aria-hidden="true">
             <svg className="logo-mark" viewBox="0 0 24 24" width="1em" height="1em" focusable="false">
               <path
-                fill="#93c5fd"
+                fill="currentColor"
                 d="M12 2l2.4 7.2H22l-6 4.8 2.4 7.2L12 16.8 5.6 21.2 8 14 2 9.2h7.6L12 2z"
               />
             </svg>
@@ -182,6 +183,7 @@ function Header() {
           )}
         </nav>
         <LanguageSwitcher className="header-language-switcher header-language-switcher--desktop" />
+        <ThemeSwitcher className="header-theme-switcher header-theme-switcher--desktop" />
 
         {/* Mobile Menu Button */}
         <button
@@ -219,6 +221,7 @@ function Header() {
               </div>
             )}
             <LanguageSwitcher className="header-language-switcher header-language-switcher--mobile" />
+            <ThemeSwitcher className="header-theme-switcher header-theme-switcher--mobile" />
             {showOwnerNav && (
               <>
                 <Link 
@@ -262,6 +265,7 @@ function Header() {
         ) : (
           <>
             <LanguageSwitcher className="header-language-switcher header-language-switcher--mobile" />
+            <ThemeSwitcher className="header-theme-switcher header-theme-switcher--mobile" />
             <Link
               to="/#templates"
               className="mobile-nav-link"
