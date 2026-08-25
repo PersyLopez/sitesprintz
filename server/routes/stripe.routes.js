@@ -169,7 +169,7 @@ router.post('/connect/refresh', requireAuth, asyncHandler(async (req, res) => {
 router.post('/connect/disconnect', requireAuth, asyncHandler(async (req, res) => {
   await prisma.users.update({
     where: { id: req.user.id },
-    data: { stripe_account_id: null }
+    data: { stripe_account_id: null, stripe_connected: false }
   });
 
   sendSuccess(res, {}, 'Stripe account disconnected');

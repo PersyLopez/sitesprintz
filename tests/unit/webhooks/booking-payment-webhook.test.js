@@ -89,8 +89,9 @@ describe('WebhookProcessor - Booking Payments', () => {
       
       expect(result).toEqual({
         success: true,
+        action: 'booking_payment_processed',
         appointmentId: 'appt-123',
-        paymentStatus: 'paid'
+        paymentStatus: 'paid',
       });
     });
 
@@ -130,7 +131,6 @@ describe('WebhookProcessor - Booking Payments', () => {
     });
 
     it('should not process booking payments without metadata.type', async () => {
-      // Arrange
       const event = {
         type: 'checkout.session.completed',
         data: {
@@ -139,50 +139,52 @@ describe('WebhookProcessor - Booking Payments', () => {
             mode: 'payment',
             payment_status: 'paid',
             metadata: {
-              // Missing type: 'booking'
-              site_id: 'site-123' // This is a product order
-            }
-          }
-        }
+              site_id: 'site-123',
+            },
+          },
+        },
       };
 
-      // Act
-      const result = await processor.handleCheckoutCompleted(event);
+      processor.handlePaymentCheckout = vi.fn().mockResolvedValue({
+        action: 'payment_processed',
+        orderId: 'order-125',
+      });
 
-      // Assert
+      await processor.handleCheckoutCompleted(event);
+
       expect(mockPaymentAdapter.handlePaymentSuccess).not.toHaveBeenCalled();
-      // Should be routed to product order handler instead
+      expect(processor.handlePaymentCheckout).toHaveBeenCalled();
     });
 
-    it('should handle payment failure gracefully', async () => {
-      // Arrange
+    it('should return booking_payment_failed when adapter throws', async () => {
       const event = {
         type: 'checkout.session.completed',
         data: {
           object: {
             id: 'cs_test_126',
             mode: 'payment',
-            payment_status: 'unpaid', // Payment failed
+            payment_status: 'paid',
             metadata: {
               type: 'booking',
-              appointment_id: 'appt-126'
-            }
-          }
-        }
+              appointment_id: 'appt-126',
+            },
+          },
+        },
       };
 
       mockPaymentAdapter.handlePaymentSuccess.mockRejectedValue(
-        new Error('Payment processing failed')
+        new Error('Payment processing failed'),
       );
 
-      // Act & Assert
-      await expect(
-        processor.handleCheckoutCompleted(event)
-      ).rejects.toThrow('Payment processing failed');
+      const result = await processor.handleCheckoutCompleted(event);
+
+      expect(result).toEqual({
+        action: 'booking_payment_failed',
+        error: 'Payment processing failed',
+      });
     });
 
-    it('should validate required metadata fields', async () => {
-      // Arrange
+    it('should return warning when appointment_id is missing', async () => {
       const event = {
         type: 'checkout.session.completed',
         data: {
@@ -191,21 +193,19 @@ describe('WebhookProcessor - Booking Payments', () => {
             mode: 'payment',
             payment_status: 'paid',
             metadata: {
-              type: 'booking'
-              // Missing appointment_id
-            }
-          }
-        }
+              type: 'booking',
+            },
+          },
+        },
       };
 
-      mockPaymentAdapter.handlePaymentSuccess.mockRejectedValue(
-        new Error('Missing appointment_id in metadata')
-      );
+      const result = await processor.handleCheckoutCompleted(event);
 
-      // Act & Assert
-      await expect(
-        processor.handleCheckoutCompleted(event)
-      ).rejects.toThrow('Missing appointment_id in metadata');
+      expect(result).toEqual({
+        action: 'booking_payment_processed',
+        warning: 'missing appointment_id',
+      });
+      expect(mockPaymentAdapter.handlePaymentSuccess).not.toHaveBeenCalled();
     });
   });
 
@@ -294,8 +294,7 @@ describe('WebhookProcessor - Booking Payments', () => {
   });
 
   describe('Error Handling', () => {
-    it('should propagate adapter errors', async () => {
-      // Arrange
+    it('should return booking_payment_failed for adapter errors', async () => {
       const event = {
         type: 'checkout.session.completed',
         data: {
@@ -304,23 +303,25 @@ describe('WebhookProcessor - Booking Payments', () => {
             mode: 'payment',
             metadata: {
               type: 'booking',
-              appointment_id: 'appt-300'
-            }
-          }
-        }
+              appointment_id: 'appt-300',
+            },
+          },
+        },
       };
 
-      const adapterError = new Error('Database connection failed');
-      mockPaymentAdapter.handlePaymentSuccess.mockRejectedValue(adapterError);
+      mockPaymentAdapter.handlePaymentSuccess.mockRejectedValue(
+        new Error('Database connection failed'),
+      );
 
-      // Act & Assert
-      await expect(
-        processor.handleCheckoutCompleted(event)
-      ).rejects.toThrow('Database connection failed');
+      const result = await processor.handleCheckoutCompleted(event);
+
+      expect(result).toEqual({
+        action: 'booking_payment_failed',
+        error: 'Database connection failed',
+      });
     });
 
     it('should handle missing appointment gracefully', async () => {
-      // Arrange
       const event = {
         type: 'checkout.session.completed',
         data: {
@@ -329,20 +330,22 @@ describe('WebhookProcessor - Booking Payments', () => {
             mode: 'payment',
             metadata: {
               type: 'booking',
-              appointment_id: 'nonexistent'
-            }
-          }
-        }
+              appointment_id: 'nonexistent',
+            },
+          },
+        },
       };
 
       mockPaymentAdapter.handlePaymentSuccess.mockRejectedValue(
-        new Error('Appointment nonexistent not found')
+        new Error('Appointment nonexistent not found'),
       );
 
-      // Act & Assert
-      await expect(
-        processor.handleCheckoutCompleted(event)
-      ).rejects.toThrow('Appointment nonexistent not found');
+      const result = await processor.handleCheckoutCompleted(event);
+
+      expect(result).toEqual({
+        action: 'booking_payment_failed',
+        error: 'Appointment nonexistent not found',
+      });
     });
   });
 
@@ -379,6 +382,7 @@ describe('WebhookProcessor - Booking Payments', () => {
       // Assert
       expect(mockPaymentAdapter.handlePaymentSuccess).toHaveBeenCalled();
       expect(result.success).toBe(true);
+      expect(result.action).toBe('booking_payment_processed');
     });
 
     it('should handle extra metadata fields gracefully', async () => {

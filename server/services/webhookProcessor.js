@@ -33,6 +33,9 @@ export class WebhookProcessor {
       'invoice.payment_failed': this.handlePaymentFailed.bind(this),
       'invoice.payment_action_required': this.handleInvoicePaymentActionRequired.bind(this),
       'charge.refunded': this.handleChargeRefunded.bind(this),
+      'charge.dispute': this.handleChargeDispute.bind(this),
+      'charge.dispute.created': this.handleChargeDispute.bind(this),
+      'account.updated': this.handleAccountUpdated.bind(this),
       'payment_intent.payment_failed': this.handlePaymentIntentFailed.bind(this),
     };
   }
@@ -44,14 +47,47 @@ export class WebhookProcessor {
    */
   async processEvent(event) {
     try {
-      // Check if already processed (idempotency)
       const alreadyProcessed = await this.isEventProcessed(event.id);
       if (alreadyProcessed) {
         console.log(`Event ${event.id} already processed, skipping`);
         return { processed: false, reason: 'duplicate' };
       }
 
-      // Route to appropriate handler
+      try {
+        await this.db.webhook_events.create({
+          data: {
+            event_id: event.id,
+            processor: 'stripe',
+            event_type: event.type,
+            payload: event,
+            status: 'processing'
+          }
+        });
+      } catch (error) {
+        if (error.code === 'P2002') {
+          const existing = await this.db.webhook_events.findUnique({
+            where: {
+              event_id_processor: { event_id: event.id, processor: 'stripe' }
+            }
+          });
+          if (existing?.status === 'processed') {
+            return { processed: false, reason: 'duplicate' };
+          }
+          await this.db.webhook_events.update({
+            where: {
+              event_id_processor: { event_id: event.id, processor: 'stripe' }
+            },
+            data: {
+              status: 'processing',
+              event_type: event.type,
+              payload: event
+            }
+          });
+        } else {
+          throw error;
+        }
+      }
+
       const handler = this.handlers[event.type];
       if (!handler) {
         console.log(`No handler for event type: ${event.type}`);
@@ -59,15 +95,17 @@ export class WebhookProcessor {
         return { processed: false, reason: 'unknown_event_type' };
       }
 
-      // Process the event
       const result = await handler(event);
-
-      // Mark as processed
       await this.markEventAsProcessed(event);
 
       return { processed: true, ...result };
     } catch (error) {
       console.error('Error processing webhook event:', error);
+      try {
+        await this.markEventAsProcessed(event, 'failed');
+      } catch (markError) {
+        console.error('Error marking event as failed:', markError);
+      }
       throw error;
     }
   }
@@ -85,7 +123,7 @@ export class WebhookProcessor {
           event_id_processor: { event_id: eventId, processor: 'stripe' }
         }
       });
-      return !!result;
+      return result?.status === 'processed';
     } catch (error) {
       console.error('Error checking event processing status:', error);
       throw error;
@@ -98,27 +136,17 @@ export class WebhookProcessor {
    * @param {string} status - 'processed' or 'failed'
    */
   async markEventAsProcessed(event, status = 'processed') {
-    try {
-      await this.db.webhook_events.upsert({
-        where: {
-          event_id_processor: { event_id: event.id, processor: 'stripe' }
-        },
-        create: {
-          event_id: event.id,
-          processor: 'stripe',
-          event_type: event.type,
-          payload: event,
-          status: status
-        },
-        update: {
-          status: status,
-          processed_at: new Date()
-        }
-      });
-    } catch (error) {
-      console.error('Error marking event as processed:', error);
-      // Don't throw - let caller decide whether to fail
-    }
+    await this.db.webhook_events.update({
+      where: {
+        event_id_processor: { event_id: event.id, processor: 'stripe' }
+      },
+      data: {
+        status,
+        processed_at: new Date(),
+        event_type: event.type,
+        payload: event
+      }
+    });
   }
 
   /**
@@ -848,6 +876,78 @@ export class WebhookProcessor {
     }
 
     throw new Error(`User not found after ${maxRetries} retries: ${email}`);
+  }
+
+  /**
+   * Handle account.updated event
+   * Sync stripe_connected when Connect account capabilities change
+   */
+  async handleAccountUpdated(event) {
+    const account = event.data.object;
+    const stripeConnected = account.charges_enabled === true && account.payouts_enabled === true;
+
+    const users = await this.db.users.findMany({
+      where: { stripe_account_id: account.id },
+      select: { id: true }
+    });
+
+    if (!users.length) {
+      return { action: 'account_updated', warning: 'no_user_found' };
+    }
+
+    await this.db.users.updateMany({
+      where: { stripe_account_id: account.id },
+      data: { stripe_connected: stripeConnected }
+    });
+
+    return { action: 'account_updated', usersUpdated: users.length };
+  }
+
+  /**
+   * Handle charge.dispute / charge.dispute.created events
+   * Marks matching order as disputed (no inventory restock)
+   */
+  async handleChargeDispute(event) {
+    const dispute = event.data.object;
+    const chargeId = typeof dispute.charge === 'string' ? dispute.charge : dispute.charge?.id;
+    const paymentIntentId = typeof dispute.payment_intent === 'string'
+      ? dispute.payment_intent
+      : dispute.payment_intent?.id;
+
+    if (!chargeId && !paymentIntentId) {
+      console.warn('Dispute missing charge and payment_intent:', dispute.id);
+      return { action: 'dispute_processed', warning: 'missing_charge_reference' };
+    }
+
+    try {
+      const order = await this.db.orders.findFirst({
+        where: {
+          OR: [
+            ...(chargeId ? [{ stripe_charge_id: chargeId }] : []),
+            ...(paymentIntentId ? [{ stripe_payment_id: paymentIntentId }] : [])
+          ]
+        }
+      });
+
+      if (!order) {
+        console.warn('No order found for dispute:', dispute.id);
+        return { action: 'dispute_processed', warning: 'order_not_found' };
+      }
+
+      await this.db.orders.update({
+        where: { id: order.id },
+        data: {
+          status: 'disputed',
+          payment_status: 'disputed',
+          updated_at: new Date()
+        }
+      });
+
+      return { action: 'dispute_processed', orderId: order.id };
+    } catch (error) {
+      console.error('Error handling charge dispute:', error);
+      throw error;
+    }
   }
 
   /**

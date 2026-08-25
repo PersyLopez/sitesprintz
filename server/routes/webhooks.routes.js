@@ -34,7 +34,12 @@ async function persistFailedEvent(event, error) {
   }
 }
 
-if (stripe && STRIPE_WEBHOOK_SECRET) {
+if (!stripe || !STRIPE_WEBHOOK_SECRET) {
+    router.post('/stripe', (req, res) => {
+        console.warn('Stripe webhook received but STRIPE_SECRET_KEY or STRIPE_WEBHOOK_SECRET not configured');
+        return res.status(503).json({ error: 'Stripe not configured' });
+    });
+} else {
     router.post('/stripe', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
         const signature = req.headers['stripe-signature'];
         let event;
@@ -76,14 +81,6 @@ if (stripe && STRIPE_WEBHOOK_SECRET) {
             // Return 500 so Stripe retries (idempotency ensures safe retries)
             return res.status(500).json({ error: error.message });
         }
-    });
-}
-
-// If Stripe not configured, add stub route
-if (!stripe) {
-    router.post('/stripe', (req, res) => {
-        console.warn('Stripe webhook received but STRIPE_SECRET_KEY or STRIPE_WEBHOOK_SECRET not configured');
-        return res.status(503).json({ error: 'Stripe not configured' });
     });
 }
 

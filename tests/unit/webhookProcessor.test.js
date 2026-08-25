@@ -1,482 +1,275 @@
-// Unit Tests for WebhookProcessor Service
-// Pure business logic testing - no HTTP layer
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { WebhookProcessor } from '../../server/services/webhookProcessor.js';
+
+function createMockDb() {
+  return {
+    webhook_events: {
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+    },
+    users: {
+      findMany: vi.fn(),
+      updateMany: vi.fn(),
+    },
+    orders: {
+      findFirst: vi.fn(),
+      update: vi.fn(),
+    },
+  };
+}
 
 describe('WebhookProcessor Service', () => {
-  let webhookProcessor;
   let mockDb;
   let mockEmailService;
-  let mockStripe;
-  
+  let processor;
+
   beforeEach(() => {
-    mockDb = {
-      query: vi.fn(),
-      transaction: vi.fn()
-    };
-    
-    mockEmailService = {
-      send: vi.fn().mockResolvedValue({ success: true })
-    };
-    
-    mockStripe = {
-      checkout: {
-        sessions: {
-          retrieve: vi.fn()
-        }
-      },
-      subscriptions: {
-        retrieve: vi.fn()
-      }
-    };
-    
-    // Will be imported once implemented
-    // webhookProcessor = new WebhookProcessor(mockDb, mockEmailService, mockStripe);
+    mockDb = createMockDb();
+    mockEmailService = { sendEmail: vi.fn().mockResolvedValue({ success: true }) };
+    processor = new WebhookProcessor(mockDb, mockEmailService);
   });
-  
-  // ========================================
-  // EVENT ROUTING
-  // ========================================
-  describe('processEvent', () => {
-    it('should route checkout.session.completed to correct handler', async () => {
-      const event = {
-        id: 'evt_test',
-        type: 'checkout.session.completed',
-        data: { object: { mode: 'payment' } }
-      };
-      
-      // Should call handleCheckoutCompleted
-      // await webhookProcessor.processEvent(event);
-      // expect(webhookProcessor.handleCheckoutCompleted).toHaveBeenCalled();
-      
-      // Placeholder assertion until implementation
-      expect(true).toBe(true);
+
+  function setupFreshEvent(event) {
+    mockDb.webhook_events.findUnique.mockResolvedValue(null);
+    mockDb.webhook_events.create.mockResolvedValue({ id: 'wh_1' });
+    mockDb.webhook_events.update.mockResolvedValue({ id: 'wh_1' });
+    return processor.processEvent(event);
+  }
+
+  describe('processEvent idempotency', () => {
+    it('returns duplicate when event already processed', async () => {
+      mockDb.webhook_events.findUnique.mockResolvedValue({ id: 'wh_existing', status: 'processed' });
+
+      const result = await processor.processEvent({
+        id: 'evt_dup',
+        type: 'account.updated',
+        data: { object: {} },
+      });
+
+      expect(result).toEqual({ processed: false, reason: 'duplicate' });
+      expect(mockDb.webhook_events.create).not.toHaveBeenCalled();
     });
-    
-    it('should route customer.subscription.updated to correct handler', async () => {
-      const event = {
-        id: 'evt_test',
-        type: 'customer.subscription.updated',
-        data: { object: {} }
-      };
-      
-      // Should call handleSubscriptionUpdated
-      expect(true).toBe(true);
+
+    it('returns duplicate on create-first unique violation when already processed', async () => {
+      mockDb.webhook_events.findUnique
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({ status: 'processed' });
+      mockDb.webhook_events.create.mockRejectedValue({ code: 'P2002' });
+
+      const result = await processor.processEvent({
+        id: 'evt_race',
+        type: 'account.updated',
+        data: { object: {} },
+      });
+
+      expect(result).toEqual({ processed: false, reason: 'duplicate' });
     });
-    
-    it('should route invoice.payment_failed to correct handler', async () => {
-      const event = {
-        id: 'evt_test',
-        type: 'invoice.payment_failed',
-        data: { object: {} }
-      };
-      
-      // Should call handlePaymentFailed
-      expect(true).toBe(true);
+
+    it('reclaims failed row on P2002 and runs handler', async () => {
+      mockDb.webhook_events.findUnique
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({ status: 'failed' });
+      mockDb.webhook_events.create.mockRejectedValue({ code: 'P2002' });
+      mockDb.webhook_events.update.mockResolvedValue({ id: 'wh_1' });
+      mockDb.users.findMany.mockResolvedValue([]);
+
+      const result = await processor.processEvent({
+        id: 'evt_reclaim',
+        type: 'account.updated',
+        data: {
+          object: { id: 'acct_123', charges_enabled: true, payouts_enabled: true },
+        },
+      });
+
+      expect(mockDb.webhook_events.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: 'processing' }),
+        })
+      );
+      expect(result.processed).toBe(true);
+      expect(result.warning).toBe('no_user_found');
     });
-    
-    it('should return false for unknown event types', async () => {
-      const event = {
+
+    it('marks failed and rethrows when handler throws', async () => {
+      mockDb.webhook_events.findUnique.mockResolvedValue(null);
+      mockDb.webhook_events.create.mockResolvedValue({ id: 'wh_1' });
+      mockDb.users.findMany.mockRejectedValue(new Error('Handler blew up'));
+      mockDb.webhook_events.update.mockResolvedValue({ id: 'wh_1' });
+
+      await expect(
+        processor.processEvent({
+          id: 'evt_handler_fail',
+          type: 'account.updated',
+          data: {
+            object: { id: 'acct_123', charges_enabled: true, payouts_enabled: true },
+          },
+        })
+      ).rejects.toThrow('Handler blew up');
+
+      expect(mockDb.webhook_events.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: 'failed' }),
+        })
+      );
+    });
+
+    it('returns unknown_event_type for unregistered handlers', async () => {
+      const result = await setupFreshEvent({
         id: 'evt_unknown',
         type: 'unknown.event.type',
-        data: { object: {} }
-      };
-      
-      // Should return { processed: false, reason: 'unknown_event_type' }
-      expect(true).toBe(true);
+        data: { object: {} },
+      });
+
+      expect(result).toEqual({ processed: false, reason: 'unknown_event_type' });
+      expect(mockDb.webhook_events.update).toHaveBeenCalled();
+    });
+
+    it('throws when markEventAsProcessed fails after successful handler', async () => {
+      mockDb.webhook_events.findUnique.mockResolvedValue(null);
+      mockDb.webhook_events.create.mockResolvedValue({ id: 'wh_1' });
+      mockDb.users.findMany.mockResolvedValue([]);
+      mockDb.webhook_events.update.mockRejectedValue(new Error('DB write failed'));
+
+      await expect(
+        processor.processEvent({
+          id: 'evt_fail_mark',
+          type: 'account.updated',
+          data: {
+            object: { id: 'acct_123', charges_enabled: true, payouts_enabled: true },
+          },
+        })
+      ).rejects.toThrow('DB write failed');
     });
   });
-  
-  // ========================================
-  // IDEMPOTENCY CHECKING
-  // ========================================
+
   describe('isEventProcessed', () => {
-    it('should return true if event exists in processed_webhooks', async () => {
-      mockDb.query.mockResolvedValueOnce({
-        rows: [{ id: 'evt_already_processed' }],
-        rowCount: 1
+    it('returns true only when status is processed', async () => {
+      mockDb.webhook_events.findUnique.mockResolvedValue({ status: 'processed' });
+      await expect(processor.isEventProcessed('evt_done')).resolves.toBe(true);
+    });
+
+    it('returns false when row exists but status is processing or failed', async () => {
+      mockDb.webhook_events.findUnique.mockResolvedValue({ status: 'processing' });
+      await expect(processor.isEventProcessed('evt_processing')).resolves.toBe(false);
+
+      mockDb.webhook_events.findUnique.mockResolvedValue({ status: 'failed' });
+      await expect(processor.isEventProcessed('evt_failed')).resolves.toBe(false);
+    });
+
+    it('throws on database error', async () => {
+      mockDb.webhook_events.findUnique.mockRejectedValue(new Error('Database connection lost'));
+
+      await expect(processor.isEventProcessed('evt_error')).rejects.toThrow('Database connection lost');
+    });
+  });
+
+  describe('account.updated', () => {
+    it('sets stripe_connected from charges and payouts enabled', async () => {
+      mockDb.users.findMany.mockResolvedValue([{ id: 'user-1' }]);
+      mockDb.users.updateMany.mockResolvedValue({ count: 1 });
+
+      const result = await setupFreshEvent({
+        id: 'evt_account',
+        type: 'account.updated',
+        data: {
+          object: {
+            id: 'acct_123',
+            charges_enabled: true,
+            payouts_enabled: true,
+          },
+        },
       });
-      
-      // const result = await webhookProcessor.isEventProcessed('evt_already_processed');
-      // expect(result).toBe(true);
-      
-      expect(mockDb.query).not.toHaveBeenCalled(); // Will be called after implementation
-    });
-    
-    it('should return false if event does not exist', async () => {
-      mockDb.query.mockResolvedValueOnce({
-        rows: [],
-        rowCount: 0
+
+      expect(result.processed).toBe(true);
+      expect(mockDb.users.updateMany).toHaveBeenCalledWith({
+        where: { stripe_account_id: 'acct_123' },
+        data: { stripe_connected: true },
       });
-      
-      // const result = await webhookProcessor.isEventProcessed('evt_new');
-      // expect(result).toBe(false);
-      
-      expect(true).toBe(true);
     });
-    
-    it('should query with correct SQL', async () => {
-      mockDb.query.mockResolvedValueOnce({ rows: [], rowCount: 0 });
-      
-      // await webhookProcessor.isEventProcessed('evt_test');
-      
-      // expect(mockDb.query).toHaveBeenCalledWith(
-      //   expect.stringMatching(/SELECT.*FROM processed_webhooks.*WHERE id/i),
-      //   ['evt_test']
-      // );
-      
-      expect(true).toBe(true);
-    });
-  });
-  
-  describe('markEventAsProcessed', () => {
-    it('should insert event into processed_webhooks', async () => {
-      mockDb.query.mockResolvedValueOnce({ rows: [], rowCount: 1 });
-      
-      const event = {
-        id: 'evt_to_mark',
-        type: 'test.event',
-        data: { object: {} }
-      };
-      
-      // await webhookProcessor.markEventAsProcessed(event);
-      
-      // expect(mockDb.query).toHaveBeenCalledWith(
-      //   expect.stringMatching(/INSERT INTO processed_webhooks/i),
-      //   expect.arrayContaining(['evt_to_mark', 'test.event'])
-      // );
-      
-      expect(true).toBe(true);
-    });
-    
-    it('should store event data as JSONB', async () => {
-      mockDb.query.mockResolvedValueOnce({ rows: [], rowCount: 1 });
-      
-      const event = {
-        id: 'evt_json',
-        type: 'test.event',
-        data: { object: { key: 'value' } }
-      };
-      
-      // await webhookProcessor.markEventAsProcessed(event);
-      
-      // const callArgs = mockDb.query.mock.calls[0][1];
-      // expect(callArgs[2]).toBe(JSON.stringify(event));
-      
-      expect(true).toBe(true);
-    });
-  });
-  
-  // ========================================
-  // PAYMENT ORDER CREATION
-  // ========================================
-  describe('createOrder', () => {
-    it('should create order with correct data', async () => {
-      const sessionData = {
-        id: 'cs_test',
-        amount_total: 9900,
-        currency: 'usd',
-        customer_email: 'customer@example.com',
-        metadata: {
-          site_id: 'site-123',
-          order_items: JSON.stringify([
-            { name: 'Product 1', price: 99, quantity: 1 }
-          ])
-        }
-      };
-      
-      mockDb.transaction.mockImplementation(async (callback) => {
-        const mockTx = {
-          query: vi.fn().mockResolvedValue({
-            rows: [{ id: 'order-123' }],
-            rowCount: 1
-          })
-        };
-        return await callback(mockTx);
+
+    it('no-ops when no user matches stripe account', async () => {
+      mockDb.users.findMany.mockResolvedValue([]);
+
+      const result = await setupFreshEvent({
+        id: 'evt_account_none',
+        type: 'account.updated',
+        data: {
+          object: { id: 'acct_orphan', charges_enabled: true, payouts_enabled: true },
+        },
       });
-      
-      // const result = await webhookProcessor.createOrder(sessionData);
-      // expect(result.orderId).toBe('order-123');
-      
-      expect(true).toBe(true);
+
+      expect(result.warning).toBe('no_user_found');
+      expect(mockDb.users.updateMany).not.toHaveBeenCalled();
     });
-    
-    it('should create order_items in same transaction', async () => {
-      const sessionData = {
-        metadata: {
-          site_id: 'site-123',
-          order_items: JSON.stringify([
-            { name: 'Product 1', price: 50, quantity: 2 },
-            { name: 'Product 2', price: 30, quantity: 1 }
-          ])
-        }
-      };
-      
-      mockDb.transaction.mockImplementation(async (callback) => {
-        const mockTx = {
-          query: vi.fn()
-            .mockResolvedValueOnce({ rows: [{ id: 'order-123' }] }) // INSERT order
-            .mockResolvedValueOnce({ rowCount: 2 }) // INSERT order_items
-        };
-        return await callback(mockTx);
+  });
+
+  describe('charge.dispute', () => {
+    it('marks order payment_status and status as disputed', async () => {
+      mockDb.orders.findFirst.mockResolvedValue({ id: 'order-1' });
+      mockDb.orders.update.mockResolvedValue({ id: 'order-1' });
+
+      const result = await setupFreshEvent({
+        id: 'evt_dispute',
+        type: 'charge.dispute.created',
+        data: {
+          object: {
+            id: 'dp_123',
+            charge: 'ch_123',
+            payment_intent: 'pi_123',
+          },
+        },
       });
-      
-      // await webhookProcessor.createOrder(sessionData);
-      
-      // const txCallback = mockDb.transaction.mock.calls[0][0];
-      // const mockTx = { query: vi.fn().mockResolvedValue({ rows: [{ id: 'order-123' }] }) };
-      // await txCallback(mockTx);
-      
-      // expect(mockTx.query).toHaveBeenCalledTimes(2); // order + order_items
-      
-      expect(true).toBe(true);
-    });
-    
-    it('should rollback if order_items insert fails', async () => {
-      const sessionData = {
-        metadata: {
-          site_id: 'site-123',
-          order_items: JSON.stringify([{ name: 'Product 1', price: 50, quantity: 1 }])
-        }
-      };
-      
-      mockDb.transaction.mockRejectedValue(new Error('Insert failed'));
-      
-      // await expect(webhookProcessor.createOrder(sessionData)).rejects.toThrow();
-      
-      expect(true).toBe(true);
-    });
-  });
-  
-  // ========================================
-  // SUBSCRIPTION MANAGEMENT
-  // ========================================
-  describe('createSubscription', () => {
-    it('should create subscription record', async () => {
-      const sessionData = {
-        customer: 'cus_test',
-        subscription: 'sub_test',
-        metadata: {
-          userId: 'user-123',
-          plan: 'pro'
-        }
-      };
-      
-      mockDb.transaction.mockImplementation(async (callback) => {
-        const mockTx = {
-          query: vi.fn().mockResolvedValue({ rows: [], rowCount: 1 })
-        };
-        return await callback(mockTx);
+
+      expect(result.processed).toBe(true);
+      expect(mockDb.orders.update).toHaveBeenCalledWith({
+        where: { id: 'order-1' },
+        data: {
+          status: 'disputed',
+          payment_status: 'disputed',
+          updated_at: expect.any(Date),
+        },
       });
-      
-      // await webhookProcessor.createSubscription(sessionData);
-      
-      // expect(mockDb.transaction).toHaveBeenCalled();
-      
-      expect(true).toBe(true);
     });
-    
-    it('should update user plan', async () => {
-      const sessionData = {
-        metadata: {
-          userId: 'user-123',
-          plan: 'pro'
-        }
-      };
-      
-      mockDb.transaction.mockImplementation(async (callback) => {
-        const mockTx = {
-          query: vi.fn().mockResolvedValue({ rows: [], rowCount: 1 })
-        };
-        return await callback(mockTx);
+
+    it('warns without order lookup when charge and payment_intent missing', async () => {
+      const result = await setupFreshEvent({
+        id: 'evt_dispute_no_refs',
+        type: 'charge.dispute',
+        data: { object: { id: 'dp_no_refs' } },
       });
-      
-      // await webhookProcessor.createSubscription(sessionData);
-      
-      // const txCallback = mockDb.transaction.mock.calls[0][0];
-      // const mockTx = { query: vi.fn().mockResolvedValue({ rows: [], rowCount: 1 }) };
-      // await txCallback(mockTx);
-      
-      // expect(mockTx.query).toHaveBeenCalledWith(
-      //   expect.stringMatching(/UPDATE users.*plan/i),
-      //   expect.arrayContaining(['pro', 'user-123'])
-      // );
-      
-      expect(true).toBe(true);
+
+      expect(result.warning).toBe('missing_charge_reference');
+      expect(mockDb.orders.findFirst).not.toHaveBeenCalled();
     });
-  });
-  
-  describe('updateSubscriptionStatus', () => {
-    it('should update subscription status', async () => {
-      mockDb.query.mockResolvedValueOnce({ rows: [], rowCount: 1 });
-      
-      // await webhookProcessor.updateSubscriptionStatus('sub_test', 'canceled');
-      
-      // expect(mockDb.query).toHaveBeenCalledWith(
-      //   expect.stringMatching(/UPDATE.*subscriptions.*status/i),
-      //   expect.arrayContaining(['canceled', 'sub_test'])
-      // );
-      
-      expect(true).toBe(true);
-    });
-    
-    it('should update user subscription_status', async () => {
-      mockDb.query
-        .mockResolvedValueOnce({ rows: [{ user_id: 'user-123' }], rowCount: 1 })
-        .mockResolvedValueOnce({ rows: [], rowCount: 1 });
-      
-      // await webhookProcessor.updateSubscriptionStatus('sub_test', 'past_due');
-      
-      // expect(mockDb.query).toHaveBeenCalledWith(
-      //   expect.stringMatching(/UPDATE users.*subscription_status/i),
-      //   expect.arrayContaining(['past_due', 'user-123'])
-      // );
-      
-      expect(true).toBe(true);
-    });
-  });
-  
-  // ========================================
-  // EMAIL NOTIFICATIONS
-  // ========================================
-  describe('sendOrderConfirmation', () => {
-    it('should send email to customer', async () => {
-      const orderData = {
-        orderId: 'order-123',
-        customerEmail: 'customer@example.com',
-        amount: 9900,
-        items: [{ name: 'Product 1', price: 99, quantity: 1 }]
-      };
-      
-      // await webhookProcessor.sendOrderConfirmation(orderData);
-      
-      // expect(mockEmailService.send).toHaveBeenCalledWith(
-      //   'customer@example.com',
-      //   expect.stringMatching(/order.*confirmation/i),
-      //   expect.objectContaining({
-      //     orderId: 'order-123',
-      //     amount: 9900
-      //   })
-      // );
-      
-      expect(true).toBe(true);
-    });
-    
-    it('should not throw if email fails', async () => {
-      mockEmailService.send.mockRejectedValue(new Error('Email service down'));
-      
-      const orderData = {
-        orderId: 'order-123',
-        customerEmail: 'customer@example.com'
-      };
-      
-      // Should log error but not throw
-      // await expect(webhookProcessor.sendOrderConfirmation(orderData)).resolves.not.toThrow();
-      
-      expect(true).toBe(true);
-    });
-  });
-  
-  describe('sendOwnerNotification', () => {
-    it('should send email to site owner', async () => {
-      mockDb.query.mockResolvedValueOnce({
-        rows: [{ owner_email: 'owner@example.com' }],
-        rowCount: 1
+
+    it('warns and returns when no order matches dispute', async () => {
+      mockDb.orders.findFirst.mockResolvedValue(null);
+
+      const result = await setupFreshEvent({
+        id: 'evt_dispute_missing',
+        type: 'charge.dispute',
+        data: {
+          object: { id: 'dp_orphan', charge: 'ch_orphan' },
+        },
       });
-      
-      const orderData = {
-        siteId: 'site-123',
-        orderId: 'order-123'
-      };
-      
-      // await webhookProcessor.sendOwnerNotification(orderData);
-      
-      // expect(mockEmailService.send).toHaveBeenCalledWith(
-      //   'owner@example.com',
-      //   expect.stringMatching(/new.*order/i),
-      //   expect.any(Object)
-      // );
-      
-      expect(true).toBe(true);
+
+      expect(result.warning).toBe('order_not_found');
+      expect(mockDb.orders.update).not.toHaveBeenCalled();
     });
   });
-  
-  // ========================================
-  // ERROR HANDLING
-  // ========================================
-  describe('Error Handling', () => {
-    it('should handle database errors gracefully', async () => {
-      mockDb.query.mockRejectedValue(new Error('Database connection lost'));
-      
-      const event = {
-        id: 'evt_error',
-        type: 'test.event',
-        data: { object: {} }
-      };
-      
-      // await expect(webhookProcessor.isEventProcessed(event.id)).rejects.toThrow('Database connection lost');
-      
-      expect(true).toBe(true);
-    });
-    
-    it('should log errors with context', async () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      
-      mockDb.query.mockRejectedValue(new Error('Query failed'));
-      
-      // try {
-      //   await webhookProcessor.isEventProcessed('evt_test');
-      // } catch (error) {
-      //   // Error should be logged with context
-      // }
-      
-      // expect(consoleSpy).toHaveBeenCalledWith(
-      //   expect.stringMatching(/webhook|error/i),
-      //   expect.any(Error)
-      // );
-      
-      consoleSpy.mockRestore();
-      expect(true).toBe(true);
-    });
-  });
-  
-  // ========================================
-  // RACE CONDITION HANDLING
-  // ========================================
-  describe('Race Condition Handling', () => {
-    it('should retry user lookup if not found initially', async () => {
-      mockDb.query
-        .mockResolvedValueOnce({ rows: [], rowCount: 0 }) // First attempt - not found
-        .mockResolvedValueOnce({ rows: [{ id: 'user-123' }], rowCount: 1 }); // Retry - found
-      
-      // const result = await webhookProcessor.findUserWithRetry('user-123');
-      // expect(result.id).toBe('user-123');
-      // expect(mockDb.query).toHaveBeenCalledTimes(2);
-      
-      expect(true).toBe(true);
-    });
-    
-    it('should wait between retries', async () => {
-      mockDb.query
-        .mockResolvedValueOnce({ rows: [], rowCount: 0 })
-        .mockResolvedValueOnce({ rows: [{ id: 'user-123' }], rowCount: 1 });
-      
-      const start = Date.now();
-      // await webhookProcessor.findUserWithRetry('user-123', { retryDelay: 100 });
-      const duration = Date.now() - start;
-      
-      // expect(duration).toBeGreaterThanOrEqual(100);
-      
-      expect(true).toBe(true);
-    });
-    
-    it('should fail after max retries', async () => {
-      mockDb.query.mockResolvedValue({ rows: [], rowCount: 0 });
-      
-      // await expect(
-      //   webhookProcessor.findUserWithRetry('user-nonexistent', { maxRetries: 3 })
-      // ).rejects.toThrow(/not found|max retries/i);
-      
-      expect(true).toBe(true);
+
+  describe('booking payment', () => {
+    it('returns warning when appointment_id missing (does not throw)', async () => {
+      const result = await processor.handleBookingPayment({
+        id: 'cs_booking',
+        metadata: { type: 'booking' },
+      });
+
+      expect(result).toEqual({
+        action: 'booking_payment_processed',
+        warning: 'missing appointment_id',
+      });
     });
   });
 });
