@@ -16,6 +16,7 @@ import {
 import { resolvePrivateAddressForBuyer } from '../../src/utils/liveSiteContact.js';
 import { parseSiteData } from '../utils/parseSiteData.js';
 import { fulfillLaborSession } from './labor/laborFulfillment.js';
+import { productCatalogService } from './ProductCatalogService.js';
 
 export class WebhookProcessor {
   constructor(db = null, emailSvc = null, stripe = null, paymentAdapter = null) {
@@ -358,6 +359,20 @@ export class WebhookProcessor {
         },
         include: { order_items: true }
       });
+
+      // Decrement site catalog stock (source of truth for dashboard products)
+      const siteCatalogItems = items.map((item) => ({
+        productId: item.productId != null ? String(item.productId) : null,
+        quantity: item.quantity || 1
+      })).filter((item) => item.productId);
+
+      if (siteCatalogItems.length > 0 && session.metadata.site_id) {
+        await productCatalogService.decrementSiteCatalog(
+          session.metadata.site_id,
+          siteCatalogItems,
+          tx
+        );
+      }
 
       // Decrement inventory for each item
       for (const item of orderItemsData) {
@@ -1019,6 +1034,12 @@ export class WebhookProcessor {
           updated_at: new Date()
         }
       });
+
+      // Restock site catalog stock
+      const siteCatalogItems = productCatalogService.extractSiteCatalogItemsFromOrder(order);
+      if (siteCatalogItems.length > 0 && order.site_id) {
+        await productCatalogService.restockSiteCatalog(order.site_id, siteCatalogItems);
+      }
 
       // Restock inventory
       for (const item of order.order_items) {

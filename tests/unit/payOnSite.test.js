@@ -129,4 +129,30 @@ describe('pay on site helpers', () => {
     };
     expect(buildPublishableContent(draft, 'growth').settings.payOnSite).toBe(false);
   });
+
+  it('rejects pay-on-site checkout when stock is insufficient', () => {
+    const catalog = [{ id: 'muffin', name: 'Muffin', price: 4, stock: 1 }];
+    const result = buildPayOnSiteOrderItems([
+      { id: 'muffin', name: 'Muffin', price: 4, quantity: 2 }
+    ], catalog);
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain('Insufficient stock for Muffin');
+  });
+
+  it('carries stock through extractSiteCatalog', () => {
+    const catalog = extractSiteCatalog({
+      products: [{ id: 'tea', name: 'Tea', price: 2, stock: 3 }]
+    });
+    expect(catalog).toEqual([
+      expect.objectContaining({ id: 'tea', stock: 3 })
+    ]);
+  });
+
+  it('allows unlimited stock when stock is omitted', () => {
+    const catalog = [{ id: 'soup', name: 'Soup', price: 8 }];
+    const result = buildPayOnSiteOrderItems([
+      { id: 'soup', name: 'Soup', price: 8, quantity: 99 }
+    ], catalog);
+    expect(result.valid).toBe(true);
+  });
 });

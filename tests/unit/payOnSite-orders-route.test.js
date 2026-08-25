@@ -5,6 +5,7 @@ import { prisma } from '../../database/db.js';
 
 vi.mock('../../database/db.js', () => ({
   prisma: {
+    $transaction: vi.fn(async (callback) => callback(prisma)),
     sites: {
       findUnique: vi.fn(),
       findFirst: vi.fn(),
@@ -31,6 +32,14 @@ vi.mock('../../database/db.js', () => ({
   }
 }));
 
+vi.mock('../../server/services/ProductCatalogService.js', () => ({
+  productCatalogService: {
+    decrementSiteCatalog: vi.fn().mockResolvedValue({}),
+    restockSiteCatalog: vi.fn().mockResolvedValue({}),
+    extractSiteCatalogItemsFromOrder: vi.fn().mockReturnValue([])
+  }
+}));
+
 vi.mock('../../server/middleware/auth.js', () => ({
   requireAuth: (req, _res, next) => {
     req.user = { id: '11111111-1111-1111-1111-111111111111', role: 'user' };
@@ -39,6 +48,7 @@ vi.mock('../../server/middleware/auth.js', () => ({
 }));
 
 import ordersRoutes from '../../server/routes/orders.routes.js';
+import { productCatalogService } from '../../server/services/ProductCatalogService.js';
 
 const growthSite = {
   id: 'site-1',
@@ -115,6 +125,34 @@ describe('POST /api/orders/:siteId/pay-on-site', () => {
         total_amount: 16
       })
     }));
+    expect(productCatalogService.decrementSiteCatalog).toHaveBeenCalledWith(
+      'site-1',
+      [{ productId: 'soup', quantity: 2 }],
+      prisma
+    );
+  });
+
+  it('rejects out-of-stock items before creating an order', async () => {
+    prisma.sites.findUnique.mockResolvedValue({
+      ...growthSite,
+      site_data: {
+        settings: { payOnSite: true, allowCheckout: true },
+        products: [{ id: 'soup', name: 'Soup', price: 8, stock: 1 }]
+      }
+    });
+
+    const response = await request(createApp())
+      .post('/api/orders/site-1/pay-on-site')
+      .send({
+        customerName: 'Alex Rivera',
+        customerEmail: 'alex@example.com',
+        items: [{ id: 'soup', name: 'Soup', price: 8, quantity: 2 }]
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe('INVALID_ITEMS');
+    expect(prisma.orders.create).not.toHaveBeenCalled();
+    expect(productCatalogService.decrementSiteCatalog).not.toHaveBeenCalled();
   });
 
   it('rejects items that are not on the site catalog', async () => {

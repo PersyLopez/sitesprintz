@@ -5,6 +5,93 @@
  */
 
 import { prisma } from '../../database/db.js';
+import { parseSiteData } from '../utils/parseSiteData.js';
+
+function getCatalogProducts(siteData) {
+  return siteData?.products || siteData?.data?.products || [];
+}
+
+function normalizeSiteCatalogItems(items) {
+  if (!Array.isArray(items)) {
+    return [];
+  }
+
+  const qtyByProductId = new Map();
+
+  for (const item of items) {
+    const productId = item?.productId ?? item?.id;
+    const quantity = Math.floor(Number(item?.quantity) || 0);
+    if (!productId || quantity < 1) {
+      continue;
+    }
+    const key = String(productId);
+    qtyByProductId.set(key, (qtyByProductId.get(key) || 0) + quantity);
+  }
+
+  return [...qtyByProductId.entries()].map(([productId, quantity]) => ({
+    productId,
+    quantity
+  }));
+}
+
+function writeCatalogProducts(siteData, products) {
+  if (Array.isArray(siteData?.products)) {
+    return { ...siteData, products };
+  }
+  if (Array.isArray(siteData?.data?.products)) {
+    return {
+      ...siteData,
+      data: {
+        ...siteData.data,
+        products
+      }
+    };
+  }
+  return { ...siteData, products };
+}
+
+function applySiteCatalogStockChange(siteData, items, direction) {
+  const normalizedItems = normalizeSiteCatalogItems(items);
+  if (normalizedItems.length === 0) {
+    return siteData;
+  }
+
+  const products = [...getCatalogProducts(siteData)];
+  if (products.length === 0) {
+    throw new Error('Site catalog has no products');
+  }
+
+  for (const { productId, quantity } of normalizedItems) {
+    const index = products.findIndex((product) => String(product.id) === productId);
+    if (index === -1) {
+      throw new Error(`Product not found: ${productId}`);
+    }
+
+    const product = products[index];
+    if (product.stock === undefined || product.stock === null) {
+      continue;
+    }
+
+    const remaining = Number.parseInt(String(product.stock), 10);
+    if (!Number.isFinite(remaining)) {
+      continue;
+    }
+
+    if (direction === 'decrement') {
+      if (remaining < quantity) {
+        throw new Error(
+          `Insufficient stock for ${product.name}. ` +
+          `Available: ${remaining}, Requested: ${quantity}`
+        );
+      }
+      products[index] = { ...product, stock: remaining - quantity };
+    } else {
+      products[index] = { ...product, stock: remaining + quantity };
+    }
+  }
+
+  return writeCatalogProducts(siteData, products);
+}
 
 export class ProductCatalogService {
   /**
@@ -152,6 +239,114 @@ export class ProductCatalogService {
     }
 
     return { items: rebuiltItems, totalAmount };
+  }
+
+  /**
+   * Atomically decrement site_data.products stock (catalog of record for dashboard sites).
+   * @param {string} siteId
+   * @param {Array<{ productId?: string, id?: string, quantity: number }>} items
+   * @param {import('@prisma/client').Prisma.TransactionClient} [tx]
+   */
+  async decrementSiteCatalog(siteId, items, tx = null) {
+    const run = async (transaction) => {
+      const rows = await transaction.$queryRaw`
+        SELECT id, site_data FROM sites WHERE id = ${siteId} FOR UPDATE
+      `;
+
+      if (!Array.isArray(rows) || rows.length === 0) {
+        throw new Error(`Site not found: ${siteId}`);
+      }
+
+      const row = rows[0];
+      const siteData = parseSiteData(row.site_data);
+      const updatedSiteData = applySiteCatalogStockChange(siteData, items, 'decrement');
+
+      await transaction.sites.update({
+        where: { id: siteId },
+        data: {
+          site_data: updatedSiteData,
+          updated_at: new Date()
+        }
+      });
+
+      return updatedSiteData;
+    };
+
+    if (tx) {
+      return run(tx);
+    }
+
+    return prisma.$transaction(run);
+  }
+
+  /**
+   * Restock site_data.products after refund or cancellation.
+   * @param {string} siteId
+   * @param {Array<{ productId?: string, id?: string, quantity: number }>} items
+   * @param {import('@prisma/client').Prisma.TransactionClient} [tx]
+   */
+  async restockSiteCatalog(siteId, items, tx = null) {
+    const run = async (transaction) => {
+      const rows = await transaction.$queryRaw`
+        SELECT id, site_data FROM sites WHERE id = ${siteId} FOR UPDATE
+      `;
+
+      if (!Array.isArray(rows) || rows.length === 0) {
+        throw new Error(`Site not found: ${siteId}`);
+      }
+
+      const row = rows[0];
+      const siteData = parseSiteData(row.site_data);
+      const updatedSiteData = applySiteCatalogStockChange(siteData, items, 'restock');
+
+      await transaction.sites.update({
+        where: { id: siteId },
+        data: {
+          site_data: updatedSiteData,
+          updated_at: new Date()
+        }
+      });
+
+      return updatedSiteData;
+    };
+
+    if (tx) {
+      return run(tx);
+    }
+
+    return prisma.$transaction(run);
+  }
+
+  /**
+   * Normalize order line items for site catalog stock changes.
+   * @param {object} order
+   * @returns {Array<{ productId: string, quantity: number }>}
+   */
+  extractSiteCatalogItemsFromOrder(order) {
+    let items = order?.items;
+    if (typeof items === 'string') {
+      try {
+        items = JSON.parse(items);
+      } catch {
+        items = [];
+      }
+    }
+
+    const fromDenormalized = normalizeSiteCatalogItems(items);
+    if (fromDenormalized.length > 0) {
+      return fromDenormalized;
+    }
+
+    if (Array.isArray(order?.order_items) && order.order_items.length > 0) {
+      return normalizeSiteCatalogItems(
+        order.order_items.map((item) => ({
+          productId: item.product_id ?? item.productId ?? item.id,
+          quantity: item.quantity
+        }))
+      );
+    }
+
+    return [];
   }
 
   /**

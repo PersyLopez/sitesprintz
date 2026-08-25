@@ -66,11 +66,18 @@ function pushCatalogItem(list, item, index) {
   const name = String(item.name || item.title || '').trim();
   const price = parseMoney(item.price);
   if (!name || price <= 0) return;
-  list.push({
+  const catalogItem = {
     id: productKey(item, index),
     name,
     price
-  });
+  };
+  if (item.stock !== undefined && item.stock !== null) {
+    const stock = Number.parseInt(String(item.stock), 10);
+    if (Number.isFinite(stock)) {
+      catalogItem.stock = stock;
+    }
+  }
+  list.push(catalogItem);
 }
 
 /**
@@ -147,6 +154,15 @@ export function buildPayOnSiteOrderItems(rawItems, catalog) {
 
     if (!catalogItem) {
       return { valid: false, error: 'An item is not on this site\'s menu' };
+    }
+
+    if (catalogItem.stock !== undefined && catalogItem.stock !== null) {
+      if (catalogItem.stock < quantity) {
+        return {
+          valid: false,
+          error: `Insufficient stock for ${catalogItem.name}. Available: ${catalogItem.stock}, Requested: ${quantity}`
+        };
+      }
     }
 
     items.push({

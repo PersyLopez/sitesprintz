@@ -19,6 +19,7 @@ import {
 import { sanitizeString, validateEmail, validatePhone } from '../utils/validators.js';
 import { checkoutLimiter, orderLimiter } from '../middleware/rateLimiting.js';
 import { isPayOnSiteEnabled, buildPayOnSiteOrderItems, extractSiteCatalog } from '../utils/payOnSite.js';
+import { productCatalogService } from '../services/ProductCatalogService.js';
 import {
   isShowcaseDemoSite,
   isShowcaseDemoSiteData,
@@ -460,25 +461,43 @@ router.post('/:siteId/pay-on-site', checkoutLimiter, orderLimiter, asyncHandler(
     }, 'Demo order placed. Pay when you pick up — no real order was saved.');
   }
 
-  const order = await prisma.orders.create({
-    data: {
-      site_id: site.id,
-      user_id: site.user_id || undefined,
-      customer_email: emailCheck.value,
-      customer_name: customerName,
-      customer_phone: phoneCheck.value,
-      items: built.items,
-      total_amount: built.total,
-      currency: 'usd',
-      payment_status: 'unpaid',
-      status: 'pending',
-      fulfillment_type: 'pay_on_site',
-      notes,
-      metadata: {
-        paymentMethod: 'pay_on_site'
-      }
+  let order;
+  try {
+    order = await prisma.$transaction(async (tx) => {
+      const createdOrder = await tx.orders.create({
+        data: {
+          site_id: site.id,
+          user_id: site.user_id || undefined,
+          customer_email: emailCheck.value,
+          customer_name: customerName,
+          customer_phone: phoneCheck.value,
+          items: built.items,
+          total_amount: built.total,
+          currency: 'usd',
+          payment_status: 'unpaid',
+          status: 'pending',
+          fulfillment_type: 'pay_on_site',
+          notes,
+          metadata: {
+            paymentMethod: 'pay_on_site'
+          }
+        }
+      });
+
+      await productCatalogService.decrementSiteCatalog(
+        site.id,
+        built.items.map((item) => ({ productId: item.id, quantity: item.quantity })),
+        tx
+      );
+
+      return createdOrder;
+    });
+  } catch (error) {
+    if (error?.message?.includes('Insufficient stock')) {
+      return sendBadRequest(res, error.message, 'INSUFFICIENT_STOCK');
     }
-  });
+    throw error;
+  }
 
   const total = Number.parseFloat(String(order.total_amount));
 
@@ -635,13 +654,35 @@ router.put('/:siteId/orders/:orderId/status', requireAuth, asyncHandler(async (r
     ? { payment_status: 'paid' }
     : {};
 
-  const order = await prisma.orders.update({
-    where: { id: orderId },
-    data: {
-      status: nextStatus,
-      updated_at: new Date(),
-      ...paymentUpdate
+  const stockHeldStatuses = new Set([
+    ORDER_STATUSES.PENDING,
+    ORDER_STATUSES.PROCESSING,
+    ORDER_STATUSES.FULFILLED,
+    ORDER_STATUSES.SHIPPED,
+    ORDER_STATUSES.DELIVERED
+  ]);
+
+  const order = await prisma.$transaction(async (tx) => {
+    const updatedOrder = await tx.orders.update({
+      where: { id: orderId },
+      data: {
+        status: nextStatus,
+        updated_at: new Date(),
+        ...paymentUpdate
+      }
+    });
+
+    if (
+      nextStatus === ORDER_STATUSES.CANCELLED &&
+      stockHeldStatuses.has(oldStatus)
+    ) {
+      const restockItems = productCatalogService.extractSiteCatalogItemsFromOrder(existingOrder);
+      if (restockItems.length > 0) {
+        await productCatalogService.restockSiteCatalog(ownership.site.id, restockItems, tx);
+      }
     }
+
+    return updatedOrder;
   });
 
   // Send email notification if status changed
