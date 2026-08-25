@@ -121,10 +121,7 @@ describe('Landing Page - Pricing', () => {
     expect(extras).toHaveTextContent(/\$49/);
     expect(extras).toHaveTextContent(/\$99/);
     expect(extras).toHaveTextContent(/\$250/);
-    expect(screen.getByTestId('labor-extras-cta')).toHaveAttribute(
-      'href',
-      expect.stringMatching(/^mailto:hello@sitesprintz\.com/),
-    );
+    expect(screen.getByTestId('labor-extras-cta')).toHaveAttribute('href', '/build');
     expect(document.querySelectorAll('.pricing-card')).toHaveLength(2);
   });
 

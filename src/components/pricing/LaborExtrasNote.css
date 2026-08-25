@@ -53,3 +53,10 @@
   outline: 2px solid var(--accent, #0d9488);
   outline-offset: 3px;
 }
+
+.labor-extras-cta-secondary {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary, #64748b);
+}

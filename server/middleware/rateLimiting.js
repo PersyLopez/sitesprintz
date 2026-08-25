@@ -235,6 +235,31 @@ export const feedbackLimiter = rateLimit({
   }
 });
 
+/**
+ * Build intake rate limiter
+ *
+ * Limits: 5 submissions per 15 minutes per IP
+ */
+export const buildIntakeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: isTest ? 1000 : 5,
+  message: {
+    error: 'Too many build requests',
+    message: 'Please wait before submitting another build request.',
+    retryAfter: 15 * 60,
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => ipKeyGenerator(req),
+  handler: (req, res) => {
+    res.status(429).json({
+      error: 'Too many build requests',
+      message: 'Please wait before submitting another build request.',
+      retryAfter: 15 * 60,
+    });
+  },
+});
+
 export const claimAcceptLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: isTest ? 1000 : 10,

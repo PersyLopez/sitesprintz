@@ -48,6 +48,7 @@ const Settings = lazy(() => import('./pages/Settings'));
 const FoundationSettingsPage = lazy(() => import('./pages/FoundationSettingsPage'));
 const StaffInviteAccept = lazy(() => import('./pages/StaffInviteAccept'));
 const ClaimSite = lazy(() => import('./pages/ClaimSite'));
+const BuildIntake = lazy(() => import('./pages/BuildIntake'));
 const StaffDashboard = lazy(() => import('./pages/StaffDashboard'));
 const StaffAppointments = lazy(() => import('./pages/StaffAppointments'));
 const StaffSchedule = lazy(() => import('./pages/StaffSchedule'));
@@ -95,6 +96,14 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
+              <Route
+                path="/build"
+                element={
+                  <Suspense fallback={<LoadingFallback message="Loading..." />}>
+                    <BuildIntake />
+                  </Suspense>
+                }
+              />
               <Route 
                 path="/register" 
                 element={

@@ -316,6 +316,8 @@ import submissionsRoutes from './server/routes/submissions.routes.js';
 app.use('/api/submissions', submissionsRoutes);
 import feedbackRoutes from './server/routes/feedback.routes.js';
 app.use('/api/feedback', feedbackRoutes);
+import buildIntakeRoutes from './server/routes/buildIntake.routes.js';
+app.use('/api/build-intake', buildIntakeRoutes);
 import serviceRequestsRoutes from './server/routes/service-requests.routes.js';
 app.use('/api/service-requests', serviceRequestsRoutes);
 import draftsRoutes from './server/routes/drafts.routes.js';

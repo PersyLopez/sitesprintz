@@ -118,6 +118,8 @@ export class EmailService {
       subscriptionCreated: (data) => this.renderSubscriptionTemplate(data),
       laborPurchaseCustomer: (data) => this.renderLaborPurchaseCustomerTemplate(data),
       laborPurchaseOps: (data) => this.renderLaborPurchaseOpsTemplate(data),
+      buildIntakeCustomer: (data) => this.renderBuildIntakeCustomerTemplate(data),
+      buildIntakeOps: (data) => this.renderBuildIntakeOpsTemplate(data),
     };
   }
 
@@ -528,11 +530,19 @@ export class EmailService {
     const skuName = String(data?.skuName || 'optional extra').slice(0, 80)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;');
+    const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
+    const buildUrl = `${siteUrl}/build`;
     return {
       subject: `SiteSprintz — ${skuName} received`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <p>We received your ${skuName} request. We will follow up from hello@sitesprintz.com. The editor stays available if you want to keep going yourself.</p>
+          <p style="margin: 24px 0;">
+            <a href="${buildUrl}" style="display: inline-block; padding: 12px 24px; background: #2563eb; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600;">
+              Share what we should build
+            </a>
+          </p>
+          <p style="color: #64748b; font-size: 14px;">Leave anything unknown blank — we only use what you send.</p>
         </div>
       `,
       provider: 'resend'
@@ -560,6 +570,121 @@ export class EmailService {
         </div>
       `,
       provider: 'resend'
+    };
+  }
+
+  renderBuildIntakeCustomerTemplate(data) {
+    const name = this.escapeHtml(data?.contactName || 'there');
+    const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
+    return {
+      subject: 'SiteSprintz — we received your build request',
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <p>Hi ${name},</p>
+          <p>Thanks — we received what you sent for your Growth site build. We only use the details you provided; anything you left blank stays blank on the site.</p>
+          <p>Send your own photos via Drive, Dropbox, or https links only. We do not invent hours, staff, or stock images.</p>
+          <p>Your street stays private on the live site unless you asked us to publish it. If hidden, visitors see your service area and radius; customers get the exact address in booking or order confirmations.</p>
+          <p>We will follow up from hello@sitesprintz.com. You can add more anytime at <a href="${siteUrl}/build">${siteUrl}/build</a>.</p>
+        </div>
+      `,
+      provider: 'resend',
+    };
+  }
+
+  renderBuildIntakeOpsTemplate(data) {
+    const esc = (value) => this.escapeHtml(value || '');
+    const line = (label, value) => (value ? `<p><strong>${label}:</strong> ${esc(value)}</p>` : '');
+    const section = (title, body) => (body ? `<h3 style="margin-top:24px;">${title}</h3>${body}` : '');
+
+    const sources = [
+      line('Website', data.website),
+      line('Instagram', data.instagram),
+      line('Facebook', data.facebook),
+      line('Scheduler', data.scheduler),
+      line('Google Maps', data.googleMaps),
+      line('Logo URL', data.logoUrl),
+      line('Photos album', data.photosUrl),
+    ].join('');
+
+    const brand = [
+      line('Business', data.businessName),
+      line('Tagline', data.businessTagline),
+      line('About', data.aboutBio),
+      line('Custom domain', data.customDomain),
+      line('Brand colors', data.brandColors),
+      line('Brand file', data.brandFileUrl),
+      line('Reference URLs', data.referenceUrls),
+      line('Vibe', data.vibeSentence),
+    ].join('');
+
+    const nap = [
+      line('Contact', `${data.contactName} <${data.contactEmail}>`),
+      line('Phone', data.contactPhone),
+      line('City / service area', data.cityServiceArea),
+      line('Street (private unless public)', data.streetAddress),
+      line('Publish street on live site', data.locationPublic ? 'yes' : 'no'),
+      !data.locationPublic ? line('Public area label', data.serviceAreaLabel) : '',
+      !data.locationPublic && data.serviceRadiusMiles ? line('Service radius (miles)', String(data.serviceRadiusMiles)) : '',
+    ].join('');
+
+    const hours = data.byAppointment
+      ? '<p>By appointment only</p>'
+      : line('Hours', data.hoursText);
+
+    const services = data.features?.booking ? [
+      line('Services', data.servicesText),
+      line('Deposit / cancellation', data.depositCancellationPolicy),
+      line('Operating model', data.operatingModel),
+      line('Staff names', data.staffNames),
+    ].join('') : '';
+
+    const products = data.features?.shop ? [
+      line('Products', data.productsText),
+      line('Fulfillment', data.fulfillmentMode),
+    ].join('') : '';
+
+    const gallery = [
+      data.features?.gallery ? line('Extra album', data.extraAlbumUrl) : '',
+      data.features?.beforeAfter ? line('Before/after', data.beforeAfterText) : '',
+    ].join('');
+
+    const policies = data.features?.faq ? line('FAQ', data.faqText) : '';
+    const quotes = data.features?.quotes ? line('Quote requests', data.quotesText) : '';
+    const staff = data.features?.staff ? line('Staff profiles', data.staffProfilesText) : '';
+
+    const social = [
+      line('Instagram', data.instagram),
+      line('Facebook', data.facebook),
+    ].join('');
+
+    const requested = Object.entries(data.features || {})
+      .filter(([, on]) => on)
+      .map(([key]) => key)
+      .join(', ') || 'none';
+
+    const missing = '<p>Anything left blank in the form was intentionally unknown — do not invent.</p>';
+
+    return {
+      subject: `Build intake — ${esc(data.businessName)}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 640px; margin: 0 auto; padding: 20px;">
+          <p><strong>Submission:</strong> ${esc(String(data.submissionId || ''))}</p>
+          <p><strong>Requested modules:</strong> ${esc(requested)}</p>
+          <p><strong>Locale:</strong> ${esc(data.preferredLocale)}</p>
+          ${section('Sources', sources)}
+          ${section('Brand', brand)}
+          ${section('NAP', nap)}
+          ${section('Hours', hours)}
+          ${section('Services', services)}
+          ${section('Products', products)}
+          ${section('Gallery', gallery)}
+          ${section('Policies', policies + quotes)}
+          ${section('Staff', staff)}
+          ${section('Social', social)}
+          ${section('Missing', missing)}
+        </div>
+      `,
+      provider: 'resend',
     };
   }
 

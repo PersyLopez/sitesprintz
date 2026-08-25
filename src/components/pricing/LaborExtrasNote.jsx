@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useLocale } from '../../i18n/LocaleContext.jsx';
 import { laborDisplayVars, laborInquiryMailto } from '../../utils/laborInquiryMailto';
 import './LaborExtrasNote.css';
@@ -13,7 +14,7 @@ function LaborExtrasNote({ compact = false, anchor = false, variant = 'default' 
     return null;
   }
 
-  const href = laborInquiryMailto(variant === 'claim' ? 'build on request' : 'optional extras');
+  const mailtoHref = laborInquiryMailto(variant === 'claim' ? 'build on request' : 'optional extras');
   const headingId = compact ? 'labor-extras-heading-compact' : 'labor-extras-heading';
   const leadKey = variant === 'claim' ? 'labor.extras.claimLead' : 'labor.extras.lead';
 
@@ -32,15 +33,14 @@ function LaborExtrasNote({ compact = false, anchor = false, variant = 'default' 
         <li>{t('labor.extras.brand', vars)}</li>
         <li>{t('labor.extras.look', vars)}</li>
       </ul>
-      {href ? (
-        <a className="labor-extras-cta" href={href} data-testid="labor-extras-cta">
-          {t('labor.extras.cta')}
+      <Link className="labor-extras-cta" to="/build" data-testid="labor-extras-cta">
+        {t('labor.extras.cta')}
+      </Link>
+      {mailtoHref ? (
+        <a className="labor-extras-cta-secondary" href={mailtoHref}>
+          {t('labor.extras.ctaEmail')}
         </a>
-      ) : (
-        <p className="labor-extras-cta" data-testid="labor-extras-cta-unavailable">
-          {t('labor.extras.ctaUnavailable')}
-        </p>
-      )}
+      ) : null}
     </aside>
   );
 }

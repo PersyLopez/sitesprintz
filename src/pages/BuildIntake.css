@@ -1,0 +1,188 @@
+.build-intake-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.build-intake-intro {
+  text-align: center;
+  color: var(--sp-muted, #5c4f46);
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+}
+
+.build-intake-section {
+  border: 1px solid var(--sp-border, #e8dfd6);
+  border-radius: 12px;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.build-intake-section h2 {
+  font-size: 1.125rem;
+  margin: 0 0 0.5rem;
+  color: var(--sp-ink, #1c140f);
+}
+
+.build-intake-section > p {
+  margin: 0 0 1rem;
+  color: var(--sp-muted, #5c4f46);
+  font-size: 0.9375rem;
+}
+
+.build-intake-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .build-intake-grid--2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.build-intake-field label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  color: var(--sp-ink, #1c140f);
+}
+
+.build-intake-field input,
+.build-intake-field textarea,
+.build-intake-field select {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--sp-border, #d4c8bc);
+  border-radius: 8px;
+  font: inherit;
+  background: #fff;
+  color: var(--sp-ink, #1c140f);
+}
+
+.build-intake-field input:focus,
+.build-intake-field textarea:focus,
+.build-intake-field select:focus {
+  outline: 2px solid var(--sp-accent, #2563eb);
+  outline-offset: 2px;
+  border-color: var(--sp-accent, #2563eb);
+}
+
+.build-intake-field textarea {
+  min-height: 6rem;
+  resize: vertical;
+}
+
+.build-intake-checkboxes {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.build-intake-checkboxes label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.build-intake-checkboxes input[type='checkbox'] {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+}
+
+.build-intake-privacy {
+  background: var(--sp-sand, #f5efe8);
+  border-radius: 8px;
+  padding: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.build-intake-honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.build-intake-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.build-intake-message {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+}
+
+.build-intake-message--error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.build-intake-message--success {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.build-intake-privacy-callout {
+  margin-bottom: 1rem;
+}
+
+.build-intake-privacy-callout p {
+  margin: 0 0 0.5rem;
+}
+
+.build-intake-visibility {
+  border: none;
+  margin: 1rem 0 0;
+  padding: 0;
+}
+
+.build-intake-visibility legend {
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: var(--sp-ink, #1c140f);
+}
+
+.build-intake-radio {
+  margin-bottom: 1rem;
+}
+
+.build-intake-radio label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.build-intake-radio input[type='radio'] {
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+.build-intake-help {
+  margin: 0.35rem 0 0 1.5rem;
+  font-size: 0.875rem;
+  color: var(--sp-muted, #5c4f46);
+  line-height: 1.5;
+}
+
+.build-intake-feature-panel {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--sp-border, #e8dfd6);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
