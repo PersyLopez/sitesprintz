@@ -411,7 +411,15 @@ const BookingWidget = ({
       setAppointment(response.appointment);
       setStep('confirmation');
     } catch (err) {
-      setError(err.message || t('booking.createFail'));
+      const message = err.message || t('booking.createFail');
+      if (/no longer available/i.test(message)) {
+        setSelectedTime(null);
+        if (selectedDate) {
+          await fetchTimeSlots(selectedDate);
+        }
+        setStep('date');
+      }
+      setError(message);
       console.error('Error creating appointment:', err);
     } finally {
       setLoading(false);
@@ -628,6 +636,12 @@ const BookingWidget = ({
             onDateSelect={handleDateSelect}
           />
         </div>
+
+        {error && (
+          <div data-testid="error-message" className="error">
+            {error}
+          </div>
+        )}
 
         {selectedDate && slotsLoading && (
           <p className="booking-slots-status" data-testid="slots-loading">{t('booking.slotsLoading')}</p>

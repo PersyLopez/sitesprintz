@@ -135,6 +135,14 @@ describe('ProductCard Component', () => {
       expect(badge).toHaveTextContent('Out of Stock');
     });
 
+    it('should not show out of stock when stock is null (unlimited)', () => {
+      const unlimitedProduct = { ...mockProduct, stock: null };
+      const { container } = renderProductCard(unlimitedProduct);
+
+      expect(container.querySelector('.badge-out-of-stock')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /add to cart/i })).toBeInTheDocument();
+    });
+
     it('should show recurring badge', () => {
       const recurringProduct = {
         ...mockProduct,
@@ -194,6 +202,16 @@ describe('ProductCard Component', () => {
     
     expect(screen.getByText('2')).toBeInTheDocument();
   });
+
+    it('should not increase quantity past remaining stock', async () => {
+      const user = userEvent.setup();
+      renderProductCard({ ...mockProduct, stock: 1 });
+
+      await user.click(screen.getByLabelText('Increase quantity'));
+
+      expect(screen.getByText('1')).toBeInTheDocument();
+      expect(screen.queryByText('2')).not.toBeInTheDocument();
+    });
 
     it('should decrease quantity when - clicked', async () => {
     const user = userEvent.setup();

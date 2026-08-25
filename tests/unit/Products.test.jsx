@@ -240,6 +240,15 @@ describe('Products Page', () => {
         expect(screen.getByText('Unavailable')).toBeInTheDocument();
       });
     });
+
+    it('should show stock badges for sold out and remaining count', async () => {
+      renderProducts();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('stock-badge-2')).toHaveTextContent('Sold out');
+        expect(screen.getByTestId('stock-badge-1')).toHaveTextContent('50 in stock');
+      });
+    });
   });
 
   describe('Product Management', () => {

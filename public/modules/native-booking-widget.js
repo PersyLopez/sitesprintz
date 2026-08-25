@@ -202,7 +202,15 @@ class NativeBookingWidget {
       this.state.appointment = data.appointment;
       this.state.step = 'confirmation';
     } catch (err) {
-      this.state.error = err.message || 'Failed to create booking. Please try again.';
+      const message = err.message || 'Failed to create booking. Please try again.';
+      if (/no longer available/i.test(message)) {
+        this.state.selectedTime = null;
+        if (this.state.selectedDate && this.state.selectedService) {
+          await this.loadAvailability(this.state.selectedService.id, this.state.selectedDate);
+        }
+        this.state.step = 'date';
+      }
+      this.state.error = message;
       console.error('Error creating appointment:', err);
     } finally {
       this.state.loading = false;
@@ -488,7 +496,11 @@ class NativeBookingWidget {
       `;
     }).join('');
 
-    const timeSlotsHtml = this.state.timeSlots.length > 0 ? `
+    const timeSlotsHtml = this.state.selectedDate ? (
+      this.state.slotsLoading
+        ? '<p data-testid="slots-loading">Loading available times...</p>'
+        : this.state.timeSlots.length > 0
+          ? `
       <div data-testid="time-slots" class="time-slots">
         <h3>Available Times</h3>
         ${this.state.timeSlots.map(slot => `
@@ -507,7 +519,9 @@ class NativeBookingWidget {
           </button>
         ` : ''}
       </div>
-    ` : this.state.slotsLoading ? '<p>Loading available times...</p>' : '';
+    `
+          : '<p class="booking-slots-status" data-testid="slots-empty">No times available this day. Try another date.</p>'
+    ) : '';
 
     this.container.innerHTML = `
       <div class="booking-widget">
@@ -533,6 +547,9 @@ class NativeBookingWidget {
           </div>
         </div>
         ${timeSlotsHtml}
+        ${this.state.error ? `
+          <div data-testid="error-message" class="error">${this.escapeHtml(this.state.error)}</div>
+        ` : ''}
       </div>
     `;
   }

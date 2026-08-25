@@ -11,6 +11,7 @@ import DeleteConfirmModal from '../components/products/DeleteConfirmModal';
 import SkeletonLoader from '../components/common/SkeletonLoader';
 import { OptimizedImage } from '../components/common/OptimizedImage';
 import { api } from '../services/api';
+import { remainingStock } from '../utils/productAvailability';
 import './Products.css';
 
 function Products() {
@@ -401,6 +402,24 @@ function Products() {
                   <div className={`availability-badge ${product.available !== false ? 'available' : 'unavailable'}`}>
                     {product.available !== false ? 'Available' : 'Unavailable'}
                   </div>
+                  {(() => {
+                    const stockCount = remainingStock(product);
+                    if (stockCount === 0) {
+                      return (
+                        <div className="stock-badge sold-out" data-testid={`stock-badge-${product.id}`}>
+                          Sold out
+                        </div>
+                      );
+                    }
+                    if (stockCount !== null) {
+                      return (
+                        <div className="stock-badge" data-testid={`stock-badge-${product.id}`}>
+                          {stockCount} in stock
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                   <div className="product-actions">
                     <button
                       type="button"

@@ -179,6 +179,39 @@ describe('CartContext', () => {
         expect.stringContaining('prod-1')
       );
     });
+
+    it('should cap quantity at remaining stock', () => {
+      const { result } = renderCartHook();
+      const limitedProduct = { ...mockProduct, stock: 3 };
+
+      act(() => {
+        result.current.addToCart(limitedProduct, 5);
+      });
+
+      expect(result.current.cartItems[0].quantity).toBe(3);
+    });
+
+    it('should refuse add when stock is zero', () => {
+      const { result } = renderCartHook();
+      const soldOut = { ...mockProduct, stock: 0 };
+
+      act(() => {
+        result.current.addToCart(soldOut, 1);
+      });
+
+      expect(result.current.cartItems).toHaveLength(0);
+    });
+
+    it('should allow add when stock is null (unlimited)', () => {
+      const { result } = renderCartHook();
+      const unlimited = { ...mockProduct, stock: null };
+
+      act(() => {
+        result.current.addToCart(unlimited, 1);
+      });
+
+      expect(result.current.cartItems).toHaveLength(1);
+    });
   });
 
   describe('Update Quantity', () => {

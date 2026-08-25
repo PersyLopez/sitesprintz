@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useCart } from '../../hooks/useCart';
 import { OptimizedImage } from '../common/OptimizedImage';
+import { isPurchasable, isLowStock, remainingStock } from '../../utils/productAvailability';
 import './ProductCard.css';
 
 function ProductCard({ product, showActions = true }) {
@@ -29,7 +30,8 @@ function ProductCard({ product, showActions = true }) {
   };
 
   const isRecurring = product.billingPeriod && product.billingPeriod !== 'one-time';
-  const isAvailable = product.available !== false && (product.stock === undefined || product.stock > 0);
+  const isAvailable = isPurchasable(product);
+  const stockRemaining = remainingStock(product);
 
   return (
     <div className={`product-card ${!isAvailable ? 'out-of-stock' : ''}`}>
@@ -122,9 +124,9 @@ function ProductCard({ product, showActions = true }) {
         )}
 
         {/* Stock Info */}
-        {product.stock !== undefined && product.stock > 0 && product.stock <= 10 && (
+        {isLowStock(product) && (
           <div className="stock-warning">
-            ⚠️ Only {product.stock} left in stock
+            ⚠️ Only {stockRemaining} left in stock
           </div>
         )}
 
@@ -142,7 +144,9 @@ function ProductCard({ product, showActions = true }) {
               </button>
               <span className="qty-display">{quantity}</span>
               <button
-                onClick={() => setQuantity(quantity + 1)}
+                onClick={() => setQuantity((current) => (
+                  stockRemaining != null ? Math.min(current + 1, stockRemaining) : current + 1
+                ))}
                 className="qty-btn"
                 aria-label="Increase quantity"
               >

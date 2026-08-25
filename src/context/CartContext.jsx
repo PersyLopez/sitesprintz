@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
+import { isPurchasable, remainingStock } from '../utils/productAvailability';
 
 export const CartContext = createContext();
 
@@ -35,38 +36,40 @@ export function CartProvider({ children, siteId = null }) {
 
   // Add item to cart
   const addToCart = (product, quantity = 1, options = {}) => {
+    if (!isPurchasable(product)) {
+      return;
+    }
+
+    const maxQty = remainingStock(product);
+
     setCartItems(prevItems => {
-      // Check if item already exists
       const existingIndex = prevItems.findIndex(
         item => item.id === product.id && JSON.stringify(item.options) === JSON.stringify(options)
       );
 
       if (existingIndex >= 0) {
-        // Update quantity, cap at stock if defined
         const updated = [...prevItems];
-        const maxQty = product.stock ?? product.inventory;
         const newQty = updated[existingIndex].quantity + quantity;
         updated[existingIndex].quantity = maxQty != null
           ? Math.min(newQty, maxQty)
           : newQty;
         return updated;
-      } else {
-        const maxQty = product.stock ?? product.inventory;
-        const safeQty = maxQty != null ? Math.min(quantity, maxQty) : quantity;
-        if (maxQty != null && safeQty <= 0) {
-          return prevItems;
-        }
-        // Add new item
-        return [...prevItems, {
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          image: product.image,
-          quantity: safeQty,
-          stock: maxQty,
-          options
-        }];
       }
+
+      const safeQty = maxQty != null ? Math.min(quantity, maxQty) : quantity;
+      if (safeQty <= 0) {
+        return prevItems;
+      }
+
+      return [...prevItems, {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        quantity: safeQty,
+        stock: maxQty,
+        options
+      }];
     });
   };
 
@@ -78,11 +81,13 @@ export function CartProvider({ children, siteId = null }) {
     }
 
     setCartItems(prevItems =>
-      prevItems.map(item =>
-        item.id === itemId && JSON.stringify(item.options) === JSON.stringify(options)
-          ? { ...item, quantity }
-          : item
-      )
+      prevItems.map(item => {
+        if (item.id !== itemId || JSON.stringify(item.options) !== JSON.stringify(options)) {
+          return item;
+        }
+        const capped = item.stock != null ? Math.min(quantity, item.stock) : quantity;
+        return { ...item, quantity: capped };
+      })
     );
   };
 

@@ -11,6 +11,21 @@
 const ProPayments = {
   siteId: null,
   siteData: null,
+
+  remainingStock(product) {
+    if (!product) return null;
+    const raw = product.stock ?? product.inventory;
+    if (raw === null || raw === undefined || raw === '') return null;
+    const num = Number(raw);
+    return Number.isFinite(num) ? num : null;
+  },
+
+  isPurchasable(product) {
+    if (!product || product.available === false) return false;
+    const remaining = this.remainingStock(product);
+    if (remaining === null) return true;
+    return remaining > 0;
+  },
   
   /**
    * Initialize the payment system
@@ -112,9 +127,14 @@ const ProPayments = {
    */
   renderBuyButton(productIndex, buttonText = 'Buy Now', className = '') {
     const product = this.siteData.products[productIndex];
-    
-    if (!product || product.available === false) {
+
+    if (!product) {
       return `<button class="buy-button disabled ${className}" disabled>Unavailable</button>`;
+    }
+
+    if (!this.isPurchasable(product)) {
+      const label = product.available === false ? 'Unavailable' : 'Out of Stock';
+      return `<button class="buy-button disabled ${className}" disabled>${label}</button>`;
     }
     
     return `
