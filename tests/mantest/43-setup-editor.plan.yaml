@@ -76,6 +76,15 @@ steps:
       - text contains Look
       - text contains Add section
 
+  - action: Live preview is not covered by a loader
+    code: |
+      const iframe = page.locator('[data-testid="preview-frame"] iframe');
+      if (!(await iframe.isVisible())) throw new Error('Preview iframe missing after template');
+      if (await page.getByTestId('preview-loading').isVisible()) {
+        throw new Error('Loading overlay should not cover the live preview');
+      }
+    settle_ms: 200
+
   - action: Publish enabled after template
     code: |
       const publish = page.getByTestId('publish-site-button');
@@ -178,6 +187,9 @@ steps:
       if (layout.templatesVisible) throw new Error('Template picker should be hidden after template selection');
       if (!/Mantest Beauty Co/i.test(layout.title)) {
         throw new Error('Setup title should reflect renamed business: "' + layout.title + '"');
+      }
+      if (await page.getByTestId('preview-loading').isVisible()) {
+        throw new Error('Renaming should not flash a loading overlay over the preview');
       }
     settle_ms: 200
 

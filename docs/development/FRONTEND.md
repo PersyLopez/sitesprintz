@@ -214,7 +214,7 @@ For known niches, the wizard delegates to `wizardSiteDataBuilder.js` and the new
 
 ### Editor
 
-- After a template is selected, Setup hides the template column until Change template. The workspace is `PageBuilder` (section list, add/reorder/hide/remove) plus one live `PreviewFrame` iframe. Selecting a section opens `BusinessInfoForm`, `ThemePicker`, `ServicesProductsEditor`, or `ContactBookingForm`.
+- After a template is selected, Setup hides the template column until Change template. The workspace is `PageBuilder` (section list, add/reorder/hide/remove, Alt+Arrow reorder) plus one live `PreviewFrame` iframe. Preview writes are debounced while typing; template load flushes immediately and the loading overlay does not cover later updates.
 - `EditorPanel` still exists for those form tabs but is not mounted on `/setup`.
 - `SectionEditors.jsx` exports specialized editors for `native-booking`, `checkout`, `reviews`, and premium modules (calculator, class scheduler, quiz, etc.).
 - `PreviewFrame` writes composed HTML into a full-column iframe. It falls back to legacy inline HTML if the layout engine fails.

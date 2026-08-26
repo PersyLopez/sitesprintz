@@ -3,6 +3,7 @@
   flex-direction: column;
   height: 100%;
   min-height: 0;
+  position: relative;
   background: var(--bg-card);
   color: var(--text-light);
 }
@@ -83,8 +84,13 @@
   border-color: var(--primary-dark);
 }
 
-.section-item.is-hidden {
-  opacity: 0.65;
+.section-item.is-dragging {
+  opacity: 0.5;
+}
+
+.section-item.is-drop-target {
+  border-color: var(--primary-dark);
+  box-shadow: inset 0 0 0 1px var(--primary-dark);
 }
 
 .section-drag-handle {
@@ -132,8 +138,14 @@
 }
 
 .section-drop-end {
-  min-height: 12px;
+  min-height: 16px;
   margin-top: 4px;
+  border-radius: 6px;
+}
+
+.section-drop-end.is-drop-target {
+  background: var(--bg-elevated);
+  box-shadow: inset 0 0 0 1px var(--primary-dark);
 }
 
 .remove-confirm {
@@ -153,14 +165,19 @@
 }
 
 .add-section-menu {
-  margin: var(--spacing-sm) var(--spacing-md);
+  position: absolute;
+  z-index: 8;
+  top: 3.25rem;
+  left: var(--spacing-md);
+  right: var(--spacing-md);
+  margin: 0;
   padding: var(--spacing-md);
   border: 1px solid var(--border-dark);
   border-radius: 8px;
   background: var(--bg-elevated);
-  max-height: 40%;
+  max-height: min(24rem, 55%);
   overflow: auto;
-  flex-shrink: 0;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
 }
 
 .menu-header {

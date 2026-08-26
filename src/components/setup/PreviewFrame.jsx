@@ -14,32 +14,67 @@ import './PreviewFrame.css';
 function PreviewFrame() {
   const { siteData, previewKey } = useSite();
   const iframeRef = useRef(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const siteDataRef = useRef(siteData);
+  const lastHtmlRef = useRef('');
+  const [hasPainted, setHasPainted] = useState(false);
 
-  const updatePreview = useCallback(() => {
-    if (!iframeRef.current) return;
+  siteDataRef.current = siteData;
 
+  const writePreview = useCallback(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    const data = siteDataRef.current;
     let content;
 
     try {
-      content = buildPreviewFromLayout(siteData);
+      content = buildPreviewFromLayout(data);
     } catch {
-      content = buildLegacyPreview(siteData);
+      content = buildLegacyPreview(data);
     }
 
-    const doc = iframeRef.current.contentDocument;
+    if (content === lastHtmlRef.current) {
+      setHasPainted(true);
+      return;
+    }
+
+    const doc = iframe.contentDocument;
     if (!doc) return;
+    lastHtmlRef.current = content;
     doc.open();
     doc.write(content);
     doc.close();
-  }, [siteData]);
+    setHasPainted(true);
+  }, []);
 
   useEffect(() => {
-    if (!iframeRef.current) return;
-    setIsLoading(true);
-    updatePreview();
-    setIsLoading(false);
-  }, [previewKey, updatePreview]);
+    writePreview();
+  }, [previewKey, writePreview]);
+
+  return (
+    <div
+      data-testid="preview-frame"
+      className="preview-frame-container"
+      aria-busy={!hasPainted}
+    >
+      <div className="preview-viewport">
+        {!hasPainted && (
+          <div className="preview-loading" data-testid="preview-loading">
+            <div className="loading-spinner"></div>
+            <p>Loading preview...</p>
+          </div>
+        )}
+        <iframe
+          ref={iframeRef}
+          className="preview-iframe"
+          src="about:blank"
+          sandbox="allow-same-origin"
+          title="Site Preview"
+        />
+      </div>
+    </div>
+  );
+}
 
   function buildPreviewFromLayout(data) {
     if (!data || Object.keys(data).length === 0) {
@@ -152,26 +187,5 @@ function PreviewFrame() {
 </body>
 </html>`;
   }
-
-  return (
-    <div data-testid="preview-frame" className="preview-frame-container">
-      <div className="preview-viewport">
-        {isLoading && (
-          <div className="preview-loading" data-testid="preview-loading">
-            <div className="loading-spinner"></div>
-            <p>Loading preview...</p>
-          </div>
-        )}
-        <iframe
-          ref={iframeRef}
-          className="preview-iframe"
-          src="about:blank"
-          sandbox="allow-same-origin"
-          title="Site Preview"
-        />
-      </div>
-    </div>
-  );
-}
 
 export default PreviewFrame;

@@ -52,8 +52,8 @@
   color: var(--text-muted);
 }
 
-@keyframes preview-spin {
-  to {
-    transform: rotate(360deg);
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner {
+    animation: none;
   }
 }

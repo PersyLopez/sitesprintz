@@ -164,4 +164,25 @@ describe('PreviewFrame', () => {
     const { container } = render(<PreviewFrame />);
     expect(container.querySelector('[data-testid="preview-frame"]')).toBeTruthy();
   });
+
+  it('does not rewrite when siteData changes without a previewKey bump', async () => {
+    mockPreviewKey = 1;
+    mockSiteData = {
+      businessName: 'First',
+      category: 'salon',
+      sections: [],
+    };
+    const { rerender } = render(<PreviewFrame />);
+    await waitFor(() => {
+      expect(mockComposePage).toHaveBeenCalled();
+    });
+    const calls = mockComposePage.mock.calls.length;
+    mockSiteData = {
+      businessName: 'Second',
+      category: 'salon',
+      sections: [],
+    };
+    rerender(<PreviewFrame />);
+    expect(mockComposePage.mock.calls.length).toBe(calls);
+  });
 });

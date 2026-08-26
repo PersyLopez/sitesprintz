@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import PageBuilder, { inspectorKindForSection, LOOK_ID } from '../../src/components/setup/PageBuilder';
@@ -170,5 +170,33 @@ describe('PageBuilder', () => {
     expect(updateField).toHaveBeenCalled();
     const next = updateField.mock.calls[0][1];
     expect(next[next.length - 1].id).toBe('about-1');
+  });
+
+  it('still drops after dragend until the frame clears the handle', () => {
+    const queued = [];
+    const raf = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
+      queued.push(cb);
+      return queued.length;
+    });
+    renderBuilder();
+    const handle = screen.getByTestId('section-drag-about-1');
+    fireEvent.dragStart(handle, { dataTransfer: { effectAllowed: 'move', setData: vi.fn() } });
+    fireEvent.dragEnd(handle);
+    fireEvent.drop(screen.getByTestId('section-drop-end'));
+    expect(updateField).toHaveBeenCalled();
+    act(() => {
+      queued.forEach((cb) => cb(0));
+    });
+    raf.mockRestore();
+  });
+
+  it('reorders the selected section with Alt+ArrowDown', async () => {
+    const user = userEvent.setup();
+    renderBuilder();
+    await user.click(screen.getByTestId('section-type-hero'));
+    await user.keyboard('{Alt>}{ArrowDown}{/Alt}');
+    const next = updateField.mock.calls[0][1];
+    expect(next[0].id).toBe('about-1');
+    expect(next[1].id).toBe('hero-1');
   });
 });

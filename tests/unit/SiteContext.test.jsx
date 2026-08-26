@@ -426,6 +426,19 @@ describe('SiteContext', () => {
       expect(types).toContain('services');
       expect(types).toContain('class-scheduler');
     });
+
+    it('flushes the preview immediately when a template loads', () => {
+      const { result } = renderSiteHook();
+      const initialKey = result.current.previewKey;
+      act(() => {
+        result.current.loadTemplate({
+          id: 'salon',
+          hero: { title: 'Welcome' },
+          services: [{ name: 'Haircut' }],
+        });
+      });
+      expect(result.current.previewKey).toBe(initialKey + 1);
+    });
   });
 
   describe('Auto-save', () => {

@@ -43,6 +43,9 @@ function PageBuilder() {
 
   const addMenuRef = useRef(null);
   const addButtonRef = useRef(null);
+  const draggedRef = useRef(null);
+  const listRef = useRef(null);
+  const [dropIndex, setDropIndex] = useState(null);
   const effectiveSelectedId = selectedId ?? (sections[0]?.id || LOOK_ID);
 
   useEffect(() => {
@@ -79,9 +82,33 @@ function PageBuilder() {
     };
   }, [showAddMenu]);
 
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      if (!event.altKey || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return;
+      if (isTypingTarget(event.target)) return;
+      const id = selectedId ?? sections[0]?.id;
+      if (!id || id === LOOK_ID) return;
+      event.preventDefault();
+      moveSection(id, event.key === 'ArrowDown' ? 1 : -1);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  });
+
   const persistSections = useCallback((next) => {
     updateField('sections', next.map((section, index) => ({ ...section, order: index })));
   }, [updateField]);
+
+  const isTypingTarget = (target) => {
+    if (!(target instanceof HTMLElement)) return false;
+    const tag = target.tagName;
+    return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable;
+  };
+
+  const scrollRowIntoView = (sectionId) => {
+    const row = listRef.current?.querySelector(`[data-testid="section-row-${sectionId}"]`);
+    row?.scrollIntoView({ block: 'nearest' });
+  };
 
   const handleAddSection = (sectionType) => {
     const definition = getSectionByType(sectionType);
@@ -131,25 +158,39 @@ function PageBuilder() {
     const [item] = next.splice(from, 1);
     next.splice(to, 0, item);
     persistSections(next);
+    scrollRowIntoView(sectionId);
   };
 
   const handleDragStart = (event, section) => {
     event.stopPropagation();
+    draggedRef.current = section;
     setDraggedSection(section);
     if (event.dataTransfer) {
       event.dataTransfer.effectAllowed = 'move';
+      try {
+        event.dataTransfer.setData('text/plain', section.id);
+      } catch {
+        // jsdom and some browsers reject setData during tests
+      }
     }
   };
 
   const handleDragEnd = () => {
-    setDraggedSection(null);
+    requestAnimationFrame(() => {
+      draggedRef.current = null;
+      setDraggedSection(null);
+      setDropIndex(null);
+    });
   };
 
   const handleDropAt = (targetIndex) => {
-    if (!draggedSection) return;
-    const from = sections.findIndex((section) => section.id === draggedSection.id);
+    const dragged = draggedRef.current;
+    if (!dragged) return;
+    const from = sections.findIndex((section) => section.id === dragged.id);
     if (from < 0) {
+      draggedRef.current = null;
       setDraggedSection(null);
+      setDropIndex(null);
       return;
     }
 
@@ -157,13 +198,26 @@ function PageBuilder() {
     const [item] = next.splice(from, 1);
     const insertAt = from < targetIndex ? targetIndex - 1 : targetIndex;
     if (insertAt === from) {
+      draggedRef.current = null;
       setDraggedSection(null);
+      setDropIndex(null);
       return;
     }
 
     next.splice(insertAt, 0, item);
     persistSections(next);
+    draggedRef.current = null;
     setDraggedSection(null);
+    setDropIndex(null);
+    scrollRowIntoView(item.id);
+  };
+
+  const allowDrop = (event, index) => {
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+    if (dropIndex !== index) setDropIndex(index);
   };
 
   const getAvailableSections = () => {
@@ -262,7 +316,7 @@ function PageBuilder() {
             <p>No sections yet. Add one to start.</p>
           </div>
         ) : (
-          <ul className="sections-container" data-testid="section-list">
+          <ul className="sections-container" data-testid="section-list" ref={listRef}>
             {sections.map((section, index) => {
               const definition = getSectionByType(section.type);
               const label = definition?.name || section.type;
@@ -272,9 +326,9 @@ function PageBuilder() {
               return (
                 <li key={section.id}>
                   <div
-                    className={`section-item ${!section.enabled ? 'is-hidden' : ''} ${isSelected ? 'selected' : ''}`}
+                    className={`section-item ${!section.enabled ? 'is-hidden' : ''} ${isSelected ? 'selected' : ''} ${draggedSection?.id === section.id ? 'is-dragging' : ''} ${dropIndex === index ? 'is-drop-target' : ''}`}
                     data-testid={`section-row-${section.id}`}
-                    onDragOver={(event) => event.preventDefault()}
+                    onDragOver={(event) => allowDrop(event, index)}
                     onDrop={(event) => {
                       event.preventDefault();
                       handleDropAt(index);
@@ -359,9 +413,9 @@ function PageBuilder() {
           </ul>
         )}
         <div
-          className="section-drop-end"
+          className={`section-drop-end ${dropIndex === sections.length ? 'is-drop-target' : ''}`}
           data-testid="section-drop-end"
-          onDragOver={(event) => event.preventDefault()}
+          onDragOver={(event) => allowDrop(event, sections.length)}
           onDrop={(event) => {
             event.preventDefault();
             handleDropAt(sections.length);

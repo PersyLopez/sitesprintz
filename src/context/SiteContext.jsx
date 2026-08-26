@@ -52,15 +52,20 @@ export function SiteProvider({ children }) {
   const autoSaveTimerRef = useRef(null);
 
   // Debounced preview update (300ms delay)
-  const triggerPreviewUpdate = useCallback(() => {
+  const triggerPreviewUpdate = useCallback((immediate = false) => {
     if (previewTimerRef.current) {
       clearTimeout(previewTimerRef.current);
+      previewTimerRef.current = null;
+    }
+
+    if (immediate) {
+      setPreviewKey((prev) => prev + 1);
+      return;
     }
 
     previewTimerRef.current = setTimeout(() => {
-      setPreviewKey(prev => prev + 1);
-      console.log('🔄 Preview updated');
-    }, 300); // 300ms debounce
+      setPreviewKey((prev) => prev + 1);
+    }, 300);
   }, []);
 
   // Auto-save every 30 seconds
@@ -348,7 +353,8 @@ export function SiteProvider({ children }) {
     if (!fullTemplateData._layout) fullTemplateData._layout = getLayoutForNiche(nicheId);
 
     setSiteData(fullTemplateData);
-  }, []);
+    triggerPreviewUpdate(true);
+  }, [triggerPreviewUpdate]);
 
   const reset = useCallback(() => {
     setSiteData({
