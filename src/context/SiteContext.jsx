@@ -335,8 +335,14 @@ export function SiteProvider({ children }) {
     };
 
     const nicheId = fullTemplateData.template || fullTemplateData.id;
-    if (!Array.isArray(fullTemplateData.sections) || fullTemplateData.sections.length === 0) {
-      fullTemplateData.sections = normalizeTemplateSections(fullTemplateData);
+    const existingSections = Array.isArray(fullTemplateData.sections) ? fullTemplateData.sections : [];
+    const hasPageHero = existingSections.some((section) => section?.type === 'hero');
+    if (existingSections.length === 0 || !hasPageHero) {
+      const pageSections = normalizeTemplateSections({
+        ...fullTemplateData,
+        sections: undefined,
+      });
+      fullTemplateData.sections = [...pageSections, ...existingSections];
     }
     if (!fullTemplateData._niche) fullTemplateData._niche = nicheId;
     if (!fullTemplateData._layout) fullTemplateData._layout = getLayoutForNiche(nicheId);

@@ -721,6 +721,7 @@ export function composePage({
   for (const sectionType of skeleton) {
     // Find section data from siteData
     const sectionData = findSectionData(siteData, sectionType);
+    if (sectionData && sectionData.enabled === false) continue;
     const config = layout?.sections[sectionType] || sectionsConfig[sectionType];
 
     // Skip sections gated by features
@@ -758,6 +759,7 @@ export function composePage({
   for (const extraType of catalogExtras) {
     if (presentTypes.has(extraType)) continue;
     const extraData = findSectionData(siteData, extraType);
+    if (extraData?.enabled === false) continue;
     if (!hasCatalogBlock(extraType, extraData)) continue;
     const rendered = renderSection(
       extraType,

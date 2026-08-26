@@ -138,13 +138,6 @@ steps:
       if (kind !== 'services') throw new Error('Expected services inspector, got ' + kind);
     settle_ms: 200
 
-  - action: Hide a section
-    code: |
-      const hide = page.getByRole('button', { name: /^Hide / });
-      if ((await hide.count()) === 0) throw new Error('Hide control missing');
-      await hide.first().click({ timeout: 4000 });
-    settle_ms: 600
-
   - action: Open essentials via hero
     click: { testId: section-type-hero }
     settle_ms: 800
@@ -187,6 +180,172 @@ steps:
         throw new Error('Setup title should reflect renamed business: "' + layout.title + '"');
       }
     settle_ms: 200
+
+  - action: Contact inspector
+    click: { testId: section-type-contact }
+    settle_ms: 800
+
+  - action: Contact form visible
+    code: |
+      const kind = await page.getByTestId('builder-inspector').getAttribute('data-inspector');
+      if (kind !== 'contact') throw new Error('Expected contact inspector, got ' + kind);
+      if ((await page.getByTestId('address-privacy-callout').count()) === 0) {
+        throw new Error('Address privacy callout missing in Contact');
+      }
+    settle_ms: 200
+
+  - action: Open add section menu
+    click: { testId: add-section-button }
+    settle_ms: 500
+
+  - action: Add menu is a dialog
+    wait_for: { selector: '[data-testid="add-section-menu"]', timeout: 8000 }
+
+  - action: Escape closes add menu
+    press: Escape
+    settle_ms: 400
+
+  - action: Add menu closed after Escape
+    code: |
+      if ((await page.getByTestId('add-section-menu').count()) !== 0) {
+        throw new Error('Add menu should close on Escape');
+      }
+    settle_ms: 200
+
+  - action: Add FAQ section
+    click: { testId: add-section-button }
+    settle_ms: 400
+
+  - action: Pick FAQ
+    wait_for: { selector: '[data-testid="add-type-faq"]', timeout: 8000 }
+    click: { testId: add-type-faq }
+    settle_ms: 800
+
+  - action: FAQ appears in the list
+    wait_for: { selector: '[data-testid="section-type-faq"]', timeout: 8000 }
+
+  - action: Remove FAQ then cancel
+    code: |
+      const remove = page.locator('[data-remove-type="faq"]');
+      if ((await remove.count()) === 0) throw new Error('Remove FAQ missing');
+      await remove.click({ timeout: 4000 });
+    settle_ms: 400
+
+  - action: Cancel remove
+    click: { testId: remove-cancel }
+    settle_ms: 400
+
+  - action: FAQ still listed after cancel
+    code: |
+      if ((await page.getByTestId('section-type-faq').count()) === 0) {
+        throw new Error('FAQ should remain after cancel');
+      }
+    settle_ms: 200
+
+  - action: Remove FAQ confirm
+    code: |
+      await page.locator('[data-remove-type="faq"]').click({ timeout: 4000 });
+    settle_ms: 400
+
+  - action: Confirm remove
+    click: { testId: remove-confirm-button }
+    settle_ms: 600
+
+  - action: FAQ gone after confirm
+    code: |
+      if ((await page.getByTestId('section-type-faq').count()) !== 0) {
+        throw new Error('FAQ should be gone after confirm');
+      }
+    settle_ms: 200
+
+  - action: Add FAQ again for hide and reorder
+    click: { testId: add-section-button }
+    settle_ms: 400
+
+  - action: Pick FAQ again
+    wait_for: { selector: '[data-testid="add-type-faq"]', timeout: 8000 }
+    click: { testId: add-type-faq }
+    settle_ms: 800
+
+  - action: Move hero down
+    code: |
+      const down = page.locator('[data-move-down-type="hero"]');
+      if ((await down.count()) === 0) throw new Error('Move hero down missing');
+      if (await down.isDisabled()) throw new Error('Move hero down should be enabled');
+      await down.click({ timeout: 4000 });
+    settle_ms: 600
+
+  - action: Hero is not first after move
+    code: |
+      const first = page.locator('[data-testid="section-list"] li').first();
+      const id = await first.locator('[data-testid^="section-type-"]').getAttribute('data-testid');
+      if (id === 'section-type-hero') throw new Error('Hero should no longer be first after Move down');
+    settle_ms: 200
+
+  - action: Hide services
+    code: |
+      const hide = page.locator('[data-toggle-type="services"]');
+      if ((await hide.count()) === 0) throw new Error('Hide services missing');
+      await hide.click({ timeout: 4000 });
+    settle_ms: 1000
+
+  - action: Preview drops hidden services
+    code: |
+      const frame = page.frameLocator('[data-testid="preview-frame"] iframe');
+      const body = await frame.locator('body').innerText();
+      if (/Professional cut and style/i.test(body)) {
+        throw new Error('Hidden services still in preview: ' + body.slice(0, 800));
+      }
+    settle_ms: 300
+
+  - action: Show services again
+    code: |
+      const show = page.locator('[data-toggle-type="services"]');
+      await show.click({ timeout: 4000 });
+    settle_ms: 1000
+
+  - action: Preview restores Haircut
+    code: |
+      const frame = page.frameLocator('[data-testid="preview-frame"] iframe');
+      const body = await frame.locator('body').innerText();
+      if (!/Professional cut and style/i.test(body)) {
+        throw new Error('Services should return to preview: ' + body.slice(0, 800));
+      }
+    settle_ms: 300
+
+  - action: Drag hero handle to end
+    code: |
+      const handle = page.locator('[data-drag-type="hero"]');
+      const drop = page.getByTestId('section-drop-end');
+      if ((await handle.count()) === 0) throw new Error('Hero drag handle missing');
+      await handle.dispatchEvent('dragstart');
+      await page.waitForTimeout(120);
+      await drop.dispatchEvent('drop');
+    settle_ms: 800
+
+  - action: Hero is last after drop
+    code: |
+      const last = page.locator('[data-testid="section-list"] li').last();
+      const id = await last.locator('[data-testid^="section-type-"]').getAttribute('data-testid');
+      if (id !== 'section-type-hero') {
+        throw new Error('Hero should be last after drop to end, last=' + id);
+      }
+    settle_ms: 200
+
+  - action: Mobile preview tab
+    code: |
+      await page.setViewportSize({ width: 390, height: 844 });
+      const previewTab = page.getByRole('button', { name: /^Preview$/ });
+      await previewTab.click({ timeout: 4000 });
+      const iframe = page.locator('[data-testid="preview-frame"] iframe');
+      if (!(await iframe.isVisible())) throw new Error('Preview iframe hidden on mobile Preview tab');
+      const editorTab = page.getByRole('button', { name: /^Editor$/ });
+      await editorTab.click({ timeout: 4000 });
+      if (!(await page.getByTestId('page-builder').isVisible())) {
+        throw new Error('Page builder hidden on mobile Editor tab');
+      }
+      await page.setViewportSize({ width: 1400, height: 900 });
+    settle_ms: 500
 
   - action: Change template restores picker
     click: { testId: change-template-button }

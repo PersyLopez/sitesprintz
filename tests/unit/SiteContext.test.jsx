@@ -409,6 +409,23 @@ describe('SiteContext', () => {
       expect(result.current.siteData.template).toBe('gym');
       expect(result.current.siteData.services).toHaveLength(1);
     });
+
+    it('merges page sections when the template only has extra widgets', () => {
+      const { result } = renderSiteHook();
+      act(() => {
+        result.current.loadTemplate({
+          id: 'salon',
+          hero: { title: 'Welcome' },
+          services: [{ name: 'Haircut' }],
+          contact: { email: 'hello@example.com' },
+          sections: [{ id: 'stylist-booking', type: 'class-scheduler' }],
+        });
+      });
+      const types = result.current.siteData.sections.map((section) => section.type);
+      expect(types).toContain('hero');
+      expect(types).toContain('services');
+      expect(types).toContain('class-scheduler');
+    });
   });
 
   describe('Auto-save', () => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import PageBuilder, { inspectorKindForSection, LOOK_ID } from '../../src/components/setup/PageBuilder';
@@ -143,5 +143,32 @@ describe('PageBuilder', () => {
     const next = updateField.mock.calls[0][1];
     expect(next[0].id).toBe('about-1');
     expect(next[1].id).toBe('hero-1');
+  });
+
+  it('closes the add menu on Escape', async () => {
+    const user = userEvent.setup();
+    renderBuilder();
+    await user.click(screen.getByTestId('add-section-button'));
+    expect(screen.getByTestId('add-section-menu')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByTestId('add-section-menu')).not.toBeInTheDocument();
+  });
+
+  it('does not persist a drop on the same index', () => {
+    renderBuilder();
+    const handle = screen.getByTestId('section-drag-about-1');
+    fireEvent.dragStart(handle, { dataTransfer: { effectAllowed: 'move', setData: vi.fn() } });
+    fireEvent.drop(screen.getByTestId('section-row-about-1'));
+    expect(updateField).not.toHaveBeenCalled();
+  });
+
+  it('drops a section onto the end target', () => {
+    renderBuilder();
+    const handle = screen.getByTestId('section-drag-about-1');
+    fireEvent.dragStart(handle, { dataTransfer: { effectAllowed: 'move', setData: vi.fn() } });
+    fireEvent.drop(screen.getByTestId('section-drop-end'));
+    expect(updateField).toHaveBeenCalled();
+    const next = updateField.mock.calls[0][1];
+    expect(next[next.length - 1].id).toBe('about-1');
   });
 });

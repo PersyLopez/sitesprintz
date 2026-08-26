@@ -221,6 +221,20 @@ describe('layoutRenderer — composePage()', () => {
     expect(page.paymentMethods).toBeDefined();
     expect(page.paymentMethods.length).toBeGreaterThan(0);
   });
+
+  it('omits skeleton sections the editor hid', () => {
+    const page = composePage({
+      siteData: {
+        ...baseSiteData,
+        sections: [
+          { id: 'svc-1', type: 'services', enabled: false, content: {} },
+        ],
+      },
+      layout: 'atelier',
+      level: 'solo',
+    });
+    expect(page.sections.map((section) => section.type)).not.toContain('services');
+  });
 });
 
 // ---------------------------------------------------------------------------

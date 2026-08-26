@@ -136,7 +136,9 @@ function PageBuilder() {
   const handleDragStart = (event, section) => {
     event.stopPropagation();
     setDraggedSection(section);
-    event.dataTransfer.effectAllowed = 'move';
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+    }
   };
 
   const handleDragEnd = () => {
@@ -282,6 +284,7 @@ function PageBuilder() {
                       type="button"
                       className="section-drag-handle"
                       data-testid={`section-drag-${section.id}`}
+                      data-drag-type={section.type}
                       draggable
                       aria-label={`Drag ${label}`}
                       aria-grabbed={draggedSection?.id === section.id}
@@ -308,6 +311,7 @@ function PageBuilder() {
                         type="button"
                         className="btn btn-secondary btn-sm"
                         data-testid={`section-move-up-${section.id}`}
+                        data-move-up-type={section.type}
                         aria-label={`Move ${label} up`}
                         disabled={index === 0}
                         onClick={() => moveSection(section.id, -1)}
@@ -318,6 +322,7 @@ function PageBuilder() {
                         type="button"
                         className="btn btn-secondary btn-sm"
                         data-testid={`section-move-down-${section.id}`}
+                        data-move-down-type={section.type}
                         aria-label={`Move ${label} down`}
                         disabled={index === sections.length - 1}
                         onClick={() => moveSection(section.id, 1)}
@@ -328,6 +333,7 @@ function PageBuilder() {
                         type="button"
                         className="btn btn-secondary btn-sm"
                         data-testid={`section-toggle-${section.id}`}
+                        data-toggle-type={section.type}
                         aria-pressed={section.enabled !== false}
                         aria-label={section.enabled !== false ? `Hide ${label}` : `Show ${label}`}
                         onClick={() => handleToggleSection(section.id)}
@@ -338,6 +344,7 @@ function PageBuilder() {
                         type="button"
                         className="btn btn-secondary btn-sm"
                         data-testid={`section-remove-${section.id}`}
+                        data-remove-type={section.type}
                         aria-label={`Remove ${label}`}
                         disabled={!removable}
                         onClick={() => removable && setPendingRemoveId(section.id)}
