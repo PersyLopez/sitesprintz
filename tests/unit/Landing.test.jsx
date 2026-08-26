@@ -74,7 +74,7 @@ describe('Landing Page', () => {
 
   it('renders the customer stories section', () => {
     renderLanding();
-    expect(screen.getByRole('heading', { name: /Same longing\. Different businesses\./i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Maria, James, and Aisha — same gap\./i })).toBeInTheDocument();
     expect(screen.getByText('Maria')).toBeInTheDocument();
     expect(screen.getByText('James')).toBeInTheDocument();
     expect(screen.getByText('Aisha')).toBeInTheDocument();
@@ -87,10 +87,11 @@ describe('Landing Page', () => {
     expect(screen.getByText(/Forgotten by noon/i)).toBeInTheDocument();
     expect(screen.getByText(/Empty chair, busy street/i)).toBeInTheDocument();
     expect(screen.getByText(/DMs instead of a door/i)).toBeInTheDocument();
-    expect(screen.getByText(/Neighbors lined up for her mangoes/i)).toBeInTheDocument();
-    expect(screen.getByText(/couldn’t remember which corner/i)).toBeInTheDocument();
-    expect(screen.getByText(/see today’s fruit/i)).toBeInTheDocument();
+    expect(screen.getByText(/sold out of mangoes by 10/i)).toBeInTheDocument();
+    expect(screen.getByText(/remember which corner/i)).toBeInTheDocument();
+    expect(screen.getByText(/today’s fruit/i)).toBeInTheDocument();
     expect(stories.querySelectorAll('.story-phase').length).toBe(0);
+    expect(stories.querySelectorAll('.story-arc-label').length).toBeGreaterThanOrEqual(3);
   });
 
   it('renders the purpose story section', () => {
@@ -101,8 +102,10 @@ describe('Landing Page', () => {
 
   it('renders the founder story block', () => {
     renderLanding();
+    const purpose = document.getElementById('purpose');
     expect(screen.getByText(/Who we built this for/i)).toBeInTheDocument();
-    expect(screen.getByText(/We didn’t start this for agencies/i)).toBeInTheDocument();
+    expect(within(purpose).getByText(/We didn’t start this for agencies/i)).toBeInTheDocument();
+    expect(within(purpose).getByText(/Maria, James, and Aisha/i)).toBeInTheDocument();
   });
 
   it('renders the template gallery section', () => {
