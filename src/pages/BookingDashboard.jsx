@@ -218,7 +218,7 @@ const BookingDashboard = () => {
           </div>
         ) : (
           <>
-            <div className="dashboard-header">
+            <div className={`dashboard-header${embedded ? ' pane-quiet-header' : ''}`}>
               <div>
                 {embedded ? (
                   <h2>Appointments</h2>
