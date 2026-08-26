@@ -214,12 +214,10 @@ For known niches, the wizard delegates to `wizardSiteDataBuilder.js` and the new
 
 ### Editor
 
-- `EditorPanel` tabs switch exclusive panes for Essentials, Design, Services and Products, and Contact and Booking.
-- After a template is selected, Setup hides the template column (editor | preview) until Change template.
-- `BusinessInfoForm`, `ServicesProductsEditor`, `ContactBookingForm`, and `ThemePicker` are the primary editing forms.
-- `PageBuilder` (via `components/setup/PageBuilder.jsx`) allows users to add, remove, reorder, and toggle sections; locked sections are gated by tier.
+- After a template is selected, Setup hides the template column until Change template. The workspace is `PageBuilder` (section list, add/reorder/hide/remove) plus one live `PreviewFrame` iframe. Selecting a section opens `BusinessInfoForm`, `ThemePicker`, `ServicesProductsEditor`, or `ContactBookingForm`.
+- `EditorPanel` still exists for those form tabs but is not mounted on `/setup`.
 - `SectionEditors.jsx` exports specialized editors for `native-booking`, `checkout`, `reviews`, and premium modules (calculator, class scheduler, quiz, etc.).
-- `PreviewFrame` renders the composed page in an iframe with desktop/tablet/mobile device modes and zoom controls. It falls back to legacy inline HTML if the layout engine fails.
+- `PreviewFrame` writes composed HTML into a full-column iframe. It falls back to legacy inline HTML if the layout engine fails.
 - `PublishModal` handles the final publish step.
 
 Keyboard shortcuts in `Setup.jsx`: `Cmd/Ctrl+S` saves the draft, `Cmd/Ctrl+P` opens preview, `Cmd/Ctrl+Shift+P` triggers publish.
@@ -250,10 +248,10 @@ The `FeatureGate` component in `src/components/common/FeatureGate.jsx` condition
 - `QuickStartWizard` — four-step permanent business wizard.
 - `CustomTemplateBuilder` — layout, color, and content picker for custom sites.
 - `LevelSelector` — solo/studio/established selector with niche-aware layout preview.
-- `PageBuilder` — drag-and-drop section management.
+- `PageBuilder` — section list, add/reorder/hide/remove, inspector forms.
 - `SectionEditors` — registry of section-specific editors.
-- `EditorPanel` — exclusive tab panels (Essentials, Design, Services & Products, Contact & Booking) with undo/redo.
-- `PreviewFrame` — iframe preview with device and zoom controls.
+- `EditorPanel` — form tabs (not mounted on `/setup`).
+- `PreviewFrame` — full-column iframe preview.
 - `PublishModal` — publish confirmation and configuration.
 - `TemplateGrid` — template selection grid.
 - `ThemePicker`, `BusinessInfoForm`, `ServicesProductsEditor`, `ContactBookingForm`, `ProductsEditor`, `ImageUploader`.

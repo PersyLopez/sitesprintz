@@ -5,13 +5,12 @@ import { templatesService } from '../services/templates';
 import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
 import TemplateGrid from '../components/setup/TemplateGrid';
-import EditorPanel from '../components/setup/EditorPanel';
+import PageBuilder from '../components/setup/PageBuilder';
 import PublishModal from '../components/setup/PublishModal';
 import QuickStartWizard from '../components/setup/QuickStartWizard';
 import CustomTemplateBuilder from '../components/setup/CustomTemplateBuilder';
 import LoadingFallback from '../components/common/LoadingFallback';
 import SaveIndicator from '../components/common/SaveIndicator';
-import ProgressIndicator from '../components/common/ProgressIndicator';
 import SkeletonLoader from '../components/common/SkeletonLoader';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import './Setup.css';
@@ -35,14 +34,6 @@ function Setup() {
 
   const templatesPanelVisible = showTemplatePicker || !siteData.template;
   const twoColumnLayout = Boolean(siteData.template) && !showTemplatePicker;
-
-  // Calculate progress percentage
-  const progressPercentage = () => {
-    if (!siteData.template) return 0;
-    if (!siteData.businessName) return 33;
-    if (!siteData.tagline) return 66;
-    return 100;
-  };
 
   useEffect(() => {
     loadTemplates();
@@ -182,16 +173,6 @@ function Setup() {
       </a>
       <Header />
 
-      {/* Progress Bar */}
-      <div className="setup-progress-section">
-        <ProgressIndicator
-          percentage={progressPercentage()}
-          label="Setup"
-          showPercentage={false}
-          size="sm"
-        />
-      </div>
-
       <div className="setup-header">
         <div className="setup-title">
           <h1>{siteData.businessName || 'New site'}</h1>
@@ -200,7 +181,18 @@ function Setup() {
 
         <div className="setup-actions">
           <SaveIndicator lastSaved={lastSaved} isSaving={isSaving} />
+          {siteData.template && !showTemplatePicker && (
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              data-testid="change-template-button"
+              onClick={handleShowTemplatePicker}
+            >
+              Change template
+            </button>
+          )}
           <button
+            type="button"
             onClick={() => saveDraft()}
             className="btn btn-secondary"
             data-testid="save-draft-button"
@@ -208,6 +200,7 @@ function Setup() {
             Save
           </button>
           <button
+            type="button"
             onClick={handlePublish}
             className="btn btn-primary"
             disabled={!siteData.template}
@@ -218,7 +211,7 @@ function Setup() {
         </div>
       </div>
 
-      <div className="setup-container">
+      <div id="setup-main" className="setup-container">
         {/* Mobile tabs */}
         <div className="mobile-tabs">
           <button
@@ -275,27 +268,13 @@ function Setup() {
             </div>
           </div>
 
-          {/* Editor Panel */}
           <div
             className={`setup-panel editor-panel ${activeTab === 'editor' ? 'active' : ''}`}
             data-testid="customize-panel"
           >
-            <div className="panel-header">
-              <h2>Customize</h2>
-              {siteData.template && (
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm change-template-button"
-                  data-testid="change-template-button"
-                  onClick={handleShowTemplatePicker}
-                >
-                  Change template
-                </button>
-              )}
-            </div>
             <div className="panel-content">
               {siteData.template ? (
-                <EditorPanel />
+                <PageBuilder key={siteData.template} />
               ) : (
                 <div className="panel-empty">
                   <p>Select a template from the left to start customizing your website</p>
@@ -304,15 +283,11 @@ function Setup() {
             </div>
           </div>
 
-          {/* Preview Panel */}
           <div className={`setup-panel preview-panel ${activeTab === 'preview' ? 'active' : ''}`}>
-            <div className="panel-header">
-              <h2>Preview</h2>
-            </div>
             <div className="panel-content">
               {siteData.template ? (
                 <Suspense fallback={<LoadingFallback message="Loading preview..." />}>
-                  <PreviewFrame siteData={siteData} />
+                  <PreviewFrame />
                 </Suspense>
               ) : (
                 <div className="panel-empty">

@@ -14,25 +14,7 @@ import './PreviewFrame.css';
 function PreviewFrame() {
   const { siteData, previewKey } = useSite();
   const iframeRef = useRef(null);
-  const [deviceMode, setDeviceMode] = useState('desktop');
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(100);
   const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (iframeRef.current && siteData) {
-      setIsRefreshing(true);
-      setIsLoading(true);
-
-      updatePreview();
-
-      setTimeout(() => {
-        setIsRefreshing(false);
-        setIsLoading(false);
-      }, 400);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [previewKey, siteData]);
 
   const updatePreview = useCallback(() => {
     if (!iframeRef.current) return;
@@ -41,40 +23,42 @@ function PreviewFrame() {
 
     try {
       content = buildPreviewFromLayout(siteData);
-    } catch (e) {
-      // CRITICAL: fall back to legacy rendering if composePage() throws
+    } catch {
       content = buildLegacyPreview(siteData);
     }
 
     const doc = iframeRef.current.contentDocument;
+    if (!doc) return;
     doc.open();
     doc.write(content);
     doc.close();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [siteData]);
 
-  // -------------------------------------------------------------------------
-  // Layout-system preview (primary path)
-  // -------------------------------------------------------------------------
+  useEffect(() => {
+    if (!iframeRef.current) return;
+    setIsLoading(true);
+    updatePreview();
+    setIsLoading(false);
+  }, [previewKey, updatePreview]);
 
-  function buildPreviewFromLayout(siteData) {
-    if (!siteData || Object.keys(siteData).length === 0) {
+  function buildPreviewFromLayout(data) {
+    if (!data || Object.keys(data).length === 0) {
       return buildEmptyPreview();
     }
 
-    const page = composePage({ siteData });
+    const page = composePage({ siteData: data });
     const { sections = [], tokens } = page;
     const t = tokens?.theme || {};
 
-    const bg = t.bg || siteData.colors?.bg || '#0c0c0e';
-    const text = t.text || siteData.colors?.text || '#f4f2ee';
-    const accent = t.accent || siteData.colors?.accent || '#c2683a';
-    const muted = t.muted || siteData.colors?.muted || '#8a8a8f';
+    const bg = t.bg || data.colors?.bg || '#0c0c0e';
+    const text = t.text || data.colors?.text || '#f4f2ee';
+    const accent = t.accent || data.colors?.accent || '#c2683a';
+    const muted = t.muted || data.colors?.muted || '#8a8a8f';
 
-    const enabledSections = sections.filter(s => s && s.enabled !== false);
+    const enabledSections = sections.filter((s) => s && s.enabled !== false);
     const renderTokens = withNativeBookingTokens(tokens, enabledSections);
     const sectionsHtml = enabledSections
-      .map(section => renderSectionToHtml(section, renderTokens))
+      .map((section) => renderSectionToHtml(section, renderTokens))
       .filter(Boolean)
       .join('\n');
 
@@ -92,12 +76,6 @@ function PreviewFrame() {
       line-height: 1.6;
     }
     .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
-    .hero { padding: 80px 24px; text-align: center; }
-    .hero h1 { font-size: 2.5rem; margin-bottom: 16px; color: ${accent}; }
-    .hero p { font-size: 1.1rem; color: ${muted}; max-width: 700px; margin: 0 auto; }
-    .section { padding: 48px 24px; }
-    .section h2 { font-size: 2rem; margin-bottom: 24px; color: ${accent}; text-align: center; }
-    .section p { color: ${muted}; text-align: center; }
     img { max-width: 100%; height: auto; }
   </style>
 </head>
@@ -107,12 +85,8 @@ function PreviewFrame() {
 </html>`;
   }
 
-  // -------------------------------------------------------------------------
-  // Legacy fallback (safety net — keeps old inline HTML rendering)
-  // -------------------------------------------------------------------------
-
-  function buildLegacyPreview(siteData) {
-    const colors = siteData?.colors || {};
+  function buildLegacyPreview(data) {
+    const colors = data?.colors || {};
     const primaryColor = colors.primary || '#06b6d4';
     const accentColor = colors.accent || colors.secondary || '#0891b2';
     const bgColor = colors.background || colors.bg || '#0f172a';
@@ -120,8 +94,8 @@ function PreviewFrame() {
     const textColor = colors.text || '#f8fafc';
     const textMutedColor = colors.textMuted || colors.muted || '#94a3b8';
 
-    const heroTitle = siteData?.heroTitle || siteData?.businessName || 'Your Business';
-    const heroSubtitle = siteData?.heroSubtitle || '';
+    const heroTitle = data?.heroTitle || data?.businessName || 'Your Business';
+    const heroSubtitle = data?.heroSubtitle || '';
 
     return `<!DOCTYPE html>
 <html>
@@ -138,11 +112,7 @@ function PreviewFrame() {
     .section { margin-bottom: 60px; }
     .section h2 { font-size: 2.5rem; margin-bottom: 12px; color: ${primaryColor}; text-align: center; }
     .section p.subtitle { font-size: 1.1rem; color: ${textMutedColor}; text-align: center; }
-    .items-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
     .item-card { background: ${surfaceColor}; padding: 24px; border-radius: 12px; }
-    .item-card h3 { color: ${primaryColor}; margin-bottom: 8px; }
-    .item-card p { color: ${textMutedColor}; }
-    .item-card .price { font-size: 1.25rem; font-weight: 700; color: ${primaryColor}; margin-top: 12px; }
   </style>
 </head>
 <body>
@@ -151,7 +121,7 @@ function PreviewFrame() {
       <h1>${heroTitle}</h1>
       ${heroSubtitle ? `<p>${heroSubtitle}</p>` : ''}
     </div>
-    ${(siteData?.services || []).map(s => `
+    ${(data?.services || []).map((s) => `
       <div class="section">
         <h2>${s.name || 'Service'}</h2>
         <p class="subtitle">${s.description || ''}</p>
@@ -162,10 +132,6 @@ function PreviewFrame() {
 </body>
 </html>`;
   }
-
-  // -------------------------------------------------------------------------
-  // Empty preview
-  // -------------------------------------------------------------------------
 
   function buildEmptyPreview() {
     return `<!DOCTYPE html>
@@ -187,84 +153,22 @@ function PreviewFrame() {
 </html>`;
   }
 
-  // -------------------------------------------------------------------------
-  // Device frame dimensions
-  // -------------------------------------------------------------------------
-
-  const deviceFrames = {
-    desktop: { width: '100%', height: '100%', icon: '🖥️', label: 'Desktop' },
-    tablet: { width: '768px', height: '100%', icon: '📱', label: 'Tablet' },
-    mobile: { width: '375px', height: '100%', icon: '📱', label: 'Mobile' },
-  };
-
   return (
     <div data-testid="preview-frame" className="preview-frame-container">
-      <div className="preview-toolbar">
-        <div className="toolbar-section">
-          <div className="device-buttons">
-            {Object.entries(deviceFrames).map(([mode, config]) => (
-              <button
-                key={mode}
-                type="button"
-                className={`device-btn ${deviceMode === mode ? 'active' : ''}`}
-                onClick={() => setDeviceMode(mode)}
-                title={config.label}
-                data-testid={`device-${mode}`}
-              >
-                <span className="device-icon" aria-hidden="true">{config.icon}</span>
-                <span className="device-label">{config.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="toolbar-section">
-          <div className="zoom-controls">
-            <button
-              type="button"
-              className="zoom-btn"
-              onClick={() => setZoomLevel(Math.max(25, zoomLevel - 25))}
-              title="Zoom Out"
-              data-testid="zoom-out"
-            >
-              −
-            </button>
-            <span className="zoom-level" data-testid="zoom-level">{zoomLevel}%</span>
-            <button
-              type="button"
-              className="zoom-btn"
-              onClick={() => setZoomLevel(Math.min(200, zoomLevel + 25))}
-              title="Zoom In"
-              data-testid="zoom-in"
-            >
-              +
-            </button>
-          </div>
-        </div>
-      </div>
-
       <div className="preview-viewport">
-        <div className={`preview-device-wrapper device-${deviceMode} ${isRefreshing ? 'refreshing' : ''}`}>
-          {isLoading && (
-            <div className="preview-loading" data-testid="preview-loading">
-              <div className="loading-spinner"></div>
-              <p>Loading preview...</p>
-            </div>
-          )}
-          <div
-            className="preview-content"
-            style={{ transform: `scale(${zoomLevel / 100})` }}
-          >
-            <iframe
-              ref={iframeRef}
-              className="preview-iframe"
-              src="about:blank"
-              style={{ opacity: isLoading ? 0 : 1 }}
-              sandbox="allow-same-origin"
-              title="Site Preview"
-            />
+        {isLoading && (
+          <div className="preview-loading" data-testid="preview-loading">
+            <div className="loading-spinner"></div>
+            <p>Loading preview...</p>
           </div>
-        </div>
+        )}
+        <iframe
+          ref={iframeRef}
+          className="preview-iframe"
+          src="about:blank"
+          sandbox="allow-same-origin"
+          title="Site Preview"
+        />
       </div>
     </div>
   );

@@ -1,254 +1,478 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSite } from '../../hooks/useSite';
-import { useAuth } from '../../hooks/useAuth';
 import { usePlan } from '../../hooks/usePlan';
 import { useToast } from '../../hooks/useToast';
 import {
   getAllSections,
   getSectionsByCategory,
   getAllCategories,
+  getSectionByType,
   canAccessSection,
-  createSectionInstance
+  createSectionInstance,
 } from '../../config/sectionRegistry.js';
+import BusinessInfoForm from './forms/BusinessInfoForm';
+import ServicesProductsEditor from './forms/ServicesProductsEditor';
+import ContactBookingForm from './forms/ContactBookingForm';
+import ThemePicker from './forms/ThemePicker';
 import './PageBuilder.css';
+
+export const LOOK_ID = '__look__';
+
+export function inspectorKindForSection(type) {
+  if (!type || type === LOOK_ID) return 'look';
+  if (['services', 'catalog', 'menu'].includes(type)) return 'services';
+  if (['contact', 'booking', 'hours', 'location', 'social', 'native-booking'].includes(type)) {
+    return 'contact';
+  }
+  return 'essentials';
+}
 
 function PageBuilder() {
   const { siteData, updateField } = useSite();
-  const { user } = useAuth();
   const { plan } = usePlan();
   const { showSuccess, showError } = useToast();
-  
+
+  const sections = Array.isArray(siteData?.sections) ? siteData.sections : [];
+  const categories = getAllCategories();
+
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [filterCategory, setFilterCategory] = useState('all');
   const [draggedSection, setDraggedSection] = useState(null);
-  const [saving, setSaving] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+  const [pendingRemoveId, setPendingRemoveId] = useState(null);
 
-  const sections = siteData.sections || [];
-  const categories = getAllCategories();
-  
-  // Add a new section
+  const addMenuRef = useRef(null);
+  const addButtonRef = useRef(null);
+  const effectiveSelectedId = selectedId ?? (sections[0]?.id || LOOK_ID);
+
+  useEffect(() => {
+    if (!selectedId || selectedId === LOOK_ID) return;
+    if (!sections.some((section) => section.id === selectedId)) {
+      setSelectedId(LOOK_ID);
+      setPendingRemoveId(null);
+    }
+  }, [sections, selectedId]);
+
+  useEffect(() => {
+    if (!showAddMenu) return undefined;
+
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setShowAddMenu(false);
+        addButtonRef.current?.focus();
+      }
+    };
+
+    const onPointerDown = (event) => {
+      if (addMenuRef.current && !addMenuRef.current.contains(event.target)
+          && !addButtonRef.current?.contains(event.target)) {
+        setShowAddMenu(false);
+        addButtonRef.current?.focus();
+      }
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('mousedown', onPointerDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('mousedown', onPointerDown);
+    };
+  }, [showAddMenu]);
+
+  const persistSections = useCallback((next) => {
+    updateField('sections', next.map((section, index) => ({ ...section, order: index })));
+  }, [updateField]);
+
   const handleAddSection = (sectionType) => {
+    const definition = getSectionByType(sectionType);
+    if (!definition) {
+      showError(`Unknown section: ${sectionType}`);
+      return;
+    }
+    if (!canAccessSection(plan, sectionType)) {
+      return;
+    }
+    if (!definition.repeatable && sections.some((section) => section.type === sectionType)) {
+      return;
+    }
+
     try {
-      const newSection = createSectionInstance(sectionType, {
-        order: sections.length
-      });
-      
-      const updated = [...sections, newSection];
-      updateField('sections', updated);
+      const created = createSectionInstance(sectionType, { order: sections.length });
+      persistSections([...sections, created]);
+      setSelectedId(created.id);
       setShowAddMenu(false);
-      showSuccess(`Added ${sectionType} section`);
+      addButtonRef.current?.focus();
+      showSuccess(`Added ${definition.name}`);
     } catch (error) {
-      showError(`Failed to add section: ${error.message}`);
+      showError(error.message || 'Could not add section');
     }
   };
-  
-  // Remove a section
-  const handleRemoveSection = (sectionId) => {
-    if (!window.confirm('Remove this section?')) return;
-    
-    const updated = sections.filter(s => s.id !== sectionId);
-    updateField('sections', updated);
+
+  const confirmRemove = () => {
+    if (!pendingRemoveId) return;
+    const removedId = pendingRemoveId;
+    persistSections(sections.filter((section) => section.id !== removedId));
+    if (selectedId === removedId) setSelectedId(LOOK_ID);
+    setPendingRemoveId(null);
     showSuccess('Section removed');
   };
-  
-  // Toggle section visibility
+
   const handleToggleSection = (sectionId) => {
-    const updated = sections.map(s => 
-      s.id === sectionId ? { ...s, enabled: !s.enabled } : s
-    );
-    updateField('sections', updated);
+    persistSections(sections.map((section) => (
+      section.id === sectionId ? { ...section, enabled: !section.enabled } : section
+    )));
   };
-  
-  // Reorder sections (drag and drop)
-  const handleDragStart = (section) => {
+
+  const moveSection = (sectionId, delta) => {
+    const from = sections.findIndex((section) => section.id === sectionId);
+    const to = from + delta;
+    if (from < 0 || to < 0 || to >= sections.length) return;
+    const next = [...sections];
+    const [item] = next.splice(from, 1);
+    next.splice(to, 0, item);
+    persistSections(next);
+  };
+
+  const handleDragStart = (event, section) => {
+    event.stopPropagation();
     setDraggedSection(section);
+    event.dataTransfer.effectAllowed = 'move';
   };
-  
-  const handleDropZone = (targetIndex) => {
+
+  const handleDragEnd = () => {
+    setDraggedSection(null);
+  };
+
+  const handleDropAt = (targetIndex) => {
     if (!draggedSection) return;
-    
-    const currentIndex = sections.findIndex(s => s.id === draggedSection.id);
-    if (currentIndex === targetIndex) {
+    const from = sections.findIndex((section) => section.id === draggedSection.id);
+    if (from < 0) {
       setDraggedSection(null);
       return;
     }
-    
-    const updated = [...sections];
-    updated.splice(currentIndex, 1);
-    updated.splice(targetIndex, 0, draggedSection);
-    
-    // Update order values
-    const reordered = updated.map((s, i) => ({ ...s, order: i }));
-    updateField('sections', reordered);
+
+    const next = [...sections];
+    const [item] = next.splice(from, 1);
+    const insertAt = from < targetIndex ? targetIndex - 1 : targetIndex;
+    if (insertAt === from) {
+      setDraggedSection(null);
+      return;
+    }
+
+    next.splice(insertAt, 0, item);
+    persistSections(next);
     setDraggedSection(null);
-    showSuccess('Section reordered');
   };
-  
-  // Get sections available for this tier
+
   const getAvailableSections = () => {
-    const all = filterCategory === 'all' 
-      ? getAllSections() 
+    const all = filterCategory === 'all'
+      ? getAllSections()
       : getSectionsByCategory(filterCategory);
-    
-    return all.filter(section => {
-      const hasAccess = canAccessSection(plan, section.type);
-      const alreadyAdded = sections.some(s => s.type === section.type && !section.repeatable);
-      return hasAccess && !alreadyAdded;
+
+    return all.filter((definition) => {
+      if (!canAccessSection(plan, definition.type)) return false;
+      if (!definition.repeatable && sections.some((section) => section.type === definition.type)) {
+        return false;
+      }
+      return true;
     });
   };
-  
+
   const getLockedSections = () => {
-    const all = filterCategory === 'all' 
-      ? getAllSections() 
+    const all = filterCategory === 'all'
+      ? getAllSections()
       : getSectionsByCategory(filterCategory);
-    
-    return all.filter(section => {
-      const hasAccess = canAccessSection(plan, section.type);
-      return !hasAccess;
-    });
+    return all.filter((definition) => !canAccessSection(plan, definition.type));
   };
-  
+
   const availableSections = getAvailableSections();
   const lockedSections = getLockedSections();
+  const selectedSection = sections.find((section) => section.id === effectiveSelectedId);
+  const inspectorKind = inspectorKindForSection(
+    selectedSection?.type || (effectiveSelectedId === LOOK_ID ? LOOK_ID : null)
+  );
+
+  const renderInspector = () => {
+    switch (inspectorKind) {
+      case 'look':
+        return (
+          <>
+            <h3 className="inspector-title">Look</h3>
+            <ThemePicker templateId={siteData.template || siteData.templateId} />
+          </>
+        );
+      case 'services':
+        return (
+          <>
+            <h3 className="inspector-title">Services and products</h3>
+            <ServicesProductsEditor />
+          </>
+        );
+      case 'contact':
+        return (
+          <>
+            <h3 className="inspector-title">Contact and booking</h3>
+            <ContactBookingForm />
+          </>
+        );
+      default:
+        return (
+          <>
+            <h3 className="inspector-title">Essentials</h3>
+            <BusinessInfoForm />
+          </>
+        );
+    }
+  };
 
   return (
-    <div className="page-builder">
-      <div className="builder-header">
-        <h3>📄 Page Builder</h3>
-        <p className="subtitle">Add, remove, and reorder sections on your site</p>
+    <div className="page-builder" data-testid="page-builder">
+      <div className="builder-toolbar">
+        <button
+          type="button"
+          className={`builder-look-btn ${effectiveSelectedId === LOOK_ID ? 'selected' : ''}`}
+          data-testid="builder-look"
+          aria-pressed={effectiveSelectedId === LOOK_ID}
+          onClick={() => {
+            setSelectedId(LOOK_ID);
+            setPendingRemoveId(null);
+          }}
+        >
+          Look
+        </button>
+        <button
+          ref={addButtonRef}
+          type="button"
+          className="btn btn-primary btn-sm"
+          data-testid="add-section-button"
+          aria-expanded={showAddMenu}
+          aria-controls="add-section-menu"
+          onClick={() => setShowAddMenu((open) => !open)}
+        >
+          Add section
+        </button>
       </div>
 
-      {/* Current Sections List */}
       <div className="sections-list">
-        <div className="list-header">
-          <h4>Current Sections ({sections.length})</h4>
-          <button
-            className="btn btn-primary btn-sm"
-            onClick={() => setShowAddMenu(!showAddMenu)}
-          >
-            + Add Section
-          </button>
-        </div>
-
+        <h2 className="list-heading">Sections ({sections.length})</h2>
         {sections.length === 0 ? (
-          <div className="empty-state">
-            <p>No sections added yet. Add one to get started!</p>
+          <div className="empty-state" data-testid="builder-empty">
+            <p>No sections yet. Add one to start.</p>
           </div>
         ) : (
-          <div className="sections-container">
-            {sections.map((section, index) => (
-              <div
-                key={section.id}
-                className={`section-item ${!section.enabled ? 'disabled' : ''}`}
-                draggable
-                onDragStart={() => handleDragStart(section)}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={() => handleDropZone(index)}
-              >
-                <div className="section-drag-handle">≡</div>
-                <div className="section-info">
-                  <span className="section-type">{section.type}</span>
-                  <span className="section-order">#{index + 1}</span>
-                </div>
-                <div className="section-controls">
-                  <button
-                    className={`toggle-btn ${section.enabled ? 'enabled' : 'disabled'}`}
-                    onClick={() => handleToggleSection(section.id)}
-                    title={section.enabled ? 'Hide section' : 'Show section'}
+          <ul className="sections-container" data-testid="section-list">
+            {sections.map((section, index) => {
+              const definition = getSectionByType(section.type);
+              const label = definition?.name || section.type;
+              const removable = definition?.removable !== false;
+              const isSelected = effectiveSelectedId === section.id;
+
+              return (
+                <li key={section.id}>
+                  <div
+                    className={`section-item ${!section.enabled ? 'is-hidden' : ''} ${isSelected ? 'selected' : ''}`}
+                    data-testid={`section-row-${section.id}`}
+                    onDragOver={(event) => event.preventDefault()}
+                    onDrop={(event) => {
+                      event.preventDefault();
+                      handleDropAt(index);
+                    }}
                   >
-                    {section.enabled ? '👁️' : '🚫'}
-                  </button>
-                  <button
-                    className="remove-btn"
-                    onClick={() => handleRemoveSection(section.id)}
-                    title="Remove section"
-                  >
-                    🗑️
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+                    <button
+                      type="button"
+                      className="section-drag-handle"
+                      data-testid={`section-drag-${section.id}`}
+                      draggable
+                      aria-label={`Drag ${label}`}
+                      aria-grabbed={draggedSection?.id === section.id}
+                      onDragStart={(event) => handleDragStart(event, section)}
+                      onDragEnd={handleDragEnd}
+                    >
+                      Move
+                    </button>
+                    <button
+                      type="button"
+                      className="section-select"
+                      data-testid={`section-type-${section.type}`}
+                      aria-pressed={isSelected}
+                      onClick={() => {
+                        setSelectedId(section.id);
+                        setPendingRemoveId(null);
+                      }}
+                    >
+                      <span className="section-type">{label}</span>
+                      <span className="section-order">#{index + 1}</span>
+                    </button>
+                    <div className="section-controls">
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        data-testid={`section-move-up-${section.id}`}
+                        aria-label={`Move ${label} up`}
+                        disabled={index === 0}
+                        onClick={() => moveSection(section.id, -1)}
+                      >
+                        Up
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        data-testid={`section-move-down-${section.id}`}
+                        aria-label={`Move ${label} down`}
+                        disabled={index === sections.length - 1}
+                        onClick={() => moveSection(section.id, 1)}
+                      >
+                        Down
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        data-testid={`section-toggle-${section.id}`}
+                        aria-pressed={section.enabled !== false}
+                        aria-label={section.enabled !== false ? `Hide ${label}` : `Show ${label}`}
+                        onClick={() => handleToggleSection(section.id)}
+                      >
+                        {section.enabled !== false ? 'Hide' : 'Show'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        data-testid={`section-remove-${section.id}`}
+                        aria-label={`Remove ${label}`}
+                        disabled={!removable}
+                        onClick={() => removable && setPendingRemoveId(section.id)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         )}
+        <div
+          className="section-drop-end"
+          data-testid="section-drop-end"
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => {
+            event.preventDefault();
+            handleDropAt(sections.length);
+          }}
+        />
       </div>
 
-      {/* Add Section Menu */}
-      {showAddMenu && (
-        <div className="add-section-menu">
-          <div className="menu-header">
-            <h4>Add a Section</h4>
+      {pendingRemoveId && (
+        <div className="remove-confirm" data-testid="remove-confirm" role="alertdialog" aria-labelledby="remove-confirm-title">
+          <p id="remove-confirm-title">Remove this section from the page?</p>
+          <div className="remove-confirm-actions">
             <button
-              className="close-btn"
-              onClick={() => setShowAddMenu(false)}
+              type="button"
+              className="btn btn-secondary btn-sm"
+              data-testid="remove-cancel"
+              onClick={() => setPendingRemoveId(null)}
             >
-              ✕
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              data-testid="remove-confirm-button"
+              onClick={confirmRemove}
+            >
+              Remove
             </button>
           </div>
+        </div>
+      )}
 
-          {/* Category Filter */}
-          <div className="category-filter">
-            <label>Filter by:</label>
-            <select
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
+      {showAddMenu && (
+        <div
+          ref={addMenuRef}
+          id="add-section-menu"
+          className="add-section-menu"
+          data-testid="add-section-menu"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="add-section-title"
+        >
+          <div className="menu-header">
+            <h3 id="add-section-title">Add a section</h3>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              data-testid="add-section-close"
+              aria-label="Close add section"
+              onClick={() => {
+                setShowAddMenu(false);
+                addButtonRef.current?.focus();
+              }}
             >
-              <option value="all">All Categories</option>
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+              Close
+            </button>
+          </div>
+          <div className="category-filter">
+            <label htmlFor="section-category-filter">Filter by</label>
+            <select
+              id="section-category-filter"
+              value={filterCategory}
+              onChange={(event) => setFilterCategory(event.target.value)}
+            >
+              <option value="all">All categories</option>
+              {categories.map((category) => (
+                <option key={category} value={category}>{category}</option>
               ))}
             </select>
           </div>
-
-          {/* Available Sections */}
           {availableSections.length > 0 && (
             <div className="available-sections">
-              <h5>Available Sections</h5>
+              <h4>Available</h4>
               <div className="sections-grid">
-                {availableSections.map(section => (
-                  <div
-                    key={section.type}
+                {availableSections.map((definition) => (
+                  <button
+                    key={definition.type}
+                    type="button"
                     className="section-card"
-                    onClick={() => handleAddSection(section.type)}
+                    data-testid={`add-type-${definition.type}`}
+                    onClick={() => handleAddSection(definition.type)}
                   >
-                    <span className="section-icon">{section.icon}</span>
-                    <span className="section-name">{section.name}</span>
-                    <span className="section-tier">{section.requiredTier}</span>
-                  </div>
+                    <span className="section-name">{definition.name}</span>
+                    <span className="section-tier">{definition.requiredTier}</span>
+                  </button>
                 ))}
               </div>
             </div>
           )}
-
-          {/* Locked Sections (Upgrade Required) */}
           {lockedSections.length > 0 && (
             <div className="locked-sections">
-              <h5>Upgrade to Unlock</h5>
+              <h4>Upgrade to unlock</h4>
               <div className="sections-grid locked">
-                {lockedSections.map(section => (
-                  <div
-                    key={section.type}
+                {lockedSections.map((definition) => (
+                  <button
+                    key={definition.type}
+                    type="button"
                     className="section-card locked"
-                    title={`Requires ${section.requiredTier} tier`}
+                    data-testid={`locked-type-${definition.type}`}
+                    disabled
+                    aria-disabled="true"
+                    title={`Requires ${definition.requiredTier}`}
                   >
-                    <span className="lock-icon">🔒</span>
-                    <span className="section-name">{section.name}</span>
-                    <span className="required-tier">{section.requiredTier}</span>
-                  </div>
+                    <span className="section-name">{definition.name}</span>
+                    <span className="required-tier">{definition.requiredTier}</span>
+                  </button>
                 ))}
               </div>
-              <p className="upgrade-hint">
-                Upgrade your plan to access more sections
-              </p>
             </div>
           )}
-
           {availableSections.length === 0 && lockedSections.length === 0 && (
-            <div className="no-sections">
-              <p>No sections available in this category</p>
-            </div>
+            <p className="no-sections">No sections in this category</p>
           )}
         </div>
       )}
+
+      <div className="builder-inspector" data-testid="builder-inspector" data-inspector={inspectorKind}>
+        {renderInspector()}
+      </div>
     </div>
   );
 }

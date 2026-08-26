@@ -47,18 +47,10 @@ vi.mock('../../src/components/setup/TemplateGrid', () => ({
   ),
 }));
 
-vi.mock('../../src/components/setup/EditorPanel', () => ({
-  default: ({ siteData, onChange }) => (
-    <div data-testid="editor-panel">
-      <input
-        data-testid="business-name-input"
-        value={siteData?.businessName || ''}
-        onChange={(e) => {
-          if (onChange && typeof onChange === 'function') {
-            onChange({ ...siteData, businessName: e.target.value });
-          }
-        }}
-      />
+vi.mock('../../src/components/setup/PageBuilder', () => ({
+  default: () => (
+    <div data-testid="page-builder">
+      <input data-testid="business-name-input" defaultValue="" />
     </div>
   ),
 }));
@@ -478,7 +470,7 @@ describe('Setup Page', () => {
       });
 
       // Editor should not be visible initially
-      const editor = screen.queryByTestId('editor-panel');
+      const editor = screen.queryByTestId('page-builder');
       expect(editor === null || editor !== null).toBe(true);
     });
 
@@ -499,7 +491,7 @@ describe('Setup Page', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByTestId('editor-panel')).toBeInTheDocument();
+        expect(screen.getByTestId('page-builder')).toBeInTheDocument();
       });
     });
 
@@ -509,7 +501,7 @@ describe('Setup Page', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByTestId('editor-panel')).toBeInTheDocument();
+        expect(screen.getByTestId('page-builder')).toBeInTheDocument();
       });
     });
 
@@ -519,7 +511,7 @@ describe('Setup Page', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByTestId('editor-panel')).toBeInTheDocument();
+        expect(screen.getByTestId('page-builder')).toBeInTheDocument();
       });
     });
 
@@ -542,7 +534,7 @@ describe('Setup Page', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByTestId('editor-panel')).toBeInTheDocument();
+        expect(screen.getByTestId('page-builder')).toBeInTheDocument();
       });
 
       // Validation happens implicitly through forms

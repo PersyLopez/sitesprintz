@@ -40,6 +40,7 @@ const mockRenderSectionToHtml = vi.fn(
 );
 vi.mock('../../src/utils/sectionHtmlBridge', () => ({
   renderSectionToHtml: (...args) => mockRenderSectionToHtml(...args),
+  withNativeBookingTokens: (tokens) => tokens,
 }));
 
 // Mock CSS import
@@ -128,18 +129,12 @@ describe('PreviewFrame', () => {
     expect(iframe.style.height).not.toBe('700px');
   });
 
-  it('renders device mode toggle buttons', () => {
+  it('does not render device or zoom chrome', () => {
     mockSiteData = { businessName: 'Test', category: 'service' };
     render(<PreviewFrame />);
-    expect(screen.getByTestId('device-desktop')).toBeTruthy();
-    expect(screen.getByTestId('device-tablet')).toBeTruthy();
-    expect(screen.getByTestId('device-mobile')).toBeTruthy();
-  });
-
-  it('renders zoom controls', () => {
-    mockSiteData = { businessName: 'Test', category: 'service' };
-    render(<PreviewFrame />);
-    expect(screen.getByText('100%')).toBeTruthy();
+    expect(screen.queryByTestId('device-desktop')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('zoom-in')).not.toBeInTheDocument();
+    expect(screen.queryByText('100%')).not.toBeInTheDocument();
   });
 
   it('falls back to inline HTML rendering if composePage throws', async () => {
