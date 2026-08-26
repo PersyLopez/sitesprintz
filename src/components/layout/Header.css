@@ -79,6 +79,11 @@
   display: none;
 }
 
+.header-language-switcher--desktop,
+.header-theme-switcher--desktop {
+  display: none;
+}
+
 /* Desktop: Show desktop nav */
 @media (min-width: 1024px) {
   .desktop-nav {
@@ -92,11 +97,6 @@
     display: inline-flex;
     margin-left: 12px;
   }
-}
-
-.header-language-switcher--desktop,
-.header-theme-switcher--desktop {
-  display: none;
 }
 
 .header-language-switcher--mobile,

@@ -15,7 +15,7 @@
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted);
   font: inherit;
   font-size: 0.75rem;
   font-weight: 700;
@@ -24,12 +24,12 @@
 }
 
 .language-switcher-btn.is-active {
-  background: var(--primary-color, #2563eb);
-  color: #fff;
+  background: var(--primary-dark);
+  color: var(--on-primary);
 }
 
 .language-switcher-btn:focus-visible {
-  outline: 2px solid var(--primary-color, #2563eb);
+  outline: 2px solid var(--primary-dark);
   outline-offset: 2px;
 }
 

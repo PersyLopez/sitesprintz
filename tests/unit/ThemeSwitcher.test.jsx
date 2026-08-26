@@ -38,7 +38,21 @@ describe('ThemeSwitcher', () => {
     await user.click(screen.getByTestId('theme-switcher-dark'));
 
     expect(screen.getByTestId('theme-switcher-dark')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('theme-switcher-dark')).toHaveClass('is-active');
+    expect(screen.getByTestId('theme-switcher-light')).toHaveAttribute('aria-pressed', 'false');
     expect(document.documentElement.dataset.theme).toBe('dark');
     expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark');
+  });
+
+  it('marks light as selected after switching back', async () => {
+    const user = userEvent.setup();
+    renderSwitcher();
+
+    await user.click(screen.getByTestId('theme-switcher-dark'));
+    await user.click(screen.getByTestId('theme-switcher-light'));
+
+    expect(screen.getByTestId('theme-switcher-light')).toHaveClass('is-active');
+    expect(screen.getByTestId('theme-switcher-dark')).not.toHaveClass('is-active');
+    expect(document.documentElement.dataset.theme).toBe('light');
   });
 });
