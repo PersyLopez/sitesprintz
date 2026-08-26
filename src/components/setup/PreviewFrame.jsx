@@ -175,13 +175,13 @@ function PreviewFrame() {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: system-ui, -apple-system, sans-serif; background: #0c0c0e; color: #f4f2ee; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #030712; color: #f0f9ff; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
   </style>
 </head>
 <body>
   <div style="text-align:center;padding:48px;">
-    <h1 style="color:#c2683a;font-size:2rem;">Site Preview</h1>
-    <p style="color:#8a8a8f;margin-top:1rem;">Start building to see your preview here.</p>
+    <h1 style="color:#4a6d82;font-size:2rem;">Site Preview</h1>
+    <p style="color:#94a3b8;margin-top:1rem;">Start building to see your preview here.</p>
   </div>
 </body>
 </html>`;
@@ -198,69 +198,72 @@ function PreviewFrame() {
   };
 
   return (
-    <div data-testid="preview-frame" className="preview-frame-wrapper">
-      {/* Device Mode Toggle */}
-      <div className="preview-controls">
-        <div className="device-toggle">
-          {Object.entries(deviceFrames).map(([mode, config]) => (
-            <button
-              key={mode}
-              className={`device-btn ${deviceMode === mode ? 'active' : ''}`}
-              onClick={() => setDeviceMode(mode)}
-              title={config.label}
-              data-testid={`device-${mode}`}
-            >
-              {config.icon} {config.label}
-            </button>
-          ))}
+    <div data-testid="preview-frame" className="preview-frame-container">
+      <div className="preview-toolbar">
+        <div className="toolbar-section">
+          <div className="device-buttons">
+            {Object.entries(deviceFrames).map(([mode, config]) => (
+              <button
+                key={mode}
+                type="button"
+                className={`device-btn ${deviceMode === mode ? 'active' : ''}`}
+                onClick={() => setDeviceMode(mode)}
+                title={config.label}
+                data-testid={`device-${mode}`}
+              >
+                <span className="device-icon" aria-hidden="true">{config.icon}</span>
+                <span className="device-label">{config.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Zoom Controls */}
-        <div className="zoom-controls">
-          <button
-            className="zoom-btn"
-            onClick={() => setZoomLevel(Math.max(25, zoomLevel - 25))}
-            title="Zoom Out"
-            data-testid="zoom-out"
-          >
-            −
-          </button>
-          <span className="zoom-level" data-testid="zoom-level">{zoomLevel}%</span>
-          <button
-            className="zoom-btn"
-            onClick={() => setZoomLevel(Math.min(200, zoomLevel + 25))}
-            title="Zoom In"
-            data-testid="zoom-in"
-          >
-            +
-          </button>
+        <div className="toolbar-section">
+          <div className="zoom-controls">
+            <button
+              type="button"
+              className="zoom-btn"
+              onClick={() => setZoomLevel(Math.max(25, zoomLevel - 25))}
+              title="Zoom Out"
+              data-testid="zoom-out"
+            >
+              −
+            </button>
+            <span className="zoom-level" data-testid="zoom-level">{zoomLevel}%</span>
+            <button
+              type="button"
+              className="zoom-btn"
+              onClick={() => setZoomLevel(Math.min(200, zoomLevel + 25))}
+              title="Zoom In"
+              data-testid="zoom-in"
+            >
+              +
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Preview Frame */}
-      <div className="preview-container" style={{ maxWidth: deviceFrames[deviceMode]?.width || '100%' }}>
-        {isLoading && (
-          <div className="preview-loading" data-testid="preview-loading">
-            <div className="spinner"></div>
-            <p>Loading preview...</p>
+      <div className="preview-viewport">
+        <div className={`preview-device-wrapper device-${deviceMode} ${isRefreshing ? 'refreshing' : ''}`}>
+          {isLoading && (
+            <div className="preview-loading" data-testid="preview-loading">
+              <div className="loading-spinner"></div>
+              <p>Loading preview...</p>
+            </div>
+          )}
+          <div
+            className="preview-content"
+            style={{ transform: `scale(${zoomLevel / 100})` }}
+          >
+            <iframe
+              ref={iframeRef}
+              className="preview-iframe"
+              src="about:blank"
+              style={{ opacity: isLoading ? 0 : 1 }}
+              sandbox="allow-same-origin"
+              title="Site Preview"
+            />
           </div>
-        )}
-        <div className={`iframe-wrapper ${isRefreshing ? 'refreshing' : ''}`}>
-          <iframe
-            ref={iframeRef}
-            src="about:blank"
-            style={{
-              width: '100%',
-              height: '700px',
-              border: 'none',
-              transform: `scale(${zoomLevel / 100})`,
-              transformOrigin: 'top left',
-              opacity: isLoading ? 0 : 1,
-              transition: 'opacity 0.3s ease',
-            }}
-            sandbox="allow-same-origin"
-            title="Site Preview"
-          />
         </div>
       </div>
     </div>

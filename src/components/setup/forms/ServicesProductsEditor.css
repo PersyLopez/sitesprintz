@@ -6,7 +6,7 @@
   display: flex;
   gap: 8px;
   margin-bottom: 24px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--border-dark);
 }
 
 .tab-button {
@@ -18,19 +18,19 @@
   align-items: center;
   gap: 8px;
   font-size: 0.95rem;
-  color: #64748b;
+  color: var(--text-muted);
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
-  transition: all 0.2s;
+  transition: color 0.2s, border-color 0.2s;
 }
 
 .tab-button:hover {
-  color: #1e293b;
+  color: var(--text-light);
 }
 
 .tab-button.active {
-  color: #6366f1;
-  border-bottom-color: #6366f1;
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
   font-weight: 500;
 }
 
@@ -56,7 +56,7 @@
 .services-header h3 {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-light);
   margin: 0;
 }
 
@@ -67,8 +67,8 @@
 }
 
 .service-item {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-dark);
   border-radius: 8px;
   padding: 16px;
 }
@@ -85,16 +85,18 @@
 .service-item textarea {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-dark);
   border-radius: 6px;
   font-size: 0.95rem;
+  background: var(--bg-darker);
+  color: var(--text-light);
 }
 
 .service-item input:focus,
 .service-item textarea:focus {
   outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 15%, transparent);
 }
 
 .service-item .form-row {
@@ -111,7 +113,7 @@
 .empty-services {
   text-align: center;
   padding: 40px 20px;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .empty-services p {

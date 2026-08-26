@@ -80,7 +80,12 @@ function ThemeCard({ theme, isSelected, isSuggested, onSelect }) {
       >
         <div className="theme-swatch" style={{ background: tokens.accent }} />
         <div className="theme-swatch-secondary" style={{ background: tokens.surface }} />
-        <span className="theme-mode-label">{mode === 'light' ? 'Light' : 'Dark'}</span>
+        <span
+          className="theme-mode-label"
+          style={{ color: tokens.text, background: tokens.surface }}
+        >
+          {mode === 'light' ? 'Light' : 'Dark'}
+        </span>
       </div>
       <div className="theme-card-info">
         <div className="theme-card-header">

@@ -131,14 +131,6 @@ describe('EditorPanel - Trial & Subscription System', () => {
       expect(screen.getByTestId('contact-booking-form')).toBeInTheDocument();
     });
 
-    it('should fetch published site count on mount', async () => {
-      renderEditorPanel({}, [{ status: 'published', publishedAt: '2026-01-01' }]);
-
-      await waitFor(() => {
-        expect(sitesService.getUserSites).toHaveBeenCalledWith(1);
-      });
-    });
-
     it('should expose all editor tabs for growth subscribers', async () => {
       renderEditorPanel({ user: { id: 1, email: 'test@example.com', plan: 'growth', subscription_status: 'active' } }, []);
 

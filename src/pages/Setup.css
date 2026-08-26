@@ -81,7 +81,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-lg) var(--spacing-xl);
+  padding: var(--spacing-sm) var(--spacing-lg);
   background: var(--bg-elevated);
   border-bottom: 1px solid var(--border-dark);
   box-shadow: none;
@@ -95,11 +95,11 @@
 }
 
 .setup-title h1 {
-  margin: 0 0 4px;
-  font-size: clamp(1.5rem, 3vw + 0.5rem, 2rem);
+  margin: 0 0 2px;
+  font-size: clamp(1.1rem, 2vw + 0.5rem, 1.35rem);
   color: var(--text-light);
-  font-weight: 800;
-  letter-spacing: -0.5px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
 }
 
 .setup-title p {
@@ -238,7 +238,7 @@
 }
 
 .setup-progress-section {
-  padding: var(--spacing-md) var(--spacing-xl);
+  padding: 6px var(--spacing-lg);
   background: var(--bg-elevated);
   border-bottom: 1px solid var(--border-dark);
 }
@@ -305,7 +305,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-md);
-  padding: var(--spacing-lg);
+  padding: var(--spacing-sm) var(--spacing-md);
   background: var(--bg-elevated);
   border-bottom: 1px solid var(--border-dark);
   box-shadow: none;
@@ -335,8 +335,16 @@
 
 .panel-content {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+.editor-panel .panel-content,
+.preview-panel .panel-content {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .panel-loading {
@@ -415,7 +423,7 @@
   
   .setup-header {
     flex-direction: row;
-    padding: var(--spacing-lg) var(--spacing-xl);
+    padding: var(--spacing-sm) var(--spacing-lg);
   }
   
   .setup-title {

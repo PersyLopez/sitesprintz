@@ -45,9 +45,9 @@ steps:
     wait_for: { selector: '[data-testid="customize-panel"]', timeout: 15000 }
     settle_ms: 400
     assert:
-      - text contains Choose Your Template
-      - text contains Customize Your Content
-      - text contains Live Preview
+      - text contains Templates
+      - text contains Customize
+      - text contains Preview
       - text contains Select a template from the left
       - text contains live preview will appear here
 
@@ -103,6 +103,61 @@ steps:
       const name = page.getByTestId('business-name-input');
       const val = await name.inputValue();
       if (!/Beauty Studio/i.test(val)) throw new Error('Business name not loaded: ' + val);
+    settle_ms: 200
+
+  - action: Two columns after Salon
+    wait_for: { selector: '[data-testid="preview-frame"]', timeout: 15000 }
+    code: |
+      const layout = await page.evaluate(() => {
+        const panels = [...document.querySelectorAll('.setup-panel')].map((el) => {
+          const r = el.getBoundingClientRect();
+          const cs = getComputedStyle(el);
+          return {
+            cls: el.className,
+            display: cs.display,
+            w: Math.round(r.width),
+            h: Math.round(r.height),
+          };
+        });
+        const editor = document.querySelector('[data-testid="customize-panel"]');
+        const iframe = document.querySelector('[data-testid="preview-frame"] iframe');
+        const er = editor ? editor.getBoundingClientRect() : null;
+        const ir = iframe ? iframe.getBoundingClientRect() : null;
+        const tabpanels = document.querySelectorAll('[role="tabpanel"]');
+        const editorTabs = document.querySelectorAll('.editor-tabs [role="tab"]');
+        const editorTabButtons = document.querySelectorAll('.editor-tabs button:not([role="tab"])');
+        const twoCol = !!document.querySelector('.setup-panels--two-col');
+        return {
+          panels,
+          twoCol,
+          editorW: er ? Math.round(er.width) : 0,
+          iframeW: ir ? Math.round(ir.width) : 0,
+          iframeH: ir ? Math.round(ir.height) : 0,
+          tabpanelCount: tabpanels.length,
+          tabCount: editorTabs.length,
+          tabWithoutRole: editorTabButtons.length,
+        };
+      });
+      if (!layout.twoCol) throw new Error('Expected setup-panels--two-col after Salon');
+      const visible = layout.panels.filter((p) => p.display !== 'none' && p.w > 0 && p.h > 0);
+      if (visible.length !== 2) {
+        throw new Error('Expected two visible columns after Salon, got ' + JSON.stringify(visible));
+      }
+      if (layout.tabpanelCount !== 1) {
+        throw new Error('Expected one tabpanel, found ' + layout.tabpanelCount);
+      }
+      if (layout.tabCount !== 4) {
+        throw new Error('Expected four role=tab editor tabs, found ' + layout.tabCount);
+      }
+      if (layout.tabWithoutRole !== 0) {
+        throw new Error('Editor tabs must use role=tab, found button without tab role');
+      }
+      if (layout.iframeW < 400) {
+        throw new Error('Desktop preview iframe too narrow: ' + layout.iframeW + 'px');
+      }
+      if (layout.editorW > 0 && layout.iframeW < layout.editorW * 0.45) {
+        throw new Error('Preview iframe much narrower than editor column: iframe=' + layout.iframeW + ' editor=' + layout.editorW);
+      }
     settle_ms: 200
 
   - action: Preview frame present
@@ -277,4 +332,4 @@ steps:
     click: { testId: change-template-button }
     settle_ms: 800
     assert:
-      - text contains Choose Your Template
+      - text contains Templates

@@ -186,34 +186,34 @@ function Setup() {
       <div className="setup-progress-section">
         <ProgressIndicator
           percentage={progressPercentage()}
-          label="Setup Progress"
-          showPercentage={true}
-          size="md"
+          label="Setup"
+          showPercentage={false}
+          size="sm"
         />
       </div>
 
       <div className="setup-header">
         <div className="setup-title">
-          <h1>{siteData.businessName || '✨ Create Your Amazing Website'}</h1>
-          <p>{siteData.template ? `Template: ${siteData.template}` : 'Choose a stunning template to get started'}</p>
+          <h1>{siteData.businessName || 'New site'}</h1>
+          <p>{siteData.template ? `Template: ${siteData.template}` : 'Pick a template to start'}</p>
         </div>
 
         <div className="setup-actions">
           <SaveIndicator lastSaved={lastSaved} isSaving={isSaving} />
           <button
             onClick={() => saveDraft()}
-            className="btn btn-secondary btn-glow"
+            className="btn btn-secondary"
             data-testid="save-draft-button"
           >
-            💾 Save Draft
+            Save
           </button>
           <button
             onClick={handlePublish}
-            className="btn btn-primary btn-glow"
+            className="btn btn-primary"
             disabled={!siteData.template}
             data-testid="publish-site-button"
           >
-            🚀 Publish Site
+            Publish
           </button>
         </div>
       </div>
@@ -225,21 +225,21 @@ function Setup() {
             className={`mobile-tab ${activeTab === 'templates' ? 'active' : ''}`}
             onClick={handleShowTemplatePicker}
           >
-            🎨 Templates
+            Templates
           </button>
           <button
             className={`mobile-tab ${activeTab === 'editor' ? 'active' : ''}`}
             onClick={() => setActiveTab('editor')}
             disabled={!siteData.template}
           >
-            ✏️ Editor
+            Editor
           </button>
           <button
             className={`mobile-tab ${activeTab === 'preview' ? 'active' : ''}`}
             onClick={() => setActiveTab('preview')}
             disabled={!siteData.template}
           >
-            👀 Preview
+            Preview
           </button>
         </div>
 
@@ -250,7 +250,7 @@ function Setup() {
             className={`setup-panel templates-panel ${activeTab === 'templates' ? 'active' : ''} ${!templatesPanelVisible ? 'templates-panel--hidden' : ''}`}
           >
             <div className="panel-header">
-              <h2>🎨 Choose Your Template</h2>
+              <h2>Templates</h2>
             </div>
             <div className="panel-content">
               {loading ? (
@@ -281,7 +281,7 @@ function Setup() {
             data-testid="customize-panel"
           >
             <div className="panel-header">
-              <h2>✏️ Customize Your Content</h2>
+              <h2>Customize</h2>
               {siteData.template && (
                 <button
                   type="button"
@@ -298,8 +298,7 @@ function Setup() {
                 <EditorPanel />
               ) : (
                 <div className="panel-empty">
-                  <div className="empty-icon">🎨</div>
-                  <p>👈 Select a template from the left to start customizing your website</p>
+                  <p>Select a template from the left to start customizing your website</p>
                 </div>
               )}
             </div>
@@ -308,7 +307,7 @@ function Setup() {
           {/* Preview Panel */}
           <div className={`setup-panel preview-panel ${activeTab === 'preview' ? 'active' : ''}`}>
             <div className="panel-header">
-              <h2>👀 Live Preview</h2>
+              <h2>Preview</h2>
             </div>
             <div className="panel-content">
               {siteData.template ? (
@@ -317,7 +316,6 @@ function Setup() {
                 </Suspense>
               ) : (
                 <div className="panel-empty">
-                  <div className="empty-icon">🖼️</div>
                   <p>Your live preview will appear here once you select a template</p>
                 </div>
               )}

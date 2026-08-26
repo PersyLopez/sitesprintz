@@ -118,6 +118,16 @@ describe('PreviewFrame', () => {
     expect(screen.getByTestId('preview-frame')).toBeTruthy();
   });
 
+  it('uses PreviewFrame.css class family without a fixed 700px iframe', () => {
+    mockSiteData = { businessName: 'Test', category: 'service' };
+    const { container } = render(<PreviewFrame />);
+    const root = screen.getByTestId('preview-frame');
+    expect(root.classList.contains('preview-frame-container')).toBe(true);
+    const iframe = container.querySelector('iframe');
+    expect(iframe.classList.contains('preview-iframe')).toBe(true);
+    expect(iframe.style.height).not.toBe('700px');
+  });
+
   it('renders device mode toggle buttons', () => {
     mockSiteData = { businessName: 'Test', category: 'service' };
     render(<PreviewFrame />);
