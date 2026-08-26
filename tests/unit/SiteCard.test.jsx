@@ -52,7 +52,7 @@ describe('SiteCard', () => {
 
     expect(screen.getByText('Test Business')).toBeInTheDocument();
     expect(screen.getByText('restaurant-casual')).toBeInTheDocument();
-    expect(screen.getByText('✅ Published')).toBeInTheDocument();
+    expect(screen.getByText('Published')).toBeInTheDocument();
   });
 
   it('should show published status for published sites', () => {
@@ -63,7 +63,7 @@ describe('SiteCard', () => {
       />
     );
 
-    expect(screen.getByText('✅ Published')).toBeInTheDocument();
+    expect(screen.getByText('Published')).toBeInTheDocument();
   });
 
   it('should show draft status for draft sites', () => {
@@ -76,7 +76,7 @@ describe('SiteCard', () => {
       />
     );
 
-    expect(screen.getByText('📝 Draft')).toBeInTheDocument();
+    expect(screen.getByText('Draft')).toBeInTheDocument();
   });
 
   it('should call onDelete when delete button is clicked', () => {
