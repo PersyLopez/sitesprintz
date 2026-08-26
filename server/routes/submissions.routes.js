@@ -28,8 +28,47 @@ import {
   isShowcaseDemoSiteData,
   buildDemoOrderId,
 } from '../utils/showcaseDemo.js';
+import {
+  HEALTH_PROBE_FORM_TYPE,
+  HEALTH_PROBE_HEADER,
+  healthProbeSecretMatches,
+  purgeOldHealthProbes,
+} from '../utils/healthProbe.js';
 
 const router = express.Router();
+
+/**
+ * Persist a contact-form health probe via the real submit path (no owner email).
+ */
+export async function createContactHealthProbe() {
+  await purgeOldHealthProbes();
+
+  const subdomain = process.env.HEALTH_PROBE_SUBDOMAIN;
+  if (!subdomain) {
+    return { ok: false, error: 'not_configured' };
+  }
+
+  const site = await getSiteBySubdomain(subdomain);
+  if (!site) {
+    return { ok: false, error: 'site_not_found', subdomain };
+  }
+
+  const submission = await prisma.submissions.create({
+    data: {
+      site_id: site.id,
+      form_type: HEALTH_PROBE_FORM_TYPE,
+      data: {
+        probe: true,
+        subdomain,
+        source: 'health_probe',
+      },
+      status: 'read',
+      created_at: new Date(),
+    },
+  });
+
+  return { ok: true, submissionId: submission.id, subdomain };
+}
 
 /**
  * Helper: Get site by subdomain with owner info
@@ -70,6 +109,25 @@ function parseSiteData(site) {
  */
 router.post('/contact', asyncHandler(async (req, res) => {
   const { subdomain, name, email, phone, message, type, ...otherFields } = req.body;
+  const probeHeader = req.headers[HEALTH_PROBE_HEADER];
+  const wantsProbe = Boolean(probeHeader || type === HEALTH_PROBE_FORM_TYPE);
+
+  if (wantsProbe) {
+    if (!healthProbeSecretMatches(probeHeader)) {
+      return res.status(401).json({ error: 'Unauthorized', code: 'PROBE_UNAUTHORIZED' });
+    }
+    const result = await createContactHealthProbe();
+    if (!result.ok) {
+      if (result.error === 'not_configured') {
+        return sendBadRequest(res, 'Health probe not configured', 'PROBE_NOT_CONFIGURED');
+      }
+      return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
+    }
+    return sendCreated(res, {
+      submissionId: result.submissionId,
+      probe: true,
+    }, 'Health probe recorded');
+  }
 
   // Validate required fields
   if (!subdomain) {

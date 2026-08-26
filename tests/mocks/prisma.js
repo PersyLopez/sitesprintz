@@ -232,6 +232,21 @@ export const createMockPrisma = () => {
       findUnique: vi.fn(({ where }) => {
         return Promise.resolve(findById(mockData.submissions, where.id));
       }),
+      findFirst: vi.fn(({ where, orderBy } = {}) => {
+        let results = Array.from(mockData.submissions.values());
+        if (where?.form_type) {
+          results = results.filter((s) => s.form_type === where.form_type);
+        }
+        if (where?.created_at?.lt) {
+          results = results.filter(
+            (s) => new Date(s.created_at) < new Date(where.created_at.lt)
+          );
+        }
+        if (orderBy?.created_at === 'desc') {
+          results.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        }
+        return Promise.resolve(results[0] || null);
+      }),
       findMany: vi.fn(({ where, orderBy } = {}) => {
         let results = Array.from(mockData.submissions.values());
         if (where) {
@@ -270,7 +285,21 @@ export const createMockPrisma = () => {
           return Promise.resolve(submission);
         }
         return Promise.reject(new Error('Submission not found'));
-      })
+      }),
+      deleteMany: vi.fn(({ where } = {}) => {
+        const entries = Array.from(mockData.submissions.entries());
+        const toDelete = entries.filter(([, submission]) => {
+          if (where?.form_type && submission.form_type !== where.form_type) {
+            return false;
+          }
+          if (where?.created_at?.lt) {
+            return new Date(submission.created_at) < new Date(where.created_at.lt);
+          }
+          return true;
+        });
+        toDelete.forEach(([id]) => mockData.submissions.delete(id));
+        return Promise.resolve({ count: toDelete.length });
+      }),
     },
 
     // Orders model

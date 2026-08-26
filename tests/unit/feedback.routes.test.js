@@ -62,4 +62,38 @@ describe('POST /api/feedback', () => {
     expect(response.status).toBe(400);
     expect(prisma.submissions.create).not.toHaveBeenCalled();
   });
+
+  it('rejects health probe without secret header', async () => {
+    const app = createApp();
+    const response = await request(app)
+      .post('/api/feedback')
+      .send({ probe: true });
+
+    expect(response.status).toBe(401);
+    expect(prisma.submissions.create).not.toHaveBeenCalled();
+  });
+
+  it('writes health_probe and skips admin email with valid secret', async () => {
+    process.env.HEALTH_PROBE_SECRET = 'probe-secret';
+    prisma.submissions.deleteMany.mockResolvedValue({ count: 0 });
+    prisma.submissions.create.mockResolvedValue({ id: 77 });
+
+    const app = createApp();
+    const response = await request(app)
+      .post('/api/feedback')
+      .set('X-Health-Probe', 'probe-secret')
+      .send({ probe: true });
+
+    expect(response.status).toBe(201);
+    expect(prisma.submissions.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ form_type: 'health_probe' }),
+      })
+    );
+    const { sendEmail, sendAdminNotification } = await import('../../server/utils/email-service-wrapper.js');
+    expect(sendEmail).not.toHaveBeenCalled();
+    expect(sendAdminNotification).not.toHaveBeenCalled();
+
+    delete process.env.HEALTH_PROBE_SECRET;
+  });
 });

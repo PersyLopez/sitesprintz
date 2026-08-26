@@ -7,6 +7,11 @@ import { setupIntegrationTest, createTestUser, createTestSite, seedPrismaData } 
 // Mock Prisma before importing routes
 const mockPrisma = setupIntegrationTest();
 
+vi.mock('../../server/utils/email-service-wrapper.js', () => ({
+  sendEmail: vi.fn().mockResolvedValue({ success: true }),
+  EmailTypes: { CONTACT_FORM_SUBMISSION: 'contactFormSubmission' },
+}));
+
 // Mock auth middleware BEFORE importing routes
 vi.mock('../../server/middleware/auth.js', () => ({
   requireAuth: (req, res, next) => {
@@ -19,6 +24,8 @@ vi.mock('../../server/middleware/auth.js', () => ({
 
 // Now import routes after mocking auth
 const submissionsRoutes = (await import('../../server/routes/submissions.routes.js')).default;
+import { sendEmail } from '../../server/utils/email-service-wrapper.js';
+import { prisma } from '../../database/db.js';
 
 // Generate test IDs at module level so they're available to helper functions
 const testSiteId = randomUUID();
@@ -44,11 +51,6 @@ const createTestApp = () => {
   app.use('/api/submissions', submissionsRoutes);
   return app;
 };
-
-import { setupIntegrationTest, createTestUser, createTestSite, seedPrismaData } from '../utils/integrationTestSetup.js';
-
-// Mock Prisma before importing routes
-const mockPrisma = setupIntegrationTest();
 
 const createAuthTestApp = () => {
   const app = express();
@@ -404,6 +406,46 @@ describe('Submissions Routes Integration Tests', () => {
       // Should accept (backend might not validate) or reject
       expect(response.status).toBeDefined();
       // This test documents current behavior
+    });
+  });
+
+  describe('POST /api/submissions/contact health probe', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+      process.env.HEALTH_PROBE_SECRET = 'probe-secret';
+      process.env.HEALTH_PROBE_SUBDOMAIN = 'test-restaurant';
+      prisma.submissions.deleteMany.mockResolvedValue({ count: 0 });
+      prisma.submissions.create.mockResolvedValue({ id: 99 });
+    });
+
+    afterEach(() => {
+      delete process.env.HEALTH_PROBE_SECRET;
+      delete process.env.HEALTH_PROBE_SUBDOMAIN;
+    });
+
+    it('rejects probe without secret header', async () => {
+      const response = await request(app)
+        .post('/api/submissions/contact')
+        .send({ type: 'health_probe', subdomain: 'test-restaurant' });
+
+      expect(response.status).toBe(401);
+      expect(prisma.submissions.create).not.toHaveBeenCalled();
+      expect(sendEmail).not.toHaveBeenCalled();
+    });
+
+    it('writes health_probe and skips email with valid secret', async () => {
+      const response = await request(app)
+        .post('/api/submissions/contact')
+        .set('X-Health-Probe', 'probe-secret')
+        .send({ type: 'health_probe' });
+
+      expect(response.status).toBe(201);
+      expect(prisma.submissions.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ form_type: 'health_probe' }),
+        })
+      );
+      expect(sendEmail).not.toHaveBeenCalled();
     });
   });
 });

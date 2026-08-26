@@ -12,14 +12,56 @@ import {
   sendBadRequest,
   asyncHandler
 } from '../utils/apiResponse.js';
+import {
+  HEALTH_PROBE_FORM_TYPE,
+  HEALTH_PROBE_HEADER,
+  healthProbeSecretMatches,
+  purgeOldHealthProbes,
+} from '../utils/healthProbe.js';
 
 const router = express.Router();
+
+/**
+ * Persist a platform feedback health probe via the real submit path (no admin email).
+ */
+export async function createFeedbackHealthProbe() {
+  await purgeOldHealthProbes();
+
+  const submission = await prisma.submissions.create({
+    data: {
+      site_id: null,
+      form_type: HEALTH_PROBE_FORM_TYPE,
+      data: {
+        probe: true,
+        source: 'health_probe',
+        submittedAt: new Date().toISOString(),
+      },
+      status: 'read',
+      created_at: new Date(),
+    },
+  });
+
+  return { ok: true, submissionId: submission.id };
+}
 
 const FEEDBACK_TYPES = new Set(['bug', 'feature', 'question']);
 const MAX_MESSAGE_LENGTH = 4000;
 
 router.post('/', feedbackLimiter, asyncHandler(async (req, res) => {
   const { type, message, email, url, userAgent } = req.body;
+  const probeHeader = req.headers[HEALTH_PROBE_HEADER];
+  const wantsProbe = Boolean(probeHeader || req.body.probe === true);
+
+  if (wantsProbe) {
+    if (!healthProbeSecretMatches(probeHeader)) {
+      return res.status(401).json({ error: 'Unauthorized', code: 'PROBE_UNAUTHORIZED' });
+    }
+    const result = await createFeedbackHealthProbe();
+    return sendCreated(res, {
+      submissionId: result.submissionId,
+      probe: true,
+    }, 'Health probe recorded');
+  }
 
   if (!type || !FEEDBACK_TYPES.has(type)) {
     return sendBadRequest(res, 'Invalid feedback type', 'INVALID_TYPE');

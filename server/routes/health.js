@@ -1,6 +1,15 @@
 import express from 'express';
 import { prisma } from '../../database/db.js';
 import { isBetaMode, betaAllowsPublicSignups, stripeKeyMode } from '../config/betaMode.js';
+import {
+  getCanaryStatus,
+  getFormsHealthSummary,
+  healthProbeSecretMatches,
+  isHealthProbeConfigured,
+  isHealthProbeRequest,
+} from '../utils/healthProbe.js';
+import { createContactHealthProbe } from './submissions.routes.js';
+import { createFeedbackHealthProbe } from './feedback.routes.js';
 
 const router = express.Router();
 const startTime = Date.now();
@@ -140,6 +149,61 @@ router.get('/email', async (req, res) => {
 });
 
 /**
+ * Forms health check
+ * Read-only summary of last real submissions; optional synthetic probe with X-Health-Probe header.
+ */
+router.get('/forms', async (req, res) => {
+  try {
+    const probeHeader = req.headers['x-health-probe'];
+
+    if (probeHeader && process.env.HEALTH_PROBE_SECRET && !healthProbeSecretMatches(probeHeader)) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+        code: 'PROBE_UNAUTHORIZED',
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    const [forms, canary] = await Promise.all([
+      getFormsHealthSummary(),
+      getCanaryStatus(),
+    ]);
+
+    const emailConfigured = Boolean(process.env.RESEND_API_KEY);
+
+    let probe = { status: 'not_configured' };
+    if (isHealthProbeRequest(req)) {
+      if (isHealthProbeConfigured()) {
+        const [contactResult, platformResult] = await Promise.all([
+          createContactHealthProbe(),
+          createFeedbackHealthProbe(),
+        ]);
+        probe = {
+          status: contactResult.ok && platformResult.ok ? 'ok' : 'degraded',
+          contact: contactResult,
+          platform: platformResult,
+        };
+      }
+    }
+
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      email: { configured: emailConfigured },
+      canary,
+      forms,
+      probe,
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: 'error',
+      error: error.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
+/**
  * Comprehensive health check
  * Runs all checks in parallel and aggregates results
  */
@@ -148,7 +212,8 @@ router.get('/full', async (req, res) => {
     app: { status: 'ok', uptime: Math.floor((Date.now() - startTime) / 1000) },
     database: { status: 'checking' },
     stripe: { status: 'checking' },
-    email: { status: 'checking' }
+    email: { status: 'checking' },
+    forms: { status: 'checking' },
   };
 
   // Run all checks in parallel
@@ -175,13 +240,30 @@ router.get('/full', async (req, res) => {
       checks.email = {
         status: process.env.RESEND_API_KEY ? 'ok' : 'not_configured'
       };
+    })(),
+
+    // Forms summary (read-only)
+    (async () => {
+      const [forms, canary] = await Promise.all([
+        getFormsHealthSummary(),
+        getCanaryStatus(),
+      ]);
+      checks.forms = {
+        status: 'ok',
+        emailConfigured: Boolean(process.env.RESEND_API_KEY),
+        canary,
+        lastSubmittedAt: {
+          contact: forms.contact.lastSubmittedAt,
+          platformFeedback: forms.platformFeedback.lastSubmittedAt,
+        },
+      };
     })()
   ]);
 
   // Update failed checks
   results.forEach((result, index) => {
     if (result.status === 'rejected') {
-      const service = ['database', 'stripe', 'email'][index];
+      const service = ['database', 'stripe', 'email', 'forms'][index];
       checks[service] = {
         status: 'error',
         error: result.reason?.message || 'Unknown error'
