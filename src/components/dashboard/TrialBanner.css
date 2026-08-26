@@ -1,18 +1,18 @@
 .trial-banner {
-  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-  border-radius: 1rem;
+  background: var(--bg-elevated);
+  color: var(--text-light);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius-xl, 16px);
   padding: 1.5rem;
   margin-bottom: 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
-  animation: slideInDown 0.5s ease;
+  box-shadow: none;
 }
 
 .trial-banner.urgent {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-  animation: pulse 2s ease-in-out infinite;
+  border-color: var(--danger-color);
 }
 
 .trial-content {
@@ -28,13 +28,13 @@
 
 .trial-text h3 {
   margin: 0 0 0.5rem 0;
-  color: white;
+  color: var(--text-light);
   font-size: 1.25rem;
 }
 
 .trial-text p {
   margin: 0;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text-muted);
   font-size: 0.95rem;
 }
 
@@ -48,53 +48,32 @@
   border-radius: 0.5rem;
   font-weight: 600;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: background var(--transition-base), border-color var(--transition-base);
 }
 
 .trial-banner .btn-primary {
-  background: white;
-  color: #f97316;
+  background: var(--primary-dark);
+  color: var(--on-primary);
   border: none;
 }
 
 .trial-banner .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+  background: var(--primary-color);
 }
 
 .trial-banner .btn-secondary {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: transparent;
+  color: var(--text-light);
+  border: 1px solid var(--border-dark);
 }
 
 .trial-banner .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--bg-hover);
 }
 
 .trial-banner.urgent .btn-primary {
-  background: #fef3c7;
-  color: #dc2626;
-}
-
-@keyframes slideInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
-  }
-  50% {
-    box-shadow: 0 4px 25px rgba(220, 38, 38, 0.6);
-  }
+  background: var(--primary-dark);
+  color: var(--on-primary);
 }
 
 @media (max-width: 768px) {
@@ -118,4 +97,3 @@
     width: 100%;
   }
 }
-
