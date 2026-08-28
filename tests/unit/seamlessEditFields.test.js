@@ -19,6 +19,22 @@ describe('applyEditableField', () => {
     expect(data.heroTitle).toBe('New headline');
   });
 
+  it('writes hero image into the section and catalog fallbacks', () => {
+    const data = {
+      sections: [{ type: 'hero', content: { title: 'Hello' } }],
+    };
+    applyEditableField(data, 'hero.image', '/uploads/shop.jpg');
+    expect(data.sections[0].content.image).toBe('/uploads/shop.jpg');
+    expect(data.hero.image).toBe('/uploads/shop.jpg');
+    expect(data.heroImage).toBe('/uploads/shop.jpg');
+  });
+
+  it('writes a gallery tile src', () => {
+    const data = { sections: [{ type: 'gallery', content: {} }] };
+    applyEditableField(data, 'gallery.images.0.src', '/uploads/work.jpg');
+    expect(data.sections[0].content.images[0].src).toBe('/uploads/work.jpg');
+  });
+
   it('updates a service item name', () => {
     const data = {
       sections: [{ type: 'services', content: { items: [{ name: 'Cut' }] } }],

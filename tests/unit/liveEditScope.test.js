@@ -19,7 +19,12 @@ describe('classifyUnboundLiveEditTarget', () => {
   it('classifies photos as page builder edits', () => {
     mount('<div class="ss-live"><img src="/photo.jpg" alt="Hero" /></div>');
     const result = classifyUnboundLiveEditTarget(document.querySelector('img'));
-    expect(result).toEqual({ key: 'edit', title: 'Photos, sections, FAQ, menu' });
+    expect(result).toEqual({ key: 'edit', title: 'Sections, FAQ, menu' });
+  });
+
+  it('does not classify a bound photo insert as unbound', () => {
+    mount('<div class="ss-live"><div data-editable="hero.image" data-photo-field="hero.image" class="ss-photo-placeholder"></div></div>');
+    expect(classifyUnboundLiveEditTarget(document.querySelector('.ss-photo-placeholder'))).toBeNull();
   });
 
   it('classifies phone links as site settings', () => {
@@ -48,6 +53,7 @@ describe('classifyUnboundLiveEditTarget', () => {
 
   it('exports the toolbar hint copy', () => {
     expect(LIVE_EDIT_SCOPE_HINT).toMatch(/outlined text/i);
+    expect(LIVE_EDIT_SCOPE_HINT).toMatch(/sample photo/i);
     expect(LIVE_EDIT_SCOPE_HINT).toMatch(/not edited here/i);
   });
 });

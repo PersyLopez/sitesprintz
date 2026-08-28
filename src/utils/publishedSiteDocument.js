@@ -199,19 +199,28 @@ export function getLiveSiteCss(tokens = {}) {
   object-fit: cover; z-index: 0;
 }
 .ss-photo-placeholder {
+  position: relative;
   display: grid;
   place-items: center;
   box-sizing: border-box;
-  background: repeating-linear-gradient(
-    -45deg,
-    color-mix(in srgb, var(--ss-muted) 10%, var(--ss-surface)) 0 14px,
-    color-mix(in srgb, var(--ss-muted) 20%, var(--ss-surface)) 14px 28px
-  );
-  border: 1px dashed color-mix(in srgb, var(--ss-muted) 40%, transparent);
+  overflow: hidden;
+  background: var(--ss-surface);
+}
+.ss-photo-placeholder-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
 }
 .ss-photo-placeholder-mark {
-  max-width: 16rem;
-  padding: 10px 14px;
+  position: relative;
+  z-index: 1;
+  align-self: end;
+  max-width: calc(100% - 24px);
+  margin: 12px;
+  padding: 8px 12px;
   text-align: center;
   font-size: 0.72rem;
   font-weight: 700;
@@ -219,27 +228,29 @@ export function getLiveSiteCss(tokens = {}) {
   line-height: 1.35;
   text-transform: uppercase;
   color: var(--ss-text);
-  opacity: 0.62;
-  background: color-mix(in srgb, var(--ss-bg) 78%, transparent);
+  background: var(--ss-bg);
+  border: 1px solid var(--ss-hairline);
+  border-radius: 4px;
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--ss-text) 14%, transparent);
 }
 .ss-photo-placeholder--hero {
   position: absolute;
   inset: 0;
   z-index: 0;
-  border: 0;
   align-items: end;
   padding-bottom: min(10vh, 72px);
 }
 .ss-photo-placeholder--hero .ss-photo-placeholder-mark {
   font-size: 0.8rem;
+  color: var(--ss-hero-text);
+  background: color-mix(in srgb, var(--ss-text) 82%, transparent);
+  border-color: color-mix(in srgb, var(--ss-hero-text) 24%, transparent);
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--ss-text) 28%, transparent);
 }
 .ss-photo-placeholder--card {
   width: 100%;
   height: 220px;
   flex-shrink: 0;
-  border-left: 0;
-  border-right: 0;
-  border-top: 0;
 }
 .ss-photo-placeholder--tile {
   min-height: 240px;
@@ -249,6 +260,37 @@ export function getLiveSiteCss(tokens = {}) {
   width: 100%;
   min-height: 280px;
   border-radius: 4px;
+}
+.ss-photo-placeholder--avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+}
+.ss-photo-placeholder--avatar .ss-photo-placeholder-img {
+  border-radius: 50%;
+}
+.ss-photo-placeholder--avatar .ss-photo-placeholder-mark {
+  font-size: 0.62rem;
+  max-width: calc(100% - 16px);
+  margin: 8px;
+  padding: 6px 8px;
+}
+.ss-live--editing [data-photo-field],
+.ss-live--editing .ss-photo-placeholder {
+  cursor: pointer;
+}
+.ss-live--editing .ss-hero--photo::after {
+  pointer-events: none;
+}
+.ss-live--editing .ss-photo-placeholder-mark::after {
+  content: " — click to replace";
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+.ss-photo-placeholder--owned .ss-photo-placeholder-mark {
+  display: none;
 }
 .ss-hero-inner { position: relative; z-index: 2; max-width: 820px; }
 .ss-hero-meta {

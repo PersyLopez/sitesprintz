@@ -36,6 +36,9 @@ function mirrorHero(siteData, key, value) {
     siteData.hero.eyebrow = value;
   } else if (key === 'ctaText') {
     siteData.hero.cta = value;
+  } else if (key === 'image') {
+    siteData.hero.image = value;
+    siteData.heroImage = value;
   }
 }
 
@@ -67,7 +70,7 @@ export function applyEditableField(siteData, field, value) {
   const rest = parts.slice(1);
   const listKey = rest[0];
 
-  if (listKey === 'items' || listKey === 'members') {
+  if (listKey === 'items' || listKey === 'members' || listKey === 'images' || listKey === 'pairs') {
     const index = Number(rest[1]);
     const itemField = rest[2];
     if (!Number.isInteger(index) || index < 0 || !itemField) {
@@ -78,6 +81,8 @@ export function applyEditableField(siteData, field, value) {
     item[itemField] = value;
     if (itemField === 'name') item.title = value;
     if (itemField === 'role') item.title = item.title || value;
+    if (itemField === 'photo') item.image = value;
+    if (itemField === 'src') item.url = value;
     if (listKey === 'items' && Array.isArray(siteData.services?.items) && root === 'services') {
       const mirrored = ensureListItem(siteData.services.items, index);
       mirrored[itemField] = value;
@@ -86,6 +91,13 @@ export function applyEditableField(siteData, field, value) {
       if (!siteData.team || typeof siteData.team !== 'object') siteData.team = { members: [] };
       if (!Array.isArray(siteData.team.members)) siteData.team.members = [];
       const mirrored = ensureListItem(siteData.team.members, index);
+      mirrored[itemField] = value;
+      if (itemField === 'photo') mirrored.image = value;
+    }
+    if (listKey === 'images') {
+      if (!siteData.gallery || typeof siteData.gallery !== 'object') siteData.gallery = { images: [] };
+      if (!Array.isArray(siteData.gallery.images)) siteData.gallery.images = [];
+      const mirrored = ensureListItem(siteData.gallery.images, index);
       mirrored[itemField] = value;
     }
     return siteData;

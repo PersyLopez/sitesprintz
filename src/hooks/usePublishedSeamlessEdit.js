@@ -3,6 +3,7 @@ import { get, post } from '../utils/api';
 import api from '../services/api';
 import { bindSeamlessEditing } from '../utils/seamlessEdit';
 import { getSiteDataVersion } from '../utils/seamlessEditFields';
+import { showOwnerPhotoOnSlot, pickSiteImageFile, uploadSiteImage } from '../utils/siteImageUpload';
 
 const MAX_DELAYED_FLUSH_RETRIES = 3;
 const DELAYED_FLUSH_MS = 3000;
@@ -136,18 +137,34 @@ export function usePublishedSeamlessEdit({
     if (classified?.hint) setUnboundHint(classified.hint);
   }, []);
 
+  const handlePhotoPick = useCallback(({ field, element }) => {
+    const filePromise = pickSiteImageFile(element?.ownerDocument || document);
+    (async () => {
+      try {
+        const file = await filePromise;
+        if (!file) return;
+        const url = await uploadSiteImage(file);
+        showOwnerPhotoOnSlot(element, url);
+        handleCommit({ field, previous: '', value: url });
+      } catch (error) {
+        setUnboundHint(error.message || 'Could not upload that photo');
+      }
+    })();
+  }, [handleCommit]);
+
   useEffect(() => {
     if (!enabled || !liveRef.current) return undefined;
     liveRef.current.classList.add('ss-live--editing');
     const unbind = bindSeamlessEditing(liveRef.current, {
       onCommit: handleCommit,
+      onPhotoPick: handlePhotoPick,
       onUnboundClick: handleUnboundClick,
     });
     return () => {
       liveRef.current?.classList.remove('ss-live--editing');
       unbind();
     };
-  }, [enabled, handleCommit, handleUnboundClick, liveRef, bindKey]);
+  }, [enabled, handleCommit, handlePhotoPick, handleUnboundClick, liveRef, bindKey]);
 
   useEffect(() => () => {
     if (timerRef.current) window.clearTimeout(timerRef.current);

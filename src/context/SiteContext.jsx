@@ -5,6 +5,7 @@ import { generateDemoContent } from '../utils/demoContent';
 import { colorsFromSiteTheme, DEFAULT_SITE_THEME_ID, normalizeSiteThemeId } from '../config/siteThemes';
 import { normalizeTemplateSections } from '../utils/sectionNormalizer';
 import { getLayoutForNiche } from '../config/layouts';
+import { applyEditableField } from '../utils/seamlessEditFields';
 
 export const SiteContext = createContext(null);
 
@@ -151,6 +152,16 @@ export function SiteProvider({ children }) {
     });
 
     // Trigger preview update
+    triggerPreviewUpdate();
+  }, [triggerPreviewUpdate, addToHistory]);
+
+  const applyLiveField = useCallback((field, value) => {
+    setSiteData((prev) => {
+      addToHistory(prev);
+      const next = JSON.parse(JSON.stringify(prev));
+      applyEditableField(next, field, value);
+      return next;
+    });
     triggerPreviewUpdate();
   }, [triggerPreviewUpdate, addToHistory]);
 
@@ -421,6 +432,7 @@ export function SiteProvider({ children }) {
     setAutoSaveEnabled,
     updateField,
     updateNestedField,
+    applyLiveField,
     addService,
     updateService,
     deleteService,

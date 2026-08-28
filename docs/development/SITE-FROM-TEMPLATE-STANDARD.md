@@ -28,7 +28,7 @@ Both required. Fail either → do not hand `/view/:subdomain` (or a claim link).
 
 - Every **known** fact is on the live site in the correct field (name, city, hours wording, each service/product, prices, photos, policies, social URLs, logo, about).
 - **Unknown stays blank.** Missing phone, email, street, hours, or staff is not filled with template defaults.
-- **Invented leftovers are an automatic fail:** named template people (Sarah / Alex / Maya, etc.), niche `defaultHours`, fake bios, Unsplash or other stock photography on a customer site, a city the business is not in. Labeled photo slots (“Use your business photo here”) are allowed; they are not stock photos.
+- **Invented leftovers are an automatic fail:** named template people (Sarah / Alex / Maya, etc.), niche `defaultHours`, fake bios, Unsplash or other stock photography on a customer site, a city the business is not in. Labeled first-party sample inserts (“Use your business photo here” over a generic picture, like a store frame) are allowed; they are not stock photos of someone else’s shop.
 
 Claimable content score = (found facts correctly on the site) / (found facts in the intake). Target **≥ 0.90**, prefer **≥ 0.95**. Missing-from-source does not lower the score.
 
@@ -66,7 +66,7 @@ On phone and desktop, a finished site must be findable and callable:
 - **Footer:** NAP that matches the header; no empty “lorem” or 2025 copyright leftovers.
 - **Growth:** booking or cart is ours. Starter: offline CTA (`tel:` / `mailto:` / contact form), not a fake checkout.
 
-Do not use Unsplash or generic stock photography on customer/claimable sites. Gallery demos may. Empty image fields render a watermarked slot that tells the owner to use their own picture — not a fake photo of someone else’s shop.
+Do not use Unsplash or generic stock photography on customer/claimable sites. Gallery demos may. Empty image fields render a first-party sample insert with a replace label (picture-frame analog) — not a fake photo of someone else’s shop.
 
 ---
 

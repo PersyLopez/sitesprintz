@@ -101,4 +101,25 @@ describe('bindSeamlessEditing', () => {
     root.querySelector('img').click();
     expect(unbound.map((item) => item.key)).toEqual(['settings', 'edit']);
   });
+
+  it('opens a photo pick instead of text editing on sample inserts', () => {
+    document.body.innerHTML = `
+      <div class="ss-live">
+        <section data-ss-edit-type="hero">
+          <div class="ss-photo-placeholder" data-photo-field="hero.image" data-testid="photo-placeholder">
+            <img class="ss-photo-placeholder-img" src="/assets/hero-placeholder.jpg" alt="" />
+          </div>
+        </section>
+      </div>
+    `;
+    const root = document.querySelector('.ss-live');
+    const picks = [];
+    bindSeamlessEditing(root, {
+      onPhotoPick: (payload) => picks.push(payload),
+    });
+    root.querySelector('[data-testid="photo-placeholder"]').click();
+    expect(picks).toHaveLength(1);
+    expect(picks[0].field).toBe('hero.image');
+    expect(root.querySelector('[data-testid="photo-placeholder"]').getAttribute('contenteditable')).toBeNull();
+  });
 });

@@ -1,16 +1,16 @@
 export const LIVE_EDIT_SCOPE_HINT =
-  'Click outlined text to change it. Phone, hours, photos, and booking are not edited here.';
+  'Click outlined text to change it. Click a sample photo to drop in yours. Phone, hours, and booking are not edited here.';
 
 export const LIVE_EDIT_HELP_ROWS = [
   { key: 'settings', title: 'Phone, hours, address' },
-  { key: 'edit', title: 'Photos, sections, FAQ, menu' },
+  { key: 'edit', title: 'Sections, FAQ, menu' },
   { key: 'appointments', title: 'Booking' },
   { key: 'products', title: 'Cart and catalog' },
 ];
 
 const UNBOUND_HINTS = {
   settings: 'Phone, hours, and address are in Site settings.',
-  edit: 'Photos, sections, FAQ, and menu are in the Page builder.',
+  edit: 'Sections, FAQ, and menu are in the Page builder.',
   appointments: 'Booking is managed in Appointments.',
   products: 'Cart and catalog are in Products.',
 };

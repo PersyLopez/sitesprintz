@@ -1,0 +1,113 @@
+url: http://localhost:5173/login
+goal: Customer templates show first-party sample photo inserts; click replaces with an owner upload; gallery demos stay photographed
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter email
+    fill: { testId: login-email, value: "test@example.com", clear: true }
+
+  - action: Enter password
+    fill: { testId: login-password, value: "SecurePass!2024", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Dismiss welcome
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) await dismiss.click({ timeout: 4000 }).catch(() => {});
+      else await page.keyboard.press('Escape').catch(() => {});
+    settle_ms: 400
+
+  - action: Open setup
+    goto: http://localhost:5173/setup
+    settle_ms: 1500
+
+  - action: Quick Start present
+    wait_for: { selector: '[data-testid="quickstart-wizard"]', timeout: 20000 }
+
+  - action: Skip to Full Editor
+    click: { testId: wizard-skip }
+    settle_ms: 1500
+
+  - action: Use Salon template
+    code: |
+      const use = page.getByRole('button', { name: /Use Salon template/i });
+      if ((await use.count()) === 0) throw new Error('Use Salon template button missing');
+      await use.first().click({ timeout: 8000 });
+    settle_ms: 2500
+
+  - action: Preview iframe ready
+    wait_for: { selector: '[data-testid="preview-frame"] iframe', timeout: 20000 }
+    settle_ms: 800
+
+  - action: Preview inserts are first-party sample photos
+    code: |
+      const frame = page.frameLocator('[data-testid="preview-frame"] iframe');
+      const slots = frame.getByTestId('photo-placeholder');
+      const n = await slots.count();
+      if (n < 1) throw new Error('No photo-placeholder inserts after Salon template');
+      const html = await frame.locator('body').innerHTML();
+      if (/images\.unsplash\.com/i.test(html)) {
+        throw new Error('Customer preview still has Unsplash');
+      }
+      const src = await slots.first().locator('img').first().getAttribute('src');
+      if (!src || !/\/assets\/hero-placeholder/.test(src)) {
+        throw new Error('Insert src is not first-party: ' + src);
+      }
+      const field = await slots.first().getAttribute('data-photo-field');
+      if (!field) throw new Error('Insert missing data-photo-field');
+      const label = await slots.first().innerText();
+      if (!/Use your|Use a photo/i.test(label)) {
+        throw new Error('Insert missing replace label: ' + label.slice(0, 120));
+      }
+
+  - action: Click a card insert and upload an owner photo
+    code: |
+      const frame = page.frameLocator('[data-testid="preview-frame"] iframe');
+      const card = frame.locator('.ss-photo-placeholder--card').first();
+      if ((await card.count()) === 0) {
+        throw new Error('No card-sized sample insert to replace');
+      }
+      await card.scrollIntoViewIfNeeded();
+      await card.click({ force: true });
+      const fileInput = page.getByTestId('preview-photo-file');
+      await fileInput.waitFor({ state: 'attached', timeout: 5000 });
+      await fileInput.setInputFiles('tests/fixtures/test-preview.png');
+    settle_ms: 2500
+
+  - action: Owner upload replaces the sample
+    code: |
+      const frame = page.frameLocator('[data-testid="preview-frame"] iframe');
+      const uploaded = frame.locator('img[src*="/uploads/"]');
+      if ((await uploaded.count()) < 1) {
+        const html = await frame.locator('body').innerHTML();
+        throw new Error('Preview has no owner upload: ' + html.slice(0, 280));
+      }
+      const src = await uploaded.first().getAttribute('src');
+      if (/unsplash|hero-placeholder/i.test(src || '')) {
+        throw new Error('Uploaded photo still looks like a sample: ' + src);
+      }
+
+  - action: Gallery demo still looks photographed
+    goto: http://localhost:5173/view/gallery-salon
+    settle_ms: 2000
+
+  - action: Live salon example keeps real photos
+    wait_for: { text: Luxe Beauty Studio, timeout: 20000 }
+    code: |
+      const html = await page.locator('[data-testid="published-composed-site"]').innerHTML().catch(async () => page.locator('body').innerHTML());
+      if (!/unsplash\.com|\/uploads\/|cloudinary|images\./i.test(html)) {
+        const slots = await page.getByTestId('photo-placeholder').count();
+        if (slots > 0) {
+          throw new Error('Gallery demo fell back to empty inserts instead of example photography');
+        }
+      }
+      const t = await page.locator('body').innerText();
+      if (!/Luxe Beauty Studio/i.test(t)) throw new Error('Salon live site missing identity');

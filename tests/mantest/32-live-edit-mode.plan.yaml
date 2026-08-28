@@ -90,7 +90,7 @@ steps:
       if (!/outlined text/i.test(scopeText)) {
         throw new Error('Scope hint missing outlined text: ' + scopeText);
       }
-      if (!/phone|hours|photos/i.test(scopeText) || !/not edited here/i.test(scopeText)) {
+      if (!/phone|hours|booking/i.test(scopeText) || !/not edited here/i.test(scopeText)) {
         throw new Error('Scope hint missing exclusions: ' + scopeText);
       }
 

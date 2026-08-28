@@ -138,10 +138,13 @@ describe('sectionHtmlBridge', () => {
     expect(html).toContain('ss-hero');
   });
 
-  it('renders labeled photo slots when images are missing', () => {
+  it('renders labeled photo inserts when images are missing', () => {
     const hero = renderSectionToHtml({ type: 'hero', content: { title: 'Hello' } }, tokens);
     expect(hero).toContain('Use your business photo here');
-    expect(hero).toContain('ss-hero--slot');
+    expect(hero).toContain('ss-hero--photo');
+    expect(hero).toContain('/assets/hero-placeholder.jpg');
+    expect(hero).toContain('ss-photo-placeholder-img');
+    expect(hero).toContain('data-photo-field="hero.image"');
     expect(hero).not.toContain('unsplash.com');
 
     const services = renderSectionToHtml({
@@ -149,12 +152,39 @@ describe('sectionHtmlBridge', () => {
       content: { items: [{ name: 'Cut', price: '45' }] },
     }, tokens);
     expect(services).toContain('Use a photo of this service here');
+    expect(services).toContain('/assets/hero-placeholder.jpg');
 
     const catalog = renderSectionToHtml({
       type: 'catalog',
       content: { items: [{ name: 'Mug', price: '$24' }] },
     }, tokens);
     expect(catalog).toContain('Use your product photo here');
+  });
+
+  it('keeps an owner photo URL instead of the sample insert', () => {
+    const html = renderSectionToHtml({
+      type: 'hero',
+      content: { title: 'Hello', image: 'https://cdn.example.com/shop.jpg' },
+    }, tokens);
+    expect(html).toContain('https://cdn.example.com/shop.jpg');
+    expect(html).not.toContain('data-testid="photo-placeholder"');
+  });
+
+  it('fills team and before-after holes with sample inserts', () => {
+    const team = renderSectionToHtml({
+      type: 'team',
+      content: { members: [{ name: 'Jane', role: 'Lead' }] },
+    }, tokens);
+    expect(team).toContain('ss-photo-placeholder--avatar');
+    expect(team).toContain('Use a photo of this person here');
+
+    const beforeAfter = renderSectionToHtml({
+      type: 'before-after',
+      content: { title: 'Transformations', pairs: [] },
+    }, tokens);
+    expect(beforeAfter).toContain('data-testid="photo-placeholder"');
+    expect(beforeAfter).toContain('/assets/hero-placeholder.jpg');
+    expect(beforeAfter).not.toContain('unsplash.com');
   });
 
   it('buildLiveSiteMarkup includes nav brand and labeled photo slots', () => {
@@ -538,6 +568,7 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(html).not.toContain('unsplash.com');
     expect(html).toContain('data-testid="photo-placeholder"');
     expect(html).toContain('Use a photo of your work here');
+    expect(html).toContain('/assets/hero-placeholder.jpg');
   });
 
   it('keeps Unsplash on demo seeds', () => {

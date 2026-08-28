@@ -1,10 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useToast } from '../../../hooks/useToast';
-import { api } from '../../../services/api';
+import { SITE_IMAGE_ACCEPT, assertSiteImageFile, uploadSiteImage } from '../../../utils/siteImageUpload';
 import './ImageUploader.css';
-
-const ACCEPTED_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
-const ACCEPTED_EXT = /\.(jpe?g|png|gif|webp)$/i;
 
 function ImageUploader({ value, onChange, aspectRatio, label, allowUrl = true }) {
   const { showError, showSuccess } = useToast();
@@ -43,39 +40,30 @@ function ImageUploader({ value, onChange, aspectRatio, label, allowUrl = true })
   };
 
   const handleFile = async (file) => {
-    const typeOk = ACCEPTED_TYPES.has(file.type) || ACCEPTED_EXT.test(file.name);
-    if (!typeOk) {
-      showError('Please upload a JPEG, PNG, GIF, or WebP image');
-      return;
-    }
-
-    const maxSize = 5 * 1024 * 1024;
-    if (file.size > maxSize) {
-      showError('Image must be less than 5MB. Try compressing your image first.', {
-        action: {
-          label: 'Compress',
-          onClick: () => window.open('https://tinypng.com', '_blank')
-        }
-      });
+    try {
+      assertSiteImageFile(file);
+    } catch (error) {
+      if (error.code === 'IMAGE_TOO_LARGE') {
+        showError(error.message, {
+          action: {
+            label: 'Compress',
+            onClick: () => window.open('https://tinypng.com', '_blank')
+          }
+        });
+        return;
+      }
+      showError(error.message || 'Failed to upload image');
       return;
     }
 
     setUploading(true);
 
     try {
-      const formData = new FormData();
-      formData.append('image', file);
-
-      const data = await api.upload('/api/sites/upload', formData);
-      const url = data.url || data.data?.url;
-      if (!url) {
-        throw new Error('Upload succeeded but no image URL was returned');
-      }
+      const url = await uploadSiteImage(file);
       onChange(url);
       showSuccess('Image uploaded');
       setShowUrlInput(false);
     } catch (error) {
-      console.error('Upload error:', error);
       showError(error.message || 'Failed to upload image');
     } finally {
       setUploading(false);
@@ -187,7 +175,7 @@ function ImageUploader({ value, onChange, aspectRatio, label, allowUrl = true })
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/gif,image/webp,.jpg,.jpeg,.png,.gif,.webp"
+        accept={SITE_IMAGE_ACCEPT}
         onChange={handleChange}
         style={{ display: 'none' }}
         data-testid="image-file-input"

@@ -60,7 +60,7 @@ const sectionPrimitives = {
         eyebrow: c.eyebrow || catalogHero.eyebrow || siteData?.brand?.name || '',
         title: c.title || catalogHero.title || siteData.heroTitle || siteData.businessName || siteData?.brand?.name || 'Welcome',
         subtitle: c.subtitle || catalogHero.subtitle || siteData.heroSubtitle || siteData?.brand?.tagline || '',
-        image: liveHeroImage(c.image || catalogHero.image || siteData.heroImage || '', siteData),
+        image: liveImage(c.image || catalogHero.image || siteData.heroImage || '', siteData),
         imageAlt: c.imageAlt || catalogHero.imageAlt || '',
         ctaText: c.ctaText || ctaFromCatalog || resolveHeroCta(heroVariant, siteData),
         ctaLink: c.ctaLink || catalogHero.cta?.[0]?.href || resolvePrimaryCta(siteData).href,
@@ -90,7 +90,7 @@ const sectionPrimitives = {
       variant: displayVariant,
       content: {
         title: c.title || resolveVoiceCopy(siteData, tokens?.level).servicesTitle,
-        items,
+        items: liveItemPhotos(items, siteData),
         displayVariant,
       },
       settings: {},
@@ -106,7 +106,7 @@ const sectionPrimitives = {
       content: {
         title: c.title || catalogAbout.title || resolveVoiceCopy(siteData, tokens?.level).aboutTitle,
         body: c.body || c.description || catalogAbout.body || catalogAbout.description || '',
-        image: c.image || catalogAbout.image || '',
+        image: liveImage(c.image || catalogAbout.image || '', siteData),
         features: firstList(c.features, catalogAbout.features),
       },
       settings: {},
@@ -142,7 +142,7 @@ const sectionPrimitives = {
       variant: variant || 'slider',
       content: {
         title: c.title || 'Transformations',
-        pairs,
+        pairs: liveBeforeAfterPairs(pairs, siteData),
       },
       settings: {},
       accent: false,
@@ -158,7 +158,7 @@ const sectionPrimitives = {
       variant: variant || 'grid',
       content: {
         title: resolveTeamHeading(members, c.title || catalogTeam.title),
-        members,
+        members: liveMemberPhotos(members, siteData),
       },
       settings: {},
       accent: false,
@@ -244,7 +244,7 @@ const sectionPrimitives = {
       variant: variant || 'grid',
       content: {
         title: c.title || 'Menu',
-        items,
+        items: liveItemPhotos(items, siteData),
         displayVariant: variant || 'grid',
         purchasable: Boolean(siteData?.settings?.allowCheckout),
       },
@@ -551,10 +551,37 @@ function firstList(...candidates) {
   return [];
 }
 
-function liveHeroImage(url, siteData) {
+function liveImage(url, siteData) {
   if (!url) return '';
   if (siteData?._demo === true) return url;
   return isStockImageUrl(url) ? '' : url;
+}
+
+function liveItemPhotos(items, siteData) {
+  return (Array.isArray(items) ? items : []).map((item) => {
+    if (!item || typeof item !== 'object') return item;
+    const next = liveImage(item.image || item.src || '', siteData);
+    return { ...item, image: next };
+  });
+}
+
+function liveMemberPhotos(members, siteData) {
+  return (Array.isArray(members) ? members : []).map((member) => {
+    if (!member || typeof member !== 'object') return member;
+    const next = liveImage(member.photo || member.image || '', siteData);
+    return { ...member, photo: next, image: next };
+  });
+}
+
+function liveBeforeAfterPairs(pairs, siteData) {
+  return (Array.isArray(pairs) ? pairs : []).map((pair) => {
+    if (!pair || typeof pair !== 'object') return pair;
+    return {
+      ...pair,
+      before: liveImage(pair.before, siteData),
+      after: liveImage(pair.after, siteData),
+    };
+  });
 }
 
 function normalizeImage(img) {

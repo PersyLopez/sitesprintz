@@ -44,6 +44,7 @@ export const defaultMockValues = {
     },
     updateField: vi.fn(),
     updateNestedField: vi.fn(),
+    applyLiveField: vi.fn(),
     resetSite: vi.fn(),
     loading: false,
     previewKey: 0

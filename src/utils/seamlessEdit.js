@@ -2,6 +2,7 @@
  * Click-to-edit bindings for composed published-site HTML.
  */
 
+import { isPhotoEditField } from './siteImageUpload';
 import {
   classifyUnboundLiveEditTarget,
   getUnboundHintForKey,
@@ -18,6 +19,10 @@ export function annotateEditableMarkup(root) {
   if (!root) return;
 
   mark(root.querySelector('.ss-brand'), 'brand.name');
+
+  root.querySelectorAll('[data-photo-field]').forEach((el) => {
+    mark(el, el.getAttribute('data-photo-field'));
+  });
 
   root.querySelectorAll('section[data-ss-edit-type]').forEach((section) => {
     const type = section.getAttribute('data-ss-edit-type');
@@ -195,16 +200,28 @@ export function startEditableSession(element, onCommit) {
 
 /**
  * @param {ParentNode} root
- * @param {{ onCommit: Function, onUnboundClick?: Function }} handlers
+ * @param {{ onCommit: Function, onPhotoPick?: Function, onUnboundClick?: Function }} handlers
  * @returns {() => void} unbind
  */
-export function bindSeamlessEditing(root, { onCommit, onUnboundClick } = {}) {
+export function bindSeamlessEditing(root, { onCommit, onPhotoPick, onUnboundClick } = {}) {
   if (!root) return () => {};
   annotateEditableMarkup(root);
 
   const onClick = (event) => {
+    const photoEl = event.target.closest('[data-photo-field], [data-editable]');
+    const photoField = photoEl && root.contains(photoEl)
+      ? (photoEl.getAttribute('data-photo-field') || photoEl.getAttribute('data-editable'))
+      : '';
+    if (photoEl && isPhotoEditField(photoField) && onPhotoPick) {
+      event.preventDefault();
+      event.stopPropagation();
+      onPhotoPick({ field: photoField, element: photoEl });
+      return;
+    }
+
     const editable = event.target.closest('[data-editable]');
     if (editable && root.contains(editable)) {
+      if (isPhotoEditField(editable.getAttribute('data-editable'))) return;
       if (editable.classList.contains('is-editing') || editable.hasAttribute('contenteditable')) return;
       event.preventDefault();
       event.stopPropagation();

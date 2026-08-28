@@ -16,4 +16,8 @@ describe('stockPhotos', () => {
     expect(filterStockImages(images)).toHaveLength(1);
     expect(filterStockImages(images, { allowStock: true })).toHaveLength(2);
   });
+
+  it('does not treat the first-party insert as stock', () => {
+    expect(isStockImageUrl('/assets/hero-placeholder.jpg')).toBe(false);
+  });
 });

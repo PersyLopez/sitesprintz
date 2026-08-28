@@ -3,9 +3,16 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ImageUploader from '../../src/components/setup/forms/ImageUploader';
 import { useToast } from '../../src/hooks/useToast';
+import { uploadSiteImage } from '../../src/utils/siteImageUpload';
 
-// Mock useToast hook
 vi.mock('../../src/hooks/useToast');
+vi.mock('../../src/utils/siteImageUpload', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    uploadSiteImage: vi.fn(),
+  };
+});
 
 describe('ImageUploader Component', () => {
   let mockOnChange;
@@ -22,14 +29,12 @@ describe('ImageUploader Component', () => {
       showError: mockShowError,
     });
 
-    global.fetch = vi.fn();
-    global.localStorage = {
-      getItem: vi.fn(() => 'fake-token'),
-    };
+    uploadSiteImage.mockReset();
+    uploadSiteImage.mockResolvedValue('https://example.com/uploaded.jpg');
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.clearAllMocks();
   });
 
   // Rendering Tests (3 tests)
@@ -79,11 +84,6 @@ describe('ImageUploader Component', () => {
     });
 
     it('should handle file selection', async () => {
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => ({ url: 'https://example.com/uploaded.jpg' }),
-      });
-
       const user = userEvent.setup();
       render(<ImageUploader value="" onChange={mockOnChange} />);
 
@@ -93,19 +93,15 @@ describe('ImageUploader Component', () => {
       await user.upload(input, file);
 
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith(
-          '/api/uploads',
-          expect.objectContaining({
-            method: 'POST',
-          })
-        );
+        expect(uploadSiteImage).toHaveBeenCalledWith(file);
+        expect(mockOnChange).toHaveBeenCalledWith('https://example.com/uploaded.jpg');
       });
     });
 
     it('should show file size limit', () => {
       render(<ImageUploader value="" onChange={mockOnChange} />);
 
-      expect(screen.getByText(/max\. 5MB/i)).toBeInTheDocument();
+      expect(screen.getByText(/max 5MB/i)).toBeInTheDocument();
     });
   });
 
@@ -121,7 +117,7 @@ describe('ImageUploader Component', () => {
       fireEvent.change(input, { target: { files: [file] } });
 
       await waitFor(() => {
-        expect(mockShowError).toHaveBeenCalledWith('Please upload an image file');
+        expect(mockShowError).toHaveBeenCalledWith('Please upload a JPEG, PNG, GIF, or WebP image');
       });
       expect(mockOnChange).not.toHaveBeenCalled();
     });
@@ -138,17 +134,15 @@ describe('ImageUploader Component', () => {
       fireEvent.change(input, { target: { files: [largeFile] } });
 
       await waitFor(() => {
-        expect(mockShowError).toHaveBeenCalledWith('Image must be less than 5MB');
+        expect(mockShowError).toHaveBeenCalledWith(
+          'Image must be less than 5MB. Try compressing your image first.',
+          expect.objectContaining({ action: expect.any(Object) })
+        );
       });
       expect(mockOnChange).not.toHaveBeenCalled();
     });
 
     it('should accept valid image files', async () => {
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => ({ url: 'https://example.com/uploaded.jpg' }),
-      });
-
       const user = userEvent.setup();
       render(<ImageUploader value="" onChange={mockOnChange} />);
 
@@ -159,7 +153,7 @@ describe('ImageUploader Component', () => {
 
       await waitFor(() => {
         expect(mockShowError).not.toHaveBeenCalled();
-        expect(global.fetch).toHaveBeenCalled();
+        expect(uploadSiteImage).toHaveBeenCalled();
       });
     });
   });
@@ -167,11 +161,6 @@ describe('ImageUploader Component', () => {
   // Upload Tests (3 tests)
   describe('Upload', () => {
     it('should upload file successfully', async () => {
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => ({ url: 'https://example.com/uploaded.jpg' }),
-      });
-
       const user = userEvent.setup();
       render(<ImageUploader value="" onChange={mockOnChange} />);
 
@@ -182,16 +171,13 @@ describe('ImageUploader Component', () => {
 
       await waitFor(() => {
         expect(mockOnChange).toHaveBeenCalledWith('https://example.com/uploaded.jpg');
-        expect(mockShowSuccess).toHaveBeenCalledWith('Image uploaded successfully');
+        expect(mockShowSuccess).toHaveBeenCalledWith('Image uploaded');
       });
     });
 
     it('should show uploading state', async () => {
-      global.fetch.mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve({
-          ok: true,
-          json: async () => ({ url: 'https://example.com/uploaded.jpg' }),
-        }), 100))
+      uploadSiteImage.mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve('https://example.com/uploaded.jpg'), 100))
       );
 
       const user = userEvent.setup();
@@ -202,15 +188,11 @@ describe('ImageUploader Component', () => {
 
       await user.upload(input, file);
 
-      // Should show uploading state immediately
       expect(screen.getByText(/uploading/i)).toBeInTheDocument();
     });
 
     it('should handle upload errors', async () => {
-      global.fetch.mockResolvedValue({
-        ok: false,
-        json: async () => ({ message: 'Upload failed' }),
-      });
+      uploadSiteImage.mockRejectedValue(new Error('Upload failed'));
 
       const user = userEvent.setup();
       render(<ImageUploader value="" onChange={mockOnChange} />);
@@ -234,8 +216,8 @@ describe('ImageUploader Component', () => {
         <ImageUploader value="https://example.com/image.jpg" onChange={mockOnChange} />
       );
 
-      expect(screen.getByText(/change image/i)).toBeInTheDocument();
-      expect(screen.getByText(/remove/i)).toBeInTheDocument();
+      expect(screen.getByTestId('change-image-btn')).toBeInTheDocument();
+      expect(screen.getByTestId('remove-image-btn')).toBeInTheDocument();
     });
 
     it('should remove image', async () => {
@@ -244,28 +226,21 @@ describe('ImageUploader Component', () => {
         <ImageUploader value="https://example.com/image.jpg" onChange={mockOnChange} />
       );
 
-      const removeButton = screen.getByText(/remove/i);
+      const removeButton = screen.getByTestId('remove-image-btn');
       await user.click(removeButton);
 
       expect(mockOnChange).toHaveBeenCalledWith('');
     });
 
     it('should allow changing existing image', async () => {
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => ({ url: 'https://example.com/new-image.jpg' }),
-      });
-
       const user = userEvent.setup();
       render(
         <ImageUploader value="https://example.com/old-image.jpg" onChange={mockOnChange} />
       );
 
-      const changeButton = screen.getByText(/change image/i);
+      const changeButton = screen.getByTestId('change-image-btn');
       await user.click(changeButton);
 
-      // File input should be triggered
-      // In real test, would upload new file
       expect(changeButton).toBeInTheDocument();
     });
   });
@@ -286,23 +261,17 @@ describe('ImageUploader Component', () => {
     });
 
     it('should handle dropped files', async () => {
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => ({ url: 'https://example.com/dropped.jpg' }),
-      });
-
       render(<ImageUploader value="" onChange={mockOnChange} />);
 
       const uploadZone = screen.getByText(/click to upload/i).closest('.upload-zone');
       const file = new File(['image'], 'dropped.png', { type: 'image/png' });
 
-      // Simulate file drop using fireEvent
       fireEvent.drop(uploadZone, {
         dataTransfer: { files: [file] },
       });
 
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalled();
+        expect(uploadSiteImage).toHaveBeenCalledWith(file);
       });
     });
 

@@ -182,14 +182,11 @@ function renderHero(section, tokens) {
   const imageAlt = c.imageAlt || title;
   const accent = getAccent(tokens);
   const onAccent = getOnAccent(tokens);
-  const bg = getBg(tokens);
-  const photoClass = image ? ' ss-hero--photo' : ' ss-hero--slot';
   const photo = image
-    ? `<img class="ss-hero-photo" src="${escapeAttr(image)}" alt="${escapeAttr(imageAlt)}" width="1600" height="900" fetchpriority="high" decoding="async" />`
-    : renderPhotoPlaceholder('business', { className: 'ss-photo-placeholder--hero' });
-  const backgroundStyle = image ? '' : ` style="background: ${bg};"`;
+    ? `<img class="ss-hero-photo" data-photo-field="hero.image" src="${escapeAttr(image)}" alt="${escapeAttr(imageAlt)}" width="1600" height="900" fetchpriority="high" decoding="async" />`
+    : renderPhotoPlaceholder('business', { className: 'ss-photo-placeholder--hero', priority: true, photoField: 'hero.image' });
 
-  return `<section class="ss-hero${photoClass}"${backgroundStyle}>
+  return `<section class="ss-hero ss-hero--photo">
   ${photo}
   <div class="ss-hero-inner ss-container">
     ${eyebrow ? `<p class="ss-eyebrow">${escapeHtml(eyebrow)}</p>` : ''}
@@ -240,8 +237,8 @@ function renderServices(section, tokens) {
       const serviceId = serviceKey(item, index);
       return `<article class="ss-card" data-service-id="${escapeAttr(serviceId)}" data-service-name="${escapeAttr(name)}" style="background: ${getSurface(tokens)}; border: 1px solid ${getTokens(tokens).theme.hairline};">
   ${image
-    ? `<img class="ss-card-media" src="${escapeAttr(image)}" alt="${escapeAttr(item.imageAlt || name)}" loading="lazy" />`
-    : renderPhotoPlaceholder('service', { className: 'ss-photo-placeholder--card' })}
+    ? `<img class="ss-card-media" data-photo-field="services.items.${index}.image" src="${escapeAttr(image)}" alt="${escapeAttr(item.imageAlt || name)}" loading="lazy" />`
+    : renderPhotoPlaceholder('service', { className: 'ss-photo-placeholder--card', photoField: `services.items.${index}.image` })}
   <div class="ss-card-body">
     <h3 style="color: ${getAccent(tokens)};">${escapeHtml(name)}</h3>
     ${desc ? `<p style="color: ${getMuted(tokens)};">${escapeHtml(desc)}</p>` : ''}
@@ -276,8 +273,8 @@ function renderAbout(section, tokens) {
   return `<section class="ss-about ss-section" style="background: ${getBg(tokens)}; color: ${getText(tokens)};">
   <div class="ss-container ss-about-grid ss-about-grid--media">
     ${image
-      ? `<img class="ss-about-media" src="${escapeAttr(image)}" alt="${escapeAttr(title)}" loading="lazy" />`
-      : renderPhotoPlaceholder('shop', { className: 'ss-photo-placeholder--about' })}
+      ? `<img class="ss-about-media" data-photo-field="about.image" src="${escapeAttr(image)}" alt="${escapeAttr(title)}" loading="lazy" />`
+      : renderPhotoPlaceholder('shop', { className: 'ss-photo-placeholder--about', photoField: 'about.image' })}
     <div>
       <h2 class="ss-h2" style="color: ${getAccent(tokens)}; text-align: left;">${escapeHtml(title)}</h2>
       <p class="ss-lead">${escapeHtml(body)}</p>
@@ -304,10 +301,14 @@ function renderGallery(section, tokens) {
   }
 
   const imgsHtml = images
-    .map((img) => {
-      const src = img.src || img.url || img;
-      const alt = img.alt || '';
-      return `<img class="ss-gallery-item" src="${escapeAttr(src)}" alt="${escapeAttr(alt)}" loading="lazy" />`;
+    .map((img, index) => {
+      const src = typeof img === 'string' ? img : (img.src || img.url || '');
+      const alt = typeof img === 'string' ? '' : (img.alt || '');
+      const field = `gallery.images.${index}.src`;
+      if (!src) {
+        return renderPhotoPlaceholder('work', { className: 'ss-photo-placeholder--tile', photoField: field });
+      }
+      return `<img class="ss-gallery-item" data-photo-field="${escapeAttr(field)}" src="${escapeAttr(src)}" alt="${escapeAttr(alt)}" loading="lazy" />`;
     })
     .join('\n');
 
@@ -326,21 +327,21 @@ function renderBeforeAfter(section, tokens) {
   const title = c.title || 'Transformations';
   const pairs = c.pairs || [];
 
-  if (!pairs.length) {
-    return `<section class="ss-before-after" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
-  <div class="ss-container" style="max-width: 1200px; margin: 0 auto;">
-    <h2 style="text-align: center; color: ${getAccent(tokens)};">${escapeHtml(title)}</h2>
-    <p style="text-align: center; color: ${getMuted(tokens)};">No transformations yet.</p>
-  </div>
-</section>`;
-  }
-
-  const pairsHtml = pairs
-    .map((p) => `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-  <div><img src="${escapeAttr(p.before)}" alt="Before" style="width: 100%; border-radius: 8px;" /><p style="text-align: center; color: ${getMuted(tokens)}; margin-top: 8px;">Before</p></div>
-  <div><img src="${escapeAttr(p.after)}" alt="After" style="width: 100%; border-radius: 8px;" /><p style="text-align: center; color: ${getMuted(tokens)}; margin-top: 8px;">After</p></div>
+  const pairsHtml = pairs.length
+    ? pairs
+      .map((p, index) => `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+  <div>${p.before
+    ? `<img data-photo-field="before-after.pairs.${index}.before" src="${escapeAttr(p.before)}" alt="Before" style="width: 100%; border-radius: 8px;" />`
+    : renderPhotoPlaceholder('work', { className: 'ss-photo-placeholder--card', photoField: `before-after.pairs.${index}.before` })}<p style="text-align: center; color: ${getMuted(tokens)}; margin-top: 8px;">Before</p></div>
+  <div>${p.after
+    ? `<img data-photo-field="before-after.pairs.${index}.after" src="${escapeAttr(p.after)}" alt="After" style="width: 100%; border-radius: 8px;" />`
+    : renderPhotoPlaceholder('work', { className: 'ss-photo-placeholder--card', photoField: `before-after.pairs.${index}.after` })}<p style="text-align: center; color: ${getMuted(tokens)}; margin-top: 8px;">After</p></div>
 </div>`)
-    .join('\n');
+      .join('\n')
+    : `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+  <div>${renderPhotoPlaceholder('work', { className: 'ss-photo-placeholder--card', photoField: 'before-after.pairs.0.before' })}<p style="text-align: center; color: ${getMuted(tokens)}; margin-top: 8px;">Before</p></div>
+  <div>${renderPhotoPlaceholder('work', { className: 'ss-photo-placeholder--card', photoField: 'before-after.pairs.0.after' })}<p style="text-align: center; color: ${getMuted(tokens)}; margin-top: 8px;">After</p></div>
+</div>`;
 
   return `<section class="ss-before-after" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
   <div class="ss-container" style="max-width: 1200px; margin: 0 auto;">
@@ -361,8 +362,10 @@ function renderTeam(section, tokens) {
   const title = resolveTeamHeading(members, c.title);
 
   const membersHtml = members
-    .map((m) => `<div style="text-align: center; background: ${getSurface(tokens)}; padding: 32px; border-radius: 12px;">
-  ${m.photo || m.image ? `<img src="${escapeAttr(m.photo || m.image)}" alt="${escapeAttr(m.name)}" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin-bottom: 16px; border: 4px solid ${getAccent(tokens)};" />` : ''}
+    .map((m, index) => `<div style="text-align: center; background: ${getSurface(tokens)}; padding: 32px; border-radius: 12px;">
+  ${m.photo || m.image
+    ? `<img data-photo-field="team.members.${index}.photo" src="${escapeAttr(m.photo || m.image)}" alt="${escapeAttr(m.name)}" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin-bottom: 16px; border: 4px solid ${getAccent(tokens)};" />`
+    : renderPhotoPlaceholder('staff', { className: 'ss-photo-placeholder--avatar', photoField: `team.members.${index}.photo` })}
   <h3 style="color: ${getAccent(tokens)}; margin-bottom: 4px;">${escapeHtml(m.name || '')}</h3>
   <div style="color: ${getMuted(tokens)}; font-size: 0.9rem; margin-bottom: 12px;">${escapeHtml(m.role || m.title || '')}</div>
   <p style="color: ${getText(tokens)}; font-size: 0.9rem; line-height: 1.6;">${escapeHtml(m.bio || '')}</p>
@@ -568,8 +571,8 @@ function renderCatalog(section, tokens) {
   const cardsHtml = items
     .map((item, index) => `<article class="ss-card" style="background: ${getSurface(tokens)}; border: 1px solid ${getTokens(tokens).theme.hairline};">
   ${item.image
-    ? `<img class="ss-card-media" src="${escapeAttr(item.image)}" alt="${escapeAttr(item.imageAlt || item.name || '')}" loading="lazy" />`
-    : renderPhotoPlaceholder('product', { className: 'ss-photo-placeholder--card' })}
+    ? `<img class="ss-card-media" data-photo-field="catalog.items.${index}.image" src="${escapeAttr(item.image)}" alt="${escapeAttr(item.imageAlt || item.name || '')}" loading="lazy" />`
+    : renderPhotoPlaceholder('product', { className: 'ss-photo-placeholder--card', photoField: `catalog.items.${index}.image` })}
   <div class="ss-card-body">
     <h3 style="color: ${getAccent(tokens)};">${escapeHtml(item.name || '')}</h3>
     <p style="color: ${getMuted(tokens)};">${escapeHtml(item.description || '')}</p>

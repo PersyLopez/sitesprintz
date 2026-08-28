@@ -9,16 +9,38 @@ import { useRef, useEffect, useState, useCallback } from 'react';
 import { useSite } from '../../hooks/useSite';
 import { composePage } from '../../utils/layoutRenderer';
 import { renderSectionToHtml, withNativeBookingTokens } from '../../utils/sectionHtmlBridge';
+import { getLiveSiteCss } from '../../utils/publishedSiteDocument';
+import { bindSeamlessEditing } from '../../utils/seamlessEdit';
+import { showOwnerPhotoOnSlot, uploadSiteImage } from '../../utils/siteImageUpload';
 import './PreviewFrame.css';
 
 function PreviewFrame() {
-  const { siteData, previewKey } = useSite();
+  const { siteData, previewKey, applyLiveField } = useSite();
   const iframeRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const pendingPhotoRef = useRef(null);
   const siteDataRef = useRef(siteData);
   const lastHtmlRef = useRef('');
+  const unbindRef = useRef(() => {});
   const [hasPainted, setHasPainted] = useState(false);
 
   siteDataRef.current = siteData;
+
+  const bindPreviewEditing = useCallback((doc) => {
+    unbindRef.current();
+    const liveRoot = doc?.querySelector('.ss-live');
+    if (!liveRoot || !applyLiveField) {
+      unbindRef.current = () => {};
+      return;
+    }
+    unbindRef.current = bindSeamlessEditing(liveRoot, {
+      onCommit: ({ field, value }) => applyLiveField(field, value),
+      onPhotoPick: ({ field, element }) => {
+        pendingPhotoRef.current = { field, element };
+        fileInputRef.current?.click();
+      },
+    });
+  }, [applyLiveField]);
 
   const writePreview = useCallback(() => {
     const iframe = iframeRef.current;
@@ -33,23 +55,42 @@ function PreviewFrame() {
       content = buildLegacyPreview(data);
     }
 
-    if (content === lastHtmlRef.current) {
-      setHasPainted(true);
-      return;
-    }
-
     const doc = iframe.contentDocument;
     if (!doc) return;
-    lastHtmlRef.current = content;
-    doc.open();
-    doc.write(content);
-    doc.close();
+
+    if (content !== lastHtmlRef.current) {
+      lastHtmlRef.current = content;
+      doc.open();
+      doc.write(content);
+      doc.close();
+    }
+
+    bindPreviewEditing(doc);
     setHasPainted(true);
-  }, []);
+  }, [bindPreviewEditing]);
+
+  const onPreviewPhotoFile = useCallback(async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    const pending = pendingPhotoRef.current;
+    pendingPhotoRef.current = null;
+    if (!file || !pending || !applyLiveField) return;
+    try {
+      const url = await uploadSiteImage(file);
+      showOwnerPhotoOnSlot(pending.element, url);
+      applyLiveField(pending.field, url);
+    } catch {
+      // Preview keeps the sample insert if upload fails.
+    }
+  }, [applyLiveField]);
 
   useEffect(() => {
     writePreview();
   }, [previewKey, writePreview]);
+
+  useEffect(() => () => {
+    unbindRef.current();
+  }, []);
 
   return (
     <div
@@ -67,9 +108,16 @@ function PreviewFrame() {
         <iframe
           ref={iframeRef}
           className="preview-iframe"
-          src="about:blank"
-          sandbox="allow-same-origin"
           title="Site Preview"
+          onLoad={writePreview}
+        />
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/gif,image/webp,.jpg,.jpeg,.png,.gif,.webp"
+          className="ss-preview-photo-file"
+          data-testid="preview-photo-file"
+          onChange={onPreviewPhotoFile}
         />
       </div>
     </div>
@@ -85,8 +133,6 @@ function PreviewFrame() {
     const { sections = [], tokens } = page;
     const t = tokens?.theme || {};
 
-    const bg = t.bg || data.colors?.bg || '#0c0c0e';
-    const text = t.text || data.colors?.text || '#f4f2ee';
     const accent = t.accent || data.colors?.accent || '#c2683a';
     const muted = t.muted || data.colors?.muted || '#8a8a8f';
 
@@ -96,6 +142,7 @@ function PreviewFrame() {
       .map((section) => renderSectionToHtml(section, renderTokens))
       .filter(Boolean)
       .join('\n');
+    const css = getLiveSiteCss(tokens);
 
     return `<!DOCTYPE html>
 <html>
@@ -104,18 +151,15 @@ function PreviewFrame() {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: ${bg};
-      color: ${text};
-      line-height: 1.6;
-    }
-    .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
-    img { max-width: 100%; height: auto; }
+    ${css}
+    body { margin: 0; }
+    .ss-live { min-height: auto; }
   </style>
 </head>
 <body>
+  <div class="ss-live ss-live--editing">
   ${sectionsHtml || `<div style="padding:80px 24px;text-align:center;"><h1 style="color:${accent};">Preview</h1><p style="color:${muted};">No sections configured.</p></div>`}
+  </div>
 </body>
 </html>`;
   }
