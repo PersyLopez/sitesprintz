@@ -165,6 +165,11 @@ describe('Header Component', () => {
       expect(screen.getByTestId('nav-create-site')).toBeInTheDocument();
       expect(screen.getByRole('link', { name: /Create Site/i })).toHaveAttribute('href', '/setup');
     });
+
+    it('should hide language switcher on dashboard', () => {
+      renderHeader(true, '/dashboard');
+      expect(screen.queryByTestId('language-switcher')).not.toBeInTheDocument();
+    });
   });
 
   describe('Logout Functionality', () => {
@@ -227,6 +232,45 @@ describe('Header Component', () => {
 
       const getStartedButton = screen.getByRole('link', { name: /Get Started/i });
       expect(getStartedButton).toHaveClass('btn', 'btn-primary');
+    });
+  });
+
+  describe('Mobile menu', () => {
+    it('should open mobile nav when toggle is clicked', async () => {
+      const user = userEvent.setup();
+      renderHeader(false);
+
+      const toggle = screen.getByTestId('mobile-menu-toggle');
+      expect(toggle).toHaveAttribute('aria-expanded', 'false');
+
+      await user.click(toggle);
+
+      expect(toggle).toHaveAttribute('aria-expanded', 'true');
+      expect(screen.getByTestId('mobile-nav-gallery')).toBeVisible();
+    });
+
+    it('should close mobile nav on second toggle click', async () => {
+      const user = userEvent.setup();
+      renderHeader(false);
+
+      const toggle = screen.getByTestId('mobile-menu-toggle');
+      await user.click(toggle);
+      await user.click(toggle);
+
+      expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    it('should close mobile nav when Escape is pressed', async () => {
+      const user = userEvent.setup();
+      renderHeader(false);
+
+      const toggle = screen.getByTestId('mobile-menu-toggle');
+      await user.click(toggle);
+      expect(toggle).toHaveAttribute('aria-expanded', 'true');
+
+      await user.keyboard('{Escape}');
+
+      expect(toggle).toHaveAttribute('aria-expanded', 'false');
     });
   });
 

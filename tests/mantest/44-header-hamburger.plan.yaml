@@ -1,0 +1,164 @@
+url: http://localhost:5173/
+viewport: mobile
+goal: Header hamburger opens, closes, and navigates on a phone viewport
+steps:
+  - action: Phone viewport
+    code: |
+      await page.setViewportSize({ width: 390, height: 844 });
+
+  - action: Landing loads
+    wait_for: { text: SiteSprintz, timeout: 20000 }
+    settle_ms: 600
+    assert:
+      - text contains SiteSprintz
+
+  - action: Hamburger is visible and closed
+    code: |
+      const toggle = page.getByTestId('mobile-menu-toggle');
+      if (!(await toggle.isVisible())) throw new Error('Hamburger toggle not visible');
+      if ((await toggle.getAttribute('aria-expanded')) !== 'false') {
+        throw new Error('Hamburger should start closed');
+      }
+      if (await page.getByTestId('desktop-nav').isVisible()) {
+        throw new Error('Desktop nav should be hidden on phone');
+      }
+      const box = await toggle.boundingBox();
+      if (!box || box.width < 44 || box.height < 44) {
+        throw new Error('Hamburger touch target is under 44px: ' + JSON.stringify(box));
+      }
+
+  - action: Open hamburger
+    click: { testId: mobile-menu-toggle }
+    settle_ms: 500
+
+  - action: Public drawer links are usable
+    code: |
+      const toggle = page.getByTestId('mobile-menu-toggle');
+      if ((await toggle.getAttribute('aria-expanded')) !== 'true') {
+        throw new Error('Hamburger did not open');
+      }
+      const nav = page.getByTestId('mobile-nav');
+      const cls = await nav.getAttribute('class') || '';
+      if (!/\bopen\b/.test(cls)) throw new Error('mobile-nav missing open class: ' + cls);
+      const gallery = page.getByTestId('mobile-nav-gallery');
+      if (!(await gallery.isVisible())) throw new Error('Gallery link not visible in drawer');
+      const box = await gallery.boundingBox();
+      if (!box || box.y < 70) {
+        throw new Error('Drawer clipped to header; gallery y=' + (box && box.y));
+      }
+      if (!(await page.getByTestId('mobile-nav-login').isVisible())) throw new Error('Login link missing');
+      if (!(await page.getByTestId('mobile-nav-register').isVisible())) throw new Error('Get Started link missing');
+      if (!(await page.getByTestId('mobile-nav-pricing').isVisible())) throw new Error('Pricing link missing');
+
+  - action: Close hamburger with the same button
+    click: { testId: mobile-menu-toggle }
+    settle_ms: 500
+
+  - action: Confirm drawer closed
+    code: |
+      const toggle = page.getByTestId('mobile-menu-toggle');
+      if ((await toggle.getAttribute('aria-expanded')) !== 'false') {
+        throw new Error('Hamburger did not close on second click');
+      }
+      const cls = (await page.getByTestId('mobile-nav').getAttribute('class')) || '';
+      if (/\bopen\b/.test(cls)) throw new Error('mobile-nav still has open class');
+
+  - action: Reopen hamburger
+    click: { testId: mobile-menu-toggle }
+    settle_ms: 400
+
+  - action: Close with Escape
+    press: Escape
+    settle_ms: 400
+
+  - action: Confirm Escape closed the drawer
+    code: |
+      if ((await page.getByTestId('mobile-menu-toggle').getAttribute('aria-expanded')) !== 'false') {
+        throw new Error('Escape did not close the hamburger');
+      }
+
+  - action: Reopen for Gallery
+    click: { testId: mobile-menu-toggle }
+    settle_ms: 400
+
+  - action: Go to Gallery from drawer
+    click: { testId: mobile-nav-gallery }
+    settle_ms: 800
+    assert:
+      - url contains /showcase
+
+  - action: Menu closed after Gallery navigation
+    code: |
+      if ((await page.getByTestId('mobile-menu-toggle').getAttribute('aria-expanded')) !== 'false') {
+        throw new Error('Menu stayed open after Gallery navigation');
+      }
+
+  - action: Open hamburger on Gallery
+    click: { testId: mobile-menu-toggle }
+    settle_ms: 400
+
+  - action: Go to Login from drawer
+    click: { testId: mobile-nav-login }
+    settle_ms: 800
+    assert:
+      - url contains /login
+      - text contains Welcome Back
+
+  - action: Enter email
+    fill: { testId: login-email, value: "test@example.com" }
+
+  - action: Enter password
+    fill: { testId: login-password, value: "SecurePass!2024" }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Land on dashboard
+    wait_for: { url: /dashboard, timeout: 20000 }
+
+  - action: Dismiss welcome modal if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+
+  - action: Keep phone viewport after login
+    code: |
+      await page.setViewportSize({ width: 390, height: 844 });
+    settle_ms: 400
+
+  - action: Open signed-in hamburger
+    click: { testId: mobile-menu-toggle }
+    settle_ms: 500
+
+  - action: Signed-in drawer links are usable
+    code: |
+      if ((await page.getByTestId('mobile-menu-toggle').getAttribute('aria-expanded')) !== 'true') {
+        throw new Error('Signed-in hamburger did not open');
+      }
+      const dash = page.getByTestId('mobile-nav-dashboard');
+      if (!(await dash.isVisible())) throw new Error('Dashboard link not visible');
+      const box = await dash.boundingBox();
+      if (!box || box.y < 70) {
+        throw new Error('Signed-in drawer clipped; dashboard y=' + (box && box.y));
+      }
+      if (!(await page.getByTestId('mobile-nav-create-site').isVisible())) throw new Error('Create Site missing');
+      if (!(await page.getByTestId('mobile-nav-gallery').isVisible())) throw new Error('Gallery missing');
+      if (!(await page.getByTestId('mobile-nav-logout').isVisible())) throw new Error('Logout missing');
+
+  - action: Dashboard link from drawer
+    click: { testId: mobile-nav-dashboard }
+    settle_ms: 800
+    assert:
+      - url contains /dashboard
+
+  - action: Menu closed after dashboard link
+    code: |
+      if ((await page.getByTestId('mobile-menu-toggle').getAttribute('aria-expanded')) !== 'false') {
+        throw new Error('Menu stayed open after Dashboard link');
+      }

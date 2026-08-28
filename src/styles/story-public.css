@@ -136,11 +136,12 @@
   font-weight: 700;
 }
 
-.story-public .mobile-menu-toggle,
-.public-page .mobile-menu-toggle {
+.story-public .site-header .mobile-menu-toggle,
+.public-page .site-header .mobile-menu-toggle {
   color: var(--sp-ink);
-  border-color: var(--sp-border);
+  border: 1px solid var(--sp-border);
   background: var(--sp-surface);
+  border-radius: 10px;
 }
 
 .story-public .mobile-nav-link,
@@ -171,8 +172,8 @@
   fill: currentColor;
 }
 
-.story-public .mobile-nav,
-.public-page .mobile-nav {
+.story-public .site-header-mobile-nav,
+.public-page .site-header-mobile-nav {
   background: var(--sp-bg);
   border-color: var(--sp-border);
 }

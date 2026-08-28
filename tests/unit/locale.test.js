@@ -3,6 +3,7 @@ import {
   parseLocale,
   resolveLocale,
   persistLocale,
+  isLocalizedAppRoute,
   LANG_STORAGE_KEY,
 } from '../../src/i18n/locale.js';
 
@@ -56,5 +57,21 @@ describe('persistLocale', () => {
     expect(persistLocale('es')).toBe('es');
     expect(window.localStorage.getItem(LANG_STORAGE_KEY)).toBe('es');
     expect(document.cookie).toContain('ss_lang=es');
+  });
+});
+
+describe('isLocalizedAppRoute', () => {
+  it('allows marketing and auth pages', () => {
+    expect(isLocalizedAppRoute('/')).toBe(true);
+    expect(isLocalizedAppRoute('/login')).toBe(true);
+    expect(isLocalizedAppRoute('/showcase/luxe')).toBe(true);
+    expect(isLocalizedAppRoute('/about')).toBe(true);
+  });
+
+  it('rejects owner and admin shells', () => {
+    expect(isLocalizedAppRoute('/dashboard')).toBe(false);
+    expect(isLocalizedAppRoute('/dashboard/sites/1')).toBe(false);
+    expect(isLocalizedAppRoute('/setup')).toBe(false);
+    expect(isLocalizedAppRoute('/admin')).toBe(false);
   });
 });

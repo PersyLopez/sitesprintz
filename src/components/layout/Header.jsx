@@ -12,6 +12,7 @@ function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const menuRef = useRef(null);
+  const toggleRef = useRef(null);
   const location = useLocation();
   const isAccountDashboard =
     location.pathname === '/dashboard' ||
@@ -19,10 +20,10 @@ function Header() {
   const isStaffRoute = location.pathname === '/staff' || location.pathname.startsWith('/staff/');
   const showOwnerNav = isAuthenticated && !isStaffRoute;
 
-  // Close mobile menu when route changes
+  // Close mobile menu on path change, not ?lang= (language switch would look broken)
   useEffect(() => {
     setMobileMenuOpen(false);
-  }, [location]);
+  }, [location.pathname]);
 
   // Handle scroll effect
   useEffect(() => {
@@ -33,16 +34,25 @@ function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu when clicking outside
+  // Close mobile menu when clicking outside (exclude toggle to avoid mousedown/click race)
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+      const clickedMenu = menuRef.current?.contains(event.target);
+      const clickedToggle = toggleRef.current?.contains(event.target);
+      if (!clickedMenu && !clickedToggle) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
         setMobileMenuOpen(false);
       }
     };
 
     if (mobileMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -50,16 +60,10 @@ function Header() {
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = '';
     };
   }, [mobileMenuOpen]);
-
-  // Handle keyboard navigation
-  const handleKeyDown = (e) => {
-    if (e.key === 'Escape') {
-      setMobileMenuOpen(false);
-    }
-  };
 
   const handleLogout = () => {
     logout();
@@ -67,6 +71,7 @@ function Header() {
   };
 
   return (
+    <>
     <header className={`site-header ${isScrolled ? 'scrolled' : ''}`}>
       <div className="header-container">
         <Link 
@@ -187,12 +192,13 @@ function Header() {
 
         {/* Mobile Menu Button */}
         <button
+          ref={toggleRef}
+          type="button"
           className={`mobile-menu-toggle ${mobileMenuOpen ? 'open' : ''}`}
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-label={t('nav.menu')}
           aria-expanded={mobileMenuOpen}
           aria-controls="mobile-menu"
-          onKeyDown={handleKeyDown}
           data-testid="mobile-menu-toggle"
         >
           <span></span>
@@ -200,12 +206,11 @@ function Header() {
           <span></span>
         </button>
       </div>
-
-      {/* Mobile Navigation */}
+    </header>
       <nav
         ref={menuRef}
         id="mobile-menu"
-        className={`mobile-nav ${mobileMenuOpen ? 'open' : ''}`}
+        className={`mobile-nav site-header-mobile-nav ${mobileMenuOpen ? 'open' : ''}`}
         aria-label="Mobile navigation"
         aria-hidden={!mobileMenuOpen}
         data-testid="mobile-nav"
@@ -318,7 +323,7 @@ function Header() {
           </>
         )}
       </nav>
-    </header>
+    </>
   );
 }
 

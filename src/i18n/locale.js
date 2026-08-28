@@ -3,6 +3,25 @@ export const DEFAULT_LOCALE = 'en';
 export const LANG_STORAGE_KEY = 'ss_lang';
 export const LANG_COOKIE = 'ss_lang';
 
+const LOCALIZED_APP_PREFIXES = [
+  '/login',
+  '/register',
+  '/forgot-password',
+  '/reset-password',
+  '/verify-email',
+  '/about',
+  '/contact',
+  '/showcase',
+  '/build',
+];
+
+/** Product chrome with t() copy — hide the switcher on owner/admin shells. */
+export function isLocalizedAppRoute(pathname) {
+  const path = String(pathname || '/').split('?')[0] || '/';
+  if (path === '/') return true;
+  return LOCALIZED_APP_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+}
+
 export function parseLocale(raw) {
   const value = String(raw || '').trim().toLowerCase().split(/[-_]/)[0];
   return LOCALES.includes(value) ? value : DEFAULT_LOCALE;

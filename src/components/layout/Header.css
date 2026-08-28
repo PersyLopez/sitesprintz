@@ -4,9 +4,9 @@
   padding: 1rem 0;
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 1001;
   backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+  transition: background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .site-header.scrolled {
@@ -151,64 +151,68 @@
   font-size: 0.9rem;
   font-weight: 500;
   padding: 8px 16px;
-  background: rgba(59, 130, 246, 0.1);
+  background: color-mix(in srgb, var(--primary-color) 12%, transparent);
   border-radius: 20px;
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  border: 1px solid color-mix(in srgb, var(--primary-color) 25%, transparent);
 }
 
-/* Mobile Menu Toggle - Visible on mobile */
-.mobile-menu-toggle {
+/* Mobile Menu Toggle - scoped to site header (BookingDashboard has its own) */
+.site-header .mobile-menu-toggle {
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
-  width: 44px; /* Touch target */
-  height: 44px; /* Touch target */
+  justify-content: center;
+  align-items: stretch;
+  gap: 6px;
+  width: 44px;
+  height: 44px;
   min-width: 44px;
   min-height: 44px;
+  color: var(--text-light);
   background: transparent;
   border: none;
   cursor: pointer;
   padding: 10px;
   z-index: 1001;
-  transition: all 0.3s ease;
+  transition: color 0.2s ease;
 }
 
 /* Desktop: Hide mobile toggle */
 @media (min-width: 1024px) {
-  .mobile-menu-toggle {
+  .site-header .mobile-menu-toggle {
     display: none;
   }
 }
 
-.mobile-menu-toggle:focus {
+.site-header .mobile-menu-toggle:focus-visible {
   outline: 2px solid var(--primary-color);
   outline-offset: 4px;
   border-radius: 4px;
 }
 
-.mobile-menu-toggle span {
+.site-header .mobile-menu-toggle span {
+  display: block;
   width: 100%;
   height: 3px;
-  background: var(--text-light);
+  background: currentColor;
   border-radius: 3px;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.2s ease;
   transform-origin: center;
 }
 
-.mobile-menu-toggle.open span:nth-child(1) {
-  transform: rotate(45deg) translate(8px, 8px);
+.site-header .mobile-menu-toggle.open span:nth-child(1) {
+  transform: translateY(9px) rotate(45deg);
 }
 
-.mobile-menu-toggle.open span:nth-child(2) {
+.site-header .mobile-menu-toggle.open span:nth-child(2) {
   opacity: 0;
 }
 
-.mobile-menu-toggle.open span:nth-child(3) {
-  transform: rotate(-45deg) translate(8px, -8px);
+.site-header .mobile-menu-toggle.open span:nth-child(3) {
+  transform: translateY(-9px) rotate(-45deg);
 }
 
-/* Mobile Navigation - Visible on mobile */
-.mobile-nav {
+/* Mobile Navigation - scoped to site header */
+.site-header-mobile-nav {
   display: block;
   position: fixed;
   top: 0;
@@ -222,27 +226,29 @@
   transform: translateX(100%);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: var(--shadow-xl);
+  pointer-events: none;
 }
 
 /* Tablet+: Increase padding */
 @media (min-width: 640px) {
-  .mobile-nav {
+  .site-header-mobile-nav {
     padding: 80px var(--spacing-xl) var(--spacing-xl);
   }
 }
 
 /* Desktop: Hide mobile nav */
 @media (min-width: 1024px) {
-  .mobile-nav {
+  .site-header-mobile-nav {
     display: none;
   }
 }
 
-.mobile-nav.open {
+.site-header-mobile-nav.open {
   transform: translateX(0);
+  pointer-events: auto;
 }
 
-.mobile-nav[aria-hidden="true"] {
+.site-header-mobile-nav[aria-hidden="true"] {
   visibility: hidden;
 }
 
@@ -293,14 +299,14 @@
 }
 
 .mobile-nav-link.active {
-  background: rgba(59, 130, 246, 0.12);
+  background: color-mix(in srgb, var(--primary-color) 12%, var(--bg-card));
   color: var(--primary-color);
-  border-color: rgba(59, 130, 246, 0.4);
+  border-color: color-mix(in srgb, var(--primary-color) 40%, var(--border-dark));
 }
 
-.mobile-nav-link.mobile-cta {
+.site-header-mobile-nav .mobile-nav-link.mobile-cta {
   background: var(--primary-gradient);
-  color: white;
+  color: var(--on-primary);
   border: none;
   font-weight: 600;
   margin-top: var(--spacing-lg);
@@ -314,16 +320,16 @@
 }
 
 .mobile-nav-link.mobile-logout {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  border-color: rgba(239, 68, 68, 0.3);
+  background: color-mix(in srgb, var(--danger-color) 12%, var(--bg-card));
+  color: var(--danger-color);
+  border-color: color-mix(in srgb, var(--danger-color) 30%, var(--border-dark));
   margin-top: var(--spacing-lg);
 }
 
 .mobile-nav-link.mobile-logout:hover,
 .mobile-nav-link.mobile-logout:focus {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: #ef4444;
+  background: color-mix(in srgb, var(--danger-color) 20%, var(--bg-card));
+  border-color: var(--danger-color);
 }
 
 /* Mobile nav links - Touch targets */

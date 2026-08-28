@@ -57,4 +57,15 @@ describe('marketing language switcher', () => {
     expect(await screen.findByRole('heading', { name: /Les encanta lo que haces/i })).toBeInTheDocument();
     expect(screen.getByTestId('language-switcher-es')).toHaveAttribute('aria-pressed', 'true');
   });
+
+  it('does not render the switcher on untranslated owner routes', () => {
+    render(
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <LocaleProvider>
+          <LanguageSwitcher />
+        </LocaleProvider>
+      </MemoryRouter>
+    );
+    expect(screen.queryByTestId('language-switcher')).not.toBeInTheDocument();
+  });
 });
