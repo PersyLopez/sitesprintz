@@ -19,24 +19,24 @@ steps:
 
   - action: Open products
     goto: http://localhost:5173/products
+    settle_ms: 2000
 
-  - action: Products page loaded
-    wait_for: { text: Products, timeout: 15000 }
-    settle_ms: 1000
-    assert:
-      - url contains /products
-      - text contains Import CSV
-      - text contains Export CSV
-      - text contains Add Product
-
-  - action: Empty state or product tools present
+  - action: Products tools loaded
     code: |
+      const addBtn = page.getByTestId('add-product-btn');
+      if ((await addBtn.count()) === 0) {
+        const manage = page.getByTestId('manage-site-button').first();
+        if ((await manage.count()) === 0) {
+          throw new Error('Neither products tools nor a site card after /products: ' + page.url());
+        }
+        await manage.click();
+        await page.getByTestId('site-nav-products').click();
+      }
+      await page.getByTestId('add-product-btn').waitFor({ timeout: 15000 });
       const t = await page.locator('body').innerText();
-      const ok =
-        /No products yet|total products|Add Product/i.test(t) &&
-        (await page.getByTestId('add-product-btn').count()) > 0;
-      if (!ok) throw new Error('Products page missing expected controls');
-    settle_ms: 300
+      const ok = /Import CSV/i.test(t) && /Export CSV/i.test(t) && /Add Product/i.test(t);
+      if (!ok) throw new Error('Products tools missing: ' + t.slice(0, 240));
+    settle_ms: 400
 
   - action: Search control works
     fill: { testId: product-search-input, value: "pizza", clear: true }

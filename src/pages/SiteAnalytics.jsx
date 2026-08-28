@@ -200,11 +200,11 @@ export default function SiteAnalytics() {
         <div className="header-actions">
           <button 
             onClick={fetchAnalytics}
-            className="btn btn-secondary"
+            className="btn btn-secondary site-analytics-refresh-btn"
             aria-label="Refresh analytics"
             disabled={loading}
           >
-            🔄 Refresh
+            Refresh
           </button>
         </div>
       </div>
@@ -225,7 +225,6 @@ export default function SiteAnalytics() {
       {/* Overview Stats Cards */}
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-icon">📊</div>
           <div className="stat-content">
             <h3>Page Views</h3>
             <p className="stat-value">{formatNumber(stats.pageViews)}</p>
@@ -233,7 +232,6 @@ export default function SiteAnalytics() {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">👥</div>
           <div className="stat-content">
             <h3>Unique Visitors</h3>
             <p className="stat-value">{formatNumber(stats.uniqueVisitors)}</p>
@@ -241,7 +239,6 @@ export default function SiteAnalytics() {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">🛒</div>
           <div className="stat-content">
             <h3>Orders</h3>
             <p className="stat-value">{formatNumber(stats.orders)}</p>
@@ -249,7 +246,6 @@ export default function SiteAnalytics() {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">💰</div>
           <div className="stat-content">
             <h3>Revenue</h3>
             <p className="stat-value">{formatCurrency(stats.revenue)}</p>
@@ -257,7 +253,6 @@ export default function SiteAnalytics() {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">📈</div>
           <div className="stat-content">
             <h3>Avg Order Value</h3>
             <p className="stat-value">{formatCurrency(stats.avgOrderValue)}</p>
@@ -265,7 +260,6 @@ export default function SiteAnalytics() {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">🎯</div>
           <div className="stat-content">
             <h3>Conversion Rate</h3>
             <p className="stat-value">{stats.conversionRate}%</p>

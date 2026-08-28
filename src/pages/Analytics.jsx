@@ -17,6 +17,34 @@ import './Analytics.css';
 
 const AnalyticsChart = lazy(() => import('../components/analytics/AnalyticsChart'));
 
+const ANALYTICS_ICONS = {
+  refresh: 'M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z',
+  chart: 'M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z',
+  warning: 'M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z',
+};
+
+const CHART_COLORS = {
+  views: '#7a9bb0',
+  visitors: '#9bb4c4',
+  orders: '#3d8f72',
+  revenue: '#b8862a',
+};
+
+function AnalyticsIcon({ path, className = 'analytics-icon' }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      width="1.15em"
+      height="1.15em"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path fill="currentColor" d={path} />
+    </svg>
+  );
+}
+
 function daysToPeriod(days) {
   return `${days}d`;
 }
@@ -249,6 +277,7 @@ function Analytics() {
   const { showError } = useToast();
 
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [analyticsData, setAnalyticsData] = useState(null);
   const [timeRange, setTimeRange] = useState('30');
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -266,6 +295,7 @@ function Analytics() {
     }
 
     setLoading(true);
+    setLoadError(null);
 
     try {
       if (siteAnalyticsMode) {
@@ -279,6 +309,7 @@ function Analytics() {
       setAnalyticsData(data);
       setLastUpdated(new Date());
     } catch {
+      setLoadError('Failed to load analytics. Please try again.');
       showError('Failed to load analytics');
       setAnalyticsData(null);
     } finally {
@@ -318,9 +349,20 @@ function Analytics() {
       upgradeMessage="Upgrade to Growth to view traffic and performance for this site."
     />
   ) : loading ? (
-    <div className="loading-container" data-testid="analytics-loading">
+    <div className="analytics-loading" data-testid="analytics-loading" aria-busy="true" aria-label="Loading analytics">
       <div className="loading-spinner" />
       <p>Loading analytics...</p>
+    </div>
+  ) : loadError ? (
+    <div className="empty-state analytics-error-state" data-testid="analytics-load-error">
+      <div className="empty-state-icon analytics-error-icon" aria-hidden="true">
+        <AnalyticsIcon path={ANALYTICS_ICONS.warning} className="empty-state-icon-svg" />
+      </div>
+      <h2 className="empty-state-title">Could Not Load Analytics</h2>
+      <p className="empty-state-description">{loadError}</p>
+      <button type="button" onClick={loadAnalytics} className="btn btn-primary">
+        Retry
+      </button>
     </div>
   ) : analyticsData ? (
     <>
@@ -362,14 +404,14 @@ function Analytics() {
               title="Site Views Over Time"
               data={analyticsData.chartData?.views || []}
               labels={analyticsData.labels || []}
-              color="#06b6d4"
+              color={CHART_COLORS.views}
             />
 
             <AnalyticsChart
               title="Unique Visitors"
               data={analyticsData.chartData?.visitors || []}
               labels={analyticsData.labels || []}
-              color="#8b5cf6"
+              color={CHART_COLORS.visitors}
             />
           </div>
 
@@ -378,14 +420,14 @@ function Analytics() {
               title="Orders Over Time"
               data={analyticsData.chartData?.orders || []}
               labels={analyticsData.labels || []}
-              color="#22c55e"
+              color={CHART_COLORS.orders}
             />
 
             <AnalyticsChart
               title="Revenue Trend"
               data={analyticsData.chartData?.revenue || []}
               labels={analyticsData.labels || []}
-              color="#f59e0b"
+              color={CHART_COLORS.revenue}
             />
           </div>
         </Suspense>
@@ -434,12 +476,18 @@ function Analytics() {
     </>
   ) : (
     <div className="empty-state" data-testid="analytics-empty">
-      <h2>No Analytics Data</h2>
-      <p>Analytics data will appear here once your site receives visitors.</p>
+      <div className="empty-state-icon" aria-hidden="true">
+        <AnalyticsIcon path={ANALYTICS_ICONS.chart} className="empty-state-icon-svg" />
+      </div>
+      <h2 className="empty-state-title">No Analytics Data</h2>
+      <p className="empty-state-description">
+        Analytics data will appear here once your site receives visitors.
+      </p>
     </div>
   );
 
   const PageContainer = embedded ? 'div' : 'main';
+  const PageTitle = embedded ? 'h2' : 'h1';
 
   return (
     <div className={`analytics-page${embedded ? ' embedded-page' : ''}`}>
@@ -448,11 +496,7 @@ function Analytics() {
       <PageContainer className="analytics-container" data-testid="analytics-page">
         <div className={`analytics-header${embedded ? ' pane-quiet-header' : ''}`}>
           <div className="header-content">
-            {embedded ? (
-              <h2>Analytics</h2>
-            ) : (
-              <h1>Analytics Dashboard</h1>
-            )}
+            <PageTitle>Analytics</PageTitle>
             <p>
               {siteId ? 'Site Performance' : 'All Sites'} •
               {' '}
@@ -477,10 +521,12 @@ function Analytics() {
             <button
               type="button"
               onClick={loadAnalytics}
-              className="btn btn-secondary"
+              className="btn btn-secondary analytics-refresh-btn"
               disabled={siteAnalyticsMode && !hasAnalyticsAccess}
+              aria-label="Refresh analytics"
             >
-              🔄 Refresh
+              <AnalyticsIcon path={ANALYTICS_ICONS.refresh} />
+              Refresh
             </button>
 
             {!embedded && (

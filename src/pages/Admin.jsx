@@ -216,13 +216,13 @@ function Admin() {
     });
   };
 
-  const getActivityIcon = (type) => {
+  const getActivityTypeLabel = (type) => {
     switch (type) {
-      case 'site_published': return '🚀';
-      case 'user_signup': return '👤';
-      case 'subscription': return '💳';
-      case 'order': return '📦';
-      default: return '📌';
+      case 'site_published': return 'Publish';
+      case 'user_signup': return 'Signup';
+      case 'subscription': return 'Billing';
+      case 'order': return 'Order';
+      default: return 'Event';
     }
   };
 
@@ -293,10 +293,8 @@ function Admin() {
             {adminData.alerts && adminData.alerts.length > 0 && (
               <div className="alerts-section">
                 {adminData.alerts.map((alert) => (
-                  <div key={alert.id} className={`alert alert-${alert.type}`}>
-                    <span className="alert-icon">
-                      {alert.type === 'warning' ? '⚠️' : 'ℹ️'}
-                    </span>
+                  <div key={alert.id} className={`alert alert-${alert.type}`} role="status">
+                    <span className="alert-indicator" aria-hidden="true" />
                     <span className="alert-message">{alert.message}</span>
                     <button className="alert-dismiss">×</button>
                   </div>
@@ -335,13 +333,13 @@ function Admin() {
                 className={`admin-tab ${activeTab === 'activity' ? 'active' : ''}`}
                 onClick={() => setActiveTab('activity')}
               >
-                🔔 Activity
+                Activity
               </button>
               <button
                 className={`admin-tab ${activeTab === 'system' ? 'active' : ''}`}
                 onClick={() => setActiveTab('system')}
               >
-                ⚡ System
+                System
               </button>
             </div>
 
@@ -430,7 +428,7 @@ function Admin() {
 
                 {/* Subscription Breakdown */}
                 <div className="admin-section">
-                  <h2>💳 Subscription Breakdown</h2>
+                  <h2>Subscription Breakdown</h2>
                   <div className="subscription-grid">
                     <div className="subscription-card">
                       <div className="sub-header">
@@ -484,7 +482,7 @@ function Admin() {
                   <div className="user-insights-grid" data-testid="users-table">
                     {/* Top Users */}
                     <div className="insight-card">
-                      <h3>🏆 Top Users by Revenue</h3>
+                      <h3>Top Users by Revenue</h3>
                       <div className="user-list">
                         {adminData.topUsers.map((user, index) => (
                           <div key={user.id} className="user-item">
@@ -511,7 +509,7 @@ function Admin() {
 
                     {/* Recent Signups */}
                     <div className="insight-card">
-                      <h3>✨ Recent Signups</h3>
+                      <h3>Recent Signups</h3>
                       <div className="user-list">
                         {adminData.recentSignups.map((signup) => (
                           <div key={signup.id} className="user-item">
@@ -542,13 +540,13 @@ function Admin() {
             {/* Activity Tab */}
             {activeTab === 'activity' && (
               <div className="admin-section">
-                <h2>🔔 Recent Activity</h2>
+                <h2>Recent Activity</h2>
                 <div className="activity-feed">
                   {adminData.recentActivity.map((activity) => (
                     <div key={activity.id} className="activity-item-feed">
-                      <div className="activity-icon-circle">
-                        {getActivityIcon(activity.type)}
-                      </div>
+                      <span className={`activity-type-badge activity-type-${activity.type}`}>
+                        {getActivityTypeLabel(activity.type)}
+                      </span>
                       <div className="activity-content">
                         <div className="activity-description">
                           <strong>{activity.user}</strong> {activity.description}
@@ -567,11 +565,11 @@ function Admin() {
             {activeTab === 'system' && (
               <>
                 <div className="admin-section">
-                  <h2>⚡ System Health</h2>
+                  <h2>System Health</h2>
                   <div className="system-health-grid">
                     <div className="health-item">
                       <div className="health-label">Server Status</div>
-                      <div className="health-value">✅ {adminData.system.status}</div>
+                      <div className="health-value">{adminData.system.status}</div>
                     </div>
                     <div className="health-item">
                       <div className="health-label">Uptime</div>
@@ -593,7 +591,7 @@ function Admin() {
                 </div>
 
                 <div className="admin-section">
-                  <h2>💻 Resource Usage</h2>
+                  <h2>Resource Usage</h2>
                   <div className="resource-grid">
                     <div className="resource-card">
                       <div className="resource-label">CPU Usage</div>
@@ -634,7 +632,6 @@ function Admin() {
           </>
         ) : (
           <div className="empty-state">
-            <div className="empty-icon">👑</div>
             <h2>No Data Available</h2>
             <p>Admin data will appear here once loaded.</p>
           </div>

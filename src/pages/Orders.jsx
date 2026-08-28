@@ -22,6 +22,27 @@ import {
 } from '../utils/orderOwnerStatus';
 import './Orders.css';
 
+function OrdersIcon({ path, className = 'orders-icon' }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      width="1.15em"
+      height="1.15em"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path fill="currentColor" d={path} />
+    </svg>
+  );
+}
+
+const ORDERS_ICONS = {
+  package: 'M20 8h-3V4H7v4H4c-1.1 0-2 .9-2 2v11h20V10c0-1.1-.9-2-2-2zM7 8V6h10v2H7zm11 11H6v-5h12v5z',
+  warning: 'M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z',
+  download: 'M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z',
+};
+
 function Orders() {
   const [searchParams] = useSearchParams();
   const { embedded, siteId: workspaceSiteId } = useSiteWorkspace();
@@ -235,9 +256,11 @@ function Orders() {
         {!embedded && <Header />}
         <div className="orders-container">
           <div className="empty-state">
-            <div className="empty-icon">📦</div>
-            <h2>No Site Selected</h2>
-            <p>Please select a site from your dashboard to view orders.</p>
+            <div className="empty-state-icon" aria-hidden="true">
+              <OrdersIcon path={ORDERS_ICONS.package} className="empty-state-icon-svg" />
+            </div>
+            <h2 className="empty-state-title">No Site Selected</h2>
+            <p className="empty-state-description">Please select a site from your dashboard to view orders.</p>
             <Link to="/dashboard" className="btn btn-primary">
               Go to Dashboard
             </Link>
@@ -261,12 +284,13 @@ function Orders() {
           </div>
 
           <div className="header-actions">
-            <button onClick={exportOrders} className="btn btn-secondary">
-              📥 Export CSV
+            <button type="button" onClick={exportOrders} className="btn btn-secondary orders-export-btn">
+              <OrdersIcon path={ORDERS_ICONS.download} />
+              Export CSV
             </button>
             {!embedded && (
               <Link to={backTo} className="btn btn-secondary">
-                ← Back to Dashboard
+                Back to Dashboard
               </Link>
             )}
           </div>
@@ -338,11 +362,11 @@ function Orders() {
               <span className="selected-count">{selectedOrders.size}</span> orders selected
             </div>
             <div className="bulk-actions">
-              <button onClick={() => bulkUpdateStatus(ownerMarkCompleteApiStatus())} className="bulk-btn success">
-                ✓ Mark Completed
+              <button type="button" onClick={() => bulkUpdateStatus(ownerMarkCompleteApiStatus())} className="bulk-btn success">
+                Mark Completed
               </button>
-              <button onClick={() => bulkUpdateStatus(ownerCancelApiStatus())} className="bulk-btn danger">
-                ✕ Cancel Orders
+              <button type="button" onClick={() => bulkUpdateStatus(ownerCancelApiStatus())} className="bulk-btn danger">
+                Cancel Orders
               </button>
               <button onClick={selectAll} className="bulk-btn">
                 Select All ({filteredOrders.length})
@@ -362,18 +386,22 @@ function Orders() {
           </div>
         ) : loadError ? (
           <div className="empty-state orders-error-state" data-testid="orders-load-error">
-            <div className="empty-icon">⚠️</div>
-            <h2>Could Not Load Orders</h2>
-            <p>{loadError}</p>
+            <div className="empty-state-icon orders-error-icon" aria-hidden="true">
+              <OrdersIcon path={ORDERS_ICONS.warning} className="empty-state-icon-svg" />
+            </div>
+            <h2 className="empty-state-title">Could Not Load Orders</h2>
+            <p className="empty-state-description">{loadError}</p>
             <button type="button" onClick={loadOrders} className="btn btn-primary">
               Retry
             </button>
           </div>
         ) : filteredOrders.length === 0 ? (
           <div className="empty-state" data-testid="orders-empty-state">
-            <div className="empty-icon">📦</div>
-            <h2>No Orders Found</h2>
-            <p>
+            <div className="empty-state-icon" aria-hidden="true">
+              <OrdersIcon path={ORDERS_ICONS.package} className="empty-state-icon-svg" />
+            </div>
+            <h2 className="empty-state-title">No Orders Found</h2>
+            <p className="empty-state-description">
               {searchTerm
                 ? 'No orders match your search.'
                 : selectedStatus === OWNER_ORDER_FILTERS.ALL

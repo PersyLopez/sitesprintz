@@ -154,3 +154,7 @@ Skill rules live in `.cursorrules` and `.cursor/GLOBAL_RULES_FOR_CURSOR.md`.
 ---
 
 **Version**: 1.3 | **Last updated**: August 2026
+
+<!-- design-specialist -->
+Visual/UI slices (landing, dashboards, Booking, Orders, Products, Analytics) go to `/design-specialist`. Do not use WebCraft or `Task` `generalPurpose` / `explore` as a stand-in. Vault: `vendor/design-specialist/vault/`.
+<!-- /design-specialist -->

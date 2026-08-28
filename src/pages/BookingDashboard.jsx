@@ -243,16 +243,18 @@ const BookingDashboard = () => {
                   aria-label="Menu"
                   data-testid="mobile-menu-toggle"
                 >
-                  ☰ Menu
+                  Menu
                 </button>
               )}
             </div>
 
             {/* Stats Cards */}
-            {loading && <div className="loading">Loading...</div>}
+            {loading && (
+              <div className="loading" role="status">Loading...</div>
+            )}
 
             {statsError && (
-              <div className="error-message">{statsError}</div>
+              <div className="error-message" role="alert">{statsError}</div>
             )}
 
             {!loading && !statsError && (
@@ -294,35 +296,45 @@ const BookingDashboard = () => {
             {/* Navigation Tabs */}
             <div
               className={`${embedded ? 'pane-subnav' : 'dashboard-tabs'}${mobileMenuOpen ? ' mobile-open' : ''}`}
+              role="tablist"
+              aria-label="Booking sections"
             >
               <button
+                type="button"
                 role="tab"
                 data-testid="appointments-tab"
                 className={`tab ${activeTab === 'appointments' ? 'active' : ''}`}
+                aria-selected={activeTab === 'appointments'}
                 onClick={() => handleTabChange('appointments')}
               >
                 Appointments
               </button>
               <button
+                type="button"
                 role="tab"
                 data-testid="services-tab"
                 className={`tab ${activeTab === 'services' ? 'active' : ''}`}
+                aria-selected={activeTab === 'services'}
                 onClick={() => handleTabChange('services')}
               >
                 Services
               </button>
               <button
+                type="button"
                 role="tab"
                 data-testid="schedule-tab"
                 className={`tab ${activeTab === 'schedule' ? 'active' : ''}`}
+                aria-selected={activeTab === 'schedule'}
                 onClick={() => handleTabChange('schedule')}
               >
                 Schedule
               </button>
               <button
+                type="button"
                 role="tab"
                 data-testid="phase2-tab"
                 className={`tab ${activeTab === 'phase2' ? 'active' : ''}`}
+                aria-selected={activeTab === 'phase2'}
                 onClick={() => handleTabChange('phase2')}
               >
                 Phase 2 Settings
@@ -342,7 +354,7 @@ const BookingDashboard = () => {
               )}
               {activeTab === 'phase2' && (
                 <div className="phase2-settings-panel" data-testid="phase2-settings-panel">
-                  <h3>🔔 Reminders & Availability Buffer</h3>
+                  <h3>Reminders & Availability Buffer</h3>
                   <p className="settings-intro">Configure phase 2 settings for your booking system.</p>
 
                   <fieldset className="settings-fieldset">
@@ -395,7 +407,7 @@ const BookingDashboard = () => {
                     disabled={savingPhase2}
                     data-testid="save-phase2-settings-btn"
                   >
-                    {savingPhase2 ? '💾 Saving...' : '💾 Save Settings'}
+                    {savingPhase2 ? 'Saving...' : 'Save Settings'}
                   </button>
                 </div>
               )}

@@ -208,26 +208,25 @@ function AdminPlanFeatures() {
       <main className="admin-container">
         <div className="admin-header">
           <div>
-            <h1>⚙️ Plan Features Configuration</h1>
+            <h1>Plan Features Configuration</h1>
             <p>Configure what features are available for each subscription tier</p>
           </div>
           <div className="header-actions">
             <button onClick={handleReset} className="btn btn-secondary">
-              🔄 Reset to Defaults
+              Reset to Defaults
             </button>
             <button 
               onClick={handleSave} 
               className="btn btn-primary"
               disabled={saving}
             >
-              {saving ? 'Saving...' : '💾 Save Changes'}
+              {saving ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </div>
 
-        {/* Info Banner */}
-        <div className="warning-banner" style={{ background: '#dbeafe', borderColor: '#3b82f6' }}>
-          <span className="warning-icon">ℹ️</span>
+        <div className="info-banner" role="status">
+          <span className="info-banner-indicator" aria-hidden="true" />
           <div>
             <strong>Note:</strong> Changes here will affect what features users can access.
             Growth Managed uses the same software features as Growth.
@@ -284,9 +283,9 @@ function AdminPlanFeatures() {
                         title={isInherited ? 'Inherited from lower tier' : enabled ? 'Click to disable' : 'Click to enable'}
                       >
                         {enabled ? (
-                          <span className="check-icon">✅</span>
+                          <span className="feature-state feature-state-on" aria-hidden="true">On</span>
                         ) : (
-                          <span className="check-icon empty">☐</span>
+                          <span className="feature-state feature-state-off" aria-hidden="true">Off</span>
                         )}
                         {isInherited && <span className="inherited-badge">Inherited</span>}
                       </div>
@@ -300,7 +299,7 @@ function AdminPlanFeatures() {
 
         {/* Summary */}
         <div className="summary-section">
-          <h2>📊 Summary</h2>
+          <h2>Summary</h2>
           <div className="summary-grid">
             {plans.map(plan => (
               <div key={plan} className="summary-card">
