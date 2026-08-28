@@ -41,13 +41,12 @@ steps:
       - url contains /setup
       - text contains Publish
 
-  - action: Skip-empty editor chrome
-    wait_for: { selector: '[data-testid="customize-panel"]', timeout: 15000 }
+  - action: Skip-empty picker only
+    wait_for: { selector: '[data-testid="template-grid"]', timeout: 15000 }
     settle_ms: 400
     assert:
       - text contains Templates
-      - text contains Select a template from the left
-      - text contains live preview will appear here
+      - text contains Showing
 
   - action: Skip-empty layout probe
     code: |
@@ -55,9 +54,11 @@ steps:
       if (!(await publish.isDisabled())) {
         throw new Error('Publish should be disabled with no template');
       }
-      const empty = page.locator('.preview-panel .panel-empty, .editor-panel .panel-empty');
-      if ((await empty.count()) < 1) {
-        throw new Error('Expected empty editor/preview after skip without a template');
+      if (await page.getByTestId('customize-panel').isVisible()) {
+        throw new Error('Editor column should not sit beside the template picker');
+      }
+      if (await page.getByTestId('page-builder').isVisible()) {
+        throw new Error('Page builder should not show before a template');
       }
     settle_ms: 200
 
@@ -279,19 +280,17 @@ steps:
     click: { testId: add-type-faq }
     settle_ms: 800
 
-  - action: Move hero down
+  - action: Move hero down with Alt+Arrow
     code: |
-      const down = page.locator('[data-move-down-type="hero"]');
-      if ((await down.count()) === 0) throw new Error('Move hero down missing');
-      if (await down.isDisabled()) throw new Error('Move hero down should be enabled');
-      await down.click({ timeout: 4000 });
+      await page.getByTestId('section-type-hero').click({ timeout: 4000 });
+      await page.keyboard.press('Alt+ArrowDown');
     settle_ms: 600
 
   - action: Hero is not first after move
     code: |
       const first = page.locator('[data-testid="section-list"] li').first();
       const id = await first.locator('[data-testid^="section-type-"]').getAttribute('data-testid');
-      if (id === 'section-type-hero') throw new Error('Hero should no longer be first after Move down');
+      if (id === 'section-type-hero') throw new Error('Hero should no longer be first after Alt+ArrowDown');
     settle_ms: 200
 
   - action: Hide services

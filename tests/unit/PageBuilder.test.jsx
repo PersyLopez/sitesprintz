@@ -136,13 +136,11 @@ describe('PageBuilder', () => {
     expect(screen.getByTestId('section-remove-hero-1')).toBeDisabled();
   });
 
-  it('moves a section down with the button', async () => {
-    const user = userEvent.setup();
+  it('does not show up or down buttons', () => {
     renderBuilder();
-    await user.click(screen.getByTestId('section-move-down-hero-1'));
-    const next = updateField.mock.calls[0][1];
-    expect(next[0].id).toBe('about-1');
-    expect(next[1].id).toBe('hero-1');
+    expect(screen.queryByRole('button', { name: /Move Hero Section down/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Move Hero Section up/i })).not.toBeInTheDocument();
+    expect(screen.getByTestId('section-drag-hero-1')).toBeInTheDocument();
   });
 
   it('closes the add menu on Escape', async () => {

@@ -113,6 +113,12 @@ function Setup() {
     setActiveTab('templates');
   };
 
+  const handleBackToEditor = () => {
+    if (!siteData.template) return;
+    setShowTemplatePicker(false);
+    setActiveTab('editor');
+  };
+
   const handleCustomBuilderCancel = () => {
     setShowCustomBuilder(false);
   };
@@ -222,14 +228,18 @@ function Setup() {
           </button>
           <button
             className={`mobile-tab ${activeTab === 'editor' ? 'active' : ''}`}
-            onClick={() => setActiveTab('editor')}
+            onClick={handleBackToEditor}
             disabled={!siteData.template}
           >
             Editor
           </button>
           <button
             className={`mobile-tab ${activeTab === 'preview' ? 'active' : ''}`}
-            onClick={() => setActiveTab('preview')}
+            onClick={() => {
+              if (!siteData.template) return;
+              setShowTemplatePicker(false);
+              setActiveTab('preview');
+            }}
             disabled={!siteData.template}
           >
             Preview
@@ -237,13 +247,23 @@ function Setup() {
         </div>
 
         {/* Desktop three-column layout */}
-        <div className={`setup-panels ${twoColumnLayout ? 'setup-panels--two-col' : ''}`}>
+        <div className={`setup-panels ${twoColumnLayout ? 'setup-panels--two-col' : ''} ${templatesPanelVisible ? 'setup-panels--picker' : ''}`}>
           {/* Templates Panel */}
           <div
             className={`setup-panel templates-panel ${activeTab === 'templates' ? 'active' : ''} ${!templatesPanelVisible ? 'templates-panel--hidden' : ''}`}
           >
             <div className="panel-header">
               <h2>Templates</h2>
+              {siteData.template ? (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  data-testid="back-to-editor-button"
+                  onClick={handleBackToEditor}
+                >
+                  Back to editor
+                </button>
+              ) : null}
             </div>
             <div className="panel-content">
               {loading ? (

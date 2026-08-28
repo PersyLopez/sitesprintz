@@ -311,12 +311,15 @@ function PageBuilder() {
 
       <div className="sections-list">
         <h2 className="list-heading">Sections ({sections.length})</h2>
+        <p id="section-reorder-hint" className="sr-only">
+          Drag Move to reorder. Alt+Up and Alt+Down reorder the selected section.
+        </p>
         {sections.length === 0 ? (
           <div className="empty-state" data-testid="builder-empty">
             <p>No sections yet. Add one to start.</p>
           </div>
         ) : (
-          <ul className="sections-container" data-testid="section-list" ref={listRef}>
+          <ul className="sections-container" data-testid="section-list" ref={listRef} aria-describedby="section-reorder-hint">
             {sections.map((section, index) => {
               const definition = getSectionByType(section.type);
               const label = definition?.name || section.type;
@@ -340,7 +343,7 @@ function PageBuilder() {
                       data-testid={`section-drag-${section.id}`}
                       data-drag-type={section.type}
                       draggable
-                      aria-label={`Drag ${label}`}
+                      aria-label={`Drag to reorder ${label}. Alt+Up or Alt+Down also reorders.`}
                       aria-grabbed={draggedSection?.id === section.id}
                       onDragStart={(event) => handleDragStart(event, section)}
                       onDragEnd={handleDragEnd}
@@ -361,28 +364,6 @@ function PageBuilder() {
                       <span className="section-order">#{index + 1}</span>
                     </button>
                     <div className="section-controls">
-                      <button
-                        type="button"
-                        className="btn btn-secondary btn-sm"
-                        data-testid={`section-move-up-${section.id}`}
-                        data-move-up-type={section.type}
-                        aria-label={`Move ${label} up`}
-                        disabled={index === 0}
-                        onClick={() => moveSection(section.id, -1)}
-                      >
-                        Up
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-secondary btn-sm"
-                        data-testid={`section-move-down-${section.id}`}
-                        data-move-down-type={section.type}
-                        aria-label={`Move ${label} down`}
-                        disabled={index === sections.length - 1}
-                        onClick={() => moveSection(section.id, 1)}
-                      >
-                        Down
-                      </button>
                       <button
                         type="button"
                         className="btn btn-secondary btn-sm"

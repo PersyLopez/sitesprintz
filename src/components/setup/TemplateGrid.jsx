@@ -103,7 +103,7 @@ function TemplateGrid({ templates, selectedTemplate, onSelect, onCustom }) {
   const filteredCount = Object.values(groupedTemplates).reduce((sum, arr) => sum + arr.length, 0);
 
   return (
-    <div className="template-grid-container">
+    <div className="template-grid-container" data-testid="template-grid" data-template-grid>
       {/* Controls Section */}
       <div className="template-controls">
         {/* Search Bar */}

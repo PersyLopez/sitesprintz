@@ -194,8 +194,8 @@
   border-bottom: 1px solid var(--border-dark);
 }
 
-/* Desktop: Hide mobile tabs */
-@media (min-width: 1024px) {
+/* Tablet+: hide tabs — header Change template / Back to editor owns that switch */
+@media (min-width: 640px) {
   .mobile-tabs {
     display: none;
   }
@@ -266,7 +266,24 @@
   }
 }
 
-/* Two-column layout when template picker is hidden */
+/* Picker owns the workspace — do not stack editor/preview beside the grid */
+.setup-panels.setup-panels--picker {
+  display: flex !important;
+  flex-direction: column;
+  grid-template-columns: none;
+}
+
+.setup-panels.setup-panels--picker .editor-panel,
+.setup-panels.setup-panels--picker .preview-panel {
+  display: none !important;
+}
+
+.setup-panels.setup-panels--picker .templates-panel {
+  display: flex !important;
+  flex: 1;
+  min-height: 0;
+  border-bottom: none;
+}
 @media (min-width: 640px) {
   .setup-panels.setup-panels--two-col {
     grid-template-columns: minmax(22rem, 28rem) 1fr;
@@ -448,10 +465,6 @@
 
 /* Desktop: 3 columns */
 @media (min-width: 1024px) {
-  .mobile-tabs {
-    display: none; /* Hide mobile tabs on desktop */
-  }
-  
   .setup-panel {
     display: flex;
   }
