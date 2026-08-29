@@ -51,6 +51,17 @@ steps:
           body: JSON.stringify({ success: true, accessToken: 'e2e-share-token', refreshToken: 'e2e-share-refresh', user }),
         });
       });
+      await page.route(/\/api\/auth\/refresh(?:\?|$)/, async (route) => {
+        if (route.request().method() !== 'POST') return route.continue();
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ success: true, accessToken: 'e2e-share-token', refreshToken: 'e2e-share-refresh' }),
+        });
+      });
+      await page.route(/\/api\/staff\/my-assignments(?:\?|$)/, (route) =>
+        route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, assignments: [] }) })
+      );
       await page.route(/\/api\/users\/[^/]+\/sites(?:\?|$)/, async (route) => {
         if (route.request().method() !== 'GET') return route.continue();
         await route.fulfill({
@@ -76,6 +87,7 @@ steps:
   - action: Submit login
     click: { testId: login-submit }
     settle_ms: 3000
+    wait_for: { url: /dashboard, timeout: 20000 }
     assert:
       - url contains /dashboard
 
@@ -104,13 +116,25 @@ steps:
 
   - action: Open Share modal from published card
     click: { testId: share-site-button, nth: 0 }
-    settle_ms: 800
+    settle_ms: 1200
     assert:
       - text contains Share Your Site
       - text contains WhatsApp
       - text contains Instagram
       - text contains TikTok
       - text contains Download QR
+      - text contains Scan to open
+
+  - action: Card preview and QR are visible
+    wait_for: { selector: '[data-testid="share-card-preview"]', timeout: 10000 }
+    code: |
+      const cardPreview = page.locator('[data-testid="share-card-preview"] img');
+      const qrPreview = page.locator('[data-testid="share-qr-preview"]');
+      await cardPreview.waitFor({ state: 'visible', timeout: 10000 });
+      await qrPreview.waitFor({ state: 'visible', timeout: 10000 });
+    settle_ms: 300
+    assert:
+      - text contains Card preview
 
   - action: Download QR control is present
     wait_for: { selector: '[data-testid="share-download-qr"]', timeout: 10000 }

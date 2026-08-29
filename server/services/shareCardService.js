@@ -19,6 +19,19 @@ const DIMENSIONS = {
   square: { width: 1080, height: 1080 }
 };
 
+// SiteSprintz Ocean palette (matches src/styles/global.css)
+const OCEAN = {
+  primary: '#4a6d82',
+  primaryDark: '#2f4a5c',
+  primaryDarker: '#1a2c38',
+  accent: '#7a9bb0',
+  text: '#f0f9ff',
+  textMuted: '#cbd5e1',
+  textSubtle: '#94a3b8',
+  success: '#3d8f72',
+  surface: '#0f172a'
+};
+
 /**
  * Calculate card dimensions for a given format
  */
@@ -96,7 +109,7 @@ export function normalizeTemplateData(template) {
   // Extract hero image
   const heroImage =
     template.hero?.image ||
-    'https://via.placeholder.com/1200x630/6366f1/ffffff?text=SiteSprintz';
+    'https://via.placeholder.com/1200x630/4a6d82/f0f9ff?text=SiteSprintz';
 
   // Determine tier
   const tier = template.plan || 'Starter';
@@ -224,6 +237,24 @@ export function extractFeatures(normalized) {
 }
 
 /**
+ * Draw a rounded rectangle path
+ */
+function roundRect(ctx, x, y, w, h, r) {
+  const radius = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + w - radius, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+  ctx.lineTo(x + w, y + h - radius);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+  ctx.lineTo(x + radius, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+}
+
+/**
  * Generate share card image
  * Universal function that works for all template types
  */
@@ -251,115 +282,140 @@ export async function generateShareCard(templateData, format = 'social') {
   const features = extractFeatures(normalized);
 
   try {
-    // 1. Draw hero image background with overlay
+    const isStory = format === 'story';
+    const isSquare = format === 'square';
+    const footerHeight = height * (isStory ? 0.14 : 0.18);
+
+    // 1. Hero background
     try {
       const heroImage = await loadImage(normalized.heroImage);
-      
-      // Scale and center the image
       const scale = Math.max(width / heroImage.width, height / heroImage.height);
       const scaledWidth = heroImage.width * scale;
       const scaledHeight = heroImage.height * scale;
       const x = (width - scaledWidth) / 2;
       const y = (height - scaledHeight) / 2;
-      
       ctx.drawImage(heroImage, x, y, scaledWidth, scaledHeight);
-      
-      // Dark overlay for readability
-      const gradient = ctx.createLinearGradient(0, 0, 0, height);
-      gradient.addColorStop(0, 'rgba(0, 0, 0, 0.7)');
-      gradient.addColorStop(1, 'rgba(0, 0, 0, 0.85)');
-      ctx.fillStyle = gradient;
+
+      // Lighter overlay — readable without muddy blacks
+      const overlay = ctx.createLinearGradient(0, 0, 0, height);
+      overlay.addColorStop(0, 'rgba(15, 23, 42, 0.35)');
+      overlay.addColorStop(0.55, 'rgba(15, 23, 42, 0.55)');
+      overlay.addColorStop(1, 'rgba(3, 7, 18, 0.72)');
+      ctx.fillStyle = overlay;
       ctx.fillRect(0, 0, width, height);
     } catch (error) {
-      // Fallback: gradient background if image fails
       console.warn('Hero image failed to load, using gradient fallback');
-      const gradient = ctx.createLinearGradient(0, 0, 0, height);
-      gradient.addColorStop(0, '#6366f1');
-      gradient.addColorStop(1, '#4338ca');
+      const gradient = ctx.createLinearGradient(0, 0, width, height);
+      gradient.addColorStop(0, OCEAN.primary);
+      gradient.addColorStop(1, OCEAN.primaryDark);
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, width, height);
     }
 
-    // 2. Draw business name
-    ctx.fillStyle = '#ffffff';
-    ctx.font = `bold ${Math.floor(height * 0.08)}px Arial, sans-serif`;
-    ctx.textAlign = 'center';
+    // 2. Footer band — URL + QR on quiet surface
+    const footerY = height - footerHeight;
+    ctx.fillStyle = OCEAN.surface;
+    ctx.fillRect(0, footerY, width, footerHeight);
+
+    ctx.fillStyle = OCEAN.accent;
+    ctx.fillRect(0, footerY, width, 3);
+
+    // 3. Business name
+    const nameSize = Math.floor(height * (isStory ? 0.055 : 0.07));
+    ctx.fillStyle = OCEAN.text;
+    ctx.font = `bold ${nameSize}px "Segoe UI", system-ui, sans-serif`;
+    ctx.textAlign = isSquare ? 'center' : 'left';
     ctx.textBaseline = 'top';
-    
-    // Add text shadow for better readability
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-    ctx.shadowBlur = 20;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 4;
-    
-    // Truncate long business names
+
     let displayName = businessName;
     if (displayName.length > 40) {
       displayName = displayName.substring(0, 37) + '...';
     }
-    
-    ctx.fillText(displayName, width / 2, height * 0.15);
 
-    // 3. Draw tagline
-    ctx.font = `${Math.floor(height * 0.04)}px Arial, sans-serif`;
-    ctx.fillStyle = '#e2e8f0';
-    
-    // Word wrap for long taglines
-    const maxWidth = width * 0.8;
+    const contentLeft = width * 0.06;
+    const nameY = height * (isStory ? 0.08 : 0.1);
+    ctx.fillText(displayName, isSquare ? width / 2 : contentLeft, nameY);
+
+    // 4. Tagline
+    const tagSize = Math.floor(height * (isStory ? 0.028 : 0.034));
+    ctx.font = `${tagSize}px "Segoe UI", system-ui, sans-serif`;
+    ctx.fillStyle = OCEAN.textMuted;
+
+    const maxWidth = width * (isSquare ? 0.82 : 0.55);
     const lines = wrapText(ctx, tagline, maxWidth);
+    const tagY = nameY + nameSize * 1.35;
     lines.forEach((line, index) => {
-      ctx.fillText(line, width / 2, height * 0.25 + (index * height * 0.05));
+      ctx.fillText(line, isSquare ? width / 2 : contentLeft, tagY + index * tagSize * 1.4);
     });
 
-    // Reset shadow
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-
-    // 4. Draw features
-    const startY = height * 0.42;
-    const lineHeight = height * 0.08;
-    
+    // 5. Feature pills
+    const featureStartY = tagY + lines.length * tagSize * 1.4 + height * 0.04;
+    const featureFontSize = Math.floor(height * (isStory ? 0.024 : 0.028));
+    ctx.font = `600 ${featureFontSize}px "Segoe UI", system-ui, sans-serif`;
     ctx.textAlign = 'left';
-    ctx.font = `${Math.floor(height * 0.04)}px Arial, sans-serif`;
-    
-    features.forEach((feature, index) => {
-      const y = startY + (index * lineHeight);
-      // Checkmark
-      ctx.fillStyle = '#22c55e';
-      ctx.fillText('✓', width * 0.15, y);
-      // Feature text
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(feature, width * 0.22, y);
+
+    const pillPadX = width * 0.012;
+    const pillPadY = height * 0.008;
+    const pillGap = width * 0.015;
+    let pillX = contentLeft;
+    let pillRowY = featureStartY;
+    const maxPillRow = width * 0.88;
+
+    features.forEach((feature) => {
+      const textWidth = ctx.measureText(feature).width;
+      const pillW = textWidth + pillPadX * 2;
+      const pillH = featureFontSize + pillPadY * 2;
+
+      if (pillX + pillW > maxPillRow && pillX > contentLeft) {
+        pillX = contentLeft;
+        pillRowY += pillH + pillGap * 0.5;
+      }
+
+      ctx.fillStyle = 'rgba(122, 155, 176, 0.22)';
+      roundRect(ctx, pillX, pillRowY, pillW, pillH, pillH * 0.35);
+      ctx.fill();
+
+      ctx.fillStyle = OCEAN.text;
+      ctx.fillText(feature, pillX + pillPadX, pillRowY + pillPadY);
+
+      pillX += pillW + pillGap;
     });
 
-    // 5. Draw URL
-    ctx.textAlign = 'center';
-    ctx.font = `bold ${Math.floor(height * 0.045)}px Arial, sans-serif`;
-    ctx.fillStyle = '#60a5fa';
-    ctx.fillText(siteUrl, width / 2, height * 0.78);
+    // 6. Footer URL
+    const urlFontSize = Math.floor(footerHeight * 0.22);
+    ctx.textAlign = 'left';
+    ctx.font = `600 ${urlFontSize}px "Segoe UI", system-ui, sans-serif`;
+    ctx.fillStyle = OCEAN.text;
+    ctx.fillText(siteUrl, contentLeft, footerY + footerHeight * 0.32);
 
-    // 6. Generate and draw QR code
+    ctx.font = `${Math.floor(footerHeight * 0.14)}px "Segoe UI", system-ui, sans-serif`;
+    ctx.fillStyle = OCEAN.textSubtle;
+    ctx.fillText('Built with SiteSprintz', contentLeft, footerY + footerHeight * 0.62);
+
+    // 7. QR in footer — white pad
     try {
+      const qrSize = footerHeight * 0.72;
+      const qrPad = qrSize * 0.08;
+      const qrX = width - contentLeft - qrSize - qrPad * 2;
+      const qrY = footerY + (footerHeight - qrSize - qrPad * 2) / 2;
+
+      ctx.fillStyle = '#ffffff';
+      roundRect(ctx, qrX, qrY, qrSize + qrPad * 2, qrSize + qrPad * 2, 8);
+      ctx.fill();
+
       const qrCodeDataUrl = await QRCode.toDataURL(`https://${siteUrl}`, {
-        width: height * 0.15,
-        margin: 0,
+        width: Math.round(qrSize),
+        margin: 1,
         color: {
-          dark: '#000000',
+          dark: OCEAN.primaryDarker,
           light: '#ffffff'
         }
       });
       const qrImage = await loadImage(qrCodeDataUrl);
-      const qrSize = height * 0.12;
-      ctx.drawImage(qrImage, width * 0.85 - qrSize / 2, height * 0.82, qrSize, qrSize);
+      ctx.drawImage(qrImage, qrX + qrPad, qrY + qrPad, qrSize, qrSize);
     } catch (error) {
       console.error('QR code generation failed:', error);
     }
-
-    // 7. Draw SiteSprintz branding
-    ctx.textAlign = 'left';
-    ctx.font = `${Math.floor(height * 0.03)}px Arial, sans-serif`;
-    ctx.fillStyle = '#94a3b8';
-    ctx.fillText('Built with SiteSprintz', width * 0.05, height * 0.95);
 
     // Convert to buffer
     const buffer = canvas.toBuffer('image/png');
@@ -387,10 +443,10 @@ export async function generateQrPng(siteUrl, { width = 512 } = {}) {
   return QRCode.toBuffer(siteUrl, {
     type: 'png',
     width,
-    margin: 2,
+    margin: 3,
     errorCorrectionLevel: 'M',
     color: {
-      dark: '#000000',
+      dark: OCEAN.primaryDarker,
       light: '#ffffff'
     }
   });

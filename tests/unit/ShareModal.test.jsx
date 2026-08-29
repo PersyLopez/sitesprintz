@@ -29,10 +29,22 @@ describe('ShareModal', () => {
     expect(screen.getByTestId('share-facebook')).toBeInTheDocument();
   });
 
-  it('shows a QR download control', () => {
+  it('shows a QR download control and inline QR preview', async () => {
     render(<ShareModal subdomain="river-salon" onClose={() => {}} />);
 
     expect(screen.getByTestId('share-download-qr')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('share-qr-preview')).toBeInTheDocument();
+    });
+  });
+
+  it('shows card preview when generated', async () => {
+    render(<ShareModal subdomain="river-salon" onClose={() => {}} />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('share-card-preview')).toBeInTheDocument();
+      expect(screen.getByAltText('Share card preview')).toBeInTheDocument();
+    });
   });
 
   it('uses the production site URL as the share target', () => {

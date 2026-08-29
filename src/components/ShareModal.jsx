@@ -23,6 +23,7 @@ const ShareModal = ({ subdomain, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [cardUrl, setCardUrl] = useState(null);
+  const [qrUrl, setQrUrl] = useState(null);
   const [copied, setCopied] = useState(false);
   const [shareHint, setShareHint] = useState(null);
 
@@ -36,16 +37,40 @@ const ShareModal = ({ subdomain, onClose }) => {
     preGenerateCard();
   }, [format, subdomain]);
 
+  // Pre-generate QR once per subdomain
+  useEffect(() => {
+    preGenerateQr();
+  }, [subdomain]);
+
   const preGenerateCard = async () => {
     try {
       const response = await fetch(shareCardEndpoint);
       if (response.ok) {
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
-        setCardUrl(url);
+        setCardUrl((prev) => {
+          if (prev) URL.revokeObjectURL(prev);
+          return url;
+        });
       }
     } catch (err) {
       console.warn('Pre-generation failed:', err);
+    }
+  };
+
+  const preGenerateQr = async () => {
+    try {
+      const response = await fetch(shareQrEndpoint);
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        setQrUrl((prev) => {
+          if (prev) URL.revokeObjectURL(prev);
+          return url;
+        });
+      }
+    } catch (err) {
+      console.warn('QR pre-generation failed:', err);
     }
   };
 
@@ -216,14 +241,13 @@ const ShareModal = ({ subdomain, onClose }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  // Cleanup blob URL on unmount
+  // Cleanup blob URLs on unmount
   useEffect(() => {
     return () => {
-      if (cardUrl) {
-        URL.revokeObjectURL(cardUrl);
-      }
+      if (cardUrl) URL.revokeObjectURL(cardUrl);
+      if (qrUrl) URL.revokeObjectURL(qrUrl);
     };
-  }, [cardUrl]);
+  }, [cardUrl, qrUrl]);
 
   return (
     <div className="share-modal-overlay" onClick={onClose}>
@@ -236,30 +260,92 @@ const ShareModal = ({ subdomain, onClose }) => {
           </button>
         </div>
 
-        {/* Share Options — above preview so channels stay in viewport */}
+        {/* Preview + QR */}
+        <div className="share-preview-row">
+          <div className="share-modal-preview" data-testid="share-card-preview">
+            <p className="share-preview-label">Card preview</p>
+            <div className="share-preview-frame">
+              {cardUrl ? (
+                <img src={cardUrl} alt="Share card preview" />
+              ) : (
+                <div className="share-modal-preview-loading">
+                  <div className="spinner"></div>
+                  <p>Generating preview…</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="share-qr-block" data-testid="share-qr-block">
+            <p className="share-preview-label">Scan to open</p>
+            <div className="share-qr-surface">
+              {qrUrl ? (
+                <img src={qrUrl} alt="QR code for your site" data-testid="share-qr-preview" />
+              ) : (
+                <div className="share-modal-preview-loading">
+                  <div className="spinner"></div>
+                </div>
+              )}
+            </div>
+            <p className="share-qr-caption">{subdomain}.sitesprintz.com</p>
+          </div>
+        </div>
+
+        {/* Format Selection */}
+        <div className="share-format-selector">
+          <label>Card format</label>
+          <div className="share-format-buttons" role="group" aria-label="Card format">
+            <button
+              type="button"
+              className={format === 'social' ? 'active' : ''}
+              onClick={() => setFormat('social')}
+            >
+              Social
+              <span className="share-format-dim">1200×630</span>
+            </button>
+            <button
+              type="button"
+              className={format === 'story' ? 'active' : ''}
+              onClick={() => setFormat('story')}
+            >
+              Story
+              <span className="share-format-dim">1080×1920</span>
+            </button>
+            <button
+              type="button"
+              className={format === 'square' ? 'active' : ''}
+              onClick={() => setFormat('square')}
+            >
+              Square
+              <span className="share-format-dim">1080×1080</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Share Options */}
         <div className="share-options">
-          <h3>Share Directly</h3>
+          <h3>Share directly</h3>
           <div className="share-buttons">
-            <button onClick={handleFacebookShare} className="share-btn facebook" data-testid="share-facebook">
+            <button type="button" onClick={handleFacebookShare} className="share-btn facebook" data-testid="share-facebook">
               <span className="icon">f</span>
               Facebook
             </button>
-            <button onClick={handleWhatsAppShare} className="share-btn whatsapp" data-testid="share-whatsapp">
+            <button type="button" onClick={handleWhatsAppShare} className="share-btn whatsapp" data-testid="share-whatsapp">
               <span className="icon">WA</span>
               WhatsApp
             </button>
-            <button onClick={handleInstagramShare} className="share-btn instagram" data-testid="share-instagram">
+            <button type="button" onClick={handleInstagramShare} className="share-btn instagram" data-testid="share-instagram">
               <span className="icon">IG</span>
               Instagram
             </button>
-            <button onClick={handleTikTokShare} className="share-btn tiktok" data-testid="share-tiktok">
+            <button type="button" onClick={handleTikTokShare} className="share-btn tiktok" data-testid="share-tiktok">
               <span className="icon">TT</span>
               TikTok
             </button>
             {navigator.share && (
-              <button onClick={handleNativeShare} className="share-btn native">
+              <button type="button" onClick={handleNativeShare} className="share-btn native">
                 <span className="icon">⤴</span>
-                More...
+                More…
               </button>
             )}
           </div>
@@ -269,43 +355,6 @@ const ShareModal = ({ subdomain, onClose }) => {
           {shareHint && (
             <p className="share-app-hint copied" data-testid="share-copy-hint">{shareHint}</p>
           )}
-        </div>
-
-        {/* Preview */}
-        <div className="share-modal-preview">
-          {cardUrl ? (
-            <img src={cardUrl} alt="Share card preview" />
-          ) : (
-            <div className="share-modal-preview-loading">
-              <div className="spinner"></div>
-              <p>Generating preview...</p>
-            </div>
-          )}
-        </div>
-
-        {/* Format Selection */}
-        <div className="share-format-selector">
-          <label>Card Format:</label>
-          <div className="share-format-buttons">
-            <button
-              className={format === 'social' ? 'active' : ''}
-              onClick={() => setFormat('social')}
-            >
-              Social (1200×630)
-            </button>
-            <button
-              className={format === 'story' ? 'active' : ''}
-              onClick={() => setFormat('story')}
-            >
-              Story (1080×1920)
-            </button>
-            <button
-              className={format === 'square' ? 'active' : ''}
-              onClick={() => setFormat('square')}
-            >
-              Square (1080×1080)
-            </button>
-          </div>
         </div>
 
         {/* Link Options */}
