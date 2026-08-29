@@ -182,14 +182,6 @@ const getShareCard = async (req, res) => {
       });
     }
 
-    // Rate limiting
-    const clientIp = req.ip || req.connection.remoteAddress;
-    if (!checkRateLimit(clientIp)) {
-      return res.status(429).json({
-        error: 'Rate limit exceeded'
-      });
-    }
-
     // Dedicated QR PNG of the live production URL
     if (format === 'qr') {
       const cacheKey = `${subdomain}:qr`;
@@ -200,6 +192,13 @@ const getShareCard = async (req, res) => {
         res.set('Cache-Control', 'public, max-age=3600');
         res.set('X-Cache', 'HIT');
         return res.send(cachedQr);
+      }
+
+      const clientIp = req.ip || req.connection.remoteAddress;
+      if (!checkRateLimit(clientIp)) {
+        return res.status(429).json({
+          error: 'Rate limit exceeded'
+        });
       }
 
       const qrSite = await prisma.sites.findUnique({
@@ -231,6 +230,14 @@ const getShareCard = async (req, res) => {
       res.set('Cache-Control', 'public, max-age=3600');
       res.set('X-Cache', 'HIT');
       return res.send(cached);
+    }
+
+    // Rate limit only on cache miss / generation (OG crawlers can re-fetch cached PNGs)
+    const clientIp = req.ip || req.connection.remoteAddress;
+    if (!checkRateLimit(clientIp)) {
+      return res.status(429).json({
+        error: 'Rate limit exceeded'
+      });
     }
 
     // Not cached, generate

@@ -42,6 +42,20 @@ describe('Published Site SSR Rendering', () => {
       expect(html).toContain('https://example.com/logo.png');
     });
 
+    it('should point og:image at the share card when siteIdentifier is passed', async () => {
+      const html = await publishedSiteRenderer.render(
+        {
+          businessName: 'My Business',
+          businessDescription: 'Test business description that is long enough'
+        },
+        { siteIdentifier: 'best-pizza' }
+      );
+
+      expect(html).toContain('/api/share/best-pizza/social');
+      expect(html).toContain('property="og:image:width"');
+      expect(html).toContain('property="og:image:height"');
+    });
+
     it('should include Twitter Card meta tags', async () => {
       const siteData = {
         businessName: 'Test Business',

@@ -282,11 +282,18 @@ export async function generateShareCard(templateData, format = 'social') {
   const features = extractFeatures(normalized);
 
   try {
+    const isSocial = format === 'social';
     const isStory = format === 'story';
     const isSquare = format === 'square';
     const footerHeight = height * (isStory ? 0.14 : 0.18);
+    const contentLeft = width * 0.06;
 
-    // 1. Hero background
+    let displayName = businessName;
+    if (displayName.length > 40) {
+      displayName = displayName.substring(0, 37) + '...';
+    }
+
+    // 1. Hero background — photo is the star on social OG cards
     try {
       const heroImage = await loadImage(normalized.heroImage);
       const scale = Math.max(width / heroImage.width, height / heroImage.height);
@@ -296,13 +303,21 @@ export async function generateShareCard(templateData, format = 'social') {
       const y = (height - scaledHeight) / 2;
       ctx.drawImage(heroImage, x, y, scaledWidth, scaledHeight);
 
-      // Lighter overlay — readable without muddy blacks
-      const overlay = ctx.createLinearGradient(0, 0, 0, height);
-      overlay.addColorStop(0, 'rgba(15, 23, 42, 0.35)');
-      overlay.addColorStop(0.55, 'rgba(15, 23, 42, 0.55)');
-      overlay.addColorStop(1, 'rgba(3, 7, 18, 0.72)');
-      ctx.fillStyle = overlay;
-      ctx.fillRect(0, 0, width, height);
+      if (isSocial) {
+        // Minimal top vignette — keep hero bright and visible
+        const topVignette = ctx.createLinearGradient(0, 0, 0, height * 0.25);
+        topVignette.addColorStop(0, 'rgba(15, 23, 42, 0.18)');
+        topVignette.addColorStop(1, 'rgba(15, 23, 42, 0)');
+        ctx.fillStyle = topVignette;
+        ctx.fillRect(0, 0, width, height * 0.25);
+      } else {
+        const overlay = ctx.createLinearGradient(0, 0, 0, height);
+        overlay.addColorStop(0, 'rgba(15, 23, 42, 0.35)');
+        overlay.addColorStop(0.55, 'rgba(15, 23, 42, 0.55)');
+        overlay.addColorStop(1, 'rgba(3, 7, 18, 0.72)');
+        ctx.fillStyle = overlay;
+        ctx.fillRect(0, 0, width, height);
+      }
     } catch (error) {
       console.warn('Hero image failed to load, using gradient fallback');
       const gradient = ctx.createLinearGradient(0, 0, width, height);
@@ -312,109 +327,132 @@ export async function generateShareCard(templateData, format = 'social') {
       ctx.fillRect(0, 0, width, height);
     }
 
-    // 2. Footer band — URL + QR on quiet surface
-    const footerY = height - footerHeight;
-    ctx.fillStyle = OCEAN.surface;
-    ctx.fillRect(0, footerY, width, footerHeight);
+    if (isSocial) {
+      // 2. Light bottom gradient — name + one-line tagline only (no QR, no pills)
+      const textBandHeight = height * 0.36;
+      const textBandY = height - textBandHeight;
+      const bottomGradient = ctx.createLinearGradient(0, textBandY, 0, height);
+      bottomGradient.addColorStop(0, 'rgba(3, 7, 18, 0)');
+      bottomGradient.addColorStop(0.4, 'rgba(15, 23, 42, 0.62)');
+      bottomGradient.addColorStop(1, 'rgba(3, 7, 18, 0.92)');
+      ctx.fillStyle = bottomGradient;
+      ctx.fillRect(0, textBandY, width, textBandHeight);
 
-    ctx.fillStyle = OCEAN.accent;
-    ctx.fillRect(0, footerY, width, 3);
-
-    // 3. Business name
-    const nameSize = Math.floor(height * (isStory ? 0.055 : 0.07));
-    ctx.fillStyle = OCEAN.text;
-    ctx.font = `bold ${nameSize}px "Segoe UI", system-ui, sans-serif`;
-    ctx.textAlign = isSquare ? 'center' : 'left';
-    ctx.textBaseline = 'top';
-
-    let displayName = businessName;
-    if (displayName.length > 40) {
-      displayName = displayName.substring(0, 37) + '...';
-    }
-
-    const contentLeft = width * 0.06;
-    const nameY = height * (isStory ? 0.08 : 0.1);
-    ctx.fillText(displayName, isSquare ? width / 2 : contentLeft, nameY);
-
-    // 4. Tagline
-    const tagSize = Math.floor(height * (isStory ? 0.028 : 0.034));
-    ctx.font = `${tagSize}px "Segoe UI", system-ui, sans-serif`;
-    ctx.fillStyle = OCEAN.textMuted;
-
-    const maxWidth = width * (isSquare ? 0.82 : 0.55);
-    const lines = wrapText(ctx, tagline, maxWidth);
-    const tagY = nameY + nameSize * 1.35;
-    lines.forEach((line, index) => {
-      ctx.fillText(line, isSquare ? width / 2 : contentLeft, tagY + index * tagSize * 1.4);
-    });
-
-    // 5. Feature pills
-    const featureStartY = tagY + lines.length * tagSize * 1.4 + height * 0.04;
-    const featureFontSize = Math.floor(height * (isStory ? 0.024 : 0.028));
-    ctx.font = `600 ${featureFontSize}px "Segoe UI", system-ui, sans-serif`;
-    ctx.textAlign = 'left';
-
-    const pillPadX = width * 0.012;
-    const pillPadY = height * 0.008;
-    const pillGap = width * 0.015;
-    let pillX = contentLeft;
-    let pillRowY = featureStartY;
-    const maxPillRow = width * 0.88;
-
-    features.forEach((feature) => {
-      const textWidth = ctx.measureText(feature).width;
-      const pillW = textWidth + pillPadX * 2;
-      const pillH = featureFontSize + pillPadY * 2;
-
-      if (pillX + pillW > maxPillRow && pillX > contentLeft) {
-        pillX = contentLeft;
-        pillRowY += pillH + pillGap * 0.5;
-      }
-
-      ctx.fillStyle = 'rgba(122, 155, 176, 0.22)';
-      roundRect(ctx, pillX, pillRowY, pillW, pillH, pillH * 0.35);
-      ctx.fill();
-
+      const nameSize = Math.floor(height * 0.068);
       ctx.fillStyle = OCEAN.text;
-      ctx.fillText(feature, pillX + pillPadX, pillRowY + pillPadY);
+      ctx.font = `bold ${nameSize}px "Segoe UI", system-ui, sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'bottom';
 
-      pillX += pillW + pillGap;
-    });
+      const tagSize = Math.floor(height * 0.032);
+      const tagLine = wrapText(ctx, tagline, width * 0.88)[0] || tagline;
+      const tagY = height - height * 0.06;
+      const nameY = tagY - tagSize * 1.25;
 
-    // 6. Footer URL
-    const urlFontSize = Math.floor(footerHeight * 0.22);
-    ctx.textAlign = 'left';
-    ctx.font = `600 ${urlFontSize}px "Segoe UI", system-ui, sans-serif`;
-    ctx.fillStyle = OCEAN.text;
-    ctx.fillText(siteUrl, contentLeft, footerY + footerHeight * 0.32);
+      ctx.fillText(displayName, contentLeft, nameY);
 
-    ctx.font = `${Math.floor(footerHeight * 0.14)}px "Segoe UI", system-ui, sans-serif`;
-    ctx.fillStyle = OCEAN.textSubtle;
-    ctx.fillText('Built with SiteSprintz', contentLeft, footerY + footerHeight * 0.62);
+      ctx.font = `${tagSize}px "Segoe UI", system-ui, sans-serif`;
+      ctx.fillStyle = OCEAN.textMuted;
+      ctx.fillText(tagLine, contentLeft, tagY);
+    } else {
+      // 2. Footer band — URL + QR on quiet surface (story / square)
+      const footerY = height - footerHeight;
+      ctx.fillStyle = OCEAN.surface;
+      ctx.fillRect(0, footerY, width, footerHeight);
 
-    // 7. QR in footer — white pad
-    try {
-      const qrSize = footerHeight * 0.72;
-      const qrPad = qrSize * 0.08;
-      const qrX = width - contentLeft - qrSize - qrPad * 2;
-      const qrY = footerY + (footerHeight - qrSize - qrPad * 2) / 2;
+      ctx.fillStyle = OCEAN.accent;
+      ctx.fillRect(0, footerY, width, 3);
 
-      ctx.fillStyle = '#ffffff';
-      roundRect(ctx, qrX, qrY, qrSize + qrPad * 2, qrSize + qrPad * 2, 8);
-      ctx.fill();
+      // 3. Business name
+      const nameSize = Math.floor(height * (isStory ? 0.055 : 0.07));
+      ctx.fillStyle = OCEAN.text;
+      ctx.font = `bold ${nameSize}px "Segoe UI", system-ui, sans-serif`;
+      ctx.textAlign = isSquare ? 'center' : 'left';
+      ctx.textBaseline = 'top';
 
-      const qrCodeDataUrl = await QRCode.toDataURL(`https://${siteUrl}`, {
-        width: Math.round(qrSize),
-        margin: 1,
-        color: {
-          dark: OCEAN.primaryDarker,
-          light: '#ffffff'
-        }
+      const nameY = height * (isStory ? 0.08 : 0.1);
+      ctx.fillText(displayName, isSquare ? width / 2 : contentLeft, nameY);
+
+      // 4. Tagline
+      const tagSize = Math.floor(height * (isStory ? 0.028 : 0.034));
+      ctx.font = `${tagSize}px "Segoe UI", system-ui, sans-serif`;
+      ctx.fillStyle = OCEAN.textMuted;
+
+      const maxWidth = width * (isSquare ? 0.82 : 0.55);
+      const lines = wrapText(ctx, tagline, maxWidth);
+      const tagY = nameY + nameSize * 1.35;
+      lines.forEach((line, index) => {
+        ctx.fillText(line, isSquare ? width / 2 : contentLeft, tagY + index * tagSize * 1.4);
       });
-      const qrImage = await loadImage(qrCodeDataUrl);
-      ctx.drawImage(qrImage, qrX + qrPad, qrY + qrPad, qrSize, qrSize);
-    } catch (error) {
-      console.error('QR code generation failed:', error);
+
+      // 5. Feature pills
+      const featureStartY = tagY + lines.length * tagSize * 1.4 + height * 0.04;
+      const featureFontSize = Math.floor(height * (isStory ? 0.024 : 0.028));
+      ctx.font = `600 ${featureFontSize}px "Segoe UI", system-ui, sans-serif`;
+      ctx.textAlign = 'left';
+
+      const pillPadX = width * 0.012;
+      const pillPadY = height * 0.008;
+      const pillGap = width * 0.015;
+      let pillX = contentLeft;
+      let pillRowY = featureStartY;
+      const maxPillRow = width * 0.88;
+
+      features.forEach((feature) => {
+        const textWidth = ctx.measureText(feature).width;
+        const pillW = textWidth + pillPadX * 2;
+        const pillH = featureFontSize + pillPadY * 2;
+
+        if (pillX + pillW > maxPillRow && pillX > contentLeft) {
+          pillX = contentLeft;
+          pillRowY += pillH + pillGap * 0.5;
+        }
+
+        ctx.fillStyle = 'rgba(122, 155, 176, 0.22)';
+        roundRect(ctx, pillX, pillRowY, pillW, pillH, pillH * 0.35);
+        ctx.fill();
+
+        ctx.fillStyle = OCEAN.text;
+        ctx.fillText(feature, pillX + pillPadX, pillRowY + pillPadY);
+
+        pillX += pillW + pillGap;
+      });
+
+      // 6. Footer URL
+      const urlFontSize = Math.floor(footerHeight * 0.22);
+      ctx.textAlign = 'left';
+      ctx.font = `600 ${urlFontSize}px "Segoe UI", system-ui, sans-serif`;
+      ctx.fillStyle = OCEAN.text;
+      ctx.fillText(siteUrl, contentLeft, footerY + footerHeight * 0.32);
+
+      ctx.font = `${Math.floor(footerHeight * 0.14)}px "Segoe UI", system-ui, sans-serif`;
+      ctx.fillStyle = OCEAN.textSubtle;
+      ctx.fillText('Built with SiteSprintz', contentLeft, footerY + footerHeight * 0.62);
+
+      // 7. QR in footer — white pad
+      try {
+        const qrSize = footerHeight * 0.72;
+        const qrPad = qrSize * 0.08;
+        const qrX = width - contentLeft - qrSize - qrPad * 2;
+        const qrY = footerY + (footerHeight - qrSize - qrPad * 2) / 2;
+
+        ctx.fillStyle = '#ffffff';
+        roundRect(ctx, qrX, qrY, qrSize + qrPad * 2, qrSize + qrPad * 2, 8);
+        ctx.fill();
+
+        const qrCodeDataUrl = await QRCode.toDataURL(`https://${siteUrl}`, {
+          width: Math.round(qrSize),
+          margin: 1,
+          color: {
+            dark: OCEAN.primaryDarker,
+            light: '#ffffff'
+          }
+        });
+        const qrImage = await loadImage(qrCodeDataUrl);
+        ctx.drawImage(qrImage, qrX + qrPad, qrY + qrPad, qrSize, qrSize);
+      } catch (error) {
+        console.error('QR code generation failed:', error);
+      }
     }
 
     // Convert to buffer

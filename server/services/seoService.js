@@ -65,13 +65,35 @@ class SEOService {
       'twitter:description': description
     };
 
-    // Add logo/image if available
-    if (logo) {
+    // og:image — share card highlight when subdomain known, else hero, else logo
+    const subdomain = siteData.subdomain || siteData.siteId;
+    const heroImage = siteData.hero?.image || siteData.meta?.heroImage;
+
+    if (subdomain) {
+      const shareCardUrl = this._getShareCardImageUrl(subdomain);
+      metaTags['og:image'] = shareCardUrl;
+      metaTags['twitter:image'] = shareCardUrl;
+      metaTags['og:image:width'] = '1200';
+      metaTags['og:image:height'] = '630';
+    } else if (heroImage) {
+      metaTags['og:image'] = heroImage;
+      metaTags['twitter:image'] = heroImage;
+    } else if (logo) {
       metaTags['og:image'] = logo;
       metaTags['twitter:image'] = logo;
     }
 
     return metaTags;
+  }
+
+  /**
+   * Absolute URL for the social OG share card PNG
+   * @param {string} subdomain
+   * @returns {string}
+   */
+  _getShareCardImageUrl(subdomain) {
+    const host = String(this.baseUrl).replace(/^https?:\/\//, '');
+    return `${this.protocol}://${host}/api/share/${subdomain}/social`;
   }
 
   /**

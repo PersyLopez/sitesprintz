@@ -466,17 +466,31 @@ describe('ShareCardService - Universal Template Support (TDD)', () => {
       expect(buffer).toBeInstanceOf(Buffer);
     });
 
-    it('should include QR code', async () => {
+    it('should include QR code on story format', async () => {
       const data = {
         subdomain: 'test',
         brand: { name: 'Test' }
       };
 
-      const buffer = await generateShareCard(data, 'social');
+      const buffer = await generateShareCard(data, 'story');
 
       expect(buffer).toBeInstanceOf(Buffer);
-      // QR code should be embedded in image
-      expect(buffer.length).toBeGreaterThan(20000); // With QR code, image should be substantial
+      expect(buffer.length).toBeGreaterThan(20000);
+    });
+
+    it('should generate lighter social OG card without QR footer', async () => {
+      const data = {
+        subdomain: 'test',
+        brand: { name: 'Test' },
+        hero: { subtitle: 'OG highlight' }
+      };
+
+      const socialBuffer = await generateShareCard(data, 'social');
+      const storyBuffer = await generateShareCard(data, 'story');
+
+      expect(socialBuffer).toBeInstanceOf(Buffer);
+      expect(storyBuffer).toBeInstanceOf(Buffer);
+      expect(socialBuffer.length).not.toBe(storyBuffer.length);
     });
 
     it('should optimize image quality', async () => {

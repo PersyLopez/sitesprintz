@@ -27,11 +27,16 @@ class PublishedSiteRenderer {
       siteId = '',
       customDomain = null
     } = options;
+    // server.js passes siteIdentifier (live subdomain); tests pass siteId
+    const resolvedSubdomain = siteData.subdomain || siteId || options.siteIdentifier || '';
 
-    // Generate meta tags and schema
-    const metaTags = this.seoService.generateMetaTags(siteData);
+    // Generate meta tags and schema (pass subdomain for OG share card image)
+    const metaTags = this.seoService.generateMetaTags({
+      ...siteData,
+      subdomain: resolvedSubdomain
+    });
     const schema = this.seoService.generateSchemaMarkup(siteData.category || 'service', siteData);
-    const canonicalUrl = this.seoService.getCanonicalUrl(siteId, '/', { customDomain });
+    const canonicalUrl = this.seoService.getCanonicalUrl(resolvedSubdomain, '/', { customDomain });
 
     // Build visible sections HTML — prefer bridge (token-aware), fallback to builder
     let sectionsHtml;
@@ -109,6 +114,8 @@ class PublishedSiteRenderer {
   <meta property="og:title" content="${this._escapeHtml(metaTags['og:title'] || title)}">
   <meta property="og:description" content="${this._escapeHtml(metaTags['og:description'] || description)}">
   ${metaTags['og:image'] ? `<meta property="og:image" content="${this._escapeHtml(metaTags['og:image'])}">` : ''}
+  ${metaTags['og:image:width'] ? `<meta property="og:image:width" content="${this._escapeHtml(metaTags['og:image:width'])}">` : ''}
+  ${metaTags['og:image:height'] ? `<meta property="og:image:height" content="${this._escapeHtml(metaTags['og:image:height'])}">` : ''}
   
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image">

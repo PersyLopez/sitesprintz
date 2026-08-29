@@ -108,6 +108,32 @@ describe('SEOService', () => {
       expect(metaTags).toHaveProperty('og:description');
       expect(metaTags).toHaveProperty('og:type');
       expect(metaTags['og:type']).toBe('website');
+      expect(metaTags['og:image']).toBe('https://example.com/logo.png');
+    });
+
+    it('should point og:image at share card API when subdomain is present', () => {
+      const metaTags = seoService.generateMetaTags({
+        businessName: 'Best Pizza',
+        businessDescription: 'Authentic Italian pizza',
+        category: 'restaurant',
+        subdomain: 'best-pizza',
+        logo: 'https://example.com/logo.png'
+      });
+
+      expect(metaTags['og:image']).toContain('/api/share/best-pizza/social');
+      expect(metaTags['twitter:image']).toContain('/api/share/best-pizza/social');
+      expect(metaTags['og:image:width']).toBe('1200');
+      expect(metaTags['og:image:height']).toBe('630');
+    });
+
+    it('should fall back to logo for og:image when subdomain is missing', () => {
+      const metaTags = seoService.generateMetaTags({
+        businessName: 'Best Pizza',
+        logo: 'https://example.com/logo.png'
+      });
+
+      expect(metaTags['og:image']).toBe('https://example.com/logo.png');
+      expect(metaTags).not.toHaveProperty('og:image:width');
     });
 
     it('should include Twitter Card tags', () => {
