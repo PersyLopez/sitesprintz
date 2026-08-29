@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useLocale } from '../../i18n/LocaleContext.jsx';
+import { getShowcasePath } from '../../utils/galleryTemplateMap.js';
 import './LandingGallery.css';
 
 /* ──────────────────────────────────────────────
@@ -217,43 +218,53 @@ function SectionPreview({ sections, accent }) {
 /* ──────────────────────────────────────────────
    Template card
    ────────────────────────────────────────────── */
-function TemplateCard({ template, ctaTo, onNavigate, isSelected, style, t }) {
+function TemplateCard({ template, showcaseTo, useLookTo, onUseLook, isSelected, style, t }) {
   const [hovered, setHovered] = useState(false);
 
   return (
-    <Link
-      to={ctaTo}
+    <article
       className={`gl-card ${hovered ? 'gl-card--hovered' : ''} ${isSelected ? 'gl-card--selected' : ''}`}
       style={{ '--card-accent': template.accent, ...style }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onClick={onNavigate}
       data-testid={`gallery-card-${template.id}`}
     >
-      {/* Mini layout preview */}
-      <div className="gl-card-preview">
-        <SectionPreview sections={template.sections} accent={template.accent} />
-        <div className="gl-card-emoji-wrap">
-          <span className="gl-card-emoji">{template.emoji}</span>
+      <Link
+        to={showcaseTo}
+        className="gl-card-example"
+        data-testid={`gallery-card-${template.id}-example`}
+      >
+        <div className="gl-card-preview">
+          <SectionPreview sections={template.sections} accent={template.accent} />
+          <div className="gl-card-emoji-wrap">
+            <span className="gl-card-emoji">{template.emoji}</span>
+          </div>
         </div>
-      </div>
 
-      {/* Card info */}
-      <div className="gl-card-info">
-        <h3 className="gl-card-title">{t(`gallery.tpl.${template.id}.title`)}</h3>
-        <p className="gl-card-desc">{t(`gallery.tpl.${template.id}.desc`)}</p>
-        <div className="gl-card-tags">
-          {template.tags.map((tag) => (
-            <span key={tag} className="gl-tag">{tag}</span>
-          ))}
+        <div className="gl-card-info">
+          <h3 className="gl-card-title">{t(`gallery.tpl.${template.id}.title`)}</h3>
+          <p className="gl-card-desc">{t(`gallery.tpl.${template.id}.desc`)}</p>
+          <div className="gl-card-tags">
+            {template.tags.map((tag) => (
+              <span key={tag} className="gl-tag">{tag}</span>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Hover CTA */}
-      <div className="gl-card-cta">
-        <span>{t('gallery.useTemplate')}</span>
-      </div>
-    </Link>
+        <div className="gl-card-cta">
+          <span>{t('gallery.seeExample')}</span>
+        </div>
+      </Link>
+
+      <Link
+        to={useLookTo}
+        className="gl-card-use"
+        onClick={onUseLook}
+        data-testid={`gallery-card-${template.id}-use`}
+      >
+        {t('gallery.useThisLook')}
+      </Link>
+    </article>
   );
 }
 
@@ -265,7 +276,6 @@ export default function LandingGallery({ selectedTemplateId, onSelectTemplate })
   const [liveSites, setLiveSites] = useState([]);
   const { isAuthenticated } = useAuth();
   const { t } = useLocale();
-  const navigate = useNavigate();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -288,15 +298,13 @@ export default function LandingGallery({ selectedTemplateId, onSelectTemplate })
     return () => controller.abort();
   }, []);
 
-  const handleNavigate = (e, templateId) => {
+  const handleUseLook = (templateId) => {
     onSelectTemplate?.(templateId);
-    if (isAuthenticated) {
-      e.preventDefault();
-      navigate(`/setup?template=${templateId}`);
-    }
   };
 
-  const ctaTo = (templateId) =>
+  const showcaseTo = (templateId) => getShowcasePath(templateId);
+
+  const useLookTo = (templateId) =>
     isAuthenticated ? `/setup?template=${templateId}` : `/register?template=${templateId}`;
 
   const filtered = useMemo(() => {
@@ -342,8 +350,9 @@ export default function LandingGallery({ selectedTemplateId, onSelectTemplate })
             <TemplateCard
               key={template.id}
               template={template}
-              ctaTo={ctaTo(template.id)}
-              onNavigate={(e) => handleNavigate(e, template.id)}
+              showcaseTo={showcaseTo(template.id)}
+              useLookTo={useLookTo(template.id)}
+              onUseLook={() => handleUseLook(template.id)}
               isSelected={selectedTemplateId === template.id}
               t={t}
               style={{ animationDelay: `${i * 60}ms` }}

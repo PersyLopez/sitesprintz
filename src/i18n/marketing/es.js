@@ -130,6 +130,8 @@ export default {
   'gallery.tab.professional': 'Profesional',
   'gallery.tab.shop': 'Tienda',
   'gallery.useTemplate': 'Usar esta plantilla →',
+  'gallery.seeExample': 'Ver ejemplo →',
+  'gallery.useThisLook': 'Usar este estilo →',
   'gallery.live.kicker': 'Véalo en vivo',
   'gallery.live.heading': 'Así puede verse una página de SiteSprintz',
   'gallery.live.lead': 'Abre un ejemplo — oficio, tema y diseño — y empieza desde una plantilla parecida.',

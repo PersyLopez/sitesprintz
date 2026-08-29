@@ -169,6 +169,39 @@ export const EXAMPLES = [
     contactEmail: 'help@clearflowplumbing.com',
     themeId: 'onyx-ink',
   },
+  {
+    subdomain: 'gallery-tech',
+    niche: 'tech-repair',
+    level: 'studio',
+    featured: true,
+    plan: 'growth',
+    businessName: 'Circuit Fix Mobile',
+    contactPhone: '(555) 880-3344',
+    contactEmail: 'repair@circuitfixmobile.com',
+    themeId: 'onyx-ink',
+  },
+  {
+    subdomain: 'gallery-tow',
+    niche: 'tow-truck',
+    level: 'studio',
+    featured: true,
+    plan: 'starter',
+    businessName: 'Summit Tow & Recovery',
+    contactPhone: '(555) 911-4477',
+    contactEmail: 'dispatch@summittow.com',
+    themeId: 'onyx-ember',
+  },
+  {
+    subdomain: 'gallery-ordering',
+    niche: 'product-ordering',
+    level: 'studio',
+    featured: true,
+    plan: 'growth',
+    businessName: 'Oak & Anchor Supply',
+    contactPhone: '(555) 204-7788',
+    contactEmail: 'orders@oakanchorsupply.com',
+    themeId: 'onyx-brass',
+  },
 ];
 
 function loadCatalog(niche) {
@@ -342,6 +375,7 @@ function assembleSiteData(example) {
         allowCheckout: true,
         bookingEnabled: false,
         payOnSite: true,
+        demoMode: true,
       },
     };
   }
@@ -433,6 +467,7 @@ function assembleSiteData(example) {
       bookingWidget: isBooking ? 'native' : undefined,
       bookingTitle: example.niche === 'restaurant' ? 'Reserve a Table' : 'Book an Appointment',
       payOnSite: isCommerce,
+      demoMode: true,
     },
   };
 }

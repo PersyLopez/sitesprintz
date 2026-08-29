@@ -165,6 +165,7 @@ function Setup() {
       <div className="setup-page setup-page-wizard">
         <Header />
         <QuickStartWizard
+          initialTemplate={searchParams.get('template')}
           onComplete={handleWizardComplete}
           onSkip={handleWizardSkip}
         />

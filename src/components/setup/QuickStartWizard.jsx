@@ -50,10 +50,20 @@ const INDUSTRY_TO_NICHE = {
   'product-ordering': 'product-ordering',
 };
 
-function QuickStartWizard({ onComplete, onSkip }) {
+/** Map landing/register template id → wizard industry id (e.g. gym → fitness). */
+function resolveIndustryFromTemplate(templateId) {
+  if (!templateId?.trim()) return null;
+  const id = templateId.trim();
+  if (INDUSTRIES.some((industry) => industry.id === id)) return id;
+  const match = Object.entries(INDUSTRY_TO_NICHE).find(([, niche]) => niche === id);
+  return match ? match[0] : null;
+}
+
+function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
   const { loadTemplate } = useSite();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [selectedIndustry, setSelectedIndustry] = useState(null);
+  const preselectedIndustry = resolveIndustryFromTemplate(initialTemplate);
+  const [currentStep, setCurrentStep] = useState(preselectedIndustry ? 1 : 0);
+  const [selectedIndustry, setSelectedIndustry] = useState(preselectedIndustry);
   const [selectedLevel, setSelectedLevel] = useState('solo');
   const [formData, setFormData] = useState({
     businessName: '',

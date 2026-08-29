@@ -150,9 +150,6 @@ describe('QuickStartWizard — Phase 4 level step', () => {
   it('falls back to templatesService for niches not in REFINED_NICHE_IDS', async () => {
     render(<QuickStartWizard onComplete={() => {}} onSkip={() => {}} />);
 
-    // Pick an industry whose niche IS in the refined list still calls the new builder;
-    // here we just assert the new builder is reachable for salon and that
-    // templatesService is not called for a refined niche.
     clickIndustry('Salon');
     fireEvent.change(screen.getByTestId('business-name-input'), { target: { value: 'X' } });
     fireEvent.change(screen.getByTestId('contact-phone-input'), { target: { value: '555' } });
@@ -171,5 +168,30 @@ describe('QuickStartWizard — Phase 4 level step', () => {
 
     await waitFor(() => expect(getBuildMock()).toHaveBeenCalled());
     expect(getGetTemplateMock()).not.toHaveBeenCalled();
+  });
+});
+
+describe('QuickStartWizard — initialTemplate from URL', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    alertMock.mockClear();
+  });
+
+  it('skips industry step and opens basics when initialTemplate is salon', () => {
+    render(<QuickStartWizard initialTemplate="salon" onComplete={() => {}} onSkip={() => {}} />);
+    expect(screen.queryByText(/What type of business are you creating/i)).toBeNull();
+    expect(screen.getByTestId('business-name-input')).toBeTruthy();
+  });
+
+  it('maps gym niche to fitness industry and opens basics', () => {
+    render(<QuickStartWizard initialTemplate="gym" onComplete={() => {}} onSkip={() => {}} />);
+    expect(screen.queryByText(/What type of business are you creating/i)).toBeNull();
+    expect(screen.getByTestId('business-name-input')).toBeTruthy();
+  });
+
+  it('shows industry step for invalid initialTemplate', () => {
+    render(<QuickStartWizard initialTemplate="invalid-xyz" onComplete={() => {}} onSkip={() => {}} />);
+    expect(screen.getByText(/What type of business are you creating/i)).toBeTruthy();
+    expect(screen.queryByTestId('business-name-input')).toBeNull();
   });
 });

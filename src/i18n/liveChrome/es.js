@@ -80,7 +80,7 @@ export default {
   sendMessage: 'Enviar mensaje',
   added: 'Agregado',
   tryAgain: 'Reintentar',
-  demoBanner: 'Demo de galería — así podría verse tu sitio. Prueba la experiencia completa. Lo único que no puedes hacer aquí es pagar con tarjeta.',
+  demoBanner: 'Ejemplo de galería — así puede verse tu sitio. Explora páginas, reservas y la experiencia completa. El pago con tarjeta está desactivado en esta demo.',
   loadingSite: 'Cargando sitio...',
   siteNotFound: 'Sitio no encontrado',
   siteUnavailable: 'Este sitio ya no está disponible',

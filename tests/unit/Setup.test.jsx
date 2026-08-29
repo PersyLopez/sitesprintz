@@ -18,11 +18,15 @@ vi.mock('../../src/services/templates', () => ({
 }));
 
 vi.mock('../../src/components/setup/QuickStartWizard', () => ({
-  default: ({ onSkip }) => {
+  default: ({ onSkip, initialTemplate }) => {
     React.useEffect(() => {
-      onSkip?.();
-    }, [onSkip]);
-    return null;
+      if (!initialTemplate) onSkip?.();
+    }, [onSkip, initialTemplate]);
+    return (
+      <div data-testid="quickstart-wizard" data-initial-template={initialTemplate || ''}>
+        QuickStartWizard
+      </div>
+    );
   },
 }));
 
@@ -278,25 +282,24 @@ describe('Setup Page', () => {
       expect(mockLoadTemplate).toHaveBeenCalled();
     });
 
-    it('should pre-select template from URL param ⚡ CRITICAL', async () => {
-      renderSetup('/setup?template=restaurant');
+    it('should pass template param to QuickStartWizard', async () => {
+      renderSetup('/setup?template=salon');
 
       await waitFor(() => {
-        expect(screen.getByTestId('template-grid')).toBeInTheDocument();
-        expect(templatesService.getTemplates).toHaveBeenCalled();
+        expect(screen.getByTestId('quickstart-wizard')).toBeInTheDocument();
+        expect(screen.getByTestId('quickstart-wizard')).toHaveAttribute('data-initial-template', 'salon');
       });
+      expect(screen.queryByTestId('template-grid')).not.toBeInTheDocument();
     });
 
-    it('should handle invalid template ID from URL', async () => {
+    it('should keep wizard visible for invalid template ID from URL', async () => {
       renderSetup('/setup?template=invalid-xyz');
 
       await waitFor(() => {
-        expect(screen.getByTestId('template-grid')).toBeInTheDocument();
+        expect(screen.getByTestId('quickstart-wizard')).toBeInTheDocument();
+        expect(screen.getByTestId('quickstart-wizard')).toHaveAttribute('data-initial-template', 'invalid-xyz');
       });
-
-      // Should not call loadTemplate with invalid ID
-      await new Promise(resolve => setTimeout(resolve, 500));
-      // Test passes if no error is thrown
+      expect(screen.queryByTestId('template-grid')).not.toBeInTheDocument();
     });
 
     it('should show all available templates', async () => {

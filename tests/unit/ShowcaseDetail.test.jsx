@@ -348,12 +348,15 @@ describe('ShowcaseDetail Component', () => {
       });
     });
 
-    it('should have CTA link to register when logged out', async () => {
+    it('should have CTA link to register with template when logged out', async () => {
       renderWithRouter(<ShowcaseDetail />);
 
       await waitFor(() => {
-        const ctaLink = screen.getByRole('link', { name: /Get Started Free/i });
-        expect(ctaLink).toHaveAttribute('href', '/register');
+        const ctaLinks = screen.getAllByRole('link', { name: /Use this look/i });
+        expect(ctaLinks.length).toBeGreaterThan(0);
+        ctaLinks.forEach((ctaLink) => {
+          expect(ctaLink).toHaveAttribute('href', '/register?template=restaurant');
+        });
       });
     });
   });

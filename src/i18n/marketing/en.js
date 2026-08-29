@@ -131,6 +131,8 @@ export default {
   'gallery.tab.professional': 'Professional',
   'gallery.tab.product': 'Products',
   'gallery.useTemplate': 'Use this template →',
+  'gallery.seeExample': 'See example →',
+  'gallery.useThisLook': 'Use this look →',
   'gallery.live.kicker': 'See it live',
   'gallery.live.heading': 'How a SiteSprintz page can look',
   'gallery.live.lead': 'Open an example — industry, theme, and layout — then start from a matching template.',

@@ -116,9 +116,7 @@
   border: 1.5px solid var(--border, #f0d7b5);
   border-radius: 18px;
   overflow: hidden;
-  text-decoration: none;
   color: inherit;
-  cursor: pointer;
   transition:
     transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 280ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -127,6 +125,45 @@
   scroll-snap-stop: always;
   box-shadow: 0 2px 10px rgba(28, 20, 15, 0.05);
   animation: glCardIn 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.gl-card-example {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.gl-card-example:focus-visible {
+  outline: 2px solid var(--accent, #e87b1e);
+  outline-offset: -2px;
+}
+
+.gl-card-use {
+  display: block;
+  padding: 0 16px 14px;
+  font-family: var(--font-display, 'Outfit', sans-serif);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-secondary, #5c4a3d);
+  text-decoration: none;
+  text-align: center;
+  border-top: 1px solid var(--border, #f0d7b5);
+  padding-top: 10px;
+  margin-top: auto;
+  transition: color 180ms ease, background 180ms ease;
+}
+
+.gl-card-use:hover {
+  color: var(--accent-deep, #c45a0a);
+  background: var(--accent-soft, #fff1de);
+}
+
+.gl-card-use:focus-visible {
+  outline: 2px solid var(--accent, #e87b1e);
+  outline-offset: -2px;
 }
 
 @keyframes glCardIn {
@@ -155,9 +192,9 @@
   letter-spacing: 0.01em;
 }
 
-.gl-card:focus-visible {
-  outline: 2px solid var(--accent, #e87b1e);
-  outline-offset: 2px;
+.gl-card:focus-within {
+  border-color: var(--accent, #e87b1e);
+  box-shadow: 0 0 0 3px rgba(232, 123, 30, 0.15);
 }
 
 .gl-card--selected {

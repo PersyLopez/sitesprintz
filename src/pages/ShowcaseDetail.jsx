@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import PublicPageLayout from '../components/layout/PublicPageLayout';
+import { resolveShowcaseTemplateId } from '../utils/galleryTemplateMap.js';
 import './ShowcaseDetail.css';
 
 function ShowcaseDetail() {
@@ -144,8 +145,10 @@ function ShowcaseDetail() {
     window.location.reload();
   };
 
-  const ctaTarget = isAuthenticated ? '/setup' : '/register';
-  const ctaLabel = isAuthenticated ? 'Create Your Site →' : 'Get Started Free →';
+  const templateId = resolveShowcaseTemplateId(site, subdomain);
+  const templateQuery = templateId ? `?template=${templateId}` : '';
+  const ctaTarget = isAuthenticated ? `/setup${templateQuery}` : `/register${templateQuery}`;
+  const ctaLabel = 'Use this look →';
 
   if (loading) {
     return (
@@ -231,6 +234,9 @@ function ShowcaseDetail() {
               >
                 Visit example →
               </a>
+              <Link to={ctaTarget} className="btn btn-secondary cta-button">
+                {ctaLabel}
+              </Link>
               <button type="button" onClick={handleCopyLink} className="btn btn-secondary share-button">
                 {copySuccess ? '✓ Copied!' : 'Copy Link'}
               </button>

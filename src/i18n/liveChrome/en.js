@@ -80,7 +80,7 @@ export default {
   sendMessage: 'Send Message',
   added: 'Added',
   tryAgain: 'Try Again',
-  demoBanner: 'Gallery demo — this is an example of how your site could look. Try the full visitor experience. The only thing you cannot do here is pay by card.',
+  demoBanner: 'Gallery example — this is how your site can look. Explore pages, booking, and the full visitor experience. Card checkout is disabled in this demo.',
   loadingSite: 'Loading site...',
   siteNotFound: 'Site Not Found',
   siteUnavailable: 'This site is no longer available',

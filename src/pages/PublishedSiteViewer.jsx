@@ -19,9 +19,12 @@ import { mountGoogleReviews } from '../utils/mountGoogleReviews';
 import { getSiteWorkspacePaths } from '../utils/siteWorkspace';
 import { isPayOnSiteEnabled } from '../utils/payOnSite';
 import { siteWantsNativeBooking, subdomainFromLivePath } from '../utils/visitorExperience';
+import { tLive } from '../i18n/liveChrome/index.js';
+import { useLocale } from '../i18n/LocaleContext.jsx';
 import '../styles/published-site-viewer.css';
 
 function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
+  const { locale } = useLocale();
   const { subdomain: paramSubdomain } = useParams();
   const subdomain = forcedSubdomain || paramSubdomain;
   const [searchParams] = useSearchParams();
@@ -316,7 +319,7 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
       )}
       {demoMode && (
         <div className="showcase-demo-banner" data-testid="showcase-demo-banner" role="status">
-          Gallery demo — this is an example of how your site could look. Try the full visitor experience. The only thing you cannot do here is pay by card.
+          {tLive(locale, 'demoBanner')}
         </div>
       )}
 

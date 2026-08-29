@@ -143,9 +143,15 @@ describe('LandingGallery', () => {
     expect(screen.getByText(/Browse example sites/i)).toBeTruthy();
   });
 
-  it('card links go to /register when not authenticated', () => {
+  it('card example link goes to niche showcase when not authenticated', () => {
     renderGallery();
-    const salonCard = screen.getByTestId('gallery-card-salon');
-    expect(salonCard.getAttribute('href')).toBe('/register?template=salon');
+    const salonExample = screen.getByTestId('gallery-card-salon-example');
+    expect(salonExample.getAttribute('href')).toBe('/showcase/gallery-salon');
+  });
+
+  it('card use-this-look link goes to /register with template when not authenticated', () => {
+    renderGallery();
+    const salonUse = screen.getByTestId('gallery-card-salon-use');
+    expect(salonUse.getAttribute('href')).toBe('/register?template=salon');
   });
 });
