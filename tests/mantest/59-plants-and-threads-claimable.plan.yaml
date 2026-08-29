@@ -1,0 +1,43 @@
+url: http://localhost:5173/view/plants-and-threads
+goal: Plants & Threads live site is bilingual, hides Walnut Avenue, and keeps pay-on-site shopping
+steps:
+  - action: English live site loads
+    wait_for: { text: Plants & Threads, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Four hibiscus photos from the grid are $20 products
+    wait_for: { text: Orange hibiscus, timeout: 8000 }
+    code: |
+      const t = await page.locator('[data-testid="published-composed-site"]').innerText();
+      for (const name of ['Orange hibiscus', 'Pink hibiscus', 'Coral hibiscus', 'Apricot hibiscus']) {
+        if (!t.includes(name)) throw new Error('Missing product: ' + name);
+      }
+      if (!/\$20/.test(t)) throw new Error('Missing $20 price');
+
+
+  - action: Street is not public
+    code: |
+      const t = await page.locator('[data-testid="published-composed-site"]').innerText();
+      if (/Walnut/i.test(t) || /429/.test(t)) {
+        throw new Error('Private street leaked: ' + t.slice(0, 400));
+      }
+      if (!/Trenton/i.test(t)) {
+        throw new Error('Public city missing: ' + t.slice(0, 400));
+      }
+
+  - action: EN and ES switcher is on the live nav
+    wait_for: { selector: '[data-testid="language-switcher"]', timeout: 8000 }
+
+  - action: Switch to Spanish
+    click: { testId: language-switcher-es }
+    settle_ms: 800
+
+  - action: Spanish copy is visible
+    wait_for: { text: Plantas, timeout: 12000 }
+
+  - action: Switch back to English
+    click: { testId: language-switcher-en }
+    settle_ms: 800
+
+  - action: English copy returns
+    wait_for: { text: Plants for sale, timeout: 12000 }

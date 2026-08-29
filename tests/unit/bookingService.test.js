@@ -45,15 +45,15 @@ describe('BookingService - Tenant & Service Management', () => {
 
       expect(result).toEqual(mockTenant);
       expect(prisma.booking_tenants.findFirst).toHaveBeenCalledWith({
-        where: { user_id: 1 }
+        where: {
+          user_id: 1,
+          OR: [{ site_id: 'site-123' }, { site_id: 'site-123' }],
+        }
       });
     });
 
-    it('should create new tenant if not found', async () => {
-      const mockUser = { 
-        id: 2,
-        email: 'newuser@example.com' 
-      };
+    it('creates a site-scoped tenant instead of reusing another site', async () => {
+      const mockUser = { id: 2, email: 'newuser@example.com' };
       const mockNewTenant = {
         id: 'tenant-456',
         user_id: 2,
@@ -63,21 +63,20 @@ describe('BookingService - Tenant & Service Management', () => {
         status: 'active'
       };
 
-      // No existing tenant
       vi.mocked(prisma.booking_tenants.findFirst).mockResolvedValueOnce(null);
-      // Get user
       vi.mocked(prisma.users.findUnique).mockResolvedValueOnce(mockUser);
-      // Create tenant
       vi.mocked(prisma.booking_tenants.create).mockResolvedValueOnce(mockNewTenant);
 
       const result = await bookingService.getOrCreateTenant(2, 'site-456');
 
       expect(result).toEqual(mockNewTenant);
-      expect(prisma.booking_tenants.findFirst).toHaveBeenCalled();
-      expect(prisma.users.findUnique).toHaveBeenCalledWith({
-        where: { id: 2 }
+      expect(prisma.booking_tenants.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          user_id: 2,
+          site_id: 'site-456',
+          email: 'newuser@example.com',
+        })
       });
-      expect(prisma.booking_tenants.create).toHaveBeenCalled();
     });
 
     it('should throw error if user not found', async () => {

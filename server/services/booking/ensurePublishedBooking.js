@@ -60,25 +60,38 @@ function asItemList(value) {
  * @param {object} siteData
  * @returns {Array<{ name: string, description: string, price: number, duration: number }>}
  */
+function mapBookableItem(item) {
+  return {
+    name: item.name,
+    description: item.description || '',
+    price: parseMoney(item.price),
+    duration: item.duration || item.duration_minutes || 60,
+  };
+}
+
 export function pickBookingServicesFromSiteData(siteData = {}) {
   const niche = siteData._niche || siteData.niche || '';
   const fromServices = asItemList(siteData.services);
+  const fromServiceSections = (siteData.sections || [])
+    .filter((section) => section?.type === 'services')
+    .flatMap((section) => section.content?.items || []);
+  const explicit = [...fromServices, ...fromServiceSections].filter((item) => item && item.name);
+
+  if (explicit.length > 0 && niche !== 'restaurant') {
+    return explicit.slice(0, 5).map(mapBookableItem);
+  }
+
   const fromMenu = (siteData.menu?.sections || []).flatMap((section) => section.items || []);
   const fromSections = (siteData.sections || [])
-    .filter((section) => ['services', 'menu', 'catalog'].includes(section?.type))
+    .filter((section) => ['menu', 'catalog'].includes(section?.type))
     .flatMap((section) => section.content?.items || section.content?.sections?.flatMap((s) => s.items || []) || []);
   const fromProducts = Array.isArray(siteData.products) ? siteData.products : [];
-  const pool = [...fromServices, ...fromSections, ...fromMenu, ...fromProducts]
+  const pool = [...fromSections, ...fromMenu, ...fromProducts]
     .filter((item) => item && item.name)
     .slice(0, 5);
 
   if (pool.length > 0 && niche !== 'restaurant') {
-    return pool.map((item) => ({
-      name: item.name,
-      description: item.description || '',
-      price: parseMoney(item.price),
-      duration: item.duration || item.duration_minutes || 60,
-    }));
+    return pool.map(mapBookableItem);
   }
 
   return BOOKING_FALLBACKS[niche] || BOOKING_FALLBACKS.salon;

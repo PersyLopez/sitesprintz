@@ -427,6 +427,9 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(html).toContain('id="main"');
     expect(css).toContain('.ss-nav-actions');
     expect(css).toContain('.ss-nav-cta');
+    expect(html).toContain('data-testid="language-switcher"');
+    expect(html).toContain('data-testid="language-switcher-en"');
+    expect(html).toContain('data-testid="language-switcher-es"');
   });
 
   it('keeps header actions visible on small screens when page links hide', () => {
@@ -486,6 +489,32 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(html).toContain('Powered by SiteSprintz');
     expect(html).toContain('data-testid="footer-call"');
     expect(html).toContain('data-testid="footer-address"');
+  });
+
+  it('applies Spanish overlay and marks ES active on the live switcher', () => {
+    const { html } = buildLiveSiteMarkup({
+      businessName: 'Plants & Threads',
+      brand: { name: 'Plants & Threads' },
+      _layout: 'mercantile',
+      _niche: 'product-showcase',
+      _level: 'solo',
+      sections: [{
+        type: 'hero',
+        enabled: true,
+        content: { title: 'Plants & Threads', subtitle: 'Plants for sale and sewing services.' },
+      }],
+      locales: {
+        es: {
+          strings: {
+            'sections.0.content.subtitle': 'Plantas a la venta y servicios de costura.',
+          },
+        },
+      },
+    }, { locale: 'es' });
+    expect(html).toContain('Plantas a la venta y servicios de costura.');
+    expect(html).toContain('data-ss-lang="es"');
+    expect(html).toMatch(/data-testid="language-switcher-es"[^>]*aria-pressed="true"/);
+    expect(html).not.toContain('Plants for sale and sewing services.');
   });
 
   it('shows a service area line and map mount without the private street', () => {

@@ -40,6 +40,7 @@ vi.mock('../../src/utils/publishedSiteDocument', () => ({
 vi.mock('../../src/utils/visitorExperience', () => ({
   siteWantsEmbeddedBooking: () => true,
   siteWantsNativeBooking: () => true,
+  siteFeesEnabled: () => false,
   subdomainFromLivePath: () => 'gallery-salon',
 }));
 

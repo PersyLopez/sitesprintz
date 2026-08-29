@@ -40,6 +40,14 @@ describe('localeOverlay', () => {
     expect(values).not.toContain('https://maria.example.com');
   });
 
+  it('skips privateStreet so it is not copied into the Spanish overlay', () => {
+    const strings = collectTranslatableStrings({
+      contact: { privateStreet: '429 Walnut Avenue, Trenton, NJ', serviceAreaLabel: 'Trenton, NJ' },
+    });
+    expect(Object.values(strings)).not.toContain('429 Walnut Avenue, Trenton, NJ');
+    expect(Object.values(strings)).toContain('Trenton, NJ');
+  });
+
   it('applies Spanish overlay without changing skipped fields', () => {
     const overlay = {
       ...siteData,

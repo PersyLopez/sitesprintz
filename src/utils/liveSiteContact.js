@@ -270,6 +270,21 @@ export function toPublicSiteData(siteData) {
     publicData.googleMapsUrl = '';
   }
   walkSections(publicData, displayLine);
+  const street = resolvePrivateStreet(siteData);
+  if (street && publicData.locales) {
+    const nextLocales = { ...publicData.locales };
+    for (const [code, pack] of Object.entries(nextLocales)) {
+      if (!pack?.strings || typeof pack.strings !== 'object') continue;
+      const strings = { ...pack.strings };
+      for (const [key, value] of Object.entries(strings)) {
+        if (/privateStreet|address/i.test(key) || String(value || '').includes(street)) {
+          delete strings[key];
+        }
+      }
+      nextLocales[code] = { ...pack, strings };
+    }
+    publicData.locales = nextLocales;
+  }
   return publicData;
 }
 

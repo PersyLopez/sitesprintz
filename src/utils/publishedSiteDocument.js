@@ -7,6 +7,7 @@ import { composePage } from './layoutRenderer.js';
 import { renderSectionToHtml, withNativeBookingTokens } from './sectionHtmlBridge.js';
 import { buildSiteNav } from '../config/operatingModel.js';
 import { tLive } from '../i18n/liveChrome/index.js';
+import { applyLocaleOverlay } from './localeOverlay.js';
 import { PLATFORM_SUPPORT_EMAIL } from '../config/pricing.config.js';
 import {
   applyGalleryDemoSupportEmail,
@@ -172,6 +173,18 @@ export function getLiveSiteCss(tokens = {}) {
 .ss-nav-phone {
   color: var(--ss-text); text-decoration: none; font-weight: 600; font-size: 0.95rem;
   white-space: nowrap;
+}
+.ss-lang {
+  display: inline-flex; align-items: center; gap: 2px; padding: 2px;
+  border: 1px solid var(--ss-hairline); border-radius: 999px;
+}
+.ss-lang-btn {
+  min-width: 36px; min-height: 32px; padding: 4px 10px; border: 0; border-radius: 999px;
+  background: transparent; color: var(--ss-muted); font: inherit; font-size: 0.75rem;
+  font-weight: 700; letter-spacing: 0.04em; cursor: pointer;
+}
+.ss-lang-btn[aria-pressed="true"] {
+  background: var(--ss-accent); color: var(--ss-on-accent);
 }
 .ss-nav-cta {
   display: inline-flex; align-items: center; justify-content: center;
@@ -482,7 +495,15 @@ export function getLiveSiteCss(tokens = {}) {
 `.trim();
 }
 
-function renderNav(siteData, page) {
+function renderLangSwitch(locale) {
+  const isEs = locale === 'es';
+  return `<div class="ss-lang" data-testid="language-switcher" role="group" aria-label="Language">
+    <button type="button" class="ss-lang-btn" data-testid="language-switcher-en" data-ss-lang="en" aria-pressed="${isEs ? 'false' : 'true'}">EN</button>
+    <button type="button" class="ss-lang-btn" data-testid="language-switcher-es" data-ss-lang="es" aria-pressed="${isEs ? 'true' : 'false'}">ES</button>
+  </div>`;
+}
+
+function renderNav(siteData, page, locale = 'en') {
   const brand = siteData?.brand?.name || siteData?.businessName || 'Studio';
   const navSource = (Array.isArray(siteData?.nav) && siteData.nav.length)
     ? siteData.nav
@@ -510,7 +531,7 @@ function renderNav(siteData, page) {
   <div class="ss-nav-inner">
     <a class="ss-brand" href="#main" data-editable="brand.name">${escapeHtml(brand)}</a>
     ${linkHtml ? `<div class="ss-nav-links">${linkHtml}</div>` : ''}
-    <div class="ss-nav-actions">${phoneLink}${ctaLink}</div>
+    <div class="ss-nav-actions">${renderLangSwitch(locale)}${phoneLink}${ctaLink}</div>
   </div>
 </nav>`;
 }
@@ -574,7 +595,8 @@ export function buildStickyCtaBar(siteData, page) {
 }
 
 export function buildLiveSiteMarkup(siteData, options = {}) {
-  const liveData = applyGalleryDemoSupportEmail(siteData);
+  const locale = resolveLiveLocale(siteData, options);
+  const liveData = applyLocaleOverlay(applyGalleryDemoSupportEmail(siteData), locale);
   const page = composePage({
     siteData: liveData,
     layout: options.layout || liveData?._layout,
@@ -598,7 +620,7 @@ export function buildLiveSiteMarkup(siteData, options = {}) {
   const mapScript = needsMap
     ? '<script src="/vendor/service-area-map.js" defer></script>'
     : '';
-  const html = `${renderNav(liveData, page)}
+  const html = `${renderNav(liveData, page, locale)}
 <main id="main" class="ss-main">
   ${sectionsHtml}
 </main>

@@ -1,6 +1,6 @@
 const SKIP_KEYS = new Set([
   'id', 'type', 'enabled', 'image', 'images', 'src', 'url', 'href', 'logo',
-  'phone', 'email', 'address', 'price', 'lat', 'lng', 'mapUrl', 'tel',
+  'phone', 'email', 'address', 'privateStreet', 'price', 'lat', 'lng', 'mapUrl', 'tel',
   'whatsapp', 'instagram', 'facebook', 'tiktok', 'youtube', 'linkedin',
   'twitter', 'website', 'color', 'accent', 'theme', 'themeVars', 'css',
   'locales', 'sourceHash', 'subdomain', 'template', 'layout',
@@ -26,7 +26,7 @@ function isPrice(value) {
 function shouldSkipKey(key) {
   if (!key || SKIP_KEYS.has(key)) return true;
   if (key.startsWith('_')) return true;
-  return /phone|email|address|href|url|image|price|tel/i.test(key);
+  return /phone|email|address|street|href|url|image|price|tel/i.test(key);
 }
 
 /**

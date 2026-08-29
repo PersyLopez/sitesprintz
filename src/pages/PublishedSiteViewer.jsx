@@ -24,7 +24,7 @@ import { useLocale } from '../i18n/LocaleContext.jsx';
 import '../styles/published-site-viewer.css';
 
 function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
-  const { locale } = useLocale();
+  const { locale, setLocale } = useLocale();
   const { subdomain: paramSubdomain } = useParams();
   const subdomain = forcedSubdomain || paramSubdomain;
   const [searchParams] = useSearchParams();
@@ -186,6 +186,13 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
   }
 
   const handleLiveClick = (event) => {
+    const langBtn = event.target.closest('[data-ss-lang]');
+    if (langBtn) {
+      event.preventDefault();
+      setLocale(langBtn.getAttribute('data-ss-lang'));
+      return;
+    }
+
     const bookTarget = event.target.closest('[data-ss-book-service]');
     if (bookTarget) {
       event.preventDefault();

@@ -137,6 +137,20 @@ describe('pickBookingServicesFromSiteData', () => {
     });
     expect(picks[0].name).toMatch(/Table/i);
   });
+
+  it('does not book catalog products when sewing services are listed', () => {
+    const picks = pickBookingServicesFromSiteData({
+      _niche: 'product-showcase',
+      services: [{ name: 'Sewing services', description: 'Quoted in person', price: 0 }],
+      products: [{ name: 'Pothos', price: 25 }],
+      sections: [{
+        type: 'catalog',
+        content: { items: [{ name: 'Pothos', price: '$25' }] },
+      }],
+    });
+    expect(picks).toHaveLength(1);
+    expect(picks[0].name).toBe('Sewing services');
+  });
 });
 
 describe('pickBookingStaffFromSiteData', () => {
