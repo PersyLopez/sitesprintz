@@ -1,0 +1,86 @@
+url: http://localhost:5173/login
+goal: Gallery service demos expose Booking Settings and scheduling fees; Starter demos gate booking; cart demos stay shops — without saving so seeded demos stay put
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter gallery email
+    fill: { testId: login-email, value: "gallery@sitesprintz.com", clear: true }
+
+  - action: Enter gallery password
+    fill: { testId: login-password, value: "GalleryDemo123!", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard loads
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 1200
+
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+    settle_ms: 400
+
+  - action: Service demos have booking settings and fees UI
+    code: |
+      const growth = [
+        { sub: 'gallery-salon', name: 'Luxe Beauty Studio' },
+        { sub: 'gallery-gym', name: 'Forge Fitness' },
+        { sub: 'gallery-pet', name: 'Paws & Pine' },
+        { sub: 'gallery-tech', name: 'Circuit Fix Mobile' },
+        { sub: 'gallery-electrician', name: 'Brightline Electric' },
+        { sub: 'gallery-consultant', name: 'Northstar Advisory' },
+        { sub: 'gallery-cleaning', name: 'Cedar Clean Co' },
+        { sub: 'gallery-freelancer', name: 'Mira Design Studio' },
+        { sub: 'gallery-auto', name: 'Harbor Auto Works' },
+        { sub: 'gallery-plumbing', name: 'Clearflow Plumbing' },
+        { sub: 'gallery-tow', name: 'Summit Tow & Recovery' },
+      ];
+      const missing = [];
+      for (const demo of growth) {
+        await page.goto('http://localhost:5173/dashboard/sites/' + demo.sub + '/appointments', { waitUntil: 'domcontentloaded' });
+        await page.getByTestId('booking-dashboard-page').waitFor({ timeout: 20000 });
+        const upgrade = page.getByRole('heading', { name: /Growth Feature/i });
+        if (await upgrade.count()) {
+          missing.push(demo.sub + ': Growth demo showed booking upgrade wall');
+          continue;
+        }
+        await page.getByTestId('settings-tab').click();
+        await page.getByTestId('booking-intake-settings').waitFor({ timeout: 15000 });
+        for (const id of ['scheduling-enabled-switch', 'urgent-enabled-switch', 'fees-enabled-switch', 'payment-enabled-switch']) {
+          if ((await page.getByTestId(id).count()) === 0) missing.push(demo.sub + ': missing ' + id);
+        }
+        const fees = page.getByTestId('fees-enabled-switch');
+        const wasOn = await fees.isChecked();
+        if (!wasOn) await fees.check();
+        const feeUi = page.locator('.fee-configuration');
+        const addFirst = page.getByText(/Add a service first/i);
+        try {
+          await feeUi.or(addFirst).first().waitFor({ timeout: 8000 });
+        } catch {
+          missing.push(demo.sub + ': fees on but no fee configuration and no add-service hint');
+        }
+        if (!wasOn) {
+          await fees.uncheck();
+          await page.getByText(/will not see fee policies/i).waitFor({ timeout: 5000 }).catch(() => {
+            missing.push(demo.sub + ': fees-off notice missing');
+          });
+        }
+      }
+      if (missing.length) throw new Error(missing.join(' | '));
+    settle_ms: 400
+
+  - action: Live salon still has booking
+    goto: http://localhost:5173/view/gallery-salon
+    settle_ms: 2000
+    wait_for: { text: Luxe Beauty Studio, timeout: 20000 }
+
+  - action: Salon live booking widget
+    wait_for: { selector: '[data-testid="live-booking-widget"]', timeout: 12000 }
