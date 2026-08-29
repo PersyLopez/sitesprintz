@@ -55,6 +55,7 @@ Deep dive: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 
 - Unit/integration: `npm test` (Vitest)
 - E2E: `npm run test:e2e` (Playwright)
+- **Mantest (required for UI/flows):** extend or add `tests/mantest/*.plan.yaml`, then `mantest --json --agent --plan <plan>` against the running app (`http://localhost:5173`). Reuse a running `npm run dev`; do not start a second copy. Vitest or a browser MCP pass does **not** replace this. Logic-only (no UI) may skip mantest.
 - Selector priority: `data-testid` → `getByRole` → `getByText` — never CSS classes or XPath
 - Mock external deps in unit tests; use transaction rollback or isolated fixtures for integration
 - **Turnstile is on for production email signup.** Agents must **log in**, not register. Seed with `npm run seed:testers` (uses `DATABASE_URL`). Credentials: `tests/fixtures/test-credentials.js` — `gallery@sitesprintz.com`, `test@example.com`, `admin@example.com`, `growth@example.com`, `starter@example.com`. Leave `VITE_TURNSTILE_SITE_KEY` unset in local `.env`.
@@ -95,6 +96,7 @@ Create a doc **only if** the user asked, OR all of:
 | Tiers & features | `src/config/tiers.js`, `src/utils/planFeatures.js` | `docs/ecommerce/ECOMMERCE_TIER_CONSOLIDATION.md` |
 | Page builder | `src/components/setup/PageBuilder.jsx`, `src/config/sectionRegistry.js` | `docs/features/PLUG_AND_PLAY_IMPLEMENTATION.md` |
 | Feature status | all features | `docs/features/QUICK_REFERENCE_STATUS.md` |
+| Behavioral UI | `tests/mantest/*.plan.yaml` | `~/.claude/skills/manual-test/SKILL.md` |
 | Auth / OAuth | `server/routes/auth.routes.js`, `auth-google.js` | `docs/setup/GOOGLE-OAUTH-NGROK.md` |
 | JS standards | all `.js`/`.jsx` | `docs/development/JS-STANDARDS.md` |
 | Doc efficiency | all tasks | `docs/governance/AGENT_DOCUMENTATION_GUIDE.md` |
@@ -112,9 +114,11 @@ Before implementing:
 
 After implementing:
 
-1. Run relevant tests (`npm test` and/or targeted E2E)
-2. Check lints on edited files
-3. Update docs only if behavior or setup changed
+1. Run relevant unit/integration tests (`npm test`)
+2. If UI, layout, routing, client state, or an owner/visitor flow changed: write or extend a `tests/mantest/*.plan.yaml` (neighbor the numbered plans there) and run `mantest --json --agent --plan <that plan>`. The slice is not done until that run is green. Playwright E2E is extra, not a substitute.
+3. Check lints on edited files
+4. Update docs only if behavior or setup changed
+5. Update the **launch dashboard** — `~/.cursor/projects/Users-persylopez-sitesprintz/canvases/site-remaining-work-audit.canvas.tsx`. Tick landed items, update still-open P0–P2. Do not add a parallel status canvas or a session-report markdown file.
 
 ---
 
@@ -146,6 +150,7 @@ Skill rules live in `.cursorrules` and `.cursor/GLOBAL_RULES_FOR_CURSOR.md`.
 - [ ] Critical flow identified and preserved
 - [ ] Tier gating respected if touching features or publish
 - [ ] Tests added or updated for behavior changes
+- [ ] UI/flow slices: mantest plan run green (`tests/mantest/`, `--json --agent --plan`)
 - [ ] No secrets, no `console.log`, no unrelated files
 - [ ] No new docs unless user asked or durable reference required
 - [ ] Updated canonical doc instead of creating parallel report
@@ -153,7 +158,7 @@ Skill rules live in `.cursorrules` and `.cursor/GLOBAL_RULES_FOR_CURSOR.md`.
 
 ---
 
-**Version**: 1.3 | **Last updated**: August 2026
+**Version**: 1.4 | **Last updated**: August 2026
 
 <!-- design-specialist -->
 Visual/UI slices (landing, dashboards, Booking, Orders, Products, Analytics) go to `/design-specialist`. Do not use WebCraft or `Task` `generalPurpose` / `explore` as a stand-in. Vault: `vendor/design-specialist/vault/`.

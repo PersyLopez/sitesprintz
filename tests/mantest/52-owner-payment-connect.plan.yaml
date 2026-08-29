@@ -1,0 +1,141 @@
+url: http://localhost:5173/login
+goal: Owner payment settings offer new vs existing Stripe, recommended Stripe, honest return banners, and Starter upgrade — without leaving for Stripe hosted onboarding
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter growth email
+    fill: { testId: login-email, value: "growth@example.com", clear: true }
+
+  - action: Enter growth password
+    fill: { testId: login-password, value: "GrowthPass!2024", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard loads
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+    settle_ms: 400
+
+  - action: Open payment settings
+    goto: http://localhost:5173/settings/payments
+    settle_ms: 1500
+
+  - action: Payment configuration loaded
+    wait_for: { selector: '[data-testid="processor-stripe"]', timeout: 20000 }
+    assert:
+      - text contains Payment Configuration
+      - text contains never paste API keys
+      - text contains Cards on your site
+      - text contains already take cards in person
+      - text contains PayPal Business
+
+  - action: No account ids; fork or honest connected/incomplete status
+    code: |
+      if ((await page.getByTestId('stripe-account-id').count()) > 0) {
+        throw new Error('Stripe account id should not be shown');
+      }
+      const applyTo = page.getByTestId('payment-apply-to');
+      const siteSelect = page.getByTestId('payment-site-select');
+      if (await siteSelect.count()) {
+        const n = await siteSelect.locator('option').count();
+        if (n <= 1 && (await applyTo.count()) > 0) {
+          throw new Error('apply-to radios should be hidden for a single site');
+        }
+      }
+      const choice = page.getByTestId('stripe-connect-choice');
+      const stripeCard = page.getByTestId('processor-stripe');
+      const status = (await stripeCard.getByTestId('connection-status').innerText()).trim();
+      if (await choice.count()) {
+        const neu = await page.getByTestId('stripe-connect-button').innerText();
+        const existing = await page.getByTestId('stripe-existing-oauth-button').innerText();
+        if (!/new to stripe/i.test(neu)) throw new Error('Missing new-to-Stripe action: ' + neu);
+        if (!/already have stripe/i.test(existing)) throw new Error('Missing existing-Stripe action: ' + existing);
+        if ((await page.getByTestId('processor-recommended-pill').count()) === 0) {
+          throw new Error('Recommended pill missing on unconnected Stripe');
+        }
+      } else if (!/connected|incomplete/i.test(status)) {
+        throw new Error('Expected Stripe choice pair, Connected, or Incomplete. Got: ' + status);
+      }
+    settle_ms: 300
+
+  - action: Expired Account Link banner without auto-redirect
+    goto: http://localhost:5173/settings/payments?connect=refresh&processor=stripe
+    settle_ms: 1500
+    wait_for: { selector: '[data-testid="processor-oauth-banner"]', timeout: 15000 }
+
+  - action: Refresh banner is honest and query is stripped
+    code: |
+      const banner = await page.getByTestId('processor-oauth-banner').innerText();
+      if (!/expired|continue setup/i.test(banner)) {
+        throw new Error('Expected expired-link banner, got: ' + banner);
+      }
+      if (/connected successfully/i.test(banner)) {
+        throw new Error('Refresh must not claim connected');
+      }
+      const href = page.url();
+      if (/connect=refresh/i.test(href)) {
+        throw new Error('connect=refresh should be stripped from the URL: ' + href);
+      }
+      if (/connect\.stripe\.com/i.test(href)) {
+        throw new Error('Must not auto-redirect to Stripe');
+      }
+    settle_ms: 300
+
+  - action: Switch to Starter for upgrade gate
+    code: |
+      await page.evaluate(() => {
+        localStorage.clear();
+        sessionStorage.clear();
+      });
+    settle_ms: 200
+
+  - action: Starter login page
+    goto: http://localhost:5173/login
+    settle_ms: 800
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter starter email
+    fill: { testId: login-email, value: "starter@example.com", clear: true }
+
+  - action: Enter starter password
+    fill: { testId: login-password, value: "StarterPass!2024", clear: true }
+
+  - action: Submit starter login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Starter dashboard
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Starter payment settings require Growth
+    goto: http://localhost:5173/settings/payments
+    settle_ms: 1500
+    wait_for: { selector: '[data-testid="processor-stripe"]', timeout: 20000 }
+
+  - action: Starter cannot start Stripe connect
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/Upgrade to Growth/i.test(t)) {
+        throw new Error('Starter should see Growth upgrade copy');
+      }
+      if ((await page.getByTestId('stripe-connect-choice').count()) > 0) {
+        throw new Error('Starter must not see Stripe new/existing choice');
+      }
+      const pay = page.getByTestId('pay-on-site-toggle');
+      if (await pay.count()) {
+        if (await pay.isEnabled()) throw new Error('Pay on site should be disabled on Starter');
+      }
+    settle_ms: 300

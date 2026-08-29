@@ -64,6 +64,12 @@ We use **Vitest** for unit/integration tests and **Playwright** for end-to-end (
     npm test
     ```
 
+-   **Run owner/visitor behavioral checks (UI/flow changes):**
+    ```bash
+    mantest --json --agent --plan tests/mantest/<nn>-*.plan.yaml
+    ```
+    App must already be running on `http://localhost:5173`. Log in; do not register.
+
 -   **Run E2E Tests:**
     ```bash
     npm run test:e2e
