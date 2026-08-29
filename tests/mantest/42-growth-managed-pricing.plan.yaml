@@ -10,7 +10,7 @@ steps:
       - text contains $10
       - text contains $35
       - text contains $75
-      - text contains We take the list
+      - text contains We keep your list updated
 
   - action: Three pricing cards and Managed CTA
     code: |

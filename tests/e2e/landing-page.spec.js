@@ -20,7 +20,7 @@ test.describe('Landing page storytelling', () => {
 
   test('customer stories use named businesses without workshop labels', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: /Same longing\. Different businesses/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /They had regulars\. Tomorrow nobody could find them/i })).toBeVisible();
     await expect(page.getByText('Maria')).toBeVisible();
     await expect(page.getByText('James')).toBeVisible();
     await expect(page.getByText('Aisha')).toBeVisible();

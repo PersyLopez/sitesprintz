@@ -13,6 +13,16 @@ steps:
       - text contains Growth
       - text contains Growth Managed
 
+  - action: Customer stories section
+    goto: http://localhost:5173/#stories
+    wait_for: { text: They had regulars. Tomorrow nobody could find them. }
+    assert:
+      - text contains Maria
+      - text contains James
+      - text contains Aisha
+      - text contains They had regulars. Tomorrow nobody could find them.
+      - text contains Small shops like yours
+
   - action: Open Gallery from header
     click: { testId: nav-gallery }
     assert:

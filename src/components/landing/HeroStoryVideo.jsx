@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import './HeroStoryVideo.css';
 
 /**
- * Ambient Value Stories — diffused into the hero, not a boxed player.
- * Kindra Hall: Before → Gap → Change → After
+ * Ambient value stories — diffused into the hero, not a boxed player.
+ * Second-person "you": busy today → gone tomorrow → one page → they come back.
  */
 
 const STORIES = [
@@ -14,10 +14,10 @@ const STORIES = [
     video: '/assets/hero/food/story.mp4',
     poster: '/assets/hero/food/poster.jpg',
     captions: [
-      { start: 0, end: 2.3, label: 'Before', text: 'Your stand is busy today. People taste, smile, and move on.' },
-      { start: 2.3, end: 4.5, label: 'The gap', text: 'Tomorrow they want those mangoes again — and can’t remember which corner.' },
-      { start: 4.5, end: 6.7, label: 'The change', text: 'They open a simple page: today’s fruit, hours, how to find you.' },
-      { start: 6.7, end: 99, label: 'After', text: 'They return. Your stand isn’t only a moment — it’s a place they can find.' },
+      { start: 0, end: 2.3, label: 'Today', text: 'Your stand is busy. People taste, smile, and move on.' },
+      { start: 2.3, end: 4.5, label: 'Tomorrow', text: 'They want those mangoes again — and can’t remember which corner.' },
+      { start: 4.5, end: 6.7, label: 'Your page', text: 'One link: today’s fruit, your hours, how to find you.' },
+      { start: 6.7, end: 99, label: 'They return', text: 'They come back. Your stand isn’t only a moment — it’s a place they can find.' },
     ],
   },
   {
@@ -27,23 +27,23 @@ const STORIES = [
     video: '/assets/hero/service/story.mp4',
     poster: '/assets/hero/service/poster.jpg',
     captions: [
-      { start: 0, end: 2.3, label: 'Before', text: 'Your chair is ready. The street is full of people who need a cut.' },
-      { start: 2.3, end: 4.5, label: 'The gap', text: 'They walk past, unsure about hours — and keep scrolling.' },
-      { start: 4.5, end: 6.7, label: 'The change', text: 'A page shows hours, style photos, and a simple way to book.' },
-      { start: 6.7, end: 99, label: 'After', text: 'The chair stays filled — because customers finally know how to find you.' },
+      { start: 0, end: 2.3, label: 'Today', text: 'Your chair is ready. The street is full of people who need a cut.' },
+      { start: 2.3, end: 4.5, label: 'Tomorrow', text: 'They walk past, unsure of your hours — and keep scrolling.' },
+      { start: 4.5, end: 6.7, label: 'Your page', text: 'Hours, style photos, and a simple way to message you.' },
+      { start: 6.7, end: 99, label: 'They return', text: 'The chair stays filled — because customers finally know how to find you.' },
     ],
   },
   {
     id: 'professional',
-    categoryLabel: 'Professional',
-    badge: 'Consultant',
+    categoryLabel: 'Home bakery',
+    badge: 'Home bakery',
     video: '/assets/hero/professional/story.mp4',
     poster: '/assets/hero/professional/poster.jpg',
     captions: [
-      { start: 0, end: 2.3, label: 'Before', text: 'You’re good at the work. The day still starts in a pile of messages.' },
-      { start: 2.3, end: 4.5, label: 'The gap', text: 'Clients ask the same questions. Sticky notes replace a real first impression.' },
-      { start: 4.5, end: 6.7, label: 'The change', text: 'A clean page: what you do, how it works, how to reach you.' },
-      { start: 6.7, end: 99, label: 'After', text: 'Less chaos. More clients who found you on purpose.' },
+      { start: 0, end: 2.3, label: 'Today', text: 'Your kitchen is busy. The smell of cinnamon fills the room.' },
+      { start: 2.3, end: 4.5, label: 'Tomorrow', text: 'Someone wants those rolls again — but the order is buried in your DMs.' },
+      { start: 4.5, end: 6.7, label: 'Your page', text: 'One link: flavors this week, how to order, when you’re full.' },
+      { start: 6.7, end: 99, label: 'They return', text: 'Customers order on purpose — not by hunting through message threads.' },
     ],
   },
 ];

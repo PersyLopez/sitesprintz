@@ -48,7 +48,7 @@ describe('Landing Page', () => {
   it('renders the story-driven hero headline', () => {
     renderLanding();
     expect(screen.getByRole('heading', { name: /They love what you make/i })).toBeInTheDocument();
-    expect(screen.getByText(/so the people who already care can come back/i)).toBeInTheDocument();
+    expect(screen.getByText(/so people who already love what you do can come back/i)).toBeInTheDocument();
   });
 
   it('renders brand as a hero-level signal', () => {
@@ -74,7 +74,7 @@ describe('Landing Page', () => {
 
   it('renders the customer stories section', () => {
     renderLanding();
-    expect(screen.getByRole('heading', { name: /Maria, James, and Aisha — same gap\./i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /They had regulars\. Tomorrow nobody could find them\./i })).toBeInTheDocument();
     expect(screen.getByText('Maria')).toBeInTheDocument();
     expect(screen.getByText('James')).toBeInTheDocument();
     expect(screen.getByText('Aisha')).toBeInTheDocument();
@@ -89,6 +89,7 @@ describe('Landing Page', () => {
     expect(screen.getByText(/DMs instead of a door/i)).toBeInTheDocument();
     expect(screen.getByText(/sold out of mangoes by 10/i)).toBeInTheDocument();
     expect(screen.getByText(/remember which corner/i)).toBeInTheDocument();
+    expect(screen.getByText(/Marcus waved through the window/i)).toBeInTheDocument();
     expect(screen.getByText(/today’s fruit/i)).toBeInTheDocument();
     expect(stories.querySelectorAll('.story-phase').length).toBe(0);
     expect(stories.querySelectorAll('.story-arc-label').length).toBeGreaterThanOrEqual(3);
@@ -121,7 +122,7 @@ describe('Landing Page', () => {
     const stepTitles = Array.from(howSection.querySelectorAll('h3')).map((h) => h.textContent);
     expect(stepTitles).toContain('Tell us what you sell');
     expect(stepTitles).toContain('Show what customers need');
-    expect(stepTitles).toContain('Leave the light on');
+    expect(stepTitles).toContain('Share your link');
     expect(howSection.querySelectorAll('.how-arc-step').length).toBe(3);
   });
 

@@ -28,7 +28,7 @@ steps:
       - text contains How it works
       - text contains Tell us what you sell
       - text contains Show what customers need
-      - text contains Leave the light on
+      - text contains Share your link
 
   - action: How it works nav
     click: { testId: nav-how-it-works }
