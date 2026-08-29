@@ -399,33 +399,38 @@ export function getLiveSiteCss(tokens = {}) {
 .ss-footer-nap a { color: var(--ss-text); text-decoration: none; font-weight: 600; }
 .ss-sitesprintz-badge {
   position: fixed;
-  right: max(12px, env(safe-area-inset-right, 0px));
-  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-  z-index: 35;
+  right: max(10px, env(safe-area-inset-right, 0px));
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  z-index: 45;
   display: inline-flex; align-items: center; justify-content: center;
-  min-height: 44px; min-width: 44px; padding: 10px 16px;
-  border-radius: 999px; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.01em;
-  color: var(--ss-text); text-decoration: none; white-space: nowrap;
+  min-height: 44px; min-width: 44px; padding: 6px 10px;
+  border-radius: 999px; font-size: 0.68rem; font-weight: 500; letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--ss-muted) 88%, transparent);
+  text-decoration: none; white-space: nowrap;
   pointer-events: auto;
-  background: color-mix(in srgb, var(--ss-surface) 82%, var(--ss-bg));
-  border: 1px solid color-mix(in srgb, var(--ss-hairline) 90%, transparent);
-  box-shadow: 0 4px 18px color-mix(in srgb, var(--ss-text) 10%, transparent);
-  -webkit-backdrop-filter: blur(12px) saturate(160%);
-  backdrop-filter: blur(12px) saturate(160%);
+  background: color-mix(in srgb, var(--ss-surface) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ss-hairline) 38%, transparent);
+  box-shadow: none;
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  backdrop-filter: blur(24px) saturate(170%);
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .ss-sitesprintz-badge {
-    background: color-mix(in srgb, var(--ss-surface) 94%, var(--ss-bg));
+    background: color-mix(in srgb, var(--ss-surface) 48%, transparent);
   }
 }
 .ss-live:has(.ss-sticky-cta) .ss-sitesprintz-badge {
-  bottom: calc(76px + 12px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(76px + 10px + env(safe-area-inset-bottom, 0px));
 }
 .ss-sitesprintz-badge:hover,
 .ss-sitesprintz-badge:focus-visible {
   color: var(--ss-text);
-  border-color: color-mix(in srgb, var(--ss-accent) 45%, var(--ss-hairline));
-  background: color-mix(in srgb, var(--ss-surface) 92%, var(--ss-bg));
+  border-color: color-mix(in srgb, var(--ss-hairline) 72%, transparent);
+  background: color-mix(in srgb, var(--ss-surface) 42%, transparent);
+  text-shadow:
+    0 0 1px color-mix(in srgb, var(--ss-bg) 55%, transparent),
+    0 1px 2px color-mix(in srgb, var(--ss-text) 12%, transparent);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--ss-text) 8%, transparent);
 }
 .ss-service-area-map {
   position: relative;
