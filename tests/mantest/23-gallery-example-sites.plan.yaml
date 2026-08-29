@@ -11,12 +11,33 @@ steps:
     wait_for: { selector: '[data-testid="showcase-grid"]', timeout: 20000 }
     settle_ms: 800
     code: |
-      const body = await page.locator('body').innerText();
-      const needed = ['Luxe Beauty Studio', 'The Grand Table', 'Brightline Electric', 'Sunset Tacos'];
-      const missing = needed.filter((name) => !body.includes(name));
+      const needed = [
+        'Luxe Beauty Studio',
+        'The Grand Table',
+        'Brightline Electric',
+        'Sunset Tacos',
+        'Circuit Fix Mobile',
+        'Summit Tow & Recovery',
+        'Oak & Anchor Supply',
+      ];
+      const found = new Set();
+      for (let i = 0; i < 4; i += 1) {
+        const body = await page.locator('body').innerText();
+        needed.forEach((name) => {
+          if (body.includes(name)) found.add(name);
+        });
+        if (found.size === needed.length) break;
+        const next = page.getByRole('button', { name: /next page|página siguiente/i });
+        if ((await next.count()) === 0 || (await next.isDisabled())) break;
+        await next.click();
+        await page.waitForTimeout(800);
+      }
+      const missing = needed.filter((name) => !found.has(name));
       if (missing.length) {
         throw new Error('Gallery missing example sites: ' + missing.join(', '));
       }
+      await page.getByTestId('showcase-search').fill('salon');
+      await page.waitForTimeout(800);
       const salonCard = page.getByTestId('site-card-gallery-salon');
       if ((await salonCard.count()) === 0) {
         throw new Error('Missing gallery-salon card');

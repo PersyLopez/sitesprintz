@@ -145,3 +145,39 @@ steps:
       if (!/Plumb|Service|Contact|Emergency|Quote/i.test(t)) {
         throw new Error('Plumbing missing copy: ' + t.slice(0, 280));
       }
+
+  - action: Tech repair
+    goto: http://localhost:5173/view/gallery-tech
+    settle_ms: 1800
+  - action: Tech identity
+    wait_for: { text: Circuit Fix Mobile, timeout: 20000 }
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/not yet supported in preview/i.test(t)) throw new Error('Tech placeholders');
+      if (!/Repair|Phone|Computer|Contact|Fix|Circuit/i.test(t)) {
+        throw new Error('Tech missing copy: ' + t.slice(0, 280));
+      }
+
+  - action: Tow truck
+    goto: http://localhost:5173/view/gallery-tow
+    settle_ms: 1800
+  - action: Tow identity
+    wait_for: { text: Summit Tow & Recovery, timeout: 20000 }
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/not yet supported in preview/i.test(t)) throw new Error('Tow placeholders');
+      if (!/Tow|Roadside|Recovery|Contact|Dispatch|Summit/i.test(t)) {
+        throw new Error('Tow missing copy: ' + t.slice(0, 280));
+      }
+
+  - action: Product ordering
+    goto: http://localhost:5173/view/gallery-ordering
+    settle_ms: 1800
+  - action: Ordering identity
+    wait_for: { text: Oak & Anchor Supply, timeout: 20000 }
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/not yet supported in preview/i.test(t)) throw new Error('Ordering placeholders');
+      if (!/Order|Catalog|Supply|Product|Cart|Shop|Oak/i.test(t)) {
+        throw new Error('Ordering missing copy: ' + t.slice(0, 280));
+      }
