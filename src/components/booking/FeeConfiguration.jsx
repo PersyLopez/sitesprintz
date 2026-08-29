@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { get, put } from '../../utils/api';
 import './FeeConfiguration.css';
 
 export default function FeeConfiguration({ serviceId, serviceName }) {
@@ -43,10 +44,7 @@ export default function FeeConfiguration({ serviceId, serviceName }) {
   const loadPolicies = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/booking/services/${serviceId}/fee-policies`);
-      if (!response.ok) throw new Error('Failed to load policies');
-      
-      const data = await response.json();
+      const data = await get(`/api/booking/services/${serviceId}/fee-policies`);
       if (data.cancellationPolicy) setCancellationPolicy(data.cancellationPolicy);
       if (data.noShowPolicy) setNoShowPolicy(data.noShowPolicy);
       if (data.bookingFeePolicy) setBookingFeePolicy(data.bookingFeePolicy);
@@ -63,22 +61,16 @@ export default function FeeConfiguration({ serviceId, serviceName }) {
       setError('');
       setMessage('');
 
-      const response = await fetch(`/api/booking/services/${serviceId}/fee-policies`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cancellationPolicy,
-          noShowPolicy,
-          bookingFeePolicy
-        })
+      await put(`/api/booking/services/${serviceId}/fee-policies`, {
+        cancellationPolicy,
+        noShowPolicy,
+        bookingFeePolicy,
       });
 
-      if (!response.ok) throw new Error('Failed to save policies');
-
-      setMessage('✅ Fee policies saved successfully');
+      setMessage('Fee policies saved successfully');
       setTimeout(() => setMessage(''), 3000);
     } catch (err) {
-      setError('❌ ' + err.message);
+      setError(err.message || 'Failed to save policies');
     } finally {
       setLoading(false);
     }
@@ -344,13 +336,23 @@ export default function FeeConfiguration({ serviceId, serviceName }) {
       </section>
 
       {/* Messages */}
-      {message && <div className="message success">{message}</div>}
+      {message && (
+        <div className="message success" data-testid="fee-policies-saved">
+          {message}
+        </div>
+      )}
       {error && <div className="message error">{error}</div>}
 
       {/* Actions */}
       <div className="actions">
-        <button onClick={handleSave} disabled={loading} className="btn btn-primary">
-          {loading ? 'Saving...' : '💾 Save Fee Policies'}
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={loading}
+          className="btn btn-primary"
+          data-testid="save-fee-policies"
+        >
+          {loading ? 'Saving...' : 'Save fee policies'}
         </button>
       </div>
     </div>

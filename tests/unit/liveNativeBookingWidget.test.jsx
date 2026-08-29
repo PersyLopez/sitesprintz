@@ -177,3 +177,108 @@ describe('Live BookingWidget catalog mode', () => {
     expect(screen.getByTestId('date-picker')).toBeInTheDocument();
   });
 });
+
+const mockFeePolicies = {
+  feesEnabled: true,
+  cancellationPolicy: {
+    enabled: true,
+    type: 'sliding_scale',
+    rules: [{ cancelWithinHours: 24, feePercentage: 100 }],
+  },
+  noShowPolicy: { enabled: false },
+  bookingFeePolicy: { enabled: false },
+};
+
+function nextWeekdayIso() {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  for (let offset = 1; offset <= 14; offset += 1) {
+    const candidate = new Date(start);
+    candidate.setDate(start.getDate() + offset);
+    if (candidate.getDay() === 0 || candidate.getDay() === 6) continue;
+    return `${candidate.getFullYear()}-${String(candidate.getMonth() + 1).padStart(2, '0')}-${String(candidate.getDate()).padStart(2, '0')}`;
+  }
+  throw new Error('No weekday found');
+}
+
+async function navigateToCustomerForm(user, { feesEnabled = false, feePolicies = mockFeePolicies } = {}) {
+  const dateString = nextWeekdayIso();
+
+  api.get.mockImplementation((url) => {
+    if (url.includes('/fee-policies')) return Promise.resolve(feePolicies);
+    if (url.includes('/services')) return Promise.resolve({ services: mockServices });
+    if (url.includes('/staff')) return Promise.resolve({ staff: [] });
+    if (url.includes('/availability')) {
+      return Promise.resolve({
+        slots: [{ start_time: `${dateString}T10:00:00`, display_time: '10:00 AM', available: true }],
+      });
+    }
+    return Promise.resolve({ slots: [] });
+  });
+
+  renderWidget({ pageCatalogMode: false, feesEnabled });
+
+  await waitFor(() => {
+    expect(screen.getByTestId('service-card-svc-1')).toBeInTheDocument();
+  });
+
+  await user.click(screen.getByTestId('service-card-svc-1'));
+  await user.click(screen.getByTestId('next-button'));
+
+  await waitFor(() => {
+    expect(screen.getByTestId(`date-${dateString}`)).toBeInTheDocument();
+  });
+
+  await user.click(screen.getByTestId(`date-${dateString}`));
+
+  await waitFor(() => {
+    expect(screen.getByTestId(`time-slot-${dateString}T10:00:00`)).toBeInTheDocument();
+  });
+
+  await user.click(screen.getByTestId(`time-slot-${dateString}T10:00:00`));
+  await user.click(screen.getByTestId('next-button'));
+
+  await waitFor(() => {
+    expect(screen.getByTestId('customer-form')).toBeInTheDocument();
+  });
+}
+
+describe('Live BookingWidget fee notice', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('does not show fee notice when shop fees are off', async () => {
+    const user = userEvent.setup();
+    await navigateToCustomerForm(user, {
+      feesEnabled: false,
+      feePolicies: { ...mockFeePolicies, feesEnabled: false },
+    });
+    expect(screen.queryByTestId('booking-fee-notice')).not.toBeInTheDocument();
+  });
+
+  it('shows fee notice when shop fees and a policy are enabled', async () => {
+    const user = userEvent.setup();
+    await navigateToCustomerForm(user, { feesEnabled: true });
+    await waitFor(() => {
+      expect(screen.getByTestId('booking-fee-notice')).toBeInTheDocument();
+    });
+    expect(screen.getByText(/Cancel within 24 hours/i)).toBeInTheDocument();
+  });
+
+  it('does not show fee notice when shop fees on but all policies disabled', async () => {
+    const user = userEvent.setup();
+    await navigateToCustomerForm(user, {
+      feesEnabled: true,
+      feePolicies: {
+        feesEnabled: true,
+        cancellationPolicy: { enabled: false },
+        noShowPolicy: { enabled: false },
+        bookingFeePolicy: { enabled: false },
+      },
+    });
+    await waitFor(() => {
+      expect(screen.queryByTestId('booking-fee-notice')).not.toBeInTheDocument();
+    });
+  });
+});

@@ -36,6 +36,83 @@ export function siteFeesEnabled(siteData) {
   return Boolean(state && typeof state === 'object' && state.enabled === true);
 }
 
+/**
+ * True when at least one fee policy type is enabled for visitor disclosure.
+ *
+ * @param {object|null|undefined} policies
+ * @returns {boolean}
+ */
+export function hasEnabledVisitorFeePolicies(policies) {
+  if (!policies || typeof policies !== 'object') return false;
+  const { cancellationPolicy, noShowPolicy, bookingFeePolicy } = policies;
+  if (cancellationPolicy?.enabled && Array.isArray(cancellationPolicy.rules) && cancellationPolicy.rules.length) {
+    return true;
+  }
+  if (noShowPolicy?.enabled && noShowPolicy.chargeOnNoShow !== false) {
+    return true;
+  }
+  if (bookingFeePolicy?.enabled) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Plain-language fee disclosure lines for the visitor booking form.
+ *
+ * @param {object|null|undefined} policies
+ * @param {(key: string, vars?: Record<string, string|number>) => string} t
+ * @returns {string[]}
+ */
+export function formatVisitorFeeNoticeLines(policies, t) {
+  if (!policies || typeof policies !== 'object') return [];
+  const lines = [];
+  const { cancellationPolicy, noShowPolicy, bookingFeePolicy } = policies;
+
+  if (cancellationPolicy?.enabled && Array.isArray(cancellationPolicy.rules)) {
+    for (const rule of cancellationPolicy.rules) {
+      if (rule.cancelWithinHours != null) {
+        lines.push(t('booking.feeNotice.cancelWithin', {
+          hours: rule.cancelWithinHours,
+          percent: rule.feePercentage ?? 0,
+        }));
+      } else if (rule.cancelAfterHours != null) {
+        lines.push(t('booking.feeNotice.cancelAfter', {
+          hours: rule.cancelAfterHours,
+          percent: rule.feePercentage ?? 0,
+        }));
+      }
+    }
+  }
+
+  if (noShowPolicy?.enabled && noShowPolicy.chargeOnNoShow !== false) {
+    if (noShowPolicy.feeType === 'fixed') {
+      lines.push(t('booking.feeNotice.noShowFixed', {
+        amount: noShowPolicy.feeAmount ?? 0,
+      }));
+    } else {
+      lines.push(t('booking.feeNotice.noShowPercent', {
+        percent: noShowPolicy.feeAmount ?? 0,
+      }));
+    }
+  }
+
+  if (bookingFeePolicy?.enabled) {
+    if (bookingFeePolicy.type === 'flat') {
+      const amountCents = bookingFeePolicy.amount ?? 0;
+      lines.push(t('booking.feeNotice.bookingFeeFlat', {
+        amount: (amountCents / 100).toFixed(2),
+      }));
+    } else {
+      lines.push(t('booking.feeNotice.bookingPercent', {
+        percent: bookingFeePolicy.percentage ?? 0,
+      }));
+    }
+  }
+
+  return lines;
+}
+
 export function siteWantsEmbeddedBooking(siteData) {
   if (!siteData) return false;
   if (!siteSchedulingEnabled(siteData)) return false;

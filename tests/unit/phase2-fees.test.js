@@ -311,17 +311,42 @@ describe('BookingFeeService', () => {
           noShowPolicy: { enabled: true },
           bookingFeePolicy: { enabled: false },
         }),
+        booking_tenants: { site_id: 'site-1' },
+      });
+      prisma.sites.findUnique.mockResolvedValue({
+        site_data: { _features: { bookingFees: { enabled: true } } },
       });
 
       const result = await feeService.getPoliciesForService('service-1');
 
       expect(prisma.booking_services.findUnique).toHaveBeenCalledWith({
         where: { id: 'service-1' },
-        select: { cancellation_policy: true },
+        select: {
+          cancellation_policy: true,
+          booking_tenants: { select: { site_id: true } },
+        },
       });
+      expect(result.feesEnabled).toBe(true);
       expect(result.cancellationPolicy).toEqual({ enabled: true, type: 'sliding_scale' });
       expect(result.noShowPolicy).toEqual({ enabled: true });
       expect(result.bookingFeePolicy).toEqual({ enabled: false });
+    });
+
+    it('returns feesEnabled false when shop switch is off', async () => {
+      const { prisma } = await import('../../database/db.js');
+      prisma.booking_services.findUnique.mockResolvedValue({
+        cancellation_policy: JSON.stringify({
+          cancellationPolicy: { enabled: true, type: 'sliding_scale' },
+        }),
+        booking_tenants: { site_id: 'site-1' },
+      });
+      prisma.sites.findUnique.mockResolvedValue({
+        site_data: { _features: { bookingFees: { enabled: false } } },
+      });
+
+      const result = await feeService.getPoliciesForService('service-1');
+
+      expect(result.feesEnabled).toBe(false);
     });
   });
 });

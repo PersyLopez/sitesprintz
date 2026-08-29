@@ -18,7 +18,7 @@ import { buildLiveSiteMarkup, getLiveSiteThemeVars } from '../utils/publishedSit
 import { mountGoogleReviews } from '../utils/mountGoogleReviews';
 import { getSiteWorkspacePaths } from '../utils/siteWorkspace';
 import { isPayOnSiteEnabled } from '../utils/payOnSite';
-import { siteWantsNativeBooking, subdomainFromLivePath } from '../utils/visitorExperience';
+import { siteFeesEnabled, siteWantsNativeBooking, subdomainFromLivePath } from '../utils/visitorExperience';
 import { tLive } from '../i18n/liveChrome/index.js';
 import { useLocale } from '../i18n/LocaleContext.jsx';
 import '../styles/published-site-viewer.css';
@@ -273,6 +273,7 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
     || bookingSection?.content?.noPreferenceText
     || payload._operatingModel?.noPreferenceText
     || 'Any available';
+  const feesEnabled = siteFeesEnabled(payload);
   const bookingWidget = bookingEnabled ? (
     <BookingWidget
       userId={ownerUserId}
@@ -281,6 +282,7 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
       businessMode={bookingMode}
       noPreferenceText={bookingNoPreference}
       pageCatalogMode={pageCatalogMode}
+      feesEnabled={feesEnabled}
     />
   ) : null;
 

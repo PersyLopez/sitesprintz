@@ -30,6 +30,56 @@ function matchBookableService(services, id, name) {
   return services.find((service) => normalizeServiceName(service.name) === normalized);
 }
 
+function hasEnabledVisitorFeePolicies(policies) {
+  if (!policies || typeof policies !== 'object') return false;
+  const { cancellationPolicy, noShowPolicy, bookingFeePolicy } = policies;
+  if (cancellationPolicy?.enabled && Array.isArray(cancellationPolicy.rules) && cancellationPolicy.rules.length) {
+    return true;
+  }
+  if (noShowPolicy?.enabled && noShowPolicy.chargeOnNoShow !== false) {
+    return true;
+  }
+  if (bookingFeePolicy?.enabled) {
+    return true;
+  }
+  return false;
+}
+
+function formatVisitorFeeNoticePlain(policies) {
+  if (!policies || typeof policies !== 'object') return [];
+  const lines = [];
+  const { cancellationPolicy, noShowPolicy, bookingFeePolicy } = policies;
+
+  if (cancellationPolicy?.enabled && Array.isArray(cancellationPolicy.rules)) {
+    for (const rule of cancellationPolicy.rules) {
+      if (rule.cancelWithinHours != null) {
+        lines.push(`Cancel within ${rule.cancelWithinHours} hours of your appointment: ${rule.feePercentage ?? 0}% of the service price.`);
+      } else if (rule.cancelAfterHours != null) {
+        lines.push(`Cancel more than ${rule.cancelAfterHours} hours before your appointment: ${rule.feePercentage ?? 0}% of the service price.`);
+      }
+    }
+  }
+
+  if (noShowPolicy?.enabled && noShowPolicy.chargeOnNoShow !== false) {
+    if (noShowPolicy.feeType === 'fixed') {
+      lines.push(`No-show fee: $${noShowPolicy.feeAmount ?? 0}.`);
+    } else {
+      lines.push(`No-show fee: ${noShowPolicy.feeAmount ?? 0}% of the service price.`);
+    }
+  }
+
+  if (bookingFeePolicy?.enabled) {
+    if (bookingFeePolicy.type === 'flat') {
+      const amountCents = bookingFeePolicy.amount ?? 0;
+      lines.push(`Booking fee: $${(amountCents / 100).toFixed(2)} (added at checkout).`);
+    } else {
+      lines.push(`Booking fee: ${bookingFeePolicy.percentage ?? 0}% of the service price (added at checkout).`);
+    }
+  }
+
+  return lines;
+}
+
 class NativeBookingWidget {
   constructor(containerId, userId) {
     this.container = document.getElementById(containerId);
@@ -61,6 +111,7 @@ class NativeBookingWidget {
       appointment: null,
       pageCatalogMode: Boolean(document.querySelector('[data-ss-book-service]')),
       serviceFromPage: false,
+      feeNoticeLines: [],
     };
     this._pendingPagePick = null;
 
@@ -169,6 +220,25 @@ class NativeBookingWidget {
     }
   }
 
+  async loadFeePolicies() {
+    this.state.feeNoticeLines = [];
+    const serviceId = this.state.selectedService?.id;
+    if (!serviceId) return;
+
+    try {
+      const response = await fetch(`/api/booking/services/${serviceId}/fee-policies`);
+      if (!response.ok) return;
+      const policies = await response.json();
+      if (!policies.feesEnabled || !hasEnabledVisitorFeePolicies(policies)) {
+        this.state.feeNoticeLines = [];
+        return;
+      }
+      this.state.feeNoticeLines = formatVisitorFeeNoticePlain(policies);
+    } catch {
+      this.state.feeNoticeLines = [];
+    }
+  }
+
   async submitAppointment() {
     if (!this.validateForm()) {
       return;
@@ -238,6 +308,7 @@ class NativeBookingWidget {
   handleServiceSelect(service, fromPage = false) {
     this.state.selectedService = service;
     this.state.serviceFromPage = fromPage;
+    this.state.feeNoticeLines = [];
     this.render();
   }
 
@@ -266,6 +337,7 @@ class NativeBookingWidget {
     this.state.selectedDate = null;
     this.state.selectedTime = null;
     this.state.timeSlots = [];
+    this.state.feeNoticeLines = [];
     this.render();
   }
 
@@ -279,9 +351,10 @@ class NativeBookingWidget {
     this.render();
   }
 
-  handleNextFromTime() {
+  async handleNextFromTime() {
     if (this.state.selectedTime) {
       this.state.step = 'form';
+      await this.loadFeePolicies();
       this.render();
     }
   }
@@ -623,6 +696,12 @@ class NativeBookingWidget {
           ` : ''}
           ${this.state.loading ? `
             <div data-testid="booking-loading">Processing your booking...</div>
+          ` : ''}
+          ${this.state.feeNoticeLines?.length ? `
+            <div data-testid="booking-fee-notice" class="booking-summary email-notice">
+              <h3>Fees &amp; policies</h3>
+              ${this.state.feeNoticeLines.map((line) => `<p>${this.escapeHtml(line)}</p>`).join('')}
+            </div>
           ` : ''}
           <button
             data-testid="book-now-button"

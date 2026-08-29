@@ -23,6 +23,9 @@ import {
 import { TEMPLATE_TO_SHOWCASE_SUBDOMAIN } from '../src/utils/galleryTemplateMap.js';
 import { PLATFORM_SUPPORT_EMAIL } from '../src/config/pricing.config.js';
 import StaffManagementService from '../server/services/booking/StaffManagementService.js';
+import BookingFeeService from '../server/services/booking/BookingFeeService.js';
+import { applyShopIntakeSiteFeatures } from '../server/services/booking/shopIntakeFlags.js';
+import { parseSiteData } from '../server/utils/parseSiteData.js';
 
 dotenv.config();
 
@@ -557,7 +560,12 @@ function assembleSiteData(example) {
     _level: generated._level,
     _niche: generated._niche,
     _theme: generated._theme,
-    _features: generated._features,
+    _features: {
+      ...(generated._features || {}),
+      ...(isBooking
+        ? { bookingFees: { offered: true, enabled: true } }
+        : {}),
+    },
     _layoutSections: generated.sections,
     products,
     _demo: true,
@@ -691,6 +699,67 @@ function bookingServicePicks(example, siteData) {
   return BOOKING_FALLBACKS[niche] || BOOKING_FALLBACKS.salon;
 }
 
+const GALLERY_DEMO_FEE_POLICIES = {
+  cancellationPolicy: {
+    enabled: true,
+    type: 'sliding_scale',
+    rules: [
+      { cancelWithinHours: 24, feePercentage: 100 },
+      { cancelWithinHours: 48, feePercentage: 50 },
+      { cancelAfterHours: 48, feePercentage: 0 },
+    ],
+  },
+  noShowPolicy: {
+    enabled: true,
+    chargeOnNoShow: true,
+    feeType: 'percentage',
+    feeAmount: 100,
+    requireConfirmation: true,
+  },
+  bookingFeePolicy: {
+    enabled: false,
+    type: 'percentage',
+    percentage: 2.5,
+    nonRefundable: false,
+  },
+};
+
+async function applyDemoFeePoliciesToServices(serviceIds) {
+  const feeService = new BookingFeeService();
+  for (const serviceId of serviceIds) {
+    await feeService.updateCancellationPolicy(serviceId, GALLERY_DEMO_FEE_POLICIES.cancellationPolicy);
+    await feeService.updateNoShowPolicy(serviceId, GALLERY_DEMO_FEE_POLICIES.noShowPolicy);
+    await feeService.updateBookingFeePolicy(serviceId, GALLERY_DEMO_FEE_POLICIES.bookingFeePolicy);
+  }
+}
+
+export async function applyGalleryDemoFeeTransparency() {
+  const sites = await prisma.sites.findMany({
+    where: { subdomain: { startsWith: 'gallery-' } },
+    select: { id: true, subdomain: true, site_data: true },
+  });
+  let patched = 0;
+  for (const site of sites) {
+    const tenant = await prisma.booking_tenants.findFirst({
+      where: { site_id: site.id },
+      select: { id: true },
+    });
+    if (!tenant) continue;
+    const next = applyShopIntakeSiteFeatures(parseSiteData(site.site_data), { feesEnabled: true });
+    await prisma.sites.update({
+      where: { id: site.id },
+      data: { site_data: next },
+    });
+    const services = await prisma.booking_services.findMany({
+      where: { tenant_id: tenant.id, status: 'active' },
+      select: { id: true },
+    });
+    await applyDemoFeePoliciesToServices(services.map((row) => row.id));
+    patched += 1;
+  }
+  return patched;
+}
+
 async function ensureSiteBooking(owner, example) {
   const siteData = applyCuratedTheme(assembleSiteData(example), example);
   const site = await prisma.sites.findUnique({
@@ -762,6 +831,12 @@ async function ensureSiteBooking(owner, example) {
 
   const staffService = new StaffManagementService();
   await staffService.getOrCreateDefaultStaff(tenant.id);
+
+  const created = await prisma.booking_services.findMany({
+    where: { tenant_id: tenant.id },
+    select: { id: true },
+  });
+  await applyDemoFeePoliciesToServices(created.map((row) => row.id));
 }
 
 async function ensureGalleryBookings(owner) {
@@ -845,6 +920,7 @@ async function main() {
     results.push(await upsertSite(owner, example));
   }
   await ensureGalleryBookings(owner);
+  await applyGalleryDemoFeeTransparency();
 
   if (removed.length > 0) {
     console.log('Removed stale gallery sites:');

@@ -1,0 +1,219 @@
+url: http://localhost:5173/login
+goal: Visitor booking form shows fee notice only when salon fees switch is on
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter gallery email
+    fill: { testId: login-email, value: "gallery@sitesprintz.com", clear: true }
+
+  - action: Enter gallery password
+    fill: { testId: login-password, value: "GalleryDemo123!", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+    settle_ms: 300
+
+  - action: Open salon booking settings
+    goto: http://localhost:5173/dashboard/sites/gallery-salon/appointments
+    settle_ms: 800
+    wait_for: { testId: booking-dashboard-page, timeout: 20000 }
+
+  - action: Settings tab
+    click: { testId: settings-tab }
+    settle_ms: 800
+    wait_for: { testId: booking-intake-settings, timeout: 15000 }
+
+  - action: Enable fees, save shop switch, persist first-service policies
+    code: |
+      const fees = page.getByTestId('fees-enabled-switch');
+      if (!(await fees.isChecked())) await fees.check();
+      await page.locator('.fee-configuration').waitFor({ timeout: 8000 });
+      await page.getByTestId('save-booking-settings-btn').click();
+      await page.getByTestId('save-fee-policies').waitFor({ timeout: 8000 });
+      await page.waitForFunction(() => {
+        const el = document.querySelector('[data-testid="save-fee-policies"]');
+        return el && !el.disabled;
+      }, { timeout: 8000 });
+      await page.getByTestId('save-fee-policies').click();
+      await page.getByTestId('fee-policies-saved').waitFor({ timeout: 8000 });
+    settle_ms: 400
+
+  - action: Open salon live site
+    goto: http://localhost:5173/view/gallery-salon
+    settle_ms: 2000
+    wait_for: { selector: '[data-testid="live-booking-widget"]', timeout: 12000 }
+
+  - action: Salon visitor form shows fee notice
+    code: |
+      const pageBook = page.locator('#services [data-ss-book-service], [data-ss-book-service]');
+      const select = page.getByTestId('booking-service-select');
+      const card = page.locator('[data-testid^="service-card-"]');
+      if (await pageBook.count()) {
+        await pageBook.first().click();
+      } else if (await select.count()) {
+        const options = await select.locator('option').all();
+        if (options.length > 1) await select.selectOption({ index: 1 });
+        const next = page.getByTestId('next-button');
+        if (await next.count()) await next.first().click();
+      } else if (await card.count()) {
+        await card.first().click();
+        const next = page.getByTestId('next-button');
+        if (await next.count()) await next.first().click();
+      } else {
+        throw new Error('Salon has no bookable service control');
+      }
+      const staffStep = page.getByTestId('staff-selection-step');
+      if (await staffStep.count()) {
+        const staffCards = page.locator('[data-testid^="staff-card-"]');
+        if (await staffCards.count()) await staffCards.first().click();
+        const next = page.getByTestId('next-button').first();
+        if (await next.count()) await next.click();
+      }
+      await page.getByTestId('calendar').waitFor({ timeout: 12000 });
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      let picked = false;
+      for (let offset = 1; offset <= 14; offset += 1) {
+        const day = new Date(today);
+        day.setDate(today.getDate() + offset);
+        if (day.getDay() === 0) continue;
+        const iso = day.getFullYear() + '-' + String(day.getMonth() + 1).padStart(2, '0') + '-' + String(day.getDate()).padStart(2, '0');
+        const btn = page.getByTestId('date-' + iso);
+        if ((await btn.count()) === 0) {
+          const nextMonth = page.getByTestId('next-month');
+          if (await nextMonth.count()) await nextMonth.click();
+        }
+        if ((await btn.count()) > 0 && await btn.isEnabled()) {
+          await btn.click();
+          picked = true;
+          break;
+        }
+      }
+      if (!picked) throw new Error('Salon calendar had no enabled weekday');
+      await page.getByTestId('time-slots').waitFor({ timeout: 10000 });
+      const slot = page.locator('[data-testid^="time-slot-"]').first();
+      if (!(await slot.count())) throw new Error('Salon had no time slots');
+      await slot.click();
+      const nextBtn = page.getByTestId('next-button').first();
+      if (await nextBtn.count()) await nextBtn.click();
+      await page.getByTestId('customer-form').waitFor({ timeout: 12000 });
+      await page.getByTestId('booking-fee-notice').waitFor({ timeout: 8000 });
+    settle_ms: 400
+
+  - action: Return to salon settings to disable fees
+    goto: http://localhost:5173/dashboard/sites/gallery-salon/appointments
+    settle_ms: 800
+    wait_for: { testId: booking-dashboard-page, timeout: 20000 }
+
+  - action: Settings tab again
+    click: { testId: settings-tab }
+    settle_ms: 800
+    wait_for: { testId: booking-intake-settings, timeout: 15000 }
+
+  - action: Disable fees and save
+    code: |
+      const fees = page.getByTestId('fees-enabled-switch');
+      if (await fees.isChecked()) await fees.uncheck();
+      await page.getByTestId('save-booking-settings-btn').click();
+      await page.waitForTimeout(1200);
+    settle_ms: 400
+
+  - action: Open salon live site again
+    goto: http://localhost:5173/view/gallery-salon
+    settle_ms: 2000
+    wait_for: { selector: '[data-testid="live-booking-widget"]', timeout: 12000 }
+
+  - action: Salon visitor form hides fee notice
+    code: |
+      const pageBook = page.locator('#services [data-ss-book-service], [data-ss-book-service]');
+      const select = page.getByTestId('booking-service-select');
+      const card = page.locator('[data-testid^="service-card-"]');
+      if (await pageBook.count()) {
+        await pageBook.first().click();
+      } else if (await select.count()) {
+        const options = await select.locator('option').all();
+        if (options.length > 1) await select.selectOption({ index: 1 });
+        const next = page.getByTestId('next-button');
+        if (await next.count()) await next.first().click();
+      } else if (await card.count()) {
+        await card.first().click();
+        const next = page.getByTestId('next-button');
+        if (await next.count()) await next.first().click();
+      }
+      const staffStep = page.getByTestId('staff-selection-step');
+      if (await staffStep.count()) {
+        const staffCards = page.locator('[data-testid^="staff-card-"]');
+        if (await staffCards.count()) await staffCards.first().click();
+        const next = page.getByTestId('next-button').first();
+        if (await next.count()) await next.click();
+      }
+      await page.getByTestId('calendar').waitFor({ timeout: 12000 });
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      let picked = false;
+      for (let offset = 1; offset <= 14; offset += 1) {
+        const day = new Date(today);
+        day.setDate(today.getDate() + offset);
+        if (day.getDay() === 0) continue;
+        const iso = day.getFullYear() + '-' + String(day.getMonth() + 1).padStart(2, '0') + '-' + String(day.getDate()).padStart(2, '0');
+        const btn = page.getByTestId('date-' + iso);
+        if ((await btn.count()) === 0) {
+          const nextMonth = page.getByTestId('next-month');
+          if (await nextMonth.count()) await nextMonth.click();
+        }
+        if ((await btn.count()) > 0 && await btn.isEnabled()) {
+          await btn.click();
+          picked = true;
+          break;
+        }
+      }
+      if (!picked) throw new Error('Salon calendar had no enabled weekday');
+      await page.getByTestId('time-slots').waitFor({ timeout: 10000 });
+      const slot = page.locator('[data-testid^="time-slot-"]').first();
+      if (await slot.count()) await slot.click();
+      const nextBtn = page.getByTestId('next-button').first();
+      if (await nextBtn.count()) await nextBtn.click();
+      await page.getByTestId('customer-form').waitFor({ timeout: 12000 });
+      if (await page.getByTestId('booking-fee-notice').count()) {
+        throw new Error('booking-fee-notice should be hidden when fees disabled');
+      }
+    settle_ms: 400
+
+  - action: Restore salon fees on so the gallery demo keeps visitor transparency
+    goto: http://localhost:5173/dashboard/sites/gallery-salon/appointments
+    settle_ms: 800
+    wait_for: { testId: booking-dashboard-page, timeout: 20000 }
+
+  - action: Settings tab restore
+    click: { testId: settings-tab }
+    settle_ms: 800
+    wait_for: { testId: booking-intake-settings, timeout: 15000 }
+
+  - action: Enable fees again and save
+    code: |
+      const fees = page.getByTestId('fees-enabled-switch');
+      if (!(await fees.isChecked())) await fees.check();
+      await page.locator('.fee-configuration').waitFor({ timeout: 8000 });
+      await page.getByTestId('save-booking-settings-btn').click();
+      await page.getByTestId('save-fee-policies').waitFor({ timeout: 8000 });
+      await page.waitForFunction(() => {
+        const el = document.querySelector('[data-testid="save-fee-policies"]');
+        return el && !el.disabled;
+      }, { timeout: 8000 });
+      await page.getByTestId('save-fee-policies').click();
+      await page.getByTestId('fee-policies-saved').waitFor({ timeout: 8000 });

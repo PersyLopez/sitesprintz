@@ -7,6 +7,8 @@ import {
   siteSchedulingEnabled,
   siteUrgentEnabled,
   siteFeesEnabled,
+  hasEnabledVisitorFeePolicies,
+  formatVisitorFeeNoticeLines,
 } from '../../src/utils/visitorExperience.js';
 import { pickBookingServicesFromSiteData, pickBookingStaffFromSiteData } from '../../server/services/booking/ensurePublishedBooking.js';
 
@@ -79,6 +81,40 @@ describe('visitorExperience', () => {
     expect(siteFeesEnabled({ _features: { bookingFees: { enabled: true } } })).toBe(true);
     expect(siteFeesEnabled({ _features: { bookingFees: { enabled: false } } })).toBe(false);
     expect(siteFeesEnabled({})).toBe(false);
+  });
+
+  it('formats enabled visitor fee policies into disclosure lines', () => {
+    const t = (key, vars = {}) => {
+      const templates = {
+        'booking.feeNotice.cancelWithin': 'Cancel within {hours} hours: {percent}%',
+        'booking.feeNotice.noShowPercent': 'No-show: {percent}%',
+        'booking.feeNotice.bookingPercent': 'Booking fee: {percent}%',
+      };
+      return Object.entries(vars).reduce(
+        (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+        templates[key] || key,
+      );
+    };
+
+    expect(hasEnabledVisitorFeePolicies({
+      cancellationPolicy: { enabled: false },
+      noShowPolicy: { enabled: false },
+      bookingFeePolicy: { enabled: false },
+    })).toBe(false);
+
+    const lines = formatVisitorFeeNoticeLines({
+      cancellationPolicy: {
+        enabled: true,
+        rules: [{ cancelWithinHours: 24, feePercentage: 100 }],
+      },
+      noShowPolicy: { enabled: true, chargeOnNoShow: true, feeType: 'percentage', feeAmount: 50 },
+      bookingFeePolicy: { enabled: true, type: 'percentage', percentage: 2.5 },
+    }, t);
+
+    expect(lines).toHaveLength(3);
+    expect(lines[0]).toContain('24');
+    expect(lines[1]).toContain('50');
+    expect(lines[2]).toContain('2.5');
   });
 });
 

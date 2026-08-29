@@ -119,4 +119,11 @@ export default {
   'booking.prevMonth': 'Mes anterior',
   'booking.emptyNow': 'No hay servicios disponibles por ahora.',
   'booking.emailNotice': 'Se envió un correo de confirmación a {email}',
+  'booking.feeNotice.title': 'Tarifas y políticas',
+  'booking.feeNotice.cancelWithin': 'Cancelar dentro de {hours} horas de tu cita: {percent}% del precio del servicio.',
+  'booking.feeNotice.cancelAfter': 'Cancelar con más de {hours} horas de anticipación: {percent}% del precio del servicio.',
+  'booking.feeNotice.noShowFixed': 'Cargo por no presentarse: ${amount}.',
+  'booking.feeNotice.noShowPercent': 'Cargo por no presentarse: {percent}% del precio del servicio.',
+  'booking.feeNotice.bookingFeeFlat': 'Tarifa de reserva: ${amount} (se suma al pagar).',
+  'booking.feeNotice.bookingPercent': 'Tarifa de reserva: {percent}% del precio del servicio (se suma al pagar).',
 };

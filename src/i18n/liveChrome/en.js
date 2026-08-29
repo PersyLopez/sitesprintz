@@ -119,4 +119,11 @@ export default {
   'booking.prevMonth': 'Previous month',
   'booking.emptyNow': 'No services available at this time.',
   'booking.emailNotice': 'A confirmation email has been sent to {email}',
+  'booking.feeNotice.title': 'Fees & policies',
+  'booking.feeNotice.cancelWithin': 'Cancel within {hours} hours of your appointment: {percent}% of the service price.',
+  'booking.feeNotice.cancelAfter': 'Cancel more than {hours} hours before your appointment: {percent}% of the service price.',
+  'booking.feeNotice.noShowFixed': 'No-show fee: ${amount}.',
+  'booking.feeNotice.noShowPercent': 'No-show fee: {percent}% of the service price.',
+  'booking.feeNotice.bookingFeeFlat': 'Booking fee: ${amount} (added at checkout).',
+  'booking.feeNotice.bookingPercent': 'Booking fee: {percent}% of the service price (added at checkout).',
 };

@@ -62,4 +62,47 @@ describe('NativeBookingWidget', () => {
     expect(container.innerHTML).toContain('No times available this day. Try another date.');
     expect(container.querySelector('[data-testid="slots-empty"]')).toBeTruthy();
   });
+
+  it('shows fee notice on form when shop fees and policies are enabled', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        feesEnabled: true,
+        cancellationPolicy: {
+          enabled: true,
+          rules: [{ cancelWithinHours: 24, feePercentage: 100 }],
+        },
+        noShowPolicy: { enabled: false },
+        bookingFeePolicy: { enabled: false },
+      }),
+    });
+
+    widget.state.step = 'form';
+    widget.state.selectedService = { id: 'svc-1', name: 'Cut' };
+    await widget.loadFeePolicies();
+    widget.renderForm();
+
+    expect(container.querySelector('[data-testid="booking-fee-notice"]')).toBeTruthy();
+    expect(container.textContent).toMatch(/Cancel within 24 hours/i);
+  });
+
+  it('does not show fee notice when shop fees are off in API response', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        feesEnabled: false,
+        cancellationPolicy: {
+          enabled: true,
+          rules: [{ cancelWithinHours: 24, feePercentage: 100 }],
+        },
+      }),
+    });
+
+    widget.state.step = 'form';
+    widget.state.selectedService = { id: 'svc-1', name: 'Cut' };
+    await widget.loadFeePolicies();
+    widget.renderForm();
+
+    expect(container.querySelector('[data-testid="booking-fee-notice"]')).toBeFalsy();
+  });
 });

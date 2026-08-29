@@ -375,12 +375,26 @@ class BookingFeeService {
         where: { id: serviceId },
         select: {
           cancellation_policy: true,
-        }
+          booking_tenants: {
+            select: { site_id: true },
+          },
+        },
       });
+
+      let feesEnabled = false;
+      const siteId = service?.booking_tenants?.site_id;
+      if (siteId) {
+        const site = await prisma.sites.findUnique({
+          where: { id: siteId },
+          select: { site_data: true },
+        });
+        feesEnabled = siteFeesEnabled(parseSiteData(site?.site_data));
+      }
 
       const unpacked = unpackFeePolicies(service?.cancellation_policy);
       return {
         serviceId,
+        feesEnabled,
         cancellationPolicy: unpacked.cancellationPolicy,
         noShowPolicy: unpacked.noShowPolicy,
         bookingFeePolicy: unpacked.bookingFeePolicy,

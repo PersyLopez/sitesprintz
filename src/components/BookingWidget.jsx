@@ -5,6 +5,10 @@ import {
   shouldShowStaffSelection,
   resolveAutoAssignedStaffId,
 } from '../utils/bookingStaffFlow';
+import {
+  formatVisitorFeeNoticeLines,
+  hasEnabledVisitorFeePolicies,
+} from '../utils/visitorExperience';
 import { useLocale } from '../i18n/LocaleContext.jsx';
 import { tLive } from '../i18n/liveChrome/index.js';
 import './BookingWidget.css';
@@ -156,10 +160,11 @@ const BookingWidget = ({
   businessMode = 'solo',
   noPreferenceText = 'Any available',
   pageCatalogMode = false,
+  feesEnabled = false,
 }) => {
   const { userId: paramUserId } = useParams();
   const userId = propUserId || paramUserId;
-  const { t } = useLiveT();
+  const { locale, t } = useLiveT();
   const [step, setStep] = useState('services'); // services, date, time, form, confirmation
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -186,6 +191,7 @@ const BookingWidget = ({
 
   const [appointment, setAppointment] = useState(null);
   const [serviceFromPage, setServiceFromPage] = useState(false);
+  const [feeNoticeLines, setFeeNoticeLines] = useState([]);
   const pendingPagePickRef = useRef(null);
 
   const siteQuery = siteId ? { siteId } : undefined;
@@ -240,6 +246,37 @@ const BookingWidget = ({
     window.addEventListener('ss-book-service-select', onPagePick);
     return () => window.removeEventListener('ss-book-service-select', onPagePick);
   }, [pageCatalogMode, services, showStaff, businessMode, staff]);
+
+  useEffect(() => {
+    if (!selectedService?.id) {
+      setFeeNoticeLines([]);
+      return undefined;
+    }
+
+    let cancelled = false;
+    const loadFeeNotice = async () => {
+      try {
+        const policies = await get(`/api/booking/services/${selectedService.id}/fee-policies`);
+        if (cancelled) return;
+        const shopFeesOn = feesEnabled || policies?.feesEnabled === true;
+        if (!shopFeesOn || !hasEnabledVisitorFeePolicies(policies)) {
+          setFeeNoticeLines([]);
+          return;
+        }
+        setFeeNoticeLines(formatVisitorFeeNoticeLines(
+          policies,
+          (key, vars) => tLive(locale, key, vars),
+        ));
+      } catch {
+        if (!cancelled) setFeeNoticeLines([]);
+      }
+    };
+
+    loadFeeNotice();
+    return () => {
+      cancelled = true;
+    };
+  }, [feesEnabled, selectedService?.id, locale]);
 
   const fetchServices = async () => {
     try {
@@ -768,6 +805,15 @@ const BookingWidget = ({
 
           {loading && (
             <div data-testid="booking-loading">{t('booking.processing')}</div>
+          )}
+
+          {feeNoticeLines.length > 0 && (
+            <div data-testid="booking-fee-notice" className="booking-summary email-notice">
+              <h3>{t('booking.feeNotice.title')}</h3>
+              {feeNoticeLines.map((line) => (
+                <p key={line}>{line}</p>
+              ))}
+            </div>
           )}
 
           <button
