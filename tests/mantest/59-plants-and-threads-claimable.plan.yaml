@@ -1,5 +1,5 @@
 url: http://localhost:5173/view/plants-and-threads
-goal: Plants & Threads live site is bilingual, hides Walnut Avenue, and keeps pay-on-site shopping
+goal: Plants & Threads live site is bilingual, hides Walnut Avenue, pay-on-site shopping, and sewing slots work
 steps:
   - action: English live site loads
     wait_for: { text: Plants & Threads, timeout: 20000 }
@@ -84,3 +84,96 @@ steps:
       if (!/Sewing/i.test(body)) throw new Error('Sewing service missing on live page');
       const err = await page.locator('[data-testid="error-message"]').count();
       if (err) throw new Error('Booking widget shows an error');
+
+  - action: Pick sewing from the catalog or widget
+    code: |
+      const pageBook = page.locator('#services [data-ss-book-service], [data-ss-book-service]');
+      const select = page.getByTestId('booking-service-select');
+      const card = page.locator('[data-testid^="service-card-"]');
+      if (await pageBook.count()) {
+        await pageBook.filter({ hasText: /Sew/i }).first().click({ timeout: 8000 }).catch(async () => {
+          await pageBook.first().click();
+        });
+      } else if (await select.count()) {
+        const options = await select.locator('option').allTextContents();
+        const sewing = options.find((o) => /Sew/i.test(o));
+        if (sewing) await select.selectOption({ label: sewing });
+        else if (options.length > 1) await select.selectOption({ index: 1 });
+        const next = page.getByTestId('next-button');
+        if (await next.count()) await next.first().click();
+      } else if (await card.count()) {
+        await card.first().click();
+        const next = page.getByTestId('next-button');
+        if (await next.count()) await next.first().click();
+      } else {
+        throw new Error('Plants & Threads has no bookable sewing control');
+      }
+    settle_ms: 800
+
+  - action: Continue through optional staff step
+    code: |
+      const staffStep = page.getByTestId('staff-selection-step');
+      if (await staffStep.count()) {
+        const staffCards = page.locator('[data-testid^="staff-card-"]').filter({
+          hasNot: page.getByTestId('staff-card-no-preference'),
+        });
+        if (await staffCards.count()) {
+          await staffCards.first().click({ timeout: 3000 });
+        } else {
+          const noPref = page.getByTestId('staff-card-no-preference');
+          if (await noPref.count()) await noPref.click({ timeout: 3000 });
+        }
+        const next = page.getByTestId('next-button').first();
+        await next.waitFor({ timeout: 5000 });
+        await next.click();
+      }
+    settle_ms: 800
+
+  - action: Calendar is visible
+    wait_for: { selector: '[data-testid="calendar"]', timeout: 12000 }
+
+  - action: Pick a weekday and see sewing times
+    code: |
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      let picked = false;
+      for (let offset = 1; offset <= 21; offset += 1) {
+        const day = new Date(today);
+        day.setDate(today.getDate() + offset);
+        if (day.getDay() === 0 || day.getDay() === 6) continue;
+        const iso = day.getFullYear() + '-' + String(day.getMonth() + 1).padStart(2, '0') + '-' + String(day.getDate()).padStart(2, '0');
+        const btn = page.getByTestId('date-' + iso);
+        if ((await btn.count()) === 0) {
+          const nextMonth = page.getByTestId('next-month');
+          if (await nextMonth.count()) {
+            await nextMonth.click();
+            await page.waitForTimeout(300);
+          }
+        }
+        if ((await btn.count()) === 0 || !(await btn.isEnabled())) continue;
+        await btn.click();
+        const slots = page.locator('[data-testid^="time-slot-"]');
+        const empty = page.getByTestId('slots-empty');
+        const loading = page.getByText(/Finding available times/i);
+        await Promise.race([
+          slots.first().waitFor({ timeout: 10000 }).catch(() => {}),
+          empty.waitFor({ timeout: 10000 }).catch(() => {}),
+        ]);
+        if (await loading.count()) {
+          await loading.first().waitFor({ state: 'hidden', timeout: 8000 }).catch(() => {});
+        }
+        if ((await slots.count()) > 0) {
+          await slots.first().click();
+          picked = true;
+          break;
+        }
+      }
+      if (!picked) throw new Error('Sewing calendar had no weekday with times');
+    settle_ms: 400
+
+  - action: Continue to customer form
+    click: { testId: next-button }
+    settle_ms: 600
+
+  - action: Customer form is visible
+    wait_for: { selector: '[data-testid="customer-form"]', timeout: 8000 }

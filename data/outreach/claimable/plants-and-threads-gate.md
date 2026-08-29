@@ -22,9 +22,9 @@ none
 | Add plant → pay-on-site checkout | **pass** (mantest 59) |
 | Booking widget mount | **pass** (mantest 59 `[data-testid="live-booking-widget"]`) |
 | Sewing on the page | **pass** |
-| Calendar slot reachable | pending (see leftover) |
+| Calendar slot reachable | **pass** (mantest 59: weekday times → customer form; did not submit) |
 | Contact form POST | skip — phone and email are Missing; form has nowhere honest to deliver |
-| Claim API + claim page | **pass** on production seed |
+| Claim API + claim page | **pass** (production `GET /api/claim/:token` 200, Plants & Threads) |
 
 ## URLs (production)
 
@@ -39,7 +39,7 @@ Already verified:
 - The page loads and the plant photos show
 - English and Spanish both work on the same page
 - Shop: add a plant and pay on site (please bring cash — we do not take cards)
-- Book sewing stays on this site; price is quoted in person
+- Book sewing stays on this site; you can pick a weekday time (price quoted in person)
 - Your street is not on the public page
 
 Look: https://sitesprintz.com/view/plants-and-threads
@@ -51,5 +51,6 @@ Growth is $35/month if you will edit, or Growth Managed $75/month if we keep the
 
 ## Leftover risk
 
-- Widget default hours vs “by appointment” (product limit; do not invent a salon week).
-- Calendar slot path not walked in mantest 59 yet (widget mount only).
+- Widget default hours are Mon–Fri 9–5 (product default). Public Hours still say by appointment — do not invent a salon week on the page.
+- Nav currently lists Shop twice.
+- Contact form not posted (no phone/email in intake).
