@@ -1,0 +1,51 @@
+url: http://localhost:5173/view/gallery-salon
+goal: Gallery demos show loaded, niche-specific owner photos in the same slots a customer would fill
+steps:
+  - action: Every landing-niche demo has a real hero photo
+    wait_for: { text: Luxe Beauty Studio, timeout: 20000 }
+    settle_ms: 400
+    code: |
+      const sites = [
+        { sub: 'gallery-salon', name: 'Luxe Beauty Studio' },
+        { sub: 'gallery-restaurant', name: 'The Grand Table' },
+        { sub: 'gallery-gym', name: 'Forge Fitness' },
+        { sub: 'gallery-consultant', name: 'Northstar Advisory' },
+        { sub: 'gallery-freelancer', name: 'Mira Design Studio' },
+        { sub: 'gallery-cleaning', name: 'Cedar Clean Co' },
+        { sub: 'gallery-electrician', name: 'Brightline Electric' },
+        { sub: 'gallery-auto', name: 'Harbor Auto Works' },
+        { sub: 'gallery-pet', name: 'Paws & Pine' },
+        { sub: 'gallery-plumbing', name: 'Clearflow Plumbing' },
+        { sub: 'gallery-tech', name: 'Circuit Fix Mobile' },
+        { sub: 'gallery-tow', name: 'Summit Tow & Recovery' },
+        { sub: 'gallery-products', name: 'Harbor Goods' },
+        { sub: 'gallery-ordering', name: 'Oak & Anchor Supply' },
+        { sub: 'gallery-food-stall', name: 'Sunset Tacos' },
+      ];
+      const heroes = [];
+      for (const site of sites) {
+        await page.goto('http://localhost:5173/view/' + site.sub, { waitUntil: 'domcontentloaded' });
+        await page.getByText(site.name, { exact: false }).first().waitFor({ timeout: 20000 });
+        await page.waitForFunction(() => {
+          return [...document.images].some((img) => img.naturalWidth > 80 && img.getBoundingClientRect().width >= 240);
+        }, { timeout: 15000 });
+        const natural = await page.locator('img').evaluateAll((nodes) => {
+          const wide = nodes.find((img) => img.naturalWidth > 80 && img.getBoundingClientRect().width >= 240);
+          return wide ? { nw: wide.naturalWidth, src: wide.currentSrc || wide.src } : null;
+        });
+        if (!natural || natural.nw < 80) {
+          throw new Error(site.sub + ' hero image did not decode');
+        }
+        if (/hero-placeholder/i.test(natural.src)) {
+          throw new Error(site.sub + ' still showing the insert placeholder');
+        }
+        if (!/\/uploads\//.test(natural.src)) {
+          throw new Error(site.sub + ' hero is not an owner upload: ' + natural.src);
+        }
+        heroes.push({ sub: site.sub, src: natural.src });
+      }
+      const srcs = heroes.map((h) => h.src);
+      const unique = new Set(srcs);
+      if (unique.size < 10) {
+        throw new Error('Too many demos share the same photo: ' + JSON.stringify(heroes));
+      }
