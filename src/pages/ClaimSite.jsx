@@ -5,6 +5,7 @@ import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import LaborExtrasNote from '../components/pricing/LaborExtrasNote';
+import { PLATFORM_SUPPORT_EMAIL } from '../config/pricing.config';
 import './Auth.css';
 
 function authHeaders(token) {
@@ -217,6 +218,10 @@ function ClaimSite() {
             <div className="error-message">
               <h2>Claim link unavailable</h2>
               <p>{error}</p>
+              <p>
+                Need help?{' '}
+                <a href={`mailto:${PLATFORM_SUPPORT_EMAIL}`}>{PLATFORM_SUPPORT_EMAIL}</a>
+              </p>
             </div>
           ) : (
             <>

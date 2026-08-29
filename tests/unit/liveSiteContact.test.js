@@ -61,6 +61,26 @@ describe('liveSiteContact', () => {
     expect(resolvePrivateAddressForBuyer(siteData)).toBe('99 Hidden Ln Unit 4B');
   });
 
+  it('rewrites gallery demo contact email to platform support', () => {
+    const publicData = toPublicSiteData({
+      _demo: true,
+      settings: { demoMode: true },
+      contact: { email: 'hello@luxebeautystudio.com' },
+      contactEmail: 'hello@luxebeautystudio.com',
+      brand: { email: 'hello@luxebeautystudio.com' },
+    });
+    expect(publicData.contact.email).toBe('support@sitesprintz.com');
+    expect(publicData.contactEmail).toBe('support@sitesprintz.com');
+    expect(publicData.brand.email).toBe('support@sitesprintz.com');
+  });
+
+  it('leaves real site contact email alone', () => {
+    const publicData = toPublicSiteData({
+      contact: { email: 'owner@truecuts.example' },
+    });
+    expect(publicData.contact.email).toBe('owner@truecuts.example');
+  });
+
   it('returns no buyer street unless area mode is on', () => {
     expect(resolvePrivateAddressForBuyer({
       contact: { address: '99 Hidden Ln', addressDisplay: 'street' },

@@ -82,6 +82,14 @@ describe('Footer Component', () => {
       });
     });
 
+    it('should show platform support email', () => {
+      renderFooter();
+
+      const support = screen.getByTestId('footer-support-email');
+      expect(support).toHaveAttribute('href', 'mailto:support@sitesprintz.com');
+      expect(support).toHaveTextContent('support@sitesprintz.com');
+    });
+
     it('should handle internal navigation links', () => {
       renderFooter();
       

@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { useToast } from '../hooks/useToast';
+import { PLATFORM_SUPPORT_EMAIL } from '../config/pricing.config';
 import './Auth.css';
 
 function VerifyEmail() {
@@ -130,6 +131,10 @@ function VerifyEmail() {
                   <Link to="/register" className="link-primary">
                     Create New Account
                   </Link>
+                </p>
+                <p>
+                  Need help?{' '}
+                  <a href={`mailto:${PLATFORM_SUPPORT_EMAIL}`}>{PLATFORM_SUPPORT_EMAIL}</a>
                 </p>
               </div>
             </div>

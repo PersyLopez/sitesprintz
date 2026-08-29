@@ -4,6 +4,7 @@ import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { PasswordStrengthMeter } from '../components/auth/PasswordStrengthMeter';
+import { PLATFORM_SUPPORT_EMAIL } from '../config/pricing.config';
 import './Auth.css';
 
 function ResetPassword() {
@@ -103,7 +104,9 @@ function ResetPassword() {
               <h2>Invalid Reset Link</h2>
               <p>
                 This password reset link is invalid or has expired.
-                Please request a new one.
+                Please request a new one, or write{' '}
+                <a href={`mailto:${PLATFORM_SUPPORT_EMAIL}`}>{PLATFORM_SUPPORT_EMAIL}</a>
+                .
               </p>
               <div className="auth-links">
                 <Link to="/forgot-password" className="btn btn-primary" data-testid="reset-password-request-new">

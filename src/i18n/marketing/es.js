@@ -27,6 +27,7 @@ export default {
   'footer.howItWorks': 'Cómo funciona',
   'footer.about': 'Nosotros',
   'footer.contact': 'Contacto',
+  'footer.supportEmail': 'support@sitesprintz.com',
   'footer.register': 'Crear cuenta',
   'footer.login': 'Entrar',
   'footer.terms': 'Términos del servicio',
@@ -99,7 +100,7 @@ export default {
   'labor.extras.look': 'Look propio — ${look} una vez. Papel, tipografía y acento para tu sitio, en este mismo diseño.',
   'labor.extras.cta': 'Pídenos que lo construyamos o actualicemos',
   'labor.extras.ctaEmail': 'O escríbenos por correo',
-  'labor.extras.ctaUnavailable': 'Escribe a hello@sitesprintz.com para añadir uno',
+  'labor.extras.ctaUnavailable': 'Escribe a support@sitesprintz.com para añadir uno',
   'labor.extras.themeHint': '¿Quieres tu logo y colores aplicados por nosotros? Marca a tu medida ${brand}, o un look propio ${look}.',
   'labor.extras.themeHintLink': 'Ver extras opcionales',
   'landing.plan.starter.tagline': 'Alojamiento y monitoreo',
@@ -367,4 +368,5 @@ export default {
   'auth.forgot.sent': 'Enviamos un enlace para restablecer la contraseña a {email}. Ábrelo para continuar.',
   'auth.forgot.spam': '¿No llegó? Revisa el correo no deseado o',
   'auth.forgot.retry': 'inténtalo de nuevo',
+  'auth.forgot.supportLead': '¿Sigue fallando? Escribe a',
 };

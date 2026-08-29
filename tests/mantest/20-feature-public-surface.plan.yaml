@@ -65,4 +65,4 @@ steps:
     settle_ms: 1000
     assert:
       - url contains /contact
-      - text contains hello@sitesprintz.com
+      - text contains support@sitesprintz.com

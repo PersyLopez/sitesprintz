@@ -4,6 +4,7 @@ import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { useLocale } from '../i18n/LocaleContext.jsx';
 import { laborDisplayVars } from '../utils/laborInquiryMailto';
+import { PLATFORM_SUPPORT_EMAIL } from '../config/pricing.config';
 import './ContentPage.css';
 
 function Contact() {
@@ -25,21 +26,9 @@ function Contact() {
             <h2>{t('contact.email.h')}</h2>
             <div className="contact-methods">
               <div className="contact-item">
-                <h3>{t('contact.general')}</h3>
-                <a href="mailto:hello@sitesprintz.com" className="contact-link">
-                  hello@sitesprintz.com
-                </a>
-              </div>
-              <div className="contact-item">
                 <h3>{t('contact.support')}</h3>
-                <a href="mailto:support@sitesprintz.com" className="contact-link">
-                  support@sitesprintz.com
-                </a>
-              </div>
-              <div className="contact-item">
-                <h3>{t('contact.partnerships')}</h3>
-                <a href="mailto:partnerships@sitesprintz.com" className="contact-link">
-                  partnerships@sitesprintz.com
+                <a href={`mailto:${PLATFORM_SUPPORT_EMAIL}`} className="contact-link">
+                  {PLATFORM_SUPPORT_EMAIL}
                 </a>
               </div>
             </div>

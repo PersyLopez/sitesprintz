@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { PLATFORM_SUPPORT_EMAIL } from '../../config/pricing.config';
 import { useLocale } from '../../i18n/LocaleContext.jsx';
 import './Footer.css';
 
@@ -39,6 +40,9 @@ function Footer() {
               <p className="footer-heading">{t('footer.company')}</p>
               <Link to="/about">{t('footer.about')}</Link>
               <Link to="/contact">{t('footer.contact')}</Link>
+              <a href={`mailto:${PLATFORM_SUPPORT_EMAIL}`} data-testid="footer-support-email">
+                {t('footer.supportEmail')}
+              </a>
             </div>
             
             <div className="footer-column">

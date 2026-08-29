@@ -7,6 +7,7 @@ import Footer from '../components/layout/Footer';
 import { PasswordStrengthMeter } from '../components/auth/PasswordStrengthMeter';
 import { getSafeRedirect } from '../utils/safeRedirect';
 import { paidPlanFromQuery } from '../config/tiers.js';
+import { PLATFORM_SUPPORT_EMAIL } from '../config/pricing.config';
 import { useLocale } from '../i18n/LocaleContext.jsx';
 import './Auth.css';
 
@@ -241,7 +242,10 @@ function Register() {
                 color: '#92400e',
               }}
             >
-              Signups are invite-only during our closed beta. Contact us if you need access.
+              Signups are invite-only during our closed beta.{' '}
+              Write{' '}
+              <a href={`mailto:${PLATFORM_SUPPORT_EMAIL}`}>{PLATFORM_SUPPORT_EMAIL}</a>
+              {' '}if you need access.
             </div>
           )}
 

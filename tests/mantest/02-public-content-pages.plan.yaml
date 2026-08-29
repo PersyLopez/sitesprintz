@@ -7,6 +7,7 @@ steps:
       - text contains Leave a light on for tomorrow’s customer
       - text contains Who we built this for
       - text contains How it works
+      - text contains support@sitesprintz.com
 
   - action: Go to Contact
     goto: http://localhost:5173/contact
@@ -14,7 +15,6 @@ steps:
   - action: Contact loaded
     wait_for: { text: Contact, timeout: 20000 }
     assert:
-      - text contains hello@sitesprintz.com
       - text contains support@sitesprintz.com
       - text contains Common questions
 

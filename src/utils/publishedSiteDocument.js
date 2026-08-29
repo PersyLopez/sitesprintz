@@ -6,7 +6,10 @@
 import { composePage } from './layoutRenderer.js';
 import { renderSectionToHtml, withNativeBookingTokens } from './sectionHtmlBridge.js';
 import { buildSiteNav } from '../config/operatingModel.js';
+import { tLive } from '../i18n/liveChrome/index.js';
+import { PLATFORM_SUPPORT_EMAIL } from '../config/pricing.config.js';
 import {
+  applyGalleryDemoSupportEmail,
   resolvePrimaryCta,
   resolveSiteAddress,
   resolveSitePhone,
@@ -388,10 +391,25 @@ export function getLiveSiteCss(tokens = {}) {
 }
 .ss-footer {
   border-top: 1px solid var(--ss-hairline);
-  padding: 28px 0 40px; color: var(--ss-muted); font-size: 0.9rem;
+  padding: 28px 0 max(40px, calc(12px + env(safe-area-inset-bottom, 0px)));
+  color: var(--ss-muted); font-size: 0.9rem;
 }
-.ss-footer-nap { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; }
+.ss-footer-inner { flex-wrap: wrap; gap: 12px 16px; }
+.ss-footer-nap { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; flex: 1 1 auto; min-width: 0; }
 .ss-footer-nap a { color: var(--ss-text); text-decoration: none; font-weight: 600; }
+.ss-sitesprintz-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; min-width: 44px; padding: 10px 16px;
+  border-radius: 999px; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.01em;
+  color: var(--ss-text); text-decoration: none; white-space: nowrap; flex-shrink: 0;
+  background: color-mix(in srgb, var(--ss-surface) 88%, var(--ss-bg));
+  border: 1px solid var(--ss-hairline);
+}
+.ss-sitesprintz-badge:hover {
+  color: var(--ss-text);
+  border-color: color-mix(in srgb, var(--ss-accent) 45%, var(--ss-hairline));
+  background: color-mix(in srgb, var(--ss-surface) 72%, var(--ss-accent));
+}
 .ss-service-area-map {
   position: relative;
   width: 100%;
@@ -475,7 +493,12 @@ function renderNav(siteData, page) {
 </nav>`;
 }
 
-function renderFooter(siteData) {
+function resolveLiveLocale(siteData, options = {}) {
+  const locale = options.locale || siteData?.locale || siteData?.settings?.locale;
+  return locale === 'es' ? 'es' : 'en';
+}
+
+function renderFooter(siteData, options = {}) {
   const brand = siteData?.brand?.name || siteData?.businessName || '';
   const phone = resolveSitePhone(siteData);
   const phoneHref = telHref(phone);
@@ -485,14 +508,20 @@ function renderFooter(siteData) {
     phoneHref ? `<a data-testid="footer-call" href="${escapeAttr(phoneHref)}">${escapeHtml(phone)}</a>` : '',
     address ? `<span data-testid="footer-address">${escapeHtml(address)}</span>` : '',
   ].filter(Boolean).join('');
+  const locale = resolveLiveLocale(siteData, options);
+  const badgeLabel = escapeHtml(tLive(locale, 'madeWith'));
   const badge = shouldRemoveBranding(siteData)
     ? ''
-    : '<span data-testid="sitesprintz-badge">Made with SiteSprintz</span>';
+    : `<a class="ss-sitesprintz-badge" data-testid="sitesprintz-badge" href="https://sitesprintz.com" rel="noopener noreferrer" target="_blank">${badgeLabel}</a>`;
+  const demoSupport = (siteData?._demo === true || siteData?.settings?.demoMode === true)
+    ? `<a data-testid="demo-support-email" href="mailto:${escapeAttr(PLATFORM_SUPPORT_EMAIL)}">${escapeHtml(PLATFORM_SUPPORT_EMAIL)}</a>`
+    : '';
 
   return `<footer class="ss-footer">
   <div class="ss-footer-inner">
     <div class="ss-footer-nap">${nap}</div>
     ${badge}
+    ${demoSupport}
   </div>
 </footer>`;
 }
@@ -522,18 +551,19 @@ export function buildStickyCtaBar(siteData, page) {
 }
 
 export function buildLiveSiteMarkup(siteData, options = {}) {
+  const liveData = applyGalleryDemoSupportEmail(siteData);
   const page = composePage({
-    siteData,
-    layout: options.layout || siteData?._layout,
-    character: options.character || siteData?._character,
-    level: options.level || siteData?._level,
-    niche: options.niche || siteData?._niche,
+    siteData: liveData,
+    layout: options.layout || liveData?._layout,
+    character: options.character || liveData?._character,
+    level: options.level || liveData?._level,
+    niche: options.niche || liveData?._niche,
     overrides: options.overrides || {},
   });
 
   const enabledSections = (page.sections || [])
     .filter((section) => section && section.enabled !== false && !isEmptyOptional(section));
-  const renderTokens = withNativeBookingTokens(page.tokens, enabledSections, siteData);
+  const renderTokens = withNativeBookingTokens(page.tokens, enabledSections, liveData);
 
   const sectionsHtml = enabledSections
     .map((section) => renderSectionToHtml(section, renderTokens))
@@ -545,12 +575,12 @@ export function buildLiveSiteMarkup(siteData, options = {}) {
   const mapScript = needsMap
     ? '<script src="/vendor/service-area-map.js" defer></script>'
     : '';
-  const html = `${renderNav(siteData, page)}
+  const html = `${renderNav(liveData, page)}
 <main id="main" class="ss-main">
   ${sectionsHtml}
 </main>
-${renderFooter(siteData)}
-${buildStickyCtaBar(siteData, page)}
+${renderFooter(liveData, options)}
+${buildStickyCtaBar(liveData, page)}
 ${mapScript}`;
 
   return { css, html, page, tokens: page.tokens };

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import PublicPageLayout from '../components/layout/PublicPageLayout';
 import { useAuth } from '../hooks/useAuth';
+import { PLATFORM_SUPPORT_EMAIL } from '../config/pricing.config';
 import './PaymentPages.css';
 
 const PLAN_LABELS = {
@@ -120,6 +121,10 @@ const PaymentSuccess = () => {
                   Billing settings
                 </Link>
               </div>
+              <p>
+                Still stuck?{' '}
+                <a href={`mailto:${PLATFORM_SUPPORT_EMAIL}`}>{PLATFORM_SUPPORT_EMAIL}</a>
+              </p>
             </>
           )}
         </div>

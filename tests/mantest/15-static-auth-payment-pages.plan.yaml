@@ -14,8 +14,9 @@ steps:
   - action: Payment cancel content
     wait_for: { text: Payment Cancelled, timeout: 15000 }
     assert:
-      - text contains payment was cancelled
-      - text contains Return to Dashboard
+      - text contains Payment cancelled
+      - text contains Return to dashboard
+      - text contains support@sitesprintz.com
 
   - action: Payment success without session redirects home
     goto: http://localhost:5173/payment-success

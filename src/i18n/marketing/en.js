@@ -27,6 +27,7 @@ export default {
   'footer.howItWorks': 'How It Works',
   'footer.about': 'About',
   'footer.contact': 'Contact',
+  'footer.supportEmail': 'support@sitesprintz.com',
   'footer.register': 'Create Account',
   'footer.login': 'Login',
   'footer.terms': 'Terms of Service',
@@ -99,7 +100,7 @@ export default {
   'labor.extras.look': 'Unique look — ${look} once. Paper, type, and accent for your site, still this layout.',
   'labor.extras.cta': 'Ask us to build or update it',
   'labor.extras.ctaEmail': 'Or email us instead',
-  'labor.extras.ctaUnavailable': 'Write hello@sitesprintz.com to add one',
+  'labor.extras.ctaUnavailable': 'Write support@sitesprintz.com to add one',
   'labor.extras.themeHint': 'Want your logo and colors applied for you? Brand match ${brand}, or a unique look ${look}.',
   'labor.extras.themeHintLink': 'See optional extras',
   'landing.plan.starter.tagline': 'Hosting & monitoring',
@@ -369,4 +370,5 @@ export default {
   'auth.forgot.sent': 'We’ve sent a password reset link to {email}. Click the link in the email to reset your password.',
   'auth.forgot.spam': 'Didn’t receive the email? Check your spam folder or',
   'auth.forgot.retry': 'try again',
+  'auth.forgot.supportLead': 'Still stuck? Write',
 };

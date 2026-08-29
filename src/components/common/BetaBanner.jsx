@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { PLATFORM_SUPPORT_EMAIL } from '../../config/pricing.config';
 
 function isPublishedSitePath(pathname) {
   return /^\/view\/[^/]+/.test(pathname) || /^\/sites\/[^/]+$/.test(pathname);
@@ -45,7 +46,11 @@ export default function BetaBanner() {
         borderBottom: '1px solid #1e293b',
       }}
     >
-      Private beta — expect rough edges. Use Send feedback (💬) to report issues.
+      Private beta — expect rough edges. Use Send feedback (💬) or{' '}
+      <a href={`mailto:${PLATFORM_SUPPORT_EMAIL}`} style={{ color: '#67e8f9' }}>
+        {PLATFORM_SUPPORT_EMAIL}
+      </a>
+      .
     </div>
   );
 }

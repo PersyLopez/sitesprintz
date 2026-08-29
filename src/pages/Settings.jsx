@@ -11,6 +11,7 @@ import FAQWidget from '../components/common/FAQWidget';
 import LaborExtrasNote from '../components/pricing/LaborExtrasNote';
 import LaborCheckoutButtons from '../components/pricing/LaborCheckoutButtons';
 import { isPaidHostingPlan, isTrialingStatus } from '../config/tiers.js';
+import { PLATFORM_SUPPORT_EMAIL } from '../config/pricing.config';
 import './Settings.css';
 
 function BillingSection({ user, token }) {
@@ -91,6 +92,10 @@ function BillingSection({ user, token }) {
         >
           {loading ? '⏳ Loading...' : '📊 Open Billing Portal'}
         </button>
+        <p className="section-description" style={{ marginTop: '0.75rem' }}>
+          Billing questions:{' '}
+          <a href={`mailto:${PLATFORM_SUPPORT_EMAIL}`}>{PLATFORM_SUPPORT_EMAIL}</a>
+        </p>
       </div>
 
       <div className="settings-card">

@@ -21,6 +21,7 @@ import {
   getSiteTheme,
 } from '../src/config/siteThemes.js';
 import { TEMPLATE_TO_SHOWCASE_SUBDOMAIN } from '../src/utils/galleryTemplateMap.js';
+import { PLATFORM_SUPPORT_EMAIL } from '../src/config/pricing.config.js';
 import StaffManagementService from '../server/services/booking/StaffManagementService.js';
 
 dotenv.config();
@@ -398,6 +399,7 @@ function applyCuratedTheme(siteData, example) {
 }
 
 function assembleSiteData(example) {
+  example = { ...example, contactEmail: PLATFORM_SUPPORT_EMAIL };
   if (example.bazaar) {
     const generated = buildBazaarSiteData({
       popUpType: example.bazaar,
@@ -405,7 +407,7 @@ function assembleSiteData(example) {
       location: example.location,
       hours: example.hours,
       contactPhone: example.contactPhone || '(555) 010-1010',
-      contactEmail: example.contactEmail || 'hello@example.com',
+      contactEmail: example.contactEmail || PLATFORM_SUPPORT_EMAIL,
     });
     return {
       ...generated,
@@ -423,7 +425,7 @@ function assembleSiteData(example) {
       businessName: example.businessName,
       contact: {
         phone: example.contactPhone || '(555) 010-1010',
-        email: example.contactEmail || 'hello@example.com',
+        email: example.contactEmail || PLATFORM_SUPPORT_EMAIL,
         address: example.location || '',
         hours: viewerHours(example.hours),
       },
@@ -711,7 +713,7 @@ async function ensureSiteBooking(owner, example) {
         site_id: siteId,
         business_name: example.businessName,
         business_type: example.niche || 'service',
-        email: example.contactEmail,
+        email: PLATFORM_SUPPORT_EMAIL,
         phone: example.contactPhone,
         timezone: 'America/New_York',
         currency: 'USD',
@@ -728,7 +730,7 @@ async function ensureSiteBooking(owner, example) {
         user_id: owner.id,
         business_name: example.businessName,
         business_type: example.niche || 'service',
-        email: example.contactEmail,
+        email: PLATFORM_SUPPORT_EMAIL,
         phone: example.contactPhone,
         booking_page_enabled: true,
         confirmation_email_enabled: false,

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { PLATFORM_SUPPORT_EMAIL } from '../../config/pricing.config';
 import './FAQWidget.css';
 
 const FAQ_DATA = [
@@ -99,6 +100,10 @@ function FAQWidget({ onClose }) {
           ))
         )}
       </div>
+      <p className="faq-contact">
+        Still need help?{' '}
+        <a href={`mailto:${PLATFORM_SUPPORT_EMAIL}`}>{PLATFORM_SUPPORT_EMAIL}</a>
+      </p>
     </div>
   );
 }

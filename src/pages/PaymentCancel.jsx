@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import PublicPageLayout from '../components/layout/PublicPageLayout';
+import { PLATFORM_SUPPORT_EMAIL } from '../config/pricing.config';
 import './PaymentPages.css';
 
 const PaymentCancel = () => {
@@ -29,6 +30,10 @@ const PaymentCancel = () => {
               {draftId ? 'Return to setup' : 'Return to dashboard'}
             </button>
           </div>
+          <p>
+            Questions?{' '}
+            <a href={`mailto:${PLATFORM_SUPPORT_EMAIL}`}>{PLATFORM_SUPPORT_EMAIL}</a>
+          </p>
         </div>
       </div>
     </PublicPageLayout>

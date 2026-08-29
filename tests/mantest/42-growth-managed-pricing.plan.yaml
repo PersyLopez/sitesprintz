@@ -55,7 +55,7 @@ steps:
 
   - action: Open contact
     goto: http://localhost:5173/contact
-    wait_for: { text: hello@sitesprintz.com, timeout: 15000 }
+    wait_for: { text: support@sitesprintz.com, timeout: 15000 }
     settle_ms: 400
 
   - action: Contact FAQ is Growth Managed not $49 care

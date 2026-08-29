@@ -428,8 +428,7 @@ router.get('/privacy', (req, res) => {
     <h2>12. Contact Us</h2>
     <p>
         For privacy questions or to exercise your rights:<br>
-        Email: privacy@sitesprintz.com<br>
-        Support: support@sitesprintz.com
+        Email: support@sitesprintz.com
     </p>
 
     <footer>
@@ -955,7 +954,7 @@ router.get(['/third-party-services', '/third-party', '/data-handling'], (req, re
     <h2>9. Contact</h2>
     <p>
         Questions about this Disclosure or our Providers?<br>
-        Email: privacy@sitesprintz.com &nbsp;|&nbsp; Support: support@sitesprintz.com
+        Email: support@sitesprintz.com
     </p>
 
     <footer>

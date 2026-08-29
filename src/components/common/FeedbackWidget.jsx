@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useToast } from '../../hooks/useToast';
+import { PLATFORM_SUPPORT_EMAIL } from '../../config/pricing.config';
 import './FeedbackWidget.css';
 
 /**
@@ -150,6 +151,10 @@ function FeedbackWidget() {
                   {submitting ? 'Sending...' : 'Send Feedback'}
                 </button>
               </div>
+              <p className="feedback-mailto">
+                Or write{' '}
+                <a href={`mailto:${PLATFORM_SUPPORT_EMAIL}`}>{PLATFORM_SUPPORT_EMAIL}</a>
+              </p>
             </form>
           </div>
         </div>

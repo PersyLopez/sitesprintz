@@ -3,6 +3,9 @@
  * Comprehensive pricing, features, value propositions, and competitor comparisons
  */
 
+/** Platform inbound mail. Customer published sites keep their own contact email. */
+export const PLATFORM_SUPPORT_EMAIL = 'support@sitesprintz.com';
+
 export const PRICING_CONFIG = {
   // Trial period configuration (must match Stripe trial_period_days in payments.routes.js)
   trial: {
@@ -15,7 +18,7 @@ export const PRICING_CONFIG = {
 
   // Optional labor (not hosting). Display amounts; Stripe Price IDs later.
   labor: {
-    contactEmail: 'hello@sitesprintz.com',
+    contactEmail: PLATFORM_SUPPORT_EMAIL,
     claimSetup: {
       billed: 'one_time',
       customerFacing: false,

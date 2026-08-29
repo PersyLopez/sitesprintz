@@ -4,6 +4,7 @@ import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { useLocale } from '../i18n/LocaleContext.jsx';
+import { PLATFORM_SUPPORT_EMAIL } from '../config/pricing.config';
 import './Auth.css';
 
 function ForgotPassword() {
@@ -118,6 +119,10 @@ function ForgotPassword() {
                 >
                   {t('auth.forgot.retry')}
                 </button>
+              </p>
+              <p className="text-muted">
+                {t('auth.forgot.supportLead')}{' '}
+                <a href={`mailto:${PLATFORM_SUPPORT_EMAIL}`}>{PLATFORM_SUPPORT_EMAIL}</a>
               </p>
               <div className="auth-links">
                 <Link to="/login">{t('auth.forgot.back')}</Link>

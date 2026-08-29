@@ -4,6 +4,7 @@
 
 import { getLayout } from '../config/layouts.js';
 import { FEATURES, hasFeature } from './planFeatures.js';
+import { PLATFORM_SUPPORT_EMAIL } from '../config/pricing.config.js';
 
 const PRIMARY_BY_INTENT = {
   booking: { href: '#booking', label: 'Book', stickyTestId: 'sticky-cta-book' },
@@ -212,9 +213,36 @@ function walkSections(node, displayLine) {
 /**
  * Public clone for unauthenticated HTML/JSON/API. Owner/draft payloads must not use this.
  */
+export function applyGalleryDemoSupportEmail(siteData) {
+  if (!siteData || typeof siteData !== 'object') return siteData;
+  if (siteData._demo !== true && siteData.settings?.demoMode !== true) {
+    return siteData;
+  }
+  const next = cloneJson(siteData);
+  const email = PLATFORM_SUPPORT_EMAIL;
+  if (next.contact && typeof next.contact === 'object') {
+    next.contact.email = email;
+  }
+  next.contactEmail = email;
+  if (next.brand && typeof next.brand === 'object') {
+    next.brand = { ...next.brand, email };
+  }
+  if (next.published && typeof next.published === 'object') {
+    next.published = { ...next.published, email };
+  }
+  if (Array.isArray(next.sections)) {
+    next.sections = next.sections.map((section) => {
+      if (!section?.content || typeof section.content !== 'object') return section;
+      if (section.type !== 'contact' && section.type !== 'footer') return section;
+      return { ...section, content: { ...section.content, email } };
+    });
+  }
+  return next;
+}
+
 export function toPublicSiteData(siteData) {
   if (!siteData || typeof siteData !== 'object') return siteData;
-  const publicData = cloneJson(siteData);
+  const publicData = applyGalleryDemoSupportEmail(cloneJson(siteData));
   if (!isAreaDisplay(publicData)) return publicData;
 
   const location = resolvePublicLocation(publicData);

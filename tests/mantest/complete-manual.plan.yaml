@@ -63,7 +63,7 @@ steps:
     assert:
       - url contains /contact
       - text contains Contact
-      - text contains hello@sitesprintz.com
+      - text contains support@sitesprintz.com
 
   # --- Track lookup ---
   - action: Track page loads
