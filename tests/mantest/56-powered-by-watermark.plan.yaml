@@ -21,6 +21,21 @@ steps:
       if (tag !== 'a') {
         throw new Error('Badge should be a link, got ' + tag);
       }
+      const position = await badge.evaluate((el) => getComputedStyle(el).position);
+      if (position !== 'fixed') {
+        throw new Error('Badge should be position:fixed, got ' + position);
+      }
+      const box = await badge.boundingBox();
+      const viewport = page.viewportSize();
+      if (!box || !viewport) {
+        throw new Error('Could not measure badge or viewport');
+      }
+      const inViewport = box.x >= 0 && box.y >= 0
+        && box.x + box.width <= viewport.width
+        && box.y + box.height <= viewport.height;
+      if (!inViewport) {
+        throw new Error('Badge not in viewport without scroll: ' + JSON.stringify({ box, viewport }));
+      }
 
   - action: Open salon gallery demo
     goto: http://localhost:5173/view/gallery-salon

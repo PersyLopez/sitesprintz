@@ -398,17 +398,34 @@ export function getLiveSiteCss(tokens = {}) {
 .ss-footer-nap { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; flex: 1 1 auto; min-width: 0; }
 .ss-footer-nap a { color: var(--ss-text); text-decoration: none; font-weight: 600; }
 .ss-sitesprintz-badge {
+  position: fixed;
+  right: max(12px, env(safe-area-inset-right, 0px));
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index: 35;
   display: inline-flex; align-items: center; justify-content: center;
   min-height: 44px; min-width: 44px; padding: 10px 16px;
   border-radius: 999px; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.01em;
-  color: var(--ss-text); text-decoration: none; white-space: nowrap; flex-shrink: 0;
-  background: color-mix(in srgb, var(--ss-surface) 88%, var(--ss-bg));
-  border: 1px solid var(--ss-hairline);
+  color: var(--ss-text); text-decoration: none; white-space: nowrap;
+  pointer-events: auto;
+  background: color-mix(in srgb, var(--ss-surface) 82%, var(--ss-bg));
+  border: 1px solid color-mix(in srgb, var(--ss-hairline) 90%, transparent);
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--ss-text) 10%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  backdrop-filter: blur(12px) saturate(160%);
 }
-.ss-sitesprintz-badge:hover {
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .ss-sitesprintz-badge {
+    background: color-mix(in srgb, var(--ss-surface) 94%, var(--ss-bg));
+  }
+}
+.ss-live:has(.ss-sticky-cta) .ss-sitesprintz-badge {
+  bottom: calc(76px + 12px + env(safe-area-inset-bottom, 0px));
+}
+.ss-sitesprintz-badge:hover,
+.ss-sitesprintz-badge:focus-visible {
   color: var(--ss-text);
   border-color: color-mix(in srgb, var(--ss-accent) 45%, var(--ss-hairline));
-  background: color-mix(in srgb, var(--ss-surface) 72%, var(--ss-accent));
+  background: color-mix(in srgb, var(--ss-surface) 92%, var(--ss-bg));
 }
 .ss-service-area-map {
   position: relative;
@@ -498,6 +515,13 @@ function resolveLiveLocale(siteData, options = {}) {
   return locale === 'es' ? 'es' : 'en';
 }
 
+function renderSiteBadge(siteData, options = {}) {
+  if (shouldRemoveBranding(siteData)) return '';
+  const locale = resolveLiveLocale(siteData, options);
+  const badgeLabel = escapeHtml(tLive(locale, 'madeWith'));
+  return `<a class="ss-sitesprintz-badge" data-testid="sitesprintz-badge" href="https://sitesprintz.com" rel="noopener noreferrer" target="_blank">${badgeLabel}</a>`;
+}
+
 function renderFooter(siteData, options = {}) {
   const brand = siteData?.brand?.name || siteData?.businessName || '';
   const phone = resolveSitePhone(siteData);
@@ -508,11 +532,6 @@ function renderFooter(siteData, options = {}) {
     phoneHref ? `<a data-testid="footer-call" href="${escapeAttr(phoneHref)}">${escapeHtml(phone)}</a>` : '',
     address ? `<span data-testid="footer-address">${escapeHtml(address)}</span>` : '',
   ].filter(Boolean).join('');
-  const locale = resolveLiveLocale(siteData, options);
-  const badgeLabel = escapeHtml(tLive(locale, 'madeWith'));
-  const badge = shouldRemoveBranding(siteData)
-    ? ''
-    : `<a class="ss-sitesprintz-badge" data-testid="sitesprintz-badge" href="https://sitesprintz.com" rel="noopener noreferrer" target="_blank">${badgeLabel}</a>`;
   const demoSupport = (siteData?._demo === true || siteData?.settings?.demoMode === true)
     ? `<a data-testid="demo-support-email" href="mailto:${escapeAttr(PLATFORM_SUPPORT_EMAIL)}">${escapeHtml(PLATFORM_SUPPORT_EMAIL)}</a>`
     : '';
@@ -520,7 +539,6 @@ function renderFooter(siteData, options = {}) {
   return `<footer class="ss-footer">
   <div class="ss-footer-inner">
     <div class="ss-footer-nap">${nap}</div>
-    ${badge}
     ${demoSupport}
   </div>
 </footer>`;
@@ -580,6 +598,7 @@ export function buildLiveSiteMarkup(siteData, options = {}) {
   ${sectionsHtml}
 </main>
 ${renderFooter(liveData, options)}
+${renderSiteBadge(liveData, options)}
 ${buildStickyCtaBar(liveData, page)}
 ${mapScript}`;
 
