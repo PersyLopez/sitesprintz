@@ -25,6 +25,19 @@ describe('BookingNotificationService', () => {
   });
 
   describe('formatDateTime', () => {
+    it('should format a Prisma Date the same as an ISO string', () => {
+      const isoDate = '2026-08-31T15:00:00.000Z';
+      const timezone = 'America/New_York';
+      const fromString = notificationService.formatDateTime(isoDate, timezone);
+      const fromDate = notificationService.formatDateTime(new Date(isoDate), timezone);
+
+      expect(fromDate.time).toBe('11:00 AM');
+      expect(fromDate.datetime).toBe(fromString.datetime);
+      expect(fromDate.datetime).not.toMatch(/Invalid/i);
+      expect(fromDate.datetime).toContain('August 31, 2026');
+      expect(fromDate.datetime).toContain('at 11:00 AM');
+    });
+
     it('should format ISO date to human-readable format', () => {
       const isoDate = '2025-11-20T14:00:00Z';
       const timezone = 'America/New_York';

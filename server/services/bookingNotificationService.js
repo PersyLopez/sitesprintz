@@ -16,14 +16,45 @@ class BookingNotificationService {
   /**
    * Format date/time for email display
    */
+  /**
+   * Format date/time for email display.
+   * Prisma returns Date objects; Luxon fromISO() only parses strings.
+   */
   formatDateTime(isoDate, timezone) {
-    const dt = DateTime.fromISO(isoDate, { zone: timezone });
+    const zone =
+      typeof timezone === 'string' && DateTime.now().setZone(timezone).isValid
+        ? timezone
+        : 'America/New_York';
+    const dt = this.toZonedDateTime(isoDate, zone);
+    if (!dt.isValid) {
+      return {
+        date: '',
+        time: '',
+        datetime: '',
+        timezone: '',
+      };
+    }
     return {
-      date: dt.toFormat('EEEE, MMMM d, yyyy'), // "Monday, November 18, 2025"
-      time: dt.toFormat('h:mm a'), // "2:00 PM"
-      datetime: dt.toFormat('EEEE, MMMM d, yyyy \'at\' h:mm a'), // Full format
-      timezone: dt.toFormat('ZZZZ'), // "EST" or "America/New_York"
+      date: dt.toFormat('EEEE, MMMM d, yyyy'),
+      time: dt.toFormat('h:mm a'),
+      datetime: dt.toFormat("EEEE, MMMM d, yyyy 'at' h:mm a"),
+      timezone: dt.toFormat('ZZZZ'),
     };
+  }
+
+  toZonedDateTime(value, zone) {
+    if (value instanceof Date) {
+      return DateTime.fromJSDate(value, { zone: 'utc' }).setZone(zone);
+    }
+    if (typeof value === 'string') {
+      const fromIso = DateTime.fromISO(value, { setZone: true });
+      if (fromIso.isValid) return fromIso.setZone(zone);
+    }
+    if (value != null) {
+      const fromJs = DateTime.fromJSDate(new Date(value), { zone: 'utc' }).setZone(zone);
+      if (fromJs.isValid) return fromJs;
+    }
+    return DateTime.invalid('unparsable');
   }
 
   /**
