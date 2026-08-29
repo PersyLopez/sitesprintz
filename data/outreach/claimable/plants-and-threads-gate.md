@@ -51,11 +51,9 @@ Growth is $35/month if you will edit, or Growth Managed $75/month if we keep the
 
 ## Operator claim walk (not the customer pitch)
 
-Log in — do not register. Admin accounts cannot claim this site.
+They claim with **their own email** — Create account or log in (Google is fine). Do not use an admin account.
 
-- Email: `persylopez99+plantsclaim@gmail.com`
-- Password: `ClaimWalk!2026`
-- Coupon: `PLANTSWALK` (100% off, one use, bound to that Stripe customer)
+- Coupon: `PLANTSWALK` (100% off, one use, any email)
 - Claim: https://sitesprintz.com/claim/1e6179cfa92ed0118c6ec09567f9802f1adad911748603c218342dc83e8e1e36
 
 On Subscribe, choose Growth or Growth Managed, apply `PLANTSWALK` on Stripe Checkout. Card is not required at $0. Then finish claim.

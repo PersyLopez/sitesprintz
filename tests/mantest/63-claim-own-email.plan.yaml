@@ -1,0 +1,13 @@
+url: https://sitesprintz.com/claim/1e6179cfa92ed0118c6ec09567f9802f1adad911748603c218342dc83e8e1e36
+goal: Claim page tells them to use their own email, not a walk-in account
+steps:
+  - action: Claim page loads signed out
+    wait_for: { testId: claim-register, timeout: 20000 }
+
+  - action: Copy says use the email they want the site under
+    wait_for: { text: email you want this site owned under, timeout: 8000 }
+
+  - action: Create account and log in are both there
+    assert:
+      - testid claim-register visible
+      - testid claim-login visible

@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { authService } from '../services/auth';
 import { paidPlanFromQuery } from '../config/tiers.js';
+import { takeOAuthRedirect } from '../utils/safeRedirect';
 
 const ERROR_MESSAGES = {
   oauth_failed: 'Google sign-in was cancelled. Please try again.',
@@ -56,6 +57,11 @@ function OAuthCallback() {
       if (user.role === 'admin') {
         navigate('/admin', { replace: true });
       } else {
+        const returnTo = takeOAuthRedirect();
+        if (returnTo) {
+          navigate(returnTo, { replace: true });
+          return;
+        }
         const plan = paidPlanFromQuery(searchParams.get('plan'));
         navigate(plan ? `/settings/billing?plan=${plan}` : '/dashboard', { replace: true });
       }

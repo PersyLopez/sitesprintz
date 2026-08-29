@@ -46,6 +46,16 @@ describe('OAuthCallback', () => {
   beforeEach(() => {
     mockNavigate.mockClear();
     mockCheckAuth.mockResolvedValue(undefined);
+    sessionStorage.clear();
+  });
+
+  it('returns claimers to the claim link after Google sign-in', async () => {
+    const claimPath = `/claim/${'ab'.repeat(32)}`;
+    sessionStorage.setItem('oauthRedirect', claimPath);
+    renderCallback('?token=abc');
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith(claimPath, { replace: true });
+    });
   });
 
   it('sends Growth Managed sign-in to billing', async () => {

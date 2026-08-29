@@ -237,8 +237,9 @@ function ClaimSite() {
               {!isAuthenticated ? (
                 <div>
                   <p>
-                    Register or log in to continue. Subscribe to Growth ($35/month, you edit) or
-                    Growth Managed ($75/month, we set it up and keep the list updated).
+                    Create an account or log in with the email you want this site owned under.
+                    Subscribe to Growth ($35/month, you edit) or Growth Managed ($75/month, we
+                    set it up and keep the list updated).
                   </p>
                   <div className="auth-links" style={{ marginTop: '20px' }}>
                     <Link to={registerTo} className="btn btn-primary btn-full" data-testid="claim-register">
@@ -257,8 +258,9 @@ function ClaimSite() {
               ) : showTrialFlow ? (
                 <div>
                   <p>
-                    Signed in as <strong>{user?.email}</strong>. Subscribe to Growth or Growth
-                    Managed to claim this site. Booking and checkout stay on this site.
+                    Signed in as <strong>{user?.email}</strong>. That email will own this site.
+                    Subscribe to Growth or Growth Managed to claim it. If you have a coupon, add
+                    it on the payment screen. Booking and checkout stay on this site.
                   </p>
                   <fieldset style={{ marginTop: '16px', border: 0, padding: 0 }}>
                     <legend className="sr-only">Hosting plan</legend>

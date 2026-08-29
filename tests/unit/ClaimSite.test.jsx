@@ -75,6 +75,7 @@ describe('ClaimSite', () => {
       'href',
       expect.stringContaining('plan=growth')
     );
+    expect(screen.getByText(/email you want this site owned under/i)).toBeInTheDocument();
     expect(screen.getByTestId('claim-login')).toBeInTheDocument();
     expect(screen.queryByTestId('claim-accept')).not.toBeInTheDocument();
     expect(screen.queryByTestId('claim-start-trial')).not.toBeInTheDocument();
@@ -99,6 +100,7 @@ describe('ClaimSite', () => {
     expect(screen.getByTestId('claim-plan-growth-managed')).toBeInTheDocument();
     expect(screen.queryByTestId('claim-plan-starter')).not.toBeInTheDocument();
     expect(screen.getByText(/subscribe to claim/i)).toBeInTheDocument();
+    expect(screen.getByText(/that email will own this site/i)).toBeInTheDocument();
     expect(screen.getByTestId('labor-extras')).not.toHaveTextContent(/no setup fee/i);
     expect(screen.getByTestId('labor-extras')).toHaveTextContent(/Growth Managed/i);
     expect(screen.queryByTestId('claim-accept')).not.toBeInTheDocument();

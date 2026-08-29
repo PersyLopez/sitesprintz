@@ -4,7 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
-import { getSafeRedirect } from '../utils/safeRedirect';
+import { getSafeRedirect, stashOAuthRedirect } from '../utils/safeRedirect';
 import { useLocale } from '../i18n/LocaleContext.jsx';
 import './Auth.css';
 
@@ -140,7 +140,7 @@ function Login() {
   };
 
   const handleGoogleLogin = () => {
-    // Google OAuth routes are on the backend server
+    stashOAuthRedirect(searchParams.get('redirect'));
     const apiUrl = import.meta.env.DEV
       ? 'http://localhost:3000/auth/google'
       : '/auth/google';

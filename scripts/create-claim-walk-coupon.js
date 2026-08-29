@@ -1,13 +1,12 @@
 #!/usr/bin/env node
 
 /**
- * One-use 100% claim walk: seed the non-admin walker login and PLANTSWALK.
- * Neighbor: scripts/seed-tester-accounts.js + createPlatformCoupon.
+ * One-use 100% claim coupon (PLANTSWALK). Not bound to a Stripe customer —
+ * whoever logs in with their own email can apply it once at claim Checkout.
  *
  *   npm run seed:claim-walk
  */
 
-import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import Stripe from 'stripe';
 import { prisma } from '../database/db.js';
@@ -15,73 +14,33 @@ import { createPlatformCoupon } from '../server/services/platformCouponService.j
 
 dotenv.config();
 
-/** Keep in sync with tests/fixtures/test-credentials.js (tests/ is not on Railway). */
 const CLAIM_WALK_COUPON = 'PLANTSWALK';
-const CLAIM_WALK_USER = {
-  email: 'persylopez99+plantsclaim@gmail.com',
-  password: 'ClaimWalk!2026',
-  role: 'user',
-  plan: 'free',
-  subscriptionStatus: 'inactive',
-};
 
-async function upsertWalkUser() {
-  const passwordHash = await bcrypt.hash(CLAIM_WALK_USER.password, 10);
-  const now = new Date();
-  const existing = await prisma.users.findUnique({
-    where: { email: CLAIM_WALK_USER.email },
-  });
-
-  const data = {
-    password_hash: passwordHash,
-    role: CLAIM_WALK_USER.role,
-    status: 'active',
-    subscription_status: CLAIM_WALK_USER.subscriptionStatus,
-    subscription_plan: CLAIM_WALK_USER.plan,
-    plan: CLAIM_WALK_USER.plan,
-    email_verified: true,
-    last_login: now,
-  };
-
-  if (existing) {
-    const updated = await prisma.users.update({
-      where: { email: CLAIM_WALK_USER.email },
-      data,
-    });
-    return { user: updated, created: false };
-  }
-
-  const created = await prisma.users.create({
-    data: {
-      email: CLAIM_WALK_USER.email,
-      created_at: now,
-      ...data,
-    },
-  });
-  return { user: created, created: true };
+function promoCustomerId(promo) {
+  if (!promo?.customer) return null;
+  return typeof promo.customer === 'string' ? promo.customer : promo.customer.id;
 }
 
-async function ensureStripeCustomer(stripe, user) {
-  if (user.stripe_customer_id) {
-    const existing = await stripe.customers.retrieve(user.stripe_customer_id);
-    if (existing && !existing.deleted) {
-      return existing;
-    }
+async function unrestrictPromo(stripe, promo) {
+  if (!promoCustomerId(promo)) {
+    return promo;
   }
 
-  const listed = await stripe.customers.list({ email: user.email, limit: 1 });
-  const customer = listed.data[0]
-    ? listed.data[0]
-    : await stripe.customers.create({
-      email: user.email,
-      metadata: { source: 'sitesprintz', purpose: 'claim_walk' },
+  await stripe.promotionCodes.update(promo.id, { active: false });
+  const couponId = typeof promo.coupon === 'string' ? promo.coupon : promo.coupon?.id;
+  try {
+    return await stripe.promotionCodes.create({
+      coupon: couponId,
+      code: CLAIM_WALK_COUPON,
+      max_redemptions: promo.max_redemptions ?? 1,
     });
-
-  await prisma.users.update({
-    where: { id: user.id },
-    data: { stripe_customer_id: customer.id },
-  });
-  return customer;
+  } catch {
+    return stripe.promotionCodes.create({
+      coupon: couponId,
+      code: 'CLAIMWALK',
+      max_redemptions: 1,
+    });
+  }
 }
 
 async function persistStripePromo({ stripe, prismaClient, createdBy, promo }) {
@@ -89,7 +48,7 @@ async function persistStripePromo({ stripe, prismaClient, createdBy, promo }) {
   const stripeCoupon = await stripe.coupons.retrieve(couponId);
   return prismaClient.platform_coupons.create({
     data: {
-      code: CLAIM_WALK_COUPON,
+      code: promo.code || CLAIM_WALK_COUPON,
       percent_off: stripeCoupon.percent_off ?? 100,
       amount_off_cents: stripeCoupon.amount_off ?? null,
       duration: stripeCoupon.duration,
@@ -107,30 +66,37 @@ async function persistStripePromo({ stripe, prismaClient, createdBy, promo }) {
   });
 }
 
-async function ensureCoupon({ stripe, createdBy, customerId }) {
+async function ensureCoupon({ stripe, createdBy }) {
   const existing = await prisma.platform_coupons.findUnique({
     where: { code: CLAIM_WALK_COUPON },
   });
   if (existing) {
-    return { coupon: existing, created: false };
+    const promo = await stripe.promotionCodes.retrieve(existing.stripe_promotion_code_id);
+    const next = await unrestrictPromo(stripe, promo);
+    if (next.id !== existing.stripe_promotion_code_id) {
+      await prisma.platform_coupons.update({
+        where: { id: existing.id },
+        data: {
+          stripe_promotion_code_id: next.id,
+          code: next.code || CLAIM_WALK_COUPON,
+          active: true,
+        },
+      });
+    }
+    return { coupon: existing, created: false, code: next.code || CLAIM_WALK_COUPON };
   }
 
   const listed = await stripe.promotionCodes.list({ code: CLAIM_WALK_COUPON, limit: 10 });
   const promo = listed.data.find((row) => row.code === CLAIM_WALK_COUPON);
   if (promo) {
-    const boundCustomer = typeof promo.customer === 'string' ? promo.customer : promo.customer?.id;
-    if (boundCustomer && boundCustomer !== customerId) {
-      process.stderr.write(
-        `warn\t${CLAIM_WALK_COUPON} is bound to a different Stripe customer; apply it while logged in as ${CLAIM_WALK_USER.email}\n`,
-      );
-    }
+    const next = await unrestrictPromo(stripe, promo);
     const row = await persistStripePromo({
       stripe,
       prismaClient: prisma,
       createdBy,
-      promo,
+      promo: next,
     });
-    return { coupon: row, created: true, attached: true };
+    return { coupon: row, created: true, attached: true, code: next.code };
   }
 
   const created = await createPlatformCoupon(
@@ -139,11 +105,10 @@ async function ensureCoupon({ stripe, createdBy, customerId }) {
       percent: 100,
       duration: 'forever',
       maxRedemptions: 1,
-      restrictToCustomerId: customerId,
     },
     { stripe, prisma, createdBy },
   );
-  return { coupon: created, created: true };
+  return { coupon: created, created: true, code: created.code };
 }
 
 async function main() {
@@ -165,18 +130,13 @@ async function main() {
     throw new Error('An admin user is required to create platform_coupons.created_by');
   }
 
-  const walk = await upsertWalkUser();
-  const customer = await ensureStripeCustomer(stripe, walk.user);
   const coupon = await ensureCoupon({
     stripe,
     createdBy: admin.id,
-    customerId: customer.id,
   });
 
-  const userAction = walk.created ? 'created' : 'updated';
   const couponAction = coupon.attached ? 'attached' : coupon.created ? 'created' : 'existing';
-  process.stdout.write(`${userAction}\t${CLAIM_WALK_USER.email}\n`);
-  process.stdout.write(`${couponAction}\t${CLAIM_WALK_COUPON}\n`);
+  process.stdout.write(`${couponAction}\t${coupon.code || CLAIM_WALK_COUPON}\n`);
 }
 
 main()
