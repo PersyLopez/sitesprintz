@@ -64,23 +64,68 @@ function PaymentSettings({ site: siteProp = null }) {
     const processor = searchParams.get('processor');
     if (!result) return;
 
-    if (result === 'success' && processor) {
-      setConnectBanner(`${processor} connected successfully`);
-      loadStripeStatus(searchParams.get('site') || site?.id);
-    } else if (result === 'error') {
-      const code = searchParams.get('message');
-      const connectErrors = {
-        no_location: 'Square needs an active location. Add one in Square Dashboard, then reconnect.',
-        paypal_not_business: 'PayPal checkout needs a Business account. Upgrade to PayPal Business, then reconnect.'
-      };
-      setConnectBanner(connectErrors[code] || 'Could not finish connecting. Try again from the provider card.');
-    }
+    const siteId = searchParams.get('site') || site?.id;
 
-    searchParams.delete('connect');
-    searchParams.delete('processor');
-    searchParams.delete('message');
-    setSearchParams(searchParams, { replace: true });
-  }, [searchParams, setSearchParams, loadStripeStatus, site?.id]);
+    const handleConnectReturn = async () => {
+      if (result === 'refresh') {
+        setConnectBanner({
+          type: 'warning',
+          message: 'Your Stripe setup link expired. Use Continue Setup on the Stripe card to pick up where you left off.'
+        });
+      } else if (result === 'success' && processor) {
+        try {
+          const data = await api.get('/api/connect/status', siteId ? { params: { siteId } } : {});
+          setStatusData(data);
+          const label = processor === 'square' ? 'Square' : processor === 'paypal' ? 'PayPal' : 'Stripe';
+          const stripeReady = Boolean(data.chargesEnabled && data.payoutsEnabled);
+          const processorReady = processor === 'stripe'
+            ? stripeReady && data.stripe?.connected !== false
+            : data[processor]?.connected === true;
+
+          if (processor === 'stripe' && data.accountId && !stripeReady) {
+            setStripeStatus('incomplete');
+            setConnectBanner({
+              type: 'warning',
+              message: 'Stripe still needs identity checks before you can accept payments. Use Continue Setup on the Stripe card.'
+            });
+          } else if (processorReady) {
+            setStripeStatus('ready');
+            setConnectBanner({ type: 'success', message: `${label} connected successfully` });
+          } else {
+            setConnectBanner({
+              type: 'warning',
+              message: `${label} setup is not finished yet. Continue from the ${label} card.`
+            });
+          }
+        } catch {
+          setConnectBanner({
+            type: 'warning',
+            message: 'Returned from the provider but we could not verify status. Check the card below.'
+          });
+        }
+      } else if (result === 'error') {
+        const code = searchParams.get('message');
+        const connectErrors = {
+          no_location: 'Square needs an active location. Add one in Square Dashboard, then reconnect.',
+          paypal_not_business: 'PayPal checkout needs a Business account. Upgrade to PayPal Business, then reconnect.',
+          expired: 'Your connection link expired. Try again from the provider card.',
+          token_exchange: 'We could not finish signing in with the provider. Try connecting again.',
+          access_denied: 'Connection was cancelled. You can try again anytime from the provider card.'
+        };
+        setConnectBanner({
+          type: 'error',
+          message: connectErrors[code] || 'Could not finish connecting. Try again from the provider card.'
+        });
+      }
+
+      searchParams.delete('connect');
+      searchParams.delete('processor');
+      searchParams.delete('message');
+      setSearchParams(searchParams, { replace: true });
+    };
+
+    handleConnectReturn();
+  }, [searchParams, setSearchParams, site?.id]);
 
   const loadSites = async (preferredId) => {
     try {
@@ -139,7 +184,7 @@ function PaymentSettings({ site: siteProp = null }) {
       else setApplyTo('site');
       await loadStripeStatus(site.id);
     } catch (error) {
-      setConnectBanner(error.message || 'Could not update future-site preference');
+      setConnectBanner({ type: 'error', message: error.message || 'Could not update future-site preference' });
     } finally {
       setFutureSaving(false);
     }
@@ -154,10 +199,10 @@ function PaymentSettings({ site: siteProp = null }) {
         applyToAll: true,
         applyToFuture: applyTo !== 'site'
       });
-      setConnectBanner(`Copied this payment setup to ${sites.length} sites`);
+      setConnectBanner({ type: 'success', message: `Copied this payment setup to ${sites.length} sites` });
       await loadStripeStatus(site.id);
     } catch (error) {
-      setConnectBanner(error.message || 'Could not copy this setup to other sites');
+      setConnectBanner({ type: 'error', message: error.message || 'Could not copy this setup to other sites' });
     } finally {
       setCopySaving(false);
     }
@@ -170,8 +215,9 @@ function PaymentSettings({ site: siteProp = null }) {
       <div className="editor-header">
         <h3>Payment Configuration</h3>
         <p className="form-description">
-          Choose how this site takes payment. You can keep it unique, reuse it on future sites,
-          or copy it to every site you already have.
+          {sites.length > 1
+            ? 'Choose how this site takes payment. You can keep it unique, reuse it on future sites, or copy it to every site you already have.'
+            : 'Choose how this site takes payment. Stripe is recommended for cards. Square and PayPal are there if you already use them.'}
         </p>
       </div>
 
@@ -193,6 +239,7 @@ function PaymentSettings({ site: siteProp = null }) {
         </label>
       )}
 
+      {sites.length > 1 && (
       <fieldset className="payment-apply-to" data-testid="payment-apply-to">
         <legend>When you connect a provider</legend>
         <label>
@@ -229,13 +276,14 @@ function PaymentSettings({ site: siteProp = null }) {
           All current and future sites
         </label>
       </fieldset>
+      )}
 
       {connectBanner && (
         <p
-          className="processor-action-success"
+          className={`processor-connect-banner processor-connect-banner--${connectBanner.type}`}
           data-testid="processor-oauth-banner"
         >
-          {connectBanner}
+          {connectBanner.message}
         </p>
       )}
 

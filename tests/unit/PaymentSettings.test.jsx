@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import PaymentSettings from '../../src/components/setup/forms/PaymentSettings';
@@ -23,39 +23,42 @@ vi.mock('../../src/services/api', () => ({
   }
 }));
 
-function renderSettings() {
+function renderSettings(initialEntry = '/settings/payments') {
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[initialEntry]}>
       <PaymentSettings />
     </MemoryRouter>
   );
+}
+
+function mockSitesAndStatus(sites, status = {}) {
+  api.get.mockImplementation((url) => {
+    if (url === '/api/connect/status') {
+      return Promise.resolve({
+        accountId: null,
+        available: { stripe: true, square: true, paypal: true },
+        ...status
+      });
+    }
+    if (url === '/api/sites') {
+      return Promise.resolve({ sites });
+    }
+    return Promise.resolve({});
+  });
 }
 
 describe('PaymentSettings', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     usePlan.mockReturnValue({ isGrowth: true });
-    api.get.mockImplementation((url) => {
-      if (url === '/api/connect/status') {
-        return Promise.resolve({
-          accountId: null,
-          available: { stripe: true, square: true, paypal: true }
-        });
-      }
-      if (url === '/api/sites') {
-        return Promise.resolve({
-          sites: [{ id: 'site-1', payOnSite: false }]
-        });
-      }
-      return Promise.resolve({});
-    });
+    mockSitesAndStatus([{ id: 'site-1', payOnSite: false }]);
   });
 
   it('renders payment configuration and the pay on site toggle', async () => {
     renderSettings();
     expect(screen.getByText(/payment configuration/i)).toBeInTheDocument();
     expect(await screen.findByTestId('pay-on-site-toggle')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /connect stripe/i })).toBeInTheDocument();
+    expect(screen.getByTestId('stripe-connect-button')).toBeInTheDocument();
   });
 
   it('shows Stripe, Square, and PayPal connect cards', async () => {
@@ -64,8 +67,9 @@ describe('PaymentSettings', () => {
     expect(screen.getByTestId('processor-square')).toBeInTheDocument();
     expect(screen.getByTestId('processor-paypal')).toBeInTheDocument();
     expect(screen.getByTestId('processor-trust-banner')).toBeInTheDocument();
+    expect(screen.getByTestId('processor-recommended-pill')).toHaveTextContent(/recommended/i);
     expect(screen.getAllByText(/2\.9% \+ 30¢/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText(/instant payouts/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/cards on your site/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/3\.3% \+ 30¢/i)).toBeInTheDocument();
     expect(screen.getByText(/2\.99% \+ 49¢/i)).toBeInTheDocument();
     expect(screen.getAllByText(/never paste API keys/i).length).toBeGreaterThanOrEqual(1);
@@ -140,13 +144,15 @@ describe('PaymentSettings', () => {
     expect(await screen.findByTestId('processor-connect-success')).toHaveTextContent(/square set as default/i);
   });
 
-  it('shows Use existing Stripe account next to Connect Stripe', async () => {
+  it('shows Stripe new vs existing choice without posting onboard until new is picked', async () => {
     renderSettings();
-    expect(await screen.findByTestId('stripe-connect-button')).toBeInTheDocument();
-    expect(screen.getByTestId('stripe-existing-oauth-button')).toHaveTextContent(/use existing stripe account/i);
+    expect(await screen.findByTestId('stripe-connect-choice')).toBeInTheDocument();
+    expect(screen.getByTestId('stripe-connect-button')).toHaveTextContent(/new to stripe/i);
+    expect(screen.getByTestId('stripe-existing-oauth-button')).toHaveTextContent(/already have stripe/i);
+    expect(api.post).not.toHaveBeenCalledWith('/api/connect/onboard', expect.anything());
   });
 
-  it('Connect Stripe still starts Account Links onboarding', async () => {
+  it('new Stripe choice starts Account Links onboarding', async () => {
     const user = userEvent.setup();
     const hrefSetter = vi.fn();
     const originalLocation = window.location;
@@ -178,8 +184,64 @@ describe('PaymentSettings', () => {
     });
   });
 
-  it('lets the owner pick this site, future sites, or all sites', async () => {
+  it('existing Stripe choice uses OAuth without onboarding', async () => {
     const user = userEvent.setup();
+    const originalLocation = window.location;
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...originalLocation, href: '' }
+    });
+    api.get.mockImplementation((url, opts) => {
+      if (url === '/api/connect/stripe/oauth') {
+        return Promise.resolve({ url: 'https://connect.stripe.com/oauth/authorize' });
+      }
+      if (url === '/api/connect/status') {
+        return Promise.resolve({
+          accountId: null,
+          available: { stripe: true, square: true, paypal: true }
+        });
+      }
+      if (url === '/api/sites') {
+        return Promise.resolve({ sites: [{ id: 'site-1', payOnSite: false }] });
+      }
+      return Promise.resolve({});
+    });
+
+    renderSettings();
+    await user.click(await screen.findByTestId('stripe-existing-oauth-button'));
+
+    await waitFor(() => {
+      expect(api.get).toHaveBeenCalledWith('/api/connect/stripe/oauth', {
+        params: { siteId: 'site-1', applyTo: 'site' }
+      });
+    });
+    expect(api.post).not.toHaveBeenCalledWith('/api/connect/onboard', expect.anything());
+
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: originalLocation
+    });
+  });
+
+  it('hides apply-to radios with one site and shows them with two', async () => {
+    renderSettings();
+    await screen.findByTestId('pay-on-site-toggle');
+    expect(screen.queryByTestId('payment-apply-to')).not.toBeInTheDocument();
+
+    mockSitesAndStatus([
+      { id: 'site-1', businessName: 'Cafe', payOnSite: false },
+      { id: 'site-2', businessName: 'Bakery', payOnSite: false }
+    ]);
+    renderSettings();
+    expect(await screen.findByTestId('payment-apply-to')).toBeInTheDocument();
+  });
+
+  it('lets the owner pick this site, future sites, or all sites when they have multiple sites', async () => {
+    const user = userEvent.setup();
+    mockSitesAndStatus([
+      { id: 'site-1', businessName: 'Cafe', payOnSite: false },
+      { id: 'site-2', businessName: 'Bakery', payOnSite: false }
+    ]);
     renderSettings();
 
     expect(await screen.findByTestId('payment-apply-to')).toBeInTheDocument();
@@ -187,6 +249,39 @@ describe('PaymentSettings', () => {
 
     await user.click(screen.getByTestId('payment-apply-future'));
     expect(screen.getByTestId('payment-apply-future')).toBeChecked();
+  });
+
+  it('shows refresh banner when Account Link expired', async () => {
+    renderSettings('/settings/payments?connect=refresh&processor=stripe');
+    expect(await screen.findByTestId('processor-oauth-banner')).toHaveTextContent(/setup link expired/i);
+    expect(api.post).not.toHaveBeenCalledWith('/api/connect/refresh', expect.anything());
+  });
+
+  it('does not claim fully connected on success while Stripe is incomplete', async () => {
+    api.get.mockImplementation((url) => {
+      if (url === '/api/connect/status') {
+        return Promise.resolve({
+          accountId: 'acct_test',
+          chargesEnabled: false,
+          payoutsEnabled: false,
+          stripe: { connected: true },
+          available: { stripe: true, square: true, paypal: true }
+        });
+      }
+      if (url === '/api/sites') {
+        return Promise.resolve({ sites: [{ id: 'site-1', payOnSite: false }] });
+      }
+      return Promise.resolve({});
+    });
+
+    renderSettings('/settings/payments?connect=success&processor=stripe');
+    const banner = await screen.findByTestId('processor-oauth-banner');
+    expect(banner).toHaveTextContent(/identity checks/i);
+    expect(banner).not.toHaveTextContent(/connected successfully/i);
+    const stripeCard = screen.getByTestId('processor-stripe');
+    expect(within(stripeCard).getByTestId('connection-status')).toHaveTextContent(/incomplete/i);
+    expect(within(stripeCard).getByTestId('stripe-connect-button')).toHaveTextContent(/continue setup/i);
+    expect(screen.queryByTestId('stripe-account-id')).not.toBeInTheDocument();
   });
 
   it('copies this site payment setup to every existing site', async () => {

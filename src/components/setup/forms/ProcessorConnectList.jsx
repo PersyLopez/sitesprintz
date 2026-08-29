@@ -5,21 +5,22 @@ const PROCESSORS = [
   {
     id: 'stripe',
     name: 'Stripe',
+    recommended: true,
     fee: 'Typical US online 2.9% + 30¢ (live rate in Stripe)',
-    highlight: 'Instant payouts',
-    description: 'New to Stripe? Connect Stripe to create an account. Already have Stripe? Use your existing account. Identity checks happen on Stripe — never paste API keys here.',
+    highlight: 'Cards on your site',
+    description: 'Recommended for accepting cards on your site. Choose new or existing Stripe — identity checks happen on Stripe. Never paste API keys here.',
     connectTestId: 'stripe-connect-button',
     existingTestId: 'stripe-existing-oauth-button',
     defaultTestId: 'stripe-set-default-button',
     attachTestId: 'stripe-attach-button',
-    heading: 'Stripe Connect'
+    heading: 'Stripe'
   },
   {
     id: 'square',
     name: 'Square',
     fee: 'Typical US Square API 2.9% + 30¢ (Square Online/invoices on Free is 3.3% + 30¢; live rate in Square)',
-    highlight: 'Online checkout',
-    description: 'Authorize SiteSprintz to send checkout to your Square account. This is Square Payments, not Square Appointments. Checkout needs an active Square location. Never paste Application secrets here.',
+    highlight: 'In-person + online',
+    description: 'Best if you already take cards in person or use Square hardware. Checkout needs an active Square location. Never paste Application secrets here.',
     connectTestId: 'square-connect-button',
     defaultTestId: 'square-set-default-button'
   },
@@ -27,8 +28,8 @@ const PROCESSORS = [
     id: 'paypal',
     name: 'PayPal',
     fee: 'Typical US PayPal Checkout 2.99% + 49¢ (live rate in PayPal)',
-    highlight: 'PayPal checkout',
-    description: 'Customers pay with PayPal. Use a PayPal Business account — personal wallets cannot run checkout. Never paste Client Secret here.',
+    highlight: 'PayPal checkout button',
+    description: 'Adds a PayPal button at checkout for customers who prefer PayPal. Requires a PayPal Business account — personal wallets cannot run checkout.',
     connectTestId: 'paypal-connect-button',
     defaultTestId: 'paypal-set-default-button'
   }
@@ -56,25 +57,45 @@ function ProcessorConnectList({
   const [actionError, setActionError] = useState(null);
   const [actionMessage, setActionMessage] = useState(null);
 
+  const startStripeNew = async () => {
+    if (!isGrowth || isProcessing) return;
+    setActionError(null);
+    setIsProcessing(true);
+    try {
+      const data = await api.post('/api/connect/onboard', {
+        ...(siteId ? { siteId } : {}),
+        applyTo
+      });
+      const url = redirectUrl(data);
+      if (!url) throw new Error('Stripe did not return a connect URL');
+      window.location.href = url;
+    } catch (error) {
+      setActionError(error.message || 'Could not start Stripe connection');
+      setIsProcessing(false);
+    }
+  };
+
+  const startStripeContinue = async () => {
+    if (!isGrowth || isProcessing) return;
+    setActionError(null);
+    setIsProcessing(true);
+    try {
+      const data = await api.post('/api/connect/refresh');
+      const url = redirectUrl(data);
+      if (!url) throw new Error('Stripe did not return a connect URL');
+      window.location.href = url;
+    } catch (error) {
+      setActionError(error.message || 'Could not continue Stripe setup');
+      setIsProcessing(false);
+    }
+  };
+
   const startConnect = async (processorId) => {
     if (!isGrowth || isProcessing) return;
     setActionError(null);
     setIsProcessing(true);
 
     try {
-      if (processorId === 'stripe') {
-        const data = status?.accountId && !(status?.chargesEnabled && status?.payoutsEnabled)
-          ? await api.post('/api/connect/refresh')
-          : await api.post('/api/connect/onboard', {
-              ...(siteId ? { siteId } : {}),
-              applyTo
-            });
-        const url = redirectUrl(data);
-        if (!url) throw new Error('Stripe did not return a connect URL');
-        window.location.href = url;
-        return;
-      }
-
       const data = await api.get(`/api/connect/${processorId}`, {
         params: {
           ...(siteId ? { siteId } : {}),
@@ -164,8 +185,9 @@ function ProcessorConnectList({
 
   const isConnected = (id) => {
     if (id === 'stripe') {
-      return status?.stripe?.connected === true
-        || Boolean(status?.chargesEnabled && status?.payoutsEnabled && status?.stripe?.connected !== false && !status?.stripe);
+      const ready = Boolean(status?.chargesEnabled && status?.payoutsEnabled);
+      if (!ready) return false;
+      return status?.stripe?.connected === true || status?.stripe?.connected !== false;
     }
     return status?.[id]?.connected === true;
   };
@@ -238,7 +260,14 @@ function ProcessorConnectList({
               data-default={defaultProcessor ? 'true' : 'false'}
             >
               <div className="processor-card-header">
-                <h4>{processor.heading || processor.name}</h4>
+                <div className="processor-card-title">
+                  <h4>{processor.heading || processor.name}</h4>
+                  {processor.recommended && !connected && !incomplete && (
+                    <span className="processor-recommended-pill" data-testid="processor-recommended-pill">
+                      Recommended
+                    </span>
+                  )}
+                </div>
                 <span
                   className={`status-badge ${connected ? 'ready' : incomplete ? 'incomplete' : 'not_started'}`}
                   data-testid="connection-status"
@@ -255,9 +284,6 @@ function ProcessorConnectList({
 
               {processor.id === 'stripe' && connected && status?.email && (
                 <p className="processor-account" data-testid="stripe-account-email">{status.email}</p>
-              )}
-              {processor.id === 'stripe' && connected && status?.accountId && (
-                <p className="processor-account" data-testid="stripe-account-id">{status.accountId}</p>
               )}
               {processor.id === 'stripe' && connected && (
                 <a
@@ -292,7 +318,31 @@ function ProcessorConnectList({
                   </button>
                 )}
 
-                {isGrowth && enabled && !connected && !incomplete && !(processor.id === 'stripe' && canAttachStripe) && (
+                {isGrowth && enabled && processor.id === 'stripe' && !connected && !incomplete && !canAttachStripe && (
+                  <div className="processor-choice-pair" data-testid="stripe-connect-choice">
+                    <p className="processor-choice-label">How do you want to connect Stripe?</p>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      data-testid={processor.connectTestId}
+                      onClick={startStripeNew}
+                      disabled={isProcessing}
+                    >
+                      {isProcessing ? 'Opening…' : "I'm new to Stripe"}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      data-testid={processor.existingTestId}
+                      onClick={startStripeExistingOAuth}
+                      disabled={isProcessing}
+                    >
+                      {isProcessing ? 'Opening…' : 'I already have Stripe'}
+                    </button>
+                  </div>
+                )}
+
+                {isGrowth && enabled && processor.id !== 'stripe' && !connected && !incomplete && (
                   <button
                     type="button"
                     className="btn btn-primary"
@@ -304,24 +354,12 @@ function ProcessorConnectList({
                   </button>
                 )}
 
-                {isGrowth && enabled && processor.id === 'stripe' && !connected && !incomplete && !canAttachStripe && (
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    data-testid={processor.existingTestId}
-                    onClick={startStripeExistingOAuth}
-                    disabled={isProcessing}
-                  >
-                    {isProcessing ? 'Opening…' : 'Use existing Stripe account'}
-                  </button>
-                )}
-
-                {isGrowth && enabled && incomplete && (
+                {isGrowth && enabled && processor.id === 'stripe' && incomplete && (
                   <button
                     type="button"
                     className="btn btn-warning"
                     data-testid={processor.connectTestId}
-                    onClick={() => startConnect(processor.id)}
+                    onClick={startStripeContinue}
                     disabled={isProcessing}
                   >
                     {isProcessing ? 'Opening…' : 'Continue Setup'}

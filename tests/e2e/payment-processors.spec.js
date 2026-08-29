@@ -238,8 +238,8 @@ test.describe('Stripe Connect Flow', () => {
     
     // Assert: Account details visible
     await expect(page.getByTestId('stripe-account-email')).toBeVisible();
-    await expect(page.getByTestId('stripe-account-id')).toBeVisible();
     await expect(page.getByTestId('stripe-dashboard-link')).toBeVisible();
+    await expect(page.getByTestId('stripe-account-id')).toHaveCount(0);
   });
 });
 
