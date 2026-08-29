@@ -282,7 +282,7 @@ export default function LandingGallery({ selectedTemplateId, onSelectTemplate })
 
     const loadLive = async () => {
       try {
-        const response = await fetch('/api/showcases?page=1&pageSize=4', {
+        const response = await fetch('/api/showcases?kind=clients&page=1&pageSize=4', {
           signal: controller.signal,
         });
         if (!response.ok) return;

@@ -4,7 +4,7 @@
  * Migrated to Prisma ORM - Tests should now be reliable!
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import request from 'supertest';
 import app from '../../server.js';
 import { prisma } from '../../database/db.js';
@@ -141,6 +141,72 @@ describe('Showcase Routes Integration Tests', () => {
       const names = response.body.sites.map(s => s.name);
       const sortedNames = [...names].sort();
       expect(names).toEqual(sortedNames);
+    });
+
+    it('should filter examples with kind=examples', async () => {
+      const stamp = Date.now();
+      const galleryExample = await createTestSite(testUser.id, {
+        id: `gallery-example-${stamp}`,
+        subdomain: `gallery-salon-${stamp}`,
+        site_data: { brand: { name: 'Gallery Example Salon' }, settings: { demoMode: true } },
+        template_id: 'salon',
+        status: 'published',
+        isPublic: true,
+      });
+
+      const clientSite = await createTestSite(testUser.id, {
+        id: `client-example-${stamp}`,
+        subdomain: `client-biz-${stamp}`,
+        site_data: { brand: { name: 'Client Business Site' }, settings: { demoMode: false } },
+        template_id: 'restaurant',
+        status: 'published',
+        isPublic: true,
+      });
+
+      const response = await request(app)
+        .get('/api/showcases?kind=examples')
+        .expect(200);
+
+      const subdomains = response.body.sites.map((s) => s.subdomain);
+      expect(subdomains).toContain(galleryExample.subdomain);
+      expect(subdomains).not.toContain(clientSite.subdomain);
+
+      await prisma.sites.deleteMany({
+        where: { id: { in: [galleryExample.id, clientSite.id] } },
+      });
+    });
+
+    it('should filter clients with kind=clients', async () => {
+      const stamp = Date.now();
+      const galleryExample = await createTestSite(testUser.id, {
+        id: `gallery-gym-${stamp}`,
+        subdomain: `gallery-gym-${stamp}`,
+        site_data: { brand: { name: 'Gallery Gym Demo' }, settings: { demoMode: true } },
+        template_id: 'gym',
+        status: 'published',
+        isPublic: true,
+      });
+
+      const clientSite = await createTestSite(testUser.id, {
+        id: `client-shop-${stamp}`,
+        subdomain: `client-shop-${stamp}`,
+        site_data: { brand: { name: 'Client Shop Site' }, settings: { demoMode: false } },
+        template_id: 'product',
+        status: 'published',
+        isPublic: true,
+      });
+
+      const response = await request(app)
+        .get('/api/showcases?kind=clients')
+        .expect(200);
+
+      const subdomains = response.body.sites.map((s) => s.subdomain);
+      expect(subdomains).toContain(clientSite.subdomain);
+      expect(subdomains).not.toContain(galleryExample.subdomain);
+
+      await prisma.sites.deleteMany({
+        where: { id: { in: [galleryExample.id, clientSite.id] } },
+      });
     });
   });
 

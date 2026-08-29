@@ -15,6 +15,7 @@ import {
 import { validateSubdomain } from '../utils/validators.js';
 import { toPublicSiteData } from '../../src/utils/liveSiteContact.js';
 import { visitorOnlinePaymentReady } from '../services/payments/processorConnectHelpers.js';
+import { buildShowcaseKindWhere } from '../utils/showcaseDemo.js';
 
 const router = express.Router();
 
@@ -77,7 +78,8 @@ router.get('/', asyncHandler(async (req, res) => {
     category,
     search,
     sortBy = 'featured',
-    sortOrder = 'desc'
+    sortOrder = 'desc',
+    kind,
   } = req.query;
 
   const page = Math.max(1, parseInt(pageParam, 10) || 1);
@@ -87,7 +89,8 @@ router.get('/', asyncHandler(async (req, res) => {
   // Build where clause
   const where = {
     is_public: true,
-    status: 'published'
+    status: 'published',
+    ...buildShowcaseKindWhere(kind),
   };
 
   // Filter by category (template prefix)
@@ -187,10 +190,13 @@ router.get('/', asyncHandler(async (req, res) => {
  * Access: Public
  */
 router.get('/categories', asyncHandler(async (req, res) => {
+  const { kind } = req.query;
+
   const sites = await prisma.sites.findMany({
     where: {
       is_public: true,
-      status: 'published'
+      status: 'published',
+      ...buildShowcaseKindWhere(kind),
     },
     select: {
       template_id: true

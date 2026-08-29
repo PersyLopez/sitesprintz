@@ -9,6 +9,21 @@ steps:
       - text contains Example sites
       - text contains Browse live examples by industry
 
+  - action: Made with section when client sites exist
+    code: |
+      const section = page.getByTestId('made-with-section');
+      if ((await section.count()) > 0) {
+        const body = await page.locator('body').innerText();
+        if (!/Made with SiteSprintz/i.test(body)) {
+          throw new Error('Made with section missing heading');
+        }
+        const card = page.locator('[data-testid^="made-with-card-"]');
+        if ((await card.count()) === 0) {
+          throw new Error('Made with section has no client cards');
+        }
+      }
+    settle_ms: 400
+
   - action: Sites grid or count appears
     wait_for: { selector: '[data-testid="showcase-grid"]', timeout: 20000 }
     settle_ms: 500

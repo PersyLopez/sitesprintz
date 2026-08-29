@@ -48,6 +48,62 @@ const filterByField = (map, field, value) => {
   return Array.from(map.values()).filter(item => item[field] === value);
 };
 
+function parseSiteDataJson(site) {
+  const raw = site?.site_data;
+  if (!raw) return {};
+  if (typeof raw === 'string') {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return {};
+    }
+  }
+  return raw;
+}
+
+function matchesSiteWhere(site, where) {
+  if (!where) return true;
+
+  if (where.is_public !== undefined && site.is_public !== where.is_public) return false;
+  if (where.status && site.status !== where.status) return false;
+  if (where.user_id && site.user_id !== where.user_id) return false;
+  if (where.plan && site.plan !== where.plan) return false;
+
+  if (where.template_id?.startsWith) {
+    const prefix = where.template_id.startsWith;
+    if (!site.template_id?.startsWith(prefix)) return false;
+  }
+
+  if (where.subdomain?.startsWith) {
+    if (!site.subdomain?.startsWith(where.subdomain.startsWith)) return false;
+  }
+
+  if (typeof where.subdomain === 'string') {
+    if (site.subdomain !== where.subdomain) return false;
+  }
+
+  if (where.id && site.id !== where.id) return false;
+
+  if (where.site_data?.path && where.site_data.equals !== undefined) {
+    const path = where.site_data.path;
+    let val = parseSiteDataJson(site);
+    for (const key of path) {
+      val = val?.[key];
+    }
+    if (val !== where.site_data.equals) return false;
+  }
+
+  if (where.OR) {
+    if (!where.OR.some((cond) => matchesSiteWhere(site, cond))) return false;
+  }
+
+  if (where.NOT) {
+    if (matchesSiteWhere(site, where.NOT)) return false;
+  }
+
+  return true;
+}
+
 // Helper to create Prisma-style result
 const createResult = (data) => {
   if (Array.isArray(data)) {
@@ -152,28 +208,32 @@ export const createMockPrisma = () => {
         return Promise.resolve(null);
       }),
       findFirst: vi.fn(({ where } = {}) => {
-        if (where?.id) return Promise.resolve(findById(mockData.sites, where.id));
-        if (where?.subdomain) return Promise.resolve(findByField(mockData.sites, 'subdomain', where.subdomain));
-        return Promise.resolve(null);
+        const results = Array.from(mockData.sites.values()).filter((s) =>
+          matchesSiteWhere(s, where)
+        );
+        return Promise.resolve(results[0] || null);
       }),
-      findMany: vi.fn(({ where, orderBy } = {}) => {
+      findMany: vi.fn(({ where, orderBy, skip, take } = {}) => {
         let results = Array.from(mockData.sites.values());
         if (where) {
-          if (where.user_id) results = results.filter(s => s.user_id === where.user_id);
-          if (where.status) results = results.filter(s => s.status === where.status);
-          if (where.plan) results = results.filter(s => s.plan === where.plan);
+          results = results.filter((s) => matchesSiteWhere(s, where));
         }
         if (orderBy) {
-          const [field, direction] = Object.entries(orderBy)[0];
-          results.sort((a, b) => {
-            const aVal = a[field];
-            const bVal = b[field];
-            if (direction === 'desc') {
-              return bVal > aVal ? 1 : -1;
-            }
-            return aVal > bVal ? 1 : -1;
-          });
+          const orders = Array.isArray(orderBy) ? orderBy : [orderBy];
+          for (const entry of orders) {
+            const [field, direction] = Object.entries(entry)[0];
+            results.sort((a, b) => {
+              const aVal = a[field];
+              const bVal = b[field];
+              if (direction === 'desc') {
+                return bVal > aVal ? 1 : -1;
+              }
+              return aVal > bVal ? 1 : -1;
+            });
+          }
         }
+        if (skip) results = results.slice(skip);
+        if (take) results = results.slice(0, take);
         return Promise.resolve(results);
       }),
       create: vi.fn(({ data }) => {
@@ -186,11 +246,13 @@ export const createMockPrisma = () => {
           status: data.status || 'draft',
           plan: data.plan || 'free',
           site_data: data.site_data || {},
+          is_public: data.is_public ?? false,
+          is_featured: data.is_featured ?? false,
           published_at: data.published_at || null,
           expires_at: data.expires_at || null,
           created_at: new Date(),
           updated_at: new Date(),
-          ...data
+          ...data,
         };
         mockData.sites.set(id, site);
         return Promise.resolve(site);
@@ -213,17 +275,22 @@ export const createMockPrisma = () => {
         }
         return Promise.reject(new Error('Site not found'));
       }),
-      count: vi.fn(({ where } = {}) => {
-        let count = mockData.sites.size;
-        if (where) {
-          const filtered = Array.from(mockData.sites.values()).filter(s => {
-            if (where.user_id && s.user_id !== where.user_id) return false;
-            if (where.status && s.status !== where.status) return false;
-            return true;
-          });
-          count = filtered.length;
+      deleteMany: vi.fn(({ where } = {}) => {
+        let deleted = 0;
+        for (const [id, site] of mockData.sites.entries()) {
+          if (where?.id?.in && !where.id.in.includes(id)) continue;
+          if (where?.user_id && site.user_id !== where.user_id) continue;
+          mockData.sites.delete(id);
+          deleted += 1;
         }
-        return Promise.resolve(count);
+        return Promise.resolve({ count: deleted });
+      }),
+      count: vi.fn(({ where } = {}) => {
+        let results = Array.from(mockData.sites.values());
+        if (where) {
+          results = results.filter((s) => matchesSiteWhere(s, where));
+        }
+        return Promise.resolve(results.length);
       })
     },
 
@@ -400,7 +467,6 @@ export const createMockPrisma = () => {
       })
     },
 
-    // Raw SQL queries
     $queryRaw: vi.fn((query) => {
       // Handle common raw queries
       if (query && typeof query === 'object' && query.strings) {
@@ -423,6 +489,28 @@ export const createMockPrisma = () => {
       }
       
       // Default: return empty result
+      return Promise.resolve([]);
+    }),
+
+    $queryRawUnsafe: vi.fn((sql, ...ids) => {
+      const sqlLower = String(sql).toLowerCase();
+      if (sqlLower.includes('site_data') && ids.length) {
+        return Promise.resolve(
+          ids.map((id) => {
+            const site = findById(mockData.sites, id);
+            const sd = parseSiteDataJson(site);
+            return {
+              id,
+              name: sd?.brand?.name || site?.subdomain || null,
+              heroImage: sd?.hero?.image || null,
+              themeId: sd?.galleryTheme?.id || sd?.colors?.themeId || sd?._themeId || null,
+              themeName: sd?.galleryTheme?.name || null,
+              themeMode: sd?.galleryTheme?.mode || sd?.colors?.mode || null,
+              themeAccent: sd?.colors?.accent || sd?.colors?.primary || null,
+            };
+          })
+        );
+      }
       return Promise.resolve([]);
     }),
 

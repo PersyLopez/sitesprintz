@@ -17,7 +17,9 @@ if (typeof window === 'undefined') {
       return {
         prisma: mockPrisma,
         resetPrismaMocks,
-        seedPrismaData
+        seedPrismaData,
+        testConnection: vi.fn().mockResolvedValue(true),
+        query: vi.fn().mockResolvedValue({ rows: [] }),
       };
     } catch (e) {
       // Fallback if mock not available
@@ -26,9 +28,12 @@ if (typeof window === 'undefined') {
           users: { findUnique: vi.fn(), findMany: vi.fn(), create: vi.fn(), update: vi.fn() },
           sites: { findUnique: vi.fn(), findMany: vi.fn(), create: vi.fn(), update: vi.fn() },
           $queryRaw: vi.fn(),
+          $queryRawUnsafe: vi.fn(),
           $executeRaw: vi.fn(),
           $transaction: vi.fn()
-        }
+        },
+        testConnection: vi.fn().mockResolvedValue(true),
+        query: vi.fn().mockResolvedValue({ rows: [] }),
       };
     }
   });

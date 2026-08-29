@@ -65,6 +65,7 @@ function ShowcaseGallery() {
   const { isAuthenticated } = useAuth();
   const { t } = useLocale();
   const navigate = useNavigate();
+  const [clientSites, setClientSites] = useState([]);
   const [sites, setSites] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -107,7 +108,7 @@ function ShowcaseGallery() {
 
     const fetchCategories = async () => {
       try {
-        const response = await fetch('/api/showcases/categories', {
+        const response = await fetch('/api/showcases/categories?kind=examples', {
           signal: controller.signal,
         });
         if (!response.ok) throw new Error('Failed to fetch categories');
@@ -120,6 +121,27 @@ function ShowcaseGallery() {
     };
 
     fetchCategories();
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchClientSites = async () => {
+      try {
+        const response = await fetch('/api/showcases?kind=clients&page=1&pageSize=8', {
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error('Failed to fetch client sites');
+        const data = await response.json();
+        setClientSites(data.sites || []);
+      } catch (err) {
+        if (err?.name === 'AbortError') return;
+        setClientSites([]);
+      }
+    };
+
+    fetchClientSites();
     return () => controller.abort();
   }, []);
 
@@ -137,6 +159,7 @@ function ShowcaseGallery() {
       const params = new URLSearchParams({
         page: currentPage.toString(),
         pageSize: sitesPerPage.toString(),
+        kind: 'examples',
       });
 
       if (selectedCategory) {
@@ -205,6 +228,94 @@ function ShowcaseGallery() {
     return formatLabel(site.template);
   };
 
+  const renderSiteCard = (site, cardTestId) => {
+    const title = getSiteTitle(site);
+    const category = getSiteCategory(site);
+    const meta = categoryMeta(site.template);
+    const image = getSiteImage(site);
+    const plan = (site.plan || 'starter').toLowerCase();
+
+    return (
+      <article
+        key={site.id}
+        className="site-card"
+        data-testid={cardTestId || `site-card-${site.subdomain || site.id}`}
+        style={{ '--card-accent': meta.accent }}
+      >
+        <Link to={`/showcase/${site.subdomain}`} className="site-card-link">
+          <div className="site-browser">
+            <div className="site-browser-bar" aria-hidden="true">
+              <span className="site-browser-dots">
+                <i /><i /><i />
+              </span>
+              <span className="site-browser-url">
+                {site.subdomain}.sitesprintz.com
+              </span>
+            </div>
+            <div className="site-image">
+              {image ? (
+                <OptimizedImage
+                  src={image}
+                  alt={`${title} preview`}
+                  width={600}
+                  height={400}
+                  aspectRatio="3/2"
+                  priority={false}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
+              ) : (
+                <div
+                  className="site-image-fallback"
+                  style={{
+                    background: `linear-gradient(145deg, ${meta.accent}55 0%, #2a1f18 55%, #1a2e35 100%)`,
+                  }}
+                >
+                  <span className="site-image-fallback-emoji" aria-hidden="true">
+                    {meta.emoji}
+                  </span>
+                  <span className="site-image-fallback-label">{category}</span>
+                </div>
+              )}
+              <div className="site-overlay">
+                <span className="view-details">See this look</span>
+              </div>
+              <span className={`site-plan-badge site-plan-badge--${plan}`}>
+                {plan}
+              </span>
+            </div>
+          </div>
+          <div className="site-info">
+            <div className="site-category-row">
+              <span className="site-category-pill">
+                <span aria-hidden="true">{meta.emoji}</span>
+                {category}
+              </span>
+              {site.themeName && (
+                <span
+                  className={`site-theme-pill site-theme-pill--${site.themeMode || 'dark'}`}
+                  style={site.themeAccent ? { '--theme-accent': site.themeAccent } : undefined}
+                >
+                  {site.themeName}
+                </span>
+              )}
+            </div>
+            <p className="site-card-title">{title}</p>
+          </div>
+        </Link>
+        <div className="site-meta">
+          <Link
+            to={getSiteUrl(site.subdomain)}
+            className="visit-site-btn"
+            data-testid={`visit-site-${site.subdomain}`}
+          >
+            {t('showcase.open')}
+            <span aria-hidden="true">↗</span>
+          </Link>
+        </div>
+      </article>
+    );
+  };
+
   const rangeStart = totalSites === 0 ? 0 : (currentPage - 1) * sitesPerPage + 1;
   const rangeEnd = Math.min(currentPage * sitesPerPage, totalSites);
 
@@ -250,6 +361,28 @@ function ShowcaseGallery() {
             </div>
           </div>
         </header>
+
+        {clientSites.length > 0 && (
+          <section
+            className="showcase-made-with"
+            aria-label={t('showcase.madeWith.heading')}
+            data-testid="made-with-section"
+          >
+            <div className="showcase-made-with-header">
+              <span className="showcase-hero-badge">
+                <span className="showcase-hero-badge-dot" aria-hidden="true" />
+                {t('showcase.madeWith.badge')}
+              </span>
+              <h2>{t('showcase.madeWith.heading')}</h2>
+              <p className="showcase-made-with-lead">{t('showcase.madeWith.lead')}</p>
+            </div>
+            <div className="showcase-grid" data-testid="made-with-grid">
+              {clientSites.map((site) =>
+                renderSiteCard(site, `made-with-card-${site.subdomain}`)
+              )}
+            </div>
+          </section>
+        )}
 
         {/* Filters */}
         <section
@@ -366,93 +499,7 @@ function ShowcaseGallery() {
         {!loading && !error && sites.length > 0 && (
           <>
             <div className="showcase-grid" data-testid="showcase-grid">
-              {sites.map((site) => {
-                const title = getSiteTitle(site);
-                const category = getSiteCategory(site);
-                const meta = categoryMeta(site.template);
-                const image = getSiteImage(site);
-                const plan = (site.plan || 'starter').toLowerCase();
-
-                return (
-                  <article
-                    key={site.id}
-                    className="site-card"
-                    data-testid={`site-card-${site.subdomain || site.id}`}
-                    style={{ '--card-accent': meta.accent }}
-                  >
-                    <Link to={`/showcase/${site.subdomain}`} className="site-card-link">
-                      <div className="site-browser">
-                        <div className="site-browser-bar" aria-hidden="true">
-                          <span className="site-browser-dots">
-                            <i /><i /><i />
-                          </span>
-                          <span className="site-browser-url">
-                            {site.subdomain}.sitesprintz.com
-                          </span>
-                        </div>
-                        <div className="site-image">
-                          {image ? (
-                            <OptimizedImage
-                              src={image}
-                              alt={`${title} preview`}
-                              width={600}
-                              height={400}
-                              aspectRatio="3/2"
-                              priority={false}
-                              sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            />
-                          ) : (
-                            <div
-                              className="site-image-fallback"
-                              style={{
-                                background: `linear-gradient(145deg, ${meta.accent}55 0%, #2a1f18 55%, #1a2e35 100%)`,
-                              }}
-                            >
-                              <span className="site-image-fallback-emoji" aria-hidden="true">
-                                {meta.emoji}
-                              </span>
-                              <span className="site-image-fallback-label">{category}</span>
-                            </div>
-                          )}
-                          <div className="site-overlay">
-                            <span className="view-details">See this look</span>
-                          </div>
-                          <span className={`site-plan-badge site-plan-badge--${plan}`}>
-                            {plan}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="site-info">
-                        <div className="site-category-row">
-                          <span className="site-category-pill">
-                            <span aria-hidden="true">{meta.emoji}</span>
-                            {category}
-                          </span>
-                          {site.themeName && (
-                            <span
-                              className={`site-theme-pill site-theme-pill--${site.themeMode || 'dark'}`}
-                              style={site.themeAccent ? { '--theme-accent': site.themeAccent } : undefined}
-                            >
-                              {site.themeName}
-                            </span>
-                          )}
-                        </div>
-                        <p className="site-card-title">{title}</p>
-                      </div>
-                    </Link>
-                    <div className="site-meta">
-                      <Link
-                        to={getSiteUrl(site.subdomain)}
-                        className="visit-site-btn"
-                        data-testid={`visit-site-${site.subdomain}`}
-                      >
-                        {t('showcase.open')}
-                        <span aria-hidden="true">↗</span>
-                      </Link>
-                    </div>
-                  </article>
-                );
-              })}
+              {sites.map((site) => renderSiteCard(site))}
             </div>
 
             {totalPages > 1 && (

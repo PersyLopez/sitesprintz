@@ -62,6 +62,17 @@ const mockSites = [
   }
 ];
 
+const mockClientSites = [
+  {
+    id: 'client-1',
+    subdomain: 'real-bakery',
+    template: 'restaurant',
+    plan: 'growth',
+    name: 'Real Bakery Co',
+    heroImage: '/images/bakery-hero.jpg',
+  },
+];
+
 const mockCategories = [
   { template: 'restaurant', count: 10 },
   { template: 'salon', count: 8 },
@@ -82,6 +93,17 @@ describe('ShowcaseGallery Component', () => {
         return Promise.resolve({
           ok: true,
           json: async () => ({ categories: mockCategories }),
+        });
+      }
+      if (href.includes('kind=clients')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            sites: mockClientSites,
+            total: mockClientSites.length,
+            page: 1,
+            pageSize: 8,
+          }),
         });
       }
       return Promise.resolve({
@@ -164,6 +186,8 @@ describe('ShowcaseGallery Component', () => {
           expect.stringContaining('/api/showcase'),
           expect.anything()
         );
+        const calls = global.fetch.mock.calls.map((c) => String(c[0]));
+        expect(calls.some((u) => u.includes('kind=examples'))).toBe(true);
       }, { timeout: 3000 });
     });
 
@@ -438,6 +462,55 @@ describe('ShowcaseGallery Component', () => {
         const visit = screen.getByTestId('visit-site-amazing-restaurant');
         expect(visit).toHaveAttribute('href', '/view/amazing-restaurant');
       });
+    });
+  });
+
+  // ==================== MADE WITH SECTION ====================
+  describe('Made with SiteSprintz section', () => {
+    it('shows client sites section when kind=clients returns data', async () => {
+      renderWithRouter(<ShowcaseGallery />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('made-with-section')).toBeInTheDocument();
+        expect(screen.getByTestId('made-with-grid')).toBeInTheDocument();
+        expect(screen.getByTestId('made-with-card-real-bakery')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Made with SiteSprintz' })).toBeInTheDocument();
+      });
+    });
+
+    it('hides client section when kind=clients returns empty', async () => {
+      global.fetch.mockImplementation((url) => {
+        const href = String(url);
+        if (href.includes('/api/showcases/categories')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({ categories: mockCategories }),
+          });
+        }
+        if (href.includes('kind=clients')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({ sites: [], total: 0, page: 1, pageSize: 8 }),
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            sites: mockSites,
+            total: mockSites.length,
+            page: 1,
+            limit: 12,
+          }),
+        });
+      });
+
+      renderWithRouter(<ShowcaseGallery />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('showcase-grid')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByTestId('made-with-section')).not.toBeInTheDocument();
     });
   });
 
