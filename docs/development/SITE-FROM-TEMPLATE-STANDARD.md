@@ -88,5 +88,6 @@ Do not use Unsplash or generic stock photography on customer/claimable sites. Ga
 - [ ] No demo banner, no `gallery@` owner, no `_demo: true` on a customer site
 - [ ] Hours, location, social present when known
 - [ ] Claimable only: intake ledger, score ≥ 90%, 14-day `/claim/:token`, admin-owned
+- [ ] Claimable only: `{slug}-gate.md` pre-delivery inspection (every enabled feature) **and** a pitch that names what we checked
 
-Hand off: live URL, what is Missing, and (claimable) score + claim link.
+Hand off: live URL, Missing, (claimable) score + claim link + inspection + customer pitch. Do not pitch a site that only “looks done.”

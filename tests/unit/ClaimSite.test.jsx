@@ -67,6 +67,9 @@ describe('ClaimSite', () => {
 
     await waitFor(() => {
       expect(screen.getByText('This site was prepared for you')).toBeInTheDocument();
+      expect(
+        screen.getByText(/already checked that the live page, photos, and booking or checkout/i)
+      ).toBeInTheDocument();
     });
     expect(screen.getByTestId('claim-register')).toHaveAttribute(
       'href',

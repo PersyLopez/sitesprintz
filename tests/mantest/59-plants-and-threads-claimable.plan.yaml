@@ -70,3 +70,17 @@ steps:
       if (!/Please bring cash/i.test(t)) {
         throw new Error('Checkout cash hint missing: ' + t);
       }
+
+  - action: Close cart
+    click: { testId: cart-close-button }
+    settle_ms: 400
+
+  - action: Sewing booking widget is mounted
+    wait_for: { selector: '[data-testid="live-booking-widget"]', timeout: 10000 }
+
+  - action: Sewing service is bookable
+    code: |
+      const body = await page.locator('body').innerText();
+      if (!/Sewing/i.test(body)) throw new Error('Sewing service missing on live page');
+      const err = await page.locator('[data-testid="error-message"]').count();
+      if (err) throw new Error('Booking widget shows an error');

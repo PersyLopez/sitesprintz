@@ -228,6 +228,10 @@ function ClaimSite() {
               <div className="auth-header">
                 <h1>{preview?.businessName || 'Your site'}</h1>
                 <p>This site was prepared for you</p>
+                <p>
+                  We already checked that the live page, photos, and booking or checkout on this
+                  site work.
+                </p>
               </div>
 
               {!isAuthenticated ? (
