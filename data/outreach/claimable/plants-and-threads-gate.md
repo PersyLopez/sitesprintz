@@ -49,6 +49,30 @@ We left blank what we did not have: phone, email, public street, a hours grid, a
 
 Growth is $35/month if you will edit, or Growth Managed $75/month if we keep the list updated.
 
+## Pitch (ES — sent)
+
+To: gonzalesgl1280@gmail.com  
+CC: persylopez9@gmail.com  
+Sent: 2026-08-29 Resend `45be6a1c-f7d8-41c7-9df2-0abd67eb0e78`
+
+Pusimos Plants & Threads en una página de SiteSprintz con tus fotos, y comprobamos que funciona de verdad antes de enviarte esto.
+
+Ya verificamos:
+- La página carga y se ven las fotos de las plantas
+- Inglés y español funcionan en la misma página
+- Tienda: agregar una planta y pagar en el local (trae efectivo — no aceptamos tarjetas)
+- Reservar costura se queda en este sitio; puedes elegir un horario entre semana (el precio se cotiza en persona)
+- Tu calle no aparece en la página pública
+
+Mírala: https://sitesprintz.com/view/plants-and-threads
+Reclama esta página (14 días): https://sitesprintz.com/claim/1e6179cfa92ed0118c6ec09567f9802f1adad911748603c218342dc83e8e1e36
+
+Dejamos en blanco lo que no teníamos: teléfono, correo, calle pública, un horario de semana y el precio de costura.
+
+Growth es $35 al mes si tú editas, o Growth Managed $75 al mes si nosotros mantenemos la lista actualizada.
+
+Para reclamarla, crea una cuenta o entra con el correo que quieres usar para el sitio. En la pantalla de pago, usa el código **PLANTSWALK**.
+
 ## Operator claim walk (not the customer pitch)
 
 They claim with **their own email** — Create account or log in (Google is fine). Do not use an admin account.

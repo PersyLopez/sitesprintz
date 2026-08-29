@@ -88,4 +88,24 @@ describe('Email Service', () => {
         expect(result.success).toBe(false);
         expect(result.error).toMatch(/Unknown email template/);
     });
+
+    it('passes cc and replyTo on HTML mail', async () => {
+        mockSend.mockResolvedValue({ data: { id: 'email_html_1' }, error: null });
+        const { sendHtmlEmail } = await import('../../email-service.js');
+
+        const result = await sendHtmlEmail(
+            'owner@example.com',
+            'Tu página',
+            '<p>Hola</p>',
+            { cc: 'persylopez9@gmail.com', replyTo: 'persylopez9@gmail.com' },
+        );
+
+        expect(result.success).toBe(true);
+        expect(mockSend).toHaveBeenCalledWith(expect.objectContaining({
+            to: ['owner@example.com'],
+            cc: ['persylopez9@gmail.com'],
+            replyTo: 'persylopez9@gmail.com',
+            subject: 'Tu página',
+        }));
+    });
 });

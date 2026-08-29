@@ -796,7 +796,7 @@ export async function sendEmail(to, templateName, templateData = {}) {
 }
 
 /** Send already-rendered HTML (booking confirmation/cancellation). */
-export async function sendHtmlEmail(to, subject, html) {
+export async function sendHtmlEmail(to, subject, html, options = {}) {
   const resendInstance = getResend();
 
   if (!resendInstance) {
@@ -805,12 +805,23 @@ export async function sendHtmlEmail(to, subject, html) {
   }
 
   try {
-    const { data, error } = await resendInstance.emails.send({
+    const payload = {
       from: FROM_EMAIL,
-      to: [to],
+      to: Array.isArray(to) ? to : [to],
       subject,
       html,
-    });
+    };
+    if (options.text) {
+      payload.text = options.text;
+    }
+    if (options.cc) {
+      payload.cc = Array.isArray(options.cc) ? options.cc : [options.cc];
+    }
+    if (options.replyTo) {
+      payload.replyTo = options.replyTo;
+    }
+
+    const { data, error } = await resendInstance.emails.send(payload);
 
     if (error) {
       console.error('❌ Email send error:', error);
