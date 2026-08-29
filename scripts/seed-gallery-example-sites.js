@@ -19,8 +19,8 @@ import {
   colorsFromSiteTheme,
   defaultThemeIdForNiche,
   getSiteTheme,
-  listSiteThemes,
 } from '../src/config/siteThemes.js';
+import { TEMPLATE_TO_SHOWCASE_SUBDOMAIN } from '../src/utils/galleryTemplateMap.js';
 import StaffManagementService from '../server/services/booking/StaffManagementService.js';
 
 dotenv.config();
@@ -30,12 +30,12 @@ const GALLERY_EMAIL = 'gallery@sitesprintz.com';
 const GALLERY_PASSWORD = 'GalleryDemo123!';
 
 /**
- * One site per curated theme (all 6), then extra niches so the gallery
- * shows template variety — salon, trades, dining, products, bazaar, etc.
- * themeId is the locked SiteSprintz palette applied at publish.
+ * One admin-owned demo per landing niche (not one per theme).
+ * Extra bazaar example (food-stall) is allowed. themeId is the locked
+ * palette for that site; themes may repeat across niches.
  */
 export const EXAMPLES = [
-  // ── Full theme lineup (each SITE_THEMES id exactly once as the lead) ──
+  // ── Landing niches (one demo each) ──
   {
     subdomain: 'gallery-salon',
     niche: 'salon',
@@ -102,7 +102,7 @@ export const EXAMPLES = [
     themeId: 'ivory-grove',
   },
 
-  // ── More niches (reuse themes so every template family is represented) ──
+  // ── Remaining landing niches (themes may repeat) ──
   {
     subdomain: 'gallery-cleaning',
     niche: 'cleaning',
@@ -593,7 +593,14 @@ function bookingServicePicks(example, siteData) {
 
 async function ensureSiteBooking(owner, example) {
   const siteData = applyCuratedTheme(assembleSiteData(example), example);
-  const siteId = example.subdomain;
+  const site = await prisma.sites.findUnique({
+    where: { subdomain: example.subdomain },
+    select: { id: true },
+  });
+  if (!site) {
+    throw new Error(`Gallery site missing for booking: ${example.subdomain}`);
+  }
+  const siteId = site.id;
 
   let tenant = await prisma.booking_tenants.findFirst({
     where: { site_id: siteId },
@@ -633,9 +640,8 @@ async function ensureSiteBooking(owner, example) {
     });
   }
 
-  await prisma.booking_services.deleteMany({ where: { tenant_id: tenant.id } });
-  // Clear prior demo appointments so reseeding services never conflicts
   await prisma.appointments.deleteMany({ where: { tenant_id: tenant.id } }).catch(() => {});
+  await prisma.booking_services.deleteMany({ where: { tenant_id: tenant.id } });
 
   const services = bookingServicePicks(example, siteData);
   for (const [index, item] of services.entries()) {
@@ -664,7 +670,12 @@ async function ensureGalleryBookings(owner) {
   );
 
   // Drop orphan gallery tenants tied to this owner before recreating per site
-  const keepIds = new Set(bookingExamples.map((example) => example.subdomain));
+  const bookingSubdomains = bookingExamples.map((example) => example.subdomain);
+  const bookingSites = await prisma.sites.findMany({
+    where: { subdomain: { in: bookingSubdomains } },
+    select: { id: true },
+  });
+  const keepIds = new Set(bookingSites.map((site) => site.id));
   const existing = await prisma.booking_tenants.findMany({
     where: { user_id: owner.id },
     select: { id: true, site_id: true },
@@ -713,12 +724,15 @@ async function clearStaleGallerySites(owner, keepSubdomains) {
 }
 
 async function main() {
-  const themes = listSiteThemes();
-  const themeIdsInExamples = new Set(EXAMPLES.map((e) => e.themeId));
-  const missingThemes = themes.filter((t) => !themeIdsInExamples.has(t.id));
-  if (missingThemes.length > 0) {
+  const missingNiches = Object.entries(TEMPLATE_TO_SHOWCASE_SUBDOMAIN).filter(
+    ([niche, subdomain]) =>
+      !EXAMPLES.some((example) => example.niche === niche && example.subdomain === subdomain)
+  );
+  if (missingNiches.length > 0) {
     throw new Error(
-      `Gallery seed must showcase every curated theme. Missing: ${missingThemes.map((t) => t.id).join(', ')}`
+      `Gallery seed must include one demo per landing niche. Missing: ${missingNiches
+        .map(([niche, subdomain]) => `${niche} (${subdomain})`)
+        .join(', ')}`
     );
   }
 
@@ -739,7 +753,7 @@ async function main() {
     }
   }
 
-  console.log('Gallery example sites (theme → niche):');
+  console.log('Gallery example sites (one demo per landing niche):');
   for (const example of EXAMPLES) {
     const row = results.find((r) => r.subdomain === example.subdomain);
     const theme = getSiteTheme(example.themeId);
@@ -748,7 +762,7 @@ async function main() {
     );
   }
   console.log(`Owner: ${GALLERY_EMAIL} / ${GALLERY_PASSWORD}`);
-  console.log(`Themes covered: ${[...themeIdsInExamples].join(', ')}`);
+  console.log(`Landing niches: ${Object.keys(TEMPLATE_TO_SHOWCASE_SUBDOMAIN).join(', ')}`);
 
   await prisma.$disconnect();
 }
