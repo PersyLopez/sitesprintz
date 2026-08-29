@@ -247,30 +247,93 @@ function heroCtaLabel(hero) {
   return undefined;
 }
 
+function photoFrom(value) {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+  return value.image || value.src || value.photo || value.url || '';
+}
+
+function withPhoto(item, fallback) {
+  if (!item || typeof item !== 'object') return item;
+  const image = photoFrom(item) || photoFrom(fallback);
+  if (!image) return item;
+  return { ...item, image, src: item.src || image, photo: item.photo || image };
+}
+
+function catalogMenuItems(catalog) {
+  return (catalog?.menu?.sections || []).flatMap((section) => section.items || []);
+}
+
+function catalogGalleryImages(catalog, businessName) {
+  const gallery = catalog?.gallery;
+  if (!gallery) return [];
+  const fromList = Array.isArray(gallery.images) ? gallery.images : [];
+  const fromCategories = (gallery.categories || []).flatMap((category) => category.images || []);
+  const raw = fromList.length ? fromList : fromCategories;
+  return raw
+    .map((img) => {
+      const src = photoFrom(img);
+      if (!src) return null;
+      const alt = (typeof img === 'object' && (img.alt || img.imageAlt)) || `${businessName} work`;
+      return { src, alt };
+    })
+    .filter(Boolean);
+}
+
+function catalogTeamMembers(catalog) {
+  const team = catalog?.team;
+  if (Array.isArray(team)) return team;
+  return team?.members || [];
+}
+
 /**
  * Fill empty showcase sections so demos look complete (gallery/team/faq/reviews).
  */
 function enrichGallerySections(sections, example, catalog) {
   const name = example.businessName;
+  const menuItems = catalogMenuItems(catalog);
+  const catalogImages = catalogGalleryImages(catalog, name);
+  const teamCatalog = catalogTeamMembers(catalog);
   return (sections || []).map((section) => {
     const content = { ...(section.content || {}) };
     const type = section.type;
 
-    if (type === 'gallery' && (!Array.isArray(content.images) || content.images.length === 0)) {
-      const heroImg = catalog.hero?.image
-        || 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80';
-      content.images = [
-        { src: heroImg, alt: `${name} space` },
-        { src: 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&q=80', alt: `${name} detail` },
-        { src: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800&q=80', alt: `${name} team` },
-      ];
+    if (type === 'gallery') {
+      if (catalogImages.length > (content.images?.length || 0)) {
+        content.images = catalogImages;
+      } else if (!Array.isArray(content.images) || content.images.length === 0) {
+        const heroImg = catalog.hero?.image
+          || 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80';
+        content.images = [
+          { src: heroImg, alt: `${name} space` },
+          { src: 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&q=80', alt: `${name} detail` },
+          { src: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800&q=80', alt: `${name} team` },
+        ];
+      }
     }
 
-    if (type === 'team' && (!Array.isArray(content.members) || content.members.length === 0)) {
-      content.members = [
-        { name: 'Alex Rivera', role: 'Owner', bio: `Leads ${name} day to day.` },
-        { name: 'Jordan Lee', role: 'Lead specialist', bio: 'Here to help you get set up.' },
-      ];
+    if (type === 'services' && Array.isArray(content.items) && content.items.length) {
+      content.items = content.items.map((item, index) => withPhoto(item, menuItems[index]));
+    }
+
+    if (type === 'team') {
+      if (!Array.isArray(content.members) || content.members.length === 0) {
+        content.members = teamCatalog.length
+          ? teamCatalog.map((member) => withPhoto({
+            name: member.name,
+            role: member.title || member.role,
+            bio: member.bio,
+          }, member))
+          : [
+            { name: 'Alex Rivera', role: 'Owner', bio: `Leads ${name} day to day.` },
+            { name: 'Jordan Lee', role: 'Lead specialist', bio: 'Here to help you get set up.' },
+          ];
+      } else {
+        content.members = content.members.map((member, index) => {
+          const match = teamCatalog.find((row) => row.name === member.name) || teamCatalog[index];
+          return withPhoto(member, match);
+        });
+      }
     }
 
     if (type === 'faq' && (!Array.isArray(content.items) || content.items.length === 0)) {
@@ -297,6 +360,14 @@ function enrichGallerySections(sections, example, catalog) {
     if (type === 'catalog' || type === 'menu' || type === 'products') {
       if ((!Array.isArray(content.items) || content.items.length === 0) && Array.isArray(catalog.products)) {
         content.items = catalog.products;
+      }
+      const catalogItems = [
+        ...(catalog.products || []),
+        ...(catalog.featuredProducts?.items || []),
+        ...menuItems,
+      ];
+      if (Array.isArray(content.items) && content.items.length) {
+        content.items = content.items.map((item, index) => withPhoto(item, catalogItems[index]));
       }
     }
 
@@ -356,21 +427,42 @@ function assembleSiteData(example) {
         address: example.location || '',
         hours: viewerHours(example.hours),
       },
-      products: generated.products || [],
+      products: (generated.products || []).map((item, index) => withPhoto(item, [
+        { image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80' },
+        { image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80' },
+        { image: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=800&q=80' },
+      ][index])),
       sections: (generated.sections || []).map((section) => {
-        if (section.type !== 'hero') return section;
-        return {
-          ...section,
-          content: {
-            ...(section.content || {}),
-            eyebrow: example.businessName,
-            title: example.businessName,
-            subtitle: generated.heroSubtitle || section.content?.subtitle,
-            image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=1200&q=80',
-            ctaText: 'Order Now',
-          },
-        };
+        if (section.type === 'hero') {
+          return {
+            ...section,
+            content: {
+              ...(section.content || {}),
+              eyebrow: example.businessName,
+              title: example.businessName,
+              subtitle: generated.heroSubtitle || section.content?.subtitle,
+              image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=1200&q=80',
+              ctaText: 'Order Now',
+            },
+          };
+        }
+        if (section.type === 'catalog' && Array.isArray(section.content?.items)) {
+          const foodPhotos = [
+            'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80',
+            'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80',
+            'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=800&q=80',
+          ];
+          return {
+            ...section,
+            content: {
+              ...section.content,
+              items: section.content.items.map((item, index) => withPhoto(item, { image: foodPhotos[index] })),
+            },
+          };
+        }
+        return section;
       }),
+      _demo: true,
       settings: {
         allowCheckout: true,
         bookingEnabled: false,
@@ -399,8 +491,13 @@ function assembleSiteData(example) {
     generated.heroSubtitle ||
     '';
 
+  const catalogItems = [
+    ...(catalog.products || []),
+    ...(catalog.featuredProducts?.items || []),
+    ...catalogMenuItems(catalog),
+  ];
   const products = flattenProducts(catalog, generated).map((item, index) => ({
-    ...item,
+    ...withPhoto(item, catalogItems[index]),
     id: item.id || `gallery-${example.subdomain}-${index + 1}`,
   }));
 
@@ -461,6 +558,7 @@ function assembleSiteData(example) {
     _features: generated._features,
     _layoutSections: generated.sections,
     products,
+    _demo: true,
     settings: {
       allowCheckout: isCommerce,
       bookingEnabled: isBooking,

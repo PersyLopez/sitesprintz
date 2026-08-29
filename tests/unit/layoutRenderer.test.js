@@ -504,5 +504,10 @@ describe('layoutRenderer — catalog-shaped site data', () => {
       heroImage: 'https://images.unsplash.com/photo-1',
     }, {});
     expect(demo.content.image).toContain('unsplash.com');
+    const seeded = renderSection('hero', {}, {
+      settings: { demoMode: true },
+      heroImage: 'https://images.unsplash.com/photo-1',
+    }, {});
+    expect(seeded.content.image).toContain('unsplash.com');
   });
 });

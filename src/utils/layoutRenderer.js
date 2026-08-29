@@ -30,7 +30,7 @@ import {
 } from '../config/layouts.js';
 import { resolveVoiceCopy, resolveTeamHeading } from './businessScale.js';
 import { resolveOperatingModel } from '../config/operatingModel.js';
-import { filterStockImages, isStockImageUrl } from './stockPhotos.js';
+import { allowsDemoStockPhotos, filterStockImages, isStockImageUrl } from './stockPhotos.js';
 import { isAreaDisplay, resolvePrimaryCta, resolvePublicLocation, resolveSiteAddress, resolveSitePhone } from './liveSiteContact.js';
 
 // ---------------------------------------------------------------------------
@@ -119,7 +119,7 @@ const sectionPrimitives = {
     const rawImages = flattenGalleryImages(c).length
       ? flattenGalleryImages(c)
       : flattenGalleryImages(siteData.gallery);
-    const images = filterStockImages(rawImages, { allowStock: siteData?._demo === true });
+    const images = filterStockImages(rawImages, { allowStock: allowsDemoStockPhotos(siteData) });
     const catalogGallery = siteData?.gallery && typeof siteData.gallery === 'object' ? siteData.gallery : {};
     return {
       type: 'gallery',
@@ -553,7 +553,7 @@ function firstList(...candidates) {
 
 function liveImage(url, siteData) {
   if (!url) return '';
-  if (siteData?._demo === true) return url;
+  if (allowsDemoStockPhotos(siteData)) return url;
   return isStockImageUrl(url) ? '' : url;
 }
 

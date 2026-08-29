@@ -1,7 +1,7 @@
 /**
  * Detect placeholder stock hosts so customer sites do not publish Unsplash
  * as if it were the business's own photography. Gallery demo seeds keep
- * stock URLs and set `_demo: true`.
+ * stock URLs via `_demo: true` and/or `settings.demoMode: true`.
  */
 
 const STOCK_HOSTS = [
@@ -32,6 +32,16 @@ export function imageSrc(image) {
   if (!image) return '';
   if (typeof image === 'string') return image;
   return image.src || image.url || image.image || '';
+}
+
+/**
+ * Gallery / showcase seeds keep Unsplash. Customer and claimable sites do not.
+ * Matches server/utils/showcaseDemo.js (settings.demoMode) plus the seed `_demo` flag.
+ * @param {object|null|undefined} siteData
+ * @returns {boolean}
+ */
+export function allowsDemoStockPhotos(siteData) {
+  return siteData?._demo === true || siteData?.settings?.demoMode === true;
 }
 
 /**

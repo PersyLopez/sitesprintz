@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { filterStockImages, isStockImageUrl } from '../../src/utils/stockPhotos.js';
+import { allowsDemoStockPhotos, filterStockImages, isStockImageUrl } from '../../src/utils/stockPhotos.js';
 
 describe('stockPhotos', () => {
   it('detects Unsplash hosts', () => {
@@ -19,5 +19,12 @@ describe('stockPhotos', () => {
 
   it('does not treat the first-party insert as stock', () => {
     expect(isStockImageUrl('/assets/hero-placeholder.jpg')).toBe(false);
+  });
+
+  it('allows stock on demo seeds via _demo or settings.demoMode', () => {
+    expect(allowsDemoStockPhotos({})).toBe(false);
+    expect(allowsDemoStockPhotos({ _demo: true })).toBe(true);
+    expect(allowsDemoStockPhotos({ settings: { demoMode: true } })).toBe(true);
+    expect(allowsDemoStockPhotos({ settings: { demoMode: false } })).toBe(false);
   });
 });
