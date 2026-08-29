@@ -4,7 +4,6 @@ import { getFrontendOrigin } from './payments/processorConnectHelpers.js';
 import {
   CLAIM_PLAN,
   CLAIM_PLANS,
-  STRIPE_TRIAL_DAYS,
   normalizePaidPlan,
   stripeSubscriptionLineItem,
 } from '../config/platformPlans.js';
@@ -24,7 +23,7 @@ export function normalizeClaimPlan(rawPlan) {
 
 export function hasClaimableGrowthSubscription(user) {
   const status = user?.subscriptionStatus || user?.subscription_status;
-  if (!isSubscribedStatus(status)) {
+  if (status !== 'active') {
     return false;
   }
   const raw = user?.subscriptionPlan || user?.subscription_plan || user?.plan;
@@ -98,7 +97,7 @@ export async function createClaimTrialCheckout({
   }
   const claimPlan = plan ? normalizeClaimPlan(plan) : CLAIM_PLAN;
   if (!claimPlan) {
-    const error = new Error('Claim trial must be Growth or Growth Managed');
+    const error = new Error('Claim must be Growth or Growth Managed');
     error.code = 'INVALID_PLAN';
     throw error;
   }
@@ -113,7 +112,6 @@ export async function createClaimTrialCheckout({
     payment_method_types: ['card'],
     line_items: [stripeSubscriptionLineItem(claimPlan)],
     subscription_data: {
-      trial_period_days: STRIPE_TRIAL_DAYS,
       metadata: {
         plan: claimPlan,
         userId: user.id,
@@ -179,15 +177,15 @@ export async function completeClaimTrialCheckout({
     throw error;
   }
 
-  if (!isSubscribedStatus(subscription.status)) {
-    const error = new Error('Subscription is not active or trialing');
+  if (subscription.status !== 'active') {
+    const error = new Error('Subscription is not paid');
     error.code = 'INVALID_SUBSCRIPTION_STATUS';
     throw error;
   }
 
   const plan = normalizeClaimPlan(metadata.plan);
   if (!plan) {
-    const error = new Error('Claim trial must be Growth or Growth Managed');
+    const error = new Error('Claim must be Growth or Growth Managed');
     error.code = 'INVALID_PLAN';
     throw error;
   }

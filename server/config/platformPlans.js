@@ -6,7 +6,7 @@
  * access still gated by plan). Labor SKUs use Dashboard Price IDs only — never client cents.
  *
  * Two clocks (do not conflate):
- * - STRIPE_TRIAL_DAYS: card-required Checkout trial
+ * - STRIPE_TRIAL_DAYS: self-serve publish Checkout only (not claimables we prepared)
  * - CLAIM_TTL_DAYS in claimTokenService.js: claim-link window (14 days)
  */
 

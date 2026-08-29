@@ -25,6 +25,7 @@ steps:
       const extras = page.getByTestId('labor-extras');
       const extraText = await extras.innerText();
       if (/\$49/.test(extraText)) throw new Error('Legacy $49 care still shown in extras');
+      if (/no setup fee/i.test(extraText)) throw new Error('Do not advertise a waived setup fee');
       if (!/Growth Managed/i.test(extraText)) throw new Error('Extras should mention Growth Managed');
 
   - action: Growth Managed CTA goes to register with plan
@@ -63,3 +64,4 @@ steps:
       const t = await page.locator('body').innerText();
       if (!/\$75/.test(t)) throw new Error('Contact FAQ missing $75 Managed price');
       if (/Managed care is \$49/i.test(t)) throw new Error('Contact still sells $49 managed care');
+      if (/no setup fee/i.test(t)) throw new Error('Do not advertise a waived setup fee on contact');

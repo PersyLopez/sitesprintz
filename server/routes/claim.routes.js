@@ -65,7 +65,7 @@ router.get('/:token', async (req, res) => {
 
 /**
  * POST /api/claim/:token/trial-checkout
- * Start Stripe Checkout with 7-day trial before claiming.
+ * Start paid Stripe Checkout (no trial) before claiming.
  */
 router.post('/:token/trial-checkout', claimAcceptLimiter, requireAuth, async (req, res) => {
   try {
@@ -111,7 +111,7 @@ router.post('/:token/trial-checkout', claimAcceptLimiter, requireAuth, async (re
         code: 'STRIPE_NOT_CONFIGURED',
       });
     }
-    return res.status(500).json({ error: 'Trial checkout failed' });
+    return res.status(500).json({ error: 'Checkout failed' });
   }
 });
 
@@ -165,7 +165,7 @@ router.post('/:token/trial-complete', requireAuth, async (req, res) => {
 
 /**
  * POST /api/claim/:token/accept
- * Transfer prospect site to the authenticated user after trial/active subscription.
+ * Transfer prospect site to the authenticated user after a paid Growth plan.
  */
 router.post('/:token/accept', claimAcceptLimiter, requireAuth, async (req, res) => {
   try {
@@ -187,8 +187,8 @@ router.post('/:token/accept', claimAcceptLimiter, requireAuth, async (req, res) 
       const status = claimant.subscriptionStatus || claimant.subscription_status;
       return res.status(403).json({
         error: isSubscribedStatus(status)
-          ? 'This site is on Growth. Start a Growth trial to claim it'
-          : 'Start a 7-day Growth trial before claiming this site',
+          ? 'This site is on Growth. Subscribe to Growth to claim it'
+          : 'Subscribe to Growth before claiming this site',
         code: isSubscribedStatus(status) ? 'GROWTH_REQUIRED' : 'SUBSCRIPTION_REQUIRED',
       });
     }

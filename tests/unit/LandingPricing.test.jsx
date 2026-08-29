@@ -101,9 +101,10 @@ describe('Landing Page - Pricing', () => {
     expect(screen.getByText('Embedded booking')).toBeInTheDocument();
   });
 
-  it('shows the pricing lead without a claimable setup fee', () => {
+  it('shows the pricing lead without advertising a waived setup fee', () => {
     renderLanding();
-    expect(screen.getAllByText(/sites we prepare for you have no setup fee/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText(/no setup fee/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/we set the site up and keep your menu and hours updated/i)).toBeInTheDocument();
   });
 
   it('shows the trial note', () => {
@@ -122,7 +123,7 @@ describe('Landing Page - Pricing', () => {
     renderLanding();
     const extras = screen.getByTestId('labor-extras');
     expect(extras).toHaveAttribute('id', 'pricing-extras');
-    expect(extras).toHaveTextContent(/no setup fee/i);
+    expect(extras).not.toHaveTextContent(/no setup fee/i);
     expect(extras).toHaveTextContent(/Growth Managed/i);
     expect(extras).toHaveTextContent(/\$75/);
     expect(extras).toHaveTextContent(/\$99/);

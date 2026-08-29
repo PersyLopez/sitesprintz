@@ -12,7 +12,7 @@ Tiers: trial → Starter ($10) → Growth ($35) → Growth Managed ($75). Gating
 
 | If this is… | Then… |
 |-------------|--------|
-| A real business (URLs, photos, Acuity, Instagram) | Claimable prospect on **Growth** software. Intake first. Claim = hosting trial (Growth $35 DIY or Growth Managed $75). No setup fee. This standard **plus** the claimable workflow. Do not seed Starter/flyer claimables — those are self-serve. |
+| A real business (URLs, photos, Acuity, Instagram) | Claimable prospect on **Growth** software. Intake first. Claim = paid Growth $35 DIY or Growth Managed $75 (we set it up and keep it updated). No trial. Do not advertise a waived setup fee. This standard **plus** the claimable workflow. Do not seed Starter/flyer claimables — those are self-serve. |
 | An owner filling the wizard | Customer site. Map their answers onto the template. Do not leave gallery leftovers. |
 | A gallery / example (`gallery@`) | Demo. Example staff and photos are allowed **only** here. `demoMode` stays off on customer sites. |
 

@@ -75,9 +75,11 @@ describe('ClaimSite', () => {
     expect(screen.getByTestId('claim-login')).toBeInTheDocument();
     expect(screen.queryByTestId('claim-accept')).not.toBeInTheDocument();
     expect(screen.queryByTestId('claim-start-trial')).not.toBeInTheDocument();
+    expect(screen.queryByText(/7-day trial/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/no setup fee/i)).not.toBeInTheDocument();
   });
 
-  it('shows start-trial UI when logged in without subscription', async () => {
+  it('shows subscribe UI when logged in without a paid Growth plan', async () => {
     useAuth.mockReturnValue({
       user: { id: 'user-1', email: 'owner@example.com', role: 'user', subscription_status: 'inactive' },
       token: 'fake-token',
@@ -93,12 +95,36 @@ describe('ClaimSite', () => {
     expect(screen.getByTestId('claim-plan-growth')).toBeInTheDocument();
     expect(screen.getByTestId('claim-plan-growth-managed')).toBeInTheDocument();
     expect(screen.queryByTestId('claim-plan-starter')).not.toBeInTheDocument();
-    expect(screen.getByText(/add a card/i)).toBeInTheDocument();
-    expect(screen.getByTestId('labor-extras')).toHaveTextContent(/no setup fee/i);
+    expect(screen.getByText(/subscribe to claim/i)).toBeInTheDocument();
+    expect(screen.getByTestId('labor-extras')).not.toHaveTextContent(/no setup fee/i);
+    expect(screen.getByTestId('labor-extras')).toHaveTextContent(/Growth Managed/i);
     expect(screen.queryByTestId('claim-accept')).not.toBeInTheDocument();
   });
 
-  it('shows accept button when logged in with trialing subscription', async () => {
+  it('shows accept button when logged in with an active Growth subscription', async () => {
+    useAuth.mockReturnValue({
+      user: {
+        id: 'user-1',
+        email: 'owner@example.com',
+        role: 'user',
+        subscription_status: 'active',
+        plan: 'growth',
+        subscription_plan: 'growth',
+      },
+      token: 'fake-token',
+      isAuthenticated: true,
+      setUser: vi.fn(),
+    });
+
+    renderClaim();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('claim-accept')).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId('claim-start-trial')).not.toBeInTheDocument();
+  });
+
+  it('does not treat a self-serve Growth trial as enough to claim', async () => {
     useAuth.mockReturnValue({
       user: {
         id: 'user-1',
@@ -116,12 +142,12 @@ describe('ClaimSite', () => {
     renderClaim();
 
     await waitFor(() => {
-      expect(screen.getByTestId('claim-accept')).toBeInTheDocument();
+      expect(screen.getByTestId('claim-start-trial')).toBeInTheDocument();
     });
-    expect(screen.queryByTestId('claim-start-trial')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('claim-accept')).not.toBeInTheDocument();
   });
 
-  it('redirects to Stripe checkout when start trial is clicked', async () => {
+  it('redirects to Stripe checkout when subscribe is clicked', async () => {
     useAuth.mockReturnValue({
       user: { id: 'user-1', email: 'owner@example.com', role: 'user' },
       token: 'fake-token',
@@ -154,7 +180,7 @@ describe('ClaimSite', () => {
     expect(JSON.parse(checkoutCall[1].body)).toEqual({ plan: 'growth' });
   });
 
-  it('keeps Starter subscribers on the Growth trial step', async () => {
+  it('keeps Starter subscribers on the Growth subscribe step', async () => {
     useAuth.mockReturnValue({
       user: {
         id: 'user-1',

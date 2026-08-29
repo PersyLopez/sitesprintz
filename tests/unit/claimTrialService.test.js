@@ -62,13 +62,13 @@ describe('claimTrialService', () => {
     expect(isSubscribedStatus('canceled')).toBe(false);
   });
 
-  it('treats Growth and Growth Managed as claim-ready', () => {
+  it('treats only paid Growth as claim-ready', () => {
     expect(
       hasClaimableGrowthSubscription({
         subscription_status: 'trialing',
         subscription_plan: 'growth',
       })
-    ).toBe(true);
+    ).toBe(false);
     expect(
       hasClaimableGrowthSubscription({
         subscriptionStatus: 'active',
@@ -83,7 +83,7 @@ describe('claimTrialService', () => {
     ).toBe(false);
   });
 
-  it('creates checkout session with 7-day trial and required metadata', async () => {
+  it('creates checkout session without a trial', async () => {
     const user = { id: 'user-1', email: 'owner@example.com' };
     const site = { id: 'site-1', subdomain: 'riverside-cuts' };
 
@@ -102,7 +102,6 @@ describe('claimTrialService', () => {
         mode: 'subscription',
         payment_method_collection: 'always',
         subscription_data: {
-          trial_period_days: 7,
           metadata: {
             plan: 'growth',
             userId: 'user-1',
@@ -121,6 +120,7 @@ describe('claimTrialService', () => {
     const call = mockStripe.checkout.sessions.create.mock.calls[0][0];
     expect(call.line_items[0].price_data.unit_amount).toBe(3500);
     expect(call.metadata).not.toHaveProperty('claimToken');
+    expect(call.subscription_data).not.toHaveProperty('trial_period_days');
   });
 
   it('creates Growth Managed claim checkout at $75', async () => {
@@ -161,7 +161,7 @@ describe('claimTrialService', () => {
     delete process.env.STRIPE_PRICE_GROWTH;
   });
 
-  it('syncs user subscription on trial-complete', async () => {
+  it('syncs user subscription on checkout-complete', async () => {
     mockStripe.checkout.sessions.retrieve.mockResolvedValue({
       status: 'complete',
       customer: 'cus_123',
@@ -173,7 +173,7 @@ describe('claimTrialService', () => {
       },
       subscription: {
         id: 'sub_123',
-        status: 'trialing',
+        status: 'active',
         current_period_end: 1_700_000_000,
       },
     });
@@ -185,12 +185,12 @@ describe('claimTrialService', () => {
       stripe: mockStripe,
     });
 
-    expect(result).toEqual({ ready: true, subscriptionStatus: 'trialing', plan: 'growth' });
+    expect(result).toEqual({ ready: true, subscriptionStatus: 'active', plan: 'growth' });
     expect(prisma.users.update).toHaveBeenCalledWith({
       where: { id: 'user-1' },
       data: expect.objectContaining({
         stripe_subscription_id: 'sub_123',
-        subscription_status: 'trialing',
+        subscription_status: 'active',
         plan: 'growth',
         subscription_plan: 'growth',
       }),
@@ -209,7 +209,7 @@ describe('claimTrialService', () => {
       },
       subscription: {
         id: 'sub_123',
-        status: 'trialing',
+        status: 'active',
         current_period_end: 1_700_000_000,
       },
     });

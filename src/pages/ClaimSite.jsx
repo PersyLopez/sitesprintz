@@ -17,7 +17,7 @@ function authHeaders(token) {
 
 function hasGrowthClaimSubscription(user) {
   const status = user?.subscriptionStatus || user?.subscription_status;
-  if (status !== 'trialing' && status !== 'active') {
+  if (status !== 'active') {
     return false;
   }
   const plan = user?.subscriptionPlan || user?.subscription_plan || user?.plan;
@@ -110,7 +110,7 @@ function ClaimSite() {
         });
         const data = await response.json().catch(() => ({}));
         if (!response.ok) {
-          throw new Error(data.error || 'Failed to confirm trial');
+          throw new Error(data.error || 'Failed to confirm subscription');
         }
         if (!cancelled) {
           setSubscriptionReady(true);
@@ -127,14 +127,14 @@ function ClaimSite() {
                 }
               : prev
           );
-          showSuccess('Your 7-day trial is active. You can claim this site now.');
+          showSuccess('Your plan is active. You can claim this site now.');
           const nextParams = new URLSearchParams(searchParams);
           nextParams.delete('session_id');
           setSearchParams(nextParams, { replace: true });
         }
       } catch (err) {
         if (!cancelled) {
-          showError(err.message || 'Failed to confirm trial');
+          showError(err.message || 'Failed to confirm subscription');
         }
       } finally {
         if (!cancelled) setCompletingTrial(false);
@@ -158,7 +158,7 @@ function ClaimSite() {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to start trial checkout');
+        throw new Error(data.error || 'Failed to start checkout');
       }
       if (data.alreadySubscribed) {
         setSubscriptionReady(true);
@@ -169,7 +169,7 @@ function ClaimSite() {
         window.location.assign(data.url);
       }
     } catch (err) {
-      showError(err.message || 'Failed to start trial checkout');
+      showError(err.message || 'Failed to start checkout');
     } finally {
       setStartingTrial(false);
     }
@@ -189,7 +189,7 @@ function ClaimSite() {
       ) {
         setNeedsTrial(true);
         setSubscriptionReady(false);
-        throw new Error(data.error || 'Start a 7-day Growth trial before claiming this site');
+        throw new Error(data.error || 'Subscribe to Growth before claiming this site');
       }
       if (!response.ok) {
         throw new Error(data.error || 'Failed to claim site');
@@ -233,9 +233,8 @@ function ClaimSite() {
               {!isAuthenticated ? (
                 <div>
                   <p>
-                    Register or log in to continue. Pick Growth ($35/month, you edit) or Growth
-                    Managed ($75/month, we take the list) after a 7-day trial. No setup fee.
-                    Brochure Starter sites are self-serve.
+                    Register or log in to continue. Subscribe to Growth ($35/month, you edit) or
+                    Growth Managed ($75/month, we set it up and keep the list updated).
                   </p>
                   <div className="auth-links" style={{ marginTop: '20px' }}>
                     <Link to={registerTo} className="btn btn-primary btn-full" data-testid="claim-register">
@@ -254,9 +253,8 @@ function ClaimSite() {
               ) : showTrialFlow ? (
                 <div>
                   <p>
-                    Signed in as <strong>{user?.email}</strong>. Add a card to start a 7-day trial.
-                    Choose DIY Growth or Growth Managed. Booking and checkout stay on this site.
-                    No setup fee.
+                    Signed in as <strong>{user?.email}</strong>. Subscribe to Growth or Growth
+                    Managed to claim this site. Booking and checkout stay on this site.
                   </p>
                   <fieldset style={{ marginTop: '16px', border: 0, padding: 0 }}>
                     <legend className="sr-only">Hosting plan</legend>
@@ -278,7 +276,7 @@ function ClaimSite() {
                         checked={claimPlan === 'growth_managed'}
                         onChange={() => setClaimPlan('growth_managed')}
                       />
-                      {' '}Growth Managed — $75/month, we take the list
+                      {' '}Growth Managed — $75/month, we set it up and keep the list updated
                     </label>
                   </fieldset>
                   <button
@@ -289,13 +287,13 @@ function ClaimSite() {
                     data-testid="claim-start-trial"
                     style={{ marginTop: '20px' }}
                   >
-                    {startingTrial || completingTrial ? 'Starting trial...' : 'Start 7-day trial'}
+                    {startingTrial || completingTrial ? 'Opening checkout...' : 'Subscribe to claim'}
                   </button>
                 </div>
               ) : (
                 <div>
                   <p>
-                    Signed in as <strong>{user?.email}</strong>. Your trial is active — claim this
+                    Signed in as <strong>{user?.email}</strong>. Your plan is active — claim this
                     site to move it to your account.
                   </p>
                   <button
