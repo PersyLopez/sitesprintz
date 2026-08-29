@@ -12,9 +12,18 @@ import dotenv from 'dotenv';
 import Stripe from 'stripe';
 import { prisma } from '../database/db.js';
 import { createPlatformCoupon } from '../server/services/platformCouponService.js';
-import { CLAIM_WALK_COUPON, CLAIM_WALK_USER } from '../tests/fixtures/test-credentials.js';
 
 dotenv.config();
+
+/** Keep in sync with tests/fixtures/test-credentials.js (tests/ is not on Railway). */
+const CLAIM_WALK_COUPON = 'PLANTSWALK';
+const CLAIM_WALK_USER = {
+  email: 'persylopez99+plantsclaim@gmail.com',
+  password: 'ClaimWalk!2026',
+  role: 'user',
+  plan: 'free',
+  subscriptionStatus: 'inactive',
+};
 
 async function upsertWalkUser() {
   const passwordHash = await bcrypt.hash(CLAIM_WALK_USER.password, 10);
