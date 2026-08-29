@@ -16,7 +16,7 @@ function Register() {
   const [searchParams] = useSearchParams();
   const { register } = useAuth();
   const { showSuccess, showError } = useToast();
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const turnstileRef = useRef(null);
   const captchaTokenRef = useRef(null);
 
@@ -27,6 +27,9 @@ function Register() {
   });
   const [loading, setLoading] = useState(false);
   const [captchaReady, setCaptchaReady] = useState(false);
+  const [turnstileSiteKey, setTurnstileSiteKey] = useState(
+    () => import.meta.env.VITE_TURNSTILE_SITE_KEY || '',
+  );
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [inviteOnly, setInviteOnly] = useState(false);
 
@@ -35,8 +38,12 @@ function Register() {
     fetch('/api/health')
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (!cancelled && data?.beta?.enabled && data.beta.allowSignups === false) {
+        if (cancelled || !data) return;
+        if (data?.beta?.enabled && data.beta.allowSignups === false) {
           setInviteOnly(true);
+        }
+        if (typeof data.turnstileSiteKey === 'string' && data.turnstileSiteKey.trim()) {
+          setTurnstileSiteKey(data.turnstileSiteKey.trim());
         }
       })
       .catch(() => {});
@@ -60,16 +67,14 @@ function Register() {
       ? `/login?template=${searchParams.get('template')}`
       : '/login';
 
-  // Mount Turnstile only when the site key exists and the container is a real DOM node.
-  // index.html always loads the script; without a key the widget div is omitted and
-  // render(null) throws and takes down the whole registration page.
   useEffect(() => {
-    const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
+    const siteKey = turnstileSiteKey;
     if (!siteKey) {
       setCaptchaReady(true);
       return undefined;
     }
 
+    setCaptchaReady(false);
     let widgetId = null;
     let cancelled = false;
 
@@ -80,6 +85,8 @@ function Register() {
       try {
         widgetId = window.turnstile.render(container, {
           sitekey: siteKey,
+          appearance: 'always',
+          language: locale === 'es' ? 'es' : 'auto',
           callback: (token) => {
             captchaTokenRef.current = token;
           },
@@ -118,7 +125,7 @@ function Register() {
         window.turnstile.remove(widgetId);
       }
     };
-  }, [showError]);
+  }, [showError, turnstileSiteKey, locale]);
 
   const handleChange = (e) => {
     setFormData({
@@ -165,7 +172,7 @@ function Register() {
     // Production builds with a site key require a token. Vitest and `vite` dev
     // (MODE !== production) skip this so agents can still exercise /register
     // locally. Production agents log in as seeded testers instead.
-    const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
+    const siteKey = turnstileSiteKey;
     if (import.meta.env.PROD && siteKey && !captchaTokenRef.current) {
       showError('Please complete the CAPTCHA verification');
       return;
@@ -299,9 +306,9 @@ function Register() {
             </div>
 
             {/* Cloudflare Turnstile CAPTCHA */}
-            {import.meta.env.VITE_TURNSTILE_SITE_KEY && (
+            {turnstileSiteKey && (
               <div className="form-group">
-                <div ref={turnstileRef} className="turnstile-widget"></div>
+                <div ref={turnstileRef} className="turnstile-widget" data-testid="register-turnstile"></div>
                 {!captchaReady && (
                   <small className="form-hint">Loading security verification...</small>
                 )}

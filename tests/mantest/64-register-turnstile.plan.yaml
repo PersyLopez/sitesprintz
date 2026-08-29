@@ -1,0 +1,29 @@
+url: http://localhost:5173/register?redirect=/claim/local-claim-token
+goal: Register from a claim redirect loads; Turnstile widget mounts when health exposes a site key
+steps:
+  - action: Register page loads from claim redirect
+    wait_for: { text: Create Your Account, timeout: 20000 }
+    assert:
+      - url contains /register
+      - url contains redirect
+      - text contains Create Account
+
+  - action: Health advertises Turnstile; widget mounts if a public key is available
+    code: |
+      const res = await page.request.get('http://localhost:5173/api/health');
+      if (!res.ok()) throw new Error(`health ${res.status()}`);
+      const data = await res.json();
+      if (!Object.prototype.hasOwnProperty.call(data, 'turnstileSiteKey')) {
+        throw new Error('health missing turnstileSiteKey field');
+      }
+      if (/secret/i.test(String(data.turnstileSiteKey || ''))) {
+        throw new Error('health must not expose a Turnstile secret');
+      }
+      const healthKey = typeof data.turnstileSiteKey === 'string' ? data.turnstileSiteKey.trim() : '';
+      if (healthKey) {
+        await page.waitForSelector('[data-testid="register-turnstile"]', { timeout: 15000 });
+        return;
+      }
+      // Local Vite can still inline a dummy site key when the API has none.
+      await page.waitForSelector('[data-testid="register-email"]', { timeout: 5000 });
+    settle_ms: 400

@@ -70,6 +70,13 @@ describe('Health Endpoints Integration Tests', () => {
         stripeMode: expect.stringMatching(/^(live|test|missing|invalid)$/),
       });
     });
+
+    it('includes the public Turnstile site key when configured', async () => {
+      process.env.VITE_TURNSTILE_SITE_KEY = '0xpublic-site-key';
+      const response = await request(app).get('/health');
+      expect(response.body.turnstileSiteKey).toBe('0xpublic-site-key');
+      expect(JSON.stringify(response.body)).not.toMatch(/SECRET/i);
+    });
   });
 
   describe('GET /health/forms', () => {

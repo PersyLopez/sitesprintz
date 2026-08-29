@@ -1,6 +1,7 @@
 import express from 'express';
 import { prisma } from '../../database/db.js';
 import { isBetaMode, betaAllowsPublicSignups, stripeKeyMode } from '../config/betaMode.js';
+import { getTurnstileSiteKey } from '../utils/captcha.js';
 import {
   getCanaryStatus,
   getFormsHealthSummary,
@@ -49,7 +50,8 @@ router.get('/', async (req, res) => {
         enabled: isBetaMode(),
         allowSignups: betaAllowsPublicSignups(),
         stripeMode: stripeKeyMode(process.env.STRIPE_SECRET_KEY)
-      }
+      },
+      turnstileSiteKey: getTurnstileSiteKey(),
     });
   } catch (error) {
     res.status(500).json({

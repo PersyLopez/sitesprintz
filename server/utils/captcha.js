@@ -1,14 +1,26 @@
 /**
  * CAPTCHA Verification Utility
- * 
+ *
  * Verifies Cloudflare Turnstile CAPTCHA tokens
- * 
+ *
  * @see https://developers.cloudflare.com/turnstile/get-started/server-side-validation/
  */
 
 /**
+ * Public widget site key. Safe to expose to the browser.
+ * Prefers the Vite-prefixed name Railway already uses, then TURNSTILE_SITE_KEY.
+ * @param {NodeJS.ProcessEnv} [env]
+ * @returns {string|null}
+ */
+export function getTurnstileSiteKey(env = process.env) {
+  const raw = env.VITE_TURNSTILE_SITE_KEY || env.TURNSTILE_SITE_KEY || '';
+  const key = String(raw).trim();
+  return key || null;
+}
+
+/**
  * Verify Cloudflare Turnstile CAPTCHA token
- * 
+ *
  * @param {string} token - The CAPTCHA token from the frontend
  * @param {string} ip - The user's IP address (optional, for additional security)
  * @returns {Promise<{success: boolean, error?: string}>}
@@ -62,9 +74,6 @@ export async function verifyTurnstile(token, ip = null) {
     };
   }
 }
-
-
-
 
 
 

@@ -61,7 +61,7 @@ VITE_TURNSTILE_SITE_KEY=your-site-key-here
 TURNSTILE_SECRET_KEY=your-secret-key-here
 ```
 
-**Note:** `VITE_` prefix is required for Vite to expose the variable to the frontend.
+**Note:** `VITE_` prefix is required for Vite to expose the variable at **build** time. Register also reads the public site key from `/api/health` (`turnstileSiteKey`) so a Railway **runtime** `VITE_TURNSTILE_SITE_KEY` still mounts the widget when a Nixpacks/Docker build did not inline it. Do not add a second site key. `TURNSTILE_SECRET_KEY` stays server-only.
 
 ---
 

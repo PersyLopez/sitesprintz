@@ -19,6 +19,11 @@ RUN npx prisma generate
 # Copy application code
 COPY . .
 
+# Vite inlines VITE_* at build time. Railway also injects this at runtime so
+# /api/health can hand the public site key to /register if a build missed it.
+ARG VITE_TURNSTILE_SITE_KEY
+ENV VITE_TURNSTILE_SITE_KEY=$VITE_TURNSTILE_SITE_KEY
+
 # Build frontend for production
 RUN npm run build:prod
 

@@ -327,4 +327,31 @@ describe('Register Component', () => {
 
     delete window.turnstile;
   });
+
+  it('mounts Turnstile when health returns a site key', async () => {
+    const renderSpy = vi.fn(() => 'widget-1');
+    window.turnstile = { render: renderSpy, remove: vi.fn() };
+    vi.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        beta: { enabled: true, allowSignups: true },
+        turnstileSiteKey: '0xpublic-site-key',
+      }),
+    });
+
+    renderRegister();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('register-turnstile')).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(renderSpy).toHaveBeenCalledWith(
+        expect.any(HTMLElement),
+        expect.objectContaining({ sitekey: '0xpublic-site-key' }),
+      );
+    });
+
+    delete window.turnstile;
+    vi.restoreAllMocks();
+  });
 });
