@@ -49,3 +49,43 @@ steps:
       if (unique.size < 10) {
         throw new Error('Too many demos share the same photo: ' + JSON.stringify(heroes));
       }
+
+  - action: Shop demos show real product photos not empty inserts
+    goto: http://localhost:5173/view/gallery-ordering
+    settle_ms: 800
+    code: |
+      const shops = [
+        { sub: 'gallery-ordering', name: 'Oak & Anchor Supply' },
+        { sub: 'gallery-products', name: 'Harbor Goods' },
+        { sub: 'gallery-restaurant', name: 'The Grand Table' },
+        { sub: 'gallery-food-stall', name: 'Sunset Tacos' },
+      ];
+      for (const site of shops) {
+        await page.goto('http://localhost:5173/view/' + site.sub, { waitUntil: 'domcontentloaded' });
+        await page.getByText(site.name, { exact: false }).first().waitFor({ timeout: 20000 });
+        await page.waitForFunction(() => {
+          const slots = [...document.querySelectorAll('[data-photo-field^="catalog.items."] img, img[data-photo-field^="catalog.items."]')]
+            .concat([...document.querySelectorAll('[data-photo-field^="catalog.items."] img')]);
+          const imgs = [...document.querySelectorAll('[data-photo-field^="catalog.items."]')]
+            .map((el) => (el.tagName === 'IMG' ? el : el.querySelector('img')))
+            .filter(Boolean);
+          return imgs.some((img) => img.naturalWidth > 80);
+        }, { timeout: 15000 });
+        const loaded = await page.evaluate(() => {
+          const fields = [...document.querySelectorAll('[data-photo-field^="catalog.items."]')]
+            .map((el) => {
+              const img = el.tagName === 'IMG' ? el : el.querySelector('img');
+              const src = img ? (img.currentSrc || img.src) : '';
+              return { field: el.getAttribute('data-photo-field'), nw: img ? img.naturalWidth : 0, src };
+            });
+          return fields;
+        });
+        const ok = loaded.filter((x) => x.nw > 80 && /\/uploads\//.test(x.src));
+        const empty = loaded.filter((x) => !x.nw || /hero-placeholder/.test(x.src));
+        if (ok.length < 3) {
+          throw new Error(site.sub + ' product cards still empty: ' + JSON.stringify(loaded));
+        }
+        if (empty.length) {
+          throw new Error(site.sub + ' still has placeholder product slots: ' + JSON.stringify(empty));
+        }
+      }
