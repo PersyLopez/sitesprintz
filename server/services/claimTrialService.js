@@ -108,9 +108,10 @@ export async function createClaimTrialCheckout({
   const session = await stripe.checkout.sessions.create({
     customer: customer.id,
     mode: 'subscription',
-    payment_method_collection: 'always',
+    payment_method_collection: 'if_required',
     payment_method_types: ['card'],
     line_items: [stripeSubscriptionLineItem(claimPlan)],
+    allow_promotion_codes: true,
     subscription_data: {
       metadata: {
         plan: claimPlan,

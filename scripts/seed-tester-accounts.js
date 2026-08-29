@@ -10,7 +10,7 @@
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import { prisma } from '../database/db.js';
-import { AGENT_TESTERS } from '../tests/fixtures/test-credentials.js';
+import { AGENT_TESTERS, CLAIM_WALK_USER } from '../tests/fixtures/test-credentials.js';
 
 dotenv.config();
 
@@ -37,7 +37,7 @@ async function upsertTester(account) {
     password_hash: passwordHash,
     role: account.role,
     status: 'active',
-    subscription_status: 'active',
+    subscription_status: account.subscriptionStatus || 'active',
     subscription_plan: account.plan,
     plan: account.plan,
     email_verified: true,
@@ -172,7 +172,7 @@ async function main() {
   }
 
   const results = [];
-  for (const account of AGENT_TESTERS) {
+  for (const account of [...AGENT_TESTERS, CLAIM_WALK_USER]) {
     results.push(await upsertTester(account));
   }
 

@@ -72,6 +72,17 @@ export const TEST_USERS = {
 /** Accounts agents and E2E must log in with. Do not register these through Turnstile. */
 export const AGENT_TESTERS = Object.values(TEST_USERS);
 
+/** One-use claim walk: log in (do not register), apply PLANTSWALK at Stripe Checkout. */
+export const CLAIM_WALK_USER = {
+  email: 'persylopez99+plantsclaim@gmail.com',
+  password: 'ClaimWalk!2026',
+  role: 'user',
+  plan: 'free',
+  subscriptionStatus: 'inactive',
+};
+
+export const CLAIM_WALK_COUPON = 'PLANTSWALK';
+
 /**
  * Generate a unique test email for registration tests
  * @returns {string} Unique email address
@@ -97,6 +108,8 @@ export default {
   STRONG_PASSWORD,
   TEST_USERS,
   AGENT_TESTERS,
+  CLAIM_WALK_USER,
+  CLAIM_WALK_COUPON,
   generateTestEmail,
   getTestUser
 };

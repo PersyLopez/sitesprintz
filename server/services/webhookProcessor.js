@@ -16,6 +16,7 @@ import {
 import { resolvePrivateAddressForBuyer } from '../../src/utils/liveSiteContact.js';
 import { parseSiteData } from '../utils/parseSiteData.js';
 import { fulfillLaborSession } from './labor/laborFulfillment.js';
+import { recordPlatformCouponRedemption } from './platformCouponService.js';
 import { productCatalogService } from './ProductCatalogService.js';
 
 export class WebhookProcessor {
@@ -285,6 +286,15 @@ export class WebhookProcessor {
 
       if (!result.fulfilled) {
         throw new Error('User not found for subscription');
+      }
+
+      try {
+        await recordPlatformCouponRedemption(session, {
+          prisma: this.db,
+          stripe: this.stripe,
+        });
+      } catch (redemptionError) {
+        console.error('Platform coupon redemption failed:', redemptionError);
       }
 
       const { plan } = result;

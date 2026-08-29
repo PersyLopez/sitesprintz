@@ -100,7 +100,7 @@ describe('claimTrialService', () => {
     expect(mockStripe.checkout.sessions.create).toHaveBeenCalledWith(
       expect.objectContaining({
         mode: 'subscription',
-        payment_method_collection: 'always',
+        payment_method_collection: 'if_required',
         subscription_data: {
           metadata: {
             plan: 'growth',
@@ -118,6 +118,7 @@ describe('claimTrialService', () => {
       })
     );
     const call = mockStripe.checkout.sessions.create.mock.calls[0][0];
+    expect(call.allow_promotion_codes).toBe(true);
     expect(call.line_items[0].price_data.unit_amount).toBe(3500);
     expect(call.metadata).not.toHaveProperty('claimToken');
     expect(call.subscription_data).not.toHaveProperty('trial_period_days');

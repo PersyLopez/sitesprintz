@@ -23,6 +23,7 @@
     "create-demo-sites": "node scripts/create-demo-sites.js",
     "seed:gallery": "node scripts/seed-gallery-example-sites.js",
     "seed:testers": "node scripts/seed-tester-accounts.js",
+    "seed:claim-walk": "node scripts/create-claim-walk-coupon.js",
     "setup-beta": "./scripts/setup-beta-env.sh",
     "create-beta-sites": "node scripts/create-beta-sites.js",
     "lint": "eslint . --ext .js,.jsx --report-unused-disable-directives --max-warnings 0",

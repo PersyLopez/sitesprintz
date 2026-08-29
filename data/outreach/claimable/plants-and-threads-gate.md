@@ -49,6 +49,17 @@ We left blank what we did not have: phone, email, public street, a hours grid, a
 
 Growth is $35/month if you will edit, or Growth Managed $75/month if we keep the list updated.
 
+## Operator claim walk (not the customer pitch)
+
+Log in — do not register. Admin accounts cannot claim this site.
+
+- Email: `persylopez99+plantsclaim@gmail.com`
+- Password: `ClaimWalk!2026`
+- Coupon: `PLANTSWALK` (100% off, one use, bound to that Stripe customer)
+- Claim: https://sitesprintz.com/claim/1e6179cfa92ed0118c6ec09567f9802f1adad911748603c218342dc83e8e1e36
+
+On Subscribe, choose Growth or Growth Managed, apply `PLANTSWALK` on Stripe Checkout. Card is not required at $0. Then finish claim.
+
 ## Leftover risk
 
 - Widget default hours are Mon–Fri 9–5 (product default). Public Hours still say by appointment — do not invent a salon week on the page.
