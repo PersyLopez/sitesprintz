@@ -99,11 +99,11 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
   const markup = useMemo(() => {
     if (!payload || Object.keys(payload).length === 0) return null;
     try {
-      return buildLiveSiteMarkup(payload);
+      return buildLiveSiteMarkup(payload, { locale });
     } catch {
       return null;
     }
-  }, [payload]);
+  }, [payload, locale]);
   const bookingEnabled = Boolean(
     ownerUserId
     && (

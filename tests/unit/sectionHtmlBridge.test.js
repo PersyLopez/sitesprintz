@@ -8,9 +8,10 @@
  *   4. Delegates to SectionHtmlBuilder for types it handles
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { renderSectionToHtml, ALL_SECTION_TYPES, withNativeBookingTokens } from '../../src/utils/sectionHtmlBridge';
 import { buildLiveSiteMarkup } from '../../src/utils/publishedSiteDocument';
+import * as liveSiteContact from '../../src/utils/liveSiteContact';
 
 // Minimal tokens for testing
 const tokens = {
@@ -479,6 +480,10 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
       ],
     });
     expect(html).toContain('data-testid="sitesprintz-badge"');
+    expect(html).toContain('href="https://sitesprintz.com"');
+    expect(html).toContain('rel="noopener noreferrer"');
+    expect(html).toContain('target="_blank"');
+    expect(html).toContain('Powered by SiteSprintz');
     expect(html).toContain('data-testid="footer-call"');
     expect(html).toContain('data-testid="footer-address"');
   });
@@ -536,6 +541,37 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
       sections: [{ type: 'hero', enabled: true, content: { title: 'Harbor Goods' } }],
     });
     expect(html).toContain('data-testid="sitesprintz-badge"');
+    expect(html).toContain('href="https://sitesprintz.com"');
+    expect(html).toContain('Powered by SiteSprintz');
+  });
+
+  it('keeps the clickable badge on gallery demo seeds', () => {
+    const { html } = buildLiveSiteMarkup({
+      businessName: 'The Grand Table',
+      plan: 'growth',
+      settings: { demoMode: true },
+      _demo: true,
+      _layout: 'hearth',
+      _niche: 'restaurant',
+      _level: 'solo',
+      sections: [{ type: 'hero', enabled: true, content: { title: 'The Grand Table' } }],
+    });
+    expect(html).toContain('data-testid="sitesprintz-badge"');
+    expect(html).toContain('href="https://sitesprintz.com"');
+    expect(html).toContain('Powered by SiteSprintz');
+    expect(html).toContain('class="ss-sitesprintz-badge"');
+  });
+
+  it('omits the badge when branding removal is enabled for the plan', () => {
+    const spy = vi.spyOn(liveSiteContact, 'shouldRemoveBranding').mockReturnValue(true);
+    const { html } = buildLiveSiteMarkup({
+      businessName: 'Studio Luxe',
+      plan: 'growth',
+      _layout: 'atelier',
+      sections: [{ type: 'hero', enabled: true, content: { title: 'Studio Luxe' } }],
+    });
+    expect(html).not.toContain('data-testid="sitesprintz-badge"');
+    spy.mockRestore();
   });
 
   it('keeps a reviews section when only a Google placeId is present', () => {

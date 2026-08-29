@@ -1,0 +1,48 @@
+url: http://localhost:5173/view/gallery-restaurant
+goal: Gallery demo live sites show a clickable Powered by SiteSprintz watermark
+steps:
+  - action: Restaurant demo loads
+    wait_for: { text: The Grand Table, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Restaurant demo badge is a Powered-by link
+    code: |
+      const badge = page.getByTestId('sitesprintz-badge');
+      await badge.waitFor({ state: 'visible', timeout: 10000 });
+      const href = await badge.getAttribute('href');
+      if (href !== 'https://sitesprintz.com') {
+        throw new Error('Badge href expected https://sitesprintz.com, got ' + href);
+      }
+      const text = (await badge.innerText()).trim();
+      if (!/Powered by SiteSprintz/i.test(text)) {
+        throw new Error('Badge copy expected Powered by SiteSprintz, got: ' + text);
+      }
+      const tag = await badge.evaluate((el) => el.tagName.toLowerCase());
+      if (tag !== 'a') {
+        throw new Error('Badge should be a link, got ' + tag);
+      }
+
+  - action: Open salon gallery demo
+    goto: http://localhost:5173/view/gallery-salon
+    settle_ms: 2000
+
+  - action: Salon demo identity visible
+    wait_for: { text: Luxe Beauty Studio, timeout: 20000 }
+    settle_ms: 400
+
+  - action: Salon demo badge is a Powered-by link
+    code: |
+      const badge = page.getByTestId('sitesprintz-badge');
+      await badge.waitFor({ state: 'visible', timeout: 10000 });
+      const href = await badge.getAttribute('href');
+      if (href !== 'https://sitesprintz.com') {
+        throw new Error('Salon badge href expected https://sitesprintz.com, got ' + href);
+      }
+      const text = (await badge.innerText()).trim();
+      if (!/Powered by SiteSprintz/i.test(text)) {
+        throw new Error('Salon badge copy expected Powered by SiteSprintz, got: ' + text);
+      }
+      const tag = await badge.evaluate((el) => el.tagName.toLowerCase());
+      if (tag !== 'a') {
+        throw new Error('Salon badge should be a link, got ' + tag);
+      }

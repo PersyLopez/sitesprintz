@@ -22,7 +22,7 @@ export default {
   industries: 'Industries We Serve',
   howToOrder: 'How to Order',
   location: 'Location',
-  madeWith: 'Made with SiteSprintz',
+  madeWith: 'Powered by SiteSprintz',
   call: 'Call',
   item: 'Item',
   cartToggle: 'Shopping Cart',

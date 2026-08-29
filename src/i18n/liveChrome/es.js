@@ -22,7 +22,7 @@ export default {
   industries: 'Oficios que atendemos',
   howToOrder: 'Cómo pedir',
   location: 'Ubicación',
-  madeWith: 'Hecho con SiteSprintz',
+  madeWith: 'Creado con SiteSprintz',
   call: 'Llamar',
   item: 'Artículo',
   cartToggle: 'Carrito',
