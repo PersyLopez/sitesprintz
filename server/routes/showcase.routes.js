@@ -14,6 +14,7 @@ import {
 } from '../utils/apiResponse.js';
 import { validateSubdomain } from '../utils/validators.js';
 import { toPublicSiteData } from '../../src/utils/liveSiteContact.js';
+import { visitorOnlinePaymentReady } from '../services/payments/processorConnectHelpers.js';
 
 const router = express.Router();
 
@@ -335,7 +336,7 @@ router.get('/:subdomain', asyncHandler(async (req, res) => {
       site_data: true,
       user_id: true,
       created_at: true,
-      users: { select: { stripe_connected: true } },
+      users: { select: { stripe_connected: true, stripe_account_id: true } },
     }
   });
 
@@ -356,6 +357,7 @@ router.get('/:subdomain', asyncHandler(async (req, res) => {
       data: siteData,
       userId: site.user_id,
       stripe_connected: site.users?.stripe_connected === true,
+      online_payment_ready: visitorOnlinePaymentReady({ user: site.users }),
       createdAt: site.created_at
     }
   });

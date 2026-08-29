@@ -11,7 +11,8 @@ import { prisma } from '../../../database/db.js';
 import Stripe from 'stripe';
 import { addDays } from 'date-fns';
 import BookingFeeService from './BookingFeeService.js';
-import { ownerConnectReady, sitePaymentEnabled } from './shopIntakeFlags.js';
+import { sitePaymentEnabled } from './shopIntakeFlags.js';
+import { publicVisitorCheckoutProcessor } from '../payments/processorConnectHelpers.js';
 import { parseSiteData } from '../../utils/parseSiteData.js';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
@@ -105,7 +106,11 @@ class BookingPaymentAdapter {
       });
 
       const stripeAccountId = tenant?.users?.stripe_account_id || tenant?.stripe_account_id;
-      if (!ownerConnectReady(tenant?.users) || !stripeAccountId) {
+      const checkoutProcessor = publicVisitorCheckoutProcessor({
+        user: tenant?.users,
+        defaultProcessor: 'stripe',
+      });
+      if (checkoutProcessor !== 'stripe' || !stripeAccountId) {
         return this.confirmPayOnSite(appointmentId);
       }
 

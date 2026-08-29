@@ -281,7 +281,9 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
     || payload._operatingModel?.noPreferenceText
     || 'Any available';
   const feesEnabled = siteFeesEnabled(payload);
-  const paymentsReady = !demoMode && site?.stripe_connected === true;
+  const paymentsReady = !demoMode && (
+    site?.online_payment_ready === true || site?.stripe_connected === true
+  );
   const bookingWidget = bookingEnabled ? (
     <BookingWidget
       userId={ownerUserId}

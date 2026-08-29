@@ -206,3 +206,34 @@ describe('site-specific processor connections', () => {
     expect(status.available).toBeDefined();
   });
 });
+
+describe('visitor checkout processor gating', () => {
+  it('only treats Stripe as a public visitor checkout processor', async () => {
+    const {
+      PUBLIC_VISITOR_PROCESSORS,
+      isVisitorProcessorPublic,
+      publicVisitorCheckoutProcessor,
+      visitorOnlinePaymentReady,
+    } = await import('../../../server/services/payments/processorConnectHelpers.js');
+
+    expect(PUBLIC_VISITOR_PROCESSORS).toEqual(['stripe']);
+    expect(isVisitorProcessorPublic('stripe')).toBe(true);
+    expect(isVisitorProcessorPublic('square')).toBe(false);
+    expect(isVisitorProcessorPublic('paypal')).toBe(false);
+
+    const stripeUser = { stripe_account_id: 'acct_1', stripe_connected: true };
+    expect(visitorOnlinePaymentReady({ user: stripeUser })).toBe(true);
+    expect(publicVisitorCheckoutProcessor({ user: stripeUser })).toBe('stripe');
+
+    expect(visitorOnlinePaymentReady({
+      user: { stripe_connected: false },
+      byProcessor: { square: { account_id: 'sq_1' } },
+      defaultProcessor: 'square',
+    })).toBe(false);
+    expect(publicVisitorCheckoutProcessor({
+      user: { stripe_connected: false },
+      byProcessor: { square: { account_id: 'sq_1' } },
+      defaultProcessor: 'square',
+    })).toBeNull();
+  });
+});

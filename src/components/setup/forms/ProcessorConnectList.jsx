@@ -281,6 +281,11 @@ function ProcessorConnectList({
                 {processor.fee}
                 {processor.highlight ? ` · ${processor.highlight}` : ''}
               </p>
+              {status?.visitorCheckout?.[processor.id] === false && (
+                <p className="processor-unavailable" data-testid={`${processor.id}-visitor-checkout-pending`}>
+                  You can connect {processor.name} now. Customers still pay with Stripe (or at the salon) until this checkout is enabled.
+                </p>
+              )}
 
               {processor.id === 'stripe' && connected && status?.email && (
                 <p className="processor-account" data-testid="stripe-account-email">{status.email}</p>

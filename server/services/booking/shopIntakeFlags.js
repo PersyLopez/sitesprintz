@@ -4,6 +4,7 @@
  */
 
 import { parseSiteData } from '../../utils/parseSiteData.js';
+import { visitorOnlinePaymentReady } from '../payments/processorConnectHelpers.js';
 
 const PAYMENT_TYPES = new Set(['none', 'full', 'deposit']);
 
@@ -13,18 +14,23 @@ export const CONNECT_USER_SELECT = {
 };
 
 /**
- * Visitor card charges require a connected Stripe account.
- * Platform SaaS Checkout is a different ledger and must not be used here.
+ * Visitor online pay is ready (public processors only). Stripe today;
+ * Square/PayPal join when PUBLIC_VISITOR_PROCESSORS includes them.
  *
  * @param {{ stripe_account_id?: string|null, stripe_connected?: boolean }|null|undefined} user
+ * @param {{ user?: object, byProcessor?: object, defaultProcessor?: string|null }} [connected]
  * @returns {boolean}
  */
-export function ownerConnectReady(user) {
-  return Boolean(user?.stripe_account_id) && user?.stripe_connected === true;
+export function ownerConnectReady(user, connected) {
+  return visitorOnlinePaymentReady({
+    user: connected?.user || user,
+    byProcessor: connected?.byProcessor,
+    defaultProcessor: connected?.defaultProcessor,
+  });
 }
 
 /**
- * Shop wants a card AND Connect is ready. Otherwise visitors pay at the salon.
+ * Shop wants a card AND a public visitor processor is ready. Otherwise pay at the salon.
  *
  * @param {object|null|undefined} tenant
  * @returns {boolean}
@@ -33,7 +39,7 @@ export function shopRequiresOnlineCard(tenant) {
   const paymentType = tenant?.default_payment_type || 'none';
   const shopWantsPay = Boolean(tenant?.payment_enabled) && paymentType !== 'none';
   if (!shopWantsPay) return false;
-  return ownerConnectReady(tenant?.users);
+  return ownerConnectReady(tenant?.users, tenant);
 }
 
 function featureEnabled(features, key, defaultEnabled = true) {

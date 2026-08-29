@@ -11,6 +11,63 @@ import { getRedis } from '../../utils/redis.js';
 
 export const PROCESSORS = ['stripe', 'square', 'paypal'];
 
+/**
+ * Processors visitors may pay with on a live site.
+ * Square and PayPal can be connected in the owner dashboard; they are not
+ * public checkout until their visitor charge path is finished.
+ */
+export const PUBLIC_VISITOR_PROCESSORS = ['stripe'];
+
+export function isVisitorProcessorPublic(processor) {
+  return PUBLIC_VISITOR_PROCESSORS.includes(processor);
+}
+
+export function stripeConnectReady(user) {
+  return Boolean(user?.stripe_account_id) && user?.stripe_connected === true;
+}
+
+export function processorCredentialReady(byProcessor, processor) {
+  return Boolean(byProcessor?.[processor]?.account_id);
+}
+
+/**
+ * True when a visitor can pay online. Never the SiteSprintz platform ledger.
+ * Non-public processors can be connected without making this true.
+ *
+ * @param {{ user?: object, byProcessor?: object, defaultProcessor?: string|null }} [connected]
+ * @returns {boolean}
+ */
+export function visitorOnlinePaymentReady(connected = {}) {
+  return publicVisitorCheckoutProcessor(connected) != null;
+}
+
+/**
+ * Which processor should run visitor Checkout. Null → pay on site.
+ *
+ * @param {{ user?: object, byProcessor?: object, defaultProcessor?: string|null }} [connected]
+ * @returns {'stripe'|'square'|'paypal'|null}
+ */
+export function publicVisitorCheckoutProcessor(connected = {}) {
+  const { user, byProcessor, defaultProcessor } = connected;
+  const preferred = isVisitorProcessorPublic(defaultProcessor) ? defaultProcessor : null;
+  const candidates = preferred
+    ? [preferred, ...PUBLIC_VISITOR_PROCESSORS.filter((processor) => processor !== preferred)]
+    : PUBLIC_VISITOR_PROCESSORS;
+
+  for (const processor of candidates) {
+    if (processor === 'stripe' && stripeConnectReady(user)) return 'stripe';
+    if (processor !== 'stripe' && processorCredentialReady(byProcessor, processor)) return processor;
+  }
+  return null;
+}
+
+export function visitorCheckoutPublicMap() {
+  return Object.fromEntries(PROCESSORS.map((processor) => [
+    processor,
+    isVisitorProcessorPublic(processor),
+  ]));
+}
+
 const PENDING_TTL_SECONDS = 60 * 60 * 24 * 30;
 const FUTURE_TTL_SECONDS = 60 * 60 * 24 * 90;
 
@@ -544,7 +601,8 @@ export async function getPaymentConnectStatus(userId, requestedSiteId) {
       stripeOAuth: false,
       square: false,
       paypal: false
-    }
+    },
+    visitorCheckout: visitorCheckoutPublicMap(),
   };
 
   try {
@@ -592,7 +650,8 @@ export async function getPaymentConnectStatus(userId, requestedSiteId) {
       },
       defaultProcessor: extra.defaultProcessor,
       futureDefaults: extra.futureDefaults || EMPTY_CONNECT_STATUS.futureDefaults,
-      available
+      available,
+      visitorCheckout: visitorCheckoutPublicMap(),
     };
   } catch (error) {
     console.error('Failed to build payment connect status:', error);

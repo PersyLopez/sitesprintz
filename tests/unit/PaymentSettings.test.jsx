@@ -37,6 +37,7 @@ function mockSitesAndStatus(sites, status = {}) {
       return Promise.resolve({
         accountId: null,
         available: { stripe: true, square: true, paypal: true },
+        visitorCheckout: { stripe: true, square: false, paypal: false },
         ...status
       });
     }
@@ -73,6 +74,9 @@ describe('PaymentSettings', () => {
     expect(screen.getByText(/3\.3% \+ 30¢/i)).toBeInTheDocument();
     expect(screen.getByText(/2\.99% \+ 49¢/i)).toBeInTheDocument();
     expect(screen.getAllByText(/never paste API keys/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByTestId('square-visitor-checkout-pending')).toBeInTheDocument();
+    expect(screen.getByTestId('paypal-visitor-checkout-pending')).toBeInTheDocument();
+    expect(screen.queryByTestId('stripe-visitor-checkout-pending')).not.toBeInTheDocument();
     expect(screen.queryByText(/STRIPE_SECRET_KEY/)).not.toBeInTheDocument();
   });
 

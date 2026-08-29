@@ -60,6 +60,13 @@ describe('shopIntakeFlags', () => {
       default_payment_type: 'deposit',
       users: { stripe_account_id: 'acct_1', stripe_connected: true },
     })).toBe(true);
+    expect(shopRequiresOnlineCard({
+      payment_enabled: true,
+      default_payment_type: 'deposit',
+      users: { stripe_connected: false },
+      byProcessor: { square: { account_id: 'sq_1' } },
+      defaultProcessor: 'square',
+    })).toBe(false);
   });
 
   it('maps PUT body to tenant and site updates', () => {
