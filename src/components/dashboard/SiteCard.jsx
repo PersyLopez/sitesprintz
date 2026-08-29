@@ -154,20 +154,27 @@ function SiteCard({ site, onDelete, onDuplicate }) {
         )}
 
         {onDuplicate && (
-          <button type="button" onClick={onDuplicate} className="btn btn-secondary btn-sm site-card-icon-btn" title="Duplicate site" aria-label="Duplicate site">
+          <button
+            type="button"
+            onClick={onDuplicate}
+            className="btn btn-secondary btn-sm site-card-action-btn"
+            aria-label="Duplicate site"
+            data-testid="duplicate-site-button"
+          >
             <SiteCardIcon path={SITE_CARD_ICONS.duplicate} />
+            <span>Duplicate</span>
           </button>
         )}
 
         <button
           type="button"
           onClick={onDelete}
-          className="btn btn-danger btn-sm site-card-icon-btn"
+          className="btn btn-danger btn-sm site-card-action-btn site-card-action-btn--danger"
           data-testid="delete-site-button"
-          title="Delete site"
           aria-label="Delete site"
         >
           <SiteCardIcon path={SITE_CARD_ICONS.delete} />
+          <span>Delete</span>
         </button>
       </div>
 

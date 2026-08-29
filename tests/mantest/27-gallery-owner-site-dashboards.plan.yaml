@@ -38,6 +38,21 @@ steps:
       }
     settle_ms: 400
 
+  - action: Site card actions show readable labels
+    code: |
+      const card = page.locator('[data-testid="site-card"][data-subdomain="gallery-salon"]');
+      if ((await card.count()) === 0) {
+        throw new Error('Missing salon site card on dashboard');
+      }
+      const duplicate = card.getByRole('button', { name: /Duplicate/i });
+      const deleteBtn = card.getByTestId('delete-site-button');
+      if ((await duplicate.count()) === 0) throw new Error('Duplicate button missing visible label');
+      if ((await deleteBtn.count()) === 0) throw new Error('Delete button missing');
+      const dupText = (await duplicate.innerText()).trim();
+      const delText = (await deleteBtn.innerText()).trim();
+      if (!/Duplicate/i.test(dupText)) throw new Error('Duplicate label not readable: ' + dupText);
+      if (!/Delete/i.test(delText)) throw new Error('Delete label not readable: ' + delText);
+
   - action: Manage salon site
     code: |
       const card = page.locator('[data-testid="site-card"][data-subdomain="gallery-salon"]');

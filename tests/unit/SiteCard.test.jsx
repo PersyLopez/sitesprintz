@@ -87,7 +87,7 @@ describe('SiteCard', () => {
       />
     );
 
-    const deleteButton = screen.getByTitle('Delete site');
+    const deleteButton = screen.getByRole('button', { name: 'Delete site' });
     fireEvent.click(deleteButton);
 
     expect(mockDeleteHandler).toHaveBeenCalledTimes(1);
@@ -102,7 +102,7 @@ describe('SiteCard', () => {
       />
     );
 
-    const duplicateButton = screen.getByTitle('Duplicate site');
+    const duplicateButton = screen.getByRole('button', { name: 'Duplicate site' });
     fireEvent.click(duplicateButton);
 
     expect(mockDuplicateHandler).toHaveBeenCalledTimes(1);
@@ -116,7 +116,25 @@ describe('SiteCard', () => {
       />
     );
 
-    expect(screen.queryByTitle('Duplicate site')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Duplicate site' })).not.toBeInTheDocument();
+  });
+
+  it('shows visible Duplicate and Delete labels on action buttons', () => {
+    renderWithRouter(
+      <SiteCard
+        site={mockSite}
+        onDelete={mockDeleteHandler}
+        onDuplicate={mockDuplicateHandler}
+      />
+    );
+
+    const duplicate = screen.getByTestId('duplicate-site-button');
+    expect(duplicate).toHaveTextContent('Duplicate');
+    expect(duplicate.querySelector('span')).toHaveTextContent('Duplicate');
+
+    const deleteBtn = screen.getByTestId('delete-site-button');
+    expect(deleteBtn).toHaveTextContent('Delete');
+    expect(deleteBtn.querySelector('span')).toHaveTextContent('Delete');
   });
 
   it('should render view button for published sites', () => {

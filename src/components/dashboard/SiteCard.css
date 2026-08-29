@@ -102,22 +102,25 @@
   flex-wrap: wrap;
 }
 
-.btn-sm {
-  padding: 8px 16px;
+.site-card-actions .btn-sm {
+  flex: 0 1 auto;
+  padding: 8px 14px;
   font-size: 0.875rem;
-  flex: 1;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: var(--spacing-xs);
+  min-height: 40px;
+  white-space: nowrap;
 }
 
-.site-card-icon-btn {
-  flex: 0 0 auto;
-  padding: 8px 12px;
+.site-card-action-btn {
+  font-weight: 600;
+  font-size: 0.8rem;
 }
 
 .site-card-icon {
+  flex-shrink: 0;
   display: block;
 }
 
