@@ -20,6 +20,8 @@ import { sanitizeString, validateEmail, validatePhone } from '../utils/validator
 import { checkoutLimiter, orderLimiter } from '../middleware/rateLimiting.js';
 import { isPayOnSiteEnabled, buildPayOnSiteOrderItems, extractSiteCatalog } from '../utils/payOnSite.js';
 import { productCatalogService } from '../services/ProductCatalogService.js';
+import { emailService } from '../services/emailService.js';
+import { resolvePrivateAddressForBuyer } from '../../src/utils/liveSiteContact.js';
 import {
   isShowcaseDemoSite,
   isShowcaseDemoSiteData,
@@ -500,6 +502,26 @@ router.post('/:siteId/pay-on-site', checkoutLimiter, orderLimiter, asyncHandler(
   }
 
   const total = Number.parseFloat(String(order.total_amount));
+  const amountCents = Math.round((Number.isFinite(total) ? total : built.total) * 100);
+
+  try {
+    await emailService.sendEmail({
+      to: order.customer_email,
+      template: 'orderConfirmation',
+      data: {
+        orderId: order.id,
+        amount: amountCents,
+        items: built.items.map((item) => ({
+          name: item.name,
+          price: Math.round(item.price * item.quantity * 100),
+        })),
+        businessAddress: resolvePrivateAddressForBuyer(siteData),
+        payOnSite: true,
+      },
+    });
+  } catch {
+    // Email failure must not roll back a placed order.
+  }
 
   return sendCreated(res, {
     order: {

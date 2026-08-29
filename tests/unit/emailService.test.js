@@ -215,6 +215,25 @@ describe('EmailService', () => {
       const emailCall = mockResend.emails.send.mock.calls[0][0];
       expect(emailCall.subject).toContain('Order Confirmation');
       expect(emailCall.html).toContain('99 Hidden Ln Unit 4B');
+      expect(emailCall.html).not.toContain('Please bring cash');
+    });
+
+    it('tells pay-on-site customers to bring cash', async () => {
+      await emailService.sendEmail({
+        to: 'customer@example.com',
+        template: 'orderConfirmation',
+        data: {
+          orderId: 'ORD-100',
+          amount: 2000,
+          items: [{ name: 'Pothos', price: 2000 }],
+          payOnSite: true,
+        }
+      });
+
+      const emailCall = mockResend.emails.send.mock.calls[0][0];
+      expect(emailCall.html).toContain('Please bring cash');
+      expect(emailCall.html).toContain('We do not take cards');
+      expect(emailCall.html).not.toContain('shipping update');
     });
 
     it('should render contact form submission email', async () => {

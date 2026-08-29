@@ -41,3 +41,32 @@ steps:
 
   - action: English copy returns
     wait_for: { text: Plants for sale, timeout: 12000 }
+
+  - action: Cash is required without advertising card
+    code: |
+      const t = await page.locator('[data-testid="published-composed-site"]').innerText();
+      if (/cash or card/i.test(t) || /cash or in person/i.test(t)) {
+        throw new Error('Pay-on-site still mentions card: ' + t.slice(0, 400));
+      }
+      if (!/Please bring cash/i.test(t)) {
+        throw new Error('Cash hint missing: ' + t.slice(0, 400));
+      }
+
+  - action: Add a plant to the cart
+    click: { selector: '[data-ss-add-to-cart]' }
+    settle_ms: 500
+
+  - action: Open cart pay-on-site checkout
+    click: { testId: cart-toggle-button }
+    settle_ms: 600
+
+  - action: Checkout note is a quiet cash hint
+    wait_for: { selector: '[data-testid="pay-on-site-checkout"]', timeout: 8000 }
+    code: |
+      const t = await page.locator('[data-testid="pay-on-site-checkout"]').innerText();
+      if (/cash or card/i.test(t) || /cash or in person/i.test(t)) {
+        throw new Error('Checkout still says cash or card: ' + t);
+      }
+      if (!/Please bring cash/i.test(t)) {
+        throw new Error('Checkout cash hint missing: ' + t);
+      }

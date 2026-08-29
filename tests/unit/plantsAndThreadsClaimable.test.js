@@ -34,5 +34,8 @@ describe('plants-and-threads claimable', () => {
       expect(item?.image).toMatch(/hibiscus-(orange|pink|coral|apricot)\.jpg$/);
     }
     expect(JSON.stringify(site)).not.toMatch(/hibiscus-grid/);
+    expect(JSON.stringify(site)).not.toMatch(/cash or card/i);
+    expect(JSON.stringify(site)).not.toMatch(/cash or in person/i);
+    expect(JSON.stringify(site)).toMatch(/Please bring cash/);
   });
 });

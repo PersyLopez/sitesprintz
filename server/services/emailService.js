@@ -240,8 +240,11 @@ export class EmailService {
           
           <div style="background: #f8fafc; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
             ${data.businessAddress ? `<p style="color: #1e293b; margin: 0 0 12px 0;"><strong>Pickup / location:</strong> ${String(data.businessAddress).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
+            ${data.payOnSite ? `<p style="color: #1e293b; margin: 0 0 12px 0;"><strong>Please bring cash.</strong> We do not take cards.</p>` : ''}
             <p style="color: #64748b; margin: 0;">
-              We'll get your order ready and send you a shipping update soon. If you have any questions, please don't hesitate to reach out!
+              ${data.payOnSite
+                ? "We'll have your order ready for pickup. If you have any questions, please reach out."
+                : "We'll get your order ready and send you a shipping update soon. If you have any questions, please don't hesitate to reach out!"}
             </p>
           </div>
         </div>

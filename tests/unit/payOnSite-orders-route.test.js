@@ -40,6 +40,12 @@ vi.mock('../../server/services/ProductCatalogService.js', () => ({
   }
 }));
 
+vi.mock('../../server/services/emailService.js', () => ({
+  emailService: {
+    sendEmail: vi.fn().mockResolvedValue({ success: true })
+  }
+}));
+
 vi.mock('../../server/middleware/auth.js', () => ({
   requireAuth: (req, _res, next) => {
     req.user = { id: '11111111-1111-1111-1111-111111111111', role: 'user' };
@@ -49,6 +55,7 @@ vi.mock('../../server/middleware/auth.js', () => ({
 
 import ordersRoutes from '../../server/routes/orders.routes.js';
 import { productCatalogService } from '../../server/services/ProductCatalogService.js';
+import { emailService } from '../../server/services/emailService.js';
 
 const growthSite = {
   id: 'site-1',
@@ -130,6 +137,11 @@ describe('POST /api/orders/:siteId/pay-on-site', () => {
       [{ productId: 'soup', quantity: 2 }],
       prisma
     );
+    expect(emailService.sendEmail).toHaveBeenCalledWith(expect.objectContaining({
+      to: 'alex@example.com',
+      template: 'orderConfirmation',
+      data: expect.objectContaining({ payOnSite: true, amount: 1600 })
+    }));
   });
 
   it('rejects out-of-stock items before creating an order', async () => {

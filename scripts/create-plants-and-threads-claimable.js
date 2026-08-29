@@ -47,11 +47,11 @@ const HERO_SRC = `${GALLERY_DIR}/hero.jpg`;
 
 const HOURS_COPY = 'By appointment. Exact address is shared after you book or order.';
 const LOCATION_COPY = 'Trenton, NJ. Exact address is shared after you book or order.';
-const PAY_COPY = 'Pay on site — cash or in person. No online card checkout.';
-const BOOKING_COPY = 'Book a sewing visit. Price is quoted in person. Pay on site.';
+const PAY_COPY = 'Pay on site. Please bring cash.';
+const BOOKING_COPY = 'Book a sewing visit. Price is quoted in person. Please bring cash.';
 const ABOUT_COPY = 'Plants & Threads in Trenton, NJ. Plants for sale and sewing services. Pay on site. Exact address is shared after you book or order.';
 
-const DROP_SECTION_TYPES = new Set(['team', 'testimonials', 'faq', 'reviews', 'stats']);
+const DROP_SECTION_TYPES = new Set(['team', 'testimonials', 'faq', 'reviews', 'stats', 'how-to-order']);
 
 const PRODUCTS = [
   { name: 'Hanging basket', price: '$25', description: 'Flowering hanging basket.', image: `${PRODUCT_DIR}/hanging-basket.jpg` },
@@ -73,7 +73,7 @@ const SEWING = {
   name: 'Sewing services',
   price: '',
   duration: '60',
-  description: 'Alterations and sewing. Quoted in person. Pay on site.',
+  description: 'Alterations and sewing. Quoted in person. Please bring cash.',
   image: HERO_SRC,
   imageAlt: 'Sewing machine among plants at Plants & Threads',
 };
@@ -89,7 +89,6 @@ const ES_BY_EN = {
   'Shop plants': 'Ver plantas',
   'Our Plants': 'Nuestras plantas',
   'Sewing': 'Costura',
-  'Book a sewing visit. Price is quoted in person. Pay on site.': 'Reserve una visita de costura. El precio se cotiza en persona. Pago en el lugar.',
   'Book sewing': 'Reservar costura',
   'Gallery': 'Galería',
   'Hours': 'Horario',
@@ -101,8 +100,8 @@ const ES_BY_EN = {
   'Contact': 'Contacto',
   [HOURS_COPY]: 'Con cita. La dirección exacta se comparte después de reservar o pedir.',
   [LOCATION_COPY]: 'Trenton, NJ. La dirección exacta se comparte después de reservar o pedir.',
-  [PAY_COPY]: 'Pago en el lugar — efectivo o en persona. Sin pago con tarjeta en línea.',
-  [BOOKING_COPY]: 'Reserve una visita de costura. El precio se cotiza en persona. Pago en el lugar.',
+  [PAY_COPY]: 'Pago en el lugar. Por favor, traiga efectivo.',
+  [BOOKING_COPY]: 'Reserve una visita de costura. El precio se cotiza en persona. Por favor, traiga efectivo.',
   [ABOUT_COPY]: 'Plants & Threads en Trenton, NJ. Plantas a la venta y servicios de costura. Pago en el lugar. La dirección exacta se comparte después de reservar o pedir.',
   'Hanging basket': 'Canasta colgante',
   'Flowering hanging basket.': 'Canasta colgante con flores.',
@@ -131,7 +130,7 @@ const ES_BY_EN = {
   'Apricot hibiscus': 'Hibisco albaricoque',
   'Apricot hibiscus with a red center. $20 each.': 'Hibisco albaricoque con centro rojo. $20 cada uno.',
   'Sewing services': 'Servicios de costura',
-  'Alterations and sewing. Quoted in person. Pay on site.': 'Arreglos y costura. Se cotiza en persona. Pago en el lugar.',
+  'Alterations and sewing. Quoted in person. Please bring cash.': 'Arreglos y costura. Se cotiza en persona. Por favor, traiga efectivo.',
   'Trenton, NJ. Exact location sent after you book or order.': LOCATION_COPY,
 };
 

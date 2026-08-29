@@ -5,6 +5,7 @@ import { availabilityService } from './AvailabilityServiceV2.js';
 import AppointmentCancellationService from './AppointmentCancellationService.js';
 import { resolvePrivateAddressForBuyer } from '../../../src/utils/liveSiteContact.js';
 import { parseSiteData } from '../../utils/parseSiteData.js';
+import { isPayOnSiteEnabled } from '../../utils/payOnSite.js';
 
 /**
  * Appointment Service - Manages appointments
@@ -463,13 +464,18 @@ class AppointmentService {
       }
 
       let locationAddress = '';
+      let payOnSite = false;
       try {
-        if (!appt.requires_approval && appt.booking_tenants?.site_id) {
+        if (appt.booking_tenants?.site_id) {
           const site = await prisma.sites.findUnique({
             where: { id: appt.booking_tenants.site_id },
             select: { site_data: true },
           });
-          locationAddress = resolvePrivateAddressForBuyer(parseSiteData(site?.site_data));
+          const siteData = parseSiteData(site?.site_data);
+          payOnSite = isPayOnSiteEnabled(siteData);
+          if (!appt.requires_approval) {
+            locationAddress = resolvePrivateAddressForBuyer(siteData);
+          }
         }
       } catch {
         locationAddress = '';
@@ -492,6 +498,7 @@ class AppointmentService {
         business_email: appt.booking_tenants?.email,
         business_phone: appt.booking_tenants?.phone,
         location_address: locationAddress,
+        pay_on_site: payOnSite,
       });
 
       return true;

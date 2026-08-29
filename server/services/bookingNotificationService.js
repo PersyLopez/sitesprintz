@@ -59,6 +59,7 @@ class BookingNotificationService {
         business_email,
         business_phone,
         location_address,
+        pay_on_site,
       } = appointmentData;
 
       const datetime = this.formatDateTime(start_time, timezone);
@@ -121,6 +122,14 @@ class BookingNotificationService {
                 ${buyerLocationEmailRow(requires_approval, location_address)}
               </table>
             </div>
+
+            ${pay_on_site ? `
+              <div style="margin-top: 20px; padding: 16px; background: #f8fafc; border-left: 4px solid #64748b; border-radius: 8px;">
+                <p style="color: #1e293b; margin: 0; line-height: 1.5;">
+                  <strong>Please bring cash.</strong> We do not take cards.
+                </p>
+              </div>
+            ` : ''}
 
             ${business_name ? `
               <div style="margin-top: 20px; padding: 16px; background: #eff6ff; border-radius: 8px;">
