@@ -79,6 +79,18 @@ Do not use Unsplash or generic stock photography on customer/claimable sites. Ga
 
 ---
 
+## Claimable: inspect, then pitch
+
+Filling the template is the job. **Pitching is the inspection.** Like an oil change that also checks the lights: do not send `/view` or `/claim` because the page looks finished.
+
+Write `data/outreach/claimable/{slug}-gate.md` (neighbor `true-cuts-barbershop-gate.md`) with every **enabled** Growth feature exercised on the live origin. Neighbor `tests/mantest/{n}-{slug}-claimable.plan.yaml` and run it green. Skip a row only when that feature is honestly off (no goods → no cart).
+
+Always: site loads, photos 200, nav/CTAs stay on this origin, claim token names this business. Then booking widget + a reachable slot if booking is on; add-to-cart + the real pay path if they sell goods; contact form POST if they have a destination; EN/ES if bilingual.
+
+The **pitch** (email/text) is that list in customer language — what we already verified — plus view URL, 14-day claim URL, and honest Missing. Do not paste scores, waived setup fees, or a trial. Claim page copy matches: the site was prepared and already checked.
+
+---
+
 ## Done checklist
 
 - [ ] Classified (claimable / customer / gallery)
