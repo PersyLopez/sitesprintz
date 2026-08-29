@@ -24,6 +24,14 @@ export function isClaimTokenShape(token) {
   return typeof token === 'string' && /^[a-f0-9]{64}$/.test(token);
 }
 
+/** Raw token from a same-origin /claim/:token path, or null. */
+export function claimTokenFromPath(path) {
+  if (!path || typeof path !== 'string') return null;
+  const pathname = path.trim().split('?')[0];
+  const match = pathname.match(/^\/claim\/([a-f0-9]{64})$/i);
+  return match ? match[1].toLowerCase() : null;
+}
+
 /**
  * Constant-time compare of two hex hashes. Length mismatch returns false
  * after a dummy compare so timing does not leak hash presence.

@@ -126,7 +126,7 @@ describe('Register Component', () => {
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
     await waitFor(() => {
-      expect(mockRegister).toHaveBeenCalledWith('test@example.com', VALID_PASSWORD, null, true);
+      expect(mockRegister).toHaveBeenCalledWith('test@example.com', VALID_PASSWORD, null, true, null);
       expect(mockShowSuccess).toHaveBeenCalledWith('Account created successfully!');
       expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
     });

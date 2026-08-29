@@ -1,6 +1,6 @@
 import express from 'express';
 import { prisma } from '../../database/db.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireSignedIn } from '../middleware/auth.js';
 import { claimAcceptLimiter } from '../middleware/rateLimiting.js';
 import {
   hashClaimToken,
@@ -67,7 +67,7 @@ router.get('/:token', async (req, res) => {
  * POST /api/claim/:token/trial-checkout
  * Start paid Stripe Checkout (no trial) before claiming.
  */
-router.post('/:token/trial-checkout', claimAcceptLimiter, requireAuth, async (req, res) => {
+router.post('/:token/trial-checkout', claimAcceptLimiter, requireSignedIn, async (req, res) => {
   try {
     const site = await findSiteByClaimToken(req.params.token);
     if (!site) {
@@ -119,7 +119,7 @@ router.post('/:token/trial-checkout', claimAcceptLimiter, requireAuth, async (re
  * POST /api/claim/:token/trial-complete
  * Sync subscription after Stripe Checkout return (covers webhook lag).
  */
-router.post('/:token/trial-complete', requireAuth, async (req, res) => {
+router.post('/:token/trial-complete', requireSignedIn, async (req, res) => {
   try {
     const site = await findSiteByClaimToken(req.params.token);
     if (!site) {
@@ -167,7 +167,7 @@ router.post('/:token/trial-complete', requireAuth, async (req, res) => {
  * POST /api/claim/:token/accept
  * Transfer prospect site to the authenticated user after a paid Growth plan.
  */
-router.post('/:token/accept', claimAcceptLimiter, requireAuth, async (req, res) => {
+router.post('/:token/accept', claimAcceptLimiter, requireSignedIn, async (req, res) => {
   try {
     const site = await findSiteByClaimToken(req.params.token);
     if (!site) {

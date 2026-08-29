@@ -105,13 +105,17 @@ window.fetch = async function (...args) {
 
 export const authService = {
   // Register new user
-  async register(email, password, captchaToken = null, acceptedTerms = false) {
-    const data = await api.post('/api/auth/register', {
+  async register(email, password, captchaToken = null, acceptedTerms = false, redirect = null) {
+    const payload = {
       email,
       password,
       captchaToken,
       acceptedTerms
-    });
+    };
+    if (redirect) {
+      payload.redirect = redirect;
+    }
+    const data = await api.post('/api/auth/register', payload);
     if (data.accessToken) {
       localStorage.setItem('accessToken', data.accessToken);
       localStorage.setItem('refreshToken', data.refreshToken);

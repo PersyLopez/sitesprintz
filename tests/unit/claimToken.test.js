@@ -8,6 +8,7 @@ import {
   hashesEqual,
   isClaimExpired,
   isClaimTokenShape,
+  claimTokenFromPath,
 } from '../../server/services/claimTokenService.js';
 
 describe('claim token', () => {
@@ -36,5 +37,12 @@ describe('claim token', () => {
     expect(isClaimExpired(expires, now)).toBe(false);
     expect(isClaimExpired(expires, new Date(expires.getTime() + 1))).toBe(true);
     expect(isClaimExpired(null, now)).toBe(true);
+  });
+
+  it('reads a live claim token from a redirect path', () => {
+    const token = 'ab'.repeat(32);
+    expect(claimTokenFromPath(`/claim/${token}`)).toBe(token);
+    expect(claimTokenFromPath(`/claim/${token}?x=1`)).toBe(token);
+    expect(claimTokenFromPath('/dashboard')).toBeNull();
   });
 });

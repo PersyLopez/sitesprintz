@@ -194,7 +194,7 @@ export async function requireAdmin(req, res, next) {
  * 5. Attach user object to request
  * 6. Continue to next middleware/route
  */
-export async function requireAuth(req, res, next) {
+async function authenticateRequest(req, res, next, { checkVerification }) {
   const token = extractToken(req);
 
   if (!token) {
@@ -206,8 +206,10 @@ export async function requireAuth(req, res, next) {
     const user = await authenticateAndLoadUser(token);
     console.log(`Auth Middleware: Token verified for user ${user.email} (${user.role})`);
 
-    const verificationError = checkEmailVerification(user, res);
-    if (verificationError) return verificationError;
+    if (checkVerification) {
+      const verificationError = checkEmailVerification(user, res);
+      if (verificationError) return verificationError;
+    }
 
     attachUserToRequest(req, user);
     next();
@@ -222,6 +224,18 @@ export async function requireAuth(req, res, next) {
     });
     return handleAuthError(err, res);
   }
+}
+
+/**
+ * Signed in, including unverified password accounts.
+ * Use on claim checkout/accept: the claim token is the gate, not a second inbox click.
+ */
+export async function requireSignedIn(req, res, next) {
+  return authenticateRequest(req, res, next, { checkVerification: false });
+}
+
+export async function requireAuth(req, res, next) {
+  return authenticateRequest(req, res, next, { checkVerification: true });
 }
 
 /**

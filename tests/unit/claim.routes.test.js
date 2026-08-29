@@ -170,6 +170,30 @@ describe('claim routes', () => {
     expect(createClaimTrialCheckout).not.toHaveBeenCalled();
   });
 
+  it('lets an unverified claimant start checkout', async () => {
+    prisma.sites.findUnique.mockResolvedValue({ ...prospectSite });
+    prisma.users.findUnique.mockImplementation(({ where }) => {
+      if (where.id === 'user-1') {
+        return Promise.resolve({
+          ...claimant,
+          email_verified: false,
+          status: 'pending',
+          subscription_status: 'none',
+          subscription_plan: 'starter',
+        });
+      }
+      return Promise.resolve(null);
+    });
+
+    const response = await request(createApp())
+      .post(`/api/claim/${CLAIM_TOKEN}/trial-checkout`)
+      .set('Authorization', `Bearer ${signToken({ userId: 'user-1' })}`)
+      .send({ plan: 'growth' });
+
+    expect(response.status).toBe(200);
+    expect(response.body.url).toBe('https://checkout.stripe.com/test');
+  });
+
   it('returns alreadySubscribed when user has paid Growth', async () => {
     prisma.sites.findUnique.mockResolvedValue({ ...prospectSite });
 

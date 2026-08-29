@@ -181,7 +181,13 @@ function Register() {
     setLoading(true);
 
     try {
-      await register(formData.email, formData.password, captchaTokenRef.current, acceptedTerms);
+      await register(
+        formData.email,
+        formData.password,
+        captchaTokenRef.current,
+        acceptedTerms,
+        getSafeRedirect(searchParams.get('redirect')),
+      );
       showSuccess('Account created successfully!');
 
       // Reset CAPTCHA after successful registration

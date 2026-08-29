@@ -70,9 +70,9 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const register = async (email, password, captchaToken = null, acceptedTerms = false) => {
+  const register = async (email, password, captchaToken = null, acceptedTerms = false, redirect = null) => {
     try {
-      const data = await authService.register(email, password, captchaToken, acceptedTerms);
+      const data = await authService.register(email, password, captchaToken, acceptedTerms, redirect);
       setToken(data.accessToken || data.token); // Support both formats
       setUser(data.user);
       return data;

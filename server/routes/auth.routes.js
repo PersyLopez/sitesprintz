@@ -25,6 +25,24 @@ import {
 import { getRequiredSecret } from '../config/secrets.js';
 import { betaAllowsPublicSignups } from '../config/betaMode.js';
 import { setAuthCookies, clearAuthCookies, readRefreshToken } from '../utils/authCookies.js';
+import {
+    claimTokenFromPath,
+    hashClaimToken,
+    hashesEqual,
+    isClaimExpired,
+} from '../services/claimTokenService.js';
+
+async function isLiveClaimSignup(redirect) {
+    const token = claimTokenFromPath(redirect);
+    if (!token) return false;
+    const hashed = hashClaimToken(token);
+    const site = await prisma.sites.findUnique({
+        where: { claim_token_hash: hashed },
+    });
+    if (!site?.claim_token_hash) return false;
+    if (!hashesEqual(site.claim_token_hash, hashed)) return false;
+    return !isClaimExpired(site.claim_token_expires);
+}
 
 const validator = new ValidationService();
 
@@ -41,7 +59,7 @@ router.post('/register', registrationLimiter, asyncHandler(async (req, res) => {
         return sendForbidden(res, 'Signups are invite-only during closed beta', 'BETA_INVITE_ONLY');
     }
 
-    const { email, password, captchaToken, acceptedTerms } = req.body;
+    const { email, password, captchaToken, acceptedTerms, redirect } = req.body;
 
     // Step 1: Validate input
     if (!email || !password) {
@@ -91,6 +109,8 @@ router.post('/register', registrationLimiter, asyncHandler(async (req, res) => {
         return sendConflict(res, 'User already exists', 'USER_EXISTS');
     }
 
+    const claimSignup = await isLiveClaimSignup(redirect);
+
     // Step 3: Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -129,8 +149,8 @@ router.post('/register', registrationLimiter, asyncHandler(async (req, res) => {
 
     // In development: auto-activate all users (including test users)
     // In production: activate test users, keep others pending for email verification
-    const initialStatus = isNonProd ? 'active' : (isTestUser ? 'active' : 'pending');
-    const initialVerified = isNonProd || isTestUser;  // In dev: all verified; In prod: test users verified
+    const initialStatus = isNonProd || isTestUser || claimSignup ? 'active' : 'pending';
+    const initialVerified = isNonProd || isTestUser || claimSignup;
 
     const user = await prisma.users.create({
         data: {
@@ -174,17 +194,18 @@ router.post('/register', registrationLimiter, asyncHandler(async (req, res) => {
     });
 
     // Step 6: Send verification email (don't fail registration if email fails)
-    try {
-        const baseUrl = process.env.SITE_URL || process.env.BASE_URL || 'http://localhost:3000';
-        const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
+    if (!initialVerified) {
+        try {
+            const baseUrl = process.env.SITE_URL || process.env.BASE_URL || 'http://localhost:3000';
+            const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
 
-        await sendEmail(user.email, EmailTypes.VERIFY_EMAIL, {
-            email: user.email,
-            verificationLink
-        });
-    } catch (emailError) {
-        console.error('Failed to send verification email:', emailError);
-        // Don't fail registration if email fails - user can request resend
+            await sendEmail(user.email, EmailTypes.VERIFY_EMAIL, {
+                email: user.email,
+                verificationLink
+            });
+        } catch (emailError) {
+            console.error('Failed to send verification email:', emailError);
+        }
     }
 
     // Step 6b: Notify admin of new user (don't fail registration if this fails)
@@ -210,8 +231,10 @@ router.post('/register', registrationLimiter, asyncHandler(async (req, res) => {
             emailVerified: user.email_verified,
             status: user.status
         },
-        requiresVerification: true
-    }, 'Account created! Please check your email to verify your account.');
+        requiresVerification: !user.email_verified
+    }, user.email_verified
+        ? 'Account created!'
+        : 'Account created! Please check your email to verify your account.');
 }));
 
 /**
