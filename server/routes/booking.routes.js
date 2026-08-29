@@ -725,6 +725,28 @@ router.post('/checkout/create-session', asyncHandler(async (req, res) => {
 }));
 
 /**
+ * POST /api/booking/checkout/confirm
+ * Public: visitor returns from Stripe Checkout. Fulfills Connect payments
+ * even when the platform webhook never sees connected-account events.
+ */
+router.post('/checkout/confirm', asyncHandler(async (req, res) => {
+  const { session_id, confirmation_code } = req.body || {};
+  if (!session_id || !confirmation_code) {
+    return sendBadRequest(res, 'session_id and confirmation_code are required', 'MISSING_CONFIRM_FIELDS');
+  }
+  try {
+    const result = await paymentAdapter.confirmCheckoutSession(session_id, confirmation_code);
+    sendSuccess(res, {
+      appointment_id: result.appointmentId,
+      payment_status: result.paymentStatus
+    }, 'Payment confirmed');
+  } catch (error) {
+    console.error('[BookingRoutes] Error confirming checkout session:', error);
+    return sendBadRequest(res, error.message, 'CHECKOUT_CONFIRM_FAILED');
+  }
+}));
+
+/**
  * PUT /api/booking/admin/:userId/services/:serviceId/payment
  * Enable/configure payment for a service
  * ADMIN endpoint - requires authentication

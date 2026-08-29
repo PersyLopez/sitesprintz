@@ -88,12 +88,14 @@ class BookingPaymentAdapter {
 
       const tenantRecord = appointment.booking_tenants;
       let siteData = {};
+      let subdomain = null;
       if (tenantRecord?.site_id) {
         const site = await prisma.sites.findUnique({
           where: { id: tenantRecord.site_id },
-          select: { site_data: true },
+          select: { site_data: true, subdomain: true },
         });
         siteData = parseSiteData(site?.site_data);
+        subdomain = site?.subdomain || null;
       }
 
       if (!sitePaymentEnabled(siteData, tenantRecord)) {
@@ -135,10 +137,16 @@ class BookingPaymentAdapter {
         return this.confirmPayOnSite(appointmentId);
       }
 
-      // Determine success and cancel URLs
       const origin = process.env.FRONTEND_URL || 'http://localhost:5173';
-      const successUrl = `${origin}/booking?session_id={CHECKOUT_SESSION_ID}&appointment_id=${appointmentId}`;
-      const cancelUrl = `${origin}/booking?cancelled=true&service_id=${appointment.booking_services.id}`;
+      const confirmationCode = appointment.confirmation_code;
+      if (!confirmationCode) {
+        throw new Error(`Appointment ${appointmentId} is missing a confirmation code`);
+      }
+      const appointmentPath = `/booking/appointment/${encodeURIComponent(confirmationCode)}`;
+      const successUrl = `${origin}${appointmentPath}?session_id={CHECKOUT_SESSION_ID}`;
+      const cancelUrl = subdomain
+        ? `${origin}/view/${encodeURIComponent(subdomain)}`
+        : `${origin}${appointmentPath}`;
 
       // Create Stripe Checkout Session
       const sessionParams = {
@@ -231,6 +239,7 @@ class BookingPaymentAdapter {
       const appointment = await prisma.appointments.update({
         where: { id: appointmentId },
         data: {
+          status: 'confirmed',
           payment_status: 'paid',
           paid_at: new Date()
         },
@@ -257,6 +266,57 @@ class BookingPaymentAdapter {
       console.error('[BookingPaymentAdapter] Error handling payment success:', error);
       throw error;
     }
+  }
+
+  /**
+   * Confirm a returned Checkout session on the connected account.
+   * Connect checkout.session.completed often never hits the platform webhook.
+   */
+  async confirmCheckoutSession(sessionId, confirmationCode) {
+    if (!sessionId || !confirmationCode) {
+      throw new Error('session_id and confirmation_code are required');
+    }
+
+    const appointment = await prisma.appointments.findFirst({
+      where: { stripe_session_id: sessionId },
+      include: {
+        booking_tenants: {
+          include: { users: { select: { stripe_account_id: true } } }
+        }
+      }
+    });
+
+    if (!appointment || appointment.confirmation_code !== confirmationCode) {
+      throw new Error('Appointment not found for this checkout session');
+    }
+
+    if (appointment.payment_status === 'paid') {
+      return { success: true, appointmentId: appointment.id, paymentStatus: 'paid' };
+    }
+
+    const stripe = this.getStripe();
+    if (!stripe) {
+      throw new Error('Stripe is not configured');
+    }
+
+    const stripeAccountId = appointment.booking_tenants?.users?.stripe_account_id
+      || appointment.booking_tenants?.stripe_account_id;
+    const session = await stripe.checkout.sessions.retrieve(
+      sessionId,
+      {},
+      stripeAccountId ? { stripeAccount: stripeAccountId } : {}
+    );
+
+    if (session.payment_status !== 'paid') {
+      throw new Error('Checkout session is not paid');
+    }
+
+    const metaAppointmentId = session.metadata?.appointment_id;
+    if (metaAppointmentId && metaAppointmentId !== appointment.id) {
+      throw new Error('Checkout session does not match this appointment');
+    }
+
+    return this.handlePaymentSuccess(sessionId, appointment.id);
   }
 
   /**

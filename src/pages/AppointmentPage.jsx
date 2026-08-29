@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { get, del } from '../utils/api';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { get, del, post } from '../utils/api';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import './AppointmentPage.css';
 
 const AppointmentPage = () => {
     const { confirmationCode } = useParams();
+    const [searchParams] = useSearchParams();
     const [appointment, setAppointment] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -15,8 +16,22 @@ const AppointmentPage = () => {
     const [cancelLoading, setCancelLoading] = useState(false);
 
     useEffect(() => {
-        fetchAppointment();
-    }, [confirmationCode]);
+        const sessionId = searchParams.get('session_id');
+        const run = async () => {
+            if (sessionId) {
+                try {
+                    await post('/api/booking/checkout/confirm', {
+                        session_id: sessionId,
+                        confirmation_code: confirmationCode
+                    });
+                } catch (err) {
+                    console.error('Error confirming checkout session:', err);
+                }
+            }
+            await fetchAppointment();
+        };
+        run();
+    }, [confirmationCode, searchParams]);
 
     const fetchAppointment = async () => {
         try {

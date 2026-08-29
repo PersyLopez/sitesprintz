@@ -22,6 +22,7 @@ vi.mock('../../../database/db.js', () => ({
   prisma: {
     appointments: {
       findUnique: vi.fn(),
+      findFirst: vi.fn(),
       update: vi.fn()
     },
     booking_services: {
@@ -111,6 +112,7 @@ describe('BookingPaymentAdapter', () => {
       id: 'appt-123',
       tenant_id: 'tenant-456',
       service_id: 'service-789',
+      confirmation_code: 'LOPEZ-TEST-1',
       customer_name: 'John Doe',
       customer_email: 'john@example.com',
       start_time: new Date('2026-02-01T10:00:00'),
@@ -220,7 +222,8 @@ describe('BookingPaymentAdapter', () => {
             type: 'booking',
             appointment_id: 'appt-123',
             payment_type: 'full'
-          })
+          }),
+          success_url: 'http://localhost:5173/booking/appointment/LOPEZ-TEST-1?session_id={CHECKOUT_SESSION_ID}',
         }),
         expect.anything()
       );
@@ -352,11 +355,42 @@ describe('BookingPaymentAdapter', () => {
       expect(prisma.appointments.update).toHaveBeenCalledWith({
         where: { id: 'appt-123' },
         data: expect.objectContaining({
+          status: 'confirmed',
           payment_status: 'paid',
           paid_at: expect.any(Date)
         }),
         include: expect.any(Object)
       });
+    });
+
+    it('confirms a paid Connect session on the connected account', async () => {
+      prisma.appointments.findFirst.mockResolvedValue({
+        id: 'appt-123',
+        confirmation_code: 'LOPEZ-TEST-1',
+        payment_status: 'pending',
+        stripe_session_id: 'cs_test_123',
+        booking_tenants: { users: { stripe_account_id: 'acct_123' } }
+      });
+      mockStripe.checkout.sessions.retrieve.mockResolvedValue({
+        id: 'cs_test_123',
+        payment_status: 'paid',
+        metadata: { appointment_id: 'appt-123' }
+      });
+      prisma.appointments.update.mockResolvedValue({
+        id: 'appt-123',
+        payment_method: 'full',
+        booking_services: { name: 'Haircut' },
+        booking_tenants: { id: 'tenant-456' }
+      });
+
+      const result = await adapter.confirmCheckoutSession('cs_test_123', 'LOPEZ-TEST-1');
+
+      expect(mockStripe.checkout.sessions.retrieve).toHaveBeenCalledWith(
+        'cs_test_123',
+        {},
+        { stripeAccount: 'acct_123' }
+      );
+      expect(result.paymentStatus).toBe('paid');
     });
 
     it('should create remaining balance record for deposit payments', async () => {
