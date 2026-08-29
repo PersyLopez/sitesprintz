@@ -1,0 +1,292 @@
+url: https://sitesprintz.com/view/studio-lopez
+goal: Visitor persylopez9@gmail.com pays a Studio Lopez Haircut deposit on Connect, then cancels from the confirmation page
+steps:
+  - action: Live site loads as Studio Lopez
+    wait_for: { selector: '[data-testid="published-composed-site"]', timeout: 25000 }
+    settle_ms: 800
+    code: |
+      const t = await page.locator('[data-testid="published-composed-site"]').innerText();
+      if (!/Studio Lopez/i.test(t)) throw new Error('Studio Lopez identity missing: ' + t.slice(0, 240));
+
+  - action: Showcase reports Connect-ready visitor pay and no invented product catalog
+    code: |
+      const result = await page.evaluate(async () => {
+        const resp = await fetch('/api/showcases/studio-lopez');
+        const body = await resp.json().catch(() => ({}));
+        return { status: resp.status, body };
+      });
+      if (result.status !== 200) throw new Error('showcase HTTP ' + result.status);
+      const site = result.body.site || result.body.data?.site || result.body.data || result.body;
+      if (site.stripe_connected !== true && site.online_payment_ready !== true) {
+        throw new Error('Visitor pay not ready: ' + JSON.stringify({
+          stripe_connected: site.stripe_connected,
+          online_payment_ready: site.online_payment_ready,
+        }));
+      }
+      const inner = site.data || {};
+      const products = inner.products || inner.ecommerce?.products || [];
+      if (Array.isArray(products) && products.length > 0) {
+        throw new Error('Service shop should not carry a product catalog, got ' + products.length);
+      }
+
+  - action: No visitor cart checkout — this shop sells services
+    code: |
+      const add = await page.locator('[data-ss-add-to-cart]').count();
+      const cart = await page.getByTestId('cart-toggle-button').count();
+      if (add > 0 || cart > 0) {
+        throw new Error('Service shop must not show product cart controls');
+      }
+
+  - action: Booking widget and priced services are on the page
+    wait_for: { selector: '[data-testid="live-booking-widget"]', timeout: 12000 }
+    code: |
+      const t = await page.locator('[data-testid="published-composed-site"]').innerText();
+      for (const name of ['Haircut', 'Color', 'Manicure']) {
+        if (!new RegExp(name, 'i').test(t)) {
+          throw new Error('Missing service ' + name + ': ' + t.slice(0, 400));
+        }
+      }
+
+  - action: Pick Haircut from the page catalog
+    code: |
+      const pageBook = page.locator('#services [data-ss-book-service], [data-ss-book-service]');
+      const select = page.getByTestId('booking-service-select');
+      const card = page.locator('[data-testid^="service-card-"]');
+      if (await pageBook.count()) {
+        await pageBook.filter({ hasText: /Haircut/i }).first().click({ timeout: 8000 }).catch(async () => {
+          await pageBook.first().click();
+        });
+      } else if (await select.count()) {
+        const options = await select.locator('option').allTextContents();
+        const haircut = options.find((o) => /Haircut/i.test(o));
+        if (haircut) await select.selectOption({ label: haircut });
+        else if (options.length > 1) await select.selectOption({ index: 1 });
+        const next = page.getByTestId('next-button');
+        if (await next.count()) await next.first().click();
+      } else if (await card.count()) {
+        await card.first().click();
+        const next = page.getByTestId('next-button');
+        if (await next.count()) await next.first().click();
+      } else {
+        throw new Error('Studio Lopez has no bookable service control');
+      }
+    settle_ms: 800
+
+  - action: Continue through optional staff step
+    code: |
+      const staffStep = page.getByTestId('staff-selection-step');
+      if (await staffStep.count()) {
+        const staffCards = page.locator('[data-testid^="staff-card-"]').filter({
+          hasNot: page.getByTestId('staff-card-no-preference'),
+        });
+        if (await staffCards.count()) {
+          await staffCards.first().click({ timeout: 3000 });
+        } else {
+          const noPref = page.getByTestId('staff-card-no-preference');
+          if (await noPref.count()) await noPref.click({ timeout: 3000 });
+        }
+        const next = page.getByTestId('next-button').first();
+        await next.waitFor({ timeout: 5000 });
+        await next.click();
+      }
+    settle_ms: 800
+
+  - action: Calendar is visible
+    wait_for: { selector: '[data-testid="calendar"]', timeout: 12000 }
+
+  - action: Pick a future weekday with availability
+    code: |
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      let picked = false;
+      for (let offset = 2; offset <= 21; offset += 1) {
+        const day = new Date(today);
+        day.setDate(today.getDate() + offset);
+        if (day.getDay() === 0 || day.getDay() === 6) continue;
+        const iso = day.getFullYear() + '-' + String(day.getMonth() + 1).padStart(2, '0') + '-' + String(day.getDate()).padStart(2, '0');
+        const btn = page.getByTestId('date-' + iso);
+        if ((await btn.count()) === 0) {
+          const nextMonth = page.getByTestId('next-month');
+          if (await nextMonth.count()) {
+            await nextMonth.click();
+            await page.waitForTimeout(300);
+          }
+        }
+        if ((await btn.count()) > 0 && await btn.isEnabled()) {
+          await btn.click();
+          picked = true;
+          break;
+        }
+      }
+      if (!picked) throw new Error('Studio Lopez calendar had no enabled weekday');
+
+  - action: Time slots appear
+    wait_for: { selector: '[data-testid="time-slots"]', timeout: 12000 }
+    settle_ms: 500
+
+  - action: Pick a time slot
+    code: |
+      const slots = page.locator('[data-testid^="time-slot-"]');
+      if ((await slots.count()) < 1) {
+        const empty = page.getByTestId('slots-empty');
+        if (await empty.count()) throw new Error('No times: ' + await empty.innerText());
+        throw new Error('Studio Lopez time-slots container empty');
+      }
+      await slots.first().click();
+
+  - action: Continue to customer form
+    click: { testId: next-button }
+    settle_ms: 600
+
+  - action: Customer form is visible
+    wait_for: { selector: '[data-testid="customer-form"]', timeout: 10000 }
+
+  - action: Deposit due is shown, pay-at-salon is not
+    code: |
+      const due = page.getByTestId('booking-payment-due');
+      const cash = page.getByTestId('booking-pay-on-site');
+      if (await cash.count()) {
+        throw new Error('Connect-ready shop must not fall back to pay at salon: ' + await cash.innerText());
+      }
+      if ((await due.count()) === 0) {
+        throw new Error('Expected deposit/full due copy on a payable service');
+      }
+      const dueText = await due.innerText();
+      if (!/deposit|due/i.test(dueText)) {
+        throw new Error('Unexpected payment due copy: ' + dueText);
+      }
+
+  - action: Fee or cancellation notice is visible when the shop has policies
+    code: |
+      const notice = page.getByTestId('booking-fee-notice');
+      if (await notice.count()) {
+        const t = await notice.innerText();
+        if (!/cancel|no-show|fee/i.test(t)) {
+          throw new Error('Fee notice present but empty of policy copy: ' + t);
+        }
+      }
+
+  - action: Fill visitor name
+    fill: { testId: customer-name, value: "Persy Lopez", clear: true }
+
+  - action: Fill visitor email
+    fill: { testId: customer-email, value: "persylopez9@gmail.com", clear: true }
+
+  - action: Fill visitor phone
+    fill: { testId: customer-phone, value: "555-010-1999", clear: true }
+
+  - action: Pay and continue to Stripe Checkout
+    click: { testId: book-now-button }
+    settle_ms: 2500
+
+  - action: Hosted Checkout is the connected Studio Lopez account
+    code: |
+      await page.waitForURL(/checkout\.stripe\.com/, { timeout: 30000 });
+      const t = await page.locator('body').innerText();
+      if (!/Haircut/i.test(t)) throw new Error('Checkout missing Haircut: ' + t.slice(0, 240));
+      if (!/Sandbox/i.test(t)) throw new Error('Expected Stripe test/sandbox Checkout');
+      if (/SiteSprintz/i.test(t) && !/Studio/i.test(t)) {
+        throw new Error('Checkout looks like the platform ledger, not Studio Lopez');
+      }
+    settle_ms: 1500
+
+  - action: Complete Checkout with test card 4242
+    code: |
+      await page.waitForURL(/checkout\.stripe\.com/, { timeout: 45000 });
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForTimeout(2500);
+      const fillStripeCheckout = async () => {
+        const cardByPlaceholder = page.getByPlaceholder('1234 1234 1234 1234');
+        if (await cardByPlaceholder.count()) {
+          await cardByPlaceholder.fill('4242 4242 4242 4242');
+          const exp = page.getByPlaceholder('MM / YY');
+          if (await exp.count()) await exp.fill('12 / 34');
+          const cvc = page.getByPlaceholder('CVC');
+          if (await cvc.count()) await cvc.fill('123');
+          return true;
+        }
+        for (const frame of page.frames()) {
+          const card = frame.locator(
+            'input[name="cardNumber"], input[name="cardnumber"], input[autocomplete="cc-number"]'
+          );
+          if (await card.count()) {
+            await card.first().fill('4242424242424242');
+            const exp = frame.locator('input[name="cardExpiry"], input[autocomplete="cc-exp"]');
+            if (await exp.count()) await exp.first().fill('1234');
+            const cvc = frame.locator('input[name="cardCvc"], input[autocomplete="cc-csc"]');
+            if (await cvc.count()) await cvc.first().fill('123');
+            return true;
+          }
+        }
+        return false;
+      };
+      if (!(await fillStripeCheckout())) {
+        throw new Error('Could not find Stripe card fields. url=' + page.url());
+      }
+      const cardholder = page.getByPlaceholder('Full name on card');
+      if (await cardholder.count()) await cardholder.fill('Persy Lopez');
+      const zip = page.getByPlaceholder('ZIP');
+      if (await zip.count()) await zip.fill('10001');
+      const emailField = page.getByPlaceholder('email@example.com');
+      if (await emailField.count()) {
+        await emailField.fill('persylopez9@gmail.com');
+      } else {
+        const email = page.getByLabel(/^email$/i).first();
+        if (await email.count()) await email.fill('persylopez9@gmail.com');
+      }
+      const linkSave = page.getByLabel('Save my information for faster checkout');
+      if (await linkSave.count() && await linkSave.isChecked()) await linkSave.uncheck();
+      const pay = page.locator('button').filter({ hasText: /Pay/i }).first();
+      await pay.waitFor({ state: 'visible', timeout: 15000 });
+      await pay.click({ timeout: 15000 });
+      let left = false;
+      try {
+        await page.waitForURL((u) => !/checkout\.stripe\.com/.test(u.href), { timeout: 45000 });
+        left = true;
+      } catch {
+        left = !/checkout\.stripe\.com/.test(page.url());
+      }
+      if (!left) {
+        const body = await page.locator('body').innerText();
+        if (!/error processing your request/i.test(body)) {
+          throw new Error('Still on Stripe Checkout: ' + body.slice(0, 220));
+        }
+      }
+    settle_ms: 800
+
+  - action: Visitor lands on appointment confirmation, not a 404
+    wait_for: { selector: '[data-testid="appointment-details"]', timeout: 25000 }
+    code: |
+      if (/Page Not Found/i.test(await page.locator('body').innerText())) {
+        throw new Error('Paid visitor landed on 404: ' + page.url());
+      }
+      const status = await page.getByTestId('appointment-status').innerText();
+      if (!/confirmed|paid/i.test(status)) {
+        throw new Error('Appointment not confirmed after pay: ' + status);
+      }
+
+  - action: Open cancel dialog
+    click: { testId: cancel-appointment-button }
+    settle_ms: 400
+    wait_for: { selector: '[data-testid="cancel-confirm-dialog"]', timeout: 8000 }
+
+  - action: Enter booking email to cancel
+    fill: { testId: cancel-email, value: "persylopez9@gmail.com", clear: true }
+
+  - action: Enter cancel reason
+    fill: { testId: cancellation-reason, value: "Testing visitor cancel on Studio Lopez", clear: true }
+
+  - action: Confirm cancellation
+    click: { testId: confirm-cancel-button }
+    settle_ms: 1500
+
+  - action: Appointment shows cancelled
+    wait_for: { selector: '[data-testid="cancellation-success"]', timeout: 15000 }
+    code: |
+      const status = await page.getByTestId('appointment-status').innerText();
+      if (!/cancelled/i.test(status)) {
+        throw new Error('Expected cancelled status, got: ' + status);
+      }
+      if (await page.getByTestId('cancel-error').count()) {
+        throw new Error('Cancel error: ' + await page.getByTestId('cancel-error').innerText());
+      }

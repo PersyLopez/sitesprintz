@@ -69,7 +69,7 @@ class BookingNotificationService {
         ? `Appointment Request Received - ${confirmation_code}`
         : `Appointment Confirmed - ${confirmation_code}`;
 
-      const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
+      const SITE_URL = process.env.SITE_URL || process.env.FRONTEND_URL || 'http://localhost:3000';
       const manageUrl = `${SITE_URL}/booking/appointment/${confirmation_code}`;
 
       const html = `
@@ -166,7 +166,8 @@ class BookingNotificationService {
 
       // Send email
       const service = await getEmailService();
-      const result = await service.sendEmail(customer_email, subject, html);
+      const send = service.sendHtmlEmail || service.sendEmail;
+      const result = await send(customer_email, subject, html);
 
       // Log notification
       await this.logNotification({
@@ -179,7 +180,7 @@ class BookingNotificationService {
         message: html,
         status: result.success ? 'sent' : 'failed',
         provider: 'resend',
-        provider_message_id: result.id || null,
+        provider_message_id: result.messageId || result.id || null,
         error_message: result.error || null,
       });
 
@@ -273,7 +274,8 @@ class BookingNotificationService {
 
       // Send email
       const service = await getEmailService();
-      const result = await service.sendEmail(customer_email, subject, html);
+      const send = service.sendHtmlEmail || service.sendEmail;
+      const result = await send(customer_email, subject, html);
 
       // Log notification
       await this.logNotification({
@@ -286,7 +288,7 @@ class BookingNotificationService {
         message: html,
         status: result.success ? 'sent' : 'failed',
         provider: 'resend',
-        provider_message_id: result.id || null,
+        provider_message_id: result.messageId || result.id || null,
         error_message: result.error || null,
       });
 
@@ -320,7 +322,7 @@ class BookingNotificationService {
 
       const subject = `Reminder: Appointment Tomorrow - ${service_name}`;
 
-      const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
+      const SITE_URL = process.env.SITE_URL || process.env.FRONTEND_URL || 'http://localhost:3000';
       const manageUrl = `${SITE_URL}/booking/appointment/${confirmation_code}`;
 
       const html = `
@@ -391,7 +393,8 @@ class BookingNotificationService {
 
       // Send email
       const service = await getEmailService();
-      const result = await service.sendEmail(customer_email, subject, html);
+      const send = service.sendHtmlEmail || service.sendEmail;
+      const result = await send(customer_email, subject, html);
 
       // Log notification
       await this.logNotification({
@@ -404,7 +407,7 @@ class BookingNotificationService {
         message: html,
         status: result.success ? 'sent' : 'failed',
         provider: 'resend',
-        provider_message_id: result.id || null,
+        provider_message_id: result.messageId || result.id || null,
         error_message: result.error || null,
       });
 
@@ -622,7 +625,7 @@ class BookingNotificationService {
       const datetime = this.formatDateTime(appointment.start_time, appointment.timezone);
       const subject = `Appointment Update: ${appointment.booking_services?.name || 'Your appointment'} is now ${newStatus}`;
 
-      const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
+      const SITE_URL = process.env.SITE_URL || process.env.FRONTEND_URL || 'http://localhost:3000';
       const manageUrl = `${SITE_URL}/track/appointment/${appointment.confirmation_code}`;
 
       const html = `

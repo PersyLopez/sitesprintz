@@ -17,6 +17,7 @@ if (process.env.NODE_ENV === 'test' || process.env.USE_MOCK_EMAIL === 'true') {
 }
 
 export const sendEmail = emailService.sendEmail || emailService.default?.sendEmail;
+export const sendHtmlEmail = emailService.sendHtmlEmail || emailService.default?.sendHtmlEmail;
 export const EmailTypes = emailService.EmailTypes;
 export const sendAdminNotification = emailService.sendAdminNotification;
 

@@ -795,6 +795,36 @@ export async function sendEmail(to, templateName, templateData = {}) {
   }
 }
 
+/** Send already-rendered HTML (booking confirmation/cancellation). */
+export async function sendHtmlEmail(to, subject, html) {
+  const resendInstance = getResend();
+
+  if (!resendInstance) {
+    console.warn('⚠️ RESEND_API_KEY not set. Email would be sent to:', to);
+    return { success: false, error: 'Email service not configured' };
+  }
+
+  try {
+    const { data, error } = await resendInstance.emails.send({
+      from: FROM_EMAIL,
+      to: [to],
+      subject,
+      html,
+    });
+
+    if (error) {
+      console.error('❌ Email send error:', error);
+      return { success: false, error: error.message };
+    }
+
+    console.log('✅ Email sent successfully:', data.id);
+    return { success: true, messageId: data.id, id: data.id };
+  } catch (error) {
+    console.error('❌ Email error:', error);
+    return { success: false, error: error.message };
+  }
+}
+
 // Available email types
 export const EmailTypes = {
   WELCOME: 'welcome',

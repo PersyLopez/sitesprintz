@@ -474,8 +474,14 @@ class BookingPaymentAdapter {
    * Send payment confirmation email
    */
   async sendPaymentConfirmationEmail(appointment) {
-    // This would integrate with existing email service
-    console.log(`[BookingPaymentAdapter] Payment confirmation email for ${appointment.customer_email}`);
+    try {
+      const AppointmentService = (await import('./AppointmentService.js')).default;
+      const BookingNotificationService = (await import('../bookingNotificationService.js')).default;
+      const appointmentService = new AppointmentService(null, new BookingNotificationService());
+      await appointmentService.sendConfirmationEmail(appointment);
+    } catch (error) {
+      console.error('[BookingPaymentAdapter] Error sending payment confirmation email:', error);
+    }
   }
 
   /**

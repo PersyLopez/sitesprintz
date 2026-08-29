@@ -13,6 +13,8 @@ const AppointmentPage = () => {
     const [error, setError] = useState(null);
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
+    const [cancelEmail, setCancelEmail] = useState('');
+    const [cancelError, setCancelError] = useState('');
     const [cancelLoading, setCancelLoading] = useState(false);
 
     useEffect(() => {
@@ -29,6 +31,9 @@ const AppointmentPage = () => {
                 }
             }
             await fetchAppointment();
+            if (searchParams.get('action') === 'cancel') {
+                setShowCancelModal(true);
+            }
         };
         run();
     }, [confirmationCode, searchParams]);
@@ -50,31 +55,24 @@ const AppointmentPage = () => {
     };
 
     const handleCancel = async () => {
-        if (!cancelReason.trim()) return;
+        if (!cancelReason.trim() || !cancelEmail.trim()) return;
 
         try {
             setCancelLoading(true);
-            // Use the tenant ID from the loaded appointment to call the tenant-scoped cancel endpoint
-            // OR use a global cancel endpoint if available.
-            // Let's assume we can use the tenant-scoped one if we have the tenant ID (which we should get from the appointment details)
-            // But wait, the API requires userId (integer) in the URL: /api/booking/tenants/:userId/appointments/:identifier
-            // The appointment object might have tenant_id (UUID) but maybe not the user_id (integer).
-            // We might need the global endpoint to handle cancellation too, or return the user_id.
-
-            // For now, let's assume the global endpoint supports DELETE too.
+            setCancelError('');
             await del(`/api/booking/appointments/${confirmationCode}`, {
                 body: JSON.stringify({
                     reason: cancelReason,
-                    cancelled_by: 'customer'
+                    cancelled_by: 'customer',
+                    customer_email: cancelEmail.trim(),
                 })
             });
 
-            // Refresh
-            fetchAppointment();
+            await fetchAppointment();
             setShowCancelModal(false);
         } catch (err) {
             console.error('Error cancelling appointment:', err);
-            alert('Failed to cancel appointment');
+            setCancelError(err.message || 'Failed to cancel appointment');
         } finally {
             setCancelLoading(false);
         }
@@ -149,7 +147,19 @@ const AppointmentPage = () => {
                 <div data-testid="cancel-confirm-dialog" className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-lg p-6 max-w-md w-full">
                         <h3 className="text-xl font-bold mb-4">Cancel Appointment</h3>
-                        <p className="mb-4">Are you sure you want to cancel? Please provide a reason.</p>
+                        <p className="mb-4">Confirm with the email used to book, and a short reason.</p>
+
+                        <label htmlFor="cancel-email" className="block font-semibold mb-1">Email used to book</label>
+                        <input
+                            id="cancel-email"
+                            data-testid="cancel-email"
+                            type="email"
+                            autoComplete="email"
+                            value={cancelEmail}
+                            onChange={(e) => setCancelEmail(e.target.value)}
+                            className="w-full border rounded p-2 mb-4"
+                            placeholder="you@example.com"
+                        />
 
                         <textarea
                             data-testid="cancellation-reason"
@@ -159,6 +169,10 @@ const AppointmentPage = () => {
                             placeholder="Reason for cancellation..."
                             rows={3}
                         />
+
+                        {cancelError && (
+                            <p data-testid="cancel-error" className="text-red-600 mb-4">{cancelError}</p>
+                        )}
 
                         <div className="flex justify-end gap-3">
                             <button
@@ -170,7 +184,7 @@ const AppointmentPage = () => {
                             <button
                                 data-testid="confirm-cancel-button"
                                 onClick={handleCancel}
-                                disabled={cancelLoading}
+                                disabled={cancelLoading || !cancelReason.trim() || !cancelEmail.trim()}
                                 className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
                             >
                                 {cancelLoading ? 'Cancelling...' : 'Confirm Cancellation'}

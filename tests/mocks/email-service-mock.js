@@ -17,6 +17,7 @@ export class MockEmailService {
         this.sendBookingConfirmation = this.sendBookingConfirmation.bind(this);
         this.getLastEmail = this.getLastEmail.bind(this);
         this.sendAdminNotification = this.sendAdminNotification.bind(this);
+        this.sendHtmlEmail = this.sendHtmlEmail.bind(this);
     }
 
     async sendEmail({ to, subject, html, text }) {
@@ -34,6 +35,10 @@ export class MockEmailService {
             success: true,
             messageId: `mock-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
         };
+    }
+
+    async sendHtmlEmail(to, subject, html) {
+        return this.sendEmail({ to, subject, html });
     }
 
     async sendWelcomeEmail(email, name) {
