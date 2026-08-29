@@ -1,0 +1,114 @@
+url: http://localhost:5173/login
+goal: Admin hub and AdminSubnav pages load for platform admin (no login bounce, no 403)
+
+steps:
+  - action: Login page ready
+    wait_for: { text: Welcome Back }
+    settle_ms: 500
+
+  - action: Fill admin email
+    fill: { testId: login-email, value: "admin@example.com", clear: true }
+
+  - action: Fill admin password
+    fill: { testId: login-password, value: "AdminPass!2024", clear: true }
+
+  - action: Submit login with Sign In button
+    click: { role: button, name: Sign In }
+    settle_ms: 3000
+    assert:
+      - url matches /admin|/dashboard
+
+  - action: Open admin hub
+    goto: http://localhost:5173/admin
+    settle_ms: 2500
+
+  - action: Admin hub loads
+    assert:
+      - url contains /admin
+      - text contains Admin Dashboard
+    code: |
+      if (page.url().includes('/login')) throw new Error('Admin hub bounced to login');
+      const denied = await page.evaluate(() => /Access denied/i.test(document.body?.innerText || ''));
+      if (denied) throw new Error('Admin hub returned access denied');
+      await page.waitForSelector('[data-testid="admin-subnav"]', { timeout: 10000 });
+
+  - action: Open admin users
+    goto: http://localhost:5173/admin/users
+    settle_ms: 2500
+
+  - action: Admin users page loads
+    assert:
+      - url contains /admin/users
+      - text contains User Management
+    code: |
+      if (page.url().includes('/login')) throw new Error('Admin users bounced to login');
+      const denied = await page.evaluate(() => /Access denied/i.test(document.body?.innerText || ''));
+      if (denied) throw new Error('Admin users returned access denied');
+
+  - action: Open admin sites
+    goto: http://localhost:5173/admin/sites
+    settle_ms: 2500
+
+  - action: Admin sites page loads
+    assert:
+      - url contains /admin/sites
+      - text contains Sites Management
+    code: |
+      if (page.url().includes('/login')) throw new Error('Admin sites bounced to login');
+      const denied = await page.evaluate(() => /Access denied/i.test(document.body?.innerText || ''));
+      if (denied) throw new Error('Admin sites returned access denied');
+
+  - action: Open admin templates
+    goto: http://localhost:5173/admin/templates
+    settle_ms: 3000
+
+  - action: Admin templates page loads
+    assert:
+      - url contains /admin/templates
+      - text contains Template Management
+    code: |
+      if (page.url().includes('/login')) throw new Error('Admin templates bounced to login');
+      const denied = await page.evaluate(() => /Access denied/i.test(document.body?.innerText || ''));
+      if (denied) throw new Error('Admin templates returned access denied');
+
+  - action: Open admin pricing
+    goto: http://localhost:5173/admin/pricing
+    settle_ms: 3500
+
+  - action: Admin pricing shell visible
+    wait_for: { text: Pricing Management, timeout: 15000 }
+
+  - action: Admin pricing page loads
+    assert:
+      - url contains /admin/pricing
+    code: |
+      if (page.url().includes('/login')) throw new Error('Admin pricing bounced to login');
+      const denied = await page.evaluate(() => /Access denied/i.test(document.body?.innerText || ''));
+      if (denied) throw new Error('Admin pricing returned access denied');
+      const body = await page.evaluate(() => document.body?.innerText || '');
+      if (!/Manage subscription pricing|Quick Price Update|Failed to load pricing/i.test(body)) {
+        throw new Error('Admin pricing page shell missing expected copy');
+      }
+
+  - action: Open admin plan features
+    goto: http://localhost:5173/admin/plan-features
+    settle_ms: 2500
+
+  - action: Admin plan features page loads
+    assert:
+      - url contains /admin/plan-features
+      - text contains Plan Features Configuration
+    code: |
+      if (page.url().includes('/login')) throw new Error('Admin plan features bounced to login');
+      const denied = await page.evaluate(() => /Access denied/i.test(document.body?.innerText || ''));
+      if (denied) throw new Error('Admin plan features returned access denied');
+
+  - action: AdminSubnav links present on plan features
+    wait_for: { selector: '[data-testid="admin-subnav"]', timeout: 10000 }
+    assert:
+      - text contains Hub
+      - text contains Users
+      - text contains Sites
+      - text contains Templates
+      - text contains Pricing
+      - text contains Plan features

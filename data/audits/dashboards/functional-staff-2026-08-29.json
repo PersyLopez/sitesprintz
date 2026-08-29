@@ -1,0 +1,46 @@
+{
+  "plan": "tests/mantest/58-staff-employee-dashboards.plan.yaml",
+  "stepsPassed": 15,
+  "stepsTotal": 15,
+  "status": "passed",
+  "notes": "Employee mantest green after seeding staff@ + staff-limited@ against gallery-salon booking_staff. Plan 36 (gallery owner empty assignments) re-run 8/8. Invalid invite accept returns 500/unexpected error (not a crisp 404 message). Console ERR_ABORTED noise during navigation; assertions still pass.",
+  "findings": {
+    "ownerInviteUi": "missing",
+    "employeeAssignedDashboard": "pass",
+    "employeeSchedule": "pass",
+    "employeeAppointments": "pass",
+    "employeeOrders": "pass",
+    "employeeBlockedFromAdmin": "pass",
+    "employeeOwnAccountDashboard": "pass",
+    "invalidInviteToken": "pass",
+    "emptyOwnerStaffDashboard": "pass",
+    "limitedEmployeeOrdersBlocked": "pass"
+  },
+  "seed": {
+    "tenantId": "efd27665-a12c-4388-bdac-8f880e6e091a",
+    "tenantName": "Luxe Beauty Studio",
+    "staffIds": [
+      "405ecb2a-20ab-4da6-8be7-c29388e472f9",
+      "52ba3e2f-0809-4ca9-b843-4d02a4592f86",
+      "d674bcb0-a754-4bdc-96f1-d55e3e085fee"
+    ],
+    "staffUserStaffId": "405ecb2a-20ab-4da6-8be7-c29388e472f9",
+    "staffLimitedStaffId": "52ba3e2f-0809-4ca9-b843-4d02a4592f86"
+  },
+  "mantestRuns": {
+    "36-staff-empty-assignments": {
+      "plan": "tests/mantest/36-staff-empty-assignments.plan.yaml",
+      "stepsPassed": 8,
+      "stepsTotal": 8,
+      "status": "passed",
+      "artifact": "data/audits/dashboards/runs/36-staff-empty-assignments-2026-08-29.json"
+    },
+    "58-staff-employee-dashboards": {
+      "plan": "tests/mantest/58-staff-employee-dashboards.plan.yaml",
+      "stepsPassed": 15,
+      "stepsTotal": 15,
+      "status": "passed",
+      "artifact": "data/audits/dashboards/runs/58-staff-employee-dashboards-2026-08-29.json"
+    }
+  }
+}

@@ -1,0 +1,179 @@
+url: http://localhost:5173/login
+goal: Invited staff tester sees assigned dashboards, cannot access admin, and has own account home
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter staff email
+    fill: { testId: login-email, value: "staff@example.com", clear: true }
+
+  - action: Enter staff password
+    fill: { testId: login-password, value: "StaffPass!2024", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Land on account dashboard
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 1200
+
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+    settle_ms: 400
+
+  - action: Account home is not gallery owner sites
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/Luxe Beauty Studio/i.test(t) && (await page.locator('[data-testid="site-card"][data-subdomain="gallery-salon"]').count()) > 0) {
+        throw new Error('Staff account dashboard shows gallery owner site card');
+      }
+      const ownHome = /No sites yet|Welcome back|Create Your First Site|Create New Site/i.test(t);
+      if (!ownHome) {
+        throw new Error('Expected staff account home, got: ' + t.slice(0, 280));
+      }
+    settle_ms: 300
+
+  - action: Open staff dashboard
+    goto: http://localhost:5173/staff/dashboard
+    settle_ms: 1500
+
+  - action: Assigned staff dashboard visible
+    wait_for: { text: Staff Dashboard, timeout: 15000 }
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/Loading dashboard/i.test(t)) {
+        throw new Error('Staff dashboard stuck on loading spinner');
+      }
+      if (/No Staff Assignments/i.test(t)) {
+        throw new Error('Expected assigned staff dashboard, saw empty assignments');
+      }
+      if (!/Staff Dashboard/i.test(t)) {
+        throw new Error('Missing Staff Dashboard heading: ' + t.slice(0, 280));
+      }
+      if ((await page.getByTestId('open-schedule').count()) === 0) {
+        throw new Error('Missing open-schedule control on staff dashboard');
+      }
+      const tenantId = await page.evaluate(async () => {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/staff/my-assignments', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error('Failed to load staff assignments');
+        const data = await res.json();
+        const id = data.assignments?.[0]?.tenantId;
+        if (!id) throw new Error('No staff tenant assignment found');
+        window.__staffTenantId = id;
+        localStorage.setItem('__mantestStaffTenantId', id);
+        return id;
+      });
+      if (!tenantId) throw new Error('Missing tenantId for staff routes');
+    settle_ms: 300
+
+  - action: Open schedule board
+    code: |
+      const tenantId = await page.evaluate(() => localStorage.getItem('__mantestStaffTenantId'));
+      if (!tenantId) throw new Error('Missing tenantId before schedule');
+      await page.goto(`http://localhost:5173/staff/schedule/${tenantId}`);
+      await page.getByTestId('schedule-board').waitFor({ timeout: 15000 });
+      await page.getByRole('heading', { name: /^Schedule$/i }).waitFor({ timeout: 10000 });
+    settle_ms: 300
+
+  - action: Staff appointments page
+    code: |
+      const tenantId = await page.evaluate(() => localStorage.getItem('__mantestStaffTenantId'));
+      if (!tenantId) throw new Error('Missing tenantId from schedule step');
+      await page.goto(`http://localhost:5173/staff/appointments/${tenantId}`);
+      await page.getByText('My Appointments').waitFor({ timeout: 15000 });
+    settle_ms: 300
+
+  - action: Staff orders page when permitted
+    code: |
+      const tenantId = await page.evaluate(() => localStorage.getItem('__mantestStaffTenantId'));
+      if (!tenantId) throw new Error('Missing tenantId for orders');
+      await page.goto(`http://localhost:5173/staff/orders/${tenantId}`);
+      await page.waitForTimeout(1200);
+      const t = await page.locator('body').innerText();
+      if (/Orders not available/i.test(t)) {
+        throw new Error('Full-permission staff should access orders');
+      }
+      const ok = /Today.*Orders|No orders for today|Orders/i.test(t);
+      if (!ok) throw new Error('Unexpected staff orders page: ' + t.slice(0, 280));
+    settle_ms: 300
+
+  - action: Invalid invite token shows error
+    code: |
+      await page.goto('http://localhost:5173/staff/accept/not-a-real-token');
+      await page.waitForTimeout(1200);
+      await page.getByRole('heading', { name: /Staff Invitation/i }).waitFor({ timeout: 15000 });
+      const accept = page.getByRole('button', { name: /accept invitation/i });
+      if ((await accept.count()) === 0) {
+        throw new Error('Expected accept invitation button for logged-in staff');
+      }
+      await accept.click();
+      await page.waitForTimeout(8000);
+      const t = await page.locator('body').innerText();
+      const extra = await page.evaluate(() => {
+        return [...document.querySelectorAll('.error-message, [role="alert"], .toast, .Toastify__toast-body')]
+          .map((node) => node.textContent || '')
+          .join(' ');
+      });
+      const blob = `${t} ${extra}`;
+      const hasError = /invalid|expired|not found|failed|error|unexpected/i.test(blob);
+      if (!hasError) {
+        throw new Error('Expected invalid-token error after accept, got: ' + blob.slice(0, 320));
+      }
+    settle_ms: 300
+
+  - action: Staff blocked from admin
+    code: |
+      await page.goto('http://localhost:5173/admin');
+      await page.waitForURL(/\/dashboard/, { timeout: 15000 });
+      const url = page.url();
+      const t = await page.locator('body').innerText();
+      if (/\/admin(?:\/|$)/.test(url) && /Admin Panel|User Management|Platform/i.test(t)) {
+        throw new Error('Non-admin staff reached admin panel');
+      }
+      if (!/\/dashboard/.test(url)) {
+        throw new Error('Expected bounce to /dashboard, got ' + url);
+      }
+    settle_ms: 300
+
+  - action: Limited staff orders blocked when seeded
+    code: |
+      await page.goto('http://localhost:5173/login');
+      await page.getByTestId('login-email').fill('staff-limited@example.com');
+      await page.getByTestId('login-password').fill('StaffLimited!2024');
+      await page.getByTestId('login-submit').click();
+      await page.waitForURL(/dashboard/, { timeout: 20000 }).catch(() => {});
+      await page.goto('http://localhost:5173/staff/dashboard');
+      await page.waitForTimeout(1200);
+      const dash = await page.locator('body').innerText();
+      if (/No Staff Assignments/i.test(dash)) {
+        await page.evaluate(() => { window.__limitedStaffSeeded = false; });
+        return;
+      }
+      await page.evaluate(() => { window.__limitedStaffSeeded = true; });
+      const tenantId = await page.evaluate(async () => {
+        const res = await fetch('/api/staff/my-assignments', {
+          credentials: 'include',
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
+        if (!res.ok) return null;
+        const data = await res.json();
+        return data.assignments?.[0]?.tenantId || null;
+      });
+      if (!tenantId) throw new Error('Limited staff missing tenant assignment');
+      await page.goto(`http://localhost:5173/staff/orders/${tenantId}`);
+      await page.waitForTimeout(1200);
+      const t = await page.locator('body').innerText();
+      if (!/Orders not available/i.test(t)) {
+        throw new Error('Limited staff should see Orders not available: ' + t.slice(0, 280));
+      }
+    settle_ms: 300

@@ -54,6 +54,18 @@ export const TEST_USERS = {
     password: 'GalleryDemo123!',
     role: 'user',
     plan: 'growth'
+  },
+  STAFF: {
+    email: 'staff@example.com',
+    password: 'StaffPass!2024',
+    role: 'user',
+    plan: 'starter'
+  },
+  STAFF_LIMITED: {
+    email: 'staff-limited@example.com',
+    password: 'StaffLimited!2024',
+    role: 'user',
+    plan: 'starter'
   }
 };
 
@@ -70,7 +82,7 @@ export function generateTestEmail(prefix = 'test') {
 
 /**
  * Get credentials for a specific user type
- * @param {'ADMIN' | 'PRO_USER' | 'FREE_USER' | 'GROWTH_USER' | 'STARTER_USER' | 'GALLERY'} userType 
+ * @param {'ADMIN' | 'PRO_USER' | 'FREE_USER' | 'GROWTH_USER' | 'STARTER_USER' | 'GALLERY' | 'STAFF' | 'STAFF_LIMITED'} userType 
  * @returns {object} User credentials
  */
 export function getTestUser(userType) {

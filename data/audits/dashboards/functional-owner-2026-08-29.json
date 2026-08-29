@@ -1,0 +1,110 @@
+{
+  "auditedAt": "2026-08-29T18:50:00.000Z",
+  "scope": "owner + admin dashboards",
+  "app": "http://localhost:5173",
+  "plans": [
+    {
+      "plan": "05-login-dashboard-setup",
+      "stepsPassed": 22,
+      "stepsTotal": 22,
+      "status": "pass",
+      "notes": ""
+    },
+    {
+      "plan": "11-products-ui",
+      "stepsPassed": 11,
+      "stepsTotal": 11,
+      "status": "pass",
+      "notes": ""
+    },
+    {
+      "plan": "12-analytics-orders-local",
+      "stepsPassed": 8,
+      "stepsTotal": 10,
+      "status": "fail",
+      "notes": "Stale copy: plan waits for H1 \"Analytics Dashboard\" (page is \"Analytics\") and \"No Site Selected\"; neighbor 33-workspace-analytics passes 13/13"
+    },
+    {
+      "plan": "19-main-authenticated-shell",
+      "stepsPassed": 22,
+      "stepsTotal": 22,
+      "status": "pass",
+      "notes": ""
+    },
+    {
+      "plan": "21-feature-growth-shell",
+      "stepsPassed": 16,
+      "stepsTotal": 16,
+      "status": "pass",
+      "notes": ""
+    },
+    {
+      "plan": "22-feature-starter-gates",
+      "stepsPassed": 10,
+      "stepsTotal": 10,
+      "status": "pass",
+      "notes": ""
+    },
+    {
+      "plan": "27-gallery-owner-site-dashboards",
+      "stepsPassed": 20,
+      "stepsTotal": 20,
+      "status": "pass",
+      "notes": ""
+    },
+    {
+      "plan": "29-owner-solo-path",
+      "stepsPassed": 25,
+      "stepsTotal": 25,
+      "status": "pass",
+      "notes": ""
+    },
+    {
+      "plan": "30-owner-multistaff-path",
+      "stepsPassed": 26,
+      "stepsTotal": 26,
+      "status": "pass",
+      "notes": ""
+    },
+    {
+      "plan": "33-workspace-analytics",
+      "stepsPassed": 13,
+      "stepsTotal": 13,
+      "status": "pass",
+      "notes": ""
+    },
+    {
+      "plan": "34-workspace-orders-status",
+      "stepsPassed": 13,
+      "stepsTotal": 13,
+      "status": "pass",
+      "notes": ""
+    },
+    {
+      "plan": "admin-flow",
+      "stepsPassed": 5,
+      "stepsTotal": 5,
+      "status": "pass",
+      "notes": ""
+    },
+    {
+      "plan": "admin-candidates",
+      "stepsPassed": 13,
+      "stepsTotal": 13,
+      "status": "pass",
+      "notes": ""
+    },
+    {
+      "plan": "57-admin-dashboard-pages",
+      "stepsPassed": 18,
+      "stepsTotal": 18,
+      "status": "pass",
+      "notes": "Admin hub + subnav routes load; pricing API may 500 but shell renders"
+    }
+  ],
+  "summary": {
+    "total": 14,
+    "passed": 13,
+    "failed": 1
+  }
+}
