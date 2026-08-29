@@ -80,10 +80,12 @@ export function sectionListHasNativeBooking(sections) {
   });
 }
 
-export function withNativeBookingTokens(tokens, sections) {
+export function withNativeBookingTokens(tokens, sections, siteData) {
+  const hasNativeSection = sectionListHasNativeBooking(sections);
+  const schedulingOn = !siteData || siteData._features?.booking?.enabled !== false;
   return {
     ...(tokens || DEFAULT_TOKENS),
-    _nativeBooking: sectionListHasNativeBooking(sections),
+    _nativeBooking: hasNativeSection && schedulingOn,
   };
 }
 
@@ -1085,7 +1087,7 @@ export function renderPageToHtml(page = {}, tokens) {
   const muted = brand.muted || t.muted;
 
   const enabled = sections.filter((s) => s && s.enabled !== false);
-  const renderTokens = withNativeBookingTokens(tokens || DEFAULT_TOKENS, enabled);
+  const renderTokens = withNativeBookingTokens(tokens || DEFAULT_TOKENS, enabled, page.siteData);
   const sectionsHtml = enabled
     .map((section) => renderSectionToHtml(section, renderTokens))
     .filter(Boolean)

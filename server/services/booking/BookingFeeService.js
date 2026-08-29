@@ -9,6 +9,37 @@
 
 import { prisma } from '../../../database/db.js';
 import { differenceInHours } from 'date-fns';
+import { parseSiteData } from '../../utils/parseSiteData.js';
+import { siteFeesEnabled } from '../../../src/utils/visitorExperience.js';
+
+function unpackFeePolicies(raw) {
+  if (raw == null || raw === '') {
+    return { cancellationPolicy: null, noShowPolicy: null, bookingFeePolicy: null };
+  }
+  let parsed = raw;
+  if (typeof raw === 'string') {
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return { cancellationPolicy: raw, noShowPolicy: null, bookingFeePolicy: null };
+    }
+  }
+  if (parsed && typeof parsed === 'object' && 'cancellationPolicy' in parsed) {
+    return {
+      cancellationPolicy: parsed.cancellationPolicy ?? null,
+      noShowPolicy: parsed.noShowPolicy ?? null,
+      bookingFeePolicy: parsed.bookingFeePolicy ?? null,
+    };
+  }
+  return { cancellationPolicy: parsed, noShowPolicy: null, bookingFeePolicy: null };
+}
+
+function packFeePolicies(existingRaw, patch) {
+  return JSON.stringify({
+    ...unpackFeePolicies(existingRaw),
+    ...patch,
+  });
+}
 
 class BookingFeeService {
   /**
@@ -28,14 +59,23 @@ class BookingFeeService {
         throw new Error(`Appointment ${appointmentId} not found`);
       }
 
+      const tenant = appointment.booking_tenants;
+      let feesGloballyEnabled = true;
+      if (tenant?.site_id) {
+        const site = await prisma.sites.findUnique({
+          where: { id: tenant.site_id },
+          select: { site_data: true },
+        });
+        feesGloballyEnabled = siteFeesEnabled(parseSiteData(site?.site_data));
+      }
+
       const service = appointment.booking_services;
       const servicePriceCents = service.price * 100 || 0;
 
       // Calculate booking fee
-      const bookingFeeCents = this.calculateBookingFee(
-        servicePriceCents,
-        service.booking_fee_policy
-      );
+      const bookingFeeCents = feesGloballyEnabled
+        ? this.calculateBookingFee(servicePriceCents, service.booking_fee_policy)
+        : 0;
 
       // Total payable at booking
       const totalPayableCents = servicePriceCents + bookingFeeCents;
@@ -244,10 +284,16 @@ class BookingFeeService {
    */
   async updateCancellationPolicy(serviceId, policy) {
     try {
+      const current = await prisma.booking_services.findUnique({
+        where: { id: serviceId },
+        select: { cancellation_policy: true },
+      });
       await prisma.booking_services.update({
         where: { id: serviceId },
         data: {
-          cancellation_policy: policy
+          cancellation_policy: packFeePolicies(current?.cancellation_policy, {
+            cancellationPolicy: policy,
+          }),
         }
       });
 
@@ -267,10 +313,16 @@ class BookingFeeService {
    */
   async updateNoShowPolicy(serviceId, policy) {
     try {
+      const current = await prisma.booking_services.findUnique({
+        where: { id: serviceId },
+        select: { cancellation_policy: true },
+      });
       await prisma.booking_services.update({
         where: { id: serviceId },
         data: {
-          no_show_policy: policy
+          cancellation_policy: packFeePolicies(current?.cancellation_policy, {
+            noShowPolicy: policy,
+          }),
         }
       });
 
@@ -290,10 +342,16 @@ class BookingFeeService {
    */
   async updateBookingFeePolicy(serviceId, policy) {
     try {
+      const current = await prisma.booking_services.findUnique({
+        where: { id: serviceId },
+        select: { cancellation_policy: true },
+      });
       await prisma.booking_services.update({
         where: { id: serviceId },
         data: {
-          booking_fee_policy: policy
+          cancellation_policy: packFeePolicies(current?.cancellation_policy, {
+            bookingFeePolicy: policy,
+          }),
         }
       });
 
@@ -317,16 +375,15 @@ class BookingFeeService {
         where: { id: serviceId },
         select: {
           cancellation_policy: true,
-          no_show_policy: true,
-          booking_fee_policy: true
         }
       });
 
+      const unpacked = unpackFeePolicies(service?.cancellation_policy);
       return {
         serviceId,
-        cancellationPolicy: service?.cancellation_policy,
-        noShowPolicy: service?.no_show_policy,
-        bookingFeePolicy: service?.booking_fee_policy
+        cancellationPolicy: unpacked.cancellationPolicy,
+        noShowPolicy: unpacked.noShowPolicy,
+        bookingFeePolicy: unpacked.bookingFeePolicy,
       };
     } catch (error) {
       console.error('[BookingFeeService] Error getting policies:', error);

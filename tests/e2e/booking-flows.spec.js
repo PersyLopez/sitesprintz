@@ -141,50 +141,39 @@ test.describe('Booking Flows - Solo vs Team', () => {
     });
   });
 
-  test.describe('Booking Dashboard Phase 2 UI', () => {
+  test.describe('Booking Dashboard settings UI', () => {
     
-    test('booking dashboard has phase 2 settings tab', async ({ page }) => {
-      // Test that the booking dashboard includes Phase 2 settings
-      
+    test('booking dashboard has settings tab', async ({ page }) => {
       await page.goto(`${baseURL}/booking-dashboard`, { waitUntil: 'networkidle' }).catch(() => {
         // Dashboard might not be accessible without auth
       });
       
-      const phase2Tab = page.locator('[data-testid="phase2-tab"], button:has-text("Phase 2")');
+      const settingsTab = page.locator('[data-testid="settings-tab"], button:has-text("Settings")');
       
-      // If dashboard loads, phase 2 tab should exist
-      const exists = await phase2Tab.isVisible().catch(() => false);
+      const exists = await settingsTab.isVisible().catch(() => false);
       expect(exists || true).toBeTruthy();
     });
 
-    test('phase 2 settings panel has reminder configuration', async ({ page }) => {
-      // Test that phase 2 settings panel exists and has reminder controls
-      
-      // Try to navigate to phase 2 settings (may not be accessible without auth)
+    test('settings panel has intake switches', async ({ page }) => {
       await page.goto(`${baseURL}/booking-dashboard`, { waitUntil: 'networkidle' }).catch(() => {});
       
-      const phase2Panel = page.locator('[data-testid="phase2-settings-panel"]');
-      const remindersCheckbox = page.locator('[data-testid="reminders-enabled-checkbox"]');
+      const panel = page.locator('[data-testid="booking-intake-settings"]');
+      const schedulingSwitch = page.locator('[data-testid="scheduling-enabled-switch"]');
       
-      const panelExists = await phase2Panel.isVisible().catch(() => false);
-      const checkboxExists = await remindersCheckbox.isVisible().catch(() => false);
+      const panelExists = await panel.isVisible().catch(() => false);
+      const switchExists = await schedulingSwitch.isVisible().catch(() => false);
       
-      // Either panel/checkbox exists or page doesn't load (auth required)
-      expect(panelExists === false || checkboxExists || true).toBeTruthy();
+      expect(panelExists === false || switchExists || true).toBeTruthy();
     });
 
-    test('phase 2 settings can be saved', async ({ page }) => {
-      // Test that phase 2 settings can be saved (requires auth)
-      
-      const saveButton = page.locator('[data-testid="save-phase2-settings-btn"]');
+    test('booking settings can be saved', async ({ page }) => {
+      const saveButton = page.locator('[data-testid="save-booking-settings-btn"]');
       
       const exists = await saveButton.isVisible().catch(() => false);
       
-      // If button exists, it should be clickable
       if (exists) {
         expect(await saveButton.isEnabled().catch(() => false) || true).toBeTruthy();
       } else {
-        // Button not visible - expected without auth
         expect(true).toBeTruthy();
       }
     });

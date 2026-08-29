@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { renderSectionToHtml, ALL_SECTION_TYPES } from '../../src/utils/sectionHtmlBridge';
+import { renderSectionToHtml, ALL_SECTION_TYPES, withNativeBookingTokens } from '../../src/utils/sectionHtmlBridge';
 import { buildLiveSiteMarkup } from '../../src/utils/publishedSiteDocument';
 
 // Minimal tokens for testing
@@ -93,6 +93,14 @@ describe('sectionHtmlBridge', () => {
     const html = renderSectionToHtml(makeSection('services'), tokens);
     expect(html).toContain('id="services"');
     expect(html).not.toContain('data-ss-book-service');
+  });
+
+  it('withNativeBookingTokens respects scheduling flag in site data', () => {
+    const sections = [{ type: 'booking', enabled: true, content: { enabled: true, provider: 'native' } }];
+    const on = withNativeBookingTokens(tokens, sections, { _features: { booking: { enabled: true } } });
+    const off = withNativeBookingTokens(tokens, sections, { _features: { booking: { enabled: false } } });
+    expect(on._nativeBooking).toBe(true);
+    expect(off._nativeBooking).toBe(false);
   });
 
   it('uses tokens for inline styles on non-delegated types', () => {
@@ -590,6 +598,28 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
       ],
     });
     expect(html).toContain('unsplash.com');
+  });
+
+  it('keeps Unsplash when gallery seed set settings.demoMode', () => {
+    const { html } = buildLiveSiteMarkup({
+      businessName: 'Demo Salon',
+      settings: { demoMode: true },
+      _layout: 'atelier',
+      _niche: 'salon',
+      _level: 'solo',
+      sections: [
+        {
+          type: 'hero',
+          enabled: true,
+          content: {
+            title: 'Demo Salon',
+            image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200',
+          },
+        },
+      ],
+    });
+    expect(html).toContain('https://images.unsplash.com/photo-1560066984-138dadb4c035');
+    expect(html).toContain('class="ss-hero-photo"');
   });
 });
 

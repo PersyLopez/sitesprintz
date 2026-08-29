@@ -533,7 +533,7 @@ export function buildLiveSiteMarkup(siteData, options = {}) {
 
   const enabledSections = (page.sections || [])
     .filter((section) => section && section.enabled !== false && !isEmptyOptional(section));
-  const renderTokens = withNativeBookingTokens(page.tokens, enabledSections);
+  const renderTokens = withNativeBookingTokens(page.tokens, enabledSections, siteData);
 
   const sectionsHtml = enabledSections
     .map((section) => renderSectionToHtml(section, renderTokens))

@@ -154,17 +154,17 @@ steps:
         throw new Error('Schedule tab unexpected: ' + t.slice(0, 240));
       }
 
-  - action: Phase 2 reminder settings
+  - action: Booking settings
     code: |
-      const tab = page.getByTestId('phase2-tab');
-      if ((await tab.count()) === 0) throw new Error('Phase 2 tab missing');
+      const tab = page.getByTestId('settings-tab');
+      if ((await tab.count()) === 0) throw new Error('Settings tab missing');
       await tab.click({ timeout: 8000 });
-      await page.waitForSelector('[data-testid="phase2-settings-panel"]', { timeout: 10000 });
-      if ((await page.getByTestId('reminders-enabled-checkbox').count()) === 0) {
-        throw new Error('Reminders checkbox missing');
+      await page.waitForSelector('[data-testid="booking-intake-settings"]', { timeout: 10000 });
+      for (const id of ['scheduling-enabled-switch', 'urgent-enabled-switch', 'fees-enabled-switch', 'payment-enabled-switch']) {
+        if ((await page.getByTestId(id).count()) === 0) throw new Error('Missing switch ' + id);
       }
-      if ((await page.getByTestId('save-phase2-settings-btn').count()) === 0) {
-        throw new Error('Save phase 2 missing');
+      if ((await page.getByTestId('save-booking-settings-btn').count()) === 0) {
+        throw new Error('Save booking settings missing');
       }
 
   - action: Page builder for salon

@@ -259,11 +259,20 @@ describe('BookingDashboard Component - TDD', () => {
     });
   });
 
-  describe('Phase 2 settings', () => {
+  describe('Settings tab', () => {
     it('includes siteId when saving reminder and buffer settings', async () => {
       api.get.mockImplementation((url) => {
         if (url.includes('reminder-settings')) {
-          return Promise.resolve({ enabled: true, hoursBefore: 24 });
+          return Promise.resolve({
+            enabled: true,
+            hoursBefore: 24,
+            scheduling_enabled: true,
+            urgent_enabled: false,
+            fees_enabled: false,
+            payment_enabled: false,
+            default_payment_type: 'none',
+            default_deposit_percentage: 50,
+          });
         }
         if (url.includes('services')) {
           return Promise.resolve({ services: [{ id: 9, buffer_minutes_after: 15 }] });
@@ -288,16 +297,21 @@ describe('BookingDashboard Component - TDD', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByTestId('phase2-tab')).toBeInTheDocument();
+        expect(screen.getByTestId('settings-tab')).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByTestId('phase2-tab'));
-      fireEvent.click(screen.getByTestId('save-phase2-settings-btn'));
+      fireEvent.click(screen.getByTestId('settings-tab'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('save-booking-settings-btn')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByTestId('save-booking-settings-btn'));
 
       await waitFor(() => {
         expect(api.put).toHaveBeenCalledWith(
           `/api/booking/tenants/${mockUser.id}/reminder-settings`,
-          { enabled: true, hoursBefore: 24 },
+          expect.objectContaining({ enabled: true, hoursBefore: 24, scheduling_enabled: true }),
           { params: { siteId: 'site-1' } }
         );
         expect(api.put).toHaveBeenCalledWith(
@@ -327,7 +341,7 @@ describe('BookingDashboard Component - TDD', () => {
         const page = screen.getByTestId('booking-dashboard-page');
         expect(screen.getByTestId('appointments-tab')).toBeVisible();
         expect(screen.getByTestId('services-tab')).toBeVisible();
-        expect(screen.getByTestId('phase2-tab')).toBeVisible();
+        expect(screen.getByTestId('settings-tab')).toBeVisible();
         expect(screen.queryByTestId('calendar-board-tab')).not.toBeInTheDocument();
         expect(page.querySelector('.dashboard-tabs')).not.toBeInTheDocument();
         expect(page.querySelector('.pane-subnav')).toBeInTheDocument();

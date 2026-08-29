@@ -3,17 +3,18 @@ import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { usePlan } from '../hooks/usePlan';
 import { useSiteWorkspace } from '../context/SiteWorkspaceContext';
-import { get, put } from '../utils/api';
+import { get } from '../utils/api';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import ServiceManager from '../components/booking/ServiceManager';
 import AppointmentList from '../components/booking/AppointmentList';
 import AvailabilityScheduler from '../components/booking/AvailabilityScheduler';
+import BookingIntakeSettings from '../components/booking/BookingIntakeSettings';
 import './BookingDashboard.css';
 
 const BookingDashboard = () => {
   const { user } = useAuth();
-  const { showError, showSuccess } = useToast();
+  const { showError } = useToast();
   const { isAbove, isGrowth, isPro } = usePlan();
   const { embedded, siteId } = useSiteWorkspace();
   const siteQuery = siteId ? { siteId } : undefined;
@@ -29,12 +30,6 @@ const BookingDashboard = () => {
   });
   const [statsError, setStatsError] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [phase2Settings, setPhase2Settings] = useState({
-    reminders_enabled: true,
-    reminder_hours: 24,
-    buffer_minutes: 15
-  });
-  const [savingPhase2, setSavingPhase2] = useState(false);
 
   // Growth plan required for native booking
   const hasBookingAccess = (typeof isAbove === 'function' && isAbove('growth')) || Boolean(isGrowth || isPro);
@@ -47,7 +42,6 @@ const BookingDashboard = () => {
 
     if (user?.id) {
       fetchStats();
-      loadPhase2Settings();
     }
   }, [user, hasBookingAccess, siteId]);
 
@@ -103,66 +97,6 @@ const BookingDashboard = () => {
 
   const handleAddService = () => {
     setActiveTab('services');
-  };
-
-  const loadPhase2Settings = async () => {
-    if (!user?.id) return;
-    try {
-      const settings = await get(`/api/booking/tenants/${user.id}/reminder-settings`, { params: siteQuery });
-      const servicesRes = await get(`/api/booking/tenants/${user.id}/services`, { params: siteQuery });
-      const firstService = (servicesRes.services || [])[0];
-      setPhase2Settings({
-        reminders_enabled: settings.enabled ?? true,
-        reminder_hours: settings.hoursBefore ?? 24,
-        buffer_minutes: firstService?.buffer_minutes_after
-          ?? firstService?.buffer_minutes_before
-          ?? 15
-      });
-    } catch (error) {
-      console.error('Error loading Phase 2 settings:', error);
-    }
-  };
-
-  const savePhase2Settings = async () => {
-    if (!user?.id) return;
-    
-    try {
-      setSavingPhase2(true);
-      await put(
-        `/api/booking/tenants/${user.id}/reminder-settings`,
-        {
-          enabled: phase2Settings.reminders_enabled,
-          hoursBefore: phase2Settings.reminder_hours,
-        },
-        { params: siteQuery }
-      );
-
-      const servicesRes = await get(`/api/booking/tenants/${user.id}/services`, { params: siteQuery });
-      const services = servicesRes.services || [];
-      await Promise.all(
-        services.map((svc) =>
-          put(
-            `/api/booking/services/${svc.id}/buffer-settings`,
-            {
-              before: phase2Settings.buffer_minutes || 0,
-              after: phase2Settings.buffer_minutes || 0,
-            },
-            { params: siteQuery }
-          )
-        )
-      );
-
-      showSuccess('Settings saved successfully');
-    } catch (error) {
-      console.error('Error saving Phase 2 settings:', error);
-      showError(error.message || 'Error saving Phase 2 settings');
-    } finally {
-      setSavingPhase2(false);
-    }
-  };
-
-  const handlePhase2SettingChange = (field, value) => {
-    setPhase2Settings(prev => ({ ...prev, [field]: value }));
   };
 
   const formatCurrency = (cents) => {
@@ -332,12 +266,12 @@ const BookingDashboard = () => {
               <button
                 type="button"
                 role="tab"
-                data-testid="phase2-tab"
-                className={`tab ${activeTab === 'phase2' ? 'active' : ''}`}
-                aria-selected={activeTab === 'phase2'}
-                onClick={() => handleTabChange('phase2')}
+                data-testid="settings-tab"
+                className={`tab ${activeTab === 'settings' ? 'active' : ''}`}
+                aria-selected={activeTab === 'settings'}
+                onClick={() => handleTabChange('settings')}
               >
-                Phase 2 Settings
+                Settings
               </button>
             </div>
 
@@ -352,64 +286,8 @@ const BookingDashboard = () => {
               {activeTab === 'schedule' && (
                 <AvailabilityScheduler userId={user?.id} siteId={siteId} />
               )}
-              {activeTab === 'phase2' && (
-                <div className="phase2-settings-panel" data-testid="phase2-settings-panel">
-                  <h3>Reminders & Availability Buffer</h3>
-                  <p className="settings-intro">Configure phase 2 settings for your booking system.</p>
-
-                  <fieldset className="settings-fieldset">
-                    <legend>Appointment Reminders</legend>
-                    <label className="settings-label">
-                      <input
-                        type="checkbox"
-                        name="reminders_enabled"
-                        checked={phase2Settings.reminders_enabled}
-                        onChange={(e) => handlePhase2SettingChange('reminders_enabled', e.target.checked)}
-                        data-testid="reminders-enabled-checkbox"
-                      />
-                      <span>Enable automated reminders</span>
-                    </label>
-                    {phase2Settings.reminders_enabled && (
-                      <label className="settings-label with-input">
-                        <span>Hours before appointment:</span>
-                        <input
-                          type="number"
-                          name="reminder_hours"
-                          min="1"
-                          max="72"
-                          value={phase2Settings.reminder_hours}
-                          onChange={(e) => handlePhase2SettingChange('reminder_hours', parseInt(e.target.value))}
-                          data-testid="reminder-hours-input"
-                        />
-                      </label>
-                    )}
-                  </fieldset>
-
-                  <fieldset className="settings-fieldset">
-                    <legend>Buffer Time Between Appointments</legend>
-                    <label className="settings-label with-input">
-                      <span>Minutes (for setup/cleanup):</span>
-                      <input
-                        type="number"
-                        name="buffer_minutes"
-                        min="0"
-                        max="120"
-                        value={phase2Settings.buffer_minutes}
-                        onChange={(e) => handlePhase2SettingChange('buffer_minutes', parseInt(e.target.value))}
-                        data-testid="buffer-minutes-input"
-                      />
-                    </label>
-                  </fieldset>
-
-                  <button
-                    className="save-settings-btn"
-                    onClick={savePhase2Settings}
-                    disabled={savingPhase2}
-                    data-testid="save-phase2-settings-btn"
-                  >
-                    {savingPhase2 ? 'Saving...' : 'Save Settings'}
-                  </button>
-                </div>
+              {activeTab === 'settings' && (
+                <BookingIntakeSettings userId={user?.id} siteId={siteId} />
               )}
             </div>
           </>

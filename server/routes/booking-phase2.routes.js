@@ -19,6 +19,13 @@ import ReminderScheduler from '../services/booking/ReminderScheduler.js';
 import BufferTimeService from '../services/booking/BufferTimeService.js';
 import { availabilityService } from '../services/booking/AvailabilityServiceV2.js';
 import { sanitizeString } from '../utils/validators.js';
+import { parseSiteData } from '../utils/parseSiteData.js';
+import { resolveOwnedSiteId } from '../services/payments/processorConnectHelpers.js';
+import {
+  applyShopIntakeSiteFeatures,
+  buildShopIntakeSettings,
+  parseShopIntakePutBody,
+} from '../services/booking/shopIntakeFlags.js';
 
 const router = express.Router();
 const reminderScheduler = new ReminderScheduler();
@@ -62,6 +69,34 @@ async function assertServiceOwner(serviceId, userId, userRole) {
   return { ok: true, service };
 }
 
+function requestSiteId(req) {
+  const raw = req.query?.siteId || req.body?.site_id || req.body?.siteId || null;
+  if (!raw) return null;
+  return String(raw).slice(0, 255);
+}
+
+async function loadTenantSiteRecord(tenant, userId, siteIdHint) {
+  const resolvedSiteId = await resolveOwnedSiteId(userId, siteIdHint || tenant.site_id || null);
+  if (!resolvedSiteId) return { siteId: null, siteData: {} };
+
+  const site = await prisma.sites.findFirst({
+    where: { id: resolvedSiteId, user_id: userId },
+    select: { id: true, site_data: true },
+  });
+  if (!site) return { siteId: null, siteData: {} };
+  return { siteId: site.id, siteData: parseSiteData(site.site_data) };
+}
+
+async function persistSiteIntakeFeatures(siteId, siteData, siteUpdates) {
+  if (!siteId || !siteUpdates) return siteData;
+  const nextSiteData = applyShopIntakeSiteFeatures(siteData, siteUpdates);
+  await prisma.sites.update({
+    where: { id: siteId },
+    data: { site_data: nextSiteData },
+  });
+  return nextSiteData;
+}
+
 async function assertAppointmentOwner(appointmentId, userId, userRole) {
   const appt = await prisma.appointments.findUnique({
     where: { id: appointmentId },
@@ -91,8 +126,19 @@ router.get('/tenants/:tenantId/reminder-settings', requireAuth, asyncHandler(asy
       : sendForbidden(res, access.error, 'ACCESS_DENIED');
   }
 
-  const settings = await reminderScheduler.getReminderSettings(access.tenant.id);
-  sendSuccess(res, settings);
+  const tenant = await prisma.booking_tenants.findUnique({
+    where: { id: access.tenant.id },
+    select: {
+      booking_page_enabled: true,
+      payment_enabled: true,
+      default_payment_type: true,
+      default_deposit_percentage: true,
+      site_id: true,
+    },
+  });
+  const { siteData } = await loadTenantSiteRecord(tenant, userId, requestSiteId(req));
+  const reminderSettings = await reminderScheduler.getReminderSettings(access.tenant.id);
+  sendSuccess(res, buildShopIntakeSettings(reminderSettings, tenant, siteData));
 }));
 
 router.put('/tenants/:tenantId/reminder-settings', requireAuth, asyncHandler(async (req, res) => {
@@ -106,6 +152,7 @@ router.put('/tenants/:tenantId/reminder-settings', requireAuth, asyncHandler(asy
   }
 
   const { enabled, hoursBefore, template } = req.body;
+  const intake = parseShopIntakePutBody(req.body);
 
   if (typeof enabled !== 'undefined' && typeof enabled !== 'boolean') {
     return sendBadRequest(res, 'enabled must be boolean', 'INVALID_INPUT');
@@ -115,13 +162,65 @@ router.put('/tenants/:tenantId/reminder-settings', requireAuth, asyncHandler(asy
     return sendBadRequest(res, 'hoursBefore must be between 1 and 72', 'INVALID_INPUT');
   }
 
-  const updated = await reminderScheduler.updateReminderSettings(access.tenant.id, {
+  for (const [key, val] of [
+    ['scheduling_enabled', req.body.scheduling_enabled],
+    ['urgent_enabled', req.body.urgent_enabled],
+    ['fees_enabled', req.body.fees_enabled],
+    ['payment_enabled', req.body.payment_enabled],
+  ]) {
+    if (typeof val !== 'undefined' && typeof val !== 'boolean') {
+      return sendBadRequest(res, `${key} must be boolean`, 'INVALID_INPUT');
+    }
+  }
+
+  if (intake.errors.length) {
+    return sendBadRequest(res, intake.errors[0], 'INVALID_INPUT');
+  }
+
+  const tenantBefore = await prisma.booking_tenants.findUnique({
+    where: { id: access.tenant.id },
+    select: {
+      booking_page_enabled: true,
+      payment_enabled: true,
+      default_payment_type: true,
+      default_deposit_percentage: true,
+      site_id: true,
+    },
+  });
+  const { siteId, siteData } = await loadTenantSiteRecord(
+    tenantBefore,
+    userId,
+    requestSiteId(req)
+  );
+
+  if (Object.keys(intake.tenantData).length) {
+    await prisma.booking_tenants.update({
+      where: { id: access.tenant.id },
+      data: { ...intake.tenantData, updated_at: new Date() },
+    });
+  }
+
+  const nextSiteData = await persistSiteIntakeFeatures(siteId, siteData, intake.siteUpdates);
+
+  await reminderScheduler.updateReminderSettings(access.tenant.id, {
     enabled,
     hoursBefore,
-    template: template !== undefined ? sanitizeString(String(template), 5000) : undefined
+    template: template !== undefined ? sanitizeString(String(template), 5000) : undefined,
   });
 
-  sendSuccess(res, { message: 'Reminder settings updated', settings: updated });
+  const tenantAfter = await prisma.booking_tenants.findUnique({
+    where: { id: access.tenant.id },
+    select: {
+      booking_page_enabled: true,
+      payment_enabled: true,
+      default_payment_type: true,
+      default_deposit_percentage: true,
+    },
+  });
+  const reminderSettings = await reminderScheduler.getReminderSettings(access.tenant.id);
+  const settings = buildShopIntakeSettings(reminderSettings, tenantAfter, nextSiteData);
+
+  sendSuccess(res, { message: 'Reminder settings updated', settings });
 }));
 
 router.post('/appointments/:appointmentId/send-reminder', requireAuth, asyncHandler(async (req, res) => {

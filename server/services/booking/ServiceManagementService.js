@@ -21,6 +21,18 @@ class ServiceManagementService {
 
     this.validateServiceData(name, duration_minutes);
 
+    const tenant = await prisma.booking_tenants.findUnique({
+      where: { id: tenantId },
+      select: {
+        payment_enabled: true,
+        default_payment_type: true,
+        default_deposit_percentage: true,
+      },
+    });
+
+    const paymentType = tenant?.default_payment_type || 'none';
+    const requiresPayment = Boolean(tenant?.payment_enabled) && paymentType !== 'none';
+
     try {
       const result = await prisma.booking_services.create({
         data: {
@@ -32,6 +44,9 @@ class ServiceManagementService {
           price_cents,
           online_booking_enabled,
           requires_approval,
+          requires_payment: requiresPayment,
+          payment_type: requiresPayment ? paymentType : 'none',
+          deposit_percentage: tenant?.default_deposit_percentage ?? 50,
           status: 'active'
         }
       });

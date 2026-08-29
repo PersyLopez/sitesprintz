@@ -17,8 +17,28 @@ export { siteHasExternalBooking } from './bookingEmbed.js';
  * @param {object|null|undefined} siteData
  * @returns {boolean}
  */
+export function siteSchedulingEnabled(siteData) {
+  if (!siteData) return true;
+  if (siteData._features?.booking?.enabled === false) return false;
+  return true;
+}
+
+export function siteUrgentEnabled(siteData) {
+  if (!siteData) return true;
+  const state = siteData._features?.serviceRequests;
+  if (state && typeof state === 'object' && state.enabled === false) return false;
+  return true;
+}
+
+export function siteFeesEnabled(siteData) {
+  if (!siteData) return false;
+  const state = siteData._features?.bookingFees;
+  return Boolean(state && typeof state === 'object' && state.enabled === true);
+}
+
 export function siteWantsEmbeddedBooking(siteData) {
   if (!siteData) return false;
+  if (!siteSchedulingEnabled(siteData)) return false;
   if (siteHasExternalBooking(siteData)) return true;
   if (siteData.booking?.mode === 'link' || siteData.booking?.embedded === false) {
     return false;

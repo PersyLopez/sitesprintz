@@ -52,8 +52,8 @@ function catalogToSiteData(id, template, extras = {}) {
   };
 }
 
-function htmlFromPage(page) {
-  const tokens = withNativeBookingTokens(page.tokens, page.sections);
+function htmlFromPage(page, siteData = {}) {
+  const tokens = withNativeBookingTokens(page.tokens, page.sections, siteData);
   return (page.sections || [])
     .filter((s) => s && s.enabled !== false)
     .map((section) => renderSectionToHtml(section, tokens))

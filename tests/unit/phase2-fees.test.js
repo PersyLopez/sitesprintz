@@ -4,8 +4,24 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import BookingFeeService from '../src/services/booking/BookingFeeService.js';
+import BookingFeeService from '../../server/services/booking/BookingFeeService.js';
 import { addHours, subHours } from 'date-fns';
+
+vi.mock('../../database/db.js', () => ({
+  prisma: {
+    appointments: {
+      findUnique: vi.fn(),
+      update: vi.fn(),
+    },
+    sites: {
+      findUnique: vi.fn(),
+    },
+    booking_services: {
+      findUnique: vi.fn(),
+      update: vi.fn(),
+    },
+  },
+}));
 
 describe('BookingFeeService', () => {
   let feeService;
@@ -260,6 +276,52 @@ describe('BookingFeeService', () => {
       };
 
       expect(policy.feeAmount).toBe(2500);
+    });
+  });
+
+  describe('calculateAllFees site gating', () => {
+    it('returns zero booking fee when site bookingFees feature is off', async () => {
+      const { prisma } = await import('../../database/db.js');
+      prisma.appointments.findUnique.mockResolvedValue({
+        id: 'appt-1',
+        booking_services: {
+          price: 50,
+          booking_fee_policy: { enabled: true, type: 'flat', amount: 500 },
+        },
+        booking_tenants: { site_id: 'site-1' },
+      });
+      prisma.sites.findUnique.mockResolvedValue({
+        site_data: { _features: { bookingFees: { enabled: false } } },
+      });
+      prisma.appointments.update.mockResolvedValue({});
+
+      const result = await feeService.calculateAllFees('appt-1');
+
+      expect(result.bookingFeeCents).toBe(0);
+      expect(result.totalPayableCents).toBe(5000);
+    });
+  });
+
+  describe('getPoliciesForService', () => {
+    it('reads packed policies from cancellation_policy only', async () => {
+      const { prisma } = await import('../../database/db.js');
+      prisma.booking_services.findUnique.mockResolvedValue({
+        cancellation_policy: JSON.stringify({
+          cancellationPolicy: { enabled: true, type: 'sliding_scale' },
+          noShowPolicy: { enabled: true },
+          bookingFeePolicy: { enabled: false },
+        }),
+      });
+
+      const result = await feeService.getPoliciesForService('service-1');
+
+      expect(prisma.booking_services.findUnique).toHaveBeenCalledWith({
+        where: { id: 'service-1' },
+        select: { cancellation_policy: true },
+      });
+      expect(result.cancellationPolicy).toEqual({ enabled: true, type: 'sliding_scale' });
+      expect(result.noShowPolicy).toEqual({ enabled: true });
+      expect(result.bookingFeePolicy).toEqual({ enabled: false });
     });
   });
 });

@@ -11,6 +11,8 @@ import { prisma } from '../../../database/db.js';
 import Stripe from 'stripe';
 import { addDays } from 'date-fns';
 import BookingFeeService from './BookingFeeService.js';
+import { sitePaymentEnabled } from './shopIntakeFlags.js';
+import { parseSiteData } from '../../utils/parseSiteData.js';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 
@@ -57,6 +59,27 @@ class BookingPaymentAdapter {
 
       if (!appointment) {
         throw new Error(`Appointment ${appointmentId} not found`);
+      }
+
+      const tenantRecord = appointment.booking_tenants;
+      let siteData = {};
+      if (tenantRecord?.site_id) {
+        const site = await prisma.sites.findUnique({
+          where: { id: tenantRecord.site_id },
+          select: { site_data: true },
+        });
+        siteData = parseSiteData(site?.site_data);
+      }
+
+      if (!sitePaymentEnabled(siteData, tenantRecord)) {
+        return {
+          checkoutUrl: null,
+          sessionId: null,
+          appointmentId,
+          amountCents: 0,
+          paymentType: 'none',
+          fees: { service: '0.00', bookingFee: '0.00', total: '0.00' },
+        };
       }
 
       // Calculate all fees

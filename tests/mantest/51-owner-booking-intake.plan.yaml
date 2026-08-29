@@ -1,0 +1,132 @@
+url: http://localhost:5173/login
+goal: Salon owner can independently enable and disable scheduling, urgent requests, fees, and payment from Booking Settings
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter gallery email
+    fill: { testId: login-email, value: "gallery@sitesprintz.com", clear: true }
+
+  - action: Enter gallery password
+    fill: { testId: login-password, value: "GalleryDemo123!", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard loads
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 1200
+
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+    settle_ms: 400
+
+  - action: Open Luxe Beauty Studio workspace
+    code: |
+      const card = page.locator('[data-testid="site-card"][data-subdomain="gallery-salon"]');
+      if ((await card.count()) === 0) throw new Error('Missing gallery-salon site card');
+      await card.getByTestId('manage-site-button').click();
+    settle_ms: 1500
+
+  - action: Open appointments
+    code: |
+      const nav = page.getByTestId('site-nav-appointments');
+      await nav.scrollIntoViewIfNeeded();
+      await nav.click();
+    settle_ms: 1200
+    wait_for: { url: "/appointments", timeout: 15000 }
+
+  - action: Open booking Settings
+    click: { testId: settings-tab }
+    settle_ms: 1200
+    wait_for: { selector: '[data-testid="booking-intake-settings"]', timeout: 15000 }
+
+  - action: Four independent switches are present
+    code: |
+      for (const id of ['scheduling-enabled-switch', 'urgent-enabled-switch', 'fees-enabled-switch', 'payment-enabled-switch']) {
+        if ((await page.getByTestId(id).count()) === 0) throw new Error('Missing ' + id);
+      }
+      if ((await page.getByTestId('save-booking-settings-btn').count()) === 0) {
+        throw new Error('Save missing');
+      }
+
+  - action: Turning scheduling off hides nested reminder fields
+    code: |
+      const scheduling = page.getByTestId('scheduling-enabled-switch');
+      if (!(await scheduling.isChecked())) await scheduling.check();
+      await scheduling.uncheck();
+      const notice = page.locator('.settings-off-notice').filter({ hasText: /will not see time slots/i });
+      if ((await notice.count()) === 0) throw new Error('Expected scheduling-off notice');
+      if ((await page.getByTestId('reminders-enabled-checkbox').count()) > 0) {
+        throw new Error('Reminders still visible with scheduling off');
+      }
+    settle_ms: 400
+
+  - action: Turning scheduling on reveals reminders
+    code: |
+      await page.getByTestId('scheduling-enabled-switch').check();
+      if ((await page.getByTestId('reminders-enabled-checkbox').count()) === 0) {
+        throw new Error('Reminders missing after scheduling on');
+      }
+    settle_ms: 400
+
+  - action: Urgent switch shows help when on
+    code: |
+      const urgent = page.getByTestId('urgent-enabled-switch');
+      await urgent.check();
+      const help = page.locator('.settings-help-text').filter({ hasText: /urgent/i });
+      if ((await help.count()) === 0) throw new Error('Urgent help missing when on');
+      await urgent.uncheck();
+      const off = page.locator('.settings-off-notice').filter({ hasText: /will not see an option to mark a request as urgent/i });
+      if ((await off.count()) === 0) throw new Error('Urgent-off notice missing');
+    settle_ms: 400
+
+  - action: Fees and payment nested fields only when on
+    code: |
+      await page.getByTestId('fees-enabled-switch').check();
+      const feesOn = await page.locator('.settings-help-text, [data-testid="fee-configuration"], .fee-configuration').count();
+      if (!feesOn && !(await page.locator('text=/Add a service first|fee/i').count())) {
+        const t = await page.getByTestId('booking-intake-settings').innerText();
+        if (!/fee/i.test(t)) throw new Error('Fees nested UI missing: ' + t.slice(0, 240));
+      }
+      await page.getByTestId('fees-enabled-switch').uncheck();
+      await page.getByTestId('payment-enabled-switch').check();
+      if ((await page.getByTestId('default-payment-type-select').count()) === 0) {
+        throw new Error('Payment type missing when payment on');
+      }
+      await page.getByTestId('payment-enabled-switch').uncheck();
+      if ((await page.getByTestId('default-payment-type-select').count()) > 0) {
+        throw new Error('Payment type still visible when payment off');
+      }
+    settle_ms: 400
+
+  - action: Save with scheduling on so the live salon stays bookable
+    code: |
+      await page.getByTestId('scheduling-enabled-switch').check();
+      await page.getByTestId('save-booking-settings-btn').click();
+    settle_ms: 1500
+
+  - action: Settings persist after leaving the tab
+    code: |
+      await page.getByTestId('appointments-tab').click();
+      await page.waitForTimeout(400);
+      await page.getByTestId('settings-tab').click();
+      await page.waitForSelector('[data-testid="booking-intake-settings"]', { timeout: 10000 });
+      if (!(await page.getByTestId('scheduling-enabled-switch').isChecked())) {
+        throw new Error('Scheduling did not stay enabled after save');
+      }
+
+  - action: Live salon still mounts booking when scheduling is on
+    goto: http://localhost:5173/view/gallery-salon
+    settle_ms: 2000
+    wait_for: { text: Luxe Beauty Studio, timeout: 20000 }
+
+  - action: Booking widget is on the live page
+    wait_for: { selector: '[data-testid="live-booking-widget"]', timeout: 12000 }

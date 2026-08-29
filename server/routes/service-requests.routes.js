@@ -10,6 +10,7 @@ import { requireAuth } from '../middleware/auth.js';
 import { getTemplateService } from '../services/templates/index.js';
 import { prisma } from '../../database/db.js';
 import { parseSiteData } from '../utils/parseSiteData.js';
+import { siteUrgentEnabled } from '../../src/utils/visitorExperience.js';
 import { hasServiceRequestFeature } from '../constants/subscription.js';
 import { resolveUserPlan } from '../utils/resolveUserPlan.js';
 import {
@@ -71,6 +72,15 @@ router.post('/submit', asyncHandler(async (req, res) => {
       res,
       'Service request forms require Growth tier or higher',
       'TIER_REQUIRED'
+    );
+  }
+
+  const siteData = parseSiteData(site.site_data);
+  if (!siteUrgentEnabled(siteData)) {
+    return sendBadRequest(
+      res,
+      'Service requests are not enabled for this site',
+      'SERVICE_REQUESTS_DISABLED'
     );
   }
 

@@ -396,6 +396,27 @@
   min-height: 44px;
 }
 
+.settings-off-notice,
+.settings-help-text {
+  margin: var(--spacing-sm) 0 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.settings-label select {
+  background: var(--bg-elevated);
+  color: var(--text-light);
+  border: 1px solid var(--border-dark);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  min-height: 44px;
+}
+
+.settings-label input[type="range"] {
+  width: 100%;
+  max-width: 280px;
+}
+
 .save-settings-btn {
   background: var(--primary-color);
   color: var(--on-primary, #f4f2ee);

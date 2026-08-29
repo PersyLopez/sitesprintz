@@ -137,7 +137,7 @@ function PreviewFrame() {
     const muted = t.muted || data.colors?.muted || '#8a8a8f';
 
     const enabledSections = sections.filter((s) => s && s.enabled !== false);
-    const renderTokens = withNativeBookingTokens(tokens, enabledSections);
+    const renderTokens = withNativeBookingTokens(tokens, enabledSections, data);
     const sectionsHtml = enabledSections
       .map((section) => renderSectionToHtml(section, renderTokens))
       .filter(Boolean)

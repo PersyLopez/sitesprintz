@@ -30,6 +30,9 @@ vi.mock('../../../database/db.js', () => ({
     booking_tenants: {
       findUnique: vi.fn()
     },
+    sites: {
+      findUnique: vi.fn()
+    },
     booking_notifications: {
       create: vi.fn()
     }
@@ -119,6 +122,7 @@ describe('BookingPaymentAdapter', () => {
       },
       booking_tenants: {
         id: 'tenant-456',
+        payment_enabled: true,
         users: {
           stripe_account_id: 'acct_123',
           stripe_connected: true
@@ -129,6 +133,23 @@ describe('BookingPaymentAdapter', () => {
     beforeEach(() => {
       process.env.FRONTEND_URL = 'http://localhost:5173';
       process.env.STRIPE_SECRET_KEY = 'sk_test_123';
+    });
+
+    it('should short-circuit when payment is disabled for the site', async () => {
+      prisma.appointments.findUnique.mockResolvedValue({
+        ...mockAppointment,
+        booking_tenants: {
+          ...mockAppointment.booking_tenants,
+          site_id: 'site-1',
+          payment_enabled: false,
+        },
+      });
+
+      const result = await adapter.createBookingCheckout('appt-123', 'full');
+
+      expect(result.paymentType).toBe('none');
+      expect(result.amountCents).toBe(0);
+      expect(mockStripe.checkout.sessions.create).not.toHaveBeenCalled();
     });
 
     it('should create checkout session for full payment', async () => {

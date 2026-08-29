@@ -4,6 +4,9 @@ import {
   siteWantsNativeBooking,
   applyVisitorExperienceDefaults,
   subdomainFromLivePath,
+  siteSchedulingEnabled,
+  siteUrgentEnabled,
+  siteFeesEnabled,
 } from '../../src/utils/visitorExperience.js';
 import { pickBookingServicesFromSiteData, pickBookingStaffFromSiteData } from '../../server/services/booking/ensurePublishedBooking.js';
 
@@ -58,6 +61,24 @@ describe('visitorExperience', () => {
     expect(subdomainFromLivePath('/sites/maple-salon')).toBe('maple-salon');
     expect(subdomainFromLivePath('/view/gallery-salon/')).toBe('gallery-salon');
     expect(subdomainFromLivePath('/dashboard')).toBe('');
+  });
+
+  it('disables embedded booking when scheduling is off', () => {
+    const site = { _features: { booking: { enabled: false } } };
+    expect(siteSchedulingEnabled(site)).toBe(false);
+    expect(siteWantsEmbeddedBooking(site)).toBe(false);
+    expect(siteWantsNativeBooking(site)).toBe(false);
+  });
+
+  it('gates urgent requests via serviceRequests feature', () => {
+    expect(siteUrgentEnabled({ _features: { serviceRequests: { enabled: true } } })).toBe(true);
+    expect(siteUrgentEnabled({ _features: { serviceRequests: { enabled: false } } })).toBe(false);
+  });
+
+  it('gates booking fees via bookingFees feature', () => {
+    expect(siteFeesEnabled({ _features: { bookingFees: { enabled: true } } })).toBe(true);
+    expect(siteFeesEnabled({ _features: { bookingFees: { enabled: false } } })).toBe(false);
+    expect(siteFeesEnabled({})).toBe(false);
   });
 });
 

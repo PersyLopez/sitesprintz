@@ -41,7 +41,7 @@ class PublishedSiteRenderer {
       const page = composePage({ siteData });
       pageForCta = page;
       const enabledSections = (page.sections || []).filter(s => s && s.enabled !== false);
-      const tokens = withNativeBookingTokens(page.tokens, enabledSections);
+      const tokens = withNativeBookingTokens(page.tokens, enabledSections, siteData);
       sectionsHtml = enabledSections
         .map(section => renderSectionToHtml(section, tokens))
         .filter(Boolean)
