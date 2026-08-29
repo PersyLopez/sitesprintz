@@ -152,6 +152,19 @@ describe('BookingPaymentAdapter', () => {
       expect(mockStripe.checkout.sessions.create).not.toHaveBeenCalled();
     });
 
+    it('does not charge the platform when Connect is not ready', async () => {
+      prisma.appointments.findUnique.mockResolvedValue(mockAppointment);
+      prisma.booking_tenants.findUnique.mockResolvedValue({
+        id: 'tenant-456',
+        payment_enabled: true,
+        stripe_account_id: 'acct_123',
+        users: { stripe_account_id: 'acct_123', stripe_connected: false },
+      });
+
+      await expect(adapter.createBookingCheckout('appt-123', 'full')).rejects.toThrow('STRIPE_NOT_READY');
+      expect(mockStripe.checkout.sessions.create).not.toHaveBeenCalled();
+    });
+
     it('should create checkout session for full payment', async () => {
       // Arrange
       prisma.appointments.findUnique.mockResolvedValue(mockAppointment);

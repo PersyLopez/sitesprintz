@@ -183,6 +183,41 @@ class ServiceManagementService {
   }
 
   /**
+   * Shop payment switches apply to services already on the tenant.
+   * New services inherit in createService; this keeps existing rows in sync.
+   *
+   * @param {string} tenantId
+   * @param {{ payment_enabled?: boolean, default_payment_type?: string, default_deposit_percentage?: number }|null} [tenant]
+   * @returns {Promise<number>} count of services updated
+   */
+  async syncExistingServicesToShopPayment(tenantId, tenant = null) {
+    const row = tenant || await prisma.booking_tenants.findUnique({
+      where: { id: tenantId },
+      select: {
+        payment_enabled: true,
+        default_payment_type: true,
+        default_deposit_percentage: true,
+      },
+    });
+    if (!row) return 0;
+
+    const paymentType = row.default_payment_type || 'none';
+    const requiresPayment = Boolean(row.payment_enabled) && paymentType !== 'none';
+
+    const result = await prisma.booking_services.updateMany({
+      where: { tenant_id: tenantId },
+      data: {
+        requires_payment: requiresPayment,
+        payment_type: requiresPayment ? paymentType : 'none',
+        deposit_percentage: row.default_deposit_percentage ?? 50,
+        updated_at: new Date(),
+      },
+    });
+
+    return result.count;
+  }
+
+  /**
    * Validate service data
    */
   validateServiceData(name, duration_minutes) {

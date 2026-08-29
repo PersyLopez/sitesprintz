@@ -104,8 +104,12 @@ class BookingPaymentAdapter {
         include: { users: { select: { stripe_account_id: true, stripe_connected: true } } }
       });
 
-      const stripeAccountId = tenant?.users?.stripe_account_id;
-      const isStripeConnected = tenant?.users?.stripe_connected;
+      const stripeAccountId = tenant?.users?.stripe_account_id || tenant?.stripe_account_id;
+      const isStripeConnected = tenant?.users?.stripe_connected === true;
+
+      if (!stripeAccountId || !isStripeConnected) {
+        throw new Error('STRIPE_NOT_READY');
+      }
 
       const stripe = this.getStripe();
       if (!stripe) {

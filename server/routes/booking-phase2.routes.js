@@ -17,6 +17,8 @@ import { requireAuth } from '../middleware/auth.js';
 import { prisma } from '../../database/db.js';
 import ReminderScheduler from '../services/booking/ReminderScheduler.js';
 import BufferTimeService from '../services/booking/BufferTimeService.js';
+import ServiceManagementService from '../services/booking/ServiceManagementService.js';
+import BookingFeeService from '../services/booking/BookingFeeService.js';
 import { availabilityService } from '../services/booking/AvailabilityServiceV2.js';
 import { sanitizeString } from '../utils/validators.js';
 import { parseSiteData } from '../utils/parseSiteData.js';
@@ -30,6 +32,8 @@ import {
 const router = express.Router();
 const reminderScheduler = new ReminderScheduler();
 const bufferTimeService = new BufferTimeService();
+const serviceManagement = new ServiceManagementService();
+const bookingFeeService = new BookingFeeService();
 
 async function resolveTenant(tenantIdOrUserId) {
   const byId = await prisma.booking_tenants.findUnique({
@@ -217,6 +221,14 @@ router.put('/tenants/:tenantId/reminder-settings', requireAuth, asyncHandler(asy
       default_deposit_percentage: true,
     },
   });
+
+  if (Object.keys(intake.tenantData).length) {
+    await serviceManagement.syncExistingServicesToShopPayment(access.tenant.id, tenantAfter);
+  }
+  if (intake.siteUpdates?.feesEnabled === true) {
+    await bookingFeeService.applyDefaultPoliciesToTenant(access.tenant.id);
+  }
+
   const reminderSettings = await reminderScheduler.getReminderSettings(access.tenant.id);
   const settings = buildShopIntakeSettings(reminderSettings, tenantAfter, nextSiteData);
 

@@ -282,3 +282,144 @@ describe('Live BookingWidget fee notice', () => {
     });
   });
 });
+
+const payableServices = [
+  {
+    ...mockServices[0],
+    requires_payment: true,
+    payment_type: 'deposit',
+    deposit_percentage: 50,
+  },
+];
+
+describe('Live BookingWidget deposit checkout', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    delete window.location;
+    window.location = { href: '' };
+  });
+
+  it('shows deposit due and sends the visitor to Stripe Checkout', async () => {
+    const user = userEvent.setup();
+    const dateString = nextWeekdayIso();
+
+    api.get.mockImplementation((url) => {
+      if (url.includes('/fee-policies')) return Promise.resolve(mockFeePolicies);
+      if (url.includes('/services')) return Promise.resolve({ services: payableServices });
+      if (url.includes('/staff')) return Promise.resolve({ staff: [] });
+      if (url.includes('/availability')) {
+        return Promise.resolve({
+          slots: [{ start_time: `${dateString}T10:00:00`, display_time: '10:00 AM', available: true }],
+        });
+      }
+      return Promise.resolve({ slots: [] });
+    });
+
+    api.post.mockImplementation((url) => {
+      if (url.includes('/appointments')) {
+        return Promise.resolve({ appointment: { id: 'appt-1', confirmation_code: 'ABC123' } });
+      }
+      if (url.includes('/checkout/create-session')) {
+        return Promise.resolve({ checkout_url: 'https://checkout.stripe.com/pay/cs_test_deposit' });
+      }
+      return Promise.resolve({});
+    });
+
+    renderWidget({ pageCatalogMode: false, feesEnabled: true });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('service-card-svc-1')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId('service-card-svc-1'));
+    await user.click(screen.getByTestId('next-button'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId(`date-${dateString}`)).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId(`date-${dateString}`));
+
+    await waitFor(() => {
+      expect(screen.getByTestId(`time-slot-${dateString}T10:00:00`)).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId(`time-slot-${dateString}T10:00:00`));
+    await user.click(screen.getByTestId('next-button'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('booking-payment-due')).toHaveTextContent(/50% deposit/i);
+    });
+    expect(screen.getByTestId('book-now-button')).toHaveTextContent(/Continue to payment/i);
+
+    await user.type(screen.getByTestId('customer-name'), 'Jane Doe');
+    await user.type(screen.getByTestId('customer-email'), 'jane@example.com');
+    await user.click(screen.getByTestId('book-now-button'));
+
+    await waitFor(() => {
+      expect(window.location.href).toBe('https://checkout.stripe.com/pay/cs_test_deposit');
+    });
+
+    const checkoutCall = api.post.mock.calls.find(([url]) => url.includes('/checkout/create-session'));
+    expect(checkoutCall).toEqual([
+      '/api/booking/checkout/create-session',
+      { appointment_id: 'appt-1', payment_type: 'deposit' },
+    ]);
+    expect(screen.queryByTestId('confirmation-page')).not.toBeInTheDocument();
+  });
+
+  it('skips Stripe on demo sites even when the service requires payment', async () => {
+    const user = userEvent.setup();
+    const dateString = nextWeekdayIso();
+
+    api.get.mockImplementation((url) => {
+      if (url.includes('/fee-policies')) return Promise.resolve(mockFeePolicies);
+      if (url.includes('/services')) return Promise.resolve({ services: payableServices });
+      if (url.includes('/staff')) return Promise.resolve({ staff: [] });
+      if (url.includes('/availability')) {
+        return Promise.resolve({
+          slots: [{ start_time: `${dateString}T10:00:00`, display_time: '10:00 AM', available: true }],
+        });
+      }
+      return Promise.resolve({ slots: [] });
+    });
+
+    api.post.mockResolvedValue({ appointment: { id: 'appt-demo', confirmation_code: 'DEMO1', demo: true } });
+
+    renderWidget({ pageCatalogMode: false, demoMode: true, feesEnabled: true });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('service-card-svc-1')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId('service-card-svc-1'));
+    await user.click(screen.getByTestId('next-button'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId(`date-${dateString}`)).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId(`date-${dateString}`));
+
+    await waitFor(() => {
+      expect(screen.getByTestId(`time-slot-${dateString}T10:00:00`)).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId(`time-slot-${dateString}T10:00:00`));
+    await user.click(screen.getByTestId('next-button'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('customer-form')).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId('booking-payment-due')).not.toBeInTheDocument();
+
+    await user.type(screen.getByTestId('customer-name'), 'Jane Doe');
+    await user.type(screen.getByTestId('customer-email'), 'jane@example.com');
+    await user.click(screen.getByTestId('book-now-button'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('confirmation-page')).toBeInTheDocument();
+    });
+    expect(api.post.mock.calls.some(([url]) => url.includes('/checkout/create-session'))).toBe(false);
+  });
+});

@@ -15,6 +15,23 @@ import './BookingWidget.css';
 
 const NO_PREFERENCE = 'no_preference';
 
+function serviceRequiresCheckout(service) {
+  return Boolean(service?.requires_payment) && service?.payment_type && service.payment_type !== 'none';
+}
+
+function checkoutPaymentType(service) {
+  return service?.payment_type === 'optional' ? 'full' : service.payment_type;
+}
+
+function depositDueCents(service) {
+  const price = Number(service?.price_cents) || 0;
+  if (service?.payment_type === 'deposit') {
+    const pct = Number(service.deposit_percentage) || 50;
+    return Math.round(price * (pct / 100));
+  }
+  return price;
+}
+
 function useLiveT() {
   const { locale } = useLocale();
   return {
@@ -445,7 +462,27 @@ const BookingWidget = ({
         bookingData
       );
 
-      setAppointment(response.appointment);
+      const created = response.appointment;
+      setAppointment(created);
+
+      if (!demoMode && serviceRequiresCheckout(selectedService)) {
+        setStep('payment');
+        try {
+          const checkoutResponse = await post('/api/booking/checkout/create-session', {
+            appointment_id: created.id,
+            payment_type: checkoutPaymentType(selectedService),
+          });
+          if (checkoutResponse.checkout_url) {
+            window.location.href = checkoutResponse.checkout_url;
+            return;
+          }
+          throw new Error(t('checkoutFailed'));
+        } catch (payErr) {
+          setStep('form');
+          throw payErr;
+        }
+      }
+
       setStep('confirmation');
     } catch (err) {
       const message = err.message || t('booking.createFail');
@@ -723,7 +760,19 @@ const BookingWidget = ({
     );
   }
 
+  if (step === 'payment') {
+    return (
+      <BookingShell step={step} showStaff={showStaff} skipServiceStep={skipServiceStep}>
+        <div data-testid="booking-payment-redirect" className="booking-summary email-notice">
+          <h2>{t('checkoutRedirecting')}</h2>
+        </div>
+      </BookingShell>
+    );
+  }
+
   if (step === 'form') {
+    const needsCheckout = !demoMode && serviceRequiresCheckout(selectedService);
+    const dueAmount = (depositDueCents(selectedService) / 100).toFixed(2);
     return (
       <BookingShell step={step} showStaff={showStaff} skipServiceStep={skipServiceStep}>
         <h2>{t('booking.yourInfo')}</h2>
@@ -807,6 +856,19 @@ const BookingWidget = ({
             <div data-testid="booking-loading">{t('booking.processing')}</div>
           )}
 
+          {needsCheckout && (
+            <div data-testid="booking-payment-due" className="booking-summary email-notice">
+              <p>
+                {selectedService.payment_type === 'deposit'
+                  ? t('booking.depositDue', {
+                      percent: selectedService.deposit_percentage || 50,
+                      amount: dueAmount,
+                    })
+                  : t('booking.fullDue', { amount: dueAmount })}
+              </p>
+            </div>
+          )}
+
           {feeNoticeLines.length > 0 && (
             <div data-testid="booking-fee-notice" className="booking-summary email-notice">
               <h3>{t('booking.feeNotice.title')}</h3>
@@ -823,7 +885,11 @@ const BookingWidget = ({
             disabled={loading}
             className="btn-primary"
           >
-            {loading ? t('booking.booking') : t('booking.confirm')}
+            {loading
+              ? t('booking.booking')
+              : needsCheckout
+                ? t('booking.payContinue')
+                : t('booking.confirm')}
           </button>
         </div>
       </BookingShell>

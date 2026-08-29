@@ -41,6 +41,32 @@ function packFeePolicies(existingRaw, patch) {
   });
 }
 
+/** Same defaults as FeeConfiguration.jsx — cancellation + no-show + a small booking fee. */
+export const DEFAULT_SHOP_FEE_POLICIES = {
+  cancellationPolicy: {
+    enabled: true,
+    type: 'sliding_scale',
+    rules: [
+      { cancelWithinHours: 24, feePercentage: 100 },
+      { cancelWithinHours: 48, feePercentage: 50 },
+      { cancelAfterHours: 48, feePercentage: 0 },
+    ],
+  },
+  noShowPolicy: {
+    enabled: true,
+    chargeOnNoShow: true,
+    feeType: 'percentage',
+    feeAmount: 100,
+    requireConfirmation: true,
+  },
+  bookingFeePolicy: {
+    enabled: true,
+    type: 'percentage',
+    percentage: 2.5,
+    nonRefundable: false,
+  },
+};
+
 class BookingFeeService {
   /**
    * Calculate all fees for an appointment
@@ -70,25 +96,14 @@ class BookingFeeService {
       }
 
       const service = appointment.booking_services;
-      const servicePriceCents = service.price * 100 || 0;
+      const servicePriceCents = Number(service.price_cents) || 0;
+      const { bookingFeePolicy } = unpackFeePolicies(service.cancellation_policy);
 
-      // Calculate booking fee
       const bookingFeeCents = feesGloballyEnabled
-        ? this.calculateBookingFee(servicePriceCents, service.booking_fee_policy)
+        ? this.calculateBookingFee(servicePriceCents, bookingFeePolicy)
         : 0;
 
-      // Total payable at booking
       const totalPayableCents = servicePriceCents + bookingFeeCents;
-
-      // Update appointment
-      await prisma.appointments.update({
-        where: { id: appointmentId },
-        data: {
-          booking_fee_cents: bookingFeeCents,
-          service_price_cents: servicePriceCents,
-          total_payable_cents: totalPayableCents
-        }
-      });
 
       return {
         servicePriceCents,
@@ -403,6 +418,33 @@ class BookingFeeService {
       console.error('[BookingFeeService] Error getting policies:', error);
       throw error;
     }
+  }
+
+  /**
+   * Fill empty per-service fee JSON when the shop turns fees on.
+   * Does not overwrite a service that already has a policy.
+   *
+   * @param {string} tenantId
+   * @returns {Promise<number>}
+   */
+  async applyDefaultPoliciesToTenant(tenantId) {
+    const services = await prisma.booking_services.findMany({
+      where: { tenant_id: tenantId },
+      select: { id: true, cancellation_policy: true },
+    });
+    let updated = 0;
+    for (const service of services) {
+      const unpacked = unpackFeePolicies(service.cancellation_policy);
+      if (unpacked.cancellationPolicy || unpacked.noShowPolicy || unpacked.bookingFeePolicy) {
+        continue;
+      }
+      await prisma.booking_services.update({
+        where: { id: service.id },
+        data: { cancellation_policy: JSON.stringify(DEFAULT_SHOP_FEE_POLICIES) },
+      });
+      updated += 1;
+    }
+    return updated;
   }
 }
 
