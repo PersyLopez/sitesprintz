@@ -7,6 +7,35 @@ import { parseSiteData } from '../../utils/parseSiteData.js';
 
 const PAYMENT_TYPES = new Set(['none', 'full', 'deposit']);
 
+export const CONNECT_USER_SELECT = {
+  stripe_account_id: true,
+  stripe_connected: true,
+};
+
+/**
+ * Visitor card charges require a connected Stripe account.
+ * Platform SaaS Checkout is a different ledger and must not be used here.
+ *
+ * @param {{ stripe_account_id?: string|null, stripe_connected?: boolean }|null|undefined} user
+ * @returns {boolean}
+ */
+export function ownerConnectReady(user) {
+  return Boolean(user?.stripe_account_id) && user?.stripe_connected === true;
+}
+
+/**
+ * Shop wants a card AND Connect is ready. Otherwise visitors pay at the salon.
+ *
+ * @param {object|null|undefined} tenant
+ * @returns {boolean}
+ */
+export function shopRequiresOnlineCard(tenant) {
+  const paymentType = tenant?.default_payment_type || 'none';
+  const shopWantsPay = Boolean(tenant?.payment_enabled) && paymentType !== 'none';
+  if (!shopWantsPay) return false;
+  return ownerConnectReady(tenant?.users);
+}
+
 function featureEnabled(features, key, defaultEnabled = true) {
   const state = features?.[key];
   if (!state || typeof state !== 'object') return defaultEnabled;
@@ -109,6 +138,8 @@ export function buildShopIntakeSettings(reminderSettings, tenant, siteData) {
     fees_enabled: siteFeesEnabled(parsed),
     default_payment_type: tenant?.default_payment_type || 'none',
     default_deposit_percentage: tenant?.default_deposit_percentage ?? 50,
+    connect_ready: ownerConnectReady(tenant?.users),
+    online_card_ready: shopRequiresOnlineCard(tenant),
   };
 }
 

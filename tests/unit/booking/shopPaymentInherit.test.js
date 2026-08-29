@@ -28,6 +28,7 @@ describe('shop payment inherit onto existing services', () => {
       payment_enabled: true,
       default_payment_type: 'deposit',
       default_deposit_percentage: 50,
+      users: { stripe_account_id: 'acct_1', stripe_connected: true },
     });
     expect(count).toBe(3);
     expect(prisma.booking_services.updateMany).toHaveBeenCalledWith({
@@ -40,6 +41,24 @@ describe('shop payment inherit onto existing services', () => {
     });
   });
 
+  it('keeps existing services pay-at-salon when Connect is not ready', async () => {
+    prisma.booking_services.updateMany.mockResolvedValue({ count: 3 });
+    const service = new ServiceManagementService();
+    await service.syncExistingServicesToShopPayment('tenant-1', {
+      payment_enabled: true,
+      default_payment_type: 'deposit',
+      default_deposit_percentage: 50,
+      users: { stripe_account_id: 'acct_1', stripe_connected: false },
+    });
+    expect(prisma.booking_services.updateMany).toHaveBeenCalledWith({
+      where: { tenant_id: 'tenant-1' },
+      data: expect.objectContaining({
+        requires_payment: false,
+        payment_type: 'none',
+      }),
+    });
+  });
+
   it('clears payment on existing services when the shop switch is off', async () => {
     prisma.booking_services.updateMany.mockResolvedValue({ count: 2 });
     const service = new ServiceManagementService();
@@ -47,6 +66,7 @@ describe('shop payment inherit onto existing services', () => {
       payment_enabled: false,
       default_payment_type: 'deposit',
       default_deposit_percentage: 50,
+      users: { stripe_account_id: 'acct_1', stripe_connected: true },
     });
     expect(prisma.booking_services.updateMany).toHaveBeenCalledWith({
       where: { tenant_id: 'tenant-1' },

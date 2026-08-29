@@ -58,6 +58,7 @@ export default {
   'booking.payContinue': 'Continue to payment',
   'booking.depositDue': '{percent}% deposit due now (${amount}). Remaining is due at the salon.',
   'booking.fullDue': 'Full payment due now (${amount}).',
+  'booking.payAtSalon': 'Pay at the salon. No card is charged online.',
   'booking.booking': 'Booking...',
   'booking.confirmed': 'Booking confirmed',
   'booking.demoConfirmed': 'Demo booking confirmed',

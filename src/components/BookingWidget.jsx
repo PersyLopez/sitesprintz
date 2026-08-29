@@ -178,6 +178,7 @@ const BookingWidget = ({
   noPreferenceText = 'Any available',
   pageCatalogMode = false,
   feesEnabled = false,
+  paymentsReady = false,
 }) => {
   const { userId: paramUserId } = useParams();
   const userId = propUserId || paramUserId;
@@ -465,7 +466,8 @@ const BookingWidget = ({
       const created = response.appointment;
       setAppointment(created);
 
-      if (!demoMode && serviceRequiresCheckout(selectedService)) {
+      const wantsCard = !demoMode && serviceRequiresCheckout(selectedService);
+      if (wantsCard && paymentsReady) {
         setStep('payment');
         try {
           const checkoutResponse = await post('/api/booking/checkout/create-session', {
@@ -476,11 +478,18 @@ const BookingWidget = ({
             window.location.href = checkoutResponse.checkout_url;
             return;
           }
-          throw new Error(t('checkoutFailed'));
+          if (!checkoutResponse.pay_on_site) {
+            throw new Error(t('checkoutFailed'));
+          }
         } catch (payErr) {
           setStep('form');
           throw payErr;
         }
+      } else if (wantsCard && !paymentsReady) {
+        await post('/api/booking/checkout/create-session', {
+          appointment_id: created.id,
+          payment_type: checkoutPaymentType(selectedService),
+        }).catch(() => {});
       }
 
       setStep('confirmation');
@@ -771,7 +780,8 @@ const BookingWidget = ({
   }
 
   if (step === 'form') {
-    const needsCheckout = !demoMode && serviceRequiresCheckout(selectedService);
+    const cardCheckout = !demoMode && paymentsReady && serviceRequiresCheckout(selectedService);
+    const payAtSalon = !demoMode && !paymentsReady;
     const dueAmount = (depositDueCents(selectedService) / 100).toFixed(2);
     return (
       <BookingShell step={step} showStaff={showStaff} skipServiceStep={skipServiceStep}>
@@ -856,7 +866,13 @@ const BookingWidget = ({
             <div data-testid="booking-loading">{t('booking.processing')}</div>
           )}
 
-          {needsCheckout && (
+          {payAtSalon && (
+            <div data-testid="booking-pay-on-site" className="booking-summary email-notice">
+              <p>{t('booking.payAtSalon')}</p>
+            </div>
+          )}
+
+          {cardCheckout && (
             <div data-testid="booking-payment-due" className="booking-summary email-notice">
               <p>
                 {selectedService.payment_type === 'deposit'
@@ -887,7 +903,7 @@ const BookingWidget = ({
           >
             {loading
               ? t('booking.booking')
-              : needsCheckout
+              : cardCheckout
                 ? t('booking.payContinue')
                 : t('booking.confirm')}
           </button>
@@ -907,7 +923,9 @@ const BookingWidget = ({
             <p>
               {isDemo
                 ? t('booking.demoNote')
-                : t('booking.success')}
+                : paymentsReady
+                  ? t('booking.success')
+                  : t('booking.payAtSalon')}
             </p>
           </div>
 

@@ -16,6 +16,7 @@ function normalizeSettings(apiSettings, firstService) {
       ?? 15,
     default_payment_type: apiSettings.default_payment_type || 'none',
     default_deposit_percentage: apiSettings.default_deposit_percentage ?? 50,
+    connect_ready: apiSettings.connect_ready === true,
   };
 }
 
@@ -33,6 +34,7 @@ export default function BookingIntakeSettings({ userId, siteId }) {
     buffer_minutes: 15,
     default_payment_type: 'none',
     default_deposit_percentage: 50,
+    connect_ready: false,
   });
   const [firstService, setFirstService] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -229,6 +231,11 @@ export default function BookingIntakeSettings({ userId, siteId }) {
         </label>
         {!settings.payment_enabled && (
           <p className="settings-off-notice">Customers will not be asked to pay when booking.</p>
+        )}
+        {settings.payment_enabled && !settings.connect_ready && (
+          <p className="settings-off-notice" data-testid="payment-connect-required-notice">
+            Card checkout needs Stripe Connect. Until then, customers pay at the salon.
+          </p>
         )}
         {settings.payment_enabled && (
           <>

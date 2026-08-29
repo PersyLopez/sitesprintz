@@ -281,6 +281,7 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
     || payload._operatingModel?.noPreferenceText
     || 'Any available';
   const feesEnabled = siteFeesEnabled(payload);
+  const paymentsReady = !demoMode && site?.stripe_connected === true;
   const bookingWidget = bookingEnabled ? (
     <BookingWidget
       userId={ownerUserId}
@@ -290,6 +291,7 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
       noPreferenceText={bookingNoPreference}
       pageCatalogMode={pageCatalogMode}
       feesEnabled={feesEnabled}
+      paymentsReady={paymentsReady}
     />
   ) : null;
 
@@ -336,7 +338,7 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
         <ShoppingCart
           stripePublishableKey={import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY}
           siteId={siteId}
-          paymentsReady={!demoMode && site?.stripe_connected === true}
+          paymentsReady={paymentsReady}
           payOnSite={demoMode || isPayOnSiteEnabled(payload)}
         />
       )}

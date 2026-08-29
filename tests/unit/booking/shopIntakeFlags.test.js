@@ -2,7 +2,9 @@ import { describe, it, expect } from 'vitest';
 import {
   applyShopIntakeSiteFeatures,
   buildShopIntakeSettings,
+  ownerConnectReady,
   parseShopIntakePutBody,
+  shopRequiresOnlineCard,
   siteSchedulingEnabled,
 } from '../../../server/services/booking/shopIntakeFlags.js';
 
@@ -41,6 +43,23 @@ describe('shopIntakeFlags', () => {
     expect(settings.fees_enabled).toBe(false);
     expect(settings.default_payment_type).toBe('deposit');
     expect(settings.default_deposit_percentage).toBe(40);
+    expect(settings.connect_ready).toBe(false);
+    expect(settings.online_card_ready).toBe(false);
+  });
+
+  it('requires Connect before a shop can take cards', () => {
+    expect(ownerConnectReady({ stripe_account_id: 'acct_1', stripe_connected: true })).toBe(true);
+    expect(ownerConnectReady({ stripe_account_id: 'acct_1', stripe_connected: false })).toBe(false);
+    expect(shopRequiresOnlineCard({
+      payment_enabled: true,
+      default_payment_type: 'deposit',
+      users: { stripe_account_id: 'acct_1', stripe_connected: false },
+    })).toBe(false);
+    expect(shopRequiresOnlineCard({
+      payment_enabled: true,
+      default_payment_type: 'deposit',
+      users: { stripe_account_id: 'acct_1', stripe_connected: true },
+    })).toBe(true);
   });
 
   it('maps PUT body to tenant and site updates', () => {

@@ -72,6 +72,22 @@ describe('BookingIntakeSettings', () => {
     expect(screen.getByText(/will not see time slots/i)).toBeInTheDocument();
   });
 
+  it('tells the owner visitors pay at the salon until Connect is ready', async () => {
+    api.get.mockImplementation((url) => {
+      if (url.includes('reminder-settings')) {
+        return Promise.resolve({ ...baseApiSettings, payment_enabled: true, connect_ready: false });
+      }
+      if (url.includes('services')) {
+        return Promise.resolve({ services: [{ id: 9, name: 'Haircut' }] });
+      }
+      return Promise.resolve({});
+    });
+    renderSettings();
+    await waitFor(() => {
+      expect(screen.getByTestId('payment-connect-required-notice')).toBeInTheDocument();
+    });
+  });
+
   it('shows fee placeholder when fees on but no services', async () => {
     mockLoad([]);
     renderSettings();

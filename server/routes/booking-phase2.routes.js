@@ -138,6 +138,7 @@ router.get('/tenants/:tenantId/reminder-settings', requireAuth, asyncHandler(asy
       default_payment_type: true,
       default_deposit_percentage: true,
       site_id: true,
+      users: { select: { stripe_account_id: true, stripe_connected: true } },
     },
   });
   const { siteData } = await loadTenantSiteRecord(tenant, userId, requestSiteId(req));
@@ -219,6 +220,7 @@ router.put('/tenants/:tenantId/reminder-settings', requireAuth, asyncHandler(asy
       payment_enabled: true,
       default_payment_type: true,
       default_deposit_percentage: true,
+      users: { select: { stripe_account_id: true, stripe_connected: true } },
     },
   });
 

@@ -1,4 +1,5 @@
 import { prisma } from '../../../database/db.js';
+import { CONNECT_USER_SELECT, shopRequiresOnlineCard } from './shopIntakeFlags.js';
 
 /**
  * Service Management Service - Manages booking services
@@ -27,11 +28,12 @@ class ServiceManagementService {
         payment_enabled: true,
         default_payment_type: true,
         default_deposit_percentage: true,
+        users: { select: CONNECT_USER_SELECT },
       },
     });
 
     const paymentType = tenant?.default_payment_type || 'none';
-    const requiresPayment = Boolean(tenant?.payment_enabled) && paymentType !== 'none';
+    const requiresPayment = shopRequiresOnlineCard(tenant);
 
     try {
       const result = await prisma.booking_services.create({
@@ -187,22 +189,26 @@ class ServiceManagementService {
    * New services inherit in createService; this keeps existing rows in sync.
    *
    * @param {string} tenantId
-   * @param {{ payment_enabled?: boolean, default_payment_type?: string, default_deposit_percentage?: number }|null} [tenant]
+   * @param {{ payment_enabled?: boolean, default_payment_type?: string, default_deposit_percentage?: number, users?: object }|null} [tenant]
    * @returns {Promise<number>} count of services updated
    */
   async syncExistingServicesToShopPayment(tenantId, tenant = null) {
-    const row = tenant || await prisma.booking_tenants.findUnique({
-      where: { id: tenantId },
-      select: {
-        payment_enabled: true,
-        default_payment_type: true,
-        default_deposit_percentage: true,
-      },
-    });
+    const needsUser = !tenant?.users;
+    const row = needsUser
+      ? await prisma.booking_tenants.findUnique({
+        where: { id: tenantId },
+        select: {
+          payment_enabled: true,
+          default_payment_type: true,
+          default_deposit_percentage: true,
+          users: { select: CONNECT_USER_SELECT },
+        },
+      })
+      : tenant;
     if (!row) return 0;
 
     const paymentType = row.default_payment_type || 'none';
-    const requiresPayment = Boolean(row.payment_enabled) && paymentType !== 'none';
+    const requiresPayment = shopRequiresOnlineCard(row);
 
     const result = await prisma.booking_services.updateMany({
       where: { tenant_id: tenantId },

@@ -715,8 +715,9 @@ router.post('/checkout/create-session', asyncHandler(async (req, res) => {
       appointment_id: result.appointmentId,
       amount_cents: result.amountCents,
       payment_type: result.paymentType,
+      pay_on_site: result.payOnSite === true,
       fees: result.fees
-    }, 'Checkout session created');
+    }, result.payOnSite ? 'Pay at the salon' : 'Checkout session created');
   } catch (error) {
     console.error('[BookingRoutes] Error creating checkout session:', error);
     return sendBadRequest(res, error.message, 'CHECKOUT_SESSION_FAILED');

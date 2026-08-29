@@ -11,7 +11,7 @@ import { prisma } from '../../../database/db.js';
 import Stripe from 'stripe';
 import { addDays } from 'date-fns';
 import BookingFeeService from './BookingFeeService.js';
-import { sitePaymentEnabled } from './shopIntakeFlags.js';
+import { ownerConnectReady, sitePaymentEnabled } from './shopIntakeFlags.js';
 import { parseSiteData } from '../../utils/parseSiteData.js';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
@@ -40,6 +40,30 @@ class BookingPaymentAdapter {
     }
     
     return this._stripe;
+  }
+
+  payOnSiteCheckoutResult(appointmentId) {
+    return {
+      checkoutUrl: null,
+      sessionId: null,
+      appointmentId,
+      amountCents: 0,
+      paymentType: 'none',
+      payOnSite: true,
+      fees: { service: '0.00', bookingFee: '0.00', total: '0.00' },
+    };
+  }
+
+  async confirmPayOnSite(appointmentId) {
+    await prisma.appointments.update({
+      where: { id: appointmentId },
+      data: {
+        status: 'confirmed',
+        payment_status: 'unpaid',
+        payment_method: 'pay_on_site',
+      },
+    });
+    return this.payOnSiteCheckoutResult(appointmentId);
   }
 
   /**
@@ -72,14 +96,17 @@ class BookingPaymentAdapter {
       }
 
       if (!sitePaymentEnabled(siteData, tenantRecord)) {
-        return {
-          checkoutUrl: null,
-          sessionId: null,
-          appointmentId,
-          amountCents: 0,
-          paymentType: 'none',
-          fees: { service: '0.00', bookingFee: '0.00', total: '0.00' },
-        };
+        return this.payOnSiteCheckoutResult(appointmentId);
+      }
+
+      const tenant = await prisma.booking_tenants.findUnique({
+        where: { id: appointment.tenant_id },
+        include: { users: { select: { stripe_account_id: true, stripe_connected: true } } }
+      });
+
+      const stripeAccountId = tenant?.users?.stripe_account_id || tenant?.stripe_account_id;
+      if (!ownerConnectReady(tenant?.users) || !stripeAccountId) {
+        return this.confirmPayOnSite(appointmentId);
       }
 
       // Calculate all fees
@@ -98,22 +125,9 @@ class BookingPaymentAdapter {
       const totalPriceDollars = basePriceDollars + (fees.bookingFeeCents / 100);
       const totalPriceCents = Math.round(totalPriceDollars * 100);
 
-      // Get tenant's Stripe account (if connected)
-      const tenant = await prisma.booking_tenants.findUnique({
-        where: { id: appointment.tenant_id },
-        include: { users: { select: { stripe_account_id: true, stripe_connected: true } } }
-      });
-
-      const stripeAccountId = tenant?.users?.stripe_account_id || tenant?.stripe_account_id;
-      const isStripeConnected = tenant?.users?.stripe_connected === true;
-
-      if (!stripeAccountId || !isStripeConnected) {
-        throw new Error('STRIPE_NOT_READY');
-      }
-
       const stripe = this.getStripe();
       if (!stripe) {
-        throw new Error('Stripe is not configured');
+        return this.confirmPayOnSite(appointmentId);
       }
 
       // Determine success and cancel URLs
@@ -151,17 +165,14 @@ class BookingPaymentAdapter {
         }
       };
 
-      if (isStripeConnected && stripeAccountId) {
-        const platformFee = Math.min(Math.max(Math.round(totalPriceCents * 0.01), 50), 500);
-        sessionParams.payment_intent_data = {
-          application_fee_amount: platformFee
-        };
-      }
+      const platformFee = Math.min(Math.max(Math.round(totalPriceCents * 0.01), 50), 500);
+      sessionParams.payment_intent_data = {
+        application_fee_amount: platformFee
+      };
 
-      const stripeOptions = isStripeConnected && stripeAccountId
-        ? { stripeAccount: stripeAccountId }
-        : {};
-      const session = await stripe.checkout.sessions.create(sessionParams, stripeOptions);
+      const session = await stripe.checkout.sessions.create(sessionParams, {
+        stripeAccount: stripeAccountId,
+      });
 
       // Store payment session reference
       await prisma.appointments.update({

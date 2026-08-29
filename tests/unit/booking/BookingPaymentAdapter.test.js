@@ -160,9 +160,19 @@ describe('BookingPaymentAdapter', () => {
         stripe_account_id: 'acct_123',
         users: { stripe_account_id: 'acct_123', stripe_connected: false },
       });
+      prisma.appointments.update.mockResolvedValue(mockAppointment);
 
-      await expect(adapter.createBookingCheckout('appt-123', 'full')).rejects.toThrow('STRIPE_NOT_READY');
+      const result = await adapter.createBookingCheckout('appt-123', 'full');
+      expect(result.payOnSite).toBe(true);
+      expect(result.checkoutUrl).toBeNull();
       expect(mockStripe.checkout.sessions.create).not.toHaveBeenCalled();
+      expect(prisma.appointments.update).toHaveBeenCalledWith({
+        where: { id: 'appt-123' },
+        data: expect.objectContaining({
+          status: 'confirmed',
+          payment_method: 'pay_on_site',
+        }),
+      });
     });
 
     it('should create checkout session for full payment', async () => {
@@ -300,22 +310,19 @@ describe('BookingPaymentAdapter', () => {
       ).rejects.toThrow('Appointment invalid-id not found');
     });
 
-    it('should throw error if Stripe is not configured', async () => {
-      // Arrange
+    it('falls back to pay on site if Stripe is not configured', async () => {
       const originalKey = process.env.STRIPE_SECRET_KEY;
       delete process.env.STRIPE_SECRET_KEY;
-      
-      // Force adapter to re-initialize without Stripe
+
       const adapterNoStripe = new BookingPaymentAdapter();
       prisma.appointments.findUnique.mockResolvedValue(mockAppointment);
       prisma.booking_tenants.findUnique.mockResolvedValue(mockAppointment.booking_tenants);
+      prisma.appointments.update.mockResolvedValue(mockAppointment);
 
-      // Act & Assert
-      await expect(
-        adapterNoStripe.createBookingCheckout('appt-123', 'full')
-      ).rejects.toThrow('Stripe is not configured');
+      const result = await adapterNoStripe.createBookingCheckout('appt-123', 'full');
+      expect(result.payOnSite).toBe(true);
+      expect(result.checkoutUrl).toBeNull();
 
-      // Cleanup
       process.env.STRIPE_SECRET_KEY = originalKey;
     });
   });

@@ -402,6 +402,8 @@ router.post('/payments/checkout-sessions', checkoutLimiter, orderLimiter, requir
         if (stripeAccountId) {
             createOptions.stripeAccount = stripeAccountId;
             console.log(`Creating checkout on connected account: ${stripeAccountId}`);
+        } else {
+            return sendBadRequest(res, 'Stripe Connect is not set up for this site. Visitors can pay on site.', 'STRIPE_CONNECT_REQUIRED');
         }
 
     const session = await stripe.checkout.sessions.create(sessionOptions, createOptions);

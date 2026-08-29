@@ -58,6 +58,7 @@ export default {
   'booking.payContinue': 'Continuar al pago',
   'booking.depositDue': 'Depósito del {percent}% ahora (${amount}). El resto se paga en el salón.',
   'booking.fullDue': 'Pago completo ahora (${amount}).',
+  'booking.payAtSalon': 'Paga en el salón. No se cobra tarjeta en línea.',
   'booking.booking': 'Reservando...',
   'booking.confirmed': 'Reserva confirmada',
   'booking.demoConfirmed': 'Reserva de ejemplo confirmada',
