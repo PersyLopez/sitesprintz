@@ -5,6 +5,7 @@ import { useToast } from '../../hooks/useToast';
 import { api } from '../../services/api';
 import { initializeStripe } from '../../utils/stripe';
 import { PRICING_CONFIG } from '../../config/pricing.config';
+import { getPublishedSiteUrl } from '../../utils/siteWorkspace';
 import './PublishModal.css';
 
 function PublishModal({ siteData, onClose }) {
@@ -285,7 +286,7 @@ function PublishModal({ siteData, onClose }) {
       });
 
       const subdomain = result.subdomain || result.site?.subdomain;
-      const siteUrl = result.url || `http://localhost:3000/sites/${subdomain}/`;
+      const siteUrl = result.url || getPublishedSiteUrl(subdomain) || `/view/${encodeURIComponent(subdomain)}`;
 
       showSuccess(`🎉 Site published successfully!`);
 

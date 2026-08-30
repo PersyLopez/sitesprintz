@@ -54,7 +54,7 @@ import bookingPhase2Routes from './server/routes/booking-phase2.routes.js';
 import { initializePricingRoutes } from './server/routes/pricing.routes.js';
 import { query, prisma } from './database/db.js';
 import publishedSiteRenderer from './server/services/publishedSiteRenderer.js';
-import { isSafeSiteIdentifier } from './server/utils/siteIsolation.js';
+import { isSafeSiteIdentifier, liveSiteDocumentIdentifier, liveSiteRedirectTarget } from './server/utils/siteIsolation.js';
 import testRoutes from './server/routes/test.routes.js';
 import healthRoutes from './server/routes/health.js';
 
@@ -88,6 +88,17 @@ app.set('etag', false);
 
 const isProd = process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'test';
 const publicDir = isProd ? path.join(__dirname, 'dist') : path.join(__dirname, 'public');
+
+function isCrawlerRequest(req) {
+  const ua = (req.get('user-agent') || '').toLowerCase();
+  const crawlerPatterns = [
+    'googlebot', 'bingbot', 'slurp', 'duckduckbot', 'baiduspider',
+    'yandexbot', 'facebookexternalhit', 'twitterbot', 'linkedinbot',
+    'whatsapp', 'slackbot', 'discordbot', 'curl', 'wget', 'python',
+    'validator'
+  ];
+  return crawlerPatterns.some(pattern => ua.includes(pattern)) || req.query.ssr === '1';
+}
 
 // Security Headers with Helmet (must be before static files)
 app.use(helmet({
@@ -154,7 +165,28 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.static(publicDir, { dotfiles: 'ignore' }));
+app.use((req, res, next) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+  const siteIdentifier = liveSiteDocumentIdentifier(req.path);
+  if (!siteIdentifier) return next();
+  if (!isCrawlerRequest(req)) {
+    const target = liveSiteRedirectTarget(req.path, req.originalUrl);
+    if (!target) return next();
+    return res.redirect(302, target);
+  }
+  const qIndex = String(req.originalUrl || '').indexOf('?');
+  const search = qIndex >= 0 ? req.originalUrl.slice(qIndex) : '';
+  req.url = `/sites/${siteIdentifier}${search}`;
+  return next();
+});
+
+const servePublic = express.static(publicDir, { dotfiles: 'ignore' });
+app.use((req, res, next) => {
+  if ((req.method === 'GET' || req.method === 'HEAD') && liveSiteDocumentIdentifier(req.path)) {
+    return next();
+  }
+  return servePublic(req, res, next);
+});
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -407,41 +439,6 @@ if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
   });
 }
 
-// Helper: Check if request is from a crawler/bot
-function isCrawlerRequest(req) {
-  const ua = (req.get('user-agent') || '').toLowerCase();
-  const crawlerPatterns = [
-    'googlebot', 'bingbot', 'slurp', 'duckduckbot', 'baiduspider',
-    'yandexbot', 'facebookexternalhit', 'twitterbot', 'linkedinbot',
-    'whatsapp', 'slackbot', 'discordbot', 'curl', 'wget', 'python',
-    'validator'
-  ];
-  return crawlerPatterns.some(pattern => ua.includes(pattern)) || req.query.ssr === '1';
-}
-
-// Handle SPA routing FIRST for /sites/:subdomain (before static file serving)
-// Skip SPA shell for crawlers (they need SSR), serve React SPA to browsers
-app.use((req, res, next) => {
-  if (req.method !== 'GET') return next();
-
-  // Don't intercept API calls
-  if (req.path.startsWith('/api/')) {
-    return next();
-  }
-
-  // For /sites/:subdomain routes
-  if (req.path.match(/^\/sites\/[^\/]+$/)) {
-    // For crawlers/bots, skip SPA and let SSR route handle it
-    if (isCrawlerRequest(req)) {
-      return next();
-    }
-    // For browsers, serve React SPA
-    return res.sendFile(path.join(publicDir, 'index.html'));
-  }
-
-  next();
-});
-
 // CSS route handlers for published sites (must be before static file serving)
 app.get('/sites/:siteId/styles.css', async (req, res) => {
   res.setHeader('Content-Type', 'text/css; charset=utf-8');
@@ -597,7 +594,7 @@ function generatePremiumCSS(siteId) {
 // =======================
 // Must come BEFORE static middleware for /sites to intercept dynamic requests
 // Handles both /sites/:subdomain (for published sites) and /sites/:id (legacy)
-app.get('/sites/:siteIdentifier', async (req, res, next) => {
+async function renderPublishedSiteDocument(req, res, next) {
   try {
     const { siteIdentifier } = req.params;
 
@@ -605,13 +602,11 @@ app.get('/sites/:siteIdentifier', async (req, res, next) => {
       return next();
     }
 
-    // Try to find site by subdomain first (preferred for published sites)
     let site = await prisma.sites.findFirst({
       where: { subdomain: siteIdentifier },
       select: { site_data: true, status: true, subdomain: true }
     });
 
-    // Fallback: try lookup by id for backward compatibility
     if (!site) {
       site = await prisma.sites.findUnique({
         where: { id: siteIdentifier },
@@ -619,38 +614,33 @@ app.get('/sites/:siteIdentifier', async (req, res, next) => {
       });
     }
 
-    // Fallback: try to load from public/sites/{subdomain}/data/site.json for static sites
     let siteData = null;
     if (site && site.site_data) {
       siteData = typeof site.site_data === 'string' ? JSON.parse(site.site_data) : site.site_data;
     }
 
     if (!siteData) {
-      // Not a published site, let static middleware handle it
       return next();
     }
 
-    // Render the site with SSR
     const html = await publishedSiteRenderer.render(siteData, {
       baseUrl: req.get('host'),
       siteIdentifier: site.subdomain || siteIdentifier,
-      customDomain: req.get('x-custom-domain') // Optional custom domain header
+      customDomain: req.get('x-custom-domain')
     });
 
     res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-    res.setHeader('Cache-Control', 'public, max-age=300'); // 5 minute cache
+    res.setHeader('Cache-Control', 'public, max-age=300');
     res.send(html);
   } catch (error) {
     console.error('Error rendering published site:', error);
-    next(error); // Pass to error handler
+    next(error);
   }
-});
+}
 
-// Also handle trailing slash variant
-app.get('/sites/:siteIdentifier/', async (req, res, next) => {
-  req.url = req.url.slice(0, -1); // Remove trailing slash
-  return next();
-});
+app.get('/sites/:siteIdentifier', renderPublishedSiteDocument);
+app.get('/sites/:siteIdentifier/', renderPublishedSiteDocument);
+app.get('/sites/:siteIdentifier/index.html', renderPublishedSiteDocument);
 
 // Serve published sites static files (for specific file requests, not subdomain routes)
 app.use('/sites', express.static(path.join(__dirname, 'public/sites'), {

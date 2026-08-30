@@ -45,6 +45,6 @@ describe('siteWorkspace helpers', () => {
 
   it('builds a same-origin published site path when VITE_API_URL is empty', () => {
     expect(getPublishedSiteUrl(null)).toBeNull();
-    expect(getPublishedSiteUrl('river-salon')).toMatch(/\/sites\/river-salon\/$/);
+    expect(getPublishedSiteUrl('river-salon')).toMatch(/\/view\/river-salon$/);
   });
 });

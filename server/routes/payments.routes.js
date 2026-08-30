@@ -30,6 +30,7 @@ import {
   deactivateProcessor
 } from '../services/payments/processorConnectHelpers.js';
 import { resolveStripeRedirectUrl, subscriptionCheckoutUrls } from '../utils/stripeReturnUrls.js';
+import { livePublishedPath } from '../../src/utils/visitorExperience.js';
 import { fulfillPlatformSubscription } from '../services/payments/fulfillPlatformSubscription.js';
 import { stripeSubscriptionLineItem, STRIPE_TRIAL_DAYS, normalizePaidPlan, CUSTOMER_LABOR_SKUS, isCustomerLaborSkuConfigured } from '../config/platformPlans.js';
 import { createLaborCheckout } from '../services/labor/laborCheckoutService.js';
@@ -235,15 +236,16 @@ router.post('/checkout/create-session', checkoutLimiter, orderLimiter, authentic
         })
     };
 
+    const livePath = livePublishedPath(site.subdomain || siteId) || `/view/${encodeURIComponent(site.subdomain || siteId)}`;
     sessionParams.success_url = resolveStripeRedirectUrl(
         req,
         successUrl,
-        `/view/${site.subdomain || siteId}?order=success`
+        `${livePath}?order=success`
     );
     sessionParams.cancel_url = resolveStripeRedirectUrl(
         req,
         cancelUrl,
-        `/view/${site.subdomain || siteId}?order=cancelled`
+        `${livePath}?order=cancelled`
     );
 
     // Direct charge on the owner's Standard account — funds never settle on SiteSprintz
@@ -346,7 +348,7 @@ router.post('/payments/checkout-sessions', checkoutLimiter, orderLimiter, requir
         const curr = (currency || 'usd').toLowerCase();
 
         // Determine return URLs
-        const sitePath = `/view/${liveSlug}`;
+        const sitePath = livePublishedPath(liveSlug) || `/view/${encodeURIComponent(liveSlug)}`;
         const success = resolveStripeRedirectUrl(req, successUrl, `${sitePath}?order=success`);
         const cancel = resolveStripeRedirectUrl(req, cancelUrl, `${sitePath}?order=cancelled`);
 

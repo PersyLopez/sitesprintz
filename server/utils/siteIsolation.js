@@ -89,6 +89,37 @@ export function isSafeSiteIdentifier(value) {
   return /^[a-z0-9]([a-z0-9-]{1,61}[a-z0-9])?$/.test(value);
 }
 
+/**
+ * Document URL for a leftover live site (`/sites/:id`, trailing slash, index.html).
+ * Asset paths like `/sites/:id/gallery/hero.jpg` are not documents.
+ *
+ * @param {string} pathname
+ * @returns {string|null}
+ */
+export function liveSiteDocumentIdentifier(pathname) {
+  const liveMatch = String(pathname || '').match(/^\/sites\/([^/]+)(?:\/index\.html)?\/?$/);
+  if (!liveMatch) return null;
+  const siteIdentifier = liveMatch[1];
+  if (!isSafeSiteIdentifier(siteIdentifier)) return null;
+  return siteIdentifier;
+}
+
+/**
+ * Browser visits to the leftover `/sites/:id` page (and its index.html)
+ * go to `/view/:id`. Asset paths like `/sites/:id/gallery/hero.jpg` stay.
+ *
+ * @param {string} pathname
+ * @param {string} [originalUrl]
+ * @returns {string|null}
+ */
+export function liveSiteRedirectTarget(pathname, originalUrl = '') {
+  const siteIdentifier = liveSiteDocumentIdentifier(pathname);
+  if (!siteIdentifier) return null;
+  const qIndex = String(originalUrl).indexOf('?');
+  const search = qIndex >= 0 ? originalUrl.slice(qIndex) : '';
+  return `/view/${encodeURIComponent(siteIdentifier)}${search}`;
+}
+
 export function deepClone(value) {
   if (value === undefined) {
     return undefined;
@@ -241,13 +272,9 @@ export async function writeIsolatedSiteFiles(subdomain, siteData) {
   const siteJsonPath = resolveContainedPath(siteDir, 'data', 'site.json');
   await fs.writeFile(siteJsonPath, JSON.stringify(publicData, null, 2));
 
-  try {
-    const indexSource = path.join(PROJECT_ROOT, 'public', 'site-template.html');
-    const indexContent = await fs.readFile(indexSource, 'utf-8');
-    await fs.writeFile(resolveContainedPath(siteDir, 'index.html'), indexContent);
-  } catch {
-    // index.html is optional; SSR can render from site_data
-  }
+  const { default: publishedSiteRenderer } = await import('../services/publishedSiteRenderer.js');
+  const indexHtml = await publishedSiteRenderer.render(siteData, { siteIdentifier: subdomain });
+  await fs.writeFile(resolveContainedPath(siteDir, 'index.html'), indexHtml);
 
   return siteDir;
 }

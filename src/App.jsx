@@ -65,7 +65,7 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import FeedbackWidget from './components/common/FeedbackWidget';
 import BetaBanner from './components/common/BetaBanner';
 import CustomDomainGate from './components/published/CustomDomainGate';
-import LegacySitePaneRedirect from './components/dashboard/LegacySitePaneRedirect';
+import LegacySitePaneRedirect, { LegacyPublishedSiteRedirect } from './components/dashboard/LegacySitePaneRedirect';
 import { LocaleProvider } from './i18n/LocaleContext.jsx';
 import { ThemeProvider } from './context/ThemeContext.jsx';
 
@@ -170,13 +170,9 @@ function App() {
                   </Suspense>
                 } 
               />
-              <Route 
-                path="/sites/:subdomain" 
-                element={
-                  <Suspense fallback={<LoadingFallback message="Loading published site..." />}>
-                    <PublishedSiteViewer />
-                  </Suspense>
-                } 
+              <Route
+                path="/sites/:subdomain"
+                element={<LegacyPublishedSiteRedirect />}
               />
               <Route 
                 path="/payment-success" 

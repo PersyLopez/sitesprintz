@@ -147,7 +147,7 @@ describe('SiteCard', () => {
 
     const viewButton = screen.getByTitle('View live site');
     expect(viewButton).toBeInTheDocument();
-    expect(viewButton).toHaveAttribute('href', expect.stringContaining('/sites/testbusiness/'));
+    expect(viewButton).toHaveAttribute('href', expect.stringContaining('/view/testbusiness'));
   });
 
   it('should disable preview button for draft sites', () => {

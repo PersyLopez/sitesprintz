@@ -94,6 +94,7 @@ describe('SiteDashboard', () => {
     expect(screen.getByTestId('site-overview-orders')).toBeInTheDocument();
     expect(screen.getByTestId('site-overview-appointments')).toBeInTheDocument();
     expect(screen.getByTestId('site-overview-settings')).toBeInTheDocument();
+    expect(screen.getByTestId('site-dashboard-view')).toHaveAttribute('href', expect.stringContaining('/view/river-salon'));
     expect(screen.getByTestId('site-dashboard-edit')).toHaveAttribute('href', '/view/river-salon?edit=true');
     expect(screen.getByTestId('site-dashboard-builder')).toHaveAttribute('href', '/setup?site=site-1');
     expect(screen.getByTestId('site-overview-edit')).toHaveAttribute('href', '/view/river-salon?edit=true');

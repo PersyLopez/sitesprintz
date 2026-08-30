@@ -15,6 +15,8 @@ import {
   getSiteDirectory,
   getTemplateFilePath,
   isSafeSiteIdentifier,
+  liveSiteDocumentIdentifier,
+  liveSiteRedirectTarget,
   loadTemplateCopy,
   removeIsolatedSiteFiles,
   resolveContainedPath,
@@ -73,6 +75,22 @@ describe('site isolation — identifiers', () => {
     expect(isSafeSiteIdentifier('../etc/passwd')).toBe(false);
     expect(isSafeSiteIdentifier('foo/bar')).toBe(false);
     expect(isSafeSiteIdentifier('drafts')).toBe(true); // format-ok; reserved check is separate
+  });
+});
+
+describe('site isolation — live document redirect', () => {
+  it('sends leftover live pages to /view and keeps query strings', () => {
+    expect(liveSiteRedirectTarget('/sites/plants-and-threads')).toBe('/view/plants-and-threads');
+    expect(liveSiteRedirectTarget('/sites/plants-and-threads/')).toBe('/view/plants-and-threads');
+    expect(liveSiteRedirectTarget('/sites/plants-and-threads/index.html')).toBe('/view/plants-and-threads');
+    expect(liveSiteRedirectTarget('/sites/plants-and-threads/', '/sites/plants-and-threads/?order=success'))
+      .toBe('/view/plants-and-threads?order=success');
+  });
+
+  it('does not treat photos or hydrate scripts as live documents', () => {
+    expect(liveSiteDocumentIdentifier('/sites/plants-and-threads/gallery/hero.jpg')).toBeNull();
+    expect(liveSiteRedirectTarget('/sites/plants-and-threads/products/a.jpg')).toBeNull();
+    expect(liveSiteDocumentIdentifier('/sites/site-hydrate.js')).toBeNull();
   });
 });
 
@@ -220,6 +238,11 @@ describe('site isolation — published site directories', () => {
     expect(jsonA._isolation.siteId).toBe('iso-tenant-alpha');
     expect(jsonB._isolation.siteId).toBe('iso-tenant-beta');
     expect(jsonA._isolation.sourceTemplateId).toBe('salon');
+
+    const indexA = await fs.readFile(path.join(dirA, 'index.html'), 'utf-8');
+    expect(indexA).toContain('class="ss-live"');
+    expect(indexA).toContain('Alpha Cuts');
+    expect(indexA).not.toContain('site-hydrate.js');
   });
 
   it('redacts the private street from published site.json in area mode', async () => {

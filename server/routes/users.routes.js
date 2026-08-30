@@ -11,6 +11,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { prisma } from '../../database/db.js';
 import { requireAuth } from '../middleware/auth.js';
+import { livePublishedPath } from '../../src/utils/visitorExperience.js';
 import {
   sendSuccess,
   sendBadRequest,
@@ -138,7 +139,7 @@ router.get('/:userId/sites', requireAuth, asyncHandler(async (req, res) => {
       id: site.id,
       subdomain: site.subdomain,
       name: siteData?.brand?.name || 'Untitled Site',
-      url: `/sites/${site.subdomain}/`,
+      url: livePublishedPath(site.subdomain),
       status: site.status,
       plan: site.plan,
       isPublic: site.is_public,

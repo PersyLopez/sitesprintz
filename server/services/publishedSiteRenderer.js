@@ -6,9 +6,7 @@
  */
 
 import SEOService from './seoService.js';
-import { sectionHtmlBuilder } from '../rendering/sectionHtml.js';
-import { renderSectionToHtml, withNativeBookingTokens } from '../../src/utils/sectionHtmlBridge.js';
-import { buildStickyCtaBar } from '../../src/utils/publishedSiteDocument.js';
+import { buildLiveSiteMarkup } from '../../src/utils/publishedSiteDocument.js';
 
 class PublishedSiteRenderer {
   constructor() {
@@ -37,39 +35,15 @@ class PublishedSiteRenderer {
     });
     const schema = this.seoService.generateSchemaMarkup(siteData.category || 'service', siteData);
     const canonicalUrl = this.seoService.getCanonicalUrl(resolvedSubdomain, '/', { customDomain });
+    const markup = buildLiveSiteMarkup(siteData, { locale: options.locale || 'en' });
 
-    // Build visible sections HTML — prefer bridge (token-aware), fallback to builder
-    let sectionsHtml;
-    let pageForCta = null;
-    try {
-      const { composePage } = await import('../../src/utils/layoutRenderer.js');
-      const page = composePage({ siteData });
-      pageForCta = page;
-      const enabledSections = (page.sections || []).filter(s => s && s.enabled !== false);
-      const tokens = withNativeBookingTokens(page.tokens, enabledSections, siteData);
-      sectionsHtml = enabledSections
-        .map(section => renderSectionToHtml(section, tokens))
-        .filter(Boolean)
-        .join('\n');
-    } catch (e) {
-      // Fallback: legacy builder (no token awareness)
-      sectionsHtml = await sectionHtmlBuilder.buildSectionsHtml(siteData);
-    }
-
-    // Build theme variables if custom theme is configured
-    const themeVars = this._buildThemeVariables(siteData);
-    const stickyCta = buildStickyCtaBar(siteData, pageForCta);
-
-    // Assemble complete HTML document
     return this._buildHtmlDocument({
       metaTags,
       schema,
       canonicalUrl,
-      themeVars,
-      sectionsHtml,
-      stickyCta,
+      liveCss: markup.css,
+      liveHtml: markup.html,
       siteData,
-      baseUrl
     });
   }
 
@@ -82,11 +56,9 @@ class PublishedSiteRenderer {
       metaTags,
       schema,
       canonicalUrl,
-      themeVars,
-      sectionsHtml,
-      stickyCta = '',
+      liveCss = '',
+      liveHtml = '',
       siteData,
-      baseUrl
     } = components;
 
     const title = metaTags.title || siteData.businessName || siteData.brand?.name || 'Business Website';
@@ -132,180 +104,18 @@ ${JSON.stringify(schema, null, 2).replace(/</g, '\\u003c')}
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   
-  <!-- Critical Inline Styles -->
   <style>
-    ${this._getCriticalCss()}
-    
-    /* Theme Variables */
-    :root {
-      ${themeVars}
-    }
+    ${liveCss}
   </style>
 </head>
 <body>
-  <!-- Main Content -->
-  <main id="app">
-    ${sectionsHtml}
-  </main>
-  ${stickyCta}
-  
-  <!-- Minimal Hydration Script -->
-  <script src="/sites/site-hydrate.js" defer></script>
+  <div class="ss-live">
+    ${liveHtml}
+  </div>
 </body>
 </html>`;
-  }
-
-  /**
-   * Build CSS custom properties from theme
-   * @private
-   */
-  _buildThemeVariables(siteData) {
-    const theme = siteData.theme || {};
-    
-    return `
-      --color-bg: ${theme.backgroundColor || '#0a0a0f'};
-      --color-text: ${theme.textColor || '#f8fafc'};
-      --color-primary: ${theme.primaryColor || '#6366f1'};
-      --color-primary-light: ${theme.primaryLightColor || '#818cf8'};
-      --color-accent: ${theme.accentColor || '#ec4899'};
-      --font-display: ${theme.fontDisplay || "'Inter', -apple-system, sans-serif"};
-      --font-body: ${theme.fontBody || "'Inter', -apple-system, sans-serif"};
-      --radius: ${theme.borderRadius || '20px'};
-    `;
-  }
-
-  /**
-   * Get critical CSS for above-the-fold rendering
-   * Inlined for fastest FCP
-   * @private
-   */
-  _getCriticalCss() {
-    return `
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-      
-      html, body {
-        width: 100%;
-        height: 100%;
-      }
-      
-      body {
-        font-family: var(--font-body);
-        background: var(--color-bg);
-        color: var(--color-text);
-        line-height: 1.6;
-        font-size: 16px;
-        overflow-x: hidden;
-      }
-      
-      .container {
-        width: 100%;
-        max-width: 1280px;
-        margin: 0 auto;
-        padding: 0 24px;
-      }
-      
-      /* Hero section - critical for FCP */
-      .hero {
-        padding: 96px 0;
-        position: relative;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 60vh;
-      }
-      
-      .hero-content {
-        text-align: center;
-        z-index: 10;
-      }
-      
-      .hero-content h1 {
-        font-size: 3.5rem;
-        font-weight: 900;
-        margin-bottom: 1rem;
-        line-height: 1.2;
-        letter-spacing: -0.02em;
-      }
-      
-      .hero-content p {
-        font-size: 1.25rem;
-        color: rgba(248, 250, 252, 0.7);
-        margin-bottom: 2rem;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-      }
-      
-      .cta-button {
-        display: inline-block;
-        padding: 12px 32px;
-        background: var(--color-primary);
-        color: white;
-        text-decoration: none;
-        border-radius: var(--radius);
-        font-weight: 600;
-        transition: all 0.2s;
-      }
-      
-      .cta-button:hover {
-        background: var(--color-primary-light);
-        transform: translateY(-2px);
-      }
-      
-      /* Section styles */
-      section {
-        padding: 96px 0;
-      }
-      
-      section h2 {
-        font-size: 2.5rem;
-        font-weight: 800;
-        margin-bottom: 3rem;
-        text-align: center;
-      }
-      
-      section h3 {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-      }
-      
-      /* Image optimization */
-      img {
-        max-width: 100%;
-        height: auto;
-        display: block;
-      }
-      
-      /* Sticky conversion bar */
-      body { padding-bottom: 76px; }
-      .ss-sticky-cta {
-        position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
-        display: flex; gap: 8px;
-        padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
-        background: var(--color-bg);
-        border-top: 1px solid rgba(248, 250, 252, 0.12);
-      }
-      .ss-sticky-cta a {
-        flex: 1; min-height: 44px; display: flex; align-items: center; justify-content: center;
-        text-decoration: none; font-weight: 600; border-radius: 4px;
-        background: var(--color-primary); color: #fff;
-      }
-      .ss-sticky-cta a[href^="tel"] {
-        background: transparent; color: var(--color-text);
-        border: 1px solid rgba(248, 250, 252, 0.2);
-      }
-      @media (prefers-reduced-motion: reduce) {
-        * { animation: none !important; transition: none !important; }
-      }
-    `;
   }
 
   /**

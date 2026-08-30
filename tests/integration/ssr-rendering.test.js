@@ -96,7 +96,7 @@ describe('Published Site SSR Rendering', () => {
       expect(html).toContain('@type');
     });
 
-    it('should include critical CSS inline', async () => {
+    it('should include composed live CSS inline', async () => {
       const siteData = {
         businessName: 'Test'
       };
@@ -104,20 +104,19 @@ describe('Published Site SSR Rendering', () => {
       const html = await publishedSiteRenderer.render(siteData);
 
       expect(html).toContain('<style>');
-      expect(html).toContain('--color-bg:');
-      expect(html).toContain('body {');
-      expect(html).toContain('.hero {');
+      expect(html).toContain('--ss-bg');
+      expect(html).toContain('.ss-live');
     });
 
-    it('should link hydration script', async () => {
+    it('should render composed live markup instead of the legacy hydrate shell', async () => {
       const siteData = {
         businessName: 'Test'
       };
 
       const html = await publishedSiteRenderer.render(siteData);
 
-      expect(html).toContain('site-hydrate.js');
-      expect(html).toContain('defer');
+      expect(html).toContain('class="ss-live"');
+      expect(html).not.toContain('site-hydrate.js');
     });
 
     it('should escape HTML in meta tags to prevent XSS', async () => {
@@ -134,7 +133,7 @@ describe('Published Site SSR Rendering', () => {
       expect(html).toContain('&quot;');
     });
 
-    it('should apply custom theme variables', async () => {
+  it('should include live theme tokens from the composed stylesheet', async () => {
       const siteData = {
         businessName: 'Themed Business',
         theme: {
@@ -147,10 +146,9 @@ describe('Published Site SSR Rendering', () => {
 
       const html = await publishedSiteRenderer.render(siteData);
 
-      expect(html).toContain('--color-bg: #ffffff');
-      expect(html).toContain('--color-text: #000000');
-      expect(html).toContain('--color-primary: #ff0000');
-      expect(html).toContain('--radius: 8px');
+      expect(html).toContain('--ss-bg');
+      expect(html).toContain('--ss-accent');
+      expect(html).not.toContain('--color-bg: #ffffff');
     });
   });
 

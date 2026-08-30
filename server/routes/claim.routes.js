@@ -206,6 +206,12 @@ router.post('/:token/accept', claimAcceptLimiter, requireSignedIn, async (req, r
         where: { site_id: site.id },
         data: { status: 'claimed' },
       });
+      await tx.booking_tenants.updateMany({
+        where: {
+          OR: [{ site_id: String(site.id) }, { site_id: site.subdomain }],
+        },
+        data: { user_id: claimant.id },
+      });
     });
 
     return res.json({

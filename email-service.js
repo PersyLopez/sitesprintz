@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { livePublishedPath } from './src/utils/visitorExperience.js';
 
 // Initialize Resend lazily to allow env vars to load
 let resend = null;
@@ -699,7 +700,7 @@ ${safe.message}
         </div>
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="${SITE_URL}/sites/${siteId}/" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #10b981, #059669); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 1rem;">
+          <a href="${SITE_URL}${livePublishedPath(siteId)}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #10b981, #059669); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 1rem;">
             View Live Site
           </a>
         </div>

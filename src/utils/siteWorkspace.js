@@ -1,4 +1,5 @@
 import { getLayoutForNiche, resolveFeatures, LAYOUTS } from '../config/layouts.js';
+import { livePublishedPath } from './visitorExperience.js';
 
 const KNOWN_NICHES = Array.from(
   new Set(Object.values(LAYOUTS).flatMap((layout) => layout.niches || []))
@@ -50,9 +51,10 @@ export function getSiteFeatures(site) {
 
 /** Live published URL. Empty VITE_API_URL means same-origin (production). */
 export function getPublishedSiteUrl(subdomain) {
-  if (!subdomain) return null;
+  const path = livePublishedPath(subdomain);
+  if (!path) return null;
   const origin = String(import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
-  return `${origin}/sites/${subdomain}/`;
+  return `${origin}${path}`;
 }
 
 export function getSiteWorkspacePaths(siteId, site = {}) {
@@ -66,6 +68,6 @@ export function getSiteWorkspacePaths(siteId, site = {}) {
     settings: `${base}/settings`,
     analytics: `${base}/analytics`,
     edit: `/setup?site=${siteId}`,
-    liveEdit: subdomain ? `/view/${encodeURIComponent(subdomain)}?edit=true` : `/setup?site=${siteId}`,
+    liveEdit: subdomain ? `${livePublishedPath(subdomain)}?edit=true` : `/setup?site=${siteId}`,
   };
 }

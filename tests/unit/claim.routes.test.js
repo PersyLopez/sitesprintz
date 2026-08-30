@@ -19,6 +19,9 @@ vi.mock('../../database/db.js', () => ({
     outreach_candidates: {
       updateMany: vi.fn(),
     },
+    booking_tenants: {
+      updateMany: vi.fn(),
+    },
     $transaction: vi.fn(),
   },
 }));
@@ -80,10 +83,12 @@ describe('claim routes', () => {
       fn({
         sites: prisma.sites,
         outreach_candidates: prisma.outreach_candidates,
+        booking_tenants: prisma.booking_tenants,
       })
     );
     prisma.sites.update.mockResolvedValue({ ...prospectSite, user_id: 'user-1' });
     prisma.outreach_candidates.updateMany.mockResolvedValue({ count: 1 });
+    prisma.booking_tenants.updateMany.mockResolvedValue({ count: 1 });
     prisma.users.findUnique.mockImplementation(({ where }) => {
       if (where.id === 'user-1') return Promise.resolve(claimant);
       if (where.id === 'admin-1') return Promise.resolve({ id: 'admin-1', role: 'admin' });
@@ -123,6 +128,12 @@ describe('claim routes', () => {
     expect(prisma.outreach_candidates.updateMany).toHaveBeenCalledWith({
       where: { site_id: 'riverside-cuts' },
       data: { status: 'claimed' },
+    });
+    expect(prisma.booking_tenants.updateMany).toHaveBeenCalledWith({
+      where: {
+        OR: [{ site_id: 'riverside-cuts' }, { site_id: 'riverside-cuts' }],
+      },
+      data: { user_id: 'user-1' },
     });
   });
 

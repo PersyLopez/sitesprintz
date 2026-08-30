@@ -14,7 +14,7 @@ import { sanitizeSiteDataForStorage } from '../utils/siteDataSanitizer.js';
 import { TemplateNormalizer } from '../services/templateNormalizer.js';
 import { hasFeature, FEATURES } from '../../src/utils/planFeatures.js';
 import { resolvePayOnSiteForPublish } from '../../src/utils/payOnSite.js';
-import { siteWantsEmbeddedBooking } from '../../src/utils/visitorExperience.js';
+import { siteWantsEmbeddedBooking, livePublishedPath } from '../../src/utils/visitorExperience.js';
 import { ensurePublishedBooking } from '../services/booking/ensurePublishedBooking.js';
 import { normalizeTier } from '../../src/config/tiers.js';
 import { resolveUserPlan } from '../utils/resolveUserPlan.js';
@@ -983,10 +983,11 @@ router.post('/:draftId/publish', asyncHandler(async (req, res) => {
   }
 
   const baseUrl = `${req.protocol}://${req.get('host')}`;
+  const liveUrl = `${baseUrl}${livePublishedPath(subdomain)}`;
   
   return sendSuccess(res, {
     subdomain,
-    url: `${baseUrl}/sites/${subdomain}`,
+    url: liveUrl,
     businessName: siteData.brand?.name,
     trialDays: hasActiveSubscription ? null : 7,
     isNewUser,
@@ -994,7 +995,7 @@ router.post('/:draftId/publish', asyncHandler(async (req, res) => {
     site: {
       id: siteId,
       subdomain,
-      url: `${baseUrl}/sites/${subdomain}`,
+      url: liveUrl,
       businessName: siteData.brand?.name,
       templateId: draft.template_id,
       plan: sitePlan,

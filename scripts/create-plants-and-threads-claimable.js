@@ -493,45 +493,102 @@ async function replaceNativeBooking(owner, siteData) {
   });
 }
 
-async function upsertProspectSite(owner) {
+export function resolveClaimableOwnerPatch(existing, admin, {
+  assignOwner = null,
+  keepOwner = false,
+  claimToken,
+} = {}) {
+  if (assignOwner?.id) {
+    return {
+      user_id: assignOwner.id,
+      claim_token_hash: null,
+      claim_token_expires: null,
+    };
+  }
+  if (keepOwner && existing?.user_id) {
+    return {
+      user_id: existing.user_id,
+      claim_token_hash: existing.claim_token_hash,
+      claim_token_expires: existing.claim_token_expires,
+    };
+  }
+  return {
+    user_id: admin.id,
+    claim_token_hash: hashClaimToken(claimToken),
+    claim_token_expires: claimExpiryDate(),
+  };
+}
+
+async function transferBookingTenantToUser(site, userId) {
+  const siteId = site?.id ? String(site.id) : SUBDOMAIN;
+  await prisma.booking_tenants.updateMany({
+    where: {
+      OR: [{ site_id: siteId }, { site_id: SUBDOMAIN }],
+    },
+    data: { user_id: userId },
+  });
+}
+
+async function upsertProspectSite(admin, { assignOwner = null, keepOwner = false } = {}) {
   const siteData = buildSiteData();
   const claimToken = generateClaimToken();
+  const existing = await prisma.sites.findUnique({ where: { subdomain: SUBDOMAIN } });
+  const ownership = resolveClaimableOwnerPatch(existing, admin, {
+    assignOwner,
+    keepOwner,
+    claimToken,
+  });
   const payload = {
-    user_id: owner.id,
+    ...ownership,
     subdomain: SUBDOMAIN,
     template_id: 'product-showcase',
     status: 'published',
     plan: 'growth',
     site_data: siteData,
     published_at: new Date(),
-    created_at: new Date(),
+    created_at: existing?.created_at || new Date(),
     is_public: true,
     is_featured: false,
     json_file_path: `sites/${SUBDOMAIN}/data/site.json`,
-    claim_token_hash: hashClaimToken(claimToken),
-    claim_token_expires: claimExpiryDate(),
   };
 
-  const existing = await prisma.sites.findUnique({ where: { subdomain: SUBDOMAIN } });
+  let site;
   if (existing) {
-    await prisma.sites.update({ where: { subdomain: SUBDOMAIN }, data: payload });
+    site = await prisma.sites.update({ where: { subdomain: SUBDOMAIN }, data: payload });
   } else {
-    await prisma.sites.create({ data: { id: SUBDOMAIN, ...payload } });
+    site = await prisma.sites.create({ data: { id: SUBDOMAIN, ...payload } });
   }
   await writeIsolatedSiteFiles(SUBDOMAIN, siteData);
-  await replaceNativeBooking(owner, siteData);
-  return { status: existing ? 'updated' : 'created', claimToken };
+  if (assignOwner || keepOwner) {
+    await transferBookingTenantToUser(site, site.user_id);
+  } else {
+    await replaceNativeBooking(admin, siteData);
+  }
+  return { status: existing ? 'updated' : 'created', claimToken, ownerId: site.user_id };
 }
 
 async function main() {
   if (process.env.SKIP_PLANTS_ASSETS !== '1') {
     await prepareAssets();
   }
-  const owner = await ensureAdminOwner();
-  const { status, claimToken } = await upsertProspectSite(owner);
+  const assignEmail = String(process.env.ASSIGN_OWNER_EMAIL || '').trim().toLowerCase();
+  const assignOwner = assignEmail
+    ? await prisma.users.findFirst({
+      where: { email: { equals: assignEmail, mode: 'insensitive' } },
+    })
+    : null;
+  if (assignEmail && !assignOwner) {
+    throw new Error(`No user found for ${assignEmail}. They must have an account before ownership can move.`);
+  }
+  const admin = await ensureAdminOwner();
+  const keepOwner = process.env.KEEP_CLAIM_OWNER === '1';
+  const { status, claimToken, ownerId } = await upsertProspectSite(admin, { assignOwner, keepOwner });
   const origin = process.env.SITE_URL || process.env.BASE_URL || 'http://localhost:5173';
   console.log(`${status}  ${origin.replace(/\/$/, '')}/view/${SUBDOMAIN}`);
-  console.log(`claim   ${buildClaimUrl(claimToken)}`);
+  console.log(`owner   ${assignOwner?.email || (keepOwner ? ownerId : admin.email)}`);
+  if (!assignOwner && !keepOwner) {
+    console.log(`claim   ${buildClaimUrl(claimToken)}`);
+  }
   await prisma.$disconnect();
 }
 

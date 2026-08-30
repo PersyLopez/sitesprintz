@@ -16,6 +16,7 @@ import {
 } from '../utils/apiResponse.js';
 import { createStandardAccountLink, isStripeOAuthConfigured, initiateStripeOAuth } from '../services/payments/StripeConnectService.js';
 import { getApiOrigin, getFrontendOrigin, resolveOwnedSiteId } from '../services/payments/processorConnectHelpers.js';
+import { livePublishedPath } from '../../src/utils/visitorExperience.js';
 
 const router = express.Router();
 
@@ -254,9 +255,9 @@ router.post('/connect/create-checkout', checkoutLimiter, orderLimiter, asyncHand
   }));
 
   const origin = `${req.protocol}://${req.get('host')}`;
-  const sitePath = site.subdomain || siteId;
-  const successUrl = `${origin}/sites/${sitePath}/?order=success`;
-  const cancelUrl = `${origin}/sites/${sitePath}/?order=cancelled`;
+  const sitePath = livePublishedPath(site.subdomain || siteId);
+  const successUrl = `${origin}${sitePath}?order=success`;
+  const cancelUrl = `${origin}${sitePath}?order=cancelled`;
 
   const stripeAccountId = site.users?.stripe_account_id && site.users?.stripe_connected
     ? site.users.stripe_account_id

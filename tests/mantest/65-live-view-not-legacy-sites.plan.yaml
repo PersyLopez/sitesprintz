@@ -1,0 +1,51 @@
+url: http://localhost:5173/login
+goal: Owner View site opens the composed /view page, not the legacy /sites SSR shell
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter gallery email
+    fill: { testId: login-email, value: "gallery@sitesprintz.com", clear: true }
+
+  - action: Enter gallery password
+    fill: { testId: login-password, value: "GalleryDemo123!", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard loaded
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+    settle_ms: 400
+
+  - action: Dashboard View link is /view not /sites
+    code: |
+      const card = page.locator('[data-testid="site-card"][data-subdomain="gallery-salon"]');
+      if ((await card.count()) === 0) throw new Error('Missing gallery-salon card');
+      const view = card.getByTestId('view-site-button');
+      if ((await view.count()) === 0) throw new Error('View button missing');
+      const href = await view.getAttribute('href');
+      if (!href || !href.includes('/view/gallery-salon')) {
+        throw new Error('View site must open /view/gallery-salon, got ' + href);
+      }
+      if (/\/sites\/gallery-salon/.test(href)) {
+        throw new Error('View site still points at legacy /sites SSR: ' + href);
+      }
+
+  - action: Leftover /sites URL redirects to /view
+    code: |
+      await page.goto('http://localhost:5173/sites/gallery-salon/', { waitUntil: 'domcontentloaded' });
+      if (!page.url().includes('/view/gallery-salon')) {
+        throw new Error('Expected /sites/gallery-salon/ to land on /view, got ' + page.url());
+      }
+    wait_for: { testId: published-composed-site, timeout: 20000 }

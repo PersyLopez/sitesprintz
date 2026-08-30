@@ -14,6 +14,7 @@
 
 import { prisma } from '../../database/db.js';
 import { emailService, EmailTemplates } from './emailService.js';
+import { livePublishedPath } from '../../src/utils/visitorExperience.js';
 
 export class TrialService {
   constructor(db = null, emailSvc = null) {
@@ -282,7 +283,7 @@ export class TrialService {
               daysRemaining,
               subdomain: site.subdomain,
               upgradeUrl: `${process.env.SITE_URL || 'http://localhost:3000'}/dashboard?action=upgrade`,
-              siteUrl: `${process.env.SITE_URL || 'http://localhost:3000'}/sites/${site.subdomain}/`
+              siteUrl: `${process.env.SITE_URL || 'http://localhost:3000'}${livePublishedPath(site.subdomain)}`
             }
           });
 

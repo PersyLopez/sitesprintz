@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildSiteData, PRIVATE_STREET } from '../../scripts/create-plants-and-threads-claimable.js';
+import { buildSiteData, PRIVATE_STREET, resolveClaimableOwnerPatch } from '../../scripts/create-plants-and-threads-claimable.js';
 import { applyLocaleOverlay } from '../../src/utils/localeOverlay.js';
 import { publicSiteContainsStreet, toPublicSiteData } from '../../src/utils/liveSiteContact.js';
 
@@ -37,5 +37,16 @@ describe('plants-and-threads claimable', () => {
     expect(JSON.stringify(site)).not.toMatch(/cash or card/i);
     expect(JSON.stringify(site)).not.toMatch(/cash or in person/i);
     expect(JSON.stringify(site)).toMatch(/Please bring cash/);
+  });
+
+  it('assigns a claimed shop to the named account without a new claim token', () => {
+    const existing = { user_id: 'admin-1', claim_token_hash: 'abc', claim_token_expires: new Date() };
+    const patch = resolveClaimableOwnerPatch(existing, { id: 'admin-1' }, {
+      assignOwner: { id: 'user-gonzales' },
+      claimToken: 'x'.repeat(64),
+    });
+    expect(patch.user_id).toBe('user-gonzales');
+    expect(patch.claim_token_hash).toBeNull();
+    expect(patch.claim_token_expires).toBeNull();
   });
 });

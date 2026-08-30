@@ -175,6 +175,18 @@ export function applyVisitorExperienceDefaults(siteData) {
 }
 
 /**
+ * Customer-facing live shop path. Photos stay under `/sites/:subdomain/…`;
+ * the composed page is `/view/:subdomain`.
+ *
+ * @param {string} [subdomain]
+ * @returns {string|null}
+ */
+export function livePublishedPath(subdomain) {
+  if (!subdomain) return null;
+  return `/view/${encodeURIComponent(String(subdomain))}`;
+}
+
+/**
  * Subdomain from a live-site path (`/sites/:subdomain` or `/view/:subdomain`).
  *
  * @param {string} [pathname]

@@ -193,7 +193,7 @@ describe('PublishModal', () => {
           ok: true,
           json: async () => ({
             subdomain: 'test-business',
-            url: 'http://localhost:3000/sites/test-business'
+            url: 'http://localhost:5173/view/test-business'
           })
         });
 
@@ -262,7 +262,7 @@ describe('PublishModal', () => {
           ok: true,
           json: async () => ({
             subdomain: 'test-business',
-            url: 'http://localhost:3000/sites/test-business'
+            url: 'http://localhost:5173/view/test-business'
           })
         });
 
@@ -303,7 +303,7 @@ describe('PublishModal', () => {
           ok: true,
           json: async () => ({
             subdomain: 'test-business',
-            url: 'http://localhost:3000/sites/test-business'
+            url: 'http://localhost:5173/view/test-business'
           })
         });
 
@@ -371,7 +371,7 @@ describe('PublishModal', () => {
               ok: true,
               json: async () => ({
                 subdomain: 'test-business',
-                url: 'http://localhost:3000/sites/test-business'
+                url: 'http://localhost:5173/view/test-business'
               })
             }), 100));
           }
@@ -505,7 +505,7 @@ describe('PublishModal', () => {
           ok: true,
           json: async () => ({
             subdomain: 'test-business-llc',
-            url: 'http://localhost:3000/sites/test-business-llc'
+            url: 'http://localhost:5173/view/test-business-llc'
           })
         });
 

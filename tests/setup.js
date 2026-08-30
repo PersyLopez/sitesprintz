@@ -26,7 +26,7 @@ if (typeof window === 'undefined') {
       return {
         prisma: {
           users: { findUnique: vi.fn(), findMany: vi.fn(), create: vi.fn(), update: vi.fn() },
-          sites: { findUnique: vi.fn(), findMany: vi.fn(), create: vi.fn(), update: vi.fn() },
+          sites: { findUnique: vi.fn(), findFirst: vi.fn(), findMany: vi.fn(), create: vi.fn(), update: vi.fn() },
           $queryRaw: vi.fn(),
           $queryRawUnsafe: vi.fn(),
           $executeRaw: vi.fn(),

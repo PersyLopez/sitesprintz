@@ -4,6 +4,7 @@ import {
   siteWantsNativeBooking,
   applyVisitorExperienceDefaults,
   subdomainFromLivePath,
+  livePublishedPath,
   siteSchedulingEnabled,
   siteUrgentEnabled,
   siteFeesEnabled,
@@ -63,6 +64,11 @@ describe('visitorExperience', () => {
     expect(subdomainFromLivePath('/sites/maple-salon')).toBe('maple-salon');
     expect(subdomainFromLivePath('/view/gallery-salon/')).toBe('gallery-salon');
     expect(subdomainFromLivePath('/dashboard')).toBe('');
+  });
+
+  it('builds the composed live path', () => {
+    expect(livePublishedPath('plants-and-threads')).toBe('/view/plants-and-threads');
+    expect(livePublishedPath('')).toBeNull();
   });
 
   it('disables embedded booking when scheduling is off', () => {
