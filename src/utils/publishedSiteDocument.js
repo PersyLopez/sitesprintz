@@ -412,38 +412,38 @@ export function getLiveSiteCss(tokens = {}) {
 .ss-footer-nap a { color: var(--ss-text); text-decoration: none; font-weight: 600; }
 .ss-sitesprintz-badge {
   position: fixed;
-  right: max(10px, env(safe-area-inset-right, 0px));
-  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  left: max(4px, env(safe-area-inset-left, 0px));
+  bottom: env(safe-area-inset-bottom, 0px);
   z-index: 45;
   display: inline-flex; align-items: center; justify-content: center;
   min-height: 44px; min-width: 44px; padding: 6px 10px;
   border-radius: 999px; font-size: 0.68rem; font-weight: 500; letter-spacing: 0.02em;
-  color: color-mix(in srgb, var(--ss-muted) 88%, transparent);
+  color: color-mix(in srgb, var(--ss-muted) 65%, transparent);
   text-decoration: none; white-space: nowrap;
   pointer-events: auto;
-  background: color-mix(in srgb, var(--ss-surface) 20%, transparent);
-  border: 1px solid color-mix(in srgb, var(--ss-hairline) 38%, transparent);
+  background: color-mix(in srgb, var(--ss-surface) 11%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ss-hairline) 25%, transparent);
   box-shadow: none;
   -webkit-backdrop-filter: blur(24px) saturate(170%);
   backdrop-filter: blur(24px) saturate(170%);
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .ss-sitesprintz-badge {
-    background: color-mix(in srgb, var(--ss-surface) 48%, transparent);
+    background: color-mix(in srgb, var(--ss-surface) 30%, transparent);
   }
 }
 .ss-live:has(.ss-sticky-cta) .ss-sitesprintz-badge {
-  bottom: calc(76px + 10px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(76px + env(safe-area-inset-bottom, 0px));
 }
 .ss-sitesprintz-badge:hover,
 .ss-sitesprintz-badge:focus-visible {
-  color: var(--ss-text);
-  border-color: color-mix(in srgb, var(--ss-hairline) 72%, transparent);
-  background: color-mix(in srgb, var(--ss-surface) 42%, transparent);
+  color: color-mix(in srgb, var(--ss-muted) 78%, var(--ss-text) 22%);
+  border-color: color-mix(in srgb, var(--ss-hairline) 48%, transparent);
+  background: color-mix(in srgb, var(--ss-surface) 30%, transparent);
   text-shadow:
-    0 0 1px color-mix(in srgb, var(--ss-bg) 55%, transparent),
-    0 1px 2px color-mix(in srgb, var(--ss-text) 12%, transparent);
-  box-shadow: 0 2px 10px color-mix(in srgb, var(--ss-text) 8%, transparent);
+    0 0 1px color-mix(in srgb, var(--ss-bg) 40%, transparent),
+    0 1px 2px color-mix(in srgb, var(--ss-text) 8%, transparent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--ss-text) 5%, transparent);
 }
 .ss-service-area-map {
   position: relative;

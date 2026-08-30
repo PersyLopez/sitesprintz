@@ -36,6 +36,10 @@ steps:
       if (!inViewport) {
         throw new Error('Badge not in viewport without scroll: ' + JSON.stringify({ box, viewport }));
       }
+      const nearLeft = box.x <= Math.min(16, viewport.width * 0.08);
+      if (!nearLeft) {
+        throw new Error('Badge should be pinned bottom-left, box.x=' + box.x + ' viewport.width=' + viewport.width);
+      }
 
   - action: Open salon gallery demo
     goto: http://localhost:5173/view/gallery-salon
@@ -60,4 +64,34 @@ steps:
       const tag = await badge.evaluate((el) => el.tagName.toLowerCase());
       if (tag !== 'a') {
         throw new Error('Salon badge should be a link, got ' + tag);
+      }
+      const box = await badge.boundingBox();
+      const viewport = page.viewportSize();
+      if (!box || !viewport) {
+        throw new Error('Could not measure salon badge or viewport');
+      }
+      const nearLeft = box.x <= Math.min(16, viewport.width * 0.08);
+      if (!nearLeft) {
+        throw new Error('Salon badge should be pinned bottom-left, box.x=' + box.x);
+      }
+
+  - action: Mobile viewport restaurant badge bottom-left
+    code: |
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto('http://localhost:5173/view/gallery-restaurant');
+      await page.getByText('The Grand Table').waitFor({ state: 'visible', timeout: 20000 });
+      const badge = page.getByTestId('sitesprintz-badge');
+      await badge.waitFor({ state: 'visible', timeout: 10000 });
+      const position = await badge.evaluate((el) => getComputedStyle(el).position);
+      if (position !== 'fixed') {
+        throw new Error('Mobile badge should be position:fixed, got ' + position);
+      }
+      const box = await badge.boundingBox();
+      const viewport = page.viewportSize();
+      if (!box || !viewport) {
+        throw new Error('Could not measure mobile badge or viewport');
+      }
+      const nearLeft = box.x <= Math.min(16, viewport.width * 0.08);
+      if (!nearLeft) {
+        throw new Error('Mobile badge should be pinned bottom-left, box.x=' + box.x);
       }
