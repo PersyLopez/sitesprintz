@@ -119,10 +119,13 @@ steps:
     settle_ms: 1200
     assert:
       - text contains Share Your Site
+      - text contains Social media
+      - text contains Print flyer
       - text contains WhatsApp
       - text contains Instagram
       - text contains TikTok
       - text contains Download QR
+      - text contains Download flyer
       - text contains Scan to open
 
   - action: Card preview and QR are visible
@@ -140,3 +143,28 @@ steps:
     wait_for: { selector: '[data-testid="share-download-qr"]', timeout: 10000 }
     assert:
       - text contains Download QR
+
+  - action: Two labeled jobs and flyer download
+    wait_for: { selector: '[data-testid="share-job-social"]', timeout: 10000 }
+    code: |
+      const social = page.getByTestId('share-job-social');
+      const print = page.getByTestId('share-job-print');
+      await social.waitFor({ state: 'visible', timeout: 5000 });
+      await print.waitFor({ state: 'visible', timeout: 5000 });
+      const socialGoal = await page.getByTestId('share-job-social-goal').innerText();
+      const printGoal = await page.getByTestId('share-job-print-goal').innerText();
+      if (!/photo of your shop/i.test(socialGoal)) {
+        throw new Error('Social job goal missing tap-through copy');
+      }
+      if (!/Tape this up/i.test(printGoal)) {
+        throw new Error('Print job goal missing flyer copy');
+      }
+      await page.getByTestId('share-download-flyer').waitFor({ state: 'visible', timeout: 5000 });
+      const qrCaption = await page.locator('[data-testid="share-qr-block"]').innerText();
+      if (/\/view\//.test(qrCaption)) {
+        throw new Error('QR caption should not show the long /view/ URL');
+      }
+    settle_ms: 200
+    assert:
+      - text contains People see a photo
+      - text contains Tape this up

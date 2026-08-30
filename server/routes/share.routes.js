@@ -24,6 +24,12 @@ const shareCardCache = new NodeCache({
   useClones: false // Store buffers directly
 });
 
+const CARD_CACHE_VERSION = 'v2';
+
+function cardCacheKey(subdomain, format) {
+  return `${subdomain}:${format}:${CARD_CACHE_VERSION}`;
+}
+
 /**
  * Rate limiter for share card generation
  * Prevents abuse (max 10 cards per minute per IP)
@@ -105,7 +111,7 @@ router.post('/generate', async (req, res) => {
     }
 
     // Check cache first
-    const cacheKey = `${subdomain}:${format}`;
+    const cacheKey = cardCacheKey(subdomain, format);
     const cached = shareCardCache.get(cacheKey);
 
     if (cached) {
@@ -185,7 +191,7 @@ const getShareCard = async (req, res) => {
 
     // Dedicated QR PNG of the live production URL
     if (format === 'qr') {
-      const cacheKey = `${subdomain}:qr`;
+      const cacheKey = cardCacheKey(subdomain, 'qr');
       const cachedQr = shareCardCache.get(cacheKey);
 
       if (cachedQr) {
@@ -223,7 +229,7 @@ const getShareCard = async (req, res) => {
     }
 
     // Check cache
-    const cacheKey = `${subdomain}:${format}`;
+    const cacheKey = cardCacheKey(subdomain, format);
     const cached = shareCardCache.get(cacheKey);
 
     if (cached) {
@@ -319,7 +325,7 @@ router.delete('/:subdomain', requireAuth, async (req, res) => {
     let cleared = 0;
 
     for (const format of formats) {
-      const cacheKey = `${subdomain}:${format}`;
+      const cacheKey = cardCacheKey(subdomain, format);
       if (shareCardCache.del(cacheKey)) {
         cleared++;
       }

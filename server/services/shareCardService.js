@@ -11,7 +11,8 @@
 import { createCanvas, loadImage } from '@napi-rs/canvas';
 import QRCode from 'qrcode';
 import sharp from 'sharp';
-import { getPublishedSiteDisplayUrl } from '../../src/utils/siteWorkspace.js';
+import { getAbsolutePublishedSiteUrl } from '../../src/utils/siteWorkspace.js';
+import { extractSiteCatalog } from '../utils/payOnSite.js';
 
 // Card dimensions by format
 const DIMENSIONS = {
@@ -166,75 +167,49 @@ export function normalizeTemplateData(template) {
   };
 }
 
+function formatOfferPrice(price) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(price);
+}
+
 /**
- * Extract key features from normalized template data
- * Returns top 4 features to display on card
+ * Shop offer lines for share cards. Catalog (priced) first, then named
+ * services without a price. Does not invent platform-feature pills.
+ *
+ * @param {object|null|undefined} siteData
+ * @param {{ limit?: number }} [options]
+ * @returns {string[]}
  */
-export function extractFeatures(normalized) {
-  const features = [];
+export function extractOfferLines(siteData, { limit = 4 } = {}) {
+  const max = Number.isFinite(limit) ? Math.max(0, limit) : 4;
+  const lines = [];
+  const seen = new Set();
 
-  // Online ordering (Pro feature)
-  if (normalized.hasCheckout) {
-    features.push('Online Ordering');
+  const pushLine = (name, priced) => {
+    const trimmed = String(name || '').trim();
+    if (!trimmed) return false;
+    const key = trimmed.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    lines.push(priced ? `${trimmed} · ${formatOfferPrice(priced)}` : trimmed);
+    return lines.length >= max;
+  };
+
+  const catalog = extractSiteCatalog(siteData);
+  for (const item of catalog) {
+    if (pushLine(item.name, item.price)) return lines;
   }
 
-  // Booking (Pro feature)
-  if (normalized.hasBooking) {
-    features.push('Book Appointments');
+  const services = siteData?.services?.items;
+  if (Array.isArray(services)) {
+    for (const item of services) {
+      if (pushLine(item.name || item.title, 0)) return lines;
+    }
   }
 
-  // Analytics (Pro feature)
-  if (normalized.hasAnalytics) {
-    features.push('Real-time Analytics');
-  }
-
-  // Google Reviews (Pro feature)
-  if (normalized.hasReviews) {
-    features.push('Google Reviews');
-  }
-
-  // Products count
-  if (normalized.products && normalized.products.length > 0) {
-    features.push(`${normalized.products.length}+ Products`);
-  }
-
-  // Services count
-  if (normalized.services && normalized.services.length > 0) {
-    features.push(`${normalized.services.length}+ Services`);
-  }
-
-  // Reviews/testimonials with rating
-  if (normalized.hasTestimonials && normalized.avgRating) {
-    features.push(`${normalized.avgRating.toFixed(1)}★ Reviews`);
-  }
-
-  // Gallery
-  if (normalized.hasGallery) {
-    features.push('Photo Gallery');
-  }
-
-  // Premium features
-  if (normalized.hasAdvancedForms) {
-    features.push('Advanced Forms');
-  }
-
-  if (normalized.hasClientPortal) {
-    features.push('Client Portal');
-  }
-
-  if (normalized.hasAutomation) {
-    features.push('Automation');
-  }
-
-  // If no features, add default
-  if (features.length === 0) {
-    features.push('Professional Website');
-    features.push('Mobile Responsive');
-    features.push('Fast & Secure');
-  }
-
-  // Return top 4 features
-  return features.slice(0, 4);
+  return lines;
 }
 
 /**
@@ -257,36 +232,29 @@ function roundRect(ctx, x, y, w, h, r) {
 
 /**
  * Generate share card image
- * Universal function that works for all template types
+ * social: OG highlight (no QR). square/story: flyer with shop offer + QR.
  */
 export async function generateShareCard(templateData, format = 'social') {
   if (!templateData || typeof templateData !== 'object') {
     throw new Error('Invalid template data');
   }
 
-  // Normalize template data
   const normalized = normalizeTemplateData(templateData);
-  
-  // Get card dimensions
   const { width, height } = calculateCardDimensions(format);
-  
-  // Create canvas
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');
 
-  // Escape data for security
   const businessName = escapeHtml(normalized.businessName);
   const tagline = escapeHtml(normalized.tagline);
-  const siteUrl = getPublishedSiteDisplayUrl(normalized.subdomain) || '';
-
-  // Extract features
-  const features = extractFeatures(normalized);
+  const liveUrl = getAbsolutePublishedSiteUrl(normalized.subdomain);
+  const isSocial = format === 'social';
+  const isStory = format === 'story';
+  const isSquare = format === 'square';
+  const offerLimit = isSocial ? 2 : 4;
+  const offerLines = extractOfferLines(templateData, { limit: offerLimit }).map((line) => escapeHtml(line));
 
   try {
-    const isSocial = format === 'social';
-    const isStory = format === 'story';
-    const isSquare = format === 'square';
-    const footerHeight = height * (isStory ? 0.14 : 0.18);
+    const footerHeight = height * (isStory ? 0.16 : 0.22);
     const contentLeft = width * 0.06;
 
     let displayName = businessName;
@@ -294,7 +262,6 @@ export async function generateShareCard(templateData, format = 'social') {
       displayName = displayName.substring(0, 37) + '...';
     }
 
-    // 1. Hero background — photo is the star on social OG cards
     try {
       const heroImage = await loadImage(normalized.heroImage);
       const scale = Math.max(width / heroImage.width, height / heroImage.height);
@@ -305,7 +272,6 @@ export async function generateShareCard(templateData, format = 'social') {
       ctx.drawImage(heroImage, x, y, scaledWidth, scaledHeight);
 
       if (isSocial) {
-        // Minimal top vignette — keep hero bright and visible
         const topVignette = ctx.createLinearGradient(0, 0, 0, height * 0.25);
         topVignette.addColorStop(0, 'rgba(15, 23, 42, 0.18)');
         topVignette.addColorStop(1, 'rgba(15, 23, 42, 0)');
@@ -319,8 +285,7 @@ export async function generateShareCard(templateData, format = 'social') {
         ctx.fillStyle = overlay;
         ctx.fillRect(0, 0, width, height);
       }
-    } catch (error) {
-      console.warn('Hero image failed to load, using gradient fallback');
+    } catch {
       const gradient = ctx.createLinearGradient(0, 0, width, height);
       gradient.addColorStop(0, OCEAN.primary);
       gradient.addColorStop(1, OCEAN.primaryDark);
@@ -329,34 +294,40 @@ export async function generateShareCard(templateData, format = 'social') {
     }
 
     if (isSocial) {
-      // 2. Light bottom gradient — name + one-line tagline only (no QR, no pills)
-      const textBandHeight = height * 0.36;
+      const textBandHeight = height * (offerLines.length ? 0.44 : 0.36);
       const textBandY = height - textBandHeight;
       const bottomGradient = ctx.createLinearGradient(0, textBandY, 0, height);
       bottomGradient.addColorStop(0, 'rgba(3, 7, 18, 0)');
-      bottomGradient.addColorStop(0.4, 'rgba(15, 23, 42, 0.62)');
+      bottomGradient.addColorStop(0.35, 'rgba(15, 23, 42, 0.62)');
       bottomGradient.addColorStop(1, 'rgba(3, 7, 18, 0.92)');
       ctx.fillStyle = bottomGradient;
       ctx.fillRect(0, textBandY, width, textBandHeight);
 
       const nameSize = Math.floor(height * 0.068);
+      const tagSize = Math.floor(height * 0.032);
+      const offerSize = Math.floor(height * 0.028);
+      ctx.font = `${tagSize}px "Segoe UI", system-ui, sans-serif`;
+      const tagLine = wrapText(ctx, tagline, width * 0.88)[0] || tagline;
+      const offerBlock = offerLines.length * offerSize * 1.35;
+      const tagY = height - height * 0.06 - offerBlock;
+      const nameY = tagY - tagSize * 1.25;
+
       ctx.fillStyle = OCEAN.text;
       ctx.font = `bold ${nameSize}px "Segoe UI", system-ui, sans-serif`;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'bottom';
-
-      const tagSize = Math.floor(height * 0.032);
-      const tagLine = wrapText(ctx, tagline, width * 0.88)[0] || tagline;
-      const tagY = height - height * 0.06;
-      const nameY = tagY - tagSize * 1.25;
-
       ctx.fillText(displayName, contentLeft, nameY);
 
       ctx.font = `${tagSize}px "Segoe UI", system-ui, sans-serif`;
       ctx.fillStyle = OCEAN.textMuted;
       ctx.fillText(tagLine, contentLeft, tagY);
+
+      ctx.font = `600 ${offerSize}px "Segoe UI", system-ui, sans-serif`;
+      ctx.fillStyle = OCEAN.text;
+      offerLines.forEach((line, index) => {
+        ctx.fillText(line, contentLeft, tagY + offerSize * 1.35 * (index + 1));
+      });
     } else {
-      // 2. Footer band — URL + QR on quiet surface (story / square)
       const footerY = height - footerHeight;
       ctx.fillStyle = OCEAN.surface;
       ctx.fillRect(0, footerY, width, footerHeight);
@@ -364,7 +335,6 @@ export async function generateShareCard(templateData, format = 'social') {
       ctx.fillStyle = OCEAN.accent;
       ctx.fillRect(0, footerY, width, 3);
 
-      // 3. Business name
       const nameSize = Math.floor(height * (isStory ? 0.055 : 0.07));
       ctx.fillStyle = OCEAN.text;
       ctx.font = `bold ${nameSize}px "Segoe UI", system-ui, sans-serif`;
@@ -374,7 +344,6 @@ export async function generateShareCard(templateData, format = 'social') {
       const nameY = height * (isStory ? 0.08 : 0.1);
       ctx.fillText(displayName, isSquare ? width / 2 : contentLeft, nameY);
 
-      // 4. Tagline
       const tagSize = Math.floor(height * (isStory ? 0.028 : 0.034));
       ctx.font = `${tagSize}px "Segoe UI", system-ui, sans-serif`;
       ctx.fillStyle = OCEAN.textMuted;
@@ -386,85 +355,57 @@ export async function generateShareCard(templateData, format = 'social') {
         ctx.fillText(line, isSquare ? width / 2 : contentLeft, tagY + index * tagSize * 1.4);
       });
 
-      // 5. Feature pills
-      const featureStartY = tagY + lines.length * tagSize * 1.4 + height * 0.04;
-      const featureFontSize = Math.floor(height * (isStory ? 0.024 : 0.028));
-      ctx.font = `600 ${featureFontSize}px "Segoe UI", system-ui, sans-serif`;
+      const offerStartY = tagY + lines.length * tagSize * 1.4 + height * 0.04;
+      const offerFontSize = Math.floor(height * (isStory ? 0.024 : 0.028));
+      ctx.font = `600 ${offerFontSize}px "Segoe UI", system-ui, sans-serif`;
       ctx.textAlign = 'left';
+      ctx.fillStyle = OCEAN.text;
 
-      const pillPadX = width * 0.012;
-      const pillPadY = height * 0.008;
-      const pillGap = width * 0.015;
-      let pillX = contentLeft;
-      let pillRowY = featureStartY;
-      const maxPillRow = width * 0.88;
-
-      features.forEach((feature) => {
-        const textWidth = ctx.measureText(feature).width;
-        const pillW = textWidth + pillPadX * 2;
-        const pillH = featureFontSize + pillPadY * 2;
-
-        if (pillX + pillW > maxPillRow && pillX > contentLeft) {
-          pillX = contentLeft;
-          pillRowY += pillH + pillGap * 0.5;
-        }
-
-        ctx.fillStyle = 'rgba(122, 155, 176, 0.22)';
-        roundRect(ctx, pillX, pillRowY, pillW, pillH, pillH * 0.35);
-        ctx.fill();
-
-        ctx.fillStyle = OCEAN.text;
-        ctx.fillText(feature, pillX + pillPadX, pillRowY + pillPadY);
-
-        pillX += pillW + pillGap;
+      offerLines.forEach((line, index) => {
+        ctx.fillText(line, contentLeft, offerStartY + index * offerFontSize * 1.45);
       });
 
-      // 6. Footer URL
-      const urlFontSize = Math.floor(footerHeight * 0.22);
+      const scanSize = Math.floor(footerHeight * 0.22);
       ctx.textAlign = 'left';
-      ctx.font = `600 ${urlFontSize}px "Segoe UI", system-ui, sans-serif`;
+      ctx.font = `600 ${scanSize}px "Segoe UI", system-ui, sans-serif`;
       ctx.fillStyle = OCEAN.text;
-      ctx.fillText(siteUrl, contentLeft, footerY + footerHeight * 0.32);
+      ctx.fillText('Scan to visit', contentLeft, footerY + footerHeight * 0.32);
 
       ctx.font = `${Math.floor(footerHeight * 0.14)}px "Segoe UI", system-ui, sans-serif`;
       ctx.fillStyle = OCEAN.textSubtle;
       ctx.fillText('Built with Right Site Light', contentLeft, footerY + footerHeight * 0.62);
 
-      // 7. QR in footer — white pad
-      try {
-        const qrSize = footerHeight * 0.72;
-        const qrPad = qrSize * 0.08;
-        const qrX = width - contentLeft - qrSize - qrPad * 2;
-        const qrY = footerY + (footerHeight - qrSize - qrPad * 2) / 2;
+      if (liveUrl) {
+        try {
+          const qrSize = footerHeight * 0.78;
+          const qrPad = qrSize * 0.08;
+          const qrX = width - contentLeft - qrSize - qrPad * 2;
+          const qrY = footerY + (footerHeight - qrSize - qrPad * 2) / 2;
 
-        ctx.fillStyle = '#ffffff';
-        roundRect(ctx, qrX, qrY, qrSize + qrPad * 2, qrSize + qrPad * 2, 8);
-        ctx.fill();
+          ctx.fillStyle = '#ffffff';
+          roundRect(ctx, qrX, qrY, qrSize + qrPad * 2, qrSize + qrPad * 2, 8);
+          ctx.fill();
 
-        const qrCodeDataUrl = await QRCode.toDataURL(`https://${siteUrl}`, {
-          width: Math.round(qrSize),
-          margin: 1,
-          color: {
-            dark: OCEAN.primaryDarker,
-            light: '#ffffff'
-          }
-        });
-        const qrImage = await loadImage(qrCodeDataUrl);
-        ctx.drawImage(qrImage, qrX + qrPad, qrY + qrPad, qrSize, qrSize);
-      } catch (error) {
-        console.error('QR code generation failed:', error);
+          const qrCodeDataUrl = await QRCode.toDataURL(liveUrl, {
+            width: Math.round(qrSize),
+            margin: 1,
+            color: {
+              dark: OCEAN.primaryDarker,
+              light: '#ffffff'
+            }
+          });
+          const qrImage = await loadImage(qrCodeDataUrl);
+          ctx.drawImage(qrImage, qrX + qrPad, qrY + qrPad, qrSize, qrSize);
+        } catch (error) {
+          console.error('QR code generation failed:', error);
+        }
       }
     }
 
-    // Convert to buffer
     const buffer = canvas.toBuffer('image/png');
-    
-    // Optimize with sharp
-    const optimized = await sharp(buffer)
+    return sharp(buffer)
       .png({ quality: 90, compressionLevel: 9 })
       .toBuffer();
-
-    return optimized;
   } catch (error) {
     console.error('Share card generation error:', error);
     throw error;
@@ -495,7 +436,7 @@ export default {
   generateShareCard,
   generateQrPng,
   normalizeTemplateData,
-  extractFeatures,
+  extractOfferLines,
   calculateCardDimensions,
   escapeHtml,
   wrapText

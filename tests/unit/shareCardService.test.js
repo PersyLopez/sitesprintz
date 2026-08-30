@@ -10,7 +10,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   normalizeTemplateData,
-  extractFeatures,
+  extractOfferLines,
   generateShareCard,
   generateQrPng,
   calculateCardDimensions,
@@ -175,86 +175,80 @@ describe('ShareCardService - Universal Template Support (TDD)', () => {
     });
   });
 
-  describe('extractFeatures - Universal Feature Detection', () => {
-    it('should extract features from Starter template', () => {
-      const normalized = {
-        tier: 'Starter',
-        hasCheckout: false,
-        products: [1, 2, 3],
-        services: [1, 2],
-        hasTestimonials: true,
-        avgRating: 4.8
+  describe('extractOfferLines - shop offer, not platform pills', () => {
+    it('formats priced salon services from catalog', () => {
+      const siteData = {
+        services: {
+          items: [
+            { name: 'Haircut', price: 23 },
+            { name: 'Color', price: 85 },
+            { name: 'Blowout', price: 40 },
+          ],
+        },
       };
 
-      const features = extractFeatures(normalized);
+      const lines = extractOfferLines(siteData);
 
-      expect(features).toContain('3+ Products');
-      expect(features).toContain('2+ Services');
-      expect(features).toContain('4.8★ Reviews');
-      expect(features).not.toContain('Online Ordering');
+      expect(lines).toEqual(['Haircut · $23.00', 'Color · $85.00', 'Blowout · $40.00']);
+      expect(lines).not.toContain('Online Ordering');
+      expect(lines).not.toContain('Professional Website');
     });
 
-    it('should extract features from Pro template', () => {
-      const normalized = {
-        tier: 'Pro',
-        hasCheckout: true,
-        hasBooking: true,
-        hasAnalytics: true,
-        hasReviews: true,
-        products: [1, 2, 3, 4, 5]
+    it('formats product shop catalog', () => {
+      const siteData = {
+        products: [
+          { name: 'Silk scarf', price: 42 },
+          { name: 'Tote', price: 28 },
+        ],
       };
 
-      const features = extractFeatures(normalized);
+      const lines = extractOfferLines(siteData);
 
-      expect(features).toContain('Online Ordering');
-      expect(features).toContain('Book Appointments');
-      expect(features).toContain('Real-time Analytics');
-      expect(features).toContain('Google Reviews');
+      expect(lines).toContain('Silk scarf · $42.00');
+      expect(lines).toContain('Tote · $28.00');
     });
 
-    it('should extract features from Premium template', () => {
-      const normalized = {
-        tier: 'Premium',
-        hasAdvancedForms: true,
-        hasClientPortal: true,
-        hasAutomation: true
+    it('includes named services without a price after priced catalog rows', () => {
+      const siteData = {
+        products: [{ name: 'Balm', price: 12 }],
+        services: {
+          items: [{ title: 'Consult' }],
+        },
       };
 
-      const features = extractFeatures(normalized);
+      const lines = extractOfferLines(siteData);
 
-      expect(features.length).toBeGreaterThan(0);
-      expect(features.length).toBeLessThanOrEqual(4);
+      expect(lines[0]).toBe('Balm · $12.00');
+      expect(lines).toContain('Consult');
     });
 
-    it('should limit features to 4 maximum', () => {
-      const normalized = {
-        tier: 'Pro',
-        hasCheckout: true,
-        hasBooking: true,
-        hasAnalytics: true,
-        hasReviews: true,
-        products: [1, 2, 3, 4, 5],
-        services: [1, 2, 3],
-        hasTestimonials: true,
-        hasGallery: true,
-        avgRating: 5
+    it('caps at four lines', () => {
+      const siteData = {
+        products: [1, 2, 3, 4, 5].map((n) => ({ name: `Item ${n}`, price: n * 10 })),
       };
 
-      const features = extractFeatures(normalized);
-
-      expect(features.length).toBeLessThanOrEqual(4);
+      expect(extractOfferLines(siteData).length).toBe(4);
     });
 
-    it('should handle template with no features', () => {
-      const normalized = {
-        tier: 'Starter',
-        hasCheckout: false
+    it('returns empty for empty Starter — no invented pills', () => {
+      const lines = extractOfferLines({
+        brand: { name: 'River Salon' },
+        settings: { allowCheckout: false },
+      });
+
+      expect(lines).toEqual([]);
+    });
+
+    it('respects a smaller social limit', () => {
+      const siteData = {
+        products: [
+          { name: 'A', price: 1 },
+          { name: 'B', price: 2 },
+          { name: 'C', price: 3 },
+        ],
       };
 
-      const features = extractFeatures(normalized);
-
-      expect(Array.isArray(features)).toBe(true);
-      expect(features.length).toBeGreaterThanOrEqual(1); // At least "Professional Website"
+      expect(extractOfferLines(siteData, { limit: 2 })).toHaveLength(2);
     });
   });
 
@@ -582,7 +576,7 @@ describe('ShareCardService - Universal Template Support (TDD)', () => {
   });
 
   describe('Template-Specific Features', () => {
-    it('should show different features for Starter vs Pro', async () => {
+    it('should show different offer lines for a catalog shop vs empty Starter', async () => {
       const starterData = {
         subdomain: 'starter',
         plan: 'Starter',
@@ -590,22 +584,19 @@ describe('ShareCardService - Universal Template Support (TDD)', () => {
         settings: { allowCheckout: false }
       };
 
-      const proData = {
+      const catalogData = {
         subdomain: 'pro',
         plan: 'Pro',
         brand: { name: 'Pro Biz' },
-        settings: { allowCheckout: true },
-        features: { booking: { enabled: true } }
+        products: [{ name: 'Haircut', price: 23 }],
       };
 
-      const starterBuffer = await generateShareCard(starterData, 'social');
-      const proBuffer = await generateShareCard(proData, 'social');
+      const starterBuffer = await generateShareCard(starterData, 'square');
+      const catalogBuffer = await generateShareCard(catalogData, 'square');
 
       expect(starterBuffer).toBeInstanceOf(Buffer);
-      expect(proBuffer).toBeInstanceOf(Buffer);
-      
-      // Different features should result in different images
-      expect(starterBuffer.length).not.toBe(proBuffer.length);
+      expect(catalogBuffer).toBeInstanceOf(Buffer);
+      expect(starterBuffer.length).not.toBe(catalogBuffer.length);
     });
   });
 });

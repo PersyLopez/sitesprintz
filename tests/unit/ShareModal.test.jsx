@@ -94,4 +94,53 @@ describe('ShareModal', () => {
       expect(global.fetch).toHaveBeenCalledWith('/api/share/river-salon/qr');
     });
   });
+
+  it('labels two jobs: social media and print flyer', () => {
+    render(<ShareModal subdomain="river-salon" onClose={() => {}} />);
+
+    expect(screen.getByTestId('share-job-social')).toHaveTextContent('Social media');
+    expect(screen.getByTestId('share-job-social-goal')).toHaveTextContent(
+      /photo of your shop and tap through/i
+    );
+    expect(screen.getByTestId('share-job-print')).toHaveTextContent('Print flyer');
+    expect(screen.getByTestId('share-job-print-goal')).toHaveTextContent(/Tape this up or hand it out/i);
+  });
+
+  it('previews social cards from /social and hides the view URL on the QR caption', async () => {
+    render(<ShareModal subdomain="river-salon" onClose={() => {}} />);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith('/api/share/river-salon/social');
+    });
+    expect(screen.getByTestId('share-qr-block')).not.toHaveTextContent('/view/river-salon');
+    expect(screen.getByDisplayValue('http://localhost:3000/view/river-salon')).toBeInTheDocument();
+  });
+
+  it('downloads the print flyer from square or story, never social', async () => {
+    render(<ShareModal subdomain="river-salon" onClose={() => {}} />);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith('/api/share/river-salon/square');
+    });
+    global.fetch.mockClear();
+
+    fireEvent.click(screen.getByTestId('share-download-flyer'));
+    await waitFor(() => {
+      const urls = global.fetch.mock.calls.map((call) => call[0]);
+      expect(urls).toContain('/api/share/river-salon/square');
+      expect(urls).not.toContain('/api/share/river-salon/social');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Story 1080 by 1920' }));
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith('/api/share/river-salon/story');
+    });
+    global.fetch.mockClear();
+    fireEvent.click(screen.getByTestId('share-download-flyer'));
+    await waitFor(() => {
+      const urls = global.fetch.mock.calls.map((call) => call[0]);
+      expect(urls).toContain('/api/share/river-salon/story');
+      expect(urls).not.toContain('/api/share/river-salon/social');
+    });
+  });
 });
