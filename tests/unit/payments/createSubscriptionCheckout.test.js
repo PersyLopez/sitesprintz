@@ -203,4 +203,31 @@ describe('createSubscriptionCheckout metadata', () => {
     expect(response.body.code).toBe('SITE_SLOT_AVAILABLE');
     expect(mockSessionsCreate).not.toHaveBeenCalled();
   });
+
+  it('returns 403 BILLING_NOT_OPEN when platform collection is paused', async () => {
+    process.env.PLATFORM_COLLECT_PAYMENTS = 'false';
+
+    const response = await request(app)
+      .post('/api/payments/create-subscription-checkout')
+      .send({ plan: 'starter' });
+
+    expect(response.status).toBe(403);
+    expect(response.body.code).toBe('BILLING_NOT_OPEN');
+    expect(mockSessionsCreate).not.toHaveBeenCalled();
+
+    delete process.env.PLATFORM_COLLECT_PAYMENTS;
+  });
+
+  it('returns 403 BILLING_NOT_OPEN for labor checkout when collection is paused', async () => {
+    process.env.PLATFORM_COLLECT_PAYMENTS = 'false';
+
+    const response = await request(app)
+      .post('/api/payments/labor-checkout')
+      .send({ sku: 'brand_match' });
+
+    expect(response.status).toBe(403);
+    expect(response.body.code).toBe('BILLING_NOT_OPEN');
+
+    delete process.env.PLATFORM_COLLECT_PAYMENTS;
+  });
 });

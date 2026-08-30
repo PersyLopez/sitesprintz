@@ -16,6 +16,7 @@ import {
     normalizeClaimPlan,
     validateClaimOwnership,
   } from '../services/claimTrialService.js';
+import { platformCollectsPayments, BILLING_NOT_OPEN_MESSAGE } from '../config/platformPlans.js';
 
 const router = express.Router();
 
@@ -93,6 +94,13 @@ router.post('/:token/trial-checkout', claimAcceptLimiter, requireSignedIn, async
 
     if (hasClaimableGrowthSubscription(claimant)) {
       return res.json({ alreadySubscribed: true });
+    }
+
+    if (!platformCollectsPayments()) {
+      return res.status(403).json({
+        error: BILLING_NOT_OPEN_MESSAGE,
+        code: 'BILLING_NOT_OPEN',
+      });
     }
 
     const { url } = await createClaimTrialCheckout({

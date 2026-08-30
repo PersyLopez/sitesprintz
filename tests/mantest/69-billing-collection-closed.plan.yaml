@@ -1,0 +1,64 @@
+url: http://localhost:5173/
+goal: Platform billing paused — no Checkout CTAs; Settings shows billing-closed copy
+steps:
+  - action: Health reports collection paused
+    code: |
+      const health = await page.evaluate(async () => {
+        const resp = await fetch('/api/health');
+        return resp.json();
+      });
+      if (health?.billing?.collectsPayments !== false) {
+        throw new Error('Expected billing.collectsPayments=false from /api/health, got ' + JSON.stringify(health?.billing));
+      }
+    settle_ms: 400
+
+  - action: Landing pricing shows live trial without card requirement
+    wait_for: { text: Starter, timeout: 20000 }
+    settle_ms: 800
+    code: |
+      const body = await page.locator('body').innerText();
+      if (/payment method required/i.test(body)) {
+        throw new Error('Landing should not say payment method required for live trial');
+      }
+      if (!/days live when you publish/i.test(body)) {
+        throw new Error('Expected live-trial copy on landing pricing');
+      }
+
+  - action: Login form ready
+    goto: http://localhost:5173/login
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Login free tester without paid hosting
+    fill: { testId: login-email, value: "free@example.com", clear: true }
+
+  - action: Free user password
+    fill: { testId: login-password, value: "FreePass!2024", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Open billing settings
+    goto: http://localhost:5173/settings/billing
+    wait_for: { text: Billing Management, timeout: 20000 }
+    settle_ms: 1000
+
+  - action: Subscribe buttons hidden while collection closed
+    code: |
+      const starterBtn = page.getByTestId('subscribe-starter');
+      const growthBtn = page.getByTestId('subscribe-growth');
+      if (await starterBtn.count()) {
+        throw new Error('Subscribe to Starter should be hidden when billing collection is closed');
+      }
+      if (await growthBtn.count()) {
+        throw new Error('Subscribe to Growth should be hidden when billing collection is closed');
+      }
+      const closed = page.getByTestId('billing-collection-closed');
+      const body = await page.locator('body').innerText();
+      const hasClosedCopy = (await closed.count()) > 0 || /Platform billing is not open yet/i.test(body);
+      if (!hasClosedCopy) {
+        throw new Error('Expected billing-collection-closed copy on Settings billing');
+      }
+      if (!/support@sitesprintz\.com/i.test(body)) {
+        throw new Error('Billing-closed or support copy should include support email');
+      }

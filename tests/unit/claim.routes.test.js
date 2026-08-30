@@ -258,6 +258,29 @@ describe('claim routes', () => {
     expect(createClaimTrialCheckout).toHaveBeenCalled();
   });
 
+  it('returns 403 BILLING_NOT_OPEN when platform collection is paused', async () => {
+    process.env.PLATFORM_COLLECT_PAYMENTS = 'false';
+    prisma.sites.findUnique.mockResolvedValue({ ...prospectSite });
+    prisma.users.findUnique.mockImplementation(({ where }) => {
+      if (where.id === 'user-1') {
+        return Promise.resolve({ ...claimant, subscription_status: 'inactive', subscription_plan: 'starter' });
+      }
+      if (where.id === 'admin-1') return Promise.resolve({ id: 'admin-1', role: 'admin' });
+      return Promise.resolve(null);
+    });
+
+    const response = await request(createApp())
+      .post(`/api/claim/${CLAIM_TOKEN}/trial-checkout`)
+      .set('Authorization', `Bearer ${signToken({ userId: 'user-1' })}`)
+      .send({ plan: 'growth' });
+
+    expect(response.status).toBe(403);
+    expect(response.body.code).toBe('BILLING_NOT_OPEN');
+    expect(createClaimTrialCheckout).not.toHaveBeenCalled();
+
+    delete process.env.PLATFORM_COLLECT_PAYMENTS;
+  });
+
   it('rejects Starter on claim trial-checkout', async () => {
     prisma.sites.findUnique.mockResolvedValue({ ...prospectSite });
     prisma.users.findUnique.mockImplementation(({ where }) => {

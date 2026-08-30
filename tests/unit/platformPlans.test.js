@@ -12,6 +12,8 @@ import {
   laborCheckoutMode,
   laborIdempotencyKey,
   isCustomerLaborSkuConfigured,
+  platformCollectsPayments,
+  BILLING_NOT_OPEN_MESSAGE,
   stripeSubscriptionLineItem,
   stripeLaborLineItem,
 } from '../../server/config/platformPlans.js';
@@ -82,5 +84,20 @@ describe('platformPlans', () => {
     expect(isCustomerLaborSkuConfigured('brand_match', {
       STRIPE_PRICE_BRAND_MATCH: 'price_brand_ok',
     })).toBe(true);
+  });
+
+  describe('platformCollectsPayments', () => {
+    it('respects explicit env and defaults for runtime', () => {
+      expect(platformCollectsPayments({ PLATFORM_COLLECT_PAYMENTS: 'true', NODE_ENV: 'production' })).toBe(true);
+      expect(platformCollectsPayments({ PLATFORM_COLLECT_PAYMENTS: 'false', NODE_ENV: 'production' })).toBe(false);
+      expect(platformCollectsPayments({ NODE_ENV: 'production' })).toBe(false);
+      expect(platformCollectsPayments({ NODE_ENV: 'development' })).toBe(false);
+      expect(platformCollectsPayments({ NODE_ENV: 'test' })).toBe(true);
+    });
+
+    it('exposes a client-safe billing paused message', () => {
+      expect(BILLING_NOT_OPEN_MESSAGE).toMatch(/support@sitesprintz\.com/);
+      expect(BILLING_NOT_OPEN_MESSAGE).toMatch(/no-card trial/i);
+    });
   });
 });

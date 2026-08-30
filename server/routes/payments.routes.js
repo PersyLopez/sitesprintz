@@ -32,7 +32,15 @@ import {
 import { resolveStripeRedirectUrl, subscriptionCheckoutUrls } from '../utils/stripeReturnUrls.js';
 import { livePublishedPath } from '../../src/utils/visitorExperience.js';
 import { fulfillPlatformSubscription } from '../services/payments/fulfillPlatformSubscription.js';
-import { stripeSubscriptionLineItem, STRIPE_TRIAL_DAYS, normalizePaidPlan, CUSTOMER_LABOR_SKUS, isCustomerLaborSkuConfigured } from '../config/platformPlans.js';
+import {
+  stripeSubscriptionLineItem,
+  STRIPE_TRIAL_DAYS,
+  normalizePaidPlan,
+  CUSTOMER_LABOR_SKUS,
+  isCustomerLaborSkuConfigured,
+  platformCollectsPayments,
+  BILLING_NOT_OPEN_MESSAGE,
+} from '../config/platformPlans.js';
 import { createLaborCheckout } from '../services/labor/laborCheckoutService.js';
 import { countBillablePublishedSites, countPaidSiteSlots, hasActiveLiveTrialSite } from '../services/subscriptionService.js';
 
@@ -416,6 +424,10 @@ router.post('/payments/checkout-sessions', checkoutLimiter, orderLimiter, requir
 
 // Create Checkout Session for subscription (Starter/Growth plans)
 const createSubscriptionCheckout = asyncHandler(async (req, res) => {
+    if (!platformCollectsPayments()) {
+        return sendForbidden(res, BILLING_NOT_OPEN_MESSAGE, 'BILLING_NOT_OPEN');
+    }
+
     if (!stripe) {
         return sendServiceUnavailable(res, 'Stripe not configured. Add STRIPE_SECRET_KEY to .env', 'STRIPE_NOT_CONFIGURED');
     }
@@ -552,6 +564,10 @@ router.post('/payments/create-subscription-checkout', checkoutLimiter, requireAu
 router.post('/create-subscription-checkout', checkoutLimiter, requireAuth, createSubscriptionCheckout);
 
 const createLaborCheckoutHandler = asyncHandler(async (req, res) => {
+    if (!platformCollectsPayments()) {
+        return sendForbidden(res, BILLING_NOT_OPEN_MESSAGE, 'BILLING_NOT_OPEN');
+    }
+
     if (!stripe) {
         return sendServiceUnavailable(res, 'Stripe not configured. Add STRIPE_SECRET_KEY to .env', 'STRIPE_NOT_CONFIGURED');
     }
@@ -646,6 +662,10 @@ router.post('/confirm-checkout-session', checkoutLimiter, requireAuth, confirmCh
 
 // Create Setup Intent for trial payment method collection
 router.post('/trial/setup-intent', requireAuth, asyncHandler(async (req, res) => {
+  if (!platformCollectsPayments()) {
+    return sendForbidden(res, BILLING_NOT_OPEN_MESSAGE, 'BILLING_NOT_OPEN');
+  }
+
   if (!stripe) {
     return sendServiceUnavailable(res, 'Stripe not configured. Add STRIPE_SECRET_KEY to .env', 'STRIPE_NOT_CONFIGURED');
   }
@@ -701,6 +721,10 @@ router.post('/trial/setup-intent', requireAuth, asyncHandler(async (req, res) =>
 
 // Create subscription with trial period
 router.post('/trial/create-subscription', requireAuth, asyncHandler(async (req, res) => {
+  if (!platformCollectsPayments()) {
+    return sendForbidden(res, BILLING_NOT_OPEN_MESSAGE, 'BILLING_NOT_OPEN');
+  }
+
   if (!stripe) {
     return sendServiceUnavailable(res, 'Stripe not configured. Add STRIPE_SECRET_KEY to .env', 'STRIPE_NOT_CONFIGURED');
   }

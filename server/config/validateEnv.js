@@ -4,6 +4,7 @@
  */
 
 import { isBetaMode, stripeKeyMode } from './betaMode.js';
+import { platformCollectsPayments } from './platformPlans.js';
 
 /**
  * @param {NodeJS.ProcessEnv} env
@@ -158,6 +159,7 @@ function logBootSummary() {
   console.log(`  STRIPE_PRICE_STARTER:    ${env.STRIPE_PRICE_STARTER ? '✓ Set' : '✗ Missing'}`);
   console.log(`  STRIPE_PRICE_GROWTH:     ${env.STRIPE_PRICE_GROWTH ? '✓ Set' : '✗ Missing'}`);
   console.log(`  STRIPE_PRICE_GROWTH_MANAGED: ${env.STRIPE_PRICE_GROWTH_MANAGED ? '✓ Set' : '✗ Missing'}`);
+  console.log(`  PLATFORM_COLLECT_PAYMENTS: ${platformCollectsPayments(env) ? 'collecting' : 'paused (LLC bridge)'}`);
 
   console.log('\nAuthentication & Authorization:');
   console.log(`  GOOGLE_CALLBACK_URL:     ${env.GOOGLE_CALLBACK_URL ? '✓ Set' : '✗ Missing'}`);

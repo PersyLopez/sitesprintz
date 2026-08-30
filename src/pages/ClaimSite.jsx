@@ -38,12 +38,28 @@ function ClaimSite() {
   const [error, setError] = useState(null);
   const [subscriptionReady, setSubscriptionReady] = useState(false);
   const [needsTrial, setNeedsTrial] = useState(false);
+  const [collectsPayments, setCollectsPayments] = useState(false);
 
   const claimPath = `/claim/${token}`;
   const loginTo = `/login?redirect=${encodeURIComponent(claimPath)}`;
   const registerTo = `/register?plan=growth&redirect=${encodeURIComponent(claimPath)}`;
   const subscribed =
     subscriptionReady || (isAuthenticated && hasGrowthClaimSubscription(user));
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/health')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.billing?.collectsPayments != null) {
+          setCollectsPayments(Boolean(data.billing.collectsPayments));
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -238,8 +254,9 @@ function ClaimSite() {
                 <div>
                   <p>
                     Create an account or log in with the email you want this site owned under.
-                    Subscribe to Growth ($35/month, you edit) or Growth Managed ($75/month, we
-                    set it up and keep the list updated).
+                    {collectsPayments === false
+                      ? ' Platform billing is not open yet — email us after you sign in to claim this site.'
+                      : ' Subscribe to Growth ($35/month, you edit) or Growth Managed ($75/month, we set it up and keep the list updated).'}
                   </p>
                   <div className="auth-links" style={{ marginTop: '20px' }}>
                     <Link to={registerTo} className="btn btn-primary btn-full" data-testid="claim-register">
@@ -257,6 +274,18 @@ function ClaimSite() {
                 </div>
               ) : showTrialFlow ? (
                 <div>
+                  {collectsPayments === false ? (
+                    <div data-testid="claim-billing-closed">
+                      <p>
+                        Platform billing is not open yet. Contact us to claim this site — your live
+                        preview stays up on the no-card trial.
+                      </p>
+                      <p style={{ marginTop: '16px' }}>
+                        <a href={`mailto:${PLATFORM_SUPPORT_EMAIL}`}>{PLATFORM_SUPPORT_EMAIL}</a>
+                      </p>
+                    </div>
+                  ) : (
+                    <>
                   <p>
                     Signed in as <strong>{user?.email}</strong>. That email will own this site.
                     Subscribe to Growth or Growth Managed to claim it. If you have a coupon, add
@@ -295,6 +324,8 @@ function ClaimSite() {
                   >
                     {startingTrial || completingTrial ? 'Opening checkout...' : 'Subscribe to claim'}
                   </button>
+                    </>
+                  )}
                 </div>
               ) : (
                 <div>

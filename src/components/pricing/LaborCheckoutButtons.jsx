@@ -12,6 +12,22 @@ function LaborCheckoutButtons({ token }) {
   const [skus, setSkus] = useState(null);
   const [busy, setBusy] = useState(null);
   const [error, setError] = useState(null);
+  const [collectsPayments, setCollectsPayments] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/health')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.billing?.collectsPayments != null) {
+          setCollectsPayments(Boolean(data.billing.collectsPayments));
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!token) {
@@ -35,7 +51,7 @@ function LaborCheckoutButtons({ token }) {
     return () => controller.abort();
   }, [token]);
 
-  if (!vars || !token) {
+  if (!vars || !token || collectsPayments === false) {
     return null;
   }
 

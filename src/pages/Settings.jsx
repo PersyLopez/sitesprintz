@@ -16,8 +16,24 @@ import './Settings.css';
 
 function BillingSection({ user, token }) {
   const [loading, setLoading] = useState(false);
+  const [collectsPayments, setCollectsPayments] = useState(false);
   const [searchParams] = useSearchParams();
   const highlightedPlan = searchParams.get('plan');
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/health')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.billing?.collectsPayments != null) {
+          setCollectsPayments(Boolean(data.billing.collectsPayments));
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const currentPlan = (user?.subscriptionPlan || user?.plan || '').toLowerCase();
   const subscriptionStatus = (user?.subscriptionStatus || user?.subscription_status || '').toLowerCase();
@@ -120,7 +136,7 @@ function BillingSection({ user, token }) {
           )}
         </div>
 
-        {!hasActivePlan && (
+        {!hasActivePlan && collectsPayments === true && (
           <div className="billing-subscribe-actions" style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             <button
               type="button"
@@ -151,12 +167,18 @@ function BillingSection({ user, token }) {
             </button>
           </div>
         )}
-        {highlightedPlan && !hasActivePlan && (
+        {highlightedPlan && !hasActivePlan && collectsPayments === true && (
           <p className="section-description" style={{ marginTop: '0.75rem' }}>
             You selected the {highlightedPlan} plan — choose a subscribe button above to continue.
           </p>
         )}
-        {hasActivePlan && (
+        {!hasActivePlan && collectsPayments === false && (
+          <p className="section-description" data-testid="billing-collection-closed" style={{ marginTop: '1rem' }}>
+            Platform billing is not open yet. Your site can stay live on the no-card trial. Questions:{' '}
+            <a href={`mailto:${PLATFORM_SUPPORT_EMAIL}`}>{PLATFORM_SUPPORT_EMAIL}</a>
+          </p>
+        )}
+        {hasActivePlan && collectsPayments === true && (
           <div className="billing-subscribe-actions" style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             <p className="section-description" style={{ flexBasis: '100%', margin: 0 }}>
               Each plan covers one live site. Pay for another plan to publish a second site.

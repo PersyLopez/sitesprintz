@@ -61,45 +61,45 @@ describe('TrialBanner Component', () => {
   it('should display urgent message when trial ending soon', () => {
     const urgentDate = new Date();
     urgentDate.setDate(urgentDate.getDate() + 2);
-    
+
     const user = { trial_expires_at: urgentDate.toISOString() };
     renderTrialBanner(user);
-    
-    expect(screen.getByText(/Trial Ending Soon/i)).toBeInTheDocument();
-    expect(screen.getByText(/Upgrade now to keep your sites online/i)).toBeInTheDocument();
+
+    expect(screen.getByText(/Live window closing/i)).toBeInTheDocument();
+    expect(screen.getByText(/no checkout required/i)).toBeInTheDocument();
   });
 
   it('should display normal message when trial not urgent', () => {
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 15);
-    
+
     const user = { trial_expires_at: futureDate.toISOString() };
     renderTrialBanner(user);
-    
-    expect(screen.getByText(/Free Trial Active/i)).toBeInTheDocument();
-    expect(screen.getByText(/Enjoying SiteSprintz/i)).toBeInTheDocument();
+
+    expect(screen.getByText(/Your site is live/i)).toBeInTheDocument();
+    expect(screen.getByText(/no payment needed now/i)).toBeInTheDocument();
   });
 
-  it('should show upgrade button', () => {
+  it('should show email support button', () => {
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 10);
-    
+
     const user = { trial_expires_at: futureDate.toISOString() };
     renderTrialBanner(user);
-    
-    const upgradeButton = screen.getByRole('link', { name: /Upgrade Now/i });
-    expect(upgradeButton).toHaveAttribute('href', '/#pricing');
+
+    const emailButton = screen.getByRole('link', { name: /Email us/i });
+    expect(emailButton).toHaveAttribute('href', expect.stringContaining('mailto:'));
   });
 
-  it('should show compare plans button', () => {
+  it('should show keep working button', () => {
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 10);
-    
+
     const user = { trial_expires_at: futureDate.toISOString() };
     renderTrialBanner(user);
-    
-    const compareButton = screen.getByRole('link', { name: /Compare Plans/i });
-    expect(compareButton).toHaveAttribute('href', '/#pricing');
+
+    const keepWorkingButton = screen.getByRole('link', { name: /Keep working/i });
+    expect(keepWorkingButton).toHaveAttribute('href', '#dashboard-main');
   });
 
   it('should calculate days correctly', () => {

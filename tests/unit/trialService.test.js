@@ -564,6 +564,17 @@ describe('TrialService - Deactivation', () => {
         service.deactivateExpiredTrials()
       ).rejects.toThrow('Database error');
     });
+
+    it('no-ops while platform collection is paused', async () => {
+      process.env.PLATFORM_COLLECT_PAYMENTS = 'false';
+
+      const result = await service.deactivateExpiredTrials();
+
+      expect(result.deactivated).toBe(0);
+      expect(mockDb.transaction).not.toHaveBeenCalled();
+
+      delete process.env.PLATFORM_COLLECT_PAYMENTS;
+    });
   });
 });
 

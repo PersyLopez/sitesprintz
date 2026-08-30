@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { api } from '../../services/api';
-import { PRICING_CONFIG } from '../../config/pricing.config';
+import { PRICING_CONFIG, PLATFORM_SUPPORT_EMAIL } from '../../config/pricing.config';
 import { getPublishedSiteUrl } from '../../utils/siteWorkspace';
 import './PublishModal.css';
 
@@ -38,6 +38,7 @@ function PublishModal({ siteData, onClose }) {
   const [formData, setFormData] = useState({ plan: requiredPlan });
   const [loading, setLoading] = useState(false);
   const [billablePublishedCount, setBillablePublishedCount] = useState(0);
+  const [collectsPayments, setCollectsPayments] = useState(false);
 
   const plans = [
     {
@@ -56,6 +57,21 @@ function PublishModal({ siteData, onClose }) {
       popular: true,
     },
   ];
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/health')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.billing?.collectsPayments != null) {
+          setCollectsPayments(Boolean(data.billing.collectsPayments));
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const checkTrialEligibility = async () => {
@@ -213,6 +229,10 @@ function PublishModal({ siteData, onClose }) {
       console.error('Publish error:', error);
       const code = error.payload?.code;
       if (code === 'SUBSCRIPTION_REQUIRED') {
+        if (collectsPayments === false) {
+          showError(`One live site for now. Email ${PLATFORM_SUPPORT_EMAIL} to publish another.`);
+          return;
+        }
         try {
           await startAdditionalSiteCheckout(createdDraftId);
           return;
@@ -244,9 +264,18 @@ function PublishModal({ siteData, onClose }) {
             </div>
           )}
 
-          {billablePublishedCount > 0 && (
+          {billablePublishedCount > 0 && collectsPayments !== false && (
             <div className="trial-notice" data-testid="additional-site-pay-notice">
               <p>Each plan covers one live site. Publishing this one starts checkout for another plan.</p>
+            </div>
+          )}
+
+          {billablePublishedCount > 0 && collectsPayments === false && (
+            <div className="trial-notice" data-testid="additional-site-billing-closed">
+              <p>
+                One live site for now. Email{' '}
+                <a href={`mailto:${PLATFORM_SUPPORT_EMAIL}`}>{PLATFORM_SUPPORT_EMAIL}</a> to publish another.
+              </p>
             </div>
           )}
 

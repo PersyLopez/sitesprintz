@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { laborInquiryMailto } from '../../utils/laborInquiryMailto';
 import './TrialBanner.css';
 
 function TrialBanner({ user }) {
   const [daysLeft, setDaysLeft] = useState(0);
   const [isUrgent, setIsUrgent] = useState(false);
+  const supportMailto = laborInquiryMailto('optional extras');
 
   useEffect(() => {
     if (user?.trial_expires_at) {
@@ -12,7 +13,7 @@ function TrialBanner({ user }) {
       const today = new Date();
       const diffTime = expiryDate - today;
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
+
       setDaysLeft(Math.max(0, diffDays));
       setIsUrgent(diffDays <= 3);
     }
@@ -25,28 +26,29 @@ function TrialBanner({ user }) {
         <div className="trial-text">
           <h3>
             {isUrgent
-              ? `Trial Ending Soon - ${daysLeft} days left!`
-              : `Free Trial Active - ${daysLeft} days remaining`}
+              ? `Live window closing — ${daysLeft} days left`
+              : `Your site is live — ${daysLeft} days remaining`}
           </h3>
           <p>
             {isUrgent
-              ? 'Upgrade now to keep your sites online and unlock premium features'
-              : 'Enjoying SiteSprintz? Upgrade to unlock unlimited sites and premium features'}
+              ? 'Keep sharing your link. Email us if you want help staying online — no checkout required.'
+              : 'Keep sharing your link. We’ll reach out before your live window ends — no payment needed now.'}
           </p>
         </div>
       </div>
-      
+
       <div className="trial-actions">
-        <Link to="/#pricing" className="btn btn-primary">
-          ⬆️ Upgrade Now
-        </Link>
-        <Link to="/#pricing" className="btn btn-secondary">
-          Compare Plans
-        </Link>
+        {supportMailto ? (
+          <a href={supportMailto} className="btn btn-primary">
+            ✉️ Email us
+          </a>
+        ) : null}
+        <a href="#dashboard-main" className="btn btn-secondary">
+          Keep working
+        </a>
       </div>
     </div>
   );
 }
 
 export default TrialBanner;
-

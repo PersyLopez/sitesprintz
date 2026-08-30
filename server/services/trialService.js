@@ -15,6 +15,7 @@
 import { prisma } from '../../database/db.js';
 import { emailService, EmailTemplates } from './emailService.js';
 import { livePublishedPath } from '../../src/utils/visitorExperience.js';
+import { platformCollectsPayments } from '../config/platformPlans.js';
 
 export class TrialService {
   constructor(db = null, emailSvc = null) {
@@ -329,6 +330,10 @@ export class TrialService {
       skippedDueToPayment: 0,
       sites: []
     };
+
+    if (!platformCollectsPayments()) {
+      return results;
+    }
 
     try {
       await this.db.$transaction(async (tx) => {

@@ -15,6 +15,28 @@ export const LIVE_TRIAL_DAYS = 15;
 export const STRIPE_TRIAL_DAYS = 7;
 
 /**
+ * LLC-bridge — do not collect platform SaaS/labor/claim until PLATFORM_COLLECT_PAYMENTS=true.
+ * Unset: false in production/development; true only when NODE_ENV=test (checkout unit tests).
+ *
+ * @param {NodeJS.ProcessEnv} [env]
+ * @returns {boolean}
+ */
+export function platformCollectsPayments(env = process.env) {
+  const raw = env.PLATFORM_COLLECT_PAYMENTS;
+  if (raw === 'true') {
+    return true;
+  }
+  if (raw === 'false') {
+    return false;
+  }
+  return env.NODE_ENV === 'test';
+}
+
+/** Client-safe message when platform billing is paused. */
+export const BILLING_NOT_OPEN_MESSAGE =
+  'Platform billing is not open yet. Your site can stay live on the no-card trial. Email support@sitesprintz.com for help.';
+
+/**
  * @param {Date} [fromDate]
  * @returns {Date}
  */
