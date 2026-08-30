@@ -108,6 +108,7 @@ router.get('/stripe', async (req, res) => {
       status: 'ok',
       service: 'stripe',
       configured: true,
+      mode: stripeKeyMode(STRIPE_SECRET_KEY),
       timestamp: new Date().toISOString()
     });
   } catch (error) {
@@ -232,8 +233,10 @@ router.get('/full', async (req, res) => {
 
     // Stripe check
     (async () => {
+      const stripeSecret = process.env.STRIPE_SECRET_KEY;
       checks.stripe = {
-        status: process.env.STRIPE_SECRET_KEY ? 'ok' : 'not_configured'
+        status: stripeSecret ? 'ok' : 'not_configured',
+        mode: stripeKeyMode(stripeSecret),
       };
     })(),
 

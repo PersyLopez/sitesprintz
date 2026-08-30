@@ -83,6 +83,22 @@ describe('layoutRenderer — renderSection() known types', () => {
     expect(result.content.phone).toBe('555-1234');
   });
 
+  it('services does not fall back to products (catalog stays a separate list)', () => {
+    const result = renderSection('services', {}, {
+      products: [{ name: 'Shampoo bottle', price: 18 }],
+    }, {});
+    expect(result.content.items).toHaveLength(0);
+  });
+
+  it('services still lists real services when products also exist', () => {
+    const result = renderSection('services', {}, {
+      services: [{ name: 'Haircut', price: 45 }],
+      products: [{ name: 'Shampoo bottle', price: 18 }],
+    }, {});
+    expect(result.content.items).toHaveLength(1);
+    expect(result.content.items[0].name).toBe('Haircut');
+  });
+
   it('catalog section flattens menu sections to products', () => {
     const menuData = {
       sections: [

@@ -131,6 +131,10 @@ describe('Health Endpoints Integration Tests', () => {
 
       const response = await request(app).get('/health/full').expect(200);
 
+      expect(response.body.checks.stripe).toMatchObject({
+        status: expect.stringMatching(/^(ok|not_configured)$/),
+        mode: expect.stringMatching(/^(live|test|missing|invalid)$/),
+      });
       expect(response.body.checks.forms).toMatchObject({
         status: 'ok',
         emailConfigured: true,
@@ -152,6 +156,19 @@ describe('Health Endpoints Integration Tests', () => {
       expect(response.body).toHaveProperty('ready');
       expect(response.body).toHaveProperty('timestamp');
       expect(typeof response.body.ready).toBe('boolean');
+    });
+  });
+
+  describe('GET /health/stripe', () => {
+    it('reports stripeKeyMode without charging', async () => {
+      process.env.STRIPE_SECRET_KEY = 'sk_test_health';
+      const response = await request(app).get('/health/stripe').expect(200);
+      expect(response.body).toMatchObject({
+        status: 'ok',
+        service: 'stripe',
+        configured: true,
+        mode: 'test',
+      });
     });
   });
 

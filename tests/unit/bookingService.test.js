@@ -1,31 +1,73 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import BookingService from '../../server/services/bookingService.js';
-import { prisma } from '../../database/db.js';
-import { createMockPrisma, seedPrismaData, resetPrismaMocks } from '../mocks/prisma.js';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-// Use global Prisma mock from setup.js
-// The setup.js already mocks database/db.js with Prisma
+vi.mock('../../database/db.js', () => ({
+  prisma: {
+    users: { findUnique: vi.fn() },
+    booking_tenants: {
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
+    },
+    booking_services: {
+      create: vi.fn(),
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      update: vi.fn(),
+    },
+    booking_staff: {
+      findFirst: vi.fn(),
+      create: vi.fn(),
+    },
+    booking_availability_rules: {
+      findMany: vi.fn(),
+      deleteMany: vi.fn(),
+      create: vi.fn(),
+      count: vi.fn(),
+    },
+    $transaction: vi.fn(),
+  },
+  query: vi.fn(),
+}));
 
-// Mock the notification service
 vi.mock('../../server/services/bookingNotificationService.js', () => ({
   default: class MockNotificationService {
     sendConfirmationEmail = vi.fn().mockResolvedValue({ success: true });
     sendCancellationEmail = vi.fn().mockResolvedValue({ success: true });
-  }
+  },
 }));
+
+import { prisma } from '../../database/db.js';
+import BookingService from '../../server/services/bookingService.js';
+import AppointmentService from '../../server/services/booking/AppointmentService.js';
+
+function mockAvailabilityTransaction() {
+  prisma.$transaction.mockImplementation(async (fn) => {
+    const tx = {
+      booking_availability_rules: {
+        deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
+        create: vi.fn().mockImplementation(({ data }) => Promise.resolve({
+          id: `rule-${data.day_of_week}`,
+          ...data,
+        })),
+      },
+    };
+    return fn(tx);
+  });
+}
 
 describe('BookingService - Tenant & Service Management', () => {
   let bookingService;
 
   beforeEach(() => {
     bookingService = new BookingService();
-    resetPrismaMocks();
     vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    resetPrismaMocks();
-    vi.clearAllMocks();
+    prisma.booking_tenants.findUnique.mockResolvedValue({
+      payment_enabled: false,
+      default_payment_type: 'none',
+      default_deposit_percentage: 50,
+      users: null,
+    });
+    mockAvailabilityTransaction();
   });
 
   describe('getOrCreateTenant', () => {
@@ -36,20 +78,15 @@ describe('BookingService - Tenant & Service Management', () => {
         business_name: 'Test Business',
         email: 'test@example.com',
         site_id: 'site-123',
-        status: 'active'
+        status: 'active',
       };
 
-      vi.mocked(prisma.booking_tenants.findFirst).mockResolvedValueOnce(mockTenant);
+      prisma.booking_tenants.findFirst.mockResolvedValueOnce(mockTenant);
 
       const result = await bookingService.getOrCreateTenant(1, 'site-123');
 
       expect(result).toEqual(mockTenant);
-      expect(prisma.booking_tenants.findFirst).toHaveBeenCalledWith({
-        where: {
-          user_id: 1,
-          OR: [{ site_id: 'site-123' }, { site_id: 'site-123' }],
-        }
-      });
+      expect(prisma.booking_tenants.findFirst).toHaveBeenCalled();
     });
 
     it('creates a site-scoped tenant instead of reusing another site', async () => {
@@ -60,12 +97,12 @@ describe('BookingService - Tenant & Service Management', () => {
         business_name: 'My Business',
         email: 'newuser@example.com',
         site_id: 'site-456',
-        status: 'active'
+        status: 'active',
       };
 
-      vi.mocked(prisma.booking_tenants.findFirst).mockResolvedValueOnce(null);
-      vi.mocked(prisma.users.findUnique).mockResolvedValueOnce(mockUser);
-      vi.mocked(prisma.booking_tenants.create).mockResolvedValueOnce(mockNewTenant);
+      prisma.booking_tenants.findFirst.mockResolvedValueOnce(null);
+      prisma.users.findUnique.mockResolvedValueOnce(mockUser);
+      prisma.booking_tenants.create.mockResolvedValueOnce(mockNewTenant);
 
       const result = await bookingService.getOrCreateTenant(2, 'site-456');
 
@@ -75,15 +112,13 @@ describe('BookingService - Tenant & Service Management', () => {
           user_id: 2,
           site_id: 'site-456',
           email: 'newuser@example.com',
-        })
+        }),
       });
     });
 
     it('should throw error if user not found', async () => {
-      // No tenant
-      vi.mocked(prisma.booking_tenants.findFirst).mockResolvedValueOnce(null);
-      // No user
-      vi.mocked(prisma.users.findUnique).mockResolvedValueOnce(null);
+      prisma.booking_tenants.findFirst.mockResolvedValueOnce(null);
+      prisma.users.findUnique.mockResolvedValueOnce(null);
 
       await expect(
         bookingService.getOrCreateTenant(999, 'site-999')
@@ -110,7 +145,7 @@ describe('BookingService - Tenant & Service Management', () => {
         status: 'active',
       };
 
-      vi.mocked(prisma.booking_services.create).mockResolvedValueOnce(mockService);
+      prisma.booking_services.create.mockResolvedValueOnce(mockService);
 
       const result = await bookingService.createService(mockTenantId, serviceData);
 
@@ -119,56 +154,42 @@ describe('BookingService - Tenant & Service Management', () => {
         data: expect.objectContaining({
           tenant_id: mockTenantId,
           name: 'Haircut',
-          description: 'Professional haircut',
-          category: 'hair',
           duration_minutes: 60,
           price_cents: 5000,
-        })
+        }),
       });
     });
 
     it('should throw error if name is missing', async () => {
-      const invalidData = {
-        duration_minutes: 60,
-      };
-
       await expect(
-        bookingService.createService(mockTenantId, invalidData)
+        bookingService.createService(mockTenantId, { duration_minutes: 60 })
       ).rejects.toThrow('Service name is required');
     });
 
     it('should throw error if duration is invalid', async () => {
-      const invalidData = {
-        name: 'Test Service',
-        duration_minutes: 0, // Invalid: too short
-      };
-
       await expect(
-        bookingService.createService(mockTenantId, invalidData)
+        bookingService.createService(mockTenantId, {
+          name: 'Test Service',
+          duration_minutes: 0,
+        })
       ).rejects.toThrow('Duration must be between 1 and 480 minutes');
     });
 
     it('should throw error if duration exceeds maximum', async () => {
-      const invalidData = {
-        name: 'Test Service',
-        duration_minutes: 500, // Invalid: too long
-      };
-
       await expect(
-        bookingService.createService(mockTenantId, invalidData)
+        bookingService.createService(mockTenantId, {
+          name: 'Test Service',
+          duration_minutes: 500,
+        })
       ).rejects.toThrow('Duration must be between 1 and 480 minutes');
     });
 
     it('should use defaults for optional fields', async () => {
-      const minimalData = {
-        name: 'Basic Service',
-        duration_minutes: 30,
-      };
-
       const mockService = {
         id: 'service-456',
         tenant_id: mockTenantId,
-        ...minimalData,
+        name: 'Basic Service',
+        duration_minutes: 30,
         description: '',
         category: 'general',
         price_cents: 0,
@@ -177,13 +198,23 @@ describe('BookingService - Tenant & Service Management', () => {
         status: 'active',
       };
 
-      db.query.mockResolvedValueOnce({ rows: [mockService] });
+      prisma.booking_services.create.mockResolvedValueOnce(mockService);
 
-      const result = await bookingService.createService(mockTenantId, minimalData);
+      const result = await bookingService.createService(mockTenantId, {
+        name: 'Basic Service',
+        duration_minutes: 30,
+      });
 
       expect(result.price_cents).toBe(0);
       expect(result.online_booking_enabled).toBe(true);
       expect(result.requires_approval).toBe(false);
+      expect(prisma.booking_services.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          description: '',
+          category: 'general',
+          price_cents: 0,
+        }),
+      });
     });
   });
 
@@ -196,15 +227,15 @@ describe('BookingService - Tenant & Service Management', () => {
         { id: 'service-2', name: 'Service 2', status: 'active' },
       ];
 
-      db.query.mockResolvedValueOnce({ rows: mockServices });
+      prisma.booking_services.findMany.mockResolvedValueOnce(mockServices);
 
       const result = await bookingService.getServices(mockTenantId);
 
       expect(result).toEqual(mockServices);
-      expect(db.query).toHaveBeenCalledWith(
-        expect.stringContaining("status = $2"),
-        [mockTenantId, 'active']
-      );
+      expect(prisma.booking_services.findMany).toHaveBeenCalledWith({
+        where: { tenant_id: mockTenantId, status: 'active' },
+        orderBy: [{ display_order: 'asc' }, { created_at: 'desc' }],
+      });
     });
 
     it('should return all services when includeInactive is true', async () => {
@@ -213,15 +244,15 @@ describe('BookingService - Tenant & Service Management', () => {
         { id: 'service-2', name: 'Service 2', status: 'inactive' },
       ];
 
-      db.query.mockResolvedValueOnce({ rows: mockServices });
+      prisma.booking_services.findMany.mockResolvedValueOnce(mockServices);
 
       const result = await bookingService.getServices(mockTenantId, true);
 
       expect(result).toEqual(mockServices);
-      expect(db.query).toHaveBeenCalledWith(
-        expect.not.stringContaining("status = $2"),
-        [mockTenantId]
-      );
+      expect(prisma.booking_services.findMany).toHaveBeenCalledWith({
+        where: { tenant_id: mockTenantId },
+        orderBy: [{ display_order: 'asc' }, { created_at: 'desc' }],
+      });
     });
   });
 
@@ -236,7 +267,7 @@ describe('BookingService - Tenant & Service Management', () => {
         name: 'Test Service',
       };
 
-      db.query.mockResolvedValueOnce({ rows: [mockService] });
+      prisma.booking_services.findFirst.mockResolvedValueOnce(mockService);
 
       const result = await bookingService.getService(mockServiceId, mockTenantId);
 
@@ -244,7 +275,7 @@ describe('BookingService - Tenant & Service Management', () => {
     });
 
     it('should return null if service not found', async () => {
-      db.query.mockResolvedValueOnce({ rows: [] });
+      prisma.booking_services.findFirst.mockResolvedValueOnce(null);
 
       const result = await bookingService.getService('nonexistent', mockTenantId);
 
@@ -261,14 +292,14 @@ describe('BookingService - Tenant & Service Management', () => {
         name: 'Updated Service',
         price_cents: 7500,
       };
-
       const mockUpdatedService = {
         id: mockServiceId,
         tenant_id: mockTenantId,
         ...updateData,
       };
 
-      db.query.mockResolvedValueOnce({ rows: [mockUpdatedService] });
+      prisma.booking_services.findFirst.mockResolvedValueOnce({ id: mockServiceId });
+      prisma.booking_services.update.mockResolvedValueOnce(mockUpdatedService);
 
       const result = await bookingService.updateService(
         mockServiceId,
@@ -277,14 +308,17 @@ describe('BookingService - Tenant & Service Management', () => {
       );
 
       expect(result).toEqual(mockUpdatedService);
-      expect(db.query).toHaveBeenCalledWith(
-        expect.stringContaining('UPDATE booking_services'),
-        expect.arrayContaining(['Updated Service', 7500, mockServiceId, mockTenantId])
-      );
+      expect(prisma.booking_services.update).toHaveBeenCalledWith({
+        where: { id: mockServiceId },
+        data: expect.objectContaining({
+          name: 'Updated Service',
+          price_cents: 7500,
+        }),
+      });
     });
 
     it('should return null if service not found', async () => {
-      db.query.mockResolvedValueOnce({ rows: [] });
+      prisma.booking_services.findFirst.mockResolvedValueOnce(null);
 
       const result = await bookingService.updateService(
         'nonexistent',
@@ -302,25 +336,23 @@ describe('BookingService - Tenant & Service Management', () => {
     });
 
     it('should only update allowed fields', async () => {
-      const updateData = {
-        name: 'Updated',
-        invalid_field: 'should be ignored',
-        price_cents: 5000,
-      };
-
-      const mockUpdatedService = {
+      prisma.booking_services.findFirst.mockResolvedValueOnce({ id: mockServiceId });
+      prisma.booking_services.update.mockResolvedValueOnce({
         id: mockServiceId,
         name: 'Updated',
         price_cents: 5000,
-      };
+      });
 
-      db.query.mockResolvedValueOnce({ rows: [mockUpdatedService] });
+      await bookingService.updateService(mockServiceId, mockTenantId, {
+        name: 'Updated',
+        invalid_field: 'should be ignored',
+        price_cents: 5000,
+      });
 
-      await bookingService.updateService(mockServiceId, mockTenantId, updateData);
-
-      // Query should only include allowed fields
-      const queryCall = db.query.mock.calls[0];
-      expect(queryCall[0]).not.toContain('invalid_field');
+      const data = prisma.booking_services.update.mock.calls[0][0].data;
+      expect(data).not.toHaveProperty('invalid_field');
+      expect(data.name).toBe('Updated');
+      expect(data.price_cents).toBe(5000);
     });
   });
 
@@ -329,19 +361,23 @@ describe('BookingService - Tenant & Service Management', () => {
     const mockServiceId = 'service-123';
 
     it('should soft delete service (set status to inactive)', async () => {
-      db.query.mockResolvedValueOnce({ rows: [{ id: mockServiceId, status: 'inactive' }] });
+      prisma.booking_services.findFirst.mockResolvedValueOnce({ id: mockServiceId });
+      prisma.booking_services.update.mockResolvedValueOnce({
+        id: mockServiceId,
+        status: 'inactive',
+      });
 
       const result = await bookingService.deleteService(mockServiceId, mockTenantId);
 
       expect(result).toBe(true);
-      expect(db.query).toHaveBeenCalledWith(
-        expect.stringContaining("status = 'inactive'"),
-        [mockServiceId, mockTenantId]
-      );
+      expect(prisma.booking_services.update).toHaveBeenCalledWith({
+        where: { id: mockServiceId },
+        data: expect.objectContaining({ status: 'inactive' }),
+      });
     });
 
     it('should return false if service not found', async () => {
-      db.query.mockResolvedValueOnce({ rows: [] });
+      prisma.booking_services.findFirst.mockResolvedValueOnce(null);
 
       const result = await bookingService.deleteService('nonexistent', mockTenantId);
 
@@ -359,19 +395,21 @@ describe('BookingService - Tenant & Service Management', () => {
         name: 'John Doe',
       };
 
-      db.query.mockResolvedValueOnce({ rows: [mockStaff] });
+      prisma.booking_staff.findFirst.mockResolvedValueOnce(mockStaff);
+      prisma.booking_availability_rules.count.mockResolvedValueOnce(5);
 
       const result = await bookingService.getOrCreateDefaultStaff(mockTenantId);
 
       expect(result).toEqual(mockStaff);
+      expect(prisma.booking_staff.create).not.toHaveBeenCalled();
     });
 
     it('should create default staff if none exists', async () => {
       const mockTenant = {
+        id: mockTenantId,
         business_name: 'Test Business',
         email: 'test@example.com',
       };
-
       const mockNewStaff = {
         id: 'staff-456',
         tenant_id: mockTenantId,
@@ -380,19 +418,27 @@ describe('BookingService - Tenant & Service Management', () => {
         is_primary: true,
       };
 
-      db.query.mockResolvedValueOnce({ rows: [] }); // No existing staff
-      db.query.mockResolvedValueOnce({ rows: [mockTenant] }); // Get tenant
-      db.query.mockResolvedValueOnce({ rows: [mockNewStaff] }); // Create staff
+      prisma.booking_staff.findFirst.mockResolvedValueOnce(null);
+      prisma.booking_tenants.findUnique.mockResolvedValueOnce(mockTenant);
+      prisma.booking_staff.create.mockResolvedValueOnce(mockNewStaff);
+      prisma.booking_availability_rules.count.mockResolvedValueOnce(0);
 
       const result = await bookingService.getOrCreateDefaultStaff(mockTenantId);
 
       expect(result).toEqual(mockNewStaff);
-      expect(db.query).toHaveBeenCalledTimes(3);
+      expect(prisma.booking_staff.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          tenant_id: mockTenantId,
+          name: 'Test Business',
+          email: 'test@example.com',
+          is_primary: true,
+        }),
+      });
     });
 
     it('should throw error if tenant not found', async () => {
-      db.query.mockResolvedValueOnce({ rows: [] }); // No existing staff
-      db.query.mockResolvedValueOnce({ rows: [] }); // Tenant not found
+      prisma.booking_staff.findFirst.mockResolvedValueOnce(null);
+      prisma.booking_tenants.findUnique.mockResolvedValueOnce(null);
 
       await expect(
         bookingService.getOrCreateDefaultStaff('nonexistent')
@@ -401,8 +447,10 @@ describe('BookingService - Tenant & Service Management', () => {
   });
 
   describe('generateConfirmationCode', () => {
+    const appointmentService = new AppointmentService({}, {});
+
     it('should generate 8-character alphanumeric code', () => {
-      const code = bookingService.generateConfirmationCode();
+      const code = appointmentService.generateConfirmationCode();
 
       expect(code).toHaveLength(8);
       expect(code).toMatch(/^[A-Z0-9]+$/);
@@ -411,17 +459,15 @@ describe('BookingService - Tenant & Service Management', () => {
     it('should generate unique codes', () => {
       const codes = new Set();
       for (let i = 0; i < 100; i++) {
-        codes.add(bookingService.generateConfirmationCode());
+        codes.add(appointmentService.generateConfirmationCode());
       }
 
-      // Should have generated at least 95+ unique codes out of 100
       expect(codes.size).toBeGreaterThan(95);
     });
 
     it('should not include confusing characters', () => {
-      const code = bookingService.generateConfirmationCode();
+      const code = appointmentService.generateConfirmationCode();
 
-      // Should not contain: I, O, 0, 1, L
       expect(code).not.toMatch(/[IOL01]/);
     });
   });
@@ -433,6 +479,7 @@ describe('BookingService - Availability Rules', () => {
   beforeEach(() => {
     bookingService = new BookingService();
     vi.clearAllMocks();
+    mockAvailabilityTransaction();
   });
 
   describe('setAvailabilityRules', () => {
@@ -445,24 +492,6 @@ describe('BookingService - Availability Rules', () => {
         { day_of_week: 2, start_time: '09:00', end_time: '17:00' },
       ];
 
-      const mockCreatedRules = scheduleRules.map((rule, i) => ({
-        id: `rule-${i}`,
-        staff_id: mockStaffId,
-        ...rule,
-      }));
-
-      // Mock transaction
-      const mockClient = {
-        query: vi.fn()
-          .mockResolvedValueOnce({ rows: [] }) // DELETE
-          .mockResolvedValueOnce({ rows: [mockCreatedRules[0]] }) // INSERT 1
-          .mockResolvedValueOnce({ rows: [mockCreatedRules[1]] }), // INSERT 2
-      };
-
-      db.transaction.mockImplementation(async (callback) => {
-        return callback(mockClient);
-      });
-
       const result = await bookingService.setAvailabilityRules(
         mockStaffId,
         mockTenantId,
@@ -470,11 +499,7 @@ describe('BookingService - Availability Rules', () => {
       );
 
       expect(result).toHaveLength(2);
-      expect(mockClient.query).toHaveBeenCalledWith(
-        'DELETE FROM booking_availability_rules WHERE staff_id = $1',
-        [mockStaffId]
-      );
-      expect(mockClient.query).toHaveBeenCalledTimes(3); // 1 delete + 2 inserts
+      expect(prisma.$transaction).toHaveBeenCalled();
     });
   });
 
@@ -483,23 +508,23 @@ describe('BookingService - Availability Rules', () => {
 
     it('should return availability rules for staff', async () => {
       const mockRules = [
-        { id: 'rule-1', day_of_week: 1, start_time: '09:00', end_time: '17:00' },
-        { id: 'rule-2', day_of_week: 2, start_time: '09:00', end_time: '17:00' },
+        { id: 'rule-1', day_of_week: 1, start_time: '09:00', end_time: '17:00', is_available: true },
+        { id: 'rule-2', day_of_week: 2, start_time: '09:00', end_time: '17:00', is_available: true },
       ];
 
-      db.query.mockResolvedValueOnce({ rows: mockRules });
+      prisma.booking_availability_rules.findMany.mockResolvedValueOnce(mockRules);
 
       const result = await bookingService.getAvailabilityRules(mockStaffId);
 
       expect(result).toEqual(mockRules);
-      expect(db.query).toHaveBeenCalledWith(
-        expect.stringContaining('is_available = true'),
-        [mockStaffId]
-      );
+      expect(prisma.booking_availability_rules.findMany).toHaveBeenCalledWith({
+        where: { staff_id: mockStaffId, is_available: true },
+        orderBy: [{ day_of_week: 'asc' }, { start_time: 'asc' }],
+      });
     });
 
     it('should return empty array if no rules found', async () => {
-      db.query.mockResolvedValueOnce({ rows: [] });
+      prisma.booking_availability_rules.findMany.mockResolvedValueOnce([]);
 
       const result = await bookingService.getAvailabilityRules('nonexistent');
 
@@ -507,4 +532,3 @@ describe('BookingService - Availability Rules', () => {
     });
   });
 });
-

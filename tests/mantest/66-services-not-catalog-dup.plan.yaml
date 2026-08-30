@@ -1,0 +1,35 @@
+url: http://localhost:5173/view/gallery-salon
+goal: Live salon services stay services; product shop catalog stays catalog
+steps:
+  - action: Salon live site
+    wait_for: { text: Luxe Beauty Studio, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Haircut is listed as a service
+    wait_for: { text: Haircut, timeout: 10000 }
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/Haircut/i.test(t)) {
+        throw new Error('Salon missing Haircut service: ' + t.slice(0, 280));
+      }
+      if (/Harbor Goods/i.test(t)) {
+        throw new Error('Salon leaked product-shop identity');
+      }
+
+  - action: Product shop
+    goto: http://localhost:5173/view/gallery-products
+    settle_ms: 1800
+
+  - action: Harbor Goods catalog, not salon services
+    wait_for: { text: Harbor Goods, timeout: 20000 }
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/not yet supported in preview/i.test(t)) {
+        throw new Error('Products shop placeholders');
+      }
+      if (!/Harbor Goods/i.test(t)) {
+        throw new Error('Missing shop identity: ' + t.slice(0, 280));
+      }
+      if (/Luxe Beauty Studio/i.test(t)) {
+        throw new Error('Product shop leaked salon identity');
+      }

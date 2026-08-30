@@ -80,7 +80,7 @@ const sectionPrimitives = {
 
   services(content, siteData, tokens, variant) {
     const c = content || {};
-    let items = firstList(c.items, siteData.services, siteData.products);
+    let items = firstList(c.items, siteData.services);
     if (!items.length) {
       items = flattenMenuToProducts(siteData.menu?.sections);
     }
