@@ -50,6 +50,7 @@ Single entry point. Each subfolder has its own `README.md` with canonical docs f
 | Booking modes | `features/BUSINESS_MODE_CORE_SOLUTION.md` |
 | Feature status | `features/QUICK_REFERENCE_STATUS.md` |
 | JS standards | `development/JS-STANDARDS.md` |
+| Platform brand / host rename | `development/PLATFORM-BRAND.md` |
 | Testing standards | `development/TESTING.md` |
 | Google OAuth + ngrok | `setup/GOOGLE-OAUTH-NGROK.md` |
 | Admin setup | `ADMIN-SETUP.md` |

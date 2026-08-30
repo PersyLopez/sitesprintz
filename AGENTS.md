@@ -7,7 +7,7 @@ Read this file first, then load area-specific docs only when needed.
 
 ## Project Overview
 
-**SiteSprintz** is a small-business website builder: template selection → draft editing → publish → live site with optional e-commerce, booking, and admin tooling.
+**SiteSprintz** (repo) is a small-business website builder. Visitor-facing brand is **Right Site Light** on `rightsitelight.com` — see [`docs/development/PLATFORM-BRAND.md`](docs/development/PLATFORM-BRAND.md) before renaming. Flow: template selection → draft editing → publish → live site with optional e-commerce, booking, and admin tooling.
 
 | Layer | Location | Responsibility |
 |-------|----------|----------------|
@@ -98,6 +98,7 @@ Create a doc **only if** the user asked, OR all of:
 | Feature status | all features | `docs/features/QUICK_REFERENCE_STATUS.md` |
 | Behavioral UI | `tests/mantest/*.plan.yaml` | `~/.claude/skills/manual-test/SKILL.md` |
 | Auth / OAuth | `server/routes/auth.routes.js`, `auth-google.js` | `docs/setup/GOOGLE-OAUTH-NGROK.md` |
+| Platform brand / host | `src/i18n/marketing/en.js`, `src/utils/customDomainHost.js` | `docs/development/PLATFORM-BRAND.md` |
 | JS standards | all `.js`/`.jsx` | `docs/development/JS-STANDARDS.md` |
 | Doc efficiency | all tasks | `docs/governance/AGENT_DOCUMENTATION_GUIDE.md` |
 | Doc policies | all `docs/**` | `docs/governance/DOCUMENTATION_POLICIES.md` |
