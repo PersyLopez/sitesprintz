@@ -1,18 +1,21 @@
 url: http://localhost:5173/
-goal: Public pricing shows 15-day live trial with no card required
+goal: Public pricing shows a 15-day live site with no card required
 steps:
   - action: Landing page loaded
     wait_for: { text: Starter, timeout: 20000 }
     settle_ms: 800
     assert:
-      - text contains 15-day trial when you publish
+      - text contains 15 days live when you publish
 
-  - action: Pricing section shows 15-day trial without card requirement
+  - action: Pricing section shows live trial without card requirement
     code: |
       const body = await page.locator('body').innerText();
-      if (!/15.day trial when you publish/i.test(body)) {
-        throw new Error('Expected 15-day trial copy on landing pricing');
+      if (!/15 days live when you publish/i.test(body)) {
+        throw new Error('Expected 15 days live copy on landing pricing');
       }
       if (/payment method required/i.test(body)) {
         throw new Error('Landing should not say payment method required for live trial');
+      }
+      if (/cancel anytime/i.test(body)) {
+        throw new Error('Landing should not say cancel anytime during the no-card lead window');
       }
