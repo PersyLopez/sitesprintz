@@ -18,6 +18,11 @@ import { siteWantsEmbeddedBooking, livePublishedPath } from '../../src/utils/vis
 import { ensurePublishedBooking } from '../services/booking/ensurePublishedBooking.js';
 import { normalizeTier } from '../../src/config/tiers.js';
 import { resolveUserPlan } from '../utils/resolveUserPlan.js';
+import {
+  canOccupyPublishedSiteSlot,
+  countBillablePublishedSites,
+  countPaidSiteSlots,
+} from '../services/subscriptionService.js';
 import { inheritPaymentAccountsForSite } from '../services/payments/processorConnectHelpers.js';
 import { attachSpanishLocale } from '../services/siteTranslationService.js';
 import { prepareOwnerSiteData } from '../utils/prepareSiteLocation.js';
@@ -725,7 +730,7 @@ router.post('/:draftId/publish', asyncHandler(async (req, res) => {
     
     try {
       const result = await prisma.$queryRaw`
-        SELECT id, template_id, business_data, status, expires_at
+        SELECT id, template_id, business_data, status, expires_at, published_site_id
         FROM drafts
         WHERE id = ${draftId} AND status = 'draft'
       `;
@@ -749,7 +754,8 @@ router.post('/:draftId/publish', asyncHandler(async (req, res) => {
           template_id: fileDraft.templateId || fileDraft.template,
           business_data: fileDraft.businessData || fileDraft.data || {},
           status: fileDraft.status || 'draft',
-          expires_at: fileDraft.expiresAt
+          expires_at: fileDraft.expiresAt,
+          published_site_id: fileDraft.publishedSiteId || fileDraft.published_site_id || null,
         };
       } catch (err) {
         if (err.code === 'ENOENT' || err instanceof PathEscapeError) {
@@ -800,9 +806,11 @@ router.post('/:draftId/publish', asyncHandler(async (req, res) => {
       where: { email: emailValidation.value },
       select: {
         id: true,
+        role: true,
         subscription_status: true,
         subscription_plan: true,
-        plan: true
+        plan: true,
+        stripe_customer_id: true,
       }
     });
 
@@ -824,9 +832,11 @@ router.post('/:draftId/publish', asyncHandler(async (req, res) => {
         },
         select: {
           id: true,
+          role: true,
           subscription_status: true,
           subscription_plan: true,
-          plan: true
+          plan: true,
+          stripe_customer_id: true,
         }
       });
 
@@ -870,19 +880,20 @@ router.post('/:draftId/publish', asyncHandler(async (req, res) => {
   let sitePlan = userPlan || planValidation.value;
   let expiresAt = null;
 
-  if (!hasActiveSubscription) {
-    const publishedSites = await prisma.sites.findMany({
-      where: {
-        user_id: userId,
-        status: 'published'
-      },
-      select: { id: true }
-    });
-
-    if (publishedSites.length === 0) {
+  const publishedCount = await countBillablePublishedSites(userId, {
+    exceptSiteId: draft.published_site_id || null,
+  });
+  const paidSlots = await countPaidSiteSlots(user);
+  const slot = canOccupyPublishedSiteSlot({
+    publishedCount,
+    maxSites: paidSlots,
+    isAdmin: user.role === 'admin',
+  });
+  if (!slot.allowed) {
+    if (!hasActiveSubscription && publishedCount === 0) {
       return sendBadRequest(res, 'Payment method required to start free trial. Please add a payment method.', 'PAYMENT_METHOD_REQUIRED');
     }
-    return sendBadRequest(res, 'Subscription required. Please subscribe to a plan to publish additional sites.', 'SUBSCRIPTION_REQUIRED');
+    return sendBadRequest(res, slot.reason, slot.code);
   }
 
   // Allocate an isolated subdomain, write contained files, then persist.

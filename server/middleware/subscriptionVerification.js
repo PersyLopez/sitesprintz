@@ -4,8 +4,7 @@
  * 
  * REFACTORED: Now uses SubscriptionService with caching and conflict resolution
  */
-import { subscriptionService, PLAN_LIMITS } from '../services/subscriptionService.js';
-import { prisma } from '../../database/db.js';
+import { subscriptionService, PLAN_LIMITS, countBillablePublishedSites, canOccupyPublishedSiteSlot } from '../services/subscriptionService.js';
 
 // Re-export PLAN_LIMITS for backward compatibility
 export { PLAN_LIMITS };
@@ -127,18 +126,13 @@ export async function canCreateSite(userId) {
     };
   }
   
-  // Get current site count
-  const siteCount = await prisma.sites.count({
-    where: {
-      user_id: userId,
-      status: { not: 'deleted' }
-    }
-  });
-  
-  const currentCount = siteCount;
+  const currentCount = await countBillablePublishedSites(userId);
   const maxSites = limits.maxSites;
-  
-  // -1 means unlimited
+  const slot = canOccupyPublishedSiteSlot({
+    publishedCount: currentCount,
+    maxSites,
+  });
+
   if (maxSites === -1) {
     return {
       allowed: true,
@@ -146,11 +140,12 @@ export async function canCreateSite(userId) {
       limit: -1
     };
   }
-  
+
   return {
-    allowed: currentCount < maxSites,
+    allowed: slot.allowed,
     current: currentCount,
-    limit: maxSites
+    limit: maxSites,
+    reason: slot.reason
   };
 }
 

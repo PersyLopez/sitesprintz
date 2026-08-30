@@ -34,6 +34,7 @@ import { livePublishedPath } from '../../src/utils/visitorExperience.js';
 import { fulfillPlatformSubscription } from '../services/payments/fulfillPlatformSubscription.js';
 import { stripeSubscriptionLineItem, STRIPE_TRIAL_DAYS, normalizePaidPlan, CUSTOMER_LABOR_SKUS, isCustomerLaborSkuConfigured } from '../config/platformPlans.js';
 import { createLaborCheckout } from '../services/labor/laborCheckoutService.js';
+import { countBillablePublishedSites, countPaidSiteSlots } from '../services/subscriptionService.js';
 
 const router = express.Router();
 const INVALID_PAID_PLAN = 'Invalid plan. Must be "starter", "growth", or "growth_managed"';
@@ -419,13 +420,13 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
         return sendServiceUnavailable(res, 'Stripe not configured. Add STRIPE_SECRET_KEY to .env', 'STRIPE_NOT_CONFIGURED');
     }
 
-    const { plan: rawPlan, draftId, successUrl, cancelUrl } = req.body;
-    const userEmail = req.user.email;
-    const plan = normalizePaidPlan(rawPlan);
+        const { plan: rawPlan, draftId, successUrl, cancelUrl, additionalSite } = req.body;
+        const userEmail = req.user.email;
+        const plan = normalizePaidPlan(rawPlan);
 
-    if (!plan) {
-        return sendBadRequest(res, INVALID_PAID_PLAN, 'INVALID_PLAN');
-    }
+        if (!plan) {
+            return sendBadRequest(res, INVALID_PAID_PLAN, 'INVALID_PLAN');
+        }
 
         const redirects = subscriptionCheckoutUrls(req, {
             plan,
@@ -439,13 +440,17 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
             select: {
                 stripe_customer_id: true,
                 id: true,
+                role: true,
                 subscription_status: true,
                 stripe_subscription_id: true,
             },
         });
 
+        const buyingAdditionalSite = additionalSite === true || additionalSite === 'true';
+
         if (
-            dbUser?.stripe_subscription_id
+            !buyingAdditionalSite
+            && dbUser?.stripe_subscription_id
             && ['active', 'trialing'].includes(dbUser.subscription_status)
         ) {
             return sendConflict(
@@ -453,6 +458,18 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
                 'You already have an active subscription. Manage it in the billing portal.',
                 'ALREADY_SUBSCRIBED',
             );
+        }
+
+        if (buyingAdditionalSite && dbUser?.id) {
+            const publishedCount = await countBillablePublishedSites(dbUser.id);
+            const paidSlots = await countPaidSiteSlots(dbUser);
+            if (paidSlots !== -1 && publishedCount < paidSlots) {
+                return sendConflict(
+                    res,
+                    'You already have an unused site slot. Publish this site without paying again.',
+                    'SITE_SLOT_AVAILABLE',
+                );
+            }
         }
 
         let customerId = dbUser?.stripe_customer_id || null;
@@ -506,6 +523,7 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
                 metadata: {
                     plan,
                     userId,
+                    ...(buyingAdditionalSite ? { additionalSite: 'true' } : {}),
                 },
             },
             metadata: {
@@ -513,10 +531,13 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
                 userId,
                 user_email: userEmail,
                 draft_id: draftId || '',
-                source: 'sitesprintz_subscription',
+                source: buyingAdditionalSite ? 'sitesprintz_additional_site' : 'sitesprintz_subscription',
+                ...(buyingAdditionalSite ? { additionalSite: 'true' } : {}),
             },
         }, {
-            idempotencyKey: `plat-sub:${userId}:${plan}`,
+            idempotencyKey: buyingAdditionalSite
+                ? `plat-sub:${userId}:${plan}:additional:${draftId || 'site'}`
+                : `plat-sub:${userId}:${plan}`,
         });
 
     sendSuccess(res, { sessionId: session.id, url: session.url });

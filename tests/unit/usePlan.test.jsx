@@ -148,6 +148,7 @@ describe('usePlan Hook', () => {
       expect(result.current.features.payments).toBe(true);
       expect(result.current.features.customDomain).toBe(true);
       expect(result.current.features.removeBranding).toBe(false);
+      expect(result.current.features.maxSites).toBe(1);
     });
 
     it('should expose custom domain on Starter', () => {

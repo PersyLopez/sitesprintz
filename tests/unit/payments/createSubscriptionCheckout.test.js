@@ -6,12 +6,17 @@ const mockSessionsCreate = vi.fn();
 const mockCustomersRetrieve = vi.fn();
 const mockUsersFindUnique = vi.fn();
 const mockUsersUpdate = vi.fn();
+const mockSitesCount = vi.fn();
+const mockSubscriptionsList = vi.fn();
 
 vi.mock('../../../database/db.js', () => ({
   prisma: {
     users: {
       findUnique: (...args) => mockUsersFindUnique(...args),
       update: (...args) => mockUsersUpdate(...args),
+    },
+    sites: {
+      count: (...args) => mockSitesCount(...args),
     },
   },
 }));
@@ -44,6 +49,9 @@ describe('createSubscriptionCheckout metadata', () => {
               create: (...args) => mockSessionsCreate(...args),
             },
           };
+          this.subscriptions = {
+            list: (...args) => mockSubscriptionsList(...args),
+          };
         }
       },
     }));
@@ -60,6 +68,11 @@ describe('createSubscriptionCheckout metadata', () => {
     mockUsersFindUnique.mockResolvedValue({ stripe_customer_id: 'cus_existing', id: 'user-checkout-1' });
     mockUsersUpdate.mockResolvedValue({});
     mockSessionsCreate.mockResolvedValue({ id: 'cs_test', url: 'https://checkout.stripe.test/cs' });
+    mockSitesCount.mockResolvedValue(1);
+    mockSubscriptionsList.mockResolvedValue({
+      data: [{ id: 'sub_1', status: 'trialing' }],
+      has_more: false,
+    });
   });
 
   it('includes userId in session metadata and client_reference_id', async () => {
@@ -125,6 +138,47 @@ describe('createSubscriptionCheckout metadata', () => {
 
     expect(response.status).toBe(409);
     expect(response.body.code).toBe('ALREADY_SUBSCRIBED');
+    expect(mockSessionsCreate).not.toHaveBeenCalled();
+  });
+
+  it('starts checkout for an additional site when already subscribed', async () => {
+    mockUsersFindUnique.mockResolvedValue({
+      stripe_customer_id: 'cus_existing',
+      id: 'user-checkout-1',
+      subscription_status: 'trialing',
+      stripe_subscription_id: 'sub_existing',
+    });
+
+    const response = await request(app)
+      .post('/api/payments/create-subscription-checkout')
+      .send({ plan: 'growth', additionalSite: true, draftId: 'draft-extra-1' });
+
+    expect(response.status).toBe(200);
+    expect(mockSessionsCreate).toHaveBeenCalledTimes(1);
+    const [sessionOptions, requestOptions] = mockSessionsCreate.mock.calls[0];
+    expect(sessionOptions.metadata.source).toBe('sitesprintz_additional_site');
+    expect(sessionOptions.metadata.additionalSite).toBe('true');
+    expect(sessionOptions.subscription_data.metadata.additionalSite).toBe('true');
+    expect(requestOptions).toEqual({
+      idempotencyKey: 'plat-sub:user-checkout-1:growth:additional:draft-extra-1',
+    });
+  });
+
+  it('refuses extra-site checkout when a paid slot is still unused', async () => {
+    mockUsersFindUnique.mockResolvedValue({
+      stripe_customer_id: 'cus_existing',
+      id: 'user-checkout-1',
+      subscription_status: 'trialing',
+      stripe_subscription_id: 'sub_existing',
+    });
+    mockSitesCount.mockResolvedValue(0);
+
+    const response = await request(app)
+      .post('/api/payments/create-subscription-checkout')
+      .send({ plan: 'growth', additionalSite: true, draftId: 'draft-extra-2' });
+
+    expect(response.status).toBe(409);
+    expect(response.body.code).toBe('SITE_SLOT_AVAILABLE');
     expect(mockSessionsCreate).not.toHaveBeenCalled();
   });
 });

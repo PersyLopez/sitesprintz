@@ -1,5 +1,6 @@
 import { prisma } from '../../../database/db.js';
 import { normalizePaidPlan } from '../../config/platformPlans.js';
+import { TIER_HIERARCHY } from '../../../src/config/tiers.js';
 
 const BLOCKED_SUBSCRIPTION_STATUSES = new Set([
   'incomplete',
@@ -56,6 +57,30 @@ export function resolvePlanFromSubscription(subscription) {
  */
 export function resolveEmailFromSession(session) {
   return session.metadata?.user_email || null;
+}
+
+const PAID_PLAN_RANK = TIER_HIERARCHY.filter((tier) => tier !== 'trial');
+
+/**
+ * Extra-site checkout must not lower the account's hosting plan.
+ * @param {string|null|undefined} currentPlan
+ * @param {string|null|undefined} incomingPlan
+ * @returns {'starter'|'growth'|'growth_managed'|null}
+ */
+export function preferHigherPlan(currentPlan, incomingPlan) {
+  const incoming = normalizePlatformPlan(incomingPlan);
+  if (!incoming) return normalizePlatformPlan(currentPlan);
+  const current = normalizePlatformPlan(currentPlan);
+  if (!current) return incoming;
+  return PAID_PLAN_RANK.indexOf(incoming) > PAID_PLAN_RANK.indexOf(current)
+    ? incoming
+    : current;
+}
+
+function isAdditionalSiteSession(session) {
+  return session?.metadata?.additionalSite === 'true'
+    || session?.metadata?.source === 'sitesprintz_additional_site'
+    || session?.subscription_data?.metadata?.additionalSite === 'true';
 }
 
 /**
@@ -145,6 +170,9 @@ export async function fulfillPlatformSubscription(session, options = {}) {
     return { fulfilled: false, reason: 'invalid_plan' };
   }
 
+  const additionalSite = isAdditionalSiteSession(session);
+  const effectivePlan = additionalSite ? preferHigherPlan(user.plan, plan) : plan;
+
   const subscriptionId = typeof session.subscription === 'string'
     ? session.subscription
     : session.subscription?.id || user.stripe_subscription_id;
@@ -175,16 +203,32 @@ export async function fulfillPlatformSubscription(session, options = {}) {
     user.stripe_subscription_id
     && subscriptionId
     && user.stripe_subscription_id === subscriptionId
-    && user.plan === plan
+    && user.plan === effectivePlan
     && (user.subscription_status === 'active' || user.subscription_status === 'trialing')
     && user.subscription_status === subscriptionStatus
   ) {
     return {
       fulfilled: true,
-      plan,
+      plan: effectivePlan,
       status: subscriptionStatus,
       userId: user.id,
       idempotent: true,
+    };
+  }
+
+  if (
+    additionalSite
+    && user.stripe_subscription_id
+    && (user.subscription_status === 'active' || user.subscription_status === 'trialing')
+    && user.plan === effectivePlan
+  ) {
+    return {
+      fulfilled: true,
+      plan: effectivePlan,
+      status: user.subscription_status,
+      userId: user.id,
+      idempotent: true,
+      additionalSite: true,
     };
   }
 
@@ -197,18 +241,21 @@ export async function fulfillPlatformSubscription(session, options = {}) {
     : session.customer?.id || user.stripe_customer_id;
 
   const updateData = {
-    plan,
-    subscription_plan: plan,
-    subscription_status: subscriptionStatus,
+    plan: effectivePlan,
+    subscription_plan: effectivePlan,
+    subscription_status: additionalSite
+      && (user.subscription_status === 'active' || user.subscription_status === 'trialing')
+      ? user.subscription_status
+      : subscriptionStatus,
   };
 
   if (customerId) {
     updateData.stripe_customer_id = customerId;
   }
-  if (subscriptionId) {
+  if (subscriptionId && (!additionalSite || !user.stripe_subscription_id)) {
     updateData.stripe_subscription_id = subscriptionId;
   }
-  if (currentPeriodEnd) {
+  if (currentPeriodEnd && !additionalSite) {
     updateData.current_period_end = currentPeriodEnd;
   }
 
@@ -219,8 +266,9 @@ export async function fulfillPlatformSubscription(session, options = {}) {
 
   return {
     fulfilled: true,
-    plan,
-    status: subscriptionStatus,
+    plan: effectivePlan,
+    status: updateData.subscription_status,
     userId: user.id,
+    ...(additionalSite ? { additionalSite: true } : {}),
   };
 }

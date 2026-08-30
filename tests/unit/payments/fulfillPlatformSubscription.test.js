@@ -5,6 +5,7 @@ import {
   resolveUserForSession,
   mapPlanFromPriceId,
   resolvePlanFromSubscription,
+  preferHigherPlan,
 } from '../../../server/services/payments/fulfillPlatformSubscription.js';
 
 const paidSession = (overrides = {}) => ({
@@ -258,6 +259,75 @@ describe('fulfillPlatformSubscription', () => {
 
     expect(result.idempotent).toBe(true);
     expect(mockDb.users.update).not.toHaveBeenCalled();
+  });
+
+  it('keeps the higher plan when additional-site checkout is a cheaper tier', async () => {
+    expect(preferHigherPlan('growth', 'starter')).toBe('growth');
+    expect(preferHigherPlan('starter', 'growth')).toBe('growth');
+    expect(preferHigherPlan('trial', 'starter')).toBe('starter');
+
+    mockDb.users.findUnique.mockResolvedValue({
+      id: 'user-extra',
+      email: 'extra@example.com',
+      plan: 'growth',
+      subscription_status: 'trialing',
+      stripe_subscription_id: 'sub_primary',
+    });
+
+    const result = await fulfillPlatformSubscription(
+      paidSession({
+        metadata: {
+          userId: 'user-extra',
+          plan: 'starter',
+          additionalSite: 'true',
+          source: 'sitesprintz_additional_site',
+        },
+        subscription: 'sub_extra',
+        customer: 'cus_extra',
+      }),
+      { db: mockDb },
+    );
+
+    expect(result.fulfilled).toBe(true);
+    expect(result.plan).toBe('growth');
+    expect(result.additionalSite).toBe(true);
+    expect(mockDb.users.update).not.toHaveBeenCalled();
+  });
+
+  it('does not replace the primary Stripe subscription id for an extra site', async () => {
+    mockDb.users.findUnique.mockResolvedValue({
+      id: 'user-keep-sub',
+      email: 'keep@example.com',
+      plan: 'starter',
+      subscription_status: 'active',
+      stripe_subscription_id: 'sub_primary',
+    });
+    mockDb.users.update.mockResolvedValue({});
+
+    const result = await fulfillPlatformSubscription(
+      paidSession({
+        metadata: {
+          userId: 'user-keep-sub',
+          plan: 'growth',
+          additionalSite: 'true',
+        },
+        subscription: 'sub_extra_growth',
+        customer: 'cus_keep',
+      }),
+      { db: mockDb },
+    );
+
+    expect(result.plan).toBe('growth');
+    expect(mockDb.users.update).toHaveBeenCalledWith({
+      where: { id: 'user-keep-sub' },
+      data: expect.objectContaining({
+        plan: 'growth',
+        subscription_plan: 'growth',
+        stripe_customer_id: 'cus_keep',
+        subscription_status: 'active',
+      }),
+    });
+    expect(mockDb.users.update.mock.calls[0][0].data.stripe_subscription_id).toBeUndefined();
   });
 
   it('resolveUserForSession uses client_reference_id', async () => {

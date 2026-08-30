@@ -5,8 +5,15 @@
  * Following TDD - implementation created to pass the comprehensive test suite
  */
 
+import Stripe from 'stripe';
 import { prisma } from '../../database/db.js';
 import { SimpleCache } from '../utils/cache.js';
+import { buildShowcaseExampleWhere } from '../utils/showcaseDemo.js';
+
+function getStripeClient() {
+  const key = process.env.STRIPE_SECRET_KEY || '';
+  return key ? new Stripe(key, { apiVersion: '2024-06-20' }) : null;
+}
 
 // Plan feature limits (trial + starter + growth)
 export const PLAN_LIMITS = {
@@ -40,7 +47,7 @@ export const PLAN_LIMITS = {
   },
   growth: {
     templates: ['*'],
-    maxSites: 5,
+    maxSites: 1,
     maxProducts: -1,
     maxOrdersPerMonth: -1,
     customDomain: true,
@@ -54,7 +61,7 @@ export const PLAN_LIMITS = {
   },
   growth_managed: {
     templates: ['*'],
-    maxSites: 5,
+    maxSites: 1,
     maxProducts: -1,
     maxOrdersPerMonth: -1,
     customDomain: true,
@@ -99,6 +106,101 @@ export function normalizeTierName(tierName) {
 export function getPlanLimits(planName) {
   const normalizedPlan = normalizeTierName(planName);
   return PLAN_LIMITS[normalizedPlan] || PLAN_LIMITS.trial;
+}
+
+/**
+ * One paid or trial plan covers one live customer site.
+ * Gallery examples (gallery-* / demoMode) do not consume the slot.
+ */
+export function canOccupyPublishedSiteSlot({
+  publishedCount,
+  maxSites = 1,
+  isAdmin = false,
+}) {
+  if (isAdmin) {
+    return { allowed: true };
+  }
+  if (maxSites === -1) {
+    return { allowed: true };
+  }
+  if (publishedCount < maxSites) {
+    return { allowed: true };
+  }
+  return {
+    allowed: false,
+    code: 'SUBSCRIPTION_REQUIRED',
+    reason:
+      maxSites <= 1
+        ? 'Each plan covers one site. Pay for another plan to publish this site.'
+        : `You have reached your site limit of ${maxSites}.`,
+  };
+}
+
+/**
+ * One active/trialing Stripe subscription = one paid site slot.
+ * @param {Array<{ status?: string }>} subscriptions
+ * @param {{ hasLocalSubscription?: boolean }} [opts]
+ */
+export function countPaidSlotsFromSubscriptions(subscriptions, { hasLocalSubscription = false } = {}) {
+  const fromStripe = (subscriptions || []).filter(
+    (item) => item.status === 'active' || item.status === 'trialing'
+  ).length;
+  if (fromStripe > 0) return fromStripe;
+  return hasLocalSubscription ? 1 : 0;
+}
+
+/**
+ * @param {{ role?: string, subscription_status?: string, stripe_customer_id?: string }|null} user
+ * @param {{ stripeClient?: import('stripe').Stripe|null }} [opts]
+ * @returns {Promise<number>} -1 = unlimited (admin)
+ */
+export async function countPaidSiteSlots(user, { stripeClient } = {}) {
+  if (user?.role === 'admin') {
+    return -1;
+  }
+  const hasLocalSubscription = user?.subscription_status === 'active'
+    || user?.subscription_status === 'trialing';
+  const client = stripeClient === undefined ? getStripeClient() : stripeClient;
+  if (!client || !user?.stripe_customer_id) {
+    return hasLocalSubscription ? 1 : 0;
+  }
+  try {
+    let paid = 0;
+    let startingAfter;
+    for (let page = 0; page < 5; page += 1) {
+      const list = await client.subscriptions.list({
+        customer: user.stripe_customer_id,
+        status: 'all',
+        limit: 100,
+        ...(startingAfter ? { starting_after: startingAfter } : {}),
+      });
+      paid += countPaidSlotsFromSubscriptions(list.data);
+      if (!list.has_more || !list.data.length) {
+        break;
+      }
+      startingAfter = list.data[list.data.length - 1].id;
+    }
+    return Math.max(paid, hasLocalSubscription ? 1 : 0);
+  } catch {
+    return hasLocalSubscription ? 1 : 0;
+  }
+}
+
+/**
+ * @param {string} userId
+ * @param {{ exceptSiteId?: string|null }} [opts] — skip when republishing the same site
+ * @returns {Promise<number>}
+ */
+export async function countBillablePublishedSites(userId, { exceptSiteId } = {}) {
+  const where = {
+    user_id: userId,
+    status: 'published',
+    NOT: buildShowcaseExampleWhere(),
+  };
+  if (exceptSiteId) {
+    where.id = { not: exceptSiteId };
+  }
+  return prisma.sites.count({ where });
 }
 
 export class SubscriptionService {
@@ -264,21 +366,18 @@ export class SubscriptionService {
         return { allowed: true };
       }
 
-      // Count existing sites (excluding deleted)
-      const siteCount = await this.db.sites.count({
-        where: {
-          user_id: userId,
-          status: { not: 'deleted' }
-        }
+      const siteCount = await countBillablePublishedSites(userId);
+      const slot = canOccupyPublishedSiteSlot({
+        publishedCount: siteCount,
+        maxSites: limits.maxSites,
       });
-
-      if (siteCount < limits.maxSites) {
+      if (slot.allowed) {
         return { allowed: true };
       }
 
       return {
         allowed: false,
-        reason: `You have reached your site limit of ${limits.maxSites} for the ${plan} plan.`
+        reason: slot.reason || `You have reached your site limit of ${limits.maxSites} for the ${plan} plan.`,
       };
     } catch (error) {
       console.error('Error checking site creation permission:', error);

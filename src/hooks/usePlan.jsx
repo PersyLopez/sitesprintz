@@ -40,7 +40,7 @@ export function usePlan() {
       customDomain: true,
       analytics: hasTierAccess(plan, TIERS.GROWTH),
       support: plan === TIERS.TRIAL ? 'community' : 'email',
-      maxSites: plan === TIERS.TRIAL || plan === TIERS.STARTER ? 1 : 5,
+      maxSites: 1,
       orderManagement: hasTierAccess(plan, TIERS.GROWTH),
       payments: hasTierAccess(plan, TIERS.GROWTH),
       booking: hasTierAccess(plan, TIERS.GROWTH),

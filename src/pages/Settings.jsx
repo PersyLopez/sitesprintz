@@ -50,7 +50,7 @@ function BillingSection({ user, token }) {
     }
   };
 
-  const handleSubscribe = async (plan) => {
+  const handleSubscribe = async (plan, { additionalSite = false } = {}) => {
     try {
       setLoading(true);
       const response = await fetch('/api/payments/create-subscription-checkout', {
@@ -59,13 +59,16 @@ function BillingSection({ user, token }) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan, additionalSite: additionalSite || undefined }),
       });
 
       const data = await response.json();
       if (response.ok && data.url) {
         window.location.href = data.url;
         return;
+      }
+      if (data.code === 'SITE_SLOT_AVAILABLE') {
+        throw new Error(data.error || 'You already have an unused site slot. Publish without paying again.');
       }
       throw new Error(data.error || 'Failed to create checkout session');
     } catch (error) {
@@ -152,6 +155,40 @@ function BillingSection({ user, token }) {
           <p className="section-description" style={{ marginTop: '0.75rem' }}>
             You selected the {highlightedPlan} plan — choose a subscribe button above to continue.
           </p>
+        )}
+        {hasActivePlan && (
+          <div className="billing-subscribe-actions" style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <p className="section-description" style={{ flexBasis: '100%', margin: 0 }}>
+              Each plan covers one live site. Pay for another plan to publish a second site.
+            </p>
+            <button
+              type="button"
+              onClick={() => handleSubscribe('starter', { additionalSite: true })}
+              disabled={loading}
+              className="btn btn-secondary"
+              data-testid="add-site-starter"
+            >
+              {loading ? 'Loading…' : 'Add a Starter site'}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSubscribe('growth', { additionalSite: true })}
+              disabled={loading}
+              className="btn btn-primary"
+              data-testid="add-site-growth"
+            >
+              {loading ? 'Loading…' : 'Add a Growth site'}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSubscribe('growth_managed', { additionalSite: true })}
+              disabled={loading}
+              className="btn btn-secondary"
+              data-testid="add-site-growth-managed"
+            >
+              {loading ? 'Loading…' : 'Add a Growth Managed site'}
+            </button>
+          </div>
         )}
       </div>
 

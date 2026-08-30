@@ -27,6 +27,11 @@ import { applyPayOnSiteSetting, mergeSiteDataSettings } from '../utils/payOnSite
 import { toPublicSiteData } from '../../src/utils/liveSiteContact.js';
 import { prepareOwnerSiteData } from '../utils/prepareSiteLocation.js';
 import { resolvePlanLimits } from '../utils/resolveUserPlan.js';
+import {
+  canOccupyPublishedSiteSlot,
+  countBillablePublishedSites,
+  countPaidSiteSlots,
+} from '../services/subscriptionService.js';
 import AnalyticsService from '../services/analyticsService.js';
 import { validateTemplateId } from '../utils/validators.js';
 import {
@@ -648,6 +653,22 @@ router.post('/guest-publish', asyncHandler(async (req, res) => {
         created_at: new Date()
       }
     });
+  }
+
+  const publishedCount = await countBillablePublishedSites(user.id);
+  const paidSlots = await countPaidSiteSlots(user);
+  const alreadyHasSiteOrPlan = publishedCount > 0
+    || user.subscription_status === 'active'
+    || user.subscription_status === 'trialing';
+  if (alreadyHasSiteOrPlan) {
+    const slot = canOccupyPublishedSiteSlot({
+      publishedCount,
+      maxSites: paidSlots,
+      isAdmin: user.role === 'admin',
+    });
+    if (!slot.allowed) {
+      return sendBadRequest(res, slot.reason, slot.code);
+    }
   }
 
   const businessName = data.brand?.name || data.businessName || 'my-site';

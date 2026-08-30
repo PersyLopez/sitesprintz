@@ -113,7 +113,7 @@ export const TIER_INFO = {
     billingPeriod: 'month',
     description: 'Hosting and monitoring for a brochure site',
     color: '#22c55e',
-    features: ['Website + templates', 'Contact form & shareable link', 'Hours, menu, photos', 'Bring your own domain']
+    features: ['Website + templates', 'Contact form & shareable link', 'Hours, menu, photos', 'Bring your own domain', 'One live site']
   },
   growth: {
     name: 'Growth',
@@ -126,7 +126,8 @@ export const TIER_INFO = {
     popular: true,
     features: [
       'Everything in Starter',
-      'Booking, cart & Stripe checkout'
+      'Booking, cart & Stripe checkout',
+      'One live site'
     ]
   },
   growth_managed: {
@@ -140,7 +141,8 @@ export const TIER_INFO = {
     features: [
       'Everything in Growth',
       'We apply two catalog batches a month',
-      'First month includes the initial fill'
+      'First month includes the initial fill',
+      'One live site'
     ]
   }
 };

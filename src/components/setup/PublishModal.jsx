@@ -42,6 +42,7 @@ function PublishModal({ siteData, onClose }) {
   const requiredPlan = getTemplateRequiredPlan();
   const [formData, setFormData] = useState({ plan: requiredPlan });
   const [loading, setLoading] = useState(false);
+  const [billablePublishedCount, setBillablePublishedCount] = useState(0);
 
   const plans = [
     {
@@ -71,7 +72,11 @@ function PublishModal({ siteData, onClose }) {
         const sites = Array.isArray(sitesResponse) 
           ? sitesResponse 
           : (sitesResponse?.data?.sites || sitesResponse?.sites || []);
-        const publishedSites = sites.filter(site => site.status === 'published');
+        const publishedSites = sites.filter((site) => {
+          const subdomain = site.subdomain || '';
+          return site.status === 'published' && !subdomain.startsWith('gallery-');
+        });
+        setBillablePublishedCount(publishedSites.length);
         setIsEligibleForTrial(publishedSites.length === 0);
 
         // Get Stripe publishable key
@@ -192,6 +197,19 @@ function PublishModal({ siteData, onClose }) {
     }
   };
 
+  const startAdditionalSiteCheckout = async (draftId) => {
+    const checkout = await api.post('/api/payments/create-subscription-checkout', {
+      plan: formData.plan,
+      additionalSite: true,
+      draftId,
+    });
+    const url = checkout.url || checkout.data?.url;
+    if (!url) {
+      throw new Error(checkout.error || 'Failed to start checkout for this site.');
+    }
+    window.location.href = url;
+  };
+
   const handlePublish = async () => {
     if (!user?.email) {
       showError('Please log in to publish your site');
@@ -204,6 +222,7 @@ function PublishModal({ siteData, onClose }) {
     }
 
     setLoading(true);
+    let createdDraftId = null;
 
     try {
       const phone = siteData.contact?.phone || siteData.brand?.phone || siteData.contactPhone || '';
@@ -263,6 +282,7 @@ function PublishModal({ siteData, onClose }) {
       };
 
       const { draftId } = await api.post('/api/drafts', draftData);
+      createdDraftId = draftId;
 
       // If eligible for trial and payment method not collected yet, collect it now
       if (isEligibleForTrial && !paymentMethodCollected) {
@@ -320,6 +340,16 @@ function PublishModal({ siteData, onClose }) {
       setTimeout(() => navigate('/dashboard'), 2000);
     } catch (error) {
       console.error('Publish error:', error);
+      const code = error.payload?.code;
+      if (code === 'SUBSCRIPTION_REQUIRED') {
+        try {
+          await startAdditionalSiteCheckout(createdDraftId);
+          return;
+        } catch (checkoutError) {
+          showError(checkoutError.message || 'Pay for another plan to publish this site.');
+          return;
+        }
+      }
       showError(error.message || 'Failed to publish site. Please try again.');
     } finally {
       setLoading(false);
@@ -335,10 +365,9 @@ function PublishModal({ siteData, onClose }) {
           <p>Choose your plan and launch {siteData.brand?.name || siteData.businessName || 'your site'}</p>
         </div>
         <div className="modal-body">
-          {isEligibleForTrial && (
-            <div className="trial-notice">
-              <div className="trial-badge">7-day free trial</div>
-              <p>Add a card to publish. You won’t be charged until the trial ends.</p>
+          {billablePublishedCount > 0 && (
+            <div className="trial-notice" data-testid="additional-site-pay-notice">
+              <p>Each plan covers one live site. Publishing this one starts checkout for another plan.</p>
             </div>
           )}
 
