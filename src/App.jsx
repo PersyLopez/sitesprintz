@@ -62,7 +62,6 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminRoute from './components/auth/AdminRoute';
 import LoadingFallback from './components/common/LoadingFallback';
 import ErrorBoundary from './components/common/ErrorBoundary';
-import FeedbackWidget from './components/common/FeedbackWidget';
 import BetaBanner from './components/common/BetaBanner';
 import CustomDomainGate from './components/published/CustomDomainGate';
 import LegacySitePaneRedirect, { LegacyPublishedSiteRedirect } from './components/dashboard/LegacySitePaneRedirect';
@@ -576,7 +575,6 @@ function App() {
                 } 
               />
               </Routes>
-              <FeedbackWidget />
               </CustomDomainGate>
             </StaffProvider>
             </CartProvider>

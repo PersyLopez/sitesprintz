@@ -4,15 +4,25 @@ import { PLATFORM_SUPPORT_EMAIL } from '../../config/pricing.config';
 import './FeedbackWidget.css';
 
 /**
- * FeedbackWidget - Floating feedback button and modal
+ * FeedbackWidget - Modal feedback form; optional FAB when hideFab is false.
  */
-function FeedbackWidget() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [feedbackType, setFeedbackType] = useState('bug'); // 'bug', 'feature', 'question'
+function FeedbackWidget({ hideFab = false, open: controlledOpen, onClose }) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const isOpen = isControlled ? controlledOpen : internalOpen;
+  const [feedbackType, setFeedbackType] = useState('bug');
   const [message, setMessage] = useState('');
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const { showSuccess, showError } = useToast();
+
+  const closeModal = () => {
+    if (isControlled) {
+      onClose?.();
+    } else {
+      setInternalOpen(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,7 +33,6 @@ function FeedbackWidget() {
 
     setSubmitting(true);
     try {
-      // In a real app, this would send to your backend
       const response = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -40,7 +49,7 @@ function FeedbackWidget() {
         showSuccess('Thank you for your feedback!');
         setMessage('');
         setEmail('');
-        setIsOpen(false);
+        closeModal();
       } else {
         throw new Error('Failed to submit feedback');
       }
@@ -53,23 +62,25 @@ function FeedbackWidget() {
 
   return (
     <>
-      <button
-        className="feedback-button"
-        onClick={() => setIsOpen(true)}
-        aria-label="Send feedback"
-        title="Send feedback"
-      >
-        💬
-      </button>
+      {!hideFab && (
+        <button
+          className="feedback-button"
+          onClick={() => setInternalOpen(true)}
+          aria-label="Send feedback"
+          title="Send feedback"
+        >
+          💬
+        </button>
+      )}
 
       {isOpen && (
-        <div className="feedback-overlay" onClick={() => setIsOpen(false)}>
+        <div className="feedback-overlay" onClick={closeModal}>
           <div className="feedback-modal" onClick={(e) => e.stopPropagation()}>
             <div className="feedback-header">
               <h3>Send Feedback</h3>
               <button
                 className="feedback-close"
-                onClick={() => setIsOpen(false)}
+                onClick={closeModal}
                 aria-label="Close feedback"
               >
                 ✕
@@ -138,7 +149,7 @@ function FeedbackWidget() {
                 <button
                   type="button"
                   className="btn btn-secondary"
-                  onClick={() => setIsOpen(false)}
+                  onClick={closeModal}
                 >
                   Cancel
                 </button>
@@ -164,6 +175,3 @@ function FeedbackWidget() {
 }
 
 export default FeedbackWidget;
-
-
-

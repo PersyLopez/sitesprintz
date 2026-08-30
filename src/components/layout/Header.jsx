@@ -4,12 +4,14 @@ import { useAuth } from '../../hooks/useAuth';
 import { useLocale } from '../../i18n/LocaleContext.jsx';
 import LanguageSwitcher from '../i18n/LanguageSwitcher';
 import ThemeSwitcher from './ThemeSwitcher';
+import FeedbackWidget from '../common/FeedbackWidget';
 import './Header.css';
 
 function Header() {
   const { isAuthenticated, logout, user } = useAuth();
   const { t } = useLocale();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const menuRef = useRef(null);
   const toggleRef = useRef(null);
@@ -70,6 +72,11 @@ function Header() {
     setMobileMenuOpen(false);
   };
 
+  const openFeedback = () => {
+    setMobileMenuOpen(false);
+    setFeedbackOpen(true);
+  };
+
   return (
     <>
     <header className={`site-header ${isScrolled ? 'scrolled' : ''}`}>
@@ -123,6 +130,14 @@ function Header() {
               >
                 {t('nav.gallery')}
               </Link>
+              <button
+                type="button"
+                className="nav-link nav-link-button"
+                onClick={() => setFeedbackOpen(true)}
+                data-testid="nav-feedback"
+              >
+                Send feedback
+              </button>
               {user?.name && (
                 <span className="user-name" aria-label={t('header.loggedInAs', { name: user.name })} data-testid="user-name">
                   {user.name}
@@ -168,6 +183,14 @@ function Header() {
               >
                 {t('nav.pricing')}
               </Link>
+              <button
+                type="button"
+                className="nav-link nav-link-button"
+                onClick={() => setFeedbackOpen(true)}
+                data-testid="nav-feedback"
+              >
+                Send feedback
+              </button>
               <Link 
                 to="/login" 
                 className={`nav-link ${location.pathname === '/login' ? 'active' : ''}`}
@@ -258,6 +281,14 @@ function Header() {
             >
               {t('nav.gallery')}
             </Link>
+            <button
+              type="button"
+              className="mobile-nav-link"
+              onClick={openFeedback}
+              data-testid="mobile-nav-feedback"
+            >
+              Send feedback
+            </button>
             <button 
               onClick={handleLogout} 
               className="mobile-nav-link mobile-logout"
@@ -312,6 +343,14 @@ function Header() {
             >
               {t('nav.login')}
             </Link>
+            <button
+              type="button"
+              className="mobile-nav-link"
+              onClick={openFeedback}
+              data-testid="mobile-nav-feedback"
+            >
+              Send feedback
+            </button>
             <Link 
               to="/register" 
               className="mobile-nav-link mobile-cta"
@@ -323,6 +362,7 @@ function Header() {
           </>
         )}
       </nav>
+      <FeedbackWidget hideFab open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
     </>
   );
 }

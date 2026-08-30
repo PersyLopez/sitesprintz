@@ -26,6 +26,10 @@ steps:
       if (!box || box.width < 44 || box.height < 44) {
         throw new Error('Hamburger touch target is under 44px: ' + JSON.stringify(box));
       }
+      const fab = page.locator('.feedback-button');
+      if (await fab.count() && await fab.first().isVisible()) {
+        throw new Error('Feedback FAB should not be visible when hamburger is closed');
+      }
 
   - action: Open hamburger
     click: { testId: mobile-menu-toggle }
@@ -49,6 +53,7 @@ steps:
       if (!(await page.getByTestId('mobile-nav-login').isVisible())) throw new Error('Login link missing');
       if (!(await page.getByTestId('mobile-nav-register').isVisible())) throw new Error('Get Started link missing');
       if (!(await page.getByTestId('mobile-nav-pricing').isVisible())) throw new Error('Pricing link missing');
+      if (!(await page.getByTestId('mobile-nav-feedback').isVisible())) throw new Error('Feedback link missing in drawer');
 
   - action: Close hamburger with the same button
     click: { testId: mobile-menu-toggle }

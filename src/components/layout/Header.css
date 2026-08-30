@@ -146,6 +146,14 @@
   border-radius: 4px;
 }
 
+.nav-link-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+
 .user-name {
   color: var(--text-medium);
   font-size: 0.9rem;

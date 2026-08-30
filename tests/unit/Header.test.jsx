@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import Header from '../../src/components/layout/Header';
 import { AuthContext } from '../../src/context/AuthContext';
+import { ToastProvider } from '../../src/context/ToastContext';
 
 describe('Header Component', () => {
   const mockLogout = vi.fn();
@@ -11,16 +12,18 @@ describe('Header Component', () => {
   const renderHeader = (isAuthenticated = false, initialRoute = '/') => {
     return render(
       <MemoryRouter initialEntries={[initialRoute]}>
-        <AuthContext.Provider
-          value={{
-            isAuthenticated,
-            logout: mockLogout,
-            user: isAuthenticated ? { id: 1, email: 'test@example.com' } : null,
-            loading: false,
-          }}
-        >
-          <Header />
-        </AuthContext.Provider>
+        <ToastProvider>
+          <AuthContext.Provider
+            value={{
+              isAuthenticated,
+              logout: mockLogout,
+              user: isAuthenticated ? { id: 1, email: 'test@example.com' } : null,
+              loading: false,
+            }}
+          >
+            <Header />
+          </AuthContext.Provider>
+        </ToastProvider>
       </MemoryRouter>
     );
   };
