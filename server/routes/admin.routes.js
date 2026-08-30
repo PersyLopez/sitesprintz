@@ -11,6 +11,7 @@ import { prisma } from '../../database/db.js';
 import { sendEmail, EmailTypes } from '../utils/email-service-wrapper.js';
 import bcrypt from 'bcryptjs';
 import adminPlanFeaturesRoutes from './admin-plan-features.routes.js';
+import adminCouponsRoutes from './admin-coupons.routes.js';
 import adminTemplatesRoutes from './admin-templates.routes.js';
 import {
   sendSuccess,
@@ -671,6 +672,9 @@ router.post('/users/:userId/reset-password', requireAdmin, asyncHandler(async (r
 
 // Mount plan features routes
 router.use('/', adminPlanFeaturesRoutes);
+
+// Mount platform coupon routes
+router.use('/', adminCouponsRoutes);
 
 // Mount templates routes
 router.use('/templates', adminTemplatesRoutes);

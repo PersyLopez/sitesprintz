@@ -25,6 +25,7 @@ const Analytics = lazy(() => import('./pages/Analytics'));
 const Admin = lazy(() => import('./pages/Admin'));
 const AdminUsers = lazy(() => import('./pages/AdminUsers'));
 const AdminPlanFeatures = lazy(() => import('./pages/AdminPlanFeatures'));
+const AdminCoupons = lazy(() => import('./pages/AdminCoupons'));
 const AdminSites = lazy(() => import('./pages/AdminSites'));
 const AdminCandidates = lazy(() => import('./pages/AdminCandidates'));
 const AdminTemplates = lazy(() => import('./pages/AdminTemplates'));
@@ -536,6 +537,16 @@ function App() {
                   <AdminRoute>
                     <Suspense fallback={<LoadingFallback message="Loading plan features..." />}>
                       <AdminPlanFeatures />
+                    </Suspense>
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/coupons"
+                element={
+                  <AdminRoute>
+                    <Suspense fallback={<LoadingFallback message="Loading coupons..." />}>
+                      <AdminCoupons />
                     </Suspense>
                   </AdminRoute>
                 }

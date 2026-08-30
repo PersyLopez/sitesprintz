@@ -1,0 +1,211 @@
+url: http://localhost:5173/login
+goal: SPA-click admin, staff, and settings panes without reload; no leftover SiteSprintz chrome; coupons route live
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Fill admin email
+    fill: { testId: login-email, value: "admin@example.com", clear: true }
+
+  - action: Fill admin password
+    fill: { testId: login-password, value: "AdminPass!2024", clear: true }
+
+  - action: Submit admin login
+    click: { testId: login-submit }
+    settle_ms: 3000
+    assert:
+      - url matches /admin|/dashboard
+
+  - action: Open admin hub once
+    goto: http://localhost:5173/admin
+    settle_ms: 2000
+    wait_for: { selector: '[data-testid="admin-subnav"]', timeout: 15000 }
+
+  - action: SPA click Users
+    code: |
+      const nav = page.getByTestId('admin-subnav');
+      await nav.getByRole('link', { name: 'Users', exact: true }).click({ force: true });
+      await page.waitForURL(/\/admin\/users/, { timeout: 12000 });
+      await page.getByText('User Management').waitFor({ timeout: 10000 });
+      const body = await page.locator('body').innerText();
+      if (/SiteSprintz/i.test(body)) throw new Error('Leftover SiteSprintz on admin users');
+    settle_ms: 400
+
+  - action: SPA click Sites
+    code: |
+      const nav = page.getByTestId('admin-subnav');
+      await nav.getByRole('link', { name: 'Sites', exact: true }).click({ force: true });
+      await page.waitForURL(/\/admin\/sites/, { timeout: 12000 });
+      await page.getByText('Sites Management').waitFor({ timeout: 10000 });
+      const body = await page.locator('body').innerText();
+      if (/SiteSprintz/i.test(body)) throw new Error('Leftover SiteSprintz on admin sites');
+    settle_ms: 400
+
+  - action: SPA click Candidates
+    code: |
+      const nav = page.getByTestId('admin-subnav');
+      await nav.getByRole('link', { name: 'Candidates', exact: true }).click({ force: true });
+      await page.waitForURL(/\/admin\/candidates/, { timeout: 12000 });
+      if (page.url().includes('/login')) throw new Error('Candidates bounced to login');
+      const body = await page.locator('body').innerText();
+      if (/SiteSprintz/i.test(body)) throw new Error('Leftover SiteSprintz on candidates');
+    settle_ms: 400
+
+  - action: SPA click Templates
+    code: |
+      const nav = page.getByTestId('admin-subnav');
+      await nav.getByRole('link', { name: 'Templates', exact: true }).click({ force: true });
+      await page.waitForURL(/\/admin\/templates/, { timeout: 12000 });
+      if (page.url().includes('/login')) throw new Error('Templates bounced to login');
+      const body = await page.locator('body').innerText();
+      if (/SiteSprintz/i.test(body)) throw new Error('Leftover SiteSprintz on templates');
+    settle_ms: 400
+
+  - action: SPA click Pricing
+    code: |
+      const nav = page.getByTestId('admin-subnav');
+      await nav.getByRole('link', { name: 'Pricing', exact: true }).click({ force: true });
+      await page.waitForURL(/\/admin\/pricing/, { timeout: 12000 });
+      const body = await page.locator('body').innerText();
+      if (/SiteSprintz/i.test(body)) throw new Error('Leftover SiteSprintz on pricing');
+      if (!/Pricing Management|Failed to load pricing/i.test(body)) {
+        throw new Error('Pricing pane empty after SPA click: ' + body.slice(0, 240));
+      }
+    settle_ms: 400
+
+  - action: SPA click Coupons
+    code: |
+      const nav = page.getByTestId('admin-subnav');
+      await nav.getByRole('link', { name: 'Coupons', exact: true }).click({ force: true });
+      await page.waitForURL(/\/admin\/coupons/, { timeout: 12000 });
+      if (page.url().includes('/login')) throw new Error('Coupons bounced to login');
+      await page.waitForSelector('[data-testid="admin-coupons-page"]', { timeout: 12000 });
+      const body = await page.locator('body').innerText();
+      if (/SiteSprintz/i.test(body)) throw new Error('Leftover SiteSprintz on coupons');
+      if (/Page not found|404/i.test(body)) throw new Error('Coupons dead route after SPA click');
+    settle_ms: 400
+
+  - action: SPA click Plan features
+    code: |
+      const nav = page.getByTestId('admin-subnav');
+      await nav.getByRole('link', { name: 'Plan features', exact: true }).click({ force: true });
+      await page.waitForURL(/\/admin\/plan-features/, { timeout: 12000 });
+      await page.getByText('Plan Features Configuration').waitFor({ timeout: 10000 });
+      const body = await page.locator('body').innerText();
+      if (/SiteSprintz/i.test(body)) throw new Error('Leftover SiteSprintz on plan features');
+    settle_ms: 400
+
+  - action: SPA click Hub
+    code: |
+      const nav = page.getByTestId('admin-subnav');
+      await nav.getByRole('link', { name: 'Hub', exact: true }).click({ force: true });
+      await page.waitForURL((u) => /\/admin\/?$/.test(u.pathname), { timeout: 12000 });
+      await page.getByText('Admin Dashboard').waitFor({ timeout: 10000 });
+      const body = await page.locator('body').innerText();
+      if (/SiteSprintz/i.test(body)) throw new Error('Leftover SiteSprintz on admin hub');
+    settle_ms: 400
+
+  - action: Logout admin
+    click: { testId: nav-logout-button }
+    settle_ms: 2000
+    wait_for: { text: Welcome Back, timeout: 15000 }
+
+  - action: Login staff
+    fill: { testId: login-email, value: "staff@example.com", clear: true }
+
+  - action: Staff password
+    fill: { testId: login-password, value: "StaffPass!2024", clear: true }
+
+  - action: Submit staff login
+    click: { testId: login-submit }
+    settle_ms: 3000
+    wait_for: { url: /dashboard, timeout: 20000 }
+
+  - action: Open staff dashboard once
+    goto: http://localhost:5173/staff/dashboard
+    settle_ms: 2000
+    wait_for: { text: Staff Dashboard, timeout: 15000 }
+
+  - action: SPA click Open schedule
+    code: |
+      await page.getByTestId('open-schedule').click({ force: true });
+      await page.waitForURL(/\/staff\/schedule\//, { timeout: 12000 });
+      await page.getByTestId('schedule-board').waitFor({ timeout: 15000 });
+      const body = await page.locator('body').innerText();
+      if (/SiteSprintz/i.test(body)) throw new Error('Leftover SiteSprintz on staff schedule');
+    settle_ms: 400
+
+  - action: SPA back then View Appointments
+    code: |
+      await page.goBack();
+      await page.getByTestId('open-schedule').waitFor({ timeout: 12000 });
+      await page.getByRole('button', { name: /View Appointments/i }).click({ force: true });
+      await page.waitForURL(/\/staff\/appointments\//, { timeout: 12000 });
+      await page.getByText('My Appointments').waitFor({ timeout: 15000 });
+      const body = await page.locator('body').innerText();
+      if (/SiteSprintz/i.test(body)) throw new Error('Leftover SiteSprintz on staff appointments');
+    settle_ms: 400
+
+  - action: SPA back then View Orders
+    code: |
+      await page.goBack();
+      await page.getByRole('button', { name: /View Orders/i }).waitFor({ timeout: 12000 });
+      await page.getByRole('button', { name: /View Orders/i }).click({ force: true });
+      await page.waitForURL(/\/staff\/orders\//, { timeout: 12000 });
+      const t = await page.locator('body').innerText();
+      if (/SiteSprintz/i.test(t)) throw new Error('Leftover SiteSprintz on staff orders');
+      if (!/Today.*Orders|No orders for today|Orders/i.test(t)) {
+        throw new Error('Staff orders empty after SPA click: ' + t.slice(0, 240));
+      }
+    settle_ms: 400
+
+  - action: Logout staff
+    click: { testId: nav-logout-button }
+    settle_ms: 2000
+    wait_for: { text: Welcome Back, timeout: 15000 }
+
+  - action: Login owner for settings
+    fill: { testId: login-email, value: "test@example.com", clear: true }
+
+  - action: Owner password
+    fill: { testId: login-password, value: "SecurePass!2024", clear: true }
+
+  - action: Submit owner login
+    click: { testId: login-submit }
+    settle_ms: 3000
+    wait_for: { url: /dashboard, timeout: 20000 }
+
+  - action: Open settings once
+    goto: http://localhost:5173/settings
+    settle_ms: 1500
+    wait_for: { text: Select a setting category from the sidebar, timeout: 15000 }
+
+  - action: SPA click Foundation
+    code: |
+      await page.getByTestId('settings-nav-foundation').click({ force: true, timeout: 10000 });
+      await page.waitForURL(/\/settings\/foundation/, { timeout: 12000 });
+      await page.getByText('Foundation Settings').first().waitFor({ timeout: 10000 });
+      const body = await page.locator('body').innerText();
+      if (/SiteSprintz/i.test(body)) throw new Error('Leftover SiteSprintz on foundation settings');
+    settle_ms: 400
+
+  - action: SPA click Domain
+    code: |
+      await page.getByTestId('settings-nav-domain').click({ force: true, timeout: 10000 });
+      await page.waitForURL(/\/settings\/domain/, { timeout: 12000 });
+      await page.getByText('Custom Domain').first().waitFor({ timeout: 10000 });
+      const body = await page.locator('body').innerText();
+      if (/SiteSprintz/i.test(body)) throw new Error('Leftover SiteSprintz on domain settings');
+    settle_ms: 400
+
+  - action: SPA click Billing
+    code: |
+      await page.getByTestId('settings-nav-billing').click({ force: true, timeout: 10000 });
+      await page.waitForURL(/\/settings\/billing/, { timeout: 12000 });
+      const body = await page.locator('body').innerText();
+      if (/SiteSprintz/i.test(body)) throw new Error('Leftover SiteSprintz on billing settings');
+      if (/support@sitesprintz\.com/i.test(body)) {
+        throw new Error('Leftover sitesprintz support email on billing');
+      }
+      if (!/Billing/i.test(body)) throw new Error('Billing pane missing after SPA click');
+    settle_ms: 400

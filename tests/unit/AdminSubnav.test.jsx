@@ -20,6 +20,7 @@ describe('AdminSubnav', () => {
     expect(screen.getByRole('link', { name: 'Candidates' })).toHaveAttribute('href', '/admin/candidates');
     expect(screen.getByRole('link', { name: 'Templates' })).toHaveAttribute('href', '/admin/templates');
     expect(screen.getByRole('link', { name: 'Pricing' })).toHaveAttribute('href', '/admin/pricing');
+    expect(screen.getByRole('link', { name: 'Coupons' })).toHaveAttribute('href', '/admin/coupons');
     expect(screen.getByRole('link', { name: 'Plan features' })).toHaveAttribute('href', '/admin/plan-features');
   });
 });

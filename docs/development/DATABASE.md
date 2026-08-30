@@ -36,6 +36,8 @@ The working-tree schema includes the models below. Some models were added or ext
 | `templates` | Template catalog with sections and metadata. |
 | `plan_features` | Plan-to-feature mapping used by admin UI. |
 | `pricing` | Subscription tier pricing. |
+| `platform_coupons` | Admin-created Stripe Coupon + Promotion Code for platform subscription checkout. |
+| `platform_coupon_redemptions` | Idempotent redemption ledger keyed by Stripe checkout session. |
 | `refresh_tokens` | JWT refresh token storage. |
 
 ### Booking models

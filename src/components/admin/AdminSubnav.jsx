@@ -8,6 +8,7 @@ const ADMIN_NAV_ITEMS = [
   { to: '/admin/candidates', label: 'Candidates' },
   { to: '/admin/templates', label: 'Templates' },
   { to: '/admin/pricing', label: 'Pricing' },
+  { to: '/admin/coupons', label: 'Coupons' },
   { to: '/admin/plan-features', label: 'Plan features' },
 ];
 

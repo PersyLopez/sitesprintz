@@ -106,6 +106,7 @@ export async function createLaborCheckout({
     success_url: successUrl,
     cancel_url: cancelUrl,
     metadata,
+    allow_promotion_codes: true,
   };
 
   if (mode === 'subscription') {

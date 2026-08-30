@@ -1,0 +1,64 @@
+url: http://localhost:5173/login
+goal: Admin coupons page loads with form and list; invalid submit shows error without creating Stripe coupon
+
+steps:
+  - action: Login page ready
+    wait_for: { text: Welcome Back }
+    settle_ms: 500
+
+  - action: Fill admin email
+    fill: { testId: login-email, value: "admin@example.com", clear: true }
+
+  - action: Fill admin password
+    fill: { testId: login-password, value: "AdminPass!2024", clear: true }
+
+  - action: Submit login with Sign In button
+    click: { role: button, name: Sign In }
+    settle_ms: 3000
+    assert:
+      - url matches /admin|/dashboard
+
+  - action: Open admin coupons
+    goto: http://localhost:5173/admin/coupons
+    settle_ms: 3000
+
+  - action: Admin coupons page loads
+    wait_for: { selector: '[data-testid="admin-coupons-page"]', timeout: 15000 }
+    assert:
+      - url contains /admin/coupons
+      - text contains Coupon Codes
+      - text contains Coupons
+    code: |
+      if (page.url().includes('/login')) throw new Error('Admin coupons bounced to login');
+      const denied = await page.evaluate(() => /Access denied/i.test(document.body?.innerText || ''));
+      if (denied) throw new Error('Admin coupons returned access denied');
+      await page.waitForSelector('[data-testid="coupon-code-input"]', { timeout: 10000 });
+      await page.waitForSelector('[data-testid="coupon-create-submit"]', { timeout: 10000 });
+      await page.waitForSelector('[data-testid="coupon-list"]', { timeout: 10000 });
+
+  - action: Submit invalid short code without discount
+    fill: { testId: coupon-code-input, value: "ab", clear: true }
+    click: { testId: coupon-create-submit }
+    settle_ms: 1500
+
+  - action: Stays on coupons page after validation error
+    assert:
+      - url contains /admin/coupons
+    code: |
+      const url = page.url();
+      if (!url.includes('/admin/coupons')) throw new Error('Left coupons page after invalid submit');
+      const body = await page.evaluate(() => document.body?.innerText || '');
+      if (!/Coupon Codes|Create a coupon/i.test(body)) {
+        throw new Error('Coupons page content missing after invalid submit');
+      }
+
+  - action: Clear code and submit empty
+    fill: { testId: coupon-code-input, value: "", clear: true }
+    click: { testId: coupon-create-submit }
+    settle_ms: 1500
+
+  - action: Still on coupons page after empty submit
+    assert:
+      - url contains /admin/coupons
+    code: |
+      if (!page.url().includes('/admin/coupons')) throw new Error('Left coupons page after empty submit');
