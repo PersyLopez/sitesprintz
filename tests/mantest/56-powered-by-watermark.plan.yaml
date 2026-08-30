@@ -40,6 +40,13 @@ steps:
       if (!nearLeft) {
         throw new Error('Badge should be pinned bottom-left, box.x=' + box.x + ' viewport.width=' + viewport.width);
       }
+      const restColor = await badge.evaluate((el) => getComputedStyle(el).color);
+      await badge.hover();
+      await page.waitForTimeout(200);
+      const hoverColor = await badge.evaluate((el) => getComputedStyle(el).color);
+      if (restColor === hoverColor) {
+        throw new Error('Hover text should brighten on hover: rest=' + restColor + ' hover=' + hoverColor);
+      }
 
   - action: Open salon gallery demo
     goto: http://localhost:5173/view/gallery-salon

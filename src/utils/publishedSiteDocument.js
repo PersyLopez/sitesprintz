@@ -427,6 +427,7 @@ export function getLiveSiteCss(tokens = {}) {
   box-shadow: none;
   -webkit-backdrop-filter: blur(24px) saturate(170%);
   backdrop-filter: blur(24px) saturate(170%);
+  transition: color 0.18s ease;
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .ss-sitesprintz-badge {
@@ -438,7 +439,7 @@ export function getLiveSiteCss(tokens = {}) {
 }
 .ss-sitesprintz-badge:hover,
 .ss-sitesprintz-badge:focus-visible {
-  color: color-mix(in srgb, var(--ss-muted) 78%, var(--ss-text) 22%);
+  color: var(--ss-text);
   border-color: color-mix(in srgb, var(--ss-hairline) 48%, transparent);
   background: color-mix(in srgb, var(--ss-surface) 30%, transparent);
   text-shadow:
