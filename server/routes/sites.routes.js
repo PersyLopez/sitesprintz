@@ -32,6 +32,7 @@ import {
   countBillablePublishedSites,
   countPaidSiteSlots,
 } from '../services/subscriptionService.js';
+import { liveTrialExpiresAt } from '../config/platformPlans.js';
 import AnalyticsService from '../services/analyticsService.js';
 import { validateTemplateId } from '../utils/validators.js';
 import {
@@ -713,7 +714,7 @@ router.post('/guest-publish', asyncHandler(async (req, res) => {
         status: 'published',
         plan: 'trial',
         published_at: new Date(),
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        expires_at: liveTrialExpiresAt(),
         site_data: sanitizedSiteData,
         json_file_path: path.join('sites', subdomain, 'data', 'site.json'),
         created_at: new Date()

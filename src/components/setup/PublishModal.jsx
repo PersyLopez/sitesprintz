@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { api } from '../../services/api';
-import { initializeStripe } from '../../utils/stripe';
 import { PRICING_CONFIG } from '../../config/pricing.config';
 import { getPublishedSiteUrl } from '../../utils/siteWorkspace';
 import './PublishModal.css';
@@ -12,14 +11,11 @@ function PublishModal({ siteData, onClose }) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { showSuccess, showError } = useToast();
-  const cardElementRef = useRef(null);
-  const stripeInstanceRef = useRef(null);
-  const [stripePublishableKey, setStripePublishableKey] = useState(null);
   const [isEligibleForTrial, setIsEligibleForTrial] = useState(false);
   const [checkingTrialEligibility, setCheckingTrialEligibility] = useState(true);
-  const [paymentMethodCollected, setPaymentMethodCollected] = useState(false);
-  const [setupIntentClientSecret, setSetupIntentClientSecret] = useState(null);
-  const [collectingPayment, setCollectingPayment] = useState(false);
+
+  const trialDays = PRICING_CONFIG.trial.duration;
+  const trialLabel = `Free for ${trialDays} days — no card required`;
 
   const getTemplateRequiredPlan = () => {
     const templateId = siteData.template || siteData.id || '';
@@ -29,7 +25,6 @@ function PublishModal({ siteData, onClose }) {
     if (tier === 'Growth' || tier === 'growth') return 'growth';
     if (templateId.endsWith('-pro') || templateId.endsWith('-premium')) return 'growth';
 
-    // Checkout / ordering templates need Growth (cart + Stripe), not Pro
     const commerceTemplates = ['product-ordering', 'restaurant-ordering', 'product-showcase'];
     if (commerceTemplates.includes(templateId)) return 'growth';
 
@@ -50,27 +45,24 @@ function PublishModal({ siteData, onClose }) {
       name: PRICING_CONFIG.tiers.starter.name,
       price: `$${PRICING_CONFIG.tiers.starter.price}/mo`,
       features: PRICING_CONFIG.tiers.starter.summary,
-      trialPrice: 'Free for 7 days',
+      trialPrice: trialLabel,
     },
     {
       id: 'growth',
       name: PRICING_CONFIG.tiers.growth.name,
       price: `$${PRICING_CONFIG.tiers.growth.price}/mo`,
       features: PRICING_CONFIG.tiers.growth.summary,
-      trialPrice: 'Free for 7 days',
+      trialPrice: trialLabel,
       popular: true,
     },
   ];
 
-  // Check trial eligibility and get Stripe publishable key
   useEffect(() => {
     const checkTrialEligibility = async () => {
       try {
-        // Check if user has published sites
         const sitesResponse = await api.get('/api/sites');
-        // API returns { success: true, data: { sites: [...] } } or { sites: [...] }
-        const sites = Array.isArray(sitesResponse) 
-          ? sitesResponse 
+        const sites = Array.isArray(sitesResponse)
+          ? sitesResponse
           : (sitesResponse?.data?.sites || sitesResponse?.sites || []);
         const publishedSites = sites.filter((site) => {
           const subdomain = site.subdomain || '';
@@ -78,15 +70,6 @@ function PublishModal({ siteData, onClose }) {
         });
         setBillablePublishedCount(publishedSites.length);
         setIsEligibleForTrial(publishedSites.length === 0);
-
-        // Get Stripe publishable key
-        const configResponse = await api.get('/api/payments/config');
-        if (configResponse.publishableKey) {
-          setStripePublishableKey(configResponse.publishableKey);
-          // Initialize Stripe
-          const stripe = await initializeStripe(configResponse.publishableKey);
-          stripeInstanceRef.current = stripe;
-        }
       } catch (error) {
         console.error('Error checking trial eligibility:', error);
         setIsEligibleForTrial(false);
@@ -97,105 +80,6 @@ function PublishModal({ siteData, onClose }) {
 
     checkTrialEligibility();
   }, []);
-
-  // Initialize Stripe card element when publishable key is available
-  useEffect(() => {
-    if (stripePublishableKey && stripeInstanceRef.current && isEligibleForTrial && !paymentMethodCollected) {
-      const stripe = stripeInstanceRef.current;
-      const elements = stripe.elements();
-      const cardElement = elements.create('card', {
-        style: {
-          base: {
-            fontSize: '16px',
-            color: '#424770',
-            '::placeholder': {
-              color: '#aab7c4',
-            },
-          },
-          invalid: {
-            color: '#9e2146',
-          },
-        },
-      });
-
-      if (cardElementRef.current) {
-        cardElement.mount(cardElementRef.current);
-      }
-
-      return () => {
-        if (cardElement) {
-          cardElement.unmount();
-        }
-      };
-    }
-  }, [stripePublishableKey, isEligibleForTrial, paymentMethodCollected]);
-
-  const collectPaymentMethod = async () => {
-    if (!stripeInstanceRef.current || !isEligibleForTrial) {
-      return null;
-    }
-
-    setCollectingPayment(true);
-
-    try {
-      // Create Setup Intent
-      const setupIntentResponse = await api.post('/api/payments/trial/setup-intent', {
-        plan: formData.plan
-      });
-
-      const { clientSecret } = setupIntentResponse;
-
-      if (!clientSecret) {
-        throw new Error('Failed to create setup intent');
-      }
-
-      setSetupIntentClientSecret(clientSecret);
-
-      // Confirm Setup Intent with card element
-      const stripe = stripeInstanceRef.current;
-      const elements = stripe.elements();
-      const cardElement = elements.getElement('card');
-
-      if (!cardElement) {
-        throw new Error('Card element not found');
-      }
-
-      const { error, setupIntent } = await stripe.confirmCardSetup(clientSecret, {
-        payment_method: {
-          card: cardElement,
-        }
-      });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      setPaymentMethodCollected(true);
-      return setupIntent.payment_method;
-    } catch (error) {
-      console.error('Payment method collection error:', error);
-      showError(error.message || 'Failed to collect payment method. Please try again.');
-      throw error;
-    } finally {
-      setCollectingPayment(false);
-    }
-  };
-
-  const createTrialSubscription = async (paymentMethodId, draftId = null) => {
-    try {
-      const subscriptionResponse = await api.post('/api/payments/trial/create-subscription', {
-        plan: formData.plan,
-        paymentMethodId: paymentMethodId,
-        draftId: draftId
-      });
-
-      return subscriptionResponse;
-    } catch (error) {
-      console.error('Subscription creation error:', error);
-      showError(error.message || 'Failed to create subscription. Please try again.');
-      throw error;
-    }
-  };
 
   const startAdditionalSiteCheckout = async (draftId) => {
     const checkout = await api.post('/api/payments/create-subscription-checkout', {
@@ -253,7 +137,6 @@ function PublishModal({ siteData, onClose }) {
           services: siteData.services || siteData.products || [],
           colors: siteData.colors || siteData.themeVars,
           templateSpecific: siteData.custom || {},
-          // Persist editor content so Starter/Growth features survive publish
           sections: siteData.sections,
           gallery: siteData.gallery,
           faq: siteData.faq,
@@ -284,22 +167,6 @@ function PublishModal({ siteData, onClose }) {
       const { draftId } = await api.post('/api/drafts', draftData);
       createdDraftId = draftId;
 
-      // If eligible for trial and payment method not collected yet, collect it now
-      if (isEligibleForTrial && !paymentMethodCollected) {
-        try {
-          const paymentMethodId = await collectPaymentMethod();
-          if (!paymentMethodId) {
-            return; // Error already shown
-          }
-          // Create subscription with trial (pass draftId for reference)
-          await createTrialSubscription(paymentMethodId, draftId);
-          showSuccess('Payment method saved. Starting your 7-day free trial!');
-        } catch (error) {
-          // Error already shown
-          return;
-        }
-      }
-
       const result = await api.post(`/api/drafts/${draftId}/publish`, {
         plan: formData.plan,
         email: user.email
@@ -308,7 +175,11 @@ function PublishModal({ siteData, onClose }) {
       const subdomain = result.subdomain || result.site?.subdomain;
       const siteUrl = result.url || getPublishedSiteUrl(subdomain) || `/view/${encodeURIComponent(subdomain)}`;
 
-      showSuccess(`🎉 Site published successfully!`);
+      if (isEligibleForTrial) {
+        showSuccess(`Your site is live for ${trialDays} days — no card required.`);
+      } else {
+        showSuccess('Site published successfully!');
+      }
 
       const linkNotification = document.createElement('div');
       linkNotification.style.cssText = `
@@ -365,6 +236,14 @@ function PublishModal({ siteData, onClose }) {
           <p>Choose your plan and launch {siteData.brand?.name || siteData.businessName || 'your site'}</p>
         </div>
         <div className="modal-body">
+          {isEligibleForTrial && !checkingTrialEligibility && (
+            <div className="trial-notice" data-testid="live-trial-notice">
+              <p>
+                Your first site goes live for {trialDays} days with no payment method. Subscribe before the trial ends to keep it online.
+              </p>
+            </div>
+          )}
+
           {billablePublishedCount > 0 && (
             <div className="trial-notice" data-testid="additional-site-pay-notice">
               <p>Each plan covers one live site. Publishing this one starts checkout for another plan.</p>
@@ -391,35 +270,16 @@ function PublishModal({ siteData, onClose }) {
               </div>
             ))}
           </div>
-
-          {/* Payment Method Collection for Trial */}
-          {isEligibleForTrial && !paymentMethodCollected && stripePublishableKey && (
-            <div className="payment-method-section">
-              <h4>💳 Payment Method Required</h4>
-              <p>We need a payment method to start your free trial. You won't be charged until after 7 days.</p>
-              <div id="card-element" ref={cardElementRef} className="card-element-container"></div>
-              <div id="card-errors" className="card-errors" role="alert"></div>
-              {collectingPayment && (
-                <div className="payment-loading">Processing payment method...</div>
-              )}
-            </div>
-          )}
-
-          {isEligibleForTrial && paymentMethodCollected && (
-            <div className="payment-success">
-              <span className="status-icon">✓</span>
-              <span>Payment method saved. Your trial will start when you publish.</span>
-            </div>
-          )}
         </div>
         <div className="modal-footer">
           <button onClick={onClose} className="btn btn-secondary">Cancel</button>
-          <button 
-            onClick={handlePublish} 
-            className="btn btn-primary" 
-            disabled={loading || collectingPayment || (isEligibleForTrial && !paymentMethodCollected && stripePublishableKey)}
+          <button
+            onClick={handlePublish}
+            className="btn btn-primary"
+            disabled={loading || checkingTrialEligibility}
+            data-testid="publish-submit"
           >
-            {loading ? 'Publishing...' : collectingPayment ? 'Processing...' : isEligibleForTrial ? '🚀 Start Trial & Publish' : '🚀 Publish Site'}
+            {loading ? 'Publishing...' : isEligibleForTrial ? `🚀 Publish — ${trialDays}-Day Trial` : '🚀 Publish Site'}
           </button>
         </div>
       </div>

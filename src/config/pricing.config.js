@@ -7,13 +7,13 @@
 export const PLATFORM_SUPPORT_EMAIL = 'support@sitesprintz.com';
 
 export const PRICING_CONFIG = {
-  // Trial period configuration (must match Stripe trial_period_days in payments.routes.js)
+  // Trial period configuration (LIVE_TRIAL_DAYS = site clock; STRIPE_TRIAL_DAYS = Checkout only)
   trial: {
-    duration: 7,
+    duration: 15,
     durationUnit: 'days',
     features: 'starter',
-    description: '7-day free trial when you publish — payment method required to start',
-    paymentMethodRequired: true
+    description: '15-day live trial when you publish — no payment method required',
+    paymentMethodRequired: false
   },
 
   // Optional labor (not hosting). Display amounts; Stripe Price IDs later.

@@ -4,9 +4,14 @@ import { BrowserRouter } from 'react-router-dom';
 import PublishModal from '@/components/setup/PublishModal';
 import { AuthContext } from '@/context/AuthContext';
 import { ToastContext } from '@/context/ToastContext';
+import { api } from '@/services/api';
 
-// Mock fetch globally
-global.fetch = vi.fn();
+vi.mock('@/services/api', () => ({
+  api: {
+    get: vi.fn(),
+    post: vi.fn(),
+  },
+}));
 
 const renderWithContext = (component, authValue, toastValue) => {
   return render(
@@ -38,11 +43,12 @@ describe('PublishModal', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset fetch mock - will be overridden in individual tests
-    global.fetch.mockReset();
-    // Mock window.confirm to return false by default
+    api.get.mockResolvedValue({ sites: [] });
+    api.post.mockResolvedValue({ draftId: 'test-draft-id' });
     global.window.confirm = vi.fn(() => false);
   });
+
+  const getPublishButton = () => screen.getByTestId('publish-submit');
 
   describe('Plan Detection', () => {
     it('should detect premium template by tier metadata', () => {
@@ -146,7 +152,7 @@ describe('PublishModal', () => {
   });
 
   describe('Validation', () => {
-    it('should prevent publish without user', () => {
+    it('should prevent publish without user', async () => {
       const authValue = { user: null, loading: false };
       const siteData = { brand: { name: 'Test Business' } };
 
@@ -156,14 +162,16 @@ describe('PublishModal', () => {
         defaultToastValue
       );
 
-      const publishButton = screen.getByText(/Publish Site/i);
-      fireEvent.click(publishButton);
+      await waitFor(() => {
+        expect(getPublishButton()).not.toBeDisabled();
+      });
+      fireEvent.click(getPublishButton());
 
       expect(mockShowError).toHaveBeenCalledWith('Please log in to publish your site');
     });
 
-    it('should prevent publish without business name', () => {
-      const siteData = { template: 'basic' }; // No brand.name
+    it('should prevent publish without business name', async () => {
+      const siteData = { template: 'basic' };
 
       renderWithContext(
         <PublishModal siteData={siteData} onClose={mockOnClose} />,
@@ -171,8 +179,10 @@ describe('PublishModal', () => {
         defaultToastValue
       );
 
-      const publishButton = screen.getByText(/Publish Site/i);
-      fireEvent.click(publishButton);
+      await waitFor(() => {
+        expect(getPublishButton()).not.toBeDisabled();
+      });
+      fireEvent.click(getPublishButton());
 
       expect(mockShowError).toHaveBeenCalledWith('Please add your business name before publishing');
     });
@@ -183,18 +193,11 @@ describe('PublishModal', () => {
         template: 'basic'
       };
 
-      // Mock fetch for draft creation and publishing
-      global.fetch
+      api.post
+        .mockResolvedValueOnce({ draftId: 'test-draft-id' })
         .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({ draftId: 'test-draft-id' })
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({
-            subdomain: 'test-business',
-            url: 'http://localhost:5173/view/test-business'
-          })
+          subdomain: 'test-business',
+          url: 'http://localhost:5173/view/test-business',
         });
 
       renderWithContext(
@@ -203,11 +206,32 @@ describe('PublishModal', () => {
         defaultToastValue
       );
 
-      const publishButton = screen.getByText(/Publish Site/i);
+      const publishButton = getPublishButton();
       fireEvent.click(publishButton);
 
       // Should not show error
       expect(mockShowError).not.toHaveBeenCalledWith('Please add your business name before publishing');
+    });
+  });
+
+  describe('Live trial (no card)', () => {
+    it('shows 15-day no-card trial copy for first site', async () => {
+      const siteData = {
+        template: 'basic',
+        brand: { name: 'Test Business' },
+      };
+
+      renderWithContext(
+        <PublishModal siteData={siteData} onClose={mockOnClose} />,
+        defaultAuthValue,
+        defaultToastValue
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('live-trial-notice')).toBeInTheDocument();
+      });
+      expect(screen.getAllByText(/no card required/i).length).toBeGreaterThan(0);
+      expect(screen.queryByText(/Payment Method Required/i)).not.toBeInTheDocument();
     });
   });
 
@@ -252,18 +276,11 @@ describe('PublishModal', () => {
         brand: { name: 'Test Business' }
       };
 
-      // Mock fetch for draft creation and publishing
-      global.fetch
+      api.post
+        .mockResolvedValueOnce({ draftId: 'test-draft-id' })
         .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({ draftId: 'test-draft-id' })
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({
-            subdomain: 'test-business',
-            url: 'http://localhost:5173/view/test-business'
-          })
+          subdomain: 'test-business',
+          url: 'http://localhost:5173/view/test-business',
         });
 
       renderWithContext(
@@ -272,7 +289,7 @@ describe('PublishModal', () => {
         defaultToastValue
       );
 
-      const publishButton = screen.getByText(/Publish Site/i);
+      const publishButton = getPublishButton();
       fireEvent.click(publishButton);
 
       await waitFor(() => {
@@ -293,18 +310,11 @@ describe('PublishModal', () => {
         email: 'business@test.com'
       };
 
-      // Mock fetch for draft creation and publishing
-      global.fetch
+      api.post
+        .mockResolvedValueOnce({ draftId: 'test-draft-id' })
         .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({ draftId: 'test-draft-id' })
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({
-            subdomain: 'test-business',
-            url: 'http://localhost:5173/view/test-business'
-          })
+          subdomain: 'test-business',
+          url: 'http://localhost:5173/view/test-business',
         });
 
       renderWithContext(
@@ -313,11 +323,13 @@ describe('PublishModal', () => {
         defaultToastValue
       );
 
-      const publishButton = screen.getByText(/Publish Site/i);
-      fireEvent.click(publishButton);
+      await waitFor(() => {
+        expect(getPublishButton()).not.toBeDisabled();
+      });
+      fireEvent.click(getPublishButton());
 
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalled();
+        expect(api.post).toHaveBeenCalled();
       });
     });
 
@@ -327,16 +339,10 @@ describe('PublishModal', () => {
         brand: { name: 'Test Business' }
       };
 
-      // Mock fetch to fail on publish
-      global.fetch
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({ draftId: 'test-draft-id' })
-        })
-        .mockResolvedValueOnce({
-          ok: false,
-          json: async () => ({ error: 'Network error' })
-        });
+      api.post.mockReset();
+      api.post
+        .mockResolvedValueOnce({ draftId: 'test-draft-id' })
+        .mockRejectedValueOnce(new Error('Network error'));
 
       renderWithContext(
         <PublishModal siteData={siteData} onClose={mockOnClose} />,
@@ -344,14 +350,15 @@ describe('PublishModal', () => {
         defaultToastValue
       );
 
-      const publishButton = screen.getByText(/Publish Site/i);
-      fireEvent.click(publishButton);
+      await waitFor(() => {
+        expect(getPublishButton()).not.toBeDisabled();
+      });
+      fireEvent.click(getPublishButton());
 
       await waitFor(() => {
         expect(mockShowError).toHaveBeenCalled();
       }, { timeout: 2000 });
       
-      // Check that error was called with network error message
       expect(mockShowError).toHaveBeenCalledWith(
         expect.stringMatching(/Network error|Failed to publish/i)
       );
@@ -363,24 +370,16 @@ describe('PublishModal', () => {
         brand: { name: 'Test Business' }
       };
 
-      // Mock fetch with delay for loading state test
-      global.fetch.mockImplementation(
-        (url) => {
-          if (url.includes('/publish')) {
-            return new Promise(resolve => setTimeout(() => resolve({
-              ok: true,
-              json: async () => ({
-                subdomain: 'test-business',
-                url: 'http://localhost:5173/view/test-business'
-              })
+      api.post
+        .mockImplementation((url) => {
+          if (String(url).includes('/publish')) {
+            return new Promise((resolve) => setTimeout(() => resolve({
+              subdomain: 'test-business',
+              url: 'http://localhost:5173/view/test-business',
             }), 100));
           }
-          return Promise.resolve({
-            ok: true,
-            json: async () => ({ draftId: 'test-draft-id' })
-          });
-        }
-      );
+          return Promise.resolve({ draftId: 'test-draft-id' });
+        });
 
       renderWithContext(
         <PublishModal siteData={siteData} onClose={mockOnClose} />,
@@ -388,10 +387,12 @@ describe('PublishModal', () => {
         defaultToastValue
       );
 
-      const publishButton = screen.getByText(/Publish Site/i);
-      fireEvent.click(publishButton);
+      await waitFor(() => {
+        expect(getPublishButton()).not.toBeDisabled();
+      });
 
-      // Button should show loading state
+      fireEvent.click(getPublishButton());
+
       expect(await screen.findByText(/Publishing/)).toBeInTheDocument();
     });
   });
@@ -495,18 +496,11 @@ describe('PublishModal', () => {
         brand: { name: 'Test & Business™ (LLC)' }
       };
 
-      // Mock fetch for draft creation and publishing
-      global.fetch
+      api.post
+        .mockResolvedValueOnce({ draftId: 'test-draft-id' })
         .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({ draftId: 'test-draft-id' })
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({
-            subdomain: 'test-business-llc',
-            url: 'http://localhost:5173/view/test-business-llc'
-          })
+          subdomain: 'test-business-llc',
+          url: 'http://localhost:5173/view/test-business-llc',
         });
 
       renderWithContext(
@@ -515,11 +509,13 @@ describe('PublishModal', () => {
         defaultToastValue
       );
 
-      const publishButton = screen.getByText(/Publish Site/i);
-      fireEvent.click(publishButton);
+      await waitFor(() => {
+        expect(getPublishButton()).not.toBeDisabled();
+      });
+      fireEvent.click(getPublishButton());
 
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalled();
+        expect(api.post).toHaveBeenCalled();
       });
     });
   });

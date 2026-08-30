@@ -58,7 +58,7 @@ export const FEATURES = {
 };
 
 // Plan feature mapping
-// Note: "trial" and "free" are aliases - both refer to the 7-day free trial
+// Note: "trial" and "free" are aliases - both refer to the live trial (LIVE_TRIAL_DAYS)
 const TRIAL_FEATURES = [
   FEATURES.CONTACT_FORMS,
   FEATURES.SERVICE_DISPLAY,
@@ -111,7 +111,7 @@ export const PLAN_INFO = {
   trial: {
     name: 'Free Trial',
     price: 0,
-    duration: '7 days',
+    duration: '15 days',
     color: '#64748b'
   },
   starter: {

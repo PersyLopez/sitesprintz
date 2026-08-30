@@ -101,7 +101,7 @@ export const TIER_INFO = {
     price: 0,
     currency: 'USD',
     billingPeriod: 'month',
-    description: '7-day free trial when you publish',
+    description: '15-day live trial when you publish — no card required',
     color: '#64748b',
     features: ['Contact forms', 'Service display', 'Bring your own domain']
   },

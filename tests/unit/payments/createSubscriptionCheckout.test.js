@@ -6,6 +6,7 @@ const mockSessionsCreate = vi.fn();
 const mockCustomersRetrieve = vi.fn();
 const mockUsersFindUnique = vi.fn();
 const mockUsersUpdate = vi.fn();
+const mockSitesFindFirst = vi.fn();
 const mockSitesCount = vi.fn();
 const mockSubscriptionsList = vi.fn();
 
@@ -17,6 +18,7 @@ vi.mock('../../../database/db.js', () => ({
     },
     sites: {
       count: (...args) => mockSitesCount(...args),
+      findFirst: (...args) => mockSitesFindFirst(...args),
     },
   },
 }));
@@ -69,6 +71,7 @@ describe('createSubscriptionCheckout metadata', () => {
     mockUsersUpdate.mockResolvedValue({});
     mockSessionsCreate.mockResolvedValue({ id: 'cs_test', url: 'https://checkout.stripe.test/cs' });
     mockSitesCount.mockResolvedValue(1);
+    mockSitesFindFirst.mockResolvedValue(null);
     mockSubscriptionsList.mockResolvedValue({
       data: [{ id: 'sub_1', status: 'trialing' }],
       has_more: false,
@@ -91,6 +94,7 @@ describe('createSubscriptionCheckout metadata', () => {
       plan: 'starter',
       userId: 'user-checkout-1',
     });
+    expect(sessionOptions.subscription_data.trial_period_days).toBe(7);
     expect(requestOptions).toEqual({
       idempotencyKey: 'plat-sub:user-checkout-1:starter',
     });
@@ -139,6 +143,24 @@ describe('createSubscriptionCheckout metadata', () => {
     expect(response.status).toBe(409);
     expect(response.body.code).toBe('ALREADY_SUBSCRIBED');
     expect(mockSessionsCreate).not.toHaveBeenCalled();
+  });
+
+  it('does not stack Stripe trial when user already has a live trial site', async () => {
+    mockUsersFindUnique.mockResolvedValue({
+      stripe_customer_id: 'cus_existing',
+      id: 'user-checkout-1',
+      subscription_status: null,
+      stripe_subscription_id: null,
+    });
+    mockSitesFindFirst.mockResolvedValue({ id: 'site-live-trial' });
+
+    const response = await request(app)
+      .post('/api/payments/create-subscription-checkout')
+      .send({ plan: 'starter' });
+
+    expect(response.status).toBe(200);
+    const [sessionOptions] = mockSessionsCreate.mock.calls[0];
+    expect(sessionOptions.subscription_data).not.toHaveProperty('trial_period_days');
   });
 
   it('starts checkout for an additional site when already subscribed', async () => {

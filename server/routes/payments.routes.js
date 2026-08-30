@@ -34,7 +34,7 @@ import { livePublishedPath } from '../../src/utils/visitorExperience.js';
 import { fulfillPlatformSubscription } from '../services/payments/fulfillPlatformSubscription.js';
 import { stripeSubscriptionLineItem, STRIPE_TRIAL_DAYS, normalizePaidPlan, CUSTOMER_LABOR_SKUS, isCustomerLaborSkuConfigured } from '../config/platformPlans.js';
 import { createLaborCheckout } from '../services/labor/laborCheckoutService.js';
-import { countBillablePublishedSites, countPaidSiteSlots } from '../services/subscriptionService.js';
+import { countBillablePublishedSites, countPaidSiteSlots, hasActiveLiveTrialSite } from '../services/subscriptionService.js';
 
 const router = express.Router();
 const INVALID_PAID_PLAN = 'Invalid plan. Must be "starter", "growth", or "growth_managed"';
@@ -508,6 +508,10 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
 
         const automaticTaxEnabled = process.env.STRIPE_AUTOMATIC_TAX === 'true';
 
+        const checkoutTrialDays = buyingAdditionalSite
+            ? 0
+            : (dbUser?.id && await hasActiveLiveTrialSite(dbUser.id) ? 0 : STRIPE_TRIAL_DAYS);
+
         const session = await stripe.checkout.sessions.create({
             customer: customerId,
             client_reference_id: userId,
@@ -520,6 +524,7 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
             billing_address_collection: automaticTaxEnabled ? 'required' : 'auto',
             automatic_tax: { enabled: automaticTaxEnabled },
             subscription_data: {
+                ...(checkoutTrialDays > 0 ? { trial_period_days: checkoutTrialDays } : {}),
                 metadata: {
                     plan,
                     userId,

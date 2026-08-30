@@ -109,7 +109,7 @@ describe('Landing Page - Pricing', () => {
 
   it('shows the trial note', () => {
     renderLanding();
-    expect(screen.getByText(/7-day trial when you publish/i)).toBeInTheDocument();
+    expect(screen.getByText(/15-day trial when you publish/i)).toBeInTheDocument();
   });
 
   it('pricing CTAs route unauthenticated users to register with plan', () => {

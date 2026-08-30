@@ -23,6 +23,7 @@ import {
   countBillablePublishedSites,
   countPaidSiteSlots,
 } from '../services/subscriptionService.js';
+import { LIVE_TRIAL_DAYS, liveTrialExpiresAt } from '../config/platformPlans.js';
 import { inheritPaymentAccountsForSite } from '../services/payments/processorConnectHelpers.js';
 import { attachSpanishLocale } from '../services/siteTranslationService.js';
 import { prepareOwnerSiteData } from '../utils/prepareSiteLocation.js';
@@ -884,16 +885,20 @@ router.post('/:draftId/publish', asyncHandler(async (req, res) => {
     exceptSiteId: draft.published_site_id || null,
   });
   const paidSlots = await countPaidSiteSlots(user);
+  const isFirstUnpaidLiveTrial = !hasActiveSubscription && publishedCount === 0;
   const slot = canOccupyPublishedSiteSlot({
     publishedCount,
     maxSites: paidSlots,
     isAdmin: user.role === 'admin',
   });
-  if (!slot.allowed) {
-    if (!hasActiveSubscription && publishedCount === 0) {
-      return sendBadRequest(res, 'Payment method required to start free trial. Please add a payment method.', 'PAYMENT_METHOD_REQUIRED');
-    }
+  if (!slot.allowed && !isFirstUnpaidLiveTrial) {
     return sendBadRequest(res, slot.reason, slot.code);
+  }
+
+  if (isFirstUnpaidLiveTrial) {
+    sitePlan = 'trial';
+    expiresAt = liveTrialExpiresAt();
+    siteData = filterFeaturesByPlan(siteData, 'trial');
   }
 
   // Allocate an isolated subdomain, write contained files, then persist.
@@ -1000,7 +1005,7 @@ router.post('/:draftId/publish', asyncHandler(async (req, res) => {
     subdomain,
     url: liveUrl,
     businessName: siteData.brand?.name,
-    trialDays: hasActiveSubscription ? null : 7,
+    trialDays: hasActiveSubscription ? null : (isFirstUnpaidLiveTrial ? LIVE_TRIAL_DAYS : null),
     isNewUser,
     hasActiveSubscription,
     site: {

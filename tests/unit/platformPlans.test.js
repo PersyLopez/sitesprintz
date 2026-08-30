@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
+  LIVE_TRIAL_DAYS,
   STRIPE_TRIAL_DAYS,
+  liveTrialExpiresAt,
   CLAIM_PLAN,
   PLATFORM_PLAN_DETAILS,
   LABOR_SKUS,
@@ -16,11 +18,18 @@ import {
 
 describe('platformPlans', () => {
   it('keeps monthly amounts at $10, $35, and $75', () => {
+    expect(LIVE_TRIAL_DAYS).toBe(15);
     expect(STRIPE_TRIAL_DAYS).toBe(7);
     expect(CLAIM_PLAN).toBe('growth');
     expect(PLATFORM_PLAN_DETAILS.starter.amount).toBe(1000);
     expect(PLATFORM_PLAN_DETAILS.growth.amount).toBe(3500);
     expect(PLATFORM_PLAN_DETAILS.growth_managed.amount).toBe(7500);
+  });
+
+  it('computes live trial expiry from LIVE_TRIAL_DAYS', () => {
+    const start = new Date('2026-08-30T12:00:00Z');
+    const expires = liveTrialExpiresAt(start);
+    expect(expires.getTime() - start.getTime()).toBe(LIVE_TRIAL_DAYS * 24 * 60 * 60 * 1000);
   });
 
   it('normalizes legacy paid plans', () => {

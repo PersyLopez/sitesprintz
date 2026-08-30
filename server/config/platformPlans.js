@@ -5,12 +5,22 @@
  * Monthly Starter / Growth / Growth Managed is hosting + monitoring (software
  * access still gated by plan). Labor SKUs use Dashboard Price IDs only — never client cents.
  *
- * Two clocks (do not conflate):
- * - STRIPE_TRIAL_DAYS: self-serve publish Checkout only (not claimables we prepared)
+ * Three clocks (do not conflate):
+ * - LIVE_TRIAL_DAYS: no-card first publish; site expires_at on sites row
+ * - STRIPE_TRIAL_DAYS: self-serve Checkout subscription trial only (not claimables we prepared)
  * - CLAIM_TTL_DAYS in claimTokenService.js: claim-link window (14 days)
  */
 
+export const LIVE_TRIAL_DAYS = 15;
 export const STRIPE_TRIAL_DAYS = 7;
+
+/**
+ * @param {Date} [fromDate]
+ * @returns {Date}
+ */
+export function liveTrialExpiresAt(fromDate = new Date()) {
+  return new Date(fromDate.getTime() + LIVE_TRIAL_DAYS * 24 * 60 * 60 * 1000);
+}
 
 /** Targeted claimables default to DIY Growth. Starter is self-serve only. */
 export const CLAIM_PLAN = 'growth';

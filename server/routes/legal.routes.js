@@ -150,8 +150,8 @@ router.get('/terms', (req, res) => {
 
     <h2>6. Payment Terms</h2>
     <p>
-        <strong>6.1 Free Trial:</strong> We offer a 7-day free trial when you publish a site. A payment method is required
-        to start the trial; you are not charged until the trial ends unless you cancel.
+        <strong>6.1 Free Trial:</strong> We offer a 15-day live trial when you publish a site. No payment method is
+        required to start. After 15 days, you must subscribe to keep the site live.
     </p>
     <p>
         <strong>6.2 Subscriptions:</strong> After the trial, continued use requires a paid subscription. You will be charged
@@ -634,9 +634,9 @@ router.get('/refunds', (req, res) => {
 
     <h2>1. Free Trial</h2>
     <ul>
-        <li><strong>Duration:</strong> 7 days</li>
-        <li><strong>Features:</strong> Access aligned with your selected plan during trial</li>
-        <li><strong>Payment Method:</strong> Required to publish and start the trial; not charged until trial ends if you cancel first</li>
+        <li><strong>Duration:</strong> 15 days</li>
+        <li><strong>Features:</strong> Starter-level access during the live trial</li>
+        <li><strong>Payment Method:</strong> Not required to publish and start the trial</li>
         <li><strong>Trial Expiration:</strong> Sites become view-only after trial ends (can reactivate by subscribing)</li>
     </ul>
 

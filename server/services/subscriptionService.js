@@ -187,8 +187,29 @@ export async function countPaidSiteSlots(user, { stripeClient } = {}) {
 }
 
 /**
+ * User has a published site still inside the no-card live trial window.
  * @param {string} userId
- * @param {{ exceptSiteId?: string|null }} [opts] — skip when republishing the same site
+ * @param {{ now?: Date }} [options]
+ * @returns {Promise<boolean>}
+ */
+export async function hasActiveLiveTrialSite(userId, { now = new Date() } = {}) {
+  if (!userId) return false;
+  const site = await prisma.sites.findFirst({
+    where: {
+      user_id: userId,
+      status: 'published',
+      expires_at: { gt: now },
+    },
+    select: { id: true },
+  });
+  return Boolean(site);
+}
+
+/**
+ * Count live customer sites that consume a plan slot.
+ * Gallery examples do not count.
+ * @param {string} userId
+ * @param {{ exceptSiteId?: string|null }} [opts]
  * @returns {Promise<number>}
  */
 export async function countBillablePublishedSites(userId, { exceptSiteId } = {}) {
