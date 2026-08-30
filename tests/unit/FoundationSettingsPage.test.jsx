@@ -166,8 +166,8 @@ describe('FoundationSettingsPage Component', () => {
       render(<FoundationSettingsPage />);
       
       await waitFor(() => {
-        expect(screen.getByText('myrestaurant.sitesprintz.com')).toBeInTheDocument();
-        expect(screen.getByText('mysalon.sitesprintz.com')).toBeInTheDocument();
+        expect(screen.getByText('rightsitelight.com/view/myrestaurant')).toBeInTheDocument();
+        expect(screen.getByText('rightsitelight.com/view/mysalon')).toBeInTheDocument();
       });
     });
 
@@ -356,8 +356,8 @@ describe('FoundationSettingsPage Component', () => {
       render(<FoundationSettingsPage />);
       
       await waitFor(() => {
-        const siteLink = screen.getByText('amazing.sitesprintz.com ↗');
-        expect(siteLink).toHaveAttribute('href', 'https://amazing.sitesprintz.com');
+        const siteLink = screen.getByText('rightsitelight.com/view/amazing ↗');
+        expect(siteLink).toHaveAttribute('href', 'http://localhost:3000/view/amazing');
         expect(siteLink).toHaveAttribute('target', '_blank');
         expect(siteLink).toHaveAttribute('rel', 'noopener noreferrer');
       });

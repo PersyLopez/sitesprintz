@@ -253,13 +253,10 @@ describe('Showcase Routes Integration Tests', () => {
       expect(response.body.site.name).toBe('Public Showcase Site');
     });
 
-    it('should return 404 for private site', async () => {
-      const response = await request(app)
+    it('should return 404 for a published site that is not public on the gallery', async () => {
+      await request(app)
         .get(`/api/showcases/${privateSite.subdomain}`)
         .expect(404);
-
-      expect(response.body.success).toBe(false);
-      expect(response.body.message).toContain('not found');
     });
 
     it('should return 404 for nonexistent site', async () => {

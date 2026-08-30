@@ -43,7 +43,7 @@ describe('DomainService', () => {
     expect(db.sites.update).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({ custom_domain: 'my-shop.com', custom_domain_status: 'pending' }),
     }));
-    expect(result.instructions.cname.value).toBe('maria-stand.sitesprintz.com');
+    expect(result.instructions.cname.value).toBe('maria-stand.rightsitelight.com');
   });
 
   it('rejects platform hosts and invalid names', async () => {
@@ -68,7 +68,7 @@ describe('DomainService', () => {
     });
     db.sites.update.mockResolvedValue({});
     const resolveCname = vi.fn(async (name) => {
-      if (name === 'www.my-shop.com') return ['maria-stand.sitesprintz.com.'];
+      if (name === 'www.my-shop.com') return ['maria-stand.rightsitelight.com.'];
       throw new Error('ENOTFOUND');
     });
     const service = new DomainService(db, { resolveCname, resolve4: vi.fn() });

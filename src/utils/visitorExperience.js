@@ -138,7 +138,7 @@ export function siteWantsEmbeddedBooking(siteData) {
 }
 
 /**
- * True when the live site should mount the native SiteSprintz booking widget.
+ * True when the live site should mount the native platform booking widget.
  *
  * @param {object|null|undefined} siteData
  * @returns {boolean}

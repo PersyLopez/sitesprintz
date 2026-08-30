@@ -27,7 +27,7 @@ describe('laborInquiryMailto', () => {
 
   it('encodes mailto without the current URL or tokens', () => {
     const href = laborInquiryMailto('unique look');
-    expect(href).toMatch(/^mailto:support@sitesprintz\.com\?/);
+    expect(href).toMatch(/^mailto:support@rightsitelight\.com\?/);
     expect(href).toContain('unique%20look');
     expect(href).not.toContain('claim');
     expect(href).not.toContain('Bearer');

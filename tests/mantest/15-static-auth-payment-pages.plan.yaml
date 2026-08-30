@@ -16,7 +16,7 @@ steps:
     assert:
       - text contains Payment cancelled
       - text contains Return to dashboard
-      - text contains support@sitesprintz.com
+      - text contains support@rightsitelight.com
 
   - action: Payment success without session redirects home
     goto: http://localhost:5173/payment-success

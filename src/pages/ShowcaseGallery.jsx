@@ -1,5 +1,5 @@
 /**
- * ShowcaseGallery — public “Made with SiteSprintz” gallery
+ * ShowcaseGallery — public “Made with Right Site Light” gallery
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -249,7 +249,7 @@ function ShowcaseGallery() {
                 <i /><i /><i />
               </span>
               <span className="site-browser-url">
-                {site.subdomain}.sitesprintz.com
+                /view/{site.subdomain}
               </span>
             </div>
             <div className="site-image">

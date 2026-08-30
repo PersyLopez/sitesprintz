@@ -11,6 +11,7 @@ import { sitesService } from '../services/sites';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import FoundationSettings from '../components/dashboard/FoundationSettings';
+import { getPublishedSiteDisplayUrl, getPublishedSiteUrl } from '../utils/siteWorkspace';
 import './FoundationSettingsPage.css';
 
 function FoundationSettingsPage() {
@@ -124,7 +125,7 @@ function FoundationSettingsPage() {
                     </span>
                   </div>
                   {site.subdomain && (
-                    <span className="site-url">{site.subdomain}.sitesprintz.com</span>
+                    <span className="site-url">{getPublishedSiteDisplayUrl(site.subdomain)}</span>
                   )}
                   <span className="site-plan">{site.plan || 'starter'}</span>
                 </button>
@@ -142,12 +143,12 @@ function FoundationSettingsPage() {
                     <p className="site-meta">
                       {selectedSite.subdomain && (
                         <a 
-                          href={`https://${selectedSite.subdomain}.sitesprintz.com`}
+                          href={getPublishedSiteUrl(selectedSite.subdomain)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="site-link"
                         >
-                          {selectedSite.subdomain}.sitesprintz.com ↗
+                          {getPublishedSiteDisplayUrl(selectedSite.subdomain)} ↗
                         </a>
                       )}
                       <span className="plan-badge">{selectedSite.plan || 'Starter'} Plan</span>

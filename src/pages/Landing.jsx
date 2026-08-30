@@ -204,7 +204,7 @@ export default function Landing() {
         <HeroStoryVideo />
         <div className="hero-content">
           <div className="hero-text">
-            <p className="hero-brand hero-enter hero-enter--1">SiteSprintz</p>
+            <p className="hero-brand hero-enter hero-enter--1">{t('brand.name')}</p>
             <h1 id="hero-heading" className="hero-headline hero-enter hero-enter--2">
               {t('landing.hero.headline')}
               <span className="hero-headline-soft">{t('landing.hero.headlineSoft')}</span>

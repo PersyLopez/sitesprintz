@@ -44,7 +44,7 @@ export class MockEmailService {
     async sendWelcomeEmail(email, name) {
         return this.sendEmail({
             to: email,
-            subject: 'Welcome to SiteSprintz',
+            subject: 'Welcome to Right Site Light',
             html: `<p>Welcome ${name}!</p>`,
             text: `Welcome ${name}!`
         });

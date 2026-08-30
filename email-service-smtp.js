@@ -6,7 +6,7 @@ const SMTP_SECURE = process.env.SMTP_SECURE === 'true';
 const SMTP_USER = process.env.SMTP_USER;
 const SMTP_PASS = process.env.SMTP_PASS;
 const FROM_EMAIL = process.env.FROM_EMAIL || SMTP_USER;
-const FROM_NAME = process.env.FROM_NAME || 'SiteSprintz';
+const FROM_NAME = process.env.FROM_NAME || 'Right Site Light';
 const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
 
 // Create transporter
@@ -38,7 +38,7 @@ function getTransporter() {
 
 const templates = {
   welcome: (email) => ({
-    subject: 'Welcome to SiteSprintz! 🎉',
+    subject: 'Welcome to Right Site Light! 🎉',
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; margin-bottom: 30px;">
@@ -77,7 +77,7 @@ const templates = {
   }),
 
   invitation: (email, tempPassword) => ({
-    subject: 'You\'ve been invited to SiteSprintz! 🎉',
+    subject: 'You\'ve been invited to Right Site Light! 🎉',
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; margin-bottom: 30px;">
@@ -313,7 +313,7 @@ const templates = {
         
         <div style="border-top: 1px solid #e2e8f0; margin-top: 30px; padding-top: 20px;">
           <p style="color: #94a3b8; font-size: 0.875rem; text-align: center; margin: 0;">
-            This order was placed on your SiteSprintz website. Manage all orders from your dashboard.
+            This order was placed on your Right Site Light website. Manage all orders from your dashboard.
           </p>
         </div>
       </div>

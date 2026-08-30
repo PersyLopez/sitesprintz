@@ -179,7 +179,7 @@ export default function CustomDomainSettings({ subdomain }) {
         onClose={() => setShowConfirmRemove(false)}
         title="Remove Custom Domain"
       >
-        <p>Remove this custom domain? Visitors will use your SiteSprintz link instead.</p>
+        <p>Remove this custom domain? Visitors will use your Right Site Light link instead.</p>
         <button type="button" className="btn btn-primary" onClick={handleRemoveDomain} data-testid="custom-domain-remove-confirm">
           Remove
         </button>

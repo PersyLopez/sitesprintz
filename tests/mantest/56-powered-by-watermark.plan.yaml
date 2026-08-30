@@ -1,5 +1,5 @@
 url: http://localhost:5173/view/gallery-restaurant
-goal: Gallery demo live sites show a clickable Powered by SiteSprintz watermark
+goal: Gallery demo live sites show a clickable Powered by Right Site Light watermark
 steps:
   - action: Restaurant demo loads
     wait_for: { text: The Grand Table, timeout: 20000 }
@@ -10,12 +10,12 @@ steps:
       const badge = page.getByTestId('sitesprintz-badge');
       await badge.waitFor({ state: 'visible', timeout: 10000 });
       const href = await badge.getAttribute('href');
-      if (href !== 'https://sitesprintz.com') {
-        throw new Error('Badge href expected https://sitesprintz.com, got ' + href);
+      if (href !== 'https://rightsitelight.com') {
+        throw new Error('Badge href expected https://rightsitelight.com, got ' + href);
       }
       const text = (await badge.innerText()).trim();
-      if (!/Powered by SiteSprintz/i.test(text)) {
-        throw new Error('Badge copy expected Powered by SiteSprintz, got: ' + text);
+      if (!/Powered by Right Site Light/i.test(text)) {
+        throw new Error('Badge copy expected Powered by Right Site Light, got: ' + text);
       }
       const tag = await badge.evaluate((el) => el.tagName.toLowerCase());
       if (tag !== 'a') {
@@ -54,12 +54,12 @@ steps:
       const badge = page.getByTestId('sitesprintz-badge');
       await badge.waitFor({ state: 'visible', timeout: 10000 });
       const href = await badge.getAttribute('href');
-      if (href !== 'https://sitesprintz.com') {
-        throw new Error('Salon badge href expected https://sitesprintz.com, got ' + href);
+      if (href !== 'https://rightsitelight.com') {
+        throw new Error('Salon badge href expected https://rightsitelight.com, got ' + href);
       }
       const text = (await badge.innerText()).trim();
-      if (!/Powered by SiteSprintz/i.test(text)) {
-        throw new Error('Salon badge copy expected Powered by SiteSprintz, got: ' + text);
+      if (!/Powered by Right Site Light/i.test(text)) {
+        throw new Error('Salon badge copy expected Powered by Right Site Light, got: ' + text);
       }
       const tag = await badge.evaluate((el) => el.tagName.toLowerCase());
       if (tag !== 'a') {
@@ -79,9 +79,8 @@ steps:
     code: |
       await page.setViewportSize({ width: 390, height: 844 });
       await page.goto('http://localhost:5173/view/gallery-restaurant');
-      await page.getByText('The Grand Table').waitFor({ state: 'visible', timeout: 20000 });
       const badge = page.getByTestId('sitesprintz-badge');
-      await badge.waitFor({ state: 'visible', timeout: 10000 });
+      await badge.waitFor({ state: 'visible', timeout: 20000 });
       const position = await badge.evaluate((el) => getComputedStyle(el).position);
       if (position !== 'fixed') {
         throw new Error('Mobile badge should be position:fixed, got ' + position);

@@ -224,7 +224,7 @@ describe('Customer Portal - Unit Tests', () => {
 
     it('should use HTTPS return URL in production', async () => {
       // Test that return URL uses HTTPS in production
-      const productionUrl = 'https://sitesprintz.com/dashboard';
+      const productionUrl = 'https://rightsitelight.com/dashboard';
       expect(productionUrl).toMatch(/^https:\/\//);
     });
 

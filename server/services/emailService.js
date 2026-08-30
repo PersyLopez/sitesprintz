@@ -129,7 +129,7 @@ export class EmailService {
   renderWelcomeTemplate(data) {
     const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
     return {
-      subject: 'Welcome to SiteSprintz! 🎉',
+      subject: 'Welcome to Right Site Light! 🎉',
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
@@ -504,7 +504,7 @@ export class EmailService {
    */
   renderSubscriptionTemplate(data) {
     return {
-      subject: 'Welcome to SiteSprintz Pro! 🚀',
+      subject: 'Welcome to Right Site Light Pro! 🚀',
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
@@ -536,10 +536,10 @@ export class EmailService {
     const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
     const buildUrl = `${siteUrl}/build`;
     return {
-      subject: `SiteSprintz — ${skuName} received`,
+      subject: `Right Site Light — ${skuName} received`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <p>We received your ${skuName} request. We will follow up from support@sitesprintz.com. The editor stays available if you want to keep going yourself.</p>
+          <p>We received your ${skuName} request. We will follow up from support@rightsitelight.com. The editor stays available if you want to keep going yourself.</p>
           <p style="margin: 24px 0;">
             <a href="${buildUrl}" style="display: inline-block; padding: 12px 24px; background: #2563eb; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600;">
               Share what we should build
@@ -580,7 +580,7 @@ export class EmailService {
     const name = this.escapeHtml(data?.contactName || 'there');
     const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
     return {
-      subject: 'SiteSprintz — we received your build request',
+      subject: 'Right Site Light — we received your build request',
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <p>Hi ${name},</p>
@@ -588,7 +588,7 @@ export class EmailService {
           <p>Brand match and Unique look are extra if you asked for them. We only use the details you provided; anything you left blank stays blank on the site.</p>
           <p>Send your own photos via Drive, Dropbox, or https links only. We do not invent hours, staff, or stock images.</p>
           <p>Your street stays private on the live site unless you asked us to publish it. If hidden, visitors see your service area and radius; customers get the exact address in booking or order confirmations.</p>
-          <p>We will follow up from support@sitesprintz.com. You can add more anytime at <a href="${siteUrl}/build">${siteUrl}/build</a>.</p>
+          <p>We will follow up from support@rightsitelight.com. You can add more anytime at <a href="${siteUrl}/build">${siteUrl}/build</a>.</p>
         </div>
       `,
       provider: 'resend',
@@ -938,7 +938,7 @@ export class EmailService {
       throw new Error('Resend provider not configured');
     }
 
-    const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@sitesprintz.com';
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@rightsitelight.com';
 
     const { data, error } = await this.providers.resend.emails.send({
       from: fromEmail,
@@ -965,8 +965,8 @@ export class EmailService {
       throw new Error('SMTP provider not configured');
     }
 
-    const fromName = process.env.FROM_NAME || 'SiteSprintz';
-    const fromEmail = process.env.FROM_EMAIL || process.env.SMTP_USER || 'noreply@sitesprintz.com';
+    const fromName = process.env.FROM_NAME || 'Right Site Light';
+    const fromEmail = process.env.FROM_EMAIL || process.env.SMTP_USER || 'noreply@rightsitelight.com';
 
     const info = await this.providers.smtp.sendMail({
       from: `"${fromName}" <${fromEmail}>`,

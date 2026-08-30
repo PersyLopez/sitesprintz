@@ -215,7 +215,7 @@ function ProcessorConnectList({
       <div className="processor-trust-banner" data-testid="processor-trust-banner">
         <strong>Payments are set per site.</strong>
         {' '}Stripe, Square, and PayPal handle identity checks and payouts on their sites.
-        SiteSprintz never sees card numbers, bank details, or KYC documents — never paste API keys or secrets here.
+        Right Site Light never sees card numbers, bank details, or KYC documents — never paste API keys or secrets here.
       </div>
 
       {stripeTestMode && (
@@ -234,7 +234,7 @@ function ProcessorConnectList({
 
       {available.stripe === false && isGrowth && (
         <div className="processor-test-banner processor-test-disabled" data-testid="stripe-not-configured-banner">
-          Stripe is not available on this platform yet. Contact SiteSprintz support. Never paste API keys into this page.
+          Stripe is not available on this platform yet. Contact Right Site Light support. Never paste API keys into this page.
         </div>
       )}
 

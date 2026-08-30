@@ -43,6 +43,6 @@ steps:
   - action: Contact loaded
     wait_for: { text: Contact, timeout: 15000 }
     assert:
-      - text contains support@sitesprintz.com
+      - text contains support@rightsitelight.com
       - text contains Common questions
       - text contains Get Your Page Free

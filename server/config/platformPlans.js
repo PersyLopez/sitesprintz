@@ -34,7 +34,7 @@ export function platformCollectsPayments(env = process.env) {
 
 /** Client-safe message when platform billing is paused. */
 export const BILLING_NOT_OPEN_MESSAGE =
-  'Platform billing is not open yet. Your site can stay live on the no-card trial. Email support@sitesprintz.com for help.';
+  'Platform billing is not open yet. Your site can stay live on the no-card trial. Email support@rightsitelight.com for help.';
 
 /**
  * @param {Date} [fromDate]
@@ -51,21 +51,21 @@ export const CLAIM_PLANS = ['growth', 'growth_managed'];
 export const PLATFORM_PLAN_DETAILS = {
   starter: {
     id: 'starter',
-    name: 'SiteSprintz Starter',
+    name: 'Right Site Light Starter',
     amount: 1000,
     description: 'Hosting and monitoring for a brochure site',
     envPriceKey: 'STRIPE_PRICE_STARTER',
   },
   growth: {
     id: 'growth',
-    name: 'SiteSprintz Growth',
+    name: 'Right Site Light Growth',
     amount: 3500,
     description: 'Hosting and monitoring plus booking and checkout',
     envPriceKey: 'STRIPE_PRICE_GROWTH',
   },
   growth_managed: {
     id: 'growth_managed',
-    name: 'SiteSprintz Growth Managed',
+    name: 'Right Site Light Growth Managed',
     amount: 7500,
     description: 'Same software as Growth; we take the list (two catalog batches a month)',
     envPriceKey: 'STRIPE_PRICE_GROWTH_MANAGED',

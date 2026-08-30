@@ -890,11 +890,11 @@
     const footerText = cfg.footer?.text || `? ${year} ${cfg.brand?.name || ''}. All rights reserved.`;
     footerRoot.appendChild(el('p', { class: 'muted' }, [footerText]));
     
-    // Keep SiteSprintz attribution on Trial / Starter / Growth.
+    // Keep Right Site Light attribution on Trial / Starter / Growth.
     // The next paid tier can hide it from the management dashboard.
     const poweredBy = el('p', { class: 'muted', style: 'font-size: 0.875rem; margin-top: 0.5rem;' }, [
       'Powered by ',
-      el('a', { href: 'https://sitesprintz.com', target: '_blank', rel: 'noopener', style: 'color: inherit; text-decoration: underline;' }, ['SiteSprintz'])
+      el('a', { href: 'https://rightsitelight.com', target: '_blank', rel: 'noopener', style: 'color: inherit; text-decoration: underline;' }, ['Right Site Light'])
     ]);
     footerRoot.appendChild(poweredBy);
   }

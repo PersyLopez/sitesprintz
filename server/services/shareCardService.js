@@ -11,6 +11,7 @@
 import { createCanvas, loadImage } from '@napi-rs/canvas';
 import QRCode from 'qrcode';
 import sharp from 'sharp';
+import { getPublishedSiteDisplayUrl } from '../../src/utils/siteWorkspace.js';
 
 // Card dimensions by format
 const DIMENSIONS = {
@@ -109,7 +110,7 @@ export function normalizeTemplateData(template) {
   // Extract hero image
   const heroImage =
     template.hero?.image ||
-    'https://via.placeholder.com/1200x630/4a6d82/f0f9ff?text=SiteSprintz';
+    'https://via.placeholder.com/1200x630/4a6d82/f0f9ff?text=Right+Site+Light';
 
   // Determine tier
   const tier = template.plan || 'Starter';
@@ -276,7 +277,7 @@ export async function generateShareCard(templateData, format = 'social') {
   // Escape data for security
   const businessName = escapeHtml(normalized.businessName);
   const tagline = escapeHtml(normalized.tagline);
-  const siteUrl = `${normalized.subdomain}.sitesprintz.com`;
+  const siteUrl = getPublishedSiteDisplayUrl(normalized.subdomain) || '';
 
   // Extract features
   const features = extractFeatures(normalized);
@@ -427,7 +428,7 @@ export async function generateShareCard(templateData, format = 'social') {
 
       ctx.font = `${Math.floor(footerHeight * 0.14)}px "Segoe UI", system-ui, sans-serif`;
       ctx.fillStyle = OCEAN.textSubtle;
-      ctx.fillText('Built with SiteSprintz', contentLeft, footerY + footerHeight * 0.62);
+      ctx.fillText('Built with Right Site Light', contentLeft, footerY + footerHeight * 0.62);
 
       // 7. QR in footer — white pad
       try {

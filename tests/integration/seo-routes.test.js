@@ -142,7 +142,7 @@ describe('SEO Routes Integration Tests', () => {
       expect(response.header['content-type']).toContain('text/plain');
       expect(response.text).toContain('User-agent: *');
       expect(response.text).toContain('Allow: /');
-      expect(response.text).toContain('Sitemap: https://testsite.sitesprintz.com/sitemap.xml');
+      expect(response.text).toContain('Sitemap: https://rightsitelight.com/view/testsite/sitemap.xml');
     });
 
     it('should respect noindex configuration', async () => {

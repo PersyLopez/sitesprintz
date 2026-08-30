@@ -17,6 +17,7 @@ import {
   shouldRemoveBranding,
   telHref,
 } from './liveSiteContact.js';
+import { getPublicSiteHost } from './customDomainHost.js';
 
 function escapeHtml(text) {
   if (!text) return '';
@@ -545,7 +546,8 @@ function renderSiteBadge(siteData, options = {}) {
   if (shouldRemoveBranding(siteData)) return '';
   const locale = resolveLiveLocale(siteData, options);
   const badgeLabel = escapeHtml(tLive(locale, 'madeWith'));
-  return `<a class="ss-sitesprintz-badge" data-testid="sitesprintz-badge" href="https://sitesprintz.com" rel="noopener noreferrer" target="_blank">${badgeLabel}</a>`;
+  const platformHost = getPublicSiteHost();
+  return `<a class="ss-sitesprintz-badge" data-testid="sitesprintz-badge" href="https://${escapeAttr(platformHost)}" rel="noopener noreferrer" target="_blank">${badgeLabel}</a>`;
 }
 
 function renderFooter(siteData, options = {}) {

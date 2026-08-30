@@ -41,6 +41,9 @@ steps:
       if (/\/sites\/gallery-salon/.test(href)) {
         throw new Error('View site still points at legacy /sites SSR: ' + href);
       }
+      if (/gallery-salon\.sitesprintz\.com/i.test(href || '')) {
+        throw new Error('View site still uses wildcard subdomain host: ' + href);
+      }
 
   - action: Leftover /sites URL redirects to /view
     code: |

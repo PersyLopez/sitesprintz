@@ -42,7 +42,7 @@ describe('CustomDomainSettings', () => {
       status: 'pending',
       message: 'Custom domain added successfully',
       instructions: {
-        cname: { host: 'www', value: 'maria-stand.sitesprintz.com' },
+        cname: { host: 'www', value: 'maria-stand.rightsitelight.com' },
         aRecord: { host: '@', value: '1.2.3.4' },
         note: 'Add both records.',
       },
@@ -57,7 +57,7 @@ describe('CustomDomainSettings', () => {
     });
     expect(await screen.findByTestId('custom-domain-status')).toBeInTheDocument();
     expect(screen.getByText('my-shop.com')).toBeInTheDocument();
-    expect(screen.getByTestId('custom-domain-dns')).toHaveTextContent('maria-stand.sitesprintz.com');
+    expect(screen.getByTestId('custom-domain-dns')).toHaveTextContent('maria-stand.rightsitelight.com');
   });
 
   it('shows existing domain status from GET without wrapping data.data', async () => {
@@ -67,7 +67,7 @@ describe('CustomDomainSettings', () => {
       status: 'verified',
       verified: true,
       instructions: {
-        cname: { host: 'www', value: 'bakery.sitesprintz.com' },
+        cname: { host: 'www', value: 'bakery.rightsitelight.com' },
         aRecord: { host: '@', value: '9.9.9.9' },
       },
     });
@@ -83,7 +83,7 @@ describe('CustomDomainSettings', () => {
       status: 'pending',
       verified: false,
       instructions: {
-        cname: { host: 'www', value: 'bakery.sitesprintz.com' },
+        cname: { host: 'www', value: 'bakery.rightsitelight.com' },
         aRecord: { host: '@', value: '9.9.9.9' },
       },
     });
@@ -108,7 +108,7 @@ describe('CustomDomainSettings', () => {
       domain: 'bakery.test',
       status: 'pending',
       instructions: {
-        cname: { host: 'www', value: 'bakery.sitesprintz.com' },
+        cname: { host: 'www', value: 'bakery.rightsitelight.com' },
         aRecord: { host: '@', value: '9.9.9.9' },
       },
     });

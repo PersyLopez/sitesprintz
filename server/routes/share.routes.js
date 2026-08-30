@@ -13,6 +13,7 @@ import { generateShareCard, generateQrPng } from '../services/shareCardService.j
 import { prisma } from '../../database/db.js';
 import { requireAuth } from '../middleware/auth.js';
 import { toPublicSiteData } from '../../src/utils/liveSiteContact.js';
+import { getAbsolutePublishedSiteUrl } from '../../src/utils/siteWorkspace.js';
 
 const router = express.Router();
 
@@ -212,7 +213,7 @@ const getShareCard = async (req, res) => {
         });
       }
 
-      const qrBuffer = await generateQrPng(`https://${subdomain}.sitesprintz.com`);
+      const qrBuffer = await generateQrPng(getAbsolutePublishedSiteUrl(subdomain));
       shareCardCache.set(cacheKey, qrBuffer);
 
       res.set('Content-Type', 'image/png');

@@ -16,6 +16,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { getPublishedSiteUrl } from '../utils/siteWorkspace';
 import './ShareModal.css';
 
 const ShareModal = ({ subdomain, onClose }) => {
@@ -27,7 +28,7 @@ const ShareModal = ({ subdomain, onClose }) => {
   const [copied, setCopied] = useState(false);
   const [shareHint, setShareHint] = useState(null);
 
-  const siteUrl = `https://${subdomain}.sitesprintz.com`;
+  const siteUrl = getPublishedSiteUrl(subdomain) || `${window.location.origin}/view/${encodeURIComponent(subdomain)}`;
   const shareText = `Check out my site: ${siteUrl}`;
   const shareCardEndpoint = `/api/share/${subdomain}/${format}`;
   const shareQrEndpoint = `/api/share/${subdomain}/qr`;
@@ -137,7 +138,7 @@ const ShareModal = ({ subdomain, onClose }) => {
     try {
       trackShare('native');
       await navigator.share({
-        title: `${subdomain} - SiteSprintz`,
+        title: `${subdomain} - Right Site Light`,
         text: `Check out my site!`,
         url: siteUrl
       });
@@ -287,7 +288,7 @@ const ShareModal = ({ subdomain, onClose }) => {
                 </div>
               )}
             </div>
-            <p className="share-qr-caption">{subdomain}.sitesprintz.com</p>
+            <p className="share-qr-caption">{siteUrl.replace(/^https?:\/\//, '')}</p>
           </div>
         </div>
 

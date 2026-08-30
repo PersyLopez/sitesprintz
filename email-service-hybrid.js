@@ -39,9 +39,9 @@ function getResend() {
   return resend;
 }
 
-const FROM_EMAIL_PLATFORM = process.env.FROM_EMAIL || process.env.SMTP_USER || 'noreply@sitesprintz.com';
-const FROM_NAME_PLATFORM = process.env.FROM_NAME || 'SiteSprintz';
-const FROM_EMAIL_ORDERS = process.env.RESEND_FROM_EMAIL || 'orders@sitesprintz.com';
+const FROM_EMAIL_PLATFORM = process.env.FROM_EMAIL || process.env.SMTP_USER || 'noreply@rightsitelight.com';
+const FROM_NAME_PLATFORM = process.env.FROM_NAME || 'Right Site Light';
+const FROM_EMAIL_ORDERS = process.env.RESEND_FROM_EMAIL || 'orders@rightsitelight.com';
 
 console.log('📧 Email Services:');
 console.log('   Internal → Outlook:', FROM_EMAIL_PLATFORM);
@@ -56,7 +56,7 @@ const templates = {
   // ============================================
   
   welcome: (email) => ({
-    subject: 'Welcome to SiteSprintz! 🎉',
+    subject: 'Welcome to Right Site Light! 🎉',
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; margin-bottom: 30px;">
@@ -87,7 +87,7 @@ const templates = {
   }),
 
   invitation: (email, tempPassword) => ({
-    subject: 'You\'ve been invited to SiteSprintz! 🎉',
+    subject: 'You\'ve been invited to Right Site Light! 🎉',
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; margin-bottom: 30px;">

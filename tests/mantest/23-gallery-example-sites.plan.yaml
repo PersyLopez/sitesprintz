@@ -82,6 +82,6 @@ steps:
       if (!/Sarah Williams|Our Work|Our Story|Meet Our Stylists/i.test(t)) {
         throw new Error('Salon live site missing rich catalog sections (team/gallery/about)');
       }
-      if (!t.includes('support@sitesprintz.com')) {
-        throw new Error('Salon demo missing SiteSprintz support email');
+      if (!t.includes('support@rightsitelight.com')) {
+        throw new Error('Salon demo missing Right Site Light support email');
       }

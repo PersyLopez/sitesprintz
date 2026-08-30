@@ -6,6 +6,7 @@
  */
 
 import React, { useRef, useEffect, useState } from 'react';
+import { getPublishedSiteUrl } from '../../utils/siteWorkspace';
 import './FoundationPreview.css';
 
 export default function FoundationPreview({ site, config }) {
@@ -19,7 +20,7 @@ export default function FoundationPreview({ site, config }) {
     if (site?.subdomain) {
       // Use published site URL or preview URL
       const url = site.status === 'published' 
-        ? `https://${site.subdomain}.sitesprintz.com`
+        ? getPublishedSiteUrl(site.subdomain)
         : `/preview/${site.subdomain}`;
       setPreviewUrl(url);
     }

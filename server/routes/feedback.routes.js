@@ -106,7 +106,7 @@ router.post('/', feedbackLimiter, asyncHandler(async (req, res) => {
 
   const notify = () => {
     const templateData = {
-      businessName: 'SiteSprintz Platform',
+      businessName: 'Right Site Light Platform',
       submitterName: submitterEmail || 'Anonymous',
       submitterEmail: submitterEmail || 'not provided',
       submitterPhone: 'N/A',

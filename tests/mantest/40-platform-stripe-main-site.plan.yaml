@@ -2,7 +2,7 @@ url: http://localhost:5173/
 goal: Platform Stripe - landing pricing, register, Checkout 4242, payment-success, billing portal
 steps:
   - action: Landing loads with pricing section
-    wait_for: { text: SiteSprintz, timeout: 20000 }
+    wait_for: { text: Right Site Light, timeout: 20000 }
     settle_ms: 600
 
   - action: Scroll to pricing section

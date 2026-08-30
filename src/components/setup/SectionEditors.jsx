@@ -45,7 +45,7 @@ export function NativeBookingSectionEditor({ section, onChange }) {
               onChange={(e) => handleChange({ provider: e.target.value })}
               disabled
             >
-              <option value="native">SiteSprintz Native Booking</option>
+              <option value="native">Right Site Light Native Booking</option>
             </select>
           </div>
 

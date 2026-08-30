@@ -68,4 +68,4 @@ steps:
     assert:
       - url contains /settings/billing
       - text contains Billing
-      - text contains support@sitesprintz.com
+      - text contains support@rightsitelight.com

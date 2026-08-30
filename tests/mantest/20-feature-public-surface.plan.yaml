@@ -2,10 +2,10 @@ url: http://localhost:5173/
 goal: Deep-dive public landing, pricing (Starter/Growth/Growth Managed), templates, showcase — no Stripe/Google
 steps:
   - action: Landing loads
-    wait_for: { text: SiteSprintz, timeout: 20000 }
+    wait_for: { text: Right Site Light, timeout: 20000 }
     settle_ms: 800
     assert:
-      - text contains SiteSprintz
+      - text contains Right Site Light
 
   - action: Pricing section visible
     code: |
@@ -65,4 +65,4 @@ steps:
     settle_ms: 1000
     assert:
       - url contains /contact
-      - text contains support@sitesprintz.com
+      - text contains support@rightsitelight.com

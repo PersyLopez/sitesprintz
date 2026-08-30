@@ -55,7 +55,7 @@ describe('Landing Page', () => {
     renderLanding();
     const brand = document.querySelector('.hero-brand');
     expect(brand).toBeInTheDocument();
-    expect(brand).toHaveTextContent('SiteSprintz');
+    expect(brand).toHaveTextContent('Right Site Light');
   });
 
   it('renders the primary CTA for unauthenticated visitors', () => {
@@ -98,7 +98,7 @@ describe('Landing Page', () => {
   it('renders the purpose story section', () => {
     renderLanding();
     expect(screen.getByRole('heading', { name: /Leave a light on for tomorrow’s customer/i })).toBeInTheDocument();
-    expect(screen.getByText(/We built SiteSprintz so the smallest shop/i)).toBeInTheDocument();
+    expect(screen.getByText(/We built Right Site Light so the smallest shop/i)).toBeInTheDocument();
   });
 
   it('renders the founder story block', () => {

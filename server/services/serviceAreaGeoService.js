@@ -81,7 +81,7 @@ async function geocodeWithPlaces(query) {
 async function geocodeWithNominatim(query) {
   const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
   const data = await fetchJson(url, {
-    headers: { 'User-Agent': 'SiteSprintz/1.0 (service-area geocode)' },
+    headers: { 'User-Agent': 'RightSiteLight/1.0 (service-area geocode)' },
   });
   const first = Array.isArray(data) ? data[0] : null;
   const lat = Number(first?.lat);

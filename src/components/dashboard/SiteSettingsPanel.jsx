@@ -19,7 +19,7 @@ function SiteSettingsPanel() {
   return (
     <div className="site-settings-panel" data-testid="site-settings-panel">
       <p className="site-settings-note">
-        These settings belong to this site. Billing for your SiteSprintz plan stays in account settings.
+        These settings belong to this site. Billing for your Right Site Light plan stays in account settings.
       </p>
 
       <div className="site-settings-tabs" role="tablist" aria-label="Site settings">

@@ -2,12 +2,12 @@ url: http://localhost:5173/about
 goal: Public content pages About, Contact, Track, and 404 behave correctly
 steps:
   - action: About page content
-    wait_for: { text: About SiteSprintz, timeout: 20000 }
+    wait_for: { text: About Right Site Light, timeout: 20000 }
     assert:
       - text contains Leave a light on for tomorrow’s customer
       - text contains Who we built this for
       - text contains How it works
-      - text contains support@sitesprintz.com
+      - text contains support@rightsitelight.com
 
   - action: Go to Contact
     goto: http://localhost:5173/contact
@@ -15,7 +15,7 @@ steps:
   - action: Contact loaded
     wait_for: { text: Contact, timeout: 20000 }
     assert:
-      - text contains support@sitesprintz.com
+      - text contains support@rightsitelight.com
       - text contains Common questions
 
   - action: Go to Track lookup

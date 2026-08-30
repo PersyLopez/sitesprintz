@@ -45,7 +45,7 @@ router.get('/terms', (req, res) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terms of Service - SiteSprintz</title>
+    <title>Terms of Service - Right Site Light</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -89,19 +89,19 @@ router.get('/terms', (req, res) => {
     <p class="last-updated">Last Updated: November 14, 2025</p>
     
     <div class="highlight">
-        <strong>🚨 BETA NOTICE:</strong> SiteSprintz is currently in beta. While we strive for high availability and quality,
+        <strong>🚨 BETA NOTICE:</strong> Right Site Light is currently in beta. While we strive for high availability and quality,
         the service is provided "AS-IS" with no uptime guarantee during this period. By using the service, you accept this risk.
     </div>
 
     <h2>1. Acceptance of Terms</h2>
     <p>
-        By accessing and using SiteSprintz ("Service"), you accept and agree to be bound by the terms and provision of this agreement.
+        By accessing and using Right Site Light ("Service"), you accept and agree to be bound by the terms and provision of this agreement.
         If you do not agree to these Terms of Service, please do not use the Service.
     </p>
 
     <h2>2. Description of Service</h2>
     <p>
-        SiteSprintz provides a website building platform that enables users to create, customize, and publish websites
+        Right Site Light provides a website building platform that enables users to create, customize, and publish websites
         using our templates and tools. The Service includes hosting, templates, customization tools, and related features.
     </p>
 
@@ -166,12 +166,12 @@ router.get('/terms', (req, res) => {
     </p>
     <p>
         <strong>6.5 Refunds:</strong> We offer a 30-day money-back guarantee for your first payment only. To request a refund,
-        contact support@sitesprintz.com within 30 days of your first charge.
+        contact support@rightsitelight.com within 30 days of your first charge.
     </p>
 
     <h2>7. Limitation of Liability</h2>
     <p>
-        <strong>7.1 No Liability for Damages:</strong> To the maximum extent permitted by law, SiteSprintz shall not be liable for
+        <strong>7.1 No Liability for Damages:</strong> To the maximum extent permitted by law, Right Site Light shall not be liable for
         any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data,
         use, goodwill, or other intangible losses.
     </p>
@@ -206,7 +206,7 @@ router.get('/terms', (req, res) => {
 
     <h2>9. Intellectual Property</h2>
     <p>
-        The Service, including its original content, features, and functionality, is owned by SiteSprintz and is protected by
+        The Service, including its original content, features, and functionality, is owned by Right Site Light and is protected by
         international copyright, trademark, patent, trade secret, and other intellectual property laws.
     </p>
 
@@ -235,12 +235,11 @@ router.get('/terms', (req, res) => {
     <h2>13. Contact Information</h2>
     <p>
         For questions about these Terms, please contact us at:<br>
-        Email: support@sitesprintz.com<br>
-        Status Page: <a href="https://status.sitesprintz.com">status.sitesprintz.com</a>
+        Email: support@rightsitelight.com
     </p>
 
     <footer>
-        <p>&copy; 2025 SiteSprintz. All rights reserved.</p>
+        <p>&copy; 2025 Right Site Light. All rights reserved.</p>
         <p>
             <a href="/legal/privacy">Privacy Policy</a> |
             <a href="/legal/cookies">Cookie Policy</a> |
@@ -263,7 +262,7 @@ router.get('/privacy', (req, res) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Policy - SiteSprintz</title>
+    <title>Privacy Policy - Right Site Light</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -356,7 +355,7 @@ router.get('/privacy', (req, res) => {
 
     <p>
         Sensitive information (such as payment details and login credentials) is handled by these independent
-        providers under their own terms and privacy policies, not by SiteSprintz. For the full list of providers,
+        providers under their own terms and privacy policies, not by Right Site Light. For the full list of providers,
         the sensitive data each handles, and the related limitations of liability, see our
         <a href="/legal/third-party-services">Third-Party Services & Data Handling Disclosure</a>.
     </p>
@@ -381,7 +380,7 @@ router.get('/privacy', (req, res) => {
     <p>You can edit your account information and site content at any time through the dashboard.</p>
     
     <h3>5.4 Opt-Out of Marketing</h3>
-    <p>Click "unsubscribe" in any marketing email or contact support@sitesprintz.com.</p>
+    <p>Click "unsubscribe" in any marketing email or contact support@rightsitelight.com.</p>
     
     <h3>5.5 Do Not Sell My Personal Information (CCPA)</h3>
     <p><strong>We do not sell your personal information.</strong> Ever.</p>
@@ -404,7 +403,7 @@ router.get('/privacy', (req, res) => {
     <h2>8. Children's Privacy</h2>
     <p>
         The Service is not intended for children under 13. We do not knowingly collect data from children under 13.
-        If you believe a child has provided us with data, please contact us at support@sitesprintz.com.
+        If you believe a child has provided us with data, please contact us at support@rightsitelight.com.
     </p>
 
     <h2>9. International Users</h2>
@@ -428,11 +427,11 @@ router.get('/privacy', (req, res) => {
     <h2>12. Contact Us</h2>
     <p>
         For privacy questions or to exercise your rights:<br>
-        Email: support@sitesprintz.com
+        Email: support@rightsitelight.com
     </p>
 
     <footer>
-        <p>&copy; 2025 SiteSprintz. All rights reserved.</p>
+        <p>&copy; 2025 Right Site Light. All rights reserved.</p>
         <p>
             <a href="/legal/terms">Terms of Service</a> |
             <a href="/legal/cookies">Cookie Policy</a> |
@@ -455,7 +454,7 @@ router.get('/cookies', (req, res) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cookie Policy - SiteSprintz</title>
+    <title>Cookie Policy - Right Site Light</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -568,11 +567,11 @@ router.get('/cookies', (req, res) => {
     <h2>Contact Us</h2>
     <p>
         Questions about our use of cookies?<br>
-        Email: support@sitesprintz.com
+        Email: support@rightsitelight.com
     </p>
 
     <footer>
-        <p>&copy; 2025 SiteSprintz. All rights reserved.</p>
+        <p>&copy; 2025 Right Site Light. All rights reserved.</p>
         <p>
             <a href="/legal/terms">Terms of Service</a> |
             <a href="/legal/privacy">Privacy Policy</a> |
@@ -595,7 +594,7 @@ router.get('/refunds', (req, res) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Refund & Cancellation Policy - SiteSprintz</title>
+    <title>Refund & Cancellation Policy - Right Site Light</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -628,7 +627,7 @@ router.get('/refunds', (req, res) => {
     <p class="last-updated">Last Updated: November 14, 2025</p>
     
     <div class="highlight">
-        <strong>✅ 30-Day Money-Back Guarantee:</strong> Try SiteSprintz risk-free. If you're not satisfied within
+        <strong>✅ 30-Day Money-Back Guarantee:</strong> Try Right Site Light risk-free. If you're not satisfied within
         your first 30 days, we'll refund your first payment, no questions asked.
     </div>
 
@@ -658,7 +657,7 @@ router.get('/refunds', (req, res) => {
         <li>Request a refund within 30 days of your first charge</li>
         <li>Full refund, no questions asked</li>
         <li>Refunds processed within 5-7 business days</li>
-        <li>To request: Email support@sitesprintz.com with subject "Refund Request"</li>
+        <li>To request: Email support@rightsitelight.com with subject "Refund Request"</li>
     </ul>
 
     <h3>3.2 Subsequent Payments</h3>
@@ -676,7 +675,7 @@ router.get('/refunds', (req, res) => {
     
     <h3>4.1 How to Cancel</h3>
     <p><strong>Option 1:</strong> Self-service (Dashboard → Settings → Billing → Cancel Subscription)</p>
-    <p><strong>Option 2:</strong> Email support@sitesprintz.com with subject "Cancel Subscription"</p>
+    <p><strong>Option 2:</strong> Email support@rightsitelight.com with subject "Cancel Subscription"</p>
 
     <h3>4.2 When Cancellation Takes Effect</h3>
     <ul>
@@ -736,7 +735,7 @@ router.get('/refunds', (req, res) => {
     <ul>
         <li>Chargebacks may result in immediate account suspension</li>
         <li>We reserve the right to dispute invalid chargebacks</li>
-        <li>Contact: support@sitesprintz.com</li>
+        <li>Contact: support@rightsitelight.com</li>
     </ul>
 
     <h2>8. Account Deletion</h2>
@@ -749,7 +748,7 @@ router.get('/refunds', (req, res) => {
                 <li>Cannot be undone</li>
             </ul>
         </li>
-        <li>For GDPR data deletion: support@sitesprintz.com</li>
+        <li>For GDPR data deletion: support@rightsitelight.com</li>
     </ul>
 
     <h2>9. Service Termination</h2>
@@ -777,12 +776,12 @@ router.get('/refunds', (req, res) => {
     <h2>11. Contact Us</h2>
     <p>
         Questions about billing, refunds, or cancellations?<br>
-        Email: support@sitesprintz.com<br>
+        Email: support@rightsitelight.com<br>
         Response time: Within 24 hours (usually faster)
     </p>
 
     <footer>
-        <p>&copy; 2025 SiteSprintz. All rights reserved.</p>
+        <p>&copy; 2025 Right Site Light. All rights reserved.</p>
         <p>
             <a href="/legal/terms">Terms of Service</a> |
             <a href="/legal/privacy">Privacy Policy</a> |
@@ -799,7 +798,7 @@ router.get('/refunds', (req, res) => {
  * Third-Party Services & Data Handling Disclosure
  * This is the agreement users affirmatively accept at registration. It
  * discloses that sensitive information is handled by independent third-party
- * providers and limits SiteSprintz's liability accordingly.
+ * providers and limits Right Site Light's liability accordingly.
  */
 router.get(['/third-party-services', '/third-party', '/data-handling'], (req, res) => {
   res.send(`
@@ -808,7 +807,7 @@ router.get(['/third-party-services', '/third-party', '/data-handling'], (req, re
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Third-Party Services & Data Handling Disclosure - SiteSprintz</title>
+    <title>Third-Party Services & Data Handling Disclosure - Right Site Light</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -855,7 +854,7 @@ router.get(['/third-party-services', '/third-party', '/data-handling'], (req, re
     <div class="highlight">
         <strong>&#9888; Please read carefully.</strong> Sensitive information you and your site visitors provide &mdash;
         including payment card details, login credentials, and contact details &mdash; is collected, processed, and
-        stored by <strong>independent third-party companies</strong>, not by SiteSprintz. By creating an account or
+        stored by <strong>independent third-party companies</strong>, not by Right Site Light. By creating an account or
         continuing to use the Service, you acknowledge and accept this disclosure and the limitations of liability below.
     </div>
 
@@ -871,7 +870,7 @@ router.get(['/third-party-services', '/third-party', '/data-handling'], (req, re
 
     <h2>2. Sensitive Information Is Handled by Third Parties</h2>
     <p>
-        SiteSprintz relies on established third-party providers ("Providers") to deliver core functionality. Where the
+        Right Site Light relies on established third-party providers ("Providers") to deliver core functionality. Where the
         Service involves sensitive information, that information is transmitted to and handled by the relevant Provider
         under <strong>their own terms of service and privacy policies</strong>:
     </p>
@@ -921,14 +920,14 @@ router.get(['/third-party-services', '/third-party', '/data-handling'], (req, re
 
     <h2>6. Limitation of Liability</h2>
     <p>
-        To the fullest extent permitted by law, SiteSprintz and its officers, employees, and affiliates will not be liable
+        To the fullest extent permitted by law, Right Site Light and its officers, employees, and affiliates will not be liable
         for any indirect, incidental, special, consequential, punitive, or exemplary damages, or for any loss of profits,
         revenue, data, goodwill, or business, however caused, arising out of or relating to the Service or any third-party
         Provider.
     </p>
     <p>
         Our total aggregate liability arising out of or relating to the Service in any 12-month period will not exceed the
-        greater of (a) the total fees you paid to SiteSprintz in that period, or (b) USD $100.
+        greater of (a) the total fees you paid to Right Site Light in that period, or (b) USD $100.
     </p>
     <p>
         <strong>Carve-outs:</strong> Nothing in this Disclosure excludes or limits liability that cannot lawfully be excluded
@@ -940,7 +939,7 @@ router.get(['/third-party-services', '/third-party', '/data-handling'], (req, re
     <p>
         You are responsible for the information you and your site visitors submit, for complying with each Provider's terms,
         and for any laws that apply to your business (including consumer, privacy, and payment regulations). You agree to
-        indemnify and hold harmless SiteSprintz from any third-party claims, losses, liabilities, fines, costs, and
+        indemnify and hold harmless Right Site Light from any third-party claims, losses, liabilities, fines, costs, and
         reasonable legal fees arising from or relating to your use of the Service or any Provider, your content, or your
         violation of this Disclosure.
     </p>
@@ -954,11 +953,11 @@ router.get(['/third-party-services', '/third-party', '/data-handling'], (req, re
     <h2>9. Contact</h2>
     <p>
         Questions about this Disclosure or our Providers?<br>
-        Email: support@sitesprintz.com
+        Email: support@rightsitelight.com
     </p>
 
     <footer>
-        <p>&copy; 2026 SiteSprintz. All rights reserved.</p>
+        <p>&copy; 2026 Right Site Light. All rights reserved.</p>
         <p>
             <a href="/legal/terms">Terms of Service</a> |
             <a href="/legal/privacy">Privacy Policy</a> |

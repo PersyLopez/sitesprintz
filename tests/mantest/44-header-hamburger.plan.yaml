@@ -7,10 +7,10 @@ steps:
       await page.setViewportSize({ width: 390, height: 844 });
 
   - action: Landing loads
-    wait_for: { text: SiteSprintz, timeout: 20000 }
+    wait_for: { text: Right Site Light, timeout: 20000 }
     settle_ms: 600
     assert:
-      - text contains SiteSprintz
+      - text contains Right Site Light
 
   - action: Hamburger is visible and closed
     code: |

@@ -190,7 +190,7 @@ router.get(['/paypal/callback', '/connect/paypal/callback'], asyncHandler(async 
 router.post(['/paypal/verify', '/connect/paypal/verify'], requireAuth, asyncHandler(async (req, res) => {
   return sendBadRequest(
     res,
-    'Connect PayPal with one click instead of pasting API secrets. SiteSprintz does not store merchant PayPal credentials.',
+    'Connect PayPal with one click instead of pasting API secrets. Right Site Light does not store merchant PayPal credentials.',
     'OAUTH_REQUIRED'
   );
 }));

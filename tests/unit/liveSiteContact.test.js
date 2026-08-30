@@ -34,7 +34,7 @@ describe('liveSiteContact', () => {
     })).toBe('555-2');
   });
 
-  it('keeps the SiteSprintz badge on Growth even if an old setting asks to hide it', () => {
+  it('keeps the Right Site Light badge on Growth even if an old setting asks to hide it', () => {
     expect(shouldRemoveBranding({ plan: 'growth', settings: { removeBranding: true } })).toBe(false);
     expect(shouldRemoveBranding({ settings: { removeBranding: true } })).toBe(false);
     expect(shouldRemoveBranding({ plan: 'starter' })).toBe(false);
@@ -69,9 +69,9 @@ describe('liveSiteContact', () => {
       contactEmail: 'hello@luxebeautystudio.com',
       brand: { email: 'hello@luxebeautystudio.com' },
     });
-    expect(publicData.contact.email).toBe('support@sitesprintz.com');
-    expect(publicData.contactEmail).toBe('support@sitesprintz.com');
-    expect(publicData.brand.email).toBe('support@sitesprintz.com');
+    expect(publicData.contact.email).toBe('support@rightsitelight.com');
+    expect(publicData.contactEmail).toBe('support@rightsitelight.com');
+    expect(publicData.brand.email).toBe('support@rightsitelight.com');
   });
 
   it('leaves real site contact email alone', () => {

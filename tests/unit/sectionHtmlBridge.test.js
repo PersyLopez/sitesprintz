@@ -467,7 +467,7 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(html).toContain('tel:5550100');
   });
 
-  it('keeps the SiteSprintz badge on Growth and still shows NAP in the footer', () => {
+  it('keeps the Right Site Light badge on Growth and still shows NAP in the footer', () => {
     const { html } = buildLiveSiteMarkup({
       businessName: 'Studio Luxe',
       contactPhone: '555-0100',
@@ -483,10 +483,10 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
       ],
     });
     expect(html).toContain('data-testid="sitesprintz-badge"');
-    expect(html).toContain('href="https://sitesprintz.com"');
+    expect(html).toContain('href="https://rightsitelight.com"');
     expect(html).toContain('rel="noopener noreferrer"');
     expect(html).toContain('target="_blank"');
-    expect(html).toContain('Powered by SiteSprintz');
+    expect(html).toContain('Powered by Right Site Light');
     expect(html).toContain('data-testid="footer-call"');
     expect(html).toContain('data-testid="footer-address"');
   });
@@ -560,7 +560,7 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(html).not.toContain('99 Hidden');
   });
 
-  it('keeps the SiteSprintz badge on Starter', () => {
+  it('keeps the Right Site Light badge on Starter', () => {
     const { html } = buildLiveSiteMarkup({
       businessName: 'Harbor Goods',
       plan: 'starter',
@@ -570,8 +570,8 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
       sections: [{ type: 'hero', enabled: true, content: { title: 'Harbor Goods' } }],
     });
     expect(html).toContain('data-testid="sitesprintz-badge"');
-    expect(html).toContain('href="https://sitesprintz.com"');
-    expect(html).toContain('Powered by SiteSprintz');
+    expect(html).toContain('href="https://rightsitelight.com"');
+    expect(html).toContain('Powered by Right Site Light');
   });
 
   it('keeps the clickable badge on gallery demo seeds', () => {
@@ -586,8 +586,8 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
       sections: [{ type: 'hero', enabled: true, content: { title: 'The Grand Table' } }],
     });
     expect(html).toContain('data-testid="sitesprintz-badge"');
-    expect(html).toContain('href="https://sitesprintz.com"');
-    expect(html).toContain('Powered by SiteSprintz');
+    expect(html).toContain('href="https://rightsitelight.com"');
+    expect(html).toContain('Powered by Right Site Light');
     expect(html).toContain('class="ss-sitesprintz-badge"');
   });
 

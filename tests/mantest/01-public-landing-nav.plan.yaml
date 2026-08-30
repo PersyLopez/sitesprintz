@@ -2,9 +2,9 @@ url: http://localhost:5173/
 goal: Landing page renders and primary public navigation works
 steps:
   - action: See hero and brand
-    wait_for: { text: SiteSprintz }
+    wait_for: { text: Right Site Light }
     assert:
-      - text contains SiteSprintz
+      - text contains Right Site Light
       - text contains They love what you make
       - text contains Get Your Page Free
       - text contains Read their stories

@@ -10,6 +10,7 @@ import {
   sendSuccess,
   sendBadRequest,
   sendNotFound,
+  sendError,
   asyncHandler
 } from '../utils/apiResponse.js';
 import { validateSubdomain } from '../utils/validators.js';
@@ -330,8 +331,8 @@ router.get('/:subdomain', asyncHandler(async (req, res) => {
   const site = await prisma.sites.findFirst({
     where: {
       subdomain: subdomainValidation.value,
-      is_public: true,
-      status: 'published'
+      status: 'published',
+      is_public: true
     },
     select: {
       id: true,
@@ -347,7 +348,7 @@ router.get('/:subdomain', asyncHandler(async (req, res) => {
   });
 
   if (!site) {
-    return sendNotFound(res, 'Site not found or not public', 'SITE_NOT_FOUND');
+    return sendError(res, 'Site not found or not public', 404, 'SITE_NOT_FOUND');
   }
 
   const siteData = toPublicSiteData(parseSiteData(site));

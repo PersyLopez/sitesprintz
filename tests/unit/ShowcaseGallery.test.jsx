@@ -466,7 +466,7 @@ describe('ShowcaseGallery Component', () => {
   });
 
   // ==================== MADE WITH SECTION ====================
-  describe('Made with SiteSprintz section', () => {
+  describe('Made with Right Site Light section', () => {
     it('shows client sites section when kind=clients returns data', async () => {
       renderWithRouter(<ShowcaseGallery />);
 
@@ -474,7 +474,7 @@ describe('ShowcaseGallery Component', () => {
         expect(screen.getByTestId('made-with-section')).toBeInTheDocument();
         expect(screen.getByTestId('made-with-grid')).toBeInTheDocument();
         expect(screen.getByTestId('made-with-card-real-bakery')).toBeInTheDocument();
-        expect(screen.getByRole('heading', { name: 'Made with SiteSprintz' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Made with Right Site Light' })).toBeInTheDocument();
       });
     });
 

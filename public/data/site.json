@@ -1,8 +1,8 @@
 {
   "brand": {
-    "name": "SiteSprintz",
+    "name": "Right Site Light",
     "logo": "assets/logo.svg",
-    "alt": "SiteSprintz logo"
+    "alt": "Right Site Light logo"
   },
   "themeVars": {
     "color-primary": "#2563eb",
@@ -117,10 +117,10 @@
   "contact": {
     "title": "Questions about tiers?",
     "subtitle": "Not sure which tier fits your business? We'll help you choose the right starting point and explain upgrade paths.",
-    "email": "support@sitesprintz.com",
+    "email": "support@rightsitelight.com",
     "phone": "+1 888 555 0199"
   },
   "footer": {
-    "text": "© SiteSprintz — Launch your business online in minutes."
+    "text": "© Right Site Light — Launch your business online in minutes."
   }
 }

@@ -10,7 +10,7 @@ function getResend() {
   return resend;
 }
 
-const FROM_EMAIL = process.env.FROM_EMAIL || process.env.RESEND_FROM_EMAIL || 'noreply@sitesprintz.com';
+const FROM_EMAIL = process.env.FROM_EMAIL || process.env.RESEND_FROM_EMAIL || 'noreply@rightsitelight.com';
 const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
 
 function escapeHtml(value) {
@@ -25,7 +25,7 @@ function escapeHtml(value) {
 // Email templates
 const templates = {
   welcome: (email) => ({
-    subject: 'Welcome to SiteSprintz! 🎉',
+    subject: 'Welcome to Right Site Light! 🎉',
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; margin-bottom: 30px;">
@@ -64,7 +64,7 @@ const templates = {
   }),
 
   verifyEmail: (email, verificationLink) => ({
-    subject: 'Verify Your Email Address - SiteSprintz',
+    subject: 'Verify Your Email Address - Right Site Light',
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; margin-bottom: 30px;">
@@ -110,7 +110,7 @@ const templates = {
   }),
 
   invitation: (email, tempPassword) => ({
-    subject: 'You\'ve been invited to SiteSprintz! 🎉',
+    subject: 'You\'ve been invited to Right Site Light! 🎉',
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; margin-bottom: 30px;">
@@ -580,7 +580,7 @@ ${safe.message}
         
         <div style="border-top: 1px solid #e2e8f0; margin-top: 30px; padding-top: 20px;">
           <p style="color: #94a3b8; font-size: 0.875rem; text-align: center; margin: 0;">
-            This order was placed on your SiteSprintz website. Manage all orders from your dashboard.
+            This order was placed on your Right Site Light website. Manage all orders from your dashboard.
           </p>
         </div>
       </div>
@@ -599,7 +599,7 @@ ${safe.message}
         
         <div style="background: #eff6ff; border-left: 4px solid #2563eb; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
           <h2 style="color: #1e40af; margin: 0 0 10px 0; font-size: 1.2rem;">New Signup</h2>
-          <p style="color: #1e3a8a; margin: 0; font-size: 0.9rem;">A new user has joined SiteSprintz</p>
+          <p style="color: #1e3a8a; margin: 0; font-size: 0.9rem;">A new user has joined Right Site Light</p>
         </div>
         
         <div style="background: #f8fafc; border-radius: 12px; padding: 25px; margin-bottom: 20px;">

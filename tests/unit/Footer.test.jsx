@@ -40,7 +40,7 @@ describe('Footer Component', () => {
       renderFooter();
       
       // Footer should have some branding
-      expect(screen.getAllByText(/SiteSprintz/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Right Site Light/i).length).toBeGreaterThan(0);
     });
   });
 
@@ -86,8 +86,8 @@ describe('Footer Component', () => {
       renderFooter();
 
       const support = screen.getByTestId('footer-support-email');
-      expect(support).toHaveAttribute('href', 'mailto:support@sitesprintz.com');
-      expect(support).toHaveTextContent('support@sitesprintz.com');
+      expect(support).toHaveAttribute('href', 'mailto:support@rightsitelight.com');
+      expect(support).toHaveTextContent('support@rightsitelight.com');
     });
 
     it('should handle internal navigation links', () => {
@@ -133,7 +133,7 @@ describe('Footer Component', () => {
     it('should show company name', () => {
       renderFooter();
       
-      expect(screen.getAllByText(/SiteSprintz/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Right Site Light/i).length).toBeGreaterThan(0);
     });
   });
 

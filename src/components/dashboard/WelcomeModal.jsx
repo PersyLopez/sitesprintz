@@ -8,7 +8,7 @@ function WelcomeModal({ onClose }) {
     <Modal
       isOpen={true}
       onClose={onClose}
-      title="Welcome to SiteSprintz!"
+      title="Welcome to Right Site Light!"
       className="welcome-modal"
       ariaDescribedBy="welcome-description"
     >

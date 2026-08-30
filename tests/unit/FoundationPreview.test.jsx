@@ -76,7 +76,7 @@ describe('FoundationPreview Component', () => {
       
       const iframe = screen.getByTitle('Foundation Preview');
       expect(iframe).toBeInTheDocument();
-      expect(iframe).toHaveAttribute('src', 'https://testsite.sitesprintz.com');
+      expect(iframe).toHaveAttribute('src', 'http://localhost:3000/view/testsite');
     });
 
     it('should show draft preview URL for draft sites', () => {
@@ -229,7 +229,7 @@ describe('FoundationPreview Component', () => {
       render(<FoundationPreview site={mockSite} config={mockConfig} />);
       
       const openLink = screen.getByRole('link', { name: 'Open in New Tab' });
-      expect(openLink).toHaveAttribute('href', 'https://testsite.sitesprintz.com');
+      expect(openLink).toHaveAttribute('href', 'http://localhost:3000/view/testsite');
       expect(openLink).toHaveAttribute('target', '_blank');
       expect(openLink).toHaveAttribute('rel', 'noopener noreferrer');
     });

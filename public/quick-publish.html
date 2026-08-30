@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Publish Your Site | SiteSprintz</title>
+  <title>Publish Your Site | Right Site Light</title>
   <link rel="stylesheet" href="theme.css" />
   <link rel="stylesheet" href="styles.css" />
   <style>
@@ -318,7 +318,7 @@
 
     <div class="publish-preview">
       <div class="preview-label">Your Site Will Be:</div>
-      <div class="preview-url" id="previewUrl">sitesprintz.com/your-site</div>
+      <div class="preview-url" id="previewUrl">rightsitelight.com/view/your-site</div>
     </div>
 
     <div class="error-message" id="errorMessage" data-testid="publish-error-message"></div>
@@ -399,7 +399,7 @@
           const progress = JSON.parse(savedProgress);
           const businessName = progress.data?.brand?.name || progress.data?.meta?.businessName || 'your-site';
           const slug = businessName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-          document.getElementById('previewUrl').textContent = `sitesprintz.com/${slug}`;
+          document.getElementById('previewUrl').textContent = `rightsitelight.com/view/${slug}`;
         } catch (error) {
           console.error('Failed to parse progress:', error);
         }

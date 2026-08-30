@@ -21,7 +21,7 @@ function ShowcaseDetail() {
   useEffect(() => {
     if (site) {
       const siteTitle = getSiteTitle(site);
-      document.title = `${siteTitle} - Made with SiteSprintz`;
+      document.title = `${siteTitle} - Made with Right Site Light`;
 
       let metaDescription = document.querySelector('meta[name="description"]');
       if (!metaDescription) {
@@ -33,7 +33,7 @@ function ShowcaseDetail() {
       const description =
         payload.about?.description ||
         payload.hero?.subtitle ||
-        `${siteTitle} - A beautiful website made with SiteSprintz`;
+        `${siteTitle} - A beautiful website made with Right Site Light`;
       metaDescription.setAttribute('content', description);
     }
   }, [site]);
@@ -252,7 +252,7 @@ function ShowcaseDetail() {
           <div className="metadata-item">
             <span className="metadata-label">Theme</span>
             <span className="metadata-value">
-              {payload.galleryTheme?.name || payload.colors?.themeId || 'SiteSprintz theme'}
+              {payload.galleryTheme?.name || payload.colors?.themeId || 'Right Site Light theme'}
             </span>
           </div>
           <div className="metadata-item">

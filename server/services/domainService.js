@@ -47,13 +47,13 @@ export class DomainService {
         type: 'CNAME',
         host: 'www',
         value: siteUrl,
-        description: 'Point www to your SiteSprintz site',
+        description: 'Point www to your Right Site Light site',
       },
       aRecord: {
         type: 'A',
         host: '@',
         value: serverIP,
-        description: 'Point the root domain to the SiteSprintz server',
+        description: 'Point the root domain to the Right Site Light server',
       },
       note: 'Add both records. HTTPS is issued at the host (Railway / Cloudflare) after DNS is live.',
     };

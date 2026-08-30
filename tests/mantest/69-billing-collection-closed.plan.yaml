@@ -59,6 +59,6 @@ steps:
       if (!hasClosedCopy) {
         throw new Error('Expected billing-collection-closed copy on Settings billing');
       }
-      if (!/support@sitesprintz\.com/i.test(body)) {
+      if (!/support@rightsitelight\.com/i.test(body)) {
         throw new Error('Billing-closed or support copy should include support email');
       }

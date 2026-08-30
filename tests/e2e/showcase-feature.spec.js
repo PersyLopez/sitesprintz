@@ -159,7 +159,7 @@ test.describe('Showcase Feature E2E Tests', () => {
         if (await ctaButton.isVisible()) {
           const href = await ctaButton.getAttribute('href');
           expect(href).toContain(TEST_SUBDOMAIN);
-          expect(href).toContain('sitesprintz.com');
+          expect(href).toContain('/view/');
         }
       }
     });

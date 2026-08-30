@@ -96,7 +96,7 @@ describe('platformPlans', () => {
     });
 
     it('exposes a client-safe billing paused message', () => {
-      expect(BILLING_NOT_OPEN_MESSAGE).toMatch(/support@sitesprintz\.com/);
+      expect(BILLING_NOT_OPEN_MESSAGE).toMatch(/support@rightsitelight\.com/);
       expect(BILLING_NOT_OPEN_MESSAGE).toMatch(/no-card trial/i);
     });
   });

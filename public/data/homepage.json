@@ -1,6 +1,6 @@
 {
   "brand": {
-    "name": "SiteSprintz",
+    "name": "Right Site Light",
     "logo": "assets/logo.svg"
   },
   "themeVars": {
@@ -93,7 +93,7 @@
   },
   "examples": {
     "title": "See Examples",
-    "subtitle": "Check out sites built with SiteSprintz",
+    "subtitle": "Check out sites built with Right Site Light",
     "items": [
       {
         "name": "Restaurant",
@@ -165,11 +165,11 @@
     ]
   },
   "about": {
-    "title": "Why SiteSprintz?",
-    "body": "We believe small businesses deserve powerful, affordable web presence. That's why we built SiteSprintz - to help you launch your business online in minutes without the complexity or high costs of traditional solutions. Start free, pay only when you're ready to publish."
+    "title": "Why Right Site Light?",
+    "body": "We believe small businesses deserve powerful, affordable web presence. That's why we built Right Site Light - to help you launch your business online in minutes without the complexity or high costs of traditional solutions. Start free, pay only when you're ready to publish."
   },
   "footer": {
-    "text": "© 2024 SiteSprintz. Launch your business online in minutes."
+    "text": "© 2024 Right Site Light. Launch your business online in minutes."
   }
 }
 

@@ -22,7 +22,7 @@ function Footer() {
                   />
                 </svg>
               </span>
-              <span className="logo-text">SiteSprintz</span>
+              <span className="logo-text">{t('brand.name')}</span>
             </Link>
             <p className="footer-tagline">{t('footer.tagline')}</p>
           </div>

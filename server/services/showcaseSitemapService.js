@@ -8,14 +8,22 @@
  */
 
 import { galleryService } from './galleryService.js';
+import { getPublicSiteHost } from '../../src/utils/customDomainHost.js';
+
+function resolveShowcaseBaseUrl() {
+  const siteUrl = typeof process !== 'undefined' && process.env?.SITE_URL
+    ? String(process.env.SITE_URL).replace(/\/$/, '')
+    : '';
+  return siteUrl || `https://${getPublicSiteHost()}`;
+}
 
 class ShowcaseSitemapService {
   /**
    * Generate sitemap entries for showcase pages
-   * @param {string} baseUrl - Base URL of the site (e.g., https://sitesprintz.com)
+   * @param {string} baseUrl - Base URL of the site (e.g., https://rightsitelight.com)
    * @returns {Promise<Array<Object>>} Array of sitemap entries
    */
-  async generateSitemapEntries(baseUrl = 'https://sitesprintz.com') {
+  async generateSitemapEntries(baseUrl = resolveShowcaseBaseUrl()) {
     const entries = [];
     
     try {
@@ -150,9 +158,9 @@ class ShowcaseSitemapService {
    * @param {string} baseUrl - Base URL
    * @returns {Object} Open Graph meta tags
    */
-  generateOpenGraphMeta(site, baseUrl = 'https://sitesprintz.com') {
+  generateOpenGraphMeta(site, baseUrl = resolveShowcaseBaseUrl()) {
     const title = site.site_data?.hero?.title || 'Showcase Site';
-    const description = site.site_data?.about?.description || site.site_data?.hero?.subtitle || 'A beautiful website made with SiteSprintz';
+    const description = site.site_data?.about?.description || site.site_data?.hero?.subtitle || 'A beautiful website made with Right Site Light';
     const image = site.site_data?.images?.hero || site.site_data?.hero?.backgroundImage || '/images/default-og.jpg';
     const url = `${baseUrl}/showcase/${site.subdomain}`;
 
@@ -162,7 +170,7 @@ class ShowcaseSitemapService {
       'og:image': image,
       'og:url': url,
       'og:type': 'website',
-      'og:site_name': 'SiteSprintz Showcase',
+      'og:site_name': 'Right Site Light Showcase',
       
       // Twitter Card
       'twitter:card': 'summary_large_image',
@@ -178,7 +186,7 @@ class ShowcaseSitemapService {
    * @param {string} baseUrl - Base URL
    * @returns {Object} JSON-LD structured data
    */
-  generateStructuredData(site, baseUrl = 'https://sitesprintz.com') {
+  generateStructuredData(site, baseUrl = resolveShowcaseBaseUrl()) {
     const title = site.site_data?.hero?.title || 'Showcase Site';
     const description = site.site_data?.about?.description || site.site_data?.hero?.subtitle || '';
     const image = site.site_data?.images?.hero || '';
@@ -196,7 +204,7 @@ class ShowcaseSitemapService {
       'inLanguage': 'en-US',
       'isPartOf': {
         '@type': 'WebSite',
-        'name': 'SiteSprintz',
+        'name': 'Right Site Light',
         'url': baseUrl
       }
     };

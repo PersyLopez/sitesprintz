@@ -1,13 +1,13 @@
 url: http://localhost:5173/
-goal: Complete manual/behavioral coverage of SiteSprintz public marketing, auth UI, gallery, contact, track, and auth-gate redirects
+goal: Complete manual/behavioral coverage of Right Site Light public marketing, auth UI, gallery, contact, track, and auth-gate redirects
 
 steps:
   # --- Landing ---
   - action: Landing shows brand and hero CTA
-    wait_for: { text: SiteSprintz }
+    wait_for: { text: Right Site Light }
     settle_ms: 500
     assert:
-      - text contains SiteSprintz
+      - text contains Right Site Light
       - text contains They love what you make
       - text contains Get Your Page Free
 
@@ -54,7 +54,7 @@ steps:
     settle_ms: 800
     assert:
       - url contains /about
-      - text contains About SiteSprintz
+      - text contains About Right Site Light
       - text contains Who we built this for
 
   - action: Contact page loads
@@ -63,7 +63,7 @@ steps:
     assert:
       - url contains /contact
       - text contains Contact
-      - text contains support@sitesprintz.com
+      - text contains support@rightsitelight.com
 
   # --- Track lookup ---
   - action: Track page loads
@@ -180,7 +180,7 @@ steps:
     settle_ms: 1000
     assert:
       - url matches http://localhost:5173/?$
-      - text contains SiteSprintz
+      - text contains Right Site Light
 
   # --- Get Started CTA ---
   - action: Get Started navigates to register

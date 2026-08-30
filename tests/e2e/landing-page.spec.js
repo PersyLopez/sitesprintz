@@ -35,7 +35,7 @@ test.describe('Showcase gallery after rewrite', () => {
 
   test('loads the public gallery headline', async ({ page }) => {
     await page.goto('/showcase');
-    await expect(page).toHaveTitle(/Showcase.*SiteSprintz|Gallery — See how your SiteSprintz/i);
+    await expect(page).toHaveTitle(/Showcase.*Right Site Light|Gallery — See how your Right Site Light/i);
     await expect(page.getByRole('heading', { name: /See how your site could look/i })).toBeVisible();
   });
 });

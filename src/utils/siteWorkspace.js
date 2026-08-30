@@ -1,4 +1,5 @@
 import { getLayoutForNiche, resolveFeatures, LAYOUTS } from '../config/layouts.js';
+import { getPublicSiteHost } from './customDomainHost.js';
 import { livePublishedPath } from './visitorExperience.js';
 
 const KNOWN_NICHES = Array.from(
@@ -55,6 +56,24 @@ export function getPublishedSiteUrl(subdomain) {
   if (!path) return null;
   const origin = String(import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
   return `${origin}${path}`;
+}
+
+/** Absolute https live URL on the public host (server QR, showcase, SEO). */
+export function getAbsolutePublishedSiteUrl(subdomain) {
+  const path = livePublishedPath(subdomain);
+  if (!path) return null;
+  const siteUrl = typeof process !== 'undefined' && process.env?.SITE_URL
+    ? String(process.env.SITE_URL).replace(/\/$/, '')
+    : '';
+  const origin = siteUrl || `https://${getPublicSiteHost()}`;
+  return `${origin}${path}`;
+}
+
+/** Display label without protocol (share card footer). */
+export function getPublishedSiteDisplayUrl(subdomain) {
+  const path = livePublishedPath(subdomain);
+  if (!path) return null;
+  return `${getPublicSiteHost()}${path}`;
 }
 
 export function getSiteWorkspacePaths(siteId, site = {}) {

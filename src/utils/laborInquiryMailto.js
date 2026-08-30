@@ -44,7 +44,7 @@ export function laborInquiryMailto(topic = 'optional extras', labor = PRICING_CO
     return null;
   }
   const safeTopic = sanitizeLaborTopic(topic);
-  const subject = encodeURIComponent(`SiteSprintz — ${safeTopic}`);
+  const subject = encodeURIComponent(`Right Site Light — ${safeTopic}`);
   const body = encodeURIComponent(
     'Account email:\nSite (if you have one):\nWhat you need:\n',
   );

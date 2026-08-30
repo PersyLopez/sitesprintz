@@ -340,7 +340,7 @@ function Register() {
                     Third-Party Services &amp; Data Handling Disclosure
                   </a>
                   . I understand that sensitive information such as payments and login data is processed by independent
-                  third-party providers, and that SiteSprintz&apos;s liability is limited as described in those documents.
+                  third-party providers, and that Right Site Light&apos;s liability is limited as described in those documents.
                 </span>
               </label>
             </div>
@@ -393,7 +393,7 @@ function Register() {
 
           <p className="terms-text">
             Sensitive data (payments, login) is handled by independent third parties under their own terms.
-            SiteSprintz is currently in beta and provided &ldquo;as is.&rdquo;
+            Right Site Light is currently in beta and provided &ldquo;as is.&rdquo;
           </p>
         </div>
       </div>

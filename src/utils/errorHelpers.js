@@ -162,7 +162,7 @@ export function analyzeError(error) {
       message: 'You don\'t have permission to perform this action.',
       suggestions: [
         'This feature may require a higher plan',
-        'Contact support@sitesprintz.com if you believe this is an error'
+        'Contact support@rightsitelight.com if you believe this is an error'
       ],
       action: {
         label: 'View Plans',

@@ -382,7 +382,7 @@ export default function LandingGallery({ selectedTemplateId, onSelectTemplate })
                           : '🌐'}
                   </span>
                   <span className="gl-live-title">{liveTitle(site)}</span>
-                  <span className="gl-live-meta">{site.subdomain}.sitesprintz.com</span>
+                  <span className="gl-live-meta">/view/{site.subdomain}</span>
                 </Link>
               ))}
             </div>

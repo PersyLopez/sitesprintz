@@ -43,7 +43,7 @@ test.describe('Public Showcase Gallery E2E Tests', () => {
   test.describe('Gallery Page Browsing', () => {
     test('should have proper page title', async ({ page }) => {
       await page.goto('/showcase');
-      await expect(page).toHaveTitle(/Showcase.*SiteSprintz/i);
+      await expect(page).toHaveTitle(/Showcase.*Right Site Light/i);
     });
     test('should load showcase gallery page successfully', async ({ page }) => {
       await page.goto('/showcase');
@@ -346,7 +346,7 @@ test.describe('Public Showcase Gallery E2E Tests', () => {
   test.describe('SEO Optimization', () => {
     test('should have proper page title', async ({ page }) => {
       await page.goto('/showcase');
-      await expect(page).toHaveTitle(/Showcase.*SiteSprintz/i);
+      await expect(page).toHaveTitle(/Showcase.*Right Site Light/i);
     });
 
     test('should have meta description', async ({ page }) => {

@@ -296,9 +296,9 @@ describe('SEOService', () => {
 
       const sitemap = await seoService.generateSitemap(subdomain, pages);
 
-      expect(sitemap).toContain('<loc>https://testsite.sitesprintz.com/</loc>');
-      expect(sitemap).toContain('<loc>https://testsite.sitesprintz.com/about</loc>');
-      expect(sitemap).toContain('<loc>https://testsite.sitesprintz.com/services</loc>');
+      expect(sitemap).toContain('<loc>https://rightsitelight.com/view/testsite/</loc>');
+      expect(sitemap).toContain('<loc>https://rightsitelight.com/view/testsite/about</loc>');
+      expect(sitemap).toContain('<loc>https://rightsitelight.com/view/testsite/services</loc>');
     });
 
     it('should include lastmod dates', async () => {
@@ -346,7 +346,7 @@ describe('SEOService', () => {
 
       expect(robotsTxt).toContain('User-agent: *');
       expect(robotsTxt).toContain('Allow: /');
-      expect(robotsTxt).toContain('Sitemap: https://testsite.sitesprintz.com/sitemap.xml');
+      expect(robotsTxt).toContain('Sitemap: https://rightsitelight.com/view/testsite/sitemap.xml');
     });
 
     it('should disallow specific paths if provided', () => {
@@ -393,7 +393,7 @@ describe('SEOService', () => {
 
       const canonical = seoService.getCanonicalUrl(subdomain, path);
 
-      expect(canonical).toBe('https://testsite.sitesprintz.com/services');
+      expect(canonical).toBe('https://rightsitelight.com/view/testsite/services');
     });
 
     it('should handle root path', () => {
@@ -402,7 +402,7 @@ describe('SEOService', () => {
 
       const canonical = seoService.getCanonicalUrl(subdomain, path);
 
-      expect(canonical).toBe('https://testsite.sitesprintz.com/');
+      expect(canonical).toBe('https://rightsitelight.com/view/testsite/');
     });
 
     it('should remove trailing slashes from paths', () => {
@@ -411,7 +411,7 @@ describe('SEOService', () => {
 
       const canonical = seoService.getCanonicalUrl(subdomain, path);
 
-      expect(canonical).toBe('https://testsite.sitesprintz.com/services');
+      expect(canonical).toBe('https://rightsitelight.com/view/testsite/services');
     });
 
     it('should handle custom domain', () => {
@@ -433,7 +433,7 @@ describe('SEOService', () => {
 
       const canonical = seoService.getCanonicalUrl(subdomain, path);
 
-      expect(canonical).toBe('https://testsite.sitesprintz.com/services');
+      expect(canonical).toBe('https://rightsitelight.com/view/testsite/services');
       expect(canonical).not.toContain('utm_source');
     });
   });

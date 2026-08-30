@@ -4,10 +4,36 @@
  * Following TDD: Implementation written to pass tests
  */
 
+import { getPublicSiteHost } from '../../src/utils/customDomainHost.js';
+import { livePublishedPath } from '../../src/utils/visitorExperience.js';
+
 class SEOService {
   constructor() {
-    this.baseUrl = process.env.BASE_URL || 'sitesprintz.com';
+    this.publicHost = getPublicSiteHost();
+    this.baseUrl = process.env.BASE_URL || this.publicHost;
     this.protocol = 'https';
+  }
+
+  /**
+   * Base origin for platform-hosted sites (not custom domains).
+   * @param {string} subdomain
+   * @returns {string}
+   */
+  _platformSiteOrigin(subdomain) {
+    return `${this.protocol}://${this.publicHost}${livePublishedPath(subdomain)}`;
+  }
+
+  /**
+   * Canonical base URL for a site (custom domain or /view/:subdomain).
+   * @param {string} subdomain
+   * @param {Object} options
+   * @returns {string}
+   */
+  _resolveSiteBaseUrl(subdomain, options = {}) {
+    if (options.customDomain) {
+      return `${this.protocol}://${options.customDomain}`;
+    }
+    return this._platformSiteOrigin(subdomain);
   }
 
   /**
@@ -152,8 +178,7 @@ class SEOService {
    * @returns {string} XML sitemap
    */
   async generateSitemap(subdomain, pages = [], options = {}) {
-    const domain = options.customDomain || `${subdomain}.${this.baseUrl}`;
-    const baseUrl = `${this.protocol}://${domain}`;
+    const baseUrl = this._resolveSiteBaseUrl(subdomain, options);
 
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
@@ -194,8 +219,7 @@ class SEOService {
   generateRobotsTxt(subdomain, options = {}) {
     const { customDomain, disallow = [], noindex = false } = options;
     
-    const domain = customDomain || `${subdomain}.${this.baseUrl}`;
-    const baseUrl = `${this.protocol}://${domain}`;
+    const baseUrl = this._resolveSiteBaseUrl(subdomain, { customDomain });
 
     let txt = 'User-agent: *\n';
     
@@ -224,8 +248,7 @@ class SEOService {
    * @returns {string} Canonical URL
    */
   getCanonicalUrl(subdomain, path, options = {}) {
-    const domain = options.customDomain || `${subdomain}.${this.baseUrl}`;
-    const baseUrl = `${this.protocol}://${domain}`;
+    const baseUrl = this._resolveSiteBaseUrl(subdomain, options);
 
     // Remove query parameters
     const cleanPath = path.split('?')[0];

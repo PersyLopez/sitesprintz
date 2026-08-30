@@ -50,7 +50,7 @@ describe('ShareModal', () => {
   it('uses the production site URL as the share target', () => {
     render(<ShareModal subdomain="river-salon" onClose={() => {}} />);
 
-    expect(screen.getByDisplayValue('https://river-salon.sitesprintz.com')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('http://localhost:3000/view/river-salon')).toBeInTheDocument();
   });
 
   it('opens WhatsApp with encoded site URL and text', () => {
@@ -64,7 +64,7 @@ describe('ShareModal', () => {
       expect.any(String)
     );
     const opened = decodeURIComponent(window.open.mock.calls[0][0]);
-    expect(opened).toContain('https://river-salon.sitesprintz.com');
+    expect(opened).toContain('http://localhost:3000/view/river-salon');
     expect(opened).toContain('Check out my site');
   });
 
@@ -74,7 +74,7 @@ describe('ShareModal', () => {
     fireEvent.click(screen.getByTestId('share-instagram'));
     await waitFor(() => {
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
-        'https://river-salon.sitesprintz.com'
+        'http://localhost:3000/view/river-salon'
       );
     });
     expect(screen.getByTestId('share-copy-hint')).toHaveTextContent(/Instagram/i);

@@ -4,7 +4,7 @@ steps:
   - action: Terms of Service
     wait_for: { text: Terms of Service, timeout: 15000 }
     assert:
-      - text contains SiteSprintz
+      - text contains Right Site Light
       - text contains Privacy Policy
 
   - action: Privacy Policy
@@ -13,7 +13,7 @@ steps:
   - action: Privacy loaded
     wait_for: { text: Privacy Policy, timeout: 15000 }
     assert:
-      - text contains SiteSprintz
+      - text contains Right Site Light
 
   - action: Cookie Policy
     goto: http://localhost:3000/legal/cookies

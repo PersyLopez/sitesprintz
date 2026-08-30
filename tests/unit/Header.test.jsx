@@ -33,10 +33,10 @@ describe('Header Component', () => {
   });
 
   describe('Logo', () => {
-    it('should display SiteSprintz logo', () => {
+    it('should display Right Site Light logo', () => {
       renderHeader();
 
-      expect(screen.getByText('SiteSprintz')).toBeInTheDocument();
+      expect(screen.getByText('Right Site Light')).toBeInTheDocument();
       expect(screen.getByTestId('header-logo')).toBeInTheDocument();
     });
 
@@ -45,7 +45,7 @@ describe('Header Component', () => {
 
       const homeLink = screen.getByTestId('header-logo');
       expect(homeLink).toHaveAttribute('href', '/');
-      expect(homeLink).toHaveTextContent('SiteSprintz');
+      expect(homeLink).toHaveTextContent('Right Site Light');
     });
   });
 

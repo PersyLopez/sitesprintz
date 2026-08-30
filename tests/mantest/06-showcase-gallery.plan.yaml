@@ -14,7 +14,7 @@ steps:
       const section = page.getByTestId('made-with-section');
       if ((await section.count()) > 0) {
         const body = await page.locator('body').innerText();
-        if (!/Made with SiteSprintz/i.test(body)) {
+        if (!/Made with Right Site Light/i.test(body)) {
           throw new Error('Made with section missing heading');
         }
         const card = page.locator('[data-testid^="made-with-card-"]');

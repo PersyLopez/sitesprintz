@@ -95,7 +95,7 @@ function Header() {
               />
             </svg>
           </span>
-          <span className="logo-text">SiteSprintz</span>
+          <span className="logo-text">{t('brand.name')}</span>
         </Link>
         
         {/* Desktop Navigation */}

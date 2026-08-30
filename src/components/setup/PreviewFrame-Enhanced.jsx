@@ -3,6 +3,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { useSite } from '../../hooks/useSite';
+import { getPublishedSiteUrl } from '../../utils/siteWorkspace';
 import './PreviewFrame.css';
 
 function PreviewFrame() {
@@ -556,7 +557,7 @@ function PreviewFrame() {
                 <div className="url-address">
                   <span className="url-icon">🔒</span>
                   <span className="url-text">
-                    {siteData.subdomain || 'preview'}.sitesprintz.com
+                    {getPublishedSiteUrl(siteData.subdomain || 'preview') || `/view/${siteData.subdomain || 'preview'}`}
                   </span>
                 </div>
               </div>

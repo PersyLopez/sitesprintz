@@ -23,7 +23,7 @@ describe('WelcomeModal Component', () => {
     it('should render modal with welcome message', () => {
       renderWelcomeModal();
 
-      expect(screen.getByText('Welcome to SiteSprintz!')).toBeInTheDocument();
+      expect(screen.getByText('Welcome to Right Site Light!')).toBeInTheDocument();
       expect(screen.getByText(/You're all set to create your first professional website/i)).toBeInTheDocument();
     });
 
@@ -195,7 +195,7 @@ describe('WelcomeModal Component', () => {
     it('should have proper heading hierarchy', () => {
       renderWelcomeModal();
 
-      const h2 = screen.getByRole('heading', { level: 2, name: /Welcome to SiteSprintz/i });
+      const h2 = screen.getByRole('heading', { level: 2, name: /Welcome to Right Site Light/i });
       expect(h2).toBeInTheDocument();
 
       const h3Headings = screen.getAllByRole('heading', { level: 3 });

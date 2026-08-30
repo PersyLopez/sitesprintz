@@ -23,7 +23,7 @@ test.describe('User Authentication Flow', () => {
   });
 
   test('should display homepage with login button', async ({ page }) => {
-    await expect(page).toHaveTitle(/SiteSprintz|Home/i);
+    await expect(page).toHaveTitle(/Right Site Light|Home/i);
     // Homepage uses a link to login.html
     const loginButton = page.locator('a[href="/login"], a[href="/login.html"], a[href="login.html"]').first();
     await expect(loginButton).toBeVisible();

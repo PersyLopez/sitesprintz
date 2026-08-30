@@ -87,7 +87,7 @@ describe('ShowcaseService', () => {
   describe('captureScreenshot', () => {
     it('should capture screenshot of a published site', async () => {
       const result = await showcaseService.captureScreenshot(
-        'https://testsite.sitesprintz.com',
+        'https://rightsitelight.com/view/testsite',
         { viewport: { width: 1200, height: 800 } }
       );
 
@@ -99,7 +99,7 @@ describe('ShowcaseService', () => {
 
     it('should use specified viewport dimensions', async () => {
       await showcaseService.captureScreenshot(
-        'https://testsite.sitesprintz.com',
+        'https://rightsitelight.com/view/testsite',
         { viewport: { width: 375, height: 667 } }
       );
 
@@ -111,7 +111,7 @@ describe('ShowcaseService', () => {
 
     it('should wait for page to load completely', async () => {
       await showcaseService.captureScreenshot(
-        'https://testsite.sitesprintz.com'
+        'https://rightsitelight.com/view/testsite'
       );
 
       expect(mockPage.goto).toHaveBeenCalledWith(
@@ -130,7 +130,7 @@ describe('ShowcaseService', () => {
 
     it('should capture full page screenshot', async () => {
       await showcaseService.captureScreenshot(
-        'https://testsite.sitesprintz.com',
+        'https://rightsitelight.com/view/testsite',
         { fullPage: true }
       );
 
@@ -144,7 +144,7 @@ describe('ShowcaseService', () => {
     it('should capture all highlight sections', async () => {
       const highlights = await showcaseService.captureHighlights(
         'testsite',
-        'https://testsite.sitesprintz.com'
+        'https://rightsitelight.com/view/testsite'
       );
 
       expect(highlights).toHaveProperty('hero');
@@ -157,7 +157,7 @@ describe('ShowcaseService', () => {
     it('should capture hero section with proper dimensions', async () => {
       const highlights = await showcaseService.captureHighlights(
         'testsite',
-        'https://testsite.sitesprintz.com'
+        'https://rightsitelight.com/view/testsite'
       );
 
       expect(highlights.hero).toHaveProperty('image');
@@ -171,7 +171,7 @@ describe('ShowcaseService', () => {
 
       const highlights = await showcaseService.captureHighlights(
         'testsite',
-        'https://testsite.sitesprintz.com'
+        'https://rightsitelight.com/view/testsite'
       );
 
       expect(highlights).toBeDefined();
@@ -181,7 +181,7 @@ describe('ShowcaseService', () => {
     it('should capture multiple service items', async () => {
       const highlights = await showcaseService.captureHighlights(
         'testsite',
-        'https://testsite.sitesprintz.com'
+        'https://rightsitelight.com/view/testsite'
       );
 
       if (highlights.services) {
@@ -192,7 +192,7 @@ describe('ShowcaseService', () => {
     it('should use mobile viewport for mobile highlights', async () => {
       await showcaseService.captureHighlights(
         'testsite',
-        'https://testsite.sitesprintz.com',
+        'https://rightsitelight.com/view/testsite',
         { viewport: 'mobile' }
       );
 
@@ -206,6 +206,17 @@ describe('ShowcaseService', () => {
   });
 
   describe('generateShowcase', () => {
+    it('uses the platform /view live URL for captures', async () => {
+      const spy = vi.spyOn(showcaseService, 'captureHighlights');
+      await showcaseService.generateShowcase('testsite');
+      expect(spy).toHaveBeenCalledWith(
+        'testsite',
+        'https://rightsitelight.com/view/testsite',
+        expect.any(Object)
+      );
+      spy.mockRestore();
+    });
+
     it('should generate complete showcase data', async () => {
       const showcase = await showcaseService.generateShowcase('testsite');
 

@@ -517,7 +517,7 @@ class BookingNotificationService {
    */
   async sendStaffInvitationEmail({ email, businessName, inviterName, role, acceptUrl, expiresAt }) {
     try {
-      const subject = `You've been invited to join ${businessName} on SiteSprintz`;
+      const subject = `You've been invited to join ${businessName} on Right Site Light`;
 
       const expiresDate = new Date(expiresAt).toLocaleDateString('en-US', {
         month: 'long',
@@ -537,7 +537,7 @@ class BookingNotificationService {
             </p>
             
             <p style="color: #64748b; line-height: 1.6; margin: 0 0 20px 0;">
-              <strong>${inviterName}</strong> has invited you to join <strong>${businessName}</strong> as a ${role} member on SiteSprintz.
+              <strong>${inviterName}</strong> has invited you to join <strong>${businessName}</strong> as a ${role} member on Right Site Light.
             </p>
             
             <p style="color: #64748b; line-height: 1.6; margin: 0 0 20px 0;">
@@ -559,7 +559,7 @@ class BookingNotificationService {
             
             <div style="background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 8px; padding: 16px; margin: 20px 0;">
               <p style="color: #991b1b; font-size: 0.9rem; margin: 0; line-height: 1.5;">
-                ⚠️ <strong>Important:</strong> This invitation expires on ${expiresDate}. If you don't have a SiteSprintz account, you'll be prompted to create one when you accept.
+                ⚠️ <strong>Important:</strong> This invitation expires on ${expiresDate}. If you don't have a Right Site Light account, you'll be prompted to create one when you accept.
               </p>
             </div>
           </div>

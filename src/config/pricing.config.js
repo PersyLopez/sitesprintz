@@ -1,10 +1,10 @@
 /**
- * SiteSprintz Pricing Configuration
+ * Right Site Light pricing configuration
  * Comprehensive pricing, features, value propositions, and competitor comparisons
  */
 
 /** Platform inbound mail. Customer published sites keep their own contact email. */
-export const PLATFORM_SUPPORT_EMAIL = 'support@sitesprintz.com';
+export const PLATFORM_SUPPORT_EMAIL = 'support@rightsitelight.com';
 
 export const PRICING_CONFIG = {
   // Trial period configuration (LIVE_TRIAL_DAYS = site clock; STRIPE_TRIAL_DAYS = Checkout only)

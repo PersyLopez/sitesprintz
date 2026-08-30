@@ -247,14 +247,14 @@ class ReminderScheduler {
       where: { id: tenantId },
       select: {
         reminder_email_enabled: true,
-        reminder_hours_before: true
+        reminder_hours_before: true,
       }
     });
 
     return {
       enabled: tenant?.reminder_email_enabled ?? true,
       hoursBefore: tenant?.reminder_hours_before || 24,
-      template: 'default'
+      template: 'default',
     };
   }
 

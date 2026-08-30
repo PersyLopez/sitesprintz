@@ -1,7 +1,7 @@
 /**
  * Platform Share Widget
  * 
- * Allows visitors to share the SiteSprintz platform itself
+ * Allows visitors to share the Right Site Light platform itself
  * Simpler version focused on platform marketing
  */
 
@@ -13,8 +13,8 @@ function PlatformShareButton({ className = '' }) {
   const [copied, setCopied] = useState(false);
 
   const platformUrl = window.location.origin;
-  const platformTitle = 'SiteSprintz - Build Your Business Website in Minutes';
-  const platformDescription = 'Create beautiful, professional websites for your business with SiteSprintz. No coding required!';
+  const platformTitle = 'Right Site Light - Build Your Business Website in Minutes';
+  const platformDescription = 'Create beautiful, professional websites for your business with Right Site Light. No coding required!';
 
   const handleShare = (platform) => {
     const urls = {
@@ -69,7 +69,7 @@ function PlatformShareButton({ className = '' }) {
       <button
         className={`platform-share-trigger ${className}`}
         onClick={() => setShowModal(true)}
-        title="Share SiteSprintz"
+        title="Share Right Site Light"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
@@ -83,7 +83,7 @@ function PlatformShareButton({ className = '' }) {
         <div className="platform-share-modal-overlay" onClick={() => setShowModal(false)}>
           <div className="platform-share-modal" onClick={(e) => e.stopPropagation()}>
             <div className="platform-share-header">
-              <h3>Share SiteSprintz</h3>
+              <h3>Share Right Site Light</h3>
               <button 
                 className="platform-share-close" 
                 onClick={() => setShowModal(false)}
@@ -94,7 +94,7 @@ function PlatformShareButton({ className = '' }) {
             </div>
 
             <p className="platform-share-description">
-              Help others discover SiteSprintz! Share on your favorite platform:
+              Help others discover Right Site Light! Share on your favorite platform:
             </p>
 
             <div className="platform-share-buttons">

@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
 import AdminSubnav from '../components/admin/AdminSubnav';
+import { getPublishedSiteUrl } from '../utils/siteWorkspace';
 import './AdminUsers.css';
 
 function AdminSites() {
@@ -148,7 +149,7 @@ function AdminSites() {
                 {filteredSites.map(site => (
                   <tr key={site.id} data-testid={`site-row-${site.id}`}>
                     <td>
-                      <a href={`https://${site.subdomain}.sitesprintz.com`} target="_blank" rel="noopener noreferrer" className="site-link">
+                      <a href={getPublishedSiteUrl(site.subdomain)} target="_blank" rel="noopener noreferrer" className="site-link">
                         {site.subdomain}
                       </a>
                     </td>
