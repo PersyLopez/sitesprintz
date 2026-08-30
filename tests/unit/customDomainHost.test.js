@@ -19,6 +19,8 @@ describe('customDomainHost', () => {
     expect(isValidCustomDomain('my-shop.com')).toBe(true);
     expect(isPlatformHostname('localhost')).toBe(true);
     expect(isPlatformHostname('www.sitesprintz.com')).toBe(true);
+    expect(isPlatformHostname('rightsitelight.com')).toBe(true);
+    expect(isPlatformHostname('www.rightsitelight.com')).toBe(true);
     expect(isPlatformHostname('my-shop.com')).toBe(false);
   });
 
