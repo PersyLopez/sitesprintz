@@ -259,7 +259,7 @@ function PublishModal({ siteData, onClose }) {
           {isEligibleForTrial && !checkingTrialEligibility && (
             <div className="trial-notice" data-testid="live-trial-notice">
               <p>
-                Your first site goes live for {trialDays} days with no payment method. Subscribe before the trial ends to keep it online.
+                Your first site goes live for {trialDays} days with no payment method. We’ll be in touch — no checkout required.
               </p>
             </div>
           )}

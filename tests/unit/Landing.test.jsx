@@ -164,6 +164,6 @@ describe('Landing Page', () => {
     expect(trustStrip).toBeInTheDocument();
     expect(within(trustStrip).getByText('Draft free')).toBeInTheDocument();
     expect(within(trustStrip).getByText('Preview fast')).toBeInTheDocument();
-    expect(within(trustStrip).getByText('Cancel anytime')).toBeInTheDocument();
+    expect(within(trustStrip).getByText('No card to start')).toBeInTheDocument();
   });
 });
