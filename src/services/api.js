@@ -2,7 +2,7 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
-function isAbortError(error) {
+export function isAbortError(error) {
   if (!error) return false;
   if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') return true;
   if (error.originalError) return isAbortError(error.originalError);
@@ -178,8 +178,14 @@ class APIClient {
 
         return data;
       } catch (error) {
-        if (isAbortError(error)) {
-          throw error;
+        if (isAbortError(error) || options.signal?.aborted) {
+          if (isAbortError(error)) {
+            throw error;
+          }
+          const abortError = new Error(error.message || 'The operation was aborted');
+          abortError.name = 'AbortError';
+          abortError.originalError = error;
+          throw abortError;
         }
 
         if (error.message === 'Unauthorized') {

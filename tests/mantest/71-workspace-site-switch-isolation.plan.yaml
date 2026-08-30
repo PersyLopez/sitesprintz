@@ -1,0 +1,87 @@
+url: http://localhost:5173/login
+goal: SPA switch between two gallery sites does not paint the previous site on Orders, Products, or Analytics
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter gallery email
+    fill: { testId: login-email, value: "gallery@sitesprintz.com", clear: true }
+
+  - action: Enter gallery password
+    fill: { testId: login-password, value: "GalleryDemo123!", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard with gallery sites
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 1000
+
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      }
+
+  - action: Open Oak and Anchor workspace
+    code: |
+      const card = page.locator('[data-testid="site-card"][data-subdomain="gallery-ordering"]');
+      if ((await card.count()) === 0) {
+        throw new Error('Missing gallery-ordering site card');
+      }
+      await card.getByTestId('manage-site-button').click();
+    settle_ms: 1500
+
+  - action: First site orders pane
+    click: { testId: site-nav-orders }
+    settle_ms: 1200
+    wait_for: { selector: '[data-testid="site-dashboard"]', timeout: 15000 }
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/Oak & Anchor/i.test(t)) throw new Error('Expected Oak & Anchor on first site: ' + t.slice(0, 240));
+      if (/Summit Tow/i.test(t)) throw new Error('Tow site leaked onto ordering workspace');
+
+  - action: SPA switch to Summit Tow without reload
+    code: |
+      const dash = page.getByTestId('nav-dashboard');
+      if ((await dash.count()) === 0) {
+        throw new Error('Missing header Dashboard nav');
+      }
+      await dash.click();
+      await page.waitForURL(/\/dashboard$/, { timeout: 15000 });
+      await page.waitForSelector('[data-testid="site-card"][data-subdomain="gallery-tow"]', { timeout: 15000 });
+      const card = page.locator('[data-testid="site-card"][data-subdomain="gallery-tow"]');
+      await card.getByTestId('manage-site-button').click();
+    settle_ms: 1500
+
+  - action: Second site chrome is Tow not Oak
+    wait_for: { selector: '[data-testid="site-dashboard"]', timeout: 15000 }
+    code: |
+      const t = await page.locator('body').innerText();
+      if (!/Summit Tow/i.test(t)) throw new Error('Expected Summit Tow after switch: ' + t.slice(0, 240));
+      if (/Oak & Anchor/i.test(t)) throw new Error('Previous site leaked after switch: ' + t.slice(0, 240));
+
+  - action: Tow orders pane isolated
+    click: { testId: site-nav-orders }
+    settle_ms: 1000
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/Oak & Anchor/i.test(t)) throw new Error('Ordering site leaked on Tow orders');
+      if (!/Summit Tow/i.test(t)) throw new Error('Tow name missing on orders');
+
+  - action: Tow products pane isolated
+    click: { testId: site-nav-products }
+    settle_ms: 1000
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/Oak & Anchor/i.test(t)) throw new Error('Ordering site leaked on Tow products');
+
+  - action: Tow analytics pane isolated
+    click: { testId: site-nav-analytics }
+    settle_ms: 1200
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/Oak & Anchor/i.test(t)) throw new Error('Ordering site leaked on Tow analytics');
+      if (!/Summit Tow/i.test(t)) throw new Error('Tow name missing on analytics');

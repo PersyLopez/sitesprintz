@@ -196,7 +196,12 @@ describe('AuthContext', () => {
     const mockUser = { id: 1, email: 'test@example.com' };
     localStorage.setItem('authToken', 'test-token');
     authService.getCurrentUser.mockResolvedValueOnce({ user: mockUser });
-    authService.logout.mockResolvedValueOnce({});
+    authService.logout.mockImplementationOnce(async () => {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('refreshToken');
+      return true;
+    });
 
     render(
       <AuthProvider>
@@ -208,7 +213,8 @@ describe('AuthContext', () => {
       expect(contextValue.user).toEqual(mockUser);
     });
 
-    await contextValue.logout();
+    const cleared = await contextValue.logout();
+    expect(cleared).toBe(true);
 
     await waitFor(() => {
       expect(authService.logout).toHaveBeenCalled();
@@ -217,6 +223,33 @@ describe('AuthContext', () => {
       expect(contextValue.isAuthenticated).toBe(false);
       expect(localStorage.getItem('authToken')).toBeNull();
     });
+  });
+
+  it('should not clear session if a newer login replaced tokens during logout', async () => {
+    const mockUser = { id: 1, email: 'test@example.com' };
+    localStorage.setItem('accessToken', 'old-token');
+    localStorage.setItem('authToken', 'old-token');
+    authService.getCurrentUser.mockResolvedValueOnce({ user: mockUser });
+    authService.logout.mockImplementationOnce(async () => {
+      localStorage.setItem('accessToken', 'new-token');
+      localStorage.setItem('authToken', 'new-token');
+      return false;
+    });
+
+    render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>
+    );
+
+    await waitFor(() => {
+      expect(contextValue.user).toEqual(mockUser);
+    });
+
+    const cleared = await contextValue.logout();
+    expect(cleared).toBe(false);
+    expect(contextValue.user).toEqual(mockUser);
+    expect(localStorage.getItem('accessToken')).toBe('new-token');
   });
 
   it('should clear state even if logout API call fails', async () => {
@@ -235,12 +268,12 @@ describe('AuthContext', () => {
       expect(contextValue.user).toEqual(mockUser);
     });
 
-    await contextValue.logout();
+    const cleared = await contextValue.logout();
+    expect(cleared).toBe(true);
 
     await waitFor(() => {
       expect(contextValue.user).toBeNull();
       expect(contextValue.token).toBeNull();
-      expect(localStorage.getItem('authToken')).toBeNull();
     });
   });
 

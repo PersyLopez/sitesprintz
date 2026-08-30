@@ -82,17 +82,17 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
+    let cleared = false;
     try {
-      await authService.logout();
+      cleared = await authService.logout();
     } catch (error) {
       console.error('Logout error:', error);
-    } finally {
-      setUser(null);
-      setToken(null);
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('authToken'); // Clean up old format
+      cleared = true;
     }
+    if (!cleared) return false;
+    setUser(null);
+    setToken(null);
+    return true;
   };
 
   const value = {

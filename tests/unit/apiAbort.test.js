@@ -27,4 +27,19 @@ describe('API client abort handling', () => {
     expect(errorSpy).not.toHaveBeenCalled();
     expect(warnSpy).not.toHaveBeenCalled();
   });
+
+  it('does not retry Failed to fetch when the request signal is already aborted', async () => {
+    const controller = new AbortController();
+    controller.abort();
+    const fail = new TypeError('Failed to fetch');
+    global.fetch = vi.fn().mockRejectedValue(fail);
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    await expect(
+      api.get('/api/orders/x/orders', { retries: 3, signal: controller.signal })
+    ).rejects.toMatchObject({ name: 'AbortError' });
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
 });

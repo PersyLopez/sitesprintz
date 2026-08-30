@@ -3,8 +3,10 @@ import api from './api.js';
 
 export const sitesService = {
   // Get user's sites
-  async getUserSites(userId) {
-    return api.get(`/api/users/${userId}/sites`);
+  async getUserSites(userId, options) {
+    return options
+      ? api.get(`/api/users/${userId}/sites`, options)
+      : api.get(`/api/users/${userId}/sites`);
   },
 
   // Delete site
@@ -13,8 +15,10 @@ export const sitesService = {
   },
 
   // Get site by ID or subdomain
-  async getSite(siteId) {
-    return api.get(`/api/sites/${siteId}`);
+  async getSite(siteId, options) {
+    return options
+      ? api.get(`/api/sites/${siteId}`, options)
+      : api.get(`/api/sites/${siteId}`);
   },
 
   // Get site analytics

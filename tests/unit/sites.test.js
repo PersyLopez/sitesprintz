@@ -46,6 +46,15 @@ describe('Sites Service', () => {
 
       await expect(sitesService.getUserSites('user123')).rejects.toThrow('Fetch failed');
     });
+
+    it('passes abort signal through to the API client', async () => {
+      const signal = new AbortController().signal;
+      api.get.mockResolvedValueOnce([]);
+
+      await sitesService.getUserSites('user123', { signal });
+
+      expect(api.get).toHaveBeenCalledWith('/api/users/user123/sites', { signal });
+    });
   });
 
   // Delete Site (3 tests)

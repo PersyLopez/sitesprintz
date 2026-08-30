@@ -1,5 +1,5 @@
 url: http://localhost:5173/login
-goal: Analytics dashboard and orders empty-state render from local API data
+goal: Account analytics at /analytics and legacy /orders without siteId redirects to /dashboard
 steps:
   - action: Login form ready
     wait_for: { text: Welcome Back, timeout: 20000 }
@@ -21,12 +21,13 @@ steps:
     goto: http://localhost:5173/analytics
 
   - action: Analytics dashboard
-    wait_for: { text: Analytics Dashboard, timeout: 15000 }
+    wait_for: { selector: '[data-testid="analytics-page"]', timeout: 15000 }
     settle_ms: 1500
     assert:
       - url contains /analytics
-      - text contains TOTAL VIEWS
-      - text contains UNIQUE VISITORS
+      - text contains Analytics
+      - text contains Total Views
+      - text contains Unique visitors
       - text contains Your Sites Performance
 
   - action: Time range controls present
@@ -36,9 +37,8 @@ steps:
   - action: Open orders without siteId
     goto: http://localhost:5173/orders
 
-  - action: Orders empty guidance
-    wait_for: { text: No Site Selected, timeout: 15000 }
+  - action: Orders without siteId redirects to account dashboard
+    wait_for: { url: /dashboard, timeout: 15000 }
     settle_ms: 800
     assert:
-      - text contains select a site
-      - text contains Go to Dashboard
+      - url contains /dashboard

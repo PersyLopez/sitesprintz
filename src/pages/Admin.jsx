@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
+import { usePolling } from '../hooks/usePolling';
 import Header from '../components/layout/Header';
 import AdminSubnav from '../components/admin/AdminSubnav';
 import Footer from '../components/layout/Footer';
@@ -12,61 +13,30 @@ import './Admin.css';
 function Admin() {
   const { user, token } = useAuth();
   const { showError, showSuccess } = useToast();
-
-  const [loading, setLoading] = useState(true);
-  const [adminData, setAdminData] = useState(null);
-  const [lastUpdated, setLastUpdated] = useState(null);
   const [activeTab, setActiveTab] = useState('overview'); // overview, activity, system
 
+  const {
+    data: polledData,
+    loading,
+    error,
+    lastUpdated,
+    forceRefresh,
+  } = usePolling({
+    endpoint: token ? '/api/admin/analytics' : null,
+    interval: 60000,
+    enabled: !!token,
+  });
+
   useEffect(() => {
-    if (token) {
-      loadAdminData();
+    if (!error || !import.meta.env.PROD) return undefined;
+    showError('Failed to load admin data');
+    return undefined;
+  }, [error, showError]);
 
-      // Auto-refresh every 60 seconds
-      const interval = setInterval(loadAdminData, 60000);
-      return () => clearInterval(interval);
-    }
-  }, [token]);
+  const adminData = polledData || (error && !import.meta.env.PROD ? getMockData() : null);
 
-  const loadAdminData = async () => {
-    setLoading(true);
-
-    try {
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
-      const response = await fetch('/api/admin/analytics', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to load admin data: ${response.status} ${errorText}`);
-      }
-
-      const data = await response.json();
-      setAdminData(data);
-      setLastUpdated(new Date());
-    } catch (error) {
-      console.error('Load admin data error:', error);
-      // In production, show error instead of mock data
-      if (import.meta.env.PROD) {
-        showError('Failed to load admin data');
-        setAdminData(null);
-      } else {
-        // Use mock data for development only
-        setAdminData(getMockData());
-      }
-      setLastUpdated(new Date());
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getMockData = () => ({
+  function getMockData() {
+    return ({
     system: {
       status: 'Online',
       uptime: '99.9%',
@@ -205,7 +175,8 @@ function Admin() {
         priority: 'low'
       }
     ]
-  });
+    });
+  }
 
   const formatTime = () => {
     if (!lastUpdated) return '';
@@ -269,7 +240,7 @@ function Admin() {
             <Link to="/admin/candidates" className="btn btn-secondary">
               Candidates
             </Link>
-            <button onClick={loadAdminData} className="btn btn-secondary">
+            <button type="button" onClick={forceRefresh} className="btn btn-secondary">
               Refresh
             </button>
             <Link to="/dashboard" className="btn btn-secondary">

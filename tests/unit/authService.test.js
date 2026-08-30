@@ -134,21 +134,48 @@ describe('authService', () => {
 
   describe('logout', () => {
     it('should logout user and remove token from localStorage', async () => {
+      localStorage.setItem('accessToken', 'test-token');
+      localStorage.setItem('refreshToken', 'refresh-token');
       localStorage.setItem('authToken', 'test-token');
       api.post.mockResolvedValueOnce({});
 
-      await authService.logout();
+      const cleared = await authService.logout();
 
-      expect(api.post).toHaveBeenCalledWith('/api/auth/logout', {});
+      expect(cleared).toBe(true);
+      expect(api.post).toHaveBeenCalledWith('/api/auth/logout', { refreshToken: 'refresh-token' });
       expect(localStorage.getItem('authToken')).toBeNull();
+      expect(localStorage.getItem('accessToken')).toBeNull();
     });
 
-    it('should call API even if no token exists', async () => {
-      api.post.mockResolvedValueOnce({});
+    it('should not wipe tokens if a newer login replaced them during logout', async () => {
+      api.post.mockReset();
+      localStorage.setItem('accessToken', 'old-access');
+      localStorage.setItem('refreshToken', 'old-refresh');
+      localStorage.setItem('authToken', 'old-access');
+      localStorage.setItem('token', 'old-access');
+      api.post.mockImplementationOnce(async () => {
+        localStorage.setItem('accessToken', 'new-access');
+        localStorage.setItem('refreshToken', 'new-refresh');
+        localStorage.setItem('authToken', 'new-access');
+        localStorage.setItem('token', 'new-access');
+        return {};
+      });
 
-      await authService.logout();
+      const cleared = await authService.logout();
 
-      expect(api.post).toHaveBeenCalledWith('/api/auth/logout', {});
+      expect(cleared).toBe(false);
+      expect(localStorage.getItem('accessToken')).toBe('new-access');
+      expect(localStorage.getItem('refreshToken')).toBe('new-refresh');
+    });
+
+    it('should clear storage without a logout POST when no refresh token exists', async () => {
+      localStorage.setItem('authToken', 'legacy-only');
+
+      const cleared = await authService.logout();
+
+      expect(cleared).toBe(true);
+      expect(api.post).not.toHaveBeenCalled();
+      expect(localStorage.getItem('authToken')).toBeNull();
     });
   });
 

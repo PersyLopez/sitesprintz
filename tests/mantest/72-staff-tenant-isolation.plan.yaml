@@ -1,0 +1,125 @@
+url: http://localhost:5173/login
+goal: Staff cannot see gallery sites, admin, or another tenant schedule/orders; limited staff cannot see orders
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Fill staff email
+    fill: { testId: login-email, value: "staff@example.com", clear: true }
+
+  - action: Fill staff password
+    fill: { testId: login-password, value: "StaffPass!2024", clear: true }
+
+  - action: Submit staff login
+    click: { testId: login-submit }
+    settle_ms: 3000
+    wait_for: { url: /dashboard, timeout: 20000 }
+
+  - action: Account home has no gallery owner sites
+    code: |
+      const t = await page.locator('body').innerText();
+      if (/Luxe Beauty Studio/i.test(t) && (await page.locator('[data-testid="site-card"][data-subdomain="gallery-salon"]').count()) > 0) {
+        throw new Error('Staff dashboard leaked gallery owner site');
+      }
+      const list = await page.evaluate(async () => {
+        const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken') || localStorage.getItem('token');
+        const res = await fetch('/api/sites', { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
+        const data = await res.json();
+        return { status: res.status, sites: data.data || data.sites || [] };
+      });
+      if (list.sites.some((s) => s.subdomain === 'gallery-salon')) {
+        throw new Error('GET /api/sites leaked gallery-salon to staff');
+      }
+    settle_ms: 400
+
+  - action: Gallery products IDOR is 403
+    code: |
+      const probe = await page.evaluate(async () => {
+        const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken') || localStorage.getItem('token');
+        const res = await fetch('/api/sites/gallery-salon/products', {
+          headers: { Authorization: `Bearer ${token}` },
+          credentials: 'include',
+        });
+        const body = await res.json().catch(() => ({}));
+        return { status: res.status, code: body.code || body.error };
+      });
+      if (probe.status !== 403) {
+        throw new Error('Expected 403 on gallery-salon products, got ' + JSON.stringify(probe));
+      }
+    settle_ms: 300
+
+  - action: Staff blocked from admin UI and analytics API
+    code: |
+      await page.goto('http://localhost:5173/admin');
+      await page.waitForURL(/\/dashboard/, { timeout: 15000 });
+      const adminApi = await page.evaluate(async () => {
+        const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken') || localStorage.getItem('token');
+        const res = await fetch('/api/admin/analytics', {
+          headers: { Authorization: `Bearer ${token}` },
+          credentials: 'include',
+        });
+        return res.status;
+      });
+      if (adminApi !== 403 && adminApi !== 401) {
+        throw new Error('Staff GET /api/admin/analytics expected 403/401, got ' + adminApi);
+      }
+    settle_ms: 400
+
+  - action: Other-tenant schedule and orders APIs are 403
+    code: |
+      await page.goto('http://localhost:5173/staff/dashboard');
+      await page.getByText('Staff Dashboard').waitFor({ timeout: 15000 });
+      const result = await page.evaluate(async () => {
+        const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken') || localStorage.getItem('token');
+        const headers = { Authorization: `Bearer ${token}` };
+        const mine = await fetch('/api/staff/my-assignments', { headers, credentials: 'include' });
+        const data = await mine.json();
+        const own = data.assignments?.[0]?.tenantId;
+        if (!own) throw new Error('No staff tenant assignment');
+        const foreign = /[0-9a-f]$/i.test(own)
+          ? own.replace(/[0-9a-f]$/i, (c) => (c.toLowerCase() === '0' ? '1' : '0'))
+          : `${own}0`;
+        const sched = await fetch(`/api/staff/schedule/${foreign}`, { headers, credentials: 'include' });
+        const orders = await fetch(`/api/staff/orders/${foreign}`, { headers, credentials: 'include' });
+        return { own, foreign, schedule: sched.status, orders: orders.status };
+      });
+      if (result.schedule !== 403) {
+        throw new Error('Expected 403 other-tenant schedule, got ' + JSON.stringify(result));
+      }
+      if (result.orders !== 403) {
+        throw new Error('Expected 403 other-tenant orders, got ' + JSON.stringify(result));
+      }
+    settle_ms: 400
+
+  - action: Limited staff orders blocked
+    code: |
+      await page.goto('http://localhost:5173/login');
+      await page.getByTestId('login-email').fill('staff-limited@example.com');
+      await page.getByTestId('login-password').fill('StaffLimited!2024');
+      await page.getByTestId('login-submit').click();
+      await page.waitForURL(/dashboard/, { timeout: 20000 }).catch(() => {});
+      await page.goto('http://localhost:5173/staff/dashboard');
+      await page.waitForTimeout(1200);
+      const dash = await page.locator('body').innerText();
+      if (/No Staff Assignments/i.test(dash)) return;
+      const probe = await page.evaluate(async () => {
+        const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken') || localStorage.getItem('token');
+        const headers = { Authorization: `Bearer ${token}` };
+        const mine = await fetch('/api/staff/my-assignments', { headers, credentials: 'include' });
+        const data = await mine.json();
+        const tenantId = data.assignments?.[0]?.tenantId;
+        if (!tenantId) return { skip: true };
+        const res = await fetch(`/api/staff/orders/${tenantId}`, { headers, credentials: 'include' });
+        return { tenantId, status: res.status };
+      });
+      if (probe.skip) throw new Error('Limited staff missing tenant assignment');
+      if (probe.status !== 403) {
+        throw new Error('Limited staff orders API expected 403, got ' + JSON.stringify(probe));
+      }
+      await page.goto(`http://localhost:5173/staff/orders/${probe.tenantId}`);
+      await page.waitForTimeout(1200);
+      const t = await page.locator('body').innerText();
+      if (!/Orders not available/i.test(t)) {
+        throw new Error('Limited staff should see Orders not available: ' + t.slice(0, 280));
+      }
+    settle_ms: 300

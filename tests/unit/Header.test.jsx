@@ -1,10 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import Header from '../../src/components/layout/Header';
 import { AuthContext } from '../../src/context/AuthContext';
 import { ToastProvider } from '../../src/context/ToastContext';
+
+function LocationProbe() {
+  const location = useLocation();
+  return <div data-testid="location-path">{location.pathname}</div>;
+}
 
 describe('Header Component', () => {
   const mockLogout = vi.fn();
@@ -22,6 +27,7 @@ describe('Header Component', () => {
             }}
           >
             <Header />
+            <LocationProbe />
           </AuthContext.Provider>
         </ToastProvider>
       </MemoryRouter>
@@ -191,6 +197,31 @@ describe('Header Component', () => {
 
       const logoutButton = screen.getByRole('button', { name: /Logout/i });
       expect(logoutButton).toHaveClass('btn', 'btn-secondary');
+    });
+
+    it('should navigate to login only when logout cleared the session', async () => {
+      const user = userEvent.setup();
+      mockLogout.mockResolvedValueOnce(true);
+      renderHeader(true, '/dashboard');
+
+      await user.click(screen.getByRole('button', { name: /Logout/i }));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('location-path')).toHaveTextContent('/login');
+      });
+    });
+
+    it('should stay on the current route when logout did not clear the session', async () => {
+      const user = userEvent.setup();
+      mockLogout.mockResolvedValueOnce(false);
+      renderHeader(true, '/dashboard');
+
+      await user.click(screen.getByRole('button', { name: /Logout/i }));
+
+      await waitFor(() => {
+        expect(mockLogout).toHaveBeenCalledTimes(1);
+      });
+      expect(screen.getByTestId('location-path')).toHaveTextContent('/dashboard');
     });
   });
 

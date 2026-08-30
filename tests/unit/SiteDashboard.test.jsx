@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { Link, MemoryRouter, Route, Routes } from 'react-router-dom';
 import SiteDashboard from '../../src/pages/SiteDashboard';
 import SiteOverview from '../../src/components/dashboard/SiteOverview';
 import { AuthContext } from '../../src/context/AuthContext';
@@ -47,13 +47,30 @@ describe('SiteDashboard', () => {
     businessName: 'River Salon',
   };
 
+  const listedSite2 = {
+    id: 'site-2',
+    subdomain: 'summit-tow',
+    templateId: 'tow',
+    status: 'published',
+    plan: 'growth',
+    businessName: 'Summit Tow',
+  };
+
   const renderDashboard = (entry = '/dashboard/sites/site-1') => {
     return render(
       <MemoryRouter initialEntries={[entry]}>
         <AuthContext.Provider value={{ user: mockUser, loading: false, isAuthenticated: true }}>
           <ToastContext.Provider value={{ showSuccess: vi.fn(), showError: vi.fn() }}>
             <Routes>
-              <Route path="/dashboard/sites/:siteId" element={<SiteDashboard />}>
+              <Route
+                path="/dashboard/sites/:siteId"
+                element={(
+                  <>
+                    <Link to="/dashboard/sites/site-2" data-testid="jump-site-2">jump site 2</Link>
+                    <SiteDashboard />
+                  </>
+                )}
+              >
                 <Route index element={<SiteOverview />} />
                 <Route path="appointments" element={
                   <div data-testid="booking-dashboard-embedded">
@@ -125,6 +142,58 @@ describe('SiteDashboard', () => {
       expect(screen.getByTestId('share-modal')).toBeInTheDocument();
       expect(screen.getByTestId('share-whatsapp')).toBeInTheDocument();
     });
+  });
+
+  it('does not apply a stale list after siteId changes', async () => {
+    const user = userEvent.setup();
+    let resolveFirst;
+    sitesService.getUserSites
+      .mockImplementationOnce(() => new Promise((resolve) => {
+        resolveFirst = resolve;
+      }))
+      .mockResolvedValue({ sites: [listedSite, listedSite2] });
+    sitesService.getSite.mockImplementation(async (id) => {
+      const row = id === 'site-2' ? listedSite2 : listedSite;
+      return { site: { ...row, data: { businessName: row.businessName } } };
+    });
+
+    renderDashboard();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('jump-site-2')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId('jump-site-2'));
+    resolveFirst({ sites: [listedSite] });
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Summit Tow' })).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('heading', { name: 'River Salon' })).not.toBeInTheDocument();
+  });
+
+  it('does not keep previous site chrome after siteId changes', async () => {
+    const user = userEvent.setup();
+    sitesService.getUserSites.mockResolvedValue({ sites: [listedSite, listedSite2] });
+    sitesService.getSite.mockImplementation(async (id) => {
+      const row = id === 'site-2' ? listedSite2 : listedSite;
+      return { site: { ...row, data: { businessName: row.businessName } } };
+    });
+
+    renderDashboard();
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'River Salon' })).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId('jump-site-2'));
+
+    expect(screen.queryByRole('heading', { name: 'River Salon' })).not.toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Summit Tow' })).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('heading', { name: 'River Salon' })).not.toBeInTheDocument();
   });
 
   it('renders booking console on nested appointments route', async () => {

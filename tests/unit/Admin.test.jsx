@@ -6,8 +6,18 @@ import Admin from '../../src/pages/Admin';
 import { useAuth } from '../../src/hooks/useAuth';
 import { useToast } from '../../src/hooks/useToast';
 
+const { mockApiGet } = vi.hoisted(() => ({ mockApiGet: vi.fn() }));
+
 vi.mock('../../src/hooks/useAuth');
 vi.mock('../../src/hooks/useToast');
+vi.mock('../../src/services/api', async () => {
+  const actual = await vi.importActual('../../src/services/api');
+  return {
+    ...actual,
+    default: { ...actual.default, get: mockApiGet },
+    api: { ...actual.api, get: mockApiGet },
+  };
+});
 vi.mock('../../src/components/layout/Header', () => ({
   default: () => <div data-testid="header">Header</div>,
 }));
@@ -102,7 +112,8 @@ describe('Admin Page', () => {
       showSuccess: mockShowSuccess,
       showError: mockShowError,
     });
-    global.fetch = vi.fn();
+    mockApiGet.mockReset();
+    mockApiGet.mockResolvedValue(mockAdminData);
     global.localStorage = {
       getItem: vi.fn(() => 'fake-token'),
     };
@@ -111,10 +122,7 @@ describe('Admin Page', () => {
   // Rendering (4 tests)
   describe('Page Rendering', () => {
     it('should render admin page', async () => {
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => (mockAdminData),
-      });
+      mockApiGet.mockResolvedValue(mockAdminData);
 
       render(
         <MemoryRouter>
@@ -127,10 +135,7 @@ describe('Admin Page', () => {
     });
 
     it('should show page title', async () => {
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => (mockAdminData),
-      });
+      mockApiGet.mockResolvedValue(mockAdminData);
 
       render(
         <MemoryRouter>
@@ -144,7 +149,7 @@ describe('Admin Page', () => {
     });
 
     it('should show loading state', () => {
-      global.fetch.mockReturnValue(new Promise(() => { }));
+      mockApiGet.mockReturnValue(new Promise(() => { }));
 
       render(
         <MemoryRouter>
@@ -157,10 +162,7 @@ describe('Admin Page', () => {
     });
 
     it('should load admin data on mount', async () => {
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => (mockAdminData),
-      });
+      mockApiGet.mockResolvedValue(mockAdminData);
 
       render(
         <MemoryRouter>
@@ -169,12 +171,10 @@ describe('Admin Page', () => {
       );
 
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith(
+        expect(mockApiGet).toHaveBeenCalledWith(
           '/api/admin/analytics',
           expect.objectContaining({
-            headers: expect.objectContaining({
-              Authorization: 'Bearer fake-token',
-            }),
+            signal: expect.any(AbortSignal),
           })
         );
       });
@@ -184,10 +184,7 @@ describe('Admin Page', () => {
   // Tabs (4 tests)
   describe('Tab Navigation', () => {
     beforeEach(() => {
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => (mockAdminData),
-      });
+      mockApiGet.mockResolvedValue(mockAdminData);
     });
 
     it('should have overview tab', async () => {
@@ -249,10 +246,7 @@ describe('Admin Page', () => {
   // Stats Display (4 tests)
   describe('Statistics Display', () => {
     beforeEach(() => {
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => (mockAdminData),
-      });
+      mockApiGet.mockResolvedValue(mockAdminData);
     });
 
     it('should display platform stats', async () => {
@@ -310,10 +304,7 @@ describe('Admin Page', () => {
   // Links (4 tests)
   describe('Navigation Links', () => {
     beforeEach(() => {
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => (mockAdminData),
-      });
+      mockApiGet.mockResolvedValue(mockAdminData);
     });
 
     it('should have link to users page', async () => {
@@ -355,10 +346,7 @@ describe('Admin Page', () => {
 
     it('should refresh data when button clicked', async () => {
       const user = userEvent.setup();
-      global.fetch.mockResolvedValue({
-        ok: true,
-        json: async () => (mockAdminData),
-      });
+      mockApiGet.mockResolvedValue(mockAdminData);
 
       render(
         <MemoryRouter>
@@ -367,14 +355,14 @@ describe('Admin Page', () => {
       );
 
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledTimes(1);
+        expect(mockApiGet).toHaveBeenCalledTimes(1);
       });
 
       const refreshButton = screen.getByRole('button', { name: /refresh/i });
       await user.click(refreshButton);
 
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledTimes(2);
+        expect(mockApiGet).toHaveBeenCalledTimes(2);
       });
     });
   });
@@ -382,7 +370,7 @@ describe('Admin Page', () => {
   // Error Handling (4 tests)
   describe('Error Handling', () => {
     it('should handle fetch errors gracefully', async () => {
-      global.fetch.mockRejectedValue(new Error('Failed'));
+      mockApiGet.mockRejectedValue(new Error('Failed'));
 
       render(
         <MemoryRouter>
@@ -396,7 +384,7 @@ describe('Admin Page', () => {
     });
 
     it('should use mock data on error', async () => {
-      global.fetch.mockRejectedValue(new Error('Failed'));
+      mockApiGet.mockRejectedValue(new Error('Failed'));
 
       render(
         <MemoryRouter>
@@ -411,10 +399,7 @@ describe('Admin Page', () => {
     });
 
     it('should handle unauthorized access', async () => {
-      global.fetch.mockResolvedValue({
-        ok: false,
-        status: 403,
-      });
+      mockApiGet.mockRejectedValue(new Error('Forbidden'));
 
       render(
         <MemoryRouter>
@@ -428,7 +413,7 @@ describe('Admin Page', () => {
     });
 
     it('should handle network errors', async () => {
-      global.fetch.mockRejectedValue(new Error('Network error'));
+      mockApiGet.mockRejectedValue(new Error('Network error'));
 
       render(
         <MemoryRouter>

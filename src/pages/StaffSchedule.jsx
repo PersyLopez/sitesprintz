@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
+import { usePolling } from '../hooks/usePolling';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import ScheduleBoard from '../components/booking/ScheduleBoard';
@@ -18,44 +19,32 @@ function StaffSchedule() {
   const [scope, setScope] = useState('mine');
   const [anchorDate, setAnchorDate] = useState(() => new Date());
   const [schedule, setSchedule] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
 
   const range = useMemo(() => rangeForView(anchorDate, view), [anchorDate, view]);
+  const pollParams = useMemo(() => ({
+    from: range.from.toISOString(),
+    to: addDays(range.to, 1).toISOString(),
+    scope,
+  }), [range.from, range.to, scope]);
+
+  const { data: polledData, loading, error } = usePolling({
+    endpoint: tenantId && isAuthenticated ? `/api/staff/schedule/${tenantId}` : null,
+    interval: 30000,
+    enabled: Boolean(tenantId && isAuthenticated),
+    params: pollParams,
+    onUpdate: (newData) => {
+      if (newData?.schedule) setSchedule(newData.schedule);
+    },
+  });
 
   useEffect(() => {
-    if (!tenantId || !isAuthenticated) return undefined;
-    let cancelled = false;
-    let isFirstLoad = true;
+    if (polledData?.schedule) setSchedule(polledData.schedule);
+  }, [polledData]);
 
-    async function load() {
-      try {
-        if (isFirstLoad) setLoading(true);
-        const from = range.from.toISOString();
-        const to = addDays(range.to, 1).toISOString();
-        const response = await api.get(`/api/staff/schedule/${tenantId}`, {
-          params: { from, to, scope },
-        });
-        if (!cancelled) {
-          setSchedule(response.schedule);
-        }
-      } catch (err) {
-        if (!cancelled && isFirstLoad) showError('Failed to load schedule');
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-          isFirstLoad = false;
-        }
-      }
-    }
-
-    load();
-    const timer = setInterval(load, 30000);
-    return () => {
-      cancelled = true;
-      clearInterval(timer);
-    };
-  }, [tenantId, isAuthenticated, scope, range.from.getTime(), range.to.getTime()]);
+  useEffect(() => {
+    if (error && !schedule) showError('Failed to load schedule');
+  }, [error, schedule, showError]);
 
   const handleStatusUpdate = async (appointmentId, status) => {
     try {

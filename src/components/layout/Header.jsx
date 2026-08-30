@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useLocale } from '../../i18n/LocaleContext.jsx';
 import LanguageSwitcher from '../i18n/LanguageSwitcher';
@@ -16,6 +16,7 @@ function Header() {
   const menuRef = useRef(null);
   const toggleRef = useRef(null);
   const location = useLocation();
+  const navigate = useNavigate();
   const isAccountDashboard =
     location.pathname === '/dashboard' ||
     (location.pathname.startsWith('/dashboard/') && !location.pathname.startsWith('/dashboard/sites/'));
@@ -67,9 +68,12 @@ function Header() {
     };
   }, [mobileMenuOpen]);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
     setMobileMenuOpen(false);
+    const cleared = await logout();
+    if (cleared) {
+      navigate('/login');
+    }
   };
 
   const openFeedback = () => {

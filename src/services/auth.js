@@ -146,15 +146,20 @@ export const authService = {
     return await refreshAccessToken();
   },
 
-  // Logout user
+  // Logout user. Returns true if this session's storage was cleared.
   async logout() {
     const refreshToken = localStorage.getItem('refreshToken');
+    const accessAtStart = localStorage.getItem('accessToken') || localStorage.getItem('authToken');
     if (refreshToken) {
       try {
         await api.post('/api/auth/logout', { refreshToken });
       } catch (error) {
         console.error('Logout error:', error);
       }
+    }
+    const currentAccess = localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+    if (currentAccess && currentAccess !== accessAtStart) {
+      return false;
     }
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
@@ -164,6 +169,7 @@ export const authService = {
       clearTimeout(refreshTimer);
       refreshTimer = null;
     }
+    return true;
   },
 
   // Get current user

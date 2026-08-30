@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useLocation, useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { sitesService } from '../services/sites';
+import { isAbortError } from '../services/api';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import SkeletonLoader from '../components/common/SkeletonLoader';
@@ -35,52 +36,58 @@ function SiteDashboard() {
   useEffect(() => {
     if (authLoading || !user?.id || !siteId) return undefined;
 
-    let cancelled = false;
+    setSite(null);
+    setShareOpen(false);
+    setNotFound(false);
+    setLoading(true);
+
+    const controller = new AbortController();
+    const { signal } = controller;
 
     const loadSite = async () => {
-      setLoading(true);
-      setNotFound(false);
       try {
-        const listData = await sitesService.getUserSites(user.id);
+        const listData = await sitesService.getUserSites(user.id, { signal });
+        if (signal.aborted) return;
         const list = listData.sites || [];
         const listed = list.find((item) => item.id === siteId || item.subdomain === siteId);
 
         if (!listed) {
-          if (!cancelled) {
+          if (!signal.aborted) {
             setNotFound(true);
-            setSite(null);
           }
           return;
         }
 
         let detail = listed;
         try {
-          const payload = await sitesService.getSite(listed.id);
+          const payload = await sitesService.getSite(listed.id, { signal });
           detail = normalizeSiteRecord(payload) || listed;
-        } catch {
+        } catch (error) {
+          if (isAbortError(error) || signal.aborted) return;
           detail = normalizeSiteRecord(listed);
         }
 
-        if (!cancelled) {
-          setSite({ ...listed, ...detail, id: listed.id });
+        const record = { ...listed, ...detail, id: listed.id };
+        const matchesRoute = record.id === siteId || record.subdomain === siteId;
+        if (!signal.aborted && matchesRoute) {
+          setSite(record);
         }
       } catch (error) {
-        if (!cancelled) {
-          showError('Failed to load this site');
-          setNotFound(true);
-        }
+        if (isAbortError(error) || signal.aborted) return;
+        showError('Failed to load this site');
+        setNotFound(true);
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!signal.aborted) setLoading(false);
       }
     };
 
     loadSite();
     return () => {
-      cancelled = true;
+      controller.abort();
     };
   }, [authLoading, user?.id, siteId, showError]);
 
-  if (loading || authLoading) {
+  if (authLoading || loading) {
     return (
       <div className="site-workspace-page">
         <Header />
@@ -137,7 +144,7 @@ function SiteDashboard() {
 
         <main id="site-workspace-main" className="site-workspace" data-testid="site-dashboard">
           <nav className="site-workspace-breadcrumb" aria-label="Breadcrumb">
-            <Link to="/dashboard">All sites</Link>
+            <Link to="/dashboard" data-testid="site-workspace-all-sites">All sites</Link>
             <span aria-hidden="true">/</span>
             <span>{name}</span>
           </nav>

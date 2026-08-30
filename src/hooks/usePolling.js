@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import api from '../services/api';
+import api, { isAbortError } from '../services/api';
 
 /**
  * Custom hook for smart polling with visibility API and exponential backoff
@@ -33,6 +33,12 @@ export function usePolling({
   const lastDataRef = useRef(null);
   const isVisibleRef = useRef(!document.hidden);
   const abortControllerRef = useRef(null);
+  const onUpdateRef = useRef(onUpdate);
+  const paramsRef = useRef(params);
+  const enabledRef = useRef(enabled);
+  onUpdateRef.current = onUpdate;
+  paramsRef.current = params;
+  enabledRef.current = enabled;
 
   // Track page visibility
   useEffect(() => {
@@ -100,7 +106,7 @@ export function usePolling({
       }
 
       const response = await api.get(endpoint, {
-        params,
+        params: paramsRef.current,
         signal: abortControllerRef.current.signal
       });
 
@@ -117,8 +123,8 @@ export function usePolling({
         lastDataRef.current = newData;
 
         // Call onUpdate callback if provided
-        if (onUpdate && typeof onUpdate === 'function') {
-          onUpdate(newData, lastDataRef.current);
+        if (typeof onUpdateRef.current === 'function') {
+          onUpdateRef.current(newData, lastDataRef.current);
         }
 
         // Reset backoff on successful update
@@ -127,7 +133,7 @@ export function usePolling({
 
       setLoading(false);
     } catch (err) {
-      if (err.name === 'AbortError' || err.code === 'ERR_CANCELED' || err.originalError?.name === 'AbortError') {
+      if (isAbortError(err)) {
         return;
       }
 
@@ -142,7 +148,7 @@ export function usePolling({
         );
       }
     }
-  }, [endpoint, interval, onUpdate, compareKey, params, isOnline]);
+  }, [endpoint, interval, compareKey, isOnline]);
 
   // Manual refresh function
   const forceRefresh = useCallback(() => {
@@ -152,6 +158,7 @@ export function usePolling({
 
   // Initial fetch
   useEffect(() => {
+    lastDataRef.current = null;
     if (enabled && endpoint) {
       fetchData(true);
     }
@@ -161,7 +168,7 @@ export function usePolling({
         abortControllerRef.current.abort();
       }
     };
-  }, [enabled, endpoint]); // Only run on mount or when endpoint changes
+  }, [enabled, endpoint, fetchData]);
 
   // Set up polling interval
   useEffect(() => {
@@ -169,29 +176,30 @@ export function usePolling({
       return;
     }
 
-    // Clear existing interval
+    let active = true;
+
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
 
-    // Clear existing timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
 
-    // Use dynamic interval based on backoff
     const scheduleNextPoll = () => {
       timeoutRef.current = setTimeout(() => {
-        if (enabled && isVisibleRef.current && isOnline) {
+        if (!active) return;
+        if (enabledRef.current && isVisibleRef.current && isOnline) {
           fetchData(false);
         }
-        scheduleNextPoll();
+        if (active) scheduleNextPoll();
       }, backoffDelayRef.current);
     };
 
     scheduleNextPoll();
 
     return () => {
+      active = false;
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
