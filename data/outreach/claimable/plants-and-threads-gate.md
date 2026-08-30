@@ -28,12 +28,12 @@ none
 
 ## URLs (production)
 
-- View: https://sitesprintz.com/view/plants-and-threads
-- Claim: https://sitesprintz.com/claim/1e6179cfa92ed0118c6ec09567f9802f1adad911748603c218342dc83e8e1e36
+- View: https://rightsitelight.com/view/plants-and-threads
+- Claim: https://rightsitelight.com/claim/7d02c9223328ce0be43a386bd33e5a862ce3ca00f7901653329d283849ac378a
 
 ## Pitch (send this, not the score sheet)
 
-We put Plants & Threads on a live SiteSprintz page from your photos, then checked that it actually works before sending this.
+We put Plants & Threads on a live Right Site Light page from your photos, then checked that it actually works before sending this.
 
 Already verified:
 - The page loads and the plant photos show
@@ -42,8 +42,8 @@ Already verified:
 - Book sewing stays on this site; you can pick a weekday time (price quoted in person)
 - Your street is not on the public page
 
-Look: https://sitesprintz.com/view/plants-and-threads
-Claim this page (14 days): https://sitesprintz.com/claim/1e6179cfa92ed0118c6ec09567f9802f1adad911748603c218342dc83e8e1e36
+Look: https://rightsitelight.com/view/plants-and-threads
+Claim this page (14 days): https://rightsitelight.com/claim/7d02c9223328ce0be43a386bd33e5a862ce3ca00f7901653329d283849ac378a
 
 We left blank what we did not have: phone, email, public street, a hours grid, and a sewing price.
 
@@ -55,7 +55,7 @@ To: gonzalesgl1280@gmail.com
 CC: persylopez9@gmail.com  
 Sent: 2026-08-29 Resend `45be6a1c-f7d8-41c7-9df2-0abd67eb0e78`
 
-Pusimos Plants & Threads en una página de SiteSprintz con tus fotos, y comprobamos que funciona de verdad antes de enviarte esto.
+Pusimos Plants & Threads en una página de Right Site Light con tus fotos, y comprobamos que funciona de verdad antes de enviarte esto.
 
 Ya verificamos:
 - La página carga y se ven las fotos de las plantas
@@ -64,8 +64,8 @@ Ya verificamos:
 - Reservar costura se queda en este sitio; puedes elegir un horario entre semana (el precio se cotiza en persona)
 - Tu calle no aparece en la página pública
 
-Mírala: https://sitesprintz.com/view/plants-and-threads
-Reclama esta página (14 días): https://sitesprintz.com/claim/1e6179cfa92ed0118c6ec09567f9802f1adad911748603c218342dc83e8e1e36
+Mírala: https://rightsitelight.com/view/plants-and-threads
+Reclama esta página (14 días): https://rightsitelight.com/claim/7d02c9223328ce0be43a386bd33e5a862ce3ca00f7901653329d283849ac378a
 
 Dejamos en blanco lo que no teníamos: teléfono, correo, calle pública, un horario de semana y el precio de costura.
 
@@ -78,7 +78,7 @@ Para reclamarla, crea una cuenta o entra con el correo que quieres usar para el 
 They claim with **their own email** — Create account or log in (Google is fine). Do not use an admin account.
 
 - Coupon: `PLANTSWALK` (100% off, one use, any email)
-- Claim: https://sitesprintz.com/claim/1e6179cfa92ed0118c6ec09567f9802f1adad911748603c218342dc83e8e1e36
+- Claim: https://rightsitelight.com/claim/7d02c9223328ce0be43a386bd33e5a862ce3ca00f7901653329d283849ac378a
 
 On Subscribe, choose Growth or Growth Managed, apply `PLANTSWALK` on Stripe Checkout. Card is not required at $0. Then finish claim.
 

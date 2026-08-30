@@ -567,7 +567,30 @@ async function upsertProspectSite(admin, { assignOwner = null, keepOwner = false
   return { status: existing ? 'updated' : 'created', claimToken, ownerId: site.user_id };
 }
 
+/** Rotate claim_token_hash + claim_token_expires only — never touches site_data. */
+async function rotateClaimOnly() {
+  const existing = await prisma.sites.findUnique({ where: { subdomain: SUBDOMAIN } });
+  if (!existing) {
+    throw new Error(`Site not found: ${SUBDOMAIN}`);
+  }
+  const claimToken = generateClaimToken();
+  await prisma.sites.update({
+    where: { subdomain: SUBDOMAIN },
+    data: {
+      claim_token_hash: hashClaimToken(claimToken),
+      claim_token_expires: claimExpiryDate(),
+    },
+  });
+  return claimToken;
+}
+
 async function main() {
+  if (process.env.CLAIM_ONLY === '1') {
+    const claimToken = await rotateClaimOnly();
+    console.log(`claim   ${buildClaimUrl(claimToken)}`);
+    await prisma.$disconnect();
+    return;
+  }
   if (process.env.SKIP_PLANTS_ASSETS !== '1') {
     await prepareAssets();
   }
