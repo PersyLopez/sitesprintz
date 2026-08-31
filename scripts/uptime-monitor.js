@@ -124,12 +124,20 @@ async function uptimeRobotPost(token, endpoint, params) {
   });
   const data = await response.json();
   if (!response.ok || data.stat !== 'ok') {
-    fail(data?.error?.message || `uptimerobot_http_${response.status}`);
+    const message = data?.error?.message || `uptimerobot_http_${response.status}`;
+    if (endpoint === 'newMonitor') {
+      fail(
+        message,
+        1,
+        'Free plan cannot create monitors via API. Add GET https://rightsitelight.com/api/health in the UptimeRobot dashboard (keyword "status":"ok", 5 min).',
+      );
+    }
+    fail(message);
   }
   return data;
 }
 
-function uptimeRobotDesiredParams() {
+export function uptimeRobotCreateParams() {
   return {
     type: '2',
     url: UPTIME_MONITOR_SPEC.url,
@@ -137,21 +145,36 @@ function uptimeRobotDesiredParams() {
     keyword_type: '1',
     keyword_value: UPTIME_MONITOR_SPEC.requiredKeyword,
     interval: String(UPTIME_MONITOR_SPEC.uptimeRobotInterval),
-    http_method: '2',
   };
 }
 
+export function uptimeRobotEditParams(id, monitor = {}) {
+  const desired = uptimeRobotCreateParams();
+  const params = {
+    id: String(id),
+    url: desired.url,
+    friendly_name: desired.friendly_name,
+    interval: desired.interval,
+  };
+  if (String(monitor.type) === desired.type) {
+    params.keyword_type = desired.keyword_type;
+    params.keyword_value = desired.keyword_value;
+  }
+  return params;
+}
+
 function uptimeRobotNeedsUpdate(monitor) {
-  const desired = uptimeRobotDesiredParams();
+  const desired = uptimeRobotCreateParams();
   const interval = Number(monitor.interval);
-  return (
-    String(monitor.type) !== desired.type
-    || monitor.url !== desired.url
-    || String(monitor.keyword_type) !== desired.keyword_type
+  const keywordMismatch = String(monitor.type) === desired.type && (
+    String(monitor.keyword_type) !== desired.keyword_type
     || monitor.keyword_value !== desired.keyword_value
+  );
+  return (
+    monitor.url !== desired.url
+    || keywordMismatch
     || interval > UPTIME_MONITOR_SPEC.maxIntervalSeconds
     || monitor.friendly_name !== desired.friendly_name
-    || String(monitor.http_method || '2') !== desired.http_method
   );
 }
 
@@ -167,10 +190,11 @@ async function ensureUptimeRobot(token) {
     if (!uptimeRobotNeedsUpdate(existing)) {
       return { provider: 'uptimerobot', action: 'exists', id: String(existing.id) };
     }
-    const updated = await uptimeRobotPost(token, 'editMonitor', {
-      id: String(existing.id),
-      ...uptimeRobotDesiredParams(),
-    });
+    const updated = await uptimeRobotPost(
+      token,
+      'editMonitor',
+      uptimeRobotEditParams(existing.id, existing),
+    );
     return {
       provider: 'uptimerobot',
       action: 'updated',
@@ -178,7 +202,7 @@ async function ensureUptimeRobot(token) {
     };
   }
 
-  const created = await uptimeRobotPost(token, 'newMonitor', uptimeRobotDesiredParams());
+  const created = await uptimeRobotPost(token, 'newMonitor', uptimeRobotCreateParams());
   return { provider: 'uptimerobot', action: 'created', id: String(created.monitor?.id) };
 }
 
