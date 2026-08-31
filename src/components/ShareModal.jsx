@@ -231,7 +231,7 @@ const ShareModal = ({ subdomain, onClose }) => {
           <div className="share-preview-row share-preview-row--solo">
             <div className="share-modal-preview" data-testid="share-card-preview">
               <p className="share-preview-label">Card preview</p>
-              <div className="share-preview-frame">
+              <div className="share-preview-frame share-preview-frame--og">
                 {socialCardUrl ? (
                   <img src={socialCardUrl} alt="Share card preview" />
                 ) : (
@@ -296,7 +296,7 @@ const ShareModal = ({ subdomain, onClose }) => {
           <div className="share-preview-row">
             <div className="share-modal-preview">
               <p className="share-preview-label">Flyer preview</p>
-              <div className="share-preview-frame">
+              <div className={`share-preview-frame share-preview-frame--flyer${printFormat === 'story' ? ' share-preview-frame--story' : ''}`}>
                 {printCardUrl ? (
                   <img src={printCardUrl} alt="Print flyer preview" />
                 ) : (

@@ -45,6 +45,8 @@ describe('ShareModal', () => {
       expect(screen.getByTestId('share-card-preview')).toBeInTheDocument();
       expect(screen.getByAltText('Share card preview')).toBeInTheDocument();
     });
+    expect(document.querySelector('.share-preview-frame--og')).toBeTruthy();
+    expect(document.querySelector('.share-preview-frame--flyer')).toBeTruthy();
   });
 
   it('uses the production site URL as the share target', () => {

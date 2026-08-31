@@ -8,9 +8,13 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import fs from 'fs';
+import path from 'path';
 import {
   normalizeTemplateData,
   extractOfferLines,
+  collectShareImageCandidates,
+  resolveShareImageSource,
   generateShareCard,
   generateQrPng,
   calculateCardDimensions,
@@ -121,7 +125,7 @@ describe('ShareCardService - Universal Template Support (TDD)', () => {
       expect(normalized.tagline).toBe('Welcome to our business');
     });
 
-    it('should provide placeholder image if hero image missing', () => {
+    it('should leave heroImage empty if hero image missing', () => {
       const template = {
         subdomain: 'test',
         brand: { name: 'Test' }
@@ -129,7 +133,19 @@ describe('ShareCardService - Universal Template Support (TDD)', () => {
 
       const normalized = normalizeTemplateData(template);
 
-      expect(normalized.heroImage).toContain('placeholder');
+      expect(normalized.heroImage).toBe('');
+    });
+
+    it('should use a gallery photo when hero is missing', () => {
+      const template = {
+        subdomain: 'test',
+        brand: { name: 'Test' },
+        gallery: { items: [{ src: '/uploads/shop-front.jpg' }] }
+      };
+
+      const normalized = normalizeTemplateData(template);
+
+      expect(normalized.heroImage).toBe('/uploads/shop-front.jpg');
     });
 
     it('should handle missing brand name', () => {
@@ -249,6 +265,47 @@ describe('ShareCardService - Universal Template Support (TDD)', () => {
       };
 
       expect(extractOfferLines(siteData, { limit: 2 })).toHaveLength(2);
+    });
+  });
+
+  describe('collectShareImageCandidates + resolveShareImageSource', () => {
+    it('skips via.placeholder.com so we do not fetch a dead host', () => {
+      expect(
+        resolveShareImageSource('https://via.placeholder.com/1200x630/4a6d82/f0f9ff?text=Right+Site+Light')
+      ).toBeNull();
+    });
+
+    it('passes through https shop photos', () => {
+      expect(resolveShareImageSource('https://images.unsplash.com/photo-1')).toBe(
+        'https://images.unsplash.com/photo-1'
+      );
+    });
+
+    it('maps /uploads paths that exist on disk', () => {
+      const dest = path.join(process.cwd(), 'public', 'uploads', 'share-resolve-probe.png');
+      fs.mkdirSync(path.dirname(dest), { recursive: true });
+      fs.writeFileSync(dest, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+      try {
+        expect(resolveShareImageSource('/uploads/share-resolve-probe.png')).toBe(dest);
+      } finally {
+        fs.unlinkSync(dest);
+      }
+    });
+
+    it('collects gallery when hero is missing', () => {
+      const candidates = collectShareImageCandidates({
+        gallery: { items: [{ src: '/uploads/shop.jpg' }] },
+      });
+      expect(candidates[0]).toBe('/uploads/shop.jpg');
+    });
+
+    it('skips svg logos so they do not replace the shop photo', () => {
+      expect(
+        collectShareImageCandidates({
+          hero: { image: 'https://images.unsplash.com/photo-1' },
+          brand: { logo: 'assets/logo.svg' },
+        })
+      ).toEqual(['https://images.unsplash.com/photo-1']);
     });
   });
 
@@ -418,6 +475,37 @@ describe('ShareCardService - Universal Template Support (TDD)', () => {
         const dims = calculateCardDimensions(format);
         expect(metadata.width).toBe(dims.width);
         expect(metadata.height).toBe(dims.height);
+      }
+    });
+
+    it('paints different shop names when a system font is registered', async () => {
+      const a = await generateShareCard({ subdomain: 'n1', brand: { name: 'AAAAAA Shop' } }, 'social');
+      const b = await generateShareCard({ subdomain: 'n2', brand: { name: 'WWWWWW Shop' } }, 'social');
+      expect(Buffer.compare(a, b)).not.toBe(0);
+    });
+
+    it('draws a local upload as the hero instead of the ocean fallback', async () => {
+      const dest = path.join(process.cwd(), 'public', 'uploads', 'share-unit-hero.png');
+      fs.mkdirSync(path.dirname(dest), { recursive: true });
+      await sharp({
+        create: { width: 80, height: 80, channels: 3, background: { r: 220, g: 30, b: 30 } },
+      })
+        .png()
+        .toFile(dest);
+      try {
+        const buffer = await generateShareCard({
+          subdomain: 'red-hero',
+          brand: { name: 'Red Shop' },
+          hero: { subtitle: 'Offer', image: '/uploads/share-unit-hero.png' },
+        }, 'social');
+        const { data } = await sharp(buffer)
+          .extract({ left: 600, top: 40, width: 1, height: 1 })
+          .raw()
+          .toBuffer({ resolveWithObject: true });
+        expect(data[0]).toBeGreaterThan(150);
+        expect(data[2]).toBeLessThan(120);
+      } finally {
+        fs.unlinkSync(dest);
       }
     });
 

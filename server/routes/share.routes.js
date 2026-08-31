@@ -24,7 +24,7 @@ const shareCardCache = new NodeCache({
   useClones: false // Store buffers directly
 });
 
-const CARD_CACHE_VERSION = 'v2';
+const CARD_CACHE_VERSION = 'v3';
 
 function cardCacheKey(subdomain, format) {
   return `${subdomain}:${format}:${CARD_CACHE_VERSION}`;

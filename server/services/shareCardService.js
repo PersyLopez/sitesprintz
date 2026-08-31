@@ -8,11 +8,14 @@
  * - Performant: Optimized image generation
  */
 
-import { createCanvas, loadImage } from '@napi-rs/canvas';
+import fs from 'fs';
+import path from 'path';
+import { createCanvas, loadImage, GlobalFonts } from '@napi-rs/canvas';
 import QRCode from 'qrcode';
 import sharp from 'sharp';
 import { getAbsolutePublishedSiteUrl } from '../../src/utils/siteWorkspace.js';
 import { extractSiteCatalog } from '../utils/payOnSite.js';
+import { getProjectRoot, resolveContainedPath, PathEscapeError } from '../utils/siteIsolation.js';
 
 // Card dimensions by format
 const DIMENSIONS = {
@@ -34,11 +37,159 @@ const OCEAN = {
   surface: '#0f172a'
 };
 
+const PUBLIC_DIR = path.join(getProjectRoot(), 'public');
+const PLACEHOLDER_HOST = /via\.placeholder\.com/i;
+const SHARE_FONT_FAMILY = registerShareCardFont();
+
+function registerShareCardFont() {
+  const regular = [
+    '/System/Library/Fonts/Supplemental/Arial.ttf',
+    '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+    '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
+  ];
+  const bold = [
+    '/System/Library/Fonts/Supplemental/Arial Bold.ttf',
+    '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
+    '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
+  ];
+  const regularPath = regular.find((file) => fs.existsSync(file));
+  if (!regularPath) return 'sans-serif';
+  GlobalFonts.registerFromPath(regularPath, 'ShareCardSans');
+  const boldPath = bold.find((file) => fs.existsSync(file));
+  if (boldPath) GlobalFonts.registerFromPath(boldPath, 'ShareCardSans');
+  return 'ShareCardSans';
+}
+
+function shareFont(sizePx, { bold = false, semibold = false } = {}) {
+  const weight = bold ? 'bold' : semibold ? '600' : 'normal';
+  return `${weight} ${sizePx}px ${SHARE_FONT_FAMILY}`;
+}
+
+function pushImageCandidate(out, seen, raw) {
+  if (typeof raw === 'string' && raw.trim()) {
+    const value = raw.trim();
+    if (seen.has(value) || PLACEHOLDER_HOST.test(value) || /\.svg(\?|#|$)/i.test(value)) return;
+    seen.add(value);
+    out.push(value);
+    return;
+  }
+  if (raw && typeof raw === 'object') {
+    pushImageCandidate(out, seen, raw.src || raw.url || raw.image || raw.photo || raw.heroImage);
+  }
+}
+
+/**
+ * Shop photos that can fill a share card, in preference order.
+ * Hero first, then gallery / products / section images. Skips placeholders.
+ */
+export function collectShareImageCandidates(siteData) {
+  const out = [];
+  const seen = new Set();
+  const push = (raw) => pushImageCandidate(out, seen, raw);
+
+  push(siteData?.hero?.image);
+  push(siteData?.heroImage);
+  push(siteData?.meta?.heroImage);
+  push(siteData?.brand?.logo);
+  push(siteData?.branding?.logo);
+
+  const gallery = siteData?.gallery;
+  if (Array.isArray(gallery)) gallery.forEach(push);
+  else if (Array.isArray(gallery?.items)) gallery.items.forEach(push);
+  else if (Array.isArray(gallery?.images)) gallery.images.forEach(push);
+
+  if (Array.isArray(siteData?.products)) {
+    for (const product of siteData.products) {
+      push(product?.image || product?.photo);
+      if (Array.isArray(product?.images)) product.images.forEach(push);
+    }
+  }
+
+  if (Array.isArray(siteData?.sections)) {
+    for (const section of siteData.sections) {
+      const content = section?.content && typeof section.content === 'object' ? section.content : section;
+      push(content?.image);
+      push(content?.backgroundImage);
+      push(content?.heroImage);
+      if (Array.isArray(content?.images)) content.images.forEach(push);
+      if (Array.isArray(content?.items)) content.items.forEach(push);
+    }
+  }
+
+  return out;
+}
+
+/**
+ * Map a site-data image src to something @napi-rs/canvas can load.
+ * Hosted files under public/ become filesystem paths; http(s) stays a URL.
+ */
+export function resolveShareImageSource(src) {
+  if (!src || typeof src !== 'string') return null;
+  const trimmed = src.trim();
+  if (!trimmed || PLACEHOLDER_HOST.test(trimmed)) return null;
+  if (trimmed.startsWith('data:')) return trimmed;
+
+  let pathname = trimmed;
+  if (/^https?:\/\//i.test(trimmed)) {
+    try {
+      pathname = new URL(trimmed).pathname;
+    } catch {
+      return null;
+    }
+  }
+
+  const relative = pathname.replace(/^\/+/, '');
+  if (relative && !relative.includes('\0')) {
+    try {
+      const abs = resolveContainedPath(PUBLIC_DIR, ...relative.split('/').filter(Boolean));
+      if (fs.existsSync(abs) && fs.statSync(abs).isFile()) return abs;
+    } catch (error) {
+      if (!(error instanceof PathEscapeError)) throw error;
+    }
+  }
+
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return null;
+}
+
+function loadImageWithTimeout(src, ms = 8000) {
+  let timer;
+  return Promise.race([
+    loadImage(src).finally(() => clearTimeout(timer)),
+    new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error('Share hero load timed out')), ms);
+    }),
+  ]);
+}
+
+async function loadShareHeroImage(siteData) {
+  for (const candidate of collectShareImageCandidates(siteData).slice(0, 8)) {
+    const resolved = resolveShareImageSource(candidate);
+    if (!resolved || /\.svg(\?|#|$)/i.test(resolved)) continue;
+    try {
+      if (/^https?:\/\//i.test(resolved)) {
+        return await loadImageWithTimeout(resolved, 4000);
+      }
+      return await loadImage(resolved);
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
 /**
  * Calculate card dimensions for a given format
  */
 export function calculateCardDimensions(format) {
   return DIMENSIONS[format] || DIMENSIONS.social;
+}
+
+/**
+ * Canvas fillText is not HTML — keep &, quotes, and names readable.
+ */
+function cardText(text) {
+  return String(text || '').replace(/\s+/g, ' ').trim();
 }
 
 /**
@@ -61,10 +212,11 @@ export function escapeHtml(text) {
 /**
  * Wrap text to fit within maxWidth
  */
-export function wrapText(ctx, text, maxWidth) {
-  const words = text.split(' ');
+export function wrapText(ctx, text, maxWidth, maxLines = 2) {
+  const words = String(text || '').split(' ');
   const lines = [];
   let currentLine = '';
+  const limit = Number.isFinite(maxLines) && maxLines > 0 ? maxLines : 2;
 
   for (const word of words) {
     const testLine = currentLine + (currentLine ? ' ' : '') + word;
@@ -82,7 +234,7 @@ export function wrapText(ctx, text, maxWidth) {
     lines.push(currentLine);
   }
 
-  return lines.slice(0, 2); // Max 2 lines
+  return lines.slice(0, limit);
 }
 
 /**
@@ -108,10 +260,7 @@ export function normalizeTemplateData(template) {
     template.meta?.pageTitle ||
     'Welcome to our business';
 
-  // Extract hero image
-  const heroImage =
-    template.hero?.image ||
-    'https://via.placeholder.com/1200x630/4a6d82/f0f9ff?text=Right+Site+Light';
+  const heroImage = collectShareImageCandidates(template)[0] || '';
 
   // Determine tier
   const tier = template.plan || 'Starter';
@@ -244,14 +393,14 @@ export async function generateShareCard(templateData, format = 'social') {
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');
 
-  const businessName = escapeHtml(normalized.businessName);
-  const tagline = escapeHtml(normalized.tagline);
+  const businessName = cardText(normalized.businessName);
+  const tagline = cardText(normalized.tagline);
   const liveUrl = getAbsolutePublishedSiteUrl(normalized.subdomain);
   const isSocial = format === 'social';
   const isStory = format === 'story';
   const isSquare = format === 'square';
   const offerLimit = isSocial ? 2 : 4;
-  const offerLines = extractOfferLines(templateData, { limit: offerLimit }).map((line) => escapeHtml(line));
+  const offerLines = extractOfferLines(templateData, { limit: offerLimit }).map((line) => cardText(line));
 
   try {
     const footerHeight = height * (isStory ? 0.16 : 0.22);
@@ -262,8 +411,8 @@ export async function generateShareCard(templateData, format = 'social') {
       displayName = displayName.substring(0, 37) + '...';
     }
 
-    try {
-      const heroImage = await loadImage(normalized.heroImage);
+    const heroImage = await loadShareHeroImage(templateData);
+    if (heroImage) {
       const scale = Math.max(width / heroImage.width, height / heroImage.height);
       const scaledWidth = heroImage.width * scale;
       const scaledHeight = heroImage.height * scale;
@@ -285,7 +434,7 @@ export async function generateShareCard(templateData, format = 'social') {
         ctx.fillStyle = overlay;
         ctx.fillRect(0, 0, width, height);
       }
-    } catch {
+    } else {
       const gradient = ctx.createLinearGradient(0, 0, width, height);
       gradient.addColorStop(0, OCEAN.primary);
       gradient.addColorStop(1, OCEAN.primaryDark);
@@ -306,23 +455,23 @@ export async function generateShareCard(templateData, format = 'social') {
       const nameSize = Math.floor(height * 0.068);
       const tagSize = Math.floor(height * 0.032);
       const offerSize = Math.floor(height * 0.028);
-      ctx.font = `${tagSize}px "Segoe UI", system-ui, sans-serif`;
+      ctx.font = shareFont(tagSize);
       const tagLine = wrapText(ctx, tagline, width * 0.88)[0] || tagline;
       const offerBlock = offerLines.length * offerSize * 1.35;
       const tagY = height - height * 0.06 - offerBlock;
       const nameY = tagY - tagSize * 1.25;
 
       ctx.fillStyle = OCEAN.text;
-      ctx.font = `bold ${nameSize}px "Segoe UI", system-ui, sans-serif`;
+      ctx.font = shareFont(nameSize, { bold: true });
       ctx.textAlign = 'left';
       ctx.textBaseline = 'bottom';
       ctx.fillText(displayName, contentLeft, nameY);
 
-      ctx.font = `${tagSize}px "Segoe UI", system-ui, sans-serif`;
+      ctx.font = shareFont(tagSize);
       ctx.fillStyle = OCEAN.textMuted;
       ctx.fillText(tagLine, contentLeft, tagY);
 
-      ctx.font = `600 ${offerSize}px "Segoe UI", system-ui, sans-serif`;
+      ctx.font = shareFont(offerSize, { semibold: true });
       ctx.fillStyle = OCEAN.text;
       offerLines.forEach((line, index) => {
         ctx.fillText(line, contentLeft, tagY + offerSize * 1.35 * (index + 1));
@@ -337,7 +486,7 @@ export async function generateShareCard(templateData, format = 'social') {
 
       const nameSize = Math.floor(height * (isStory ? 0.055 : 0.07));
       ctx.fillStyle = OCEAN.text;
-      ctx.font = `bold ${nameSize}px "Segoe UI", system-ui, sans-serif`;
+      ctx.font = shareFont(nameSize, { bold: true });
       ctx.textAlign = isSquare ? 'center' : 'left';
       ctx.textBaseline = 'top';
 
@@ -345,11 +494,11 @@ export async function generateShareCard(templateData, format = 'social') {
       ctx.fillText(displayName, isSquare ? width / 2 : contentLeft, nameY);
 
       const tagSize = Math.floor(height * (isStory ? 0.028 : 0.034));
-      ctx.font = `${tagSize}px "Segoe UI", system-ui, sans-serif`;
+      ctx.font = shareFont(tagSize);
       ctx.fillStyle = OCEAN.textMuted;
 
       const maxWidth = width * (isSquare ? 0.82 : 0.55);
-      const lines = wrapText(ctx, tagline, maxWidth);
+      const lines = wrapText(ctx, tagline, maxWidth, 3);
       const tagY = nameY + nameSize * 1.35;
       lines.forEach((line, index) => {
         ctx.fillText(line, isSquare ? width / 2 : contentLeft, tagY + index * tagSize * 1.4);
@@ -357,7 +506,7 @@ export async function generateShareCard(templateData, format = 'social') {
 
       const offerStartY = tagY + lines.length * tagSize * 1.4 + height * 0.04;
       const offerFontSize = Math.floor(height * (isStory ? 0.024 : 0.028));
-      ctx.font = `600 ${offerFontSize}px "Segoe UI", system-ui, sans-serif`;
+      ctx.font = shareFont(offerFontSize, { semibold: true });
       ctx.textAlign = 'left';
       ctx.fillStyle = OCEAN.text;
 
@@ -367,11 +516,11 @@ export async function generateShareCard(templateData, format = 'social') {
 
       const scanSize = Math.floor(footerHeight * 0.22);
       ctx.textAlign = 'left';
-      ctx.font = `600 ${scanSize}px "Segoe UI", system-ui, sans-serif`;
+      ctx.font = shareFont(scanSize, { semibold: true });
       ctx.fillStyle = OCEAN.text;
       ctx.fillText('Scan to visit', contentLeft, footerY + footerHeight * 0.32);
 
-      ctx.font = `${Math.floor(footerHeight * 0.14)}px "Segoe UI", system-ui, sans-serif`;
+      ctx.font = shareFont(Math.floor(footerHeight * 0.14));
       ctx.fillStyle = OCEAN.textSubtle;
       ctx.fillText('Built with Right Site Light', contentLeft, footerY + footerHeight * 0.62);
 
@@ -437,6 +586,8 @@ export default {
   generateQrPng,
   normalizeTemplateData,
   extractOfferLines,
+  collectShareImageCandidates,
+  resolveShareImageSource,
   calculateCardDimensions,
   escapeHtml,
   wrapText
