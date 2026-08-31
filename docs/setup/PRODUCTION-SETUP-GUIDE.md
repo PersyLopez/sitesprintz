@@ -219,7 +219,7 @@ Expected response includes `status: "healthy"` with `app`, `database`, `stripe`,
 
 ## Step 10: Monitoring and maintenance
 
-- Configure uptime monitoring for `/api/health/full`.
+- Configure uptime monitoring for `/api/health`.
 - Set database latency alerts.
 - Review application logs weekly.
 - Enable automatic database backups and test restore procedures quarterly.
