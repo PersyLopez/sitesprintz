@@ -8,6 +8,49 @@ steps:
       - text contains Read their stories
       - text contains A layout that already feels like your business
 
+  - action: Owner bakery story decodes
+    wait_for: { testId: hero-story-video, timeout: 15000 }
+    code: |
+      const video = page.getByTestId('hero-story-video');
+      const src = await video.getAttribute('src');
+      if (!src || !/bakery-owner\/story\.mp4/.test(src)) {
+        throw new Error('Owner story src missing: ' + src);
+      }
+      await video.evaluate((el) => new Promise((resolve, reject) => {
+        const done = () => {
+          if (el.videoWidth >= 640) resolve();
+          else reject(new Error('Owner story too small: ' + el.videoWidth));
+        };
+        if (el.readyState >= 2) return done();
+        el.onloadeddata = done;
+        el.onerror = () => reject(new Error('Owner story failed to load'));
+        setTimeout(() => reject(new Error('Owner story load timeout')), 12000);
+      }));
+
+  - action: Switch to customer bakery story
+    code: |
+      const tab = page.getByTestId('hero-story-tab-bakery-client');
+      await tab.scrollIntoViewIfNeeded();
+      await tab.click({ force: true });
+      await page.waitForFunction(() => {
+        const v = document.querySelector('[data-testid="hero-story-video"]');
+        return Boolean(v && /bakery-client/.test(v.getAttribute('src') || ''));
+      }, null, { timeout: 8000 });
+      const video = page.getByTestId('hero-story-video');
+      await video.evaluate((el) => new Promise((resolve, reject) => {
+        const done = () => {
+          if (el.videoWidth >= 640) resolve();
+          else reject(new Error('Customer story too small: ' + el.videoWidth));
+        };
+        if (el.readyState >= 2) return done();
+        el.onloadeddata = done;
+        el.onerror = () => reject(new Error('Customer story failed to load'));
+        setTimeout(() => reject(new Error('Customer story load timeout')), 12000);
+      }));
+    assert:
+      - text contains In the kitchen
+      - text contains Trying to order
+
   - action: Gallery labels present
     code: |
       const t = await page.locator('body').innerText();
@@ -18,16 +61,13 @@ steps:
 
   - action: Gallery tabs present
     code: |
-      const tabs = page.locator('[role="tablist"] [role="tab"]');
+      const tabs = page.locator('[data-testid^="gallery-tab-"]');
       const n = await tabs.count();
       if (n < 2) throw new Error('Expected multiple gallery tabs, got ' + n);
     settle_ms: 200
 
-  - action: Switch to second tab
-    code: |
-      const tabs = page.locator('[role="tablist"] [role="tab"]');
-      await tabs.nth(1).click();
-      await page.waitForTimeout(400);
+  - action: Switch to food gallery tab
+    click: { testId: gallery-tab-food }
     settle_ms: 500
 
   - action: Pricing tiers still on page

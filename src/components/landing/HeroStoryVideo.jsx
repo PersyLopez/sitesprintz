@@ -2,48 +2,32 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import './HeroStoryVideo.css';
 
 /**
- * Ambient value stories — diffused into the hero, not a boxed player.
- * Second-person "you": busy today → gone tomorrow → one page → they come back.
+ * Two bakery spots — owner hats vs client conversation tax.
+ * Same files are reusable as 16:9 ads (public/assets/hero/bakery-*).
  */
 
 const STORIES = [
   {
-    id: 'food',
-    categoryLabel: 'Food & Dining',
-    badge: 'Street stand',
-    video: '/assets/hero/food/story.mp4',
-    poster: '/assets/hero/food/poster.jpg',
+    id: 'bakery-owner',
+    categoryLabel: 'In the kitchen',
+    badge: 'Owner',
+    video: '/assets/hero/bakery-owner/story.mp4?v=ads5',
+    poster: '/assets/hero/bakery-owner/poster.jpg?v=ads5',
     captions: [
-      { start: 0, end: 2.3, label: 'Today', text: 'Your stand is busy. People taste, smile, and move on.' },
-      { start: 2.3, end: 4.5, label: 'Tomorrow', text: 'They want those mangoes again — and can’t remember which corner.' },
-      { start: 4.5, end: 6.7, label: 'Your page', text: 'One link: today’s fruit, your hours, how to find you.' },
-      { start: 6.7, end: 99, label: 'They return', text: 'They come back. Your stand isn’t only a moment — it’s a place they can find.' },
+      { start: 0, end: 3.2, label: 'Every hat', text: 'You bake. You also run the front desk — dough in one hand, the inbox in the other.' },
+      { start: 3.2, end: 5.0, label: 'Time', text: 'Every order is a conversation you didn’t have time for.' },
+      { start: 5.0, end: 99, label: 'The page', text: 'The page wears that hat. You get back to the oven.' },
     ],
   },
   {
-    id: 'service',
-    categoryLabel: 'Service',
-    badge: 'Barbershop',
-    video: '/assets/hero/service/story.mp4',
-    poster: '/assets/hero/service/poster.jpg',
+    id: 'bakery-client',
+    categoryLabel: 'Trying to order',
+    badge: 'Customer',
+    video: '/assets/hero/bakery-client/story.mp4?v=ads5',
+    poster: '/assets/hero/bakery-client/poster.jpg?v=ads5',
     captions: [
-      { start: 0, end: 2.3, label: 'Today', text: 'Your chair is ready. The street is full of people who need a cut.' },
-      { start: 2.3, end: 4.5, label: 'Tomorrow', text: 'They walk past, unsure of your hours — and keep scrolling.' },
-      { start: 4.5, end: 6.7, label: 'Your page', text: 'Hours, style photos, and a simple way to message you.' },
-      { start: 6.7, end: 99, label: 'They return', text: 'The chair stays filled — because customers finally know how to find you.' },
-    ],
-  },
-  {
-    id: 'professional',
-    categoryLabel: 'Home bakery',
-    badge: 'Home bakery',
-    video: '/assets/hero/professional/story.mp4',
-    poster: '/assets/hero/professional/poster.jpg',
-    captions: [
-      { start: 0, end: 2.3, label: 'Today', text: 'Your kitchen is busy. The smell of cinnamon fills the room.' },
-      { start: 2.3, end: 4.5, label: 'Tomorrow', text: 'Someone wants those rolls again — but the order is buried in your DMs.' },
-      { start: 4.5, end: 6.7, label: 'Your page', text: 'One link: flavors this week, how to order, when you’re full.' },
-      { start: 6.7, end: 99, label: 'They return', text: 'Customers order on purpose — not by hunting through message threads.' },
+      { start: 0, end: 5.0, label: 'The line', text: 'You shouldn’t have to ask what’s in it while people wait behind you.' },
+      { start: 5.0, end: 99, label: 'The page', text: 'See the food, what’s in it, how to order — no call, no rush.' },
     ],
   },
 ];
@@ -56,7 +40,7 @@ function captionIndexAt(captions, time) {
 export default function HeroStoryVideo() {
   const videoRef = useRef(null);
   const rootRef = useRef(null);
-  const [activeId, setActiveId] = useState(STORIES[0].id);
+  const [activeId, setActiveId] = useState('bakery-owner');
   const [playing, setPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
   const [captionIdx, setCaptionIdx] = useState(0);
@@ -96,7 +80,7 @@ export default function HeroStoryVideo() {
     if (reduceMotion) {
       video.pause();
       const last = story.captions[story.captions.length - 1];
-      video.currentTime = Math.min(last.start + 0.3, 10);
+      video.currentTime = last.start + 0.3;
       setCaptionIdx(story.captions.length - 1);
       setProgress(1);
       setPlaying(false);
@@ -113,7 +97,7 @@ export default function HeroStoryVideo() {
       rafId = requestAnimationFrame(() => {
         rafId = 0;
         const t = video.currentTime || 0;
-        const duration = video.duration || 9;
+        const duration = video.duration || 8;
         const nextCaption = captionIndexAt(story.captions, t);
         if (nextCaption !== lastCaption) {
           lastCaption = nextCaption;
@@ -185,13 +169,14 @@ export default function HeroStoryVideo() {
           playsInline
           preload="metadata"
           aria-label={caption.text}
+          data-testid="hero-story-video"
         />
         <div className="hero-ambient-veil" />
         <div className="hero-ambient-grain" aria-hidden="true" />
       </div>
 
       <div className="hero-ambient-ui">
-        <div className="hero-story-cats" role="tablist" aria-label="Business category stories">
+        <div className="hero-story-cats" role="tablist" aria-label="Owner and customer stories">
           {STORIES.map((s) => (
             <button
               key={s.id}
@@ -199,6 +184,7 @@ export default function HeroStoryVideo() {
               role="tab"
               aria-selected={s.id === activeId}
               className={`hero-story-cat ${s.id === activeId ? 'hero-story-cat--active' : ''}`}
+              data-testid={`hero-story-tab-${s.id}`}
               onClick={() => setActiveId(s.id)}
             >
               {s.categoryLabel}

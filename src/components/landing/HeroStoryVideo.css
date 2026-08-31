@@ -3,7 +3,7 @@
 .hero-ambient {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 2;
   overflow: hidden;
   pointer-events: none;
 }
@@ -17,11 +17,9 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
-  /* Static scale only — Ken Burns + CSS filters on <video> force continuous
-     GPU recomposite every frame and are a major scroll/jank source. */
-  transform: scale(1.06);
-  /* Promote once; avoid animating the decoded video layer */
+  object-position: center 40%;
+  /* Motion is in the file. Do not Ken-Burns or filter the decoded layer. */
+  transform: none;
   will-change: auto;
 }
 
@@ -33,16 +31,15 @@
 .hero-ambient-veil {
   position: absolute;
   inset: 0;
+  /* Type scrim on the copy column only — keep the right side of the shot visible. */
   background:
     linear-gradient(
-      105deg,
-      rgba(20, 36, 40, 0.92) 0%,
-      rgba(20, 36, 40, 0.82) 32%,
-      rgba(20, 36, 40, 0.45) 55%,
-      rgba(42, 31, 24, 0.35) 78%,
-      rgba(42, 31, 24, 0.5) 100%
-    ),
-    radial-gradient(ellipse 70% 80% at 70% 50%, transparent 20%, rgba(20, 36, 40, 0.5) 100%);
+      90deg,
+      rgba(20, 36, 40, 0.72) 0%,
+      rgba(20, 36, 40, 0.42) 28%,
+      rgba(20, 36, 40, 0.1) 52%,
+      rgba(20, 36, 40, 0.04) 100%
+    );
 }
 
 .hero-ambient-grain {
