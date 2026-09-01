@@ -1,6 +1,15 @@
 url: http://localhost:5173/
 goal: Landing CTAs and template marketing sections work
 steps:
+  - action: Dismiss setup offer modal if visible
+    wait_for: { text: Get Your Page Free }
+    code: |
+      const dismiss = page.getByTestId('setup-offer-dismiss');
+      if (await dismiss.isVisible()) {
+        await dismiss.click({ timeout: 5000 });
+        await page.waitForTimeout(400);
+      }
+
   - action: Hero primary CTA goes to register
     wait_for: { text: Get Your Page Free }
     click: { text: Get Your Page Free → }
@@ -11,6 +20,14 @@ steps:
   - action: Back to landing
     goto: http://localhost:5173/
     wait_for: { text: They love what you make }
+
+  - action: Dismiss setup offer modal if visible
+    code: |
+      const dismiss = page.getByTestId('setup-offer-dismiss');
+      if (await dismiss.isVisible()) {
+        await dismiss.click({ timeout: 5000 });
+        await page.waitForTimeout(400);
+      }
 
   - action: View Gallery secondary CTA
     click: { text: Browse example sites → }

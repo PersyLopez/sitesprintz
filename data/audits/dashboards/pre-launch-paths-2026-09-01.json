@@ -1,0 +1,183 @@
+{
+  "audit": "pre-launch-paths",
+  "date": "2026-09-01",
+  "appUrl": "http://localhost:5173",
+  "summary": {
+    "plansRun": 22,
+    "passed": 22,
+    "failed": 0,
+    "filesPatched": [
+      "tests/mantest/01-public-landing-nav.plan.yaml",
+      "tests/mantest/07-landing-ctas-and-templates.plan.yaml",
+      "tests/mantest/44-header-hamburger.plan.yaml",
+      "tests/mantest/complete-manual.plan.yaml"
+    ]
+  },
+  "plans": [
+    {
+      "path": "tests/mantest/01-public-landing-nav.plan.yaml",
+      "category": "public",
+      "passCount": "8/8",
+      "passed": true,
+      "rootCause": "test_brittleness",
+      "detail": "Setup-offer modal (launch-2026-09 campaign) auto-opens after 600ms and blocked header nav clicks",
+      "filesPatched": ["tests/mantest/01-public-landing-nav.plan.yaml"],
+      "neighbor": "tests/mantest/42-growth-managed-pricing.plan.yaml (dismiss setup-offer-dismiss pattern)"
+    },
+    {
+      "path": "tests/mantest/02-public-content-pages.plan.yaml",
+      "category": "public",
+      "passCount": "8/8",
+      "passed": true,
+      "rootCause": null,
+      "filesPatched": []
+    },
+    {
+      "path": "tests/mantest/07-landing-ctas-and-templates.plan.yaml",
+      "category": "public",
+      "passCount": "7/7",
+      "passed": true,
+      "rootCause": "test_brittleness",
+      "detail": "Same setup-offer modal blocked hero CTA and gallery link clicks",
+      "filesPatched": ["tests/mantest/07-landing-ctas-and-templates.plan.yaml"],
+      "neighbor": "tests/mantest/42-growth-managed-pricing.plan.yaml"
+    },
+    {
+      "path": "tests/mantest/16-legal-docs.plan.yaml",
+      "category": "public",
+      "passCount": "7/7",
+      "passed": true,
+      "rootCause": null,
+      "filesPatched": []
+    },
+    {
+      "path": "tests/mantest/03-auth-forms.plan.yaml",
+      "category": "auth",
+      "passCount": "12/12",
+      "passed": true,
+      "rootCause": null,
+      "filesPatched": []
+    },
+    {
+      "path": "tests/mantest/04-protected-redirects.plan.yaml",
+      "category": "auth",
+      "passCount": "8/8",
+      "passed": true,
+      "rootCause": null,
+      "filesPatched": []
+    },
+    {
+      "path": "tests/mantest/05-login-dashboard-setup.plan.yaml",
+      "category": "auth",
+      "passCount": "22/22",
+      "passed": true,
+      "rootCause": null,
+      "filesPatched": []
+    },
+    {
+      "path": "tests/mantest/08-setup-template-select.plan.yaml",
+      "category": "owner",
+      "passCount": "23/23",
+      "passed": true,
+      "rootCause": null,
+      "filesPatched": []
+    },
+    {
+      "path": "tests/mantest/10-settings-local.plan.yaml",
+      "category": "owner",
+      "passCount": "10/10",
+      "passed": true,
+      "rootCause": null,
+      "filesPatched": []
+    },
+    {
+      "path": "tests/mantest/19-main-authenticated-shell.plan.yaml",
+      "category": "owner",
+      "passCount": "22/22",
+      "passed": true,
+      "rootCause": null,
+      "filesPatched": []
+    },
+    {
+      "path": "tests/mantest/29-owner-solo-path.plan.yaml",
+      "category": "owner",
+      "passCount": "25/25",
+      "passed": true,
+      "rootCause": null,
+      "filesPatched": []
+    },
+    {
+      "path": "tests/mantest/43-setup-editor.plan.yaml",
+      "category": "owner",
+      "passCount": "53/53",
+      "passed": true,
+      "rootCause": null,
+      "filesPatched": []
+    },
+    {
+      "path": "tests/mantest/11-products-ui.plan.yaml",
+      "category": "owner",
+      "passCount": "11/11",
+      "passed": true,
+      "rootCause": null,
+      "filesPatched": []
+    },
+    {
+      "path": "tests/mantest/12-analytics-orders-local.plan.yaml",
+      "category": "owner",
+      "passCount": "10/10",
+      "passed": true,
+      "rootCause": null,
+      "filesPatched": []
+    },
+    {
+      "path": "tests/mantest/13-booking-gate-and-setup.plan.yaml",
+      "category": "owner",
+      "passCount": "12/12",
+      "passed": true,
+      "rootCause": null,
+      "filesPatched": []
+    },
+    {
+      "path": "tests/mantest/25-live-ordering-and-booking.plan.yaml",
+      "category": "visitor",
+      "passCount": "28/28",
+      "passed": true,
+      "rootCause": null,
+      "filesPatched": []
+    },
+    {
+      "path": "tests/mantest/58-staff-employee-dashboards.plan.yaml",
+      "category": "staff",
+      "passCount": "15/15",
+      "passed": true,
+      "rootCause": null,
+      "filesPatched": []
+    },
+    {
+      "path": "tests/mantest/72-staff-tenant-isolation.plan.yaml",
+      "category": "staff",
+      "passCount": "9/9",
+      "passed": true,
+      "rootCause": null,
+      "filesPatched": []
+    },
+    {
+      "path": "tests/mantest/71-workspace-site-switch-isolation.plan.yaml",
+      "category": "owner",
+      "passCount": "13/13",
+      "passed": true,
+      "rootCause": null,
+      "filesPatched": []
+    },
+    {
+      "path": "tests/mantest/36-staff-empty-assignments.plan.yaml",
+      "category": "staff",
+      "passCount": "8/8",
+      "passed": true,
+      "rootCause": null,
+      "filesPatched": []
+    }
+  ],
+  "leftoverRisk": "Campaign launch-2026-09 still auto-opens the we-build modal. Landing plans that click chrome now dismiss it (01, 07, 42, 44, complete-manual). 18/20/68/69/76 only read copy or use force-click; extend the same dismiss if they start clicking nav."
+}

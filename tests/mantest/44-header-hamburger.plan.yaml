@@ -12,6 +12,14 @@ steps:
     assert:
       - text contains Right Site Light
 
+  - action: Dismiss setup offer modal if visible
+    code: |
+      const dismiss = page.getByTestId('setup-offer-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 5000 });
+        await page.waitForTimeout(400);
+      }
+
   - action: Hamburger is visible and closed
     code: |
       const toggle = page.getByTestId('mobile-menu-toggle');

@@ -11,6 +11,14 @@ steps:
       - text contains They love what you make
       - text contains Get Your Page Free
 
+  - action: Dismiss setup offer modal if visible
+    code: |
+      const dismiss = page.getByTestId('setup-offer-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 5000 });
+        await page.waitForTimeout(400);
+      }
+
   - action: Pricing section reachable via nav
     click: { role: link, name: Pricing }
     settle_ms: 600

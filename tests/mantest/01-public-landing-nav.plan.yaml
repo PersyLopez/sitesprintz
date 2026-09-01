@@ -23,6 +23,14 @@ steps:
       - text contains They had regulars. Tomorrow nobody could find them.
       - text contains Small shops like yours
 
+  - action: Dismiss setup offer modal if visible
+    code: |
+      const dismiss = page.getByTestId('setup-offer-dismiss');
+      if (await dismiss.isVisible()) {
+        await dismiss.click({ timeout: 5000 });
+        await page.waitForTimeout(400);
+      }
+
   - action: Open Gallery from header
     click: { testId: nav-gallery }
     assert:
