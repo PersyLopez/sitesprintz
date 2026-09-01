@@ -11,13 +11,19 @@ import {
 export { CLAIM_PLAN, CLAIM_PLANS };
 
 /**
- * Claim Checkout is Growth or Growth Managed. Empty body defaults to DIY Growth; Starter is rejected.
+ * Claim Checkout is Growth or Growth Managed. Starter only when the published
+ * site is an inbound we-build (`site.plan === 'starter'`).
  * @param {string} [rawPlan]
- * @returns {'growth'|'growth_managed'|null}
+ * @param {string} [sitePlan]
+ * @returns {'starter'|'growth'|'growth_managed'|null}
  */
-export function normalizeClaimPlan(rawPlan) {
+export function normalizeClaimPlan(rawPlan, sitePlan) {
+  const fallback = sitePlan === 'starter' ? 'starter' : CLAIM_PLAN;
   const plan =
-    rawPlan == null || rawPlan === '' ? CLAIM_PLAN : normalizePaidPlan(rawPlan);
+    rawPlan == null || rawPlan === '' ? fallback : normalizePaidPlan(rawPlan);
+  if (plan === 'starter') {
+    return sitePlan === 'starter' ? 'starter' : null;
+  }
   return CLAIM_PLANS.includes(plan) ? plan : null;
 }
 
@@ -28,6 +34,20 @@ export function hasClaimableGrowthSubscription(user) {
   }
   const raw = user?.subscriptionPlan || user?.subscription_plan || user?.plan;
   const plan = normalizePaidPlan(raw);
+  return CLAIM_PLANS.includes(plan);
+}
+
+/** Paid starter may claim an inbound Starter site; Growth still covers those too. */
+export function hasMatchingClaimSubscription(user, sitePlan) {
+  const status = user?.subscriptionStatus || user?.subscription_status;
+  if (status !== 'active') {
+    return false;
+  }
+  const raw = user?.subscriptionPlan || user?.subscription_plan || user?.plan;
+  const plan = normalizePaidPlan(raw);
+  if (sitePlan === 'starter') {
+    return plan === 'starter' || CLAIM_PLANS.includes(plan);
+  }
   return CLAIM_PLANS.includes(plan);
 }
 
@@ -95,9 +115,13 @@ export async function createClaimTrialCheckout({
     error.code = 'STRIPE_NOT_CONFIGURED';
     throw error;
   }
-  const claimPlan = plan ? normalizeClaimPlan(plan) : CLAIM_PLAN;
+  const claimPlan = normalizeClaimPlan(plan, site?.plan);
   if (!claimPlan) {
-    const error = new Error('Claim must be Growth or Growth Managed');
+    const error = new Error(
+      site?.plan === 'starter'
+        ? 'Claim must be Starter, Growth, or Growth Managed'
+        : 'Claim must be Growth or Growth Managed',
+    );
     error.code = 'INVALID_PLAN';
     throw error;
   }

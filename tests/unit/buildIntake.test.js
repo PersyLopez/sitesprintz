@@ -9,17 +9,19 @@ const basePayload = {
   acceptedManagedPlan: true,
 };
 
+const AFTER_OFFER = new Date('2026-10-01T00:00:00.000Z');
+
 describe('sanitizeBuildIntake', () => {
   it('requires contact name, email, and business name', () => {
-    expect(sanitizeBuildIntake({ ...basePayload, contactName: '' }).ok).toBe(false);
-    expect(sanitizeBuildIntake({ ...basePayload, contactEmail: 'bad' }).ok).toBe(false);
-    expect(sanitizeBuildIntake({ ...basePayload, businessName: '' }).ok).toBe(false);
-    expect(sanitizeBuildIntake(basePayload).ok).toBe(true);
+    expect(sanitizeBuildIntake({ ...basePayload, contactName: '' }, { now: AFTER_OFFER }).ok).toBe(false);
+    expect(sanitizeBuildIntake({ ...basePayload, contactEmail: 'bad' }, { now: AFTER_OFFER }).ok).toBe(false);
+    expect(sanitizeBuildIntake({ ...basePayload, businessName: '' }, { now: AFTER_OFFER }).ok).toBe(false);
+    expect(sanitizeBuildIntake(basePayload, { now: AFTER_OFFER }).ok).toBe(true);
   });
 
   it('requires Growth Managed plan acknowledgement and stamps $75', () => {
-    expect(sanitizeBuildIntake({ ...basePayload, acceptedManagedPlan: false }).code).toBe('MISSING_PLAN_ACK');
-    const result = sanitizeBuildIntake({ ...basePayload, plan: 'starter' });
+    expect(sanitizeBuildIntake({ ...basePayload, acceptedManagedPlan: false }, { now: AFTER_OFFER }).code).toBe('MISSING_PLAN_ACK');
+    const result = sanitizeBuildIntake({ ...basePayload, plan: 'starter' }, { now: AFTER_OFFER });
     expect(result.ok).toBe(true);
     expect(result.data.plan).toBe('growth_managed');
     expect(result.data.planPriceMonthly).toBe(75);
@@ -38,7 +40,7 @@ describe('sanitizeBuildIntake', () => {
       websiteUrl: 'ftp://bad.example',
       instagram: 'https://instagram.com/jane',
       aboutBio: '<b>Hello</b>',
-    });
+    }, { now: AFTER_OFFER });
     expect(result.ok).toBe(true);
     expect(result.data.website).toBe('');
     expect(result.data.instagram).toBe('https://instagram.com/jane');
@@ -50,7 +52,7 @@ describe('sanitizeBuildIntake', () => {
       ...basePayload,
       streetAddress: '123 Main St',
       serviceAreaLabel: 'Montclair, NJ',
-    });
+    }, { now: AFTER_OFFER });
     expect(result.ok).toBe(true);
     expect(result.data.locationPublic).toBe(false);
     expect(result.data.serviceAreaLabel).toBe('Montclair, NJ');
@@ -63,7 +65,7 @@ describe('sanitizeBuildIntake', () => {
       locationPublic: true,
       serviceAreaLabel: 'Montclair, NJ',
       serviceRadiusMiles: 15,
-    });
+    }, { now: AFTER_OFFER });
     expect(result.ok).toBe(true);
     expect(result.data.locationPublic).toBe(true);
     expect(result.data.serviceAreaLabel).toBe('');
@@ -75,7 +77,7 @@ describe('sanitizeBuildIntake', () => {
       ...basePayload,
       features: { booking: true, shop: 'true', faq: 1 },
       servicesText: 'x'.repeat(9000),
-    });
+    }, { now: AFTER_OFFER });
     expect(result.ok).toBe(true);
     expect(result.data.features.booking).toBe(true);
     expect(result.data.features.shop).toBe(true);

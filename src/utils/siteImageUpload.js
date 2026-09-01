@@ -48,6 +48,33 @@ export async function uploadSiteImage(file) {
 }
 
 /**
+ * Guest we-build photos. Same file rules as owner uploads; distinct public route.
+ * @param {File} file
+ * @returns {Promise<string>}
+ */
+export async function uploadIntakeImage(file) {
+  assertSiteImageFile(file);
+  await api.initCsrf();
+  const formData = new FormData();
+  formData.append('image', file);
+  try {
+    const data = await api.upload('/api/build-intake/photo', formData);
+    const url = data.url || data.data?.url;
+    if (!url) {
+      throw new Error('Upload succeeded but no image URL was returned');
+    }
+    return url;
+  } catch (error) {
+    if (error?.status === 429 || /too many|429/i.test(String(error?.message || ''))) {
+      const capped = new Error('Too many photo uploads. Paste a link instead, or email support@rightsitelight.com');
+      capped.code = 'UPLOAD_RATE_LIMIT';
+      throw capped;
+    }
+    throw error;
+  }
+}
+
+/**
  * Open the file picker in the same document as the click (iframe-safe).
  * Must run in the user-gesture turn — do not await anything first.
  */

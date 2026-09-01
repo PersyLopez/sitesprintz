@@ -16,6 +16,19 @@ export const PRICING_CONFIG = {
     paymentMethodRequired: false
   },
 
+  /**
+   * Reusable limited-time we-build campaign (popup + /build).
+   * Flip dates + campaignId to run again; do not delete the feature.
+   * endsAt is exclusive.
+   */
+  setupOffer: {
+    campaignId: 'launch-2026-09',
+    enabled: true,
+    startsAt: '2026-09-01T00:00:00.000Z',
+    endsAt: '2026-10-01T00:00:00.000Z',
+    seasonLabel: '',
+  },
+
   // Optional labor (not hosting). Display amounts; Stripe Price IDs later.
   labor: {
     contactEmail: PLATFORM_SUPPORT_EMAIL,
@@ -362,6 +375,44 @@ export function compareTiers(tierA, tierB) {
     newFeatures: configB.features.length - configA.features.length,
     valueIncrease: configB.valueBreakdown.totalMarketValue - configA.valueBreakdown.totalMarketValue
   };
+}
+
+export function getSetupOffer(config = PRICING_CONFIG) {
+  return config?.setupOffer || null;
+}
+
+/**
+ * @param {Date|string|number} [now]
+ * @param {typeof PRICING_CONFIG.setupOffer} [offer]
+ * @returns {boolean}
+ */
+export function isSetupOfferActive(now = new Date(), offer = PRICING_CONFIG.setupOffer) {
+  if (!offer || offer.enabled !== true) return false;
+  const t = now instanceof Date ? now.getTime() : new Date(now).getTime();
+  const start = Date.parse(offer.startsAt);
+  const end = Date.parse(offer.endsAt);
+  if (!Number.isFinite(t) || !Number.isFinite(start) || !Number.isFinite(end) || start >= end) {
+    return false;
+  }
+  return t >= start && t < end;
+}
+
+export function setupOfferDismissKey(offer = PRICING_CONFIG.setupOffer) {
+  const id = String(offer?.campaignId || 'default').slice(0, 80);
+  return `rsl-setup-offer:${id}`;
+}
+
+/**
+ * Last calendar day of the window (endsAt is exclusive).
+ * @param {'en'|'es'} [locale]
+ * @param {typeof PRICING_CONFIG.setupOffer} [offer]
+ */
+export function setupOfferEndLabel(locale = 'en', offer = PRICING_CONFIG.setupOffer) {
+  const end = Date.parse(offer?.endsAt);
+  if (!Number.isFinite(end)) return '';
+  const lastDay = new Date(end - 1);
+  const tag = locale === 'es' ? 'es' : 'en-US';
+  return lastDay.toLocaleDateString(tag, { month: 'long', day: 'numeric', year: 'numeric' });
 }
 
 export default PRICING_CONFIG;

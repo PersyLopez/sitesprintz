@@ -6,6 +6,7 @@ const ADMIN_NAV_ITEMS = [
   { to: '/admin/users', label: 'Users' },
   { to: '/admin/sites', label: 'Sites' },
   { to: '/admin/candidates', label: 'Candidates' },
+  { to: '/admin/build-intakes', label: 'Build intakes' },
   { to: '/admin/templates', label: 'Templates' },
   { to: '/admin/pricing', label: 'Pricing' },
   { to: '/admin/coupons', label: 'Coupons' },

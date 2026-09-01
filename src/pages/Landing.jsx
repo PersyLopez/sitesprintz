@@ -4,9 +4,10 @@ import { useAuth } from '../hooks/useAuth';
 import PublicPageLayout from '../components/layout/PublicPageLayout';
 import LandingGallery from '../components/landing/LandingGallery';
 import HeroStoryVideo from '../components/landing/HeroStoryVideo';
-import { PRICING_CONFIG } from '../config/pricing.config';
+import { PRICING_CONFIG, isSetupOfferActive, setupOfferDismissKey } from '../config/pricing.config';
 import { useLocale } from '../i18n/LocaleContext.jsx';
 import LaborExtrasNote from '../components/pricing/LaborExtrasNote';
+import SetupOfferModal from '../components/landing/SetupOfferModal';
 import './Landing.css';
 
 /**
@@ -105,6 +106,15 @@ export default function Landing() {
   const navigate = useNavigate();
   const [selectedTemplateId, setSelectedTemplateId] = useState(null);
   const [activeSection, setActiveSection] = useState('stories');
+  const offerOn = isSetupOfferActive();
+  const dismissKey = setupOfferDismissKey();
+  const [offerDismissed, setOfferDismissed] = useState(() => {
+    try {
+      return sessionStorage.getItem(dismissKey) === '1';
+    } catch {
+      return false;
+    }
+  });
 
   useEffect(() => {
     const root = document.querySelector('.landing-page');
@@ -166,9 +176,20 @@ export default function Landing() {
 
   const ctaTo = isAuthenticated ? '/setup' : '/register';
   const ctaLabel = isAuthenticated ? t('landing.cta.auth') : t('landing.cta.guest');
-  const pricingCtaTo = (planId) => (
-    isAuthenticated ? `/settings/billing?plan=${planId}` : `/register?plan=${planId}`
-  );
+  const pricingCtaTo = (planId) => {
+    if (offerOn && planId === 'growth_managed' && !isAuthenticated) {
+      return '/build';
+    }
+    return isAuthenticated ? `/settings/billing?plan=${planId}` : `/register?plan=${planId}`;
+  };
+  const dismissOffer = () => {
+    try {
+      sessionStorage.setItem(dismissKey, '1');
+    } catch {
+      /* private mode */
+    }
+    setOfferDismissed(true);
+  };
   const trustItems = TRUST_KEYS.map((item) => ({ icon: item.icon, label: t(item.key) }));
   const customerStories = CUSTOMER_STORY_IDS.map((story) => ({
     ...story,
@@ -198,6 +219,9 @@ export default function Landing() {
 
   return (
     <PublicPageLayout className="landing-page">
+      {offerOn && !isAuthenticated && !offerDismissed ? (
+        <SetupOfferModal onDismiss={dismissOffer} />
+      ) : null}
 
       {/* Value story — bridge the gap */}
       <section className="landing-hero landing-hero--ambient" aria-labelledby="hero-heading">
@@ -371,6 +395,15 @@ export default function Landing() {
             <h2 id="pricing-heading">{t('landing.pricing.heading')}</h2>
             <p>{t('landing.pricing.lead')}</p>
           </div>
+
+          {offerOn ? (
+            <div className="setup-offer-strip" data-testid="setup-offer-reopen">
+              <p>{t('setupOffer.reopenLead')}</p>
+              <Link to="/build" className="btn btn-primary">
+                {t('setupOffer.reopen')}
+              </Link>
+            </div>
+          ) : null}
 
           <div className="pricing-grid pricing-grid--simple" data-reveal data-reveal-stagger>
             {landingPlans.map((plan) => (

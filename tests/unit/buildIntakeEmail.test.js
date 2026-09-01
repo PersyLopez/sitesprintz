@@ -17,13 +17,32 @@ describe('build intake and labor purchase emails', () => {
     expect(rendered.html).toContain('/build');
   });
 
-  it('build intake ops email names Growth Managed', () => {
+  it('build intake customer email explains the 15-day live clock during a setup offer', () => {
+    const rendered = emailService.renderBuildIntakeCustomerTemplate({
+      contactName: 'Jane',
+      setupOfferActive: true,
+      recommendedPlan: 'starter',
+      planPriceMonthly: 10,
+    });
+    expect(rendered.html).toMatch(/15 days live/i);
+    expect(rendered.html).toMatch(/starter/i);
+    expect(rendered.html).toMatch(/not instant|when the page is ready/i);
+  });
+
+  it('build intake ops email names the recommended plan and catalog', () => {
     const rendered = emailService.renderBuildIntakeOpsTemplate({
       businessName: 'Jane Salon',
-      planPriceMonthly: 75,
-      features: {},
+      plan: 'growth',
+      recommendedPlan: 'growth',
+      planPriceMonthly: 35,
+      features: { booking: true },
+      coverPhotoUrl: 'https://cdn.example/cover.jpg',
+      catalogItems: [{ name: 'Cut', price: '40', photoUrl: 'https://cdn.example/cut.jpg' }],
     });
-    expect(rendered.subject).toMatch(/Growth Managed/);
-    expect(rendered.html).toMatch(/\$75\/mo/);
+    expect(rendered.subject).toMatch(/Jane Salon/);
+    expect(rendered.html).toMatch(/growth/i);
+    expect(rendered.html).toMatch(/\$35\/mo/);
+    expect(rendered.html).toMatch(/Cover photo/);
+    expect(rendered.html).toMatch(/Cut/);
   });
 });

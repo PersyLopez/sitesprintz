@@ -22,6 +22,7 @@ describe('laborInquiryMailto', () => {
     expect(sanitizeLaborTopic('build on request')).toBe('build on request');
     expect(sanitizeLaborTopic('GROWTH MANAGED')).toBe('growth managed');
     expect(sanitizeLaborTopic('UNIQUE LOOK')).toBe('unique look');
+    expect(sanitizeLaborTopic('setup offer')).toBe('setup offer');
     expect(sanitizeLaborTopic('http://evil.example/x')).toBe('optional extras');
   });
 

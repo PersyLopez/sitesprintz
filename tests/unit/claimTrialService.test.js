@@ -27,6 +27,7 @@ import {
   createClaimTrialCheckout,
   completeClaimTrialCheckout,
   hasClaimableGrowthSubscription,
+  hasMatchingClaimSubscription,
   isSubscribedStatus,
   normalizeClaimPlan,
 } from '../../server/services/claimTrialService.js';
@@ -56,6 +57,13 @@ describe('claimTrialService', () => {
     expect(normalizeClaimPlan('invalid')).toBeNull();
   });
 
+  it('allows Starter claim only when the published site is starter', () => {
+    expect(normalizeClaimPlan('starter', 'starter')).toBe('starter');
+    expect(normalizeClaimPlan(undefined, 'starter')).toBe('starter');
+    expect(normalizeClaimPlan('growth', 'starter')).toBe('growth');
+    expect(normalizeClaimPlan('starter', 'growth')).toBeNull();
+  });
+
   it('detects trialing and active as subscribed', () => {
     expect(isSubscribedStatus('trialing')).toBe(true);
     expect(isSubscribedStatus('active')).toBe(true);
@@ -80,6 +88,18 @@ describe('claimTrialService', () => {
         subscriptionStatus: 'active',
         subscriptionPlan: 'starter',
       })
+    ).toBe(false);
+    expect(
+      hasMatchingClaimSubscription({
+        subscriptionStatus: 'active',
+        subscriptionPlan: 'starter',
+      }, 'starter')
+    ).toBe(true);
+    expect(
+      hasMatchingClaimSubscription({
+        subscriptionStatus: 'active',
+        subscriptionPlan: 'starter',
+      }, 'growth')
     ).toBe(false);
   });
 

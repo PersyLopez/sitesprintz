@@ -1,5 +1,5 @@
 url: http://localhost:5173/#pricing
-goal: Growth Managed is a flat $75 hosting plan — three cards, no $49 care add-on
+goal: Growth Managed is a flat $75 hosting plan — three cards; during the setup offer Managed CTA opens /build
 steps:
   - action: Pricing heading and three cards
     wait_for: { text: Three plans. Pick how you run it., timeout: 20000 }
@@ -28,12 +28,19 @@ steps:
       if (/no setup fee/i.test(extraText)) throw new Error('Do not advertise a waived setup fee');
       if (!/Growth Managed/i.test(extraText)) throw new Error('Extras should mention Growth Managed');
 
-  - action: Growth Managed CTA goes to register with plan
+  - action: Dismiss setup offer modal if it covers pricing
+    code: |
+      const dismiss = page.getByTestId('setup-offer-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 5000 });
+        await page.waitForTimeout(400);
+      }
+
+  - action: Growth Managed CTA goes to /build while setup offer is on
     click: { testId: pricing-cta-growth_managed }
     settle_ms: 800
     assert:
-      - url contains /register
-      - url contains plan=growth_managed
+      - url contains /build
 
   - action: Open build intake
     goto: http://localhost:5173/build
@@ -41,18 +48,24 @@ steps:
     settle_ms: 400
     assert:
       - text contains $75
-      - text contains Growth Managed
-      - text contains first month includes the initial fill
+      - text contains 15
+      - text contains the big photo at the top
 
-  - action: Build intake requires Growth Managed acknowledgement
+  - action: Build intake essential-first during setup offer
     code: |
-      const ack = page.getByTestId('build-plan-ack');
-      if (!(await ack.count())) throw new Error('Missing Growth Managed acknowledgement');
-      const submit = page.getByTestId('build-intake-submit');
-      if (!(await submit.isDisabled())) throw new Error('Submit should stay disabled until plan is accepted');
+      const need = page.getByTestId('build-need-this');
+      if (!(await need.count())) throw new Error('Missing Need this section');
+      const body = await page.locator('body').innerText();
+      if (/hero/i.test(body)) throw new Error('Customer copy must not say hero');
+      if (/no setup fee/i.test(body)) throw new Error('Do not advertise a waived setup fee');
+      const alt = page.getByTestId('build-intake-email-alt');
+      const href = await alt.getAttribute('href');
+      if (!href || !href.startsWith('mailto:support@rightsitelight.com')) {
+        throw new Error('Email alternative missing: ' + href);
+      }
       const diy = page.getByRole('link', { name: /edit it myself on Growth/i });
-      const href = await diy.getAttribute('href');
-      if (!href || !href.includes('plan=growth')) throw new Error('DIY Growth link missing: ' + href);
+      const diyHref = await diy.getAttribute('href');
+      if (!diyHref || !diyHref.includes('plan=growth')) throw new Error('DIY Growth link missing: ' + diyHref);
 
   - action: Open contact
     goto: http://localhost:5173/contact

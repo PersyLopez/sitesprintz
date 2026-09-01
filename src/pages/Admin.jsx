@@ -240,6 +240,9 @@ function Admin() {
             <Link to="/admin/candidates" className="btn btn-secondary">
               Candidates
             </Link>
+            <Link to="/admin/build-intakes" className="btn btn-secondary">
+              Build intakes
+            </Link>
             <button type="button" onClick={forceRefresh} className="btn btn-secondary">
               Refresh
             </button>

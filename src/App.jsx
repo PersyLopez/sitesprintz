@@ -28,6 +28,7 @@ const AdminPlanFeatures = lazy(() => import('./pages/AdminPlanFeatures'));
 const AdminCoupons = lazy(() => import('./pages/AdminCoupons'));
 const AdminSites = lazy(() => import('./pages/AdminSites'));
 const AdminCandidates = lazy(() => import('./pages/AdminCandidates'));
+const AdminBuildIntakes = lazy(() => import('./pages/AdminBuildIntakes'));
 const AdminTemplates = lazy(() => import('./pages/AdminTemplates'));
 const TemplateEditor = lazy(() => import('./components/admin/template-editor/TemplateEditor'));
 const PricingManagement = lazy(() => import('./components/admin/PricingManagement'));
@@ -517,6 +518,16 @@ function App() {
                   <AdminRoute>
                     <Suspense fallback={<LoadingFallback message="Loading candidates..." />}>
                       <AdminCandidates />
+                    </Suspense>
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/build-intakes"
+                element={
+                  <AdminRoute>
+                    <Suspense fallback={<LoadingFallback message="Loading build intakes..." />}>
+                      <AdminBuildIntakes />
                     </Suspense>
                   </AdminRoute>
                 }

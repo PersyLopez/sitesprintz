@@ -192,6 +192,23 @@
   line-height: 1.5;
 }
 
+.build-intake-field > .build-intake-help {
+  margin-left: 0;
+}
+
+.build-intake-catalog-row {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px dashed var(--sp-border, #e8dfd6);
+}
+
+.build-intake-nice-heading {
+  font-size: 1.25rem;
+  margin: 0.5rem 0 0;
+}
+
 .build-intake-feature-panel {
   margin-top: 1rem;
   padding-top: 1rem;

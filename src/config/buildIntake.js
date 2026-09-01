@@ -4,6 +4,7 @@
 
 import { FEATURES } from '../utils/planFeatures.js';
 import { TIERS, TIER_INFO } from './tiers.js';
+import { isSetupOfferActive, PRICING_CONFIG } from './pricing.config.js';
 import {
   SERVICE_RADIUS_MILES,
   SERVICE_AREA_LABEL_MAX,
@@ -16,11 +17,15 @@ const MAX_MEDIUM = 2000;
 const MAX_LONG = 8000;
 const MAX_URL = 2000;
 const HTTPS_URL = /^https:\/\/.+/i;
+const INTAKE_UPLOAD_PATH = /^\/uploads\/intake-[a-zA-Z0-9._-]+\.(jpe?g|png|gif|webp)$/i;
 const EMAIL_PATTERN = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
+const CATALOG_MAX_ITEMS = 40;
 
 export const BUILD_INTAKE_FORM_TYPE = 'build_intake';
 export const BUILD_INTAKE_PLAN = TIERS.GROWTH_MANAGED;
 export const BUILD_INTAKE_PLAN_PRICE = TIER_INFO[TIERS.GROWTH_MANAGED].price;
+export const BUILD_INTAKE_STATUSES = Object.freeze(['unread', 'notify_failed', 'in_progress', 'done']);
+export { CATALOG_MAX_ITEMS };
 
 export const OPERATING_MODELS = Object.freeze(['solo', 'team']);
 export const FULFILLMENT_MODES = Object.freeze(['pickup', 'shipping', 'both']);
@@ -87,6 +92,47 @@ function sanitizeHttpsUrl(value) {
   return trimmed.slice(0, MAX_URL);
 }
 
+/**
+ * Public intake photos: https links or server-written /uploads/intake-* paths.
+ * @param {unknown} value
+ * @returns {string}
+ */
+export function sanitizeIntakePhotoUrl(value) {
+  const trimmed = stripHtml(String(value ?? ''));
+  if (!trimmed) return '';
+  if (trimmed.includes('..') || trimmed.includes('\\')) return '';
+  if (INTAKE_UPLOAD_PATH.test(trimmed)) {
+    return trimmed.slice(0, MAX_URL);
+  }
+  if (HTTPS_URL.test(trimmed)) {
+    return trimmed.slice(0, MAX_URL);
+  }
+  return '';
+}
+
+/**
+ * @param {{ booking?: boolean, shop?: boolean }} features
+ * @returns {'starter'|'growth'}
+ */
+export function recommendedPlanFromFeatures(features) {
+  if (features?.booking || features?.shop) return TIERS.GROWTH;
+  return TIERS.STARTER;
+}
+
+function sanitizeCatalogItems(raw) {
+  if (!Array.isArray(raw)) return [];
+  const items = [];
+  for (const row of raw.slice(0, CATALOG_MAX_ITEMS)) {
+    if (!row || typeof row !== 'object') continue;
+    const name = sanitizeText(row.name, MAX_SHORT);
+    const price = sanitizeText(row.price, 40);
+    const photoUrl = sanitizeIntakePhotoUrl(row.photoUrl ?? row.photo);
+    if (!name && !price && !photoUrl) continue;
+    items.push({ name, price, photoUrl });
+  }
+  return items;
+}
+
 function sanitizeBoolean(value, defaultValue = false) {
   if (value === true || value === 'true' || value === 1 || value === '1') return true;
   if (value === false || value === 'false' || value === 0 || value === '0') return false;
@@ -108,9 +154,10 @@ function sanitizeFeatures(raw) {
 
 /**
  * @param {Record<string, unknown>} body
+ * @param {{ now?: Date }} [opts]
  * @returns {{ ok: true, data: object } | { ok: false, error: string, code: string }}
  */
-export function sanitizeBuildIntake(body) {
+export function sanitizeBuildIntake(body, opts = {}) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) {
     return { ok: false, error: 'Invalid payload', code: 'INVALID_BODY' };
   }
@@ -132,7 +179,9 @@ export function sanitizeBuildIntake(body) {
   if (!businessName) {
     return { ok: false, error: 'Business name is required', code: 'MISSING_BUSINESS_NAME' };
   }
-  if (!sanitizeBoolean(body.acceptedManagedPlan)) {
+
+  const offerActive = isSetupOfferActive(opts.now || new Date());
+  if (!offerActive && !sanitizeBoolean(body.acceptedManagedPlan)) {
     return {
       ok: false,
       error: 'Growth Managed at $75/month must be accepted',
@@ -141,11 +190,18 @@ export function sanitizeBuildIntake(body) {
   }
 
   const features = sanitizeFeatures(body);
+  if (sanitizeBoolean(body.wantsScheduling)) features.booking = true;
+  if (sanitizeBoolean(body.wantsOrdering)) features.shop = true;
   const byAppointment = sanitizeBoolean(body.byAppointment);
   const hoursText = byAppointment ? '' : sanitizeText(body.hoursText, MAX_MEDIUM);
   const locationPublic = sanitizeBoolean(body.locationPublic, false);
   const serviceAreaLabel = normalizeServiceAreaLabel(body.serviceAreaLabel ?? body.cityServiceArea);
   const serviceRadiusMiles = normalizeServiceRadiusMiles(body.serviceRadiusMiles) ?? 10;
+  const recommendedPlan = offerActive
+    ? recommendedPlanFromFeatures(features)
+    : BUILD_INTAKE_PLAN;
+  const planPriceMonthly = TIER_INFO[recommendedPlan]?.price ?? BUILD_INTAKE_PLAN_PRICE;
+  const offer = PRICING_CONFIG.setupOffer;
 
   const data = {
     contactName,
@@ -165,12 +221,16 @@ export function sanitizeBuildIntake(body) {
     facebook: sanitizeHttpsUrl(body.facebook),
     scheduler: sanitizeHttpsUrl(body.scheduler),
     googleMaps: sanitizeHttpsUrl(body.googleMaps),
-    logoUrl: sanitizeHttpsUrl(body.logoUrl),
+    logoUrl: sanitizeIntakePhotoUrl(body.logoUrl) || sanitizeHttpsUrl(body.logoUrl),
     photosUrl: sanitizeHttpsUrl(body.photosUrl),
+    coverPhotoUrl: sanitizeIntakePhotoUrl(body.coverPhotoUrl),
+    catalogItems: sanitizeCatalogItems(body.catalogItems),
     aboutBio: sanitizeText(body.aboutBio, MAX_LONG),
     customDomain: sanitizeText(body.customDomain, MAX_SHORT),
     preferredLocale: sanitizeEnum(body.preferredLocale, PREFERRED_LOCALES, 'en'),
     features,
+    wantsScheduling: Boolean(features.booking),
+    wantsOrdering: Boolean(features.shop),
     servicesText: sanitizeText(body.servicesText, MAX_LONG),
     depositCancellationPolicy: sanitizeText(body.depositCancellationPolicy, MAX_MEDIUM),
     operatingModel: sanitizeEnum(body.operatingModel, OPERATING_MODELS),
@@ -186,9 +246,12 @@ export function sanitizeBuildIntake(body) {
     brandFileUrl: sanitizeHttpsUrl(body.brandFileUrl),
     referenceUrls: sanitizeText(body.referenceUrls, MAX_MEDIUM),
     vibeSentence: sanitizeText(body.vibeSentence, MAX_SHORT),
-    plan: BUILD_INTAKE_PLAN,
-    planPriceMonthly: BUILD_INTAKE_PLAN_PRICE,
-    acceptedManagedPlan: true,
+    plan: recommendedPlan,
+    recommendedPlan,
+    planPriceMonthly,
+    acceptedManagedPlan: offerActive ? false : true,
+    setupOfferActive: offerActive,
+    setupOfferCampaignId: offerActive ? String(offer?.campaignId || '') : '',
     submittedAt: new Date().toISOString(),
   };
 

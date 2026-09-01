@@ -3,7 +3,16 @@ import { useToast } from '../../../hooks/useToast';
 import { SITE_IMAGE_ACCEPT, assertSiteImageFile, uploadSiteImage } from '../../../utils/siteImageUpload';
 import './ImageUploader.css';
 
-function ImageUploader({ value, onChange, aspectRatio, label, allowUrl = true }) {
+function ImageUploader({
+  value,
+  onChange,
+  aspectRatio,
+  label,
+  allowUrl = true,
+  uploadFn,
+  pickHint,
+  urlHint,
+}) {
   const { showError, showSuccess } = useToast();
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -59,7 +68,7 @@ function ImageUploader({ value, onChange, aspectRatio, label, allowUrl = true })
     setUploading(true);
 
     try {
-      const url = await uploadSiteImage(file);
+      const url = await (uploadFn || uploadSiteImage)(file);
       onChange(url);
       showSuccess('Image uploaded');
       setShowUrlInput(false);
@@ -161,9 +170,9 @@ function ImageUploader({ value, onChange, aspectRatio, label, allowUrl = true })
             <>
               <div className="upload-icon" aria-hidden="true">📷</div>
               <p className="upload-text">
-                <strong>Click to upload</strong> or drag and drop
+                <strong>{pickHint || 'Click to upload'}</strong> or drag and drop
               </p>
-              <p className="upload-hint">JPEG, PNG, GIF, or WebP · max 5MB</p>
+              <p className="upload-hint">{urlHint || 'JPEG, PNG, GIF, or WebP · max 5MB'}</p>
               {aspectRatio ? (
                 <p className="upload-hint">Recommended: {aspectRatio} aspect ratio</p>
               ) : null}

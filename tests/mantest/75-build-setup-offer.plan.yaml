@@ -1,0 +1,75 @@
+url: http://localhost:5173/
+goal: Setup offer popup opens the we-build form; dismiss keeps Open the form; no hero copy
+steps:
+  - action: Reset dismiss storage and open the offer modal
+    code: |
+      await page.evaluate(() => {
+        for (const key of Object.keys(sessionStorage)) {
+          if (key.startsWith('rsl-setup-offer:')) sessionStorage.removeItem(key);
+        }
+      });
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      const modal = page.getByTestId('setup-offer-modal');
+      await modal.waitFor({ timeout: 20000 });
+      const cta = page.getByTestId('setup-offer-cta');
+      await cta.waitFor({ state: 'visible', timeout: 8000 });
+      const mail = page.getByTestId('setup-offer-email-alt');
+      await mail.waitFor({ state: 'visible', timeout: 5000 });
+      const text = await modal.innerText();
+      if (!/15/.test(text)) throw new Error('Modal missing 15-day trial: ' + text.slice(0, 240));
+      if (!/Open the form/i.test(text)) throw new Error('Modal missing Open the form');
+      if (/hero/i.test(text)) throw new Error('Popup must not say hero');
+      if (/no setup fee/i.test(text)) throw new Error('Do not advertise a waived setup fee');
+      const href = await mail.getAttribute('href');
+      if (!href || !href.startsWith('mailto:support@rightsitelight.com')) {
+        throw new Error('Popup mailto missing: ' + href);
+      }
+
+  - action: Open the form from the popup
+    code: |
+      await page.getByTestId('setup-offer-cta').click({ force: true });
+      await page.waitForURL(/\/build/, { timeout: 10000 });
+      await page.getByTestId('build-need-this').waitFor({ timeout: 10000 });
+
+  - action: Form essential fields and gallery-or-link photos
+    code: |
+      const need = await page.getByTestId('build-need-this').innerText();
+      if (!/the big photo at the top/i.test(need)) {
+        throw new Error('Cover photo must use plain language, got: ' + need.slice(0, 200));
+      }
+      if (/hero/i.test(need)) throw new Error('Form must not say hero');
+      const alt = page.getByTestId('build-intake-email-alt');
+      if (!(await alt.count())) throw new Error('Missing email alternative on /build');
+      const pick = await page.locator('body').innerText();
+      if (!/choose from your photos|Paste a photo link/i.test(pick)) {
+        throw new Error('Photo fields must mention a link or choosing from photos');
+      }
+      await page.getByTestId('build-need-scheduling').check();
+      const callout = await page.getByTestId('build-plan-callout').innerText();
+      if (!/\$35/.test(callout) || !/Growth/i.test(callout)) {
+        throw new Error('Scheduling should call out Growth $35: ' + callout);
+      }
+
+  - action: Back to landing after opening the form
+    goto: http://localhost:5173/
+    wait_for: { text: Limited-time, timeout: 15000 }
+    settle_ms: 500
+
+  - action: Reopen strip stays; modal stays closed
+    code: |
+      if (await page.getByTestId('setup-offer-modal').count()) {
+        throw new Error('Modal should stay dismissed after Open the form');
+      }
+      const strip = page.getByTestId('setup-offer-reopen');
+      if (!(await strip.isVisible())) throw new Error('Open the form strip missing after dismiss');
+
+  - action: Reload does not re-open the modal
+    code: |
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(900);
+      if (await page.getByTestId('setup-offer-modal').count()) {
+        throw new Error('Reload in the same session should not re-open the modal');
+      }
+      if (!(await page.getByTestId('setup-offer-reopen').isVisible())) {
+        throw new Error('Strip should remain after reload');
+      }

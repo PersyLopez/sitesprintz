@@ -15,13 +15,17 @@ function authHeaders(token) {
   };
 }
 
-function hasGrowthClaimSubscription(user) {
+function hasMatchingClaimSubscription(user, sitePlan) {
   const status = user?.subscriptionStatus || user?.subscription_status;
   if (status !== 'active') {
     return false;
   }
   const plan = user?.subscriptionPlan || user?.subscription_plan || user?.plan;
-  return plan === 'growth' || plan === 'growth_managed' || plan === 'pro' || plan === 'premium';
+  const growth = plan === 'growth' || plan === 'growth_managed' || plan === 'pro' || plan === 'premium';
+  if (sitePlan === 'starter') {
+    return plan === 'starter' || growth;
+  }
+  return growth;
 }
 
 function ClaimSite() {
@@ -40,11 +44,13 @@ function ClaimSite() {
   const [needsTrial, setNeedsTrial] = useState(false);
   const [collectsPayments, setCollectsPayments] = useState(false);
 
+  const inboundStarter = preview?.recommendedPlan === 'starter';
   const claimPath = `/claim/${token}`;
   const loginTo = `/login?redirect=${encodeURIComponent(claimPath)}`;
-  const registerTo = `/register?plan=growth&redirect=${encodeURIComponent(claimPath)}`;
+  const registerPlan = inboundStarter ? 'starter' : 'growth';
+  const registerTo = `/register?plan=${registerPlan}&redirect=${encodeURIComponent(claimPath)}`;
   const subscribed =
-    subscriptionReady || (isAuthenticated && hasGrowthClaimSubscription(user));
+    subscriptionReady || (isAuthenticated && hasMatchingClaimSubscription(user, preview?.recommendedPlan));
 
   useEffect(() => {
     let cancelled = false;
@@ -81,6 +87,9 @@ function ClaimSite() {
         const data = await response.json();
         if (!cancelled) {
           setPreview(data);
+          if (data?.recommendedPlan === 'starter') {
+            setClaimPlan('starter');
+          }
         }
       } catch (err) {
         if (!cancelled) {
@@ -256,7 +265,9 @@ function ClaimSite() {
                     Create an account or log in with the email you want this site owned under.
                     {collectsPayments === false
                       ? ' Platform billing is not open yet — email us after you sign in to claim this site.'
-                      : ' Subscribe to Growth ($35/month, you edit) or Growth Managed ($75/month, we set it up and keep the list updated).'}
+                      : inboundStarter
+                        ? ' Subscribe to Starter ($10/month) or Growth ($35/month) to claim this page.'
+                        : ' Subscribe to Growth ($35/month, you edit) or Growth Managed ($75/month, we set it up and keep the list updated).'}
                   </p>
                   <div className="auth-links" style={{ marginTop: '20px' }}>
                     <Link to={registerTo} className="btn btn-primary btn-full" data-testid="claim-register">
@@ -288,11 +299,25 @@ function ClaimSite() {
                     <>
                   <p>
                     Signed in as <strong>{user?.email}</strong>. That email will own this site.
-                    Subscribe to Growth or Growth Managed to claim it. If you have a coupon, add
-                    it on the payment screen. Booking and checkout stay on this site.
+                    {inboundStarter
+                      ? ' Subscribe to Starter or Growth to claim it.'
+                      : ' Subscribe to Growth or Growth Managed to claim it.'}
+                    {' '}If you have a coupon, add it on the payment screen. Booking and checkout stay on this site.
                   </p>
                   <fieldset style={{ marginTop: '16px', border: 0, padding: 0 }}>
                     <legend className="sr-only">Hosting plan</legend>
+                    {inboundStarter ? (
+                    <label data-testid="claim-plan-starter" style={{ display: 'block', marginBottom: '8px' }}>
+                      <input
+                        type="radio"
+                        name="claim-plan"
+                        value="starter"
+                        checked={claimPlan === 'starter'}
+                        onChange={() => setClaimPlan('starter')}
+                      />
+                      {' '}Starter — $10/month, brochure page
+                    </label>
+                    ) : null}
                     <label data-testid="claim-plan-growth" style={{ display: 'block' }}>
                       <input
                         type="radio"

@@ -11,7 +11,7 @@ import {
 import {
     completeClaimTrialCheckout,
     createClaimTrialCheckout,
-    hasClaimableGrowthSubscription,
+    hasMatchingClaimSubscription,
     isSubscribedStatus,
     normalizeClaimPlan,
     validateClaimOwnership,
@@ -58,6 +58,7 @@ router.get('/:token', async (req, res) => {
     return res.json({
       businessName: businessNameFromSite(site),
       subdomain: site.subdomain,
+      recommendedPlan: site.plan || null,
     });
   } catch {
     return res.status(500).json({ error: 'Claim lookup failed' });
@@ -84,15 +85,17 @@ router.post('/:token/trial-checkout', claimAcceptLimiter, requireSignedIn, async
       return res.status(ownershipError.status).json(ownershipError.body);
     }
 
-    const plan = normalizeClaimPlan(req.body?.plan);
+    const plan = normalizeClaimPlan(req.body?.plan, site.plan);
     if (!plan) {
       return res.status(400).json({
-        error: 'Claimable sites are Growth only',
+        error: site.plan === 'starter'
+          ? 'Choose Starter, Growth, or Growth Managed'
+          : 'Claimable sites are Growth only',
         code: 'INVALID_PLAN',
       });
     }
 
-    if (hasClaimableGrowthSubscription(claimant)) {
+    if (hasMatchingClaimSubscription(claimant, site.plan)) {
       return res.json({ alreadySubscribed: true });
     }
 
@@ -191,12 +194,17 @@ router.post('/:token/accept', claimAcceptLimiter, requireSignedIn, async (req, r
       return res.status(ownershipError.status).json(ownershipError.body);
     }
 
-    if (!hasClaimableGrowthSubscription(claimant)) {
+    if (!hasMatchingClaimSubscription(claimant, site.plan)) {
       const status = claimant.subscriptionStatus || claimant.subscription_status;
+      const growthOnly = site.plan !== 'starter';
       return res.status(403).json({
-        error: isSubscribedStatus(status)
-          ? 'This site is on Growth. Subscribe to Growth to claim it'
-          : 'Subscribe to Growth before claiming this site',
+        error: growthOnly
+          ? (isSubscribedStatus(status)
+            ? 'This site is on Growth. Subscribe to Growth to claim it'
+            : 'Subscribe to Growth before claiming this site')
+          : (isSubscribedStatus(status)
+            ? 'Subscribe to the plan for this site to claim it'
+            : 'Subscribe before claiming this site'),
         code: isSubscribedStatus(status) ? 'GROWTH_REQUIRED' : 'SUBSCRIPTION_REQUIRED',
       });
     }

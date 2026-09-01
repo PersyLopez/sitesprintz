@@ -20,6 +20,7 @@
 
 import { Resend } from 'resend';
 import nodemailer from 'nodemailer';
+import { redactLaborSecrets } from './labor/laborSecrets.js';
 
 export class EmailService {
   constructor(deps = {}) {
@@ -579,15 +580,24 @@ export class EmailService {
   renderBuildIntakeCustomerTemplate(data) {
     const name = this.escapeHtml(data?.contactName || 'there');
     const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
+    const plan = this.escapeHtml(data?.recommendedPlan || data?.plan || 'starter');
+    const price = this.escapeHtml(String(data?.planPriceMonthly ?? ''));
+    const offerActive = Boolean(data?.setupOfferActive);
+    const planLine = offerActive
+      ? `We received your request to set the site up for you. After we publish, you get 15 days live — that clock starts when we publish, not today. Then hosting is ${plan} ($${price}/month) unless you pick Growth Managed to keep the list updated.`
+      : `Thanks — we received your Growth Managed request ($75/month). The first month includes the initial fill. After that we apply two catalog batches a month.`;
+    const streetLine = data?.locationPublic
+      ? 'You asked us to publish your street on the live site.'
+      : 'Your street stays private on the live site unless you asked us to publish it. If hidden, visitors see your service area and radius; customers get the exact address in booking or order confirmations.';
     return {
       subject: 'Right Site Light — we received your build request',
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <p>Hi ${name},</p>
-          <p>Thanks — we received your Growth Managed request ($75/month). The first month includes the initial fill. After that we apply two catalog batches a month. Booking and checkout are the same software as DIY Growth.</p>
-          <p>Brand match and Unique look are extra if you asked for them. We only use the details you provided; anything you left blank stays blank on the site.</p>
-          <p>Send your own photos via Drive, Dropbox, or https links only. We do not invent hours, staff, or stock images.</p>
-          <p>Your street stays private on the live site unless you asked us to publish it. If hidden, visitors see your service area and radius; customers get the exact address in booking or order confirmations.</p>
+          <p>${planLine}</p>
+          <p>This is not instant — we will email you when the page is ready to claim. We only use the details you provided; anything you left blank stays blank on the site.</p>
+          <p>You can send more photos as Drive, Dropbox, or https links, or pick them in the form. We do not invent hours, staff, or stock images.</p>
+          <p>${streetLine}</p>
           <p>We will follow up from support@rightsitelight.com. You can add more anytime at <a href="${siteUrl}/build">${siteUrl}/build</a>.</p>
         </div>
       `,
@@ -596,9 +606,16 @@ export class EmailService {
   }
 
   renderBuildIntakeOpsTemplate(data) {
-    const esc = (value) => this.escapeHtml(value || '');
+    const esc = (value) => this.escapeHtml(redactLaborSecrets(String(value || '')));
     const line = (label, value) => (value ? `<p><strong>${label}:</strong> ${esc(value)}</p>` : '');
     const section = (title, body) => (body ? `<h3 style="margin-top:24px;">${title}</h3>${body}` : '');
+    const plan = esc(data.recommendedPlan || data.plan || 'growth_managed');
+    const catalog = (Array.isArray(data.catalogItems) ? data.catalogItems : [])
+      .map((item, index) => line(
+        `Catalog ${index + 1}`,
+        [item?.name, item?.price, item?.photoUrl].filter(Boolean).join(' — '),
+      ))
+      .join('');
 
     const sources = [
       line('Website', data.website),
@@ -669,13 +686,16 @@ export class EmailService {
     const missing = '<p>Anything left blank in the form was intentionally unknown — do not invent.</p>';
 
     return {
-      subject: `Growth Managed intake — ${esc(data.businessName)}`,
+      subject: `Build intake — ${esc(data.businessName)} (${plan})`,
       html: `
         <div style="font-family: sans-serif; max-width: 640px; margin: 0 auto; padding: 20px;">
-          <p><strong>Plan:</strong> Growth Managed — $${esc(String(data.planPriceMonthly || 75))}/mo (first month includes the fill)</p>
+          <p><strong>Plan:</strong> ${plan} — $${esc(String(data.planPriceMonthly || ''))}/mo</p>
+          <p><strong>Campaign:</strong> ${esc(data.setupOfferCampaignId || 'managed')}</p>
           <p><strong>Submission:</strong> ${esc(String(data.submissionId || ''))}</p>
           <p><strong>Requested modules:</strong> ${esc(requested)}</p>
           <p><strong>Locale:</strong> ${esc(data.preferredLocale)}</p>
+          ${section('Cover', line('Cover photo', data.coverPhotoUrl))}
+          ${section('Catalog', catalog)}
           ${section('Sources', sources)}
           ${section('Brand', brand)}
           ${section('NAP', nap)}

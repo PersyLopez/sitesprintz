@@ -1,0 +1,58 @@
+.setup-offer-modal.modal-content {
+  max-width: 32rem;
+  background: #fffaf4;
+  border: 1px solid #e8dfd6;
+  color: #1c140f;
+}
+
+.setup-offer-modal .modal-title {
+  color: #1c140f;
+}
+
+.setup-offer-body,
+.setup-offer-need {
+  margin: 0 0 1rem;
+  line-height: 1.6;
+  color: #5c4f46;
+}
+
+.setup-offer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1.25rem 0 1rem;
+}
+
+.setup-offer-email {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.setup-offer-email a {
+  color: #9a3412;
+}
+
+.setup-offer-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem 1.25rem;
+  margin: 0 0 1.5rem;
+  padding: 0.85rem 1.1rem;
+  background: #fff1de;
+  border: 1px solid #e8dfd6;
+  border-radius: 12px;
+}
+
+.setup-offer-strip p {
+  margin: 0;
+  color: #5c4f46;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .setup-offer-modal.modal-content,
+  .modal-overlay:has(.setup-offer-modal) {
+    animation: none;
+  }
+}

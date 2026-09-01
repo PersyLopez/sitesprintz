@@ -4,8 +4,11 @@ import Footer from '../components/layout/Footer';
 import { Link } from 'react-router-dom';
 import { useLocale } from '../i18n/LocaleContext.jsx';
 import api from '../services/api';
-import { FEATURE_MODULE_KEYS, SERVICE_RADIUS_MILES } from '../config/buildIntake.js';
-import { laborDisplayVars } from '../utils/laborInquiryMailto';
+import { FEATURE_MODULE_KEYS, SERVICE_RADIUS_MILES, recommendedPlanFromFeatures } from '../config/buildIntake.js';
+import { isSetupOfferActive, setupOfferEndLabel, PRICING_CONFIG, PLATFORM_SUPPORT_EMAIL } from '../config/pricing.config.js';
+import { laborDisplayVars, laborInquiryMailto } from '../utils/laborInquiryMailto';
+import ImageUploader from '../components/setup/forms/ImageUploader';
+import { uploadIntakeImage } from '../utils/siteImageUpload.js';
 import './ContentPage.css';
 import './BuildIntake.css';
 
@@ -29,6 +32,7 @@ const INITIAL_FORM = {
   googleMaps: '',
   logoUrl: '',
   photosUrl: '',
+  coverPhotoUrl: '',
   aboutBio: '',
   customDomain: '',
   servicesText: '',
@@ -56,6 +60,10 @@ function BuildIntake() {
     Object.fromEntries(FEATURE_MODULE_KEYS.map((key) => [key, false]))
   ));
   const extras = laborDisplayVars() || { care: 75, extra: 39, brand: 99, look: 250, batches: 2 };
+  const offerActive = isSetupOfferActive();
+  const offerEnd = setupOfferEndLabel(locale);
+  const mailto = laborInquiryMailto(offerActive ? 'setup offer' : 'build on request');
+  const [catalogItems, setCatalogItems] = useState([{ name: '', price: '', photoUrl: '' }]);
   const [acceptedManagedPlan, setAcceptedManagedPlan] = useState(false);
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
@@ -179,9 +187,15 @@ function BuildIntake() {
     ),
   }), [features, form, t]);
 
+  const recommendedPlan = recommendedPlanFromFeatures(features);
+
+  const updateCatalog = (index, patch) => {
+    setCatalogItems((prev) => prev.map((row, i) => (i === index ? { ...row, ...patch } : row)));
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!acceptedManagedPlan) {
+    if (!offerActive && !acceptedManagedPlan) {
       setError(t('build.planAckRequired'));
       return;
     }
@@ -191,12 +205,17 @@ function BuildIntake() {
       await api.initCsrf();
       await api.post('/api/build-intake', {
         ...form,
+        catalogItems,
+        coverPhotoUrl: form.coverPhotoUrl,
         features,
+        wantsScheduling: Boolean(features.booking),
+        wantsOrdering: Boolean(features.shop),
         preferredLocale: locale === 'es' ? 'es' : 'en',
         acceptedManagedPlan,
       });
       setStatus('success');
       setForm(INITIAL_FORM);
+      setCatalogItems([{ name: '', price: '', photoUrl: '' }]);
       setFeatures(Object.fromEntries(FEATURE_MODULE_KEYS.map((key) => [key, false])));
       setAcceptedManagedPlan(false);
     } catch (err) {
@@ -211,11 +230,36 @@ function BuildIntake() {
       <main className="page-content">
         <div className="content-container">
           <h1>{t('build.title')}</h1>
-          <p className="build-intake-intro">{t('build.intro', extras)}</p>
+          <p className="build-intake-intro">
+            {offerActive
+              ? t('build.offer.intro', { end: offerEnd, days: PRICING_CONFIG.trial.duration })
+              : t('build.intro', extras)}
+          </p>
+
+          {mailto ? (
+            <p>
+              <a href={mailto} data-testid="build-intake-email-alt">
+                {t('build.offer.emailAlt', { email: PLATFORM_SUPPORT_EMAIL })}
+              </a>
+            </p>
+          ) : null}
 
           <div className="build-intake-privacy-callout" data-testid="build-plan-callout">
-            <p><strong>{t('build.planCallout.title', extras)}</strong></p>
-            <p>{t('build.planCallout.body', extras)}</p>
+            {offerActive ? (
+              <>
+                <p>
+                  <strong>
+                    {recommendedPlan === 'growth' ? t('build.offer.planGrowth') : t('build.offer.planStarter')}
+                  </strong>
+                </p>
+                <p>{t('build.offer.planManaged')}</p>
+              </>
+            ) : (
+              <>
+                <p><strong>{t('build.planCallout.title', extras)}</strong></p>
+                <p>{t('build.planCallout.body', extras)}</p>
+              </>
+            )}
             <p>
               <Link to="/register?plan=growth">{t('build.planCallout.diyLink')}</Link>
             </p>
@@ -235,6 +279,133 @@ function BuildIntake() {
               />
             </div>
 
+            {offerActive ? (
+              <section className="build-intake-section" data-testid="build-need-this" aria-labelledby="build-need-heading">
+                <h2 id="build-need-heading">{t('build.offer.needTitle')}</h2>
+                <p>{t('build.offer.needWhy')}</p>
+                <div className="build-intake-grid build-intake-grid--2">
+                  <div className="build-intake-field">
+                    <label htmlFor="contactName">{t('build.fields.contactName')}</label>
+                    <input id="contactName" required value={form.contactName} onChange={(e) => updateField('contactName', e.target.value)} />
+                    <p className="build-intake-help">{t('build.offer.contactWhy')}</p>
+                  </div>
+                  <div className="build-intake-field">
+                    <label htmlFor="contactEmail">{t('build.fields.contactEmail')}</label>
+                    <input id="contactEmail" type="email" required value={form.contactEmail} onChange={(e) => updateField('contactEmail', e.target.value)} />
+                  </div>
+                  <div className="build-intake-field">
+                    <label htmlFor="businessName">{t('build.fields.businessName')}</label>
+                    <input id="businessName" required value={form.businessName} onChange={(e) => updateField('businessName', e.target.value)} />
+                    <p className="build-intake-help">{t('build.offer.businessWhy')}</p>
+                  </div>
+                </div>
+                <div className="build-intake-field">
+                  <ImageUploader
+                    label={t('build.offer.coverLabel')}
+                    value={form.coverPhotoUrl}
+                    onChange={(url) => updateField('coverPhotoUrl', url)}
+                    allowUrl
+                    uploadFn={uploadIntakeImage}
+                    pickHint={t('build.offer.pickHint')}
+                    urlHint={t('build.offer.photoHint')}
+                  />
+                  <p className="build-intake-help">{t('build.offer.coverHelp')}</p>
+                </div>
+                <h3>{t('build.offer.catalogTitle')}</h3>
+                <p>{t('build.offer.catalogHelp')}</p>
+                {catalogItems.map((item, index) => (
+                  <div className="build-intake-catalog-row" key={`catalog-${index}`}>
+                    <div className="build-intake-field">
+                      <label htmlFor={`catalog-name-${index}`}>{t('build.offer.itemName')}</label>
+                      <input
+                        id={`catalog-name-${index}`}
+                        value={item.name}
+                        onChange={(e) => updateCatalog(index, { name: e.target.value })}
+                      />
+                    </div>
+                    <div className="build-intake-field">
+                      <label htmlFor={`catalog-price-${index}`}>{t('build.offer.itemPrice')}</label>
+                      <input
+                        id={`catalog-price-${index}`}
+                        value={item.price}
+                        onChange={(e) => updateCatalog(index, { price: e.target.value })}
+                      />
+                    </div>
+                    <ImageUploader
+                      label={t('build.offer.itemPhoto')}
+                      value={item.photoUrl}
+                      onChange={(url) => updateCatalog(index, { photoUrl: url })}
+                      allowUrl
+                      uploadFn={uploadIntakeImage}
+                      pickHint={t('build.offer.pickHint')}
+                      urlHint={t('build.offer.photoHint')}
+                    />
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setCatalogItems((prev) => [...prev, { name: '', price: '', photoUrl: '' }])}
+                >
+                  {t('build.offer.addItem')}
+                </button>
+                <div className="build-intake-checkboxes" style={{ marginTop: '1rem' }}>
+                  <label htmlFor="feature-booking">
+                    <input
+                      id="feature-booking"
+                      type="checkbox"
+                      checked={features.booking}
+                      onChange={() => toggleFeature('booking')}
+                      data-testid="build-need-scheduling"
+                    />
+                    <span>{t('build.offer.scheduling')}</span>
+                  </label>
+                  <label htmlFor="feature-shop">
+                    <input
+                      id="feature-shop"
+                      type="checkbox"
+                      checked={features.shop}
+                      onChange={() => toggleFeature('shop')}
+                      data-testid="build-need-ordering"
+                    />
+                    <span>{t('build.offer.ordering')}</span>
+                  </label>
+                </div>
+                {featurePanels.booking}
+                {featurePanels.shop}
+              </section>
+            ) : null}
+
+            {offerActive ? (
+              <h2 className="build-intake-nice-heading">{t('build.offer.niceTitle')}</h2>
+            ) : null}
+
+            {offerActive ? (
+              <section className="build-intake-section" aria-labelledby="build-extra-business-heading">
+                <h2 id="build-extra-business-heading">{t('build.sections.business')}</h2>
+                <div className="build-intake-grid">
+                  <div className="build-intake-field">
+                    <label htmlFor="businessTagline">{t('build.fields.businessTagline')}</label>
+                    <input id="businessTagline" value={form.businessTagline} onChange={(e) => updateField('businessTagline', e.target.value)} />
+                  </div>
+                  <div className="build-intake-field">
+                    <label htmlFor="aboutBio">{t('build.fields.aboutBio')}</label>
+                    <textarea id="aboutBio" value={form.aboutBio} onChange={(e) => updateField('aboutBio', e.target.value)} />
+                  </div>
+                  <div className="build-intake-field">
+                    <label htmlFor="customDomain">{t('build.fields.customDomain')}</label>
+                    <input id="customDomain" value={form.customDomain} onChange={(e) => updateField('customDomain', e.target.value)} />
+                  </div>
+                  <div className="build-intake-field">
+                    <label htmlFor="contactPhone">{t('build.fields.contactPhone')}</label>
+                    <input id="contactPhone" type="tel" value={form.contactPhone} onChange={(e) => updateField('contactPhone', e.target.value)} />
+                  </div>
+                </div>
+              </section>
+            ) : null}
+
+            {!offerActive ? (
+            <>
             <section className="build-intake-section" aria-labelledby="build-contact-heading">
               <h2 id="build-contact-heading">{t('build.sections.contact')}</h2>
               <div className="build-intake-grid build-intake-grid--2">
@@ -274,6 +445,8 @@ function BuildIntake() {
                 </div>
               </div>
             </section>
+            </>
+            ) : null}
 
             <section className="build-intake-section" aria-labelledby="build-location-heading">
               <h2 id="build-location-heading">{t('build.sections.location')}</h2>
@@ -396,7 +569,7 @@ function BuildIntake() {
               <h2 id="build-features-heading">{t('build.sections.features')}</h2>
               <p>{t('build.featuresHint')}</p>
               <div className="build-intake-checkboxes">
-                {FEATURE_MODULE_KEYS.map((key) => (
+                {FEATURE_MODULE_KEYS.filter((key) => !(offerActive && (key === 'booking' || key === 'shop'))).map((key) => (
                   <div key={key}>
                     <label htmlFor={`feature-${key}`}>
                       <input
@@ -414,6 +587,7 @@ function BuildIntake() {
             </section>
 
             <div className="build-intake-actions">
+              {!offerActive ? (
               <label className="build-intake-plan-ack" htmlFor="acceptedManagedPlan">
                 <input
                   id="acceptedManagedPlan"
@@ -425,6 +599,7 @@ function BuildIntake() {
                 />
                 <span>{t('build.planAck', extras)}</span>
               </label>
+              ) : null}
               {error && (
                 <div className="build-intake-message build-intake-message--error" role="alert">
                   {error}
@@ -438,7 +613,7 @@ function BuildIntake() {
               <button
                 type="submit"
                 className="btn-primary-large"
-                disabled={status === 'submitting' || !acceptedManagedPlan}
+                disabled={status === 'submitting' || (!offerActive && !acceptedManagedPlan)}
                 data-testid="build-intake-submit"
               >
                 {status === 'submitting' ? t('build.submitting') : t('build.submit')}

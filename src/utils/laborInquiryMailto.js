@@ -7,6 +7,7 @@ const ALLOWED_TOPICS = new Set([
   'brand match',
   'unique look',
   'build on request',
+  'setup offer',
 ]);
 
 const EMAIL_PATTERN = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
@@ -45,8 +46,9 @@ export function laborInquiryMailto(topic = 'optional extras', labor = PRICING_CO
   }
   const safeTopic = sanitizeLaborTopic(topic);
   const subject = encodeURIComponent(`Right Site Light — ${safeTopic}`);
-  const body = encodeURIComponent(
-    'Account email:\nSite (if you have one):\nWhat you need:\n',
-  );
+  const setupBody =
+    'Your name:\nEmail:\nBusiness name:\nThe big photo at the top of the page (link or attach):\nWhat you sell (name, price, photo of each):\nNeed scheduling? (yes/no):\nNeed online ordering? (yes/no):\n';
+  const defaultBody = 'Account email:\nSite (if you have one):\nWhat you need:\n';
+  const body = encodeURIComponent(safeTopic === 'setup offer' ? setupBody : defaultBody);
   return `mailto:${email}?subject=${subject}&body=${body}`;
 }
