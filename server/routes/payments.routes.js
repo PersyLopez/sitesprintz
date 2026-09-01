@@ -484,6 +484,14 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
             }
         }
 
+        if (!buyingAdditionalSite && dbUser?.id && await hasActiveLiveTrialSite(dbUser.id)) {
+            return sendConflict(
+                res,
+                'Your site is still on the no-card live trial. Choose a plan in Settings after it ends.',
+                'LIVE_TRIAL_ACTIVE',
+            );
+        }
+
         let customerId = dbUser?.stripe_customer_id || null;
         if (customerId) {
             try {

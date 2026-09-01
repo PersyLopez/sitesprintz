@@ -253,7 +253,11 @@ function PublishModal({ siteData, onClose }) {
         <button className="modal-close" onClick={onClose}>×</button>
         <div className="modal-header">
           <h2>🚀 Publish Your Website</h2>
-          <p>Choose your plan and launch {siteData.brand?.name || siteData.businessName || 'your site'}</p>
+          <p>
+            {isEligibleForTrial && !checkingTrialEligibility
+              ? `Launch ${siteData.brand?.name || siteData.businessName || 'your site'} — no plan pick needed yet`
+              : `Choose your plan and launch ${siteData.brand?.name || siteData.businessName || 'your site'}`}
+          </p>
         </div>
         <div className="modal-body">
           {isEligibleForTrial && !checkingTrialEligibility && (
@@ -279,6 +283,7 @@ function PublishModal({ siteData, onClose }) {
             </div>
           )}
 
+          {!isEligibleForTrial && !checkingTrialEligibility && (
           <div className="plans-grid">
             {plans.map((plan) => (
               <div
@@ -288,17 +293,15 @@ function PublishModal({ siteData, onClose }) {
               >
                 <h4>{plan.name}</h4>
                 <div className="plan-price">
-                  {isEligibleForTrial ? plan.trialPrice : plan.price}
+                  {plan.price}
                 </div>
-                {isEligibleForTrial && (
-                  <div className="trial-label">Then {plan.price}</div>
-                )}
                 <ul className="plan-features">
                   {plan.features.map((f, i) => <li key={i}>✓ {f}</li>)}
                 </ul>
               </div>
             ))}
           </div>
+          )}
         </div>
         <div className="modal-footer">
           <button onClick={onClose} className="btn btn-secondary">Cancel</button>

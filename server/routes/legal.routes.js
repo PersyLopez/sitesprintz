@@ -89,8 +89,8 @@ router.get('/terms', (req, res) => {
     <p class="last-updated">Last Updated: November 14, 2025</p>
     
     <div class="highlight">
-        <strong>🚨 BETA NOTICE:</strong> Right Site Light is currently in beta. While we strive for high availability and quality,
-        the service is provided "AS-IS" with no uptime guarantee during this period. By using the service, you accept this risk.
+        <strong>Service availability:</strong> Right Site Light is provided on an &ldquo;as is&rdquo; basis while we continue to improve reliability and support.
+        Scheduled maintenance or outages may occur.
     </div>
 
     <h2>1. Acceptance of Terms</h2>
@@ -121,7 +121,8 @@ router.get('/terms', (req, res) => {
 
     <h2>4. Service Availability</h2>
     <p>
-        <strong>4.1 Beta Period:</strong> During beta, we make no guarantees about service availability or uptime.
+        <strong>4.1 Availability:</strong> We strive for high availability but do not guarantee uninterrupted service.
+        Maintenance windows and outages may occur.
         We may experience downtime for maintenance, updates, or unforeseen technical issues.
     </p>
     <p>

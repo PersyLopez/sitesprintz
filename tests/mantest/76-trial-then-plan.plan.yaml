@@ -1,0 +1,50 @@
+url: http://localhost:5173/
+goal: No beta banner on landing; free user billing does not force subscribe during trial
+steps:
+  - action: Landing has no beta banner
+    wait_for: { text: Starter, timeout: 20000 }
+    settle_ms: 800
+    code: |
+      const banner = page.getByTestId('beta-banner');
+      if (await banner.count()) {
+        throw new Error('Beta banner should not render on landing at launch');
+      }
+
+  - action: Login form ready
+    goto: http://localhost:5173/login
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Login free tester without paid hosting
+    fill: { testId: login-email, value: "free@example.com", clear: true }
+
+  - action: Free user password
+    fill: { testId: login-password, value: "FreePass!2024", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Open billing settings
+    goto: http://localhost:5173/settings/billing
+    wait_for: { text: Billing Management, timeout: 20000 }
+    settle_ms: 1000
+
+  - action: Billing does not force subscribe during trial
+    code: |
+      const starterBtn = page.getByTestId('subscribe-starter');
+      const growthBtn = page.getByTestId('subscribe-growth');
+      if (await starterBtn.count()) {
+        throw new Error('Subscribe to Starter should be hidden during active live trial');
+      }
+      if (await growthBtn.count()) {
+        throw new Error('Subscribe to Growth should be hidden during active live trial');
+      }
+      const body = await page.locator('body').innerText();
+      const hasTrialOrClosedCopy =
+        (await page.getByTestId('billing-live-trial-active').count()) > 0
+        || (await page.getByTestId('billing-collection-closed').count()) > 0
+        || /no-card live trial/i.test(body)
+        || /Platform billing is not open yet/i.test(body);
+      if (!hasTrialOrClosedCopy) {
+        throw new Error('Expected live-trial or billing-closed copy on Settings billing');
+      }

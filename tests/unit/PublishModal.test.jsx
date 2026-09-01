@@ -43,15 +43,23 @@ describe('PublishModal', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    api.get.mockResolvedValue({ sites: [] });
+    api.get.mockResolvedValue({
+      sites: [{ status: 'published', subdomain: 'existing-biz' }],
+    });
     api.post.mockResolvedValue({ draftId: 'test-draft-id' });
     global.window.confirm = vi.fn(() => false);
   });
 
   const getPublishButton = () => screen.getByTestId('publish-submit');
 
+  const waitForPlanGrid = async () => {
+    await waitFor(() => {
+      expect(screen.getByText('Starter')).toBeInTheDocument();
+    });
+  };
+
   describe('Plan Detection', () => {
-    it('should detect premium template by tier metadata', () => {
+    it('should detect premium template by tier metadata', async () => {
       const siteData = {
         template: 'medical-specialty',
         tier: 'Premium',
@@ -64,6 +72,8 @@ describe('PublishModal', () => {
         defaultToastValue
       );
 
+      await waitForPlanGrid();
+
       // Growth is the current commerce plan (legacy Premium templates map here)
       const growthPlanCards = screen.getAllByText('Growth');
       const growthPlanCard = growthPlanCards.find(el =>
@@ -73,7 +83,7 @@ describe('PublishModal', () => {
       expect(growthPlanCard?.closest('.plan-card')).toHaveClass('selected');
     });
 
-    it('should detect pro template by tier metadata', () => {
+    it('should detect pro template by tier metadata', async () => {
       const siteData = {
         template: 'restaurant-ordering',
         tier: 'Pro',
@@ -86,6 +96,8 @@ describe('PublishModal', () => {
         defaultToastValue
       );
 
+      await waitForPlanGrid();
+
       const growthPlanCards = screen.getAllByText('Growth');
       const growthPlanCard = growthPlanCards.find(el =>
         el.closest('.plan-card')?.classList.contains('selected')
@@ -94,7 +106,7 @@ describe('PublishModal', () => {
       expect(growthPlanCard?.closest('.plan-card')).toHaveClass('selected');
     });
 
-    it('should detect pro template by -pro suffix', () => {
+    it('should detect pro template by -pro suffix', async () => {
       const siteData = {
         template: 'fitness-booking-pro',
         brand: { name: 'Test Business' }
@@ -106,6 +118,8 @@ describe('PublishModal', () => {
         defaultToastValue
       );
 
+      await waitForPlanGrid();
+
       const growthPlanCards = screen.getAllByText('Growth');
       const growthPlanCard = growthPlanCards.find(el =>
         el.closest('.plan-card')?.classList.contains('selected')
@@ -114,7 +128,7 @@ describe('PublishModal', () => {
       expect(growthPlanCard?.closest('.plan-card')).toHaveClass('selected');
     });
 
-    it('should detect pro template by template ID', () => {
+    it('should detect pro template by template ID', async () => {
       const siteData = {
         template: 'product-ordering',
         brand: { name: 'Test Business' }
@@ -126,6 +140,8 @@ describe('PublishModal', () => {
         defaultToastValue
       );
 
+      await waitForPlanGrid();
+
       const growthPlanCards = screen.getAllByText('Growth');
       const growthPlanCard = growthPlanCards.find(el =>
         el.closest('.plan-card')?.classList.contains('selected')
@@ -134,7 +150,7 @@ describe('PublishModal', () => {
       expect(growthPlanCard?.closest('.plan-card')).toHaveClass('selected');
     });
 
-    it('should default to starter for basic templates', () => {
+    it('should default to starter for basic templates', async () => {
       const siteData = {
         template: 'simple-landing',
         brand: { name: 'Test Business' }
@@ -145,6 +161,8 @@ describe('PublishModal', () => {
         defaultAuthValue,
         defaultToastValue
       );
+
+      await waitForPlanGrid();
 
       const starterPlanCard = screen.getByText('Starter').closest('.plan-card');
       expect(starterPlanCard).toHaveClass('selected');
@@ -215,7 +233,8 @@ describe('PublishModal', () => {
   });
 
   describe('Live trial (no card)', () => {
-    it('shows 15-day no-card trial copy for first site', async () => {
+    it('shows 15-day no-card trial copy and hides plan grid for first site', async () => {
+      api.get.mockResolvedValue({ sites: [] });
       const siteData = {
         template: 'basic',
         brand: { name: 'Test Business' },
@@ -230,7 +249,8 @@ describe('PublishModal', () => {
       await waitFor(() => {
         expect(screen.getByTestId('live-trial-notice')).toBeInTheDocument();
       });
-      expect(screen.getAllByText(/no card required/i).length).toBeGreaterThan(0);
+      expect(screen.queryByText('Starter')).not.toBeInTheDocument();
+      expect(screen.queryByText('Growth')).not.toBeInTheDocument();
       expect(screen.queryByText(/Payment Method Required/i)).not.toBeInTheDocument();
     });
   });
@@ -398,7 +418,7 @@ describe('PublishModal', () => {
   });
 
   describe('Plan Selection', () => {
-    it('should allow changing plan before publish', () => {
+    it('should allow changing plan before publish', async () => {
       const siteData = {
         template: 'basic',
         brand: { name: 'Test Business' }
@@ -409,6 +429,8 @@ describe('PublishModal', () => {
         defaultAuthValue,
         defaultToastValue
       );
+
+      await waitForPlanGrid();
 
       const growthPlanCard = screen.getByText('Growth').closest('.plan-card');
       fireEvent.click(growthPlanCard);
@@ -416,7 +438,7 @@ describe('PublishModal', () => {
       expect(growthPlanCard).toHaveClass('selected');
     });
 
-    it('should show plan features', () => {
+    it('should show plan features', async () => {
       const siteData = {
         template: 'basic',
         brand: { name: 'Test Business' }
@@ -427,6 +449,8 @@ describe('PublishModal', () => {
         defaultAuthValue,
         defaultToastValue
       );
+
+      await waitForPlanGrid();
 
       expect(screen.getByText(/Your website \+ templates/)).toBeInTheDocument();
       expect(screen.getByText(/Booking, cart & Stripe checkout/)).toBeInTheDocument();
@@ -473,7 +497,7 @@ describe('PublishModal', () => {
   });
 
   describe('Edge Cases', () => {
-    it('should handle missing template ID', () => {
+    it('should handle missing template ID', async () => {
       const siteData = {
         brand: { name: 'Test Business' }
         // No template
@@ -484,6 +508,8 @@ describe('PublishModal', () => {
         defaultAuthValue,
         defaultToastValue
       );
+
+      await waitForPlanGrid();
 
       // Should default to starter
       const starterPlanCard = screen.getByText('Starter').closest('.plan-card');

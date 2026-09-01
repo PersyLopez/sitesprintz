@@ -64,7 +64,6 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminRoute from './components/auth/AdminRoute';
 import LoadingFallback from './components/common/LoadingFallback';
 import ErrorBoundary from './components/common/ErrorBoundary';
-import BetaBanner from './components/common/BetaBanner';
 import CustomDomainGate from './components/published/CustomDomainGate';
 import LegacySitePaneRedirect, { LegacyPublishedSiteRedirect } from './components/dashboard/LegacySitePaneRedirect';
 import { LocaleProvider } from './i18n/LocaleContext.jsx';
@@ -92,7 +91,6 @@ function App() {
               <CartProvider>
               <StaffProvider>
               <CustomDomainGate>
-              <BetaBanner />
               <Routes>
               {/* Public routes */}
               <Route path="/" element={<Landing />} />

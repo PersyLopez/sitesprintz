@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { authService } from '../services/auth';
-import { paidPlanFromQuery } from '../config/tiers.js';
 import { takeOAuthRedirect } from '../utils/safeRedirect';
 
 const ERROR_MESSAGES = {
@@ -62,8 +61,7 @@ function OAuthCallback() {
           navigate(returnTo, { replace: true });
           return;
         }
-        const plan = paidPlanFromQuery(searchParams.get('plan'));
-        navigate(plan ? `/settings/billing?plan=${plan}` : '/dashboard', { replace: true });
+        navigate('/dashboard', { replace: true });
       }
     }
   }, [loading, user, navigate, searchParams]);

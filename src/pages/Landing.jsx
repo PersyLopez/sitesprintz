@@ -180,7 +180,7 @@ export default function Landing() {
     if (offerOn && planId === 'growth_managed' && !isAuthenticated) {
       return '/build';
     }
-    return isAuthenticated ? `/settings/billing?plan=${planId}` : `/register?plan=${planId}`;
+    return isAuthenticated ? '/setup' : '/register';
   };
   const dismissOffer = () => {
     try {

@@ -17,6 +17,7 @@ import './Settings.css';
 function BillingSection({ user, token }) {
   const [loading, setLoading] = useState(false);
   const [collectsPayments, setCollectsPayments] = useState(false);
+  const [onActiveLiveTrial, setOnActiveLiveTrial] = useState(false);
   const [searchParams] = useSearchParams();
   const highlightedPlan = searchParams.get('plan');
 
@@ -34,6 +35,46 @@ function BillingSection({ user, token }) {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const checkLiveTrial = async () => {
+      try {
+        const response = await fetch('/api/sites', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!response.ok) {
+          setOnActiveLiveTrial(false);
+          return;
+        }
+        const payload = await response.json();
+        const sites = Array.isArray(payload)
+          ? payload
+          : (payload?.data?.sites || payload?.sites || []);
+        const now = Date.now();
+        const hasActiveTrialSite = sites.some((site) => {
+          const subdomain = site.subdomain || '';
+          if (site.status !== 'published' || subdomain.startsWith('gallery-')) {
+            return false;
+          }
+          const expiresAt = site.expiresAt || site.expires_at;
+          if (!expiresAt) return false;
+          return new Date(expiresAt).getTime() > now;
+        });
+        if (!cancelled) {
+          setOnActiveLiveTrial(hasActiveTrialSite);
+        }
+      } catch {
+        if (!cancelled) {
+          setOnActiveLiveTrial(false);
+        }
+      }
+    };
+    checkLiveTrial();
+    return () => {
+      cancelled = true;
+    };
+  }, [token, user?.id]);
 
   const currentPlan = (user?.subscriptionPlan || user?.plan || '').toLowerCase();
   const subscriptionStatus = (user?.subscriptionStatus || user?.subscription_status || '').toLowerCase();
@@ -136,7 +177,7 @@ function BillingSection({ user, token }) {
           )}
         </div>
 
-        {!hasActivePlan && collectsPayments === true && (
+        {!hasActivePlan && collectsPayments === true && !onActiveLiveTrial && (
           <div className="billing-subscribe-actions" style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             <button
               type="button"
@@ -167,9 +208,14 @@ function BillingSection({ user, token }) {
             </button>
           </div>
         )}
-        {highlightedPlan && !hasActivePlan && collectsPayments === true && (
+        {highlightedPlan && !hasActivePlan && collectsPayments === true && !onActiveLiveTrial && (
           <p className="section-description" style={{ marginTop: '0.75rem' }}>
             You selected the {highlightedPlan} plan — choose a subscribe button above to continue.
+          </p>
+        )}
+        {!hasActivePlan && onActiveLiveTrial && (
+          <p className="section-description" data-testid="billing-live-trial-active" style={{ marginTop: '1rem' }}>
+            Your site is on the no-card live trial. We&apos;ll remind you before it ends — no subscription needed now.
           </p>
         )}
         {!hasActivePlan && collectsPayments === false && (

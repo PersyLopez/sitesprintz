@@ -132,7 +132,7 @@ describe('Register Component', () => {
     });
   });
 
-  it('sends Growth Managed signups to billing with that plan', async () => {
+  it('sends Growth Managed signups to dashboard (plan selection after trial)', async () => {
     const user = userEvent.setup();
     mockRegister.mockResolvedValueOnce({ user: { email: 'test@example.com' } });
     renderRegister('/register?plan=growth_managed');
@@ -145,7 +145,7 @@ describe('Register Component', () => {
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/settings/billing?plan=growth_managed');
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
     });
   });
 
@@ -226,7 +226,7 @@ describe('Register Component', () => {
     window.location = originalLocation;
   });
 
-  it('passes Growth Managed through Google OAuth', async () => {
+  it('does not pass plan through Google OAuth', async () => {
     const user = userEvent.setup();
     const originalLocation = window.location;
     delete window.location;
@@ -237,7 +237,7 @@ describe('Register Component', () => {
     await acceptTerms(user);
     await user.click(screen.getByRole('button', { name: /continue with google/i }));
 
-    expect(window.location.href).toBe('http://localhost:3000/auth/google?plan=growth_managed');
+    expect(window.location.href).toBe('http://localhost:3000/auth/google');
 
     window.location = originalLocation;
   });

@@ -113,11 +113,13 @@ describe('Landing Page - Pricing', () => {
     expect(screen.getByText(/no payment/i)).toBeInTheDocument();
   });
 
-  it('pricing CTAs route unauthenticated users to register with plan', () => {
+  it('pricing CTAs route unauthenticated users to register', () => {
     renderLanding();
-    expect(screen.getByTestId('pricing-cta-starter')).toHaveAttribute('href', '/register?plan=starter');
-    expect(screen.getByTestId('pricing-cta-growth')).toHaveAttribute('href', '/register?plan=growth');
-    expect(screen.getByTestId('pricing-cta-growth_managed')).toHaveAttribute('href', '/register?plan=growth_managed');
+    expect(screen.getByTestId('pricing-cta-starter')).toHaveAttribute('href', '/register');
+    expect(screen.getByTestId('pricing-cta-growth')).toHaveAttribute('href', '/register');
+    expect(['/register', '/build']).toContain(
+      screen.getByTestId('pricing-cta-growth_managed').getAttribute('href'),
+    );
   });
 
   it('shows optional extras under hosting plans', () => {
@@ -133,11 +135,11 @@ describe('Landing Page - Pricing', () => {
     expect(document.querySelectorAll('.pricing-card')).toHaveLength(3);
   });
 
-  it('pricing CTAs route authenticated users to billing with plan', () => {
+  it('pricing CTAs route authenticated users to setup', () => {
     renderLanding({ isAuthenticated: true });
-    expect(screen.getByTestId('pricing-cta-starter')).toHaveAttribute('href', '/settings/billing?plan=starter');
-    expect(screen.getByTestId('pricing-cta-growth')).toHaveAttribute('href', '/settings/billing?plan=growth');
-    expect(screen.getByTestId('pricing-cta-growth_managed')).toHaveAttribute('href', '/settings/billing?plan=growth_managed');
+    expect(screen.getByTestId('pricing-cta-starter')).toHaveAttribute('href', '/setup');
+    expect(screen.getByTestId('pricing-cta-growth')).toHaveAttribute('href', '/setup');
+    expect(screen.getByTestId('pricing-cta-growth_managed')).toHaveAttribute('href', '/setup');
   });
 
   it('does not send authenticated users to setup from a plan card', async () => {

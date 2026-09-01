@@ -145,7 +145,7 @@ describe('createSubscriptionCheckout metadata', () => {
     expect(mockSessionsCreate).not.toHaveBeenCalled();
   });
 
-  it('does not stack Stripe trial when user already has a live trial site', async () => {
+  it('refuses checkout while the no-card live trial is still active', async () => {
     mockUsersFindUnique.mockResolvedValue({
       stripe_customer_id: 'cus_existing',
       id: 'user-checkout-1',
@@ -158,9 +158,9 @@ describe('createSubscriptionCheckout metadata', () => {
       .post('/api/payments/create-subscription-checkout')
       .send({ plan: 'starter' });
 
-    expect(response.status).toBe(200);
-    const [sessionOptions] = mockSessionsCreate.mock.calls[0];
-    expect(sessionOptions.subscription_data).not.toHaveProperty('trial_period_days');
+    expect(response.status).toBe(409);
+    expect(response.body.code).toBe('LIVE_TRIAL_ACTIVE');
+    expect(mockSessionsCreate).not.toHaveBeenCalled();
   });
 
   it('starts checkout for an additional site when already subscribed', async () => {

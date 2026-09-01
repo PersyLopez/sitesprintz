@@ -58,13 +58,10 @@ describe('OAuthCallback', () => {
     });
   });
 
-  it('sends Growth Managed sign-in to billing', async () => {
+  it('sends Growth Managed sign-in to dashboard (plan selection after trial)', async () => {
     renderCallback('?token=abc&plan=growth_managed');
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith(
-        '/settings/billing?plan=growth_managed',
-        { replace: true },
-      );
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard', { replace: true });
     });
   });
 });

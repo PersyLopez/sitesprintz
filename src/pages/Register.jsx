@@ -6,7 +6,6 @@ import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { PasswordStrengthMeter } from '../components/auth/PasswordStrengthMeter';
 import { getSafeRedirect, stashOAuthRedirect } from '../utils/safeRedirect';
-import { paidPlanFromQuery } from '../config/tiers.js';
 import { PLATFORM_SUPPORT_EMAIL } from '../config/pricing.config';
 import { useLocale } from '../i18n/LocaleContext.jsx';
 import './Auth.css';
@@ -138,7 +137,7 @@ function Register() {
     e.preventDefault();
 
     if (inviteOnly) {
-      showError('Signups are invite-only during closed beta');
+      showError('Signups are currently invite-only');
       return;
     }
 
@@ -198,13 +197,10 @@ function Register() {
 
       const redirectTo = getSafeRedirect(searchParams.get('redirect'));
       const template = searchParams.get('template');
-      const plan = paidPlanFromQuery(searchParams.get('plan'));
       if (redirectTo) {
         navigate(redirectTo);
       } else if (template) {
         navigate(`/setup?template=${template}`);
-      } else if (plan) {
-        navigate(`/settings/billing?plan=${plan}`);
       } else {
         navigate('/dashboard');
       }
@@ -226,8 +222,7 @@ function Register() {
     const apiUrl = import.meta.env.DEV
       ? 'http://localhost:3000/auth/google'
       : '/auth/google';
-    const plan = paidPlanFromQuery(searchParams.get('plan'));
-    window.location.href = plan ? `${apiUrl}?plan=${encodeURIComponent(plan)}` : apiUrl;
+    window.location.href = apiUrl;
   };
 
   return (
@@ -255,7 +250,7 @@ function Register() {
                 color: '#92400e',
               }}
             >
-              Signups are invite-only during our closed beta.{' '}
+              Signups are currently invite-only.{' '}
               Write{' '}
               <a href={`mailto:${PLATFORM_SUPPORT_EMAIL}`}>{PLATFORM_SUPPORT_EMAIL}</a>
               {' '}if you need access.
@@ -371,7 +366,7 @@ function Register() {
             onClick={handleGoogleSignup}
             className="btn btn-secondary btn-full"
             disabled={inviteOnly || !acceptedTerms}
-            title={inviteOnly ? 'Signups are invite-only during closed beta' : (!acceptedTerms ? 'Accept the agreements above to continue' : undefined)}
+            title={inviteOnly ? 'Signups are currently invite-only' : (!acceptedTerms ? 'Accept the agreements above to continue' : undefined)}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
               <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4" />
@@ -393,7 +388,6 @@ function Register() {
 
           <p className="terms-text">
             Sensitive data (payments, login) is handled by independent third parties under their own terms.
-            Right Site Light is currently in beta and provided &ldquo;as is.&rdquo;
           </p>
         </div>
       </div>

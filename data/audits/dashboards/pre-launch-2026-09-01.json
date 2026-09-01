@@ -1,0 +1,108 @@
+{
+  "title": "Pre-launch security audit — trial, auth, billing, claim",
+  "date": "2026-09-01",
+  "scope": [
+    "15-day no-card live trial seam",
+    "Register / OAuth / Landing / Settings billing redirects",
+    "payments create-subscription-checkout",
+    "claim tokens",
+    "Stripe webhooks",
+    "auth cookies"
+  ],
+  "currentArchitecture": {
+    "liveTrial": "server/config/platformPlans.js LIVE_TRIAL_DAYS + drafts.routes.js publish gate + subscriptionService.hasActiveLiveTrialSite",
+    "checkout": "server/routes/payments.routes.js createSubscriptionCheckout",
+    "claim": "server/routes/claim.routes.js + claimTokenService.js (sha256 hash, timing-safe compare)",
+    "webhooks": "server/routes/webhooks.routes.js constructEvent + WebhookProcessor",
+    "authCookies": "server/utils/authCookies.js httpOnly sameSite=lax"
+  },
+  "findings": [
+    {
+      "id": "P0-001",
+      "priority": "P0",
+      "category": "trial-bypass",
+      "title": "Checkout allowed during active no-card live trial",
+      "status": "fixed",
+      "file": "server/routes/payments.routes.js",
+      "detail": "create-subscription-checkout accepted new subscriptions while sites.expires_at was still in the future, bypassing post-trial plan selection UX.",
+      "fix": "Return 409 LIVE_TRIAL_ACTIVE when hasActiveLiveTrialSite and not additionalSite checkout."
+    },
+    {
+      "id": "P1-001",
+      "priority": "P1",
+      "category": "idor",
+      "title": "Gallery published sites readable cross-tenant",
+      "status": "accepted",
+      "file": "server/routes/sites.routes.js",
+      "detail": "Public gallery sites return 200 to any authenticated user by design; owner APIs (orders/products) return 403. Re-verify after launch.",
+      "fix": null
+    },
+    {
+      "id": "P1-002",
+      "priority": "P1",
+      "category": "claim",
+      "title": "Claim token brute force",
+      "status": "mitigated",
+      "file": "server/services/claimTokenService.js",
+      "detail": "64-hex tokens + sha256 storage + timing-safe hash compare + claimAcceptLimiter. No token enumeration via distinct error bodies on GET.",
+      "fix": null
+    },
+    {
+      "id": "P1-003",
+      "priority": "P1",
+      "category": "webhook",
+      "title": "Stripe webhook signature verification",
+      "status": "pass",
+      "file": "server/routes/webhooks.routes.js",
+      "detail": "Raw body + constructEvent; 400 on bad signature; 503 when secrets unset.",
+      "fix": null
+    },
+    {
+      "id": "P1-004",
+      "priority": "P1",
+      "category": "auth",
+      "title": "Session cookies",
+      "status": "pass",
+      "file": "server/utils/authCookies.js",
+      "detail": "httpOnly + sameSite=lax on access/refresh cookies; secure in production.",
+      "fix": null
+    },
+    {
+      "id": "P2-001",
+      "priority": "P2",
+      "category": "trial-bypass",
+      "title": "STRIPE_TRIAL_DAYS before first publish",
+      "status": "open",
+      "file": "server/routes/payments.routes.js",
+      "detail": "Users with zero published sites can still start Checkout with STRIPE_TRIAL_DAYS (7) if PLATFORM_COLLECT_PAYMENTS=true, parallel to LIVE_TRIAL_DAYS clock.",
+      "fix": "Consider blocking checkout until first publish or align STRIPE_TRIAL_DAYS with LIVE_TRIAL_DAYS when billing opens."
+    },
+    {
+      "id": "P2-002",
+      "priority": "P2",
+      "category": "ux",
+      "title": "Manual /settings/billing?plan= deep link",
+      "status": "open",
+      "file": "src/pages/Settings.jsx",
+      "detail": "highlightedPlan query still highlights subscribe buttons after trial; no auto-checkout. Low risk.",
+      "fix": "Optional: strip plan query during active live trial."
+    },
+    {
+      "id": "P2-003",
+      "priority": "P2",
+      "category": "legal",
+      "title": "Residual beta copy in legal HTML footer",
+      "status": "partial",
+      "file": "server/routes/legal.routes.js",
+      "detail": "Privacy policy footer still references beta period; Terms header softened in this slice.",
+      "fix": "Sweep remaining legal templates before public launch."
+    }
+  ],
+  "summary": {
+    "p0": 1,
+    "p0Fixed": 1,
+    "p1": 4,
+    "p2": 3,
+    "verdict": "ship after P0 fix; P2 tracked"
+  }
+}
