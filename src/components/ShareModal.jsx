@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { getPublishedSiteUrl } from '../utils/siteWorkspace';
+import { getAbsolutePublishedSiteUrl, getPublishedSiteUrl } from '../utils/siteWorkspace';
 import './ShareModal.css';
 
 const SOCIAL_GOAL =
@@ -24,7 +24,10 @@ const ShareModal = ({ subdomain, onClose }) => {
   const [copied, setCopied] = useState(false);
   const [shareHint, setShareHint] = useState(null);
 
-  const siteUrl = getPublishedSiteUrl(subdomain) || `${window.location.origin}/view/${encodeURIComponent(subdomain)}`;
+  const localViewUrl = getPublishedSiteUrl(subdomain)
+    || `${window.location.origin}/view/${encodeURIComponent(subdomain)}`;
+  // Recipients get the same public /view URL the QR encodes, not the API origin.
+  const siteUrl = getAbsolutePublishedSiteUrl(subdomain) || localViewUrl;
   const shareText = `Check out my site: ${siteUrl}`;
   const socialCardEndpoint = `/api/share/${subdomain}/social`;
   const printCardEndpoint = `/api/share/${subdomain}/${printFormat}`;
@@ -119,7 +122,7 @@ const ShareModal = ({ subdomain, onClose }) => {
     }
 
     try {
-      trackShare('native', { format: 'social', job: 'social' });
+      void trackShare('native', { format: 'social', job: 'social' });
       await navigator.share({
         title: `${subdomain} - Right Site Light`,
         text: `Check out my site!`,
@@ -145,17 +148,31 @@ const ShareModal = ({ subdomain, onClose }) => {
   };
 
   const handleVisitSharePage = () => {
-    trackShare('visit-page', { format: 'social', job: 'social' });
-    window.open(`${siteUrl}?share=true`, '_blank');
+    void trackShare('visit-page', { format: 'social', job: 'social' });
+    window.open(`${localViewUrl}?share=true`, '_blank');
   };
 
-  const downloadBlob = async (endpoint, filename, trackName, failMessage) => {
-    setLoading(true);
+  const clickDownload = (url, filename) => {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  const downloadBlob = async (endpoint, filename, trackName, failMessage, readyUrl) => {
     setError(null);
+    // Do not await analytics: that drops the user-gesture token Chrome needs for a.click().
+    void trackShare(trackName, { format: printFormat, job: 'print' });
 
+    if (readyUrl) {
+      clickDownload(readyUrl, filename);
+      return;
+    }
+
+    setLoading(true);
     try {
-      await trackShare(trackName, { format: printFormat, job: 'print' });
-
       const response = await fetch(endpoint);
       if (!response.ok) {
         throw new Error(failMessage);
@@ -163,12 +180,7 @@ const ShareModal = ({ subdomain, onClose }) => {
 
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      clickDownload(url, filename);
       URL.revokeObjectURL(url);
       setLoading(false);
     } catch (err) {
@@ -183,7 +195,8 @@ const ShareModal = ({ subdomain, onClose }) => {
       printCardEndpoint,
       `${subdomain}-flyer-${printFormat}.png`,
       'download-flyer',
-      'Failed to download flyer'
+      'Failed to download flyer',
+      printCardUrl
     );
 
   const handleDownloadQr = () =>
@@ -191,7 +204,8 @@ const ShareModal = ({ subdomain, onClose }) => {
       shareQrEndpoint,
       `${subdomain}-qr.png`,
       'download-qr',
-      'Failed to download QR code'
+      'Failed to download QR code',
+      qrUrl
     );
 
   useEffect(() => {

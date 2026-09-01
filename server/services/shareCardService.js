@@ -37,6 +37,12 @@ const OCEAN = {
   surface: '#0f172a'
 };
 
+/** Hero + up to two real stills. Gap is ocean mortar between bento tiles. */
+const HIGHLIGHT_MAX = 3;
+const HIGHLIGHT_GAP = 6;
+const SOCIAL_STILL_RATIO = 0.28;
+const FLYER_STRIP_RATIO = 0.22;
+
 const PUBLIC_DIR = path.join(getProjectRoot(), 'public');
 const PLACEHOLDER_HOST = /via\.placeholder\.com/i;
 const SHARE_FONT_FAMILY = registerShareCardFont();
@@ -81,17 +87,20 @@ function pushImageCandidate(out, seen, raw) {
 /**
  * Shop photos that can fill a share card, in preference order.
  * Hero first, then gallery / products / section images. Skips placeholders.
+ * extrasOnly: gallery / products / sections only — not hero or logos.
  */
-export function collectShareImageCandidates(siteData) {
+export function collectShareImageCandidates(siteData, { extrasOnly = false } = {}) {
   const out = [];
   const seen = new Set();
   const push = (raw) => pushImageCandidate(out, seen, raw);
 
-  push(siteData?.hero?.image);
-  push(siteData?.heroImage);
-  push(siteData?.meta?.heroImage);
-  push(siteData?.brand?.logo);
-  push(siteData?.branding?.logo);
+  if (!extrasOnly) {
+    push(siteData?.hero?.image);
+    push(siteData?.heroImage);
+    push(siteData?.meta?.heroImage);
+    push(siteData?.brand?.logo);
+    push(siteData?.branding?.logo);
+  }
 
   const gallery = siteData?.gallery;
   if (Array.isArray(gallery)) gallery.forEach(push);
@@ -162,20 +171,101 @@ function loadImageWithTimeout(src, ms = 8000) {
   ]);
 }
 
-async function loadShareHeroImage(siteData) {
+async function tryLoadShareImage(candidate, usedSrc) {
+  if (!candidate || usedSrc.has(candidate)) return null;
+  const resolved = resolveShareImageSource(candidate);
+  if (!resolved || /\.svg(\?|#|$)/i.test(resolved)) return null;
+  try {
+    const image = /^https?:\/\//i.test(resolved)
+      ? await loadImageWithTimeout(resolved, 4000)
+      : await loadImage(resolved);
+    usedSrc.add(candidate);
+    return image;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Cover photo plus up to two gallery/product/section stills.
+ * Logos are not extras. Empty extras keep a single hero (or none).
+ */
+async function loadShareHighlightImages(siteData, max = HIGHLIGHT_MAX) {
+  const cap = Number.isFinite(max) ? Math.max(0, max) : HIGHLIGHT_MAX;
+  const loaded = [];
+  const usedSrc = new Set();
+
   for (const candidate of collectShareImageCandidates(siteData).slice(0, 8)) {
-    const resolved = resolveShareImageSource(candidate);
-    if (!resolved || /\.svg(\?|#|$)/i.test(resolved)) continue;
-    try {
-      if (/^https?:\/\//i.test(resolved)) {
-        return await loadImageWithTimeout(resolved, 4000);
-      }
-      return await loadImage(resolved);
-    } catch {
-      continue;
+    const image = await tryLoadShareImage(candidate, usedSrc);
+    if (image) {
+      loaded.push(image);
+      break;
     }
   }
-  return null;
+
+  for (const candidate of collectShareImageCandidates(siteData, { extrasOnly: true }).slice(0, 10)) {
+    if (loaded.length >= cap) break;
+    const image = await tryLoadShareImage(candidate, usedSrc);
+    if (image) loaded.push(image);
+  }
+
+  return loaded;
+}
+
+function drawCoverImage(ctx, image, x, y, w, h) {
+  if (!image || w <= 0 || h <= 0) return;
+  const scale = Math.max(w / image.width, h / image.height);
+  const scaledWidth = image.width * scale;
+  const scaledHeight = image.height * scale;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, y, w, h);
+  ctx.clip();
+  ctx.drawImage(image, x + (w - scaledWidth) / 2, y + (h - scaledHeight) / 2, scaledWidth, scaledHeight);
+  ctx.restore();
+}
+
+/**
+ * Social OG: hero column + stacked stills (bento). Flyer: hero + offer strip above QR.
+ * One photo (or none) keeps the current full-bleed cover.
+ */
+function paintShareHighlight(ctx, images, { width, height, isSocial, footerY }) {
+  if (!images.length) {
+    return { heroWidth: width, overlayHeight: height };
+  }
+
+  const [hero, ...rest] = images;
+  const extras = rest.slice(0, 2);
+
+  if (!extras.length) {
+    drawCoverImage(ctx, hero, 0, 0, width, height);
+    return { heroWidth: width, overlayHeight: height };
+  }
+
+  ctx.fillStyle = OCEAN.primaryDarker;
+  ctx.fillRect(0, 0, width, height);
+
+  if (isSocial) {
+    const stillW = Math.round(width * SOCIAL_STILL_RATIO);
+    const heroW = width - stillW - HIGHLIGHT_GAP;
+    drawCoverImage(ctx, hero, 0, 0, heroW, height);
+    const n = extras.length;
+    const tileH = (height - HIGHLIGHT_GAP * (n - 1)) / n;
+    extras.forEach((image, index) => {
+      drawCoverImage(ctx, image, heroW + HIGHLIGHT_GAP, index * (tileH + HIGHLIGHT_GAP), stillW, tileH);
+    });
+    return { heroWidth: heroW, overlayHeight: height };
+  }
+
+  const stripH = Math.round(footerY * FLYER_STRIP_RATIO);
+  const stripY = footerY - stripH;
+  drawCoverImage(ctx, hero, 0, 0, width, stripY);
+  const n = extras.length;
+  const tileW = (width - HIGHLIGHT_GAP * (n - 1)) / n;
+  extras.forEach((image, index) => {
+    drawCoverImage(ctx, image, index * (tileW + HIGHLIGHT_GAP), stripY, tileW, stripH);
+  });
+  return { heroWidth: width, overlayHeight: stripY };
 }
 
 /**
@@ -411,28 +501,28 @@ export async function generateShareCard(templateData, format = 'social') {
       displayName = displayName.substring(0, 37) + '...';
     }
 
-    const heroImage = await loadShareHeroImage(templateData);
-    if (heroImage) {
-      const scale = Math.max(width / heroImage.width, height / heroImage.height);
-      const scaledWidth = heroImage.width * scale;
-      const scaledHeight = heroImage.height * scale;
-      const x = (width - scaledWidth) / 2;
-      const y = (height - scaledHeight) / 2;
-      ctx.drawImage(heroImage, x, y, scaledWidth, scaledHeight);
+    const highlights = await loadShareHighlightImages(templateData);
+    const highlightLayout = paintShareHighlight(ctx, highlights, {
+      width,
+      height,
+      isSocial,
+      footerY: height - footerHeight,
+    });
 
+    if (highlights.length) {
       if (isSocial) {
         const topVignette = ctx.createLinearGradient(0, 0, 0, height * 0.25);
         topVignette.addColorStop(0, 'rgba(15, 23, 42, 0.18)');
         topVignette.addColorStop(1, 'rgba(15, 23, 42, 0)');
         ctx.fillStyle = topVignette;
-        ctx.fillRect(0, 0, width, height * 0.25);
+        ctx.fillRect(0, 0, highlightLayout.heroWidth, height * 0.25);
       } else {
-        const overlay = ctx.createLinearGradient(0, 0, 0, height);
+        const overlay = ctx.createLinearGradient(0, 0, 0, highlightLayout.overlayHeight);
         overlay.addColorStop(0, 'rgba(15, 23, 42, 0.35)');
         overlay.addColorStop(0.55, 'rgba(15, 23, 42, 0.55)');
         overlay.addColorStop(1, 'rgba(3, 7, 18, 0.72)');
         ctx.fillStyle = overlay;
-        ctx.fillRect(0, 0, width, height);
+        ctx.fillRect(0, 0, width, highlightLayout.overlayHeight);
       }
     } else {
       const gradient = ctx.createLinearGradient(0, 0, width, height);
@@ -450,13 +540,13 @@ export async function generateShareCard(templateData, format = 'social') {
       bottomGradient.addColorStop(0.35, 'rgba(15, 23, 42, 0.62)');
       bottomGradient.addColorStop(1, 'rgba(3, 7, 18, 0.92)');
       ctx.fillStyle = bottomGradient;
-      ctx.fillRect(0, textBandY, width, textBandHeight);
+      ctx.fillRect(0, textBandY, highlightLayout.heroWidth, textBandHeight);
 
       const nameSize = Math.floor(height * 0.068);
       const tagSize = Math.floor(height * 0.032);
       const offerSize = Math.floor(height * 0.028);
       ctx.font = shareFont(tagSize);
-      const tagLine = wrapText(ctx, tagline, width * 0.88)[0] || tagline;
+      const tagLine = wrapText(ctx, tagline, highlightLayout.heroWidth * 0.88)[0] || tagline;
       const offerBlock = offerLines.length * offerSize * 1.35;
       const tagY = height - height * 0.06 - offerBlock;
       const nameY = tagY - tagSize * 1.25;

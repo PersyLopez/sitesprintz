@@ -168,3 +168,32 @@ steps:
     assert:
       - text contains People see a photo
       - text contains Tape this up
+
+  - action: Copy field is the public live URL, not localhost API
+    code: |
+      const urlInput = page.getByLabel('Live site URL');
+      await urlInput.waitFor({ state: 'visible', timeout: 5000 });
+      const value = await urlInput.inputValue();
+      if (!value.includes('/view/share-demo')) {
+        throw new Error(`Expected /view/share-demo in copy field, got ${value}`);
+      }
+      if (/localhost:\d+/.test(value) || value.startsWith('/view/')) {
+        throw new Error(`Share URL should be the public host, got ${value}`);
+      }
+
+  - action: Flyer download starts from the print click
+    code: |
+      const flyerImg = page.getByAltText('Print flyer preview');
+      if (await flyerImg.count()) {
+        await flyerImg.waitFor({ state: 'visible', timeout: 10000 });
+      }
+      const downloadPromise = page.waitForEvent('download', { timeout: 15000 });
+      await page.getByTestId('share-download-flyer').click();
+      const download = await downloadPromise;
+      const name = download.suggestedFilename();
+      if (!/\.png$/i.test(name)) {
+        throw new Error(`Expected PNG flyer download, got ${name}`);
+      }
+      if (!/flyer/i.test(name) && !/square|story/i.test(name)) {
+        throw new Error(`Expected flyer filename, got ${name}`);
+      }

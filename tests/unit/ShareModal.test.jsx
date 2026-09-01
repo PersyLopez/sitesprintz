@@ -2,7 +2,27 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ShareModal from '@/components/ShareModal';
 
+function spyAnchorClicks() {
+  const clicks = [];
+  const origCreate = document.createElement.bind(document);
+  vi.spyOn(document, 'createElement').mockImplementation((tag, options) => {
+    const el = origCreate(tag, options);
+    if (String(tag).toLowerCase() === 'a') {
+      const origClick = el.click.bind(el);
+      el.click = () => {
+        clicks.push({ href: el.getAttribute('href'), download: el.download });
+        origClick();
+      };
+    }
+    return el;
+  });
+  return clicks;
+}
+
 describe('ShareModal', () => {
+  const PUBLIC_SITE_URL = 'https://rightsitelight.com/view/river-salon';
+  const LOCAL_VIEW_URL = 'http://localhost:3000/view/river-salon';
+
   beforeEach(() => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
@@ -49,10 +69,11 @@ describe('ShareModal', () => {
     expect(document.querySelector('.share-preview-frame--flyer')).toBeTruthy();
   });
 
-  it('uses the production site URL as the share target', () => {
+  it('uses the public live URL as the share target, not the API origin', () => {
     render(<ShareModal subdomain="river-salon" onClose={() => {}} />);
 
-    expect(screen.getByDisplayValue('http://localhost:3000/view/river-salon')).toBeInTheDocument();
+    expect(screen.getByDisplayValue(PUBLIC_SITE_URL)).toBeInTheDocument();
+    expect(screen.queryByDisplayValue(LOCAL_VIEW_URL)).not.toBeInTheDocument();
   });
 
   it('opens WhatsApp with encoded site URL and text', () => {
@@ -66,7 +87,7 @@ describe('ShareModal', () => {
       expect.any(String)
     );
     const opened = decodeURIComponent(window.open.mock.calls[0][0]);
-    expect(opened).toContain('http://localhost:3000/view/river-salon');
+    expect(opened).toContain(PUBLIC_SITE_URL);
     expect(opened).toContain('Check out my site');
   });
 
@@ -76,7 +97,7 @@ describe('ShareModal', () => {
     fireEvent.click(screen.getByTestId('share-instagram'));
     await waitFor(() => {
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
-        'http://localhost:3000/view/river-salon'
+        PUBLIC_SITE_URL
       );
     });
     expect(screen.getByTestId('share-copy-hint')).toHaveTextContent(/Instagram/i);
@@ -88,12 +109,19 @@ describe('ShareModal', () => {
   });
 
   it('downloads a QR PNG from the share API', async () => {
+    const downloads = spyAnchorClicks();
     render(<ShareModal subdomain="river-salon" onClose={() => {}} />);
-
-    fireEvent.click(screen.getByTestId('share-download-qr'));
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith('/api/share/river-salon/qr');
+    });
+    await waitFor(() => {
+      expect(screen.getByTestId('share-qr-preview')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('share-download-qr'));
+    await waitFor(() => {
+      expect(downloads.some((item) => item.download === 'river-salon-qr.png')).toBe(true);
     });
   });
 
@@ -115,34 +143,74 @@ describe('ShareModal', () => {
       expect(global.fetch).toHaveBeenCalledWith('/api/share/river-salon/social');
     });
     expect(screen.getByTestId('share-qr-block')).not.toHaveTextContent('/view/river-salon');
-    expect(screen.getByDisplayValue('http://localhost:3000/view/river-salon')).toBeInTheDocument();
+    expect(screen.getByDisplayValue(PUBLIC_SITE_URL)).toBeInTheDocument();
   });
 
   it('downloads the print flyer from square or story, never social', async () => {
+    const downloads = spyAnchorClicks();
     render(<ShareModal subdomain="river-salon" onClose={() => {}} />);
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith('/api/share/river-salon/square');
     });
-    global.fetch.mockClear();
+    await waitFor(() => {
+      expect(screen.getByAltText('Print flyer preview')).toBeInTheDocument();
+    });
 
     fireEvent.click(screen.getByTestId('share-download-flyer'));
     await waitFor(() => {
-      const urls = global.fetch.mock.calls.map((call) => call[0]);
-      expect(urls).toContain('/api/share/river-salon/square');
-      expect(urls).not.toContain('/api/share/river-salon/social');
+      expect(downloads.some((item) => item.download === 'river-salon-flyer-square.png')).toBe(true);
     });
+    expect(downloads.some((item) => item.download.includes('social'))).toBe(false);
 
     fireEvent.click(screen.getByRole('button', { name: 'Story 1080 by 1920' }));
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith('/api/share/river-salon/story');
     });
-    global.fetch.mockClear();
+    await waitFor(() => {
+      expect(screen.getByAltText('Print flyer preview')).toBeInTheDocument();
+    });
+    downloads.length = 0;
     fireEvent.click(screen.getByTestId('share-download-flyer'));
     await waitFor(() => {
-      const urls = global.fetch.mock.calls.map((call) => call[0]);
-      expect(urls).toContain('/api/share/river-salon/story');
-      expect(urls).not.toContain('/api/share/river-salon/social');
+      expect(downloads.some((item) => item.download === 'river-salon-flyer-story.png')).toBe(true);
     });
+    expect(downloads.some((item) => item.download.includes('social'))).toBe(false);
+  });
+
+  it('does not wait for analytics before the flyer download click', async () => {
+    let resolveTrack;
+    const hungTrack = new Promise((resolve) => {
+      resolveTrack = resolve;
+    });
+    global.fetch = vi.fn((url) => {
+      if (String(url).includes('/api/analytics/conversion')) {
+        return hungTrack;
+      }
+      return Promise.resolve({
+        ok: true,
+        blob: async () => new Blob(['png'], { type: 'image/png' }),
+      });
+    });
+    const downloads = spyAnchorClicks();
+    render(<ShareModal subdomain="river-salon" onClose={() => {}} />);
+
+    await waitFor(() => {
+      expect(screen.getByAltText('Print flyer preview')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTestId('share-download-flyer'));
+    await waitFor(() => {
+      expect(downloads.some((item) => item.download === 'river-salon-flyer-square.png')).toBe(true);
+    });
+    expect(typeof resolveTrack).toBe('function');
+    resolveTrack({ ok: true, json: async () => ({ success: true }) });
+  });
+
+  it('opens this app /view/ for the owner visit, not the public share host', () => {
+    render(<ShareModal subdomain="river-salon" onClose={() => {}} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /View live share page/i }));
+
+    expect(window.open).toHaveBeenCalledWith(`${LOCAL_VIEW_URL}?share=true`, '_blank');
   });
 });

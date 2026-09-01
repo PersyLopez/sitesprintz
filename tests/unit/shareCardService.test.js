@@ -307,6 +307,20 @@ describe('ShareCardService - Universal Template Support (TDD)', () => {
         })
       ).toEqual(['https://images.unsplash.com/photo-1']);
     });
+
+    it('extrasOnly collects gallery and products, not hero or logos', () => {
+      expect(
+        collectShareImageCandidates(
+          {
+            hero: { image: 'https://images.unsplash.com/photo-hero' },
+            brand: { logo: '/uploads/logo.png' },
+            gallery: { items: [{ src: '/uploads/cut.jpg' }] },
+            products: [{ image: '/uploads/product.jpg' }],
+          },
+          { extrasOnly: true }
+        )
+      ).toEqual(['/uploads/cut.jpg', '/uploads/product.jpg']);
+    });
   });
 
   describe('calculateCardDimensions', () => {
@@ -506,6 +520,73 @@ describe('ShareCardService - Universal Template Support (TDD)', () => {
         expect(data[2]).toBeLessThan(120);
       } finally {
         fs.unlinkSync(dest);
+      }
+    });
+
+    it('hero-only keeps a full-bleed cover (right edge is still the hero)', async () => {
+      const dest = path.join(process.cwd(), 'public', 'uploads', 'share-unit-hero-only.png');
+      fs.mkdirSync(path.dirname(dest), { recursive: true });
+      await sharp({
+        create: { width: 80, height: 80, channels: 3, background: { r: 220, g: 30, b: 30 } },
+      })
+        .png()
+        .toFile(dest);
+      try {
+        const buffer = await generateShareCard({
+          subdomain: 'hero-only',
+          brand: { name: 'Red Shop' },
+          hero: { subtitle: 'Offer', image: '/uploads/share-unit-hero-only.png' },
+        }, 'social');
+        const { data } = await sharp(buffer)
+          .extract({ left: 1100, top: 80, width: 1, height: 1 })
+          .raw()
+          .toBuffer({ resolveWithObject: true });
+        expect(data[0]).toBeGreaterThan(150);
+        expect(data[1]).toBeLessThan(120);
+      } finally {
+        fs.unlinkSync(dest);
+      }
+    });
+
+    it('composes hero plus gallery stills when extra shop photos exist', async () => {
+      const dir = path.join(process.cwd(), 'public', 'uploads');
+      fs.mkdirSync(dir, { recursive: true });
+      const files = {
+        hero: path.join(dir, 'share-unit-multi-hero.png'),
+        cut: path.join(dir, 'share-unit-multi-cut.png'),
+        product: path.join(dir, 'share-unit-multi-product.png'),
+      };
+      await Promise.all([
+        sharp({ create: { width: 80, height: 80, channels: 3, background: { r: 220, g: 30, b: 30 } } }).png().toFile(files.hero),
+        sharp({ create: { width: 80, height: 80, channels: 3, background: { r: 30, g: 200, b: 40 } } }).png().toFile(files.cut),
+        sharp({ create: { width: 80, height: 80, channels: 3, background: { r: 30, g: 40, b: 210 } } }).png().toFile(files.product),
+      ]);
+      try {
+        const buffer = await generateShareCard({
+          subdomain: 'multi-stills',
+          brand: { name: 'Color Shop' },
+          hero: { subtitle: 'Cuts and color', image: '/uploads/share-unit-multi-hero.png' },
+          gallery: { items: [{ src: '/uploads/share-unit-multi-cut.png' }] },
+          products: [{ name: 'Gloss', image: '/uploads/share-unit-multi-product.png' }],
+        }, 'social');
+        const sample = async (left, top) => {
+          const { data } = await sharp(buffer)
+            .extract({ left, top, width: 1, height: 1 })
+            .raw()
+            .toBuffer({ resolveWithObject: true });
+          return data;
+        };
+        const heroPx = await sample(200, 80);
+        const stillTop = await sample(1100, 80);
+        const stillBottom = await sample(1100, 480);
+        expect(heroPx[0]).toBeGreaterThan(150);
+        expect(heroPx[2]).toBeLessThan(120);
+        expect(stillTop[1]).toBeGreaterThan(150);
+        expect(stillTop[0]).toBeLessThan(120);
+        expect(stillBottom[2]).toBeGreaterThan(150);
+        expect(stillBottom[0]).toBeLessThan(120);
+      } finally {
+        Object.values(files).forEach((file) => fs.unlinkSync(file));
       }
     });
 

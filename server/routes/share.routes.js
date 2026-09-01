@@ -24,10 +24,26 @@ const shareCardCache = new NodeCache({
   useClones: false // Store buffers directly
 });
 
-const CARD_CACHE_VERSION = 'v3';
+const CARD_CACHE_VERSION = 'v4';
 
 function cardCacheKey(subdomain, format) {
   return `${subdomain}:${format}:${CARD_CACHE_VERSION}`;
+}
+
+function sharePngFilename(subdomain, format) {
+  const safe = String(subdomain || 'site').replace(/[^A-Za-z0-9._-]+/g, '-');
+  if (format === 'qr') return `${safe}-qr.png`;
+  if (format === 'social') return `${safe}-social.png`;
+  return `${safe}-flyer-${format}.png`;
+}
+
+function sendSharePng(res, buffer, { cacheStatus, subdomain, format }) {
+  const disposition = format === 'social' ? 'inline' : 'attachment';
+  res.set('Content-Type', 'image/png');
+  res.set('Cache-Control', 'public, max-age=3600');
+  res.set('X-Cache', cacheStatus);
+  res.set('Content-Disposition', `${disposition}; filename="${sharePngFilename(subdomain, format)}"`);
+  return res.send(buffer);
 }
 
 /**
@@ -116,10 +132,7 @@ router.post('/generate', async (req, res) => {
 
     if (cached) {
       console.log(`✅ Share card cache HIT: ${cacheKey}`);
-      res.set('Content-Type', 'image/png');
-      res.set('Cache-Control', 'public, max-age=3600');
-      res.set('X-Cache', 'HIT');
-      return res.send(cached);
+      return sendSharePng(res, cached, { cacheStatus: 'HIT', subdomain, format });
     }
 
     // Fetch site data
@@ -151,11 +164,7 @@ router.post('/generate', async (req, res) => {
     shareCardCache.set(cacheKey, cardBuffer);
     console.log(`✅ Share card cached: ${cacheKey}`);
 
-    // Return image
-    res.set('Content-Type', 'image/png');
-    res.set('Cache-Control', 'public, max-age=3600');
-    res.set('X-Cache', 'MISS');
-    res.send(cardBuffer);
+    return sendSharePng(res, cardBuffer, { cacheStatus: 'MISS', subdomain, format });
 
   } catch (error) {
     console.error('Share card generation error:', error);
@@ -195,10 +204,7 @@ const getShareCard = async (req, res) => {
       const cachedQr = shareCardCache.get(cacheKey);
 
       if (cachedQr) {
-        res.set('Content-Type', 'image/png');
-        res.set('Cache-Control', 'public, max-age=3600');
-        res.set('X-Cache', 'HIT');
-        return res.send(cachedQr);
+        return sendSharePng(res, cachedQr, { cacheStatus: 'HIT', subdomain, format: 'qr' });
       }
 
       const clientIp = req.ip || req.connection.remoteAddress;
@@ -221,11 +227,7 @@ const getShareCard = async (req, res) => {
 
       const qrBuffer = await generateQrPng(getAbsolutePublishedSiteUrl(subdomain));
       shareCardCache.set(cacheKey, qrBuffer);
-
-      res.set('Content-Type', 'image/png');
-      res.set('Cache-Control', 'public, max-age=3600');
-      res.set('X-Cache', 'MISS');
-      return res.send(qrBuffer);
+      return sendSharePng(res, qrBuffer, { cacheStatus: 'MISS', subdomain, format: 'qr' });
     }
 
     // Check cache
@@ -233,10 +235,7 @@ const getShareCard = async (req, res) => {
     const cached = shareCardCache.get(cacheKey);
 
     if (cached) {
-      res.set('Content-Type', 'image/png');
-      res.set('Cache-Control', 'public, max-age=3600');
-      res.set('X-Cache', 'HIT');
-      return res.send(cached);
+      return sendSharePng(res, cached, { cacheStatus: 'HIT', subdomain, format });
     }
 
     // Rate limit only on cache miss / generation (OG crawlers can re-fetch cached PNGs)
@@ -269,11 +268,7 @@ const getShareCard = async (req, res) => {
 
     const cardBuffer = await generateShareCard(templateData, format);
     shareCardCache.set(cacheKey, cardBuffer);
-
-    res.set('Content-Type', 'image/png');
-    res.set('Cache-Control', 'public, max-age=3600');
-    res.set('X-Cache', 'MISS');
-    res.send(cardBuffer);
+    return sendSharePng(res, cardBuffer, { cacheStatus: 'MISS', subdomain, format });
 
   } catch (error) {
     console.error('Share card fetch error:', error);
