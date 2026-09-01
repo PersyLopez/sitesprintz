@@ -52,7 +52,7 @@ steps:
 
   - action: Back to landing after opening the form
     goto: http://localhost:5173/
-    wait_for: { text: Limited-time, timeout: 15000 }
+    wait_for: { text: Limited time, timeout: 15000 }
     settle_ms: 500
 
   - action: Reopen strip stays; modal stays closed

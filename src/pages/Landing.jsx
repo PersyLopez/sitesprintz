@@ -399,7 +399,7 @@ export default function Landing() {
           {offerOn ? (
             <div className="setup-offer-strip" data-testid="setup-offer-reopen">
               <p>{t('setupOffer.reopenLead')}</p>
-              <Link to="/build" className="btn btn-primary">
+              <Link to="/build" className="setup-offer-strip-cta">
                 {t('setupOffer.reopen')}
               </Link>
             </div>

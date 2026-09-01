@@ -10,6 +10,29 @@ import {
 import { laborInquiryMailto } from '../../utils/laborInquiryMailto';
 import './SetupOfferModal.css';
 
+function SetupOfferSun() {
+  return (
+    <svg className="setup-offer-sun" viewBox="0 0 120 120" aria-hidden="true">
+      <circle cx="60" cy="60" r="22" fill="#f4a261" opacity="0.95" />
+      <circle cx="60" cy="60" r="32" fill="none" stroke="#f4a261" strokeWidth="2" opacity="0.45" />
+      {Array.from({ length: 12 }).map((_, i) => (
+        <line
+          key={i}
+          x1="60"
+          y1="14"
+          x2="60"
+          y2="6"
+          stroke="#f4a261"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          opacity="0.55"
+          transform={`rotate(${i * 30} 60 60)`}
+        />
+      ))}
+    </svg>
+  );
+}
+
 function SetupOfferModal({ onDismiss }) {
   const { t, locale } = useLocale();
   const [open, setOpen] = useState(false);
@@ -28,19 +51,27 @@ function SetupOfferModal({ onDismiss }) {
     <Modal
       isOpen={open}
       onClose={onDismiss}
-      title={t('setupOffer.title')}
       className="setup-offer-modal"
+      ariaLabelledBy="setup-offer-title"
       ariaDescribedBy="setup-offer-body"
     >
       <div data-testid="setup-offer-modal">
+        <SetupOfferSun />
+        <p className="setup-offer-kicker">{t('setupOffer.kicker', { end })}</p>
+        <h2 id="setup-offer-title" className="setup-offer-title">
+          {t('setupOffer.title')}
+        </h2>
         <p id="setup-offer-body" className="setup-offer-body">
           {t('setupOffer.body', { end, days })}
         </p>
-        <p className="setup-offer-need">{t('setupOffer.need')}</p>
+        <div className="setup-offer-need-card">
+          <p className="setup-offer-need-label">{t('setupOffer.needLabel')}</p>
+          <p className="setup-offer-need">{t('setupOffer.need')}</p>
+        </div>
         <div className="setup-offer-actions">
           <Link
             to="/build"
-            className="btn btn-primary"
+            className="btn-primary-large"
             data-testid="setup-offer-cta"
             onClick={onDismiss}
           >
@@ -48,7 +79,7 @@ function SetupOfferModal({ onDismiss }) {
           </Link>
           <button
             type="button"
-            className="btn btn-secondary"
+            className="setup-offer-dismiss"
             onClick={onDismiss}
             data-testid="setup-offer-dismiss"
           >
