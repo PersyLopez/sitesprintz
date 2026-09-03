@@ -2,11 +2,22 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { usePlan } from '../../../hooks/usePlan';
 import { api } from '../../../services/api';
+import { SERVICE_RADIUS_MILES, getPublicDeliveryConfig } from '../../../utils/delivery';
 import ProcessorConnectList from './ProcessorConnectList';
 import './PaymentSettings.css';
 
 function siteLabel(site) {
   return site?.businessName || site?.name || site?.subdomain || 'Untitled site';
+}
+
+function deliveryStateFromSite(site) {
+  const config = getPublicDeliveryConfig(site);
+  return {
+    enabled: config.enabled,
+    flatFee: config.flatFee > 0 ? String(config.flatFee) : '',
+    maxRadiusMiles: config.maxRadiusMiles || 10,
+    originReady: site?.deliveryOriginReady === true,
+  };
 }
 
 function PaymentSettings({ site: siteProp = null }) {
@@ -21,6 +32,9 @@ function PaymentSettings({ site: siteProp = null }) {
   const [payOnSite, setPayOnSite] = useState(siteProp?.payOnSite === true);
   const [payOnSiteSaving, setPayOnSiteSaving] = useState(false);
   const [payOnSiteError, setPayOnSiteError] = useState(null);
+  const [delivery, setDelivery] = useState(() => deliveryStateFromSite(siteProp));
+  const [deliverySaving, setDeliverySaving] = useState(false);
+  const [deliveryError, setDeliveryError] = useState(null);
   const [connectBanner, setConnectBanner] = useState(null);
   const [applyTo, setApplyTo] = useState('site');
   const [futureSaving, setFutureSaving] = useState(false);
@@ -49,6 +63,7 @@ function PaymentSettings({ site: siteProp = null }) {
   const selectSite = useCallback((nextSite, replace = false) => {
     setSite(nextSite);
     setPayOnSite(nextSite?.payOnSite === true);
+    setDelivery(deliveryStateFromSite(nextSite));
     const next = new URLSearchParams(searchParams);
     if (nextSite?.id) next.set('site', nextSite.id);
     else next.delete('site');
@@ -136,6 +151,7 @@ function PaymentSettings({ site: siteProp = null }) {
       const selected = list.find((item) => item.id === preferredId) || list[0] || null;
       setSite(selected);
       setPayOnSite(selected?.payOnSite === true);
+      setDelivery(deliveryStateFromSite(selected));
       await loadStripeStatus(selected?.id);
     } catch (error) {
       setSite(null);
@@ -169,6 +185,61 @@ function PaymentSettings({ site: siteProp = null }) {
     } finally {
       setPayOnSiteSaving(false);
     }
+  };
+
+  const saveDeliveryOptions = async (next) => {
+    if (!isGrowth || !site?.id || deliverySaving) return;
+    setDeliveryError(null);
+    setDeliverySaving(true);
+    setDelivery(next);
+    try {
+      const data = await api.put(`/api/sites/${site.id}/payment-options`, {
+        delivery: {
+          enabled: next.enabled,
+          flatFee: Number.parseFloat(next.flatFee) || 0,
+          maxRadiusMiles: next.maxRadiusMiles,
+        },
+      });
+      const serverDelivery = data?.delivery || data?.data?.delivery;
+      const originReady = data?.deliveryOriginReady ?? data?.data?.deliveryOriginReady;
+      if (serverDelivery) {
+        setDelivery({
+          enabled: serverDelivery.enabled === true,
+          flatFee: serverDelivery.flatFee > 0 ? String(serverDelivery.flatFee) : next.flatFee,
+          maxRadiusMiles: serverDelivery.maxRadiusMiles || next.maxRadiusMiles,
+          originReady: originReady === true,
+        });
+      }
+      setSite((prev) => (prev ? {
+        ...prev,
+        delivery: serverDelivery || prev.delivery,
+        deliveryOriginReady: originReady === true,
+      } : prev));
+    } catch (error) {
+      setDelivery(deliveryStateFromSite(site));
+      setDeliveryError(error.message || 'Could not update delivery');
+    } finally {
+      setDeliverySaving(false);
+    }
+  };
+
+  const handleDeliveryToggle = async (event) => {
+    const enabled = event.target.checked;
+    if (enabled && !delivery.originReady && !site?.deliveryOriginReady) {
+      setDeliveryError('Add a private street address in Contact / location settings before enabling delivery.');
+      return;
+    }
+    await saveDeliveryOptions({ ...delivery, enabled });
+  };
+
+  const handleDeliveryFeeBlur = async () => {
+    if (!delivery.enabled) return;
+    await saveDeliveryOptions(delivery);
+  };
+
+  const handleDeliveryRadiusChange = async (event) => {
+    const maxRadiusMiles = Number.parseInt(event.target.value, 10);
+    await saveDeliveryOptions({ ...delivery, maxRadiusMiles });
   };
 
   const futureEnabled = statusData?.futureDefaults?.enabled === true
@@ -209,6 +280,8 @@ function PaymentSettings({ site: siteProp = null }) {
   };
 
   const toggleDisabled = !isGrowth || !site?.id || payOnSiteSaving || sitesLoading;
+  const deliveryToggleDisabled = !isGrowth || !site?.id || deliverySaving || sitesLoading;
+
 
   return (
     <div className="payment-settings">
@@ -370,6 +443,81 @@ function PaymentSettings({ site: siteProp = null }) {
 
         {payOnSiteError && (
           <p className="pay-on-site-error" data-testid="pay-on-site-save-error">{payOnSiteError}</p>
+        )}
+      </div>
+
+      <div className="stripe-status-card pay-on-site-card" data-testid="delivery-options-card">
+        <div className="status-header">
+          <h4>Delivery</h4>
+          <div className={`status-badge ${delivery.enabled ? 'ready' : 'not_started'}`}>
+            {delivery.enabled ? 'Enabled' : 'Off'}
+          </div>
+        </div>
+
+        <p className="status-message">
+          Offer local delivery for product orders. Customers pay a flat fee when their address is within your radius.
+          {site ? ` Applies to ${siteLabel(site)}.` : ''}
+        </p>
+
+        {!isGrowth && (
+          <p className="pay-on-site-upgrade" data-testid="delivery-upgrade">
+            Delivery is available on Growth.{' '}
+            <Link to="/pricing">Upgrade to enable delivery.</Link>
+          </p>
+        )}
+
+        {isGrowth && site && !delivery.originReady && !site.deliveryOriginReady && (
+          <p className="pay-on-site-upgrade" data-testid="delivery-origin-required">
+            Add a private street address in Contact / location settings so we can measure delivery distance.
+          </p>
+        )}
+
+        <label className="checkbox-label pay-on-site-toggle">
+          <input
+            type="checkbox"
+            checked={delivery.enabled}
+            onChange={handleDeliveryToggle}
+            disabled={deliveryToggleDisabled}
+            data-testid="delivery-toggle"
+          />
+          <span>{deliverySaving ? 'Saving...' : 'Offer delivery'}</span>
+        </label>
+
+        {delivery.enabled && (
+          <div className="delivery-options-fields" data-testid="delivery-options-fields">
+            <label htmlFor="delivery-flat-fee">
+              Flat delivery fee (USD)
+              <input
+                id="delivery-flat-fee"
+                type="number"
+                min="0"
+                step="0.01"
+                value={delivery.flatFee}
+                onChange={(event) => setDelivery((prev) => ({ ...prev, flatFee: event.target.value }))}
+                onBlur={handleDeliveryFeeBlur}
+                disabled={deliveryToggleDisabled}
+                data-testid="delivery-flat-fee"
+              />
+            </label>
+            <label htmlFor="delivery-max-radius">
+              Max radius
+              <select
+                id="delivery-max-radius"
+                value={delivery.maxRadiusMiles}
+                onChange={handleDeliveryRadiusChange}
+                disabled={deliveryToggleDisabled}
+                data-testid="delivery-max-radius"
+              >
+                {SERVICE_RADIUS_MILES.map((miles) => (
+                  <option key={miles} value={miles}>{miles} miles</option>
+                ))}
+              </select>
+            </label>
+          </div>
+        )}
+
+        {deliveryError && (
+          <p className="pay-on-site-error" data-testid="delivery-save-error">{deliveryError}</p>
         )}
       </div>
     </div>

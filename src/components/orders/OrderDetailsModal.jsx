@@ -64,6 +64,24 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus }) {
                   </span>
                 </span>
               </div>
+              <div className="detail-row" data-testid="order-detail-fulfillment">
+                <span className="detail-label">Fulfillment:</span>
+                <span className="detail-value">
+                  {order.fulfillmentType === 'delivery' ? 'Delivery' : 'Pickup'}
+                </span>
+              </div>
+              {order.fulfillmentType === 'delivery' && order.shippingAddress?.composed && (
+                <div className="detail-row" data-testid="order-detail-delivery-address">
+                  <span className="detail-label">Deliver to:</span>
+                  <span className="detail-value">{order.shippingAddress.composed}</span>
+                </div>
+              )}
+              {order.deliveryFee != null && order.deliveryFee > 0 && (
+                <div className="detail-row">
+                  <span className="detail-label">Delivery fee:</span>
+                  <span className="detail-value">{formatCurrency(order.deliveryFee)}</span>
+                </div>
+              )}
               {order.paymentId && (
                 <div className="detail-row">
                   <span className="detail-label">Payment ID:</span>

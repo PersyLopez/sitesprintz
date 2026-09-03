@@ -13,6 +13,7 @@ function CheckoutButton({
   className = '',
   paymentsReady = false,
   payOnSite = false,
+  deliveryConfig = null,
   onConfirmed
 }) {
   const { locale } = useLocale();
@@ -21,6 +22,11 @@ function CheckoutButton({
   const { cartItems, getCartTotal } = useCart();
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
+  const deliveryEnabled = deliveryConfig?.enabled === true;
+  const deliveryFee = Number(deliveryConfig?.flatFee) || 0;
+  const [fulfillment, setFulfillment] = useState('pickup');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const isDelivery = deliveryEnabled && fulfillment === 'delivery';
 
   if (!paymentsReady && !payOnSite) {
     return (
@@ -36,6 +42,10 @@ function CheckoutButton({
   const handleCheckout = async () => {
     if (cartItems.length === 0) {
       setError(t('checkoutEmpty'));
+      return;
+    }
+    if (isDelivery && deliveryAddress.trim().length < 5) {
+      setError(t('deliveryAddress'));
       return;
     }
 
@@ -54,6 +64,8 @@ function CheckoutButton({
           description: item.description,
           options: item.options
         })),
+        fulfillment: isDelivery ? 'delivery' : 'pickup',
+        deliveryAddress: isDelivery ? deliveryAddress.trim() : undefined,
         successUrl: `${window.location.origin}${pagePath}?order=success`,
         cancelUrl: `${window.location.origin}${pagePath}?order=cancelled`
       });
@@ -69,11 +81,54 @@ function CheckoutButton({
     }
   };
 
-  const total = getCartTotal();
-  const isDisabled = processing || !paymentsReady || cartItems.length === 0;
+  const total = getCartTotal() + (isDelivery ? deliveryFee : 0);
+  const isDisabled = processing || !paymentsReady || cartItems.length === 0
+    || (isDelivery && deliveryAddress.trim().length < 5);
 
   return (
     <div className="checkout-button-container" data-testid="checkout-button-container">
+      {paymentsReady && deliveryEnabled && (
+        <fieldset className="pay-on-site-fulfillment" data-testid="card-fulfillment-choice">
+          <legend>{t('fulfillmentLabel')}</legend>
+          <label className="pay-on-site-radio">
+            <input
+              type="radio"
+              name="card-fulfillment"
+              value="pickup"
+              checked={fulfillment === 'pickup'}
+              onChange={() => setFulfillment('pickup')}
+              data-testid="card-fulfillment-pickup"
+            />
+            <span>{t('fulfillmentPickup')}</span>
+          </label>
+          <label className="pay-on-site-radio">
+            <input
+              type="radio"
+              name="card-fulfillment"
+              value="delivery"
+              checked={fulfillment === 'delivery'}
+              onChange={() => setFulfillment('delivery')}
+              data-testid="card-fulfillment-delivery"
+            />
+            <span>
+              {t('fulfillmentDelivery')}
+              {deliveryFee > 0 ? ` (+$${deliveryFee.toFixed(2)})` : ''}
+            </span>
+          </label>
+          {isDelivery && (
+            <input
+              type="text"
+              name="card-delivery-address"
+              autoComplete="street-address"
+              placeholder={t('deliveryAddress')}
+              value={deliveryAddress}
+              onChange={(event) => setDeliveryAddress(event.target.value)}
+              data-testid="card-delivery-address"
+            />
+          )}
+        </fieldset>
+      )}
+
       {paymentsReady && (
         <button
           onClick={handleCheckout}
@@ -95,7 +150,12 @@ function CheckoutButton({
       )}
 
       {payOnSite && (
-        <PayOnSiteCheckout siteId={siteId} showAsAlternative={paymentsReady} onConfirmed={onConfirmed} />
+        <PayOnSiteCheckout
+          siteId={siteId}
+          showAsAlternative={paymentsReady}
+          onConfirmed={onConfirmed}
+          deliveryConfig={deliveryConfig}
+        />
       )}
 
       {error && (

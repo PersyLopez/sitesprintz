@@ -254,6 +254,26 @@ router.post('/connect/create-checkout', checkoutLimiter, orderLimiter, asyncHand
     quantity: item.quantity
   }));
 
+  const { buildDeliveryCharge } = await import('../utils/delivery.js');
+  const deliveryCharge = await buildDeliveryCharge(siteData, {
+    fulfillment: req.body?.fulfillment,
+    address: req.body?.deliveryAddress,
+    addressLine2: req.body?.deliveryAddressLine2,
+  });
+  if (!deliveryCharge.ok) {
+    return sendBadRequest(res, deliveryCharge.error, deliveryCharge.code || 'INVALID_DELIVERY');
+  }
+  if (deliveryCharge.fee > 0) {
+    lineItems.push({
+      price_data: {
+        currency: 'usd',
+        product_data: { name: 'Delivery' },
+        unit_amount: Math.round(deliveryCharge.fee * 100),
+      },
+      quantity: 1,
+    });
+  }
+
   const origin = `${req.protocol}://${req.get('host')}`;
   const sitePath = livePublishedPath(site.subdomain || siteId);
   const successUrl = `${origin}${sitePath}?order=success`;
@@ -277,7 +297,17 @@ router.post('/connect/create-checkout', checkoutLimiter, orderLimiter, asyncHand
       site_id: siteId,
       user_id: site.user_id || '',
       order_items: JSON.stringify(rebuiltCheckout.items),
-      type: 'order'
+      type: 'order',
+      fulfillment_type: deliveryCharge.fulfillmentType,
+      ...(deliveryCharge.shippingAddress
+        ? { shipping_address: JSON.stringify(deliveryCharge.shippingAddress) }
+        : {}),
+      ...(deliveryCharge.fee > 0
+        ? {
+            delivery_fee: String(deliveryCharge.fee),
+            delivery_miles: String(deliveryCharge.miles ?? ''),
+          }
+        : {}),
     }
   };
 

@@ -18,6 +18,7 @@ import { buildLiveSiteMarkup, getLiveSiteThemeVars } from '../utils/publishedSit
 import { mountGoogleReviews } from '../utils/mountGoogleReviews';
 import { getSiteWorkspacePaths } from '../utils/siteWorkspace';
 import { isPayOnSiteEnabled } from '../utils/payOnSite';
+import { getPublicDeliveryConfig } from '../utils/delivery';
 import { siteFeesEnabled, siteWantsNativeBooking, subdomainFromLivePath } from '../utils/visitorExperience';
 import { post } from '../utils/api';
 import { tLive } from '../i18n/liveChrome/index.js';
@@ -336,6 +337,7 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
           siteId={siteId}
           paymentsReady={paymentsReady}
           payOnSite={demoMode || isPayOnSiteEnabled(payload)}
+          deliveryConfig={getPublicDeliveryConfig(payload)}
         />
       )}
 

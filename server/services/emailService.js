@@ -253,9 +253,11 @@ export class EmailService {
           <h1 style="margin: 0 0 24px 0; font-size: 1.5rem; font-weight: 600; color: #1b1b1f;">Order confirmation</h1>
           <p style="margin: 0 0 16px 0; line-height: 1.6; color: #3f3f46;">Hi ${customerName},</p>
           <p style="margin: 0 0 20px 0; line-height: 1.6; color: #3f3f46;">
-            ${data.payOnSite
-              ? 'Your order is confirmed. Please pay when you pick up or visit.'
-              : 'Thank you for your purchase. Here is a summary of your order.'}
+            ${data.delivery
+              ? 'Your order is confirmed for delivery. Please pay when it arrives.'
+              : data.payOnSite
+                ? 'Your order is confirmed. Please pay when you pick up or visit.'
+                : 'Thank you for your purchase. Here is a summary of your order.'}
           </p>
           <table style="width: 100%; border-collapse: collapse; margin: 0 0 8px 0;">
             <tr>
@@ -275,12 +277,14 @@ export class EmailService {
           <p style="margin: 0 0 16px 0; color: #3f3f46;"><strong>Total:</strong> ${total}</p>
           `}
           <div style="margin: 20px 0; padding: 16px 0; border-top: 1px solid #e8e6e1; border-bottom: 1px solid #e8e6e1;">
-            ${address ? `<p style="margin: 0 0 10px 0; line-height: 1.5; color: #3f3f46;"><strong>Pickup / location:</strong> ${address}</p>` : ''}
+            ${address ? `<p style="margin: 0 0 10px 0; line-height: 1.5; color: #3f3f46;"><strong>${data.delivery ? 'Deliver to:' : 'Pickup / location:'}</strong> ${address}</p>` : ''}
             ${data.payOnSite ? `<p style="margin: 0 0 10px 0; line-height: 1.5; color: #3f3f46;"><strong>Payment:</strong> Please bring cash. We do not take cards.</p>` : ''}
             <p style="margin: 0; line-height: 1.5; color: #6b6b73; font-size: 0.95rem;">
-              ${data.payOnSite
-                ? 'We will have your order ready for pickup. Reply if you have any questions.'
-                : 'We will send a shipping update when your order is on the way. Reply if you have any questions.'}
+              ${data.delivery
+                ? 'We will deliver your order to the address above. Reply if you have any questions.'
+                : data.payOnSite
+                  ? 'We will have your order ready for pickup. Reply if you have any questions.'
+                  : 'We will send a shipping update when your order is on the way. Reply if you have any questions.'}
             </p>
           </div>
         </div>
@@ -312,7 +316,7 @@ export class EmailService {
           <p style="margin: 0 0 8px 0; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #6b6b73;">${businessName}</p>
           <h1 style="margin: 0 0 24px 0; font-size: 1.5rem; font-weight: 600; color: #1b1b1f;">New order</h1>
           <p style="margin: 0 0 20px 0; line-height: 1.6; color: #3f3f46;">
-            A customer placed an order${data.payOnSite ? ' (pay on site)' : ''}.
+            A customer placed an order${data.delivery ? ' for delivery' : ''}${data.payOnSite ? ' (pay on site)' : ''}.
           </p>
           <table style="width: 100%; border-collapse: collapse; margin: 0 0 12px 0;">
             <tr>
@@ -346,7 +350,8 @@ export class EmailService {
           <p style="margin: 0 0 16px 0; color: #3f3f46;"><strong>Total:</strong> ${total}</p>
           `}
           ${notes ? `<p style="margin: 0 0 16px 0; line-height: 1.5; color: #3f3f46;"><strong>Notes:</strong> ${notes}</p>` : ''}
-          ${data.payOnSite ? `<p style="margin: 0 0 20px 0; line-height: 1.5; color: #6b6b73;">Payment is due when they pick up or visit.</p>` : ''}
+          ${data.delivery && data.deliveryAddress ? `<p style="margin: 0 0 16px 0; line-height: 1.5; color: #3f3f46;"><strong>Deliver to:</strong> ${this.escapeHtml(data.deliveryAddress)}</p>` : ''}
+          ${data.payOnSite ? `<p style="margin: 0 0 20px 0; line-height: 1.5; color: #6b6b73;">Payment is due when they ${data.delivery ? 'receive delivery' : 'pick up or visit'}.</p>` : ''}
           <p style="margin: 24px 0 0 0;">
             <a href="${ordersUrl}" style="display: inline-block; padding: 12px 22px; background: #1b1b1f; color: #f6f4ef; text-decoration: none; border-radius: 4px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; font-weight: 600;">
               View orders

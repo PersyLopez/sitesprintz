@@ -6,7 +6,13 @@ import CheckoutButton from './CheckoutButton';
 import { PayOnSiteConfirmation } from './PayOnSiteCheckout';
 import './ShoppingCart.css';
 
-function ShoppingCart({ stripePublishableKey, siteId, paymentsReady = false, payOnSite = false }) {
+function ShoppingCart({
+  stripePublishableKey,
+  siteId,
+  paymentsReady = false,
+  payOnSite = false,
+  deliveryConfig = null,
+}) {
   const { locale } = useLocale();
   const t = (key, vars) => tLive(locale, key, vars);
   const {
@@ -220,6 +226,7 @@ function ShoppingCart({ stripePublishableKey, siteId, paymentsReady = false, pay
                       buttonText={t('proceedToCheckout')}
                       paymentsReady={paymentsReady}
                       payOnSite={payOnSite}
+                      deliveryConfig={deliveryConfig}
                       onConfirmed={setPlacedOrder}
                     />
                   </div>

@@ -74,6 +74,18 @@ function OrderCard({ order, selected, onToggleSelect, onUpdateStatus, onViewDeta
               </a>
             </div>
           )}
+          <div className="order-fulfillment" data-testid="order-fulfillment">
+            <span className="label">Fulfillment:</span>
+            <strong>
+              {order.fulfillmentType === 'delivery' ? 'Delivery' : 'Pickup'}
+            </strong>
+          </div>
+          {order.fulfillmentType === 'delivery' && order.shippingAddress?.composed && (
+            <div className="order-delivery-address" data-testid="order-delivery-address">
+              <span className="label">Deliver to:</span>
+              <span>{order.shippingAddress.composed}</span>
+            </div>
+          )}
         </div>
 
         <div className="order-items">

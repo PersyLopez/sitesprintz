@@ -1,0 +1,146 @@
+url: http://localhost:5173/view/plants-and-threads
+goal: Plants & Threads pickup still works; delivery within radius succeeds; outside radius fails
+steps:
+  - action: Live site loads
+    wait_for: { text: Plants & Threads, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Add first plant to cart
+    code: |
+      const add = page.locator('[data-ss-add-to-cart], [data-testid^="add-to-cart-"]').first();
+      await add.waitFor({ timeout: 15000 });
+      await add.click();
+    settle_ms: 500
+
+  - action: Open cart
+    click: { testId: cart-toggle-button }
+    settle_ms: 400
+
+  - action: Pay-on-site checkout form visible
+    wait_for: { selector: '[data-testid="pay-on-site-checkout"]', timeout: 10000 }
+
+  - action: Fulfillment choice visible when delivery enabled
+    wait_for: { selector: '[data-testid="fulfillment-choice"]', timeout: 5000 }
+
+  - action: Place pickup order (default)
+    code: |
+      const stamp = Date.now();
+      await page.getByTestId('pay-on-site-name').fill('Mantest Pickup');
+      await page.getByTestId('pay-on-site-email').fill('mantest-pickup-' + stamp + '@example.com');
+      const [response] = await Promise.all([
+        page.waitForResponse(
+          (r) => r.url().includes('/pay-on-site') && r.request().method() === 'POST',
+          { timeout: 20000 }
+        ),
+        page.getByTestId('pay-on-site-place-order').click(),
+      ]);
+      const body = await response.text();
+      if (response.status() < 200 || response.status() >= 300) {
+        throw new Error('Pickup pay-on-site failed HTTP ' + response.status() + ' ' + body.slice(0, 300));
+      }
+      const data = JSON.parse(body);
+      if (data.order?.fulfillmentType === 'delivery') {
+        throw new Error('Expected pickup fulfillment, got delivery');
+      }
+    settle_ms: 600
+
+  - action: Pickup confirmation shown
+    wait_for: { selector: '[data-testid="pay-on-site-confirmation"]', timeout: 12000 }
+
+  - action: Reload for fresh cart delivery attempt
+    goto: http://localhost:5173/view/plants-and-threads
+    settle_ms: 1000
+
+  - action: Add plant again
+    code: |
+      const add = page.locator('[data-ss-add-to-cart], [data-testid^="add-to-cart-"]').first();
+      await add.waitFor({ timeout: 15000 });
+      await add.click();
+    settle_ms: 500
+
+  - action: Open cart again
+    click: { testId: cart-toggle-button }
+    settle_ms: 400
+
+  - action: Checkout form again
+    wait_for: { selector: '[data-testid="pay-on-site-checkout"]', timeout: 10000 }
+
+  - action: Choose delivery and place in-radius order
+    code: |
+      const deliveryRadio = page.getByTestId('fulfillment-delivery');
+      await deliveryRadio.scrollIntoViewIfNeeded();
+      await deliveryRadio.check({ force: true });
+      await page.getByTestId('pay-on-site-delivery-address').waitFor({ timeout: 5000 });
+      const stamp = Date.now();
+      await page.getByTestId('pay-on-site-name').fill('Mantest Delivery');
+      await page.getByTestId('pay-on-site-email').fill('mantest-delivery-' + stamp + '@example.com');
+      await page.getByTestId('pay-on-site-delivery-address').fill('500 Market Street, Trenton, NJ 08611');
+      const [response] = await Promise.all([
+        page.waitForResponse(
+          (r) => r.url().includes('/pay-on-site') && r.request().method() === 'POST',
+          { timeout: 45000 }
+        ),
+        page.getByTestId('pay-on-site-place-order').click(),
+      ]);
+      const body = await response.text();
+      if (response.status() < 200 || response.status() >= 300) {
+        throw new Error('In-radius delivery failed HTTP ' + response.status() + ' ' + body.slice(0, 400));
+      }
+      const data = JSON.parse(body);
+      if (data.order?.fulfillmentType !== 'delivery') {
+        throw new Error('Expected delivery fulfillment, got ' + data.order?.fulfillmentType);
+      }
+      const total = Number(data.order?.total ?? data.order?.totalAmount ?? data.order?.total_amount);
+      if (!(total >= 30)) {
+        throw new Error('Expected total with $5 delivery fee (>=30), got ' + total);
+      }
+    settle_ms: 800
+
+  - action: Delivery confirmation shown
+    wait_for: { selector: '[data-testid="pay-on-site-confirmation"]', timeout: 12000 }
+
+  - action: Reload for out-of-range attempt
+    goto: http://localhost:5173/view/plants-and-threads
+    settle_ms: 1000
+
+  - action: Add plant for out-of-range
+    code: |
+      const add = page.locator('[data-ss-add-to-cart], [data-testid^="add-to-cart-"]').first();
+      await add.waitFor({ timeout: 15000 });
+      await add.click();
+    settle_ms: 500
+
+  - action: Open cart for out-of-range
+    click: { testId: cart-toggle-button }
+    settle_ms: 400
+
+  - action: Checkout for out-of-range
+    wait_for: { selector: '[data-testid="pay-on-site-checkout"]', timeout: 10000 }
+
+  - action: Delivery outside radius rejected
+    code: |
+      const deliveryRadio = page.getByTestId('fulfillment-delivery');
+      await deliveryRadio.scrollIntoViewIfNeeded();
+      await deliveryRadio.check({ force: true });
+      await page.getByTestId('pay-on-site-delivery-address').waitFor({ timeout: 5000 });
+      const stamp = Date.now();
+      await page.getByTestId('pay-on-site-name').fill('Mantest Far');
+      await page.getByTestId('pay-on-site-email').fill('mantest-far-' + stamp + '@example.com');
+      await page.getByTestId('pay-on-site-delivery-address').fill('1 Infinite Loop, Cupertino, CA 95014');
+      const [response] = await Promise.all([
+        page.waitForResponse(
+          (r) => r.url().includes('/pay-on-site') && r.request().method() === 'POST',
+          { timeout: 45000 }
+        ),
+        page.getByTestId('pay-on-site-place-order').click(),
+      ]);
+      const body = await response.text();
+      if (response.status() !== 400) {
+        throw new Error('Expected HTTP 400 out of range, got ' + response.status() + ' ' + body.slice(0, 400));
+      }
+      let data;
+      try { data = JSON.parse(body); } catch { throw new Error('Non-JSON error body: ' + body.slice(0, 200)); }
+      if (!String(JSON.stringify(data)).includes('DELIVERY_OUT_OF_RANGE')) {
+        throw new Error('Expected DELIVERY_OUT_OF_RANGE, got ' + body.slice(0, 400));
+      }
+    settle_ms: 400

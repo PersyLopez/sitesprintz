@@ -12,13 +12,14 @@ export function PayOnSiteConfirmation({ confirmation }) {
   if (!confirmation) return null;
   const displayTotal = Number(confirmation.total);
   const isDemo = confirmation.demo === true;
+  const isDelivery = confirmation.fulfillmentType === 'delivery';
   return (
     <div className="pay-on-site-success" data-testid="pay-on-site-confirmation">
       <p><strong>{isDemo ? t('demoOrderPlaced') : t('orderPlaced')}</strong></p>
       <p>
         {isDemo
           ? t('demoOrderNote')
-          : t('payOnPickup')}
+          : (isDelivery ? t('payOnDelivery') : t('payOnPickup'))}
       </p>
       {confirmation.orderId && (
         <p className="pay-on-site-order-id">{t('orderId', { id: String(confirmation.orderId).slice(0, 8) })}</p>
@@ -30,26 +31,42 @@ export function PayOnSiteConfirmation({ confirmation }) {
   );
 }
 
-function PayOnSiteCheckout({ siteId, showAsAlternative = false, onConfirmed }) {
+function PayOnSiteCheckout({
+  siteId,
+  showAsAlternative = false,
+  onConfirmed,
+  deliveryConfig = null,
+}) {
   const { locale } = useLocale();
   const t = (key, vars) => tLive(locale, key, vars);
   const { cartItems, getCartTotal, clearCart } = useCart();
   const submittingRef = useRef(false);
+  const deliveryEnabled = deliveryConfig?.enabled === true;
+  const deliveryFee = Number(deliveryConfig?.flatFee) || 0;
+  const maxRadiusMiles = deliveryConfig?.maxRadiusMiles || null;
+
+  const [fulfillment, setFulfillment] = useState('pickup');
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [deliveryLine2, setDeliveryLine2] = useState('');
   const [notes, setNotes] = useState('');
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [confirmation, setConfirmation] = useState(null);
 
-  const total = getCartTotal();
+  const subtotal = getCartTotal();
+  const isDelivery = deliveryEnabled && fulfillment === 'delivery';
+  const displayTotal = isDelivery ? subtotal + deliveryFee : subtotal;
   const emailValid = EMAIL_PATTERN.test(customerEmail.trim());
+  const addressOk = !isDelivery || deliveryAddress.trim().length >= 5;
   const isDisabled = processing
     || !siteId
     || cartItems.length === 0
     || !customerName.trim()
-    || !emailValid;
+    || !emailValid
+    || !addressOk;
 
   const handlePlaceOrder = async (event) => {
     event.preventDefault();
@@ -65,6 +82,11 @@ function PayOnSiteCheckout({ siteId, showAsAlternative = false, onConfirmed }) {
         customerEmail: customerEmail.trim(),
         customerPhone: customerPhone.trim() || undefined,
         notes: notes.trim() || undefined,
+        fulfillment: isDelivery ? 'delivery' : 'pickup',
+        deliveryAddress: isDelivery ? deliveryAddress.trim() : undefined,
+        deliveryAddressLine2: isDelivery && deliveryLine2.trim()
+          ? deliveryLine2.trim()
+          : undefined,
         items: cartItems.map((item) => ({
           id: item.id,
           name: item.name,
@@ -73,11 +95,12 @@ function PayOnSiteCheckout({ siteId, showAsAlternative = false, onConfirmed }) {
         }))
       });
 
-      const confirmedTotal = Number.parseFloat(String(data.order?.total ?? total));
+      const confirmedTotal = Number.parseFloat(String(data.order?.total ?? displayTotal));
       const placed = {
         orderId: data.order?.id,
-        total: Number.isFinite(confirmedTotal) ? confirmedTotal : total,
+        total: Number.isFinite(confirmedTotal) ? confirmedTotal : displayTotal,
         demo: data.order?.demo === true || String(data.order?.id || '').startsWith('demo-'),
+        fulfillmentType: data.order?.fulfillmentType || (isDelivery ? 'delivery' : 'pay_on_site'),
       };
       onConfirmed?.(placed);
       clearCart();
@@ -109,6 +132,38 @@ function PayOnSiteCheckout({ siteId, showAsAlternative = false, onConfirmed }) {
       <p className="pay-on-site-note">
         {t('payOnSiteNote')}
       </p>
+
+      {deliveryEnabled && (
+        <fieldset className="pay-on-site-fulfillment" data-testid="fulfillment-choice">
+          <legend>{t('fulfillmentLabel')}</legend>
+          <label className="pay-on-site-radio">
+            <input
+              type="radio"
+              name="fulfillment"
+              value="pickup"
+              checked={fulfillment === 'pickup'}
+              onChange={() => setFulfillment('pickup')}
+              data-testid="fulfillment-pickup"
+            />
+            <span>{t('fulfillmentPickup')}</span>
+          </label>
+          <label className="pay-on-site-radio">
+            <input
+              type="radio"
+              name="fulfillment"
+              value="delivery"
+              checked={fulfillment === 'delivery'}
+              onChange={() => setFulfillment('delivery')}
+              data-testid="fulfillment-delivery"
+            />
+            <span>
+              {t('fulfillmentDelivery')}
+              {deliveryFee > 0 ? ` (+$${deliveryFee.toFixed(2)})` : ''}
+              {maxRadiusMiles ? ` · ${t('deliveryWithinMiles', { miles: maxRadiusMiles })}` : ''}
+            </span>
+          </label>
+        </fieldset>
+      )}
 
       <label htmlFor="pay-on-site-name">{t('name')}</label>
       <input
@@ -145,6 +200,32 @@ function PayOnSiteCheckout({ siteId, showAsAlternative = false, onConfirmed }) {
         data-testid="pay-on-site-phone"
       />
 
+      {isDelivery && (
+        <>
+          <label htmlFor="pay-on-site-address">{t('deliveryAddress')}</label>
+          <input
+            id="pay-on-site-address"
+            type="text"
+            name="address"
+            autoComplete="street-address"
+            required
+            value={deliveryAddress}
+            onChange={(event) => setDeliveryAddress(event.target.value)}
+            data-testid="pay-on-site-delivery-address"
+          />
+          <label htmlFor="pay-on-site-address2">{t('deliveryAddressLine2')}</label>
+          <input
+            id="pay-on-site-address2"
+            type="text"
+            name="address2"
+            autoComplete="address-line2"
+            value={deliveryLine2}
+            onChange={(event) => setDeliveryLine2(event.target.value)}
+            data-testid="pay-on-site-delivery-address2"
+          />
+        </>
+      )}
+
       <label htmlFor="pay-on-site-notes">{t('notesOptional')}</label>
       <textarea
         id="pay-on-site-notes"
@@ -155,13 +236,24 @@ function PayOnSiteCheckout({ siteId, showAsAlternative = false, onConfirmed }) {
         data-testid="pay-on-site-notes"
       />
 
+      {isDelivery && deliveryFee > 0 && (
+        <p className="pay-on-site-fee-note" data-testid="delivery-fee-note">
+          {t('deliveryFeeNote', {
+            fee: deliveryFee.toFixed(2),
+            subtotal: Number(subtotal).toFixed(2),
+          })}
+        </p>
+      )}
+
       <button
         type="submit"
         className={`btn btn-checkout ${showAsAlternative ? 'btn-secondary' : 'btn-primary'}`}
         disabled={isDisabled}
         data-testid="pay-on-site-place-order"
       >
-        {processing ? t('placingOrder') : t('placeOrderWithTotal', { amount: Number(total).toFixed(2) })}
+        {processing
+          ? t('placingOrder')
+          : t('placeOrderWithTotal', { amount: Number(displayTotal).toFixed(2) })}
       </button>
 
       {error && (

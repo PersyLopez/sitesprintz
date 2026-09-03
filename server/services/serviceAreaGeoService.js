@@ -5,6 +5,7 @@ import {
   isValidPublicGeo,
   normalizeServiceAreaLabel,
   normalizeServiceRadiusMiles,
+  resolvePrivateStreet,
 } from '../../src/utils/liveSiteContact.js';
 
 const GEOCODE_TIMEOUT_MS = 3000;
@@ -136,4 +137,89 @@ export async function ensurePublicGeo(siteData, { siteId } = {}) {
 export function radiusMeters(radiusMiles) {
   const miles = normalizeServiceRadiusMiles(radiusMiles);
   return miles ? Math.round(miles * METERS_PER_MILE) : null;
+}
+
+/**
+ * Great-circle distance in miles between two WGS84 points.
+ * @param {{ lat: number, lng: number }} a
+ * @param {{ lat: number, lng: number }} b
+ * @returns {number|null}
+ */
+export function milesBetween(a, b) {
+  const lat1 = Number(a?.lat);
+  const lng1 = Number(a?.lng);
+  const lat2 = Number(b?.lat);
+  const lng2 = Number(b?.lng);
+  if (![lat1, lng1, lat2, lng2].every(Number.isFinite)) return null;
+
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const rLat1 = toRad(lat1);
+  const rLat2 = toRad(lat2);
+  const h = Math.sin(dLat / 2) ** 2
+    + Math.cos(rLat1) * Math.cos(rLat2) * Math.sin(dLng / 2) ** 2;
+  const earthMiles = 3958.7613;
+  return earthMiles * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+}
+
+/**
+ * Geocode shop private street as delivery origin.
+ * @param {object} siteData
+ * @returns {Promise<{ lat: number, lng: number }|null>}
+ */
+export async function geocodeShopDeliveryOrigin(siteData) {
+  const street = resolvePrivateStreet(siteData);
+  if (!street) return null;
+  return geocodeQuery(street);
+}
+
+/**
+ * Miles from shop private street to a customer delivery address.
+ * @param {object} siteData
+ * @param {string} deliveryAddress
+ * @returns {Promise<
+ *   | { ok: true, miles: number, origin: {lat:number,lng:number}, destination: {lat:number,lng:number} }
+ *   | { ok: false, code: string, error: string }
+ * >}
+ */
+export async function measureDeliveryMiles(siteData, deliveryAddress) {
+  const address = String(deliveryAddress || '').trim();
+  if (!address) {
+    return { ok: false, code: 'DELIVERY_ADDRESS_REQUIRED', error: 'Delivery address is required' };
+  }
+
+  const origin = await geocodeShopDeliveryOrigin(siteData);
+  if (!origin) {
+    return {
+      ok: false,
+      code: 'DELIVERY_ORIGIN_REQUIRED',
+      error: 'This shop has no delivery origin address configured',
+    };
+  }
+
+  const destination = await geocodeQuery(address);
+  if (!destination) {
+    return {
+      ok: false,
+      code: 'DELIVERY_ADDRESS_INVALID',
+      error: 'Could not find that delivery address',
+    };
+  }
+
+  const miles = milesBetween(origin, destination);
+  if (miles == null) {
+    return {
+      ok: false,
+      code: 'DELIVERY_DISTANCE_FAILED',
+      error: 'Could not measure delivery distance',
+    };
+  }
+
+  return {
+    ok: true,
+    miles: Math.round(miles * 10) / 10,
+    origin,
+    destination,
+  };
 }

@@ -46,6 +46,38 @@ vi.mock('../../server/services/emailService.js', () => ({
   }
 }));
 
+vi.mock('../../server/utils/delivery.js', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    buildDeliveryCharge: vi.fn(async (_siteData, options = {}) => {
+      if (String(options.fulfillment || '').toLowerCase() === 'delivery') {
+        if (options.address === 'Far Away') {
+          return {
+            ok: false,
+            code: 'DELIVERY_OUT_OF_RANGE',
+            error: 'Delivery is only available within 5 miles',
+          };
+        }
+        return {
+          ok: true,
+          fee: 5,
+          miles: 2.1,
+          shippingAddress: { line1: options.address, composed: options.address },
+          fulfillmentType: 'delivery',
+        };
+      }
+      return {
+        ok: true,
+        fee: 0,
+        miles: null,
+        shippingAddress: null,
+        fulfillmentType: 'pay_on_site',
+      };
+    }),
+  };
+});
+
 vi.mock('../../server/middleware/auth.js', () => ({
   requireAuth: (req, _res, next) => {
     req.user = { id: '11111111-1111-1111-1111-111111111111', role: 'user' };
@@ -256,6 +288,57 @@ describe('POST /api/orders/:siteId/pay-on-site', () => {
     expect(response.status).toBe(201);
     expect(response.body.order?.demo).toBe(true);
     expect(String(response.body.order?.id || '')).toMatch(/^demo-/);
+    expect(prisma.orders.create).not.toHaveBeenCalled();
+  });
+
+  it('adds a flat delivery fee and stores shipping address', async () => {
+    prisma.orders.create.mockResolvedValue({
+      id: 'order-delivery',
+      status: 'pending',
+      payment_status: 'unpaid',
+      fulfillment_type: 'delivery',
+      total_amount: 13,
+      customer_name: 'Alex Rivera',
+      customer_email: 'alex@example.com',
+      customer_phone: '5551234567',
+    });
+
+    const response = await request(createApp())
+      .post('/api/orders/site-1/pay-on-site')
+      .send({
+        customerName: 'Alex Rivera',
+        customerEmail: 'alex@example.com',
+        customerPhone: '5551234567',
+        fulfillment: 'delivery',
+        deliveryAddress: '200 Broad St, Trenton, NJ',
+        items: [{ id: 'soup', name: 'Soup', price: 8, quantity: 1 }]
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body.order.fulfillmentType).toBe('delivery');
+    expect(response.body.order.total).toBe(13);
+    expect(prisma.orders.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        fulfillment_type: 'delivery',
+        total_amount: 13,
+        shipping_address: expect.objectContaining({ composed: '200 Broad St, Trenton, NJ' }),
+      })
+    }));
+  });
+
+  it('rejects delivery outside the configured radius', async () => {
+    const response = await request(createApp())
+      .post('/api/orders/site-1/pay-on-site')
+      .send({
+        customerName: 'Alex Rivera',
+        customerEmail: 'alex@example.com',
+        fulfillment: 'delivery',
+        deliveryAddress: 'Far Away',
+        items: [{ id: 'soup', name: 'Soup', price: 8, quantity: 1 }]
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe('DELIVERY_OUT_OF_RANGE');
     expect(prisma.orders.create).not.toHaveBeenCalled();
   });
 });

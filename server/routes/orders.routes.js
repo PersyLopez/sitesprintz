@@ -19,6 +19,7 @@ import {
 import { sanitizeString, validateEmail, validatePhone } from '../utils/validators.js';
 import { checkoutLimiter, orderLimiter } from '../middleware/rateLimiting.js';
 import { isPayOnSiteEnabled, buildPayOnSiteOrderItems, extractSiteCatalog } from '../utils/payOnSite.js';
+import { buildDeliveryCharge } from '../utils/delivery.js';
 import { productCatalogService } from '../services/ProductCatalogService.js';
 import { emailService } from '../services/emailService.js';
 import { resolvePrivateAddressForBuyer } from '../../src/utils/liveSiteContact.js';
@@ -106,6 +107,10 @@ function formatOwnerOrder(order) {
     ...item,
     price: dollarsToCents(item.price)
   }));
+  const metadata = order.metadata && typeof order.metadata === 'object' ? order.metadata : {};
+  const shipping = order.shipping_address && typeof order.shipping_address === 'object'
+    ? order.shipping_address
+    : null;
 
   return {
     id: order.id,
@@ -121,6 +126,9 @@ function formatOwnerOrder(order) {
     status: order.status === 'pending' ? 'new' : order.status,
     paymentStatus: order.payment_status,
     fulfillmentType: order.fulfillment_type,
+    shippingAddress: shipping,
+    deliveryFee: metadata.deliveryFee != null ? dollarsToCents(metadata.deliveryFee) : null,
+    deliveryMiles: metadata.deliveryMiles ?? null,
     total: dollarsToCents(order.total_amount),
     items,
     notes: order.notes,
@@ -446,6 +454,31 @@ router.post('/:siteId/pay-on-site', checkoutLimiter, orderLimiter, asyncHandler(
   }
 
   const notes = req.body?.notes ? sanitizeString(req.body.notes, 500) : null;
+  const deliveryCharge = await buildDeliveryCharge(siteData, {
+    fulfillment: req.body?.fulfillment,
+    address: req.body?.deliveryAddress,
+    addressLine2: req.body?.deliveryAddressLine2,
+    city: req.body?.deliveryCity,
+    region: req.body?.deliveryRegion,
+    postal: req.body?.deliveryPostal,
+  });
+  if (!deliveryCharge.ok) {
+    return sendBadRequest(res, deliveryCharge.error, deliveryCharge.code || 'INVALID_DELIVERY');
+  }
+
+  const orderTotal = Math.round((built.total + deliveryCharge.fee) * 100) / 100;
+  const orderEmailItems = built.items.map((item) => ({
+    name: item.name,
+    quantity: item.quantity,
+    price: Math.round(Number(item.price) * Number(item.quantity) * 100),
+  }));
+  if (deliveryCharge.fee > 0) {
+    orderEmailItems.push({
+      name: 'Delivery',
+      quantity: 1,
+      price: Math.round(deliveryCharge.fee * 100),
+    });
+  }
 
   // Gallery demos: validate + confirm UX without writing real orders
   if (isShowcaseDemoSite(site) || isShowcaseDemoSiteData(siteData)) {
@@ -454,13 +487,15 @@ router.post('/:siteId/pay-on-site', checkoutLimiter, orderLimiter, asyncHandler(
         id: buildDemoOrderId(),
         status: 'pending',
         paymentStatus: 'unpaid',
-        fulfillmentType: 'pay_on_site',
-        total: built.total,
+        fulfillmentType: deliveryCharge.fulfillmentType,
+        total: orderTotal,
         customerName,
         customerEmail: emailCheck.value,
         demo: true,
       }
-    }, 'Demo order placed. Pay when you pick up — no real order was saved.');
+    }, deliveryCharge.fulfillmentType === 'delivery'
+      ? 'Demo order placed. Pay on delivery — no real order was saved.'
+      : 'Demo order placed. Pay when you pick up — no real order was saved.');
   }
 
   let order;
@@ -474,14 +509,19 @@ router.post('/:siteId/pay-on-site', checkoutLimiter, orderLimiter, asyncHandler(
           customer_name: customerName,
           customer_phone: phoneCheck.value,
           items: built.items,
-          total_amount: built.total,
+          total_amount: orderTotal,
           currency: 'usd',
           payment_status: 'unpaid',
           status: 'pending',
-          fulfillment_type: 'pay_on_site',
+          fulfillment_type: deliveryCharge.fulfillmentType,
+          shipping_address: deliveryCharge.shippingAddress || undefined,
           notes,
           metadata: {
-            paymentMethod: 'pay_on_site'
+            paymentMethod: 'pay_on_site',
+            ...(deliveryCharge.fee > 0 ? {
+              deliveryFee: deliveryCharge.fee,
+              deliveryMiles: deliveryCharge.miles,
+            } : {}),
           }
         }
       });
@@ -502,13 +542,10 @@ router.post('/:siteId/pay-on-site', checkoutLimiter, orderLimiter, asyncHandler(
   }
 
   const total = Number.parseFloat(String(order.total_amount));
-  const amountCents = Math.round((Number.isFinite(total) ? total : built.total) * 100);
+  const amountCents = Math.round((Number.isFinite(total) ? total : orderTotal) * 100);
   const businessName = siteData.brand?.name || siteData.businessName || site.subdomain || 'Your shop';
-  const orderEmailItems = built.items.map((item) => ({
-    name: item.name,
-    quantity: item.quantity,
-    price: Math.round(Number(item.price) * Number(item.quantity) * 100),
-  }));
+  const isDelivery = order.fulfillment_type === 'delivery';
+  const deliveryAddressLine = deliveryCharge.shippingAddress?.composed || null;
 
   try {
     await emailService.sendEmail({
@@ -520,8 +557,13 @@ router.post('/:siteId/pay-on-site', checkoutLimiter, orderLimiter, asyncHandler(
         items: orderEmailItems,
         customerName: order.customer_name,
         businessName,
-        businessAddress: resolvePrivateAddressForBuyer(siteData),
+        businessAddress: isDelivery
+          ? deliveryAddressLine
+          : resolvePrivateAddressForBuyer(siteData),
         payOnSite: true,
+        delivery: isDelivery,
+        deliveryFee: deliveryCharge.fee,
+        deliveryMiles: deliveryCharge.miles,
       },
     });
   } catch {
@@ -544,6 +586,10 @@ router.post('/:siteId/pay-on-site', checkoutLimiter, orderLimiter, asyncHandler(
           notes: notes || undefined,
           businessName,
           payOnSite: true,
+          delivery: isDelivery,
+          deliveryAddress: deliveryAddressLine || undefined,
+          deliveryFee: deliveryCharge.fee,
+          deliveryMiles: deliveryCharge.miles,
         },
       });
     } catch {
@@ -557,11 +603,14 @@ router.post('/:siteId/pay-on-site', checkoutLimiter, orderLimiter, asyncHandler(
       status: order.status,
       paymentStatus: order.payment_status,
       fulfillmentType: order.fulfillment_type,
-      total: Number.isFinite(total) ? total : built.total,
+      total: Number.isFinite(total) ? total : orderTotal,
       customerName: order.customer_name,
-      customerEmail: order.customer_email
+      customerEmail: order.customer_email,
+      deliveryFee: deliveryCharge.fee || undefined,
     }
-  }, 'Order placed. Pay when you pick up or visit.');
+  }, isDelivery
+    ? 'Order placed. Pay when it is delivered.'
+    : 'Order placed. Pay when you pick up or visit.');
 }));
 
 /**
@@ -700,7 +749,9 @@ router.put('/:siteId/orders/:orderId/status', requireAuth, asyncHandler(async (r
     );
   }
 
-  const paymentUpdate = existingOrder.fulfillment_type === 'pay_on_site' && nextStatus === ORDER_STATUSES.FULFILLED
+  const paymentUpdate = (existingOrder.fulfillment_type === 'pay_on_site'
+    || existingOrder.fulfillment_type === 'delivery')
+    && nextStatus === ORDER_STATUSES.FULFILLED
     ? { payment_status: 'paid' }
     : {};
 

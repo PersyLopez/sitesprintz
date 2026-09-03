@@ -226,7 +226,7 @@ router.get('/site-methods/:siteId', asyncHandler(async (req, res) => {
  * Main checkout endpoint - routes to correct payment processor
  */
 router.post('/checkout/create-session', asyncHandler(async (req, res) => {
-  const { siteId, items, successUrl, cancelUrl } = req.body;
+  const { siteId, items, successUrl, cancelUrl, fulfillment, deliveryAddress, deliveryAddressLine2 } = req.body;
 
   if (!siteId || !items?.length) {
     return sendBadRequest(res, 'Invalid request', 'INVALID_REQUEST');
@@ -266,7 +266,16 @@ router.post('/checkout/create-session', asyncHandler(async (req, res) => {
 
   try {
     if (provider === 'stripe') {
-      return await handleStripeCheckout(req, res, site, account_id, items, successUrl, cancelUrl);
+      return await handleStripeCheckout(
+        req,
+        res,
+        site,
+        account_id,
+        items,
+        successUrl,
+        cancelUrl,
+        { fulfillment, deliveryAddress, deliveryAddressLine2 }
+      );
     }
 
     if (provider === 'square') {
@@ -293,9 +302,20 @@ router.post('/checkout/create-session', asyncHandler(async (req, res) => {
 /**
  * Stripe: Create checkout session and return redirect URL
  */
-async function handleStripeCheckout(req, res, site, stripeAccountId, items, successUrl, cancelUrl) {
+async function handleStripeCheckout(
+  req,
+  res,
+  site,
+  stripeAccountId,
+  items,
+  successUrl,
+  cancelUrl,
+  deliveryOptions = {}
+) {
   const Stripe = (await import('stripe')).default;
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
+  const { buildDeliveryCharge } = await import('../utils/delivery.js');
+  const { parseSiteData } = await import('../utils/parseSiteData.js');
 
   // Verify account is live
   try {
@@ -324,6 +344,26 @@ async function handleStripeCheckout(req, res, site, stripeAccountId, items, succ
     quantity: item.quantity || 1
   }));
 
+  const siteData = parseSiteData(site);
+  const deliveryCharge = await buildDeliveryCharge(siteData, {
+    fulfillment: deliveryOptions.fulfillment,
+    address: deliveryOptions.deliveryAddress,
+    addressLine2: deliveryOptions.deliveryAddressLine2,
+  });
+  if (!deliveryCharge.ok) {
+    return sendBadRequest(res, deliveryCharge.error, deliveryCharge.code || 'INVALID_DELIVERY');
+  }
+  if (deliveryCharge.fee > 0) {
+    lineItems.push({
+      price_data: {
+        currency: 'usd',
+        product_data: { name: 'Delivery' },
+        unit_amount: Math.round(deliveryCharge.fee * 100),
+      },
+      quantity: 1,
+    });
+  }
+
   // Create session on Stripe
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
@@ -332,7 +372,11 @@ async function handleStripeCheckout(req, res, site, stripeAccountId, items, succ
     cancel_url: cancelUrl,
     metadata: {
       siteId: site.id,
-      userId: site.user_id
+      userId: site.user_id,
+      fulfillment_type: deliveryCharge.fulfillmentType,
+      ...(deliveryCharge.shippingAddress
+        ? { shipping_address: JSON.stringify(deliveryCharge.shippingAddress) }
+        : {}),
     }
   }, {
     stripeAccount: stripeAccountId

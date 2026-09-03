@@ -206,12 +206,31 @@ export function mergeSiteDataSettings(existingData, newData) {
     ? incoming._features
     : {};
 
+  const existingSettings = existing.settings && typeof existing.settings === 'object'
+    ? existing.settings
+    : {};
+  const incomingSettings = incoming.settings && typeof incoming.settings === 'object'
+    ? incoming.settings
+    : {};
+  const existingDelivery = existingSettings.delivery && typeof existingSettings.delivery === 'object'
+    ? existingSettings.delivery
+    : {};
+  const hasIncomingDelivery = Object.prototype.hasOwnProperty.call(incomingSettings, 'delivery');
+
   return {
     ...existing,
     ...incoming,
     settings: {
-      ...(existing.settings || {}),
-      ...(incoming.settings || {})
+      ...existingSettings,
+      ...incomingSettings,
+      delivery: hasIncomingDelivery
+        ? {
+            ...existingDelivery,
+            ...(incomingSettings.delivery && typeof incomingSettings.delivery === 'object'
+              ? incomingSettings.delivery
+              : {}),
+          }
+        : existingSettings.delivery,
     },
     _features: {
       ...existingFeatures,

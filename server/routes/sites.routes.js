@@ -24,6 +24,7 @@ import {
 import { sanitizeSiteDataForStorage } from '../utils/siteDataSanitizer.js';
 import { attachSpanishLocale } from '../services/siteTranslationService.js';
 import { applyPayOnSiteSetting, mergeSiteDataSettings } from '../utils/payOnSite.js';
+import { applyDeliverySetting, getPublicDeliveryConfig, shopHasDeliveryOrigin } from '../utils/delivery.js';
 import { toPublicSiteData } from '../../src/utils/liveSiteContact.js';
 import { prepareOwnerSiteData } from '../utils/prepareSiteLocation.js';
 import { resolvePlanLimits } from '../utils/resolveUserPlan.js';
@@ -283,12 +284,18 @@ router.get('/:siteId', asyncHandler(async (req, res) => {
 
 /**
  * PUT /api/sites/:siteId/payment-options
- * Enable or disable pay-on-site on this Neon site row.
+ * Enable/disable pay-on-site and/or product delivery on this Neon site row.
  */
 router.put('/:siteId/payment-options', requireAuth, asyncHandler(async (req, res) => {
   const { siteId } = req.params;
   const userId = req.user.id || req.user.userId;
-  const payOnSite = req.body?.payOnSite === true;
+  const body = req.body && typeof req.body === 'object' ? req.body : {};
+  const hasPayOnSite = Object.prototype.hasOwnProperty.call(body, 'payOnSite');
+  const hasDelivery = Object.prototype.hasOwnProperty.call(body, 'delivery');
+
+  if (!hasPayOnSite && !hasDelivery) {
+    return sendBadRequest(res, 'Provide payOnSite and/or delivery', 'MISSING_PAYMENT_OPTIONS');
+  }
 
   const user = await prisma.users.findUnique({
     where: { id: userId },
@@ -297,7 +304,7 @@ router.put('/:siteId/payment-options', requireAuth, asyncHandler(async (req, res
   const limits = resolvePlanLimits(user);
 
   if (!limits.orderManagement) {
-    return sendForbidden(res, 'Pay on site requires a Growth plan', 'GROWTH_PLAN_REQUIRED');
+    return sendForbidden(res, 'Ordering options require a Growth plan', 'GROWTH_PLAN_REQUIRED');
   }
 
   const ownership = await verifySiteOwnership(siteId, userId, req.user.role);
@@ -308,8 +315,18 @@ router.put('/:siteId/payment-options', requireAuth, asyncHandler(async (req, res
     return sendForbidden(res, ownership.error, 'ACCESS_DENIED');
   }
 
-  const existingData = parseSiteData(ownership.site);
-  const mergedData = applyPayOnSiteSetting(existingData, payOnSite);
+  let mergedData = parseSiteData(ownership.site);
+  if (hasPayOnSite) {
+    mergedData = applyPayOnSiteSetting(mergedData, body.payOnSite === true);
+  }
+  if (hasDelivery) {
+    const deliveryResult = applyDeliverySetting(mergedData, body.delivery);
+    if (deliveryResult.error) {
+      return sendBadRequest(res, deliveryResult.error, deliveryResult.code || 'INVALID_DELIVERY');
+    }
+    mergedData = deliveryResult.siteData;
+  }
+
   const sanitizedData = sanitizeSiteDataForStorage(mergedData);
 
   await prisma.sites.update({
@@ -317,10 +334,13 @@ router.put('/:siteId/payment-options', requireAuth, asyncHandler(async (req, res
     data: { site_data: sanitizedData }
   });
 
+  const delivery = getPublicDeliveryConfig(sanitizedData);
   return sendSuccess(res, {
     siteId: ownership.site.id,
-    payOnSite
-  }, payOnSite ? 'Pay on site enabled' : 'Pay on site disabled');
+    payOnSite: sanitizedData.settings?.payOnSite === true,
+    delivery,
+    deliveryOriginReady: shopHasDeliveryOrigin(sanitizedData),
+  }, 'Payment options updated');
 }));
 
 /**
@@ -555,6 +575,7 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
 
   const formattedSites = sites.map(site => {
     const siteData = parseSiteData(site);
+    const delivery = getPublicDeliveryConfig(siteData);
     return {
       id: site.id,
       subdomain: site.subdomain,
@@ -565,6 +586,8 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
       businessName: siteData.brand?.name || siteData.businessName || null,
       payOnSite: siteData.settings?.payOnSite === true,
       allowCheckout: siteData.settings?.allowCheckout === true,
+      delivery,
+      deliveryOriginReady: shopHasDeliveryOrigin(siteData),
       createdAt: site.created_at,
       publishedAt: site.published_at,
       expiresAt: site.expires_at
