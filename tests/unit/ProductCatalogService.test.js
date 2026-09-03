@@ -100,6 +100,29 @@ describe('ProductCatalogService site catalog stock', () => {
     }));
   });
 
+  it('matches pay-on-site synthetic ids when site_data products have no id', async () => {
+    tx.$queryRaw.mockResolvedValue([{
+      id: 'plants-and-threads',
+      site_data: {
+        products: [{ name: 'Hanging basket', price: '$25' }]
+      }
+    }]);
+
+    await service.decrementSiteCatalog(
+      'plants-and-threads',
+      [{ productId: 'hanging-basket-0', quantity: 1 }],
+      tx
+    );
+
+    expect(tx.sites.update).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        site_data: {
+          products: [{ name: 'Hanging basket', price: '$25' }]
+        }
+      })
+    }));
+  });
+
   it('uses prisma.$transaction when tx is not provided', async () => {
     prisma.$transaction.mockImplementation(async (callback) => callback(tx));
     tx.$queryRaw.mockResolvedValue([{

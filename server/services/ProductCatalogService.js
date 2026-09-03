@@ -6,6 +6,7 @@
 
 import { prisma } from '../../database/db.js';
 import { parseSiteData } from '../utils/parseSiteData.js';
+import { catalogProductKey } from '../utils/payOnSite.js';
 
 function getCatalogProducts(siteData) {
   return siteData?.products || siteData?.data?.products || [];
@@ -50,6 +51,15 @@ function writeCatalogProducts(siteData, products) {
   return { ...siteData, products };
 }
 
+function findCatalogProductIndex(products, productId) {
+  const direct = products.findIndex(
+    (product) => product?.id != null && String(product.id) === productId
+  );
+  if (direct !== -1) return direct;
+  // Pay-on-site carts use catalogProductKey when site_data products have no id
+  return products.findIndex((product, index) => catalogProductKey(product, index) === productId);
+}
+
 function applySiteCatalogStockChange(siteData, items, direction) {
   const normalizedItems = normalizeSiteCatalogItems(items);
   if (normalizedItems.length === 0) {
@@ -62,7 +72,7 @@ function applySiteCatalogStockChange(siteData, items, direction) {
   }
 
   for (const { productId, quantity } of normalizedItems) {
-    const index = products.findIndex((product) => String(product.id) === productId);
+    const index = findCatalogProductIndex(products, productId);
     if (index === -1) {
       throw new Error(`Product not found: ${productId}`);
     }
@@ -261,11 +271,11 @@ export class ProductCatalogService {
       const siteData = parseSiteData(row.site_data);
       const updatedSiteData = applySiteCatalogStockChange(siteData, items, 'decrement');
 
+      // sites has no updated_at column in Prisma schema
       await transaction.sites.update({
         where: { id: siteId },
         data: {
-          site_data: updatedSiteData,
-          updated_at: new Date()
+          site_data: updatedSiteData
         }
       });
 
@@ -302,8 +312,7 @@ export class ProductCatalogService {
       await transaction.sites.update({
         where: { id: siteId },
         data: {
-          site_data: updatedSiteData,
-          updated_at: new Date()
+          site_data: updatedSiteData
         }
       });
 

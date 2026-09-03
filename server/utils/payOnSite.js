@@ -57,6 +57,9 @@ function productKey(item, index) {
   return `${slug}-${index}`;
 }
 
+/** Stable catalog id for a site_data product (explicit id or name+index). */
+export { productKey as catalogProductKey };
+
 function normalizeName(name) {
   return String(name || '').trim().toLowerCase();
 }
