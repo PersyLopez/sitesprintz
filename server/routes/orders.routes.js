@@ -139,7 +139,7 @@ async function findPublicSite(siteId) {
     plan: true,
     site_data: true,
     users: {
-      select: { plan: true, subscription_plan: true }
+      select: { plan: true, subscription_plan: true, email: true }
     }
   };
 
@@ -503,6 +503,12 @@ router.post('/:siteId/pay-on-site', checkoutLimiter, orderLimiter, asyncHandler(
 
   const total = Number.parseFloat(String(order.total_amount));
   const amountCents = Math.round((Number.isFinite(total) ? total : built.total) * 100);
+  const businessName = siteData.brand?.name || siteData.businessName || site.subdomain || 'Your shop';
+  const orderEmailItems = built.items.map((item) => ({
+    name: item.name,
+    quantity: item.quantity,
+    price: Math.round(Number(item.price) * Number(item.quantity) * 100),
+  }));
 
   try {
     await emailService.sendEmail({
@@ -511,16 +517,38 @@ router.post('/:siteId/pay-on-site', checkoutLimiter, orderLimiter, asyncHandler(
       data: {
         orderId: order.id,
         amount: amountCents,
-        items: built.items.map((item) => ({
-          name: item.name,
-          price: Math.round(item.price * item.quantity * 100),
-        })),
+        items: orderEmailItems,
+        customerName: order.customer_name,
+        businessName,
         businessAddress: resolvePrivateAddressForBuyer(siteData),
         payOnSite: true,
       },
     });
   } catch {
     // Email failure must not roll back a placed order.
+  }
+
+  const ownerEmail = site.users?.email;
+  if (ownerEmail && ownerEmail.toLowerCase() !== String(order.customer_email).toLowerCase()) {
+    try {
+      await emailService.sendEmail({
+        to: ownerEmail,
+        template: 'newOrder',
+        data: {
+          orderId: order.id,
+          amount: amountCents,
+          items: orderEmailItems,
+          customerName: order.customer_name,
+          customerEmail: order.customer_email,
+          customerPhone: order.customer_phone || undefined,
+          notes: notes || undefined,
+          businessName,
+          payOnSite: true,
+        },
+      });
+    } catch {
+      // Owner notify failure must not roll back a placed order.
+    }
   }
 
   return sendCreated(res, {

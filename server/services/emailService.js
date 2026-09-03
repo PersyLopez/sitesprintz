@@ -162,31 +162,71 @@ export class EmailService {
   }
 
   /**
+   * Short display reference for order emails (full UUID stays in data.orderId).
+   */
+  formatOrderRef(orderId) {
+    const raw = String(orderId || '').trim();
+    if (!raw) return 'N/A';
+    return raw.length > 8 ? raw.slice(0, 8).toUpperCase() : raw.toUpperCase();
+  }
+
+  formatMoneyFromCents(cents) {
+    const n = Number(cents);
+    if (!Number.isFinite(n)) return '$0.00';
+    return `$${(n / 100).toFixed(2)}`;
+  }
+
+  renderOrderItemsRows(items) {
+    if (!Array.isArray(items) || items.length === 0) return '';
+    return items.map((item) => {
+      const name = this.escapeHtml(item.name || 'Item');
+      const qty = Number(item.quantity);
+      const quantity = Number.isFinite(qty) && qty > 0 ? qty : 1;
+      const lineCents = Number.isFinite(Number(item.price))
+        ? Number(item.price)
+        : Math.round(Number(item.unitPrice || 0) * quantity * 100);
+      const qtyLabel = quantity > 1 ? `${quantity} × ` : '';
+      return `
+        <tr style="border-bottom: 1px solid #e8e6e1;">
+          <td style="padding: 10px 0; text-align: left; color: #3f3f46;">${qtyLabel}${name}</td>
+          <td style="padding: 10px 0; text-align: right; color: #3f3f46; white-space: nowrap;">${this.formatMoneyFromCents(lineCents)}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  /**
    * Render order received email template
    */
   renderOrderReceivedTemplate(data) {
+    const businessName = this.escapeHtml(data.businessName || 'your order');
+    const customerName = this.escapeHtml(data.customerName || 'there');
+    const orderRefRaw = data.orderNumber || this.formatOrderRef(data.orderId);
+    const orderRef = this.escapeHtml(orderRefRaw);
+    const total = this.escapeHtml(data.total || '$0.00');
+
     return {
-      subject: `Order Received - ${data.businessName || 'Your Order'}`,
+      subject: `Order received — ${data.businessName || 'Your order'} (${orderRefRaw})`,
       html: `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #059669; margin: 0; font-size: 1.8rem;">Order Received! ✅</h1>
-          </div>
-          
-          <div style="background: #f0fdf4; border: 2px solid #059669; border-radius: 12px; padding: 30px; margin-bottom: 20px;">
-            <p style="font-size: 1.1rem; color: #1e293b; line-height: 1.6; margin: 0 0 15px 0;">
-              Thank you for your order, ${data.customerName || 'valued customer'}!
-            </p>
-            <p style="color: #64748b; margin: 0 0 20px 0;">
-              <strong style="color: #1e293b;">Order Number:</strong> ${data.orderNumber || 'N/A'}
-            </p>
-            <p style="color: #64748b; margin: 0 0 20px 0;">
-              <strong style="color: #1e293b;">Total:</strong> ${data.total || '$0.00'}
-            </p>
-            <p style="color: #64748b; margin: 0;">
-              ${data.businessName || 'We'} will start preparing your order right away!
-            </p>
-          </div>
+        <div style="font-family: Georgia, 'Times New Roman', serif; max-width: 560px; margin: 0 auto; padding: 28px 20px; color: #1b1b1f;">
+          <p style="margin: 0 0 8px 0; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #6b6b73;">${businessName}</p>
+          <h1 style="margin: 0 0 24px 0; font-size: 1.5rem; font-weight: 600; color: #1b1b1f;">Order received</h1>
+          <p style="margin: 0 0 16px 0; line-height: 1.6; color: #3f3f46;">Hi ${customerName},</p>
+          <p style="margin: 0 0 20px 0; line-height: 1.6; color: #3f3f46;">
+            Thank you — we have your order and will begin preparing it shortly.
+          </p>
+          <table style="width: 100%; border-collapse: collapse; margin: 0 0 20px 0;">
+            <tr>
+              <td style="padding: 8px 0; color: #6b6b73;">Order</td>
+              <td style="padding: 8px 0; text-align: right; color: #1b1b1f; font-family: ui-monospace, Menlo, monospace;">${orderRef}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #6b6b73;">Total</td>
+              <td style="padding: 8px 0; text-align: right; color: #1b1b1f;">${total}</td>
+            </tr>
+          </table>
+          <p style="margin: 0; line-height: 1.6; color: #6b6b73; font-size: 0.95rem;">
+            Reply to this email if you need to change anything.
+          </p>
         </div>
       `,
       provider: 'resend'
@@ -194,58 +234,53 @@ export class EmailService {
   }
 
   /**
-   * Render order confirmation email template
+   * Render order confirmation email template (customer)
    */
   renderOrderConfirmationTemplate(data) {
-    const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
-    const itemsHtml = Array.isArray(data.items) 
-      ? data.items.map(item => `
-        <tr style="border-bottom: 1px solid #e2e8f0;">
-          <td style="padding: 12px; text-align: left; color: #64748b;">${item.name || 'Item'}</td>
-          <td style="padding: 12px; text-align: right; color: #64748b;">$${(item.price / 100).toFixed(2)}</td>
-        </tr>
-      `).join('')
-      : '';
+    const businessName = this.escapeHtml(data.businessName || 'Your order');
+    const customerName = this.escapeHtml(data.customerName || 'there');
+    const orderRefRaw = this.formatOrderRef(data.orderId);
+    const orderRef = this.escapeHtml(orderRefRaw);
+    const itemsHtml = this.renderOrderItemsRows(data.items);
+    const address = data.businessAddress ? this.escapeHtml(data.businessAddress) : '';
+    const total = this.formatMoneyFromCents(data.amount);
 
     return {
-      subject: `Order Confirmation - Order #${data.orderId || 'N/A'}`,
+      subject: `Order confirmation — ${data.businessName || 'Your order'} (${orderRefRaw})`,
       html: `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #059669; margin: 0; font-size: 1.8rem;">Order Confirmed! ✅</h1>
-          </div>
-          
-          <div style="background: #f0fdf4; border: 2px solid #059669; border-radius: 12px; padding: 30px; margin-bottom: 20px;">
-            <p style="font-size: 1.1rem; color: #1e293b; line-height: 1.6; margin: 0 0 15px 0;">
-              Thank you for your purchase!
-            </p>
-            <p style="color: #64748b; margin: 0 0 20px 0;">
-              <strong style="color: #1e293b;">Order Number:</strong> ${data.orderId || 'N/A'}
-            </p>
-            
-            ${itemsHtml ? `
-            <div style="margin: 20px 0;">
-              <strong style="color: #1e293b;">Order Items:</strong>
-              <table style="width: 100%; margin-top: 10px; border-collapse: collapse;">
-                ${itemsHtml}
-              </table>
-            </div>
-            ` : ''}
-            
-            <div style="text-align: right; padding-top: 20px; border-top: 2px solid #dcfce7;">
-              <p style="color: #64748b; margin: 10px 0 0 0;">
-                <strong style="color: #1e293b;">Total:</strong> $${(data.amount / 100).toFixed(2)}
-              </p>
-            </div>
-          </div>
-          
-          <div style="background: #f8fafc; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-            ${data.businessAddress ? `<p style="color: #1e293b; margin: 0 0 12px 0;"><strong>Pickup / location:</strong> ${String(data.businessAddress).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
-            ${data.payOnSite ? `<p style="color: #1e293b; margin: 0 0 12px 0;"><strong>Please bring cash.</strong> We do not take cards.</p>` : ''}
-            <p style="color: #64748b; margin: 0;">
+        <div style="font-family: Georgia, 'Times New Roman', serif; max-width: 560px; margin: 0 auto; padding: 28px 20px; color: #1b1b1f;">
+          <p style="margin: 0 0 8px 0; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #6b6b73;">${businessName}</p>
+          <h1 style="margin: 0 0 24px 0; font-size: 1.5rem; font-weight: 600; color: #1b1b1f;">Order confirmation</h1>
+          <p style="margin: 0 0 16px 0; line-height: 1.6; color: #3f3f46;">Hi ${customerName},</p>
+          <p style="margin: 0 0 20px 0; line-height: 1.6; color: #3f3f46;">
+            ${data.payOnSite
+              ? 'Your order is confirmed. Please pay when you pick up or visit.'
+              : 'Thank you for your purchase. Here is a summary of your order.'}
+          </p>
+          <table style="width: 100%; border-collapse: collapse; margin: 0 0 8px 0;">
+            <tr>
+              <td style="padding: 8px 0; color: #6b6b73;">Order</td>
+              <td style="padding: 8px 0; text-align: right; color: #1b1b1f; font-family: ui-monospace, Menlo, monospace;">${orderRef}</td>
+            </tr>
+          </table>
+          ${itemsHtml ? `
+          <table style="width: 100%; border-collapse: collapse; margin: 12px 0 16px 0;">
+            ${itemsHtml}
+            <tr>
+              <td style="padding: 14px 0 0 0; color: #1b1b1f; font-weight: 600;">Total</td>
+              <td style="padding: 14px 0 0 0; text-align: right; color: #1b1b1f; font-weight: 600;">${total}</td>
+            </tr>
+          </table>
+          ` : `
+          <p style="margin: 0 0 16px 0; color: #3f3f46;"><strong>Total:</strong> ${total}</p>
+          `}
+          <div style="margin: 20px 0; padding: 16px 0; border-top: 1px solid #e8e6e1; border-bottom: 1px solid #e8e6e1;">
+            ${address ? `<p style="margin: 0 0 10px 0; line-height: 1.5; color: #3f3f46;"><strong>Pickup / location:</strong> ${address}</p>` : ''}
+            ${data.payOnSite ? `<p style="margin: 0 0 10px 0; line-height: 1.5; color: #3f3f46;"><strong>Payment:</strong> Please bring cash. We do not take cards.</p>` : ''}
+            <p style="margin: 0; line-height: 1.5; color: #6b6b73; font-size: 0.95rem;">
               ${data.payOnSite
-                ? "We'll have your order ready for pickup. If you have any questions, please reach out."
-                : "We'll get your order ready and send you a shipping update soon. If you have any questions, please don't hesitate to reach out!"}
+                ? 'We will have your order ready for pickup. Reply if you have any questions.'
+                : 'We will send a shipping update when your order is on the way. Reply if you have any questions.'}
             </p>
           </div>
         </div>
@@ -258,35 +293,65 @@ export class EmailService {
    * Render new order notification email template (for site owner)
    */
   renderNewOrderTemplate(data) {
-    const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
+    const siteUrl = process.env.SITE_URL || process.env.FRONTEND_URL || 'http://localhost:3000';
+    const businessName = this.escapeHtml(data.businessName || 'Your shop');
+    const orderRefRaw = this.formatOrderRef(data.orderId);
+    const orderRef = this.escapeHtml(orderRefRaw);
+    const customerName = this.escapeHtml(data.customerName || 'Customer');
+    const customerEmail = this.escapeHtml(data.customerEmail || '—');
+    const customerPhone = data.customerPhone ? this.escapeHtml(data.customerPhone) : '';
+    const notes = data.notes ? this.escapeHtml(data.notes) : '';
+    const itemsHtml = this.renderOrderItemsRows(data.items);
+    const total = this.formatMoneyFromCents(data.amount);
+    const ordersUrl = `${siteUrl}/dashboard/orders`;
+
     return {
-      subject: `New Order Received - Order #${data.orderId || 'N/A'}`,
+      subject: `New order — ${data.businessName || 'Your shop'} (${orderRefRaw})`,
       html: `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #2563eb; margin: 0; font-size: 1.8rem;">New Order! 🎉</h1>
-          </div>
-          
-          <div style="background: #eff6ff; border: 2px solid #2563eb; border-radius: 12px; padding: 30px; margin-bottom: 20px;">
-            <p style="font-size: 1.1rem; color: #1e293b; line-height: 1.6; margin: 0 0 15px 0;">
-              You have a new order!
-            </p>
-            <p style="color: #64748b; margin: 0 0 15px 0;">
-              <strong style="color: #1e293b;">Order Number:</strong> ${data.orderId || 'N/A'}
-            </p>
-            <p style="color: #64748b; margin: 0 0 15px 0;">
-              <strong style="color: #1e293b;">Customer Email:</strong> ${data.customerEmail || 'N/A'}
-            </p>
-            <p style="color: #64748b; margin: 0 0 20px 0;">
-              <strong style="color: #1e293b;">Amount:</strong> $${(data.amount / 100).toFixed(2)}
-            </p>
-            
-            <div style="text-align: center; margin: 20px 0;">
-              <a href="${siteUrl}/admin/orders" style="display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
-                View Order Details
-              </a>
-            </div>
-          </div>
+        <div style="font-family: Georgia, 'Times New Roman', serif; max-width: 560px; margin: 0 auto; padding: 28px 20px; color: #1b1b1f;">
+          <p style="margin: 0 0 8px 0; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #6b6b73;">${businessName}</p>
+          <h1 style="margin: 0 0 24px 0; font-size: 1.5rem; font-weight: 600; color: #1b1b1f;">New order</h1>
+          <p style="margin: 0 0 20px 0; line-height: 1.6; color: #3f3f46;">
+            A customer placed an order${data.payOnSite ? ' (pay on site)' : ''}.
+          </p>
+          <table style="width: 100%; border-collapse: collapse; margin: 0 0 12px 0;">
+            <tr>
+              <td style="padding: 8px 0; color: #6b6b73;">Order</td>
+              <td style="padding: 8px 0; text-align: right; color: #1b1b1f; font-family: ui-monospace, Menlo, monospace;">${orderRef}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #6b6b73;">Customer</td>
+              <td style="padding: 8px 0; text-align: right; color: #1b1b1f;">${customerName}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #6b6b73;">Email</td>
+              <td style="padding: 8px 0; text-align: right; color: #1b1b1f;"><a href="mailto:${customerEmail}" style="color: #1b1b1f;">${customerEmail}</a></td>
+            </tr>
+            ${customerPhone ? `
+            <tr>
+              <td style="padding: 8px 0; color: #6b6b73;">Phone</td>
+              <td style="padding: 8px 0; text-align: right; color: #1b1b1f;">${customerPhone}</td>
+            </tr>
+            ` : ''}
+          </table>
+          ${itemsHtml ? `
+          <table style="width: 100%; border-collapse: collapse; margin: 8px 0 16px 0;">
+            ${itemsHtml}
+            <tr>
+              <td style="padding: 14px 0 0 0; color: #1b1b1f; font-weight: 600;">Total</td>
+              <td style="padding: 14px 0 0 0; text-align: right; color: #1b1b1f; font-weight: 600;">${total}</td>
+            </tr>
+          </table>
+          ` : `
+          <p style="margin: 0 0 16px 0; color: #3f3f46;"><strong>Total:</strong> ${total}</p>
+          `}
+          ${notes ? `<p style="margin: 0 0 16px 0; line-height: 1.5; color: #3f3f46;"><strong>Notes:</strong> ${notes}</p>` : ''}
+          ${data.payOnSite ? `<p style="margin: 0 0 20px 0; line-height: 1.5; color: #6b6b73;">Payment is due when they pick up or visit.</p>` : ''}
+          <p style="margin: 24px 0 0 0;">
+            <a href="${ordersUrl}" style="display: inline-block; padding: 12px 22px; background: #1b1b1f; color: #f6f4ef; text-decoration: none; border-radius: 4px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; font-weight: 600;">
+              View orders
+            </a>
+          </p>
         </div>
       `,
       provider: 'resend'

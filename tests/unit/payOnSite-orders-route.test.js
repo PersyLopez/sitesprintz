@@ -68,7 +68,7 @@ const growthSite = {
     settings: { payOnSite: true, allowCheckout: true },
     products: [{ id: 'soup', name: 'Soup', price: 8 }]
   },
-  users: { plan: 'growth', subscription_plan: 'growth' }
+  users: { plan: 'growth', subscription_plan: 'growth', email: 'owner@cafe.test' }
 };
 
 function createApp() {
@@ -142,6 +142,16 @@ describe('POST /api/orders/:siteId/pay-on-site', () => {
       template: 'orderConfirmation',
       data: expect.objectContaining({ payOnSite: true, amount: 1600 })
     }));
+    expect(emailService.sendEmail).toHaveBeenCalledWith(expect.objectContaining({
+      to: 'owner@cafe.test',
+      template: 'newOrder',
+      data: expect.objectContaining({
+        payOnSite: true,
+        amount: 1600,
+        customerEmail: 'alex@example.com',
+      })
+    }));
+    expect(emailService.sendEmail).toHaveBeenCalledTimes(2);
   });
 
   it('rejects out-of-stock items before creating an order', async () => {

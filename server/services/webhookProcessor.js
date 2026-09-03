@@ -871,7 +871,10 @@ export class WebhookProcessor {
           orderId: orderData.orderId,
           amount: orderData.amount,
           items: orderData.items,
+          customerName: orderData.customerName,
+          businessName: orderData.businessName,
           businessAddress,
+          payOnSite: orderData.payOnSite === true,
         }
       });
     } catch (error) {
@@ -897,6 +900,14 @@ export class WebhookProcessor {
       }
 
       const ownerEmail = site.users.email;
+      let businessName = orderData.businessName;
+      if (!businessName) {
+        try {
+          businessName = parseSiteData(site.site_data)?.brand?.name;
+        } catch {
+          businessName = undefined;
+        }
+      }
 
       await this.emailService.sendEmail({
         to: ownerEmail,
@@ -904,7 +915,13 @@ export class WebhookProcessor {
         data: {
           orderId: orderData.orderId,
           customerEmail: orderData.customerEmail,
-          amount: orderData.amount
+          customerName: orderData.customerName,
+          customerPhone: orderData.customerPhone,
+          amount: orderData.amount,
+          items: orderData.items,
+          businessName,
+          payOnSite: orderData.payOnSite === true,
+          notes: orderData.notes,
         }
       });
     } catch (error) {

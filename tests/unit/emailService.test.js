@@ -194,7 +194,7 @@ describe('EmailService', () => {
       });
 
       const emailCall = mockResend.emails.send.mock.calls[0][0];
-      expect(emailCall.subject).toContain('Order Received');
+      expect(emailCall.subject).toContain('Order received');
       expect(emailCall.html).toContain('Test Restaurant');
       expect(emailCall.html).toContain('ORD-12345');
       expect(emailCall.html).toContain('$45.99');
@@ -213,7 +213,7 @@ describe('EmailService', () => {
       });
 
       const emailCall = mockResend.emails.send.mock.calls[0][0];
-      expect(emailCall.subject).toContain('Order Confirmation');
+      expect(emailCall.subject).toContain('Order confirmation');
       expect(emailCall.html).toContain('99 Hidden Ln Unit 4B');
       expect(emailCall.html).not.toContain('Please bring cash');
     });
@@ -234,6 +234,30 @@ describe('EmailService', () => {
       expect(emailCall.html).toContain('Please bring cash');
       expect(emailCall.html).toContain('We do not take cards');
       expect(emailCall.html).not.toContain('shipping update');
+    });
+
+    it('renders a professional owner new-order notice with dashboard link', async () => {
+      await emailService.sendEmail({
+        to: 'owner@business.com',
+        template: 'newOrder',
+        data: {
+          orderId: 'ab079fc0-c39d-41e6-add8-f867e4e41b1d',
+          amount: 2500,
+          customerName: 'Alex Rivera',
+          customerEmail: 'alex@example.com',
+          businessName: 'Plants & Threads',
+          items: [{ name: 'Hanging basket', quantity: 1, price: 2500 }],
+          payOnSite: true,
+        }
+      });
+
+      const emailCall = mockResend.emails.send.mock.calls[0][0];
+      expect(emailCall.subject).toBe('New order — Plants & Threads (AB079FC0)');
+      expect(emailCall.html).toContain('Alex Rivera');
+      expect(emailCall.html).toContain('Hanging basket');
+      expect(emailCall.html).toContain('/dashboard/orders');
+      expect(emailCall.html).not.toContain('🎉');
+      expect(emailCall.html).not.toContain('/admin/orders');
     });
 
     it('should render contact form submission email', async () => {
