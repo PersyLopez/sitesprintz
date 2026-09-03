@@ -19,6 +19,7 @@ import { mountGoogleReviews } from '../utils/mountGoogleReviews';
 import { getSiteWorkspacePaths } from '../utils/siteWorkspace';
 import { isPayOnSiteEnabled } from '../utils/payOnSite';
 import { siteFeesEnabled, siteWantsNativeBooking, subdomainFromLivePath } from '../utils/visitorExperience';
+import { post } from '../utils/api';
 import { tLive } from '../i18n/liveChrome/index.js';
 import { useLocale } from '../i18n/LocaleContext.jsx';
 import '../styles/published-site-viewer.css';
@@ -243,15 +244,8 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
       status.setAttribute('data-state', '');
     }
     try {
-      const response = await fetch('/api/submissions/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(data.error || data.message || 'Failed to send message');
-      }
+      // Same api client as BookingWidget / PayOnSiteCheckout (credentials + CSRF when present)
+      const data = await post('/api/submissions/contact', body);
       form.reset();
       if (status) {
         status.textContent = data.message || 'Your message has been sent.';

@@ -1,0 +1,152 @@
+url: http://localhost:5173/view/plants-and-threads
+goal: Live Plants & Threads visitor can submit contact and sewing booking without CSRF 403
+steps:
+  - action: Live site loads
+    wait_for: { text: Plants & Threads, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Contact form is present
+    wait_for: { selector: '[data-testid="contact-form"]', timeout: 10000 }
+
+  - action: Fill and submit contact without relying on CSRF cookie dance
+    code: |
+      const stamp = Date.now();
+      await page.getByTestId('contact-form-name').fill('Mantest Probe');
+      await page.getByTestId('contact-form-email').fill('mantest-probe-' + stamp + '@example.com');
+      await page.getByTestId('contact-form-message').fill('Automated probe — ignore. CSRF visitor submit check.');
+      const [response] = await Promise.all([
+        page.waitForResponse((r) => r.url().includes('/api/submissions/contact') && r.request().method() === 'POST', { timeout: 15000 }),
+        page.getByTestId('contact-form-submit').click(),
+      ]);
+      if (response.status() === 403) {
+        const body = await response.text();
+        throw new Error('Contact blocked by CSRF: ' + body.slice(0, 200));
+      }
+      if (response.status() < 200 || response.status() >= 300) {
+        throw new Error('Contact submit failed HTTP ' + response.status());
+      }
+    settle_ms: 600
+
+  - action: Contact success status shown
+    wait_for: { selector: '[data-testid="contact-form-status"][data-state="success"]', timeout: 10000 }
+
+  - action: Sewing booking widget is mounted
+    wait_for: { selector: '[data-testid="live-booking-widget"]', timeout: 10000 }
+
+  - action: Pick sewing service
+    code: |
+      const pageBook = page.locator('#services [data-ss-book-service], [data-ss-book-service]');
+      const select = page.getByTestId('booking-service-select');
+      const card = page.locator('[data-testid^="service-card-"]');
+      if (await pageBook.count()) {
+        await pageBook.filter({ hasText: /Sew/i }).first().click({ timeout: 8000 }).catch(async () => {
+          await pageBook.first().click();
+        });
+      } else if (await select.count()) {
+        const options = await select.locator('option').allTextContents();
+        const sewing = options.find((o) => /Sew/i.test(o));
+        if (sewing) await select.selectOption({ label: sewing });
+        else if (options.length > 1) await select.selectOption({ index: 1 });
+        const next = page.getByTestId('next-button');
+        if (await next.count()) await next.first().click();
+      } else if (await card.count()) {
+        await card.first().click();
+        const next = page.getByTestId('next-button');
+        if (await next.count()) await next.first().click();
+      } else {
+        throw new Error('No bookable sewing control');
+      }
+    settle_ms: 800
+
+  - action: Skip optional staff step
+    code: |
+      const staffStep = page.getByTestId('staff-selection-step');
+      if (await staffStep.count()) {
+        const staffCards = page.locator('[data-testid^="staff-card-"]').filter({
+          hasNot: page.getByTestId('staff-card-no-preference'),
+        });
+        if (await staffCards.count()) {
+          await staffCards.first().click({ timeout: 3000 });
+        } else {
+          const noPref = page.getByTestId('staff-card-no-preference');
+          if (await noPref.count()) await noPref.click({ timeout: 3000 });
+        }
+        await page.getByTestId('next-button').first().click();
+      }
+    settle_ms: 800
+
+  - action: Calendar visible
+    wait_for: { selector: '[data-testid="calendar"]', timeout: 12000 }
+
+  - action: Pick weekday time slot
+    code: |
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      let picked = false;
+      for (let offset = 1; offset <= 21; offset += 1) {
+        const day = new Date(today);
+        day.setDate(today.getDate() + offset);
+        if (day.getDay() === 0 || day.getDay() === 6) continue;
+        const iso = day.getFullYear() + '-' + String(day.getMonth() + 1).padStart(2, '0') + '-' + String(day.getDate()).padStart(2, '0');
+        const btn = page.getByTestId('date-' + iso);
+        if ((await btn.count()) === 0) {
+          const nextMonth = page.getByTestId('next-month');
+          if (await nextMonth.count()) {
+            await nextMonth.click();
+            await page.waitForTimeout(300);
+          }
+        }
+        if ((await btn.count()) === 0 || !(await btn.isEnabled())) continue;
+        await btn.click();
+        const slots = page.locator('[data-testid^="time-slot-"]');
+        const empty = page.getByTestId('slots-empty');
+        await Promise.race([
+          slots.first().waitFor({ timeout: 10000 }).catch(() => {}),
+          empty.waitFor({ timeout: 10000 }).catch(() => {}),
+        ]);
+        if ((await slots.count()) > 0) {
+          await slots.first().click();
+          picked = true;
+          break;
+        }
+      }
+      if (!picked) throw new Error('No weekday sewing slot');
+    settle_ms: 400
+
+  - action: Continue to customer form
+    click: { testId: next-button }
+    settle_ms: 600
+
+  - action: Customer form visible
+    wait_for: { selector: '[data-testid="customer-form"]', timeout: 8000 }
+
+  - action: Fill customer and confirm booking
+    code: |
+      const stamp = Date.now();
+      const email = 'mantest-book-' + stamp + '@example.com';
+      await page.getByTestId('customer-name').fill('Mantest Booker');
+      await page.getByTestId('customer-email').fill(email);
+      const phone = page.getByTestId('customer-phone');
+      if (await phone.count()) await phone.fill('555-0100');
+      const [response] = await Promise.all([
+        page.waitForResponse((r) => r.url().includes('/appointments') && r.request().method() === 'POST', { timeout: 20000 }),
+        page.getByTestId('book-now-button').click(),
+      ]);
+      if (response.status() === 403) {
+        const body = await response.text();
+        throw new Error('Booking blocked by CSRF: ' + body.slice(0, 200));
+      }
+      if (response.status() < 200 || response.status() >= 300) {
+        throw new Error('Booking submit failed HTTP ' + response.status() + ' ' + (await response.text()).slice(0, 200));
+      }
+      const data = await response.json().catch(() => ({}));
+      const code = data.appointment?.confirmation_code;
+      if (code) {
+        await page.request.delete('http://localhost:3000/api/booking/appointments/' + code, {
+          data: { customer_email: email, reason: 'mantest cleanup' },
+        }).catch(() => {});
+      }
+    settle_ms: 800
+
+  - action: Confirmation shown
+    wait_for: { selector: '[data-testid="confirmation-page"], [data-testid="confirmation-code"]', timeout: 15000 }

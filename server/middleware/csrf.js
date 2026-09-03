@@ -115,13 +115,16 @@ export function csrfProtection(req, res, next) {
     return next();
   }
 
-  // Skip CSRF for public visitor checkout/cancel (email match is the proof on cancel)
+  // Skip CSRF for public visitor mutations (route handlers validate inputs;
+  // cancel requires matching customer_email; contact/booking create are anonymous)
   if (
     req.path === '/api/payments/checkout-sessions' ||
     req.path === '/api/stripe/connect/create-checkout' ||
     req.path === '/api/booking/checkout/create-session' ||
     req.path === '/api/booking/checkout/confirm' ||
+    req.path === '/api/submissions/contact' ||
     (typeof req.path === 'string' && /^\/api\/booking\/appointments\/[^/]+$/.test(req.path) && method === 'DELETE') ||
+    (typeof req.path === 'string' && /^\/api\/booking\/tenants\/[^/]+\/appointments$/.test(req.path) && method === 'POST') ||
     (typeof req.path === 'string' && req.path.endsWith('/pay-on-site'))
   ) {
     return next();
