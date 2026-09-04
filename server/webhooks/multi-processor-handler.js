@@ -50,9 +50,27 @@ export async function checkIdempotency(eventId, processor, prismaClient = prisma
     return existing !== null;
   } catch (error) {
     logger.error('Idempotency check failed', { eventId, processor, error: error.message });
-    // Fail-safe: If we can't check, assume not duplicate to avoid blocking valid events
-    return false;
+    // Fail closed: processor must retry when we cannot prove uniqueness
+    const unavailable = new Error('Idempotency check unavailable');
+    unavailable.code = 'IDEMPOTENCY_UNAVAILABLE';
+    unavailable.cause = error;
+    throw unavailable;
   }
+}
+
+/**
+ * Normalize webhook body to the UTF-8 string Square signed (raw Buffer from express.raw).
+ * @param {Buffer|string|object} payload
+ * @returns {string}
+ */
+export function normalizeWebhookPayloadString(payload) {
+  if (Buffer.isBuffer(payload)) {
+    return payload.toString('utf8');
+  }
+  if (typeof payload === 'string') {
+    return payload;
+  }
+  return JSON.stringify(payload);
 }
 
 /**
@@ -123,8 +141,17 @@ export async function handleStripeWebhook(request, options) {
     const event = typeof payload === 'string' ? JSON.parse(payload) : payload;
     const eventId = event.id;
     
-    // Check idempotency
-    const isDuplicate = await checkIdempotency(eventId, 'stripe', prismaClient);
+    // Check idempotency (fail closed → 503)
+    let isDuplicate;
+    try {
+      isDuplicate = await checkIdempotency(eventId, 'stripe', prismaClient);
+    } catch (idemError) {
+      log.error('Stripe idempotency unavailable', { eventId, error: idemError.message });
+      return {
+        status: 503,
+        error: 'Webhook temporarily unavailable'
+      };
+    }
     if (isDuplicate) {
       log.info('Duplicate Stripe webhook received', { eventId });
       return {
@@ -203,8 +230,8 @@ export async function handleSquareWebhook(request, options) {
       };
     }
     
-    // Verify HMAC signature
-    const payloadString = typeof payload === 'string' ? payload : JSON.stringify(payload);
+    // Verify HMAC against the exact raw body Square signed
+    const payloadString = normalizeWebhookPayloadString(payload);
     const isValid = processor.verifyWebhookSignature(payloadString, signature, webhookSecret);
     
     if (!isValid) {
@@ -216,7 +243,7 @@ export async function handleSquareWebhook(request, options) {
     }
     
     // Parse event
-    const event = typeof payload === 'string' ? JSON.parse(payload) : payload;
+    const event = JSON.parse(payloadString);
     const eventId = event.event_id;
     
     if (!eventId) {
@@ -226,8 +253,17 @@ export async function handleSquareWebhook(request, options) {
       };
     }
     
-    // Check idempotency
-    const isDuplicate = await checkIdempotency(eventId, 'square', prismaClient);
+    // Check idempotency (fail closed → 503)
+    let isDuplicate;
+    try {
+      isDuplicate = await checkIdempotency(eventId, 'square', prismaClient);
+    } catch (idemError) {
+      log.error('Square idempotency unavailable', { eventId, error: idemError.message });
+      return {
+        status: 503,
+        error: 'Webhook temporarily unavailable'
+      };
+    }
     if (isDuplicate) {
       log.info('Duplicate Square webhook received', { eventId });
       return {
@@ -236,7 +272,7 @@ export async function handleSquareWebhook(request, options) {
       };
     }
     
-    // Process webhook
+    // Process webhook (processor may fulfill visitor orders)
     try {
       const result = await processor.handleWebhook(event);
       
@@ -358,8 +394,17 @@ export async function handlePayPalWebhook(request, options) {
       };
     }
     
-    // Check idempotency
-    const isDuplicate = await checkIdempotency(eventId, 'paypal', prismaClient);
+    // Check idempotency (fail closed → 503)
+    let isDuplicate;
+    try {
+      isDuplicate = await checkIdempotency(eventId, 'paypal', prismaClient);
+    } catch (idemError) {
+      log.error('PayPal idempotency unavailable', { eventId, error: idemError.message });
+      return {
+        status: 503,
+        error: 'Webhook temporarily unavailable'
+      };
+    }
     if (isDuplicate) {
       log.info('Duplicate PayPal webhook received', { eventId });
       return {
@@ -420,7 +465,8 @@ export default {
   handleSquareWebhook,
   handlePayPalWebhook,
   checkIdempotency,
-  recordWebhookEvent
+  recordWebhookEvent,
+  normalizeWebhookPayloadString
 };
 
 

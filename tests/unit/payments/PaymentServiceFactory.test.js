@@ -100,6 +100,10 @@ describe('PaymentServiceFactory', () => {
 
       expect(processor).toBeDefined();
       expect(processor.getProcessorName()).toBe('paypal');
+      expect(processor.clientId).toBe('client_id');
+      expect(processor.clientSecret).toBe('client_secret');
+      expect(mockDecrypt).toHaveBeenCalledWith('encrypted_client_id');
+      expect(mockDecrypt).toHaveBeenCalledWith('encrypted_client_secret');
     });
 
     it('should default to Stripe if no processor configured', async () => {

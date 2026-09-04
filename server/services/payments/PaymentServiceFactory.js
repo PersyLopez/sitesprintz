@@ -14,7 +14,7 @@ import { prisma } from '../../../database/db.js';
 import { decrypt } from '../../utils/encryption.js';
 import { StripeProcessor } from './StripeProcessor.js';
 import { SquareProcessor } from './SquareProcessor.js';
-// import { PayPalProcessor } from './PayPalProcessor.js'; // P2
+import { PayPalProcessor } from './PayPalProcessor.js';
 
 const SUPPORTED_PROCESSORS = ['stripe', 'square', 'paypal'];
 
@@ -131,27 +131,7 @@ export class PaymentServiceFactory {
       ? decrypt(credentials.refresh_token_encrypted)
       : null;
 
-    // Return mock processor until PayPalProcessor is implemented (Track A)
-    return {
-      getProcessorName: () => 'paypal',
-      clientId,
-      clientSecret,
-      async createCheckout(params) {
-        throw new Error('PayPalProcessor not yet implemented');
-      },
-      async getTransactionStatus(transactionId) {
-        throw new Error('PayPalProcessor not yet implemented');
-      },
-      async processRefund(transactionId, amountCents) {
-        throw new Error('PayPalProcessor not yet implemented');
-      },
-      verifyWebhookSignature(payload, signature, secret) {
-        return false;
-      },
-      async handleWebhook(event) {
-        return { action: 'unhandled' };
-      }
-    };
+    return new PayPalProcessor(clientId, clientSecret);
   }
 
   /**

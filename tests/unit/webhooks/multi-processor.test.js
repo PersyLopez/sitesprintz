@@ -21,6 +21,7 @@ import {
   checkIdempotency,
   recordWebhookEvent
 } from '../../../server/webhooks/multi-processor-handler.js';
+import { WebhookProcessor } from '../../../server/services/webhookProcessor.js';
 
 describe('Multi-Processor Webhook Handler', () => {
   let mockPrisma;
@@ -274,6 +275,123 @@ describe('Multi-Processor Webhook Handler', () => {
       expect(result.status).toBe(400);
       expect(result.error).toMatch(/signature.*required|missing/i);
     });
+
+    it('should return 200 duplicate without reprocessing', async () => {
+      const payload = JSON.stringify({
+        type: 'payment.updated',
+        event_id: 'sq_evt_dup',
+        data: { object: { payment: { id: 'pay_dup', status: 'COMPLETED' } } }
+      });
+
+      mockProcessors.square.verifyWebhookSignature.mockReturnValue(true);
+      mockPrisma.webhook_events.findUnique.mockResolvedValue({
+        id: 'wh_existing',
+        event_id: 'sq_evt_dup',
+        processor: 'square'
+      });
+
+      const result = await handleSquareWebhook({
+        body: payload,
+        headers: { 'x-square-hmacsha256-signature': 'sig' }
+      }, {
+        processor: mockProcessors.square,
+        webhookSecret: 'secret',
+        prisma: mockPrisma
+      });
+
+      expect(result.status).toBe(200);
+      expect(result.action).toBe('duplicate');
+      expect(mockProcessors.square.handleWebhook).not.toHaveBeenCalled();
+    });
+
+    it('should return 503 when idempotency check fails closed', async () => {
+      const payload = JSON.stringify({
+        type: 'payment.updated',
+        event_id: 'sq_evt_db_down',
+        data: { object: { payment: { id: 'pay_1', status: 'COMPLETED' } } }
+      });
+
+      mockProcessors.square.verifyWebhookSignature.mockReturnValue(true);
+      mockPrisma.webhook_events.findUnique.mockRejectedValue(new Error('db down'));
+
+      const result = await handleSquareWebhook({
+        body: payload,
+        headers: { 'x-square-hmacsha256-signature': 'sig' }
+      }, {
+        processor: mockProcessors.square,
+        webhookSecret: 'secret',
+        prisma: mockPrisma
+      });
+
+      expect(result.status).toBe(503);
+      expect(result.error).toMatch(/unavailable/i);
+      expect(mockProcessors.square.handleWebhook).not.toHaveBeenCalled();
+    });
+
+    it('should fulfill visitor order on payment.updated COMPLETED (happy path)', async () => {
+      const orderItems = [{ name: 'Cut', price: 25, quantity: 1 }];
+      const payload = JSON.stringify({
+        type: 'payment.updated',
+        event_id: 'sq_evt_ok',
+        data: {
+          object: {
+            payment: {
+              id: 'pay_ok',
+              status: 'COMPLETED',
+              amount_money: { amount: 2500, currency: 'USD' },
+              buyer_email_address: 'buyer@example.com',
+              note: JSON.stringify({
+                site_id: 'site-square-1',
+                user_id: '',
+                order_items: orderItems,
+                type: 'order'
+              })
+            }
+          }
+        }
+      });
+
+      mockProcessors.square.verifyWebhookSignature.mockReturnValue(true);
+      mockPrisma.webhook_events.findUnique.mockResolvedValue(null);
+      mockPrisma.webhook_events.create.mockResolvedValue({ id: 'wh_ok' });
+
+      const mockDb = {
+        $transaction: vi.fn(async (fn) => fn({
+          orders: {
+            create: vi.fn().mockResolvedValue({ id: 'ord_square_1', order_items: [] })
+          },
+          products: {
+            findUnique: vi.fn().mockResolvedValue(null)
+          }
+        })),
+      };
+
+      const webhookProcessor = new WebhookProcessor(mockDb, {
+        sendEmail: vi.fn().mockResolvedValue(undefined),
+      }, null);
+      webhookProcessor.sendOrderConfirmation = vi.fn().mockResolvedValue(undefined);
+      webhookProcessor.sendOwnerNotification = vi.fn().mockResolvedValue(undefined);
+
+      const squareAdapter = {
+        verifyWebhookSignature: mockProcessors.square.verifyWebhookSignature,
+        handleWebhook: (event) => webhookProcessor.processSquarePaymentEvent(event),
+        getProcessorName: () => 'square'
+      };
+
+      const result = await handleSquareWebhook({
+        body: payload,
+        headers: { 'x-square-hmacsha256-signature': 'sig' }
+      }, {
+        processor: squareAdapter,
+        webhookSecret: 'secret',
+        prisma: mockPrisma
+      });
+
+      expect(result.status).toBe(200);
+      expect(result.action).toBe('payment_processed');
+      expect(result.data?.orderId || mockDb.$transaction).toBeTruthy();
+      expect(mockDb.$transaction).toHaveBeenCalled();
+    });
   });
 
   describe('PayPal Webhook Handler', () => {
@@ -405,6 +523,14 @@ describe('Multi-Processor Webhook Handler', () => {
       const isDuplicate = await checkIdempotency(eventId, processor, mockPrisma);
 
       expect(isDuplicate).toBe(false);
+    });
+
+    it('should fail closed when idempotency DB lookup errors', async () => {
+      mockPrisma.webhook_events.findUnique.mockRejectedValue(new Error('connection reset'));
+
+      await expect(
+        checkIdempotency('evt_fail', 'square', mockPrisma)
+      ).rejects.toMatchObject({ code: 'IDEMPOTENCY_UNAVAILABLE' });
     });
 
     it('should record webhook event after processing', async () => {

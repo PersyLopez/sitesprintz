@@ -345,39 +345,66 @@ export class WebhookProcessor {
    */
   async createOrder(session) {
     const items = session.metadata.order_items ? JSON.parse(session.metadata.order_items) : [];
-    
-    // Build normalized order items for creation
+    return this.fulfillVisitorOrder({
+      siteId: session.metadata.site_id,
+      userId: session.metadata.user_id,
+      customerEmail: session.customer_email || session.customer_details?.email,
+      customerName: session.customer_details?.name || 'Guest',
+      customerPhone: session.customer_details?.phone,
+      items,
+      amountCents: session.amount_total,
+      currency: session.currency || 'usd',
+      metadata: session.metadata,
+      stripeSessionId: session.id,
+      stripePaymentId: typeof session.payment_intent === 'string'
+        ? session.payment_intent
+        : session.payment_intent?.id || null,
+    });
+  }
+
+  /**
+   * Processor-agnostic visitor order fulfillment (shared Stripe / Square / PayPal path).
+   * Does not write Square/PayPal refs into stripe_session_id (unique Stripe column).
+   */
+  async fulfillVisitorOrder({
+    siteId,
+    userId,
+    customerEmail,
+    customerName = 'Guest',
+    customerPhone = null,
+    items = [],
+    amountCents = 0,
+    currency = 'usd',
+    metadata = {},
+    stripeSessionId = null,
+    stripePaymentId = null,
+  }) {
     const orderItemsData = items.map(item => ({
       product_id: item.productId ? parseInt(item.productId) : null,
       name: item.name,
       description: item.description,
       quantity: item.quantity || 1,
-      unit_price: item.price, // Normalize: price -> unit_price
+      unit_price: item.price,
       total_price: (item.price || 0) * (item.quantity || 1),
       modifiers: item.modifiers || null
     }));
 
-    // Use transaction for order + inventory
     const order = await this.db.$transaction(async (tx) => {
-      // Create order and line items
       const createdOrder = await tx.orders.create({
         data: {
-          site_id: session.metadata.site_id,
-          user_id: session.metadata.user_id,
-          customer_email: session.customer_email || session.customer_details?.email,
-          customer_name: session.customer_details?.name || 'Guest',
-          customer_phone: session.customer_details?.phone,
-          stripe_session_id: session.id,
-          stripe_payment_id: typeof session.payment_intent === 'string'
-            ? session.payment_intent
-            : session.payment_intent?.id || null,
-          total_amount: session.amount_total / 100, // Convert cents to dollars
-          currency: session.currency || 'usd',
+          site_id: siteId,
+          user_id: userId || null,
+          customer_email: customerEmail,
+          customer_name: customerName || 'Guest',
+          customer_phone: customerPhone,
+          stripe_session_id: stripeSessionId,
+          stripe_payment_id: stripePaymentId,
+          total_amount: amountCents / 100,
+          currency: currency || 'usd',
           payment_status: 'paid',
           status: 'pending',
-          items: JSON.stringify(items), // Denormalized for history
-          metadata: session.metadata,
-          // Create normalized line items
+          items: JSON.stringify(items),
+          metadata,
           order_items: {
             create: orderItemsData
           }
@@ -385,44 +412,38 @@ export class WebhookProcessor {
         include: { order_items: true }
       });
 
-      // Decrement site catalog stock (source of truth for dashboard products)
       const siteCatalogItems = items.map((item) => ({
         productId: item.productId != null ? String(item.productId) : null,
         quantity: item.quantity || 1
       })).filter((item) => item.productId);
 
-      if (siteCatalogItems.length > 0 && session.metadata.site_id) {
+      if (siteCatalogItems.length > 0 && siteId) {
         await productCatalogService.decrementSiteCatalog(
-          session.metadata.site_id,
+          siteId,
           siteCatalogItems,
           tx
         );
       }
 
-      // Decrement inventory for each item
       for (const item of orderItemsData) {
         if (!item.product_id || item.quantity < 1) continue;
 
         try {
-          // Get current stock
           const product = await tx.products.findUnique({
             where: { id: item.product_id }
           });
 
           if (!product) continue;
 
-          // Guard: only decrement if enough stock
           if (product.inventory < item.quantity) {
             throw new Error(`Insufficient inventory for product ${item.product_id}`);
           }
 
-          // Atomic decrement
           const updated = await tx.products.update({
             where: { id: item.product_id },
             data: { inventory: { decrement: item.quantity } }
           });
 
-          // Log to inventory_transactions
           await tx.inventory_transactions.create({
             data: {
               product_id: item.product_id,
@@ -436,7 +457,6 @@ export class WebhookProcessor {
           });
         } catch (err) {
           console.error(`Failed to decrement inventory for product ${item.product_id}:`, err);
-          // Continue - inventory tracking is not critical to order creation
         }
       }
 
@@ -444,6 +464,110 @@ export class WebhookProcessor {
     });
 
     return { orderId: order.id };
+  }
+
+  /**
+   * Square payment.updated / payment.created → visitor order when COMPLETED.
+   * Metadata contract: site_id + order_items (JSON) on payment.note, payment.metadata,
+   * or event.data.metadata (facilitator checkout shape).
+   */
+  async processSquarePaymentEvent(event) {
+    if (!event || !event.type) {
+      return { action: 'unhandled', type: 'invalid_event' };
+    }
+
+    if (event.type !== 'payment.updated' && event.type !== 'payment.created') {
+      return { action: 'unhandled', type: event.type };
+    }
+
+    const payment = event.data?.object?.payment || event.data?.object;
+    if (!payment) {
+      return { action: 'unhandled', type: 'missing_payment' };
+    }
+
+    const status = String(payment.status || '').toUpperCase();
+    if (status && status !== 'COMPLETED') {
+      return { action: 'ignored', reason: 'not_completed', status };
+    }
+
+    const meta = this.extractSquarePaymentMetadata(event, payment);
+    if (!meta?.site_id) {
+      console.warn('Square payment missing site_id metadata:', payment.id);
+      return { action: 'payment_processed', warning: 'missing metadata' };
+    }
+
+    const orderItemsRaw = meta.order_items;
+    const orderItemsJson = typeof orderItemsRaw === 'string'
+      ? orderItemsRaw
+      : JSON.stringify(orderItemsRaw || []);
+
+    const amountCents = Number(
+      payment.total_money?.amount
+      ?? payment.amount_money?.amount
+      ?? payment.totalMoney?.amount
+      ?? 0
+    );
+    const currency = (
+      payment.total_money?.currency
+      || payment.amount_money?.currency
+      || payment.totalMoney?.currency
+      || 'USD'
+    ).toLowerCase();
+
+    const session = {
+      id: null,
+      amount_total: amountCents,
+      currency,
+      customer_email: payment.buyer_email_address || meta.customer_email || 'guest@unknown.local',
+      customer_details: {
+        email: payment.buyer_email_address || meta.customer_email,
+        name: meta.customer_name || payment.buyer_email_address || 'Guest',
+        phone: meta.customer_phone || null,
+      },
+      metadata: {
+        site_id: meta.site_id,
+        user_id: meta.user_id || '',
+        order_items: orderItemsJson,
+        type: meta.type || 'order',
+        processor: 'square',
+        square_payment_id: payment.id,
+        ...(meta.fulfillment_type ? { fulfillment_type: meta.fulfillment_type } : {}),
+        ...(meta.shipping_address ? { shipping_address: meta.shipping_address } : {}),
+      },
+      payment_intent: null,
+    };
+
+    return this.handlePaymentCheckout(session);
+  }
+
+  /**
+   * @param {object} event
+   * @param {object} payment
+   * @returns {object|null}
+   */
+  extractSquarePaymentMetadata(event, payment) {
+    const candidates = [
+      event.data?.metadata,
+      payment.metadata,
+      payment.application_details?.metadata,
+    ];
+
+    for (const candidate of candidates) {
+      if (candidate && typeof candidate === 'object' && candidate.site_id) {
+        return candidate;
+      }
+    }
+
+    if (typeof payment.note === 'string' && payment.note.trim().startsWith('{')) {
+      try {
+        const parsed = JSON.parse(payment.note);
+        if (parsed?.site_id) return parsed;
+      } catch {
+        // ignore malformed note
+      }
+    }
+
+    return null;
   }
 
   /**
