@@ -16,7 +16,11 @@ import {
     normalizeClaimPlan,
     validateClaimOwnership,
   } from '../services/claimTrialService.js';
-import { platformCollectsPayments, BILLING_NOT_OPEN_MESSAGE } from '../config/platformPlans.js';
+import {
+  normalizePaidPlan,
+  platformCollectsPayments,
+  BILLING_NOT_OPEN_MESSAGE,
+} from '../config/platformPlans.js';
 
 const router = express.Router();
 
@@ -210,12 +214,18 @@ router.post('/:token/accept', claimAcceptLimiter, requireSignedIn, async (req, r
     }
 
     await prisma.$transaction(async (tx) => {
+      const claimantPlan = normalizePaidPlan(
+        claimant.subscriptionPlan || claimant.subscription_plan || claimant.plan
+      ) || normalizePaidPlan(site.plan);
+
       await tx.sites.update({
         where: { id: site.id },
         data: {
           user_id: claimant.id,
           claim_token_hash: null,
           claim_token_expires: null,
+          expires_at: null,
+          plan: claimantPlan,
         },
       });
       await tx.outreach_candidates.updateMany({

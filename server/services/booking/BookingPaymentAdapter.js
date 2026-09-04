@@ -178,11 +178,6 @@ class BookingPaymentAdapter {
         }
       };
 
-      const platformFee = Math.min(Math.max(Math.round(totalPriceCents * 0.01), 50), 500);
-      sessionParams.payment_intent_data = {
-        application_fee_amount: platformFee
-      };
-
       const session = await stripe.checkout.sessions.create(sessionParams, {
         stripeAccount: stripeAccountId,
       });

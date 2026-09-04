@@ -19,6 +19,8 @@ import { fulfillLaborSession } from './labor/laborFulfillment.js';
 import { recordPlatformCouponRedemption } from './platformCouponService.js';
 import { productCatalogService } from './ProductCatalogService.js';
 
+const WEBHOOK_RECLAIM_AFTER_MS = 15 * 60 * 1000;
+
 export class WebhookProcessor {
   constructor(db = null, emailSvc = null, stripe = null, paymentAdapter = null) {
     // Allow dependency injection for testing
@@ -78,6 +80,16 @@ export class WebhookProcessor {
           if (existing?.status === 'processed') {
             return { processed: false, reason: 'duplicate' };
           }
+
+          const isStaleProcessing = existing?.status === 'processing'
+            && existing.created_at instanceof Date
+            && Date.now() - existing.created_at.getTime() > WEBHOOK_RECLAIM_AFTER_MS;
+          const canReclaim = existing?.status === 'failed' || isStaleProcessing;
+
+          if (!canReclaim) {
+            return { processed: false, reason: 'duplicate' };
+          }
+
           await this.db.webhook_events.update({
             where: {
               event_id_processor: { event_id: event.id, processor: 'stripe' }
@@ -356,6 +368,9 @@ export class WebhookProcessor {
           customer_name: session.customer_details?.name || 'Guest',
           customer_phone: session.customer_details?.phone,
           stripe_session_id: session.id,
+          stripe_payment_id: typeof session.payment_intent === 'string'
+            ? session.payment_intent
+            : session.payment_intent?.id || null,
           total_amount: session.amount_total / 100, // Convert cents to dollars
           currency: session.currency || 'usd',
           payment_status: 'paid',

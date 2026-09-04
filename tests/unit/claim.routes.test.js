@@ -124,6 +124,8 @@ describe('claim routes', () => {
         user_id: 'user-1',
         claim_token_hash: null,
         claim_token_expires: null,
+        expires_at: null,
+        plan: 'growth',
       },
     });
     expect(prisma.outreach_candidates.updateMany).toHaveBeenCalledWith({

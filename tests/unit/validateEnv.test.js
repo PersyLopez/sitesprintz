@@ -54,4 +54,43 @@ describe('collectEnvIssues', () => {
 
     expect(warnings.some((w) => w.includes('live key during closed beta'))).toBe(true);
   });
+
+  it('requires live Stripe configuration when platform collection is enabled', () => {
+    const { errors, warnings } = collectEnvIssues({
+      ...baseProductionEnv,
+      BETA_MODE: 'true',
+      PLATFORM_COLLECT_PAYMENTS: 'true',
+      STRIPE_SECRET_KEY: 'sk_test_abc123',
+      STRIPE_WEBHOOK_SECRET: '',
+      STRIPE_PRICE_GROWTH: '',
+      STRIPE_PRICE_STARTER: '',
+      STRIPE_PRICE_GROWTH_MANAGED: '',
+    });
+
+    expect(errors.some((error) => error.includes('STRIPE_SECRET_KEY'))).toBe(true);
+    expect(errors.some((error) => error.includes('STRIPE_WEBHOOK_SECRET'))).toBe(true);
+    expect(errors.some((error) => error.includes('STRIPE_PRICE_GROWTH'))).toBe(true);
+    expect(errors.some((error) => error.includes('STRIPE_PRICE_STARTER'))).toBe(true);
+    expect(errors.some((error) => error.includes('STRIPE_PRICE_GROWTH_MANAGED'))).toBe(true);
+    expect(warnings.some((warning) => warning.includes('live key during closed beta'))).toBe(false);
+  });
+
+  it('keeps beta warnings when platform collection is disabled', () => {
+    const { errors, warnings } = collectEnvIssues({
+      ...baseProductionEnv,
+      BETA_MODE: 'true',
+      PLATFORM_COLLECT_PAYMENTS: 'false',
+      STRIPE_SECRET_KEY: 'sk_test_abc123',
+      STRIPE_WEBHOOK_SECRET: '',
+      STRIPE_PRICE_GROWTH: '',
+      STRIPE_PRICE_STARTER: '',
+      STRIPE_PRICE_GROWTH_MANAGED: '',
+    });
+
+    expect(errors).toEqual([]);
+    expect(warnings.some((warning) => warning.includes('STRIPE_WEBHOOK_SECRET'))).toBe(true);
+    expect(warnings.some((warning) => warning.includes('STRIPE_PRICE_GROWTH'))).toBe(true);
+    expect(warnings.some((warning) => warning.includes('STRIPE_PRICE_STARTER'))).toBe(true);
+    expect(warnings.some((warning) => warning.includes('STRIPE_PRICE_GROWTH_MANAGED'))).toBe(true);
+  });
 });

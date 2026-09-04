@@ -272,7 +272,7 @@ describe('BookingPaymentAdapter', () => {
       );
     });
 
-    it('should include Stripe Connect transfer for connected accounts', async () => {
+    it('should create checkout on the connected account without a platform fee', async () => {
       // Arrange
       prisma.appointments.findUnique.mockResolvedValue(mockAppointment);
       prisma.booking_tenants.findUnique.mockResolvedValue({
@@ -294,10 +294,8 @@ describe('BookingPaymentAdapter', () => {
 
       // Assert
       expect(mockStripe.checkout.sessions.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          payment_intent_data: expect.objectContaining({
-            application_fee_amount: 53
-          })
+        expect.not.objectContaining({
+          payment_intent_data: expect.anything(),
         }),
         expect.objectContaining({ stripeAccount: 'acct_123' })
       );

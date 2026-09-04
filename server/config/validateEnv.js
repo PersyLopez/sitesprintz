@@ -37,7 +37,27 @@ export function collectEnvIssues(env = process.env) {
   }
 
   const stripeMode = stripeKeyMode(env.STRIPE_SECRET_KEY);
-  if (beta) {
+  if (platformCollectsPayments(env)) {
+    if (stripeMode !== 'live') {
+      errors.push('STRIPE_SECRET_KEY is missing or not a live key (must start with sk_live_). Ensure you are using live Stripe credentials.');
+    }
+
+    if (!env.STRIPE_WEBHOOK_SECRET) {
+      errors.push('STRIPE_WEBHOOK_SECRET is missing. Create a webhook endpoint in Stripe Dashboard and set this value.');
+    }
+
+    if (!env.STRIPE_PRICE_GROWTH) {
+      errors.push('STRIPE_PRICE_GROWTH is missing. Set the live price ID for the Growth plan (e.g., price_2B3C4D...). Find this in your Stripe Dashboard.');
+    }
+
+    if (!env.STRIPE_PRICE_STARTER) {
+      errors.push('STRIPE_PRICE_STARTER is missing. Set the live price ID for the Starter plan.');
+    }
+
+    if (!env.STRIPE_PRICE_GROWTH_MANAGED) {
+      errors.push('STRIPE_PRICE_GROWTH_MANAGED is missing. Set the live price ID for the Growth Managed plan.');
+    }
+  } else if (beta) {
     if (stripeMode === 'missing' || stripeMode === 'invalid') {
       errors.push('STRIPE_SECRET_KEY is missing or invalid. Use sk_test_ (beta) or sk_live_ key.');
     } else if (stripeMode === 'live') {

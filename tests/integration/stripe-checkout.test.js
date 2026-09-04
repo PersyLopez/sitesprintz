@@ -346,16 +346,11 @@ describe('Stripe Checkout Integration', () => {
       );
     });
 
-    it('should support Stripe Connect for site owners', async () => {
-      const platformFee = 1000; // 10% of $100
-      
+    it('should support Stripe Connect for site owners without a platform fee', async () => {
       const sessionParams = {
         customer_email: 'customer@example.com',
         payment_method_types: ['card', 'paypal', 'link'],
         mode: 'payment',
-        payment_intent_data: {
-          application_fee_amount: platformFee
-        }
       };
 
       await mockStripe.checkout.sessions.create(sessionParams, {
@@ -363,10 +358,8 @@ describe('Stripe Checkout Integration', () => {
       });
       
       expect(mockStripe.checkout.sessions.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          payment_intent_data: expect.objectContaining({
-            application_fee_amount: platformFee
-          })
+        expect.not.objectContaining({
+          payment_intent_data: expect.anything(),
         }),
         expect.objectContaining({ stripeAccount: 'acct_connected_account' })
       );

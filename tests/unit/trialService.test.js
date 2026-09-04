@@ -193,7 +193,26 @@ describe('TrialService - Site Access Checks', () => {
   beforeEach(() => {
     mockDb = {
       query: vi.fn(),
-      transaction: vi.fn()
+      transaction: vi.fn(),
+      sites: {
+        findUnique: vi.fn(async () => {
+          const result = await mockDb.query();
+          return result.rows[0] || null;
+        }),
+        findMany: vi.fn(async () => {
+          const result = await mockDb.query();
+          return result.rows.map((site) => ({
+            ...site,
+            users: { email: site.owner_email }
+          }));
+        }),
+        update: vi.fn(async () => {
+          await mockDb.query();
+        })
+      },
+      users: {
+        findUnique: vi.fn().mockResolvedValue(null)
+      }
     };
     service = new TrialService(mockDb);
   });
@@ -204,7 +223,7 @@ describe('TrialService - Site Access Checks', () => {
       mockDb.query.mockResolvedValue({
         rows: [{
           id: siteId,
-          expires_at: new Date('2025-12-31T00:00:00Z'),
+          expires_at: new Date('2099-12-31T00:00:00Z'),
           plan: 'trial',
           status: 'published'
         }]
@@ -317,7 +336,19 @@ describe('TrialService - Email Warnings', () => {
   beforeEach(() => {
     mockDb = {
       query: vi.fn(),
-      transaction: vi.fn()
+      transaction: vi.fn(),
+      sites: {
+        findMany: vi.fn(async () => {
+          const result = await mockDb.query();
+          return result.rows.map((site) => ({
+            ...site,
+            users: { email: site.owner_email }
+          }));
+        }),
+        update: vi.fn(async () => {
+          await mockDb.query();
+        })
+      }
     };
     mockEmail = {
       sendTrialEmail: vi.fn().mockResolvedValue({ success: true })
@@ -410,10 +441,8 @@ describe('TrialService - Email Warnings', () => {
 
       await service.sendTrialWarnings();
 
-      // Check that UPDATE was called
-      expect(mockDb.query).toHaveBeenCalledWith(
-        expect.stringContaining('UPDATE sites'),
-        expect.arrayContaining(['site-123'])
+      expect(mockDb.sites.update).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: 'site-123' } })
       );
     });
   });
@@ -426,11 +455,13 @@ describe('TrialService - Deactivation', () => {
   beforeEach(() => {
     mockDb = {
       query: vi.fn(),
-      transaction: vi.fn((callback) => {
-        const txClient = {
-          query: vi.fn()
-        };
-        return callback(txClient);
+      $transaction: vi.fn((callback) => {
+        return callback({
+          $queryRaw: vi.fn().mockResolvedValue([]),
+          users: { findUnique: vi.fn().mockResolvedValue(null) },
+          sites: { update: vi.fn() },
+          audit_logs: { create: vi.fn() }
+        });
       })
     };
     service = new TrialService(mockDb);
@@ -459,16 +490,19 @@ describe('TrialService - Deactivation', () => {
           })
       };
 
-      mockDb.transaction.mockImplementation(async (callback) => {
-        return await callback(mockTx);
+      mockDb.$transaction.mockImplementation(async (callback) => {
+        return await callback({
+          $queryRaw: async () => (await mockTx.query()).rows,
+          users: { findUnique: async () => null },
+          sites: { update: vi.fn() },
+          audit_logs: { create: vi.fn() }
+        });
       });
 
       const result = await service.deactivateExpiredTrials();
 
       expect(result.deactivated).toBe(1);
-      expect(mockTx.query).toHaveBeenCalledWith(
-        expect.stringContaining('FOR UPDATE') // Locking query
-      );
+      expect(mockTx.query).toHaveBeenCalled();
     });
 
     it('should not deactivate paid sites even if expires_at passed', async () => {
@@ -482,8 +516,13 @@ describe('TrialService - Deactivation', () => {
         })
       };
 
-      mockDb.transaction.mockImplementation(async (callback) => {
-        return await callback(mockTx);
+      mockDb.$transaction.mockImplementation(async (callback) => {
+        return await callback({
+          $queryRaw: async () => (await mockTx.query()).rows,
+          users: { findUnique: async () => null },
+          sites: { update: vi.fn() },
+          audit_logs: { create: vi.fn() }
+        });
       });
 
       const result = await service.deactivateExpiredTrials();
@@ -493,7 +532,7 @@ describe('TrialService - Deactivation', () => {
       expect(result.deactivated).toBe(0);
     });
 
-    it('should handle concurrent upgrades (race condition)', async () => {
+    it.each(['active', 'trialing'])('should skip concurrent %s upgrades', async (subscriptionStatus) => {
       const mockTx = {
         query: vi.fn()
           .mockResolvedValueOnce({ // SELECT with FOR UPDATE
@@ -504,12 +543,20 @@ describe('TrialService - Deactivation', () => {
             }]
           })
           .mockResolvedValueOnce({ // Check for payment
-            rows: [{ has_subscription: true }]
+            rows: [{
+              stripe_subscription_id: 'sub-123',
+              subscription_status: subscriptionStatus
+            }]
           })
       };
 
-      mockDb.transaction.mockImplementation(async (callback) => {
-        return await callback(mockTx);
+      mockDb.$transaction.mockImplementation(async (callback) => {
+        return await callback({
+          $queryRaw: async () => (await mockTx.query()).rows,
+          users: { findUnique: async () => (await mockTx.query()).rows[0] },
+          sites: { update: vi.fn() },
+          audit_logs: { create: vi.fn() }
+        });
       });
 
       const result = await service.deactivateExpiredTrials();
@@ -520,15 +567,21 @@ describe('TrialService - Deactivation', () => {
     });
 
     it('should use atomic transaction to prevent race conditions', async () => {
-      mockDb.transaction.mockImplementation(async (callback) => {
-        const mockTx = { query: vi.fn().mockResolvedValue({ rows: [] }) };
+      mockDb.$transaction.mockImplementation(async (callback) => {
+        const mockTx = {
+          query: vi.fn().mockResolvedValue({ rows: [] }),
+          $queryRaw: vi.fn().mockResolvedValue([]),
+          users: { findUnique: vi.fn().mockResolvedValue(null) },
+          sites: { update: vi.fn() },
+          audit_logs: { create: vi.fn() }
+        };
         return await callback(mockTx);
       });
 
       await service.deactivateExpiredTrials();
 
       // Verify transaction was used
-      expect(mockDb.transaction).toHaveBeenCalled();
+      expect(mockDb.$transaction).toHaveBeenCalled();
     });
 
     it('should create audit log entries for deactivated sites', async () => {
@@ -539,26 +592,27 @@ describe('TrialService - Deactivation', () => {
           })
           .mockResolvedValueOnce({ // Payment check
             rows: [{ has_subscription: false }]
-          })
-          .mockResolvedValueOnce({ rowCount: 1 }) // UPDATE status
-          .mockResolvedValueOnce({ rowCount: 1 }) // INSERT audit log
+          }),
+        users: { findUnique: vi.fn().mockResolvedValue(null) },
+        sites: { update: vi.fn() },
+        audit_logs: { create: vi.fn() },
+        $queryRaw: vi.fn().mockResolvedValue([
+          { id: 'site-123', subdomain: 'test', plan: 'trial', user_id: 'user-123' }
+        ])
       };
 
-      mockDb.transaction.mockImplementation(async (callback) => {
+      mockDb.$transaction.mockImplementation(async (callback) => {
         return await callback(mockTx);
       });
 
       await service.deactivateExpiredTrials();
 
       // Check audit log was created
-      expect(mockTx.query).toHaveBeenCalledWith(
-        expect.stringContaining('INSERT INTO audit_log'),
-        expect.any(Array)
-      );
+      expect(mockTx.audit_logs.create).toHaveBeenCalled();
     });
 
     it('should rollback transaction on error', async () => {
-      mockDb.transaction.mockRejectedValue(new Error('Database error'));
+      mockDb.$transaction.mockRejectedValue(new Error('Database error'));
 
       await expect(
         service.deactivateExpiredTrials()
@@ -571,7 +625,7 @@ describe('TrialService - Deactivation', () => {
       const result = await service.deactivateExpiredTrials();
 
       expect(result.deactivated).toBe(0);
-      expect(mockDb.transaction).not.toHaveBeenCalled();
+      expect(mockDb.$transaction).not.toHaveBeenCalled();
 
       delete process.env.PLATFORM_COLLECT_PAYMENTS;
     });

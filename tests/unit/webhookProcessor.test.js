@@ -14,8 +14,10 @@ function createMockDb() {
     },
     orders: {
       findFirst: vi.fn(),
+      create: vi.fn(),
       update: vi.fn(),
     },
+    $transaction: vi.fn(),
   };
 }
 
@@ -76,6 +78,56 @@ describe('WebhookProcessor Service', () => {
 
       const result = await processor.processEvent({
         id: 'evt_reclaim',
+        type: 'account.updated',
+        data: {
+          object: { id: 'acct_123', charges_enabled: true, payouts_enabled: true },
+        },
+      });
+
+      expect(mockDb.webhook_events.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: 'processing' }),
+        })
+      );
+      expect(result.processed).toBe(true);
+      expect(result.warning).toBe('no_user_found');
+    });
+
+    it('skips a fresh processing row on P2002 without running the handler', async () => {
+      mockDb.webhook_events.findUnique
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({
+          status: 'processing',
+          created_at: new Date(),
+        });
+      mockDb.webhook_events.create.mockRejectedValue({ code: 'P2002' });
+
+      const result = await processor.processEvent({
+        id: 'evt_in_flight',
+        type: 'account.updated',
+        data: {
+          object: { id: 'acct_123', charges_enabled: true, payouts_enabled: true },
+        },
+      });
+
+      expect(result).toEqual({ processed: false, reason: 'duplicate' });
+      expect(mockDb.webhook_events.update).not.toHaveBeenCalled();
+      expect(mockDb.users.findMany).not.toHaveBeenCalled();
+    });
+
+    it('reclaims a stale processing row on P2002 and runs handler', async () => {
+      mockDb.webhook_events.findUnique
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({
+          status: 'processing',
+          created_at: new Date(Date.now() - 16 * 60 * 1000),
+        });
+      mockDb.webhook_events.create.mockRejectedValue({ code: 'P2002' });
+      mockDb.webhook_events.update.mockResolvedValue({ id: 'wh_1' });
+      mockDb.users.findMany.mockResolvedValue([]);
+
+      const result = await processor.processEvent({
+        id: 'evt_stale_processing',
         type: 'account.updated',
         data: {
           object: { id: 'acct_123', charges_enabled: true, payouts_enabled: true },
@@ -270,6 +322,34 @@ describe('WebhookProcessor Service', () => {
         action: 'booking_payment_processed',
         warning: 'missing appointment_id',
       });
+    });
+  });
+
+  describe('createOrder', () => {
+    it('persists the Stripe payment intent ID', async () => {
+      mockDb.$transaction.mockImplementation(async (callback) => callback(mockDb));
+      mockDb.orders.create.mockResolvedValue({ id: 'order-1', order_items: [] });
+
+      await processor.createOrder({
+        id: 'cs_order',
+        payment_intent: 'pi_order',
+        amount_total: 2500,
+        currency: 'usd',
+        customer_email: 'buyer@example.com',
+        metadata: {
+          site_id: 'site-1',
+          order_items: '[]',
+        },
+      });
+
+      expect(mockDb.orders.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            stripe_session_id: 'cs_order',
+            stripe_payment_id: 'pi_order',
+          }),
+        })
+      );
     });
   });
 });

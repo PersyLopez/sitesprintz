@@ -352,14 +352,16 @@ export class TrialService {
 
         for (const site of expiredSites) {
           // Double-check: ensure user hasn't upgraded during this transaction
-          const hasSubscription = await tx.subscriptions.findFirst({
-            where: {
-              user_id: site.user_id,
-              status: { in: ['active', 'trialing'] }
+          const user = await tx.users.findUnique({
+            where: { id: site.user_id },
+            select: {
+              stripe_subscription_id: true,
+              subscription_status: true
             }
           });
 
-          if (hasSubscription) {
+          if (user?.stripe_subscription_id &&
+              (user.subscription_status === 'active' || user.subscription_status === 'trialing')) {
             // User upgraded! Don't deactivate
             results.skippedDueToPayment++;
             continue;

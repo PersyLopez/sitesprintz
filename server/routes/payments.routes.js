@@ -11,6 +11,7 @@ import {
   sendBadRequest,
   sendForbidden,
   sendNotFound,
+  sendGone,
   sendServerError,
   sendServiceUnavailable,
   sendConflict,
@@ -218,13 +219,7 @@ router.post('/checkout/create-session', checkoutLimiter, orderLimiter, authentic
         quantity: item.quantity || 1,
     }));
 
-    // Calculate platform fee (10% commission)
-    const total = items.reduce((sum, item) => {
-        return sum + (item.price * item.quantity);
-    }, 0);
-    const platformFee = Math.round(total * 100 * 0.10); // 10% in cents
-
-    // Create Stripe session
+    // Create Stripe session — direct charge on owner's Connect account; no platform fee
     const sessionParams = {
         payment_method_types: ['card', 'paypal', 'link'],
         line_items: lineItems,
@@ -238,11 +233,6 @@ router.post('/checkout/create-session', checkoutLimiter, orderLimiter, authentic
             order_items: JSON.stringify(items)
         },
         billing_address_collection: 'auto',
-        ...(platformFee > 0 && {
-            payment_intent_data: {
-                application_fee_amount: platformFee
-            }
-        })
     };
 
     const livePath = livePublishedPath(site.subdomain || siteId) || `/view/${encodeURIComponent(site.subdomain || siteId)}`;
@@ -561,8 +551,8 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
             },
         }, {
             idempotencyKey: buyingAdditionalSite
-                ? `plat-sub:${userId}:${plan}:additional:${draftId || 'site'}`
-                : `plat-sub:${userId}:${plan}`,
+                ? `plat-sub:${userId}:${plan}:additional:${draftId || 'site'}:${dbUser?.subscription_status ?? 'new'}`
+                : `plat-sub:${userId}:${plan}:${dbUser?.subscription_status ?? 'new'}`,
         });
 
     sendSuccess(res, { sessionId: session.id, url: session.url });
@@ -1028,72 +1018,12 @@ router.post('/connect/disconnect', requireAuth, asyncHandler(async (req, res) =>
 }));
 
 // Create checkout session with connected account (for customer purchases)
-router.post('/connect/create-checkout', checkoutLimiter, orderLimiter, requireProPlan, asyncHandler(async (req, res) => {
-    if (!stripe) {
-        return sendServiceUnavailable(res, 'Stripe not configured', 'STRIPE_NOT_CONFIGURED');
-    }
-
-    // Verify CAPTCHA
-    const captchaResult = await verifyTurnstile(req.body.captchaToken, req.ip);
-    if (!captchaResult.success && !captchaResult.skipped) {
-        return sendBadRequest(res, 'CAPTCHA verification failed', 'CAPTCHA_FAILED');
-    }
-
-    const { connectedAccountId, lineItems, metadata, successUrl, cancelUrl } = req.body;
-
-    if (!connectedAccountId) {
-        return sendBadRequest(res, 'Connected account ID required', 'MISSING_ACCOUNT_ID');
-    }
-
-    if (!lineItems || !Array.isArray(lineItems) || lineItems.length === 0) {
-        return sendBadRequest(res, 'Line items required', 'MISSING_LINE_ITEMS');
-    }
-
-    // Verify the connected account exists and is active
-    const account = await stripe.accounts.retrieve(connectedAccountId);
-    if (!account.charges_enabled) {
-        return sendBadRequest(res, 'Connected account cannot accept charges', 'ACCOUNT_NOT_READY');
-    }
-
-    // Calculate platform fee (1% of total, min $0.50, max $5.00)
-    const total = lineItems.reduce((sum, item) => {
-        return sum + (item.price_data.unit_amount * item.quantity);
-    }, 0);
-    const platformFee = Math.min(Math.max(Math.round(total * 0.01), 50), 500);
-
-    // Create checkout session on behalf of connected account
-    const session = await stripe.checkout.sessions.create({
-        mode: 'payment',
-        line_items: lineItems,
-        success_url: resolveStripeRedirectUrl(
-            req,
-            successUrl,
-            '/payment-success?session_id={CHECKOUT_SESSION_ID}'
-        ),
-        cancel_url: resolveStripeRedirectUrl(req, cancelUrl, '/payment-cancel'),
-        payment_intent_data: {
-            application_fee_amount: platformFee,
-            metadata: {
-                ...metadata,
-                platform: 'sitesprintz'
-            }
-        },
-        metadata: {
-            ...metadata,
-            connectedAccountId
-        }
-    }, {
-        stripeAccount: connectedAccountId // Create on behalf of connected account
-    });
-
-    console.log(`Created Connect checkout session ${session.id} for account ${connectedAccountId}`);
-    console.log(`Platform fee: $${(platformFee / 100).toFixed(2)}`);
-
-    sendSuccess(res, {
-        sessionId: session.id,
-        url: session.url,
-        platformFee: platformFee / 100
-    });
+router.post('/connect/create-checkout', checkoutLimiter, orderLimiter, asyncHandler(async (_req, res) => {
+    return sendGone(
+        res,
+        'Checkout endpoint retired; use /api/stripe/connect/create-checkout',
+        'CHECKOUT_RETIRED'
+    );
 }));
 
 export default router;

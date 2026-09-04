@@ -1,5 +1,6 @@
 import express from 'express';
 import { requireAuth } from '../middleware/auth.js';
+import { ProductCatalogService } from '../services/ProductCatalogService.js';
 import { prisma } from '../../database/db.js';
 import {
   sendSuccess,
@@ -316,6 +317,7 @@ async function handleStripeCheckout(
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
   const { buildDeliveryCharge } = await import('../utils/delivery.js');
   const { parseSiteData } = await import('../utils/parseSiteData.js');
+  const siteData = parseSiteData(site);
 
   // Verify account is live
   try {
@@ -331,20 +333,30 @@ async function handleStripeCheckout(
     return sendBadRequest(res, 'Unable to verify Stripe account', 'STRIPE_VERIFY_FAILED');
   }
 
-  // Build line items
-  const lineItems = items.map(item => ({
+  // Validate and rebuild checkout with server-side prices and stock
+  let rebuiltCheckout;
+  try {
+    const catalogService = new ProductCatalogService();
+    rebuiltCheckout = await catalogService.validateAndRebuildCheckout(items, site.id, siteData);
+  } catch (error) {
+    console.error('Checkout validation failed:', error.message);
+    return sendBadRequest(res, error.message, 'INVALID_CHECKOUT');
+  }
+
+  // Build line items from the validated catalog items
+  const lineItems = rebuiltCheckout.items.map(item => ({
     price_data: {
       currency: 'usd',
       product_data: {
-        name: item.name,
-        description: item.description || ''
+        name: String(item.name || 'Item').slice(0, 250),
+        description: item.description ? String(item.description).slice(0, 500) : undefined,
+        images: item.image ? [item.image] : undefined
       },
-      unit_amount: Math.round(item.price * 100)
+      unit_amount: Math.round(Number(item.price) * 100)
     },
-    quantity: item.quantity || 1
+    quantity: item.quantity
   }));
 
-  const siteData = parseSiteData(site);
   const deliveryCharge = await buildDeliveryCharge(siteData, {
     fulfillment: deliveryOptions.fulfillment,
     address: deliveryOptions.deliveryAddress,

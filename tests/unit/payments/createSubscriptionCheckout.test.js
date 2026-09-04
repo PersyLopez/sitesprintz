@@ -96,8 +96,35 @@ describe('createSubscriptionCheckout metadata', () => {
     });
     expect(sessionOptions.subscription_data.trial_period_days).toBe(7);
     expect(requestOptions).toEqual({
-      idempotencyKey: 'plat-sub:user-checkout-1:starter',
+      idempotencyKey: 'plat-sub:user-checkout-1:starter:new',
     });
+  });
+
+  it('varies the idempotency key across new and canceled subscriptions', async () => {
+    mockUsersFindUnique
+      .mockResolvedValueOnce({
+        stripe_customer_id: 'cus_existing',
+        id: 'user-checkout-1',
+        subscription_status: null,
+      })
+      .mockResolvedValueOnce({
+        stripe_customer_id: 'cus_existing',
+        id: 'user-checkout-1',
+        subscription_status: 'canceled',
+      });
+
+    await request(app)
+      .post('/api/payments/create-subscription-checkout')
+      .send({ plan: 'starter' });
+    await request(app)
+      .post('/api/payments/create-subscription-checkout')
+      .send({ plan: 'starter' });
+
+    const firstKey = mockSessionsCreate.mock.calls[0][1].idempotencyKey;
+    const secondKey = mockSessionsCreate.mock.calls[1][1].idempotencyKey;
+    expect(firstKey).toBe('plat-sub:user-checkout-1:starter:new');
+    expect(secondKey).toBe('plat-sub:user-checkout-1:starter:canceled');
+    expect(firstKey).not.toBe(secondKey);
   });
 
   it('uses configured Stripe Price ID when env is set', async () => {
@@ -182,8 +209,21 @@ describe('createSubscriptionCheckout metadata', () => {
     expect(sessionOptions.metadata.additionalSite).toBe('true');
     expect(sessionOptions.subscription_data.metadata.additionalSite).toBe('true');
     expect(requestOptions).toEqual({
-      idempotencyKey: 'plat-sub:user-checkout-1:growth:additional:draft-extra-1',
+      idempotencyKey: 'plat-sub:user-checkout-1:growth:additional:draft-extra-1:trialing',
     });
+  });
+
+  it('retires the legacy connected-account checkout without calling Stripe', async () => {
+    const response = await request(app)
+      .post('/api/connect/create-checkout')
+      .send({
+        connectedAccountId: 'acct_legacy',
+        lineItems: [{ price_data: { unit_amount: 100 }, quantity: 1 }],
+      });
+
+    expect(response.status).toBe(410);
+    expect(response.body.code).toBe('CHECKOUT_RETIRED');
+    expect(mockSessionsCreate).not.toHaveBeenCalled();
   });
 
   it('refuses extra-site checkout when a paid slot is still unused', async () => {

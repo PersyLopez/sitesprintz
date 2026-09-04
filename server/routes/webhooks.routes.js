@@ -52,7 +52,7 @@ if (!stripe || !STRIPE_WEBHOOK_SECRET) {
 
         try {
             // Instantiate processor with DB and email service
-            const processor = new WebhookProcessor(prisma);
+            const processor = new WebhookProcessor(prisma, null, stripe);
             
             // Process the event
             const result = await processor.processEvent(event);
