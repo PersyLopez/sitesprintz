@@ -24,6 +24,7 @@ vi.mock('../../src/services/api', () => ({
 }));
 
 function renderSettings(initialEntry = '/settings/payments') {
+  window.history.pushState({}, '', initialEntry);
   return render(
     <MemoryRouter initialEntries={[initialEntry]}>
       <PaymentSettings />
@@ -257,8 +258,23 @@ describe('PaymentSettings', () => {
 
   it('shows refresh banner when Account Link expired', async () => {
     renderSettings('/settings/payments?connect=refresh&processor=stripe');
-    expect(await screen.findByTestId('processor-oauth-banner')).toHaveTextContent(/setup link expired/i);
+    expect(await screen.findByTestId('processor-connect-error')).toHaveTextContent(/setup link expired/i);
     expect(api.post).not.toHaveBeenCalledWith('/api/connect/refresh', expect.anything());
+  });
+
+  it('shows OAuth success on the connect list and clears query params', async () => {
+    const replaceState = vi.spyOn(window.history, 'replaceState');
+    renderSettings('/settings/payments?connect=success&processor=square&site=site-1');
+    expect(await screen.findByTestId('processor-connect-success')).toHaveTextContent(/Square connected successfully/i);
+    expect(replaceState).toHaveBeenCalled();
+    const clearedUrl = replaceState.mock.calls.at(-1)?.[2] || '';
+    expect(String(clearedUrl)).not.toMatch(/connect=/);
+    expect(String(clearedUrl)).toMatch(/site=site-1/);
+  });
+
+  it('maps OAuth error codes on the connect list', async () => {
+    renderSettings('/settings/payments?connect=error&processor=paypal&message=paypal_not_business');
+    expect(await screen.findByTestId('processor-connect-error')).toHaveTextContent(/Business account/i);
   });
 
   it('does not claim fully connected on success while Stripe is incomplete', async () => {
@@ -279,11 +295,11 @@ describe('PaymentSettings', () => {
     });
 
     renderSettings('/settings/payments?connect=success&processor=stripe');
-    const banner = await screen.findByTestId('processor-oauth-banner');
-    expect(banner).toHaveTextContent(/identity checks/i);
-    expect(banner).not.toHaveTextContent(/connected successfully/i);
-    const stripeCard = screen.getByTestId('processor-stripe');
-    expect(within(stripeCard).getByTestId('connection-status')).toHaveTextContent(/incomplete/i);
+    expect(await screen.findByTestId('processor-connect-success')).toHaveTextContent(/Stripe connected successfully/i);
+    const stripeCard = await screen.findByTestId('processor-stripe');
+    await waitFor(() => {
+      expect(within(stripeCard).getByTestId('connection-status')).toHaveTextContent(/incomplete/i);
+    });
     expect(within(stripeCard).getByTestId('stripe-connect-button')).toHaveTextContent(/continue setup/i);
     expect(screen.queryByTestId('stripe-account-id')).not.toBeInTheDocument();
   });

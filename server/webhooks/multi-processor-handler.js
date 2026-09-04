@@ -335,7 +335,8 @@ export async function handlePayPalWebhook(request, options) {
   } = options;
   
   try {
-    const payload = request.body;
+    // Raw Buffer from express.raw — same normalize as Square
+    const payloadString = normalizeWebhookPayloadString(request.body);
     const headers = request.headers;
     
     // Check required headers
@@ -358,20 +359,19 @@ export async function handlePayPalWebhook(request, options) {
     // Verify webhook via PayPal API
     let verificationResult;
     if (paypalVerify) {
-      // Use provided verification function (for testing)
+      // Use provided verification function (route mount / tests)
       verificationResult = await paypalVerify({
         webhookId,
         headers,
-        payload
+        payload: payloadString
       });
     } else {
-      // Use processor's verification method
-      const payloadString = typeof payload === 'string' ? payload : JSON.stringify(payload);
-      const isValid = processor.verifyWebhookSignature(
+      // Use processor's verification method (may be async)
+      const isValid = await Promise.resolve(processor.verifyWebhookSignature(
         payloadString,
         headers['paypal-transmission-sig'],
         webhookId
-      );
+      ));
       verificationResult = { verification_status: isValid ? 'SUCCESS' : 'FAILURE' };
     }
     
@@ -384,7 +384,7 @@ export async function handlePayPalWebhook(request, options) {
     }
     
     // Parse event
-    const event = typeof payload === 'string' ? JSON.parse(payload) : payload;
+    const event = JSON.parse(payloadString);
     const eventId = event.id;
     
     if (!eventId) {

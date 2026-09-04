@@ -4,7 +4,12 @@ import crypto from 'crypto';
 import Stripe from 'stripe';
 import { prisma } from '../../database/db.js';
 import { WebhookProcessor } from '../services/webhookProcessor.js';
-import { handleSquareWebhook } from '../webhooks/multi-processor-handler.js';
+import { PayPalProcessor } from '../services/payments/PayPalProcessor.js';
+import {
+  handleSquareWebhook,
+  handlePayPalWebhook,
+  normalizeWebhookPayloadString,
+} from '../webhooks/multi-processor-handler.js';
 
 const router = express.Router();
 
@@ -15,6 +20,14 @@ const stripe = STRIPE_SECRET_KEY ? new Stripe(STRIPE_SECRET_KEY, { apiVersion: '
 
 // Square webhook signature key (notification URL signature key from Square Dashboard)
 const SQUARE_WEBHOOK_SECRET = process.env.SQUARE_WEBHOOK_SECRET || '';
+
+// PayPal webhook ID + platform client credentials (API signature verify)
+const PAYPAL_WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID || '';
+const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID || '';
+const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET || '';
+const PAYPAL_API_BASE = process.env.NODE_ENV === 'production'
+  ? 'https://api-m.paypal.com'
+  : 'https://api-m.sandbox.paypal.com';
 
 // Webhook event failure queue (persisted to DB for retry)
 const failureQueue = [];
@@ -71,6 +84,50 @@ function createSquareWebhookProcessor(webhookProcessor) {
     },
     getProcessorName: () => 'square',
   };
+}
+
+function createPayPalWebhookProcessor(webhookProcessor) {
+  return {
+    // Unused when paypalVerify is supplied; kept for processor interface parity
+    verifyWebhookSignature: () => false,
+    async handleWebhook(event) {
+      return webhookProcessor.processPayPalPaymentEvent(event);
+    },
+    getProcessorName: () => 'paypal',
+  };
+}
+
+/**
+ * PayPal transmission verify via Notifications API (uses request headers, not HMAC).
+ * Neighbor: Square local HMAC verify — PayPal requires server round-trip.
+ */
+async function verifyPayPalWebhookWithApi({ webhookId, headers, payload }) {
+  const paypal = new PayPalProcessor(PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET);
+  const accessToken = await paypal.getAccessToken();
+  const payloadString = normalizeWebhookPayloadString(payload);
+  const webhook_event = JSON.parse(payloadString);
+
+  const response = await fetch(`${PAYPAL_API_BASE}/v1/notifications/verify-webhook-signature`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      auth_algo: headers['paypal-auth-algo'],
+      cert_url: headers['paypal-cert-url'],
+      transmission_id: headers['paypal-transmission-id'],
+      transmission_sig: headers['paypal-transmission-sig'],
+      transmission_time: headers['paypal-transmission-time'],
+      webhook_id: webhookId,
+      webhook_event,
+    }),
+  });
+
+  if (!response.ok) {
+    return { verification_status: 'FAILURE' };
+  }
+  return response.json();
 }
 
 if (!stripe || !STRIPE_WEBHOOK_SECRET) {
@@ -157,6 +214,46 @@ if (!SQUARE_WEBHOOK_SECRET) {
             });
         } catch (error) {
             console.error('Error processing Square webhook:', error);
+            return res.status(500).json({ error: error.message });
+        }
+    });
+}
+
+if (!PAYPAL_WEBHOOK_ID || !PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
+    router.post('/paypal', (req, res) => {
+        console.warn('PayPal webhook received but PAYPAL_WEBHOOK_ID or client credentials not configured');
+        return res.status(503).json({ error: 'PayPal not configured' });
+    });
+} else {
+    router.post('/paypal', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
+        try {
+            const webhookProcessor = new WebhookProcessor(prisma, null, null);
+            const result = await handlePayPalWebhook(req, {
+                processor: createPayPalWebhookProcessor(webhookProcessor),
+                webhookId: PAYPAL_WEBHOOK_ID,
+                paypalVerify: verifyPayPalWebhookWithApi,
+                prisma,
+            });
+
+            if (result.status === 400) {
+                return res.status(400).json({ error: result.error });
+            }
+            if (result.status === 503) {
+                return res.status(503).json({ error: result.error || 'Webhook temporarily unavailable' });
+            }
+            if (result.status === 500) {
+                return res.status(500).json({ error: result.error || 'Webhook processing failed' });
+            }
+            if (result.action === 'duplicate') {
+                return res.status(200).json({ success: true, duplicate: true });
+            }
+            return res.status(200).json({
+                success: true,
+                action: result.action,
+                data: result.data,
+            });
+        } catch (error) {
+            console.error('Error processing PayPal webhook:', error);
             return res.status(500).json({ error: error.message });
         }
     });

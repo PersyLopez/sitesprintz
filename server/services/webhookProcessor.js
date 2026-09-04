@@ -571,6 +571,107 @@ export class WebhookProcessor {
   }
 
   /**
+   * PayPal PAYMENT.CAPTURE.COMPLETED → visitor order.
+   * Metadata: custom_id = site_id (from PayPalProcessor.createCheckout);
+   * optional JSON custom_id or resource.metadata for order_items.
+   */
+  async processPayPalPaymentEvent(event) {
+    if (!event || !event.event_type) {
+      return { action: 'unhandled', type: 'invalid_event' };
+    }
+
+    if (event.event_type !== 'PAYMENT.CAPTURE.COMPLETED') {
+      return { action: 'unhandled', type: event.event_type };
+    }
+
+    const resource = event.resource || {};
+    const status = String(resource.status || 'COMPLETED').toUpperCase();
+    if (status && status !== 'COMPLETED') {
+      return { action: 'ignored', reason: 'not_completed', status };
+    }
+
+    const meta = this.extractPayPalCaptureMetadata(event, resource);
+    if (!meta?.site_id) {
+      console.warn('PayPal capture missing site_id metadata:', resource.id);
+      return { action: 'payment_processed', warning: 'missing metadata' };
+    }
+
+    const orderItemsRaw = meta.order_items;
+    const orderItemsJson = typeof orderItemsRaw === 'string'
+      ? orderItemsRaw
+      : JSON.stringify(orderItemsRaw || []);
+
+    const amountValue = resource.amount?.value
+      ?? resource.purchase_units?.[0]?.amount?.value;
+    const amountCents = amountValue
+      ? Math.round(parseFloat(amountValue) * 100)
+      : 0;
+    const currency = (
+      resource.amount?.currency_code
+      || resource.purchase_units?.[0]?.amount?.currency_code
+      || 'USD'
+    ).toLowerCase();
+
+    const session = {
+      id: null,
+      amount_total: amountCents,
+      currency,
+      customer_email: meta.customer_email || 'guest@unknown.local',
+      customer_details: {
+        email: meta.customer_email,
+        name: meta.customer_name || 'Guest',
+        phone: meta.customer_phone || null,
+      },
+      metadata: {
+        site_id: meta.site_id,
+        user_id: meta.user_id || '',
+        order_items: orderItemsJson,
+        type: meta.type || 'order',
+        processor: 'paypal',
+        paypal_capture_id: resource.id,
+        ...(meta.fulfillment_type ? { fulfillment_type: meta.fulfillment_type } : {}),
+        ...(meta.shipping_address ? { shipping_address: meta.shipping_address } : {}),
+      },
+      payment_intent: null,
+    };
+
+    return this.handlePaymentCheckout(session);
+  }
+
+  /**
+   * @param {object} event
+   * @param {object} resource - capture resource
+   * @returns {object|null}
+   */
+  extractPayPalCaptureMetadata(event, resource) {
+    const candidates = [
+      event.resource?.metadata,
+      resource.metadata,
+      event.data?.metadata,
+    ];
+
+    for (const candidate of candidates) {
+      if (candidate && typeof candidate === 'object' && candidate.site_id) {
+        return candidate;
+      }
+    }
+
+    if (typeof resource.custom_id === 'string' && resource.custom_id.trim()) {
+      if (resource.custom_id.trim().startsWith('{')) {
+        try {
+          const parsed = JSON.parse(resource.custom_id);
+          if (parsed?.site_id) return parsed;
+        } catch {
+          // fall through to plain site_id
+        }
+      }
+      return { site_id: resource.custom_id };
+    }
+
+    return null;
+  }
+
+  /**
    * Create subscription in database (users table only)
    */
   async createSubscription(session) {

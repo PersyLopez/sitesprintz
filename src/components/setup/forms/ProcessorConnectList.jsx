@@ -1,5 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { api } from '../../../services/api';
+
+const CONNECT_ERROR_MESSAGES = {
+  expired: 'Your connection link expired. Try again from the provider card.',
+  token_exchange: 'We could not finish signing in with the provider. Try connecting again.',
+  no_location: 'Square needs an active location. Add one in Square Dashboard, then reconnect.',
+  paypal_not_business: 'PayPal checkout needs a Business account. Upgrade to PayPal Business, then reconnect.',
+  access_denied: 'Connection was cancelled. You can try again anytime from the provider card.'
+};
 
 const PROCESSORS = [
   {
@@ -56,6 +64,37 @@ function ProcessorConnectList({
 }) {
   const [actionError, setActionError] = useState(null);
   const [actionMessage, setActionMessage] = useState(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const result = params.get('connect');
+    if (!result) return;
+
+    const processor = params.get('processor');
+    const code = params.get('message');
+    const label = processorLabel(processor);
+
+    if (result === 'success') {
+      setActionMessage(`${label} connected successfully`);
+      void onStatusChange?.();
+    } else if (result === 'error') {
+      setActionError(
+        CONNECT_ERROR_MESSAGES[code] ||
+          'Could not finish connecting. Try again from the provider card.'
+      );
+    } else if (result === 'refresh') {
+      setActionError(
+        'Your Stripe setup link expired. Use Continue Setup on the Stripe card to pick up where you left off.'
+      );
+    }
+
+    params.delete('connect');
+    params.delete('processor');
+    params.delete('message');
+    const qs = params.toString();
+    const nextUrl = `${window.location.pathname}${qs ? `?${qs}` : ''}${window.location.hash || ''}`;
+    window.history.replaceState({}, '', nextUrl);
+  }, []);
 
   const startStripeNew = async () => {
     if (!isGrowth || isProcessing) return;

@@ -485,6 +485,115 @@ describe('Multi-Processor Webhook Handler', () => {
       expect(result.status).toBe(400);
       expect(result.error).toMatch(/headers.*required|missing/i);
     });
+
+    it('should return 200 duplicate without re-processing', async () => {
+      const mockRequest = {
+        body: JSON.stringify({
+          event_type: 'PAYMENT.CAPTURE.COMPLETED',
+          id: 'WH-dup',
+          resource: { id: 'CAPTURE-dup', status: 'COMPLETED', custom_id: 'site-1' }
+        }),
+        headers: {
+          'paypal-transmission-id': 'trans_dup',
+          'paypal-transmission-time': '2025-01-04T12:00:00Z',
+          'paypal-transmission-sig': 'sig_dup',
+          'paypal-cert-url': 'https://api.paypal.com/cert',
+          'paypal-auth-algo': 'SHA256withRSA'
+        }
+      };
+
+      const mockPayPalVerify = vi.fn().mockResolvedValue({
+        verification_status: 'SUCCESS'
+      });
+
+      mockPrisma.webhook_events.findUnique.mockResolvedValue({
+        id: 'wh_existing',
+        event_id: 'WH-dup',
+        processor: 'paypal'
+      });
+
+      const result = await handlePayPalWebhook(mockRequest, {
+        processor: mockProcessors.paypal,
+        webhookId: 'paypal_webhook_id',
+        paypalVerify: mockPayPalVerify,
+        prisma: mockPrisma
+      });
+
+      expect(result.status).toBe(200);
+      expect(result.action).toBe('duplicate');
+      expect(mockProcessors.paypal.handleWebhook).not.toHaveBeenCalled();
+    });
+
+    it('should fulfill visitor order on PAYMENT.CAPTURE.COMPLETED (happy path)', async () => {
+      const orderItems = [{ name: 'Cut', price: 25, quantity: 1 }];
+      const payload = JSON.stringify({
+        event_type: 'PAYMENT.CAPTURE.COMPLETED',
+        id: 'WH-ok',
+        resource: {
+          id: 'CAPTURE-ok',
+          status: 'COMPLETED',
+          amount: { value: '25.00', currency_code: 'USD' },
+          custom_id: JSON.stringify({
+            site_id: 'site-paypal-1',
+            user_id: '',
+            order_items: orderItems,
+            type: 'order',
+            customer_email: 'buyer@example.com'
+          })
+        }
+      });
+
+      const mockPayPalVerify = vi.fn().mockResolvedValue({
+        verification_status: 'SUCCESS'
+      });
+
+      mockPrisma.webhook_events.findUnique.mockResolvedValue(null);
+      mockPrisma.webhook_events.create.mockResolvedValue({ id: 'wh_pp_ok' });
+
+      const mockDb = {
+        $transaction: vi.fn(async (fn) => fn({
+          orders: {
+            create: vi.fn().mockResolvedValue({ id: 'ord_paypal_1', order_items: [] })
+          },
+          products: {
+            findUnique: vi.fn().mockResolvedValue(null)
+          }
+        })),
+      };
+
+      const webhookProcessor = new WebhookProcessor(mockDb, {
+        sendEmail: vi.fn().mockResolvedValue(undefined),
+      }, null);
+      webhookProcessor.sendOrderConfirmation = vi.fn().mockResolvedValue(undefined);
+      webhookProcessor.sendOwnerNotification = vi.fn().mockResolvedValue(undefined);
+
+      const paypalAdapter = {
+        verifyWebhookSignature: mockProcessors.paypal.verifyWebhookSignature,
+        handleWebhook: (event) => webhookProcessor.processPayPalPaymentEvent(event),
+        getProcessorName: () => 'paypal'
+      };
+
+      const result = await handlePayPalWebhook({
+        body: payload,
+        headers: {
+          'paypal-transmission-id': 'trans_ok',
+          'paypal-transmission-time': '2025-01-04T12:00:00Z',
+          'paypal-transmission-sig': 'sig_ok',
+          'paypal-cert-url': 'https://api.paypal.com/cert',
+          'paypal-auth-algo': 'SHA256withRSA'
+        }
+      }, {
+        processor: paypalAdapter,
+        webhookId: 'paypal_webhook_id',
+        paypalVerify: mockPayPalVerify,
+        prisma: mockPrisma
+      });
+
+      expect(result.status).toBe(200);
+      expect(result.action).toBe('payment_processed');
+      expect(result.data?.orderId || mockDb.$transaction).toBeTruthy();
+      expect(mockDb.$transaction).toHaveBeenCalled();
+    });
   });
 
   describe('Idempotency System', () => {
