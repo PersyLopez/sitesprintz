@@ -352,4 +352,115 @@ describe('WebhookProcessor Service', () => {
       );
     });
   });
+
+  describe('P5 Square/PayPal refund and capture parity', () => {
+    const paidOrder = {
+      id: 'ord_meta_1',
+      site_id: 'site-1',
+      customer_email: 'buyer@example.com',
+      total_amount: 25,
+      payment_status: 'paid',
+      status: 'pending',
+      items: [],
+      order_items: [],
+      metadata: { square_payment_id: 'pay_sq_1', paypal_capture_id: 'CAPTURE-1' },
+    };
+
+    it('marks order refunded on Square refund.created', async () => {
+      mockDb.orders.findFirst.mockResolvedValue(paidOrder);
+      mockDb.orders.update.mockResolvedValue({ ...paidOrder, payment_status: 'refunded' });
+
+      const result = await processor.processSquarePaymentEvent({
+        type: 'refund.created',
+        data: {
+          object: {
+            refund: {
+              id: 'rfd_1',
+              status: 'COMPLETED',
+              payment_id: 'pay_sq_1',
+            },
+          },
+        },
+      });
+
+      expect(result.action).toBe('refund_processed');
+      expect(result.orderId).toBe('ord_meta_1');
+      expect(mockDb.orders.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            metadata: { path: ['square_payment_id'], equals: 'pay_sq_1' },
+          },
+        })
+      );
+      expect(mockDb.orders.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'refunded',
+            payment_status: 'refunded',
+          }),
+        })
+      );
+    });
+
+    it('marks order failed on Square payment FAILED when order exists', async () => {
+      mockDb.orders.findFirst.mockResolvedValue(paidOrder);
+      mockDb.orders.update.mockResolvedValue({ ...paidOrder, payment_status: 'failed' });
+
+      const result = await processor.processSquarePaymentEvent({
+        type: 'payment.updated',
+        data: {
+          object: {
+            payment: { id: 'pay_sq_1', status: 'FAILED' },
+          },
+        },
+      });
+
+      expect(result.action).toBe('order_payment_failed');
+      expect(result.orderId).toBe('ord_meta_1');
+    });
+
+    it('marks order refunded on PayPal PAYMENT.CAPTURE.REFUNDED', async () => {
+      mockDb.orders.findFirst.mockResolvedValue(paidOrder);
+      mockDb.orders.update.mockResolvedValue({ ...paidOrder, payment_status: 'refunded' });
+
+      const result = await processor.processPayPalPaymentEvent({
+        event_type: 'PAYMENT.CAPTURE.REFUNDED',
+        resource: {
+          id: 'refund_pp_1',
+          capture_id: 'CAPTURE-1',
+          amount: { value: '25.00' },
+        },
+      });
+
+      expect(result.action).toBe('refund_processed');
+      expect(result.orderId).toBe('ord_meta_1');
+    });
+
+    it('captures on CHECKOUT.ORDER.APPROVED without fulfilling', async () => {
+      const captureOrder = vi.fn().mockResolvedValue({
+        orderId: 'ORDER-PP-1',
+        status: 'COMPLETED',
+        captureId: 'CAPTURE-NEW',
+      });
+      const withPaypal = new WebhookProcessor(mockDb, mockEmailService, null, null, {
+        captureOrder,
+      });
+
+      const result = await withPaypal.processPayPalPaymentEvent({
+        event_type: 'CHECKOUT.ORDER.APPROVED',
+        resource: {
+          id: 'ORDER-PP-1',
+          purchase_units: [{
+            custom_id: JSON.stringify({ site_id: 'site-1', order_items: [] }),
+            amount: { value: '25.00', currency_code: 'USD' },
+          }],
+        },
+      });
+
+      expect(captureOrder).toHaveBeenCalledWith('ORDER-PP-1', { expectedSiteId: 'site-1' });
+      expect(result.action).toBe('payment_captured');
+      expect(result.data.captureId).toBe('CAPTURE-NEW');
+      expect(mockDb.$transaction).not.toHaveBeenCalled();
+    });
+  });
 });

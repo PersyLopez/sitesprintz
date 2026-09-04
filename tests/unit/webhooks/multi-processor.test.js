@@ -356,6 +356,9 @@ describe('Multi-Processor Webhook Handler', () => {
       mockPrisma.webhook_events.create.mockResolvedValue({ id: 'wh_ok' });
 
       const mockDb = {
+        orders: {
+          findFirst: vi.fn().mockResolvedValue(null),
+        },
         $transaction: vi.fn(async (fn) => fn({
           orders: {
             create: vi.fn().mockResolvedValue({ id: 'ord_square_1', order_items: [] })
@@ -391,6 +394,65 @@ describe('Multi-Processor Webhook Handler', () => {
       expect(result.action).toBe('payment_processed');
       expect(result.data?.orderId || mockDb.$transaction).toBeTruthy();
       expect(mockDb.$transaction).toHaveBeenCalled();
+    });
+
+    it('marks visitor order refunded on refund.created (P5-S2)', async () => {
+      const payload = JSON.stringify({
+        type: 'refund.created',
+        event_id: 'sq_evt_refund',
+        data: {
+          object: {
+            refund: {
+              id: 'rfd_sq_1',
+              status: 'COMPLETED',
+              payment_id: 'pay_ok',
+              amount_money: { amount: 2500, currency: 'USD' },
+            },
+          },
+        },
+      });
+
+      mockProcessors.square.verifyWebhookSignature.mockReturnValue(true);
+      mockPrisma.webhook_events.findUnique.mockResolvedValue(null);
+      mockPrisma.webhook_events.create.mockResolvedValue({ id: 'wh_refund' });
+
+      const mockDb = {
+        orders: {
+          findFirst: vi.fn().mockResolvedValue({
+            id: 'ord_square_1',
+            site_id: 'site-square-1',
+            customer_email: 'buyer@example.com',
+            total_amount: 25,
+            payment_status: 'paid',
+            status: 'pending',
+            items: [],
+            order_items: [],
+          }),
+          update: vi.fn().mockResolvedValue({ id: 'ord_square_1' }),
+        },
+      };
+
+      const webhookProcessor = new WebhookProcessor(mockDb, {
+        sendEmail: vi.fn().mockResolvedValue(undefined),
+      }, null);
+
+      const result = await handleSquareWebhook({
+        body: payload,
+        headers: { 'x-square-hmacsha256-signature': 'sig' },
+      }, {
+        processor: {
+          verifyWebhookSignature: mockProcessors.square.verifyWebhookSignature,
+          handleWebhook: (event) => webhookProcessor.processSquarePaymentEvent(event),
+          getProcessorName: () => 'square',
+        },
+        webhookSecret: 'secret',
+        prisma: mockPrisma,
+      });
+
+      expect(result.status).toBe(200);
+      expect(result.action).toBe('refund_processed');
+      expect(result.data?.orderId).toBe('ord_square_1');
+      expect(mockDb.orders.update).toHaveBeenCalled();
     });
   });
 
@@ -551,6 +613,9 @@ describe('Multi-Processor Webhook Handler', () => {
       mockPrisma.webhook_events.create.mockResolvedValue({ id: 'wh_pp_ok' });
 
       const mockDb = {
+        orders: {
+          findFirst: vi.fn().mockResolvedValue(null),
+        },
         $transaction: vi.fn(async (fn) => fn({
           orders: {
             create: vi.fn().mockResolvedValue({ id: 'ord_paypal_1', order_items: [] })
@@ -593,6 +658,132 @@ describe('Multi-Processor Webhook Handler', () => {
       expect(result.action).toBe('payment_processed');
       expect(result.data?.orderId || mockDb.$transaction).toBeTruthy();
       expect(mockDb.$transaction).toHaveBeenCalled();
+    });
+
+    it('captures on CHECKOUT.ORDER.APPROVED (P5-S3)', async () => {
+      const payload = JSON.stringify({
+        event_type: 'CHECKOUT.ORDER.APPROVED',
+        id: 'WH-approved',
+        resource: {
+          id: 'ORDER-PP-APPROVED',
+          purchase_units: [{
+            custom_id: JSON.stringify({
+              site_id: 'site-paypal-1',
+              order_items: [{ name: 'Cut', price: 25, quantity: 1 }],
+              type: 'order',
+            }),
+            amount: { value: '25.00', currency_code: 'USD' },
+          }],
+        },
+      });
+
+      const mockPayPalVerify = vi.fn().mockResolvedValue({
+        verification_status: 'SUCCESS'
+      });
+      mockPrisma.webhook_events.findUnique.mockResolvedValue(null);
+      mockPrisma.webhook_events.create.mockResolvedValue({ id: 'wh_pp_approved' });
+
+      const captureOrder = vi.fn().mockResolvedValue({
+        orderId: 'ORDER-PP-APPROVED',
+        status: 'COMPLETED',
+        captureId: 'CAPTURE-FROM-APPROVED',
+      });
+
+      const webhookProcessor = new WebhookProcessor(
+        { $transaction: vi.fn() },
+        { sendEmail: vi.fn() },
+        null,
+        null,
+        { captureOrder }
+      );
+
+      const result = await handlePayPalWebhook({
+        body: payload,
+        headers: {
+          'paypal-transmission-id': 'trans_appr',
+          'paypal-transmission-time': '2025-01-04T12:00:00Z',
+          'paypal-transmission-sig': 'sig_appr',
+          'paypal-cert-url': 'https://api.paypal.com/cert',
+          'paypal-auth-algo': 'SHA256withRSA'
+        }
+      }, {
+        processor: {
+          verifyWebhookSignature: mockProcessors.paypal.verifyWebhookSignature,
+          handleWebhook: (event) => webhookProcessor.processPayPalPaymentEvent(event),
+          getProcessorName: () => 'paypal'
+        },
+        webhookId: 'paypal_webhook_id',
+        paypalVerify: mockPayPalVerify,
+        prisma: mockPrisma
+      });
+
+      expect(result.status).toBe(200);
+      expect(result.action).toBe('payment_captured');
+      expect(result.data?.captureId).toBe('CAPTURE-FROM-APPROVED');
+      expect(captureOrder).toHaveBeenCalled();
+    });
+
+    it('marks visitor order refunded on PAYMENT.CAPTURE.REFUNDED (P5-S2)', async () => {
+      const payload = JSON.stringify({
+        event_type: 'PAYMENT.CAPTURE.REFUNDED',
+        id: 'WH-refund',
+        resource: {
+          id: 'refund_pp_1',
+          capture_id: 'CAPTURE-ok',
+          amount: { value: '25.00', currency_code: 'USD' },
+        },
+      });
+
+      const mockPayPalVerify = vi.fn().mockResolvedValue({
+        verification_status: 'SUCCESS'
+      });
+      mockPrisma.webhook_events.findUnique.mockResolvedValue(null);
+      mockPrisma.webhook_events.create.mockResolvedValue({ id: 'wh_pp_refund' });
+
+      const mockDb = {
+        orders: {
+          findFirst: vi.fn().mockResolvedValue({
+            id: 'ord_paypal_1',
+            site_id: 'site-paypal-1',
+            customer_email: 'buyer@example.com',
+            total_amount: 25,
+            payment_status: 'paid',
+            status: 'pending',
+            items: [],
+            order_items: [],
+          }),
+          update: vi.fn().mockResolvedValue({ id: 'ord_paypal_1' }),
+        },
+      };
+
+      const webhookProcessor = new WebhookProcessor(mockDb, {
+        sendEmail: vi.fn().mockResolvedValue(undefined),
+      }, null);
+
+      const result = await handlePayPalWebhook({
+        body: payload,
+        headers: {
+          'paypal-transmission-id': 'trans_ref',
+          'paypal-transmission-time': '2025-01-04T12:00:00Z',
+          'paypal-transmission-sig': 'sig_ref',
+          'paypal-cert-url': 'https://api.paypal.com/cert',
+          'paypal-auth-algo': 'SHA256withRSA'
+        }
+      }, {
+        processor: {
+          verifyWebhookSignature: mockProcessors.paypal.verifyWebhookSignature,
+          handleWebhook: (event) => webhookProcessor.processPayPalPaymentEvent(event),
+          getProcessorName: () => 'paypal'
+        },
+        webhookId: 'paypal_webhook_id',
+        paypalVerify: mockPayPalVerify,
+        prisma: mockPrisma
+      });
+
+      expect(result.status).toBe(200);
+      expect(result.action).toBe('refund_processed');
+      expect(result.data?.orderId).toBe('ord_paypal_1');
+      expect(mockDb.orders.update).toHaveBeenCalled();
     });
   });
 

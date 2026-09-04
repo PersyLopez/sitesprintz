@@ -22,12 +22,13 @@ import { productCatalogService } from './ProductCatalogService.js';
 const WEBHOOK_RECLAIM_AFTER_MS = 15 * 60 * 1000;
 
 export class WebhookProcessor {
-  constructor(db = null, emailSvc = null, stripe = null, paymentAdapter = null) {
+  constructor(db = null, emailSvc = null, stripe = null, paymentAdapter = null, paypalProcessor = null) {
     // Allow dependency injection for testing
     this.db = db || prisma;
     this.emailService = emailSvc || emailService;
     this.stripe = stripe;
     this.paymentAdapter = paymentAdapter;
+    this.paypalProcessor = paypalProcessor;
 
     // Event handler mapping
     this.handlers = {
@@ -467,13 +468,158 @@ export class WebhookProcessor {
   }
 
   /**
-   * Square payment.updated / payment.created → visitor order when COMPLETED.
+   * Look up visitor order by processor ref stored in orders.metadata (no parallel ledger).
+   * Neighbor: Stripe lookups on stripe_payment_id / stripe_charge_id columns.
+   */
+  async findVisitorOrderByMetadata(key, value) {
+    if (!key || value == null || value === '') return null;
+    return this.db.orders.findFirst({
+      where: {
+        metadata: {
+          path: [key],
+          equals: String(value),
+        },
+      },
+      include: { order_items: true },
+    });
+  }
+
+  /**
+   * Shared refund path — neighbor: handleChargeRefunded (Stripe).
+   */
+  async applyOrderRefund(order, refundRef = null) {
+    if (!order) {
+      return { action: 'refund_processed', warning: 'order_not_found' };
+    }
+
+    if (order.payment_status === 'refunded' || order.status === 'refunded') {
+      return { action: 'refund_processed', orderId: order.id, reason: 'already_refunded' };
+    }
+
+    await this.db.orders.update({
+      where: { id: order.id },
+      data: {
+        status: 'refunded',
+        payment_status: 'refunded',
+        updated_at: new Date(),
+      },
+    });
+
+    const siteCatalogItems = productCatalogService.extractSiteCatalogItemsFromOrder(order);
+    if (siteCatalogItems.length > 0 && order.site_id) {
+      await productCatalogService.restockSiteCatalog(order.site_id, siteCatalogItems);
+    }
+
+    for (const item of order.order_items || []) {
+      if (!item.product_id || item.quantity < 1) continue;
+
+      try {
+        const product = await this.db.products.findUnique({
+          where: { id: item.product_id },
+        });
+        if (!product) continue;
+
+        const updated = await this.db.products.update({
+          where: { id: item.product_id },
+          data: { inventory: { increment: item.quantity } },
+        });
+
+        await this.db.inventory_transactions.create({
+          data: {
+            product_id: item.product_id,
+            order_id: order.id,
+            quantity_change: item.quantity,
+            previous_quantity: product.inventory,
+            new_quantity: updated.inventory,
+            transaction_type: 'restock',
+            notes: `Refund of order ${order.id} - ${item.quantity} unit(s)`,
+          },
+        });
+      } catch (err) {
+        console.error(`Failed to restock inventory for product ${item.product_id}:`, err);
+      }
+    }
+
+    try {
+      await this.emailService.sendEmail({
+        to: order.customer_email,
+        template: 'refundConfirmation',
+        data: {
+          orderId: order.id,
+          amount: order.total_amount,
+          chargeId: refundRef,
+        },
+      });
+    } catch (emailError) {
+      console.error('Refund confirmation email failed:', emailError);
+    }
+
+    return { action: 'refund_processed', orderId: order.id };
+  }
+
+  /**
+   * Shared payment-failed path — neighbor: handlePaymentIntentFailed (Stripe orders).
+   */
+  async applyOrderPaymentFailed(order, errorMessage = null) {
+    if (!order) {
+      return { action: 'payment_failed', warning: 'no_related_record' };
+    }
+
+    if (order.payment_status === 'failed' || order.status === 'cancelled') {
+      return { action: 'order_payment_failed', orderId: order.id, reason: 'already_failed' };
+    }
+
+    await this.db.orders.update({
+      where: { id: order.id },
+      data: {
+        payment_status: 'failed',
+        status: 'cancelled',
+        updated_at: new Date(),
+      },
+    });
+
+    try {
+      await this.emailService.sendEmail({
+        to: order.customer_email,
+        template: 'orderPaymentFailed',
+        data: {
+          orderId: order.id,
+          amount: order.total_amount,
+          error: errorMessage,
+        },
+      });
+    } catch (emailError) {
+      console.error('Order failure email failed:', emailError);
+    }
+
+    return { action: 'order_payment_failed', orderId: order.id };
+  }
+
+  async resolvePayPalProcessor() {
+    if (this.paypalProcessor) return this.paypalProcessor;
+    const clientId = process.env.PAYPAL_CLIENT_ID;
+    const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
+    if (!clientId || !clientSecret) {
+      throw new Error('PayPal not configured for capture');
+    }
+    const { PayPalProcessor } = await import('./payments/PayPalProcessor.js');
+    this.paypalProcessor = new PayPalProcessor(clientId, clientSecret);
+    return this.paypalProcessor;
+  }
+
+  /**
+   * Square payment.updated / payment.created → visitor order when COMPLETED;
+   * refund.created/updated → mark refunded like Stripe; FAILED/CANCELED → mark failed.
    * Metadata contract: site_id + order_items (JSON) on payment.note, payment.metadata,
    * or event.data.metadata (facilitator checkout shape).
    */
   async processSquarePaymentEvent(event) {
     if (!event || !event.type) {
       return { action: 'unhandled', type: 'invalid_event' };
+    }
+
+    if (event.type === 'refund.created' || event.type === 'refund.updated') {
+      return this.processSquareRefundEvent(event);
     }
 
     if (event.type !== 'payment.updated' && event.type !== 'payment.created') {
@@ -486,8 +632,21 @@ export class WebhookProcessor {
     }
 
     const status = String(payment.status || '').toUpperCase();
+    if (status === 'FAILED' || status === 'CANCELED' || status === 'CANCELLED') {
+      const failedOrder = await this.findVisitorOrderByMetadata('square_payment_id', payment.id);
+      if (!failedOrder) {
+        return { action: 'ignored', reason: 'not_completed', status };
+      }
+      return this.applyOrderPaymentFailed(failedOrder, `Square payment ${status}`);
+    }
+
     if (status && status !== 'COMPLETED') {
       return { action: 'ignored', reason: 'not_completed', status };
+    }
+
+    const existing = await this.findVisitorOrderByMetadata('square_payment_id', payment.id);
+    if (existing) {
+      return { action: 'payment_processed', orderId: existing.id, reason: 'already_fulfilled' };
     }
 
     const meta = this.extractSquarePaymentMetadata(event, payment);
@@ -540,6 +699,30 @@ export class WebhookProcessor {
     return this.handlePaymentCheckout(session);
   }
 
+  async processSquareRefundEvent(event) {
+    const refund = event.data?.object?.refund || event.data?.object;
+    if (!refund) {
+      return { action: 'unhandled', type: 'missing_refund' };
+    }
+
+    const status = String(refund.status || '').toUpperCase();
+    if (status === 'FAILED' || status === 'REJECTED') {
+      return { action: 'ignored', reason: 'refund_not_completed', status };
+    }
+    if (status === 'PENDING') {
+      return { action: 'ignored', reason: 'refund_pending', status };
+    }
+
+    const paymentId = refund.payment_id || refund.paymentId;
+    if (!paymentId) {
+      console.warn('Square refund missing payment_id:', refund.id);
+      return { action: 'refund_processed', warning: 'order_not_found' };
+    }
+
+    const order = await this.findVisitorOrderByMetadata('square_payment_id', paymentId);
+    return this.applyOrderRefund(order, refund.id);
+  }
+
   /**
    * @param {object} event
    * @param {object} payment
@@ -571,13 +754,29 @@ export class WebhookProcessor {
   }
 
   /**
-   * PayPal PAYMENT.CAPTURE.COMPLETED → visitor order.
+   * PayPal CAPTURE.COMPLETED → visitor order; CAPTURE.REFUNDED / DENIED → mark like Stripe;
+   * CHECKOUT.ORDER.APPROVED → server-side capture (fulfillment stays on CAPTURE.COMPLETED).
    * Metadata: custom_id = site_id (from PayPalProcessor.createCheckout);
    * optional JSON custom_id or resource.metadata for order_items.
    */
   async processPayPalPaymentEvent(event) {
     if (!event || !event.event_type) {
       return { action: 'unhandled', type: 'invalid_event' };
+    }
+
+    if (event.event_type === 'CHECKOUT.ORDER.APPROVED') {
+      return this.processPayPalOrderApproved(event);
+    }
+
+    if (event.event_type === 'PAYMENT.CAPTURE.REFUNDED') {
+      return this.processPayPalRefundEvent(event);
+    }
+
+    if (
+      event.event_type === 'PAYMENT.CAPTURE.DENIED'
+      || event.event_type === 'PAYMENT.CAPTURE.DECLINED'
+    ) {
+      return this.processPayPalCaptureFailed(event);
     }
 
     if (event.event_type !== 'PAYMENT.CAPTURE.COMPLETED') {
@@ -588,6 +787,11 @@ export class WebhookProcessor {
     const status = String(resource.status || 'COMPLETED').toUpperCase();
     if (status && status !== 'COMPLETED') {
       return { action: 'ignored', reason: 'not_completed', status };
+    }
+
+    const existing = await this.findVisitorOrderByMetadata('paypal_capture_id', resource.id);
+    if (existing) {
+      return { action: 'payment_processed', orderId: existing.id, reason: 'already_fulfilled' };
     }
 
     const meta = this.extractPayPalCaptureMetadata(event, resource);
@@ -612,6 +816,10 @@ export class WebhookProcessor {
       || 'USD'
     ).toLowerCase();
 
+    const paypalOrderId = resource.supplementary_data?.related_ids?.order_id
+      || meta.paypal_order_id
+      || null;
+
     const session = {
       id: null,
       amount_total: amountCents,
@@ -629,6 +837,7 @@ export class WebhookProcessor {
         type: meta.type || 'order',
         processor: 'paypal',
         paypal_capture_id: resource.id,
+        ...(paypalOrderId ? { paypal_order_id: paypalOrderId } : {}),
         ...(meta.fulfillment_type ? { fulfillment_type: meta.fulfillment_type } : {}),
         ...(meta.shipping_address ? { shipping_address: meta.shipping_address } : {}),
       },
@@ -638,9 +847,97 @@ export class WebhookProcessor {
     return this.handlePaymentCheckout(session);
   }
 
+  async processPayPalOrderApproved(event) {
+    const resource = event.resource || {};
+    const paypalOrderId = resource.id;
+    if (!paypalOrderId) {
+      return { action: 'unhandled', type: 'missing_order' };
+    }
+
+    const meta = this.extractPayPalCaptureMetadata(event, resource);
+    const expectedSiteId = meta?.site_id || undefined;
+
+    try {
+      const paypal = await this.resolvePayPalProcessor();
+      const captured = await paypal.captureOrder(
+        paypalOrderId,
+        expectedSiteId ? { expectedSiteId } : {}
+      );
+      return {
+        action: 'payment_captured',
+        data: {
+          orderId: captured.orderId || paypalOrderId,
+          captureId: captured.captureId,
+          status: captured.status,
+        },
+      };
+    } catch (error) {
+      console.error('PayPal APPROVED capture failed:', error);
+      throw error;
+    }
+  }
+
+  extractPayPalCaptureIdFromRefund(resource) {
+    if (!resource || typeof resource !== 'object') return null;
+    if (resource.capture_id) return String(resource.capture_id);
+    if (resource.captureId) return String(resource.captureId);
+
+    const links = Array.isArray(resource.links) ? resource.links : [];
+    for (const link of links) {
+      const href = link?.href;
+      if (typeof href !== 'string') continue;
+      const match = href.match(/\/captures\/([^/?]+)/);
+      if (match?.[1]) return match[1];
+    }
+
+    return null;
+  }
+
+  async processPayPalRefundEvent(event) {
+    const resource = event.resource || {};
+    const captureId = this.extractPayPalCaptureIdFromRefund(resource);
+    let order = null;
+
+    if (captureId) {
+      order = await this.findVisitorOrderByMetadata('paypal_capture_id', captureId);
+    }
+
+    if (!order) {
+      const relatedOrderId = resource.supplementary_data?.related_ids?.order_id;
+      if (relatedOrderId) {
+        order = await this.findVisitorOrderByMetadata('paypal_order_id', relatedOrderId);
+      }
+    }
+
+    if (!order && resource.id) {
+      // Some payloads use capture id as resource.id
+      order = await this.findVisitorOrderByMetadata('paypal_capture_id', resource.id);
+    }
+
+    return this.applyOrderRefund(order, resource.id);
+  }
+
+  async processPayPalCaptureFailed(event) {
+    const resource = event.resource || {};
+    let order = await this.findVisitorOrderByMetadata('paypal_capture_id', resource.id);
+    if (!order) {
+      const relatedOrderId = resource.supplementary_data?.related_ids?.order_id;
+      if (relatedOrderId) {
+        order = await this.findVisitorOrderByMetadata('paypal_order_id', relatedOrderId);
+      }
+    }
+    if (!order) {
+      return { action: 'payment_failed', warning: 'no_related_record' };
+    }
+    return this.applyOrderPaymentFailed(
+      order,
+      `PayPal ${event.event_type}`
+    );
+  }
+
   /**
    * @param {object} event
-   * @param {object} resource - capture resource
+   * @param {object} resource - capture or order resource
    * @returns {object|null}
    */
   extractPayPalCaptureMetadata(event, resource) {
@@ -656,16 +953,23 @@ export class WebhookProcessor {
       }
     }
 
-    if (typeof resource.custom_id === 'string' && resource.custom_id.trim()) {
-      if (resource.custom_id.trim().startsWith('{')) {
+    const customIdCandidates = [
+      resource.custom_id,
+      resource.purchase_units?.[0]?.custom_id,
+      event.resource?.purchase_units?.[0]?.custom_id,
+    ];
+
+    for (const customId of customIdCandidates) {
+      if (typeof customId !== 'string' || !customId.trim()) continue;
+      if (customId.trim().startsWith('{')) {
         try {
-          const parsed = JSON.parse(resource.custom_id);
+          const parsed = JSON.parse(customId);
           if (parsed?.site_id) return parsed;
         } catch {
           // fall through to plain site_id
         }
       }
-      return { site_id: resource.custom_id };
+      return { site_id: customId };
     }
 
     return null;
@@ -1276,7 +1580,6 @@ export class WebhookProcessor {
     const charge = event.data.object;
 
     try {
-      // Find order by charge ID or payment ID
       const order = await this.db.orders.findFirst({
         where: {
           OR: [
@@ -1287,78 +1590,7 @@ export class WebhookProcessor {
         include: { order_items: true }
       });
 
-      if (!order) {
-        console.warn('No order found for refunded charge:', charge.id);
-        return { action: 'refund_processed', warning: 'order_not_found' };
-      }
-
-      // Update order status to refunded
-      await this.db.orders.update({
-        where: { id: order.id },
-        data: {
-          status: 'refunded',
-          payment_status: 'refunded',
-          updated_at: new Date()
-        }
-      });
-
-      // Restock site catalog stock
-      const siteCatalogItems = productCatalogService.extractSiteCatalogItemsFromOrder(order);
-      if (siteCatalogItems.length > 0 && order.site_id) {
-        await productCatalogService.restockSiteCatalog(order.site_id, siteCatalogItems);
-      }
-
-      // Restock inventory
-      for (const item of order.order_items) {
-        if (!item.product_id || item.quantity < 1) continue;
-
-        try {
-          const product = await this.db.products.findUnique({
-            where: { id: item.product_id }
-          });
-
-          if (!product) continue;
-
-          // Atomic increment
-          const updated = await this.db.products.update({
-            where: { id: item.product_id },
-            data: { inventory: { increment: item.quantity } }
-          });
-
-          // Log to inventory_transactions
-          await this.db.inventory_transactions.create({
-            data: {
-              product_id: item.product_id,
-              order_id: order.id,
-              quantity_change: item.quantity, // Positive for restock
-              previous_quantity: product.inventory,
-              new_quantity: updated.inventory,
-              transaction_type: 'restock',
-              notes: `Refund of order ${order.id} - ${item.quantity} unit(s)`
-            }
-          });
-        } catch (err) {
-          console.error(`Failed to restock inventory for product ${item.product_id}:`, err);
-          // Continue - inventory tracking is not critical
-        }
-      }
-
-      // Send refund confirmation email
-      try {
-        await this.emailService.sendEmail({
-          to: order.customer_email,
-          template: 'refundConfirmation',
-          data: {
-            orderId: order.id,
-            amount: order.total_amount,
-            chargeId: charge.id
-          }
-        });
-      } catch (emailError) {
-        console.error('Refund confirmation email failed:', emailError);
-      }
-
-      return { action: 'refund_processed', orderId: order.id };
+      return this.applyOrderRefund(order, charge.id);
     } catch (error) {
       console.error('Error handling charge refund:', error);
       throw error;
@@ -1419,36 +1651,15 @@ export class WebhookProcessor {
       const order = await this.db.orders.findFirst({
         where: {
           stripe_payment_id: paymentIntent.id
-        }
+        },
+        include: { order_items: true }
       });
 
       if (order) {
-        // Update order status to failed
-        await this.db.orders.update({
-          where: { id: order.id },
-          data: {
-            payment_status: 'failed',
-            status: 'cancelled',
-            updated_at: new Date()
-          }
-        });
-
-        // Send failure notification
-        try {
-          await this.emailService.sendEmail({
-            to: order.customer_email,
-            template: 'orderPaymentFailed',
-            data: {
-              orderId: order.id,
-              amount: order.total_amount,
-              error: paymentIntent.last_payment_error?.message
-            }
-          });
-        } catch (emailError) {
-          console.error('Order failure email failed:', emailError);
-        }
-
-        return { action: 'order_payment_failed', orderId: order.id };
+        return this.applyOrderPaymentFailed(
+          order,
+          paymentIntent.last_payment_error?.message
+        );
       }
 
       return { action: 'payment_failed', warning: 'no_related_record' };

@@ -554,6 +554,109 @@ describe('BookingPaymentAdapter', () => {
       expect(result.paymentStatus).toBe('paid');
     });
 
+    it('confirms a paid Square payment link via getTransactionStatus', async () => {
+      prisma.appointments.findFirst.mockResolvedValue({
+        id: 'appt-123',
+        confirmation_code: 'LOPEZ-TEST-1',
+        payment_status: 'pending',
+        stripe_session_id: 'sq_link_123',
+        booking_tenants: {
+          site_id: 'site-1',
+          user_id: 'user-1',
+          users: { stripe_account_id: null }
+        }
+      });
+      getConnectedProcessors.mockResolvedValue({
+        user: { id: 'user-1', stripe_connected: false },
+        byProcessor: { square: { account_id: 'sq_acct_1' } },
+        defaultProcessor: 'square',
+      });
+      const getTransactionStatus = vi.fn().mockResolvedValue({
+        status: 'paid',
+        amount: 5250,
+        currency: 'USD',
+        metadata: {}
+      });
+      PaymentServiceFactory.getProcessor.mockResolvedValue({ getTransactionStatus });
+      prisma.appointments.update.mockResolvedValue({
+        id: 'appt-123',
+        payment_method: 'full',
+        booking_services: { name: 'Haircut' },
+        booking_tenants: { id: 'tenant-456' }
+      });
+
+      const result = await adapter.confirmCheckoutSession('sq_link_123', 'LOPEZ-TEST-1');
+
+      expect(PaymentServiceFactory.getProcessor).toHaveBeenCalledWith('site-1', 'square');
+      expect(getTransactionStatus).toHaveBeenCalledWith('sq_link_123');
+      expect(mockStripe.checkout.sessions.retrieve).not.toHaveBeenCalled();
+      expect(result.paymentStatus).toBe('paid');
+    });
+
+    it('confirms a PayPal order via captureOrder then handlePaymentSuccess', async () => {
+      prisma.appointments.findFirst.mockResolvedValue({
+        id: 'appt-123',
+        confirmation_code: 'LOPEZ-TEST-1',
+        payment_status: 'pending',
+        stripe_session_id: 'PAYPAL-ORDER-1',
+        booking_tenants: {
+          site_id: 'site-1',
+          user_id: 'user-1',
+          users: { stripe_account_id: null }
+        }
+      });
+      getConnectedProcessors.mockResolvedValue({
+        user: { id: 'user-1', stripe_connected: false },
+        byProcessor: { paypal: { account_id: 'pp_merchant_1' } },
+        defaultProcessor: 'paypal',
+      });
+      const captureOrder = vi.fn().mockResolvedValue({
+        orderId: 'PAYPAL-ORDER-1',
+        status: 'COMPLETED',
+        captureId: 'CAP-1',
+        amount: 5250,
+        currency: 'USD'
+      });
+      PaymentServiceFactory.getProcessor.mockResolvedValue({ captureOrder });
+      prisma.appointments.update.mockResolvedValue({
+        id: 'appt-123',
+        payment_method: 'full',
+        booking_services: { name: 'Haircut' },
+        booking_tenants: { id: 'tenant-456' }
+      });
+
+      const result = await adapter.confirmCheckoutSession('PAYPAL-ORDER-1', 'LOPEZ-TEST-1');
+
+      expect(PaymentServiceFactory.getProcessor).toHaveBeenCalledWith('site-1', 'paypal');
+      expect(captureOrder).toHaveBeenCalledWith('PAYPAL-ORDER-1', { expectedSiteId: 'site-1' });
+      expect(mockStripe.checkout.sessions.retrieve).not.toHaveBeenCalled();
+      expect(result.paymentStatus).toBe('paid');
+    });
+
+    it('rejects unknown non-Stripe session when no Square/PayPal credentials', async () => {
+      prisma.appointments.findFirst.mockResolvedValue({
+        id: 'appt-123',
+        confirmation_code: 'LOPEZ-TEST-1',
+        payment_status: 'pending',
+        stripe_session_id: 'unknown_session_xyz',
+        booking_tenants: {
+          site_id: 'site-1',
+          user_id: 'user-1',
+          users: { stripe_account_id: null }
+        }
+      });
+      getConnectedProcessors.mockResolvedValue({
+        user: { id: 'user-1', stripe_connected: false },
+        byProcessor: {},
+        defaultProcessor: null,
+      });
+
+      await expect(
+        adapter.confirmCheckoutSession('unknown_session_xyz', 'LOPEZ-TEST-1')
+      ).rejects.toThrow('Appointment not found for this checkout session');
+      expect(PaymentServiceFactory.getProcessor).not.toHaveBeenCalled();
+    });
+
     it('should create remaining balance record for deposit payments', async () => {
       // Arrange
       const depositAppointment = {

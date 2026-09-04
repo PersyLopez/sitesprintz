@@ -726,8 +726,9 @@ router.post('/checkout/create-session', asyncHandler(async (req, res) => {
 
 /**
  * POST /api/booking/checkout/confirm
- * Public: visitor returns from Stripe Checkout. Fulfills Connect payments
- * even when the platform webhook never sees connected-account events.
+ * Public: visitor returns from Stripe / Square / PayPal checkout.
+ * Dispatches via BookingPaymentAdapter.confirmCheckoutSession (same route).
+ * Fulfills Connect payments even when the platform webhook never sees events.
  */
 router.post('/checkout/confirm', asyncHandler(async (req, res) => {
   const { session_id, confirmation_code } = req.body || {};

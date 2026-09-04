@@ -14,6 +14,7 @@ import BookingFeeService from './BookingFeeService.js';
 import { sitePaymentEnabled } from './shopIntakeFlags.js';
 import {
   getConnectedProcessors,
+  processorCredentialReady,
   publicVisitorCheckoutProcessor,
 } from '../payments/processorConnectHelpers.js';
 import { PaymentServiceFactory } from '../payments/PaymentServiceFactory.js';
@@ -353,7 +354,38 @@ class BookingPaymentAdapter {
   }
 
   /**
-   * Confirm a returned Checkout session on the connected account.
+   * Which processor owns this returned checkout session.
+   * Stripe Checkout ids are cs_*; Square/PayPal use site credentials (createBookingCheckout seam).
+   * Confirm does not re-apply visitor public flags — payment was already initiated.
+   */
+  async resolveConfirmProcessor(sessionId, appointment) {
+    if (typeof sessionId === 'string' && sessionId.startsWith('cs_')) {
+      return 'stripe';
+    }
+
+    const siteId = appointment.booking_tenants?.site_id || null;
+    if (!siteId) {
+      return null;
+    }
+
+    const userId = appointment.booking_tenants?.user_id || null;
+    const connected = await getConnectedProcessors(userId, siteId);
+    const preferred = connected.defaultProcessor;
+    if (
+      (preferred === 'square' || preferred === 'paypal')
+      && processorCredentialReady(connected.byProcessor, preferred)
+    ) {
+      return preferred;
+    }
+    if (processorCredentialReady(connected.byProcessor, 'square')) return 'square';
+    if (processorCredentialReady(connected.byProcessor, 'paypal')) return 'paypal';
+    return null;
+  }
+
+  /**
+   * Confirm a returned Checkout session (Stripe Connect / Square / PayPal).
+   * Neighbor: createBookingCheckout processor dispatch; PayPal capture like
+   * payment-facilitator POST /checkout/capture-paypal.
    * Connect checkout.session.completed often never hits the platform webhook.
    */
   async confirmCheckoutSession(sessionId, confirmationCode) {
@@ -378,6 +410,42 @@ class BookingPaymentAdapter {
       return { success: true, appointmentId: appointment.id, paymentStatus: 'paid' };
     }
 
+    const processor = await this.resolveConfirmProcessor(sessionId, appointment);
+    if (!processor) {
+      throw new Error('Appointment not found for this checkout session');
+    }
+
+    if (processor === 'stripe') {
+      return this.confirmStripeCheckoutSession(sessionId, appointment);
+    }
+
+    const siteId = appointment.booking_tenants?.site_id;
+    if (!siteId) {
+      throw new Error('Appointment not found for this checkout session');
+    }
+
+    if (processor === 'square') {
+      const square = await PaymentServiceFactory.getProcessor(siteId, 'square');
+      const status = await square.getTransactionStatus(sessionId);
+      if (status?.status !== 'paid') {
+        throw new Error('Checkout session is not paid');
+      }
+      return this.handlePaymentSuccess(sessionId, appointment.id);
+    }
+
+    if (processor === 'paypal') {
+      const paypal = await PaymentServiceFactory.getProcessor(siteId, 'paypal');
+      const capture = await paypal.captureOrder(sessionId, { expectedSiteId: siteId });
+      if (capture?.status !== 'COMPLETED') {
+        throw new Error('Checkout session is not paid');
+      }
+      return this.handlePaymentSuccess(sessionId, appointment.id);
+    }
+
+    throw new Error('Appointment not found for this checkout session');
+  }
+
+  async confirmStripeCheckoutSession(sessionId, appointment) {
     const stripe = this.getStripe();
     if (!stripe) {
       throw new Error('Stripe is not configured');

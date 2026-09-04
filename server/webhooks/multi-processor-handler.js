@@ -288,7 +288,14 @@ export async function handleSquareWebhook(request, options) {
       return {
         status: 200,
         action: result.action,
-        data: result.data
+        data: result.data ?? (result.orderId != null || result.warning || result.reason
+          ? {
+              orderId: result.orderId,
+              warning: result.warning,
+              reason: result.reason,
+              status: result.status,
+            }
+          : undefined)
       };
     } catch (processingError) {
       log.error('Square webhook processing failed', {
@@ -429,7 +436,14 @@ export async function handlePayPalWebhook(request, options) {
       return {
         status: 200,
         action: result.action,
-        data: result.data
+        data: result.data ?? (result.orderId != null || result.warning || result.reason
+          ? {
+              orderId: result.orderId,
+              warning: result.warning,
+              reason: result.reason,
+              status: result.status,
+            }
+          : undefined)
       };
     } catch (processingError) {
       log.error('PayPal webhook processing failed', {
