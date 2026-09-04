@@ -30,7 +30,7 @@ vi.mock('../../../server/utils/encryption.js', () => ({
 }));
 
 // Same square SDK stub as SquareProcessor.test.js — Client needs Environment.Sandbox
-vi.mock('square', () => ({
+vi.mock('square/legacy', () => ({
   Client: class MockClient {
     constructor() {
       return {};

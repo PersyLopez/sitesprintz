@@ -23,7 +23,7 @@ const mockSquareClient = {
   }
 };
 
-vi.mock('square', () => ({
+vi.mock('square/legacy', () => ({
   Client: class MockClient {
     constructor() {
       return mockSquareClient;

@@ -4,7 +4,7 @@
  * Implements IPaymentProcessor interface for Square payments.
  */
 
-import { Client, Environment } from 'square';
+import { Client, Environment } from 'square/legacy';
 import crypto from 'crypto';
 import { IPaymentProcessor, PaymentValidationError } from './IPaymentProcessor.js';
 

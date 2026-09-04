@@ -5,8 +5,7 @@
  */
 
 import crypto from 'crypto';
-import squarePkg from 'square';
-const { Client, Environment } = squarePkg;
+import { Client, Environment } from 'square/legacy';
 import { getRedis } from '../../utils/redis.js';
 import { recordProcessorConnection } from './processorConnectHelpers.js';
 

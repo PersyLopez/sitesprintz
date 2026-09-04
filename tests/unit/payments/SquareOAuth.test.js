@@ -47,7 +47,7 @@ vi.mock('../../../server/utils/redis.js', () => ({
   getRedis: () => mockRedis
 }));
 
-vi.mock('square', () => {
+vi.mock('square/legacy', () => {
   const Environment = {
     Production: 'production',
     Sandbox: 'sandbox'
