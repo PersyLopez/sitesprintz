@@ -79,6 +79,21 @@ describe('PaymentSettings', () => {
     expect(screen.getByTestId('paypal-visitor-checkout-pending')).toBeInTheDocument();
     expect(screen.queryByTestId('stripe-visitor-checkout-pending')).not.toBeInTheDocument();
     expect(screen.queryByText(/STRIPE_SECRET_KEY/)).not.toBeInTheDocument();
+    expect(within(screen.getByTestId('processor-square')).getByTestId('connection-status'))
+      .toHaveTextContent(/^Not connected$/);
+  });
+
+  it('shows connected-but-checkout-pending badge when Square is linked and visitorCheckout is off', async () => {
+    mockSitesAndStatus([{ id: 'site-1', payOnSite: false }], {
+      square: { connected: true, accountId: 'sq_loc_1' },
+      visitorCheckout: { stripe: true, square: false, paypal: false }
+    });
+    renderSettings();
+    const squareCard = await screen.findByTestId('processor-square');
+    expect(within(squareCard).getByTestId('connection-status'))
+      .toHaveTextContent(/Connected — online checkout coming soon/i);
+    expect(within(squareCard).getByTestId('square-visitor-checkout-pending'))
+      .toHaveTextContent(/coming soon/i);
   });
 
   it('saves pay on site for the owner sites', async () => {

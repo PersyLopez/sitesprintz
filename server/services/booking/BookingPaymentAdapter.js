@@ -12,7 +12,11 @@ import Stripe from 'stripe';
 import { addDays } from 'date-fns';
 import BookingFeeService from './BookingFeeService.js';
 import { sitePaymentEnabled } from './shopIntakeFlags.js';
-import { publicVisitorCheckoutProcessor } from '../payments/processorConnectHelpers.js';
+import {
+  getConnectedProcessors,
+  publicVisitorCheckoutProcessor,
+} from '../payments/processorConnectHelpers.js';
+import { PaymentServiceFactory } from '../payments/PaymentServiceFactory.js';
 import { parseSiteData } from '../../utils/parseSiteData.js';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
@@ -104,15 +108,35 @@ class BookingPaymentAdapter {
 
       const tenant = await prisma.booking_tenants.findUnique({
         where: { id: appointment.tenant_id },
-        include: { users: { select: { stripe_account_id: true, stripe_connected: true } } }
+        include: {
+          users: {
+            select: {
+              id: true,
+              stripe_account_id: true,
+              stripe_connected: true,
+            },
+          },
+        },
       });
 
-      const stripeAccountId = tenant?.users?.stripe_account_id || tenant?.stripe_account_id;
-      const checkoutProcessor = publicVisitorCheckoutProcessor({
-        user: tenant?.users,
-        defaultProcessor: 'stripe',
-      });
-      if (checkoutProcessor !== 'stripe' || !stripeAccountId) {
+      const siteId = tenant?.site_id || tenantRecord?.site_id || null;
+      const userId = tenant?.user_id || tenant?.users?.id || null;
+
+      // Neighbor: publicVisitorCheckoutProcessor — site default + credentials, not hardcoded stripe
+      let connected = {
+        user: tenant?.users || null,
+        byProcessor: {},
+        defaultProcessor: null,
+      };
+      if (userId && siteId) {
+        connected = await getConnectedProcessors(userId, siteId);
+        if (!connected.user && tenant?.users) {
+          connected = { ...connected, user: tenant.users };
+        }
+      }
+
+      const checkoutProcessor = publicVisitorCheckoutProcessor(connected);
+      if (!checkoutProcessor) {
         return this.confirmPayOnSite(appointmentId);
       }
 
@@ -132,21 +156,95 @@ class BookingPaymentAdapter {
       const totalPriceDollars = basePriceDollars + (fees.bookingFeeCents / 100);
       const totalPriceCents = Math.round(totalPriceDollars * 100);
 
-      const stripe = this.getStripe();
-      if (!stripe) {
-        return this.confirmPayOnSite(appointmentId);
-      }
-
       const origin = process.env.FRONTEND_URL || 'http://localhost:5173';
       const confirmationCode = appointment.confirmation_code;
       if (!confirmationCode) {
         throw new Error(`Appointment ${appointmentId} is missing a confirmation code`);
       }
       const appointmentPath = `/booking/appointment/${encodeURIComponent(confirmationCode)}`;
-      const successUrl = `${origin}${appointmentPath}?session_id={CHECKOUT_SESSION_ID}`;
       const cancelUrl = subdomain
         ? `${origin}/view/${encodeURIComponent(subdomain)}`
         : `${origin}${appointmentPath}`;
+
+      const bookingMetadata = {
+        type: 'booking', // Critical: tells webhook this is a booking payment
+        appointment_id: appointmentId,
+        tenant_id: appointment.tenant_id,
+        service_id: appointment.service_id,
+        payment_type: paymentType,
+        service_price: basePriceDollars.toString(),
+        booking_fee: (fees.bookingFeeCents / 100).toString(),
+        fees: JSON.stringify(fees.breakdown),
+        ...(siteId ? { site_id: siteId } : {}),
+      };
+
+      const productName = `${appointment.booking_services.name} - Appointment Booking`;
+      const productDescription = `Booking for ${appointment.customer_name} on ${new Date(appointment.start_time).toLocaleDateString()}`;
+
+      // Square / PayPal when site default resolves there and visitor flag is on
+      if (checkoutProcessor === 'square' || checkoutProcessor === 'paypal') {
+        if (!siteId) {
+          return this.confirmPayOnSite(appointmentId);
+        }
+
+        let processor;
+        try {
+          processor = await PaymentServiceFactory.getProcessor(siteId, checkoutProcessor);
+        } catch {
+          return this.confirmPayOnSite(appointmentId);
+        }
+
+        const successUrl = `${origin}${appointmentPath}`;
+        const { checkoutUrl, sessionId } = await processor.createCheckout({
+          items: [{
+            name: productName,
+            description: productDescription,
+            price: totalPriceDollars,
+            quantity: 1,
+          }],
+          totalCents: totalPriceCents,
+          successUrl,
+          cancelUrl,
+          metadata: bookingMetadata,
+          platformFeeCents: 0,
+        });
+
+        await prisma.appointments.update({
+          where: { id: appointmentId },
+          data: {
+            stripe_session_id: sessionId,
+            payment_intent_id: sessionId,
+            payment_amount_cents: totalPriceCents,
+            payment_method: paymentType,
+            payment_status: 'pending',
+            payment_initiated_at: new Date(),
+          },
+        });
+
+        return {
+          checkoutUrl,
+          sessionId,
+          appointmentId,
+          amountCents: totalPriceCents,
+          paymentType,
+          fees: fees.breakdown,
+        };
+      }
+
+      // Stripe path (0% platform fee — direct charge on connected account)
+      const stripeAccountId = connected.user?.stripe_account_id
+        || tenant?.users?.stripe_account_id
+        || tenant?.stripe_account_id;
+      if (!stripeAccountId) {
+        return this.confirmPayOnSite(appointmentId);
+      }
+
+      const stripe = this.getStripe();
+      if (!stripe) {
+        return this.confirmPayOnSite(appointmentId);
+      }
+
+      const successUrl = `${origin}${appointmentPath}?session_id={CHECKOUT_SESSION_ID}`;
 
       // Create Stripe Checkout Session
       const sessionParams = {
@@ -155,8 +253,8 @@ class BookingPaymentAdapter {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: `${appointment.booking_services.name} - Appointment Booking`,
-              description: `Booking for ${appointment.customer_name} on ${new Date(appointment.start_time).toLocaleDateString()}`
+              name: productName,
+              description: productDescription,
             },
             unit_amount: totalPriceCents
           },
@@ -166,16 +264,7 @@ class BookingPaymentAdapter {
         success_url: successUrl,
         cancel_url: cancelUrl,
         customer_email: appointment.customer_email,
-        metadata: {
-          type: 'booking', // Critical: tells webhook this is a booking payment
-          appointment_id: appointmentId,
-          tenant_id: appointment.tenant_id,
-          service_id: appointment.service_id,
-          payment_type: paymentType,
-          service_price: basePriceDollars.toString(),
-          booking_fee: (fees.bookingFeeCents / 100).toString(),
-          fees: JSON.stringify(fees.breakdown)
-        }
+        metadata: bookingMetadata,
       };
 
       const session = await stripe.checkout.sessions.create(sessionParams, {

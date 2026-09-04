@@ -290,6 +290,17 @@ function ProcessorConnectList({
           const incomplete = isIncomplete(processor.id);
           const enabled = available[processor.id] !== false;
           const defaultProcessor = isDefault(processor.id);
+          const visitorCheckoutLive = status?.visitorCheckout?.[processor.id] !== false;
+          const connectedCheckoutPending = connected && !visitorCheckoutLive;
+
+          let connectionStatusLabel = 'Not connected';
+          if (connectedCheckoutPending) {
+            connectionStatusLabel = 'Connected — online checkout coming soon';
+          } else if (connected) {
+            connectionStatusLabel = 'Connected';
+          } else if (incomplete) {
+            connectionStatusLabel = 'Incomplete';
+          }
 
           return (
             <article
@@ -311,7 +322,7 @@ function ProcessorConnectList({
                   className={`status-badge ${connected ? 'ready' : incomplete ? 'incomplete' : 'not_started'}`}
                   data-testid="connection-status"
                 >
-                  {connected ? 'Connected' : incomplete ? 'Incomplete' : 'Not connected'}
+                  {connectionStatusLabel}
                 </span>
               </div>
 
@@ -320,9 +331,11 @@ function ProcessorConnectList({
                 {processor.fee}
                 {processor.highlight ? ` · ${processor.highlight}` : ''}
               </p>
-              {status?.visitorCheckout?.[processor.id] === false && (
+              {!visitorCheckoutLive && (
                 <p className="processor-unavailable" data-testid={`${processor.id}-visitor-checkout-pending`}>
-                  You can connect {processor.name} now. Customers still pay with Stripe (or at the salon) until this checkout is enabled.
+                  {connectedCheckoutPending
+                    ? `${processor.name} is connected, but online checkout for customers is coming soon. Visitors still pay with Stripe or on site.`
+                    : `You can connect ${processor.name} now. Customers still pay with Stripe (or at the salon) until this checkout is enabled.`}
                 </p>
               )}
 

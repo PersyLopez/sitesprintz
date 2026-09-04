@@ -16,6 +16,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import BookingPaymentAdapter from '../../../server/services/booking/BookingPaymentAdapter.js';
 import { prisma } from '../../../database/db.js';
+import { getConnectedProcessors } from '../../../server/services/payments/processorConnectHelpers.js';
+import { PaymentServiceFactory } from '../../../server/services/payments/PaymentServiceFactory.js';
 
 // Mock Prisma
 vi.mock('../../../database/db.js', () => ({
@@ -36,8 +38,31 @@ vi.mock('../../../database/db.js', () => ({
     },
     booking_notifications: {
       create: vi.fn()
+    },
+    users: {
+      findUnique: vi.fn()
+    },
+    payment_processor_credentials: {
+      findMany: vi.fn()
+    },
+    site_payment_method: {
+      findUnique: vi.fn()
     }
   }
+}));
+
+vi.mock('../../../server/services/payments/processorConnectHelpers.js', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    getConnectedProcessors: vi.fn(),
+  };
+});
+
+vi.mock('../../../server/services/payments/PaymentServiceFactory.js', () => ({
+  PaymentServiceFactory: {
+    getProcessor: vi.fn(),
+  },
 }));
 
 // Mock BookingFeeService
@@ -108,6 +133,12 @@ describe('BookingPaymentAdapter', () => {
   });
 
   describe('createBookingCheckout', () => {
+    const stripeUser = {
+      id: 'user-1',
+      stripe_account_id: 'acct_123',
+      stripe_connected: true,
+    };
+
     const mockAppointment = {
       id: 'appt-123',
       tenant_id: 'tenant-456',
@@ -124,17 +155,25 @@ describe('BookingPaymentAdapter', () => {
       },
       booking_tenants: {
         id: 'tenant-456',
+        site_id: 'site-1',
+        user_id: 'user-1',
         payment_enabled: true,
-        users: {
-          stripe_account_id: 'acct_123',
-          stripe_connected: true
-        }
+        users: stripeUser,
       }
+    };
+
+    const stripeConnected = {
+      user: stripeUser,
+      byProcessor: {},
+      defaultProcessor: 'stripe',
     };
 
     beforeEach(() => {
       process.env.FRONTEND_URL = 'http://localhost:5173';
       process.env.STRIPE_SECRET_KEY = 'sk_test_123';
+      delete process.env.SQUARE_CHECKOUT_ENABLED;
+      delete process.env.PAYPAL_CHECKOUT_ENABLED;
+      getConnectedProcessors.mockResolvedValue(stripeConnected);
     });
 
     it('should short-circuit when payment is disabled for the site', async () => {
@@ -158,9 +197,16 @@ describe('BookingPaymentAdapter', () => {
       prisma.appointments.findUnique.mockResolvedValue(mockAppointment);
       prisma.booking_tenants.findUnique.mockResolvedValue({
         id: 'tenant-456',
+        site_id: 'site-1',
+        user_id: 'user-1',
         payment_enabled: true,
         stripe_account_id: 'acct_123',
-        users: { stripe_account_id: 'acct_123', stripe_connected: false },
+        users: { id: 'user-1', stripe_account_id: 'acct_123', stripe_connected: false },
+      });
+      getConnectedProcessors.mockResolvedValue({
+        user: { id: 'user-1', stripe_account_id: 'acct_123', stripe_connected: false },
+        byProcessor: {},
+        defaultProcessor: 'stripe',
       });
       prisma.appointments.update.mockResolvedValue(mockAppointment);
 
@@ -325,6 +371,123 @@ describe('BookingPaymentAdapter', () => {
       expect(result.checkoutUrl).toBeNull();
 
       process.env.STRIPE_SECRET_KEY = originalKey;
+    });
+
+    it('uses Square createCheckout when site default is square and flag is on', async () => {
+      process.env.SQUARE_CHECKOUT_ENABLED = 'true';
+      prisma.appointments.findUnique.mockResolvedValue(mockAppointment);
+      prisma.booking_tenants.findUnique.mockResolvedValue(mockAppointment.booking_tenants);
+      getConnectedProcessors.mockResolvedValue({
+        user: { id: 'user-1', stripe_connected: false },
+        byProcessor: { square: { account_id: 'sq_acct_1' } },
+        defaultProcessor: 'square',
+      });
+      const createCheckout = vi.fn().mockResolvedValue({
+        sessionId: 'sq_link_123',
+        checkoutUrl: 'https://square.link/u/test',
+      });
+      PaymentServiceFactory.getProcessor.mockResolvedValue({ createCheckout });
+      prisma.appointments.update.mockResolvedValue(mockAppointment);
+
+      const result = await adapter.createBookingCheckout('appt-123', 'full');
+
+      expect(PaymentServiceFactory.getProcessor).toHaveBeenCalledWith('site-1', 'square');
+      expect(createCheckout).toHaveBeenCalledWith(
+        expect.objectContaining({
+          totalCents: 5250,
+          platformFeeCents: 0,
+          metadata: expect.objectContaining({
+            type: 'booking',
+            appointment_id: 'appt-123',
+            site_id: 'site-1',
+          }),
+        })
+      );
+      expect(mockStripe.checkout.sessions.create).not.toHaveBeenCalled();
+      expect(result).toEqual({
+        checkoutUrl: 'https://square.link/u/test',
+        sessionId: 'sq_link_123',
+        appointmentId: 'appt-123',
+        amountCents: 5250,
+        paymentType: 'full',
+        fees: { booking: 250, cancellation: 0, noShow: 0 },
+      });
+      expect(prisma.appointments.update).toHaveBeenCalledWith({
+        where: { id: 'appt-123' },
+        data: expect.objectContaining({
+          stripe_session_id: 'sq_link_123',
+          payment_status: 'pending',
+        }),
+      });
+    });
+
+    it('uses PayPal createCheckout when site default is paypal and flag is on', async () => {
+      process.env.PAYPAL_CHECKOUT_ENABLED = 'true';
+      prisma.appointments.findUnique.mockResolvedValue(mockAppointment);
+      prisma.booking_tenants.findUnique.mockResolvedValue(mockAppointment.booking_tenants);
+      getConnectedProcessors.mockResolvedValue({
+        user: { id: 'user-1', stripe_connected: false },
+        byProcessor: { paypal: { account_id: 'pp_merchant_1' } },
+        defaultProcessor: 'paypal',
+      });
+      const createCheckout = vi.fn().mockResolvedValue({
+        sessionId: 'PAYPAL-ORDER-1',
+        checkoutUrl: 'https://www.paypal.com/checkoutnow?token=1',
+      });
+      PaymentServiceFactory.getProcessor.mockResolvedValue({ createCheckout });
+      prisma.appointments.update.mockResolvedValue(mockAppointment);
+
+      const result = await adapter.createBookingCheckout('appt-123', 'deposit');
+
+      expect(PaymentServiceFactory.getProcessor).toHaveBeenCalledWith('site-1', 'paypal');
+      expect(createCheckout).toHaveBeenCalledWith(
+        expect.objectContaining({
+          totalCents: 2750,
+          platformFeeCents: 0,
+          metadata: expect.objectContaining({
+            type: 'booking',
+            payment_type: 'deposit',
+          }),
+        })
+      );
+      expect(result.sessionId).toBe('PAYPAL-ORDER-1');
+      expect(result.checkoutUrl).toContain('paypal.com');
+    });
+
+    it('falls back to pay on site when square is preferred but flag is off', async () => {
+      delete process.env.SQUARE_CHECKOUT_ENABLED;
+      prisma.appointments.findUnique.mockResolvedValue(mockAppointment);
+      prisma.booking_tenants.findUnique.mockResolvedValue(mockAppointment.booking_tenants);
+      getConnectedProcessors.mockResolvedValue({
+        user: { id: 'user-1', stripe_connected: false },
+        byProcessor: { square: { account_id: 'sq_acct_1' } },
+        defaultProcessor: 'square',
+      });
+      prisma.appointments.update.mockResolvedValue(mockAppointment);
+
+      const result = await adapter.createBookingCheckout('appt-123', 'full');
+
+      expect(result.payOnSite).toBe(true);
+      expect(PaymentServiceFactory.getProcessor).not.toHaveBeenCalled();
+      expect(mockStripe.checkout.sessions.create).not.toHaveBeenCalled();
+    });
+
+    it('falls back to pay on site when factory processor is not configured', async () => {
+      process.env.SQUARE_CHECKOUT_ENABLED = 'true';
+      prisma.appointments.findUnique.mockResolvedValue(mockAppointment);
+      prisma.booking_tenants.findUnique.mockResolvedValue(mockAppointment.booking_tenants);
+      getConnectedProcessors.mockResolvedValue({
+        user: { id: 'user-1', stripe_connected: false },
+        byProcessor: { square: { account_id: 'sq_acct_1' } },
+        defaultProcessor: 'square',
+      });
+      PaymentServiceFactory.getProcessor.mockRejectedValue(new Error('Square not configured for this site'));
+      prisma.appointments.update.mockResolvedValue(mockAppointment);
+
+      const result = await adapter.createBookingCheckout('appt-123', 'full');
+
+      expect(result.payOnSite).toBe(true);
+      expect(result.checkoutUrl).toBeNull();
     });
   });
 
