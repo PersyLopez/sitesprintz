@@ -14,8 +14,8 @@ export const PROCESSORS = ['stripe', 'square', 'paypal'];
 /**
  * Processors always allowed for visitor checkout (no env gate).
  * Square/PayPal can be connected in the owner dashboard; they stay off
- * public checkout until their per-processor flag is set (Square: SQUARE_CHECKOUT_ENABLED;
- * PayPal: same pattern for P2).
+ * public checkout until their per-processor flag is set
+ * (SQUARE_CHECKOUT_ENABLED / PAYPAL_CHECKOUT_ENABLED === 'true').
  */
 export const PUBLIC_VISITOR_PROCESSORS = ['stripe'];
 
@@ -23,6 +23,7 @@ export function isVisitorProcessorPublic(processor) {
   if (PUBLIC_VISITOR_PROCESSORS.includes(processor)) return true;
   // Read at call time so flips take effect without restart in tests / hot reload.
   if (processor === 'square') return process.env.SQUARE_CHECKOUT_ENABLED === 'true';
+  if (processor === 'paypal') return process.env.PAYPAL_CHECKOUT_ENABLED === 'true';
   return false;
 }
 

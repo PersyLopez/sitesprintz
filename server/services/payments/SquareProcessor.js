@@ -57,6 +57,14 @@ export class SquareProcessor extends IPaymentProcessor {
       }
     }));
 
+    // Square order.metadata values max 255 chars — keep keys webhooks need for site recovery
+    const orderMetadata = {};
+    for (const key of ['site_id', 'user_id', 'type']) {
+      if (metadata[key] != null && metadata[key] !== '') {
+        orderMetadata[key] = String(metadata[key]).slice(0, 255);
+      }
+    }
+
     // Create payment link
     try {
       const response = await this.square.checkoutApi.createPaymentLink({
@@ -64,8 +72,12 @@ export class SquareProcessor extends IPaymentProcessor {
         paymentLink: {
           order: {
             locationId: this.locationId,
-            lineItems
+            lineItems,
+            ...(Object.keys(orderMetadata).length > 0 ? { metadata: orderMetadata } : {})
           },
+          ...(orderMetadata.site_id
+            ? { paymentNote: `site_id:${orderMetadata.site_id}` }
+            : {}),
           checkoutOptions: {
             redirectUrl: successUrl
           }

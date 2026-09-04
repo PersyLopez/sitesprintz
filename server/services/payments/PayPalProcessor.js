@@ -85,23 +85,28 @@ export class PayPalProcessor extends IPaymentProcessor {
 
     const accessToken = await this.getAccessToken();
 
-    // Build order request
+    // Build order request — custom_id carries site_id for capture/webhook recovery
+    const purchaseUnit = {
+      amount: {
+        currency_code: currency.toUpperCase(),
+        value: (totalCents / 100).toFixed(2) // Convert cents to dollars
+      },
+      items: items.map(item => ({
+        name: item.name,
+        quantity: String(item.quantity || 1),
+        unit_amount: {
+          currency_code: currency.toUpperCase(),
+          value: Number(item.price).toFixed(2)
+        }
+      }))
+    };
+    if (metadata.site_id) {
+      purchaseUnit.custom_id = String(metadata.site_id).slice(0, 127);
+    }
+
     const orderRequest = {
       intent: 'CAPTURE',
-      purchase_units: [{
-        amount: {
-          currency_code: currency.toUpperCase(),
-          value: (totalCents / 100).toFixed(2) // Convert cents to dollars
-        },
-        items: items.map(item => ({
-          name: item.name,
-          quantity: String(item.quantity || 1),
-          unit_amount: {
-            currency_code: currency.toUpperCase(),
-            value: item.price.toFixed(2)
-          }
-        }))
-      }],
+      purchase_units: [purchaseUnit],
       application_context: {
         return_url: successUrl,
         cancel_url: cancelUrl
@@ -163,18 +168,103 @@ export class PayPalProcessor extends IPaymentProcessor {
 
       // Extract amount from first purchase unit
       const amount = order.purchase_units?.[0]?.amount;
+      const customId = order.purchase_units?.[0]?.custom_id;
 
       return {
         status: order.status, // CREATED, APPROVED, COMPLETED, etc.
         amount: amount ? Math.round(parseFloat(amount.value) * 100) : 0, // Convert to cents
         currency: amount?.currency_code || 'USD',
-        metadata: {}
+        metadata: customId ? { site_id: customId } : {}
       };
     } catch (error) {
       if (error instanceof PaymentValidationError) {
         throw error;
       }
       throw error;
+    }
+  }
+
+  /**
+   * Capture an approved PayPal order server-side (no client amounts).
+   * Idempotent when order is already COMPLETED. Rejects site_id mismatch.
+   * @param {string} orderId
+   * @param {{ expectedSiteId?: string }} [options]
+   */
+  async captureOrder(orderId, options = {}) {
+    this.validateTransactionId(orderId);
+
+    const { expectedSiteId } = options;
+    const accessToken = await this.getAccessToken();
+
+    try {
+      const statusResult = await this.getTransactionStatus(orderId);
+
+      if (expectedSiteId) {
+        const orderSiteId = statusResult.metadata?.site_id || '';
+        if (orderSiteId !== expectedSiteId) {
+          throw new PaymentValidationError('Order site mismatch');
+        }
+      }
+
+      // Already captured — idempotent success
+      if (statusResult.status === 'COMPLETED') {
+        return {
+          orderId,
+          status: 'COMPLETED',
+          captureId: null,
+          amount: statusResult.amount,
+          currency: statusResult.currency
+        };
+      }
+
+      const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders/${orderId}/capture`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'PayPal-Request-Id': orderId
+        },
+        body: '{}'
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new PaymentValidationError('Order not found');
+        }
+        // PayPal returns 422 ORDER_ALREADY_CAPTURED — treat as idempotent
+        if (response.status === 422) {
+          const already = await this.getTransactionStatus(orderId);
+          if (already.status === 'COMPLETED') {
+            return {
+              orderId,
+              status: 'COMPLETED',
+              captureId: null,
+              amount: already.amount,
+              currency: already.currency
+            };
+          }
+        }
+        throw new Error('Failed to capture PayPal order');
+      }
+
+      const captured = await response.json();
+      const capture = captured.purchase_units?.[0]?.payments?.captures?.[0];
+      const amount = capture?.amount || captured.purchase_units?.[0]?.amount;
+
+      return {
+        orderId: captured.id || orderId,
+        status: captured.status || 'COMPLETED',
+        captureId: capture?.id || null,
+        amount: amount ? Math.round(parseFloat(amount.value) * 100) : statusResult.amount,
+        currency: amount?.currency_code || statusResult.currency || 'USD'
+      };
+    } catch (error) {
+      if (error instanceof PaymentValidationError) {
+        throw error;
+      }
+      const safeError = new Error('Failed to capture order');
+      safeError.originalError = error.message;
+      throw safeError;
     }
   }
 

@@ -293,7 +293,16 @@ router.post('/checkout/create-session', asyncHandler(async (req, res) => {
     }
 
     if (provider === 'paypal') {
-      return await handlePayPalCheckout(req, res, site, account_id, items, successUrl, cancelUrl);
+      return await handlePayPalCheckout(
+        req,
+        res,
+        site,
+        account_id,
+        items,
+        successUrl,
+        cancelUrl,
+        { fulfillment, deliveryAddress, deliveryAddressLine2 }
+      );
     }
 
     if (provider === 'shopify') {
@@ -304,6 +313,49 @@ router.post('/checkout/create-session', asyncHandler(async (req, res) => {
   } catch (error) {
     console.error(`${provider} checkout error:`, error);
     return sendServerError(res, error, `Failed to create ${provider} session`);
+  }
+}));
+
+/**
+ * POST /api/payments/checkout/capture-paypal
+ * Neighbor: booking.routes POST /checkout/confirm — server-side capture, no client amounts
+ */
+router.post('/checkout/capture-paypal', asyncHandler(async (req, res) => {
+  const { orderId, siteId } = req.body || {};
+
+  if (!orderId || !siteId) {
+    return sendBadRequest(res, 'orderId and siteId are required', 'MISSING_CAPTURE_FIELDS');
+  }
+
+  const site = await prisma.sites.findUnique({ where: { id: siteId } });
+  if (!site) {
+    return sendNotFound(res, 'Site', 'SITE_NOT_FOUND');
+  }
+
+  const paymentMethod = await prisma.site_payment_method.findUnique({
+    where: { site_id: siteId }
+  });
+  if (!paymentMethod?.is_active || paymentMethod.provider !== 'paypal') {
+    return sendBadRequest(res, 'PayPal not configured for this site', 'PAYMENT_NOT_CONFIGURED');
+  }
+
+  try {
+    const { PaymentServiceFactory } = await import('../services/payments/PaymentServiceFactory.js');
+    const processor = await PaymentServiceFactory.getProcessor(siteId, 'paypal');
+    const result = await processor.captureOrder(orderId, { expectedSiteId: siteId });
+
+    sendSuccess(res, {
+      orderId: result.orderId,
+      status: result.status,
+      captureId: result.captureId,
+      provider: 'paypal'
+    });
+  } catch (error) {
+    if (error?.name === 'PaymentValidationError' || error?.message === 'Order site mismatch') {
+      return sendBadRequest(res, error.message, 'SITE_MISMATCH');
+    }
+    console.error('PayPal capture error:', error);
+    return sendServerError(res, error, 'Failed to capture PayPal order');
   }
 }));
 
@@ -496,10 +548,79 @@ async function handleSquareCheckout(
 
 /**
  * PayPal: Create order and return redirect URL
+ * Neighbor: handleSquareCheckout — same validate/rebuild + delivery; factory createCheckout
  */
-async function handlePayPalCheckout(req, res, site, paypalAccountId, items, successUrl, cancelUrl) {
-  // Placeholder - implement PayPal Client when credentials available
-  return sendBadRequest(res, 'PayPal checkout not yet implemented', 'NOT_IMPLEMENTED');
+async function handlePayPalCheckout(
+  req,
+  res,
+  site,
+  _paypalAccountId,
+  items,
+  successUrl,
+  cancelUrl,
+  deliveryOptions = {}
+) {
+  const { PaymentServiceFactory } = await import('../services/payments/PaymentServiceFactory.js');
+  const { buildDeliveryCharge } = await import('../utils/delivery.js');
+  const { parseSiteData } = await import('../utils/parseSiteData.js');
+  const siteData = parseSiteData(site);
+
+  let rebuiltCheckout;
+  try {
+    const catalogService = new ProductCatalogService();
+    rebuiltCheckout = await catalogService.validateAndRebuildCheckout(items, site.id, siteData);
+  } catch (error) {
+    console.error('Checkout validation failed:', error.message);
+    return sendBadRequest(res, error.message, 'INVALID_CHECKOUT');
+  }
+
+  const deliveryCharge = await buildDeliveryCharge(siteData, {
+    fulfillment: deliveryOptions.fulfillment,
+    address: deliveryOptions.deliveryAddress,
+    addressLine2: deliveryOptions.deliveryAddressLine2,
+  });
+  if (!deliveryCharge.ok) {
+    return sendBadRequest(res, deliveryCharge.error, deliveryCharge.code || 'INVALID_DELIVERY');
+  }
+
+  const checkoutItems = [...rebuiltCheckout.items];
+  if (deliveryCharge.fee > 0) {
+    checkoutItems.push({
+      name: 'Delivery',
+      price: deliveryCharge.fee,
+      quantity: 1,
+    });
+  }
+
+  const totalCents = Math.round(
+    checkoutItems.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity || 1), 0) * 100
+  );
+
+  const processor = await PaymentServiceFactory.getProcessor(site.id, 'paypal');
+  const { checkoutUrl, sessionId } = await processor.createCheckout({
+    items: checkoutItems,
+    totalCents,
+    successUrl,
+    cancelUrl,
+    metadata: {
+      site_id: site.id,
+      user_id: site.user_id || '',
+      order_items: JSON.stringify(rebuiltCheckout.items),
+      type: 'order',
+      fulfillment_type: deliveryCharge.fulfillmentType,
+      ...(deliveryCharge.shippingAddress
+        ? { shipping_address: JSON.stringify(deliveryCharge.shippingAddress) }
+        : {}),
+    },
+  });
+
+  console.log(`✅ PayPal session created: ${sessionId} for site: ${site.id}`);
+
+  sendSuccess(res, {
+    redirectUrl: checkoutUrl,
+    sessionId,
+    provider: 'paypal',
+  });
 }
 
 /**

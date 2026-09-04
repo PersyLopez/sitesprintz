@@ -215,6 +215,140 @@ describe('PayPalProcessor', () => {
       expect(body.application_context.return_url).toBe('https://example.com/success');
       expect(body.application_context.cancel_url).toBe('https://example.com/cancel');
     });
+
+    it('should set purchase_unit custom_id from metadata.site_id', async () => {
+      await processor.createCheckout({
+        items: [{ name: 'Test', price: 10, quantity: 1 }],
+        totalCents: 1000,
+        currency: 'usd',
+        successUrl: 'https://example.com/success',
+        cancelUrl: 'https://example.com/cancel',
+        metadata: { site_id: 'site-abc', type: 'order' }
+      });
+
+      const createCall = global.fetch.mock.calls.find(call =>
+        call[0].includes('/v2/checkout/orders') && call[1]?.method === 'POST'
+      );
+      const body = JSON.parse(createCall[1].body);
+      expect(body.purchase_units[0].custom_id).toBe('site-abc');
+    });
+  });
+
+  describe('captureOrder()', () => {
+    it('captures approved order without client amounts', async () => {
+      global.fetch.mockImplementation((url, opts = {}) => {
+        if (url.includes('/v1/oauth2/token')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({ access_token: 'test_access_token', expires_in: 3600 })
+          });
+        }
+        if (url.includes('/capture') && opts.method === 'POST') {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: 'order_123',
+              status: 'COMPLETED',
+              purchase_units: [{
+                custom_id: 'site-abc',
+                payments: {
+                  captures: [{
+                    id: 'cap_1',
+                    amount: { value: '10.00', currency_code: 'USD' }
+                  }]
+                }
+              }]
+            })
+          });
+        }
+        if (url.includes('/v2/checkout/orders/')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: 'order_123',
+              status: 'APPROVED',
+              purchase_units: [{
+                custom_id: 'site-abc',
+                amount: { value: '10.00', currency_code: 'USD' }
+              }]
+            })
+          });
+        }
+        return Promise.reject(new Error('Unmocked URL: ' + url));
+      });
+
+      const result = await processor.captureOrder('order_123', { expectedSiteId: 'site-abc' });
+
+      expect(result).toMatchObject({
+        orderId: 'order_123',
+        status: 'COMPLETED',
+        captureId: 'cap_1',
+        amount: 1000
+      });
+      const captureCall = global.fetch.mock.calls.find(
+        ([u, o]) => String(u).includes('/capture') && o?.method === 'POST'
+      );
+      expect(captureCall[1].body).toBe('{}');
+      expect(JSON.parse(captureCall[1].body || '{}')).not.toHaveProperty('amount');
+    });
+
+    it('rejects site mismatch with PaymentValidationError', async () => {
+      global.fetch.mockImplementation((url) => {
+        if (url.includes('/v1/oauth2/token')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({ access_token: 'test_access_token', expires_in: 3600 })
+          });
+        }
+        if (url.includes('/v2/checkout/orders/')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: 'order_123',
+              status: 'APPROVED',
+              purchase_units: [{
+                custom_id: 'other-site',
+                amount: { value: '10.00', currency_code: 'USD' }
+              }]
+            })
+          });
+        }
+        return Promise.reject(new Error('Unmocked URL: ' + url));
+      });
+
+      await expect(
+        processor.captureOrder('order_123', { expectedSiteId: 'site-abc' })
+      ).rejects.toMatchObject({ name: 'PaymentValidationError', message: 'Order site mismatch' });
+    });
+
+    it('is idempotent when order already COMPLETED', async () => {
+      global.fetch.mockImplementation((url) => {
+        if (url.includes('/v1/oauth2/token')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({ access_token: 'test_access_token', expires_in: 3600 })
+          });
+        }
+        if (url.includes('/v2/checkout/orders/')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: 'order_123',
+              status: 'COMPLETED',
+              purchase_units: [{
+                custom_id: 'site-abc',
+                amount: { value: '10.00', currency_code: 'USD' }
+              }]
+            })
+          });
+        }
+        return Promise.reject(new Error('Unmocked URL: ' + url));
+      });
+
+      const result = await processor.captureOrder('order_123', { expectedSiteId: 'site-abc' });
+      expect(result.status).toBe('COMPLETED');
+      expect(global.fetch.mock.calls.some(([u, o]) => String(u).includes('/capture') && o?.method === 'POST')).toBe(false);
+    });
   });
 
   describe('getTransactionStatus()', () => {
@@ -262,7 +396,7 @@ describe('PayPalProcessor', () => {
       });
 
       const result = await processor.verifyWebhookSignature(
-        'payload',
+        '{}',
         'sig_header',
         'webhook_id'
       );

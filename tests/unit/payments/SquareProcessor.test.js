@@ -161,6 +161,39 @@ describe('SquareProcessor', () => {
       expect(call.paymentLink.order.lineItems[0].quantity).toBe('2');
       expect(call.paymentLink.order.lineItems[1].quantity).toBe('1');
     });
+
+    it('should attach site_id metadata and paymentNote for webhook recovery', async () => {
+      mockSquareClient.checkoutApi.createPaymentLink.mockResolvedValue({
+        result: {
+          paymentLink: {
+            id: 'link_123',
+            url: 'https://checkout.square.site/pay/link_123'
+          }
+        }
+      });
+
+      await processor.createCheckout({
+        items: [{ name: 'Test', price: 10, quantity: 1 }],
+        totalCents: 1000,
+        currency: 'usd',
+        successUrl: 'https://example.com/success',
+        cancelUrl: 'https://example.com/cancel',
+        metadata: {
+          site_id: 'site-123',
+          user_id: 'user-123',
+          type: 'order',
+          order_items: JSON.stringify([{ id: 'p1' }])
+        }
+      });
+
+      const call = mockSquareClient.checkoutApi.createPaymentLink.mock.calls[0][0];
+      expect(call.paymentLink.order.metadata).toEqual({
+        site_id: 'site-123',
+        user_id: 'user-123',
+        type: 'order'
+      });
+      expect(call.paymentLink.paymentNote).toBe('site_id:site-123');
+    });
   });
 
   describe('getTransactionStatus()', () => {
