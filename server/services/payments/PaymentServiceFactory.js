@@ -13,8 +13,8 @@
 import { prisma } from '../../../database/db.js';
 import { decrypt } from '../../utils/encryption.js';
 import { StripeProcessor } from './StripeProcessor.js';
-// import { SquareProcessor } from './SquareProcessor.js'; // Track A
-// import { PayPalProcessor } from './PayPalProcessor.js'; // Track A
+import { SquareProcessor } from './SquareProcessor.js';
+// import { PayPalProcessor } from './PayPalProcessor.js'; // P2
 
 const SUPPORTED_PROCESSORS = ['stripe', 'square', 'paypal'];
 
@@ -51,7 +51,7 @@ export class PaymentServiceFactory {
     }
 
     // Determine which processor to use
-    const processorType = processorOverride || site.default_payment_processor || 'stripe';
+    const processorType = processorOverride || site.payment_processor || 'stripe';
 
     // Create appropriate processor
     switch (processorType) {
@@ -100,29 +100,11 @@ export class PaymentServiceFactory {
     const accessToken = decrypt(credentials.access_token_encrypted);
 
     const locationId = resolveSquareLocationId(credentials.metadata);
+    if (!locationId) {
+      throw new Error('Square location ID required');
+    }
 
-    // Return mock processor until SquareProcessor is implemented (Track A)
-    return {
-      getProcessorName: () => 'square',
-      accessToken,
-      locationId,
-      async createCheckout(params) {
-        // Placeholder - will be replaced with actual SquareProcessor
-        throw new Error('SquareProcessor not yet implemented');
-      },
-      async getTransactionStatus(transactionId) {
-        throw new Error('SquareProcessor not yet implemented');
-      },
-      async processRefund(transactionId, amountCents) {
-        throw new Error('SquareProcessor not yet implemented');
-      },
-      verifyWebhookSignature(payload, signature, secret) {
-        return false;
-      },
-      async handleWebhook(event) {
-        return { action: 'unhandled' };
-      }
-    };
+    return new SquareProcessor(accessToken, locationId);
   }
 
   /**

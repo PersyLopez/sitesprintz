@@ -29,6 +29,19 @@ vi.mock('../../../server/utils/encryption.js', () => ({
   decrypt: mockDecrypt
 }));
 
+// Same square SDK stub as SquareProcessor.test.js — Client needs Environment.Sandbox
+vi.mock('square', () => ({
+  Client: class MockClient {
+    constructor() {
+      return {};
+    }
+  },
+  Environment: {
+    Production: 'production',
+    Sandbox: 'sandbox'
+  }
+}));
+
 import { PaymentServiceFactory } from '../../../server/services/payments/PaymentServiceFactory.js';
 
 describe('PaymentServiceFactory', () => {
@@ -40,7 +53,7 @@ describe('PaymentServiceFactory', () => {
     it('should return StripeProcessor for Stripe site', async () => {
       mockPrisma.sites.findFirst.mockResolvedValue({
         id: 'site_123',
-        default_payment_processor: 'stripe',
+        payment_processor: 'stripe',
         stripe_account_id: 'acct_123'
       });
 
@@ -55,7 +68,7 @@ describe('PaymentServiceFactory', () => {
     it('should return SquareProcessor for Square site', async () => {
       mockPrisma.sites.findFirst.mockResolvedValue({
         id: 'site_123',
-        default_payment_processor: 'square'
+        payment_processor: 'square'
       });
 
       mockPrisma.payment_processor_credentials.findFirst.mockResolvedValue({
@@ -74,7 +87,7 @@ describe('PaymentServiceFactory', () => {
     it('should return PayPalProcessor for PayPal site', async () => {
       mockPrisma.sites.findFirst.mockResolvedValue({
         id: 'site_123',
-        default_payment_processor: 'paypal'
+        payment_processor: 'paypal'
       });
 
       mockPrisma.payment_processor_credentials.findFirst.mockResolvedValue({
@@ -92,7 +105,7 @@ describe('PaymentServiceFactory', () => {
     it('should default to Stripe if no processor configured', async () => {
       mockPrisma.sites.findFirst.mockResolvedValue({
         id: 'site_123',
-        default_payment_processor: null,
+        payment_processor: null,
         stripe_account_id: 'acct_123'
       });
 
@@ -111,7 +124,7 @@ describe('PaymentServiceFactory', () => {
     it('should throw error if processor configured but no credentials', async () => {
       mockPrisma.sites.findFirst.mockResolvedValue({
         id: 'site_123',
-        default_payment_processor: 'square'
+        payment_processor: 'square'
       });
 
       mockPrisma.payment_processor_credentials.findFirst.mockResolvedValue(null);
@@ -123,7 +136,7 @@ describe('PaymentServiceFactory', () => {
     it('should decrypt credentials before passing to processor', async () => {
       mockPrisma.sites.findFirst.mockResolvedValue({
         id: 'site_123',
-        default_payment_processor: 'square'
+        payment_processor: 'square'
       });
 
       mockPrisma.payment_processor_credentials.findFirst.mockResolvedValue({
@@ -140,7 +153,7 @@ describe('PaymentServiceFactory', () => {
     it('should use first location ID for Square', async () => {
       mockPrisma.sites.findFirst.mockResolvedValue({
         id: 'site_123',
-        default_payment_processor: 'square'
+        payment_processor: 'square'
       });
 
       mockPrisma.payment_processor_credentials.findFirst.mockResolvedValue({
@@ -163,7 +176,7 @@ describe('PaymentServiceFactory', () => {
     it('should use metadata.location_id as the Square default', async () => {
       mockPrisma.sites.findFirst.mockResolvedValue({
         id: 'site_123',
-        default_payment_processor: 'square'
+        payment_processor: 'square'
       });
 
       mockPrisma.payment_processor_credentials.findFirst.mockResolvedValue({
@@ -188,7 +201,7 @@ describe('PaymentServiceFactory', () => {
     it('should create checkout using site default processor', async () => {
       mockPrisma.sites.findFirst.mockResolvedValue({
         id: 'site_123',
-        default_payment_processor: 'stripe',
+        payment_processor: 'stripe',
         stripe_account_id: 'acct_123'
       });
 
@@ -217,7 +230,7 @@ describe('PaymentServiceFactory', () => {
     it('should allow processor override', async () => {
       mockPrisma.sites.findFirst.mockResolvedValue({
         id: 'site_123',
-        default_payment_processor: 'stripe'
+        payment_processor: 'stripe'
       });
 
       mockPrisma.payment_processor_credentials.findFirst.mockResolvedValue({

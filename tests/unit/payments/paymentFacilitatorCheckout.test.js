@@ -123,6 +123,17 @@ describe('Payment facilitator Stripe checkout', () => {
         metadata: {
           siteId: 'site-123',
           userId: 'user-123',
+          site_id: 'site-123',
+          user_id: 'user-123',
+          order_items: JSON.stringify([{
+            productId: 'product-1',
+            name: 'Catalog product',
+            description: 'Validated description',
+            image: 'https://example.com/product.jpg',
+            price: 25.5,
+            quantity: 2
+          }]),
+          type: 'order',
           fulfillment_type: 'pickup'
         }
       }),

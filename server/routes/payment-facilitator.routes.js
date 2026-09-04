@@ -385,6 +385,11 @@ async function handleStripeCheckout(
     metadata: {
       siteId: site.id,
       userId: site.user_id,
+      // Snake_case keys for webhookProcessor fulfill (neighbor: stripe.routes.js)
+      site_id: site.id,
+      user_id: site.user_id || '',
+      order_items: JSON.stringify(rebuiltCheckout.items),
+      type: 'order',
       fulfillment_type: deliveryCharge.fulfillmentType,
       ...(deliveryCharge.shippingAddress
         ? { shipping_address: JSON.stringify(deliveryCharge.shippingAddress) }
