@@ -280,7 +280,16 @@ router.post('/checkout/create-session', asyncHandler(async (req, res) => {
     }
 
     if (provider === 'square') {
-      return await handleSquareCheckout(req, res, site, account_id, items, successUrl, cancelUrl);
+      return await handleSquareCheckout(
+        req,
+        res,
+        site,
+        account_id,
+        items,
+        successUrl,
+        cancelUrl,
+        { fulfillment, deliveryAddress, deliveryAddressLine2 }
+      );
     }
 
     if (provider === 'paypal') {
@@ -410,10 +419,79 @@ async function handleStripeCheckout(
 
 /**
  * Square: Create checkout link and return redirect URL
+ * Neighbor: handleStripeCheckout — same validate/rebuild + delivery; factory instead of raw SDK
  */
-async function handleSquareCheckout(req, res, site, squareAccountId, items, successUrl, cancelUrl) {
-  // Placeholder - implement Square Client when credentials available
-  return sendBadRequest(res, 'Square checkout not yet implemented', 'NOT_IMPLEMENTED');
+async function handleSquareCheckout(
+  req,
+  res,
+  site,
+  _squareAccountId,
+  items,
+  successUrl,
+  cancelUrl,
+  deliveryOptions = {}
+) {
+  const { PaymentServiceFactory } = await import('../services/payments/PaymentServiceFactory.js');
+  const { buildDeliveryCharge } = await import('../utils/delivery.js');
+  const { parseSiteData } = await import('../utils/parseSiteData.js');
+  const siteData = parseSiteData(site);
+
+  let rebuiltCheckout;
+  try {
+    const catalogService = new ProductCatalogService();
+    rebuiltCheckout = await catalogService.validateAndRebuildCheckout(items, site.id, siteData);
+  } catch (error) {
+    console.error('Checkout validation failed:', error.message);
+    return sendBadRequest(res, error.message, 'INVALID_CHECKOUT');
+  }
+
+  const deliveryCharge = await buildDeliveryCharge(siteData, {
+    fulfillment: deliveryOptions.fulfillment,
+    address: deliveryOptions.deliveryAddress,
+    addressLine2: deliveryOptions.deliveryAddressLine2,
+  });
+  if (!deliveryCharge.ok) {
+    return sendBadRequest(res, deliveryCharge.error, deliveryCharge.code || 'INVALID_DELIVERY');
+  }
+
+  const checkoutItems = [...rebuiltCheckout.items];
+  if (deliveryCharge.fee > 0) {
+    checkoutItems.push({
+      name: 'Delivery',
+      price: deliveryCharge.fee,
+      quantity: 1,
+    });
+  }
+
+  const totalCents = Math.round(
+    checkoutItems.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity || 1), 0) * 100
+  );
+
+  const processor = await PaymentServiceFactory.getProcessor(site.id, 'square');
+  const { checkoutUrl, sessionId } = await processor.createCheckout({
+    items: checkoutItems,
+    totalCents,
+    successUrl,
+    cancelUrl,
+    metadata: {
+      site_id: site.id,
+      user_id: site.user_id || '',
+      order_items: JSON.stringify(rebuiltCheckout.items),
+      type: 'order',
+      fulfillment_type: deliveryCharge.fulfillmentType,
+      ...(deliveryCharge.shippingAddress
+        ? { shipping_address: JSON.stringify(deliveryCharge.shippingAddress) }
+        : {}),
+    },
+  });
+
+  console.log(`✅ Square session created: ${sessionId} for site: ${site.id}`);
+
+  sendSuccess(res, {
+    redirectUrl: checkoutUrl,
+    sessionId,
+    provider: 'square',
+  });
 }
 
 /**

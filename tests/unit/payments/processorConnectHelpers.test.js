@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 const mockRedis = {
   get: vi.fn(),
@@ -208,18 +208,35 @@ describe('site-specific processor connections', () => {
 });
 
 describe('visitor checkout processor gating', () => {
-  it('only treats Stripe as a public visitor checkout processor', async () => {
+  const previousSquareCheckout = process.env.SQUARE_CHECKOUT_ENABLED;
+
+  afterEach(() => {
+    if (previousSquareCheckout === undefined) {
+      delete process.env.SQUARE_CHECKOUT_ENABLED;
+    } else {
+      process.env.SQUARE_CHECKOUT_ENABLED = previousSquareCheckout;
+    }
+  });
+
+  it('keeps Square off public checkout until SQUARE_CHECKOUT_ENABLED=true', async () => {
+    delete process.env.SQUARE_CHECKOUT_ENABLED;
     const {
       PUBLIC_VISITOR_PROCESSORS,
       isVisitorProcessorPublic,
       publicVisitorCheckoutProcessor,
       visitorOnlinePaymentReady,
+      visitorCheckoutPublicMap,
     } = await import('../../../server/services/payments/processorConnectHelpers.js');
 
     expect(PUBLIC_VISITOR_PROCESSORS).toEqual(['stripe']);
     expect(isVisitorProcessorPublic('stripe')).toBe(true);
     expect(isVisitorProcessorPublic('square')).toBe(false);
     expect(isVisitorProcessorPublic('paypal')).toBe(false);
+    expect(visitorCheckoutPublicMap()).toEqual({
+      stripe: true,
+      square: false,
+      paypal: false,
+    });
 
     const stripeUser = { stripe_account_id: 'acct_1', stripe_connected: true };
     expect(visitorOnlinePaymentReady({ user: stripeUser })).toBe(true);
@@ -235,5 +252,39 @@ describe('visitor checkout processor gating', () => {
       byProcessor: { square: { account_id: 'sq_1' } },
       defaultProcessor: 'square',
     })).toBeNull();
+  });
+
+  it('exposes Square for visitor checkout only when SQUARE_CHECKOUT_ENABLED=true', async () => {
+    process.env.SQUARE_CHECKOUT_ENABLED = 'true';
+    const {
+      isVisitorProcessorPublic,
+      publicVisitorCheckoutProcessor,
+      visitorOnlinePaymentReady,
+      visitorCheckoutPublicMap,
+    } = await import('../../../server/services/payments/processorConnectHelpers.js');
+
+    expect(isVisitorProcessorPublic('stripe')).toBe(true);
+    expect(isVisitorProcessorPublic('square')).toBe(true);
+    expect(isVisitorProcessorPublic('paypal')).toBe(false);
+    expect(visitorCheckoutPublicMap()).toEqual({
+      stripe: true,
+      square: true,
+      paypal: false,
+    });
+
+    expect(visitorOnlinePaymentReady({
+      user: { stripe_connected: false },
+      byProcessor: { square: { account_id: 'sq_1' } },
+      defaultProcessor: 'square',
+    })).toBe(true);
+    expect(publicVisitorCheckoutProcessor({
+      user: { stripe_connected: false },
+      byProcessor: { square: { account_id: 'sq_1' } },
+      defaultProcessor: 'square',
+    })).toBe('square');
+
+    process.env.SQUARE_CHECKOUT_ENABLED = 'false';
+    expect(isVisitorProcessorPublic('square')).toBe(false);
+    expect(visitorCheckoutPublicMap().square).toBe(false);
   });
 });
