@@ -1,0 +1,45 @@
+url: http://localhost:5173/login
+goal: Owner payment settings shows Stripe, Square, and PayPal cards plus trust banner
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter growth email
+    fill: { testId: login-email, value: "growth@example.com", clear: true }
+
+  - action: Enter growth password
+    fill: { testId: login-password, value: "GrowthPass!2024", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard loads
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+    settle_ms: 400
+
+  - action: Open payment settings
+    goto: http://localhost:5173/settings/payments
+    settle_ms: 1500
+
+  - action: Stripe processor card
+    wait_for: { selector: '[data-testid="processor-stripe"]', timeout: 20000 }
+
+  - action: Square processor card
+    wait_for: { selector: '[data-testid="processor-square"]', timeout: 10000 }
+
+  - action: PayPal processor card
+    wait_for: { selector: '[data-testid="processor-paypal"]', timeout: 10000 }
+
+  - action: Trust banner present
+    wait_for: { selector: '[data-testid="processor-trust-banner"]', timeout: 10000 }

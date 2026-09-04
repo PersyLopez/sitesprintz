@@ -1,0 +1,51 @@
+url: http://localhost:5173/login
+goal: Owner payments page shows PayPal card + connect affordance; no hosted PayPal payment
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter growth email
+    fill: { testId: login-email, value: "growth@example.com", clear: true }
+
+  - action: Enter growth password
+    fill: { testId: login-password, value: "GrowthPass!2024", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard loads
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+    settle_ms: 400
+
+  - action: Open payment settings
+    goto: http://localhost:5173/settings/payments
+    settle_ms: 1500
+
+  - action: PayPal card, trust/test banner, connect button (no hosted PayPal)
+    code: |
+      await page.getByTestId('processor-paypal').waitFor({ timeout: 20000 });
+      const trust = page.getByTestId('processor-trust-banner');
+      const stripeTest = page.getByTestId('stripe-test-banner');
+      if ((await trust.count()) === 0 && (await stripeTest.count()) === 0) {
+        throw new Error('Expected processor-trust-banner or stripe-test-banner');
+      }
+      const connect = page.getByTestId('paypal-connect-button');
+      const status = (
+        await page.getByTestId('processor-paypal').getByTestId('connection-status').innerText()
+      ).trim();
+      if ((await connect.count()) === 0 && !/connected/i.test(status)) {
+        throw new Error('Expected paypal-connect-button or Connected. Got: ' + status);
+      }
+      // Do not click Connect or complete hosted PayPal checkout.
+    settle_ms: 300
