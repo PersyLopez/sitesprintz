@@ -36,6 +36,12 @@ router.get('/', async (req, res) => {
       dbStatus = 'disconnected';
     }
 
+    const liveKey = stripeKeyMode(process.env.STRIPE_SECRET_KEY) === 'live';
+    const webhookSecret = Boolean(process.env.STRIPE_WEBHOOK_SECRET);
+    const priceStarter = Boolean(process.env.STRIPE_PRICE_STARTER);
+    const priceGrowth = Boolean(process.env.STRIPE_PRICE_GROWTH);
+    const priceGrowthManaged = Boolean(process.env.STRIPE_PRICE_GROWTH_MANAGED);
+
     res.json({
       status: dbStatus === 'connected' ? 'ok' : 'degraded',
       timestamp: new Date().toISOString(),
@@ -54,6 +60,12 @@ router.get('/', async (req, res) => {
       },
       billing: {
         collectsPayments: platformCollectsPayments(),
+        liveKey,
+        webhookSecret,
+        priceStarter,
+        priceGrowth,
+        priceGrowthManaged,
+        collectBootReady: liveKey && webhookSecret && priceStarter && priceGrowth && priceGrowthManaged,
       },
       turnstileSiteKey: getTurnstileSiteKey(),
     });

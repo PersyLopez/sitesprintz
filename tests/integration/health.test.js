@@ -73,9 +73,58 @@ describe('Health Endpoints Integration Tests', () => {
 
     it('includes the public Turnstile site key when configured', async () => {
       process.env.VITE_TURNSTILE_SITE_KEY = '0xpublic-site-key';
+      process.env.TURNSTILE_SECRET_KEY = '0xturnstile-secret-must-not-leak';
       const response = await request(app).get('/health');
       expect(response.body.turnstileSiteKey).toBe('0xpublic-site-key');
-      expect(JSON.stringify(response.body)).not.toMatch(/SECRET/i);
+      expect(JSON.stringify(response.body)).not.toContain('0xturnstile-secret-must-not-leak');
+    });
+
+    it('includes collect-readiness booleans without leaking Stripe values', async () => {
+      process.env.STRIPE_SECRET_KEY = 'sk_live_health_secret_key';
+      process.env.STRIPE_WEBHOOK_SECRET = 'whsec_do_not_leak';
+      process.env.STRIPE_PRICE_STARTER = 'price_starter_secret';
+      process.env.STRIPE_PRICE_GROWTH = 'price_growth_secret';
+      process.env.STRIPE_PRICE_GROWTH_MANAGED = 'price_managed_secret';
+      process.env.PLATFORM_COLLECT_PAYMENTS = 'false';
+
+      const response = await request(app).get('/health');
+
+      expect(response.body.billing).toEqual({
+        collectsPayments: false,
+        liveKey: true,
+        webhookSecret: true,
+        priceStarter: true,
+        priceGrowth: true,
+        priceGrowthManaged: true,
+        collectBootReady: true,
+      });
+
+      const serialized = JSON.stringify(response.body);
+      expect(serialized).not.toContain('sk_live_health_secret_key');
+      expect(serialized).not.toContain('whsec_do_not_leak');
+      expect(serialized).not.toContain('price_starter_secret');
+      expect(serialized).not.toContain('price_growth_secret');
+      expect(serialized).not.toContain('price_managed_secret');
+    });
+
+    it('reports collectBootReady false when live key or prices are missing', async () => {
+      process.env.STRIPE_SECRET_KEY = 'sk_test_not_live';
+      delete process.env.STRIPE_WEBHOOK_SECRET;
+      delete process.env.STRIPE_PRICE_STARTER;
+      delete process.env.STRIPE_PRICE_GROWTH;
+      delete process.env.STRIPE_PRICE_GROWTH_MANAGED;
+
+      const response = await request(app).get('/health');
+
+      expect(response.body.billing).toMatchObject({
+        liveKey: false,
+        webhookSecret: false,
+        priceStarter: false,
+        priceGrowth: false,
+        priceGrowthManaged: false,
+        collectBootReady: false,
+      });
+      expect(typeof response.body.billing.collectsPayments).toBe('boolean');
     });
   });
 
