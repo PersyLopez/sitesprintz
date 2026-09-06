@@ -90,3 +90,48 @@ export function getSiteWorkspacePaths(siteId, site = {}) {
     liveEdit: subdomain ? `${livePublishedPath(subdomain)}?edit=true` : `/setup?site=${siteId}`,
   };
 }
+
+const LAST_WORKSPACE_SITE_PREFIX = 'sitesprintz:last-workspace-site:';
+
+function getLastWorkspaceSiteKey(userId) {
+  return `${LAST_WORKSPACE_SITE_PREFIX}${String(userId || '').trim()}`;
+}
+
+export function rememberLastWorkspaceSite(userId, siteId) {
+  if (!userId || !siteId || typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.setItem(getLastWorkspaceSiteKey(userId), String(siteId));
+  } catch {
+    // Storage can be unavailable in privacy-restricted browser contexts.
+  }
+}
+
+export function readLastWorkspaceSite(userId) {
+  if (!userId || typeof window === 'undefined') return null;
+
+  try {
+    return window.localStorage.getItem(getLastWorkspaceSiteKey(userId));
+  } catch {
+    return null;
+  }
+}
+
+function isSafeSameOriginPath(value) {
+  return typeof value === 'string' && value.startsWith('/') && !value.startsWith('//');
+}
+
+export function resolveOwnerPostLoginPath({
+  sites,
+  lastSiteId,
+  role,
+  safeRedirect,
+} = {}) {
+  if (isSafeSameOriginPath(safeRedirect)) return safeRedirect;
+  if (role === 'admin') return '/admin';
+  if (!Array.isArray(sites) || sites.length === 0) return '/dashboard';
+  if (sites.length === 1) return getSiteWorkspacePaths(sites[0]?.id).overview;
+
+  const lastSite = sites.find((site) => site?.id === lastSiteId);
+  return lastSite ? getSiteWorkspacePaths(lastSite.id).overview : '/dashboard';
+}

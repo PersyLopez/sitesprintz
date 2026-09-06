@@ -13,6 +13,7 @@ import {
   getSiteDisplayName,
   getPublishedSiteUrl,
   getSiteWorkspacePaths,
+  rememberLastWorkspaceSite,
   normalizeSiteRecord,
 } from '../utils/siteWorkspace';
 import { LIVE_EDIT_SCOPE_HINT } from '../utils/liveEditScope';
@@ -71,6 +72,7 @@ function SiteDashboard() {
         const matchesRoute = record.id === siteId || record.subdomain === siteId;
         if (!signal.aborted && matchesRoute) {
           setSite(record);
+          rememberLastWorkspaceSite(user.id, record.id);
         }
       } catch (error) {
         if (isAbortError(error) || signal.aborted) return;
@@ -143,79 +145,73 @@ function SiteDashboard() {
         <Header />
 
         <main id="site-workspace-main" className="site-workspace" data-testid="site-dashboard">
-          <nav className="site-workspace-breadcrumb" aria-label="Breadcrumb">
-            <Link to="/dashboard" data-testid="site-workspace-all-sites">All sites</Link>
-            <span aria-hidden="true">/</span>
-            <span>{name}</span>
-          </nav>
-
           <div className="site-workspace-toolbar">
-          <header className="site-workspace-header">
-            <div className="site-workspace-identity">
-              <p className="site-workspace-kicker">{site.template || site.templateId || 'Site'}</p>
-              <h1>{name}</h1>
-              <div className="site-workspace-meta">
-                <span className={`site-status-pill ${site.status}`}>{site.status === 'published' ? 'Published' : 'Draft'}</span>
-                {site.plan && <span className="site-plan-pill">{site.plan}</span>}
-                {site.subdomain && <span className="site-subdomain-pill">{site.subdomain}</span>}
+            <header className="site-workspace-header">
+              <div className="site-workspace-context">
+                <div className="site-workspace-identity">
+                  <h1 title={site.subdomain || undefined}>{name}</h1>
+                  <div className="site-workspace-meta">
+                    <span className={`site-status-pill ${site.status}`}>{site.status === 'published' ? 'Published' : 'Draft'}</span>
+                    {site.plan && <span className="site-plan-pill">{site.plan}</span>}
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div className="site-workspace-header-actions">
-              {liveUrl ? (
-                <a href={liveUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary" data-testid="site-dashboard-view">
-                  View site
-                </a>
-              ) : (
-                <button type="button" className="btn btn-secondary" disabled title="Publish this site to view it live">
-                  View site
-                </button>
-              )}
-              {site.status === 'published' && site.subdomain ? (
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  data-testid="site-dashboard-share"
-                  onClick={() => setShareOpen(true)}
-                >
-                  Share
-                </button>
-              ) : null}
-              {site.status === 'published' && site.subdomain ? (
-                <Link
-                  to={paths.liveEdit}
-                  className="btn btn-primary"
-                  data-testid="site-dashboard-edit"
-                  title={LIVE_EDIT_SCOPE_HINT}
-                >
-                  Edit site
-                </Link>
-              ) : (
-                <Link to={paths.edit} className="btn btn-primary" data-testid="site-dashboard-edit">
-                  Edit site
-                </Link>
-              )}
-              {site.status === 'published' && (
-                <Link to={paths.edit} className="btn btn-secondary" data-testid="site-dashboard-builder">
-                  Page builder
-                </Link>
-              )}
-            </div>
-          </header>
+              <div className="site-workspace-header-actions">
+                {liveUrl ? (
+                  <a href={liveUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary" data-testid="site-dashboard-view">
+                    View site
+                  </a>
+                ) : (
+                  <button type="button" className="btn btn-secondary" disabled title="Publish this site to view it live">
+                    View site
+                  </button>
+                )}
+                {site.status === 'published' && site.subdomain ? (
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    data-testid="site-dashboard-share"
+                    onClick={() => setShareOpen(true)}
+                  >
+                    Share
+                  </button>
+                ) : null}
+                {site.status === 'published' && site.subdomain ? (
+                  <Link
+                    to={paths.liveEdit}
+                    className="btn btn-primary"
+                    data-testid="site-dashboard-edit"
+                    title={LIVE_EDIT_SCOPE_HINT}
+                  >
+                    Edit site
+                  </Link>
+                ) : (
+                  <Link to={paths.edit} className="btn btn-primary" data-testid="site-dashboard-edit">
+                    Edit site
+                  </Link>
+                )}
+                {site.status === 'published' && (
+                  <Link to={paths.edit} className="btn btn-secondary" data-testid="site-dashboard-builder">
+                    Page builder
+                  </Link>
+                )}
+              </div>
+            </header>
 
-          <nav className="site-workspace-nav" aria-label="Site dashboard" data-testid="site-dashboard-nav">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                data-testid={item.testId}
-                className={({ isActive }) => `site-workspace-nav-link${isActive ? ' active' : ''}`}
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
+            <nav className="site-workspace-nav" aria-label="Site dashboard" data-testid="site-dashboard-nav">
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.end}
+                  data-testid={item.testId}
+                  className={({ isActive }) => `site-workspace-nav-link${isActive ? ' active' : ''}`}
+                >
+                  {item.label}
+                </NavLink>
+              ))}
+            </nav>
           </div>
 
           <section className="site-workspace-panel">

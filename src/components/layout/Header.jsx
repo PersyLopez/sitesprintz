@@ -17,9 +17,11 @@ function Header() {
   const toggleRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const siteDashboardMatch = location.pathname.match(/^\/dashboard\/sites\/([^/]+)/);
   const isAccountDashboard =
     location.pathname === '/dashboard' ||
     (location.pathname.startsWith('/dashboard/') && !location.pathname.startsWith('/dashboard/sites/'));
+  const isSiteWorkspace = Boolean(siteDashboardMatch);
   const isStaffRoute = location.pathname === '/staff' || location.pathname.startsWith('/staff/');
   const showOwnerNav = isAuthenticated && !isStaffRoute;
 
@@ -83,7 +85,7 @@ function Header() {
 
   return (
     <>
-    <header className={`site-header ${isScrolled ? 'scrolled' : ''}`}>
+    <header className={`site-header${isSiteWorkspace ? ' site-header--workspace' : ''} ${isScrolled ? 'scrolled' : ''}`}>
       <div className="header-container">
         <Link 
           to="/" 
@@ -237,7 +239,7 @@ function Header() {
       <nav
         ref={menuRef}
         id="mobile-menu"
-        className={`mobile-nav site-header-mobile-nav ${mobileMenuOpen ? 'open' : ''}`}
+        className={`mobile-nav site-header-mobile-nav${isSiteWorkspace ? ' site-header-mobile-nav--workspace' : ''} ${mobileMenuOpen ? 'open' : ''}`}
         aria-label="Mobile navigation"
         aria-hidden={!mobileMenuOpen}
         data-testid="mobile-nav"
@@ -261,9 +263,9 @@ function Header() {
                   className={`mobile-nav-link ${isAccountDashboard ? 'active' : ''}`}
                   onClick={() => setMobileMenuOpen(false)}
                   aria-current={isAccountDashboard ? 'page' : undefined}
-                  data-testid="mobile-nav-dashboard"
+                  data-testid={isSiteWorkspace ? 'site-workspace-all-sites' : 'mobile-nav-dashboard'}
                 >
-                  {t('nav.dashboard')}
+                  {isSiteWorkspace ? 'All sites' : t('nav.dashboard')}
                 </Link>
                 <Link 
                   to="/setup" 

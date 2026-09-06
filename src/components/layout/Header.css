@@ -99,6 +99,14 @@
   }
 }
 
+@media (min-width: 1024px) {
+  .site-header--workspace .desktop-nav,
+  .site-header--workspace .header-language-switcher--desktop,
+  .site-header--workspace .header-theme-switcher--desktop {
+    display: none;
+  }
+}
+
 .header-language-switcher--mobile,
 .header-theme-switcher--mobile {
   margin: 8px 16px 16px;
@@ -189,6 +197,10 @@
   .site-header .mobile-menu-toggle {
     display: none;
   }
+
+  .site-header--workspace .mobile-menu-toggle {
+    display: flex;
+  }
 }
 
 .site-header .mobile-menu-toggle:focus-visible {
@@ -248,6 +260,10 @@
 @media (min-width: 1024px) {
   .site-header-mobile-nav {
     display: none;
+  }
+
+  .site-header-mobile-nav--workspace {
+    display: block;
   }
 }
 

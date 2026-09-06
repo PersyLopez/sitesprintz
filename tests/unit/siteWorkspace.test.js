@@ -4,7 +4,10 @@ import {
   getSiteNiche,
   getPublishedSiteUrl,
   getSiteWorkspacePaths,
+  readLastWorkspaceSite,
+  rememberLastWorkspaceSite,
   normalizeSiteRecord,
+  resolveOwnerPostLoginPath,
 } from '../../src/utils/siteWorkspace';
 
 describe('siteWorkspace helpers', () => {
@@ -46,5 +49,26 @@ describe('siteWorkspace helpers', () => {
   it('builds a same-origin published site path when VITE_API_URL is empty', () => {
     expect(getPublishedSiteUrl(null)).toBeNull();
     expect(getPublishedSiteUrl('river-salon')).toMatch(/\/view\/river-salon$/);
+  });
+
+  it('remembers the last workspace site per user', () => {
+    rememberLastWorkspaceSite('user-1', 'site-9');
+    expect(readLastWorkspaceSite('user-1')).toBe('site-9');
+    expect(readLastWorkspaceSite('user-2')).toBeNull();
+  });
+
+  it.each([
+    [{ sites: [] }, '/dashboard'],
+    [{ sites: [{ id: 'site-1' }] }, '/dashboard/sites/site-1'],
+    [
+      { sites: [{ id: 'site-1' }, { id: 'site-2' }], lastSiteId: 'site-2' },
+      '/dashboard/sites/site-2',
+    ],
+    [{ sites: [{ id: 'site-1' }, { id: 'site-2' }] }, '/dashboard'],
+    [{ sites: [{ id: 'site-1' }], role: 'admin' }, '/admin'],
+    [{ sites: [{ id: 'site-1' }], safeRedirect: '/settings?tab=profile' }, '/settings?tab=profile'],
+    [{ sites: [{ id: 'site-1' }], safeRedirect: 'https://example.com' }, '/dashboard/sites/site-1'],
+  ])('resolves owner post-login paths: %s', (input, expected) => {
+    expect(resolveOwnerPostLoginPath(input)).toBe(expected);
   });
 });
