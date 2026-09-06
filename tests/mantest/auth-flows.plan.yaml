@@ -17,7 +17,17 @@ steps:
     settle_ms: 3000
     assert:
       - url contains /dashboard
-      - text contains Welcome back
+
+  - action: Open owners list if we landed on a site workspace
+    code: |
+      if (await page.getByTestId('site-dashboard').count()) {
+        await page.getByTestId('mobile-menu-toggle').click();
+        const allSites = page.getByTestId('site-workspace-all-sites');
+        if (await allSites.count()) {
+          await allSites.click();
+        }
+      }
+    settle_ms: 1500
 
   - action: Dashboard content
     expect:

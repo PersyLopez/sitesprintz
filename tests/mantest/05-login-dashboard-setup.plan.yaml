@@ -14,12 +14,21 @@ steps:
     click: { testId: login-submit }
     settle_ms: 3000
 
-  - action: Land on dashboard
+  - action: Land on dashboard or site workspace
     wait_for: { url: /dashboard, timeout: 20000 }
     assert:
       - url contains /dashboard
-      - text contains Welcome back
-      - text contains Your sites
+
+  - action: Open owners list if we landed on a site workspace
+    code: |
+      if (await page.getByTestId('site-dashboard').count()) {
+        await page.getByTestId('mobile-menu-toggle').click();
+        const allSites = page.getByTestId('site-workspace-all-sites');
+        if (await allSites.count()) {
+          await allSites.click();
+        }
+      }
+    settle_ms: 1500
 
   - action: Dismiss welcome modal if present
     code: |

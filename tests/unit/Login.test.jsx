@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { BrowserRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import Login from '../../src/pages/Login';
 import { AuthContext } from '../../src/context/AuthContext';
 import { ToastContext } from '../../src/context/ToastContext';
@@ -16,14 +16,21 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
+const mockGetUserSites = vi.fn();
+vi.mock('../../src/services/sites', () => ({
+  sitesService: {
+    getUserSites: (...args) => mockGetUserSites(...args),
+  },
+}));
+
 describe('Login Component', () => {
   const mockLogin = vi.fn();
   const mockShowSuccess = vi.fn();
   const mockShowError = vi.fn();
 
-  const renderLogin = () => {
+  const renderLogin = (initialEntry = '/login') => {
     return render(
-      <BrowserRouter>
+      <MemoryRouter initialEntries={[initialEntry]}>
         <AuthContext.Provider value={{ 
           login: mockLogin,
           loading: false,
@@ -37,7 +44,7 @@ describe('Login Component', () => {
             <Login />
           </ToastContext.Provider>
         </AuthContext.Provider>
-      </BrowserRouter>
+      </MemoryRouter>
     );
   };
 
@@ -47,6 +54,8 @@ describe('Login Component', () => {
     mockLogin.mockClear();
     mockShowSuccess.mockClear();
     mockShowError.mockClear();
+    mockGetUserSites.mockReset();
+    mockGetUserSites.mockResolvedValue({ sites: [] });
   });
 
   it('should render login form with all fields', () => {
@@ -76,6 +85,66 @@ describe('Login Component', () => {
       expect(mockShowSuccess).toHaveBeenCalledWith('Login successful!');
       expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
     });
+  });
+
+  it('should open the only owner site after login', async () => {
+    const user = userEvent.setup();
+    mockLogin.mockResolvedValueOnce({
+      user: { id: 'owner-1', role: 'user' },
+    });
+    mockGetUserSites.mockResolvedValueOnce({ sites: [{ id: 'site-1' }] });
+    renderLogin();
+
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com');
+    await user.type(screen.getByLabelText(/password/i), 'password123');
+    await user.click(screen.getByRole('button', { name: /sign in/i }));
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard/sites/site-1');
+    });
+  });
+
+  it('keeps admins on the admin dashboard', async () => {
+    const user = userEvent.setup();
+    mockLogin.mockResolvedValueOnce({
+      user: { id: 'admin-1', role: 'admin' },
+    });
+    renderLogin();
+
+    await user.type(screen.getByLabelText(/email/i), 'admin@example.com');
+    await user.type(screen.getByLabelText(/password/i), 'password123');
+    await user.click(screen.getByRole('button', { name: /sign in/i }));
+
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/admin'));
+    expect(mockGetUserSites).not.toHaveBeenCalled();
+  });
+
+  it('keeps safe redirects ahead of owner site selection', async () => {
+    const user = userEvent.setup();
+    mockLogin.mockResolvedValueOnce({
+      user: { id: 'owner-1', role: 'user' },
+    });
+    renderLogin('/login?redirect=/dashboard/settings');
+
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com');
+    await user.type(screen.getByLabelText(/password/i), 'password123');
+    await user.click(screen.getByRole('button', { name: /sign in/i }));
+
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/dashboard/settings'));
+    expect(mockGetUserSites).not.toHaveBeenCalled();
+  });
+
+  it('falls back to dashboard when owner sites cannot be fetched', async () => {
+    const user = userEvent.setup();
+    mockLogin.mockResolvedValueOnce({ user: { id: 'owner-1', role: 'user' } });
+    mockGetUserSites.mockRejectedValueOnce(new Error('network'));
+    renderLogin();
+
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com');
+    await user.type(screen.getByLabelText(/password/i), 'password123');
+    await user.click(screen.getByRole('button', { name: /sign in/i }));
+
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/dashboard'));
   });
 
   it('should show error message when login fails', async () => {

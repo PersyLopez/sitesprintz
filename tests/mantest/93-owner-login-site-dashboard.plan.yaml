@@ -1,0 +1,62 @@
+url: http://localhost:5173/login
+goal: Owner sign-in lands on the site workspace when they have a site; hamburger All sites opens the owners list; Manage returns to the site dashboard
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter email
+    fill: { testId: login-email, value: "test@example.com" }
+
+  - action: Enter password
+    fill: { testId: login-password, value: "SecurePass!2024" }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 4000
+
+  - action: Land on site dashboard or owners list
+    wait_for: { url: /dashboard, timeout: 20000 }
+    code: |
+      const url = page.url();
+      const siteDash = page.getByTestId('site-dashboard');
+      const allSites = page.getByTestId('dashboard-header');
+      const onSite = await siteDash.count();
+      const onOwners = await allSites.count();
+      if (!/\/dashboard/.test(url) || (!onSite && !onOwners)) {
+        throw new Error('Expected site dashboard or owners list, got ' + url);
+      }
+    settle_ms: 400
+
+  - action: Open All sites from hamburger when on a site workspace
+    code: |
+      if (await page.getByTestId('site-dashboard').count()) {
+        await page.getByTestId('mobile-menu-toggle').click();
+        await page.getByTestId('site-workspace-all-sites').click();
+      }
+    settle_ms: 1500
+
+  - action: Owners list shows sites
+    code: |
+      await page.waitForURL((url) => {
+        const p = url.pathname;
+        return p === '/dashboard' || p === '/dashboard/';
+      }, { timeout: 15000 });
+      const t = await page.locator('body').innerText();
+      if (!/Your sites/i.test(t)) {
+        throw new Error('Owners list missing Your sites: ' + t.slice(0, 200));
+      }
+    settle_ms: 400
+
+  - action: Manage opens the site dashboard
+    code: |
+      const manage = page.getByTestId('manage-site-button').first();
+      if ((await manage.count()) === 0) {
+        throw new Error('No Manage button on owners list');
+      }
+      await manage.click();
+    settle_ms: 2500
+
+  - action: Back on a site workspace
+    wait_for: { url: /dashboard/sites/, timeout: 15000 }
+    assert:
+      - url contains /dashboard/sites/

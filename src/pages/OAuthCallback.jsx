@@ -2,7 +2,9 @@ import React, { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { authService } from '../services/auth';
+import { sitesService } from '../services/sites';
 import { takeOAuthRedirect } from '../utils/safeRedirect';
+import { readLastWorkspaceSite, resolveOwnerPostLoginPath } from '../utils/siteWorkspace';
 
 const ERROR_MESSAGES = {
   oauth_failed: 'Google sign-in was cancelled. Please try again.',
@@ -53,16 +55,26 @@ function OAuthCallback() {
   // Redirect based on user role once auth is loaded
   useEffect(() => {
     if (!loading && user) {
+      const returnTo = takeOAuthRedirect();
+      if (returnTo) {
+        navigate(returnTo, { replace: true });
+        return;
+      }
       if (user.role === 'admin') {
         navigate('/admin', { replace: true });
-      } else {
-        const returnTo = takeOAuthRedirect();
-        if (returnTo) {
-          navigate(returnTo, { replace: true });
-          return;
-        }
-        navigate('/dashboard', { replace: true });
+        return;
       }
+      sitesService.getUserSites(user.id)
+        .then((sitesData) => {
+          navigate(resolveOwnerPostLoginPath({
+            sites: sitesData?.sites,
+            lastSiteId: readLastWorkspaceSite(user.id),
+            role: user.role,
+          }), { replace: true });
+        })
+        .catch(() => {
+          navigate('/dashboard', { replace: true });
+        });
     }
   }, [loading, user, navigate, searchParams]);
 

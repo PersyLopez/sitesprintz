@@ -5,6 +5,8 @@ import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { getSafeRedirect, stashOAuthRedirect } from '../utils/safeRedirect';
+import { sitesService } from '../services/sites';
+import { readLastWorkspaceSite, resolveOwnerPostLoginPath } from '../utils/siteWorkspace';
 import { useLocale } from '../i18n/LocaleContext.jsx';
 import './Auth.css';
 
@@ -126,7 +128,17 @@ function Login() {
       } else if (data.user?.role === 'admin') {
         navigate('/admin');
       } else {
-        navigate('/dashboard');
+        try {
+          const sitesData = await sitesService.getUserSites(data.user?.id);
+          navigate(resolveOwnerPostLoginPath({
+            sites: sitesData?.sites,
+            lastSiteId: readLastWorkspaceSite(data.user?.id),
+            role: data.user?.role,
+            safeRedirect: redirectTo,
+          }));
+        } catch {
+          navigate('/dashboard');
+        }
       }
     } catch (error) {
       showError(error.message || t('auth.loginFail'));

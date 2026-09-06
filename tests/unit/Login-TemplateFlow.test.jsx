@@ -16,6 +16,13 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
+const mockGetUserSites = vi.fn();
+vi.mock('../../src/services/sites', () => ({
+  sitesService: {
+    getUserSites: (...args) => mockGetUserSites(...args),
+  },
+}));
+
 describe('Login - Template Selection Flow', () => {
   const mockLogin = vi.fn();
   const mockShowSuccess = vi.fn();
@@ -27,6 +34,8 @@ describe('Login - Template Selection Flow', () => {
     mockLogin.mockClear();
     mockShowSuccess.mockClear();
     mockShowError.mockClear();
+    mockGetUserSites.mockReset();
+    mockGetUserSites.mockResolvedValue({ sites: [] });
     
     // Mock window.location for Google OAuth tests
     delete window.location;
