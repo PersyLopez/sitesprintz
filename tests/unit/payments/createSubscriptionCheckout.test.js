@@ -244,6 +244,22 @@ describe('createSubscriptionCheckout metadata', () => {
     expect(mockSessionsCreate).not.toHaveBeenCalled();
   });
 
+  it('saves Checkout billing address onto the Customer when automatic tax is on', async () => {
+    process.env.STRIPE_AUTOMATIC_TAX = 'true';
+
+    const response = await request(app)
+      .post('/api/payments/create-subscription-checkout')
+      .send({ plan: 'starter' });
+
+    expect(response.status).toBe(200);
+    const [sessionOptions] = mockSessionsCreate.mock.calls[0];
+    expect(sessionOptions.automatic_tax).toEqual({ enabled: true });
+    expect(sessionOptions.billing_address_collection).toBe('required');
+    expect(sessionOptions.customer_update).toEqual({ address: 'auto', name: 'auto' });
+
+    delete process.env.STRIPE_AUTOMATIC_TAX;
+  });
+
   it('returns 403 BILLING_NOT_OPEN when platform collection is paused', async () => {
     process.env.PLATFORM_COLLECT_PAYMENTS = 'false';
 

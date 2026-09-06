@@ -533,6 +533,9 @@ const createSubscriptionCheckout = asyncHandler(async (req, res) => {
             allow_promotion_codes: true,
             billing_address_collection: automaticTaxEnabled ? 'required' : 'auto',
             automatic_tax: { enabled: automaticTaxEnabled },
+            ...(automaticTaxEnabled
+                ? { customer_update: { address: 'auto', name: 'auto' } }
+                : {}),
             subscription_data: {
                 ...(checkoutTrialDays > 0 ? { trial_period_days: checkoutTrialDays } : {}),
                 metadata: {
