@@ -14,10 +14,12 @@ function ProductModal({ product, onSave, onClose }) {
     stock: '',
     available: true
   });
+  const [step, setStep] = useState(product ? 'details' : 'photo');
 
   useEffect(() => {
     if (product) {
       setFormData({
+        id: product.id,
         name: product.name || '',
         description: product.description || '',
         price: product.price ?? '',
@@ -26,6 +28,7 @@ function ProductModal({ product, onSave, onClose }) {
         stock: product.stock ?? '',
         available: product.available !== false
       });
+      setStep('details');
     }
   }, [product]);
 
@@ -71,15 +74,41 @@ function ProductModal({ product, onSave, onClose }) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="modal-body">
-          <div className="form-group">
-            <label>Product image</label>
+        {step === 'photo' ? (
+          <div className="modal-body product-photo-step">
+            <div className="product-photo-intro">
+              <h3>Add a photo</h3>
+              <p>Products with photos are easier for customers to choose.</p>
+            </div>
             <ImageUploader
               value={formData.image}
               onChange={(url) => setFormData((prev) => ({ ...prev, image: url }))}
               aspectRatio="1:1"
+              sourceChoices
+              onSkip={() => setStep('details')}
             />
+            {formData.image ? (
+              <button type="button" className="btn btn-primary" onClick={() => setStep('details')} data-testid="product-photo-continue">
+                Continue
+              </button>
+            ) : (
+              <button type="button" className="btn btn-secondary" onClick={() => setStep('details')} data-testid="product-photo-continue-without">
+                Continue without photo
+              </button>
+            )}
           </div>
+        ) : (
+        <form onSubmit={handleSubmit} className="modal-body">
+          {product ? (
+            <div className="form-group">
+              <label>Product image</label>
+              <ImageUploader
+                value={formData.image}
+                onChange={(url) => setFormData((prev) => ({ ...prev, image: url }))}
+                aspectRatio="1:1"
+              />
+            </div>
+          ) : null}
 
           <div className="form-group">
             <label htmlFor="product-name">Product name *</label>
@@ -89,6 +118,7 @@ function ProductModal({ product, onSave, onClose }) {
               name="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="e.g. Margherita Pizza"
               data-testid="product-name-input"
               required
               autoFocus
@@ -102,7 +132,7 @@ function ProductModal({ product, onSave, onClose }) {
               name="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Describe your product…"
+              placeholder="Describe your product..."
               rows="3"
               data-testid="product-description-input"
             />
@@ -169,6 +199,11 @@ function ProductModal({ product, onSave, onClose }) {
           </div>
 
           <div className="modal-footer">
+            {!product ? (
+              <button type="button" onClick={() => setStep('photo')} className="btn btn-secondary">
+                Back
+              </button>
+            ) : null}
             <button type="button" onClick={onClose} className="btn btn-secondary" data-testid="cancel-product-btn">
               Cancel
             </button>
@@ -177,6 +212,7 @@ function ProductModal({ product, onSave, onClose }) {
             </button>
           </div>
         </form>
+        )}
       </div>
     </div>
   );

@@ -59,11 +59,13 @@ describe('ProductCard Component', () => {
       expect(image).toHaveAttribute('src', '/images/product.jpg');
   });
 
-  it('should show placeholder when no image', () => {
+    it('should use a text-led card when no image', () => {
       const noImageProduct = { ...mockProduct, image: null };
-      renderProductCard(noImageProduct);
+      const { container } = renderProductCard(noImageProduct);
     
-    expect(screen.getByText('📦')).toBeInTheDocument();
+      expect(container.querySelector('.product-image')).not.toBeInTheDocument();
+      expect(screen.getByText('Test Product')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /add to cart/i })).toBeInTheDocument();
   });
 
     it('should display category', () => {

@@ -452,9 +452,7 @@ function Products() {
                       height={250}
                       aspectRatio="8/5"
                     />
-                  ) : (
-                    <div className="product-card-placeholder">No image</div>
-                  )}
+                  ) : null}
                   <div className="product-card-body">
                     <h3>{product.name}</h3>
                     <p className="product-price">${Number(product.price || 0).toFixed(2)}</p>
@@ -480,6 +478,16 @@ function Products() {
                       }
                       return null;
                     })()}
+                    {!product.image ? (
+                      <button
+                        type="button"
+                        className="product-add-photo"
+                        onClick={() => handleEditProduct(product)}
+                        data-testid="product-add-photo"
+                      >
+                        Add photo
+                      </button>
+                    ) : null}
                     <div className="product-actions">
                       <button
                         type="button"

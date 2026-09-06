@@ -1,0 +1,76 @@
+url: http://localhost:5173/login
+goal: Add Product starts on photo choices; skip then name and price saves a text card without a photo placeholder
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter email
+    fill: { testId: login-email, value: "test@example.com" }
+
+  - action: Enter password
+    fill: { testId: login-password, value: "SecurePass!2024" }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 4000
+
+  - action: Reach products tools
+    code: |
+      await page.waitForURL(/\/dashboard/, { timeout: 20000 });
+      const addBtn = page.getByTestId('add-product-btn');
+      if ((await addBtn.count()) === 0) {
+        const siteNav = page.getByTestId('site-nav-products');
+        if (await siteNav.count()) {
+          await siteNav.click();
+        } else {
+          await page.goto('http://localhost:5173/products', { waitUntil: 'load' });
+          const manage = page.getByTestId('manage-site-button').first();
+          if (await manage.count()) {
+            await manage.click();
+            await page.getByTestId('site-nav-products').click();
+          }
+        }
+      }
+      await page.getByTestId('add-product-btn').waitFor({ timeout: 20000 });
+    settle_ms: 800
+
+  - action: Open add product
+    click: { testId: add-product-btn }
+    settle_ms: 800
+
+  - action: Photo step shows gallery camera and skip
+    wait_for: { selector: '[data-testid="product-photo-skip"]', timeout: 10000 }
+    assert:
+      - text contains Add a photo
+
+  - action: Skip photo
+    click: { testId: product-photo-skip }
+    settle_ms: 600
+
+  - action: Details form
+    wait_for: { selector: '[data-testid="product-name-input"]', timeout: 8000 }
+
+  - action: Name
+    fill: { testId: product-name-input, value: "Mantest Skip Photo Item" }
+
+  - action: Price
+    fill: { testId: product-price-input, value: "4.50" }
+
+  - action: Save product
+    click: { testId: save-product-btn }
+    settle_ms: 2500
+
+  - action: Saved without image placeholder
+    code: |
+      const body = await page.locator('body').innerText();
+      if (!/Mantest Skip Photo Item/.test(body)) {
+        throw new Error('Saved product name not on the page');
+      }
+      if (/No image/.test(body)) {
+        throw new Error('Owner grid still shows a No image placeholder');
+      }
+      const addPhoto = page.getByTestId('product-add-photo');
+      if ((await addPhoto.count()) === 0) {
+        throw new Error('Expected Add photo on the skipped-photo product');
+      }
+    settle_ms: 300

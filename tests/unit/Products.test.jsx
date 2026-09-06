@@ -232,6 +232,17 @@ describe('Products Page', () => {
       });
     });
 
+    it('should render no-image products as text cards with an Add photo action', async () => {
+      renderProducts();
+
+      await waitFor(() => {
+        expect(screen.getByText('Basic Gadget')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('No image')).not.toBeInTheDocument();
+      expect(screen.getByTestId('product-add-photo')).toHaveTextContent('Add photo');
+    });
+
     it('should show availability status', async () => {
       renderProducts();
 
@@ -288,6 +299,20 @@ describe('Products Page', () => {
           expect.objectContaining({ products: expect.any(Array) })
         );
       });
+    });
+
+    it('should open the existing edit modal from Add photo', async () => {
+      const user = userEvent.setup();
+      renderProducts();
+
+      await waitFor(() => {
+        expect(screen.getByText('Basic Gadget')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByTestId('product-add-photo'));
+
+      expect(screen.getByTestId('product-modal')).toBeInTheDocument();
+      expect(screen.getByText('Edit Product')).toBeInTheDocument();
     });
 
     it('should close modal when cancel clicked', async () => {

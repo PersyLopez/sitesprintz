@@ -32,12 +32,30 @@ function ProductCard({ product, showActions = true }) {
   const isRecurring = product.billingPeriod && product.billingPeriod !== 'one-time';
   const isAvailable = isPurchasable(product);
   const stockRemaining = remainingStock(product);
+  const badges = (
+    <div className="product-badges">
+      {isRecurring && (
+        <span className="badge badge-recurring">
+          🔁 {product.billingPeriod}
+        </span>
+      )}
+      {!isAvailable && (
+        <span className="badge badge-out-of-stock">
+          Out of Stock
+        </span>
+      )}
+      {product.featured && (
+        <span className="badge badge-featured">
+          ⭐ Featured
+        </span>
+      )}
+    </div>
+  );
 
   return (
     <div className={`product-card ${!isAvailable ? 'out-of-stock' : ''}`}>
-      {/* Product Image */}
-      <div className="product-image">
-        {product.image ? (
+      {product.image ? (
+        <div className="product-image">
           <OptimizedImage
             src={product.image}
             alt={product.name}
@@ -47,34 +65,13 @@ function ProductCard({ product, showActions = true }) {
             priority={false}
             sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
-        ) : (
-          <div className="product-image-placeholder">
-            <span aria-hidden="true">📦</span>
-          </div>
-        )}
-
-        {/* Badges */}
-        <div className="product-badges">
-          {isRecurring && (
-            <span className="badge badge-recurring">
-              🔁 {product.billingPeriod}
-            </span>
-          )}
-          {!isAvailable && (
-            <span className="badge badge-out-of-stock">
-              Out of Stock
-            </span>
-          )}
-          {product.featured && (
-            <span className="badge badge-featured">
-              ⭐ Featured
-            </span>
-          )}
+          {badges}
         </div>
-      </div>
+      ) : null}
 
       {/* Product Info */}
       <div className="product-info">
+        {!product.image ? badges : null}
         <h3 className="product-name">{product.name}</h3>
         
         {product.description && (

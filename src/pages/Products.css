@@ -341,14 +341,21 @@
   min-height: 280px;
 }
 
-.product-card-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 160px;
-  background: var(--bg-hover);
+.product-add-photo {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
   color: var(--text-muted);
-  font-size: 0.9rem;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.85rem;
+  text-decoration: underline;
+}
+
+.product-add-photo:hover,
+.product-add-photo:focus-visible {
+  color: var(--primary-color);
 }
 
 /* Site picker */

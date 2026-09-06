@@ -44,16 +44,6 @@
   transform: scale(1.05);
 }
 
-.product-image-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 4rem;
-  opacity: 0.3;
-}
-
 /* Product Badges */
 .product-badges {
   position: absolute;
@@ -64,6 +54,11 @@
   gap: var(--spacing-xs);
   flex-wrap: wrap;
   z-index: 2;
+}
+
+.product-info > .product-badges {
+  position: static;
+  margin: calc(var(--spacing-lg) * -0.25) 0 var(--spacing-md);
 }
 
 .badge {

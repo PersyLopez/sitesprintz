@@ -12,6 +12,8 @@ function ImageUploader({
   uploadFn,
   pickHint,
   urlHint,
+  sourceChoices = false,
+  onSkip,
 }) {
   const { showError, showSuccess } = useToast();
   const [uploading, setUploading] = useState(false);
@@ -19,6 +21,7 @@ function ImageUploader({
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [urlDraft, setUrlDraft] = useState('');
   const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -91,6 +94,10 @@ function ImageUploader({
     fileInputRef.current?.click();
   };
 
+  const handleCameraClick = () => {
+    cameraInputRef.current?.click();
+  };
+
   const applyUrl = () => {
     const trimmed = urlDraft.trim();
     if (!trimmed) {
@@ -144,41 +151,64 @@ function ImageUploader({
           </div>
         </div>
       ) : (
-        <div
-          className={`upload-zone ${dragActive ? 'drag-active' : ''}`}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-          onClick={handleClick}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              handleClick();
-            }
-          }}
-          data-testid="image-upload-zone"
-        >
-          {uploading ? (
-            <div className="upload-progress">
-              <div className="loading-spinner" />
-              <p>Uploading…</p>
+        sourceChoices ? (
+          <div className="photo-source-choices">
+            <p className="upload-text">Add a product photo</p>
+            <p className="upload-hint">Use a clear photo so customers know what to expect.</p>
+            <div className="photo-source-grid">
+              <button type="button" className="photo-source-btn" onClick={handleClick} disabled={uploading} data-testid="product-photo-gallery">
+                <span aria-hidden="true">▧</span>
+                Gallery
+              </button>
+              <button type="button" className="photo-source-btn" onClick={handleCameraClick} disabled={uploading} data-testid="product-photo-camera">
+                <span aria-hidden="true">📷</span>
+                Camera
+              </button>
             </div>
-          ) : (
-            <>
-              <div className="upload-icon" aria-hidden="true">📷</div>
-              <p className="upload-text">
-                <strong>{pickHint || 'Click to upload'}</strong> or drag and drop
-              </p>
-              <p className="upload-hint">{urlHint || 'JPEG, PNG, GIF, or WebP · max 5MB'}</p>
-              {aspectRatio ? (
-                <p className="upload-hint">Recommended: {aspectRatio} aspect ratio</p>
-              ) : null}
-            </>
-          )}
-        </div>
+            {uploading ? (
+              <div className="upload-progress">
+                <div className="loading-spinner" />
+                <p>Uploading…</p>
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          <div
+            className={`upload-zone ${dragActive ? 'drag-active' : ''}`}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+            onClick={handleClick}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleClick();
+              }
+            }}
+            data-testid="image-upload-zone"
+          >
+            {uploading ? (
+              <div className="upload-progress">
+                <div className="loading-spinner" />
+                <p>Uploading…</p>
+              </div>
+            ) : (
+              <>
+                <div className="upload-icon" aria-hidden="true">📷</div>
+                <p className="upload-text">
+                  <strong>{pickHint || 'Click to upload'}</strong> or drag and drop
+                </p>
+                <p className="upload-hint">{urlHint || 'JPEG, PNG, GIF, or WebP · max 5MB'}</p>
+                {aspectRatio ? (
+                  <p className="upload-hint">Recommended: {aspectRatio} aspect ratio</p>
+                ) : null}
+              </>
+            )}
+          </div>
+          )
       )}
 
       <input
@@ -189,6 +219,17 @@ function ImageUploader({
         style={{ display: 'none' }}
         data-testid="image-file-input"
       />
+      {sourceChoices ? (
+        <input
+          ref={cameraInputRef}
+          type="file"
+          accept={SITE_IMAGE_ACCEPT}
+          capture="environment"
+          onChange={handleChange}
+          style={{ display: 'none' }}
+          data-testid="product-photo-camera-input"
+        />
+      ) : null}
 
       {allowUrl ? (
         <div className="url-fallback">
@@ -226,6 +267,14 @@ function ImageUploader({
             </div>
           )}
         </div>
+      ) : null}
+      {sourceChoices && !value ? (
+        <button type="button" className="btn-link photo-skip-btn" onClick={() => {
+          onChange('');
+          onSkip?.();
+        }} data-testid="product-photo-skip">
+          Skip for now
+        </button>
       ) : null}
     </div>
   );

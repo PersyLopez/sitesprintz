@@ -571,10 +571,10 @@ function renderCatalog(section, tokens) {
   }
 
   const cardsHtml = items
-    .map((item, index) => `<article class="ss-card" style="background: ${getSurface(tokens)}; border: 1px solid ${getTokens(tokens).theme.hairline};">
+    .map((item, index) => `<article class="ss-card" data-photo-field="catalog.items.${index}.image" style="background: ${getSurface(tokens)}; border: 1px solid ${getTokens(tokens).theme.hairline};">
   ${item.image
-    ? `<img class="ss-card-media" data-photo-field="catalog.items.${index}.image" src="${escapeAttr(item.image)}" alt="${escapeAttr(item.imageAlt || item.name || '')}" loading="lazy" />`
-    : renderPhotoPlaceholder('product', { className: 'ss-photo-placeholder--card', photoField: `catalog.items.${index}.image` })}
+    ? `<img class="ss-card-media" src="${escapeAttr(item.image)}" alt="${escapeAttr(item.imageAlt || item.name || '')}" loading="lazy" />`
+    : ''}
   <div class="ss-card-body">
     <h3 style="color: ${getAccent(tokens)};">${escapeHtml(item.name || '')}</h3>
     <p style="color: ${getMuted(tokens)};">${escapeHtml(item.description || '')}</p>

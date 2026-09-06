@@ -22,12 +22,17 @@ describe('ProductModal', () => {
     global.alert = vi.fn();
   });
 
+  const renderAddProduct = (props = {}) => {
+    renderWithToast(<ProductModal onSave={mockOnSave} onClose={mockOnClose} {...props} />);
+    fireEvent.click(screen.getByTestId('product-photo-skip'));
+  };
+
   describe('Rendering', () => {
     it('should render in create mode when no product provided', () => {
       renderWithToast(<ProductModal onSave={mockOnSave} onClose={mockOnClose} />);
       
       expect(screen.getByRole('heading', { name: /add product/i })).toBeInTheDocument();
-      expect(screen.getByPlaceholderText('e.g. Margherita Pizza')).toBeInTheDocument();
+      expect(screen.getByTestId('product-photo-gallery')).toBeInTheDocument();
     });
 
     it('should render in edit mode when product provided', () => {
@@ -50,16 +55,33 @@ describe('ProductModal', () => {
     });
 
     it('should show all required field markers', () => {
-      renderWithToast(<ProductModal onSave={mockOnSave} onClose={mockOnClose} />);
+      renderAddProduct();
       
-      expect(screen.getByText(/Product Name \*/)).toBeInTheDocument();
+      expect(screen.getByText(/Product name \*/)).toBeInTheDocument();
       expect(screen.getByText(/Price \(\$\) \*/)).toBeInTheDocument();
+    });
+
+    it('should start add mode with separate gallery and camera inputs', () => {
+      renderWithToast(<ProductModal onSave={mockOnSave} onClose={mockOnClose} />);
+
+      expect(screen.getByTestId('product-photo-gallery')).toBeInTheDocument();
+      expect(screen.getByTestId('product-photo-camera-input')).toHaveAttribute('capture', 'environment');
+      expect(screen.getByTestId('image-file-input')).not.toHaveAttribute('capture');
+    });
+
+    it('should continue to details when photo is skipped', () => {
+      renderWithToast(<ProductModal onSave={mockOnSave} onClose={mockOnClose} />);
+
+      fireEvent.click(screen.getByTestId('product-photo-skip'));
+
+      expect(screen.getByTestId('product-name-input')).toBeInTheDocument();
+      expect(screen.queryByTestId('product-photo-gallery')).not.toBeInTheDocument();
     });
   });
 
   describe('Form Validation', () => {
     it('should prevent submit with empty name', () => {
-      renderWithToast(<ProductModal onSave={mockOnSave} onClose={mockOnClose} />);
+      renderAddProduct();
       
       const submitButton = screen.getByRole('button', { name: /Add Product/i });
       fireEvent.click(submitButton);
@@ -69,7 +91,7 @@ describe('ProductModal', () => {
     });
 
     it('should prevent submit with empty price', () => {
-      renderWithToast(<ProductModal onSave={mockOnSave} onClose={mockOnClose} />);
+      renderAddProduct();
       
       const nameInput = screen.getByPlaceholderText('e.g. Margherita Pizza');
       fireEvent.change(nameInput, { target: { value: 'Test Product' } });
@@ -82,7 +104,7 @@ describe('ProductModal', () => {
     });
 
     it('should accept zero price', () => {
-      renderWithToast(<ProductModal onSave={mockOnSave} onClose={mockOnClose} />);
+      renderAddProduct();
       
       const nameInput = screen.getByPlaceholderText('e.g. Margherita Pizza');
       const priceInput = screen.getByPlaceholderText('0.00');
@@ -100,7 +122,7 @@ describe('ProductModal', () => {
     });
 
     it('should reject negative prices', () => {
-      renderWithToast(<ProductModal onSave={mockOnSave} onClose={mockOnClose} />);
+      renderAddProduct();
       
       const priceInput = screen.getByPlaceholderText('0.00');
       
@@ -109,7 +131,7 @@ describe('ProductModal', () => {
     });
 
     it('should parse price as float', () => {
-      renderWithToast(<ProductModal onSave={mockOnSave} onClose={mockOnClose} />);
+      renderAddProduct();
       
       const nameInput = screen.getByPlaceholderText('e.g. Margherita Pizza');
       const priceInput = screen.getByPlaceholderText('0.00');
@@ -128,7 +150,7 @@ describe('ProductModal', () => {
 
   describe('Form Submission', () => {
     it('should submit valid product', () => {
-      renderWithToast(<ProductModal onSave={mockOnSave} onClose={mockOnClose} />);
+      renderAddProduct();
       
       const nameInput = screen.getByPlaceholderText('e.g. Margherita Pizza');
       const descInput = screen.getByPlaceholderText('Describe your product...');
@@ -149,12 +171,13 @@ describe('ProductModal', () => {
         price: 19.99,
         category: 'Food',
         image: '',
+        stock: null,
         available: true
       });
     });
 
     it('should default category to General if empty', () => {
-      renderWithToast(<ProductModal onSave={mockOnSave} onClose={mockOnClose} />);
+      renderAddProduct();
       
       const nameInput = screen.getByPlaceholderText('e.g. Margherita Pizza');
       const priceInput = screen.getByPlaceholderText('0.00');
@@ -173,13 +196,18 @@ describe('ProductModal', () => {
     it('should include all form fields in submission', () => {
       renderWithToast(<ProductModal onSave={mockOnSave} onClose={mockOnClose} />);
       
+      fireEvent.click(screen.getByTestId('use-image-url-btn'));
+      fireEvent.change(screen.getByTestId('image-url-input'), {
+        target: { value: 'https://example.com/image.jpg' }
+      });
+      fireEvent.click(screen.getByTestId('apply-image-url-btn'));
+      fireEvent.click(screen.getByTestId('product-photo-continue'));
+
       const nameInput = screen.getByPlaceholderText('e.g. Margherita Pizza');
       const priceInput = screen.getByPlaceholderText('0.00');
-      const imageInput = screen.getByLabelText('Image URL');
 
       fireEvent.change(nameInput, { target: { value: 'Test Product' } });
       fireEvent.change(priceInput, { target: { value: '10' } });
-      fireEvent.change(imageInput, { target: { value: 'https://example.com/image.jpg' } });
 
       const submitButton = screen.getByRole('button', { name: /Add Product/i });
       fireEvent.click(submitButton);
@@ -195,7 +223,7 @@ describe('ProductModal', () => {
 
   describe('Modal Interactions', () => {
     it('should call onClose when close button clicked', () => {
-      renderWithToast(<ProductModal onSave={mockOnSave} onClose={mockOnClose} />);
+      renderAddProduct();
       
       const closeButton = screen.getByText('×');
       fireEvent.click(closeButton);
@@ -204,7 +232,7 @@ describe('ProductModal', () => {
     });
 
     it('should call onClose when overlay clicked', () => {
-      renderWithToast(<ProductModal onSave={mockOnSave} onClose={mockOnClose} />);
+      renderAddProduct();
       
       const overlay = document.querySelector('.modal-overlay');
       fireEvent.click(overlay);
@@ -213,7 +241,7 @@ describe('ProductModal', () => {
     });
 
     it('should not close when clicking modal content', () => {
-      renderWithToast(<ProductModal onSave={mockOnSave} onClose={mockOnClose} />);
+      renderAddProduct();
       
       const modal = document.querySelector('.modal-content');
       fireEvent.click(modal);
@@ -224,7 +252,7 @@ describe('ProductModal', () => {
 
   describe('Availability Toggle', () => {
     it('should toggle availability checkbox', () => {
-      renderWithToast(<ProductModal onSave={mockOnSave} onClose={mockOnClose} />);
+      renderAddProduct();
       
       const checkbox = screen.getByLabelText('Available for purchase');
       expect(checkbox).toBeChecked();
@@ -234,7 +262,7 @@ describe('ProductModal', () => {
     });
 
     it('should include availability in submission', () => {
-      renderWithToast(<ProductModal onSave={mockOnSave} onClose={mockOnClose} />);
+      renderAddProduct();
       
       const nameInput = screen.getByPlaceholderText('e.g. Margherita Pizza');
       const priceInput = screen.getByPlaceholderText('0.00');
@@ -255,7 +283,7 @@ describe('ProductModal', () => {
 
   describe('Edge Cases', () => {
     it('should handle very large prices', () => {
-      renderWithToast(<ProductModal onSave={mockOnSave} onClose={mockOnClose} />);
+      renderAddProduct();
       
       const nameInput = screen.getByPlaceholderText('e.g. Margherita Pizza');
       const priceInput = screen.getByPlaceholderText('0.00');
@@ -272,7 +300,7 @@ describe('ProductModal', () => {
     });
 
     it('should handle special characters in name', () => {
-      renderWithToast(<ProductModal onSave={mockOnSave} onClose={mockOnClose} />);
+      renderAddProduct();
       
       const nameInput = screen.getByPlaceholderText('e.g. Margherita Pizza');
       const priceInput = screen.getByPlaceholderText('0.00');
@@ -289,7 +317,7 @@ describe('ProductModal', () => {
     });
 
     it('should handle very long descriptions', () => {
-      renderWithToast(<ProductModal onSave={mockOnSave} onClose={mockOnClose} />);
+      renderAddProduct();
       
       const longDesc = 'A'.repeat(1000);
       const nameInput = screen.getByPlaceholderText('e.g. Margherita Pizza');

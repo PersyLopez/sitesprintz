@@ -46,12 +46,14 @@ steps:
     click: { testId: add-product-btn }
     settle_ms: 800
 
-  - action: Modal or form surfaced
+  - action: Photo step or form surfaced
     code: |
-      const t = await page.locator('body').innerText();
+      const skip = page.getByTestId('product-photo-skip');
+      const name = page.getByTestId('product-name-input');
       const dialog = page.locator('[role="dialog"], .modal, .product-modal, form');
       const ok =
-        /product name|name|price|description|save|cancel|add product/i.test(t) ||
+        (await skip.count()) > 0 ||
+        (await name.count()) > 0 ||
         (await dialog.count()) > 0;
       if (!ok) throw new Error('Add product UI did not open');
     settle_ms: 300
