@@ -21,6 +21,23 @@ import { productCatalogService } from './ProductCatalogService.js';
 
 const WEBHOOK_RECLAIM_AFTER_MS = 15 * 60 * 1000;
 
+function stripeRefId(value) {
+  if (!value) return null;
+  return typeof value === 'string' ? value : value.id || null;
+}
+
+/** Charge id from checkout.session.completed — do not fail fulfill when missing. */
+function stripeChargeIdFromCheckoutSession(session) {
+  const paymentIntent = session?.payment_intent;
+  if (paymentIntent && typeof paymentIntent === 'object') {
+    const fromPi = stripeRefId(paymentIntent.latest_charge)
+      || paymentIntent.charges?.data?.[0]?.id
+      || null;
+    if (fromPi) return fromPi;
+  }
+  return stripeRefId(session?.latest_charge) || stripeRefId(session?.charge) || null;
+}
+
 export class WebhookProcessor {
   constructor(db = null, emailSvc = null, stripe = null, paymentAdapter = null, paypalProcessor = null) {
     // Allow dependency injection for testing
@@ -360,6 +377,7 @@ export class WebhookProcessor {
       stripePaymentId: typeof session.payment_intent === 'string'
         ? session.payment_intent
         : session.payment_intent?.id || null,
+      stripeChargeId: stripeChargeIdFromCheckoutSession(session),
     });
   }
 
@@ -379,6 +397,7 @@ export class WebhookProcessor {
     metadata = {},
     stripeSessionId = null,
     stripePaymentId = null,
+    stripeChargeId = null,
   }) {
     const orderItemsData = items.map(item => ({
       product_id: item.productId ? parseInt(item.productId) : null,
@@ -400,6 +419,7 @@ export class WebhookProcessor {
           customer_phone: customerPhone,
           stripe_session_id: stripeSessionId,
           stripe_payment_id: stripePaymentId,
+          stripe_charge_id: stripeChargeId,
           total_amount: amountCents / 100,
           currency: currency || 'usd',
           payment_status: 'paid',

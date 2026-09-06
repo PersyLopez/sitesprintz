@@ -205,6 +205,39 @@ describe('site-specific processor connections', () => {
     expect(status.square.connected).toBe(false);
     expect(status.available).toBeDefined();
   });
+
+  it('sets stripe.testMode from sk_test_ secret only, not pk_test_', async () => {
+    const previousSecret = process.env.STRIPE_SECRET_KEY;
+    const previousPublishable = process.env.STRIPE_PUBLISHABLE_KEY;
+    const { getPaymentConnectStatus, platformIsStripeTestMode } = await import(
+      '../../../server/services/payments/processorConnectHelpers.js'
+    );
+    mockPrisma.sites.findFirst.mockResolvedValue({ id: 'site-1' });
+    mockPrisma.users.findUnique.mockRejectedValue(new Error('db down'));
+
+    process.env.STRIPE_SECRET_KEY = 'sk_live_abc';
+    process.env.STRIPE_PUBLISHABLE_KEY = 'pk_test_abc';
+    expect(platformIsStripeTestMode()).toBe(false);
+    const liveStatus = await getPaymentConnectStatus('user-1', 'site-1');
+    expect(liveStatus.stripe.testMode).toBe(false);
+
+    process.env.STRIPE_SECRET_KEY = 'sk_test_abc';
+    process.env.STRIPE_PUBLISHABLE_KEY = 'pk_live_abc';
+    expect(platformIsStripeTestMode()).toBe(true);
+    const testStatus = await getPaymentConnectStatus('user-1', 'site-1');
+    expect(testStatus.stripe.testMode).toBe(true);
+
+    if (previousSecret === undefined) {
+      delete process.env.STRIPE_SECRET_KEY;
+    } else {
+      process.env.STRIPE_SECRET_KEY = previousSecret;
+    }
+    if (previousPublishable === undefined) {
+      delete process.env.STRIPE_PUBLISHABLE_KEY;
+    } else {
+      process.env.STRIPE_PUBLISHABLE_KEY = previousPublishable;
+    }
+  });
 });
 
 describe('visitor checkout processor gating', () => {

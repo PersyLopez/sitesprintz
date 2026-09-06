@@ -10,6 +10,7 @@ import {
   sendServerError,
   asyncHandler
 } from '../utils/apiResponse.js';
+import { platformIsStripeTestMode } from '../services/payments/processorConnectHelpers.js';
 
 const router = express.Router();
 
@@ -387,6 +388,13 @@ async function handleStripeCheckout(
       return sendBadRequest(res,
         'Stripe account not ready for charges',
         'STRIPE_NOT_READY'
+      );
+    }
+    if (account.livemode === platformIsStripeTestMode()) {
+      return sendBadRequest(
+        res,
+        'Connected account mode does not match the platform. Disconnect Stripe and reconnect to continue.',
+        'CONNECT_MODE_MISMATCH'
       );
     }
   } catch (error) {

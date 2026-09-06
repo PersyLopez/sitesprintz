@@ -347,6 +347,66 @@ describe('WebhookProcessor Service', () => {
           data: expect.objectContaining({
             stripe_session_id: 'cs_order',
             stripe_payment_id: 'pi_order',
+            stripe_charge_id: null,
+          }),
+        })
+      );
+    });
+
+    it('persists stripe_charge_id from expanded payment_intent.latest_charge', async () => {
+      mockDb.$transaction.mockImplementation(async (callback) => callback(mockDb));
+      mockDb.orders.create.mockResolvedValue({ id: 'order-2', order_items: [] });
+
+      await processor.createOrder({
+        id: 'cs_order_expanded',
+        payment_intent: {
+          id: 'pi_order_expanded',
+          latest_charge: { id: 'ch_order' },
+        },
+        amount_total: 2500,
+        currency: 'usd',
+        customer_email: 'buyer@example.com',
+        metadata: {
+          site_id: 'site-1',
+          order_items: '[]',
+        },
+      });
+
+      expect(mockDb.orders.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            stripe_session_id: 'cs_order_expanded',
+            stripe_payment_id: 'pi_order_expanded',
+            stripe_charge_id: 'ch_order',
+          }),
+        })
+      );
+    });
+
+    it('persists stripe_charge_id from payment_intent.charges.data when latest_charge missing', async () => {
+      mockDb.$transaction.mockImplementation(async (callback) => callback(mockDb));
+      mockDb.orders.create.mockResolvedValue({ id: 'order-3', order_items: [] });
+
+      await processor.createOrder({
+        id: 'cs_order_charges',
+        payment_intent: {
+          id: 'pi_order_charges',
+          charges: { data: [{ id: 'ch_from_list' }] },
+        },
+        amount_total: 2500,
+        currency: 'usd',
+        customer_email: 'buyer@example.com',
+        metadata: {
+          site_id: 'site-1',
+          order_items: '[]',
+        },
+      });
+
+      expect(mockDb.orders.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            stripe_payment_id: 'pi_order_charges',
+            stripe_charge_id: 'ch_from_list',
           }),
         })
       );

@@ -8,6 +8,7 @@ import { prisma } from '../../../database/db.js';
 import { encrypt } from '../../utils/encryption.js';
 import { resolvePlanLimits } from '../../utils/resolveUserPlan.js';
 import { getRedis } from '../../utils/redis.js';
+import { stripeKeyMode } from '../../config/betaMode.js';
 
 export const PROCESSORS = ['stripe', 'square', 'paypal'];
 
@@ -196,6 +197,14 @@ export function isProcessorConfigured(processor) {
     return Boolean(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET);
   }
   return false;
+}
+
+/**
+ * Platform Stripe test/live from secret key only (not publishable).
+ * Neighbor: stripeKeyMode in server/config/betaMode.js
+ */
+export function platformIsStripeTestMode(env = process.env) {
+  return stripeKeyMode(env.STRIPE_SECRET_KEY) === 'test';
 }
 
 export async function userCanConnectPayments(userId) {
@@ -581,15 +590,13 @@ export async function getConnectedProcessors(userId, siteId) {
  */
 export async function getPaymentConnectStatus(userId, requestedSiteId) {
   const stripeSecret = process.env.STRIPE_SECRET_KEY || '';
-  const stripePublishable = process.env.STRIPE_PUBLISHABLE_KEY || '';
   const available = {
     stripe: isProcessorConfigured('stripe'),
     stripeOAuth: Boolean(stripeSecret && process.env.STRIPE_CLIENT_ID),
     square: isProcessorConfigured('square'),
     paypal: isProcessorConfigured('paypal')
   };
-  const stripeTestMode = available.stripe
-    && (stripeSecret.startsWith('sk_test_') || stripePublishable.startsWith('pk_test_'));
+  const stripeTestMode = platformIsStripeTestMode();
 
   const EMPTY_CONNECT_STATUS = {
     connected: false,

@@ -171,6 +171,78 @@ describe('Payment facilitator Stripe checkout', () => {
     });
     expect(mockStripe.checkout.sessions.create).not.toHaveBeenCalled();
   });
+
+  it('returns CONNECT_MODE_MISMATCH when a live Connect account hits a test platform', async () => {
+    mockStripe.accounts.retrieve.mockResolvedValue({
+      charges_enabled: true,
+      livemode: true
+    });
+
+    const response = await request(app)
+      .post('/api/payments/checkout/create-session')
+      .send({
+        siteId: 'site-123',
+        items: [{ productId: 'product-1', price: 1, quantity: 1 }]
+      })
+      .expect(400);
+
+    expect(response.body).toMatchObject({
+      success: false,
+      code: 'CONNECT_MODE_MISMATCH'
+    });
+    expect(response.body.error).toMatch(/disconnect/i);
+    expect(mockStripe.checkout.sessions.create).not.toHaveBeenCalled();
+  });
+
+  it('returns CONNECT_MODE_MISMATCH when a test Connect account hits a live platform', async () => {
+    process.env.STRIPE_SECRET_KEY = 'sk_live_123';
+    mockStripe.accounts.retrieve.mockResolvedValue({
+      charges_enabled: true,
+      livemode: false
+    });
+
+    const response = await request(app)
+      .post('/api/payments/checkout/create-session')
+      .send({
+        siteId: 'site-123',
+        items: [{ productId: 'product-1', price: 1, quantity: 1 }]
+      })
+      .expect(400);
+
+    expect(response.body).toMatchObject({
+      success: false,
+      code: 'CONNECT_MODE_MISMATCH'
+    });
+    expect(response.body.error).toMatch(/disconnect/i);
+    expect(mockStripe.checkout.sessions.create).not.toHaveBeenCalled();
+  });
+
+  it('creates a session when Connect livemode matches the platform secret', async () => {
+    mockStripe.accounts.retrieve.mockResolvedValue({
+      charges_enabled: true,
+      livemode: false
+    });
+    validateAndRebuildCheckout.mockResolvedValue({
+      items: [{
+        productId: 'product-1',
+        name: 'Catalog product',
+        price: 25.5,
+        quantity: 1
+      }]
+    });
+
+    await request(app)
+      .post('/api/payments/checkout/create-session')
+      .send({
+        siteId: 'site-123',
+        items: [{ productId: 'product-1', price: 25.5, quantity: 1 }],
+        successUrl: 'https://example.com/success',
+        cancelUrl: 'https://example.com/cancel'
+      })
+      .expect(200);
+
+    expect(mockStripe.checkout.sessions.create).toHaveBeenCalled();
+  });
 });
 
 describe('Payment facilitator Square checkout', () => {
