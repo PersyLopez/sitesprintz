@@ -4,7 +4,9 @@ import {
   applyPayOnSiteSetting,
   buildPayOnSiteOrderItems,
   mergeSiteDataSettings,
-  extractSiteCatalog
+  extractSiteCatalog,
+  parseMoney,
+  normalizeSiteCatalogPrices
 } from '../../server/utils/payOnSite.js';
 import { describe, it, expect } from 'vitest';
 import {
@@ -21,6 +23,21 @@ import {
 import { buildPublishableContent } from '../../src/services/publishService.js';
 
 describe('pay on site helpers', () => {
+  it('normalizes persisted catalog prices while preserving blank prices', () => {
+    expect(parseMoney('$25')).toBe(25);
+    const normalized = normalizeSiteCatalogPrices({
+      products: [{ name: 'Product', price: '$20' }, { name: 'Quote', price: '' }],
+      sections: [{
+        type: 'catalog',
+        content: { items: [{ name: 'Catalog item', price: '$20' }, { name: 'Quote', price: '' }] }
+      }]
+    });
+    expect(normalized.products[0].price).toBe(20);
+    expect(normalized.products[1].price).toBe('');
+    expect(normalized.sections[0].content.items[0].price).toBe(20);
+    expect(normalized.sections[0].content.items[1].price).toBe('');
+  });
+
   it('requires an explicit settings.payOnSite flag', () => {
     expect(isPayOnSiteEnabled(undefined)).toBe(false);
     expect(isPayOnSiteEnabled({ _features: { cashPayment: { enabled: true } } })).toBe(false);

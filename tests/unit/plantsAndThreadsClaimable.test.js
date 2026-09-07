@@ -30,7 +30,7 @@ describe('plants-and-threads claimable', () => {
     const gridNames = ['Orange hibiscus', 'Pink hibiscus', 'Coral hibiscus', 'Apricot hibiscus'];
     for (const name of gridNames) {
       const item = items.find((entry) => entry.name === name);
-      expect(item?.price).toBe('$20');
+      expect(item?.price).toBe(20);
       expect(item?.image).toMatch(/hibiscus-(orange|pink|coral|apricot)\.jpg$/);
     }
     expect(JSON.stringify(site)).not.toMatch(/hibiscus-grid/);

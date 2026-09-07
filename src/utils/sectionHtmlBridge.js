@@ -11,7 +11,11 @@
 import { resolveTeamHeading, shouldRenderTeam, getNamedTeamMembers } from './businessScale.js';
 import { telHref } from './liveSiteContact.js';
 import { getBookingEmbedUrl, isExternalBookingProvider } from './bookingEmbed.js';
-import { renderGalleryWorkPlaceholders, renderPhotoPlaceholder } from './photoPlaceholder.js';
+import {
+  genericServiceInsertSrc,
+  renderGalleryWorkPlaceholders,
+  renderPhotoPlaceholder,
+} from './photoPlaceholder.js';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -233,13 +237,14 @@ function renderServices(section, tokens) {
     .map((item, index) => {
       const name = item.name || item.title || '';
       const desc = item.description || '';
-      const price = item.price === 0 || item.price ? String(item.price) : '';
+      const price = formatPrice(item.price);
       const image = item.image || item.src || '';
+      const genericImage = image ? null : genericServiceInsertSrc(name);
       const duration = item.duration || item.duration_minutes;
       const serviceId = serviceKey(item, index);
       return `<article class="ss-card" data-service-id="${escapeAttr(serviceId)}" data-service-name="${escapeAttr(name)}" style="background: ${getSurface(tokens)}; border: 1px solid ${getTokens(tokens).theme.hairline};">
-  ${image
-    ? `<img class="ss-card-media" data-photo-field="services.items.${index}.image" src="${escapeAttr(image)}" alt="${escapeAttr(item.imageAlt || name)}" loading="lazy" />`
+  ${image || genericImage
+    ? `<img class="ss-card-media" data-photo-field="services.items.${index}.image" src="${escapeAttr(image || genericImage)}" alt="${escapeAttr(item.imageAlt || name)}" loading="lazy" />`
     : renderPhotoPlaceholder('service', { className: 'ss-photo-placeholder--card', photoField: `services.items.${index}.image` })}
   <div class="ss-card-body">
     <h3 style="color: ${getAccent(tokens)};">${escapeHtml(name)}</h3>
@@ -539,6 +544,13 @@ function parseMoney(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function formatPrice(value) {
+  if (value === '' || value === null || value === undefined) return '';
+  const price = parseMoney(value);
+  if (!Number.isFinite(price) || price <= 0) return '';
+  return `$${Number.isInteger(price) ? price : price.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')}`;
+}
+
 function productKey(item, index) {
   if (item?.id) return String(item.id);
   const slug = String(item?.name || 'item')
@@ -578,7 +590,7 @@ function renderCatalog(section, tokens) {
   <div class="ss-card-body">
     <h3 style="color: ${getAccent(tokens)};">${escapeHtml(item.name || '')}</h3>
     <p style="color: ${getMuted(tokens)};">${escapeHtml(item.description || '')}</p>
-    ${item.price ? `<div class="ss-price" style="color: ${getAccent(tokens)};">${escapeHtml(String(item.price))}</div>` : ''}
+    ${formatPrice(item.price) ? `<div class="ss-price" style="color: ${getAccent(tokens)};">${escapeHtml(formatPrice(item.price))}</div>` : ''}
     ${purchasable ? addToCartButton(item, index, tokens) : ''}
   </div>
 </article>`)
@@ -725,7 +737,7 @@ function renderMenu(section, tokens) {
         .map((item, itemIndex) => `<div style="padding: 12px 0; border-bottom: 1px solid ${getTokens(tokens).theme.hairline};">
   <div style="display: flex; justify-content: space-between; gap: 12px; align-items: flex-start;">
     <h4 style="color: ${getText(tokens)};">${escapeHtml(item.name || '')}</h4>
-    ${item.price ? `<span style="color: ${getAccent(tokens)}; font-weight: 600;">${escapeHtml(String(item.price))}</span>` : ''}
+    ${formatPrice(item.price) ? `<span style="color: ${getAccent(tokens)}; font-weight: 600;">${escapeHtml(formatPrice(item.price))}</span>` : ''}
   </div>
   ${item.description ? `<p style="color: ${getMuted(tokens)}; font-size: 0.9rem; margin-top: 4px;">${escapeHtml(item.description)}</p>` : ''}
   ${purchasable ? addToCartButton(item, `${sectionIndex}-${itemIndex}`, tokens) : ''}

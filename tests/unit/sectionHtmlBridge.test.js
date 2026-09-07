@@ -227,6 +227,14 @@ describe('sectionHtmlBridge', () => {
     expect(html).not.toContain('data-testid="photo-placeholder"');
   });
 
+  it('formats numeric catalog prices as dollar amounts', () => {
+    const html = renderSectionToHtml({
+      type: 'catalog',
+      content: { items: [{ name: 'Mug', price: 20 }] },
+    }, tokens);
+    expect(html).toContain('$20');
+  });
+
   it('fills team and before-after holes with sample inserts', () => {
     const team = renderSectionToHtml({
       type: 'team',

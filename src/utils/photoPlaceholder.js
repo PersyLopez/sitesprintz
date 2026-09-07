@@ -5,6 +5,21 @@
 
 export const PHOTO_INSERT_SRC = '/assets/hero-placeholder.jpg';
 
+const GENERIC_SERVICE_INSERTS = [
+  [/oil/i, 'oil.jpg'],
+  [/tire/i, 'tires.jpg'],
+  [/brake/i, 'brakes.jpg'],
+  [/muffler/i, 'muffler.jpg'],
+  [/nail/i, 'nails.jpg'],
+  [/balayage/i, 'balayage.jpg'],
+  [/hair care/i, 'hair-care.jpg'],
+  [/haircut/i, 'haircut.jpg'],
+  [/color/i, 'coloring.jpg'],
+  [/highlight/i, 'highlighting.jpg'],
+  [/laser hair removal/i, 'laser.svg'],
+  [/bridal styling/i, 'bridal.svg'],
+];
+
 const COPY = {
   business: 'Use your business photo here',
   product: 'Use your product photo here',
@@ -28,15 +43,24 @@ export function photoPlaceholderLabel(kind) {
 
 /**
  * @param {'business'|'product'|'service'|'work'|'shop'|'staff'} kind
- * @param {{ className?: string, priority?: boolean, photoField?: string }} [opts]
+ * @param {{ className?: string, priority?: boolean, photoField?: string, src?: string, offerName?: string }} [opts]
  */
 export function renderPhotoPlaceholder(kind, opts = {}) {
-  const label = photoPlaceholderLabel(kind);
+  const label = opts.offerName
+    ? `Example of ${opts.offerName} — use your photo here`
+    : photoPlaceholderLabel(kind);
   const extra = opts.className ? ` ${opts.className}` : '';
   const loading = opts.priority ? 'eager' : 'lazy';
   const fetchPriority = opts.priority ? ' fetchpriority="high"' : '';
   const fieldAttr = opts.photoField ? ` data-photo-field="${escapeHtml(opts.photoField)}"` : '';
-  return `<div class="ss-photo-placeholder${extra}" data-testid="photo-placeholder" data-placeholder-kind="${escapeHtml(kind)}"${fieldAttr} role="img" aria-label="${escapeHtml(label)}"><img class="ss-photo-placeholder-img" src="${PHOTO_INSERT_SRC}" alt="" width="1600" height="900" loading="${loading}" decoding="async"${fetchPriority} /><span class="ss-photo-placeholder-mark">${escapeHtml(label)}</span></div>`;
+  const src = opts.src || PHOTO_INSERT_SRC;
+  return `<div class="ss-photo-placeholder${extra}" data-testid="photo-placeholder" data-placeholder-kind="${escapeHtml(kind)}"${fieldAttr} role="img" aria-label="${escapeHtml(label)}"><img class="ss-photo-placeholder-img" src="${escapeHtml(src)}" alt="" width="1600" height="900" loading="${loading}" decoding="async"${fetchPriority} /><span class="ss-photo-placeholder-mark">${escapeHtml(label)}</span></div>`;
+}
+
+export function genericServiceInsertSrc(name) {
+  const serviceName = String(name || '');
+  const match = GENERIC_SERVICE_INSERTS.find(([pattern]) => pattern.test(serviceName));
+  return match ? `/assets/service-inserts/${match[1]}` : null;
 }
 
 export function renderGalleryWorkPlaceholders(count = 3, fieldPrefix = 'gallery.images') {

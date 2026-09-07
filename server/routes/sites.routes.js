@@ -23,7 +23,7 @@ import {
 } from '../utils/apiResponse.js';
 import { sanitizeSiteDataForStorage } from '../utils/siteDataSanitizer.js';
 import { attachSpanishLocale } from '../services/siteTranslationService.js';
-import { applyPayOnSiteSetting, mergeSiteDataSettings } from '../utils/payOnSite.js';
+import { applyPayOnSiteSetting, mergeSiteDataSettings, parseMoney } from '../utils/payOnSite.js';
 import { applyDeliverySetting, getPublicDeliveryConfig, shopHasDeliveryOrigin } from '../utils/delivery.js';
 import { toPublicSiteData } from '../../src/utils/liveSiteContact.js';
 import { prepareOwnerSiteData } from '../utils/prepareSiteLocation.js';
@@ -404,6 +404,20 @@ router.put('/:siteId', requireAuth, asyncHandler(async (req, res) => {
 
 // ==================== PRODUCTS ENDPOINTS ====================
 
+function hasLegacyCatalogPrice(siteData) {
+  const itemLists = [
+    siteData?.products,
+    Array.isArray(siteData?.services) ? siteData.services : siteData?.services?.items
+  ];
+  const sectionLists = (Array.isArray(siteData?.sections) ? siteData.sections : [])
+    .filter((section) => ['catalog', 'menu', 'services'].includes(section?.type))
+    .map((section) => section.content?.items);
+
+  return [...itemLists, ...sectionLists].some((items) =>
+    Array.isArray(items) && items.some((item) => typeof item?.price === 'string' && /\d/.test(item.price))
+  );
+}
+
 /**
  * GET /api/sites/:siteId/products
  * Get products for a site
@@ -421,7 +435,14 @@ router.get('/:siteId/products', requireAuth, asyncHandler(async (req, res) => {
     return sendForbidden(res, ownership.error, 'ACCESS_DENIED');
   }
 
-  const siteData = parseSiteData(ownership.site);
+  const storedSiteData = parseSiteData(ownership.site);
+  const siteData = sanitizeSiteDataForStorage(storedSiteData);
+  if (hasLegacyCatalogPrice(storedSiteData)) {
+    await prisma.sites.update({
+      where: { id: ownership.site.id },
+      data: { site_data: siteData }
+    });
+  }
 
   // Normalize products/services structure
   let products = [];
@@ -430,7 +451,7 @@ router.get('/:siteId/products', requireAuth, asyncHandler(async (req, res) => {
       id: p.id || `product-${index}`,
       name: p.name || '',
       description: p.description || '',
-      price: typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0,
+      price: p.price,
       image: p.image || null,
       category: p.category || 'General',
       stock: p.stock ?? null,
@@ -443,7 +464,7 @@ router.get('/:siteId/products', requireAuth, asyncHandler(async (req, res) => {
       id: s.id || `service-${index}`,
       title: s.title || s.name || '',
       description: s.description || '',
-      price: typeof s.price === 'number' ? s.price : parseFloat(s.price) || 0,
+      price: parseMoney(s.price),
       image: s.image || null,
       category: 'Service'
     }));
@@ -480,7 +501,7 @@ router.put('/:siteId/products', requireAuth, asyncHandler(async (req, res) => {
     id: p.id || `product-${Date.now()}-${index}`,
     name: String(p.name || '').substring(0, 200),
     description: String(p.description || '').substring(0, 1000),
-    price: typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0,
+    price: p.price,
     image: p.image ? String(p.image).substring(0, 500) : null,
     category: String(p.category || 'General').substring(0, 100),
     stock: typeof p.stock === 'number' ? p.stock : (p.stock != null && p.stock !== '' ? parseInt(p.stock, 10) || null : null),
@@ -491,16 +512,26 @@ router.put('/:siteId/products', requireAuth, asyncHandler(async (req, res) => {
   // Get existing data and update products only (never mirror into booking services)
   const existingData = parseSiteData(ownership.site);
   existingData.products = sanitizedProducts;
+  const catalogSection = Array.isArray(existingData.sections)
+    ? existingData.sections.find((section) => section?.type === 'catalog')
+    : null;
+  if (catalogSection) {
+    catalogSection.content = {
+      ...(catalogSection.content || {}),
+      items: sanitizedProducts
+    };
+  }
+  const sanitizedSiteData = sanitizeSiteDataForStorage(existingData);
 
   // Save to database
   await prisma.sites.update({
     where: { id: ownership.site.id },
     data: {
-      site_data: existingData
+      site_data: sanitizedSiteData
     }
   });
 
-  return sendSuccess(res, { products: sanitizedProducts }, 'Products updated successfully');
+  return sendSuccess(res, { products: sanitizedSiteData.products }, 'Products updated successfully');
 }));
 
 // ==================== VISIBILITY ENDPOINTS ====================

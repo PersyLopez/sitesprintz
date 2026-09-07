@@ -42,10 +42,55 @@ export function applyPayOnSiteSetting(siteData, payOnSite) {
   };
 }
 
-function parseMoney(value) {
+export function parseMoney(value) {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
   const parsed = Number.parseFloat(String(value || '').replace(/[^0-9.]/g, ''));
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function normalizeCatalogItems(items) {
+  if (!Array.isArray(items)) return items;
+  return items.map((item) => {
+    if (!item || typeof item !== 'object' || item.price === '' || item.price === null || item.price === undefined) {
+      return item;
+    }
+    return { ...item, price: parseMoney(item.price) };
+  });
+}
+
+export function normalizeSiteCatalogPrices(siteData) {
+  if (!siteData || typeof siteData !== 'object') return siteData;
+
+  const normalized = { ...siteData };
+  if (Array.isArray(siteData.products)) {
+    normalized.products = normalizeCatalogItems(siteData.products);
+  }
+  if (Array.isArray(siteData.services)) {
+    normalized.services = normalizeCatalogItems(siteData.services);
+  }
+
+  if (siteData.services && typeof siteData.services === 'object' && !Array.isArray(siteData.services)) {
+    normalized.services = { ...siteData.services };
+    if (Array.isArray(siteData.services.items)) {
+      normalized.services.items = normalizeCatalogItems(siteData.services.items);
+    }
+  }
+
+  if (Array.isArray(siteData.sections)) {
+    normalized.sections = siteData.sections.map((section) => {
+      if (!['catalog', 'menu', 'services'].includes(section?.type)) return section;
+      if (!section.content || typeof section.content !== 'object') return section;
+      return {
+        ...section,
+        content: {
+          ...section.content,
+          items: normalizeCatalogItems(section.content?.items)
+        }
+      };
+    });
+  }
+
+  return normalized;
 }
 
 function productKey(item, index) {

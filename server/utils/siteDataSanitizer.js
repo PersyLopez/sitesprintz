@@ -6,6 +6,7 @@
  */
 
 import sanitizeHtml from 'sanitize-html';
+import { normalizeSiteCatalogPrices } from './payOnSite.js';
 
 /**
  * Allowed HTML tags for site content (safe subset)
@@ -129,7 +130,7 @@ export function sanitizeSiteDataForStorage(siteData) {
   const copy = JSON.parse(JSON.stringify(siteData));
   
   // Recursively sanitize
-  return sanitizeSiteData(copy);
+  return normalizeSiteCatalogPrices(sanitizeSiteData(copy));
 }
 
 export default {

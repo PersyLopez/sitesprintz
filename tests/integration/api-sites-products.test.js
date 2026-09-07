@@ -108,6 +108,29 @@ describe('API Integration Tests - Site products', () => {
         name: 'Salon Shampoo',
       });
     });
+
+    it('heals quoted product prices and persists numeric values', async () => {
+      seedPrismaData({
+        sites: [
+          createTestSite({
+            id: TEST_SITE_ID,
+            user_id: TEST_USER_ID,
+            subdomain: 'products-route-site',
+            site_data: {
+              products: [{ ...catalogProducts[0], price: '$25' }],
+            },
+          }),
+        ],
+      });
+
+      const response = await request(app).get(`/api/sites/${TEST_SITE_ID}/products`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.products[0].price).toBe(25);
+      const site = await prisma.sites.findUnique({ where: { id: TEST_SITE_ID } });
+      const siteData = typeof site.site_data === 'string' ? JSON.parse(site.site_data) : site.site_data;
+      expect(siteData.products[0].price).toBe(25);
+    });
   });
 
   describe('PUT /api/sites/:siteId/products', () => {
@@ -120,6 +143,10 @@ describe('API Integration Tests - Site products', () => {
             subdomain: 'products-route-site',
             site_data: {
               products: catalogProducts,
+              sections: [{
+                type: 'catalog',
+                content: { title: 'Shop', items: catalogProducts },
+              }],
               services: { items: bookingServices },
             },
           }),
@@ -150,6 +177,8 @@ describe('API Integration Tests - Site products', () => {
 
       expect(siteData.products).toHaveLength(2);
       expect(siteData.products[1].name).toBe('Salon Conditioner');
+      expect(siteData.sections[0].content.title).toBe('Shop');
+      expect(siteData.sections[0].content.items).toEqual(siteData.products);
       expect(siteData.services.items).toEqual(bookingServices);
       expect(siteData.services.items[0].title).toBe('Haircut & Style');
       expect(siteData.services.items[1].title).toBe('Color Treatment');

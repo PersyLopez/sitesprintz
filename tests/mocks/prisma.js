@@ -74,7 +74,11 @@ function matchesSiteWhere(site, where) {
     if (!site.template_id?.startsWith(prefix)) return false;
   }
 
-  if (where.subdomain?.startsWith) {
+  if (
+    where.subdomain &&
+    typeof where.subdomain === 'object' &&
+    typeof where.subdomain.startsWith === 'string'
+  ) {
     if (!site.subdomain?.startsWith(where.subdomain.startsWith)) return false;
   }
 
