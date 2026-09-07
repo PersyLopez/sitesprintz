@@ -353,6 +353,40 @@ describe('PublishModal', () => {
       });
     });
 
+    it('should save and publish the existing draft without creating another draft', async () => {
+      const saveDraft = vi.fn().mockResolvedValue({ draftId: 'draft-123' });
+      api.post.mockResolvedValueOnce({
+        subdomain: 'test-business',
+        url: 'http://localhost:5173/view/test-business',
+      });
+
+      renderWithContext(
+        <PublishModal
+          siteData={{ template: 'basic', brand: { name: 'Test Business' } }}
+          draftId="draft-123"
+          saveDraft={saveDraft}
+          onClose={mockOnClose}
+        />,
+        defaultAuthValue,
+        defaultToastValue
+      );
+
+      await waitFor(() => {
+        expect(getPublishButton()).not.toBeDisabled();
+      });
+      fireEvent.click(getPublishButton());
+
+      await waitFor(() => {
+        expect(api.post).toHaveBeenCalledWith(
+          '/api/drafts/draft-123/publish',
+          { plan: 'starter', email: 'test@example.com' }
+        );
+      });
+      expect(saveDraft).toHaveBeenCalledWith(true);
+      expect(api.post).not.toHaveBeenCalledWith('/api/drafts', expect.anything());
+      expect(saveDraft.mock.invocationCallOrder[0]).toBeLessThan(api.post.mock.invocationCallOrder[0]);
+    });
+
     it('should handle publish errors gracefully', async () => {
       const siteData = {
         template: 'basic',

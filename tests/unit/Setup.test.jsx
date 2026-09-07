@@ -123,6 +123,7 @@ describe('Setup Page', () => {
       loadTemplate: mockLoadTemplate,
       saveDraft: mockSaveDraft,
       lastSaved: null,
+      canUndo: false,
     };
 
     return render(
@@ -266,6 +267,30 @@ describe('Setup Page', () => {
       await waitFor(() => {
         expect(mockLoadTemplate).toHaveBeenCalled();
       });
+    });
+
+    it('should keep current site data when cancelling a template switch', async () => {
+      const user = userEvent.setup();
+      renderSetup('/setup', {
+        siteData: { businessName: 'Current Business', template: 'restaurant' },
+        canUndo: true,
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('change-template-button')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByTestId('change-template-button'));
+      await user.click(screen.getByTestId('template-salon'));
+
+      expect(screen.getByTestId('template-switch-modal')).toBeInTheDocument();
+      await user.click(screen.getByTestId('template-switch-cancel'));
+
+      expect(mockLoadTemplate).not.toHaveBeenCalled();
+      expect(screen.getByRole('heading', { name: 'Current Business' })).toBeInTheDocument();
+      expect(screen.queryByTestId('template-switch-modal')).not.toBeInTheDocument();
+      expect(screen.getByTestId('page-builder')).toBeInTheDocument();
+      expect(screen.getByTestId('customize-panel')).toBeInTheDocument();
     });
 
     it('should highlight selected template', async () => {

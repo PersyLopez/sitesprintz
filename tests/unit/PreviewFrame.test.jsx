@@ -185,4 +185,36 @@ describe('PreviewFrame', () => {
     rerender(<PreviewFrame />);
     expect(mockComposePage.mock.calls.length).toBe(calls);
   });
+
+  it('restores iframe document and live content scroll after rewriting', async () => {
+    mockPreviewKey = 1;
+    mockSiteData = {
+      businessName: 'First',
+      category: 'salon',
+      sections: [],
+    };
+    const { rerender } = render(<PreviewFrame />);
+    const iframe = screen.getByTitle('Site Preview');
+
+    await waitFor(() => {
+      expect(iframe.contentDocument?.querySelector('.ss-live')).toBeTruthy();
+    });
+    const initialComposeCalls = mockComposePage.mock.calls.length;
+
+    iframe.contentDocument.documentElement.scrollTop = 120;
+    iframe.contentDocument.querySelector('.ss-live').scrollTop = 240;
+    mockPreviewKey = 2;
+    mockSiteData = {
+      businessName: 'Second',
+      category: 'salon',
+      sections: [],
+    };
+    rerender(<PreviewFrame />);
+
+    await waitFor(() => {
+      expect(mockComposePage.mock.calls.length).toBeGreaterThan(initialComposeCalls);
+    });
+    expect(iframe.contentDocument.documentElement.scrollTop).toBe(120);
+    expect(iframe.contentDocument.querySelector('.ss-live').scrollTop).toBe(240);
+  });
 });

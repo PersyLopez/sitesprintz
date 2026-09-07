@@ -19,6 +19,16 @@
   flex-shrink: 0;
 }
 
+.builder-history-actions {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-left: var(--spacing-sm);
+}
+
+.builder-toolbar > .btn-primary {
+  margin-left: auto;
+}
+
 .builder-look-btn {
   background: none;
   border: 1px solid var(--border-dark);
@@ -27,6 +37,11 @@
   padding: 8px 12px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.builder-look-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .builder-look-btn.selected,

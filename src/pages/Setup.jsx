@@ -12,6 +12,7 @@ import CustomTemplateBuilder from '../components/setup/CustomTemplateBuilder';
 import LoadingFallback from '../components/common/LoadingFallback';
 import SaveIndicator from '../components/common/SaveIndicator';
 import SkeletonLoader from '../components/common/SkeletonLoader';
+import { Modal } from '../components/common/Modal';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import './Setup.css';
 
@@ -20,7 +21,7 @@ const PreviewFrame = lazy(() => import('../components/setup/PreviewFrame'));
 
 function Setup() {
   const [searchParams] = useSearchParams();
-  const { siteData, loadTemplate, loadSite, saveDraft, lastSaved, isSaving } = useSite();
+  const { siteData, draftId, loadTemplate, loadSite, saveDraft, lastSaved, isSaving, canUndo } = useSite();
   const { showError, showSuccess } = useToast();
 
   const [templates, setTemplates] = useState([]);
@@ -31,6 +32,8 @@ function Setup() {
   const [wizardCompleted, setWizardCompleted] = useState(false);
   const [showCustomBuilder, setShowCustomBuilder] = useState(false);
   const [showTemplatePicker, setShowTemplatePicker] = useState(true);
+  const [pendingTemplate, setPendingTemplate] = useState(null);
+  const [showTemplateSwitchModal, setShowTemplateSwitchModal] = useState(false);
 
   const templatesPanelVisible = showTemplatePicker || !siteData.template;
   const twoColumnLayout = Boolean(siteData.template) && !showTemplatePicker;
@@ -70,11 +73,35 @@ function Setup() {
   };
 
   const handleTemplateSelect = async (template) => {
-    // Load template directly (no layout variations)
+    if (siteData.template && canUndo) {
+      setPendingTemplate(template);
+      setShowTemplateSwitchModal(true);
+      return;
+    }
+
+    applyTemplate(template);
+  };
+
+  const applyTemplate = (template) => {
     loadTemplate(template);
     setShowTemplatePicker(false);
     setActiveTab('editor');
     showSuccess(`✨ ${template.name || template.businessName} template selected!`);
+  };
+
+  const handleTemplateSwitchCancel = () => {
+    setPendingTemplate(null);
+    setShowTemplateSwitchModal(false);
+    setShowTemplatePicker(false);
+    setActiveTab('editor');
+  };
+
+  const handleTemplateSwitchConfirm = () => {
+    if (pendingTemplate) {
+      applyTemplate(pendingTemplate);
+    }
+    setPendingTemplate(null);
+    setShowTemplateSwitchModal(false);
   };
 
   const handlePublish = () => {
@@ -323,9 +350,40 @@ function Setup() {
       {showPublishModal && (
         <PublishModal
           siteData={siteData}
+          draftId={draftId}
+          saveDraft={saveDraft}
           onClose={() => setShowPublishModal(false)}
         />
       )}
+
+      <Modal
+        isOpen={showTemplateSwitchModal}
+        onClose={handleTemplateSwitchCancel}
+        title="Change template?"
+        ariaDescribedBy="template-switch-description"
+      >
+        <div data-testid="template-switch-modal">
+          <p id="template-switch-description">
+            Your current work will be replaced by the selected template.
+          </p>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={handleTemplateSwitchCancel}
+            data-testid="template-switch-cancel"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleTemplateSwitchConfirm}
+            data-testid="template-switch-confirm"
+          >
+            Change template
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

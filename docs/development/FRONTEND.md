@@ -216,7 +216,7 @@ For known niches, the wizard delegates to `wizardSiteDataBuilder.js` and the new
 
 - After a template is selected, Setup hides the template column until Change template. The workspace is `PageBuilder` (section list, drag or Alt+Arrow reorder, hide/remove) plus one live `PreviewFrame` iframe. Preview writes are debounced while typing; template load flushes immediately and the loading overlay does not cover later updates.
 - `EditorPanel` still exists for those form tabs but is not mounted on `/setup`.
-- `SectionEditors.jsx` exports specialized editors for `native-booking`, `checkout`, `reviews`, and premium modules (calculator, class scheduler, quiz, etc.).
+- `PageBuilder` uses `inspectorKindForSection` to select the appropriate inspector for `native-booking`, `checkout`, `reviews`, and premium modules (calculator, class scheduler, quiz, etc.).
 - `PreviewFrame` writes composed HTML into a full-column iframe. It falls back to legacy inline HTML if the layout engine fails.
 - `PublishModal` handles the final publish step.
 
@@ -249,7 +249,7 @@ The `FeatureGate` component in `src/components/common/FeatureGate.jsx` condition
 - `CustomTemplateBuilder` — layout, color, and content picker for custom sites.
 - `LevelSelector` — solo/studio/established selector with niche-aware layout preview.
 - `PageBuilder` — section list, add/reorder/hide/remove, inspector forms.
-- `SectionEditors` — registry of section-specific editors.
+- `PageBuilder` + `inspectorKindForSection` — section-specific inspector selection.
 - `EditorPanel` — form tabs (not mounted on `/setup`).
 - `PreviewFrame` — full-column iframe preview.
 - `PublishModal` — publish confirmation and configuration.

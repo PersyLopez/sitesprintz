@@ -147,13 +147,8 @@ const rendered = renderAllSections(sections, siteData, renderContext);
    - Category-based organization
    - Mobile-friendly layout
 
-3. **`src/components/setup/SectionEditors.jsx`** (300 lines)
-   - Integrated editors for orphaned components:
-     - `NativeBookingSectionEditor` - Business mode config
-     - `CheckoutSectionEditor` - Stripe settings
-     - `ReviewsSectionEditor` - Google reviews config
-     - `PremiumModuleSectionEditor` - Generic premium module editor
-   - Registry of section editors: `SECTION_EDITORS`
+3. **`src/components/setup/PageBuilder.jsx`** with `inspectorKindForSection`
+   - Routes each section to its appropriate inspector, including native booking, checkout, reviews, and premium modules.
 
 **Key Features:**
 - ✅ Add sections with tier gating
@@ -304,8 +299,7 @@ const merged = mergeWithAdminOverrides(sections, adminOverrides);
 │                                                             │
 │  OWNER UI LAYER                                             │
 │  ├─ src/components/setup/PageBuilder.jsx                   │
-│  ├─ src/components/setup/SectionEditors.jsx                │
-│  └─ src/components/setup/EditorPanel.jsx (add tab)         │
+│  └─ inspectorKindForSection() (section inspector routing)   │
 │                                                             │
 │  PUBLISHING LAYER                                           │
 │  └─ src/services/publishService.js (sections[] → site.json)│
@@ -430,8 +424,7 @@ To fully integrate this implementation:
 - `src/services/publishService.js` - Publishing workflow
 
 ### UI Components (2 files)
-- `src/components/setup/PageBuilder.jsx` + `.css` - Builder UI
-- `src/components/setup/SectionEditors.jsx` - Section editors
+- `src/components/setup/PageBuilder.jsx` + `.css` - Builder UI and `inspectorKindForSection` routing
 
 ### Services & Routes (2 files)
 - `src/services/adminSectionsService.js` - Admin section management

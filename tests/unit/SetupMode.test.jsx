@@ -58,10 +58,6 @@ vi.mock('../../src/components/setup/TemplateGrid', () => ({
   default: () => <div>TemplateGrid</div>,
 }));
 
-vi.mock('../../src/components/setup/EditorPanel', () => ({
-  default: () => <div>EditorPanel</div>,
-}));
-
 vi.mock('../../src/components/setup/PublishModal', () => ({
   default: () => <div>PublishModal</div>,
 }));

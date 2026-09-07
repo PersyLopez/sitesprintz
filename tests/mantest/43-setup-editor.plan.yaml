@@ -77,6 +77,12 @@ steps:
       - text contains Look
       - text contains Add section
 
+  - action: Draft save indicator appears
+    code: |
+      const saveIndicator = page.getByText(/Saved|Last saved|Saving/).first();
+      await saveIndicator.waitFor({ state: 'visible', timeout: 10000 });
+    settle_ms: 200
+
   - action: Live preview is not covered by a loader
     code: |
       const iframe = page.locator('[data-testid="preview-frame"] iframe');
@@ -163,6 +169,20 @@ steps:
         throw new Error('Business name input did not keep value: ' + val);
       }
     settle_ms: 200
+
+  - action: Undo restores previous business name
+    code: |
+      await page.getByTestId('builder-undo').click({ timeout: 4000 });
+      const undone = await page.getByTestId('business-name-input').inputValue();
+      if (/^Mantest Beauty Co$/i.test(undone)) {
+        throw new Error('Undo should restore the previous business name');
+      }
+      await page.getByTestId('builder-redo').click({ timeout: 4000 });
+      const redone = await page.getByTestId('business-name-input').inputValue();
+      if (!/^Mantest Beauty Co$/i.test(redone)) {
+        throw new Error('Redo should restore Mantest Beauty Co: ' + redone);
+      }
+    settle_ms: 500
 
   - action: Save draft
     click: { testId: save-draft-button }
@@ -363,3 +383,30 @@ steps:
     settle_ms: 800
     assert:
       - text contains Templates
+
+  - action: Template switch cancel preserves editor
+    code: |
+      const templateButtons = await page.getByRole('button', { name: /Use .*template/i }).all();
+      let alternate = null;
+      for (const button of templateButtons) {
+        const label = await button.innerText();
+        if (!/Salon/i.test(label)) {
+          alternate = button;
+          break;
+        }
+      }
+      if (!alternate) throw new Error('Alternate template button missing');
+      await alternate.click({ timeout: 8000 });
+      await page.getByTestId('template-switch-modal').waitFor({ state: 'visible', timeout: 8000 });
+      await page.getByTestId('template-switch-cancel').click({ timeout: 4000 });
+      if ((await page.getByTestId('template-switch-modal').count()) !== 0) {
+        throw new Error('Template switch modal should close after cancel');
+      }
+      const name = await page.getByTestId('business-name-input').inputValue();
+      if (!/^Mantest Beauty Co$/i.test(name)) {
+        throw new Error('Template cancel changed business name: ' + name);
+      }
+      if (!(await page.getByTestId('page-builder').isVisible())) {
+        throw new Error('Page builder should remain visible after template cancel');
+      }
+    settle_ms: 500

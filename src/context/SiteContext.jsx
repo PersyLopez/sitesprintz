@@ -51,6 +51,7 @@ export function SiteProvider({ children }) {
 
   const previewTimerRef = useRef(null);
   const autoSaveTimerRef = useRef(null);
+  const templateSaveRef = useRef(null);
 
   // Debounced preview update (300ms delay)
   const triggerPreviewUpdate = useCallback((immediate = false) => {
@@ -88,6 +89,21 @@ export function SiteProvider({ children }) {
     };
   }, [siteData, autoSaveEnabled, draftId]);
 
+  // Create a draft once after a template is committed to state.
+  useEffect(() => {
+    if (draftId) {
+      templateSaveRef.current = null;
+      return;
+    }
+
+    if (!autoSaveEnabled || !siteData.template || templateSaveRef.current === siteData.template) {
+      return;
+    }
+
+    templateSaveRef.current = siteData.template;
+    saveDraft(true);
+  }, [siteData.template, draftId, autoSaveEnabled]);
+
   // Cleanup timers on unmount
   useEffect(() => {
     return () => {
@@ -107,9 +123,8 @@ export function SiteProvider({ children }) {
       // Limit history size
       if (newHistory.length > MAX_HISTORY) {
         newHistory.shift();
-      } else {
-        setHistoryIndex(newHistory.length - 1);
       }
+      setHistoryIndex(newHistory.length - 1);
       return newHistory;
     });
   }, [historyIndex]);
@@ -364,6 +379,8 @@ export function SiteProvider({ children }) {
     if (!fullTemplateData._layout) fullTemplateData._layout = getLayoutForNiche(nicheId);
 
     setSiteData(fullTemplateData);
+    setHistory([]);
+    setHistoryIndex(-1);
     triggerPreviewUpdate(true);
   }, [triggerPreviewUpdate]);
 
@@ -401,13 +418,24 @@ export function SiteProvider({ children }) {
   }, []);
 
   const undo = useCallback(() => {
-    if (historyIndex > 0) {
-      const newIndex = historyIndex - 1;
-      setHistoryIndex(newIndex);
-      setSiteData(JSON.parse(JSON.stringify(history[newIndex]))); // Deep clone
-      triggerPreviewUpdate();
-    }
-  }, [history, historyIndex, triggerPreviewUpdate]);
+    if (historyIndex < 0) return;
+
+    const currentSnapshot = JSON.parse(JSON.stringify(siteData));
+    const isAtHistoryEnd = historyIndex === history.length - 1;
+    const nextHistory = isAtHistoryEnd
+      ? (history.length >= MAX_HISTORY
+        ? [...history.slice(1), currentSnapshot]
+        : [...history, currentSnapshot])
+      : history;
+    const newIndex = isAtHistoryEnd
+      ? (history.length >= MAX_HISTORY ? historyIndex - 1 : historyIndex)
+      : historyIndex - 1;
+
+    setHistory(nextHistory);
+    setHistoryIndex(newIndex);
+    setSiteData(JSON.parse(JSON.stringify(nextHistory[newIndex])));
+    triggerPreviewUpdate();
+  }, [history, historyIndex, siteData, triggerPreviewUpdate]);
 
   const redo = useCallback(() => {
     if (historyIndex < history.length - 1) {
@@ -418,7 +446,7 @@ export function SiteProvider({ children }) {
     }
   }, [history, historyIndex, triggerPreviewUpdate]);
 
-  const canUndo = historyIndex > 0;
+  const canUndo = historyIndex >= 0;
   const canRedo = historyIndex < history.length - 1;
 
   const value = {

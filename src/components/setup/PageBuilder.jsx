@@ -28,7 +28,7 @@ export function inspectorKindForSection(type) {
 }
 
 function PageBuilder() {
-  const { siteData, updateField } = useSite();
+  const { siteData, updateField, undo, redo, canUndo, canRedo } = useSite();
   const { plan } = usePlan();
   const { showSuccess, showError } = useToast();
 
@@ -296,6 +296,26 @@ function PageBuilder() {
         >
           Look
         </button>
+        <div className="builder-history-actions">
+          <button
+            type="button"
+            className="builder-look-btn"
+            data-testid="builder-undo"
+            onClick={undo}
+            disabled={!canUndo}
+          >
+            Undo
+          </button>
+          <button
+            type="button"
+            className="builder-look-btn"
+            data-testid="builder-redo"
+            onClick={redo}
+            disabled={!canRedo}
+          >
+            Redo
+          </button>
+        </div>
         <button
           ref={addButtonRef}
           type="button"

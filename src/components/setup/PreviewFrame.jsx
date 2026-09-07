@@ -59,10 +59,20 @@ function PreviewFrame() {
     if (!doc) return;
 
     if (content !== lastHtmlRef.current) {
+      const documentScrollTop = doc.documentElement?.scrollTop || 0;
+      const scrollContainer = doc.querySelector('.ss-live') || doc.body;
+      const contentScrollTop = scrollContainer?.scrollTop || 0;
       lastHtmlRef.current = content;
       doc.open();
       doc.write(content);
       doc.close();
+      if (doc.documentElement) {
+        doc.documentElement.scrollTop = documentScrollTop;
+      }
+      const nextScrollContainer = doc.querySelector('.ss-live') || doc.body;
+      if (nextScrollContainer) {
+        nextScrollContainer.scrollTop = contentScrollTop;
+      }
     }
 
     bindPreviewEditing(doc);

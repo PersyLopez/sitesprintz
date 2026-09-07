@@ -144,6 +144,25 @@ describe('SiteContext', () => {
       // Should only trigger one preview update despite 3 field updates
       expect(result.current.previewKey).toBe(initialKey + 1);
     });
+
+    it('should undo and redo a field change', () => {
+      const { result } = renderSiteHook();
+
+      act(() => {
+        result.current.updateField('businessName', 'Name A');
+        result.current.updateField('businessName', 'Name B');
+      });
+
+      act(() => {
+        result.current.undo();
+      });
+      expect(result.current.siteData.businessName).toBe('Name A');
+
+      act(() => {
+        result.current.redo();
+      });
+      expect(result.current.siteData.businessName).toBe('Name B');
+    });
   });
 
   describe('Update Nested Field', () => {
@@ -439,6 +458,22 @@ describe('SiteContext', () => {
       });
       expect(result.current.previewKey).toBe(initialKey + 1);
     });
+
+    it('clears history when a template loads', () => {
+      const { result } = renderSiteHook();
+
+      act(() => {
+        result.current.updateField('businessName', 'Before Template');
+        result.current.loadTemplate({ id: 'salon', businessName: 'Template Name' });
+      });
+
+      act(() => {
+        result.current.undo();
+      });
+
+      expect(result.current.siteData.businessName).toBe('Template Name');
+      expect(result.current.canUndo).toBe(false);
+    });
   });
 
   describe('Auto-save', () => {
@@ -497,6 +532,54 @@ describe('SiteContext', () => {
       });
 
       expect(draftsService.saveDraft).not.toHaveBeenCalled();
+    });
+
+    it('should create a draft after loading a template', async () => {
+      draftsService.saveDraft.mockResolvedValue({ draftId: 'draft-123' });
+      vi.useRealTimers();
+      const { result } = renderSiteHook();
+
+      act(() => {
+        result.current.loadTemplate({ id: 'restaurant' });
+      });
+
+      await waitFor(() => {
+        expect(result.current.draftId).toBe('draft-123');
+      });
+      vi.useFakeTimers();
+
+      expect(draftsService.saveDraft).toHaveBeenCalledTimes(1);
+    });
+
+    it('should auto-save again after the initial template draft exists', async () => {
+      draftsService.saveDraft.mockResolvedValue({ draftId: 'draft-123' });
+      vi.useRealTimers();
+      const { result } = renderSiteHook();
+
+      act(() => {
+        result.current.loadTemplate({ id: 'restaurant' });
+      });
+
+      await waitFor(() => {
+        expect(result.current.draftId).toBe('draft-123');
+      });
+      vi.useFakeTimers();
+      act(() => {
+        result.current.setAutoSaveEnabled(false);
+      });
+      act(() => {
+        result.current.setAutoSaveEnabled(true);
+      });
+      vi.clearAllMocks();
+
+      act(() => {
+        vi.advanceTimersByTime(30000);
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      expect(draftsService.saveDraft).toHaveBeenCalledTimes(1);
     });
   });
 

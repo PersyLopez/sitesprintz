@@ -41,11 +41,18 @@ describe('PageBuilder', () => {
 
   const renderBuilder = (extra = {}) => {
     updateField = vi.fn();
+    const contextOverrides = { ...extra };
+    delete contextOverrides.siteData;
     return render(
       <SiteContext.Provider
         value={{
           siteData: { template: 'salon', sections, ...extra.siteData },
           updateField,
+          undo: vi.fn(),
+          redo: vi.fn(),
+          canUndo: false,
+          canRedo: false,
+          ...contextOverrides,
         }}
       >
         <PageBuilder />
@@ -82,6 +89,22 @@ describe('PageBuilder', () => {
 
     await user.click(screen.getByTestId('section-type-contact'));
     expect(screen.getByTestId('contact-booking-form')).toBeInTheDocument();
+  });
+
+  it('wires enabled undo and redo toolbar buttons to site history', async () => {
+    const user = userEvent.setup();
+    const undo = vi.fn();
+    const redo = vi.fn();
+    renderBuilder({ undo, redo, canUndo: true, canRedo: true });
+
+    expect(screen.getByTestId('builder-undo')).not.toBeDisabled();
+    expect(screen.getByTestId('builder-redo')).not.toBeDisabled();
+
+    await user.click(screen.getByTestId('builder-undo'));
+    await user.click(screen.getByTestId('builder-redo'));
+
+    expect(undo).toHaveBeenCalledTimes(1);
+    expect(redo).toHaveBeenCalledTimes(1);
   });
 
   it('does not offer a duplicate non-repeatable hero in the add menu', async () => {

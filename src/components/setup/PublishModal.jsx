@@ -7,7 +7,7 @@ import { PRICING_CONFIG, PLATFORM_SUPPORT_EMAIL } from '../../config/pricing.con
 import { getPublishedSiteUrl } from '../../utils/siteWorkspace';
 import './PublishModal.css';
 
-function PublishModal({ siteData, onClose }) {
+function PublishModal({ siteData, onClose, draftId, saveDraft }) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { showSuccess, showError } = useToast();
@@ -122,71 +122,87 @@ function PublishModal({ siteData, onClose }) {
     }
 
     setLoading(true);
-    let createdDraftId = null;
+    let createdDraftId = draftId || null;
 
     try {
-      const phone = siteData.contact?.phone || siteData.brand?.phone || siteData.contactPhone || '';
-      const email = siteData.contact?.email || siteData.brand?.email || siteData.contactEmail || '';
-      const cleanPhone = phone.trim();
-      const isValidPhone = cleanPhone && /^[\+]?[1-9][\d\s\-\(\)]{7,}$/.test(cleanPhone);
-      const cleanEmail = email.trim();
-      const isValidEmail = cleanEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail);
-
-      const draftData = {
-        templateId: siteData.template || siteData.id || siteData._niche,
-        businessData: {
-          businessName: siteData.brand?.name || siteData.businessName,
-          heroTitle: siteData.hero?.title || siteData.heroTitle,
-          heroSubtitle: siteData.hero?.subtitle || siteData.heroSubtitle,
-          heroImage: siteData.hero?.image || siteData.heroImage,
-          ...(isValidEmail && { email: cleanEmail }),
-          ...(isValidPhone && { phone: cleanPhone }),
-          address: siteData.contact?.address || siteData.contactAddress,
-          businessHours: siteData.contact?.hours || siteData.businessHours,
-          websiteUrl: siteData.social?.website || siteData.websiteUrl,
-          facebookUrl: siteData.social?.facebook || siteData.facebookUrl,
-          instagramUrl: siteData.social?.instagram || siteData.instagramUrl,
-          googleMapsUrl: siteData.social?.maps || siteData.googleMapsUrl,
-          whatsappUrl: siteData.social?.whatsapp,
-          tiktokUrl: siteData.social?.tiktok,
-          linkedinUrl: siteData.social?.linkedin,
-          services: siteData.services || siteData.products || [],
-          colors: siteData.colors || siteData.themeVars,
-          templateSpecific: siteData.custom || {},
-          sections: siteData.sections,
-          gallery: siteData.gallery,
-          faq: siteData.faq,
-          team: siteData.team,
-          booking: siteData.booking,
-          menu: siteData.menu,
-          products: siteData.products,
-          testimonials: siteData.testimonials,
-          contact: siteData.contact,
-          brand: siteData.brand,
-          hero: siteData.hero,
-          features: siteData.features,
-          settings: siteData.settings,
-          beforeAfter: siteData.beforeAfter,
-          hours: siteData.hours || siteData.contact?.hours,
-          social: siteData.social,
-          nav: siteData.nav,
-          _layout: siteData._layout,
-          _level: siteData._level,
-          _niche: siteData._niche,
-          _features: siteData._features,
-          _operatingModel: siteData._operatingModel,
-          _theme: siteData._theme,
-          _themeId: siteData._themeId
+      let result;
+      if (draftId) {
+        if (saveDraft) await saveDraft(true);
+        result = await api.post(`/api/drafts/${draftId}/publish`, {
+          plan: formData.plan,
+          email: user.email
+        });
+      } else if (saveDraft) {
+        const savedDraft = await saveDraft(true);
+        createdDraftId = savedDraft?.draftId || savedDraft?.site?.id;
+        if (!createdDraftId) {
+          throw new Error('Failed to create a draft before publishing.');
         }
-      };
-
-      const { draftId } = await api.post('/api/drafts', draftData);
-      createdDraftId = draftId;
-
-      const result = await api.post(`/api/drafts/${draftId}/publish`, {
-        plan: formData.plan,
-        email: user.email
-      });
+        result = await api.post(`/api/drafts/${createdDraftId}/publish`, {
+          plan: formData.plan,
+          email: user.email
+        });
+      } else {
+        const phone = siteData.contact?.phone || siteData.brand?.phone || siteData.contactPhone || '';
+        const email = siteData.contact?.email || siteData.brand?.email || siteData.contactEmail || '';
+        const cleanPhone = phone.trim();
+        const isValidPhone = cleanPhone && /^[\+]?[1-9][\d\s\-\(\)]{7,}$/.test(cleanPhone);
+        const cleanEmail = email.trim();
+        const isValidEmail = cleanEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail);
+        const draftData = {
+          templateId: siteData.template || siteData.id || siteData._niche,
+          businessData: {
+            businessName: siteData.brand?.name || siteData.businessName,
+            heroTitle: siteData.hero?.title || siteData.heroTitle,
+            heroSubtitle: siteData.hero?.subtitle || siteData.heroSubtitle,
+            heroImage: siteData.hero?.image || siteData.heroImage,
+            ...(isValidEmail && { email: cleanEmail }),
+            ...(isValidPhone && { phone: cleanPhone }),
+            address: siteData.contact?.address || siteData.contactAddress,
+            businessHours: siteData.contact?.hours || siteData.businessHours,
+            websiteUrl: siteData.social?.website || siteData.websiteUrl,
+            facebookUrl: siteData.social?.facebook || siteData.facebookUrl,
+            instagramUrl: siteData.social?.instagram || siteData.instagramUrl,
+            googleMapsUrl: siteData.social?.maps || siteData.googleMapsUrl,
+            whatsappUrl: siteData.social?.whatsapp,
+            tiktokUrl: siteData.social?.tiktok,
+            linkedinUrl: siteData.social?.linkedin,
+            services: siteData.services || siteData.products || [],
+            colors: siteData.colors || siteData.themeVars,
+            templateSpecific: siteData.custom || {},
+            sections: siteData.sections,
+            gallery: siteData.gallery,
+            faq: siteData.faq,
+            team: siteData.team,
+            booking: siteData.booking,
+            menu: siteData.menu,
+            products: siteData.products,
+            testimonials: siteData.testimonials,
+            contact: siteData.contact,
+            brand: siteData.brand,
+            hero: siteData.hero,
+            features: siteData.features,
+            settings: siteData.settings,
+            beforeAfter: siteData.beforeAfter,
+            hours: siteData.hours || siteData.contact?.hours,
+            social: siteData.social,
+            nav: siteData.nav,
+            _layout: siteData._layout,
+            _level: siteData._level,
+            _niche: siteData._niche,
+            _features: siteData._features,
+            _operatingModel: siteData._operatingModel,
+            _theme: siteData._theme,
+            _themeId: siteData._themeId
+          }
+        };
+        const createdDraft = await api.post('/api/drafts', draftData);
+        createdDraftId = createdDraft.draftId;
+        result = await api.post(`/api/drafts/${createdDraftId}/publish`, {
+          plan: formData.plan,
+          email: user.email
+        });
+      }
 
       const subdomain = result.subdomain || result.site?.subdomain;
       const siteUrl = result.url || getPublishedSiteUrl(subdomain) || `/view/${encodeURIComponent(subdomain)}`;
