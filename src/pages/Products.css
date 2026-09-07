@@ -139,7 +139,7 @@
 
 @media (min-width: 1024px) {
   .products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: var(--spacing-xl);
   }
 }
@@ -150,6 +150,11 @@
   border-radius: var(--radius-xl, 16px);
   overflow: hidden;
   transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.product-card .optimized-image-wrapper {
+  height: 150px;
+  width: 100%;
 }
 
 .product-card:hover {

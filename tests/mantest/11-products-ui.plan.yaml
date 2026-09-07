@@ -38,6 +38,25 @@ steps:
       if (!ok) throw new Error('Products tools missing: ' + t.slice(0, 240));
     settle_ms: 400
 
+  - action: Product cards use compact dashboard density
+    code: |
+      const cards = page.locator('[data-testid^="product-card-"]');
+      const cardCount = await cards.count();
+      if (cardCount === 0) return;
+      const wrappers = cards.locator('.optimized-image-wrapper');
+      if ((await wrappers.count()) === 0) {
+        if (await page.getByTestId('products-grid').count() === 0) {
+          throw new Error('Product cards rendered without a products grid');
+        }
+        return;
+      }
+      const box = await wrappers.first().boundingBox();
+      if (!box) throw new Error('Product image wrapper has no measurable bounds');
+      if (box.height > 160) {
+        throw new Error(`Product image wrapper is oversized: ${box.height}px`);
+      }
+    settle_ms: 300
+
   - action: Search control works
     fill: { testId: product-search-input, value: "pizza", clear: true }
     settle_ms: 400

@@ -418,7 +418,7 @@ function Products() {
           <div className="products-grid products-loading" aria-busy="true" aria-label="Loading products...">
             <span className="sr-only">Loading products…</span>
             {Array.from({ length: 3 }).map((_, i) => (
-              <SkeletonLoader key={i} variant="card" width="100%" height="280px" />
+              <SkeletonLoader key={i} variant="card" width="100%" height="230px" />
             ))}
           </div>
         ) : loadError ? (
