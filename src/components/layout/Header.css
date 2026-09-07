@@ -328,6 +328,20 @@
   border-color: color-mix(in srgb, var(--primary-color) 40%, var(--border-dark));
 }
 
+.mobile-nav-group-label {
+  margin: var(--spacing-lg) 0 var(--spacing-sm);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mobile-nav-link:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .site-header-mobile-nav .mobile-nav-link.mobile-cta {
   background: var(--primary-gradient);
   color: var(--on-primary);

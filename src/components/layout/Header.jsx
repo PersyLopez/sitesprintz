@@ -5,13 +5,19 @@ import { useLocale } from '../../i18n/LocaleContext.jsx';
 import LanguageSwitcher from '../i18n/LanguageSwitcher';
 import ThemeSwitcher from './ThemeSwitcher';
 import FeedbackWidget from '../common/FeedbackWidget';
+import ShareModal from '../ShareModal';
+import { useSiteWorkspace } from '../../context/SiteWorkspaceContext';
+import { getPublishedSiteUrl, getSiteWorkspacePaths } from '../../utils/siteWorkspace';
+import { LIVE_EDIT_SCOPE_HINT } from '../../utils/liveEditScope';
 import './Header.css';
 
 function Header() {
   const { isAuthenticated, logout, user } = useAuth();
   const { t } = useLocale();
+  const { site } = useSiteWorkspace();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const menuRef = useRef(null);
   const toggleRef = useRef(null);
@@ -24,6 +30,10 @@ function Header() {
   const isSiteWorkspace = Boolean(siteDashboardMatch);
   const isStaffRoute = location.pathname === '/staff' || location.pathname.startsWith('/staff/');
   const showOwnerNav = isAuthenticated && !isStaffRoute;
+  const workspacePaths = site ? getSiteWorkspacePaths(site.id, site) : null;
+  const liveUrl = site?.status === 'published'
+    ? getPublishedSiteUrl(site.subdomain)
+    : null;
 
   // Close mobile menu on path change, not ?lang= (language switch would look broken)
   useEffect(() => {
@@ -81,6 +91,11 @@ function Header() {
   const openFeedback = () => {
     setMobileMenuOpen(false);
     setFeedbackOpen(true);
+  };
+
+  const openShare = () => {
+    setMobileMenuOpen(false);
+    setShareOpen(true);
   };
 
   return (
@@ -267,6 +282,61 @@ function Header() {
                 >
                   {isSiteWorkspace ? 'All sites' : t('nav.dashboard')}
                 </Link>
+                {isSiteWorkspace && site && (
+                  <>
+                    <div className="mobile-nav-group-label">This site</div>
+                    {liveUrl ? (
+                      <a
+                        href={liveUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mobile-nav-link"
+                        data-testid="site-dashboard-view"
+                      >
+                        View site
+                      </a>
+                    ) : (
+                      <button
+                        type="button"
+                        className="mobile-nav-link"
+                        disabled
+                        title="Publish this site to view it live"
+                        data-testid="site-dashboard-view"
+                      >
+                        View site
+                      </button>
+                    )}
+                    {site.status === 'published' && site.subdomain ? (
+                      <button
+                        type="button"
+                        className="mobile-nav-link"
+                        data-testid="site-dashboard-share"
+                        onClick={openShare}
+                      >
+                        Share
+                      </button>
+                    ) : null}
+                    <Link
+                      to={site.status === 'published' && site.subdomain ? workspacePaths.liveEdit : workspacePaths.edit}
+                      className="mobile-nav-link"
+                      data-testid="site-dashboard-edit"
+                      title={site.status === 'published' && site.subdomain ? LIVE_EDIT_SCOPE_HINT : undefined}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Edit site
+                    </Link>
+                    {site.status === 'published' && (
+                      <Link
+                        to={workspacePaths.edit}
+                        className="mobile-nav-link"
+                        data-testid="site-dashboard-builder"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Page builder
+                      </Link>
+                    )}
+                  </>
+                )}
                 <Link 
                   to="/setup" 
                   className={`mobile-nav-link ${location.pathname === '/setup' ? 'active' : ''}`}
@@ -369,6 +439,9 @@ function Header() {
         )}
       </nav>
       <FeedbackWidget hideFab open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
+      {shareOpen && site?.subdomain && (
+        <ShareModal subdomain={site.subdomain} onClose={() => setShareOpen(false)} />
+      )}
     </>
   );
 }

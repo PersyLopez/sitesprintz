@@ -62,7 +62,9 @@ steps:
       }
 
   - action: Open live Edit from workspace header
-    click: { testId: site-dashboard-edit }
+    code: |
+      await page.getByTestId('mobile-menu-toggle').click();
+      await page.getByTestId('site-dashboard-edit').click();
     settle_ms: 2000
     wait_for: { selector: '[data-testid="seamless-edit-toolbar"]', timeout: 20000 }
 

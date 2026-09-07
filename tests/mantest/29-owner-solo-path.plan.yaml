@@ -56,6 +56,7 @@ steps:
 
   - action: Share modal from workspace
     code: |
+      await page.getByTestId('mobile-menu-toggle').click();
       const share = page.getByTestId('site-dashboard-share');
       if ((await share.count()) === 0) throw new Error('Share button missing on published solo site');
       await share.scrollIntoViewIfNeeded();
@@ -132,7 +133,9 @@ steps:
       if (!ok) throw new Error('Unexpected analytics panel: ' + t.slice(0, 280));
 
   - action: Edit site / page builder
-    click: { testId: site-dashboard-builder }
+    code: |
+      await page.getByTestId('mobile-menu-toggle').click();
+      await page.getByTestId('site-dashboard-builder').click();
     settle_ms: 2000
     code: |
       const t = await page.locator('body').innerText();

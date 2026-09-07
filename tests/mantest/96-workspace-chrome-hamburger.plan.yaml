@@ -1,0 +1,64 @@
+url: http://localhost:5173/login
+goal: Workspace site actions live in the Header hamburger instead of the dashboard toolbar
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter test owner credentials
+    fill: { testId: login-email, value: "test@example.com" }
+
+  - action: Enter test owner password
+    fill: { testId: login-password, value: "SecurePass!2024" }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Reach site workspace
+    wait_for: { url: /dashboard, timeout: 20000 }
+    code: |
+      if ((await page.getByTestId('site-dashboard').count()) === 0) {
+        const manage = page.getByTestId('manage-site-button').first();
+        if ((await manage.count()) === 0) throw new Error('No site workspace or Manage button after login');
+        await manage.click();
+      }
+      await page.getByTestId('site-dashboard').waitFor({ timeout: 15000 });
+    settle_ms: 800
+
+  - action: Toolbar has no site action group
+    code: |
+      if ((await page.locator('.site-workspace-header-actions').count()) > 0) {
+        throw new Error('Removed site-workspace-header-actions still exists');
+      }
+      const toolbar = page.locator('.site-workspace-header');
+      for (const id of ['site-dashboard-view', 'site-dashboard-share', 'site-dashboard-edit', 'site-dashboard-builder']) {
+        if ((await toolbar.getByTestId(id).count()) > 0) {
+          throw new Error(id + ' still rendered in the workspace toolbar');
+        }
+      }
+
+  - action: Open workspace hamburger
+    click: { testId: mobile-menu-toggle }
+    settle_ms: 300
+
+  - action: Hamburger contains workspace actions
+    code: |
+      for (const id of ['site-dashboard-view', 'site-dashboard-edit']) {
+        const action = page.getByTestId(id);
+        if ((await action.count()) === 0 || !(await action.first().isVisible())) {
+          throw new Error('Hamburger missing visible ' + id);
+        }
+      }
+      const published = (await page.getByText('Published', { exact: true }).count()) > 0;
+      for (const id of ['site-dashboard-share', 'site-dashboard-builder']) {
+        const action = page.getByTestId(id);
+        if (published && ((await action.count()) === 0 || !(await action.first().isVisible()))) {
+          throw new Error('Published workspace missing visible ' + id);
+        }
+      }
+
+  - action: Edit opens from hamburger
+    code: |
+      await page.getByTestId('site-dashboard-edit').click();
+      await page.waitForFunction(() => /\/view\/|\/setup/.test(window.location.pathname), null, { timeout: 15000 });
+    settle_ms: 1200

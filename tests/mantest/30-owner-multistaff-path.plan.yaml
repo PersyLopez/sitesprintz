@@ -49,6 +49,7 @@ steps:
       for (const id of ['site-nav-overview', 'site-nav-orders', 'site-nav-appointments', 'site-nav-products', 'site-nav-settings', 'site-nav-analytics']) {
         if ((await page.getByTestId(id).count()) === 0) throw new Error('Missing nav ' + id);
       }
+      await page.getByTestId('mobile-menu-toggle').click();
       if ((await page.getByTestId('site-dashboard-view').count()) === 0) throw new Error('View site missing');
       if ((await page.getByTestId('site-dashboard-edit').count()) === 0) throw new Error('Edit site missing');
 
@@ -168,7 +169,9 @@ steps:
       }
 
   - action: Page builder for salon
-    click: { testId: site-dashboard-builder }
+    code: |
+      await page.getByTestId('mobile-menu-toggle').click();
+      await page.getByTestId('site-dashboard-builder').click();
     settle_ms: 2000
     code: |
       const t = await page.locator('body').innerText();
