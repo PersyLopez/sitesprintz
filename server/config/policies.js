@@ -8,8 +8,8 @@
  * changes require users to re-accept (clickwrap enforceability requirement).
  */
 
-export const POLICY_VERSION = '2026-06-07';
-export const POLICY_LAST_UPDATED = 'June 7, 2026';
+export const POLICY_VERSION = '2026-09-07';
+export const POLICY_LAST_UPDATED = 'September 7, 2026';
 
 /**
  * Independent third-party providers that process data on the platform's
@@ -73,6 +73,13 @@ export const THIRD_PARTY_PROCESSORS = [
     data: 'IP address and browser/device signals',
     privacyUrl: 'https://www.cloudflare.com/privacypolicy/',
     termsUrl: 'https://www.cloudflare.com/website-terms/',
+  },
+  {
+    name: 'Microsoft Clarity',
+    purpose: 'Behavioral analytics for the Right Site Light marketing site',
+    data: 'Browser/device information, page interactions, and session replay data',
+    privacyUrl: 'https://privacy.microsoft.com/privacystatement',
+    termsUrl: 'https://www.microsoft.com/en-us/servicesagreement',
   },
 ];
 

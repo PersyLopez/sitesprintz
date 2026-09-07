@@ -350,6 +350,7 @@ router.get('/privacy', (req, res) => {
         <li><strong>Resend:</strong> Email delivery (<a href="https://resend.com/legal/privacy">Privacy Policy</a>)</li>
         <li><strong>Google OAuth:</strong> Optional login method (<a href="https://policies.google.com/privacy">Privacy Policy</a>)</li>
         <li><strong>Neon/PostgreSQL:</strong> Database hosting (data encrypted at rest)</li>
+        <li><strong>Microsoft Clarity:</strong> Heatmaps and session replay for the Right Site Light marketing site only; it is not used on customer template sites (<a href="https://privacy.microsoft.com/privacystatement">Privacy Statement</a>)</li>
     </ul>
     
     <p><strong>We do not sell your data to third parties.</strong></p>
@@ -528,8 +529,9 @@ router.get('/cookies', (req, res) => {
 
     <h3>Analytics Cookies (Optional)</h3>
     <p>
-        We may use analytics cookies in the future to understand how visitors use the Service. These would be optional
-        and you could opt out. Currently, we do not use third-party analytics cookies.
+        Microsoft Clarity may use analytics cookies to provide heatmaps and session replay on the Right Site Light
+        marketing site only. Clarity is not used on customer template sites. You can opt out by enabling your browser's
+        third-party cookie or tracker blocking settings.
     </p>
 
     <h2>How to Control Cookies</h2>

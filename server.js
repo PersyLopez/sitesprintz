@@ -110,7 +110,9 @@ app.use(helmet({
         "'unsafe-inline'", // Required for React/Vite
         "https://challenges.cloudflare.com", // Cloudflare Turnstile
         "https://js.stripe.com", // Stripe.js
-        "https://checkout.stripe.com" // Stripe Checkout
+        "https://checkout.stripe.com", // Stripe Checkout
+        "https://www.clarity.ms", // Microsoft Clarity
+        "https://scripts.clarity.ms" // Microsoft Clarity
       ],
       scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
@@ -119,7 +121,9 @@ app.use(helmet({
         "'self'",
         "https://api.stripe.com",
         "https://challenges.cloudflare.com",
-        "https://resend.com"
+        "https://resend.com",
+        "https://*.clarity.ms",
+        "https://c.bing.com"
       ],
       fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
       objectSrc: ["'none'"],

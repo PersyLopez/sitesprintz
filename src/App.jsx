@@ -1,5 +1,5 @@
-import React, { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { SiteProvider } from './context/SiteContext';
@@ -72,6 +72,21 @@ import { ThemeProvider } from './context/ThemeContext.jsx';
 import api from './services/api';
 import { useEffect } from 'react';
 import { initWebVitals } from './utils/webVitals';
+import { syncClarity } from './utils/clarity';
+
+function ClaritySync() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    syncClarity({
+      isProd: import.meta.env.PROD,
+      hostname: window.location.hostname,
+      pathname,
+    });
+  }, [pathname]);
+
+  return null;
+}
 
 function App() {
   useEffect(() => {
@@ -83,6 +98,7 @@ function App() {
   return (
     <ErrorBoundary>
       <Router>
+        <ClaritySync />
         <LocaleProvider>
         <ThemeProvider>
         <AuthProvider>

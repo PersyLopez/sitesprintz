@@ -14,6 +14,8 @@ steps:
     wait_for: { text: Privacy Policy, timeout: 15000 }
     assert:
       - text contains Right Site Light
+      - text contains Microsoft Clarity
+      - text contains customer template sites
 
   - action: Cookie Policy
     goto: http://localhost:3000/legal/cookies
@@ -22,6 +24,8 @@ steps:
     wait_for: { text: Cookie, timeout: 15000 }
     assert:
       - text contains Cookie
+      - text contains Microsoft Clarity
+      - text contains third-party cookie
 
   - action: Third-party disclosure
     goto: http://localhost:3000/legal/third-party-services
