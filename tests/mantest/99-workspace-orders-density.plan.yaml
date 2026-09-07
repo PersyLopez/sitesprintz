@@ -1,0 +1,46 @@
+url: http://localhost:5173/login
+goal: Workspace Orders cards stay compact without changing the Orders flow
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter owner credentials
+    fill: { testId: login-email, value: "test@example.com" }
+
+  - action: Enter owner password
+    fill: { testId: login-password, value: "SecurePass!2024" }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Reach site workspace
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 800
+    code: |
+      if ((await page.getByTestId('site-dashboard').count()) === 0) {
+        const manage = page.getByTestId('manage-site-button').first();
+        if ((await manage.count()) === 0) throw new Error('No site workspace or Manage button after login');
+        await manage.click();
+      }
+      await page.getByTestId('site-dashboard').waitFor({ timeout: 15000 });
+
+  - action: Open Orders workspace
+    click: { testId: site-nav-orders }
+    settle_ms: 1200
+    wait_for: { selector: '[data-testid="orders-filter-all"]', timeout: 15000 }
+
+  - action: Orders pane remains visible
+    code: |
+      if ((await page.getByTestId('orders-filter-all').count()) === 0) {
+        throw new Error('Orders pane is not visible');
+      }
+
+  - action: Existing order cards stay compact
+    code: |
+      const cards = page.locator('.order-card');
+      const count = await cards.count();
+      if (count === 0) return;
+      const box = await cards.first().boundingBox();
+      if (!box) throw new Error('Order card has no bounding box');
+      if (box.height > 280) throw new Error('Order card is too tall: ' + box.height);

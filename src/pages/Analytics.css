@@ -362,6 +362,48 @@
   border-color: var(--primary-color);
 }
 
+/* Embedded workspace stats: keep analytics metrics compact like the booking row. */
+.analytics-page.embedded-page .stats-grid {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.analytics-page.embedded-page .stats-card {
+  padding: var(--spacing-md);
+  border-width: 1px;
+  transition: none;
+}
+
+.analytics-page.embedded-page .stats-card::before {
+  display: none;
+}
+
+.analytics-page.embedded-page .stats-card:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--border-dark);
+}
+
+.analytics-page.embedded-page .stat-icon {
+  display: none;
+}
+
+.analytics-page.embedded-page .stat-label {
+  font-size: 0.75rem;
+  margin-bottom: var(--spacing-xs);
+}
+
+.analytics-page.embedded-page .stat-value {
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  margin: var(--spacing-xs) 0;
+}
+
+.analytics-page.embedded-page .stat-change {
+  font-size: 0.75rem;
+  margin-top: var(--spacing-xs);
+}
+
 @media (max-width: 639px) {
   .header-actions {
     flex-direction: column;
@@ -371,6 +413,10 @@
   .header-actions .btn,
   .time-range-select {
     width: 100%;
+  }
+
+  .analytics-page.embedded-page .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

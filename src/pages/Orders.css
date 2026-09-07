@@ -269,7 +269,7 @@
 /* Embedded site workspace: quiet pane header */
 .embedded-page .page-header,
 .page-header.pane-quiet-header {
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
   padding: 0;
 }
 

@@ -1,9 +1,9 @@
 .order-card {
   background: var(--bg-card);
-  border: 2px solid var(--border-dark);
+  border: 1px solid var(--border-dark);
   border-radius: 16px;
-  padding: var(--spacing-xl);
-  transition: all 0.3s ease;
+  padding: var(--spacing-md);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
   animation: slideInUp 0.3s ease-out;
 }
 
@@ -20,8 +20,7 @@
 
 .order-card:hover {
   border-color: var(--primary-color);
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
+  box-shadow: none;
 }
 
 .order-card.selected {
@@ -33,8 +32,8 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
-  padding-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-md);
   border-bottom: 1px solid var(--border-dark);
 }
 
@@ -91,7 +90,7 @@
 }
 
 .order-card-body {
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
 }
 
 .customer-info {
