@@ -4,9 +4,9 @@ import { get } from '../../utils/api';
 import { addDays, mapAdminAppointmentsToBoard, rangeForView } from '../../utils/scheduleBoard';
 import ScheduleBoard from './ScheduleBoard';
 
-function TeamCalendar({ userId, siteId = null }) {
+function TeamCalendar({ userId, siteId = null, initialView = 'day' }) {
   const { showError } = useToast();
-  const [view, setView] = useState('day');
+  const [view, setView] = useState(initialView);
   const [anchorDate, setAnchorDate] = useState(() => new Date());
   const [columns, setColumns] = useState([]);
   const [appointments, setAppointments] = useState([]);

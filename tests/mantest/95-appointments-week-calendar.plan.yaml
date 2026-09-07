@@ -1,0 +1,47 @@
+url: http://localhost:5173/login
+goal: Owner opens the appointments workspace with the week calendar and compact stats row
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter test credentials
+    fill: { testId: login-email, value: "test@example.com" }
+
+  - action: Enter test password
+    fill: { testId: login-password, value: "SecurePass!2024" }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 2500
+
+  - action: Dashboard loads
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Open Appointments workspace
+    code: |
+      const nav = page.getByTestId('site-nav-appointments');
+      if (await nav.count()) {
+        await nav.scrollIntoViewIfNeeded();
+        await nav.click();
+      } else {
+        await page.goto('http://localhost:5173/booking-dashboard', { waitUntil: 'domcontentloaded' });
+      }
+    settle_ms: 1200
+    wait_for: { url: /appointments|booking-dashboard/, timeout: 15000 }
+
+  - action: Appointments tab and week calendar
+    code: |
+      const tab = page.getByTestId('appointments-tab');
+      if ((await tab.count()) === 0) throw new Error('Appointments tab missing');
+      if ((await page.getByTestId('schedule-board').count()) === 0) throw new Error('Schedule board missing');
+      const week = page.getByTestId('schedule-view-week');
+      if ((await week.count()) === 0) throw new Error('Week view toggle missing');
+      if ((await week.getAttribute('aria-pressed')) !== 'true') throw new Error('Week view is not selected');
+      if ((await page.getByTestId('appointment-list').count()) === 0) throw new Error('Appointment list missing');
+      if ((await page.getByTestId('stats-row').count()) === 0) {
+        throw new Error('Compact stats row missing');
+      }
+      for (const id of ['schedule-prev', 'schedule-today', 'schedule-next']) {
+        if ((await page.getByTestId(id).count()) === 0) throw new Error('Missing ' + id);
+      }

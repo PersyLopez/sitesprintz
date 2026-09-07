@@ -8,6 +8,7 @@ import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import ServiceManager from '../components/booking/ServiceManager';
 import AppointmentList from '../components/booking/AppointmentList';
+import TeamCalendar from '../components/booking/TeamCalendar';
 import AvailabilityScheduler from '../components/booking/AvailabilityScheduler';
 import BookingIntakeSettings from '../components/booking/BookingIntakeSettings';
 import './BookingDashboard.css';
@@ -47,7 +48,6 @@ const BookingDashboard = () => {
 
   const fetchStats = async () => {
     try {
-      console.log('Fetching booking stats...');
       setLoading(true);
       setStatsError(null);
 
@@ -56,8 +56,6 @@ const BookingDashboard = () => {
         get(`/api/booking/admin/${user.id}/appointments`, { params: siteQuery }),
         get(`/api/booking/tenants/${user.id}/services`, { params: siteQuery }),
       ]);
-
-      console.log('Stats fetched successfully', { appointments: appointmentsRes, services: servicesRes });
 
       const appointments = appointmentsRes.appointments || [];
       const services = servicesRes.services || [];
@@ -90,7 +88,6 @@ const BookingDashboard = () => {
   };
 
   const handleTabChange = (tab) => {
-    console.log('Switching tab to:', tab);
     setActiveTab(tab);
     setMobileMenuOpen(false);
   };
@@ -192,24 +189,24 @@ const BookingDashboard = () => {
             )}
 
             {!loading && !statsError && (
-              <div className="stats-grid">
-                <div className="stat-card">
+              <div className="stats-row" data-testid="stats-row">
+                <div className="stats-row-item">
                   <div className="stat-label">Total Appointments</div>
                   <div className="stat-value">{stats.total_appointments}</div>
                 </div>
-                <div className="stat-card">
+                <div className="stats-row-item">
                   <div className="stat-label">Pending</div>
                   <div className="stat-value">{stats.pending_appointments}</div>
                 </div>
-                <div className="stat-card">
+                <div className="stats-row-item">
                   <div className="stat-label">Confirmed</div>
                   <div className="stat-value">{stats.confirmed_appointments}</div>
                 </div>
-                <div className="stat-card">
+                <div className="stats-row-item">
                   <div className="stat-label">Total Revenue</div>
                   <div className="stat-value">{formatCurrency(stats.total_revenue)}</div>
                 </div>
-                <div className="stat-card">
+                <div className="stats-row-item">
                   <div className="stat-label">Active Services</div>
                   <div className="stat-value">{stats.active_services}</div>
                 </div>
@@ -278,7 +275,10 @@ const BookingDashboard = () => {
             {/* Tab Content */}
             <div className="tab-content">
               {activeTab === 'appointments' && (
-                <AppointmentList userId={user?.id} siteId={siteId} onRefresh={fetchStats} />
+                <>
+                  <TeamCalendar userId={user?.id} siteId={siteId} initialView="week" />
+                  <AppointmentList userId={user?.id} siteId={siteId} onRefresh={fetchStats} />
+                </>
               )}
               {activeTab === 'services' && (
                 <ServiceManager userId={user?.id} siteId={siteId} onRefresh={fetchStats} />
