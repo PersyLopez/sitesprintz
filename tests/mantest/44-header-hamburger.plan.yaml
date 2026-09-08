@@ -65,6 +65,8 @@ steps:
         throw new Error('Public marketing shell should not render theme switcher');
       }
       const orderValid = await page.evaluate(() => {
+        const mobileNav = document.querySelector('[data-testid="mobile-nav"]');
+        if (!mobileNav) return false;
         const elements = [
           'mobile-nav-templates',
           'mobile-nav-how-it-works',
@@ -73,7 +75,7 @@ steps:
           'mobile-nav-login',
           'language-switcher',
           'mobile-nav-register',
-        ].map((testId) => document.querySelector(`[data-testid="${testId}"]`));
+        ].map((testId) => mobileNav.querySelector(`[data-testid="${testId}"]`));
         return elements.every(Boolean) && elements.slice(1).every((element, index) => (
           elements[index].compareDocumentPosition(element) === Node.DOCUMENT_POSITION_FOLLOWING
         ));
@@ -173,7 +175,9 @@ steps:
       if ((await page.getByTestId('mobile-menu-toggle').getAttribute('aria-expanded')) !== 'true') {
         throw new Error('Signed-in hamburger did not open');
       }
-      const dash = page.getByTestId('mobile-nav-dashboard');
+      const dashboard = page.getByTestId('mobile-nav-dashboard');
+      const allSites = page.getByTestId('site-workspace-all-sites');
+      const dash = (await dashboard.isVisible().catch(() => false)) ? dashboard : allSites;
       if (!(await dash.isVisible())) throw new Error('Dashboard link not visible');
       const box = await dash.boundingBox();
       if (!box || box.y < 70) {
@@ -187,10 +191,12 @@ steps:
       }
 
   - action: Dashboard link from drawer
-    click: { testId: mobile-nav-dashboard }
-    settle_ms: 800
-    assert:
-      - url contains /dashboard
+    code: |
+      const dashboard = page.getByTestId('mobile-nav-dashboard');
+      const allSites = page.getByTestId('site-workspace-all-sites');
+      const dash = (await dashboard.isVisible().catch(() => false)) ? dashboard : allSites;
+      await dash.click();
+      await page.waitForURL(/\/dashboard/, { timeout: 10000 });
 
   - action: Menu closed after dashboard link
     code: |

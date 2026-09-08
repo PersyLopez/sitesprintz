@@ -51,8 +51,13 @@ steps:
       - text contains Get Your Page Free
 
   - action: Showcase guest CTA matches header and hero
-    goto: http://localhost:5173/showcase
-    wait_for: { text: Get Your Page Free }
+    code: |
+      await page.goto('http://localhost:5173/showcase', { waitUntil: 'domcontentloaded' });
+      await page.getByTestId('nav-get-started').waitFor({ state: 'visible', timeout: 10000 });
+      await page.locator('body').getByText('Get Your Page Free', { exact: true }).first().waitFor({
+        state: 'visible',
+        timeout: 10000,
+      });
     assert:
       - text contains Get Your Page Free
 

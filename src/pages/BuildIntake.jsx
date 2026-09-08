@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { Link } from 'react-router-dom';
@@ -56,6 +56,11 @@ const INITIAL_FORM = {
 function BuildIntake() {
   const { t, locale } = useLocale();
   const [form, setForm] = useState(INITIAL_FORM);
+
+  useEffect(() => {
+    document.title = `${t('nav.getStarted')} — ${t('brand.name')}`;
+  }, [t]);
+
   const [features, setFeatures] = useState(() => (
     Object.fromEntries(FEATURE_MODULE_KEYS.map((key) => [key, false]))
   ));

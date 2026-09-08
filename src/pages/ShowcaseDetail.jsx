@@ -226,9 +226,6 @@ function ShowcaseDetail() {
               <span className="category-badge">
                 {formatCategory(site.template || site.template_id)}
               </span>
-              <span className="plan-badge">
-                {site.plan} Plan
-              </span>
             </div>
             <h1>{getSiteTitle(site)}</h1>
             {getSiteSubtitle(site) && (
@@ -260,10 +257,6 @@ function ShowcaseDetail() {
             <span className="metadata-value">
               {payload.galleryTheme?.name || 'Right Site Light theme'}
             </span>
-          </div>
-          <div className="metadata-item">
-            <span className="metadata-label">Plan shown</span>
-            <span className="metadata-value">{site.plan}</span>
           </div>
         </section>
         {payload.about && (

@@ -113,11 +113,12 @@ steps:
       }
 
   - action: Open Login from header
-    click: { testId: nav-login }
-    assert:
-      - url contains /login
-      - text contains Welcome Back
     code: |
+      await page.getByTestId('nav-login').click();
+      await page.waitForURL(/\/login/, { timeout: 10000 });
+      if (!(await page.getByText('Welcome Back').isVisible())) {
+        throw new Error('Login page welcome text missing');
+      }
       if ((await page.locator('main#main-content').count()) !== 1) {
         throw new Error('Login page should have one main landmark');
       }
@@ -128,11 +129,12 @@ steps:
       }
 
   - action: Open Get Started from header
-    click: { testId: nav-get-started }
-    assert:
-      - url contains /register
-      - text contains Create Your Account
     code: |
+      await page.getByTestId('nav-get-started').click();
+      await page.waitForURL(/\/register/, { timeout: 10000 });
+      if (!(await page.getByText('Create Your Account').isVisible())) {
+        throw new Error('Register page heading missing');
+      }
       if ((await page.locator('main#main-content').count()) !== 1) {
         throw new Error('Register page should have one main landmark');
       }

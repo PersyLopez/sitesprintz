@@ -49,7 +49,6 @@ function SetupOfferModal({ onDismiss }) {
       triggered = true;
       setOpen(true);
       window.removeEventListener('mouseout', handleMouseOut);
-      window.clearTimeout(timeoutId);
     };
     const handleMouseOut = (event) => {
       if (
@@ -60,8 +59,6 @@ function SetupOfferModal({ onDismiss }) {
         trigger();
       }
     };
-    const timeoutId = window.setTimeout(trigger, 45000);
-
     if (desktopExitIntent) {
       window.addEventListener('mouseout', handleMouseOut);
     }
@@ -72,7 +69,6 @@ function SetupOfferModal({ onDismiss }) {
       if (desktopExitIntent) {
         window.removeEventListener('mouseout', handleMouseOut);
       }
-      window.clearTimeout(timeoutId);
     };
   }, []);
 
