@@ -24,6 +24,12 @@ const PRODUCT_ICONS = {
   alert: 'M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z',
 };
 
+function parseMoney(value) {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  const parsed = Number.parseFloat(String(value || '').replace(/[^0-9.]/g, ''));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 function ProductIcon({ path, className = 'product-icon' }) {
   return (
     <svg
@@ -497,7 +503,7 @@ function Products() {
                     </div>
                   </th>
                   <td>{product.category || '—'}</td>
-                  <td className="products-table-price tabular-nums">${Number(product.price || 0).toFixed(2)}</td>
+                  <td className="products-table-price tabular-nums">${parseMoney(product.price).toFixed(2)}</td>
                   <td>
                     {stockCount === 0 ? (
                       <span className="stock-badge sold-out" data-testid={`stock-badge-${product.id}`}>

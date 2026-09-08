@@ -12,7 +12,16 @@ vi.mock('../../server/middleware/auth.js', () => ({
   },
 }));
 
+vi.mock('../../server/utils/siteIsolation.js', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    writeIsolatedSiteFiles: vi.fn().mockResolvedValue('/tmp/sites/products-route-site'),
+  };
+});
+
 import siteRoutes from '../../server/routes/sites.routes.js';
+import { writeIsolatedSiteFiles } from '../../server/utils/siteIsolation.js';
 
 const TEST_USER_ID = 'products-route-user';
 const TEST_SITE_ID = 'products-route-site';
@@ -116,6 +125,7 @@ describe('API Integration Tests - Site products', () => {
             id: TEST_SITE_ID,
             user_id: TEST_USER_ID,
             subdomain: 'products-route-site',
+            status: 'published',
             site_data: {
               products: [{ ...catalogProducts[0], price: '$25' }],
             },
@@ -130,6 +140,7 @@ describe('API Integration Tests - Site products', () => {
       const site = await prisma.sites.findUnique({ where: { id: TEST_SITE_ID } });
       const siteData = typeof site.site_data === 'string' ? JSON.parse(site.site_data) : site.site_data;
       expect(siteData.products[0].price).toBe(25);
+      expect(writeIsolatedSiteFiles).toHaveBeenCalledWith('products-route-site', siteData);
     });
   });
 
@@ -182,6 +193,35 @@ describe('API Integration Tests - Site products', () => {
       expect(siteData.services.items).toEqual(bookingServices);
       expect(siteData.services.items[0].title).toBe('Haircut & Style');
       expect(siteData.services.items[1].title).toBe('Color Treatment');
+      expect(writeIsolatedSiteFiles).toHaveBeenCalledWith(
+        'products-route-site',
+        expect.objectContaining({ products: siteData.products })
+      );
+    });
+
+    it('does not write isolated files for an unpublished site', async () => {
+      seedPrismaData({
+        sites: [
+          createTestSite({
+            id: TEST_SITE_ID,
+            user_id: TEST_USER_ID,
+            subdomain: 'products-draft-site',
+            status: 'draft',
+            site_data: {
+              products: [{ ...catalogProducts[0], price: '$25' }],
+            },
+          }),
+        ],
+      });
+
+      const getResponse = await request(app).get(`/api/sites/${TEST_SITE_ID}/products`);
+      const putResponse = await request(app)
+        .put(`/api/sites/${TEST_SITE_ID}/products`)
+        .send({ products: catalogProducts });
+
+      expect(getResponse.status).toBe(200);
+      expect(putResponse.status).toBe(200);
+      expect(writeIsolatedSiteFiles).not.toHaveBeenCalled();
     });
 
     it('updates products when siteId param is subdomain', async () => {

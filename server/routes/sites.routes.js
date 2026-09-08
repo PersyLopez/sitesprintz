@@ -442,6 +442,10 @@ router.get('/:siteId/products', requireAuth, asyncHandler(async (req, res) => {
       where: { id: ownership.site.id },
       data: { site_data: siteData }
     });
+
+    if (ownership.site.status === 'published' && ownership.site.subdomain) {
+      await writeIsolatedSiteFiles(ownership.site.subdomain, siteData);
+    }
   }
 
   // Normalize products/services structure
@@ -451,7 +455,7 @@ router.get('/:siteId/products', requireAuth, asyncHandler(async (req, res) => {
       id: p.id || `product-${index}`,
       name: p.name || '',
       description: p.description || '',
-      price: p.price,
+      price: parseMoney(p.price),
       image: p.image || null,
       category: p.category || 'General',
       stock: p.stock ?? null,
@@ -530,6 +534,10 @@ router.put('/:siteId/products', requireAuth, asyncHandler(async (req, res) => {
       site_data: sanitizedSiteData
     }
   });
+
+  if (ownership.site.status === 'published' && ownership.site.subdomain) {
+    await writeIsolatedSiteFiles(ownership.site.subdomain, sanitizedSiteData);
+  }
 
   return sendSuccess(res, { products: sanitizedSiteData.products }, 'Products updated successfully');
 }));

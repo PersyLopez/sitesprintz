@@ -237,6 +237,15 @@ describe('Products Page', () => {
       });
     });
 
+    it('should parse dollar-string prices before formatting', async () => {
+      setupApiMocks({ products: [{ ...mockProducts[0], price: '$25' }] });
+      renderProducts();
+
+      await waitFor(() => {
+        expect(screen.getByText('$25.00')).toBeInTheDocument();
+      });
+    });
+
     it('should show product images when available', async () => {
       renderProducts();
 
