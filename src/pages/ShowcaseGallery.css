@@ -485,29 +485,6 @@
   font-weight: 700;
 }
 
-.site-plan-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-family: var(--sp-font-display, 'Outfit', sans-serif);
-  font-size: 0.68rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  background: rgba(255, 250, 243, 0.92);
-  color: var(--sp-accent-deep, #c45a0a);
-  border: 1px solid rgba(240, 215, 181, 0.9);
-}
-
-.site-plan-badge--growth,
-.site-plan-badge--pro {
-  background: var(--sp-ink, #1c140f);
-  color: #fff8ef;
-  border-color: transparent;
-}
-
 .site-info {
   padding: 14px 16px 8px;
 }

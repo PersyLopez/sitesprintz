@@ -30,6 +30,38 @@ steps:
     assert:
       - text contains example site
 
+  - action: Public cards hide internal plan labels
+    code: |
+      const cards = page.locator('[data-testid^="site-card-"]');
+      const cardCount = await cards.count();
+      if (cardCount > 0) {
+        const hasPlanBadge = await cards.evaluateAll((items) =>
+          items.some((item) => item.querySelector('[class*="site-plan-badge"]'))
+        );
+        if (hasPlanBadge) throw new Error('Public gallery card exposes a plan badge');
+        const cardText = await cards.allTextContents();
+        if (cardText.some((text) => /growth|starter/i.test(text))) {
+          throw new Error('Public gallery card exposes an internal plan name');
+        }
+      }
+
+  - action: Landing live cards hide view slugs
+    goto: http://localhost:5173/
+    settle_ms: 1000
+    code: |
+      const liveCards = page.locator('[data-testid^="landing-live-"]');
+      const liveCount = await liveCards.count();
+      if (liveCount > 0) {
+        const liveText = await liveCards.allTextContents();
+        if (liveText.some((text) => /\/view\//i.test(text))) {
+          throw new Error('Landing live card exposes a view slug');
+        }
+      }
+
+  - action: Return to showcase gallery
+    goto: http://localhost:5173/showcase
+    settle_ms: 800
+
   - action: Category filters present
     code: |
       const all = page.getByTestId('category-btn-all');

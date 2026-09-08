@@ -233,7 +233,6 @@ function ShowcaseGallery() {
     const category = getSiteCategory(site);
     const meta = categoryMeta(site.template);
     const image = getSiteImage(site);
-    const plan = (site.plan || 'starter').toLowerCase();
 
     return (
       <article
@@ -279,9 +278,6 @@ function ShowcaseGallery() {
               <div className="site-overlay">
                 <span className="view-details">See this look</span>
               </div>
-              <span className={`site-plan-badge site-plan-badge--${plan}`}>
-                {plan}
-              </span>
             </div>
           </div>
           <div className="site-info">

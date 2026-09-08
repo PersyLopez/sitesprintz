@@ -117,6 +117,10 @@ export default function Landing() {
   });
 
   useEffect(() => {
+    document.title = `${t('brand.name')} — ${t('footer.tagline')}`;
+  }, [t]);
+
+  useEffect(() => {
     const root = document.querySelector('.landing-page');
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (root && !prefersReduced) {

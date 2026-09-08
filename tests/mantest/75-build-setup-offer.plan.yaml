@@ -10,7 +10,15 @@ steps:
       });
       await page.reload({ waitUntil: 'domcontentloaded' });
       const modal = page.getByTestId('setup-offer-modal');
-      await modal.waitFor({ timeout: 20000 });
+      if (await modal.count()) throw new Error('Modal opened before an eligible trigger');
+      await page.evaluate(() => {
+        window.dispatchEvent(new MouseEvent('mouseout', {
+          bubbles: true,
+          clientY: 0,
+          relatedTarget: null,
+        }));
+      });
+      await modal.waitFor({ timeout: 5000 });
       const cta = page.getByTestId('setup-offer-cta');
       await cta.waitFor({ state: 'visible', timeout: 8000 });
       const mail = page.getByTestId('setup-offer-email-alt');

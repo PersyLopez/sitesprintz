@@ -48,6 +48,13 @@
   color: var(--sp-ink, #1c140f);
 }
 
+.build-intake-form label:has(+ input[required])::after,
+.build-intake-form label:has(> input[required])::after {
+  content: ' *';
+  color: var(--sp-accent-deep, #c45a0a);
+  font-weight: 700;
+}
+
 .build-intake-field input,
 .build-intake-field textarea,
 .build-intake-field select {
@@ -88,7 +95,9 @@
 
 .build-intake-checkboxes input[type='checkbox'] {
   width: 1.1rem;
-  height: 1.1rem;
+  height: 1.5rem;
+  min-width: 1.5rem;
+  min-height: 1.5rem;
   margin-top: 0.15rem;
   flex-shrink: 0;
 }
@@ -154,6 +163,8 @@
 
 .build-intake-plan-ack input {
   margin-top: 0.2rem;
+  min-width: 1.5rem;
+  min-height: 1.5rem;
 }
 
 .build-intake-visibility {
@@ -182,6 +193,8 @@
 
 .build-intake-radio input[type='radio'] {
   margin-top: 0.2rem;
+  min-width: 1.5rem;
+  min-height: 1.5rem;
   flex-shrink: 0;
 }
 

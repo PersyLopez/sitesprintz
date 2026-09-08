@@ -12,6 +12,42 @@ steps:
       - text contains Starter
       - text contains Growth
       - text contains Growth Managed
+    code: |
+      if ((await page.locator('main#main-content').count()) !== 1) {
+        throw new Error('Landing page should have one main landmark');
+      }
+      const landingTitle = await page.title();
+      if (!landingTitle.includes('Right Site Light')) {
+        throw new Error(`Landing page title missing brand: ${landingTitle}`);
+      }
+      await page.setViewportSize({ width: 1280, height: 800 });
+      const heroBrand = page.locator('.hero-brand');
+      const heroHeadline = page.locator('.hero-headline');
+      const heroBrandSize = await heroBrand.evaluate((element) =>
+        parseFloat(window.getComputedStyle(element).fontSize)
+      );
+      if (heroBrandSize > 48) {
+        throw new Error(`Hero brand is too large: ${heroBrandSize}px`);
+      }
+      if (!(await heroHeadline.isVisible())) {
+        throw new Error('Hero headline is not visible');
+      }
+
+  - action: Feedback lives in the footer
+    code: |
+      if (await page.getByTestId('nav-feedback').count()) {
+        throw new Error('Public header should not contain feedback navigation');
+      }
+      if (await page.getByTestId('mobile-nav-feedback').count()) {
+        throw new Error('Public mobile navigation should not contain feedback');
+      }
+      const feedback = page.getByTestId('footer-feedback');
+      if (!(await feedback.isVisible())) throw new Error('Footer feedback button missing');
+      await feedback.click();
+      if (!(await page.getByRole('heading', { name: 'Send Feedback' }).isVisible())) {
+        throw new Error('Footer feedback button did not open the widget');
+      }
+      await page.getByRole('button', { name: 'Close feedback' }).click();
 
   - action: Customer stories section
     goto: http://localhost:5173/#stories
@@ -22,6 +58,27 @@ steps:
       - text contains Aisha
       - text contains They had regulars. Tomorrow nobody could find them.
       - text contains Small shops like yours
+
+  - action: Keyboard focus shows nav ring
+    code: |
+      await page.getByTestId('header-logo').focus();
+      await page.keyboard.press('Tab');
+      const focusState = await page.evaluate(() => {
+        const element = document.activeElement;
+        if (!(element instanceof HTMLElement) || !element.matches('.nav-link')) {
+          return { isNavLink: false };
+        }
+        const style = window.getComputedStyle(element);
+        return {
+          isNavLink: true,
+          outlineStyle: style.outlineStyle,
+          outlineWidth: parseFloat(style.outlineWidth),
+        };
+      });
+      if (!focusState.isNavLink) throw new Error('Tab did not focus a nav link');
+      if (focusState.outlineStyle === 'none' || focusState.outlineWidth < 2) {
+        throw new Error(`Nav focus ring missing: ${JSON.stringify(focusState)}`);
+      }
 
   - action: Dismiss setup offer modal if visible
     code: |
@@ -47,15 +104,40 @@ steps:
     settle_ms: 400
     assert:
       - text contains Three plans. Pick how you run it.
+    code: |
+      const pricingSection = page.locator('#pricing');
+      const pricingBox = await pricingSection.boundingBox();
+      const headerBox = await page.locator('header').boundingBox();
+      if (!pricingBox || !headerBox || pricingBox.y < headerBox.y + headerBox.height) {
+        throw new Error('Pricing section is hidden under the sticky header');
+      }
 
   - action: Open Login from header
     click: { testId: nav-login }
     assert:
       - url contains /login
       - text contains Welcome Back
+    code: |
+      if ((await page.locator('main#main-content').count()) !== 1) {
+        throw new Error('Login page should have one main landmark');
+      }
+      await page.waitForFunction(() => document.title.includes('Login'));
+      const loginTitle = await page.title();
+      if (!loginTitle.includes('Login') || !loginTitle.includes('Right Site Light')) {
+        throw new Error(`Login page title incorrect: ${loginTitle}`);
+      }
 
   - action: Open Get Started from header
     click: { testId: nav-get-started }
     assert:
       - url contains /register
       - text contains Create Your Account
+    code: |
+      if ((await page.locator('main#main-content').count()) !== 1) {
+        throw new Error('Register page should have one main landmark');
+      }
+      await page.waitForFunction(() => document.title.includes('Get Your Page Free'));
+      const registerTitle = await page.title();
+      if (!registerTitle.includes('Get Your Page Free') || !registerTitle.includes('Right Site Light')) {
+        throw new Error(`Register page title incorrect: ${registerTitle}`);
+      }

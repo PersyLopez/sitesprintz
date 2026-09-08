@@ -380,6 +380,12 @@
   box-shadow: 0 10px 24px rgba(28, 20, 15, 0.08);
 }
 
+.gl-live-image {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  border-radius: 10px;
+}
+
 .gl-live-card:focus-visible {
   outline: 2px solid var(--sp-accent, var(--accent, #e87b1e));
   outline-offset: 2px;
@@ -413,6 +419,23 @@
     margin-right: calc(-1 * var(--space-lg, 24px));
     padding-left: var(--space-lg, 24px);
     padding-right: var(--space-lg, 24px);
+  }
+}
+
+@media (min-width: 1024px) {
+  .gl-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow-x: visible;
+    padding-bottom: 0;
+    scroll-snap-type: none;
+  }
+
+  .gl-card {
+    min-width: 0;
+    flex-shrink: 1;
+    scroll-snap-align: none;
+    scroll-snap-stop: normal;
   }
 }
 

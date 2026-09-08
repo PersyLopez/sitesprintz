@@ -34,6 +34,10 @@ function Login() {
   const [touched, setTouched] = useState({});
 
   useEffect(() => {
+    document.title = `${t('nav.login')} — ${t('brand.name')}`;
+  }, [t]);
+
+  useEffect(() => {
     const queryError = searchParams.get('error');
     const storedError = localStorage.getItem('oauthError');
     if (queryError || storedError) {
@@ -160,7 +164,7 @@ function Login() {
   };
 
   return (
-    <div className="auth-page story-public">
+    <main id="main-content" className="auth-page story-public">
       <Header />
 
       <div className="auth-container">
@@ -186,6 +190,7 @@ function Login() {
                 type="email"
                 id="email"
                 name="email"
+                autoComplete="email"
                 value={formData.email}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -213,6 +218,7 @@ function Login() {
                 type="password"
                 id="password"
                 name="password"
+                autoComplete="current-password"
                 value={formData.password}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -284,7 +290,7 @@ function Login() {
         </div>
       </div>
       <Footer />
-    </div>
+    </main>
   );
 }
 

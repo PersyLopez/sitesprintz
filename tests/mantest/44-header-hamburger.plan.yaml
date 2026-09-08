@@ -61,7 +61,26 @@ steps:
       if (!(await page.getByTestId('mobile-nav-login').isVisible())) throw new Error('Login link missing');
       if (!(await page.getByTestId('mobile-nav-register').isVisible())) throw new Error('Get Started link missing');
       if (!(await page.getByTestId('mobile-nav-pricing').isVisible())) throw new Error('Pricing link missing');
-      if (!(await page.getByTestId('mobile-nav-feedback').isVisible())) throw new Error('Feedback link missing in drawer');
+      if (await page.getByTestId('theme-switcher').count()) {
+        throw new Error('Public marketing shell should not render theme switcher');
+      }
+      const orderValid = await page.evaluate(() => {
+        const elements = [
+          'mobile-nav-templates',
+          'mobile-nav-how-it-works',
+          'mobile-nav-gallery',
+          'mobile-nav-pricing',
+          'mobile-nav-login',
+          'language-switcher',
+          'mobile-nav-register',
+        ].map((testId) => document.querySelector(`[data-testid="${testId}"]`));
+        return elements.every(Boolean) && elements.slice(1).every((element, index) => (
+          elements[index].compareDocumentPosition(element) === Node.DOCUMENT_POSITION_FOLLOWING
+        ));
+      });
+      if (!orderValid) {
+        throw new Error('Public drawer order should place nav links first, language second, and Get Started last');
+      }
 
   - action: Close hamburger with the same button
     click: { testId: mobile-menu-toggle }
@@ -163,6 +182,9 @@ steps:
       if (!(await page.getByTestId('mobile-nav-create-site').isVisible())) throw new Error('Create Site missing');
       if (!(await page.getByTestId('mobile-nav-gallery').isVisible())) throw new Error('Gallery missing');
       if (!(await page.getByTestId('mobile-nav-logout').isVisible())) throw new Error('Logout missing');
+      if (!(await page.getByTestId('theme-switcher').count())) {
+        throw new Error('Authenticated workspace should render theme switcher');
+      }
 
   - action: Dashboard link from drawer
     click: { testId: mobile-nav-dashboard }

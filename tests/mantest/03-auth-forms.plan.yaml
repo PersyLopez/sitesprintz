@@ -8,6 +8,13 @@ steps:
       - text contains Email
       - text contains Password
       - text contains Forgot password?
+    code: |
+      const loginAutocomplete = await page.locator('[data-testid="login-email"], [data-testid="login-password"]').evaluateAll((inputs) =>
+        inputs.map((input) => input.getAttribute('autocomplete'))
+      );
+      if (loginAutocomplete.join('|') !== 'email|current-password') {
+        throw new Error(`Unexpected login autocomplete values: ${loginAutocomplete.join('|')}`);
+      }
 
   - action: Submit empty login shows validation
     click: { testId: login-submit }
@@ -64,3 +71,46 @@ steps:
       - text contains Confirm Password
       - text contains Terms of Service
       - text contains Create Account
+    code: |
+      const registerAutocomplete = await page.locator('[data-testid="register-email"], [data-testid="register-password"], [data-testid="register-confirm-password"]').evaluateAll((inputs) =>
+        inputs.map((input) => input.getAttribute('autocomplete'))
+      );
+      if (registerAutocomplete.join('|') !== 'email|new-password|new-password') {
+        throw new Error(`Unexpected register autocomplete values: ${registerAutocomplete.join('|')}`);
+      }
+
+  - action: Header fits at 1280px
+    code: |
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto('http://localhost:5173/login');
+      await page.getByTestId('desktop-nav').waitFor({ state: 'visible', timeout: 10000 });
+      for (const testId of ['nav-templates', 'nav-how-it-works', 'nav-pricing']) {
+        if (await page.getByTestId(testId).isVisible()) {
+          throw new Error(`${testId} should be hidden at 1280px`);
+        }
+      }
+      for (const testId of ['nav-gallery', 'nav-login', 'nav-get-started']) {
+        if (!(await page.getByTestId(testId).isVisible())) {
+          throw new Error(`${testId} should be visible at 1280px`);
+        }
+      }
+
+  - action: Interactive controls meet minimum touch target
+    code: |
+      for (const url of ['http://localhost:5173/login', 'http://localhost:5173/register', 'http://localhost:5173/build']) {
+        await page.goto(url);
+        const form = page.locator('form').first();
+        await form.waitFor({ state: 'visible', timeout: 15000 });
+        const undersized = await form.locator('input, select, textarea, button').evaluateAll((controls) =>
+          controls
+            .filter((control) => {
+              const style = getComputedStyle(control);
+              return style.display !== 'none' && style.visibility !== 'hidden' && !control.closest('[aria-hidden="true"]');
+            })
+            .filter((control) => control.getBoundingClientRect().height < 24)
+            .map((control) => `${control.tagName.toLowerCase()}#${control.id || 'unnamed'}`)
+        );
+        if (undersized.length) {
+          throw new Error(`${url} has controls under 24px: ${undersized.join(', ')}`);
+        }
+      }

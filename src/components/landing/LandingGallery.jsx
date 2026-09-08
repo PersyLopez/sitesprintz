@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useLocale } from '../../i18n/LocaleContext.jsx';
 import { getShowcasePath } from '../../utils/galleryTemplateMap.js';
+import { OptimizedImage } from '../common/OptimizedImage';
 import './LandingGallery.css';
 
 /* ──────────────────────────────────────────────
@@ -375,14 +376,26 @@ export default function LandingGallery({ selectedTemplateId, onSelectTemplate })
                   className="gl-live-card"
                   data-testid={`landing-live-${site.subdomain}`}
                 >
-                  <span className="gl-live-emoji" aria-hidden="true">
-                    {site.template?.includes('salon') ? '💇'
-                      : site.template?.includes('restaurant') || site.template?.includes('food') ? '🍽️'
-                        : site.template?.includes('gym') ? '💪'
-                          : '🌐'}
-                  </span>
+                  {site.heroImage ? (
+                    <OptimizedImage
+                      src={site.heroImage}
+                      alt={`${liveTitle(site)} preview`}
+                      width={600}
+                      height={400}
+                      aspectRatio="3/2"
+                      priority={false}
+                      sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="gl-live-image"
+                    />
+                  ) : (
+                    <span className="gl-live-emoji" aria-hidden="true">
+                      {site.template?.includes('salon') ? '💇'
+                        : site.template?.includes('restaurant') || site.template?.includes('food') ? '🍽️'
+                          : site.template?.includes('gym') ? '💪'
+                            : '🌐'}
+                    </span>
+                  )}
                   <span className="gl-live-title">{liveTitle(site)}</span>
-                  <span className="gl-live-meta">/view/{site.subdomain}</span>
                 </Link>
               ))}
             </div>

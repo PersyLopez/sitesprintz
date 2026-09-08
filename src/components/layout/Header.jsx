@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useLocale } from '../../i18n/LocaleContext.jsx';
@@ -204,14 +204,6 @@ function Header() {
               >
                 {t('nav.pricing')}
               </Link>
-              <button
-                type="button"
-                className="nav-link nav-link-button"
-                onClick={() => setFeedbackOpen(true)}
-                data-testid="nav-feedback"
-              >
-                Send feedback
-              </button>
               <Link 
                 to="/login" 
                 className={`nav-link ${location.pathname === '/login' ? 'active' : ''}`}
@@ -232,7 +224,9 @@ function Header() {
           )}
         </nav>
         <LanguageSwitcher className="header-language-switcher header-language-switcher--desktop" />
-        <ThemeSwitcher className="header-theme-switcher header-theme-switcher--desktop" />
+        {isAuthenticated && (
+          <ThemeSwitcher className="header-theme-switcher header-theme-switcher--desktop" />
+        )}
 
         {/* Mobile Menu Button */}
         <button
@@ -270,7 +264,9 @@ function Header() {
               </div>
             )}
             <LanguageSwitcher className="header-language-switcher header-language-switcher--mobile" />
-            <ThemeSwitcher className="header-theme-switcher header-theme-switcher--mobile" />
+            {isAuthenticated && (
+              <ThemeSwitcher className="header-theme-switcher header-theme-switcher--mobile" />
+            )}
             {showOwnerNav && (
               <>
                 <Link 
@@ -376,8 +372,6 @@ function Header() {
           </>
         ) : (
           <>
-            <LanguageSwitcher className="header-language-switcher header-language-switcher--mobile" />
-            <ThemeSwitcher className="header-theme-switcher header-theme-switcher--mobile" />
             <Link
               to="/#templates"
               className="mobile-nav-link"
@@ -419,14 +413,10 @@ function Header() {
             >
               {t('nav.login')}
             </Link>
-            <button
-              type="button"
-              className="mobile-nav-link"
-              onClick={openFeedback}
-              data-testid="mobile-nav-feedback"
-            >
-              Send feedback
-            </button>
+            <LanguageSwitcher className="header-language-switcher header-language-switcher--mobile" />
+            {isAuthenticated && (
+              <ThemeSwitcher className="header-theme-switcher header-theme-switcher--mobile" />
+            )}
             <Link 
               to="/register" 
               className="mobile-nav-link mobile-cta"

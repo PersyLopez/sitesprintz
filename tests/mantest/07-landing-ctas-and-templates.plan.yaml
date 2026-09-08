@@ -9,6 +9,8 @@ steps:
         await dismiss.click({ timeout: 5000 });
         await page.waitForTimeout(400);
       }
+    assert:
+      - text contains Get Your Page Free
 
   - action: Hero primary CTA goes to register
     wait_for: { text: Get Your Page Free }
@@ -46,6 +48,13 @@ steps:
       - text contains Tell us what you sell
       - text contains Show what customers need
       - text contains Share your link
+      - text contains Get Your Page Free
+
+  - action: Showcase guest CTA matches header and hero
+    goto: http://localhost:5173/showcase
+    wait_for: { text: Get Your Page Free }
+    assert:
+      - text contains Get Your Page Free
 
   - action: How it works nav
     click: { testId: nav-how-it-works }

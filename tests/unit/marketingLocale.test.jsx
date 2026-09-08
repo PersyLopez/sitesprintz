@@ -6,6 +6,8 @@ import Landing from '../../src/pages/Landing';
 import { AuthContext } from '../../src/context/AuthContext';
 import { LocaleProvider } from '../../src/i18n/LocaleContext.jsx';
 import LanguageSwitcher from '../../src/components/i18n/LanguageSwitcher.jsx';
+import en from '../../src/i18n/marketing/en.js';
+import es from '../../src/i18n/marketing/es.js';
 
 vi.mock('../../src/components/layout/Header', () => ({
   default: () => <div data-testid="header">Header</div>,
@@ -44,6 +46,20 @@ function renderLanding() {
 }
 
 describe('marketing language switcher', () => {
+  it('keeps guest CTA labels aligned across marketing surfaces', () => {
+    expect(en['nav.getStarted']).toBe('Get Your Page Free');
+    expect(en['landing.cta.guest']).toBe(en['nav.getStarted']);
+    expect(en['showcase.cta.guest']).toBe(en['nav.getStarted']);
+    expect(es['nav.getStarted']).toBe('Obtén tu página gratis');
+    expect(es['landing.cta.guest']).toBe(es['nav.getStarted']);
+    expect(es['showcase.cta.guest']).toBe(es['nav.getStarted']);
+  });
+
+  it('keeps authenticated showcase CTA aligned with landing', () => {
+    expect(en['showcase.cta.auth']).toBe(en['landing.cta.auth']);
+    expect(es['showcase.cta.auth']).toBe(es['landing.cta.auth']);
+  });
+
   it('keeps Landing copy in English by default', () => {
     renderLanding();
     expect(screen.getByRole('heading', { name: /They love what you make/i })).toBeInTheDocument();

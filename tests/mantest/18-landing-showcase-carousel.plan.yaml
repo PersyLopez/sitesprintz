@@ -59,6 +59,17 @@ steps:
       if (!has) throw new Error('Landing gallery demo labels missing');
     settle_ms: 300
 
+  - action: Live showcase images keep a 3/2 frame
+    code: |
+      const image = page.locator('[data-testid="landing-live-showcase"] .gl-live-image').first();
+      if (await image.count()) {
+        const box = await image.boundingBox();
+        if (!box || Math.abs(box.width / box.height - 1.5) > 0.05) {
+          throw new Error('Live showcase image frame is not 3/2');
+        }
+      }
+    settle_ms: 200
+
   - action: Gallery tabs present
     code: |
       const tabs = page.locator('[data-testid^="gallery-tab-"]');

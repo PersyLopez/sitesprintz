@@ -33,6 +33,10 @@ function Register() {
   const [inviteOnly, setInviteOnly] = useState(false);
 
   useEffect(() => {
+    document.title = `${t('nav.getStarted')} — ${t('brand.name')}`;
+  }, [t]);
+
+  useEffect(() => {
     let cancelled = false;
     fetch('/api/health')
       .then((res) => (res.ok ? res.json() : null))
@@ -226,7 +230,7 @@ function Register() {
   };
 
   return (
-    <div className="auth-page story-public">
+    <main id="main-content" className="auth-page story-public">
       <Header />
 
       <div className="auth-container">
@@ -264,6 +268,7 @@ function Register() {
                 type="email"
                 id="email"
                 name="email"
+                autoComplete="email"
                 data-testid="register-email"
                 value={formData.email}
                 onChange={handleChange}
@@ -279,6 +284,7 @@ function Register() {
                 type="password"
                 id="password"
                 name="password"
+                autoComplete="new-password"
                 data-testid="register-password"
                 value={formData.password}
                 onChange={handleChange}
@@ -296,6 +302,7 @@ function Register() {
                 type="password"
                 id="confirmPassword"
                 name="confirmPassword"
+                autoComplete="new-password"
                 data-testid="register-confirm-password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
@@ -392,7 +399,7 @@ function Register() {
         </div>
       </div>
       <Footer />
-    </div>
+    </main>
   );
 }
 

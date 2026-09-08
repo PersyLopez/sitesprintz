@@ -38,3 +38,30 @@ steps:
       if (/No examples found|Start your site|See how your site could look/i.test(t)) return;
       throw new Error('Neither detail nor gallery empty state. url=' + url);
     settle_ms: 400
+
+  - action: Showcase detail hero and sharing
+    code: |
+      if (!page.url().includes('/showcase/')) return;
+      const heroImage = page.locator('.hero-image img');
+      const fallback = page.locator('.hero-image-fallback');
+      if ((await heroImage.count()) > 0) {
+        const naturalWidth = await heroImage.first().evaluate((image) => image.naturalWidth);
+        if (naturalWidth === 0) throw new Error('Showcase hero image failed to load');
+      } else if ((await fallback.count()) === 0) {
+        throw new Error('Showcase hero has neither image nor category fallback');
+      }
+      const share = page.locator('.showcase-share');
+      const copyLink = share.getByRole('button', { name: /Copy Link|Copied/i });
+      if ((await copyLink.count()) === 0) throw new Error('Copy Link is outside the share section');
+      if (/onyx-ink/i.test(await page.locator('body').innerText())) {
+        throw new Error('Raw theme slug rendered on showcase detail');
+      }
+      const title = page.locator('.hero-content h1');
+      if (await title.count()) {
+        const titleBox = await title.boundingBox();
+        const textAlign = await title.evaluate((element) => getComputedStyle(element).textAlign);
+        if (!titleBox || textAlign !== 'left') {
+          throw new Error('Showcase detail title is not aligned with hero content');
+        }
+      }
+    settle_ms: 400

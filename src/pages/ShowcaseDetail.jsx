@@ -89,10 +89,11 @@ function ShowcaseDetail() {
   const getSiteHeroImage = (siteData) => {
     const payload = siteData?.data || siteData?.site_data || {};
     return (
+      siteData?.heroImage ||
       payload.hero?.image ||
       payload.hero?.backgroundImage ||
       payload.images?.hero ||
-      '/images/default-hero.jpg'
+      null
     );
   };
 
@@ -207,10 +208,18 @@ function ShowcaseDetail() {
 
         <section className="showcase-hero">
           <div className="hero-image">
-            <img
-              src={getSiteHeroImage(site)}
-              alt={`${getSiteTitle(site)} hero image`}
-            />
+            {getSiteHeroImage(site) ? (
+              <img
+                src={getSiteHeroImage(site)}
+                alt={`${getSiteTitle(site)} hero image`}
+              />
+            ) : (
+              <div className="hero-image-fallback" aria-label={`${formatCategory(site.template || site.template_id)} example`}>
+                <span className="hero-image-fallback-label">
+                  {formatCategory(site.template || site.template_id)}
+                </span>
+              </div>
+            )}
           </div>
           <div className="hero-content">
             <div className="hero-badges">
@@ -237,9 +246,6 @@ function ShowcaseDetail() {
               <Link to={ctaTarget} className="btn btn-secondary cta-button">
                 {ctaLabel}
               </Link>
-              <button type="button" onClick={handleCopyLink} className="btn btn-secondary share-button">
-                {copySuccess ? '✓ Copied!' : 'Copy Link'}
-              </button>
             </div>
           </div>
         </section>
@@ -252,7 +258,7 @@ function ShowcaseDetail() {
           <div className="metadata-item">
             <span className="metadata-label">Theme</span>
             <span className="metadata-value">
-              {payload.galleryTheme?.name || payload.colors?.themeId || 'Right Site Light theme'}
+              {payload.galleryTheme?.name || 'Right Site Light theme'}
             </span>
           </div>
           <div className="metadata-item">
@@ -335,6 +341,9 @@ function ShowcaseDetail() {
               aria-label="Share on LinkedIn"
             >
               LinkedIn
+            </button>
+            <button type="button" onClick={handleCopyLink} className="share-btn share-button">
+              {copySuccess ? '✓ Copied!' : 'Copy Link'}
             </button>
           </div>
         </section>

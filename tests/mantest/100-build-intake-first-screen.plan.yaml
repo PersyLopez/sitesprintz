@@ -1,0 +1,35 @@
+url: http://localhost:5173/build
+goal: Build intake starts promptly, explains required fields, and rejects an empty submission
+steps:
+  - action: Verify first-screen form start and plan callout
+    code: |
+      const heading = page.getByRole('heading', { name: /build my site for me/i });
+      await heading.waitFor({ state: 'visible', timeout: 10000 });
+      const form = page.getByTestId('build-intake-form');
+      await form.waitFor({ state: 'visible', timeout: 10000 });
+      const formBox = await form.boundingBox();
+      if (!formBox || formBox.y > 900) throw new Error('Form starts below the first screen');
+      const intro = page.locator('.build-intake-intro');
+      const introBox = await intro.boundingBox();
+      if (!introBox || introBox.height > 40) throw new Error('Intro should be a single lead line');
+      await page.getByTestId('build-plan-callout').waitFor({ state: 'visible', timeout: 5000 });
+
+  - action: Verify required markers and attributes
+    code: |
+      const required = await page.evaluate(() => [...document.querySelectorAll('input[required]')].map((input) => ({
+        id: input.id,
+        marker: getComputedStyle(input.previousElementSibling, '::after').content,
+      })));
+      if (!required.some(({ id }) => id === 'contactName')) throw new Error('Contact name is not required');
+      if (!required.some(({ id }) => id === 'contactEmail')) throw new Error('Contact email is not required');
+      if (!required.some(({ id }) => id === 'businessName')) throw new Error('Business name is not required');
+      for (const field of required) {
+        if (!field.marker || field.marker === 'none' || field.marker === 'normal') {
+          throw new Error(`Missing required marker for ${field.id}`);
+        }
+      }
+
+  - action: Verify empty intake fails required-field validation
+    code: |
+      const isValid = await page.evaluate(() => document.querySelector('[data-testid="build-intake-form"]').checkValidity());
+      if (isValid) throw new Error('Empty submission should fail required-field validation');

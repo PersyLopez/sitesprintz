@@ -2,11 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { PLATFORM_SUPPORT_EMAIL } from '../../config/pricing.config';
 import { useLocale } from '../../i18n/LocaleContext.jsx';
+import FeedbackWidget from '../common/FeedbackWidget';
 import './Footer.css';
 
 function Footer() {
   const currentYear = new Date().getFullYear();
   const { t } = useLocale();
+  const [feedbackOpen, setFeedbackOpen] = React.useState(false);
 
   return (
     <footer className="site-footer">
@@ -43,6 +45,14 @@ function Footer() {
               <a href={`mailto:${PLATFORM_SUPPORT_EMAIL}`} data-testid="footer-support-email">
                 {t('footer.supportEmail')}
               </a>
+              <button
+                type="button"
+                className="footer-feedback"
+                onClick={() => setFeedbackOpen(true)}
+                data-testid="footer-feedback"
+              >
+                Send feedback
+              </button>
             </div>
             
             <div className="footer-column">
@@ -64,6 +74,7 @@ function Footer() {
           <p>{t('footer.rights', { year: currentYear })}</p>
         </div>
       </div>
+      <FeedbackWidget hideFab open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
     </footer>
   );
 }

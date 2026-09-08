@@ -99,6 +99,14 @@
   }
 }
 
+@media (min-width: 1024px) and (max-width: 1280px) {
+  .desktop-nav [data-testid="nav-templates"],
+  .desktop-nav [data-testid="nav-how-it-works"],
+  .desktop-nav [data-testid="nav-pricing"] {
+    display: none;
+  }
+}
+
 @media (min-width: 1024px) {
   .site-header--workspace .desktop-nav,
   .site-header--workspace .header-language-switcher--desktop,
@@ -136,6 +144,9 @@
 .nav-link:hover,
 .nav-link:focus {
   color: var(--primary-color);
+}
+
+.nav-link:focus:not(:focus-visible) {
   outline: none;
 }
 
@@ -148,7 +159,7 @@
   color: var(--primary-color);
 }
 
-.nav-link:focus {
+.nav-link:focus-visible {
   outline: 2px solid var(--primary-color);
   outline-offset: 4px;
   border-radius: 4px;
@@ -319,7 +330,16 @@
   background: var(--bg-elevated);
   color: var(--primary-color);
   border-color: var(--primary-color);
+}
+
+.mobile-nav-link:focus:not(:focus-visible) {
   outline: none;
+}
+
+.mobile-nav-link:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 4px;
+  border-radius: 4px;
 }
 
 .mobile-nav-link.active {

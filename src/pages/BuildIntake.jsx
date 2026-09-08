@@ -231,9 +231,7 @@ function BuildIntake() {
         <div className="content-container">
           <h1>{t('build.title')}</h1>
           <p className="build-intake-intro">
-            {offerActive
-              ? t('build.offer.intro', { end: offerEnd, days: PRICING_CONFIG.trial.duration })
-              : t('build.intro', extras)}
+            {t('build.intro', extras).split('. ')[0]}
           </p>
 
           {mailto ? (
@@ -286,16 +284,16 @@ function BuildIntake() {
                 <div className="build-intake-grid build-intake-grid--2">
                   <div className="build-intake-field">
                     <label htmlFor="contactName">{t('build.fields.contactName')}</label>
-                    <input id="contactName" required value={form.contactName} onChange={(e) => updateField('contactName', e.target.value)} />
+                    <input id="contactName" name="contactName" autoComplete="name" required value={form.contactName} onChange={(e) => updateField('contactName', e.target.value)} />
                     <p className="build-intake-help">{t('build.offer.contactWhy')}</p>
                   </div>
                   <div className="build-intake-field">
                     <label htmlFor="contactEmail">{t('build.fields.contactEmail')}</label>
-                    <input id="contactEmail" type="email" required value={form.contactEmail} onChange={(e) => updateField('contactEmail', e.target.value)} />
+                    <input id="contactEmail" name="contactEmail" type="email" autoComplete="email" required value={form.contactEmail} onChange={(e) => updateField('contactEmail', e.target.value)} />
                   </div>
                   <div className="build-intake-field">
                     <label htmlFor="businessName">{t('build.fields.businessName')}</label>
-                    <input id="businessName" required value={form.businessName} onChange={(e) => updateField('businessName', e.target.value)} />
+                    <input id="businessName" name="businessName" autoComplete="organization" required value={form.businessName} onChange={(e) => updateField('businessName', e.target.value)} />
                     <p className="build-intake-help">{t('build.offer.businessWhy')}</p>
                   </div>
                 </div>
@@ -398,7 +396,7 @@ function BuildIntake() {
                   </div>
                   <div className="build-intake-field">
                     <label htmlFor="contactPhone">{t('build.fields.contactPhone')}</label>
-                    <input id="contactPhone" type="tel" value={form.contactPhone} onChange={(e) => updateField('contactPhone', e.target.value)} />
+                    <input id="contactPhone" name="contactPhone" type="tel" autoComplete="tel" value={form.contactPhone} onChange={(e) => updateField('contactPhone', e.target.value)} />
                   </div>
                 </div>
               </section>
@@ -411,15 +409,15 @@ function BuildIntake() {
               <div className="build-intake-grid build-intake-grid--2">
                 <div className="build-intake-field">
                   <label htmlFor="contactName">{t('build.fields.contactName')}</label>
-                  <input id="contactName" required value={form.contactName} onChange={(e) => updateField('contactName', e.target.value)} />
+                  <input id="contactName" name="contactName" autoComplete="name" required value={form.contactName} onChange={(e) => updateField('contactName', e.target.value)} />
                 </div>
                 <div className="build-intake-field">
                   <label htmlFor="contactEmail">{t('build.fields.contactEmail')}</label>
-                  <input id="contactEmail" type="email" required value={form.contactEmail} onChange={(e) => updateField('contactEmail', e.target.value)} />
+                  <input id="contactEmail" name="contactEmail" type="email" autoComplete="email" required value={form.contactEmail} onChange={(e) => updateField('contactEmail', e.target.value)} />
                 </div>
                 <div className="build-intake-field">
                   <label htmlFor="contactPhone">{t('build.fields.contactPhone')}</label>
-                  <input id="contactPhone" type="tel" value={form.contactPhone} onChange={(e) => updateField('contactPhone', e.target.value)} />
+                  <input id="contactPhone" name="contactPhone" type="tel" autoComplete="tel" value={form.contactPhone} onChange={(e) => updateField('contactPhone', e.target.value)} />
                 </div>
               </div>
             </section>
@@ -429,7 +427,7 @@ function BuildIntake() {
               <div className="build-intake-grid">
                 <div className="build-intake-field">
                   <label htmlFor="businessName">{t('build.fields.businessName')}</label>
-                  <input id="businessName" required value={form.businessName} onChange={(e) => updateField('businessName', e.target.value)} />
+                <input id="businessName" name="businessName" autoComplete="organization" required value={form.businessName} onChange={(e) => updateField('businessName', e.target.value)} />
                 </div>
                 <div className="build-intake-field">
                   <label htmlFor="businessTagline">{t('build.fields.businessTagline')}</label>

@@ -90,8 +90,11 @@
   letter-spacing: 0.05em;
 }
 
-.footer-column a {
+.footer-column a,
+.footer-column button {
   color: var(--text-medium);
+  background: none;
+  border: 0;
   text-decoration: none;
   font-size: 0.9rem;
   margin-bottom: 8px;
@@ -99,9 +102,14 @@
   min-height: 32px;
   display: flex;
   align-items: center;
+  padding: 0;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
 }
 
-.footer-column a:hover {
+.footer-column a:hover,
+.footer-column button:hover {
   color: var(--primary-light);
 }
 
@@ -113,7 +121,7 @@
 
 .footer-copyright,
 .footer-bottom p {
-  color: var(--text-muted);
+  color: var(--text-medium);
   font-size: 0.85rem;
   margin: 0;
 }

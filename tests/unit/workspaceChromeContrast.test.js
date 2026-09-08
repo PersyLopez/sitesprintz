@@ -9,6 +9,7 @@ import { meetsAaText } from '../../src/utils/colorContrast.js';
 const DARK = {
   bg: '#030712',
   text: '#f0f9ff',
+  medium: '#cbd5e1',
   muted: '#94a3b8',
   selectedFill: '#4a6d82',
   onSelected: '#f4f2ee',
@@ -17,6 +18,7 @@ const DARK = {
 const LIGHT = {
   bg: '#f7f4ef',
   text: '#1c140f',
+  medium: '#3d3229',
   muted: '#6b5d52',
   selectedFill: '#2f4a5c',
   onSelected: '#f7f4ef',
@@ -28,6 +30,8 @@ describe('workspace chrome contrast', () => {
     ['light selected control', LIGHT.onSelected, LIGHT.selectedFill],
     ['dark body text', DARK.text, DARK.bg],
     ['light body text', LIGHT.text, LIGHT.bg],
+    ['dark medium text', DARK.medium, DARK.bg],
+    ['light medium text', LIGHT.medium, LIGHT.bg],
     ['dark muted text', DARK.muted, DARK.bg],
     ['light muted text', LIGHT.muted, LIGHT.bg],
   ])('%s meets WCAG AA', (_name, foreground, background) => {

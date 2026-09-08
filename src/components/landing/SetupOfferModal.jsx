@@ -42,9 +42,38 @@ function SetupOfferModal({ onDismiss }) {
 
   useEffect(() => {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const delay = prefersReduced ? 0 : 600;
-    const id = window.setTimeout(() => setOpen(true), delay);
-    return () => window.clearTimeout(id);
+    const desktopExitIntent = window.innerWidth >= 1024;
+    let triggered = false;
+    const trigger = () => {
+      if (triggered) return;
+      triggered = true;
+      setOpen(true);
+      window.removeEventListener('mouseout', handleMouseOut);
+      window.clearTimeout(timeoutId);
+    };
+    const handleMouseOut = (event) => {
+      if (
+        window.innerWidth >= 1024 &&
+        event.relatedTarget === null &&
+        event.clientY <= 0
+      ) {
+        trigger();
+      }
+    };
+    const timeoutId = window.setTimeout(trigger, 45000);
+
+    if (desktopExitIntent) {
+      window.addEventListener('mouseout', handleMouseOut);
+    }
+    if (prefersReduced) {
+      // Reduced motion changes presentation, not eligibility; wait for a trigger.
+    }
+    return () => {
+      if (desktopExitIntent) {
+        window.removeEventListener('mouseout', handleMouseOut);
+      }
+      window.clearTimeout(timeoutId);
+    };
   }, []);
 
   return (
