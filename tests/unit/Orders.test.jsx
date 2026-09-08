@@ -25,20 +25,6 @@ vi.mock('../../src/components/layout/Footer', () => ({
   default: () => <div data-testid="footer">Footer</div>
 }));
 
-vi.mock('../../src/components/orders/OrderCard', () => ({
-  default: ({ order, selected, onToggleSelect, onUpdateStatus, onViewDetails }) => (
-    <div data-testid={`order-card-${order.orderId}`} className={selected ? 'selected' : ''}>
-      <div>Order: {order.orderId}</div>
-      <div>Customer: {order.customer?.name}</div>
-      <div>Total: ${(order.total / 100).toFixed(2)}</div>
-      <div>Status: {order.status}</div>
-      <button onClick={onToggleSelect}>Select</button>
-      <button onClick={() => onUpdateStatus(order.orderId, 'fulfilled')}>Complete</button>
-      <button onClick={onViewDetails}>View Details</button>
-    </div>
-  )
-}));
-
 vi.mock('../../src/components/orders/OrderDetailsModal', () => ({
   default: ({ order, onClose, onUpdateStatus }) => (
     <div data-testid="order-details-modal">
@@ -199,28 +185,21 @@ describe('Orders Page', () => {
       renderOrders();
       
       await waitFor(() => {
-        expect(screen.getByTestId('order-card-ORD-001')).toBeInTheDocument();
-        expect(screen.getByTestId('order-card-ORD-002')).toBeInTheDocument();
-        expect(screen.getByTestId('order-card-ORD-003')).toBeInTheDocument();
+        expect(screen.getByTestId('orders-table')).toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-001')).toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-002')).toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-003')).toBeInTheDocument();
       });
     });
 
-    it('should show order cards with details', async () => {
+    it('should show order details in table rows', async () => {
       renderOrders();
       
       await waitFor(() => {
-        const orderCard = screen.getByTestId('order-card-ORD-001');
-        expect(within(orderCard).getByText('Order: ORD-001')).toBeInTheDocument();
-        expect(within(orderCard).getByText('Customer: John Doe')).toBeInTheDocument();
-      });
-    });
-
-    it('should format prices as currency', async () => {
-      renderOrders();
-      
-      await waitFor(() => {
-        const orderCard = screen.getByTestId('order-card-ORD-001');
-        expect(within(orderCard).getByText('Total: $50.00')).toBeInTheDocument();
+        const row = screen.getByTestId('order-row-ORD-001');
+        expect(within(row).getByText('#ORD-001')).toBeInTheDocument();
+        expect(within(row).getByText('John Doe')).toBeInTheDocument();
+        expect(within(row).getByText('$50.00')).toBeInTheDocument();
       });
     });
 
@@ -228,8 +207,8 @@ describe('Orders Page', () => {
       renderOrders();
       
       await waitFor(() => {
-        expect(screen.getByText('Customer: John Doe')).toBeInTheDocument();
-        expect(screen.getByText('Customer: Jane Smith')).toBeInTheDocument();
+        expect(screen.getByText('john@example.com')).toBeInTheDocument();
+        expect(screen.getByText('jane@example.com')).toBeInTheDocument();
       });
     });
 
@@ -251,9 +230,9 @@ describe('Orders Page', () => {
       renderOrders();
       
       await waitFor(() => {
-        expect(screen.getByText('Status: new')).toBeInTheDocument();
-        expect(screen.getByText('Status: fulfilled')).toBeInTheDocument();
-        expect(screen.getByText('Status: cancelled')).toBeInTheDocument();
+        expect(within(screen.getByTestId('order-row-ORD-001')).getByText('New')).toBeInTheDocument();
+        expect(within(screen.getByTestId('order-row-ORD-002')).getByText('Completed')).toBeInTheDocument();
+        expect(within(screen.getByTestId('order-row-ORD-003')).getByText('Cancelled')).toBeInTheDocument();
       });
     });
   });
@@ -269,9 +248,9 @@ describe('Orders Page', () => {
       const allButton = await screen.findByRole('button', { name: /All Orders/i });
       
       await waitFor(() => {
-        expect(screen.getByTestId('order-card-ORD-001')).toBeInTheDocument();
-        expect(screen.getByTestId('order-card-ORD-002')).toBeInTheDocument();
-        expect(screen.getByTestId('order-card-ORD-003')).toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-001')).toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-002')).toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-003')).toBeInTheDocument();
       });
     });
 
@@ -280,16 +259,16 @@ describe('Orders Page', () => {
       renderOrders();
       
       await waitFor(() => {
-        expect(screen.getByTestId('order-card-ORD-001')).toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-001')).toBeInTheDocument();
       });
       
       const newButton = screen.getByRole('button', { name: /New Orders/i });
       await user.click(newButton);
       
       await waitFor(() => {
-        expect(screen.getByTestId('order-card-ORD-001')).toBeInTheDocument();
-        expect(screen.queryByTestId('order-card-ORD-002')).not.toBeInTheDocument();
-        expect(screen.queryByTestId('order-card-ORD-003')).not.toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-001')).toBeInTheDocument();
+        expect(screen.queryByTestId('order-row-ORD-002')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('order-row-ORD-003')).not.toBeInTheDocument();
       });
     });
 
@@ -298,16 +277,16 @@ describe('Orders Page', () => {
       renderOrders();
       
       await waitFor(() => {
-        expect(screen.getByTestId('order-card-ORD-002')).toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-002')).toBeInTheDocument();
       });
       
       const completedButton = screen.getByRole('button', { name: /^Completed/i });
       await user.click(completedButton);
       
       await waitFor(() => {
-        expect(screen.queryByTestId('order-card-ORD-001')).not.toBeInTheDocument();
-        expect(screen.getByTestId('order-card-ORD-002')).toBeInTheDocument();
-        expect(screen.queryByTestId('order-card-ORD-003')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('order-row-ORD-001')).not.toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-002')).toBeInTheDocument();
+        expect(screen.queryByTestId('order-row-ORD-003')).not.toBeInTheDocument();
       });
     });
 
@@ -316,16 +295,16 @@ describe('Orders Page', () => {
       renderOrders();
       
       await waitFor(() => {
-        expect(screen.getByTestId('order-card-ORD-003')).toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-003')).toBeInTheDocument();
       });
       
       const cancelledButton = screen.getByRole('button', { name: /Cancelled/i });
       await user.click(cancelledButton);
       
       await waitFor(() => {
-        expect(screen.queryByTestId('order-card-ORD-001')).not.toBeInTheDocument();
-        expect(screen.queryByTestId('order-card-ORD-002')).not.toBeInTheDocument();
-        expect(screen.getByTestId('order-card-ORD-003')).toBeInTheDocument();
+        expect(screen.queryByTestId('order-row-ORD-001')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('order-row-ORD-002')).not.toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-003')).toBeInTheDocument();
       });
     });
 
@@ -342,14 +321,14 @@ describe('Orders Page', () => {
       renderOrders();
       
       await waitFor(() => {
-        expect(screen.getAllByText(/Status:/i)).toHaveLength(3);
+        expect(screen.getByTestId('orders-table').querySelectorAll('tbody tr')).toHaveLength(3);
       });
       
       const newButton = screen.getByRole('button', { name: /New Orders/i });
       await user.click(newButton);
       
       await waitFor(() => {
-        expect(screen.getAllByText(/Status:/i)).toHaveLength(1);
+        expect(screen.getByTestId('orders-table').querySelectorAll('tbody tr')).toHaveLength(1);
       });
     });
 
@@ -358,16 +337,16 @@ describe('Orders Page', () => {
       renderOrders();
       
       await waitFor(() => {
-        expect(screen.getByTestId('order-card-ORD-001')).toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-001')).toBeInTheDocument();
       });
       
       const searchInput = screen.getByPlaceholderText(/Search by order ID/i);
       await user.type(searchInput, 'ORD-001');
       
       await waitFor(() => {
-        expect(screen.getByTestId('order-card-ORD-001')).toBeInTheDocument();
-        expect(screen.queryByTestId('order-card-ORD-002')).not.toBeInTheDocument();
-        expect(screen.queryByTestId('order-card-ORD-003')).not.toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-001')).toBeInTheDocument();
+        expect(screen.queryByTestId('order-row-ORD-002')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('order-row-ORD-003')).not.toBeInTheDocument();
       });
     });
 
@@ -376,16 +355,16 @@ describe('Orders Page', () => {
       renderOrders();
       
       await waitFor(() => {
-        expect(screen.getByTestId('order-card-ORD-002')).toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-002')).toBeInTheDocument();
       });
       
       const searchInput = screen.getByPlaceholderText(/Search by order ID/i);
       await user.type(searchInput, 'Jane');
       
       await waitFor(() => {
-        expect(screen.queryByTestId('order-card-ORD-001')).not.toBeInTheDocument();
-        expect(screen.getByTestId('order-card-ORD-002')).toBeInTheDocument();
-        expect(screen.queryByTestId('order-card-ORD-003')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('order-row-ORD-001')).not.toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-002')).toBeInTheDocument();
+        expect(screen.queryByTestId('order-row-ORD-003')).not.toBeInTheDocument();
       });
     });
   });
@@ -395,91 +374,15 @@ describe('Orders Page', () => {
   // ============================================================
 
   describe('Order Management', () => {
-    it('should update order status', async () => {
+    it('should open order details when a row is clicked', async () => {
       const user = userEvent.setup();
       renderOrders();
       
       await waitFor(() => {
-        expect(screen.getByTestId('order-card-ORD-001')).toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-001')).toBeInTheDocument();
       });
-      
-      fetchSpy.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ order: { ...mockOrders[0], status: 'fulfilled' } })
-      });
-      
-      const orderCard = screen.getByTestId('order-card-ORD-001');
-      const completeButton = within(orderCard).getByRole('button', { name: /Complete/i });
-      await user.click(completeButton);
-      
-      await waitFor(() => {
-        expect(fetchSpy).toHaveBeenCalledWith(
-          expect.stringContaining('/api/orders/123/orders/ORD-001/status'),
-          expect.objectContaining({
-            method: 'PUT',
-            body: JSON.stringify({ status: 'fulfilled' })
-          })
-        );
-      });
-    });
 
-    it('should show success message after update', async () => {
-      const user = userEvent.setup();
-      renderOrders();
-      
-      await waitFor(() => {
-        expect(screen.getByTestId('order-card-ORD-001')).toBeInTheDocument();
-      });
-      
-      fetchSpy.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ order: { ...mockOrders[0], status: 'fulfilled' } })
-      });
-      
-      const orderCard = screen.getByTestId('order-card-ORD-001');
-      const completeButton = within(orderCard).getByRole('button', { name: /Complete/i });
-      await user.click(completeButton);
-      
-      await waitFor(() => {
-        expect(mockToastContext.showSuccess).toHaveBeenCalledWith(
-          expect.stringContaining('ORD-001')
-        );
-      });
-    });
-
-    it('should handle update errors', async () => {
-      const user = userEvent.setup();
-      renderOrders();
-      
-      await waitFor(() => {
-        expect(screen.getByTestId('order-card-ORD-001')).toBeInTheDocument();
-      });
-      
-      fetchSpy.mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({ error: 'Update failed' })
-      });
-      
-      const orderCard = screen.getByTestId('order-card-ORD-001');
-      const completeButton = within(orderCard).getByRole('button', { name: /Complete/i });
-      await user.click(completeButton);
-      
-      await waitFor(() => {
-        expect(mockToastContext.showError).toHaveBeenCalledWith('Failed to update order');
-      });
-    });
-
-    it('should open order details modal', async () => {
-      const user = userEvent.setup();
-      renderOrders();
-      
-      await waitFor(() => {
-        expect(screen.getByTestId('order-card-ORD-001')).toBeInTheDocument();
-      });
-      
-      const orderCard = screen.getByTestId('order-card-ORD-001');
-      const detailsButton = within(orderCard).getByRole('button', { name: /View Details/i });
-      await user.click(detailsButton);
+      await user.click(screen.getByTestId('order-row-ORD-001'));
       
       await waitFor(() => {
         expect(screen.getByTestId('order-details-modal')).toBeInTheDocument();
@@ -492,21 +395,21 @@ describe('Orders Page', () => {
       renderOrders();
       
       await waitFor(() => {
-        expect(screen.getByTestId('order-card-ORD-001')).toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-001')).toBeInTheDocument();
       });
       
-      const orderCard = screen.getByTestId('order-card-ORD-001');
-      const selectButton = within(orderCard).getByRole('button', { name: /Select/i });
-      await user.click(selectButton);
+      const orderRow = screen.getByTestId('order-row-ORD-001');
+      const checkbox = within(orderRow).getByRole('checkbox');
+      await user.click(checkbox);
       
       await waitFor(() => {
-        expect(orderCard).toHaveClass('selected');
+        expect(orderRow).toHaveClass('selected');
       });
       
-      await user.click(selectButton);
+      await user.click(checkbox);
       
       await waitFor(() => {
-        expect(orderCard).not.toHaveClass('selected');
+        expect(orderRow).not.toHaveClass('selected');
       });
     });
 
@@ -515,13 +418,12 @@ describe('Orders Page', () => {
       renderOrders();
       
       await waitFor(() => {
-        expect(screen.getByTestId('order-card-ORD-001')).toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-001')).toBeInTheDocument();
       });
       
       // Select an order
-      const orderCard = screen.getByTestId('order-card-ORD-001');
-      const selectButton = within(orderCard).getByRole('button', { name: /Select/i });
-      await user.click(selectButton);
+      const orderRow = screen.getByTestId('order-row-ORD-001');
+      await user.click(within(orderRow).getByRole('checkbox'));
       
       await waitFor(() => {
         expect(screen.getByText(/orders selected/i)).toBeInTheDocument();
@@ -547,12 +449,11 @@ describe('Orders Page', () => {
       renderOrders();
       
       await waitFor(() => {
-        expect(screen.getByTestId('order-card-ORD-001')).toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-001')).toBeInTheDocument();
       });
       
-      const orderCard = screen.getByTestId('order-card-ORD-001');
-      const selectButton = within(orderCard).getByRole('button', { name: /Select/i });
-      await user.click(selectButton);
+      const orderRow = screen.getByTestId('order-row-ORD-001');
+      await user.click(within(orderRow).getByRole('checkbox'));
       
       await waitFor(() => {
         expect(screen.getByText(/orders selected/i)).toBeInTheDocument();
@@ -565,14 +466,14 @@ describe('Orders Page', () => {
       renderOrders();
       
       await waitFor(() => {
-        expect(screen.getByTestId('order-card-ORD-001')).toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-001')).toBeInTheDocument();
       });
       
       // Select two orders
-      const order1 = screen.getByTestId('order-card-ORD-001');
-      const order2 = screen.getByTestId('order-card-ORD-003');
-      await user.click(within(order1).getByRole('button', { name: /Select/i }));
-      await user.click(within(order2).getByRole('button', { name: /Select/i }));
+      const order1 = screen.getByTestId('order-row-ORD-001');
+      const order2 = screen.getByTestId('order-row-ORD-003');
+      await user.click(within(order1).getByRole('checkbox'));
+      await user.click(within(order2).getByRole('checkbox'));
       
       await waitFor(() => {
         expect(screen.getByText(/orders selected/i)).toBeInTheDocument();
@@ -599,12 +500,12 @@ describe('Orders Page', () => {
       renderOrders();
       
       await waitFor(() => {
-        expect(screen.getByTestId('order-card-ORD-001')).toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-001')).toBeInTheDocument();
       });
       
       // Select an order
-      const order1 = screen.getByTestId('order-card-ORD-001');
-      await user.click(within(order1).getByRole('button', { name: /Select/i }));
+      const order1 = screen.getByTestId('order-row-ORD-001');
+      await user.click(within(order1).getByRole('checkbox'));
       
       await waitFor(() => {
         expect(screen.getByText(/orders selected/i)).toBeInTheDocument();
@@ -640,7 +541,7 @@ describe('Orders Page', () => {
       renderOrders();
       
       await waitFor(() => {
-        expect(screen.getByTestId('order-card-ORD-001')).toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-001')).toBeInTheDocument();
       });
       
       const exportButton = screen.getByRole('button', { name: /Export CSV/i });
@@ -657,7 +558,7 @@ describe('Orders Page', () => {
       renderOrders();
       
       await waitFor(() => {
-        expect(screen.getByTestId('order-card-ORD-001')).toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-001')).toBeInTheDocument();
       });
       
       const exportButton = screen.getByRole('button', { name: /Export CSV/i });
@@ -684,7 +585,7 @@ describe('Orders Page', () => {
       renderOrders('/orders?siteId=site-1');
 
       await waitFor(() => {
-        expect(screen.getByTestId('order-card-ORD-001')).toBeInTheDocument();
+        expect(screen.getByTestId('order-row-ORD-001')).toBeInTheDocument();
       });
 
       expect(screen.queryByRole('main')).toBeNull();

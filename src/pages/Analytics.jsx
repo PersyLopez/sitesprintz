@@ -506,7 +506,7 @@ function Analytics() {
             </p>
           </div>
 
-          <div className="header-actions">
+          <div className="header-actions" data-testid="analytics-header-actions">
             <select
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}

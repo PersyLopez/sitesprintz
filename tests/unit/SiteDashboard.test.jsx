@@ -7,6 +7,13 @@ import SiteOverview from '../../src/components/dashboard/SiteOverview';
 import { AuthContext } from '../../src/context/AuthContext';
 import { ToastContext } from '../../src/context/ToastContext';
 import { sitesService } from '../../src/services/sites';
+import { api } from '../../src/services/api';
+
+vi.mock('../../src/services/api', () => ({
+  api: {
+    get: vi.fn(),
+  },
+}));
 
 vi.mock('../../src/services/sites', () => ({
   sitesService: {
@@ -88,6 +95,7 @@ describe('SiteDashboard', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    api.get.mockResolvedValue({ orders: [], appointments: [] });
     sitesService.getUserSites.mockResolvedValue({ sites: [listedSite] });
     sitesService.getSite.mockResolvedValue({
       site: {
@@ -111,12 +119,11 @@ describe('SiteDashboard', () => {
     expect(screen.getByTestId('site-overview-orders')).toBeInTheDocument();
     expect(screen.getByTestId('site-overview-appointments')).toBeInTheDocument();
     expect(screen.getByTestId('site-overview-settings')).toBeInTheDocument();
-    expect(screen.getByTestId('site-dashboard-view')).toHaveAttribute('href', expect.stringContaining('/view/river-salon'));
-    expect(screen.getByTestId('site-dashboard-edit')).toHaveAttribute('href', '/view/river-salon?edit=true');
-    expect(screen.getByTestId('site-dashboard-builder')).toHaveAttribute('href', '/setup?site=site-1');
+    expect(screen.getByTestId('site-overview-today')).toHaveTextContent('No upcoming appointments');
+    expect(screen.getByTestId('site-overview-today')).toHaveTextContent('No orders yet');
+    expect(screen.getByTestId('site-overview-products')).toBeInTheDocument();
+    expect(screen.getByTestId('site-overview-analytics')).toBeInTheDocument();
     expect(screen.getByTestId('site-overview-edit')).toHaveAttribute('href', '/view/river-salon?edit=true');
-    expect(screen.getByTestId('site-dashboard-share')).toBeInTheDocument();
-    expect(screen.getByTestId('site-dashboard-share')).toBeEnabled();
   });
 
   it('shows not found when the site is not in the account', async () => {
@@ -125,22 +132,6 @@ describe('SiteDashboard', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('site-dashboard-not-found')).toBeInTheDocument();
-    });
-  });
-
-  it('opens share modal with WhatsApp channel', async () => {
-    const user = userEvent.setup();
-    renderDashboard();
-
-    await waitFor(() => {
-      expect(screen.getByTestId('site-dashboard-share')).toBeInTheDocument();
-    });
-
-    await user.click(screen.getByTestId('site-dashboard-share'));
-
-    await waitFor(() => {
-      expect(screen.getByTestId('share-modal')).toBeInTheDocument();
-      expect(screen.getByTestId('share-whatsapp')).toBeInTheDocument();
     });
   });
 

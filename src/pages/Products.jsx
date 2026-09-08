@@ -415,10 +415,10 @@ function Products() {
         </div>
 
         {loading ? (
-          <div className="products-grid products-loading" aria-busy="true" aria-label="Loading products...">
+          <div className="products-table-container products-loading" aria-busy="true" aria-label="Loading products...">
             <span className="sr-only">Loading products…</span>
             {Array.from({ length: 3 }).map((_, i) => (
-              <SkeletonLoader key={i} variant="card" width="100%" height="230px" />
+              <SkeletonLoader key={i} variant="table" width="100%" height="40px" />
             ))}
           </div>
         ) : loadError ? (
@@ -437,61 +437,93 @@ function Products() {
             </button>
           </div>
         ) : filteredProducts.length > 0 ? (
-          <div className="products-grid" data-testid="products-grid">
+          <div className="products-table-container">
+            <table className="products-table" data-testid="products-table">
+              <thead>
+                <tr>
+                  <th scope="col">Product</th>
+                  <th scope="col">Category</th>
+                  <th scope="col" className="products-table-price">Price</th>
+                  <th scope="col">Stock</th>
+                  <th scope="col">Status</th>
+                  <th scope="col"><span className="sr-only">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody>
             {filteredProducts.map((product) => {
               const isAvailable = product.available !== false;
               const toggleLabel = isAvailable ? 'Hide from shop' : 'Show in shop';
+              const stockCount = remainingStock(product);
 
               return (
-                <div key={product.id} className="product-card" data-testid={`product-card-${product.id}`}>
-                  {product.image ? (
-                    <OptimizedImage
-                      src={product.image}
-                      alt={product.name}
-                      width={400}
-                      height={250}
-                      aspectRatio="8/5"
-                    />
-                  ) : null}
-                  <div className="product-card-body">
-                    <h3>{product.name}</h3>
-                    <p className="product-price">${Number(product.price || 0).toFixed(2)}</p>
-                    {product.category ? <span className="product-category">{product.category}</span> : null}
-                    <div className={`availability-badge ${isAvailable ? 'available' : 'unavailable'}`}>
-                      {isAvailable ? 'Available' : 'Unavailable'}
+                <tr
+                  key={product.id}
+                  className="product-row"
+                  data-testid={`product-card-${product.id}`}
+                  tabIndex="0"
+                  onClick={() => handleEditProduct(product)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      handleEditProduct(product);
+                    }
+                  }}
+                >
+                  <th scope="row">
+                    <div className="products-table-product">
+                      <span className="products-table-thumb">
+                        {product.image ? (
+                          <OptimizedImage src={product.image} alt={product.name} width={40} height={40} />
+                        ) : (
+                          <ProductIcon path={PRODUCT_ICONS.empty} />
+                        )}
+                      </span>
+                      <span>
+                        <strong>{product.name}</strong>
+                        {!product.image ? (
+                          <button
+                            type="button"
+                            className="product-add-photo"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              handleEditProduct(product);
+                            }}
+                            data-testid="product-add-photo"
+                          >
+                            Add photo
+                          </button>
+                        ) : null}
+                      </span>
                     </div>
-                    {(() => {
-                      const stockCount = remainingStock(product);
-                      if (stockCount === 0) {
-                        return (
-                          <div className="stock-badge sold-out" data-testid={`stock-badge-${product.id}`}>
-                            Sold out
-                          </div>
-                        );
-                      }
-                      if (stockCount !== null) {
-                        return (
-                          <div className="stock-badge" data-testid={`stock-badge-${product.id}`}>
-                            {stockCount} in stock
-                          </div>
-                        );
-                      }
-                      return null;
-                    })()}
-                    {!product.image ? (
-                      <button
-                        type="button"
-                        className="product-add-photo"
-                        onClick={() => handleEditProduct(product)}
-                        data-testid="product-add-photo"
-                      >
-                        Add photo
-                      </button>
-                    ) : null}
+                  </th>
+                  <td>{product.category || '—'}</td>
+                  <td className="products-table-price tabular-nums">${Number(product.price || 0).toFixed(2)}</td>
+                  <td>
+                    {stockCount === 0 ? (
+                      <span className="stock-badge sold-out" data-testid={`stock-badge-${product.id}`}>
+                        Sold out
+                      </span>
+                    ) : stockCount !== null ? (
+                      <span className="stock-badge" data-testid={`stock-badge-${product.id}`}>
+                        {stockCount} in stock
+                      </span>
+                    ) : (
+                      <span className="products-table-muted">—</span>
+                    )}
+                  </td>
+                  <td>
+                    <span className={`availability-badge ${isAvailable ? 'available' : 'unavailable'}`}>
+                      {isAvailable ? 'Available' : 'Unavailable'}
+                    </span>
+                  </td>
+                  <td>
                     <div className="product-actions">
                       <button
                         type="button"
-                        onClick={() => handleToggleAvailability(product.id)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleToggleAvailability(product.id);
+                        }}
                         className="product-action-btn"
                         aria-label={`${toggleLabel}: ${product.name}`}
                         data-testid={`toggle-availability-${product.id}`}
@@ -501,7 +533,10 @@ function Products() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleEditProduct(product)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleEditProduct(product);
+                        }}
                         className="product-action-btn product-action-btn--primary edit-button"
                         aria-label={`Edit ${product.name}`}
                         data-testid={`edit-product-${product.id}`}
@@ -511,7 +546,10 @@ function Products() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleDuplicateProduct(product)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleDuplicateProduct(product);
+                        }}
                         className="product-action-btn"
                         aria-label={`Duplicate ${product.name}`}
                         data-testid={`duplicate-product-${product.id}`}
@@ -521,7 +559,10 @@ function Products() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleDeleteProduct(product.id)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleDeleteProduct(product.id);
+                        }}
                         className="product-action-btn product-action-btn--danger delete-button"
                         aria-label={`Delete ${product.name}`}
                         data-testid={`delete-product-${product.id}`}
@@ -530,10 +571,12 @@ function Products() {
                         <span>Delete</span>
                       </button>
                     </div>
-                  </div>
-                </div>
+                  </td>
+                </tr>
               );
             })}
+              </tbody>
+            </table>
           </div>
         ) : showNoMatches ? (
           <div className="products-empty-state" data-testid="products-no-matches">

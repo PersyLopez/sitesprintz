@@ -8,7 +8,6 @@ import { getSiteWorkspacePaths } from '../utils/siteWorkspace';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import SkeletonLoader from '../components/common/SkeletonLoader';
-import OrderCard from '../components/orders/OrderCard';
 import OrderDetailsModal from '../components/orders/OrderDetailsModal';
 import { api } from '../services/api';
 import {
@@ -19,6 +18,7 @@ import {
   ownerMarkCompleteApiStatus,
   ownerCancelApiStatus,
   formatOwnerOrderStatusLabel,
+  ownerOrderStatusCssClass,
 } from '../utils/orderOwnerStatus';
 import './Orders.css';
 
@@ -284,7 +284,11 @@ function Orders() {
           </div>
 
           <div className="header-actions">
-            <button type="button" onClick={exportOrders} className="btn btn-secondary orders-export-btn">
+            <button
+              type="button"
+              onClick={exportOrders}
+              className={`btn ${embedded ? 'btn-primary' : 'btn-secondary'} orders-export-btn`}
+            >
               <OrdersIcon path={ORDERS_ICONS.download} />
               Export CSV
             </button>
@@ -416,17 +420,78 @@ function Orders() {
             )}
           </div>
         ) : (
-          <div className="orders-grid">
-            {filteredOrders.map((order) => (
-              <OrderCard
-                key={order.orderId}
-                order={order}
-                selected={selectedOrders.has(order.orderId)}
-                onToggleSelect={() => toggleOrderSelection(order.orderId)}
-                onUpdateStatus={updateOrderStatus}
-                onViewDetails={() => setSelectedOrder(order)}
-              />
-            ))}
+          <div className="orders-table-container">
+            <table className="orders-table" data-testid="orders-table">
+              <thead>
+                <tr>
+                  <th scope="col">
+                    <span className="sr-only">Select</span>
+                  </th>
+                  <th scope="col">Order</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">Customer</th>
+                  <th scope="col">Items</th>
+                  <th scope="col">Fulfillment</th>
+                  <th scope="col" className="orders-table-total">Total</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredOrders.map((order) => {
+                  const itemCount = order.items?.reduce(
+                    (count, item) => count + (Number(item.quantity) || 1),
+                    0
+                  ) || 0;
+                  const openDetails = () => setSelectedOrder(order);
+                  const handleRowKeyDown = (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      openDetails();
+                    }
+                  };
+
+                  return (
+                    <tr
+                      key={order.orderId}
+                      data-testid={`order-row-${order.orderId}`}
+                      className={selectedOrders.has(order.orderId) ? 'selected' : ''}
+                      onClick={openDetails}
+                      onKeyDown={handleRowKeyDown}
+                      tabIndex="0"
+                      aria-label={`View order ${order.orderId}`}
+                    >
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={selectedOrders.has(order.orderId)}
+                          onChange={() => toggleOrderSelection(order.orderId)}
+                          onClick={(event) => event.stopPropagation()}
+                          aria-label={`Select order ${order.orderId}`}
+                        />
+                      </td>
+                      <th scope="row">#{order.orderId}</th>
+                      <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                      <td>
+                        <div className="orders-table-customer">
+                          <strong>{order.customer?.name || 'Guest'}</strong>
+                          {order.customer?.email && <span>{order.customer.email}</span>}
+                        </div>
+                      </td>
+                      <td>{itemCount}</td>
+                      <td>{order.fulfillmentType === 'delivery' ? 'Delivery' : 'Pickup'}</td>
+                      <td className="orders-table-total tabular-nums">
+                        ${(order.total / 100).toFixed(2)}
+                      </td>
+                      <td>
+                        <span className={`orders-status-badge ${ownerOrderStatusCssClass(order.status)}`}>
+                          {formatOwnerOrderStatusLabel(order.status)}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </Container>

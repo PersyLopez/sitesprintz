@@ -755,6 +755,25 @@ label.required::after {
   padding: var(--spacing-3xl) var(--spacing-xl);
 }
 
+.site-workspace-panel .empty-state {
+  padding: var(--spacing-md);
+}
+
+.site-workspace-panel .empty-state-icon {
+  max-width: 1.5rem;
+  max-height: 1.5rem;
+  margin: 0 auto var(--spacing-sm);
+  font-size: 1.5rem;
+}
+
+.site-workspace-panel .empty-state-title {
+  font-size: var(--font-size-base);
+}
+
+.site-workspace-panel .empty-state-description {
+  margin-bottom: var(--spacing-md);
+}
+
 .empty-state-icon {
   font-size: 4rem;
   margin-bottom: var(--spacing-lg);

@@ -154,6 +154,15 @@
   border-color: var(--primary-color);
 }
 
+.embedded-page .dashboard-header .pro-badge {
+  display: none;
+}
+
+.embedded-page .dashboard-header .btn-secondary {
+  min-height: 36px;
+  padding: 0.5rem 0.75rem;
+}
+
 .mobile-menu-toggle {
   display: none;
   background: var(--bg-hover);
@@ -202,6 +211,28 @@
   padding: 0.55rem 0.85rem;
 }
 
+.stats-row-button {
+  appearance: none;
+  display: block;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.stats-row-button:hover,
+.stats-row-button:focus-visible {
+  background: var(--bg-hover);
+}
+
+.stats-row-button[aria-pressed="true"] {
+  box-shadow: inset 0 -2px 0 var(--primary-color);
+}
+
 .stats-row-item + .stats-row-item {
   border-left: 1px solid var(--border-dark);
 }
@@ -220,6 +251,7 @@
   font-weight: 600;
   color: var(--text-light);
   line-height: 1.35;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Quick Actions */
@@ -296,6 +328,22 @@
   padding: var(--spacing-xl);
   box-shadow: none;
   min-height: 320px;
+}
+
+.schedule-surface {
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius-lg, 12px);
+}
+
+.schedule-surface > .team-calendar,
+.schedule-surface > .appointment-list {
+  padding: var(--spacing-lg);
+}
+
+.schedule-surface > .appointment-list {
+  border-top: 1px solid var(--border-dark);
 }
 
 /* Mobile Styles */

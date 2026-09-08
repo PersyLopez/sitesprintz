@@ -202,9 +202,110 @@
   border-color: var(--danger-color);
 }
 
-.orders-grid {
-  display: grid;
-  gap: var(--spacing-lg);
+.orders-table-container {
+  overflow-x: auto;
+  border: 1px solid var(--border-dark);
+  border-radius: 8px;
+  background: var(--bg-elevated);
+}
+
+.orders-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+.orders-table th,
+.orders-table td {
+  height: 40px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-dark);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.orders-table thead th {
+  height: 36px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.orders-table tbody tr {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.orders-table tbody tr:last-child th,
+.orders-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.orders-table tbody tr:hover,
+.orders-table tbody tr:focus-visible,
+.orders-table tbody tr.selected {
+  background: var(--bg-hover);
+}
+
+.orders-table tbody tr:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: -2px;
+}
+
+.orders-table input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary-color);
+}
+
+.orders-table-customer {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.orders-table-customer span {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.orders-table-total {
+  text-align: right !important;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.orders-status-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bg-hover);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.orders-status-badge.status-new {
+  background: color-mix(in srgb, var(--primary-color) 18%, transparent);
+  color: var(--primary-light);
+}
+
+.orders-status-badge.status-completed {
+  background: color-mix(in srgb, var(--success-color) 18%, transparent);
+  color: var(--success-color);
+}
+
+.orders-status-badge.status-cancelled {
+  background: color-mix(in srgb, var(--danger-color) 18%, transparent);
+  color: var(--danger-color);
 }
 
 .orders-loading {
@@ -264,28 +365,6 @@
 
 .orders-error-state .empty-state-title {
   color: var(--danger-color);
-}
-
-/* Embedded site workspace: quiet pane header */
-.embedded-page .page-header,
-.page-header.pane-quiet-header {
-  margin-bottom: var(--spacing-md);
-  padding: 0;
-}
-
-.embedded-page .page-header .header-title h1,
-.embedded-page .page-header .header-title h2,
-.page-header.pane-quiet-header .header-title h1,
-.page-header.pane-quiet-header .header-title h2 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-light);
-}
-
-.embedded-page .page-header .header-title p,
-.page-header.pane-quiet-header .header-title p {
-  font-size: 0.9rem;
-  color: var(--text-muted);
 }
 
 @media (min-width: 640px) {

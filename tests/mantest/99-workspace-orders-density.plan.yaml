@@ -1,5 +1,5 @@
 url: http://localhost:5173/login
-goal: Workspace Orders cards stay compact without changing the Orders flow
+goal: Workspace Orders renders a compact, usable data table
 steps:
   - action: Login form ready
     wait_for: { text: Welcome Back, timeout: 20000 }
@@ -36,11 +36,30 @@ steps:
         throw new Error('Orders pane is not visible');
       }
 
-  - action: Existing order cards stay compact
+  - action: Export control remains available
     code: |
-      const cards = page.locator('.order-card');
-      const count = await cards.count();
+      const exportButton = page.getByRole('button', { name: /Export CSV/i });
+      await exportButton.waitFor({ timeout: 5000 });
+      if (!(await exportButton.isVisible())) throw new Error('Export CSV is not visible');
+      await exportButton.click();
+
+  - action: Orders table stays compact
+    code: |
+      const table = page.getByTestId('orders-table');
+      if ((await table.count()) === 0) {
+        if ((await page.getByTestId('orders-empty-state').count()) > 0) return;
+        throw new Error('Orders table or empty state is not visible');
+      }
+      const rows = table.locator('tbody tr');
+      const count = await rows.count();
       if (count === 0) return;
-      const box = await cards.first().boundingBox();
-      if (!box) throw new Error('Order card has no bounding box');
-      if (box.height > 280) throw new Error('Order card is too tall: ' + box.height);
+      const box = await rows.first().boundingBox();
+      if (!box) throw new Error('Order row has no bounding box');
+      if (box.height > 72) throw new Error('Order row is too tall: ' + box.height);
+      await rows.first().click();
+      await page.getByTestId('order-details-modal').waitFor({ timeout: 5000 });
+      const modalButtons = page.getByTestId('order-details-modal').getByRole('button');
+      const buttonText = await modalButtons.allTextContents();
+      if (buttonText.some((text) => /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(text))) {
+        throw new Error('Order modal buttons contain emoji');
+      }

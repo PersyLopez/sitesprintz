@@ -321,6 +321,11 @@
 /* Embedded site workspace: quiet pane header */
 .embedded-page .analytics-header,
 .analytics-header.pane-quiet-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-sm);
   margin-bottom: var(--spacing-md);
   padding: 0;
   background: transparent;
@@ -328,6 +333,16 @@
   border: none;
   border-radius: 0;
   box-shadow: none;
+}
+
+.analytics-header.pane-quiet-header .header-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.analytics-header.pane-quiet-header .header-actions {
+  flex: 0 0 auto;
+  gap: var(--spacing-sm);
 }
 
 .embedded-page .analytics-header .header-content h1,

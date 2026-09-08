@@ -29,7 +29,8 @@ steps:
     code: |
       const overview = page.getByTestId('site-overview');
       if ((await overview.count()) === 0) throw new Error('Overview grid missing');
+      if ((await page.getByTestId('site-overview-today').count()) === 0) throw new Error('Today strip missing');
       const card = page.locator('.site-overview-card').first();
       const box = await card.boundingBox();
       if (!box) throw new Error('Overview card has no bounding box');
-      if (box.height > 140) throw new Error('Overview card is too tall: ' + box.height);
+      if (box.height > 64) throw new Error('Overview row is too tall: ' + box.height);

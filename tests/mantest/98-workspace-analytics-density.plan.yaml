@@ -33,6 +33,12 @@ steps:
     wait_for: { selector: '[data-testid="workspace-analytics-panel"]', timeout: 15000 }
     code: |
       const panel = page.getByTestId('workspace-analytics-panel');
+      const actions = page.getByTestId('analytics-header-actions');
+      if (!(await actions.isVisible())) throw new Error('Analytics header actions are not visible');
+      if (!(await actions.getByRole('combobox').isVisible())) throw new Error('Analytics time range is not visible');
+      if (!(await actions.getByRole('button', { name: 'Refresh analytics' }).isVisible())) {
+        throw new Error('Analytics refresh action is not visible');
+      }
       const cards = panel.locator('.stats-card');
       if ((await cards.count()) > 0) {
         const height = await cards.first().evaluate((element) => element.getBoundingClientRect().height);

@@ -207,10 +207,24 @@ describe('Products Page', () => {
       renderProducts();
 
       await waitFor(() => {
+        expect(screen.getByTestId('products-table')).toBeInTheDocument();
         expect(screen.getByText('Premium Widget')).toBeInTheDocument();
         expect(screen.getByText('Basic Gadget')).toBeInTheDocument();
         expect(screen.getByText('Deluxe Tool')).toBeInTheDocument();
       });
+    });
+
+    it('should open the edit modal when a product row is clicked', async () => {
+      const user = userEvent.setup();
+      renderProducts();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('product-card-1')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByTestId('product-card-1'));
+
+      expect(screen.getByTestId('product-modal')).toHaveTextContent('Edit Product');
     });
 
     it('should format prices correctly with two decimals', async () => {

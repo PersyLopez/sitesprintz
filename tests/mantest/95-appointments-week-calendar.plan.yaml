@@ -35,6 +35,7 @@ steps:
       const tab = page.getByTestId('appointments-tab');
       if ((await tab.count()) === 0) throw new Error('Appointments tab missing');
       if ((await page.getByTestId('schedule-board').count()) === 0) throw new Error('Schedule board missing');
+      if ((await page.getByTestId('schedule-surface').count()) === 0) throw new Error('Schedule surface missing');
       const week = page.getByTestId('schedule-view-week');
       if ((await week.count()) === 0) throw new Error('Week view toggle missing');
       if ((await week.getAttribute('aria-pressed')) !== 'true') throw new Error('Week view is not selected');
@@ -42,6 +43,24 @@ steps:
       if ((await page.getByTestId('stats-row').count()) === 0) {
         throw new Error('Compact stats row missing');
       }
+      if (await page.getByText('GROWTH', { exact: true }).isVisible().catch(() => false)) {
+        throw new Error('GROWTH badge should not be visible in workspace appointments');
+      }
+      if ((await page.getByTestId('dashboard-refresh-btn').count()) === 0) {
+        throw new Error('Dashboard refresh button missing');
+      }
       for (const id of ['schedule-prev', 'schedule-today', 'schedule-next']) {
         if ((await page.getByTestId(id).count()) === 0) throw new Error('Missing ' + id);
+      }
+
+  - action: Filter appointments from pending stat
+    code: |
+      const pending = page.getByRole('button', { name: /Pending/ });
+      if ((await pending.count()) === 0) throw new Error('Pending stat button missing');
+      await pending.click();
+      if ((await pending.getAttribute('aria-pressed')) !== 'true') {
+        throw new Error('Pending stat is not selected');
+      }
+      if (!(await page.getByTestId('appointment-list').isVisible())) {
+        throw new Error('Appointment list not visible after filtering');
       }

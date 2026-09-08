@@ -187,14 +187,14 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus }) {
                   onClick={() => handleStatusUpdate(ownerMarkCompleteApiStatus())}
                   className="btn btn-success"
                 >
-                  ✅ Mark as Completed
+                  Mark as Completed
                 </button>
                 <button
                   type="button"
                   onClick={() => handleStatusUpdate(ownerCancelApiStatus())}
                   className="btn btn-danger"
                 >
-                  ❌ Cancel Order
+                  Cancel Order
                 </button>
               </div>
             </div>
@@ -206,14 +206,14 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus }) {
             href={`mailto:${order.customer?.email}`}
             className="btn btn-primary"
           >
-            📧 Email Customer
+            Email Customer
           </a>
           {order.customer?.phone && (
             <a
               href={`tel:${order.customer?.phone}`}
               className="btn btn-secondary"
             >
-              📞 Call Customer
+              Call Customer
             </a>
           )}
           <button type="button" onClick={onClose} className="btn btn-secondary">

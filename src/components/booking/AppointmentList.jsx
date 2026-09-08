@@ -7,7 +7,13 @@ import PaymentStatusBadge from './PaymentStatusBadge';
 import RefundModal from './RefundModal';
 import './AppointmentList.css';
 
-const AppointmentList = ({ userId, siteId = null, onRefresh }) => {
+const AppointmentList = ({
+  userId,
+  siteId = null,
+  onRefresh,
+  statusFilter: controlledStatusFilter,
+  onStatusChange,
+}) => {
   const { showSuccess, showError } = useToast();
 
   const [appointments, setAppointments] = useState([]);
@@ -16,9 +22,11 @@ const AppointmentList = ({ userId, siteId = null, onRefresh }) => {
 
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [localStatusFilter, setLocalStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('date');
   const [dateRange, setDateRange] = useState('all');
+  const isStatusControlled = controlledStatusFilter !== undefined;
+  const statusFilter = isStatusControlled ? controlledStatusFilter : localStatusFilter;
 
   // Modal states
   const [showDetails, setShowDetails] = useState(false);
@@ -83,6 +91,13 @@ const AppointmentList = ({ userId, siteId = null, onRefresh }) => {
   const handleRefresh = () => {
     fetchAppointments();
     if (onRefresh) onRefresh();
+  };
+
+  const handleStatusChange = (nextStatus) => {
+    if (!isStatusControlled) {
+      setLocalStatusFilter(nextStatus);
+    }
+    onStatusChange?.(nextStatus);
   };
 
   const handleViewDetails = (appointment) => {
@@ -196,7 +211,6 @@ const AppointmentList = ({ userId, siteId = null, onRefresh }) => {
   return (
     <div className="appointment-list" data-testid="appointment-list">
       <div className="appointment-list-header">
-        <h2>Appointments</h2>
         <button
           className="refresh-btn"
           onClick={handleRefresh}
@@ -220,7 +234,7 @@ const AppointmentList = ({ userId, siteId = null, onRefresh }) => {
 
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          onChange={(e) => handleStatusChange(e.target.value)}
           className="filter-select"
           aria-label="Status"
           data-testid="status-filter"

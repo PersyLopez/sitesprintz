@@ -31,6 +31,8 @@ const BookingDashboard = () => {
   });
   const [statsError, setStatsError] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [appointmentStatusFilter, setAppointmentStatusFilter] = useState('all');
+  const [shouldScrollToAppointments, setShouldScrollToAppointments] = useState(false);
 
   // Growth plan required for native booking
   const hasBookingAccess = (typeof isAbove === 'function' && isAbove('growth')) || Boolean(isGrowth || isPro);
@@ -96,6 +98,22 @@ const BookingDashboard = () => {
     setActiveTab('services');
   };
 
+  const handleAppointmentStatusChange = (status) => {
+    setAppointmentStatusFilter(status);
+    setActiveTab('appointments');
+    setShouldScrollToAppointments(true);
+  };
+
+  useEffect(() => {
+    if (!shouldScrollToAppointments || activeTab !== 'appointments') return;
+
+    document.querySelector('[data-testid="appointment-list"]')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+    setShouldScrollToAppointments(false);
+  }, [activeTab, shouldScrollToAppointments]);
+
   const formatCurrency = (cents) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -156,10 +174,10 @@ const BookingDashboard = () => {
                 ) : (
                   <h1>Booking Dashboard</h1>
                 )}
-                <span className="pro-badge">GROWTH</span>
+                {!embedded && <span className="pro-badge">GROWTH</span>}
               </div>
               <button
-                className="refresh-btn"
+                className={embedded ? 'btn btn-secondary' : 'refresh-btn'}
                 onClick={handleRefresh}
                 aria-label="Refresh"
                 data-testid="dashboard-refresh-btn"
@@ -190,18 +208,36 @@ const BookingDashboard = () => {
 
             {!loading && !statsError && (
               <div className="stats-row" data-testid="stats-row">
-                <div className="stats-row-item">
+                <button
+                  type="button"
+                  className="stats-row-item stats-row-button"
+                  onClick={() => handleAppointmentStatusChange('all')}
+                  aria-pressed={appointmentStatusFilter === 'all'}
+                  data-testid="stats-total-button"
+                >
                   <div className="stat-label">Total Appointments</div>
                   <div className="stat-value">{stats.total_appointments}</div>
-                </div>
-                <div className="stats-row-item">
+                </button>
+                <button
+                  type="button"
+                  className="stats-row-item stats-row-button"
+                  onClick={() => handleAppointmentStatusChange('pending')}
+                  aria-pressed={appointmentStatusFilter === 'pending'}
+                  data-testid="stats-pending-button"
+                >
                   <div className="stat-label">Pending</div>
                   <div className="stat-value">{stats.pending_appointments}</div>
-                </div>
-                <div className="stats-row-item">
+                </button>
+                <button
+                  type="button"
+                  className="stats-row-item stats-row-button"
+                  onClick={() => handleAppointmentStatusChange('confirmed')}
+                  aria-pressed={appointmentStatusFilter === 'confirmed'}
+                  data-testid="stats-confirmed-button"
+                >
                   <div className="stat-label">Confirmed</div>
                   <div className="stat-value">{stats.confirmed_appointments}</div>
-                </div>
+                </button>
                 <div className="stats-row-item">
                   <div className="stat-label">Total Revenue</div>
                   <div className="stat-value">{formatCurrency(stats.total_revenue)}</div>
@@ -275,10 +311,16 @@ const BookingDashboard = () => {
             {/* Tab Content */}
             <div className="tab-content">
               {activeTab === 'appointments' && (
-                <>
+                <div className="schedule-surface" data-testid="schedule-surface">
                   <TeamCalendar userId={user?.id} siteId={siteId} initialView="week" />
-                  <AppointmentList userId={user?.id} siteId={siteId} onRefresh={fetchStats} />
-                </>
+                  <AppointmentList
+                    userId={user?.id}
+                    siteId={siteId}
+                    onRefresh={fetchStats}
+                    statusFilter={appointmentStatusFilter}
+                    onStatusChange={setAppointmentStatusFilter}
+                  />
+                </div>
               )}
               {activeTab === 'services' && (
                 <ServiceManager userId={user?.id} siteId={siteId} onRefresh={fetchStats} />
