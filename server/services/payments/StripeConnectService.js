@@ -7,7 +7,7 @@ import crypto from 'crypto';
 import Stripe from 'stripe';
 import { getRedis } from '../../utils/redis.js';
 import { prisma } from '../../../database/db.js';
-import { recordProcessorConnection } from './processorConnectHelpers.js';
+import { recordProcessorConnection, resolveOwnedSiteId } from './processorConnectHelpers.js';
 
 const STATE_TTL_SECONDS = 600;
 
@@ -105,6 +105,52 @@ export async function handleStripeOAuthCallback(code, state) {
   await redis.del(`stripe_oauth_state:${state}`);
 
   return { siteId, accountId, chargesEnabled, payoutsEnabled };
+}
+
+/**
+ * Account Links have no callback, so onboarding completion is only learned on a
+ * later read. Reconcile the owner record and site credential from live Stripe.
+ * A retrieve failure leaves the stored state alone — a transient Stripe error
+ * must not disconnect a working merchant.
+ */
+export async function syncStripeConnectionStatus(userId) {
+  const stripe = getStripe();
+  if (!stripe) {
+    return { connected: false, reason: 'stripe_not_configured' };
+  }
+
+  const user = await prisma.users.findUnique({
+    where: { id: userId },
+    select: { stripe_account_id: true }
+  });
+
+  if (!user?.stripe_account_id) {
+    return { connected: false, reason: 'no_account' };
+  }
+
+  let account;
+  try {
+    account = await stripe.accounts.retrieve(user.stripe_account_id);
+  } catch {
+    return { connected: false, reason: 'verify_failed', accountId: user.stripe_account_id };
+  }
+
+  const chargesEnabled = account.charges_enabled === true;
+  const payoutsEnabled = account.payouts_enabled === true;
+  const connected = chargesEnabled && payoutsEnabled;
+
+  await recordProcessorConnection({
+    siteId: await resolveOwnedSiteId(userId, null),
+    userId,
+    processor: 'stripe',
+    accountId: account.id,
+    metadata: { connected_via: 'status_sync' },
+    // Reconciliation, not an owner choice: never reassign the site's default processor.
+    setDefault: false,
+    stripeChargesEnabled: connected
+  });
+
+  return { connected, accountId: account.id, chargesEnabled, payoutsEnabled };
 }
 
 export async function createStandardAccountLink({ user, origin, siteId, applyTo = 'site' }) {

@@ -14,8 +14,14 @@ import {
   sendServiceUnavailable,
   asyncHandler
 } from '../utils/apiResponse.js';
-import { createStandardAccountLink, isStripeOAuthConfigured, initiateStripeOAuth } from '../services/payments/StripeConnectService.js';
-import { getApiOrigin, getFrontendOrigin, resolveOwnedSiteId } from '../services/payments/processorConnectHelpers.js';
+import { createStandardAccountLink, isStripeOAuthConfigured, initiateStripeOAuth, syncStripeConnectionStatus } from '../services/payments/StripeConnectService.js';
+import {
+  getApiOrigin,
+  getFrontendOrigin,
+  normalizeApplyTo,
+  resolveOwnedSiteId,
+  userCanConnectPayments
+} from '../services/payments/processorConnectHelpers.js';
 import { livePublishedPath } from '../../src/utils/visitorExperience.js';
 
 const router = express.Router();
@@ -28,6 +34,10 @@ async function startStandardOnboarding(req, res) {
     return sendServiceUnavailable(res, 'Stripe not configured', 'STRIPE_NOT_CONFIGURED');
   }
 
+  if (!(await userCanConnectPayments(req.user.id))) {
+    return sendForbidden(res, 'Connecting a payment provider requires a Growth plan', 'GROWTH_PLAN_REQUIRED');
+  }
+
   const user = await prisma.users.findUnique({
     where: { id: req.user.id }
   });
@@ -37,10 +47,11 @@ async function startStandardOnboarding(req, res) {
 
   const origin = getFrontendOrigin(req);
   const siteId = await resolveOwnedSiteId(user.id, req.body?.siteId);
+  const applyTo = normalizeApplyTo(req.body?.applyTo);
 
   if (isStripeOAuthConfigured() && !user.stripe_account_id) {
     const redirectUri = `${getApiOrigin(req)}/api/connect/stripe/callback`;
-    const { authorizeUrl } = await initiateStripeOAuth(user.id, siteId, redirectUri);
+    const { authorizeUrl } = await initiateStripeOAuth(user.id, siteId, redirectUri, applyTo);
     return sendSuccess(res, {
       url: authorizeUrl,
       onboardingUrl: authorizeUrl,
@@ -48,7 +59,7 @@ async function startStandardOnboarding(req, res) {
     });
   }
 
-  const { url, accountId } = await createStandardAccountLink({ user, origin, siteId });
+  const { url, accountId } = await createStandardAccountLink({ user, origin, siteId, applyTo });
   return sendSuccess(res, {
     accountId,
     url,
@@ -109,33 +120,13 @@ router.get('/status', requireAuth, asyncHandler(async (req, res) => {
   }
 }));
 
-// GET /api/stripe/connect/status
+// GET /api/stripe/connect/status — also persists the result (Account Link has no callback)
 router.get('/connect/status', requireAuth, asyncHandler(async (req, res) => {
   if (!stripe) {
     return sendSuccess(res, { connected: false, reason: 'stripe_not_configured' });
   }
 
-  const user = await prisma.users.findUnique({
-    where: { id: req.user.id },
-    select: { stripe_account_id: true, stripe_connected: true }
-  });
-
-  if (!user?.stripe_account_id) {
-    return sendSuccess(res, { connected: false, reason: 'no_account' });
-  }
-
-  try {
-    const account = await stripe.accounts.retrieve(user.stripe_account_id);
-    const connected = account.charges_enabled === true && account.payouts_enabled === true;
-    return sendSuccess(res, {
-      connected,
-      accountId: account.id,
-      chargesEnabled: account.charges_enabled,
-      payoutsEnabled: account.payouts_enabled
-    });
-  } catch {
-    return sendSuccess(res, { connected: false, reason: 'verify_failed', accountId: user.stripe_account_id });
-  }
+  return sendSuccess(res, await syncStripeConnectionStatus(req.user.id));
 }));
 
 // POST /api/stripe/connect/refresh

@@ -83,6 +83,21 @@ describe('PaymentSettings', () => {
       .toHaveTextContent(/^Not connected$/);
   });
 
+  it('stops claiming Stripe is connected once this site is disconnected', async () => {
+    mockSitesAndStatus([{ id: 'site-1', payOnSite: false }], {
+      accountId: 'acct_test',
+      chargesEnabled: true,
+      payoutsEnabled: true,
+      stripe: { connected: false, accountAvailable: false }
+    });
+    renderSettings();
+
+    const stripeCard = await screen.findByTestId('processor-stripe');
+    expect(within(stripeCard).getByTestId('connection-status')).toHaveTextContent(/^Not connected$/);
+    expect(within(stripeCard).queryByTestId('stripe-disconnect-button')).not.toBeInTheDocument();
+    expect(screen.getByTestId('stripe-connect-choice')).toBeInTheDocument();
+  });
+
   it('shows connected-but-checkout-pending badge when Square is linked and visitorCheckout is off', async () => {
     mockSitesAndStatus([{ id: 'site-1', payOnSite: false }], {
       square: { connected: true, accountId: 'sq_loc_1' },
@@ -169,7 +184,7 @@ describe('PaymentSettings', () => {
     expect(await screen.findByTestId('stripe-connect-choice')).toBeInTheDocument();
     expect(screen.getByTestId('stripe-connect-button')).toHaveTextContent(/new to stripe/i);
     expect(screen.getByTestId('stripe-existing-oauth-button')).toHaveTextContent(/already have stripe/i);
-    expect(api.post).not.toHaveBeenCalledWith('/api/connect/onboard', expect.anything());
+    expect(api.post).not.toHaveBeenCalledWith('/api/stripe/connect/onboard', expect.anything());
   });
 
   it('new Stripe choice starts Account Links onboarding', async () => {
@@ -191,7 +206,7 @@ describe('PaymentSettings', () => {
     await user.click(await screen.findByTestId('stripe-connect-button'));
 
     await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith('/api/connect/onboard', {
+      expect(api.post).toHaveBeenCalledWith('/api/stripe/connect/onboard', {
         siteId: 'site-1',
         applyTo: 'site'
       });
@@ -235,7 +250,7 @@ describe('PaymentSettings', () => {
         params: { siteId: 'site-1', applyTo: 'site' }
       });
     });
-    expect(api.post).not.toHaveBeenCalledWith('/api/connect/onboard', expect.anything());
+    expect(api.post).not.toHaveBeenCalledWith('/api/stripe/connect/onboard', expect.anything());
 
     Object.defineProperty(window, 'location', {
       configurable: true,
@@ -274,7 +289,29 @@ describe('PaymentSettings', () => {
   it('shows refresh banner when Account Link expired', async () => {
     renderSettings('/settings/payments?connect=refresh&processor=stripe');
     expect(await screen.findByTestId('processor-connect-error')).toHaveTextContent(/setup link expired/i);
-    expect(api.post).not.toHaveBeenCalledWith('/api/connect/refresh', expect.anything());
+    expect(api.post).not.toHaveBeenCalledWith('/api/stripe/connect/refresh', expect.anything());
+  });
+
+  it('removes Stripe from this site through the shared site-scoped disconnect route', async () => {
+    const user = userEvent.setup();
+    mockSitesAndStatus([{ id: 'site-1', payOnSite: false }], {
+      accountId: 'acct_test',
+      chargesEnabled: true,
+      payoutsEnabled: true,
+      stripe: { connected: true }
+    });
+    api.post.mockResolvedValue({ success: true });
+
+    renderSettings();
+    await user.click(await screen.findByTestId('stripe-disconnect-button'));
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/api/connect/disconnect/stripe', {
+        siteId: 'site-1',
+        applyTo: 'site'
+      });
+    });
+    expect(api.post).not.toHaveBeenCalledWith('/api/stripe/connect/disconnect', expect.anything());
   });
 
   it('shows OAuth success on the connect list and clears query params', async () => {
@@ -292,8 +329,16 @@ describe('PaymentSettings', () => {
     expect(await screen.findByTestId('processor-connect-error')).toHaveTextContent(/Business account/i);
   });
 
-  it('does not claim fully connected on success while Stripe is incomplete', async () => {
+  it('does not claim connected on the Stripe success return while Stripe is unverified', async () => {
     api.get.mockImplementation((url) => {
+      if (url === '/api/stripe/connect/status') {
+        return Promise.resolve({
+          connected: false,
+          accountId: 'acct_test',
+          chargesEnabled: false,
+          payoutsEnabled: false
+        });
+      }
       if (url === '/api/connect/status') {
         return Promise.resolve({
           accountId: 'acct_test',
@@ -310,13 +355,71 @@ describe('PaymentSettings', () => {
     });
 
     renderSettings('/settings/payments?connect=success&processor=stripe');
-    expect(await screen.findByTestId('processor-connect-success')).toHaveTextContent(/Stripe connected successfully/i);
+    expect(await screen.findByTestId('processor-connect-error'))
+      .toHaveTextContent(/still needs a few details/i);
+    expect(screen.queryByTestId('processor-connect-success')).not.toBeInTheDocument();
+    expect(api.get).toHaveBeenCalledWith('/api/stripe/connect/status');
+
     const stripeCard = await screen.findByTestId('processor-stripe');
     await waitFor(() => {
       expect(within(stripeCard).getByTestId('connection-status')).toHaveTextContent(/incomplete/i);
     });
     expect(within(stripeCard).getByTestId('stripe-connect-button')).toHaveTextContent(/continue setup/i);
     expect(screen.queryByTestId('stripe-account-id')).not.toBeInTheDocument();
+  });
+
+  it('confirms the Stripe success return once the status endpoint verifies the account', async () => {
+    api.get.mockImplementation((url) => {
+      if (url === '/api/stripe/connect/status') {
+        return Promise.resolve({
+          connected: true,
+          accountId: 'acct_test',
+          chargesEnabled: true,
+          payoutsEnabled: true
+        });
+      }
+      if (url === '/api/connect/status') {
+        return Promise.resolve({
+          accountId: 'acct_test',
+          chargesEnabled: true,
+          payoutsEnabled: true,
+          stripe: { connected: true },
+          available: { stripe: true, square: true, paypal: true }
+        });
+      }
+      if (url === '/api/sites') {
+        return Promise.resolve({ sites: [{ id: 'site-1', payOnSite: false }] });
+      }
+      return Promise.resolve({});
+    });
+
+    renderSettings('/settings/payments?connect=success&processor=stripe');
+    expect(await screen.findByTestId('processor-connect-success'))
+      .toHaveTextContent(/Stripe connected successfully/i);
+    expect(screen.queryByTestId('processor-connect-error')).not.toBeInTheDocument();
+  });
+
+  it('does not claim connected when the Stripe status check fails on return', async () => {
+    api.get.mockImplementation((url) => {
+      if (url === '/api/stripe/connect/status') {
+        return Promise.reject(new Error('network down'));
+      }
+      if (url === '/api/connect/status') {
+        return Promise.resolve({
+          accountId: 'acct_test',
+          available: { stripe: true, square: true, paypal: true }
+        });
+      }
+      if (url === '/api/sites') {
+        return Promise.resolve({ sites: [{ id: 'site-1', payOnSite: false }] });
+      }
+      return Promise.resolve({});
+    });
+
+    renderSettings('/settings/payments?connect=success&processor=stripe');
+    expect(await screen.findByTestId('processor-connect-error'))
+      .toHaveTextContent(/still needs a few details/i);
+    expect(screen.queryByTestId('processor-connect-success')).not.toBeInTheDocument();
   });
 
   it('copies this site payment setup to every existing site', async () => {

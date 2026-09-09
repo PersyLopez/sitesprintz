@@ -206,6 +206,63 @@ describe('site-specific processor connections', () => {
     expect(status.available).toBeDefined();
   });
 
+  it('reports the site disconnected after Stripe is removed from that site', async () => {
+    const { getPaymentConnectStatus } = await import('../../../server/services/payments/processorConnectHelpers.js');
+    mockPrisma.sites.findFirst.mockResolvedValue({ id: 'site-1' });
+    mockPrisma.users.findUnique.mockResolvedValue({ stripe_account_id: 'acct_1', stripe_connected: true });
+    mockPrisma.payment_processor_credentials.findMany.mockResolvedValue([]);
+    mockPrisma.site_payment_method.findUnique.mockResolvedValue(null);
+
+    const status = await getPaymentConnectStatus('user-1', 'site-1');
+
+    expect(status.stripe.connected).toBe(false);
+    expect(status.connected).toBe(false);
+    expect(status.status).toBe('pending');
+    // The account itself is still charges-ready, so it can be reattached.
+    expect(status.stripe.accountAvailable).toBe(true);
+    expect(status.chargesEnabled).toBe(true);
+  });
+
+  it('stays connected on a site that still uses Square after Stripe is removed', async () => {
+    const { getPaymentConnectStatus } = await import('../../../server/services/payments/processorConnectHelpers.js');
+    mockPrisma.sites.findFirst.mockResolvedValue({ id: 'site-1' });
+    mockPrisma.users.findUnique.mockResolvedValue({ stripe_account_id: 'acct_1', stripe_connected: true });
+    mockPrisma.payment_processor_credentials.findMany.mockResolvedValue([
+      { processor: 'square', account_id: 'sq_merchant', connected_at: new Date(), metadata: {} }
+    ]);
+    mockPrisma.site_payment_method.findUnique.mockResolvedValue({
+      provider: 'square',
+      account_id: 'sq_merchant',
+      is_active: true
+    });
+
+    const status = await getPaymentConnectStatus('user-1', 'site-1');
+
+    expect(status.connected).toBe(true);
+    expect(status.stripe.connected).toBe(false);
+    expect(status.square.connected).toBe(true);
+  });
+
+  it('reports connected while the site still holds an active Stripe credential', async () => {
+    const { getPaymentConnectStatus } = await import('../../../server/services/payments/processorConnectHelpers.js');
+    mockPrisma.sites.findFirst.mockResolvedValue({ id: 'site-1' });
+    mockPrisma.users.findUnique.mockResolvedValue({ stripe_account_id: 'acct_1', stripe_connected: true });
+    mockPrisma.payment_processor_credentials.findMany.mockResolvedValue([
+      { processor: 'stripe', account_id: 'acct_1', connected_at: new Date(), metadata: {} }
+    ]);
+    mockPrisma.site_payment_method.findUnique.mockResolvedValue({
+      provider: 'stripe',
+      account_id: 'acct_1',
+      is_active: true
+    });
+
+    const status = await getPaymentConnectStatus('user-1', 'site-1');
+
+    expect(status.connected).toBe(true);
+    expect(status.stripe.connected).toBe(true);
+    expect(status.status).toBe('active');
+  });
+
   it('sets stripe.testMode from sk_test_ secret only, not pk_test_', async () => {
     const previousSecret = process.env.STRIPE_SECRET_KEY;
     const previousPublishable = process.env.STRIPE_PUBLISHABLE_KEY;

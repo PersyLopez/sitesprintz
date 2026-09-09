@@ -73,11 +73,11 @@ steps:
   - action: Expired Account Link banner without auto-redirect
     goto: http://localhost:5173/settings/payments?connect=refresh&processor=stripe
     settle_ms: 1500
-    wait_for: { selector: '[data-testid="processor-oauth-banner"]', timeout: 15000 }
+    wait_for: { selector: '[data-testid="processor-connect-error"]', timeout: 15000 }
 
   - action: Refresh banner is honest and query is stripped
     code: |
-      const banner = await page.getByTestId('processor-oauth-banner').innerText();
+      const banner = await page.getByTestId('processor-connect-error').innerText();
       if (!/expired|continue setup/i.test(banner)) {
         throw new Error('Expected expired-link banner, got: ' + banner);
       }

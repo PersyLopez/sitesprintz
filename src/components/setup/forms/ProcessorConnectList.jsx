@@ -9,6 +9,10 @@ const CONNECT_ERROR_MESSAGES = {
   access_denied: 'Connection was cancelled. You can try again anytime from the provider card.'
 };
 
+// Account Links can return successfully while Stripe still owes us verification.
+const STRIPE_UNVERIFIED_RETURN_MESSAGE =
+  'Stripe still needs a few details before it can take payments. Use Continue Setup on the Stripe card to finish.';
+
 const PROCESSORS = [
   {
     id: 'stripe',
@@ -65,6 +69,20 @@ function ProcessorConnectList({
   const [actionError, setActionError] = useState(null);
   const [actionMessage, setActionMessage] = useState(null);
 
+  const verifyStripeReturn = async () => {
+    try {
+      const data = await api.get('/api/stripe/connect/status');
+      if (data?.connected === true) {
+        setActionMessage('Stripe connected successfully');
+      } else {
+        setActionError(STRIPE_UNVERIFIED_RETURN_MESSAGE);
+      }
+    } catch {
+      setActionError(STRIPE_UNVERIFIED_RETURN_MESSAGE);
+    }
+    await onStatusChange?.();
+  };
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const result = params.get('connect');
@@ -75,8 +93,12 @@ function ProcessorConnectList({
     const label = processorLabel(processor);
 
     if (result === 'success') {
-      setActionMessage(`${label} connected successfully`);
-      void onStatusChange?.();
+      if (processor === 'stripe') {
+        void verifyStripeReturn();
+      } else {
+        setActionMessage(`${label} connected successfully`);
+        void onStatusChange?.();
+      }
     } else if (result === 'error') {
       setActionError(
         CONNECT_ERROR_MESSAGES[code] ||
@@ -101,7 +123,7 @@ function ProcessorConnectList({
     setActionError(null);
     setIsProcessing(true);
     try {
-      const data = await api.post('/api/connect/onboard', {
+      const data = await api.post('/api/stripe/connect/onboard', {
         ...(siteId ? { siteId } : {}),
         applyTo
       });
@@ -119,7 +141,7 @@ function ProcessorConnectList({
     setActionError(null);
     setIsProcessing(true);
     try {
-      const data = await api.post('/api/connect/refresh');
+      const data = await api.post('/api/stripe/connect/refresh');
       const url = redirectUrl(data);
       if (!url) throw new Error('Stripe did not return a connect URL');
       window.location.href = url;
@@ -209,11 +231,7 @@ function ProcessorConnectList({
     setActionError(null);
     setIsProcessing(true);
     try {
-      if (processorId === 'stripe') {
-        await api.post('/api/connect/disconnect', { siteId, applyTo });
-      } else {
-        await api.post(`/api/connect/disconnect/${processorId}`, { siteId, applyTo });
-      }
+      await api.post(`/api/connect/disconnect/${processorId}`, { siteId, applyTo });
       await onStatusChange?.();
     } catch (error) {
       setActionError(error.message || `Could not disconnect ${processorId}`);
@@ -225,8 +243,7 @@ function ProcessorConnectList({
   const isConnected = (id) => {
     if (id === 'stripe') {
       const ready = Boolean(status?.chargesEnabled && status?.payoutsEnabled);
-      if (!ready) return false;
-      return status?.stripe?.connected === true || status?.stripe?.connected !== false;
+      return ready && status?.stripe?.connected === true;
     }
     return status?.[id]?.connected === true;
   };

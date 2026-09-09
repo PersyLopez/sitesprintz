@@ -636,17 +636,21 @@ export async function getPaymentConnectStatus(userId, requestedSiteId) {
     const stripeAccountId = extra.user?.stripe_account_id
       || extra.byProcessor.stripe?.account_id
       || null;
-    const stripeReady = extra.user?.stripe_connected === true;
+    // Account-level: this owner's Stripe account can take charges. Survives a
+    // per-site disconnect, so the UI can still offer "use it on this site".
+    const stripeAccountReady = extra.user?.stripe_connected === true;
+    // Site-level: this site still has an active Stripe credential.
+    const stripeSiteConnected = Boolean(extra.byProcessor.stripe);
     const squareConnected = Boolean(extra.byProcessor.square);
     const paypalConnected = Boolean(extra.byProcessor.paypal);
 
     return {
-      connected: stripeReady || squareConnected || paypalConnected,
+      connected: stripeSiteConnected || squareConnected || paypalConnected,
       accountId: stripeAccountId,
       siteId,
-      chargesEnabled: stripeReady,
-      payoutsEnabled: stripeReady,
-      status: stripeReady ? 'active' : (stripeAccountId ? 'pending' : undefined),
+      chargesEnabled: stripeAccountReady,
+      payoutsEnabled: stripeAccountReady,
+      status: stripeSiteConnected ? 'active' : (stripeAccountId ? 'pending' : undefined),
       square: {
         connected: squareConnected,
         accountId: extra.byProcessor.square?.account_id || null
@@ -656,7 +660,7 @@ export async function getPaymentConnectStatus(userId, requestedSiteId) {
         accountId: extra.byProcessor.paypal?.account_id || null
       },
       stripe: {
-        connected: Boolean(extra.byProcessor.stripe),
+        connected: stripeSiteConnected,
         accountAvailable: Boolean(stripeAccountId),
         accountId: extra.byProcessor.stripe?.account_id || stripeAccountId,
         testMode: stripeTestMode

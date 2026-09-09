@@ -12,9 +12,14 @@ const mockRedis = {
 
 const mockPrisma = {
   payment_processor_credentials: { upsert: vi.fn() },
-  sites: { update: vi.fn() },
+  sites: { update: vi.fn(), findFirst: vi.fn() },
   site_payment_method: { upsert: vi.fn() },
-  users: { update: vi.fn() }
+  users: { update: vi.fn(), findUnique: vi.fn() }
+};
+
+const mockStripeAccounts = {
+  retrieve: vi.fn(),
+  create: vi.fn()
 };
 
 vi.mock('../../../server/utils/redis.js', () => ({
@@ -35,10 +40,7 @@ vi.mock('stripe', () => {
   class Stripe {
     constructor() {
       this.oauth = { token: vi.fn() };
-      this.accounts = {
-        retrieve: vi.fn(),
-        create: vi.fn()
-      };
+      this.accounts = mockStripeAccounts;
       this.accountLinks = { create: vi.fn() };
     }
   }
@@ -54,6 +56,8 @@ describe('Stripe Standard Connect', () => {
     mockPrisma.sites.update.mockResolvedValue({});
     mockPrisma.site_payment_method.upsert.mockResolvedValue({});
     mockPrisma.users.update.mockResolvedValue({});
+    mockPrisma.sites.findFirst.mockResolvedValue({ id: 'site_123' });
+    mockPrisma.users.findUnique.mockResolvedValue({ stripe_account_id: 'acct_123' });
   });
 
   afterEach(() => {
@@ -79,5 +83,65 @@ describe('Stripe Standard Connect', () => {
     mockRedis.get.mockResolvedValue(null);
     const { handleStripeOAuthCallback } = await import('../../../server/services/payments/StripeConnectService.js');
     await expect(handleStripeOAuthCallback('code', 'bad')).rejects.toThrow('Invalid or expired state token');
+  });
+
+  it('persists stripe_connected when Account Link onboarding finished', async () => {
+    mockStripeAccounts.retrieve.mockResolvedValue({
+      id: 'acct_123',
+      charges_enabled: true,
+      payouts_enabled: true
+    });
+
+    const { syncStripeConnectionStatus } = await import('../../../server/services/payments/StripeConnectService.js');
+    const result = await syncStripeConnectionStatus('user_123');
+
+    expect(result).toMatchObject({ connected: true, accountId: 'acct_123' });
+    expect(mockPrisma.users.update).toHaveBeenCalledWith({
+      where: { id: 'user_123' },
+      data: { stripe_account_id: 'acct_123', stripe_connected: true }
+    });
+    expect(mockPrisma.payment_processor_credentials.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { site_id_processor: { site_id: 'site_123', processor: 'stripe' } }
+      })
+    );
+    expect(mockPrisma.sites.update).not.toHaveBeenCalled();
+  });
+
+  it('clears stripe_connected when the account can no longer charge', async () => {
+    mockStripeAccounts.retrieve.mockResolvedValue({
+      id: 'acct_123',
+      charges_enabled: false,
+      payouts_enabled: true
+    });
+
+    const { syncStripeConnectionStatus } = await import('../../../server/services/payments/StripeConnectService.js');
+    const result = await syncStripeConnectionStatus('user_123');
+
+    expect(result).toMatchObject({ connected: false, chargesEnabled: false });
+    expect(mockPrisma.users.update).toHaveBeenCalledWith({
+      where: { id: 'user_123' },
+      data: { stripe_account_id: 'acct_123', stripe_connected: false }
+    });
+  });
+
+  it('leaves stored state alone when Stripe retrieve fails', async () => {
+    mockStripeAccounts.retrieve.mockRejectedValue(new Error('stripe down'));
+
+    const { syncStripeConnectionStatus } = await import('../../../server/services/payments/StripeConnectService.js');
+    const result = await syncStripeConnectionStatus('user_123');
+
+    expect(result).toEqual({ connected: false, reason: 'verify_failed', accountId: 'acct_123' });
+    expect(mockPrisma.users.update).not.toHaveBeenCalled();
+  });
+
+  it('reports no_account before onboarding starts', async () => {
+    mockPrisma.users.findUnique.mockResolvedValue({ stripe_account_id: null });
+
+    const { syncStripeConnectionStatus } = await import('../../../server/services/payments/StripeConnectService.js');
+    const result = await syncStripeConnectionStatus('user_123');
+
+    expect(result).toEqual({ connected: false, reason: 'no_account' });
+    expect(mockStripeAccounts.retrieve).not.toHaveBeenCalled();
   });
 });
