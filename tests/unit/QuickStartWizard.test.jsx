@@ -1,11 +1,10 @@
 /**
- * Tests for QuickStartWizard.jsx — Phase 4 level step integration
+ * Tests for QuickStartWizard.jsx — Quick Start flow
  *
  * Seams tested:
- *   1. Wizard renders with 4 steps (industry, basics, level, style)
- *   2. Level step appears for Refined-layout niches and shows LevelSelector cards
- *   3. Level selection is passed through to buildSiteDataFromWizard on completion
- *   4. Fallback to old template flow for unknown niches (no level step content used)
+ *   1. Wizard renders with 3 steps (industry, basics, style)
+ *   2. The default solo level is passed through to the site builder
+ *   3. Fallback to old template flow for unknown niches
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -51,10 +50,6 @@ vi.mock('../../src/hooks/useToast', () => ({
   useToast: () => ({ showError: vi.fn(), showSuccess: vi.fn() }),
 }));
 
-// jsdom does not implement alert
-const alertMock = vi.fn();
-vi.stubGlobal('alert', alertMock);
-
 import QuickStartWizard from '../../src/components/setup/QuickStartWizard';
 import { buildSiteDataFromWizard } from '../../src/utils/wizardSiteDataBuilder';
 import { templatesService } from '../../src/services/templates';
@@ -74,11 +69,10 @@ function nextButton() {
   return btns[btns.length - 1];
 }
 
-describe('QuickStartWizard — Phase 4 level step', () => {
+describe('QuickStartWizard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     getBuildMock().mockClear();
-    alertMock.mockClear();
   });
 
   // 1. Renders the first step (industry)
@@ -87,28 +81,27 @@ describe('QuickStartWizard — Phase 4 level step', () => {
     expect(screen.getByText(/What type of business are you creating/i)).toBeTruthy();
   });
 
-  // 2. Navigate industry → basics → level: LevelSelector cards appear
-  it('shows the level step with LevelSelector cards after basics', async () => {
+  it('shows an inline error when basics are submitted without a business name', () => {
     render(<QuickStartWizard onComplete={() => {}} onSkip={() => {}} />);
-
-    // Step 1: pick Salon (maps to niche 'salon' → atelier/refined)
     clickIndustry('Salon');
 
-    // Step 2: basics — fill required fields
-    fireEvent.change(screen.getByTestId('business-name-input'), { target: { value: 'Studio Luxe' } });
     fireEvent.change(screen.getByTestId('contact-phone-input'), { target: { value: '555-1234' } });
     fireEvent.click(nextButton());
 
-    // Step 3: level — LevelSelector should render three cards
-    await waitFor(() => {
-      expect(screen.getByTestId('level-solo')).toBeTruthy();
-      expect(screen.getByTestId('level-studio')).toBeTruthy();
-      expect(screen.getByTestId('level-established')).toBeTruthy();
-    });
+    expect(screen.getByText('Please enter your business name')).toBeTruthy();
   });
 
-  // 3. Level selection passes through to buildSiteDataFromWizard on completion
-  it('passes the selected level through to buildSiteDataFromWizard on completion', async () => {
+  it('shows an inline error when basics are submitted without phone or email', () => {
+    render(<QuickStartWizard onComplete={() => {}} onSkip={() => {}} />);
+    clickIndustry('Salon');
+
+    fireEvent.change(screen.getByTestId('business-name-input'), { target: { value: 'Studio Luxe' } });
+    fireEvent.click(nextButton());
+
+    expect(screen.getAllByText('Please enter at least a phone number or email address')).toHaveLength(2);
+  });
+
+  it('passes the default solo level through to buildSiteDataFromWizard on completion', async () => {
     const onComplete = vi.fn();
     render(<QuickStartWizard onComplete={onComplete} onSkip={() => {}} />);
 
@@ -120,12 +113,7 @@ describe('QuickStartWizard — Phase 4 level step', () => {
     fireEvent.change(screen.getByTestId('contact-phone-input'), { target: { value: '555-1234' } });
     fireEvent.click(nextButton());
 
-    // Step 3: level — pick 'studio'
-    await waitFor(() => expect(screen.getByTestId('level-studio')).toBeTruthy());
-    fireEvent.click(screen.getByTestId('level-studio'));
-    fireEvent.click(nextButton());
-
-    // Step 4: style — pick the first theme card
+    // Step 3: style — pick the first theme card
     await waitFor(() => {
       const themeCards = document.querySelectorAll('.theme-card');
       expect(themeCards.length).toBeGreaterThan(0);
@@ -142,20 +130,17 @@ describe('QuickStartWizard — Phase 4 level step', () => {
 
     const callArg = getBuildMock().mock.calls[0][0];
     expect(callArg.niche).toBe('salon');
-    expect(callArg.level).toBe('studio');
+    expect(callArg.level).toBe('solo');
     expect(callArg.businessName).toBe('Studio Luxe');
   });
 
-  // 4. Fallback path: unknown industry does not call buildSiteDataFromWizard
+  // Fallback path: unknown industry does not call buildSiteDataFromWizard
   it('falls back to templatesService for niches not in REFINED_NICHE_IDS', async () => {
     render(<QuickStartWizard onComplete={() => {}} onSkip={() => {}} />);
 
     clickIndustry('Salon');
     fireEvent.change(screen.getByTestId('business-name-input'), { target: { value: 'X' } });
     fireEvent.change(screen.getByTestId('contact-phone-input'), { target: { value: '555' } });
-    fireEvent.click(nextButton());
-
-    await waitFor(() => expect(screen.getByTestId('level-solo')).toBeTruthy());
     fireEvent.click(nextButton());
 
     await waitFor(() => {
@@ -174,7 +159,6 @@ describe('QuickStartWizard — Phase 4 level step', () => {
 describe('QuickStartWizard — initialTemplate from URL', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    alertMock.mockClear();
   });
 
   it('skips industry step and opens basics when initialTemplate is salon', () => {

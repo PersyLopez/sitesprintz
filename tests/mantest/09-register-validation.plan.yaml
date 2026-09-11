@@ -6,7 +6,6 @@ steps:
     assert:
       - text contains Email
       - text contains Password
-      - text contains Confirm Password
       - text contains Terms of Service
       - text contains Privacy Policy
 
@@ -33,23 +32,8 @@ steps:
       - text contains Email is required
       - url contains /register
 
-  - action: Fill mismatched passwords
+  - action: Fill registration fields
     fill: { testId: register-email, value: "local-only-test@example.com", clear: true }
 
   - action: Password value
     fill: { testId: register-password, value: "SecurePass!2024AA", clear: true }
-
-  - action: Confirm different password
-    fill: { testId: register-confirm-password, value: "DifferentPass!2024BB", clear: true }
-
-  - action: Submit mismatched passwords
-    code: |
-      await page.getByTestId('register-submit').click();
-      await page.waitForFunction(() => {
-        const t = document.body?.innerText || '';
-        return /passwords do not match/i.test(t);
-      }, { timeout: 8000 });
-    settle_ms: 400
-    assert:
-      - text contains Passwords do not match
-      - url contains /register

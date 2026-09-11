@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useSite } from '../../../hooks/useSite';
+import LevelSelector from '../LevelSelector';
 import './ContactBookingForm.css';
 
 function ContactBookingForm() {
@@ -265,6 +266,14 @@ function ContactBookingForm() {
 
         {booking.enabled && (
           <div className="booking-config">
+            <div className="form-group">
+              <h4>Who do customers book with?</h4>
+              <LevelSelector
+                value={siteData._level || 'solo'}
+                onChange={(key) => updateField('_level', key)}
+              />
+            </div>
+
             <div className="form-group">
               <label>Booking Provider</label>
               <p className="form-help">Choose your preferred booking platform</p>

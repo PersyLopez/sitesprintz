@@ -2,7 +2,7 @@
  * Tests for LevelSelector.jsx — TDD red-green cycles
  *
  * Seams tested (component behavior):
- *   1. Renders three level cards (Solo / Studio / Established)
+ *   1. Renders three level cards (Just me / Me and my team / A bigger team)
  *   2. Each card shows name, description, and sections it includes
  *   3. Calls onChange(levelKey) when a card is clicked
  *   4. Shows a "Recommended" badge on the suggested level when siteData is provided
@@ -30,9 +30,9 @@ describe('LevelSelector', () => {
   it('each card shows the level name', () => {
     render(<LevelSelector onChange={() => {}} />);
 
-    expect(screen.getByText('Solo')).toBeTruthy();
-    expect(screen.getByText('Studio')).toBeTruthy();
-    expect(screen.getByText('Established')).toBeTruthy();
+    expect(screen.getByText('Just me')).toBeTruthy();
+    expect(screen.getByText('Me and my team')).toBeTruthy();
+    expect(screen.getByText('A bigger team')).toBeTruthy();
   });
 
   it('each card shows a description', () => {
@@ -43,9 +43,9 @@ describe('LevelSelector', () => {
     const studio = screen.getByTestId('level-studio');
     const established = screen.getByTestId('level-established');
 
-    expect(solo.textContent.length).toBeGreaterThan('Solo'.length);
-    expect(studio.textContent.length).toBeGreaterThan('Studio'.length);
-    expect(established.textContent.length).toBeGreaterThan('Established'.length);
+    expect(solo.textContent.length).toBeGreaterThan('Just me'.length);
+    expect(studio.textContent.length).toBeGreaterThan('Me and my team'.length);
+    expect(established.textContent.length).toBeGreaterThan('A bigger team'.length);
   });
 
   it('calls onChange with the level key when a card is clicked', () => {

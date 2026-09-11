@@ -18,13 +18,16 @@ vi.mock('../../src/services/templates', () => ({
 }));
 
 vi.mock('../../src/components/setup/QuickStartWizard', () => ({
-  default: ({ onSkip, initialTemplate }) => {
+  default: ({ onComplete, onSkip, initialTemplate }) => {
     React.useEffect(() => {
       if (!initialTemplate) onSkip?.();
     }, [onSkip, initialTemplate]);
     return (
       <div data-testid="quickstart-wizard" data-initial-template={initialTemplate || ''}>
         QuickStartWizard
+        <button type="button" data-testid="complete-wizard" onClick={() => onComplete?.({})}>
+          Complete wizard
+        </button>
       </div>
     );
   },
@@ -315,6 +318,23 @@ describe('Setup Page', () => {
         expect(screen.getByTestId('quickstart-wizard')).toHaveAttribute('data-initial-template', 'salon');
       });
       expect(screen.queryByTestId('template-grid')).not.toBeInTheDocument();
+    });
+
+    it('should show the review screen after wizard completion', async () => {
+      const user = userEvent.setup();
+      renderSetup('/setup?template=salon');
+
+      await user.click(await screen.findByTestId('complete-wizard'));
+
+      expect(screen.getByTestId('setup-review')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Your page is ready' })).toBeInTheDocument();
+      expect(screen.getByTestId('review-publish')).toBeInTheDocument();
+      expect(screen.getByTestId('review-change')).toBeInTheDocument();
+      expect(mockShowSuccess).not.toHaveBeenCalled();
+
+      await user.click(screen.getByTestId('review-change'));
+      expect(screen.queryByTestId('setup-review')).not.toBeInTheDocument();
+      expect(screen.getByTestId('customize-panel')).toBeInTheDocument();
     });
 
     it('should keep wizard visible for invalid template ID from URL', async () => {

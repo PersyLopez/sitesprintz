@@ -68,14 +68,13 @@ steps:
     assert:
       - text contains Email
       - text contains Password
-      - text contains Confirm Password
       - text contains Terms of Service
       - text contains Create Account
     code: |
-      const registerAutocomplete = await page.locator('[data-testid="register-email"], [data-testid="register-password"], [data-testid="register-confirm-password"]').evaluateAll((inputs) =>
+      const registerAutocomplete = await page.locator('[data-testid="register-email"], [data-testid="register-password"]').evaluateAll((inputs) =>
         inputs.map((input) => input.getAttribute('autocomplete'))
       );
-      if (registerAutocomplete.join('|') !== 'email|new-password|new-password') {
+      if (registerAutocomplete.join('|') !== 'email|new-password') {
         throw new Error(`Unexpected register autocomplete values: ${registerAutocomplete.join('|')}`);
       }
 

@@ -9,6 +9,7 @@ import './FieldValidation.css';
  * @param {string} errorMessage - Error message to show
  * @param {number} maxLength - Maximum length
  * @param {string} recommendedLength - Recommended length hint
+ * @param {boolean} forceTouched - Show validation state without waiting for blur
  * @param {ReactNode} children - Input element
  */
 function FieldValidation({
@@ -17,18 +18,20 @@ function FieldValidation({
   errorMessage,
   maxLength,
   recommendedLength,
+  forceTouched = false,
   children,
   className = ''
 }) {
   const [error, setError] = useState(null);
   const [touched, setTouched] = useState(false);
+  const isTouched = touched || forceTouched;
 
   useEffect(() => {
-    if (touched && validator) {
+    if (isTouched && validator) {
       const result = validator(value);
       setError(result ? null : errorMessage);
     }
-  }, [value, touched, validator, errorMessage]);
+  }, [value, isTouched, validator, errorMessage]);
 
   const handleBlur = () => {
     setTouched(true);
@@ -52,7 +55,7 @@ function FieldValidation({
           </div>
         )}
       </div>
-      {error && touched && (
+      {error && isTouched && (
         <div className="field-error" role="alert">
           {error}
         </div>

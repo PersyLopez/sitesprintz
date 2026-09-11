@@ -336,7 +336,7 @@ function PageBuilder() {
         </p>
         {sections.length === 0 ? (
           <div className="empty-state" data-testid="builder-empty">
-            <p>No sections yet. Add one to start.</p>
+            <p>Nothing here yet. Add a part to get started.</p>
           </div>
         ) : (
           <ul className="sections-container" data-testid="section-list" ref={listRef} aria-describedby="section-reorder-hint">
@@ -384,6 +384,26 @@ function PageBuilder() {
                       <span className="section-order">#{index + 1}</span>
                     </button>
                     <div className="section-controls">
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm section-move-button"
+                        data-testid={`section-move-up-${section.id}`}
+                        aria-label={`Move up (${label})`}
+                        disabled={index === 0}
+                        onClick={() => moveSection(section.id, -1)}
+                      >
+                        Up
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm section-move-button"
+                        data-testid={`section-move-down-${section.id}`}
+                        aria-label={`Move down (${label})`}
+                        disabled={index === sections.length - 1}
+                        onClick={() => moveSection(section.id, 1)}
+                      >
+                        Down
+                      </button>
                       <button
                         type="button"
                         className="btn btn-secondary btn-sm"

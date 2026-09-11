@@ -98,12 +98,6 @@ steps:
   - action: Fill phone
     fill: { testId: contact-phone-input, value: "555-0100", clear: true }
 
-  - action: Next to size
-    click: { testId: wizard-next }
-    settle_ms: 1200
-    assert:
-      - text contains Business size
-
   - action: Next to look
     click: { testId: wizard-next }
     settle_ms: 1200
@@ -125,8 +119,11 @@ steps:
 
   - action: Editor after create
     code: |
+      await page.getByTestId('setup-review').waitFor({ timeout: 15000 });
+      await page.getByTestId('review-change').click();
+      await page.getByTestId('customize-panel').waitFor({ timeout: 15000 });
       const t = await page.locator('body').innerText();
       const ok = /Publish|Page Builder|Preview|Save Draft|Template/i.test(t);
-      if (!ok) throw new Error('Expected setup editor after create: ' + t.slice(0, 400));
+      if (!ok) throw new Error('Expected setup editor after review: ' + t.slice(0, 400));
       if (/Permanent Business/i.test(t)) throw new Error('Choice screen after create');
     settle_ms: 300

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { api } from '../../services/api';
@@ -8,7 +7,6 @@ import { getPublishedSiteUrl } from '../../utils/siteWorkspace';
 import './PublishModal.css';
 
 function PublishModal({ siteData, onClose, draftId, saveDraft }) {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { showSuccess, showError } = useToast();
   const [isEligibleForTrial, setIsEligibleForTrial] = useState(false);
@@ -39,6 +37,7 @@ function PublishModal({ siteData, onClose, draftId, saveDraft }) {
   const [loading, setLoading] = useState(false);
   const [billablePublishedCount, setBillablePublishedCount] = useState(0);
   const [collectsPayments, setCollectsPayments] = useState(false);
+  const [publishedUrl, setPublishedUrl] = useState('');
 
   const plans = [
     {
@@ -96,6 +95,15 @@ function PublishModal({ siteData, onClose, draftId, saveDraft }) {
 
     checkTrialEligibility();
   }, []);
+
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') onClose();
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [onClose]);
 
   const startAdditionalSiteCheckout = async (draftId) => {
     const checkout = await api.post('/api/payments/create-subscription-checkout', {
@@ -212,35 +220,7 @@ function PublishModal({ siteData, onClose, draftId, saveDraft }) {
       } else {
         showSuccess('Site published successfully!');
       }
-
-      const linkNotification = document.createElement('div');
-      linkNotification.style.cssText = `
-        position: fixed;
-        top: 80px;
-        right: 20px;
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
-        color: white;
-        padding: 20px 24px;
-        border-radius: 12px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        z-index: 10000;
-        max-width: 400px;
-      `;
-      linkNotification.innerHTML = `
-        <div style="font-weight: 600; margin-bottom: 8px;">✅ Your site is live!</div>
-        <a href="${siteUrl}" target="_blank" style="color: white; text-decoration: underline; word-break: break-all;">
-          ${siteUrl}
-        </a>
-      `;
-      document.body.appendChild(linkNotification);
-
-      setTimeout(() => {
-        linkNotification.style.transition = 'opacity 0.3s';
-        linkNotification.style.opacity = '0';
-        setTimeout(() => linkNotification.remove(), 300);
-      }, 8000);
-
-      setTimeout(() => navigate('/dashboard'), 2000);
+      setPublishedUrl(siteUrl);
     } catch (error) {
       console.error('Publish error:', error);
       const code = error.payload?.code;
@@ -263,20 +243,53 @@ function PublishModal({ siteData, onClose, draftId, saveDraft }) {
     }
   };
 
+  const handleCopyUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(publishedUrl);
+      showSuccess('Page address copied.');
+    } catch {
+      showError('Could not copy the page address. Please copy it manually.');
+    }
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content publish-modal" onClick={(e) => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose}>×</button>
         <div className="modal-header">
-          <h2>🚀 Publish Your Website</h2>
-          <p>
-            {isEligibleForTrial && !checkingTrialEligibility
+          <h2>Put my page online</h2>
+          <p>{publishedUrl ? 'Your page is live.' : (
+            isEligibleForTrial && !checkingTrialEligibility
               ? `Launch ${siteData.brand?.name || siteData.businessName || 'your site'} — no plan pick needed yet`
-              : `Choose your plan and launch ${siteData.brand?.name || siteData.businessName || 'your site'}`}
-          </p>
+              : `Choose your plan and launch ${siteData.brand?.name || siteData.businessName || 'your site'}`
+          )}</p>
         </div>
-        <div className="modal-body">
-          {isEligibleForTrial && !checkingTrialEligibility && (
+        {publishedUrl ? (
+          <div className="modal-body publish-success" data-testid="publish-success">
+            <p className="publish-success-message">Share your live page with customers.</p>
+            <button type="button" className="publish-live-address" onClick={handleCopyUrl}>
+              <span>{publishedUrl}</span>
+              <span className="publish-live-address-action">Copy</span>
+            </button>
+            <div className="publish-success-actions">
+              <a href={publishedUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+                Open my page
+              </a>
+              <a
+                href={`sms:?body=${encodeURIComponent(publishedUrl)}`}
+                className="btn btn-secondary"
+              >
+                Share by text
+              </a>
+              <button type="button" onClick={onClose} className="btn btn-secondary">
+                Back to my page
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+          <div className="modal-body">
+            {isEligibleForTrial && !checkingTrialEligibility && (
             <div className="trial-notice" data-testid="live-trial-notice">
               <p>
                 Your first site goes live for {trialDays} days with no payment method. We’ll be in touch — no checkout required.
@@ -318,18 +331,20 @@ function PublishModal({ siteData, onClose, draftId, saveDraft }) {
             ))}
           </div>
           )}
-        </div>
-        <div className="modal-footer">
-          <button onClick={onClose} className="btn btn-secondary">Cancel</button>
-          <button
-            onClick={handlePublish}
-            className="btn btn-primary"
-            disabled={loading || checkingTrialEligibility}
-            data-testid="publish-submit"
-          >
-            {loading ? 'Publishing...' : isEligibleForTrial ? `🚀 Publish — ${trialDays}-Day Trial` : '🚀 Publish Site'}
-          </button>
-        </div>
+          </div>
+          <div className="modal-footer">
+            <button onClick={onClose} className="btn btn-secondary">Cancel</button>
+            <button
+              onClick={handlePublish}
+              className="btn btn-primary"
+              disabled={loading || checkingTrialEligibility}
+              data-testid="publish-submit"
+            >
+              {loading ? 'Publishing...' : isEligibleForTrial ? `🚀 Publish — ${trialDays}-Day Trial` : '🚀 Publish Site'}
+            </button>
+          </div>
+          </>
+        )}
       </div>
     </div>
   );

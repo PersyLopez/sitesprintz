@@ -152,6 +152,10 @@
   gap: 4px;
 }
 
+.section-move-button {
+  min-width: 2.75rem;
+}
+
 .section-drop-end {
   min-height: 16px;
   margin-top: 4px;

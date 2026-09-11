@@ -2,6 +2,65 @@
   max-width: 700px;
 }
 
+.publish-success {
+  align-items: center;
+  text-align: center;
+}
+
+.publish-success-message {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.publish-live-address {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-dark);
+  border-radius: 10px;
+  background: var(--bg-elevated);
+  color: var(--text-light);
+  text-align: left;
+  cursor: pointer;
+}
+
+.publish-live-address span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.publish-live-address:hover,
+.publish-live-address:focus-visible {
+  border-color: var(--primary-color);
+}
+
+.publish-live-address:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.publish-live-address-action {
+  flex-shrink: 0;
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+.publish-success-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--spacing-md);
+}
+
+.publish-success-actions .btn {
+  min-width: 150px;
+  text-align: center;
+  text-decoration: none;
+}
+
 .modal-header {
   text-align: center;
   margin-bottom: var(--spacing-2xl);

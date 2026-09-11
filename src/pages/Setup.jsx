@@ -14,6 +14,7 @@ import SaveIndicator from '../components/common/SaveIndicator';
 import SkeletonLoader from '../components/common/SkeletonLoader';
 import { Modal } from '../components/common/Modal';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { PLATFORM_SUPPORT_EMAIL } from '../config/pricing.config';
 import './Setup.css';
 
 // Lazy load PreviewFrame (heavy component with iframe)
@@ -30,6 +31,7 @@ function Setup() {
   const [activeTab, setActiveTab] = useState('templates'); // templates, editor, preview
   const [showWizard, setShowWizard] = useState(true);
   const [wizardCompleted, setWizardCompleted] = useState(false);
+  const [showReview, setShowReview] = useState(false);
   const [showCustomBuilder, setShowCustomBuilder] = useState(false);
   const [showTemplatePicker, setShowTemplatePicker] = useState(true);
   const [pendingTemplate, setPendingTemplate] = useState(null);
@@ -116,8 +118,7 @@ function Setup() {
     setWizardCompleted(true);
     setShowWizard(false);
     setShowTemplatePicker(false);
-    setActiveTab('editor');
-    showSuccess('✨ Your website is ready! Customize it further or publish now.');
+    setShowReview(true);
   };
 
   const handleWizardSkip = () => {
@@ -196,6 +197,64 @@ function Setup() {
           onComplete={handleWizardComplete}
           onSkip={handleWizardSkip}
         />
+      </div>
+    );
+  }
+
+  if (showReview) {
+    return (
+      <div className="setup-page setup-page-review">
+        <a href="#setup-review" className="skip-to-content">
+          Skip to main content
+        </a>
+        <Header />
+        <main id="setup-review" className="setup-review" data-testid="setup-review">
+          <div className="setup-review-header">
+            <div>
+              <h1>Your page is ready</h1>
+              <p>Review your page before publishing.</p>
+            </div>
+            <SaveIndicator lastSaved={lastSaved} isSaving={isSaving} />
+          </div>
+          <div className="setup-review-preview">
+            <Suspense fallback={<LoadingFallback message="Loading preview..." />}>
+              <PreviewFrame />
+            </Suspense>
+          </div>
+          <div className="setup-review-actions">
+            <button
+              type="button"
+              className="btn btn-primary"
+              data-testid="review-publish"
+              onClick={() => setShowPublishModal(true)}
+            >
+              Publish my page
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              data-testid="review-change"
+              onClick={() => {
+                setShowReview(false);
+                setShowTemplatePicker(false);
+                setActiveTab('editor');
+              }}
+            >
+              Change something
+            </button>
+            <a className="setup-review-help" href={`mailto:${PLATFORM_SUPPORT_EMAIL}`}>
+              Need help? Email {PLATFORM_SUPPORT_EMAIL}
+            </a>
+          </div>
+        </main>
+        {showPublishModal && (
+          <PublishModal
+            siteData={siteData}
+            draftId={draftId}
+            saveDraft={saveDraft}
+            onClose={() => setShowPublishModal(false)}
+          />
+        )}
       </div>
     );
   }
@@ -325,7 +384,7 @@ function Setup() {
                 <PageBuilder key={siteData.template} />
               ) : (
                 <div className="panel-empty">
-                  <p>Select a template from the left to start customizing your website</p>
+                  <p>Select a template to start customizing your website</p>
                 </div>
               )}
             </div>

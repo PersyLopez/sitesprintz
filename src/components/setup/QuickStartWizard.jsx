@@ -4,14 +4,13 @@ import { templatesService } from '../../services/templates';
 import { getIndustryDefaults, replacePlaceholder, INDUSTRY_TEMPLATES } from '../../utils/industryDefaults';
 import { buildSiteDataFromWizard, REFINED_NICHE_IDS } from '../../utils/wizardSiteDataBuilder';
 import { getRecommendedSiteThemes, colorsFromSiteTheme } from '../../config/siteThemes';
-import { getLayoutForNiche } from '../../config/layouts';
-import LevelSelector from './LevelSelector';
+import FieldValidation from '../common/FieldValidation';
+import { useToast } from '../../hooks/useToast';
 import './QuickStartWizard.css';
 
 const WIZARD_STEPS = [
   { id: 'industry', title: 'What type of business?', icon: '🏢' },
   { id: 'basics', title: 'Business essentials', icon: '📝' },
-  { id: 'level', title: 'Business size', icon: '📊' },
   { id: 'style', title: 'Choose your look', icon: '🎨' }
 ];
 
@@ -61,10 +60,10 @@ function resolveIndustryFromTemplate(templateId) {
 
 function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
   const { loadTemplate } = useSite();
+  const { showError } = useToast();
   const preselectedIndustry = resolveIndustryFromTemplate(initialTemplate);
   const [currentStep, setCurrentStep] = useState(preselectedIndustry ? 1 : 0);
   const [selectedIndustry, setSelectedIndustry] = useState(preselectedIndustry);
-  const [selectedLevel, setSelectedLevel] = useState('solo');
   const [formData, setFormData] = useState({
     businessName: '',
     phone: '',
@@ -72,12 +71,18 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
   });
   const [selectedTheme, setSelectedTheme] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [basicsSubmitAttempted, setBasicsSubmitAttempted] = useState(false);
+  const [showAllThemes, setShowAllThemes] = useState(false);
 
   const defaults = selectedIndustry ? getIndustryDefaults(selectedIndustry) : null;
+  const themesForIndustry = selectedIndustry
+    ? getRecommendedSiteThemes(INDUSTRY_TO_NICHE[selectedIndustry] || selectedIndustry)
+    : [];
 
   const handleIndustrySelect = (industryId) => {
     setSelectedIndustry(industryId);
     setSelectedTheme(null);
+    setShowAllThemes(false);
     // Store industry preference for template recommendations
     localStorage.setItem('userIndustryPreference', industryId);
     setCurrentStep(1);
@@ -88,26 +93,21 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
   };
 
   const handleBasicsNext = () => {
+    setBasicsSubmitAttempted(true);
     // Validate: business name required, at least phone or email
     if (!formData.businessName.trim()) {
-      alert('Please enter your business name');
       return;
     }
     if (!formData.phone.trim() && !formData.email.trim()) {
-      alert('Please enter at least a phone number or email address');
       return;
     }
-    // Go to level step (step 2)
-    setCurrentStep(2);
-  };
-
-  const handleLevelNext = () => {
     const niche = INDUSTRY_TO_NICHE[selectedIndustry] || selectedIndustry;
     const recommended = getRecommendedSiteThemes(niche);
     if (!selectedTheme && recommended[0]) {
       setSelectedTheme(recommended[0]);
     }
-    setCurrentStep(3);
+    // Go to theme step (step 2)
+    setCurrentStep(2);
   };
 
   const handleThemeSelect = (theme) => {
@@ -116,7 +116,7 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
 
   const handleComplete = async () => {
     if (!selectedIndustry || !selectedTheme) {
-      alert('Please complete all steps');
+      showError('Please complete all steps');
       return;
     }
 
@@ -133,7 +133,7 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
         const siteData = buildSiteDataFromWizard({
           niche: nicheId,
           businessName: formData.businessName.trim(),
-          level: selectedLevel,
+          level: 'solo',
           contact,
           themeId: selectedTheme.id,
         });
@@ -169,7 +169,7 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
       await loadTemplate(siteData);
       onComplete(siteData);
     } catch (error) {
-      alert('Failed to load template. Please try again.');
+      showError('Failed to load template. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -199,12 +199,15 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
                   data-testid={`wizard-industry-${industry.id}`}
                   onClick={() => handleIndustrySelect(industry.id)}
                 >
-                  <span className="industry-icon">{industry.icon}</span>
+                  <span className="industry-icon" aria-hidden="true">{industry.icon}</span>
                   <h3>{industry.name}</h3>
                   <p>{industry.description}</p>
                 </button>
               ))}
             </div>
+            <button type="button" className="wizard-skip industry-skip" data-testid="wizard-skip" onClick={onSkip}>
+              Let me pick a design myself
+            </button>
           </div>
         );
 
@@ -218,39 +221,60 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
                 <label htmlFor="businessName">
                   Business Name <span className="required">*</span>
                 </label>
-                <input
-                  type="text"
-                  id="businessName"
-                  data-testid="business-name-input"
+                <FieldValidation
                   value={formData.businessName}
-                  onChange={(e) => handleBasicsChange('businessName', e.target.value)}
-                  placeholder="e.g., Acme Restaurant"
-                  required
-                />
+                  validator={(value) => Boolean(value.trim())}
+                  errorMessage="Please enter your business name"
+                  forceTouched={basicsSubmitAttempted}
+                >
+                  <input
+                    type="text"
+                    id="businessName"
+                    data-testid="business-name-input"
+                    value={formData.businessName}
+                    onChange={(e) => handleBasicsChange('businessName', e.target.value)}
+                    placeholder="e.g., Acme Restaurant"
+                    required
+                  />
+                </FieldValidation>
               </div>
 
               <div className="form-group">
                 <label htmlFor="phone">Phone Number</label>
-                <input
-                  type="tel"
-                  id="phone"
-                  data-testid="contact-phone-input"
+                <FieldValidation
                   value={formData.phone}
-                  onChange={(e) => handleBasicsChange('phone', e.target.value)}
-                  placeholder="(555) 123-4567"
-                />
+                  validator={(value) => Boolean(value.trim() || formData.email.trim())}
+                  errorMessage="Please enter at least a phone number or email address"
+                  forceTouched={basicsSubmitAttempted}
+                >
+                  <input
+                    type="tel"
+                    id="phone"
+                    data-testid="contact-phone-input"
+                    value={formData.phone}
+                    onChange={(e) => handleBasicsChange('phone', e.target.value)}
+                    placeholder="(555) 123-4567"
+                  />
+                </FieldValidation>
               </div>
 
               <div className="form-group">
                 <label htmlFor="email">Email Address</label>
-                <input
-                  type="email"
-                  id="email"
-                  data-testid="contact-email-input"
+                <FieldValidation
                   value={formData.email}
-                  onChange={(e) => handleBasicsChange('email', e.target.value)}
-                  placeholder="contact@yourbusiness.com"
-                />
+                  validator={(value) => Boolean(value.trim() || formData.phone.trim())}
+                  errorMessage="Please enter at least a phone number or email address"
+                  forceTouched={basicsSubmitAttempted}
+                >
+                  <input
+                    type="email"
+                    id="email"
+                    data-testid="contact-email-input"
+                    value={formData.email}
+                    onChange={(e) => handleBasicsChange('email', e.target.value)}
+                    placeholder="contact@yourbusiness.com"
+                  />
+                </FieldValidation>
               </div>
 
               <div className="form-help">
@@ -262,25 +286,11 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
 
       case 2:
         return (
-          <div className="wizard-step level-selection">
-            <h2>What size is your business?</h2>
-            <p className="step-description">This sets the page layout and how customers book with you or your team</p>
-            <LevelSelector
-              value={selectedLevel}
-              onChange={setSelectedLevel}
-              layout={getLayoutForNiche(INDUSTRY_TO_NICHE[selectedIndustry] || selectedIndustry)}
-              niche={INDUSTRY_TO_NICHE[selectedIndustry] || selectedIndustry}
-            />
-          </div>
-        );
-
-      case 3:
-        return (
           <div className="wizard-step style-selection">
             <h2>Choose a theme</h2>
             <p className="step-description">Six palettes with locked contrast. Recommended ones for your business come first.</p>
             <div className="theme-grid">
-              {getRecommendedSiteThemes(INDUSTRY_TO_NICHE[selectedIndustry] || selectedIndustry).map((theme) => (
+              {themesForIndustry.slice(0, showAllThemes ? themesForIndustry.length : 3).map((theme) => (
                 <button
                   key={theme.id}
                   type="button"
@@ -302,10 +312,22 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
                   <div className="theme-info">
                     <h3>{theme.name}</h3>
                     <p>{theme.description}</p>
+                    {selectedTheme?.id === theme.id && (
+                      <span className="theme-selected-indicator">✓ Selected</span>
+                    )}
                   </div>
                 </button>
               ))}
             </div>
+            {!showAllThemes && themesForIndustry.length > 3 && (
+              <button
+                type="button"
+                className="theme-disclosure"
+                onClick={() => setShowAllThemes(true)}
+              >
+                See 3 more
+              </button>
+            )}
           </div>
         );
 
@@ -317,11 +339,8 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
   return (
     <div className="quickstart-wizard" data-testid="quickstart-wizard">
       <div className="wizard-header">
-        <h1>✨ Quick Start</h1>
+        <h1><span aria-hidden="true">✨</span> Quick Start</h1>
         <p>Get your website ready in a few simple steps</p>
-        <button type="button" className="wizard-skip" data-testid="wizard-skip" onClick={onSkip}>
-          Skip to Full Editor →
-        </button>
       </div>
 
       <div className="wizard-progress">
@@ -354,7 +373,7 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
               type="button"
               className="btn btn-primary"
               data-testid="wizard-next"
-              onClick={currentStep === 1 ? handleBasicsNext : handleLevelNext}
+              onClick={handleBasicsNext}
             >
               Next →
             </button>

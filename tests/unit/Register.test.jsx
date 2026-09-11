@@ -61,31 +61,42 @@ describe('Register Component', () => {
     expect(screen.getByText('Create Your Account')).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
+    expect(screen.getByTestId('register-password-toggle')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
   });
 
   it('should show password requirements', () => {
     renderRegister();
 
-    expect(screen.getByText('At least 12 characters')).toBeInTheDocument();
+    expect(screen.getByText('At least 12 characters, with a number and a symbol.')).toBeInTheDocument();
   });
 
-  it('should show error when passwords do not match', async () => {
+  it('should show an error when submitting without a password', async () => {
     const user = userEvent.setup();
     renderRegister();
 
     await user.type(screen.getByLabelText(/email/i), 'test@example.com');
-    await user.type(screen.getByLabelText(/^password$/i), VALID_PASSWORD);
-    await user.type(screen.getByLabelText(/confirm password/i), 'Different123!');
     await acceptTerms(user);
 
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
     await waitFor(() => {
-      expect(mockShowError).toHaveBeenCalledWith('Passwords do not match');
+      expect(mockShowError).toHaveBeenCalledWith('Password is required');
     });
     expect(mockRegister).not.toHaveBeenCalled();
+  });
+
+  it('should toggle password visibility', async () => {
+    const user = userEvent.setup();
+    renderRegister();
+
+    const passwordInput = screen.getByLabelText(/^password$/i);
+    const toggle = screen.getByTestId('register-password-toggle');
+
+    expect(passwordInput).toHaveAttribute('type', 'password');
+    await user.click(toggle);
+    expect(passwordInput).toHaveAttribute('type', 'text');
+    expect(toggle).toHaveAccessibleName('Hide password');
   });
 
   it('should disable submit until the agreements are accepted', () => {
@@ -120,7 +131,6 @@ describe('Register Component', () => {
 
     await user.type(screen.getByLabelText(/email/i), 'test@example.com');
     await user.type(screen.getByLabelText(/^password$/i), VALID_PASSWORD);
-    await user.type(screen.getByLabelText(/confirm password/i), VALID_PASSWORD);
     await acceptTerms(user);
 
     await user.click(screen.getByRole('button', { name: /create account/i }));
@@ -139,7 +149,6 @@ describe('Register Component', () => {
 
     await user.type(screen.getByLabelText(/email/i), 'test@example.com');
     await user.type(screen.getByLabelText(/^password$/i), VALID_PASSWORD);
-    await user.type(screen.getByLabelText(/confirm password/i), VALID_PASSWORD);
     await acceptTerms(user);
 
     await user.click(screen.getByRole('button', { name: /create account/i }));
@@ -156,7 +165,6 @@ describe('Register Component', () => {
 
     await user.type(screen.getByLabelText(/email/i), 'existing@example.com');
     await user.type(screen.getByLabelText(/^password$/i), VALID_PASSWORD);
-    await user.type(screen.getByLabelText(/confirm password/i), VALID_PASSWORD);
     await acceptTerms(user);
 
     await user.click(screen.getByRole('button', { name: /create account/i }));
@@ -174,7 +182,6 @@ describe('Register Component', () => {
 
     await user.type(screen.getByLabelText(/email/i), 'test@example.com');
     await user.type(screen.getByLabelText(/^password$/i), VALID_PASSWORD);
-    await user.type(screen.getByLabelText(/confirm password/i), VALID_PASSWORD);
     await acceptTerms(user);
 
     await user.click(screen.getByRole('button', { name: /create account/i }));
@@ -182,7 +189,6 @@ describe('Register Component', () => {
     expect(screen.getByText(/creating account/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeDisabled();
     expect(screen.getByLabelText(/^password$/i)).toBeDisabled();
-    expect(screen.getByLabelText(/confirm password/i)).toBeDisabled();
   });
 
   it('does not require a CAPTCHA token when Turnstile is not configured', async () => {
@@ -192,7 +198,6 @@ describe('Register Component', () => {
 
     await user.type(screen.getByLabelText(/email/i), 'new@example.com');
     await user.type(screen.getByLabelText(/^password$/i), VALID_PASSWORD);
-    await user.type(screen.getByLabelText(/confirm password/i), VALID_PASSWORD);
     await acceptTerms(user);
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
@@ -271,7 +276,6 @@ describe('Register Component', () => {
 
     await user.type(screen.getByLabelText(/email/i), 'test@example.com');
     await user.type(screen.getByLabelText(/^password$/i), VALID_PASSWORD);
-    await user.type(screen.getByLabelText(/confirm password/i), VALID_PASSWORD);
 
     // Submit button is disabled, so the form cannot be submitted without consent
     expect(screen.getByTestId('register-submit')).toBeDisabled();
@@ -297,17 +301,14 @@ describe('Register Component', () => {
 
     expect(screen.getByLabelText(/email/i)).toBeRequired();
     expect(screen.getByLabelText(/^password$/i)).toBeRequired();
-    expect(screen.getByLabelText(/confirm password/i)).toBeRequired();
   });
 
   it('should enforce minimum password length in HTML', () => {
     renderRegister();
 
     const passwordInput = screen.getByLabelText(/^password$/i);
-    const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
 
     expect(passwordInput).toHaveAttribute('minLength', '12');
-    expect(confirmPasswordInput).toHaveAttribute('minLength', '12');
   });
 
   it('does not pass a null container to Turnstile', () => {
