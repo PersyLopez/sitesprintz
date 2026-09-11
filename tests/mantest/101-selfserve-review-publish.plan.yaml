@@ -1,0 +1,149 @@
+url: http://localhost:5173/login
+goal: New self-serve path — 3-step wizard, Your page is ready, publish modal, editor opt-in (do not submit publish)
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter email
+    fill: { testId: login-email, value: "test@example.com", clear: true }
+
+  - action: Enter password
+    fill: { testId: login-password, value: "SecurePass!2024", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Dismiss welcome
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) await dismiss.click({ timeout: 4000 }).catch(() => {});
+      else await page.keyboard.press('Escape').catch(() => {});
+    settle_ms: 400
+
+  - action: Open setup
+    goto: http://localhost:5173/setup
+    settle_ms: 1500
+
+  - action: Industry step with skip at bottom
+    wait_for: { selector: '[data-testid="quickstart-wizard"]', timeout: 20000 }
+    settle_ms: 500
+    assert:
+      - text contains What type of business
+      - text contains Let me pick a design myself
+
+  - action: Skip is on the industry step only
+    code: |
+      const skip = page.getByTestId('wizard-skip');
+      if (!(await skip.isVisible())) throw new Error('wizard-skip missing on industry step');
+      const t = await page.locator('body').innerText();
+      if (/Business size/i.test(t)) throw new Error('Business-size step should be gone');
+    settle_ms: 200
+
+  - action: Pick Salon
+    click: { testId: wizard-industry-salon }
+    settle_ms: 1000
+    assert:
+      - text contains Business essentials
+
+  - action: Next empty shows name error
+    click: { testId: wizard-next }
+    settle_ms: 600
+    assert:
+      - text contains Please enter your business name
+      - text contains Please enter at least a phone number or email address
+
+  - action: Fill business name
+    fill: { testId: business-name-input, value: "Mantest Review Salon", clear: true }
+
+  - action: Fill phone
+    fill: { testId: contact-phone-input, value: "555-0199", clear: true }
+
+  - action: Next to look
+    click: { testId: wizard-next }
+    settle_ms: 1200
+    assert:
+      - text contains Choose a theme
+      - text contains See 3 more
+
+  - action: Reveal remaining themes
+    click: { text: See 3 more }
+    settle_ms: 600
+    assert:
+      - text contains Onyx Oxblood
+
+  - action: Pick first recommended theme
+    click: { testId: wizard-theme-onyx-oxblood }
+    settle_ms: 500
+
+  - action: Create My Website
+    click: { testId: wizard-create }
+    settle_ms: 4000
+
+  - action: Review screen not editor
+    wait_for: { selector: '[data-testid="setup-review"]', timeout: 20000 }
+    settle_ms: 800
+    assert:
+      - text contains Your page is ready
+      - text contains Publish my page
+      - text contains Change something
+
+  - action: Page builder is not the landing surface
+    code: |
+      if (await page.getByTestId('page-builder').count()) {
+        throw new Error('Editor shown before Change something');
+      }
+      if (await page.getByTestId('template-grid').count()) {
+        throw new Error('Template grid shown after wizard create');
+      }
+    settle_ms: 200
+
+  - action: Open publish from review
+    click: { testId: review-publish }
+    settle_ms: 1200
+    assert:
+      - text contains Put my page online
+
+  - action: Publish submit is in the modal
+    wait_for: { selector: '[data-testid="publish-submit"]', timeout: 10000 }
+    settle_ms: 300
+
+  - action: Close publish modal
+    code: |
+      await page.locator('.modal-close').click({ timeout: 5000 });
+    settle_ms: 600
+    assert:
+      - text contains Your page is ready
+
+  - action: Change something opens editor
+    click: { testId: review-change }
+    settle_ms: 1500
+    wait_for: { selector: '[data-testid="page-builder"]', timeout: 15000 }
+    assert:
+      - text contains Publish
+
+  - action: Section up/down controls exist
+    code: |
+      const up = page.locator('[data-testid^="section-move-up-"]');
+      const down = page.locator('[data-testid^="section-move-down-"]');
+      if ((await up.count()) === 0) throw new Error('No section-move-up controls');
+      if ((await down.count()) === 0) throw new Error('No section-move-down controls');
+    settle_ms: 200
+
+  - action: Booking inspector asks who customers book with
+    code: |
+      const contact = page.getByTestId('section-type-contact');
+      if ((await contact.count()) === 0) throw new Error('No contact section');
+      await contact.first().click();
+      await page.getByText('Who do customers book with?').waitFor({ timeout: 8000 });
+      if ((await page.getByTestId('level-solo').count()) === 0) {
+        throw new Error('level-solo missing in booking inspector');
+      }
+    settle_ms: 400
+    assert:
+      - text contains Just me
+      - text contains Me and my team

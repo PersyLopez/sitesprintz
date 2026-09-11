@@ -8,6 +8,8 @@ steps:
       - text contains Password
       - text contains Terms of Service
       - text contains Privacy Policy
+      - text contains Continue with Google
+      - text contains At least 12 characters, with a number and a symbol.
 
   - action: Submit disabled without terms
     code: |
@@ -37,3 +39,13 @@ steps:
 
   - action: Password value
     fill: { testId: register-password, value: "SecurePass!2024AA", clear: true }
+
+  - action: Show password toggle
+    code: |
+      const input = page.getByTestId('register-password');
+      const toggle = page.getByTestId('register-password-toggle');
+      if ((await toggle.count()) === 0) throw new Error('register-password-toggle missing');
+      if ((await input.getAttribute('type')) !== 'password') throw new Error('password should start hidden');
+      await toggle.click();
+      if ((await input.getAttribute('type')) !== 'text') throw new Error('toggle should reveal password');
+    settle_ms: 300

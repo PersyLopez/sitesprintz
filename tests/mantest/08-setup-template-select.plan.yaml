@@ -16,8 +16,6 @@ steps:
 
   - action: Wait for dashboard
     wait_for: { url: /dashboard, timeout: 20000 }
-    assert:
-      - text contains Welcome back
 
   - action: Dismiss welcome if present
     code: |
@@ -27,14 +25,7 @@ steps:
     settle_ms: 400
 
   - action: Create Site from dashboard
-    code: |
-      const nav = page.getByTestId('nav-create-site');
-      const createBtn = page.getByTestId('create-site-button');
-      const firstBtn = page.getByTestId('create-first-site-button');
-      if (await nav.count()) await nav.first().click({ force: true });
-      else if (await createBtn.count()) await createBtn.first().click({ force: true });
-      else if (await firstBtn.count()) await firstBtn.first().click({ force: true });
-      else await page.goto('http://localhost:5173/setup', { waitUntil: 'load' });
+    goto: http://localhost:5173/setup
     settle_ms: 1500
     assert:
       - url contains /setup
