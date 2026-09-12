@@ -346,7 +346,7 @@ export default function LandingGallery({ selectedTemplateId, onSelectTemplate })
           ))}
         </div>
 
-        <div className="gl-grid" data-testid="gallery-grid" data-reveal data-reveal-stagger>
+        <div className="gl-grid" data-testid="gallery-grid">
           {filtered.map((template, i) => (
             <TemplateCard
               key={template.id}
@@ -362,7 +362,7 @@ export default function LandingGallery({ selectedTemplateId, onSelectTemplate })
         </div>
 
         {liveSites.length > 0 && (
-          <div className="gl-live" data-reveal data-testid="landing-live-showcase">
+          <div className="gl-live" data-testid="landing-live-showcase">
             <div className="gl-live-header">
               <p className="section-kicker">{t('gallery.live.kicker')}</p>
               <h3>{t('gallery.live.heading')}</h3>
@@ -402,7 +402,7 @@ export default function LandingGallery({ selectedTemplateId, onSelectTemplate })
           </div>
         )}
 
-        <div className="gl-footer" data-reveal>
+        <div className="gl-footer">
           <Link to="/showcase" className="gl-see-all" data-testid="landing-gallery-showcase-link">
             Browse example sites →
           </Link>

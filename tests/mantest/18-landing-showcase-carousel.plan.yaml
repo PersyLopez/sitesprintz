@@ -59,6 +59,28 @@ steps:
       if (!has) throw new Error('Landing gallery demo labels missing');
     settle_ms: 300
 
+  - action: Narrow templates hash paints gallery
+    code: |
+      await page.setViewportSize({ width: 534, height: 800 });
+      await page.goto('http://localhost:5173/#templates');
+      const card = page.locator('[data-testid="gallery-grid"] .gl-card').first();
+      await card.waitFor({ state: 'visible', timeout: 10000 });
+      const cardOpacity = await card.evaluate((el) =>
+        parseFloat(window.getComputedStyle(el).opacity)
+      );
+      if (cardOpacity !== 1) {
+        throw new Error(`gallery card opacity is ${cardOpacity}, expected 1`);
+      }
+      const live = page.locator('[data-testid="landing-live-showcase"]');
+      if (await live.count()) {
+        const liveOpacity = await live.evaluate((el) =>
+          parseFloat(window.getComputedStyle(el).opacity)
+        );
+        if (liveOpacity !== 1) {
+          throw new Error(`live showcase opacity is ${liveOpacity}, expected 1`);
+        }
+      }
+
   - action: Live showcase images keep a 3/2 frame
     code: |
       const image = page.locator('[data-testid="landing-live-showcase"] .gl-live-image').first();
