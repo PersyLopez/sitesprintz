@@ -317,102 +317,6 @@
   border-radius: 4px;
 }
 
-/* Live showcase strip — bridges landing → /showcase */
-
-.gl-live {
-  margin-top: var(--space-xl, 32px);
-  padding: var(--space-xl, 32px);
-  border-radius: 22px;
-  border: 1.5px solid var(--sp-border, var(--border, #f0d7b5));
-  background:
-    radial-gradient(ellipse 60% 80% at 0% 0%, rgba(244, 162, 97, 0.16), transparent 55%),
-    var(--sp-surface, var(--surface, #fff));
-  box-shadow: 0 8px 28px rgba(28, 20, 15, 0.05);
-}
-
-.gl-live-header {
-  text-align: center;
-  max-width: 34rem;
-  margin: 0 auto 24px;
-}
-
-.gl-live-header h3 {
-  font-family: var(--font-display, 'Outfit', sans-serif);
-  font-size: clamp(1.25rem, 2.5vw, 1.55rem);
-  font-weight: 800;
-  margin: 0 0 8px;
-  color: var(--sp-ink, var(--ink, #1c140f));
-  letter-spacing: -0.02em;
-}
-
-.gl-live-header p:last-child {
-  margin: 0;
-  color: var(--sp-muted, var(--text-secondary, #5c4a3d));
-  font-weight: 600;
-  font-size: 0.98rem;
-}
-
-.gl-live-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
-}
-
-.gl-live-card {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 14px 16px;
-  border-radius: 14px;
-  border: 1.5px solid var(--sp-border, var(--border, #f0d7b5));
-  background: var(--sp-bg, #fff8ef);
-  text-decoration: none;
-  color: inherit;
-  transition:
-    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 180ms ease,
-    box-shadow 220ms ease;
-}
-
-.gl-live-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--sp-accent, var(--accent, #e87b1e));
-  box-shadow: 0 10px 24px rgba(28, 20, 15, 0.08);
-}
-
-.gl-live-image {
-  width: 100%;
-  aspect-ratio: 3 / 2;
-  border-radius: 10px;
-}
-
-.gl-live-card:focus-visible {
-  outline: 2px solid var(--sp-accent, var(--accent, #e87b1e));
-  outline-offset: 2px;
-}
-
-.gl-live-emoji {
-  font-size: 1.35rem;
-  line-height: 1;
-  margin-bottom: 4px;
-}
-
-.gl-live-title {
-  font-family: var(--font-display, 'Outfit', sans-serif);
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: var(--sp-ink, var(--ink, #1c140f));
-}
-
-.gl-live-meta {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--sp-muted, var(--text-secondary, #5c4a3d));
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 @media (max-width: 639px) {
   .gl-grid {
     margin-left: calc(-1 * var(--space-lg, 24px));
@@ -444,15 +348,13 @@
   .gl-tab,
   .gl-see-all,
   .gl-section-block,
-  .gl-card-cta span,
-  .gl-live-card {
+  .gl-card-cta span {
     transition: none;
     animation: none;
   }
 
   .gl-card:hover,
-  .gl-tab:hover,
-  .gl-live-card:hover {
+  .gl-tab:hover {
     transform: none;
   }
 }

@@ -71,39 +71,21 @@ steps:
       if (cardOpacity !== 1) {
         throw new Error(`gallery card opacity is ${cardOpacity}, expected 1`);
       }
-      const live = page.locator('[data-testid="landing-live-showcase"]');
-      if (await live.count()) {
-        const liveOpacity = await live.evaluate((el) =>
-          parseFloat(window.getComputedStyle(el).opacity)
-        );
-        if (liveOpacity !== 1) {
-          throw new Error(`live showcase opacity is ${liveOpacity}, expected 1`);
-        }
+      if ((await page.locator('[data-testid="landing-live-showcase"]').count()) !== 0) {
+        throw new Error('landing live showcase should be removed');
       }
 
-  - action: Live showcase images keep a 3/2 frame
+  - action: Gallery footer sits under the template grid
     code: |
-      const image = page.locator('[data-testid="landing-live-showcase"] .gl-live-image').first();
-      if (await image.count()) {
-        const box = await image.boundingBox();
-        if (!box || Math.abs(box.width / box.height - 1.5) > 0.05) {
-          throw new Error('Live showcase image frame is not 3/2');
-        }
-      }
       await page.setViewportSize({ width: 1280, height: 800 });
-      const stack = await page.evaluate(() => {
-        const live = document.querySelector('.gl-live');
-        const footer = document.querySelector('.gl-footer');
-        return {
-          liveMt: live ? parseFloat(window.getComputedStyle(live).marginTop) : NaN,
-          footerPt: footer ? parseFloat(window.getComputedStyle(footer).paddingTop) : NaN,
-        };
-      });
-      if (stack.liveMt !== 24 && stack.liveMt !== 32) {
-        throw new Error(`gl-live margin-top not 24/32: ${stack.liveMt}`);
+      if ((await page.locator('[data-testid="landing-live-showcase"]').count()) !== 0) {
+        throw new Error('landing live showcase should be removed');
       }
-      if (stack.footerPt !== 16 && stack.footerPt !== 24) {
-        throw new Error(`gl-footer padding-top not 16/24: ${stack.footerPt}`);
+      const footerPt = await page.locator('.gl-footer').evaluate((el) =>
+        parseFloat(window.getComputedStyle(el).paddingTop)
+      );
+      if (footerPt !== 16 && footerPt !== 24) {
+        throw new Error(`gl-footer padding-top not 16/24: ${footerPt}`);
       }
     settle_ms: 200
 

@@ -1,9 +1,8 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useLocale } from '../../i18n/LocaleContext.jsx';
 import { getShowcasePath } from '../../utils/galleryTemplateMap.js';
-import { OptimizedImage } from '../common/OptimizedImage';
 import './LandingGallery.css';
 
 /* ──────────────────────────────────────────────
@@ -274,30 +273,8 @@ function TemplateCard({ template, showcaseTo, useLookTo, onUseLook, isSelected, 
    ────────────────────────────────────────────── */
 export default function LandingGallery({ selectedTemplateId, onSelectTemplate }) {
   const [activeCategory, setActiveCategory] = useState('all');
-  const [liveSites, setLiveSites] = useState([]);
   const { isAuthenticated } = useAuth();
   const { t } = useLocale();
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const loadLive = async () => {
-      try {
-        const response = await fetch('/api/showcases?kind=clients&page=1&pageSize=4', {
-          signal: controller.signal,
-        });
-        if (!response.ok) return;
-        const data = await response.json();
-        setLiveSites(Array.isArray(data.sites) ? data.sites.slice(0, 4) : []);
-      } catch (err) {
-        if (err?.name === 'AbortError') return;
-        setLiveSites([]);
-      }
-    };
-
-    loadLive();
-    return () => controller.abort();
-  }, []);
 
   const handleUseLook = (templateId) => {
     onSelectTemplate?.(templateId);
@@ -312,13 +289,6 @@ export default function LandingGallery({ selectedTemplateId, onSelectTemplate })
     if (activeCategory === 'all') return TEMPLATES;
     return TEMPLATES.filter((t) => t.category === activeCategory);
   }, [activeCategory]);
-
-  const liveTitle = (site) =>
-    site.name ||
-    site.site_data?.hero?.title ||
-    site.site_data?.brand?.name ||
-    site.subdomain ||
-    t('gallery.liveTitle');
 
   return (
     <section id="templates" className="gl-section" aria-label={t('gallery.sectionAria')} data-testid="landing-gallery">
@@ -360,47 +330,6 @@ export default function LandingGallery({ selectedTemplateId, onSelectTemplate })
             />
           ))}
         </div>
-
-        {liveSites.length > 0 && (
-          <div className="gl-live" data-testid="landing-live-showcase">
-            <div className="gl-live-header">
-              <p className="section-kicker">{t('gallery.live.kicker')}</p>
-              <h3>{t('gallery.live.heading')}</h3>
-              <p>{t('gallery.live.lead')}</p>
-            </div>
-            <div className="gl-live-grid">
-              {liveSites.map((site) => (
-                <Link
-                  key={site.id || site.subdomain}
-                  to={`/showcase/${site.subdomain}`}
-                  className="gl-live-card"
-                  data-testid={`landing-live-${site.subdomain}`}
-                >
-                  {site.heroImage ? (
-                    <OptimizedImage
-                      src={site.heroImage}
-                      alt={`${liveTitle(site)} preview`}
-                      width={600}
-                      height={400}
-                      aspectRatio="3/2"
-                      priority={false}
-                      sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      className="gl-live-image"
-                    />
-                  ) : (
-                    <span className="gl-live-emoji" aria-hidden="true">
-                      {site.template?.includes('salon') ? '💇'
-                        : site.template?.includes('restaurant') || site.template?.includes('food') ? '🍽️'
-                          : site.template?.includes('gym') ? '💪'
-                            : '🌐'}
-                    </span>
-                  )}
-                  <span className="gl-live-title">{liveTitle(site)}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
 
         <div className="gl-footer">
           <Link to="/showcase" className="gl-see-all" data-testid="landing-gallery-showcase-link">
