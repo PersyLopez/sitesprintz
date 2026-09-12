@@ -83,8 +83,8 @@
 .landing-hero {
   position: relative;
   color: var(--hero-text);
-  padding: var(--space-4xl) var(--space-lg) calc(var(--space-5xl) + 100px);
-  min-height: 100vh;
+  padding: var(--space-4xl) var(--space-lg) var(--space-4xl);
+  min-height: min(70vh, 720px);
   display: flex;
   align-items: center;
   isolation: isolate;
@@ -395,7 +395,7 @@
 /* ── Customer stories ─────────────────────────────────────── */
 
 .stories-section {
-  padding: var(--space-5xl) 0;
+  padding: var(--space-4xl) 0;
 }
 
 .stories-grid {
@@ -559,7 +559,7 @@
 
 .purpose-section {
   position: relative;
-  padding: var(--space-5xl) 0;
+  padding: var(--space-4xl) 0;
   background: linear-gradient(155deg, var(--hero-bg) 0%, #243b42 100%);
   color: var(--hero-text);
   overflow: hidden;
@@ -644,7 +644,7 @@
 /* ── How it works ─────────────────────────────────────────── */
 
 .how-section {
-  padding: var(--space-5xl) 0;
+  padding: var(--space-4xl) 0;
   background: rgba(255, 232, 200, 0.22);
 }
 
@@ -783,7 +783,7 @@
 /* ── Pricing ──────────────────────────────────────────────── */
 
 .pricing-section {
-  padding: var(--space-5xl) 0;
+  padding: var(--space-4xl) 0;
 }
 
 .pricing-grid {
@@ -1002,7 +1002,7 @@
 
 .final-cta {
   position: relative;
-  padding: var(--space-5xl) var(--space-lg);
+  padding: var(--space-4xl) var(--space-lg);
   text-align: center;
   background: linear-gradient(165deg, var(--hero-bg) 0%, #2a1f18 100%);
   color: var(--hero-text);

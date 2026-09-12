@@ -32,6 +32,54 @@ steps:
       if (!(await heroHeadline.isVisible())) {
         throw new Error('Hero headline is not visible');
       }
+      const chrome = await page.evaluate(() => {
+        const hero = document.querySelector('.landing-hero');
+        const minHeight = hero ? window.getComputedStyle(hero).minHeight : '';
+        const minHeightPx = parseFloat(minHeight);
+        const paddingTops = ['stories', 'purpose', 'how', 'pricing', 'final-cta'].map((cls) => {
+          const el = document.querySelector(`.${cls}-section, .${cls}`);
+          return el ? parseFloat(window.getComputedStyle(el).paddingTop) : NaN;
+        });
+        return { minHeight, minHeightPx, paddingTops };
+      });
+      if (chrome.minHeight === '100vh' || chrome.minHeightPx === 800) {
+        throw new Error(`Hero min-height still full viewport: ${chrome.minHeight}`);
+      }
+      if (chrome.paddingTops.some((px) => px !== 64 && px !== 88)) {
+        throw new Error(`Section padding-top not 64/88: ${JSON.stringify(chrome.paddingTops)}`);
+      }
+
+  - action: Header lockup is compact
+    code: |
+      await page.setViewportSize({ width: 1280, height: 800 });
+      const metrics = await page.getByTestId('header-logo').evaluate((el) => {
+        const style = window.getComputedStyle(el);
+        const icon = el.querySelector('.logo-icon');
+        const mark = el.querySelector('.logo-mark');
+        const text = el.querySelector('.logo-text');
+        const iconStyle = icon ? window.getComputedStyle(icon) : null;
+        const gap = parseFloat(style.columnGap || style.gap);
+        return {
+          gap,
+          iconFontSize: iconStyle ? parseFloat(iconStyle.fontSize) : 0,
+          hasMark: Boolean(mark),
+          wordmark: text ? text.textContent.trim() : '',
+          aria: el.getAttribute('aria-label'),
+        };
+      });
+      if (!metrics.hasMark) throw new Error('Header logo mark missing');
+      if (metrics.wordmark !== 'Right Site Light') {
+        throw new Error(`Wordmark hidden or changed: ${metrics.wordmark}`);
+      }
+      if (!(metrics.gap < 12)) {
+        throw new Error(`Logo gap not tighter than 12px: ${metrics.gap}`);
+      }
+      if (!(metrics.iconFontSize < 32)) {
+        throw new Error(`Logo icon not smaller than 2rem: ${metrics.iconFontSize}`);
+      }
+      if (!metrics.aria) {
+        throw new Error('header.home aria-label missing on logo');
+      }
 
   - action: Feedback lives in the footer
     code: |

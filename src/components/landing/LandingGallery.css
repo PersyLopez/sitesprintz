@@ -2,7 +2,7 @@
 
 .gl-section {
   background: transparent;
-  padding: var(--space-5xl, 100px) 0;
+  padding: var(--space-4xl, 88px) 0;
   scroll-margin-top: 130px;
 }
 
@@ -18,7 +18,7 @@
 
 .gl-header {
   text-align: center;
-  margin-bottom: var(--space-3xl, 64px);
+  margin-bottom: var(--space-2xl, 48px);
   max-width: 36rem;
   margin-left: auto;
   margin-right: auto;
@@ -44,7 +44,7 @@
   gap: 8px;
   justify-content: center;
   flex-wrap: wrap;
-  margin-bottom: var(--space-3xl, 64px);
+  margin-bottom: var(--space-2xl, 48px);
 }
 
 .gl-tab {
