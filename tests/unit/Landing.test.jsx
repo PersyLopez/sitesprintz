@@ -146,7 +146,16 @@ describe('Landing Page', () => {
 
     const chips = within(nav).getAllByRole('button');
     const labels = chips.map((chip) => chip.textContent);
-    expect(labels).toEqual(['Stories', 'Purpose', 'Templates', 'How it works', 'Pricing']);
+    expect(labels).toEqual(['Stories', 'Purpose', 'How it works', 'Templates', 'Pricing']);
+  });
+
+  it('share step names more than WhatsApp', () => {
+    renderLanding();
+    const how = document.querySelector('#how-it-works');
+    const step3 = how?.querySelectorAll('.how-arc-step')[2];
+    const body = step3?.querySelector('p')?.textContent || '';
+    expect(body).toMatch(/WhatsApp/);
+    expect(body).toMatch(/Instagram|Facebook/);
   });
 
   it('has a proper heading hierarchy', () => {

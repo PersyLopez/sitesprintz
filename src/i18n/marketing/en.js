@@ -86,7 +86,7 @@ export default {
   'landing.how.2.title': 'Show what customers need',
   'landing.how.2.body': 'Add hours, menu, photos, and directions. Turn on booking or checkout when your plan includes them.',
   'landing.how.3.title': 'Share your link',
-  'landing.how.3.body': 'Tape the link on your stand, text it to a regular, post it on WhatsApp. Tomorrow’s customer opens it on their phone and knows where to go.',
+  'landing.how.3.body': 'Tape the link on your stand, text it to a regular, or post it on WhatsApp, Instagram, Facebook, or wherever you already talk to customers. Tomorrow’s customer opens it on their phone and knows where to go.',
   'landing.pricing.kicker': 'Plans',
   'landing.pricing.heading': 'Three plans. Pick how you run it.',
   'landing.pricing.lead': 'Hosting and monitoring. Booking and checkout on Growth. Growth Managed is the same software at $75/month — we set the site up and keep your menu and hours updated. You can edit anytime on Starter or Growth.',

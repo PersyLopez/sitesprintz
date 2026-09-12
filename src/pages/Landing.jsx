@@ -261,8 +261,8 @@ export default function Landing() {
         {[
           { id: 'stories', label: t('landing.jump.stories') },
           { id: 'purpose', label: t('landing.jump.purpose') },
-          { id: 'templates', label: t('landing.jump.templates') },
           { id: 'how-it-works', label: t('landing.jump.how') },
+          { id: 'templates', label: t('landing.jump.templates') },
           { id: 'pricing', label: t('landing.jump.pricing') },
         ].map((item) => (
           <button
@@ -361,11 +361,6 @@ export default function Landing() {
         </div>
       </section>
 
-      <LandingGallery
-        selectedTemplateId={selectedTemplateId}
-        onSelectTemplate={setSelectedTemplateId}
-      />
-
       {/* Steller arc as the plan */}
       <section id="how-it-works" className="how-section" aria-labelledby="how-heading">
         <div className="section-inner">
@@ -391,6 +386,11 @@ export default function Landing() {
           </ol>
         </div>
       </section>
+
+      <LandingGallery
+        selectedTemplateId={selectedTemplateId}
+        onSelectTemplate={setSelectedTemplateId}
+      />
 
       <section id="pricing" className="pricing-section" aria-labelledby="pricing-heading">
         <div className="section-inner">

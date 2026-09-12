@@ -86,7 +86,7 @@ export default {
   'landing.how.2.title': 'Muestra lo que necesitan',
   'landing.how.2.body': 'Añade horario, menú, fotos y cómo llegar. Activa reservas o checkout cuando tu plan las incluya.',
   'landing.how.3.title': 'Comparte tu enlace',
-  'landing.how.3.body': 'Pega el enlace en tu puesto, envíalo a un cliente fijo, publícalo en WhatsApp. El cliente de mañana lo abre en el teléfono y sabe a dónde ir.',
+  'landing.how.3.body': 'Pega el enlace en tu puesto, mándalo por mensaje, o publícalo en WhatsApp, Instagram, Facebook o donde ya hables con tus clientes. El cliente de mañana lo abre en el teléfono y sabe a dónde ir.',
   'landing.pricing.kicker': 'Planes',
   'landing.pricing.heading': 'Tres planes. Elige cómo lo llevas.',
   'landing.pricing.lead': 'Alojamiento y monitoreo. Reservas y checkout en Growth. Growth Managed es el mismo software a $75/mes — montamos el sitio y actualizamos tu menú y horario. Puedes editar cuando quieras en Starter o Growth.',

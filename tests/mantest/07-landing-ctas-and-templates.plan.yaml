@@ -66,3 +66,30 @@ steps:
     settle_ms: 600
     assert:
       - text contains Three steps. Then you’re findable.
+    code: |
+      if ((await page.locator('#purpose').count()) === 0) {
+        await page.goto('http://localhost:5173/#how-it-works');
+      }
+      await page.locator('#purpose').waitFor({ state: 'attached', timeout: 10000 });
+      await page.locator('#how-it-works').waitFor({ state: 'attached', timeout: 10000 });
+      await page.locator('#templates').waitFor({ state: 'attached', timeout: 10000 });
+      const order = await page.evaluate(() => {
+        const purpose = document.querySelector('#purpose');
+        const how = document.querySelector('#how-it-works');
+        const templates = document.querySelector('#templates');
+        const purposeBeforeHow = Boolean(
+          purpose.compareDocumentPosition(how) & Node.DOCUMENT_POSITION_FOLLOWING
+        );
+        const howBeforeTemplates = Boolean(
+          how.compareDocumentPosition(templates) & Node.DOCUMENT_POSITION_FOLLOWING
+        );
+        const step3 = how.querySelectorAll('.how-arc-step')[2];
+        const step3Text = step3 ? step3.textContent || '' : '';
+        return { purposeBeforeHow, howBeforeTemplates, step3Text };
+      });
+      if (!order.purposeBeforeHow || !order.howBeforeTemplates) {
+        throw new Error(`Section order wrong: ${JSON.stringify(order)}`);
+      }
+      if (!/Instagram|Facebook/.test(order.step3Text)) {
+        throw new Error(`How step 3 is WhatsApp-only: ${order.step3Text}`);
+      }
