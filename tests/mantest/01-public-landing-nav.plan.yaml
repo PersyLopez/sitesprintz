@@ -49,19 +49,69 @@ steps:
         throw new Error(`Section padding-top not 64/88: ${JSON.stringify(chrome.paddingTops)}`);
       }
 
+  - action: Mobile CTAs do not overlap the hero caption
+    code: |
+      const dismiss = page.getByTestId('setup-offer-dismiss');
+      if (await dismiss.isVisible()) {
+        await dismiss.click({ timeout: 5000 });
+        await page.waitForTimeout(400);
+      }
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.evaluate(() => window.scrollTo(0, 0));
+      const secondary = page.locator('.landing-hero .btn-secondary-large');
+      const caption = page.locator('.hero-ambient-caption');
+      await secondary.waitFor({ state: 'visible', timeout: 10000 });
+      await caption.waitFor({ state: 'visible', timeout: 10000 });
+      const mobile = await page.evaluate(() => {
+        const cta = document.querySelector('.landing-hero .btn-secondary-large');
+        const cap = document.querySelector('.hero-ambient-caption');
+        if (!cta || !cap) return { missing: true };
+        const a = cta.getBoundingClientRect();
+        const b = cap.getBoundingClientRect();
+        const hit = !(a.right <= b.left || a.left >= b.right || a.bottom <= b.top || a.top >= b.bottom);
+        return {
+          hit,
+          ctaVisible: a.width > 0 && a.height > 0,
+          capVisible: b.width > 0 && b.height > 0,
+        };
+      });
+      if (mobile.missing || !mobile.ctaVisible || !mobile.capVisible) {
+        throw new Error('CTA or caption missing at 390');
+      }
+      if (mobile.hit) {
+        throw new Error('Read their stories overlaps the hero caption at 390');
+      }
+      await page.setViewportSize({ width: 1280, height: 800 });
+      const desktop = await page.evaluate(() => {
+        const cta = document.querySelector('.hero-cta-row');
+        const cap = document.querySelector('.hero-ambient-caption');
+        const hero = document.querySelector('.landing-hero');
+        if (!cta || !cap || !hero) return { missing: true };
+        const cr = cta.getBoundingClientRect();
+        const capr = cap.getBoundingClientRect();
+        const hr = hero.getBoundingClientRect();
+        return {
+          captionOnRight: capr.left > hr.left + hr.width * 0.45,
+          ctaInCopy: cr.right < hr.left + hr.width * 0.55,
+        };
+      });
+      if (desktop.missing) throw new Error('Desktop hero nodes missing');
+      if (!desktop.captionOnRight) throw new Error('Caption not on the right at 1280');
+      if (!desktop.ctaInCopy) throw new Error('CTAs not in the copy column at 1280');
+
   - action: Header lockup is compact
     code: |
       await page.setViewportSize({ width: 1280, height: 800 });
       const metrics = await page.getByTestId('header-logo').evaluate((el) => {
         const style = window.getComputedStyle(el);
-        const icon = el.querySelector('.logo-icon');
         const mark = el.querySelector('.logo-mark');
         const text = el.querySelector('.logo-text');
-        const iconStyle = icon ? window.getComputedStyle(icon) : null;
+        const box = mark ? mark.getBoundingClientRect() : { height: 0, width: 0 };
         const gap = parseFloat(style.columnGap || style.gap);
         return {
           gap,
-          iconFontSize: iconStyle ? parseFloat(iconStyle.fontSize) : 0,
+          markHeight: box.height,
+          markWidth: box.width,
           hasMark: Boolean(mark),
           wordmark: text ? text.textContent.trim() : '',
           aria: el.getAttribute('aria-label'),
@@ -74,12 +124,48 @@ steps:
       if (!(metrics.gap < 12)) {
         throw new Error(`Logo gap not tighter than 12px: ${metrics.gap}`);
       }
-      if (!(metrics.iconFontSize < 32)) {
-        throw new Error(`Logo icon not smaller than 2rem: ${metrics.iconFontSize}`);
+      if (!(metrics.markHeight <= 68)) {
+        throw new Error(`Logo mark taller than 68px: ${metrics.markHeight}`);
+      }
+      if (!(metrics.markWidth <= 160)) {
+        throw new Error(`Logo mark wider than 160px: ${metrics.markWidth}`);
       }
       if (!metrics.aria) {
         throw new Error('header.home aria-label missing on logo');
       }
+      await page.setViewportSize({ width: 534, height: 800 });
+      const readHeaderChrome = async () =>
+        page.locator('.site-header').evaluate((el) => {
+          const style = window.getComputedStyle(el);
+          return {
+            bg: style.backgroundColor,
+            backdrop: style.backdropFilter || style.webkitBackdropFilter || 'none',
+          };
+        });
+      const chromeAlpha = (bg) => {
+        const match = bg.match(/[\d.]+/g);
+        if (!match) return 1;
+        if (bg.startsWith('rgb(') && !bg.startsWith('rgba(')) return 1;
+        return match.length >= 4 ? Number(match[3]) : 0;
+      };
+      const assertTransparentChrome = (paint, label) => {
+        if (chromeAlpha(paint.bg) > 0.08) {
+          throw new Error(`Header ${label} should be transparent, got ${paint.bg}`);
+        }
+        const backdrop = String(paint.backdrop || 'none').replace(/\s/g, '').toLowerCase();
+        if (backdrop !== 'none') {
+          throw new Error(`Header ${label} backdrop-filter should be none, got ${paint.backdrop}`);
+        }
+      };
+      await page.evaluate(() => window.scrollTo(0, 0));
+      assertTransparentChrome(await readHeaderChrome(), 'at rest');
+      await page.evaluate(() => window.scrollTo(0, 80));
+      await page.waitForFunction(() =>
+        document.querySelector('.site-header')?.classList.contains('scrolled')
+      );
+      assertTransparentChrome(await readHeaderChrome(), 'when scrolled');
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.setViewportSize({ width: 1280, height: 800 });
 
   - action: Feedback lives in the footer
     code: |

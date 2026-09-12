@@ -43,9 +43,10 @@
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: clamp(1.25rem, 2vw + 0.5rem, 1.5rem); /* Fluid typography */
-  font-weight: 800;
+  gap: 0;
+  font-size: clamp(1.0625rem, 1.5vw + 0.4rem, 1.25rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
   color: var(--text-light);
   transition: all 0.2s ease;
   z-index: 1001;
@@ -63,15 +64,17 @@
 }
 
 .logo-icon {
-  font-size: 2rem;
   color: var(--primary-light);
-  animation: float 3s ease-in-out infinite;
+  display: inline-flex;
+  align-items: center;
+  overflow: visible;
 }
 
 .logo-text {
   /* Solid color (not transparent clipped gradient) so WCAG contrast is measurable */
   color: var(--primary-light);
-  font-weight: 800;
+  font-weight: 700;
+  letter-spacing: -0.03em;
 }
 
 /* Desktop Navigation - Hidden on mobile */
@@ -400,15 +403,17 @@
 
 /* Logo icon - Responsive */
 .logo-icon {
-  font-size: clamp(1.5rem, 3vw + 0.5rem, 2rem);
   display: inline-flex;
   align-items: center;
   line-height: 1;
+  overflow: visible;
 }
 
 .logo-mark {
   display: block;
-  width: 1em;
-  height: 1em;
+  height: 60px;
+  width: auto;
+  aspect-ratio: 48 / 36;
+  overflow: visible;
 }
 

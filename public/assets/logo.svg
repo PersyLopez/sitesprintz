@@ -1,12 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" fill="none">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#22c55e"/>
-      <stop offset="100%" stop-color="#16a34a"/>
-    </linearGradient>
-  </defs>
-  <rect width="96" height="96" rx="20" fill="#062a12"/>
-  <g filter="url(#shadow)">
-    <path d="M70 44c0 16-12 28-28 28S14 60 14 44 26 16 42 16c6 0 12 2 16 6-8 2-14 8-16 16 8-2 14-8 16-16 8 4 12 12 12 22z" fill="url(#g)"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 36" preserveAspectRatio="xMidYMid meet">
+  <path fill="#3d5c72" fill-opacity="0.22" d="M3 3 L16 34 L46 18 Z"/>
+  <g fill="none" stroke="#3d5c72" stroke-width="1.2" stroke-linejoin="round">
+    <rect x="14" y="8" width="31" height="24" rx="2.2"/>
+    <path d="M14 14 H45"/>
   </g>
+  <circle cx="4.6" cy="4.2" r="2" fill="#3d5c72"/>
+  <circle cx="17.6" cy="11" r="0.85" fill="#3d5c72"/>
+  <circle cx="20.2" cy="11" r="0.85" fill="#3d5c72"/>
+  <circle cx="22.8" cy="11" r="0.85" fill="#3d5c72"/>
+  <rect x="25" y="9.4" width="17.6" height="3.2" rx="1.6" fill="none" stroke="#3d5c72" stroke-width="0.7"/>
+  <text x="26.4" y="11.8" fill="#3d5c72" font-family="system-ui, ui-sans-serif, sans-serif" font-size="2.35" font-stretch="condensed">rightsitelight.com</text>
+  <text x="17.8" y="20.2" fill="#3d5c72" font-family="system-ui, ui-sans-serif, sans-serif" font-weight="800" font-size="5.8" font-stretch="condensed" letter-spacing="-0.04">Right</text>
+  <text x="17.8" y="25.2" fill="#3d5c72" font-family="system-ui, ui-sans-serif, sans-serif" font-weight="800" font-size="5.8" font-stretch="condensed" letter-spacing="-0.04">Site</text>
+  <text x="17.8" y="30.2" fill="#3d5c72" font-family="system-ui, ui-sans-serif, sans-serif" font-weight="800" font-size="5.8" font-stretch="condensed" letter-spacing="-0.04">Light</text>
 </svg>

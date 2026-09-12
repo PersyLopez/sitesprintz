@@ -40,19 +40,16 @@
   flex: 1;
 }
 
-/* Header — warm story chrome */
+/* Header — fully transparent chrome at rest and when sticky (no fill, frost, blur, border, or shadow) */
 .story-public .site-header,
-.public-page .site-header {
-  background: rgba(255, 248, 239, 0.9);
-  border-bottom: 1px solid var(--sp-border);
-  backdrop-filter: blur(12px);
-}
-
+.public-page .site-header,
 .story-public .site-header.scrolled,
 .public-page .site-header.scrolled {
-  background: rgba(255, 248, 239, 0.97);
-  box-shadow: 0 4px 20px rgba(28, 20, 15, 0.06);
-  border-bottom-color: var(--sp-border);
+  background: transparent;
+  border-bottom-color: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
 }
 
 .story-public .logo,

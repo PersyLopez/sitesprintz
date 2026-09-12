@@ -86,7 +86,7 @@
   padding: var(--space-4xl) var(--space-lg) var(--space-4xl);
   min-height: min(70vh, 720px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   isolation: isolate;
   overflow: hidden;
 }
@@ -114,6 +114,10 @@
 }
 
 @media (min-width: 1024px) {
+  .landing-hero {
+    align-items: center;
+  }
+
   .hero-content {
     grid-template-columns: minmax(0, 34rem) 1fr;
     gap: var(--space-4xl);
@@ -165,12 +169,20 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+  /* Stacked hero: keep CTAs above .hero-ambient-ui (caption + controls). */
+  padding-bottom: calc(var(--space-5xl) * 2 + var(--space-4xl));
 }
 
 @media (min-width: 640px) {
   .hero-cta-row {
     flex-direction: row;
     align-items: center;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-cta-row {
+    padding-bottom: 0;
   }
 }
 
