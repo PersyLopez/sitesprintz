@@ -255,6 +255,76 @@ describe('PublishModal', () => {
     });
   });
 
+  describe('Photo link', () => {
+    it('keeps pre-publish confirmation free of photo links', async () => {
+      const onEditPhotos = vi.fn();
+      const siteData = {
+        template: 'basic',
+        brand: { name: 'Test Business' },
+      };
+
+      renderWithContext(
+        <PublishModal
+          siteData={siteData}
+          onClose={mockOnClose}
+          onEditPhotos={onEditPhotos}
+        />,
+        defaultAuthValue,
+        defaultToastValue
+      );
+
+      await waitFor(() => {
+        expect(getPublishButton()).not.toBeDisabled();
+      });
+      expect(screen.getByRole('heading', { name: 'Put my page online' })).toBeInTheDocument();
+      expect(screen.queryByTestId('publish-photo-link')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('publish-photo-link-live')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('publish-photos-later')).not.toBeInTheDocument();
+      expect(screen.queryByText('Use your photos here')).not.toBeInTheDocument();
+      expect(onEditPhotos).not.toHaveBeenCalled();
+    });
+
+    it('shows photo choices after publish success', async () => {
+      const onEditPhotos = vi.fn();
+      const saveDraft = vi.fn().mockResolvedValue({ draftId: 'draft-123' });
+      api.get.mockResolvedValue({ sites: [] });
+      api.post.mockReset();
+      api.post.mockResolvedValue({
+        subdomain: 'test-business',
+        url: 'http://localhost:5173/view/test-business',
+      });
+
+      renderWithContext(
+        <PublishModal
+          siteData={{ template: 'basic', brand: { name: 'Test Business' } }}
+          draftId="draft-123"
+          saveDraft={saveDraft}
+          onClose={mockOnClose}
+          onEditPhotos={onEditPhotos}
+        />,
+        defaultAuthValue,
+        defaultToastValue
+      );
+
+      await waitFor(() => {
+        expect(getPublishButton()).not.toBeDisabled();
+      });
+      fireEvent.click(getPublishButton());
+
+      await waitFor(() => {
+        expect(screen.getByTestId('publish-success')).toBeInTheDocument();
+      });
+      const live = screen.getByTestId('publish-photo-link-live');
+      expect(live).toHaveTextContent('Use your photos here');
+      expect(live).toHaveAttribute('href', '/view/test-business?edit=true');
+      const later = screen.getByTestId('publish-photos-later');
+      expect(later).toHaveTextContent("I'll add photos later");
+      fireEvent.click(later);
+      expect(onEditPhotos).not.toHaveBeenCalled();
+      expect(screen.getByTestId('publish-success')).toBeInTheDocument();
+    });
+  });
+
   describe('Payment Logic', () => {
     it('does not require a merchant processor to publish a Growth template', () => {
       const siteData = {

@@ -79,6 +79,27 @@
   font-size: 1.1rem;
 }
 
+.btn-link {
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  color: var(--primary-color);
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 0.9rem;
+}
+
+.btn-link:hover,
+.btn-link:focus-visible {
+  color: var(--text-light);
+}
+
+.publish-success-actions .btn-link {
+  display: inline-block;
+  min-width: auto;
+  align-self: center;
+}
+
 /* Plan requirement notice */
 .plan-requirement-notice {
   margin-top: var(--spacing-md);

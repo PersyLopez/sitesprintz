@@ -160,14 +160,16 @@ describe('sectionHtmlBridge', () => {
       type: 'services',
       content: { items: [{ name: 'Cut', price: '45' }] },
     }, tokens);
-    expect(services).toContain('Use a photo of this service here');
+    expect(services).toContain('data-testid="photo-placeholder"');
+    expect(services).toContain('Example of Cut — use your photo here');
     expect(services).toContain('/assets/hero-placeholder.jpg');
+    expect(services).not.toContain('ss-card-media');
 
     const oilService = renderSectionToHtml({
       type: 'services',
       content: { items: [{ name: 'Oil changes', price: 'from $39' }] },
     }, tokens);
-    expect(oilService).toMatch(/\/assets\/service-inserts\/oil\.(jpg|svg)/);
+    expect(oilService).toContain('/assets/service-inserts/oil.jpg');
     expect(oilService).toContain('ss-card-media');
     expect(oilService).not.toContain('photo-placeholder');
     expect(oilService).not.toContain('Example of Oil changes');
@@ -177,8 +179,8 @@ describe('sectionHtmlBridge', () => {
       type: 'services',
       content: { items: [{ name: 'Muffler', price: '' }, { name: 'Oil changes', price: '' }] },
     }, tokens);
-    expect(mufflerService).toMatch(/\/assets\/service-inserts\/muffler\.(jpg|svg)/);
-    expect(mufflerService).toMatch(/\/assets\/service-inserts\/oil\.(jpg|svg)/);
+    expect(mufflerService).toContain('/assets/service-inserts/muffler.jpg');
+    expect(mufflerService).toContain('/assets/service-inserts/oil.jpg');
     expect(mufflerService).toContain('ss-card-media');
     expect(mufflerService).not.toContain('photo-placeholder');
     expect(mufflerService).not.toContain('Example of Muffler');
@@ -188,7 +190,7 @@ describe('sectionHtmlBridge', () => {
       type: 'services',
       content: { items: [{ name: 'Hair care / haircuts' }] },
     }, tokens);
-    expect(hairCareService).toMatch(/\/assets\/service-inserts\/hair-care\.(jpg|svg)/);
+    expect(hairCareService).toContain('/assets/service-inserts/hair-care.jpg');
     expect(hairCareService).not.toMatch(/\/assets\/service-inserts\/haircut\.(jpg|svg)/);
     expect(hairCareService).toContain('ss-card-media');
     expect(hairCareService).not.toContain('photo-placeholder');
@@ -197,7 +199,7 @@ describe('sectionHtmlBridge', () => {
       type: 'services',
       content: { items: [{ name: 'Haircut' }] },
     }, tokens);
-    expect(haircutService).toMatch(/\/assets\/service-inserts\/haircut\.(jpg|svg)/);
+    expect(haircutService).toContain('/assets/service-inserts/haircut.jpg');
     expect(haircutService).toContain('ss-card-media');
     expect(haircutService).not.toContain('photo-placeholder');
 
@@ -205,17 +207,20 @@ describe('sectionHtmlBridge', () => {
       type: 'catalog',
       content: { items: [{ name: 'Mug', price: '$24' }] },
     }, tokens);
+    expect(catalog).toContain('data-testid="photo-placeholder"');
     expect(catalog).toContain('data-photo-field="catalog.items.0.image"');
-    expect(catalog).not.toContain('data-testid="photo-placeholder"');
-    expect(catalog).not.toContain('ss-photo-placeholder');
+    expect(catalog).toContain('ss-photo-placeholder');
+    expect(catalog).toContain('Use your product photo here');
+    expect(catalog).not.toContain('/assets/service-inserts/');
 
     const menuDish = renderSectionToHtml({
       type: 'catalog',
       content: { items: [{ name: 'Chicken over rice', price: '$12' }] },
     }, tokens);
+    expect(menuDish).toContain('data-testid="photo-placeholder"');
     expect(menuDish).not.toContain('/assets/service-inserts/');
     expect(menuDish).toContain('Chicken over rice');
-    expect(menuDish).not.toContain('ss-photo-placeholder');
+    expect(menuDish).toContain('/assets/hero-placeholder.jpg');
   });
 
   it('keeps an owner photo URL instead of the sample insert', () => {
@@ -225,6 +230,15 @@ describe('sectionHtmlBridge', () => {
     }, tokens);
     expect(html).toContain('https://cdn.example.com/shop.jpg');
     expect(html).not.toContain('data-testid="photo-placeholder"');
+
+    const service = renderSectionToHtml({
+      type: 'services',
+      content: { items: [{ name: 'Haircut', image: 'https://cdn.example.com/cut.jpg' }] },
+    }, tokens);
+    expect(service).toContain('https://cdn.example.com/cut.jpg');
+    expect(service).toContain('ss-card-media');
+    expect(service).not.toContain('data-testid="photo-placeholder"');
+    expect(service).not.toContain('/assets/service-inserts/haircut.jpg');
   });
 
   it('formats numeric catalog prices as dollar amounts', () => {
@@ -268,7 +282,7 @@ describe('sectionHtmlBridge', () => {
     expect(html).toContain('Harbor Goods');
     expect(html).toContain('Shop');
     expect(html).toContain('data-photo-field="catalog.items.0.image"');
-    expect(html).not.toContain('Use your product photo here');
+    expect(html).toContain('Use your product photo here');
   });
 
   it('embeds a booking mount for native scheduling', () => {

@@ -242,10 +242,15 @@ function renderServices(section, tokens) {
       const genericImage = image ? null : genericServiceInsertSrc(name);
       const duration = item.duration || item.duration_minutes;
       const serviceId = serviceKey(item, index);
+      const media = image || genericImage
+        ? `<img class="ss-card-media" data-photo-field="services.items.${index}.image" src="${escapeAttr(image || genericImage)}" alt="${escapeAttr(item.imageAlt || name)}" loading="lazy" />`
+        : renderPhotoPlaceholder('service', {
+            offerName: name,
+            className: 'ss-photo-placeholder--card',
+            photoField: `services.items.${index}.image`,
+          });
       return `<article class="ss-card" data-service-id="${escapeAttr(serviceId)}" data-service-name="${escapeAttr(name)}" style="background: ${getSurface(tokens)}; border: 1px solid ${getTokens(tokens).theme.hairline};">
-  ${image || genericImage
-    ? `<img class="ss-card-media" data-photo-field="services.items.${index}.image" src="${escapeAttr(image || genericImage)}" alt="${escapeAttr(item.imageAlt || name)}" loading="lazy" />`
-    : renderPhotoPlaceholder('service', { className: 'ss-photo-placeholder--card', photoField: `services.items.${index}.image` })}
+  ${media}
   <div class="ss-card-body">
     <h3 style="color: ${getAccent(tokens)};">${escapeHtml(name)}</h3>
     ${desc ? `<p style="color: ${getMuted(tokens)};">${escapeHtml(desc)}</p>` : ''}
@@ -583,10 +588,10 @@ function renderCatalog(section, tokens) {
   }
 
   const cardsHtml = items
-    .map((item, index) => `<article class="ss-card" data-photo-field="catalog.items.${index}.image" style="background: ${getSurface(tokens)}; border: 1px solid ${getTokens(tokens).theme.hairline};">
+    .map((item, index) => `<article class="ss-card" style="background: ${getSurface(tokens)}; border: 1px solid ${getTokens(tokens).theme.hairline};">
   ${item.image
-    ? `<img class="ss-card-media" src="${escapeAttr(item.image)}" alt="${escapeAttr(item.imageAlt || item.name || '')}" loading="lazy" />`
-    : ''}
+    ? `<img class="ss-card-media" data-photo-field="catalog.items.${index}.image" src="${escapeAttr(item.image)}" alt="${escapeAttr(item.imageAlt || item.name || '')}" loading="lazy" />`
+    : renderPhotoPlaceholder('product', { className: 'ss-photo-placeholder--card', photoField: `catalog.items.${index}.image` })}
   <div class="ss-card-body">
     <h3 style="color: ${getAccent(tokens)};">${escapeHtml(item.name || '')}</h3>
     <p style="color: ${getMuted(tokens)};">${escapeHtml(item.description || '')}</p>

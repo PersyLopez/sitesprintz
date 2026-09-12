@@ -42,6 +42,22 @@ describe('photoPlaceholder', () => {
       expect(genericServiceInsertSrc('Highlighting')).toBe('/assets/service-inserts/highlighting.jpg');
       expect(genericServiceInsertSrc('Laser hair removal')).toBe('/assets/service-inserts/laser.svg');
       expect(genericServiceInsertSrc('Bridal styling')).toBe('/assets/service-inserts/bridal.svg');
+      expect(genericServiceInsertSrc('Manicure')).toBe('/assets/service-inserts/nails.jpg');
+      expect(genericServiceInsertSrc('Box braids')).toBe('/assets/service-inserts/braids.jpg');
+      expect(genericServiceInsertSrc('Perm')).toBe('/assets/service-inserts/perm.jpg');
+      expect(genericServiceInsertSrc('Blowout')).toBe('/assets/service-inserts/blowout.jpg');
+      expect(genericServiceInsertSrc('Waxing')).toBe('/assets/service-inserts/waxing.jpg');
+      expect(genericServiceInsertSrc('Tune-up')).toBe('/assets/service-inserts/tuneup.jpg');
+      expect(genericServiceInsertSrc('Transmission')).toBe('/assets/service-inserts/transmission.jpg');
+      expect(genericServiceInsertSrc('Headlights')).toBe('/assets/service-inserts/lights.jpg');
+      expect(genericServiceInsertSrc('Suspension')).toBe('/assets/service-inserts/suspension.jpg');
+      expect(genericServiceInsertSrc('General repair')).toBe('/assets/service-inserts/general-repair.jpg');
+    });
+
+    it('matches highlight before lights and hair care before haircut', () => {
+      expect(genericServiceInsertSrc('Balayage highlights')).toBe('/assets/service-inserts/balayage.jpg');
+      expect(genericServiceInsertSrc('Highlighting')).toBe('/assets/service-inserts/highlighting.jpg');
+      expect(genericServiceInsertSrc('Highlighting')).not.toBe('/assets/service-inserts/lights.jpg');
     });
 
     it('does not map hair care to haircut scissors insert', () => {

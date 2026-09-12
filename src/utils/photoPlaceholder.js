@@ -6,18 +6,28 @@
 export const PHOTO_INSERT_SRC = '/assets/hero-placeholder.jpg';
 
 const GENERIC_SERVICE_INSERTS = [
-  [/oil/i, 'oil.jpg'],
-  [/tire/i, 'tires.jpg'],
-  [/brake/i, 'brakes.jpg'],
-  [/muffler/i, 'muffler.jpg'],
-  [/nail/i, 'nails.jpg'],
+  [/laser hair removal/i, 'laser.svg'],
+  [/bridal styling/i, 'bridal.svg'],
   [/balayage/i, 'balayage.jpg'],
+  [/highlight/i, 'highlighting.jpg'],
+  [/manicure/i, 'nails.jpg'],
+  [/nail/i, 'nails.jpg'],
+  [/braid/i, 'braids.jpg'],
+  [/perm/i, 'perm.jpg'],
+  [/blowout/i, 'blowout.jpg'],
+  [/waxing/i, 'waxing.jpg'],
   [/hair care/i, 'hair-care.jpg'],
   [/haircut/i, 'haircut.jpg'],
   [/color/i, 'coloring.jpg'],
-  [/highlight/i, 'highlighting.jpg'],
-  [/laser hair removal/i, 'laser.svg'],
-  [/bridal styling/i, 'bridal.svg'],
+  [/muffler/i, 'muffler.jpg'],
+  [/transmission/i, 'transmission.jpg'],
+  [/suspension/i, 'suspension.jpg'],
+  [/tune[\s-]?up/i, 'tuneup.jpg'],
+  [/brake/i, 'brakes.jpg'],
+  [/tire/i, 'tires.jpg'],
+  [/oil/i, 'oil.jpg'],
+  [/lights/i, 'lights.jpg'],
+  [/general[\s-]?repair/i, 'general-repair.jpg'],
 ];
 
 const COPY = {

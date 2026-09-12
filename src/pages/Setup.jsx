@@ -147,6 +147,12 @@ function Setup() {
     setActiveTab('editor');
   };
 
+  const openEditorFromReview = () => {
+    setShowReview(false);
+    setShowTemplatePicker(false);
+    setActiveTab('editor');
+  };
+
   const handleCustomBuilderCancel = () => {
     setShowCustomBuilder(false);
   };
@@ -234,11 +240,7 @@ function Setup() {
               type="button"
               className="btn btn-secondary"
               data-testid="review-change"
-              onClick={() => {
-                setShowReview(false);
-                setShowTemplatePicker(false);
-                setActiveTab('editor');
-              }}
+              onClick={openEditorFromReview}
             >
               Change something
             </button>
@@ -253,6 +255,11 @@ function Setup() {
             draftId={draftId}
             saveDraft={saveDraft}
             onClose={() => setShowPublishModal(false)}
+            onEditPhotos={async () => {
+              if (saveDraft) await saveDraft(true);
+              setShowPublishModal(false);
+              openEditorFromReview();
+            }}
           />
         )}
       </div>

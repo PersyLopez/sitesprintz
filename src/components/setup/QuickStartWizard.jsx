@@ -3,6 +3,7 @@ import { useSite } from '../../hooks/useSite';
 import { templatesService } from '../../services/templates';
 import { getIndustryDefaults, replacePlaceholder, INDUSTRY_TEMPLATES } from '../../utils/industryDefaults';
 import { buildSiteDataFromWizard, REFINED_NICHE_IDS } from '../../utils/wizardSiteDataBuilder';
+import { getNicheConfig } from '../../config/nicheTemplateBuilders';
 import { getRecommendedSiteThemes, colorsFromSiteTheme } from '../../config/siteThemes';
 import FieldValidation from '../common/FieldValidation';
 import { useToast } from '../../hooks/useToast';
@@ -11,8 +12,47 @@ import './QuickStartWizard.css';
 const WIZARD_STEPS = [
   { id: 'industry', title: 'What type of business?', icon: '🏢' },
   { id: 'basics', title: 'Business essentials', icon: '📝' },
+  { id: 'offers', title: 'What you offer', icon: '📋' },
   { id: 'style', title: 'Choose your look', icon: '🎨' }
 ];
+
+const EMPTY_OFFER = { name: '', price: '', description: '' };
+
+function mapOfferRows(items) {
+  return items.map((item) => ({
+    name: item.name || '',
+    price: item.price || '',
+    description: item.description || '',
+  }));
+}
+
+function seedOffersFromNiche(nicheId) {
+  const niche = getNicheConfig(nicheId);
+  if (!niche) {
+    return { kind: 'services', items: [{ ...EMPTY_OFFER }] };
+  }
+  if (Array.isArray(niche.services) && niche.services.length) {
+    return { kind: 'services', items: mapOfferRows(niche.services) };
+  }
+  if (Array.isArray(niche.products) && niche.products.length) {
+    return { kind: 'products', items: mapOfferRows(niche.products) };
+  }
+  if (Array.isArray(niche.menuSections) && niche.menuSections.length) {
+    const items = niche.menuSections.flatMap((section) => section.items || []);
+    if (items.length) {
+      return { kind: 'products', items: mapOfferRows(items) };
+    }
+  }
+  return { kind: 'services', items: [{ ...EMPTY_OFFER }] };
+}
+
+function seedOffersFromIndustry(industryId) {
+  if (!industryId) {
+    return { kind: 'services', items: [{ ...EMPTY_OFFER }] };
+  }
+  const nicheId = INDUSTRY_TO_NICHE[industryId] || industryId;
+  return seedOffersFromNiche(nicheId);
+}
 
 const INDUSTRIES = [
   { id: 'restaurant', name: 'Restaurant', icon: '🍽️', description: 'Food & dining' },
@@ -73,6 +113,9 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
   const [loading, setLoading] = useState(false);
   const [basicsSubmitAttempted, setBasicsSubmitAttempted] = useState(false);
   const [showAllThemes, setShowAllThemes] = useState(false);
+  const initialOffers = seedOffersFromIndustry(preselectedIndustry);
+  const [offerKind, setOfferKind] = useState(initialOffers.kind);
+  const [offerRows, setOfferRows] = useState(initialOffers.items);
 
   const defaults = selectedIndustry ? getIndustryDefaults(selectedIndustry) : null;
   const themesForIndustry = selectedIndustry
@@ -83,6 +126,9 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
     setSelectedIndustry(industryId);
     setSelectedTheme(null);
     setShowAllThemes(false);
+    const seeded = seedOffersFromIndustry(industryId);
+    setOfferKind(seeded.kind);
+    setOfferRows(seeded.items);
     // Store industry preference for template recommendations
     localStorage.setItem('userIndustryPreference', industryId);
     setCurrentStep(1);
@@ -101,13 +147,33 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
     if (!formData.phone.trim() && !formData.email.trim()) {
       return;
     }
+    setCurrentStep(2);
+  };
+
+  const handleOffersNext = () => {
     const niche = INDUSTRY_TO_NICHE[selectedIndustry] || selectedIndustry;
     const recommended = getRecommendedSiteThemes(niche);
     if (!selectedTheme && recommended[0]) {
       setSelectedTheme(recommended[0]);
     }
-    // Go to theme step (step 2)
-    setCurrentStep(2);
+    setCurrentStep(3);
+  };
+
+  const updateOfferRow = (index, field, value) => {
+    setOfferRows((prev) => prev.map((row, i) => (
+      i === index ? { ...row, [field]: value } : row
+    )));
+  };
+
+  const addOfferRow = () => {
+    setOfferRows((prev) => [...prev, { ...EMPTY_OFFER }]);
+  };
+
+  const removeOfferRow = (index) => {
+    setOfferRows((prev) => {
+      const next = prev.filter((_, i) => i !== index);
+      return next.length ? next : [{ ...EMPTY_OFFER }];
+    });
   };
 
   const handleThemeSelect = (theme) => {
@@ -130,12 +196,20 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
 
       // Try the new layout engine first for known niches
       if (nicheId && REFINED_NICHE_IDS.includes(nicheId)) {
+        const catalogItems = offerRows
+          .map((row) => ({
+            name: (row.name || '').trim(),
+            price: (row.price || '').trim(),
+            description: (row.description || '').trim(),
+          }))
+          .filter((row) => row.name);
         const siteData = buildSiteDataFromWizard({
           niche: nicheId,
           businessName: formData.businessName.trim(),
           level: 'solo',
           contact,
           themeId: selectedTheme.id,
+          ...(catalogItems.length ? { catalogItems, kind: offerKind } : {}),
         });
         await loadTemplate(siteData);
         onComplete(siteData);
@@ -286,6 +360,73 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
 
       case 2:
         return (
+          <div className="wizard-step" data-testid="wizard-offers-step">
+            <h2>{offerKind === 'services' ? 'Your services' : 'What you offer'}</h2>
+            <p className="step-description">A few starters for your business type. Edit them now — you can change these later.</p>
+            <div className="wizard-form">
+              {offerRows.map((row, index) => (
+                <div key={`offer-${index}`}>
+                  <div className="form-group">
+                    <label htmlFor={`wizard-offer-name-${index}`}>Name</label>
+                    <input
+                      type="text"
+                      id={`wizard-offer-name-${index}`}
+                      data-testid={`wizard-offer-name-${index}`}
+                      value={row.name}
+                      onChange={(e) => updateOfferRow(index, 'name', e.target.value)}
+                      placeholder={offerKind === 'services' ? 'Service name' : 'Product name'}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor={`wizard-offer-price-${index}`}>Price</label>
+                    <input
+                      type="text"
+                      id={`wizard-offer-price-${index}`}
+                      data-testid={`wizard-offer-price-${index}`}
+                      value={row.price}
+                      onChange={(e) => updateOfferRow(index, 'price', e.target.value)}
+                      placeholder="$45"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor={`wizard-offer-desc-${index}`}>Description</label>
+                    <input
+                      type="text"
+                      id={`wizard-offer-desc-${index}`}
+                      data-testid={`wizard-offer-desc-${index}`}
+                      value={row.description}
+                      onChange={(e) => updateOfferRow(index, 'description', e.target.value)}
+                      placeholder="Short description"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      data-testid={`wizard-offer-remove-${index}`}
+                      onClick={() => removeOfferRow(index)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+              <div className="form-group">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  data-testid="wizard-offer-add"
+                  onClick={addOfferRow}
+                >
+                  Add another
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 3:
+        return (
           <div className="wizard-step style-selection">
             <h2>Choose a theme</h2>
             <p className="step-description">Six palettes with locked contrast. Recommended ones for your business come first.</p>
@@ -373,7 +514,7 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
               type="button"
               className="btn btn-primary"
               data-testid="wizard-next"
-              onClick={handleBasicsNext}
+              onClick={currentStep === 1 ? handleBasicsNext : handleOffersNext}
             >
               Next →
             </button>

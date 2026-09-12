@@ -269,6 +269,20 @@ export function getLiveSiteCss(tokens = {}) {
   height: 220px;
   flex-shrink: 0;
 }
+.ss-photo-placeholder--card::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 48%;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--ss-bg) 55%, transparent) 100%);
+}
+.ss-photo-placeholder--card .ss-photo-placeholder-mark {
+  z-index: 2;
+  color: var(--ss-text);
+  background: var(--ss-bg);
+}
 .ss-photo-placeholder--tile {
   min-height: 240px;
   border-radius: 4px;

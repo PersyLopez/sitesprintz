@@ -1,5 +1,5 @@
 url: http://localhost:5173/login
-goal: New self-serve path — 3-step wizard, Your page is ready, publish modal, editor opt-in (do not submit publish)
+goal: New self-serve path — wizard with offers step, Your page is ready, publish modal, editor opt-in (do not submit publish)
 steps:
   - action: Login form ready
     wait_for: { text: Welcome Back, timeout: 20000 }
@@ -63,6 +63,22 @@ steps:
   - action: Fill phone
     fill: { testId: contact-phone-input, value: "555-0199", clear: true }
 
+  - action: Next to offers
+    click: { testId: wizard-next }
+    settle_ms: 1200
+
+  - action: Offers step prefilled
+    wait_for: { selector: '[data-testid="wizard-offers-step"]', timeout: 10000 }
+    assert:
+      - text contains Your services
+
+  - action: Haircut is prefilled
+    code: |
+      const name = page.getByTestId('wizard-offer-name-0');
+      await name.waitFor({ timeout: 5000 });
+      const v = await name.inputValue();
+      if (!/Haircut/i.test(v)) throw new Error('expected Haircut prefill, got ' + v);
+
   - action: Next to look
     click: { testId: wizard-next }
     settle_ms: 1200
@@ -111,6 +127,19 @@ steps:
   - action: Publish submit is in the modal
     wait_for: { selector: '[data-testid="publish-submit"]', timeout: 10000 }
     settle_ms: 300
+
+  - action: Photo links are absent before publish
+    code: |
+      if (await page.getByTestId('publish-photo-link').count()) {
+        throw new Error('publish-photo-link should not appear before publish');
+      }
+      if (await page.getByTestId('publish-photos-later').count()) {
+        throw new Error('publish-photos-later should not appear before publish');
+      }
+      const t = await page.locator('body').innerText();
+      if (/Use your photos here/i.test(t)) {
+        throw new Error('Use your photos here should not appear before publish');
+      }
 
   - action: Close publish modal
     code: |

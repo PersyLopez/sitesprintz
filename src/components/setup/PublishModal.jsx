@@ -4,9 +4,10 @@ import { useToast } from '../../hooks/useToast';
 import { api } from '../../services/api';
 import { PRICING_CONFIG, PLATFORM_SUPPORT_EMAIL } from '../../config/pricing.config';
 import { getPublishedSiteUrl } from '../../utils/siteWorkspace';
+import { livePublishedPath, subdomainFromLivePath } from '../../utils/visitorExperience';
 import './PublishModal.css';
 
-function PublishModal({ siteData, onClose, draftId, saveDraft }) {
+function PublishModal({ siteData, onClose, draftId, saveDraft, onEditPhotos }) {
   const { user } = useAuth();
   const { showSuccess, showError } = useToast();
   const [isEligibleForTrial, setIsEligibleForTrial] = useState(false);
@@ -38,6 +39,7 @@ function PublishModal({ siteData, onClose, draftId, saveDraft }) {
   const [billablePublishedCount, setBillablePublishedCount] = useState(0);
   const [collectsPayments, setCollectsPayments] = useState(false);
   const [publishedUrl, setPublishedUrl] = useState('');
+  const [publishedSubdomain, setPublishedSubdomain] = useState('');
 
   const plans = [
     {
@@ -212,8 +214,11 @@ function PublishModal({ siteData, onClose, draftId, saveDraft }) {
         });
       }
 
-      const subdomain = result.subdomain || result.site?.subdomain;
-      const siteUrl = result.url || getPublishedSiteUrl(subdomain) || `/view/${encodeURIComponent(subdomain)}`;
+      const subdomain = result.subdomain
+        || result.site?.subdomain
+        || result.data?.subdomain
+        || subdomainFromLivePath(result.url || result.data?.url || '');
+      const siteUrl = result.url || result.data?.url || getPublishedSiteUrl(subdomain) || `/view/${encodeURIComponent(subdomain)}`;
 
       if (isEligibleForTrial) {
         showSuccess(`Your site is live for ${trialDays} days — no card required.`);
@@ -221,6 +226,7 @@ function PublishModal({ siteData, onClose, draftId, saveDraft }) {
         showSuccess('Site published successfully!');
       }
       setPublishedUrl(siteUrl);
+      setPublishedSubdomain(subdomain || '');
     } catch (error) {
       console.error('Publish error:', error);
       const code = error.payload?.code;
@@ -242,6 +248,15 @@ function PublishModal({ siteData, onClose, draftId, saveDraft }) {
       setLoading(false);
     }
   };
+
+  const handleEditPhotos = () => {
+    if (onEditPhotos) onEditPhotos();
+    else onClose();
+  };
+
+  const liveEditSubdomain = publishedSubdomain || subdomainFromLivePath(publishedUrl);
+  const liveEditPath = livePublishedPath(liveEditSubdomain);
+  const liveEditHref = liveEditPath ? `${liveEditPath}?edit=true` : '';
 
   const handleCopyUrl = async () => {
     try {
@@ -275,6 +290,27 @@ function PublishModal({ siteData, onClose, draftId, saveDraft }) {
               <a href={publishedUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
                 Open my page
               </a>
+              {liveEditHref ? (
+                <a href={liveEditHref} className="btn-link" data-testid="publish-photo-link-live">
+                  Use your photos here
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  className="btn-link"
+                  data-testid="publish-photo-link-live"
+                  onClick={handleEditPhotos}
+                >
+                  Use your photos here
+                </button>
+              )}
+              <button
+                type="button"
+                className="btn-link"
+                data-testid="publish-photos-later"
+              >
+                I'll add photos later
+              </button>
               <a
                 href={`sms:?body=${encodeURIComponent(publishedUrl)}`}
                 className="btn btn-secondary"

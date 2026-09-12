@@ -71,13 +71,11 @@ vi.mock('../../src/components/setup/PreviewFrame', () => ({
 }));
 
 vi.mock('../../src/components/setup/PublishModal', () => ({
-  default: ({ isOpen, onClose, onPublish }) => (
-    isOpen ? (
-      <div data-testid="publish-modal">
-        <button data-testid="confirm-publish" onClick={onPublish}>Publish</button>
-        <button data-testid="cancel-publish" onClick={onClose}>Cancel</button>
-      </div>
-    ) : null
+  default: ({ onClose }) => (
+    <div data-testid="publish-modal">
+      <button data-testid="confirm-publish" onClick={onClose}>Publish</button>
+      <button data-testid="cancel-publish" onClick={onClose}>Cancel</button>
+    </div>
   ),
 }));
 

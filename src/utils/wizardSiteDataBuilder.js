@@ -123,8 +123,41 @@ function ensureSocial(siteData) {
  * @param {string} [formState.openUntil]   - Bazaar: optional end date
  * @param {Object} [formState.features]    - Feature overrides
  * @param {string} [formState.themeId]     - Curated site theme id
+ * @param {Array<{name?: string, price?: string, description?: string}>} [formState.catalogItems]
+ * @param {string} [formState.kind]        - services vs products/menu (section chosen by what exists)
  * @returns {Object|null} siteData, or null when the niche is unknown
  */
+function applyWizardCatalogItems(siteData, catalogItems) {
+  if (!siteData || !Array.isArray(catalogItems) || catalogItems.length === 0) {
+    return siteData;
+  }
+
+  const items = catalogItems.map((item) => ({
+    name: item?.name || '',
+    price: item?.price || '',
+    description: item?.description || '',
+  }));
+
+  if (!Array.isArray(siteData.sections)) return siteData;
+
+  let catalogTouched = false;
+  siteData.sections = siteData.sections.map((section) => {
+    if (section.type !== 'services' && section.type !== 'catalog') return section;
+    if (section.type === 'catalog') catalogTouched = true;
+    return {
+      ...section,
+      content: {
+        ...(section.content || {}),
+        items,
+      },
+    };
+  });
+  if (catalogTouched) {
+    siteData.products = items;
+  }
+  return siteData;
+}
+
 export function buildSiteDataFromWizard(formState = {}) {
   const { niche } = formState;
   if (!niche) return null;
@@ -158,6 +191,8 @@ export function buildSiteDataFromWizard(formState = {}) {
     features: formState.features,
     includeStockPhotos: false,
   });
+
+  applyWizardCatalogItems(siteData, formState.catalogItems);
 
   return applyVisitorExperienceDefaults(
     applyTheme(ensureSocial(injectContact(siteData, formState)), formState.themeId, niche)

@@ -58,13 +58,13 @@ steps:
         throw new Error('Customer preview still has Unsplash');
       }
       const src = await slots.first().locator('img').first().getAttribute('src');
-      if (!src || !/\/assets\/hero-placeholder/.test(src)) {
+      if (!src || !/\/assets\/(hero-placeholder|service-inserts)/.test(src)) {
         throw new Error('Insert src is not first-party: ' + src);
       }
       const field = await slots.first().getAttribute('data-photo-field');
       if (!field) throw new Error('Insert missing data-photo-field');
       const label = await slots.first().innerText();
-      if (!/Use your|Use a photo/i.test(label)) {
+      if (!/Use your|Use a photo|use your photo here/i.test(label)) {
         throw new Error('Insert missing replace label: ' + label.slice(0, 120));
       }
 

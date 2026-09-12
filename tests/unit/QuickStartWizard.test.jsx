@@ -2,7 +2,7 @@
  * Tests for QuickStartWizard.jsx — Quick Start flow
  *
  * Seams tested:
- *   1. Wizard renders with 3 steps (industry, basics, style)
+ *   1. Wizard renders with 4 steps (industry, basics, offers, style)
  *   2. The default solo level is passed through to the site builder
  *   3. Fallback to old template flow for unknown niches
  */
@@ -113,7 +113,10 @@ describe('QuickStartWizard', () => {
     fireEvent.change(screen.getByTestId('contact-phone-input'), { target: { value: '555-1234' } });
     fireEvent.click(nextButton());
 
-    // Step 3: style — pick the first theme card
+    expect(screen.getByTestId('wizard-offers-step')).toBeTruthy();
+    fireEvent.click(nextButton());
+
+    // Step 4: style — pick the first theme card
     await waitFor(() => {
       const themeCards = document.querySelectorAll('.theme-card');
       expect(themeCards.length).toBeGreaterThan(0);
@@ -132,6 +135,8 @@ describe('QuickStartWizard', () => {
     expect(callArg.niche).toBe('salon');
     expect(callArg.level).toBe('solo');
     expect(callArg.businessName).toBe('Studio Luxe');
+    expect(callArg.kind).toBe('services');
+    expect(callArg.catalogItems.some((item) => /Haircut/i.test(item.name))).toBe(true);
   });
 
   // Fallback path: unknown industry does not call buildSiteDataFromWizard
@@ -141,6 +146,7 @@ describe('QuickStartWizard', () => {
     clickIndustry('Salon');
     fireEvent.change(screen.getByTestId('business-name-input'), { target: { value: 'X' } });
     fireEvent.change(screen.getByTestId('contact-phone-input'), { target: { value: '555' } });
+    fireEvent.click(nextButton());
     fireEvent.click(nextButton());
 
     await waitFor(() => {

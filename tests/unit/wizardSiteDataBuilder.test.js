@@ -224,4 +224,47 @@ describe('wizardSiteDataBuilder — buildSiteDataFromWizard', () => {
     const blob = JSON.stringify(images);
     expect(blob).not.toMatch(/unsplash/i);
   });
+
+  it('applies custom catalogItems onto salon services.items', () => {
+    const siteData = buildSiteDataFromWizard({
+      niche: 'salon',
+      businessName: 'Studio Luxe',
+      level: 'solo',
+      catalogItems: [
+        { name: 'Custom Cut', price: '$50', description: 'Edited' },
+      ],
+    });
+    const services = siteData.sections.find((s) => s.type === 'services');
+    expect(services.content.items).toEqual([
+      { name: 'Custom Cut', price: '$50', description: 'Edited' },
+    ]);
+    expect(siteData.services).toBeUndefined();
+  });
+
+  it('applies custom catalogItems onto restaurant catalog.items and products', () => {
+    const siteData = buildSiteDataFromWizard({
+      niche: 'restaurant',
+      businessName: 'Casa',
+      catalogItems: [
+        { name: 'Tacos', price: '$12', description: 'Street style' },
+      ],
+    });
+    const catalog = siteData.sections.find((s) => s.type === 'catalog');
+    expect(catalog.content.items).toEqual([
+      { name: 'Tacos', price: '$12', description: 'Street style' },
+    ]);
+    expect(siteData.products).toEqual([
+      { name: 'Tacos', price: '$12', description: 'Street style' },
+    ]);
+  });
+
+  it('keeps niche default offers when catalogItems is omitted', () => {
+    const siteData = buildSiteDataFromWizard({
+      niche: 'salon',
+      businessName: 'Studio Luxe',
+      level: 'solo',
+    });
+    const services = siteData.sections.find((s) => s.type === 'services');
+    expect(services.content.items.some((item) => /Haircut/i.test(item.name))).toBe(true);
+  });
 });
