@@ -292,7 +292,7 @@
 
 .gl-footer {
   text-align: center;
-  padding-top: var(--space-2xl, 48px);
+  padding-top: var(--space-lg, 24px);
 }
 
 .gl-see-all {
@@ -320,7 +320,7 @@
 /* Live showcase strip — bridges landing → /showcase */
 
 .gl-live {
-  margin-top: var(--space-3xl, 64px);
+  margin-top: var(--space-xl, 32px);
   padding: var(--space-xl, 32px);
   border-radius: 22px;
   border: 1.5px solid var(--sp-border, var(--border, #f0d7b5));

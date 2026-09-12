@@ -68,6 +68,21 @@ steps:
           throw new Error('Live showcase image frame is not 3/2');
         }
       }
+      await page.setViewportSize({ width: 1280, height: 800 });
+      const stack = await page.evaluate(() => {
+        const live = document.querySelector('.gl-live');
+        const footer = document.querySelector('.gl-footer');
+        return {
+          liveMt: live ? parseFloat(window.getComputedStyle(live).marginTop) : NaN,
+          footerPt: footer ? parseFloat(window.getComputedStyle(footer).paddingTop) : NaN,
+        };
+      });
+      if (stack.liveMt !== 24 && stack.liveMt !== 32) {
+        throw new Error(`gl-live margin-top not 24/32: ${stack.liveMt}`);
+      }
+      if (stack.footerPt !== 16 && stack.footerPt !== 24) {
+        throw new Error(`gl-footer padding-top not 16/24: ${stack.footerPt}`);
+      }
     settle_ms: 200
 
   - action: Gallery tabs present
