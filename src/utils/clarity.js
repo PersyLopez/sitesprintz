@@ -43,6 +43,9 @@ export function syncClarity({ isProd, hostname, pathname }) {
     return;
   }
 
+  // Official tag calls window.clarity("start", ...) before clarity.js loads.
+  window.clarity = window.clarity || function () { (window.clarity.q = window.clarity.q || []).push(arguments); };
+
   const selector = `script[data-clarity-project="${CLARITY_PROJECT_ID}"]`;
   if (document.querySelector(selector)) return;
 

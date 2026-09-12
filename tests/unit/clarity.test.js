@@ -38,6 +38,7 @@ describe('clarity', () => {
     const scripts = document.querySelectorAll(`script[data-clarity-project="${CLARITY_PROJECT_ID}"]`);
     expect(scripts).toHaveLength(1);
     expect(scripts[0].src).toBe(`https://www.clarity.ms/tag/${CLARITY_PROJECT_ID}`);
+    expect(typeof window.clarity).toBe('function');
 
     window.clarity = vi.fn();
     syncClarity({ isProd: true, hostname: 'rightsitelight.com', pathname: '/view/foo' });
