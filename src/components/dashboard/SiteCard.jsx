@@ -179,7 +179,7 @@ function SiteCard({ site, onDelete, onDuplicate }) {
       </div>
 
       {shareOpen && canShare && (
-        <ShareModal subdomain={site.subdomain} onClose={() => setShareOpen(false)} />
+        <ShareModal subdomain={site.subdomain} shopName={name} onClose={() => setShareOpen(false)} />
       )}
     </div>
   );

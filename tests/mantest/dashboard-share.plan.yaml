@@ -73,6 +73,13 @@ steps:
       await page.route(/\/api\/share\//, (route) =>
         route.fulfill({ status: 200, contentType: 'image/png', body: png })
       );
+      await page.route(/\/api\/sites\/[^/]+\/domain(?:\?|$)/, (route) =>
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ success: true, hasDomain: false }),
+        })
+      );
       await page.route(/\/api\/analytics\/conversion(?:\?|$)/, (route) =>
         route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true }) })
       );
@@ -127,6 +134,10 @@ steps:
       - text contains Download QR
       - text contains Download flyer
       - text contains Scan to open
+      - text contains Get found
+      - text contains Google Business
+      - text contains Instagram bio
+      - text contains Tape the QR
 
   - action: Card preview and QR are visible
     wait_for: { selector: '[data-testid="share-card-preview"]', timeout: 10000 }
@@ -149,25 +160,45 @@ steps:
     code: |
       const social = page.getByTestId('share-job-social');
       const print = page.getByTestId('share-job-print');
+      const found = page.getByTestId('share-job-found');
       await social.waitFor({ state: 'visible', timeout: 5000 });
       await print.waitFor({ state: 'visible', timeout: 5000 });
+      await found.waitFor({ state: 'visible', timeout: 5000 });
       const socialGoal = await page.getByTestId('share-job-social-goal').innerText();
       const printGoal = await page.getByTestId('share-job-print-goal').innerText();
+      const foundGoal = await page.getByTestId('share-job-found-goal').innerText();
       if (!/photo of your shop/i.test(socialGoal)) {
         throw new Error('Social job goal missing tap-through copy');
       }
       if (!/Tape this up/i.test(printGoal)) {
         throw new Error('Print job goal missing flyer copy');
       }
+      if (!/Paste this URL where people already look/i.test(foundGoal)) {
+        throw new Error('Get found job goal missing owner-paste copy');
+      }
       await page.getByTestId('share-download-flyer').waitFor({ state: 'visible', timeout: 5000 });
       const qrCaption = await page.locator('[data-testid="share-qr-block"]').innerText();
       if (/\/view\//.test(qrCaption)) {
         throw new Error('QR caption should not show the long /view/ URL');
       }
+      const foundText = await found.innerText();
+      if (!/Google Business/i.test(foundText)) {
+        throw new Error('Get found missing Google Business');
+      }
+      if (!/Instagram bio/i.test(foundText)) {
+        throw new Error('Get found missing Instagram bio');
+      }
+      if (!/Tape the QR/i.test(foundText)) {
+        throw new Error('Get found missing Tape the QR');
+      }
     settle_ms: 200
     assert:
       - text contains People see a photo
       - text contains Tape this up
+      - text contains Get found
+      - text contains Google Business
+      - text contains Instagram bio
+      - text contains Tape the QR
 
   - action: Copy field is the public live URL, not localhost API
     code: |

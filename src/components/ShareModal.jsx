@@ -1,20 +1,39 @@
 /**
- * Owner share sheet: two jobs (social tap-through vs print flyer).
+ * Owner share sheet: three jobs (social, print flyer, get found).
  * Entry points stay SiteCard and SiteDashboard. Ocean tokens in ShareModal.css.
  */
 
 import React, { useState, useEffect } from 'react';
 import { getAbsolutePublishedSiteUrl, getPublishedSiteUrl } from '../utils/siteWorkspace';
+import api from '../services/api';
 import './ShareModal.css';
 
 const SOCIAL_GOAL =
   'People see a photo of your shop and tap through. They never type your link.';
 const PRINT_GOAL =
   'Tape this up or hand it out. Scan the code to open the shop — no long web address to type.';
+const FOUND_GOAL =
+  'Paste this URL where people already look. You do this — we do not list you on Google.';
 const STORY_AS_PICTURE_HINT =
   'A Story or post as a picture should use the print flyer (QR), not this preview.';
 
-const ShareModal = ({ subdomain, onClose }) => {
+function shopDisplayName(shopName, subdomain) {
+  const named = String(shopName || '').trim();
+  if (named) return named;
+  const fromHost = String(subdomain || '')
+    .split(/[-_]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+  return fromHost || 'our shop';
+}
+
+function verifiedDomainHost(data) {
+  if (data?.verified && data?.hasDomain && data?.domain) return data.domain;
+  return null;
+}
+
+const ShareModal = ({ subdomain, shopName, customDomain, onClose }) => {
   const [printFormat, setPrintFormat] = useState('square');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -22,13 +41,22 @@ const ShareModal = ({ subdomain, onClose }) => {
   const [printCardUrl, setPrintCardUrl] = useState(null);
   const [qrUrl, setQrUrl] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [copiedPaste, setCopiedPaste] = useState(null);
   const [shareHint, setShareHint] = useState(null);
+  const [verifiedHost, setVerifiedHost] = useState(() =>
+    (typeof customDomain === 'string' && customDomain.trim()) || null
+  );
 
+  const displayName = shopDisplayName(shopName, subdomain);
   const localViewUrl = getPublishedSiteUrl(subdomain)
     || `${window.location.origin}/view/${encodeURIComponent(subdomain)}`;
-  // Recipients get the same public /view URL the QR encodes, not the API origin.
-  const siteUrl = getAbsolutePublishedSiteUrl(subdomain) || localViewUrl;
-  const shareText = `Check out my site: ${siteUrl}`;
+  // Recipients get the public live URL (verified host, else /view). No UTM on paste/copy.
+  const siteUrl = getAbsolutePublishedSiteUrl(subdomain, { customDomain: verifiedHost })
+    || localViewUrl;
+  const shareText = `Here’s ${displayName} — hours and how to find us: ${siteUrl}`;
+  const igBioPaste = `${displayName} · hours, menu, how to find us ${siteUrl}`;
+  const smsPaste = `Hi — here’s our page so you can find hours without hunting: ${siteUrl}`;
+  const gbpPaste = `Website (and Book or Order if Google shows it): ${siteUrl}`;
   const socialCardEndpoint = `/api/share/${subdomain}/social`;
   const printCardEndpoint = `/api/share/${subdomain}/${printFormat}`;
   const shareQrEndpoint = `/api/share/${subdomain}/qr`;
@@ -60,6 +88,28 @@ const ShareModal = ({ subdomain, onClose }) => {
   useEffect(() => {
     fetchBlobInto(shareQrEndpoint, setQrUrl);
   }, [subdomain]);
+
+  useEffect(() => {
+    if (!subdomain) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await api.get(`/api/sites/${encodeURIComponent(subdomain)}/domain`);
+        if (cancelled) return;
+        setVerifiedHost(verifiedDomainHost(data));
+      } catch {
+        if (!cancelled) {
+          const fallback = typeof customDomain === 'string' && customDomain.trim()
+            ? customDomain.trim()
+            : null;
+          setVerifiedHost(fallback);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [subdomain, customDomain]);
 
   const trackShare = async (platform, extra = {}) => {
     try {
@@ -124,8 +174,8 @@ const ShareModal = ({ subdomain, onClose }) => {
     try {
       void trackShare('native', { format: 'social', job: 'social' });
       await navigator.share({
-        title: `${subdomain} - Right Site Light`,
-        text: `Check out my site!`,
+        title: displayName,
+        text: `Here’s ${displayName} — hours and how to find us.`,
         url: siteUrl
       });
     } catch (err) {
@@ -147,9 +197,15 @@ const ShareModal = ({ subdomain, onClose }) => {
     }
   };
 
-  const handleVisitSharePage = () => {
-    void trackShare('visit-page', { format: 'social', job: 'social' });
-    window.open(`${localViewUrl}?share=true`, '_blank');
+  const copyPasteLine = async (key, text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedPaste(key);
+      setTimeout(() => setCopiedPaste((current) => (current === key ? null : current)), 2000);
+    } catch (err) {
+      console.error('Copy failed:', err);
+      setError('Failed to copy link');
+    }
   };
 
   const clickDownload = (url, filename) => {
@@ -404,15 +460,70 @@ const ShareModal = ({ subdomain, onClose }) => {
           </div>
         </section>
 
+        <section className="share-job" data-testid="share-job-found" aria-labelledby="share-job-found-heading">
+          <h3 id="share-job-found-heading">Get found</h3>
+          <p className="share-job-goal" data-testid="share-job-found-goal">{FOUND_GOAL}</p>
+
+          <div className="share-found-paste">
+            <div>
+              <h4 className="share-link-heading">Instagram bio</h4>
+              <div className="share-link-input">
+                <input type="text" value={igBioPaste} readOnly aria-label="Instagram bio" />
+                <button
+                  type="button"
+                  data-testid="share-copy-ig-bio"
+                  className={copiedPaste === 'ig' ? 'copied' : ''}
+                  onClick={() => copyPasteLine('ig', igBioPaste)}
+                >
+                  {copiedPaste === 'ig' ? '✓ Copied!' : 'Copy'}
+                </button>
+              </div>
+            </div>
+            <div>
+              <h4 className="share-link-heading">SMS</h4>
+              <div className="share-link-input">
+                <input type="text" value={smsPaste} readOnly aria-label="SMS text" />
+                <button
+                  type="button"
+                  data-testid="share-copy-sms"
+                  className={copiedPaste === 'sms' ? 'copied' : ''}
+                  onClick={() => copyPasteLine('sms', smsPaste)}
+                >
+                  {copiedPaste === 'sms' ? '✓ Copied!' : 'Copy'}
+                </button>
+              </div>
+            </div>
+            <div>
+              <h4 className="share-link-heading">Google Business Profile</h4>
+              <div className="share-link-input">
+                <input type="text" value={gbpPaste} readOnly aria-label="Google Business website line" />
+                <button
+                  type="button"
+                  data-testid="share-copy-gbp"
+                  className={copiedPaste === 'gbp' ? 'copied' : ''}
+                  onClick={() => copyPasteLine('gbp', gbpPaste)}
+                >
+                  {copiedPaste === 'gbp' ? '✓ Copied!' : 'Copy'}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <ol className="share-found-guide" data-testid="share-found-guide">
+            <li>Put that URL on Google Business Profile (Website; Book or Order if you take bookings/orders)</li>
+            <li>Same URL on Apple Maps / Business Connect</li>
+            <li>Instagram bio = the URL; Story can be the print flyer</li>
+            <li>Text regulars from your own phone (people who already text you)</li>
+            <li>Tape the QR at the register/window</li>
+            <li>After a good visit, ask for a Google review (no incentives)</li>
+          </ol>
+        </section>
+
         {error && (
           <div className="share-error">
             {error}
           </div>
         )}
-
-        <button type="button" onClick={handleVisitSharePage} className="share-visit-link">
-          View live share page →
-        </button>
       </div>
     </div>
   );

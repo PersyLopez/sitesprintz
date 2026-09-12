@@ -13,7 +13,7 @@ import path from 'path';
 import { createCanvas, loadImage, GlobalFonts } from '@napi-rs/canvas';
 import QRCode from 'qrcode';
 import sharp from 'sharp';
-import { getAbsolutePublishedSiteUrl } from '../../src/utils/siteWorkspace.js';
+import { getAbsolutePublishedSiteUrl, withShareTracking } from '../../src/utils/siteWorkspace.js';
 import { extractSiteCatalog } from '../utils/payOnSite.js';
 import { getProjectRoot, resolveContainedPath, PathEscapeError } from '../utils/siteIsolation.js';
 
@@ -485,10 +485,15 @@ export async function generateShareCard(templateData, format = 'social') {
 
   const businessName = cardText(normalized.businessName);
   const tagline = cardText(normalized.tagline);
-  const liveUrl = getAbsolutePublishedSiteUrl(normalized.subdomain);
   const isSocial = format === 'social';
   const isStory = format === 'story';
   const isSquare = format === 'square';
+  const canonicalUrl = getAbsolutePublishedSiteUrl(normalized.subdomain, {
+    customDomain: templateData.customDomain,
+  });
+  const liveUrl = (!isSocial && canonicalUrl)
+    ? withShareTracking(canonicalUrl, { source: 'qr', medium: 'print' })
+    : canonicalUrl;
   const offerLimit = isSocial ? 2 : 4;
   const offerLines = extractOfferLines(templateData, { limit: offerLimit }).map((line) => cardText(line));
 

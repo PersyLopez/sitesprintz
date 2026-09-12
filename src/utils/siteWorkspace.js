@@ -1,5 +1,5 @@
 import { getLayoutForNiche, resolveFeatures, LAYOUTS } from '../config/layouts.js';
-import { getPublicSiteHost } from './customDomainHost.js';
+import { getPublicSiteHost, isValidCustomDomain, normalizeHostname } from './customDomainHost.js';
 import { livePublishedPath } from './visitorExperience.js';
 
 const KNOWN_NICHES = Array.from(
@@ -58,8 +58,15 @@ export function getPublishedSiteUrl(subdomain) {
   return `${origin}${path}`;
 }
 
+function resolvedCustomDomainHost(customDomain) {
+  if (!isValidCustomDomain(customDomain)) return '';
+  return normalizeHostname(customDomain);
+}
+
 /** Absolute https live URL on the public host (server QR, showcase, SEO). */
-export function getAbsolutePublishedSiteUrl(subdomain) {
+export function getAbsolutePublishedSiteUrl(subdomain, { customDomain } = {}) {
+  const customHost = resolvedCustomDomainHost(customDomain);
+  if (customHost) return `https://${customHost}`;
   const path = livePublishedPath(subdomain);
   if (!path) return null;
   const siteUrl = typeof process !== 'undefined' && process.env?.SITE_URL
@@ -70,10 +77,25 @@ export function getAbsolutePublishedSiteUrl(subdomain) {
 }
 
 /** Display label without protocol (share card footer). */
-export function getPublishedSiteDisplayUrl(subdomain) {
+export function getPublishedSiteDisplayUrl(subdomain, { customDomain } = {}) {
+  const customHost = resolvedCustomDomainHost(customDomain);
+  if (customHost) return customHost;
   const path = livePublishedPath(subdomain);
   if (!path) return null;
   return `${getPublicSiteHost()}${path}`;
+}
+
+/** Append UTM params for print/QR share URLs. Social OG cards stay untracked. */
+export function withShareTracking(url, { source, medium } = {}) {
+  if (!url) return url;
+  try {
+    const parsed = new URL(url);
+    if (source) parsed.searchParams.set('utm_source', source);
+    if (medium) parsed.searchParams.set('utm_medium', medium);
+    return parsed.toString();
+  } catch {
+    return url;
+  }
 }
 
 export function getSiteWorkspacePaths(siteId, site = {}) {

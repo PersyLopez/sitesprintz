@@ -13,7 +13,7 @@ import { generateShareCard, generateQrPng } from '../services/shareCardService.j
 import { prisma } from '../../database/db.js';
 import { requireAuth } from '../middleware/auth.js';
 import { toPublicSiteData } from '../../src/utils/liveSiteContact.js';
-import { getAbsolutePublishedSiteUrl } from '../../src/utils/siteWorkspace.js';
+import { getAbsolutePublishedSiteUrl, withShareTracking } from '../../src/utils/siteWorkspace.js';
 
 const router = express.Router();
 
@@ -24,7 +24,25 @@ const shareCardCache = new NodeCache({
   useClones: false // Store buffers directly
 });
 
-const CARD_CACHE_VERSION = 'v4';
+const CARD_CACHE_VERSION = 'v5';
+
+const SHARE_DOMAIN_SELECT = {
+  custom_domain: true,
+  custom_domain_status: true,
+  custom_domain_verified: true,
+};
+
+function verifiedCustomDomain(site) {
+  if (!site || site.custom_domain_verified == null) return undefined;
+  return site.custom_domain || undefined;
+}
+
+function printTrackedLiveUrl(subdomain, customDomain) {
+  return withShareTracking(
+    getAbsolutePublishedSiteUrl(subdomain, { customDomain }),
+    { source: 'qr', medium: 'print' }
+  );
+}
 
 function cardCacheKey(subdomain, format) {
   return `${subdomain}:${format}:${CARD_CACHE_VERSION}`;
@@ -138,7 +156,7 @@ router.post('/generate', async (req, res) => {
     // Fetch site data
     const site = await prisma.sites.findUnique({
       where: { subdomain },
-      select: { site_data: true }
+      select: { site_data: true, ...SHARE_DOMAIN_SELECT }
     });
 
     if (!site) {
@@ -154,6 +172,10 @@ router.post('/generate', async (req, res) => {
     // Add subdomain to template data if not present
     if (!templateData.subdomain) {
       templateData.subdomain = subdomain;
+    }
+    const customDomain = verifiedCustomDomain(site);
+    if (customDomain) {
+      templateData.customDomain = customDomain;
     }
 
     // Generate card
@@ -216,7 +238,7 @@ const getShareCard = async (req, res) => {
 
       const qrSite = await prisma.sites.findUnique({
         where: { subdomain },
-        select: { subdomain: true }
+        select: { subdomain: true, ...SHARE_DOMAIN_SELECT }
       });
 
       if (!qrSite) {
@@ -225,7 +247,9 @@ const getShareCard = async (req, res) => {
         });
       }
 
-      const qrBuffer = await generateQrPng(getAbsolutePublishedSiteUrl(subdomain));
+      const qrBuffer = await generateQrPng(
+        printTrackedLiveUrl(subdomain, verifiedCustomDomain(qrSite))
+      );
       shareCardCache.set(cacheKey, qrBuffer);
       return sendSharePng(res, qrBuffer, { cacheStatus: 'MISS', subdomain, format: 'qr' });
     }
@@ -249,7 +273,7 @@ const getShareCard = async (req, res) => {
     // Not cached, generate
     const site = await prisma.sites.findUnique({
       where: { subdomain },
-      select: { site_data: true }
+      select: { site_data: true, ...SHARE_DOMAIN_SELECT }
     });
 
     if (!site) {
@@ -264,6 +288,10 @@ const getShareCard = async (req, res) => {
 
     if (!templateData.subdomain) {
       templateData.subdomain = subdomain;
+    }
+    const customDomain = verifiedCustomDomain(site);
+    if (customDomain) {
+      templateData.customDomain = customDomain;
     }
 
     const cardBuffer = await generateShareCard(templateData, format);

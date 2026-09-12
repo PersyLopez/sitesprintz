@@ -8,7 +8,7 @@ import PlatformMark from './PlatformMark';
 import FeedbackWidget from '../common/FeedbackWidget';
 import ShareModal from '../ShareModal';
 import { useSiteWorkspace } from '../../context/SiteWorkspaceContext';
-import { getPublishedSiteUrl, getSiteWorkspacePaths } from '../../utils/siteWorkspace';
+import { getPublishedSiteUrl, getSiteDisplayName, getSiteWorkspacePaths } from '../../utils/siteWorkspace';
 import { LIVE_EDIT_SCOPE_HINT } from '../../utils/liveEditScope';
 import './Header.css';
 
@@ -426,7 +426,7 @@ function Header() {
       </nav>
       <FeedbackWidget hideFab open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
       {shareOpen && site?.subdomain && (
-        <ShareModal subdomain={site.subdomain} onClose={() => setShareOpen(false)} />
+        <ShareModal subdomain={site.subdomain} shopName={getSiteDisplayName(site)} onClose={() => setShareOpen(false)} />
       )}
     </>
   );

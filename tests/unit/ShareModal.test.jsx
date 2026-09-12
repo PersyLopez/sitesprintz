@@ -1,6 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ShareModal from '@/components/ShareModal';
+import api from '@/services/api';
+
+vi.mock('@/services/api', () => ({
+  default: {
+    get: vi.fn(),
+  },
+}));
 
 function spyAnchorClicks() {
   const clicks = [];
@@ -24,6 +31,7 @@ describe('ShareModal', () => {
   const LOCAL_VIEW_URL = 'http://localhost:3000/view/river-salon';
 
   beforeEach(() => {
+    api.get.mockResolvedValue({ success: true, hasDomain: false });
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       blob: async () => new Blob(['png'], { type: 'image/png' }),
@@ -88,7 +96,8 @@ describe('ShareModal', () => {
     );
     const opened = decodeURIComponent(window.open.mock.calls[0][0]);
     expect(opened).toContain(PUBLIC_SITE_URL);
-    expect(opened).toContain('Check out my site');
+    expect(opened).toContain('Here’s River Salon — hours and how to find us');
+    expect(opened).not.toContain('Check out my site');
   });
 
   it('copies the site URL for Instagram and TikTok', async () => {
@@ -125,8 +134,8 @@ describe('ShareModal', () => {
     });
   });
 
-  it('labels two jobs: social media and print flyer', () => {
-    render(<ShareModal subdomain="river-salon" onClose={() => {}} />);
+  it('labels three jobs: social, print, and get found', () => {
+    render(<ShareModal subdomain="river-salon" shopName="River Salon" onClose={() => {}} />);
 
     expect(screen.getByTestId('share-job-social')).toHaveTextContent('Social media');
     expect(screen.getByTestId('share-job-social-goal')).toHaveTextContent(
@@ -134,6 +143,8 @@ describe('ShareModal', () => {
     );
     expect(screen.getByTestId('share-job-print')).toHaveTextContent('Print flyer');
     expect(screen.getByTestId('share-job-print-goal')).toHaveTextContent(/Tape this up or hand it out/i);
+    expect(screen.getByTestId('share-job-found')).toHaveTextContent('Get found');
+    expect(screen.getByTestId('share-job-found-goal')).toHaveTextContent(/Paste this URL where people already look/i);
   });
 
   it('previews social cards from /social and hides the view URL on the QR caption', async () => {
@@ -206,11 +217,24 @@ describe('ShareModal', () => {
     resolveTrack({ ok: true, json: async () => ({ success: true }) });
   });
 
-  it('opens this app /view/ for the owner visit, not the public share host', () => {
+  it('copies Instagram bio with the live URL inside the line', async () => {
+    render(<ShareModal subdomain="river-salon" shopName="River Salon" onClose={() => {}} />);
+
+    fireEvent.click(screen.getByTestId('share-copy-ig-bio'));
+    await waitFor(() => {
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+        expect.stringContaining(PUBLIC_SITE_URL)
+      );
+    });
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+      `River Salon · hours, menu, how to find us ${PUBLIC_SITE_URL}`
+    );
+  });
+
+  it('does not show a View live share page control', () => {
     render(<ShareModal subdomain="river-salon" onClose={() => {}} />);
 
-    fireEvent.click(screen.getByRole('button', { name: /View live share page/i }));
-
-    expect(window.open).toHaveBeenCalledWith(`${LOCAL_VIEW_URL}?share=true`, '_blank');
+    expect(screen.queryByRole('button', { name: /View live share page/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/View live share page/i)).not.toBeInTheDocument();
   });
 });
