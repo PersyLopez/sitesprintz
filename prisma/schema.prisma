@@ -105,6 +105,11 @@ model booking_notifications {
   error_message       String?
   provider            String?         @db.VarChar(50)
   provider_message_id String?         @db.VarChar(255)
+  response_token      String?         @unique @db.VarChar(64)
+  response            String?         @default("none") @db.VarChar(20)
+  response_at         DateTime?       @db.Timestamp(6)
+  followup_sent_at    DateTime?       @db.Timestamp(6)
+  submission_id       Int?
   created_at          DateTime?       @default(now()) @db.Timestamp(6)
   appointments        appointments?   @relation(fields: [appointment_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   booking_tenants     booking_tenants @relation(fields: [tenant_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
@@ -112,6 +117,7 @@ model booking_notifications {
   @@index([appointment_id], map: "idx_notifications_appointment")
   @@index([status], map: "idx_notifications_status")
   @@index([tenant_id], map: "idx_notifications_tenant")
+  @@index([submission_id], map: "idx_notifications_submission")
 }
 
 
@@ -136,6 +142,7 @@ model booking_services {
   deposit_percentage     Int?            @default(50)
   cancellation_policy    String?
   refund_policy          String?         @default("full") @db.VarChar(50)
+  reminder_interval_days Int?
   created_at             DateTime?       @default(now()) @db.Timestamp(6)
   updated_at             DateTime?       @default(now()) @db.Timestamp(6)
   appointments           appointments[]
@@ -302,6 +309,7 @@ model submissions {
   form_type  String?   @db.VarChar(100)
   data       Json?
   status     String?   @default("unread") @db.VarChar(50)
+  read_at    DateTime? @db.Timestamp(6)
   created_at DateTime? @default(now()) @db.Timestamp(6)
   sites      sites?    @relation(fields: [site_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
