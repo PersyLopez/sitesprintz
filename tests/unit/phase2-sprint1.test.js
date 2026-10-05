@@ -10,6 +10,20 @@ import AppointmentCancellationService from '../../server/services/booking/Appoin
 import AvailabilityService from '../../server/services/booking/AvailabilityService.js';
 import { addHours, addMinutes } from 'date-fns';
 
+const { mockNotifySendReminderEmail } = vi.hoisted(() => ({
+  mockNotifySendReminderEmail: vi.fn().mockResolvedValue({ success: true })
+}));
+
+// Mock the notification service the scheduler delegates to
+vi.mock('../../server/services/bookingNotificationService.js', () => ({
+  default: class {
+    constructor() {}
+    sendReminderEmail(...args) {
+      return mockNotifySendReminderEmail(...args);
+    }
+  }
+}));
+
 // Mock prisma
 vi.mock('../../database/db.js', () => ({
   prisma: {
@@ -79,6 +93,111 @@ describe('ReminderScheduler', () => {
   it('should skip already-reminded appointments', () => {
     // Verify that appointments with existing reminders are skipped
     expect(reminderScheduler).toBeDefined();
+  });
+
+  it('should delegate reminder emails to BookingNotificationService with mapped data', async () => {
+    const start = new Date('2025-12-25T10:00:00Z');
+    const appointment = {
+      id: 'appt-1',
+      tenant_id: 'tenant-1',
+      confirmation_code: 'ABC123',
+      customer_name: 'Jane Doe',
+      customer_email: 'jane@example.com',
+      customer_phone: '+15551234567',
+      start_time: start,
+      timezone: 'America/New_York',
+      booking_services: { name: 'Haircut' },
+      booking_staff: { name: 'Sam' },
+      booking_tenants: { business_name: 'Studio 17', phone: '+15550000000' }
+    };
+
+    await reminderScheduler.sendReminderEmail(appointment);
+
+    expect(mockNotifySendReminderEmail).toHaveBeenCalledTimes(1);
+    expect(mockNotifySendReminderEmail).toHaveBeenCalledWith({
+      confirmation_code: 'ABC123',
+      customer_name: 'Jane Doe',
+      customer_email: 'jane@example.com',
+      start_time: start,
+      timezone: 'America/New_York',
+      service_name: 'Haircut',
+      staff_name: 'Sam',
+      tenant_id: 'tenant-1',
+      appointment_id: 'appt-1',
+      business_name: 'Studio 17',
+      business_phone: '+15550000000'
+    });
+  });
+
+  it('should not create the notification row itself (service logs sent/failed)', async () => {
+    const { prisma } = await import('../../database/db.js');
+
+    await reminderScheduler.sendReminderEmail({
+      id: 'appt-1',
+      tenant_id: 'tenant-1',
+      confirmation_code: 'ABC123',
+      customer_name: 'Jane Doe',
+      customer_email: 'jane@example.com',
+      start_time: new Date(),
+      timezone: 'America/New_York',
+      booking_services: { name: 'Haircut' },
+      booking_staff: { name: 'Sam' },
+      booking_tenants: { business_name: 'Studio 17', phone: '+15550000000' }
+    });
+
+    expect(prisma.booking_notifications.create).not.toHaveBeenCalled();
+    expect(prisma.booking_notifications.update).not.toHaveBeenCalled();
+  });
+
+  it('should reject when the notification service reports a failed send', async () => {
+    mockNotifySendReminderEmail.mockResolvedValueOnce({ success: false, error: 'resend down' });
+
+    await expect(
+      reminderScheduler.sendReminderEmail({
+        id: 'appt-2',
+        tenant_id: 'tenant-1',
+        confirmation_code: 'DEF456',
+        customer_name: 'Jane Doe',
+        customer_email: 'jane@example.com',
+        start_time: new Date(),
+        timezone: 'America/New_York',
+        booking_services: { name: 'Haircut' },
+        booking_staff: { name: 'Sam' },
+        booking_tenants: { business_name: 'Studio 17', phone: '+15550000000' }
+      })
+    ).rejects.toThrow('resend down');
+  });
+
+  it('should send manual reminders through the same delegation path', async () => {
+    const { prisma } = await import('../../database/db.js');
+
+    prisma.appointments.findUnique.mockResolvedValue({
+      id: 'appt-9',
+      tenant_id: 'tenant-1',
+      confirmation_code: 'XYZ789',
+      customer_name: 'Jane Doe',
+      customer_email: 'jane@example.com',
+      start_time: new Date(),
+      timezone: 'America/New_York',
+      booking_services: { name: 'Haircut' },
+      booking_staff: { name: 'Sam' },
+      booking_tenants: { business_name: 'Studio 17', phone: '+15550000000' }
+    });
+
+    await reminderScheduler.sendManualReminder('appt-9');
+
+    expect(prisma.appointments.findUnique).toHaveBeenCalledWith({
+      where: { id: 'appt-9' },
+      include: {
+        booking_services: true,
+        booking_staff: true,
+        booking_tenants: true
+      }
+    });
+    expect(mockNotifySendReminderEmail).toHaveBeenCalledTimes(1);
+    expect(mockNotifySendReminderEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ appointment_id: 'appt-9', confirmation_code: 'XYZ789' })
+    );
   });
 });
 
