@@ -4,6 +4,39 @@ import { Modal } from '../common/Modal';
 import api from '../../services/api';
 import './CustomDomainSettings.css';
 
+const PORKBUN_HOME = 'https://porkbun.com/';
+
+function stripTypedDomain(typedDomain) {
+  return String(typedDomain || '')
+    .trim()
+    .replace(/^https?:\/\//i, '')
+    .replace(/\/+$/, '');
+}
+
+function looksLikeHostname(value) {
+  return Boolean(value) && !/\s/.test(value) && value.includes('.');
+}
+
+/** Porkbun checkout/search URL. Affiliate id comes from env only — never hardcoded. */
+export function getPorkbunBuyUrl(typedDomain) {
+  const hostname = stripTypedDomain(typedDomain);
+  const affiliate = String(import.meta.env.VITE_PORKBUN_AFFILIATE_URL || '').trim();
+  if (affiliate) {
+    try {
+      const url = new URL(affiliate);
+      if (looksLikeHostname(hostname)) url.searchParams.set('q', hostname);
+      return url.toString();
+    } catch {
+      // Invalid Ambassador URL — fall through to the public Porkbun search.
+    }
+  }
+  if (hostname) {
+    return `https://porkbun.com/checkout/search?q=${encodeURIComponent(hostname)}`;
+  }
+  return PORKBUN_HOME;
+}
+
+
 /**
  * Connect a registrar domain. Available on every plan.
  */
