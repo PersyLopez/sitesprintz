@@ -22,58 +22,31 @@ const startTime = Date.now();
  */
 router.get('/', async (req, res) => {
   try {
-    const uptime = Math.floor((Date.now() - startTime) / 1000);
-
     // Check database connection
     let dbStatus = 'unknown';
-    let dbLatency = 0;
     try {
-      const start = Date.now();
       await prisma.$queryRaw`SELECT 1`;
-      dbLatency = Date.now() - start;
       dbStatus = 'connected';
     } catch (err) {
       dbStatus = 'disconnected';
     }
 
-    const liveKey = stripeKeyMode(process.env.STRIPE_SECRET_KEY) === 'live';
-    const webhookSecret = Boolean(process.env.STRIPE_WEBHOOK_SECRET);
-    const priceStarter = Boolean(process.env.STRIPE_PRICE_STARTER);
-    const priceGrowth = Boolean(process.env.STRIPE_PRICE_GROWTH);
-    const priceGrowthManaged = Boolean(process.env.STRIPE_PRICE_GROWTH_MANAGED);
-
     res.json({
       status: dbStatus === 'connected' ? 'ok' : 'degraded',
       timestamp: new Date().toISOString(),
-      uptime,
-      services: {
-        api: 'ok',
-        database: dbStatus
-      },
-      performance: {
-        database_latency_ms: dbLatency
-      },
       beta: {
         enabled: isBetaMode(),
         allowSignups: betaAllowsPublicSignups(),
-        stripeMode: stripeKeyMode(process.env.STRIPE_SECRET_KEY)
       },
       billing: {
         collectsPayments: platformCollectsPayments(),
-        liveKey,
-        webhookSecret,
-        priceStarter,
-        priceGrowth,
-        priceGrowthManaged,
-        collectBootReady: liveKey && webhookSecret && priceStarter && priceGrowth && priceGrowthManaged,
       },
       turnstileSiteKey: getTurnstileSiteKey(),
     });
   } catch (error) {
     res.status(500).json({
       status: 'error',
-      timestamp: new Date().toISOString(),
-      error: error.message
+      timestamp: new Date().toISOString()
     });
   }
 });
@@ -83,6 +56,14 @@ router.get('/', async (req, res) => {
  * Returns: connection status, latency
  */
 router.get('/db', async (req, res) => {
+  if (!healthProbeSecretMatches(req.headers['x-health-probe'])) {
+    return res.status(401).json({
+      error: 'Unauthorized',
+      code: 'PROBE_UNAUTHORIZED',
+      timestamp: new Date().toISOString(),
+    });
+  }
+
   try {
     const start = Date.now();
     await prisma.$queryRaw`SELECT NOW()`;
@@ -107,6 +88,14 @@ router.get('/db', async (req, res) => {
  * Validates Stripe API key without making a charge
  */
 router.get('/stripe', async (req, res) => {
+  if (!healthProbeSecretMatches(req.headers['x-health-probe'])) {
+    return res.status(401).json({
+      error: 'Unauthorized',
+      code: 'PROBE_UNAUTHORIZED',
+      timestamp: new Date().toISOString(),
+    });
+  }
+
   try {
     const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 
@@ -141,6 +130,14 @@ router.get('/stripe', async (req, res) => {
  * Validates Resend API key is configured
  */
 router.get('/email', async (req, res) => {
+  if (!healthProbeSecretMatches(req.headers['x-health-probe'])) {
+    return res.status(401).json({
+      error: 'Unauthorized',
+      code: 'PROBE_UNAUTHORIZED',
+      timestamp: new Date().toISOString(),
+    });
+  }
+
   try {
     const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
@@ -227,6 +224,14 @@ router.get('/forms', async (req, res) => {
  * Runs all checks in parallel and aggregates results
  */
 router.get('/full', async (req, res) => {
+  if (!healthProbeSecretMatches(req.headers['x-health-probe'])) {
+    return res.status(401).json({
+      error: 'Unauthorized',
+      code: 'PROBE_UNAUTHORIZED',
+      timestamp: new Date().toISOString(),
+    });
+  }
+
   const checks = {
     app: { status: 'ok', uptime: Math.floor((Date.now() - startTime) / 1000) },
     database: { status: 'checking' },
@@ -320,7 +325,6 @@ router.get('/ready', async (req, res) => {
   } catch (error) {
     res.status(503).json({
       ready: false,
-      error: error.message,
       timestamp: new Date().toISOString()
     });
   }
@@ -331,11 +335,9 @@ router.get('/ready', async (req, res) => {
  * Used by container orchestration to determine if app needs to be restarted
  */
 router.get('/live', (req, res) => {
-  const uptime = Math.floor((Date.now() - startTime) / 1000);
   res.json({
     alive: true,
-    timestamp: new Date().toISOString(),
-    uptime
+    timestamp: new Date().toISOString()
   });
 });
 

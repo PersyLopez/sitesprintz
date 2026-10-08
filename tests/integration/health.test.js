@@ -44,30 +44,30 @@ describe('Health Endpoints Integration Tests', () => {
   });
 
   describe('GET /health', () => {
-    it('should return health status', async () => {
+    it('should return health status without ops configuration', async () => {
       const response = await request(app)
         .get('/health')
         .expect('Content-Type', /json/);
 
       expect(response.status).toBeGreaterThanOrEqual(200);
-      expect(response.body).toHaveProperty('status');
-      expect(response.body).toHaveProperty('timestamp');
-      expect(response.body).toHaveProperty('uptime');
-      expect(response.body).toHaveProperty('services');
+      expect(Object.keys(response.body).sort()).toEqual([
+        'beta',
+        'billing',
+        'status',
+        'timestamp',
+        'turnstileSiteKey',
+      ]);
+      expect(typeof response.body.status).toBe('string');
+      expect(response.body.uptime).toBeUndefined();
+      expect(response.body.services).toBeUndefined();
+      expect(response.body.performance).toBeUndefined();
     });
 
-    it('should include service health checks', async () => {
-      const response = await request(app).get('/health');
-      expect(response.body.services).toHaveProperty('api');
-      expect(response.body.services).toHaveProperty('database');
-    });
-
-    it('should include beta flags', async () => {
+    it('should include public beta flags only', async () => {
       const response = await request(app).get('/health');
       expect(response.body.beta).toEqual({
         enabled: expect.any(Boolean),
         allowSignups: expect.any(Boolean),
-        stripeMode: expect.stringMatching(/^(live|test|missing|invalid)$/),
       });
     });
 
@@ -79,7 +79,7 @@ describe('Health Endpoints Integration Tests', () => {
       expect(JSON.stringify(response.body)).not.toContain('0xturnstile-secret-must-not-leak');
     });
 
-    it('includes collect-readiness booleans without leaking Stripe values', async () => {
+    it('includes billing.collectsPayments without leaking Stripe configuration', async () => {
       process.env.STRIPE_SECRET_KEY = 'sk_live_health_secret_key';
       process.env.STRIPE_WEBHOOK_SECRET = 'whsec_do_not_leak';
       process.env.STRIPE_PRICE_STARTER = 'price_starter_secret';
@@ -91,12 +91,6 @@ describe('Health Endpoints Integration Tests', () => {
 
       expect(response.body.billing).toEqual({
         collectsPayments: false,
-        liveKey: true,
-        webhookSecret: true,
-        priceStarter: true,
-        priceGrowth: true,
-        priceGrowthManaged: true,
-        collectBootReady: true,
       });
 
       const serialized = JSON.stringify(response.body);
@@ -105,26 +99,17 @@ describe('Health Endpoints Integration Tests', () => {
       expect(serialized).not.toContain('price_starter_secret');
       expect(serialized).not.toContain('price_growth_secret');
       expect(serialized).not.toContain('price_managed_secret');
+      expect(response.body.billing.liveKey).toBeUndefined();
+      expect(response.body.billing.collectBootReady).toBeUndefined();
+      expect(response.body.beta.stripeMode).toBeUndefined();
     });
 
-    it('reports collectBootReady false when live key or prices are missing', async () => {
-      process.env.STRIPE_SECRET_KEY = 'sk_test_not_live';
-      delete process.env.STRIPE_WEBHOOK_SECRET;
-      delete process.env.STRIPE_PRICE_STARTER;
-      delete process.env.STRIPE_PRICE_GROWTH;
-      delete process.env.STRIPE_PRICE_GROWTH_MANAGED;
-
-      const response = await request(app).get('/health');
-
-      expect(response.body.billing).toMatchObject({
-        liveKey: false,
-        webhookSecret: false,
-        priceStarter: false,
-        priceGrowth: false,
-        priceGrowthManaged: false,
-        collectBootReady: false,
-      });
-      expect(typeof response.body.billing.collectsPayments).toBe('boolean');
+    it('reports degraded with HTTP 200 when the database is unreachable', async () => {
+      prisma.$queryRaw.mockRejectedValue(new Error('connection refused secrets'));
+      const response = await request(app).get('/health').expect(200);
+      expect(response.body.status).toBe('degraded');
+      expect(response.body.timestamp).toEqual(expect.any(String));
+      expect(JSON.stringify(response.body)).not.toContain('connection refused');
     });
   });
 
@@ -174,11 +159,25 @@ describe('Health Endpoints Integration Tests', () => {
   });
 
   describe('GET /health/full', () => {
-    it('includes compact forms summary', async () => {
+    it('rejects unauthenticated requests', async () => {
+      delete process.env.HEALTH_PROBE_SECRET;
+      const response = await request(app).get('/health/full').expect(401);
+      expect(response.body.code).toBe('PROBE_UNAUTHORIZED');
+      expect(response.body).toMatchObject({
+        error: 'Unauthorized',
+        timestamp: expect.any(String),
+      });
+    });
+
+    it('includes compact forms summary when probe header matches', async () => {
+      process.env.HEALTH_PROBE_SECRET = 'secret-value';
       prisma.submissions.findFirst.mockResolvedValue(null);
       prisma.sites.findFirst.mockResolvedValue(null);
 
-      const response = await request(app).get('/health/full').expect(200);
+      const response = await request(app)
+        .get('/health/full')
+        .set('X-Health-Probe', 'secret-value')
+        .expect(200);
 
       expect(response.body.checks.stripe).toMatchObject({
         status: expect.stringMatching(/^(ok|not_configured)$/),
@@ -209,9 +208,31 @@ describe('Health Endpoints Integration Tests', () => {
   });
 
   describe('GET /health/stripe', () => {
-    it('reports stripeKeyMode without charging', async () => {
+    it('rejects unauthenticated requests', async () => {
+      delete process.env.HEALTH_PROBE_SECRET;
+      const response = await request(app)
+        .get('/health/stripe')
+        .set('X-Health-Probe', 'anything')
+        .expect(401);
+      expect(response.body.code).toBe('PROBE_UNAUTHORIZED');
+    });
+
+    it('rejects a wrong probe header even when the secret is set', async () => {
+      process.env.HEALTH_PROBE_SECRET = 'secret-value';
+      const response = await request(app)
+        .get('/health/stripe')
+        .set('X-Health-Probe', 'wrong-secret')
+        .expect(401);
+      expect(response.body.code).toBe('PROBE_UNAUTHORIZED');
+    });
+
+    it('reports stripeKeyMode without charging when probe header matches', async () => {
+      process.env.HEALTH_PROBE_SECRET = 'secret-value';
       process.env.STRIPE_SECRET_KEY = 'sk_test_health';
-      const response = await request(app).get('/health/stripe').expect(200);
+      const response = await request(app)
+        .get('/health/stripe')
+        .set('X-Health-Probe', 'secret-value')
+        .expect(200);
       expect(response.body).toMatchObject({
         status: 'ok',
         service: 'stripe',
@@ -222,7 +243,7 @@ describe('Health Endpoints Integration Tests', () => {
   });
 
   describe('GET /health/live', () => {
-    it('should return liveness status', async () => {
+    it('should return liveness status without uptime', async () => {
       const response = await request(app)
         .get('/health/live')
         .expect(200)
@@ -231,7 +252,6 @@ describe('Health Endpoints Integration Tests', () => {
       expect(response.body).toEqual({
         alive: true,
         timestamp: expect.any(String),
-        uptime: expect.any(Number),
       });
     });
   });
