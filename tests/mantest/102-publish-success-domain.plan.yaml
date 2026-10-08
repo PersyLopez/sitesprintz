@@ -1,0 +1,151 @@
+url: http://localhost:5173/login
+goal: Publish success offers a skippable Porkbun domain link — submit publish only on the local trial path (no checkout)
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter email
+    fill: { testId: login-email, value: "free@example.com", clear: true }
+
+  - action: Enter password
+    fill: { testId: login-password, value: "FreePass!2024", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Dismiss welcome
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) await dismiss.click({ timeout: 4000 }).catch(() => {});
+      else await page.keyboard.press('Escape').catch(() => {});
+    settle_ms: 400
+
+  - action: Open setup
+    goto: http://localhost:5173/setup
+    settle_ms: 1500
+
+  - action: Wizard industry step
+    wait_for: { selector: '[data-testid="quickstart-wizard"]', timeout: 20000 }
+    settle_ms: 500
+
+  - action: Pick Salon
+    click: { testId: wizard-industry-salon }
+    settle_ms: 1000
+
+  - action: Fill business name
+    fill: { testId: business-name-input, value: "Mantest Domain Salon", clear: true }
+
+  - action: Fill phone
+    fill: { testId: contact-phone-input, value: "555-0188", clear: true }
+
+  - action: Next to offers
+    click: { testId: wizard-next }
+    settle_ms: 1200
+
+  - action: Offers step ready
+    wait_for: { selector: '[data-testid="wizard-offers-step"]', timeout: 10000 }
+    assert:
+      - text contains Your services
+
+  - action: Next to look
+    click: { testId: wizard-next }
+    settle_ms: 1200
+    assert:
+      - text contains Choose a theme
+
+  - action: Pick first recommended theme
+    click: { testId: wizard-theme-onyx-oxblood }
+    settle_ms: 500
+
+  - action: Create My Website
+    click: { testId: wizard-create }
+    settle_ms: 4000
+
+  - action: Review screen ready
+    wait_for: { selector: '[data-testid="setup-review"]', timeout: 20000 }
+    settle_ms: 800
+    assert:
+      - text contains Your page is ready
+
+  - action: Open publish from review
+    click: { testId: review-publish }
+    settle_ms: 1200
+    assert:
+      - text contains Put my page online
+
+  - action: Publish submit is in the modal
+    wait_for: { selector: '[data-testid="publish-submit"]', timeout: 10000 }
+    settle_ms: 300
+
+  - action: No domain link before publish
+    code: |
+      if (await page.getByTestId('publish-domain-buy').count()) {
+        throw new Error('publish-domain-buy should not appear before publish');
+      }
+
+  - action: Trial gate — only submit when no checkout
+    code: |
+      const trial = page.getByTestId('live-trial-notice');
+      await trial.waitFor({ timeout: 5000 }).catch(() => {});
+      if (!(await trial.count())) {
+        const pay = page.getByTestId('additional-site-pay-notice');
+        if (await pay.count()) {
+          throw new Error('Blocker: seeded user would start checkout for an additional site — not submitting per plan');
+        }
+        const grid = page.locator('.plans-grid');
+        if (await grid.count()) {
+          throw new Error('Blocker: seeded user is not on the local trial path (plans grid shown) — not submitting per plan');
+        }
+        throw new Error('Blocker: neither trial notice nor trial path detected — not submitting per plan');
+      }
+
+  - action: Submit publish
+    click: { testId: publish-submit }
+    settle_ms: 5000
+
+  - action: Publish success shows
+    wait_for: { selector: '[data-testid="publish-success"]', timeout: 20000 }
+    settle_ms: 500
+
+  - action: Domain buy link is visible with Porkbun href
+    code: |
+      const buy = page.getByTestId('publish-domain-buy');
+      await buy.waitFor({ timeout: 5000 });
+      const href = await buy.getAttribute('href');
+      if (!href || !href.includes('porkbun.com')) {
+        throw new Error('publish-domain-buy href should contain porkbun.com, got ' + href);
+      }
+      if (await buy.getAttribute('target') !== '_blank') {
+        throw new Error('publish-domain-buy should open in a new tab');
+      }
+
+  - action: Disclosure is visible
+    code: |
+      const disc = page.getByTestId('publish-domain-disclosure');
+      await disc.waitFor({ timeout: 5000 });
+      const t = await disc.innerText();
+      if (!/commission/i.test(t) || !/registrar/i.test(t)) {
+        throw new Error('disclosure should mention commission and registrar, got: ' + t);
+      }
+
+  - action: Later keeps the success screen
+    click: { testId: publish-domain-later }
+    settle_ms: 500
+
+  - action: Success screen survives later click
+    code: |
+      const success = page.getByTestId('publish-success');
+      if (!(await success.count())) {
+        throw new Error('publish-success should stay mounted after publish-domain-later');
+      }
+      if (await page.getByTestId('publish-photo-link-live').count() === 0) {
+        throw new Error('photo action should remain after publish-domain-later');
+      }
+      if (await page.getByTestId('publish-domain-buy').count()) {
+        throw new Error('publish-domain-buy should be hidden after publish-domain-later');
+      }

@@ -5,6 +5,7 @@ import { api } from '../../services/api';
 import { PRICING_CONFIG, PLATFORM_SUPPORT_EMAIL } from '../../config/pricing.config';
 import { getPublishedSiteUrl } from '../../utils/siteWorkspace';
 import { livePublishedPath, subdomainFromLivePath } from '../../utils/visitorExperience';
+import { getPorkbunBuyUrl } from '../dashboard/CustomDomainSettings';
 import './PublishModal.css';
 
 function PublishModal({ siteData, onClose, draftId, saveDraft, onEditPhotos }) {
@@ -40,6 +41,7 @@ function PublishModal({ siteData, onClose, draftId, saveDraft, onEditPhotos }) {
   const [collectsPayments, setCollectsPayments] = useState(false);
   const [publishedUrl, setPublishedUrl] = useState('');
   const [publishedSubdomain, setPublishedSubdomain] = useState('');
+  const [domainNoticeHidden, setDomainNoticeHidden] = useState(false);
 
   const plans = [
     {
@@ -321,6 +323,30 @@ function PublishModal({ siteData, onClose, draftId, saveDraft, onEditPhotos }) {
                 Back to my page
               </button>
             </div>
+            {!domainNoticeHidden && (
+              <div className="publish-domain-note">
+                <a
+                  className="btn btn-secondary"
+                  data-testid="publish-domain-buy"
+                  href={getPorkbunBuyUrl('')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Get your own web address at Porkbun
+                </a>
+                <p className="publish-domain-disclosure" data-testid="publish-domain-disclosure">
+                  We may earn a commission if you buy through this Porkbun link. Any registrar still works.
+                </p>
+                <button
+                  type="button"
+                  className="btn-link"
+                  data-testid="publish-domain-later"
+                  onClick={() => setDomainNoticeHidden(true)}
+                >
+                  I'll use this link for now
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <>

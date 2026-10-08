@@ -5,6 +5,7 @@ import PublishModal from '@/components/setup/PublishModal';
 import { AuthContext } from '@/context/AuthContext';
 import { ToastContext } from '@/context/ToastContext';
 import { api } from '@/services/api';
+import { getPorkbunBuyUrl } from '../../src/components/dashboard/CustomDomainSettings';
 
 vi.mock('@/services/api', () => ({
   api: {
@@ -280,6 +281,7 @@ describe('PublishModal', () => {
       expect(screen.queryByTestId('publish-photo-link')).not.toBeInTheDocument();
       expect(screen.queryByTestId('publish-photo-link-live')).not.toBeInTheDocument();
       expect(screen.queryByTestId('publish-photos-later')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('publish-domain-buy')).not.toBeInTheDocument();
       expect(screen.queryByText('Use your photos here')).not.toBeInTheDocument();
       expect(onEditPhotos).not.toHaveBeenCalled();
     });
@@ -322,6 +324,16 @@ describe('PublishModal', () => {
       fireEvent.click(later);
       expect(onEditPhotos).not.toHaveBeenCalled();
       expect(screen.getByTestId('publish-success')).toBeInTheDocument();
+
+      const buy = screen.getByTestId('publish-domain-buy');
+      expect(buy).toHaveAttribute('href', getPorkbunBuyUrl(''));
+      expect(buy).toHaveAttribute('target', '_blank');
+      expect(buy).toHaveAttribute('rel', 'noopener noreferrer');
+      expect(screen.getByTestId('publish-domain-disclosure')).toBeInTheDocument();
+      fireEvent.click(screen.getByTestId('publish-domain-later'));
+      expect(screen.getByTestId('publish-success')).toBeInTheDocument();
+      expect(screen.getByTestId('publish-photo-link-live')).toBeInTheDocument();
+      expect(screen.queryByTestId('publish-domain-buy')).not.toBeInTheDocument();
     });
   });
 
