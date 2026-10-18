@@ -960,6 +960,7 @@ router.post('/:draftId/publish', asyncHandler(async (req, res) => {
           subdomain,
           template_id: templateValidation.value,
           status: 'published',
+          is_public: true,
           plan: sitePlan,
           published_at: new Date(),
           expires_at: expiresAt,

@@ -87,12 +87,15 @@ router.get('/', asyncHandler(async (req, res) => {
   const pageSize = Math.min(Math.max(1, parseInt(pageSizeParam, 10) || 12), 50);
   const skip = (page - 1) * pageSize;
 
-  // Build where clause
+  // Client sites are shops published on the platform. The public flag
+  // defaults off, so the Made with row does not wait for that flag.
   const where = {
-    is_public: true,
     status: 'published',
     ...buildShowcaseKindWhere(kind),
   };
+  if (kind !== 'clients') {
+    where.is_public = true;
+  }
 
   // Filter by category (template prefix)
   if (category) {
@@ -316,7 +319,8 @@ router.get('/featured', asyncHandler(async (req, res) => {
 
 /**
  * GET /api/showcases/:subdomain
- * Get specific public site by subdomain
+ * Live address for a published site. The Made with gallery lists published
+ * platform sites; template examples stay on the public flag.
  * Access: Public
  */
 router.get('/:subdomain', asyncHandler(async (req, res) => {
@@ -332,7 +336,6 @@ router.get('/:subdomain', asyncHandler(async (req, res) => {
     where: {
       subdomain: subdomainValidation.value,
       status: 'published',
-      is_public: true
     },
     select: {
       id: true,

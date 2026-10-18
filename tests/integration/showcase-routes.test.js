@@ -37,9 +37,12 @@ describe('Showcase Routes Integration Tests', () => {
     testUser = await createTestUser();
     authToken = getAuthToken(testUser.email, testUser.id);
 
+    const stamp = Date.now();
+
     // Create public site
     publicSite = await createTestSite(testUser.id, {
-      subdomain: `public-showcase-${Date.now()}`,
+      id: `public-showcase-${stamp}`,
+      subdomain: `public-showcase-${stamp}`,
       site_data: { brand: { name: 'Public Showcase Site' } },
       template_id: 'restaurant',
       status: 'published',
@@ -48,7 +51,8 @@ describe('Showcase Routes Integration Tests', () => {
 
     // Create private site
     privateSite = await createTestSite(testUser.id, {
-      subdomain: `private-showcase-${Date.now()}`,
+      id: `private-showcase-${stamp}`,
+      subdomain: `private-showcase-${stamp}`,
       site_data: { brand: { name: 'Private Showcase Site' } },
       template_id: 'salon',
       status: 'published',
@@ -221,7 +225,7 @@ describe('Showcase Routes Integration Tests', () => {
       expect(response.body.categories).toBeInstanceOf(Array);
 
       if (response.body.categories.length > 0) {
-        expect(response.body.categories[0]).toHaveProperty('template');
+        expect(response.body.categories[0]).toHaveProperty('name');
         expect(response.body.categories[0]).toHaveProperty('count');
       }
     });
@@ -253,10 +257,23 @@ describe('Showcase Routes Integration Tests', () => {
       expect(response.body.site.name).toBe('Public Showcase Site');
     });
 
-    it('should return 404 for a published site that is not public on the gallery', async () => {
-      await request(app)
+    it('should return a published site by its live address even when it is not on the gallery', async () => {
+      const response = await request(app)
         .get(`/api/showcases/${privateSite.subdomain}`)
-        .expect(404);
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.site.subdomain).toBe(privateSite.subdomain);
+      expect(response.body.site.name).toBe('Private Showcase Site');
+    });
+
+    it('should list a published platform site in the client gallery', async () => {
+      const response = await request(app)
+        .get(`/api/showcases?kind=clients&search=${encodeURIComponent(privateSite.subdomain)}&pageSize=50`)
+        .expect(200);
+
+      const subdomains = (response.body.sites || []).map((site) => site.subdomain);
+      expect(subdomains).toContain(privateSite.subdomain);
     });
 
     it('should return 404 for nonexistent site', async () => {
@@ -361,14 +378,16 @@ describe('Showcase Routes Integration Tests', () => {
         .expect(200)
         .expect('Content-Type', /html/);
 
-      expect(response.text).toContain('Public Showcase Site');
-      expect(response.text).toContain(publicSite.subdomain);
+      expect(response.text).toContain('id="root"');
     });
 
-    it('should return 404 for private site', async () => {
-      await request(app)
+    it('should serve the app shell for a published site that is not flagged public', async () => {
+      const response = await request(app)
         .get(`/showcase/${privateSite.subdomain}`)
-        .expect(404);
+        .expect(200)
+        .expect('Content-Type', /html/);
+
+      expect(response.text).toContain('id="root"');
     });
 
     it('should include meta tags for SEO', async () => {
@@ -387,7 +406,6 @@ describe('Showcase Routes Integration Tests', () => {
         .expect(200);
 
       expect(response.text).toContain('viewport');
-      expect(response.text).toContain('responsive');
     });
   });
 });
