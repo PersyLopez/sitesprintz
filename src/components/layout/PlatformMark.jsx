@@ -4,7 +4,8 @@ import './PlatformMark.css';
 const TYPE_FACE = 'system-ui, ui-sans-serif, sans-serif';
 const BODY_LINES = ['Right', 'Site', 'Light'];
 
-/** M1 lockup — L4 browser + beam + URL chip + stacked name. 48×36. */
+/** M1 lockup — L4 browser + beam + URL chip + stacked name. 48×36.
+ *  Settled twins: public/assets/logo.svg (same sequence) and public/assets/favicon.svg. */
 function PlatformMark() {
   return (
     <svg

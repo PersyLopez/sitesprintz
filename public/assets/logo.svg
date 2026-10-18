@@ -1,16 +1,57 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 36" preserveAspectRatio="xMidYMid meet">
-  <path fill="#3d5c72" fill-opacity="0.22" d="M3 3 L16 34 L46 18 Z"/>
+  <style>
+    .logo-mark-line,
+    .logo-mark-bulb,
+    .logo-mark-beam {
+      animation-duration: 0.52s;
+      animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+      animation-fill-mode: both;
+      animation-iteration-count: 1;
+    }
+    .logo-mark-line { animation-name: markWordRise; }
+    .logo-mark-line--0 { animation-delay: 0ms; }
+    .logo-mark-line--1 { animation-delay: 420ms; }
+    .logo-mark-line--2 { animation-delay: 860ms; }
+    .logo-mark-bulb {
+      animation-name: markBulbOn;
+      animation-delay: 860ms;
+      animation-duration: 0.7s;
+    }
+    .logo-mark-beam {
+      animation-name: markBeamReveal;
+      animation-delay: 860ms;
+      animation-duration: 0.7s;
+    }
+    @keyframes markWordRise {
+      from { opacity: 0; transform: translateY(3px); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes markBulbOn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes markBeamReveal {
+      from { opacity: 0; }
+      to { opacity: 0.22; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .logo-mark-line,
+      .logo-mark-bulb,
+      .logo-mark-beam { animation: none; }
+    }
+  </style>
+  <path class="logo-mark-beam" fill="#3d5c72" opacity="0.22" d="M3 3 L16 34 L46 18 Z"/>
   <g fill="none" stroke="#3d5c72" stroke-width="1.2" stroke-linejoin="round">
     <rect x="14" y="8" width="31" height="24" rx="2.2"/>
     <path d="M14 14 H45"/>
   </g>
-  <circle cx="4.6" cy="4.2" r="2" fill="#3d5c72"/>
+  <circle class="logo-mark-bulb" cx="4.6" cy="4.2" r="2" fill="#3d5c72"/>
   <circle cx="17.6" cy="11" r="0.85" fill="#3d5c72"/>
   <circle cx="20.2" cy="11" r="0.85" fill="#3d5c72"/>
   <circle cx="22.8" cy="11" r="0.85" fill="#3d5c72"/>
   <rect x="25" y="9.4" width="17.6" height="3.2" rx="1.6" fill="none" stroke="#3d5c72" stroke-width="0.7"/>
   <text x="26.4" y="11.8" fill="#3d5c72" font-family="system-ui, ui-sans-serif, sans-serif" font-size="2.35" font-stretch="condensed">rightsitelight.com</text>
-  <text x="17.8" y="20.2" fill="#3d5c72" font-family="system-ui, ui-sans-serif, sans-serif" font-weight="800" font-size="5.8" font-stretch="condensed" letter-spacing="-0.04">Right</text>
-  <text x="17.8" y="25.2" fill="#3d5c72" font-family="system-ui, ui-sans-serif, sans-serif" font-weight="800" font-size="5.8" font-stretch="condensed" letter-spacing="-0.04">Site</text>
-  <text x="17.8" y="30.2" fill="#3d5c72" font-family="system-ui, ui-sans-serif, sans-serif" font-weight="800" font-size="5.8" font-stretch="condensed" letter-spacing="-0.04">Light</text>
+  <text class="logo-mark-line logo-mark-line--0" x="17.8" y="20.2" fill="#3d5c72" font-family="system-ui, ui-sans-serif, sans-serif" font-weight="800" font-size="5.8" font-stretch="condensed" letter-spacing="-0.04">Right</text>
+  <text class="logo-mark-line logo-mark-line--1" x="17.8" y="25.2" fill="#3d5c72" font-family="system-ui, ui-sans-serif, sans-serif" font-weight="800" font-size="5.8" font-stretch="condensed" letter-spacing="-0.04">Site</text>
+  <text class="logo-mark-line logo-mark-line--2" x="17.8" y="30.2" fill="#3d5c72" font-family="system-ui, ui-sans-serif, sans-serif" font-weight="800" font-size="5.8" font-stretch="condensed" letter-spacing="-0.04">Light</text>
 </svg>
