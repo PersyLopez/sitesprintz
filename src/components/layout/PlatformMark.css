@@ -39,10 +39,10 @@
   animation-delay: 860ms;
 }
 
-/* "Light" beat: bulb fades on from dim and holds — no overshoot. */
+/* "Light" beat: bulb comes on from off and holds — no overshoot. */
 @keyframes markBulbOn {
   from {
-    opacity: 0.45;
+    opacity: 0;
     filter: none;
   }
   to {
@@ -57,10 +57,10 @@
   animation-duration: 0.7s;
 }
 
-/* Beam fades in from a dimmer shade and holds at the static 0.22. */
+/* Beam stays off, then rises to the static 0.22 and holds. */
 @keyframes markBeamReveal {
   from {
-    opacity: 0.15;
+    opacity: 0;
   }
   to {
     opacity: 0.22;
