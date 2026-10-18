@@ -1,4 +1,5 @@
 import React from 'react';
+import './PlatformMark.css';
 
 const TYPE_FACE = 'system-ui, ui-sans-serif, sans-serif';
 const BODY_LINES = ['Right', 'Site', 'Light'];
@@ -13,12 +14,12 @@ function PlatformMark() {
       focusable="false"
       aria-hidden="true"
     >
-      <path fill="currentColor" opacity="0.22" d="M3 3 L16 34 L46 18 Z" />
+      <path className="logo-mark-beam" fill="currentColor" opacity="0.22" d="M3 3 L16 34 L46 18 Z" />
       <g fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round">
         <rect x="14" y="8" width="31" height="24" rx="2.2" />
         <path d="M14 14 H45" />
       </g>
-      <circle cx="4.6" cy="4.2" r="2" fill="currentColor" />
+      <circle className="logo-mark-bulb" cx="4.6" cy="4.2" r="2" fill="currentColor" />
       <circle cx="17.6" cy="11" r="0.85" fill="currentColor" />
       <circle cx="20.2" cy="11" r="0.85" fill="currentColor" />
       <circle cx="22.8" cy="11" r="0.85" fill="currentColor" />
@@ -45,6 +46,7 @@ function PlatformMark() {
       {BODY_LINES.map((line, i) => (
         <text
           key={line}
+          className={`logo-mark-line logo-mark-line--${i}`}
           x="17.8"
           y={20.2 + i * 5}
           fill="currentColor"

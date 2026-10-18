@@ -1,0 +1,82 @@
+/* Play-once logo reveal for the M1 lockup. Easing copied as a literal from
+   Landing.css (--ease-out lives only on the landing page). End state must
+   match the static mark: words opacity 1, no leftover transform or filter,
+   beam opacity 0.22. */
+
+.logo-mark .logo-mark-line,
+.logo-mark .logo-mark-bulb,
+.logo-mark .logo-mark-beam {
+  animation-duration: 0.52s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+  animation-iteration-count: 1;
+}
+
+@keyframes markWordRise {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.logo-mark .logo-mark-line {
+  animation-name: markWordRise;
+}
+
+.logo-mark .logo-mark-line--0 {
+  animation-delay: 0ms;
+}
+
+.logo-mark .logo-mark-line--1 {
+  animation-delay: 420ms;
+}
+
+.logo-mark .logo-mark-line--2 {
+  animation-delay: 860ms;
+}
+
+/* "Light" beat: bulb fades on from dim and holds — no overshoot. */
+@keyframes markBulbOn {
+  from {
+    opacity: 0.45;
+    filter: none;
+  }
+  to {
+    opacity: 1;
+    filter: none;
+  }
+}
+
+.logo-mark .logo-mark-bulb {
+  animation-name: markBulbOn;
+  animation-delay: 860ms;
+  animation-duration: 0.7s;
+}
+
+/* Beam fades in from a dimmer shade and holds at the static 0.22. */
+@keyframes markBeamReveal {
+  from {
+    opacity: 0.15;
+  }
+  to {
+    opacity: 0.22;
+  }
+}
+
+.logo-mark .logo-mark-beam {
+  animation-name: markBeamReveal;
+  animation-delay: 860ms;
+  animation-duration: 0.7s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-mark .logo-mark-line,
+  .logo-mark .logo-mark-bulb,
+  .logo-mark .logo-mark-beam {
+    animation: none;
+  }
+}
