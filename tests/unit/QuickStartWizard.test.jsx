@@ -2,8 +2,8 @@
  * Tests for QuickStartWizard.jsx — Quick Start flow
  *
  * Seams tested:
- *   1. Wizard renders with 4 steps (industry, basics, offers, style)
- *   2. The default solo level is passed through to the site builder
+ *   1. Wizard renders with 5 steps (industry, basics, level, offers, style)
+ *   2. The chosen level is passed through to the site builder
  *   3. Fallback to old template flow for unknown niches
  */
 
@@ -113,6 +113,10 @@ describe('QuickStartWizard', () => {
     fireEvent.change(screen.getByTestId('contact-phone-input'), { target: { value: '555-1234' } });
     fireEvent.click(nextButton());
 
+    expect(screen.getByTestId('wizard-level-step')).toBeTruthy();
+    expect(screen.getByTestId('level-solo').getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(nextButton());
+
     expect(screen.getByTestId('wizard-offers-step')).toBeTruthy();
     fireEvent.click(nextButton());
 
@@ -139,6 +143,86 @@ describe('QuickStartWizard', () => {
     expect(callArg.catalogItems.some((item) => /Haircut/i.test(item.name))).toBe(true);
   });
 
+  it('passes a bigger team through to buildSiteDataFromWizard', async () => {
+    render(<QuickStartWizard onComplete={() => {}} onSkip={() => {}} />);
+
+    clickIndustry('Salon');
+    fireEvent.change(screen.getByTestId('business-name-input'), { target: { value: 'Harbor and Co' } });
+    fireEvent.change(screen.getByTestId('contact-phone-input'), { target: { value: '555-1234' } });
+    fireEvent.click(nextButton());
+
+    fireEvent.click(screen.getByTestId('level-established'));
+    fireEvent.click(nextButton());
+    fireEvent.click(nextButton());
+
+    await waitFor(() => {
+      expect(document.querySelectorAll('.theme-card').length).toBeGreaterThan(0);
+    });
+    fireEvent.click(document.querySelector('.theme-card'));
+    fireEvent.click(screen.getByRole('button', { name: /Create My Website/i }));
+
+    await waitFor(() => expect(getBuildMock()).toHaveBeenCalledTimes(1));
+    expect(getBuildMock().mock.calls[0][0].level).toBe('established');
+  });
+
+  // Hours accept-default: checked by default, no hours passed to the builder
+  it('passes no hours when the accept-default-hours box stays checked', async () => {
+    const onComplete = vi.fn();
+    render(<QuickStartWizard onComplete={onComplete} onSkip={() => {}} />);
+
+    clickIndustry('Salon');
+
+    fireEvent.change(screen.getByTestId('business-name-input'), { target: { value: 'Studio Luxe' } });
+    fireEvent.change(screen.getByTestId('contact-phone-input'), { target: { value: '555-1234' } });
+
+    const checkbox = screen.getByTestId('wizard-hours-accept-default');
+    expect(checkbox.checked).toBe(true);
+    // Accessible name carries that niche's real defaultHours
+    expect(checkbox.closest('label').textContent).toContain('Tue–Sat 9am–6pm');
+    expect(screen.queryByTestId('wizard-hours-input')).toBeNull();
+
+    fireEvent.click(nextButton());
+    fireEvent.click(nextButton());
+    fireEvent.click(nextButton());
+    await waitFor(() => {
+      const themeCards = document.querySelectorAll('.theme-card');
+      expect(themeCards.length).toBeGreaterThan(0);
+    });
+    fireEvent.click(document.querySelector('.theme-card'));
+    fireEvent.click(screen.getByRole('button', { name: /Create My Website/i }));
+
+    await waitFor(() => expect(getBuildMock()).toHaveBeenCalledTimes(1));
+    expect(getBuildMock().mock.calls[0][0].hours).toBeUndefined();
+  });
+
+  it('passes the edited hours when the accept-default-hours box is unchecked', async () => {
+    const onComplete = vi.fn();
+    render(<QuickStartWizard onComplete={onComplete} onSkip={() => {}} />);
+
+    clickIndustry('Salon');
+
+    fireEvent.change(screen.getByTestId('business-name-input'), { target: { value: 'Studio Luxe' } });
+    fireEvent.change(screen.getByTestId('contact-phone-input'), { target: { value: '555-1234' } });
+
+    fireEvent.click(screen.getByTestId('wizard-hours-accept-default'));
+    const hoursInput = screen.getByTestId('wizard-hours-input');
+    expect(hoursInput.value).toBe('Tue–Sat 9am–6pm');
+    fireEvent.change(hoursInput, { target: { value: 'Mon–Wed 10am–4pm' } });
+
+    fireEvent.click(nextButton());
+    fireEvent.click(nextButton());
+    fireEvent.click(nextButton());
+    await waitFor(() => {
+      const themeCards = document.querySelectorAll('.theme-card');
+      expect(themeCards.length).toBeGreaterThan(0);
+    });
+    fireEvent.click(document.querySelector('.theme-card'));
+    fireEvent.click(screen.getByRole('button', { name: /Create My Website/i }));
+
+    await waitFor(() => expect(getBuildMock()).toHaveBeenCalledTimes(1));
+    expect(getBuildMock().mock.calls[0][0].hours).toBe('Mon–Wed 10am–4pm');
+  });
+
   // Fallback path: unknown industry does not call buildSiteDataFromWizard
   it('falls back to templatesService for niches not in REFINED_NICHE_IDS', async () => {
     render(<QuickStartWizard onComplete={() => {}} onSkip={() => {}} />);
@@ -146,6 +230,7 @@ describe('QuickStartWizard', () => {
     clickIndustry('Salon');
     fireEvent.change(screen.getByTestId('business-name-input'), { target: { value: 'X' } });
     fireEvent.change(screen.getByTestId('contact-phone-input'), { target: { value: '555' } });
+    fireEvent.click(nextButton());
     fireEvent.click(nextButton());
     fireEvent.click(nextButton());
 

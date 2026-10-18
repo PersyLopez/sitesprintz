@@ -119,7 +119,7 @@ function ensureSocial(siteData) {
  * @param {string} [formState.contactEmail]
  * @param {string} [formState.contactAddress]
  * @param {string} [formState.location]    - Bazaar: location text
- * @param {string} [formState.hours]       - Bazaar: hours text
+ * @param {string} [formState.hours]       - Bazaar: hours text; Refined: edited hours (replaces niche defaultHours)
  * @param {string} [formState.openUntil]   - Bazaar: optional end date
  * @param {Object} [formState.features]    - Feature overrides
  * @param {string} [formState.themeId]     - Curated site theme id
@@ -193,6 +193,25 @@ export function buildSiteDataFromWizard(formState = {}) {
   });
 
   applyWizardCatalogItems(siteData, formState.catalogItems);
+
+  // Refined niches: an explicitly-passed hours string (edited or cleared, but
+  // present) replaces the niche default in the hours section and businessHours.
+  if (formState.hours !== undefined) {
+    const hours = formState.hours;
+    siteData.businessHours = hours;
+    if (Array.isArray(siteData.sections)) {
+      siteData.sections = siteData.sections.map((section) => {
+        if (section.type !== 'hours') return section;
+        return {
+          ...section,
+          content: {
+            ...(section.content || {}),
+            hours,
+          },
+        };
+      });
+    }
+  }
 
   return applyVisitorExperienceDefaults(
     applyTheme(ensureSocial(injectContact(siteData, formState)), formState.themeId, niche)

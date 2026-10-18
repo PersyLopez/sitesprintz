@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useSite } from '../../hooks/useSite';
 import { templatesService } from '../../services/templates';
 import { getIndustryDefaults, replacePlaceholder, INDUSTRY_TEMPLATES } from '../../utils/industryDefaults';
@@ -6,12 +6,14 @@ import { buildSiteDataFromWizard, REFINED_NICHE_IDS } from '../../utils/wizardSi
 import { getNicheConfig } from '../../config/nicheTemplateBuilders';
 import { getRecommendedSiteThemes, colorsFromSiteTheme } from '../../config/siteThemes';
 import FieldValidation from '../common/FieldValidation';
+import LevelSelector from './LevelSelector';
 import { useToast } from '../../hooks/useToast';
 import './QuickStartWizard.css';
 
 const WIZARD_STEPS = [
   { id: 'industry', title: 'What type of business?', icon: '🏢' },
   { id: 'basics', title: 'Business essentials', icon: '📝' },
+  { id: 'level', title: 'Business size', icon: '👥' },
   { id: 'offers', title: 'What you offer', icon: '📋' },
   { id: 'style', title: 'Choose your look', icon: '🎨' }
 ];
@@ -52,6 +54,13 @@ function seedOffersFromIndustry(industryId) {
   }
   const nicheId = INDUSTRY_TO_NICHE[industryId] || industryId;
   return seedOffersFromNiche(nicheId);
+}
+
+/** Real defaultHours of the niche behind an industry (e.g. salon → 'Tue–Sat 9am–6pm'). */
+function defaultHoursForIndustry(industryId) {
+  if (!industryId) return '';
+  const niche = getNicheConfig(INDUSTRY_TO_NICHE[industryId] || industryId);
+  return niche?.defaultHours || '';
 }
 
 const INDUSTRIES = [
@@ -107,28 +116,43 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
   const [formData, setFormData] = useState({
     businessName: '',
     phone: '',
-    email: ''
+    email: '',
+    hours: defaultHoursForIndustry(preselectedIndustry) || '',
+    level: 'solo'
   });
+  const [hoursAcceptDefault, setHoursAcceptDefault] = useState(true);
   const [selectedTheme, setSelectedTheme] = useState(null);
   const [loading, setLoading] = useState(false);
   const [basicsSubmitAttempted, setBasicsSubmitAttempted] = useState(false);
-  const [showAllThemes, setShowAllThemes] = useState(false);
   const initialOffers = seedOffersFromIndustry(preselectedIndustry);
   const [offerKind, setOfferKind] = useState(initialOffers.kind);
   const [offerRows, setOfferRows] = useState(initialOffers.items);
 
   const defaults = selectedIndustry ? getIndustryDefaults(selectedIndustry) : null;
+  const nicheDefaultHours = defaultHoursForIndustry(selectedIndustry);
   const themesForIndustry = selectedIndustry
     ? getRecommendedSiteThemes(INDUSTRY_TO_NICHE[selectedIndustry] || selectedIndustry)
     : [];
 
+  const wizardRef = useRef(null);
+  const didMountRef = useRef(false);
+  useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
+    wizardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [currentStep]);
+
   const handleIndustrySelect = (industryId) => {
     setSelectedIndustry(industryId);
     setSelectedTheme(null);
-    setShowAllThemes(false);
     const seeded = seedOffersFromIndustry(industryId);
     setOfferKind(seeded.kind);
     setOfferRows(seeded.items);
+    // Hours: reset to the new niche's default and back to the checked accept-default box
+    setFormData(prev => ({ ...prev, hours: defaultHoursForIndustry(industryId) }));
+    setHoursAcceptDefault(true);
     // Store industry preference for template recommendations
     localStorage.setItem('userIndustryPreference', industryId);
     setCurrentStep(1);
@@ -150,13 +174,17 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
     setCurrentStep(2);
   };
 
+  const handleLevelNext = () => {
+    setCurrentStep(3);
+  };
+
   const handleOffersNext = () => {
     const niche = INDUSTRY_TO_NICHE[selectedIndustry] || selectedIndustry;
     const recommended = getRecommendedSiteThemes(niche);
     if (!selectedTheme && recommended[0]) {
       setSelectedTheme(recommended[0]);
     }
-    setCurrentStep(3);
+    setCurrentStep(4);
   };
 
   const updateOfferRow = (index, field, value) => {
@@ -206,9 +234,11 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
         const siteData = buildSiteDataFromWizard({
           niche: nicheId,
           businessName: formData.businessName.trim(),
-          level: 'solo',
+          level: formData.level,
           contact,
           themeId: selectedTheme.id,
+          // Only pass hours when the user opted out of the niche default (empty string counts)
+          ...(!hoursAcceptDefault ? { hours: formData.hours } : {}),
           ...(catalogItems.length ? { catalogItems, kind: offerKind } : {}),
         });
         await loadTemplate(siteData);
@@ -351,6 +381,34 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
                 </FieldValidation>
               </div>
 
+              <div className="form-group">
+                <label htmlFor="hoursAcceptDefault" className="wizard-hours-accept">
+                  <input
+                    type="checkbox"
+                    id="hoursAcceptDefault"
+                    data-testid="wizard-hours-accept-default"
+                    checked={hoursAcceptDefault}
+                    onChange={(e) => setHoursAcceptDefault(e.target.checked)}
+                  />
+                  {nicheDefaultHours
+                    ? `Accept default hours (${nicheDefaultHours})`
+                    : 'Accept default hours'}
+                </label>
+                {!hoursAcceptDefault && (
+                  <>
+                    <label htmlFor="hours">Your hours</label>
+                    <input
+                      type="text"
+                      id="hours"
+                      data-testid="wizard-hours-input"
+                      value={formData.hours}
+                      onChange={(e) => handleBasicsChange('hours', e.target.value)}
+                      placeholder="e.g., Mon–Fri 9am–5pm"
+                    />
+                  </>
+                )}
+              </div>
+
               <div className="form-help">
                 <p>💡 At least one contact method (phone or email) is required</p>
               </div>
@@ -359,6 +417,19 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
         );
 
       case 2:
+        return (
+          <div className="wizard-step level-selection" data-testid="wizard-level-step">
+            <h2>How big is your team?</h2>
+            <p className="step-description">This decides whether your page includes a team section.</p>
+            <LevelSelector
+              value={formData.level}
+              onChange={(level) => handleBasicsChange('level', level)}
+              niche={INDUSTRY_TO_NICHE[selectedIndustry] || selectedIndustry}
+            />
+          </div>
+        );
+
+      case 3:
         return (
           <div className="wizard-step" data-testid="wizard-offers-step">
             <h2>{offerKind === 'services' ? 'Your services' : 'What you offer'}</h2>
@@ -425,50 +496,59 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
           </div>
         );
 
-      case 3:
+      case 4:
         return (
           <div className="wizard-step style-selection">
             <h2>Choose a theme</h2>
-            <p className="step-description">Six palettes with locked contrast. Recommended ones for your business come first.</p>
-            <div className="theme-grid">
-              {themesForIndustry.slice(0, showAllThemes ? themesForIndustry.length : 3).map((theme) => (
-                <button
-                  key={theme.id}
-                  type="button"
-                  className={`theme-card ${selectedTheme?.id === theme.id ? 'selected' : ''}`}
-                  onClick={() => handleThemeSelect(theme)}
-                  data-testid={`wizard-theme-${theme.id}`}
-                >
-                  <div className="theme-preview" style={{
-                    background: theme.tokens.bg,
-                    border: `1px solid ${theme.tokens.hairline}`,
-                  }}>
-                    <div className="theme-preview-content">
-                      <div className="preview-text" style={{ color: theme.tokens.text }}>
-                        {formData.businessName || 'Your Business'}
-                      </div>
-                      <span className="color-dot" style={{ backgroundColor: theme.tokens.accent }} />
-                    </div>
+            <p className="step-description">Dark or light page. The button color is the only other change.</p>
+            {['dark', 'light'].map((mode) => {
+              const group = themesForIndustry.filter((theme) => theme.mode === mode);
+              if (!group.length) return null;
+              return (
+                <div key={mode} className="theme-mode-group">
+                  <h3 className="theme-group-label">{mode === 'dark' ? 'Dark page' : 'Light page'}</h3>
+                  <div className="theme-grid">
+                    {group.map((theme) => (
+                      <button
+                        key={theme.id}
+                        type="button"
+                        className={`theme-card ${selectedTheme?.id === theme.id ? 'selected' : ''}`}
+                        onClick={() => handleThemeSelect(theme)}
+                        data-testid={`wizard-theme-${theme.id}`}
+                      >
+                        <div className="theme-preview" style={{
+                          background: theme.tokens.bg,
+                          border: `1px solid ${theme.tokens.hairline}`,
+                        }}>
+                          <div className="theme-preview-content">
+                            <div className="preview-text" style={{ color: theme.tokens.text }}>
+                              {formData.businessName || 'Your Business'}
+                            </div>
+                            <div className="preview-muted" style={{ color: theme.tokens.muted }}>
+                              Booking · Services
+                            </div>
+                            <span
+                              className="preview-action"
+                              data-testid="theme-preview-action"
+                              style={{ background: theme.tokens.accent, color: theme.tokens.onAccent }}
+                            >
+                              Book
+                            </span>
+                          </div>
+                        </div>
+                        <div className="theme-info">
+                          <h3>{theme.name}</h3>
+                          <p>{theme.description}</p>
+                          {selectedTheme?.id === theme.id && (
+                            <span className="theme-selected-indicator">✓ Selected</span>
+                          )}
+                        </div>
+                      </button>
+                    ))}
                   </div>
-                  <div className="theme-info">
-                    <h3>{theme.name}</h3>
-                    <p>{theme.description}</p>
-                    {selectedTheme?.id === theme.id && (
-                      <span className="theme-selected-indicator">✓ Selected</span>
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-            {!showAllThemes && themesForIndustry.length > 3 && (
-              <button
-                type="button"
-                className="theme-disclosure"
-                onClick={() => setShowAllThemes(true)}
-              >
-                See 3 more
-              </button>
-            )}
+                </div>
+              );
+            })}
           </div>
         );
 
@@ -478,7 +558,7 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
   };
 
   return (
-    <div className="quickstart-wizard" data-testid="quickstart-wizard">
+    <div className="quickstart-wizard" data-testid="quickstart-wizard" ref={wizardRef}>
       <div className="wizard-header">
         <h1><span aria-hidden="true">✨</span> Quick Start</h1>
         <p>Get your website ready in a few simple steps</p>
@@ -514,7 +594,7 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
               type="button"
               className="btn btn-primary"
               data-testid="wizard-next"
-              onClick={currentStep === 1 ? handleBasicsNext : handleOffersNext}
+              onClick={currentStep === 1 ? handleBasicsNext : currentStep === 2 ? handleLevelNext : handleOffersNext}
             >
               Next →
             </button>

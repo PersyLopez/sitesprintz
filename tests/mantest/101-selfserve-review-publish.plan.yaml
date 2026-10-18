@@ -40,8 +40,6 @@ steps:
     code: |
       const skip = page.getByTestId('wizard-skip');
       if (!(await skip.isVisible())) throw new Error('wizard-skip missing on industry step');
-      const t = await page.locator('body').innerText();
-      if (/Business size/i.test(t)) throw new Error('Business-size step should be gone');
     settle_ms: 200
 
   - action: Pick Salon
@@ -62,6 +60,38 @@ steps:
 
   - action: Fill phone
     fill: { testId: contact-phone-input, value: "555-0199", clear: true }
+
+  - action: Default hours box is checked with salon hours
+    code: |
+      const box = page.getByTestId('wizard-hours-accept-default');
+      await box.waitFor({ timeout: 5000 });
+      if (!(await box.isChecked())) throw new Error('wizard-hours-accept-default should start checked');
+      const byName = page.getByRole('checkbox', { name: /Tue–Sat 9am–6pm/ });
+      if (!(await byName.count())) throw new Error('checkbox accessible name missing salon default hours (Tue–Sat 9am–6pm)');
+      if (await page.getByTestId('wizard-hours-input').count()) throw new Error('wizard-hours-input should be hidden while box is checked');
+    settle_ms: 200
+
+  - action: Next to business size
+    click: { testId: wizard-next }
+    settle_ms: 800
+    assert:
+      - text contains Business size
+
+  - action: Three level cards are visible
+    code: |
+      for (const id of ['level-solo', 'level-studio', 'level-established']) {
+        const card = page.getByTestId(id);
+        await card.waitFor({ timeout: 5000 });
+        if (!(await card.isVisible())) throw new Error(id + ' card not visible');
+      }
+      if (!(await page.getByTestId('level-solo').getAttribute('aria-pressed'))) {
+        throw new Error('level-solo should be pre-selected');
+      }
+    settle_ms: 200
+
+  - action: Pick Me and my team
+    click: { testId: level-studio }
+    settle_ms: 300
 
   - action: Next to offers
     click: { testId: wizard-next }
@@ -84,13 +114,9 @@ steps:
     settle_ms: 1200
     assert:
       - text contains Choose a theme
-      - text contains See 3 more
-
-  - action: Reveal remaining themes
-    click: { text: See 3 more }
-    settle_ms: 600
-    assert:
-      - text contains Onyx Oxblood
+      - text contains Dark page
+      - text contains Light page
+      - text contains Ivory Grove
 
   - action: Pick first recommended theme
     click: { testId: wizard-theme-onyx-oxblood }

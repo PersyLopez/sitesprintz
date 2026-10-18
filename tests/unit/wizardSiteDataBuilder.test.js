@@ -13,6 +13,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { buildSiteDataFromWizard } from '../../src/utils/wizardSiteDataBuilder';
+import { resolveOperatingModel } from '../../src/config/operatingModel';
 
 describe('wizardSiteDataBuilder — buildSiteDataFromWizard', () => {
   beforeEach(() => {
@@ -266,5 +267,105 @@ describe('wizardSiteDataBuilder — buildSiteDataFromWizard', () => {
     });
     const services = siteData.sections.find((s) => s.type === 'services');
     expect(services.content.items.some((item) => /Haircut/i.test(item.name))).toBe(true);
+  });
+
+  it('replaces niche defaultHours with an edited hours string on refined niches', () => {
+    const siteData = buildSiteDataFromWizard({
+      niche: 'salon',
+      businessName: 'Studio Luxe',
+      level: 'solo',
+      hours: 'Mon–Thu 10am–4pm',
+    });
+
+    const hoursSection = siteData.sections.find((s) => s.type === 'hours');
+    expect(hoursSection.content.hours).toBe('Mon–Thu 10am–4pm');
+    expect(siteData.businessHours).toBe('Mon–Thu 10am–4pm');
+  });
+
+  it('keeps the niche defaultHours when hours is omitted', () => {
+    const siteData = buildSiteDataFromWizard({
+      niche: 'salon',
+      businessName: 'Studio Luxe',
+      level: 'solo',
+    });
+
+    const hoursSection = siteData.sections.find((s) => s.type === 'hours');
+    expect(hoursSection.content.hours).toBe('Tue–Sat 9am–6pm');
+    expect(siteData.businessHours).toBe('Tue–Sat 9am–6pm');
+  });
+
+  it('salon + studio emits a team section with staff-picker variant and team businessMode', () => {
+    const siteData = buildSiteDataFromWizard({
+      niche: 'salon',
+      businessName: 'Studio Luxe',
+      level: 'studio',
+    });
+
+    const team = siteData.sections.find((s) => s.type === 'team');
+    expect(team).toBeTruthy();
+    expect(team.variant).toBe('staff-picker');
+    const expected = resolveOperatingModel('salon', 'studio').businessMode;
+    expect(siteData.booking.businessMode).toBe(expected);
+    expect(siteData._operatingModel.businessMode).toBe(expected);
+  });
+
+  it('salon + established emits team grid plus testimonials', () => {
+    const siteData = buildSiteDataFromWizard({
+      niche: 'salon',
+      businessName: 'Studio Luxe',
+      level: 'established',
+    });
+
+    const team = siteData.sections.find((s) => s.type === 'team');
+    expect(team).toBeTruthy();
+    expect(team.variant).toBe('grid');
+    const testimonials = siteData.sections.find((s) => s.type === 'testimonials');
+    expect(testimonials).toBeTruthy();
+  });
+
+  it('salon + solo emits no team section and solo businessMode', () => {
+    const siteData = buildSiteDataFromWizard({
+      niche: 'salon',
+      businessName: 'Studio Luxe',
+      level: 'solo',
+    });
+
+    expect(siteData.sections.find((s) => s.type === 'team')).toBeUndefined();
+    expect(siteData.booking.businessMode).toBe('solo');
+    expect(siteData._operatingModel.businessMode).toBe('solo');
+  });
+
+  it('dispatch niche (plumbing) + studio resolves the dispatch businessMode', () => {
+    const siteData = buildSiteDataFromWizard({
+      niche: 'plumbing',
+      businessName: 'Reliable Pipes',
+      level: 'studio',
+    });
+
+    const expected = resolveOperatingModel('plumbing', 'studio').businessMode;
+    expect(siteData.booking.businessMode).toBe(expected);
+    expect(siteData._operatingModel.businessMode).toBe(expected);
+  });
+
+  it('dispatch niche (tow-truck) + studio resolves the same dispatch businessMode', () => {
+    const siteData = buildSiteDataFromWizard({
+      niche: 'tow-truck',
+      businessName: 'Fast Tow',
+      level: 'studio',
+    });
+
+    expect(siteData._operatingModel.businessMode)
+      .toBe(resolveOperatingModel('tow-truck', 'studio').businessMode);
+  });
+
+  it('omits level → solo default', () => {
+    const siteData = buildSiteDataFromWizard({
+      niche: 'salon',
+      businessName: 'Studio Luxe',
+    });
+
+    expect(siteData._level).toBe('solo');
+    expect(siteData.booking.businessMode).toBe('solo');
+    expect(siteData.sections.find((s) => s.type === 'team')).toBeUndefined();
   });
 });
