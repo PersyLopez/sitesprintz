@@ -3,7 +3,7 @@
  * Paths look like: brand.name, hero.title, services.items.0.name, team.members.0.role
  */
 
-import { isAreaDisplay, normalizeServiceRadiusMiles } from './liveSiteContact';
+import { isAreaDisplay, normalizeServiceRadiusMiles } from './liveSiteContact.js';
 
 function ensureSection(siteData, type) {
   if (!Array.isArray(siteData.sections)) siteData.sections = [];
