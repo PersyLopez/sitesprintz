@@ -282,7 +282,7 @@ function flattenMenuToProducts(menu) {
  * Filter template features based on user's subscription tier
  * Removes features user doesn't have access to
  */
-function filterFeaturesByPlan(siteData, userPlan) {
+export function filterFeaturesByPlan(siteData, userPlan) {
   const plan = normalizeTier(userPlan);
   const filtered = deepClone(siteData) || {};
   
@@ -385,12 +385,24 @@ function filterFeaturesByPlan(siteData, userPlan) {
     }
   }
 
-  // FAQ / before-after (Starter+)
+  // FAQ / before-after (Starter+). Drop the composed sections too, same as team.
   if (!hasFeature(plan, FEATURES.FAQ_SECTION)) {
     delete filtered.faq;
+    if (Array.isArray(filtered.sections)) {
+      filtered.sections = filtered.sections.filter((section) => section?.type !== 'faq');
+    }
+    if (Array.isArray(filtered.nav)) {
+      filtered.nav = filtered.nav.filter((item) => !String(item?.href || '').includes('#faq'));
+    }
   }
   if (!hasFeature(plan, FEATURES.BEFORE_AFTER_GALLERY)) {
     delete filtered.beforeAfter;
+    if (Array.isArray(filtered.sections)) {
+      filtered.sections = filtered.sections.filter((section) => section?.type !== 'before-after');
+    }
+    if (Array.isArray(filtered.nav)) {
+      filtered.nav = filtered.nav.filter((item) => !String(item?.href || '').includes('#before-after'));
+    }
   }
   
   // Remove filterable gallery if user doesn't have FILTERS
