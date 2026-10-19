@@ -253,7 +253,7 @@ function renderServices(section, tokens) {
       const duration = item.duration || item.duration_minutes;
       const serviceId = serviceKey(item, index);
       const media = image || genericImage
-        ? `<img class="ss-card-media" data-photo-field="services.items.${index}.image" src="${escapeAttr(image || genericImage)}" alt="${escapeAttr(item.imageAlt || name)}" loading="lazy" />`
+        ? `<img class="ss-card-media" data-photo-field="services.items.${index}.image" src="${escapeAttr(image || genericImage)}" alt="${escapeAttr(item.imageAlt || name)}" width="400" height="220" loading="lazy" decoding="async" />`
         : renderPhotoPlaceholder('service', {
             offerName: name,
             className: 'ss-photo-placeholder--card',
@@ -295,7 +295,7 @@ function renderAbout(section, tokens) {
   return `<section class="ss-about ss-section" style="background: ${getBg(tokens)}; color: ${getText(tokens)};">
   <div class="ss-container ss-about-grid ss-about-grid--media">
     ${image
-      ? `<img class="ss-about-media" data-photo-field="about.image" src="${escapeAttr(image)}" alt="${escapeAttr(title)}" loading="lazy" />`
+      ? `<img class="ss-about-media" data-photo-field="about.image" src="${escapeAttr(image)}" alt="${escapeAttr(title)}" width="640" height="280" loading="lazy" decoding="async" />`
       : renderPhotoPlaceholder('shop', { className: 'ss-photo-placeholder--about', photoField: 'about.image' })}
     <div>
       <h2 class="ss-h2" style="color: ${getAccent(tokens)}; text-align: left;">${escapeHtml(title)}</h2>
@@ -330,7 +330,7 @@ function renderGallery(section, tokens) {
       if (!src) {
         return renderPhotoPlaceholder('work', { className: 'ss-photo-placeholder--tile', photoField: field });
       }
-      return `<img class="ss-gallery-item" data-photo-field="${escapeAttr(field)}" src="${escapeAttr(src)}" alt="${escapeAttr(alt)}" loading="lazy" />`;
+      return `<img class="ss-gallery-item" data-photo-field="${escapeAttr(field)}" src="${escapeAttr(src)}" alt="${escapeAttr(alt)}" width="400" height="240" loading="lazy" decoding="async" />`;
     })
     .join('\n');
 
@@ -353,10 +353,10 @@ function renderBeforeAfter(section, tokens) {
     ? pairs
       .map((p, index) => `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
   <div>${p.before
-    ? `<img data-photo-field="before-after.pairs.${index}.before" src="${escapeAttr(p.before)}" alt="Before" style="width: 100%; border-radius: 8px;" loading="lazy" decoding="async" />`
+    ? `<img data-photo-field="before-after.pairs.${index}.before" src="${escapeAttr(p.before)}" alt="Before" width="800" height="600" style="width: 100%; border-radius: 8px;" loading="lazy" decoding="async" />`
     : renderPhotoPlaceholder('work', { className: 'ss-photo-placeholder--card', photoField: `before-after.pairs.${index}.before` })}<p style="text-align: center; color: ${getMuted(tokens)}; margin-top: 8px;">Before</p></div>
   <div>${p.after
-    ? `<img data-photo-field="before-after.pairs.${index}.after" src="${escapeAttr(p.after)}" alt="After" style="width: 100%; border-radius: 8px;" loading="lazy" decoding="async" />`
+    ? `<img data-photo-field="before-after.pairs.${index}.after" src="${escapeAttr(p.after)}" alt="After" width="800" height="600" style="width: 100%; border-radius: 8px;" loading="lazy" decoding="async" />`
     : renderPhotoPlaceholder('work', { className: 'ss-photo-placeholder--card', photoField: `before-after.pairs.${index}.after` })}<p style="text-align: center; color: ${getMuted(tokens)}; margin-top: 8px;">After</p></div>
 </div>`)
       .join('\n')
@@ -386,7 +386,7 @@ function renderTeam(section, tokens) {
   const membersHtml = members
     .map((m, index) => `<div style="text-align: center; background: ${getSurface(tokens)}; padding: 32px; border-radius: 12px;">
   ${m.photo || m.image
-    ? `<img data-photo-field="team.members.${index}.photo" src="${escapeAttr(m.photo || m.image)}" alt="${escapeAttr(m.name)}" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin-bottom: 16px; border: 4px solid ${getAccent(tokens)};" loading="lazy" decoding="async" />`
+    ? `<img data-photo-field="team.members.${index}.photo" src="${escapeAttr(m.photo || m.image)}" alt="${escapeAttr(m.name)}" width="150" height="150" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin-bottom: 16px; border: 4px solid ${getAccent(tokens)};" loading="lazy" decoding="async" />`
     : renderPhotoPlaceholder('staff', { className: 'ss-photo-placeholder--avatar', photoField: `team.members.${index}.photo` })}
   <h3 style="color: ${getAccent(tokens)}; margin-bottom: 4px;">${escapeHtml(m.name || '')}</h3>
   <div style="color: ${getMuted(tokens)}; font-size: 0.9rem; margin-bottom: 12px;">${escapeHtml(m.role || m.title || '')}</div>
@@ -600,7 +600,7 @@ function renderCatalog(section, tokens) {
   const cardsHtml = items
     .map((item, index) => `<article class="ss-card" style="background: ${getSurface(tokens)}; border: 1px solid ${getTokens(tokens).theme.hairline};">
   ${item.image
-    ? `<img class="ss-card-media" data-photo-field="catalog.items.${index}.image" src="${escapeAttr(item.image)}" alt="${escapeAttr(item.imageAlt || item.name || '')}" loading="lazy" />`
+    ? `<img class="ss-card-media" data-photo-field="catalog.items.${index}.image" src="${escapeAttr(item.image)}" alt="${escapeAttr(item.imageAlt || item.name || '')}" width="400" height="220" loading="lazy" decoding="async" />`
     : renderPhotoPlaceholder('product', { className: 'ss-photo-placeholder--card', photoField: `catalog.items.${index}.image` })}
   <div class="ss-card-body">
     <h3 style="color: ${getAccent(tokens)};">${escapeHtml(item.name || '')}</h3>

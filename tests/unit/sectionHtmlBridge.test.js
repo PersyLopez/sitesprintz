@@ -233,6 +233,33 @@ describe('sectionHtmlBridge', () => {
     expect(menuDish).toContain('/assets/hero-placeholder.jpg');
   });
 
+  it('reserves space for service, gallery, about, and before-after photos', () => {
+    const service = renderSectionToHtml({
+      type: 'services',
+      content: { items: [{ name: 'Haircut', image: '/uploads/cut.jpg' }] },
+    }, tokens);
+    expect(service).toContain('width="400" height="220"');
+
+    const gallery = renderSectionToHtml({
+      type: 'gallery',
+      content: { images: [{ src: '/uploads/shop.jpg', alt: 'Shop' }] },
+    }, tokens);
+    expect(gallery).toContain('width="400" height="240"');
+
+    const about = renderSectionToHtml({
+      type: 'about',
+      content: { title: 'About', image: '/uploads/about.jpg' },
+    }, tokens);
+    expect(about).toContain('width="640" height="280"');
+
+    const work = renderSectionToHtml({
+      type: 'before-after',
+      content: { pairs: [{ before: '/uploads/before.jpg', after: '/uploads/after.jpg' }] },
+    }, tokens);
+    expect(work).toContain('alt="Before" width="800" height="600"');
+    expect(work).toContain('alt="After" width="800" height="600"');
+  });
+
   it('keeps an owner photo URL instead of the sample insert', () => {
     const html = renderSectionToHtml({
       type: 'hero',
