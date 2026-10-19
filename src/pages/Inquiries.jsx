@@ -7,7 +7,7 @@ import { api } from '../services/api';
 import './Orders.css';
 
 function Inquiries() {
-  const { embedded, site } = useSiteWorkspace();
+  const { embedded, site, refreshUnreadMessages } = useSiteWorkspace();
   const { loading: authLoading } = useAuth();
   const { showError } = useToast();
 
@@ -50,6 +50,7 @@ function Inquiries() {
       setSubmissions((prev) => prev.map((s) => (
         s.id === submission.id ? { ...s, status: 'read' } : s
       )));
+      refreshUnreadMessages();
     } catch (error) {
       showError('Failed to mark message as read');
     }

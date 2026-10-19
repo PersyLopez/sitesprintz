@@ -203,4 +203,39 @@ describe('SiteDashboard', () => {
       expect(screen.getByTestId('appointments-tab')).toBeInTheDocument();
     });
   });
+  it('shows unread message count in the Messages nav', async () => {
+    api.get.mockImplementation((url) => {
+      if (url.startsWith('/api/submissions/site/')) {
+        return Promise.resolve({
+          submissions: [
+            { id: 's1', status: 'unread' },
+            { id: 's2', status: 'unread' },
+          ],
+        });
+      }
+      return Promise.resolve({ orders: [], appointments: [] });
+    });
+
+    renderDashboard();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('site-dashboard')).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('site-nav-messages-unread')).toHaveTextContent('2');
+    });
+    expect(screen.getByTestId('site-nav-messages')).toHaveAccessibleName(/Messages\s*2/);
+  });
+
+  it('shows no unread count when the submissions array is missing', async () => {
+    renderDashboard();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('site-dashboard')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByTestId('site-nav-messages-unread')).not.toBeInTheDocument();
+  });
+
 });

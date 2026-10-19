@@ -5,11 +5,12 @@ const SiteWorkspaceContext = createContext({
   embedded: false,
   site: null,
   siteId: null,
+  refreshUnreadMessages: null,
 });
 
-export function SiteWorkspaceProvider({ children, site, siteId }) {
+export function SiteWorkspaceProvider({ children, site, siteId, refreshUnreadMessages }) {
   return (
-    <SiteWorkspaceContext.Provider value={{ embedded: true, site, siteId }}>
+    <SiteWorkspaceContext.Provider value={{ embedded: true, site, siteId, refreshUnreadMessages }}>
       {children}
     </SiteWorkspaceContext.Provider>
   );
@@ -25,6 +26,7 @@ export function useSiteWorkspace() {
     embedded: Boolean(context.embedded),
     site: context.site,
     siteId,
+    refreshUnreadMessages: context.refreshUnreadMessages || (() => {}),
   };
 }
 

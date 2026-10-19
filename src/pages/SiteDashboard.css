@@ -114,6 +114,21 @@
   box-shadow: inset 0 -2px 0 var(--primary-color);
 }
 
+
+.site-workspace-nav-count {
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  background: var(--bg-elevated);
+}
+
+.site-workspace-nav-link.active .site-workspace-nav-count {
+  color: var(--text-light);
+  background: var(--primary-color);
+}
+
 .site-workspace-panel {
   min-height: 320px;
 }

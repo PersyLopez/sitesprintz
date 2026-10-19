@@ -67,6 +67,20 @@ steps:
       }
     settle_ms: 400
 
+  - action: Messages nav shows an unread count
+    code: |
+      if (await page.getByTestId('site-inquiries-empty').count()) return;
+      const badge = page.getByTestId('site-nav-messages-unread');
+      if ((await badge.count()) === 0) {
+        throw new Error('Messages nav does not show an unread count for a seeded unread lead');
+      }
+      const text = (await badge.innerText()).trim();
+      if (!/^\d+$/.test(text)) {
+        throw new Error('Messages nav unread count is not a number: ' + text);
+      }
+      await page.evaluate((n) => { window.__mantestUnreadBefore = Number(n); }, text);
+    settle_ms: 400
+
   - action: Opening the row marks it read
     code: |
       if (await page.getByTestId('site-inquiries-empty').count()) return;
@@ -76,5 +90,11 @@ steps:
       const rowText = await page.getByTestId('site-inquiry-row').first().innerText();
       if (/\bNew\b/.test(rowText)) {
         throw new Error('Row still shows New after being opened');
+      }
+      const badge = page.getByTestId('site-nav-messages-unread');
+      const count = (await badge.count()) ? Number((await badge.innerText()).trim()) : 0;
+      const before = await page.evaluate(() => window.__mantestUnreadBefore ?? 0);
+      if (count >= before) {
+        throw new Error(`Messages nav unread count did not drop after opening a message (${before} -> ${count})`);
       }
     settle_ms: 400

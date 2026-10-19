@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { sitesService } from '../services/sites';
-import { isAbortError } from '../services/api';
+import { api, isAbortError } from '../services/api';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import SkeletonLoader from '../components/common/SkeletonLoader';
@@ -24,6 +24,36 @@ function SiteDashboard() {
   const [site, setSite] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const unreadRequestSeq = useRef(0);
+
+  const fetchUnreadMessages = useCallback(async (subdomain, signal) => {
+    if (!subdomain) return;
+    const seq = ++unreadRequestSeq.current;
+    try {
+      const data = await api.get(`/api/submissions/site/${subdomain}?status=unread`, { signal });
+      if (signal?.aborted || seq !== unreadRequestSeq.current) return;
+      setUnreadMessages(Array.isArray(data?.submissions) ? data.submissions.length : 0);
+    } catch (error) {
+      if (isAbortError(error) || signal?.aborted) return;
+      if (seq === unreadRequestSeq.current) setUnreadMessages(0);
+    }
+  }, []);
+
+  useEffect(() => {
+    const subdomain = site?.subdomain;
+    if (!subdomain) return undefined;
+
+    const controller = new AbortController();
+    fetchUnreadMessages(subdomain, controller.signal);
+    return () => controller.abort();
+  }, [site?.subdomain, fetchUnreadMessages]);
+
+  const refreshUnreadMessages = useCallback(() => {
+    if (site?.subdomain) fetchUnreadMessages(site.subdomain);
+  }, [site?.subdomain, fetchUnreadMessages]);
+
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -124,7 +154,7 @@ function SiteDashboard() {
   const navItems = [
     { to: paths.overview, label: 'Overview', end: true, testId: 'site-nav-overview' },
     { to: paths.orders, label: 'Orders', testId: 'site-nav-orders' },
-    { to: paths.messages, label: 'Messages', testId: 'site-nav-messages' },
+    { to: paths.messages, label: 'Messages', testId: 'site-nav-messages', unread: unreadMessages },
     { to: paths.appointments, label: 'Appointments', testId: 'site-nav-appointments' },
     { to: paths.products, label: 'Products', testId: 'site-nav-products' },
     { to: paths.settings, label: 'Settings', testId: 'site-nav-settings' },
@@ -132,7 +162,7 @@ function SiteDashboard() {
   ];
 
   return (
-    <SiteWorkspaceProvider site={site} siteId={site.id}>
+    <SiteWorkspaceProvider site={site} siteId={site.id} refreshUnreadMessages={refreshUnreadMessages}>
       <div className="site-workspace-page">
         <a href="#site-workspace-main" className="skip-to-content">Skip to main content</a>
         <Header />
@@ -162,6 +192,14 @@ function SiteDashboard() {
                   className={({ isActive }) => `site-workspace-nav-link${isActive ? ' active' : ''}`}
                 >
                   {item.label}
+                  {item.unread > 0 && (
+                    <>
+                      {' '}
+                      <span className="site-workspace-nav-count" data-testid="site-nav-messages-unread">
+                        {item.unread}
+                      </span>
+                    </>
+                  )}
                 </NavLink>
               ))}
             </nav>
