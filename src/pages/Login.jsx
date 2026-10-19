@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
@@ -33,8 +33,9 @@ function Login() {
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.title = `${t('nav.login')} — ${t('brand.name')}`;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', t('auth.login.p'));
   }, [t]);
 
   useEffect(() => {

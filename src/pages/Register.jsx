@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
@@ -31,8 +31,9 @@ function Register() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [inviteOnly, setInviteOnly] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.title = `${t('nav.getStarted')} — ${t('brand.name')}`;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', t('auth.register.p'));
   }, [t]);
 
   useEffect(() => {

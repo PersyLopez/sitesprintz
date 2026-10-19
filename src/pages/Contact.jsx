@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useLayoutEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
@@ -10,6 +10,10 @@ import './ContentPage.css';
 function Contact() {
   const { t } = useLocale();
   const laborVars = laborDisplayVars();
+  useLayoutEffect(() => {
+    document.title = `${t('contact.title')} — ${t('brand.name')}`;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', t('contact.p'));
+  }, [t]);
   return (
     <div className="content-page story-public">
       <Header />

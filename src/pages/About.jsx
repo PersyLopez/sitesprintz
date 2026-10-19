@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useLayoutEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
@@ -7,6 +7,10 @@ import './ContentPage.css';
 
 function About() {
   const { t } = useLocale();
+  useLayoutEffect(() => {
+    document.title = t('about.title');
+    document.querySelector('meta[name="description"]')?.setAttribute('content', t('about.p2'));
+  }, [t]);
   return (
     <div className="content-page story-public">
       <Header />

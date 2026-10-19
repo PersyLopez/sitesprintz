@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect, useMemo } from 'react';
+import { useCallback, useState, useEffect, useLayoutEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import PublicPageLayout from '../components/layout/PublicPageLayout';
@@ -116,8 +116,9 @@ export default function Landing() {
     }
   });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.title = `${t('brand.name')} — ${t('footer.tagline')}`;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', t('landing.hero.subtitle'));
   }, [t]);
 
   useEffect(() => {

@@ -6,6 +6,8 @@
 
 import { getPublicSiteHost, normalizeHostname } from '../../src/utils/customDomainHost.js';
 import { livePublishedPath } from '../../src/utils/visitorExperience.js';
+import { tMarketing } from '../../src/i18n/marketing/index.js';
+import { DEFAULT_LOCALE, parseLocale } from '../../src/i18n/locale.js';
 
 const MARKETING_APEX_HOSTS = new Set(['rightsitelight.com', 'sitesprintz.com', 'localhost', '127.0.0.1']);
 
@@ -78,11 +80,16 @@ class SEOService {
   resolveMarketingPageMeta(pathname, search = '') {
     const path = this._normalizeMarketingPath(pathname);
     const origin = `${this.protocol}://${getPublicSiteHost()}`;
+    const params = new URLSearchParams(String(search || '').replace(/^\?/, ''));
+    const locale = params.has('lang') ? parseLocale(params.get('lang')) : DEFAULT_LOCALE;
+    const t = (key) => tMarketing(locale, key);
+    const brand = t('brand.name');
     const home = {
-      title: 'Right Site Light — A page so customers can find you again',
-      description: 'A simple page for your hours, menu, and how to find you — so the people who already care can come back.',
+      title: `${brand} — ${t('footer.tagline')}`,
+      description: t('landing.hero.subtitle'),
       canonical: `${origin}/`,
       robots: 'index',
+      lang: locale,
     };
     const noIndexPaths = new Set([
       '/login',
@@ -97,47 +104,55 @@ class SEOService {
 
     if (path === '/about') {
       return {
-        title: 'About — Right Site Light',
-        description: 'We built Right Site Light so the smallest shop can still be found after the awning comes down: a simple page with hours, what you sell, and how to reach you.',
+        title: t('about.title'),
+        description: t('about.p2'),
         canonical: `${origin}/about`,
         robots: 'index',
+        lang: locale,
       };
     }
 
     if (path === '/contact') {
       return {
-        title: 'Contact Right Site Light',
-        description: 'Write support@rightsitelight.com',
+        title: `${t('contact.title')} — ${brand}`,
+        description: t('contact.p'),
         canonical: `${origin}/contact`,
         robots: 'index',
+        lang: locale,
       };
     }
 
     if (path === '/showcase') {
       return {
-        title: 'Gallery — See how your Right Site Light site could look',
-        description: 'Browse live examples by industry and theme. Open one, click around, and picture your name on the door — then start your own draft.',
+        title: t('showcase.title'),
+        description: t('showcase.meta'),
         canonical: `${origin}/showcase`,
         robots: 'index',
+        lang: locale,
       };
     }
 
     if (path === '/register') {
-      const params = new URLSearchParams(String(search || '').replace(/^\?/, ''));
       return {
-        title: 'Get Your Page Free — Right Site Light',
-        description: 'Draft is free. Next: hours, menu, and how to find you — no card to start.',
+        title: `${t('nav.getStarted')} — ${brand}`,
+        description: t('auth.register.p'),
         canonical: `${origin}/register`,
         robots: params.has('template') ? 'noindex,nofollow' : 'index',
+        lang: locale,
       };
     }
 
     if (noIndexPaths.has(path)) {
+      const titled = {
+        '/login': `${t('nav.login')} — ${brand}`,
+        '/build': `${t('nav.getStarted')} — ${brand}`,
+      };
       return {
-        title: home.title,
-        description: home.description,
+        title: titled[path] || home.title,
+        description: path === '/login' ? t('auth.login.p') : home.description,
         canonical: `${origin}${path}`,
         robots: 'noindex,nofollow',
+        lang: locale,
       };
     }
 
@@ -198,6 +213,13 @@ class SEOService {
 
   _applyMarketingHead(html, meta) {
     let out = html;
+    if (meta.lang) {
+      out = out.replace(/<html\b([^>]*)>/i, (full, attrs) => (
+        /\blang=/.test(attrs)
+          ? full.replace(/\blang="[^"]*"/, `lang="${meta.lang}"`)
+          : `<html lang="${meta.lang}"${attrs}>`
+      ));
+    }
     out = out.replace(/<title>[^<]*<\/title>/i, `<title>${this._escapeHtml(meta.title)}</title>`);
     out = this._replaceMetaContent(out, 'name', 'description', meta.description);
     out = this._replaceCanonicalHref(out, meta.canonical);

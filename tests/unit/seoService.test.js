@@ -6,6 +6,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import SEOService from '../../server/services/seoService.js';
+import { tMarketing } from '../../src/i18n/marketing/index.js';
 
 describe('SEOService', () => {
   let seoService;
@@ -559,6 +560,22 @@ describe('SEOService', () => {
       expect(injected).toContain('content="Cuts and color on Bergenline."');
       expect(injected).toContain('href="https://rightsitelight.com/showcase/gallery-salon"');
       expect(injected).not.toContain('<title>Right Site Light — A page so customers can find you again</title>');
+    });
+
+    it('uses the same marketing copy as the page, including Spanish', () => {
+      const home = seoService.resolveMarketingPageMeta('/', '');
+      expect(home.title).toBe(`${tMarketing('en', 'brand.name')} — ${tMarketing('en', 'footer.tagline')}`);
+      expect(home.description).toBe(tMarketing('en', 'landing.hero.subtitle'));
+      expect(home.lang).toBe('en');
+
+      const gallery = seoService.resolveMarketingPageMeta('/showcase', '?lang=es');
+      expect(gallery.title).toBe(tMarketing('es', 'showcase.title'));
+      expect(gallery.description).toBe(tMarketing('es', 'showcase.meta'));
+      expect(gallery.lang).toBe('es');
+
+      const injected = seoService.injectMarketingPageMeta('<html lang="en"><head><title>old</title></head></html>', '/about', '?lang=es');
+      expect(injected).toContain('lang="es"');
+      expect(injected).toContain(`<title>${tMarketing('es', 'about.title')}</title>`);
     });
   });
 });
