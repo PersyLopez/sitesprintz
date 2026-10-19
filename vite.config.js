@@ -1,6 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { liveSiteRedirectTarget } from './server/utils/siteIsolation.js';
+import {
+  injectPublishedSiteEmbed,
+  liveSiteRedirectTarget,
+  liveViewDocumentIdentifier
+} from './server/utils/siteIsolation.js';
 
 const apiTarget = process.env.API_URL || 'http://localhost:3000';
 
@@ -14,8 +18,28 @@ function liveSiteRedirectPlugin() {
     res.setHeader('Location', target);
     res.end();
   };
+  // /view/:subdomain serves the SPA shell; inline the showcase JSON the
+  // composed viewer would otherwise fetch, so first paint skips the round
+  // trip. Fail open to the unchanged shell.
+  const embedShowcase = async (html, ctx) => {
+    const url = String(ctx?.originalUrl || ctx?.path || '').split('?')[0];
+    const subdomain = liveViewDocumentIdentifier(url);
+    if (!subdomain) return html;
+    try {
+      const response = await fetch(`${apiTarget}/api/showcases/${encodeURIComponent(subdomain)}`);
+      if (!response.ok) return html;
+      const body = await response.json();
+      return injectPublishedSiteEmbed(html, body);
+    } catch {
+      return html;
+    }
+  };
   return {
     name: 'live-site-redirect',
+    transformIndexHtml: {
+      order: 'post',
+      handler: embedShowcase,
+    },
     configureServer(server) {
       server.middlewares.use(redirect);
     },

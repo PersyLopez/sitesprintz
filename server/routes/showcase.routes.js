@@ -318,19 +318,17 @@ router.get('/featured', asyncHandler(async (req, res) => {
 }));
 
 /**
- * GET /api/showcases/:subdomain
- * Live address for a published site. The Made with gallery lists published
- * platform sites; template examples stay on the public flag.
- * Access: Public
+ * Shared lookup for the public showcase JSON. Used by
+ * GET /api/showcases/:subdomain and by the /view HTML handler to inline the
+ * payload for first paint. Returns null when the subdomain is invalid or the
+ * site is not published.
+ *
+ * @param {string} rawSubdomain
+ * @returns {Promise<object|null>}
  */
-router.get('/:subdomain', asyncHandler(async (req, res) => {
-  const { subdomain } = req.params;
-
-  // Validate subdomain
-  const subdomainValidation = validateSubdomain(subdomain);
-  if (!subdomainValidation.valid) {
-    return sendBadRequest(res, subdomainValidation.error, 'INVALID_SUBDOMAIN');
-  }
+export async function findPublishedShowcase(rawSubdomain) {
+  const subdomainValidation = validateSubdomain(rawSubdomain);
+  if (!subdomainValidation.valid) return null;
 
   const site = await prisma.sites.findFirst({
     where: {
@@ -350,27 +348,47 @@ router.get('/:subdomain', asyncHandler(async (req, res) => {
     }
   });
 
+  if (!site) return null;
+
+  const siteData = toPublicSiteData(parseSiteData(site));
+
+  return {
+    id: site.id,
+    subdomain: site.subdomain,
+    template: site.template_id,
+    status: site.status,
+    plan: site.plan,
+    name: siteData?.brand?.name || site.subdomain,
+    data: siteData,
+    userId: site.user_id,
+    stripe_connected: site.users?.stripe_connected === true,
+    online_payment_ready: visitorOnlinePaymentReady({ user: site.users }),
+    createdAt: site.created_at
+  };
+}
+
+/**
+ * GET /api/showcases/:subdomain
+ * Live address for a published site. The Made with gallery lists published
+ * platform sites; template examples stay on the public flag.
+ * Access: Public
+ */
+router.get('/:subdomain', asyncHandler(async (req, res) => {
+  const { subdomain } = req.params;
+
+  // Validate subdomain
+  const subdomainValidation = validateSubdomain(subdomain);
+  if (!subdomainValidation.valid) {
+    return sendBadRequest(res, subdomainValidation.error, 'INVALID_SUBDOMAIN');
+  }
+
+  const site = await findPublishedShowcase(subdomain);
+
   if (!site) {
     return sendError(res, 'Site not found or not public', 404, 'SITE_NOT_FOUND');
   }
 
-  const siteData = toPublicSiteData(parseSiteData(site));
-
-  return sendSuccess(res, {
-    site: {
-      id: site.id,
-      subdomain: site.subdomain,
-      template: site.template_id,
-      status: site.status,
-      plan: site.plan,
-      name: siteData?.brand?.name || site.subdomain,
-      data: siteData,
-      userId: site.user_id,
-      stripe_connected: site.users?.stripe_connected === true,
-      online_payment_ready: visitorOnlinePaymentReady({ user: site.users }),
-      createdAt: site.created_at
-    }
-  });
+  return sendSuccess(res, { site });
 }));
 
 export default router;

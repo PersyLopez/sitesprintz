@@ -52,3 +52,16 @@ steps:
         throw new Error('Expected /sites/gallery-salon/ to land on /view, got ' + page.url());
       }
     wait_for: { testId: published-composed-site, timeout: 20000 }
+
+  - action: Live view embeds showcase JSON for first paint
+    code: |
+      if (!page.url().includes('/view/gallery-salon')) {
+        throw new Error('Expected to still be on /view/gallery-salon, got ' + page.url());
+      }
+      const html = await page.content();
+      if (!html.includes('__RSL_PUBLISHED_SITE__')) {
+        throw new Error('/view HTML is missing the __RSL_PUBLISHED_SITE__ embed for first paint');
+      }
+      if ((await page.getByTestId('published-composed-site').count()) === 0) {
+        throw new Error('Composed viewer is not rendered on /view');
+      }

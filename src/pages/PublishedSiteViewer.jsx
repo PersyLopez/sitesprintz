@@ -25,6 +25,17 @@ import { tLive } from '../i18n/liveChrome/index.js';
 import { useLocale } from '../i18n/LocaleContext.jsx';
 import '../styles/published-site-viewer.css';
 
+/**
+ * Server-inlined showcase JSON (window.__RSL_PUBLISHED_SITE__) lets the FIRST
+ * render show the composed site — no spinner, no /api/showcases round trip.
+ * Subdomain must match the route so stale embeds from another path are ignored.
+ */
+function readEmbeddedSite(routeSubdomain) {
+  const embed = typeof window !== 'undefined' ? window.__RSL_PUBLISHED_SITE__ : null;
+  const candidate = embed?.site || embed || null;
+  return candidate?.subdomain === routeSubdomain ? candidate : null;
+}
+
 function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
   const { locale, setLocale } = useLocale();
   const { subdomain: paramSubdomain } = useParams();
@@ -35,14 +46,23 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
   const { clearCart, addToCart } = useCart();
   const liveRef = useRef(null);
   const appliedHtmlRef = useRef('');
-  const [site, setSite] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const embeddedSite = readEmbeddedSite(subdomain);
+  const [site, setSite] = useState(embeddedSite);
+  const [loading, setLoading] = useState(!embeddedSite);
   const [error, setError] = useState(null);
-  const [userId, setUserId] = useState(null);
-  const [siteId, setSiteId] = useState(null);
+  const [userId, setUserId] = useState(embeddedSite?.userId || embeddedSite?.user_id || null);
+  const [siteId, setSiteId] = useState(embeddedSite?.id || embeddedSite?.subdomain || null);
   const [bookingMount, setBookingMount] = useState(null);
 
   useEffect(() => {
+    // When the embed matches this route the state above is already primed;
+    // only the parent siteId sync stays here (effects, not render).
+    const candidate = readEmbeddedSite(subdomain);
+    if (candidate) {
+      onSiteId?.(candidate.id || candidate.subdomain);
+      return;
+    }
+
     const fetchSite = async () => {
       try {
         setLoading(true);

@@ -289,6 +289,30 @@ describe('Showcase Routes Integration Tests', () => {
     });
   });
 
+  // ==================== GET /view/:subdomain (HTML with embedded showcase JSON) ====================
+  describe('GET /view/:subdomain', () => {
+    it('inlines the published showcase JSON for first paint and stays no-store', async () => {
+      const response = await request(app)
+        .get(`/view/${publicSite.subdomain}`)
+        .expect(200)
+        .expect('Content-Type', /html/)
+        .expect('Cache-Control', 'no-store');
+
+      expect(response.text).toContain('__RSL_PUBLISHED_SITE__');
+      expect(response.text).toContain(publicSite.subdomain);
+    });
+
+    it('serves the shell without a forged embed for unknown subdomains', async () => {
+      const response = await request(app)
+        .get('/view/no-such-published-site')
+        .expect(200)
+        .expect('Content-Type', /html/)
+        .expect('Cache-Control', 'no-store');
+
+      expect(response.text).not.toContain('__RSL_PUBLISHED_SITE__');
+    });
+  });
+
   // ==================== PUT /api/sites/:siteId/public ====================
   describe('PUT /api/sites/:siteId/public', () => {
     it('should toggle site to public (authenticated)', async () => {

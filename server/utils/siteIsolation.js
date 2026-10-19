@@ -120,6 +120,37 @@ export function liveSiteRedirectTarget(pathname, originalUrl = '') {
   return `/view/${encodeURIComponent(siteIdentifier)}${search}`;
 }
 
+/**
+ * Subdomain for a `/view/:subdomain` document. Asset-style deeper paths
+ * (`/view/:id/data/site.json`) are not viewer documents.
+ *
+ * @param {string} pathname
+ * @returns {string|null}
+ */
+export function liveViewDocumentIdentifier(pathname) {
+  const viewMatch = String(pathname || '').match(/^\/view\/([^/]+)\/?$/);
+  if (!viewMatch) return null;
+  const siteIdentifier = viewMatch[1];
+  if (!isSafeSiteIdentifier(siteIdentifier)) return null;
+  return siteIdentifier;
+}
+
+/**
+ * Inline the published showcase JSON the composed viewer would otherwise
+ * fetch, so /view first paint renders without the extra round trip. `<` is
+ * escaped inside the payload so `</script>` cannot break out of the embed.
+ *
+ * @param {string} html
+ * @param {unknown} payload - same JSON body as GET /api/showcases/:subdomain
+ * @returns {string}
+ */
+export function injectPublishedSiteEmbed(html, payload) {
+  if (typeof html !== 'string' || !html.includes('</head>')) return html;
+  const serialized = JSON.stringify(payload ?? null).replace(/</g, '\\u003c');
+  const script = `<script>window.__RSL_PUBLISHED_SITE__=${serialized};</script>`;
+  return html.replace('</head>', `${script}</head>`);
+}
+
 export function deepClone(value) {
   if (value === undefined) {
     return undefined;

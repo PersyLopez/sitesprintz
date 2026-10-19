@@ -15,8 +15,10 @@ import {
   getSiteDirectory,
   getTemplateFilePath,
   isSafeSiteIdentifier,
+  injectPublishedSiteEmbed,
   liveSiteDocumentIdentifier,
   liveSiteRedirectTarget,
+  liveViewDocumentIdentifier,
   loadTemplateCopy,
   removeIsolatedSiteFiles,
   resolveContainedPath,
@@ -91,6 +93,33 @@ describe('site isolation — live document redirect', () => {
     expect(liveSiteDocumentIdentifier('/sites/plants-and-threads/gallery/hero.jpg')).toBeNull();
     expect(liveSiteRedirectTarget('/sites/plants-and-threads/products/a.jpg')).toBeNull();
     expect(liveSiteDocumentIdentifier('/sites/site-hydrate.js')).toBeNull();
+  });
+});
+
+describe('site isolation — /view document and embed', () => {
+  it('matches only /view document paths, not deeper asset paths', () => {
+    expect(liveViewDocumentIdentifier('/view/gallery-salon')).toBe('gallery-salon');
+    expect(liveViewDocumentIdentifier('/view/gallery-salon/')).toBe('gallery-salon');
+    expect(liveViewDocumentIdentifier('/view/gallery-salon/data/site.json')).toBeNull();
+    expect(liveViewDocumentIdentifier('/view/')).toBeNull();
+    expect(liveViewDocumentIdentifier('/view/gallery-salon?edit=true')).toBeNull();
+    expect(liveViewDocumentIdentifier('/sites/gallery-salon')).toBeNull();
+  });
+
+  it('injects one escaped embed script before </head>', () => {
+    const payload = { success: true, site: { subdomain: 'wren', name: 'Wren </script>x' } };
+    const html = injectPublishedSiteEmbed('<html><head></head><body></body></html>', payload);
+    const scriptCount = (html.match(/<script>/g) || []).length;
+    expect(scriptCount).toBe(1);
+    expect(html).toContain('window.__RSL_PUBLISHED_SITE__=');
+    // `<` inside the JSON payload is escaped so it cannot break out
+    expect(html).toContain('\\u003c');
+    expect(html).not.toContain('</script>x');
+    expect(html.indexOf('<script>')).toBeLessThan(html.indexOf('</head>'));
+  });
+
+  it('leaves HTML without a head end tag unchanged', () => {
+    expect(injectPublishedSiteEmbed('<html><body></body></html>', { a: 1 })).toBe('<html><body></body></html>');
   });
 });
 

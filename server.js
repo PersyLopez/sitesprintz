@@ -32,7 +32,7 @@ import siteRoutes from './server/routes/sites.routes.js';
 import bookingRoutes from './server/routes/booking.routes.js';
 import bookingFeesRoutes from './server/routes/booking-fees.routes.js';
 import contentRoutes from './server/routes/content.routes.js';
-import showcaseRoutes from './server/routes/showcase.routes.js';
+import showcaseRoutes, { findPublishedShowcase } from './server/routes/showcase.routes.js';
 import adminRoutes from './server/routes/admin.routes.js';
 import reviewsRoutes from './server/routes/reviews.routes.js';
 import outreachRoutes from './server/routes/outreach.routes.js';
@@ -54,7 +54,8 @@ import bookingPhase2Routes from './server/routes/booking-phase2.routes.js';
 import { initializePricingRoutes } from './server/routes/pricing.routes.js';
 import { query, prisma } from './database/db.js';
 import publishedSiteRenderer from './server/services/publishedSiteRenderer.js';
-import { isSafeSiteIdentifier, liveSiteDocumentIdentifier, liveSiteRedirectTarget } from './server/utils/siteIsolation.js';
+import { readFile } from 'fs/promises';
+import { injectPublishedSiteEmbed, isSafeSiteIdentifier, liveSiteDocumentIdentifier, liveSiteRedirectTarget, liveViewDocumentIdentifier } from './server/utils/siteIsolation.js';
 import testRoutes from './server/routes/test.routes.js';
 import healthRoutes from './server/routes/health.js';
 
@@ -653,7 +654,7 @@ app.use('/sites', express.static(path.join(__dirname, 'public/sites'), {
 }));
 
 // Handle all other SPA routing - serve index.html for remaining non-API routes
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
   if (req.method !== 'GET') return next();
 
   // Don't intercept API calls
@@ -661,7 +662,28 @@ app.use((req, res, next) => {
     return next();
   }
 
-  res.sendFile(path.join(publicDir, 'index.html'));
+  const viewSubdomain = liveViewDocumentIdentifier(req.path);
+  if (!viewSubdomain) {
+    return res.sendFile(path.join(publicDir, 'index.html'));
+  }
+
+  res.setHeader('Cache-Control', 'no-store');
+  const indexPath = path.join(publicDir, 'index.html');
+  try {
+    const html = await readFile(indexPath, 'utf8');
+    res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+    try {
+      const showcase = await findPublishedShowcase(viewSubdomain);
+      if (showcase) {
+        return res.send(injectPublishedSiteEmbed(html, { success: true, site: showcase }));
+      }
+    } catch {
+      // Unknown subdomain or lookup error: serve the shell without an embed
+    }
+    return res.send(html);
+  } catch {
+    return res.sendFile(indexPath);
+  }
 });
 
 // Not Found Handler (must come before error handler)
