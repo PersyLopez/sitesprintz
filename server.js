@@ -54,6 +54,7 @@ import bookingPhase2Routes from './server/routes/booking-phase2.routes.js';
 import { initializePricingRoutes } from './server/routes/pricing.routes.js';
 import { query, prisma } from './database/db.js';
 import publishedSiteRenderer from './server/services/publishedSiteRenderer.js';
+import SEOService from './server/services/seoService.js';
 import { readFile } from 'fs/promises';
 import { injectPublishedSiteEmbed, isSafeSiteIdentifier, liveSiteDocumentIdentifier, liveSiteRedirectTarget, liveViewDocumentIdentifier } from './server/utils/siteIsolation.js';
 import testRoutes from './server/routes/test.routes.js';
@@ -654,6 +655,7 @@ app.use('/sites', express.static(path.join(__dirname, 'public/sites'), {
 }));
 
 // Handle all other SPA routing - serve index.html for remaining non-API routes
+const spaSeoService = new SEOService();
 app.use(async (req, res, next) => {
   if (req.method !== 'GET') return next();
 
@@ -662,25 +664,33 @@ app.use(async (req, res, next) => {
     return next();
   }
 
+  // Live view documents are per-visitor: no caching, and the composed
+  // viewer gets the showcase JSON inlined so first paint skips the fetch.
   const viewSubdomain = liveViewDocumentIdentifier(req.path);
-  if (!viewSubdomain) {
-    return res.sendFile(path.join(publicDir, 'index.html'));
+  if (viewSubdomain) {
+    res.setHeader('Cache-Control', 'no-store');
   }
 
-  res.setHeader('Cache-Control', 'no-store');
   const indexPath = path.join(publicDir, 'index.html');
   try {
     const html = await readFile(indexPath, 'utf8');
+    const rawUrl = String(req.originalUrl || req.url || '');
+    const qIndex = rawUrl.indexOf('?');
+    const search = qIndex >= 0 ? rawUrl.slice(qIndex) : '';
+    const injected = spaSeoService.injectMarketingPageMeta(html, req.path, search);
     res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-    try {
-      const showcase = await findPublishedShowcase(viewSubdomain);
-      if (showcase) {
-        return res.send(injectPublishedSiteEmbed(html, { success: true, site: showcase }));
+    if (viewSubdomain) {
+      try {
+        const showcase = await findPublishedShowcase(viewSubdomain);
+        if (showcase) {
+          return res.send(injectPublishedSiteEmbed(injected, { success: true, site: showcase }));
+        }
+      } catch {
+        // Unknown subdomain or lookup error: serve the shell without an embed
       }
-    } catch {
-      // Unknown subdomain or lookup error: serve the shell without an embed
+      return res.send(injected);
     }
-    return res.send(html);
+    return res.send(injected);
   } catch {
     return res.sendFile(indexPath);
   }

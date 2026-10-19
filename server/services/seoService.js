@@ -5,9 +5,9 @@
  */
 
 import { getPublicSiteHost, normalizeHostname } from '../../src/utils/customDomainHost.js';
+import { livePublishedPath } from '../../src/utils/visitorExperience.js';
 
 const MARKETING_APEX_HOSTS = new Set(['rightsitelight.com', 'sitesprintz.com', 'localhost', '127.0.0.1']);
-import { livePublishedPath } from '../../src/utils/visitorExperience.js';
 
 class SEOService {
   constructor() {
@@ -69,6 +69,147 @@ class SEOService {
     ].join('\n');
   }
 
+  /**
+   * Marketing SPA head for a path (unknown routes keep homepage head).
+   * @param {string} pathname
+   * @param {string} [search]
+   * @returns {{ title: string, description: string, canonical: string, robots: string } | null}
+   */
+  resolveMarketingPageMeta(pathname, search = '') {
+    const path = this._normalizeMarketingPath(pathname);
+    const origin = `${this.protocol}://${getPublicSiteHost()}`;
+    const home = {
+      title: 'Right Site Light — A page so customers can find you again',
+      description: 'A simple page for your hours, menu, and how to find you — so the people who already care can come back.',
+      canonical: `${origin}/`,
+      robots: 'index',
+    };
+    const noIndexPaths = new Set([
+      '/login',
+      '/forgot-password',
+      '/reset-password',
+      '/verify-email',
+      '/oauth/callback',
+      '/build',
+    ]);
+
+    if (path === '/') return home;
+
+    if (path === '/about') {
+      return {
+        title: 'About — Right Site Light',
+        description: 'We built Right Site Light so the smallest shop can still be found after the awning comes down: a simple page with hours, what you sell, and how to reach you.',
+        canonical: `${origin}/about`,
+        robots: 'index',
+      };
+    }
+
+    if (path === '/contact') {
+      return {
+        title: 'Contact Right Site Light',
+        description: 'Write support@rightsitelight.com',
+        canonical: `${origin}/contact`,
+        robots: 'index',
+      };
+    }
+
+    if (path === '/showcase') {
+      return {
+        title: 'Gallery — See how your Right Site Light site could look',
+        description: 'Browse live examples by industry and theme. Open one, click around, and picture your name on the door — then start your own draft.',
+        canonical: `${origin}/showcase`,
+        robots: 'index',
+      };
+    }
+
+    if (path === '/register') {
+      const params = new URLSearchParams(String(search || '').replace(/^\?/, ''));
+      return {
+        title: 'Get Your Page Free — Right Site Light',
+        description: 'Draft is free. Next: hours, menu, and how to find you — no card to start.',
+        canonical: `${origin}/register`,
+        robots: params.has('template') ? 'noindex,nofollow' : 'index',
+      };
+    }
+
+    if (noIndexPaths.has(path)) {
+      return {
+        title: home.title,
+        description: home.description,
+        canonical: `${origin}${path}`,
+        robots: 'noindex,nofollow',
+      };
+    }
+
+    return null;
+  }
+
+  /**
+   * Replace homepage head tags in index.html with marketing meta for this path.
+   * @param {string} html
+   * @param {string} pathname
+   * @param {string} [search]
+   * @returns {string}
+   */
+  injectMarketingPageMeta(html, pathname, search = '') {
+    const meta = this.resolveMarketingPageMeta(pathname, search);
+    if (!meta || typeof html !== 'string') return html;
+
+    let out = html;
+    out = out.replace(/<title>[^<]*<\/title>/i, `<title>${this._escapeHtml(meta.title)}</title>`);
+    out = this._replaceMetaContent(out, 'name', 'description', meta.description);
+    out = this._replaceCanonicalHref(out, meta.canonical);
+    out = this._replaceMetaContent(out, 'property', 'og:url', meta.canonical);
+    out = this._replaceMetaContent(out, 'property', 'og:title', meta.title);
+    out = this._replaceMetaContent(out, 'property', 'og:description', meta.description);
+    out = this._replaceMetaContent(out, 'name', 'twitter:title', meta.title);
+    out = this._replaceMetaContent(out, 'name', 'twitter:description', meta.description);
+    return this._replaceOrInsertRobots(out, meta.robots);
+  }
+
+  _normalizeMarketingPath(pathname) {
+    if (!pathname || pathname === '/') return '/';
+    const raw = String(pathname).split('?')[0];
+    const trimmed = raw.replace(/\/+$/, '') || '/';
+    return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  }
+
+  _escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  _replaceMetaContent(html, attrKey, attrVal, content) {
+    const escaped = this._escapeHtml(content);
+    const re = new RegExp(
+      `<meta(\\s+)${attrKey}="${attrVal}"(\\s+)content="[^"]*"(\\s*)(/?)>`,
+      'i'
+    );
+    if (!re.test(html)) return html;
+    return html.replace(re, `<meta$1${attrKey}="${attrVal}"$2content="${escaped}"$3$4>`);
+  }
+
+  _replaceCanonicalHref(html, href) {
+    const escaped = this._escapeHtml(href);
+    const re = /<link(\s+)rel="canonical"(\s+)href="[^"]*"(\s*)(\/?)>/i;
+    if (!re.test(html)) return html;
+    return html.replace(re, `<link$1rel="canonical"$2href="${escaped}"$3$4>`);
+  }
+
+  _replaceOrInsertRobots(html, robots) {
+    const escaped = this._escapeHtml(robots);
+    if (/<meta\s+name="robots"/i.test(html)) {
+      return this._replaceMetaContent(html, 'name', 'robots', robots);
+    }
+    const tag = `<meta name="robots" content="${escaped}" />`;
+    if (/<meta\s+name="description"[^>]*>/i.test(html)) {
+      return html.replace(/(<meta\s+name="description"[^>]*>)/i, `$1\n    ${tag}`);
+    }
+    return html.replace(/<\/head>/i, `    ${tag}\n  </head>`);
+  }
 
   /**
    * Canonical base URL for a site (custom domain or /view/:subdomain).

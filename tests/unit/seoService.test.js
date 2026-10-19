@@ -499,5 +499,47 @@ describe('SEOService', () => {
       expect(validation.warnings).toContain('Description is too short');
     });
   });
+
+  describe('injectMarketingPageMeta', () => {
+    const homepageHtml = [
+      '<html><head>',
+      '<title>Right Site Light — A page so customers can find you again</title>',
+      '<meta name="description" content="A simple page for your hours, menu, and how to find you — so the people who already care can come back." />',
+      '<link rel="canonical" href="https://rightsitelight.com/" />',
+      '<meta property="og:url" content="https://rightsitelight.com/" />',
+      '<meta property="og:title" content="Right Site Light — A page so customers can find you again" />',
+      '<meta property="og:description" content="homepage" />',
+      '<meta name="twitter:title" content="Right Site Light — A page so customers can find you again" />',
+      '<meta name="twitter:description" content="homepage" />',
+      '</head></html>',
+    ].join('');
+
+    it('changes title for /register', () => {
+      const injected = seoService.injectMarketingPageMeta(homepageHtml, '/register', '');
+
+      expect(injected).toContain('<title>Get Your Page Free — Right Site Light</title>');
+      expect(injected).toContain('href="https://rightsitelight.com/register"');
+      expect(injected).not.toContain('<title>Right Site Light — A page so customers can find you again</title>');
+    });
+
+    it('sets robots noindex for /login', () => {
+      const injected = seoService.injectMarketingPageMeta(homepageHtml, '/login', '');
+
+      expect(injected).toMatch(/<meta name="robots" content="noindex,nofollow"/);
+    });
+
+    it('noindexes /register when template query is present', () => {
+      const meta = seoService.resolveMarketingPageMeta('/register', '?template=salon');
+
+      expect(meta.robots).toBe('noindex,nofollow');
+      expect(meta.canonical).toBe('https://rightsitelight.com/register');
+    });
+
+    it('leaves unknown paths with the homepage head', () => {
+      const injected = seoService.injectMarketingPageMeta(homepageHtml, '/not-a-real-page', '');
+
+      expect(injected).toBe(homepageHtml);
+    });
+  });
 });
 
