@@ -35,6 +35,7 @@ import {
   sendNotFound,
   sendGone,
   sendServerError,
+  sendError,
   asyncHandler
 } from '../utils/apiResponse.js';
 import {
@@ -969,9 +970,18 @@ router.post('/:draftId/publish', asyncHandler(async (req, res) => {
         }
       });
       await inheritPaymentAccountsForSite(userId, siteId).catch(() => {});
-      await ensurePublishedBooking({ userId, siteId, siteData }).catch((error) => {
-        console.error('[PUBLISH] Booking setup failed:', error.message);
-      });
+      try {
+        await ensurePublishedBooking({ userId, siteId, siteData });
+      } catch (bookingError) {
+        console.error('[PUBLISH] Booking setup failed:', bookingError.message);
+        try {
+          await prisma.sites.delete({ where: { id: siteId } });
+          await removeIsolatedSiteFiles(subdomain);
+        } catch (cleanupError) {
+          console.error('[PUBLISH] Error rolling back site after booking setup failure:', cleanupError.message);
+        }
+        return sendError(res, 'Booking setup failed', 500, 'BOOKING_SETUP_FAILED');
+      }
       break;
     } catch (error) {
       await removeIsolatedSiteFiles(subdomain).catch(() => {});
