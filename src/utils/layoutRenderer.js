@@ -473,11 +473,13 @@ const sectionPrimitives = {
         instagram: c.instagram || social.instagram || '',
         whatsapp: c.whatsapp || social.whatsapp || '',
         tiktok: c.tiktok || social.tiktok || '',
-        maps: isAreaDisplay(siteData) ? '' : (c.maps || social.maps || siteData?.googleMapsUrl || ''),
+        maps: isAreaDisplay(siteData) ? '' : (c.maps || social.maps || httpUrl(social.googleMaps) || siteData?.googleMapsUrl || ''),
         website: c.website || social.website || '',
         linkedin: c.linkedin || social.linkedin || '',
         twitter: c.twitter || social.twitter || '',
         youtube: c.youtube || social.youtube || '',
+        yelp: httpUrl(c.yelp || social.yelp),
+        pinterest: httpUrl(c.pinterest || social.pinterest),
       },
       settings: {},
       accent: false,
@@ -934,6 +936,11 @@ function flattenGalleryImages(source) {
       .filter(Boolean);
   }
   return [];
+}
+
+function httpUrl(value) {
+  const raw = String(value || '').trim();
+  return /^https?:\/\//i.test(raw) ? raw : '';
 }
 
 function hourSpan(value) {

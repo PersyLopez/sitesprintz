@@ -860,6 +860,26 @@ describe('layoutRenderer — tolerant data access', () => {
     expect(result.content.whatsapp).toBe('15551234567');
   });
 
+  it('publishes Yelp, Pinterest, and a Google Maps link', () => {
+    const result = renderSection('social', {}, {
+      social: {
+        yelp: 'https://yelp.com/biz/shop',
+        pinterest: 'https://pinterest.com/shop',
+        googleMaps: 'https://maps.google.com/shop',
+      },
+    }, {});
+    expect(result.content.yelp).toBe('https://yelp.com/biz/shop');
+    expect(result.content.pinterest).toBe('https://pinterest.com/shop');
+    expect(result.content.maps).toBe('https://maps.google.com/shop');
+
+    const dropped = renderSection('social', {}, {
+      social: { yelp: 'javascript:alert(1)', googleMaps: 'https://maps.google.com/shop' },
+      contact: { addressDisplay: 'area', serviceAreaLabel: 'Montclair, NJ' },
+    }, {});
+    expect(dropped.content.yelp).toBe('');
+    expect(dropped.content.maps).toBe('');
+  });
+
   it('how-to-order renders with empty steps', () => {
     const result = renderSection('how-to-order', {}, {}, {});
     expect(result.content.steps).toEqual([]);

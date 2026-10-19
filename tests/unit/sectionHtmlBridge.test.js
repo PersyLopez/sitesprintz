@@ -530,6 +530,20 @@ describe('sectionHtmlBridge', () => {
     expect(html).not.toContain('Facebook');
   });
 
+  it('links Yelp and Pinterest when the shop stored them', () => {
+    const html = renderSectionToHtml({
+      type: 'social',
+      content: {
+        yelp: 'https://yelp.com/biz/shop',
+        pinterest: 'https://pinterest.com/shop',
+      },
+    }, tokens);
+    expect(html).toContain('https://yelp.com/biz/shop');
+    expect(html).toContain('Yelp');
+    expect(html).toContain('https://pinterest.com/shop');
+    expect(html).toContain('Pinterest');
+  });
+
   it('uses a WhatsApp URL as-is and labels maps distinctly', () => {
     const html = renderSectionToHtml({
       type: 'social',

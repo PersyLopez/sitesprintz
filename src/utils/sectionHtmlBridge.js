@@ -1042,6 +1042,8 @@ function renderSocial(section, tokens) {
     { key: 'linkedin', label: 'LinkedIn' },
     { key: 'twitter', label: 'Twitter' },
     { key: 'youtube', label: 'YouTube' },
+    { key: 'yelp', label: 'Yelp' },
+    { key: 'pinterest', label: 'Pinterest' },
   ];
 
   const links = platforms
