@@ -515,6 +515,34 @@ const sectionPrimitives = {
     };
   },
 
+  'subscription-booking'(content) {
+    const c = content || {};
+    const plans = (Array.isArray(c.services) ? c.services : (Array.isArray(c.plans) ? c.plans : []))
+      .map((plan) => ({
+        name: String(plan?.name || '').trim(),
+        price: Number(plan?.price) || 0,
+        description: typeof plan?.description === 'string' ? plan.description : '',
+      }))
+      .filter((plan) => plan.name);
+    const frequencies = (Array.isArray(c.frequencies) ? c.frequencies : [])
+      .map((item) => ({
+        label: String(item?.label || item?.value || '').trim(),
+        discount: Number(item?.discount) || 0,
+      }))
+      .filter((item) => item.label);
+    return {
+      type: 'subscription-booking',
+      content: {
+        title: c.title || c.heading || 'Plans',
+        description: typeof c.description === 'string' ? c.description : '',
+        plans,
+        frequencies,
+      },
+      settings: {},
+      accent: false,
+    };
+  },
+
   'class-scheduler'(content) {
     const c = content || {};
     const classes = (Array.isArray(c.classes) ? c.classes : [])
@@ -668,7 +696,6 @@ function resolveHeroCta(variant, _siteData) {
 // ---------------------------------------------------------------------------
 
 const SECTION_ALIASES = {
-  'subscription-booking': 'booking',
   'native-booking': 'booking',
   'service-filters': 'services',
   'enhanced-profiles': 'team',
@@ -919,6 +946,7 @@ export function composePage({
           'progress-tracker': FEATURES.PROGRESS_TRACKER,
           'video-gallery': FEATURES.VIDEO_GALLERY,
           'class-scheduler': FEATURES.CLASS_SCHEDULER,
+          'subscription-booking': FEATURES.SUBSCRIPTION_BOOKING,
         }[section.type] || null;
         if (gatedFeature && plan && !hasFeature(plan, gatedFeature)) continue;
         const usesSettings = Boolean(gatedFeature);

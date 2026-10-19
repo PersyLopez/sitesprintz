@@ -58,6 +58,7 @@ const EXPECTED_TYPES = [
   'progress-tracker',
   'video-gallery',
   'class-scheduler',
+  'subscription-booking',
   'placeholder',
 ];
 
@@ -785,6 +786,25 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(fragment).toContain('class="ss-live"');
     expect(fragment).toContain('Trial Shop');
     expect(renderPublishedViewFragment(null)).toBe('');
+  });
+
+  it('lists plans and posts a request without a checkout', () => {
+    const html = renderSectionToHtml({
+      type: 'subscription-booking',
+      content: {
+        title: 'Maintenance Plans',
+        plans: [{ name: 'Basic Maintenance Plan', price: 199, description: 'Annual inspection' }],
+        frequencies: [{ label: 'Annual', discount: 15 }],
+      },
+    }, { ...tokens, _contactSubdomain: 'gallery-plumbing' });
+    expect(html).toContain('data-testid="plan-request-form"');
+    expect(html).toContain('action="/api/submissions/contact"');
+    expect(html).toContain('name="type" value="plan-request"');
+    expect(html).toContain('value="gallery-plumbing"');
+    expect(html).toContain('Basic Maintenance Plan — $199');
+    expect(html).toContain('Annual (15% off)');
+    expect(html).toContain('Request this plan');
+    expect(html).not.toContain('checkout');
   });
 
   it('lists classes and posts a spot request', () => {

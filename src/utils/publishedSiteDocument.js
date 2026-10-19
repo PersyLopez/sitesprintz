@@ -88,6 +88,8 @@ function isEmptyOptional(section) {
       return list(c.videos).length === 0;
     case 'class-scheduler':
       return list(c.classes).length === 0;
+    case 'subscription-booking':
+      return list(c.plans).length === 0;
     case 'process':
     case 'how-to-order':
       return list(c.steps).length === 0;

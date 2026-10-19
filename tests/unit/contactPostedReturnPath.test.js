@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { classRequestMessage, contactOwnerNotice, contactPostedReturnPath, diagnosticQuoteMessage, packageQuoteMessage, zipCheckMessage } from '../../server/routes/submissions.routes.js';
+import { classRequestMessage, contactOwnerNotice, contactPostedReturnPath, diagnosticQuoteMessage, packageQuoteMessage, planRequestMessage, zipCheckMessage } from '../../server/routes/submissions.routes.js';
 
 describe('contactPostedReturnPath', () => {
   it('returns to the same shop path', () => {
@@ -8,6 +8,14 @@ describe('contactPostedReturnPath', () => {
       referer: 'https://rightsitelight.com/view/gallery-salon',
       subdomain: 'gallery-salon',
     })).toBe('/view/gallery-salon?contact=sent');
+  });
+
+  it('lists the requested plan and frequency on the note', () => {
+    expect(planRequestMessage('Please set up this plan.', {
+      plan_choice: 'Basic Maintenance Plan — $199',
+      frequency_choice: 'Annual (15% off)',
+    }, 'plan-request')).toBe('Basic Maintenance Plan — $199; Annual (15% off)');
+    expect(planRequestMessage('Hello', { plan_choice: 'VIP' }, 'contact')).toBe('Hello');
   });
 
   it('lists the requested class on the note', () => {

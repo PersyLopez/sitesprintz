@@ -50,6 +50,17 @@ describe('filterFeaturesByPlan', () => {
     expect(growth.settings.allowCheckout).toBe(true);
   });
 
+  it('drops a maintenance plan on the live trial and keeps it on Growth', () => {
+    const withPlans = {
+      sections: [
+        { type: 'hero' },
+        { type: 'subscription-booking', settings: { services: [{ name: 'Basic Maintenance Plan' }] } },
+      ],
+    };
+    expect(filterFeaturesByPlan(withPlans, 'trial').sections.map((section) => section.type)).toEqual(['hero']);
+    expect(filterFeaturesByPlan(withPlans, 'growth').sections.map((section) => section.type)).toContain('subscription-booking');
+  });
+
   it('drops a class schedule on the live trial and keeps it on Growth', () => {
     const withClasses = {
       sections: [

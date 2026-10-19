@@ -58,6 +58,24 @@ describe('layoutRenderer — renderSection() known types', () => {
     expect(result.content.displayVariant).toBe('list');
   });
 
+  it('reads plan names and prices', () => {
+    const result = renderSection('subscription-booking', {
+      title: 'Maintenance Plans',
+      services: [
+        { name: 'Basic Maintenance Plan', price: 199, description: 'Annual inspection' },
+        { name: '  ', price: 10 },
+      ],
+      frequencies: [{ value: 'annual', label: 'Annual', discount: 15 }],
+    }, {}, {});
+    expect(result.type).toBe('subscription-booking');
+    expect(result.content.plans).toEqual([{
+      name: 'Basic Maintenance Plan',
+      price: 199,
+      description: 'Annual inspection',
+    }]);
+    expect(result.content.frequencies).toEqual([{ label: 'Annual', discount: 15 }]);
+  });
+
   it('reads class names and weekdays', () => {
     const result = renderSection('class-scheduler', {
       heading: 'Class Schedule',
@@ -385,6 +403,30 @@ describe('layoutRenderer — feature gating', () => {
     });
     const types = page.sections.map((s) => s.type);
     expect(types).toContain('booking');
+  });
+
+  it('keeps maintenance plans from section settings and drops them on the trial plan', () => {
+    const sections = [{
+      type: 'subscription-booking',
+      settings: {
+        title: 'Maintenance Plans',
+        services: [{ name: 'Total Protection Plan', price: 399 }],
+      },
+    }];
+    const shown = composePage({
+      siteData: { businessName: 'Plumbing', sections },
+      layout: 'atelier',
+      level: 'solo',
+    });
+    const plans = shown.sections.find((section) => section.type === 'subscription-booking');
+    expect(plans?.content.plans[0].name).toBe('Total Protection Plan');
+
+    const hidden = composePage({
+      siteData: { businessName: 'Plumbing', plan: 'trial', sections },
+      layout: 'atelier',
+      level: 'solo',
+    });
+    expect(hidden.sections.map((section) => section.type)).not.toContain('subscription-booking');
   });
 
   it('keeps the class list from section settings and drops it on the trial plan', () => {

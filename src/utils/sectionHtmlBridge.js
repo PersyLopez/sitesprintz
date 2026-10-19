@@ -53,6 +53,7 @@ export const ALL_SECTION_TYPES = [
   'progress-tracker',
   'video-gallery',
   'class-scheduler',
+  'subscription-booking',
   'placeholder',
 ];
 
@@ -1203,6 +1204,63 @@ function renderDiagnosticQuiz(section, tokens) {
 </section>`;
 }
 
+function renderSubscriptionBooking(section, tokens) {
+  const c = section.content || {};
+  const plans = Array.isArray(c.plans) ? c.plans : [];
+  const frequencies = Array.isArray(c.frequencies) ? c.frequencies : [];
+  const title = c.title || 'Plans';
+  const description = c.description || '';
+  const planChoices = plans.map((plan, index) => {
+    const price = Number(plan.price) > 0 ? ` — ${packageMoney(plan.price)}` : '';
+    const value = `${plan.name}${price}`;
+    return `<label class="ss-field" style="display: flex; gap: 12px; align-items: flex-start; padding: 16px; background: ${getSurface(tokens)}; border-radius: 12px;">
+      <input type="radio" name="plan_choice" value="${escapeAttr(value)}" ${index === 0 ? 'required' : ''} data-testid="plan-choice" />
+      <span>
+        <strong>${escapeHtml(plan.name)}${price ? ` ${escapeHtml(packageMoney(plan.price))}` : ''}</strong>
+        ${plan.description ? `<span style="display: block; color: ${getMuted(tokens)};">${escapeHtml(plan.description)}</span>` : ''}
+      </span>
+    </label>`;
+  }).join('\n');
+  const frequencyChoices = frequencies.map((item, index) => {
+    const off = item.discount > 0 ? ` (${item.discount}% off)` : '';
+    const value = `${item.label}${off}`;
+    return `<label class="ss-field" style="display: flex; gap: 12px; align-items: center;">
+      <input type="radio" name="frequency_choice" value="${escapeAttr(value)}" ${index === 0 ? 'required' : ''} data-testid="plan-frequency" />
+      <span>${escapeHtml(value)}</span>
+    </label>`;
+  }).join('\n');
+  return `<section id="plans" class="ss-plans" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
+  <div class="ss-container" style="max-width: 720px; margin: 0 auto;">
+    <h2 style="text-align: center; color: ${getAccent(tokens)}; margin-bottom: 16px;">${escapeHtml(title)}</h2>
+    ${description ? `<p style="text-align: center; color: ${getMuted(tokens)}; margin-bottom: 24px;">${escapeHtml(description)}</p>` : ''}
+    <form class="ss-contact-form" data-testid="plan-request-form" data-type="plan-request" method="post" action="/api/submissions/contact" novalidate>
+      <input type="hidden" name="subdomain" value="${escapeAttr(tokens?._contactSubdomain || '')}" />
+      <input type="hidden" name="type" value="plan-request" />
+      <p class="ss-form-status" data-testid="plan-form-status" role="status" aria-live="polite"></p>
+      <div style="display: grid; gap: 12px; margin-bottom: 20px;">${planChoices}</div>
+      ${frequencyChoices ? `<div style="display: grid; gap: 8px; margin-bottom: 20px;">${frequencyChoices}</div>` : ''}
+      <label class="ss-field">
+        <span>Email</span>
+        <input type="email" name="email" autocomplete="email" required maxlength="254" />
+      </label>
+      <label class="ss-field">
+        <span>Name <span class="ss-optional">(optional)</span></span>
+        <input type="text" name="name" autocomplete="name" maxlength="200" />
+      </label>
+      <label class="ss-field">
+        <span>Phone <span class="ss-optional">(optional)</span></span>
+        <input type="tel" name="phone" autocomplete="tel" maxlength="40" />
+      </label>
+      <label class="ss-field">
+        <span>Note <span class="ss-optional">(optional)</span></span>
+        <textarea name="message" rows="3" maxlength="2000">Please set up this plan.</textarea>
+      </label>
+      <button type="submit" class="ss-btn" data-testid="plan-request-submit" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)}; border: 0; cursor: pointer;">Request this plan</button>
+    </form>
+  </div>
+</section>`;
+}
+
 const CLASS_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function classWhen(item) {
@@ -1387,6 +1445,7 @@ const RENDERERS = {
   'progress-tracker': renderProgressTracker,
   'video-gallery': renderVideoGallery,
   'class-scheduler': renderClassScheduler,
+  'subscription-booking': renderSubscriptionBooking,
   placeholder: renderPlaceholder,
 };
 

@@ -39,6 +39,19 @@ import {
 const router = express.Router();
 
 /** Links in the owner email for a saved shop message. */
+export function planRequestMessage(message, fields, type) {
+  const text = String(message || '').trim();
+  if (type !== 'plan-request' || !fields || typeof fields !== 'object') return text;
+  const picked = [fields.plan_choice, fields.frequency_choice]
+    .map((value) => String(value || '').trim())
+    .filter(Boolean)
+    .join('; ');
+  if (!picked) return text;
+  if (!text || text === 'Please set up this plan.') return picked;
+  if (text.includes(picked)) return text;
+  return `${picked}. ${text}`;
+}
+
 export function classRequestMessage(message, fields, type) {
   const text = String(message || '').trim();
   if (type !== 'class-request' || !fields || typeof fields !== 'object') return text;
@@ -265,7 +278,11 @@ router.post('/contact', asyncHandler(async (req, res) => {
   const sanitizedMessage = zipCheckMessage(
     packageQuoteMessage(
       diagnosticQuoteMessage(
-        classRequestMessage(sanitizeString(message, 2000), otherFields, type),
+        classRequestMessage(
+          planRequestMessage(sanitizeString(message, 2000), otherFields, type),
+          otherFields,
+          type
+        ),
         otherFields,
         type
       ),

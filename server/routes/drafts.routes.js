@@ -464,6 +464,9 @@ export function filterFeaturesByPlan(siteData, userPlan) {
   if (!hasFeature(plan, FEATURES.CLASS_SCHEDULER) && Array.isArray(filtered.sections)) {
     filtered.sections = filtered.sections.filter((section) => section?.type !== 'class-scheduler');
   }
+  if (!hasFeature(plan, FEATURES.SUBSCRIPTION_BOOKING) && Array.isArray(filtered.sections)) {
+    filtered.sections = filtered.sections.filter((section) => section?.type !== 'subscription-booking');
+  }
   
   if (!hasFeature(plan, FEATURES.ORDER_MANAGEMENT)) {
     filtered.settings = {
