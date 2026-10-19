@@ -20,7 +20,9 @@ import { csrfProtection, csrfTokenEndpoint } from './server/middleware/csrf.js';
 import { apiLimiter } from './server/middleware/rateLimiting.js';
 import './server/jobs/tokenCleanup.js'; // Token cleanup job
 import { startReminderJob } from './server/jobs/booking-reminders.js';
+import { startTrialExpirationJob } from './server/jobs/trial-expiration.js';
 startReminderJob();
+startTrialExpirationJob();
 
 // Routes
 import authRoutes from './server/routes/auth.routes.js';
