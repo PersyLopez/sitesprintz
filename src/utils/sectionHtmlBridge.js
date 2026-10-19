@@ -621,6 +621,19 @@ function renderCatalog(section, tokens) {
 </section>`;
 }
 
+function allowedBookingEmbedUrl(url) {
+  const hosts = ['acuityscheduling.com', 'as.me', 'calendly.com', 'squareup.com', 'square.site'];
+  try {
+    const parsed = new URL(String(url || '').trim());
+    if (parsed.protocol !== 'https:') return '';
+    const host = parsed.hostname.toLowerCase();
+    const allowed = hosts.some((name) => host === name || host.endsWith(`.${name}`));
+    return allowed ? parsed.toString() : '';
+  } catch {
+    return '';
+  }
+}
+
 function renderBooking(section, tokens) {
   const c = section.content || {};
   const title = c.title || 'Book an Appointment';
@@ -629,14 +642,43 @@ function renderBooking(section, tokens) {
   const isExternal = isExternalBookingProvider(provider) && Boolean(externalUrl);
   const isLinkOnly = c.mode === 'link' || (!isExternal && c.embedded === false);
   if (isExternal && !isLinkOnly) {
-    const embedUrl = getBookingEmbedUrl(provider, externalUrl);
+    const embedUrl = allowedBookingEmbedUrl(getBookingEmbedUrl(provider, externalUrl));
+    if (!embedUrl) {
+      return `<section id="booking" class="ss-booking ss-section" style="background: ${getBg(tokens)}; color: ${getText(tokens)};">
+  <div class="ss-container" style="max-width: 600px; margin: 0 auto; text-align: center;">
+    <h2 class="ss-h2" style="color: ${getAccent(tokens)};">${escapeHtml(title)}</h2>
+    <div style="background: ${getSurface(tokens)}; padding: 40px; border-radius: 12px; border: 1px solid ${getTokens(tokens).theme.hairline};">
+      <p style="color: ${getMuted(tokens)}; margin-bottom: 24px;">Book your appointment online — fast and easy.</p>
+      <a href="${escapeAttr(externalUrl)}" class="ss-btn" target="_blank" rel="noopener noreferrer" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)};">Open scheduler</a>
+    </div>
+  </div>
+</section>`;
+    }
     return `<section id="booking" class="ss-booking ss-section booking-section" style="background: ${getBg(tokens)}; color: ${getText(tokens)};">
   <div class="ss-container" style="max-width: 900px; margin: 0 auto;">
     <h2 class="ss-h2" style="color: ${getAccent(tokens)};">${escapeHtml(title)}</h2>
     <p class="ss-lead" style="text-align: center; margin: -24px auto 28px;">Book your appointment online — fast and easy.</p>
     <div class="ss-booking-embed" data-testid="live-booking-embed" style="background: ${getSurface(tokens)}; border-radius: 12px; overflow: hidden; border: 1px solid ${getTokens(tokens).theme.hairline};">
-      <iframe src="${escapeAttr(embedUrl)}" title="Book an Appointment" loading="lazy" style="width: 100%; min-height: 700px; border: 0; display: block;"></iframe>
+      <button type="button" data-ss-booking-open data-embed-src="${escapeAttr(embedUrl)}" data-testid="booking-embed-open" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)}; border: 0; cursor: pointer; padding: 14px 22px;">Show scheduler</button>
     </div>
+    <script>
+    (function () {
+      var root = document.currentScript && document.currentScript.previousElementSibling;
+      if (!root) return;
+      root.addEventListener('click', function (event) {
+        var button = event.target.closest('[data-ss-booking-open]');
+        if (!button || button.parentNode !== root) return;
+        var src = button.getAttribute('data-embed-src') || '';
+        if (src.indexOf('https://') !== 0) return;
+        var frame = document.createElement('iframe');
+        frame.src = src;
+        frame.title = 'Book an Appointment';
+        frame.loading = 'lazy';
+        frame.style.cssText = 'width:100%;min-height:700px;border:0;display:block';
+        button.replaceWith(frame);
+      });
+    })();
+    </script>
     <p style="text-align: center; margin-top: 16px;"><a href="${escapeAttr(externalUrl)}" target="_blank" rel="noopener noreferrer" style="color: ${getAccent(tokens)};">Open scheduler</a></p>
   </div>
 </section>`;

@@ -360,7 +360,7 @@ describe('sectionHtmlBridge', () => {
     expect(html).toContain('Book Now');
   });
 
-  it('renders an iframe for external Acuity booking', () => {
+  it('keeps an external scheduler unloaded until the visitor asks', () => {
     const html = renderSectionToHtml({
       type: 'booking',
       content: {
@@ -370,8 +370,23 @@ describe('sectionHtmlBridge', () => {
       },
     }, tokens);
     expect(html).not.toContain('data-ss-booking-mount');
-    expect(html).toContain('data-testid="live-booking-embed"');
-    expect(html).toContain('https://dhmakeupartistry.as.me/schedule/8ffea782?embed=true');
+    expect(html).not.toContain('<iframe');
+    expect(html).toContain('data-testid="booking-embed-open"');
+    expect(html).toContain('data-embed-src="https://dhmakeupartistry.as.me/schedule/8ffea782?embed=true"');
+  });
+
+  it('links an unknown scheduler instead of framing it', () => {
+    const html = renderSectionToHtml({
+      type: 'booking',
+      content: {
+        title: 'Book',
+        provider: 'custom',
+        url: 'https://example.com/book',
+      },
+    }, tokens);
+    expect(html).not.toContain('<iframe');
+    expect(html).not.toContain('data-embed-src');
+    expect(html).toContain('href="https://example.com/book"');
   });
 
   it('uses a booking link instead of an iframe when mode is link', () => {

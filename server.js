@@ -138,7 +138,15 @@ app.use(helmet({
         "'self'",
         "https://js.stripe.com",
         "https://hooks.stripe.com",
-        "https://challenges.cloudflare.com"
+        "https://challenges.cloudflare.com",
+        "https://acuityscheduling.com",
+        "https://*.acuityscheduling.com",
+        "https://*.as.me",
+        "https://calendly.com",
+        "https://*.calendly.com",
+        "https://squareup.com",
+        "https://*.squareup.com",
+        "https://*.square.site"
       ],
       upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null,
     },
