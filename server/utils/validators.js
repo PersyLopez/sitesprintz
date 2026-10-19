@@ -42,12 +42,15 @@ export function validatePhone(phone) {
   }
   
   const trimmed = phone.trim();
-  const phoneRegex = /^[\+]?[1-9][\d\s\-\(\)]{7,20}$/;
-  
-  if (!phoneRegex.test(trimmed)) {
+  // Parentheses, spaces, dots, and a leading + are formatting. The digit count is the check.
+  if (!/^[+(\d][\d\s().+\-]{6,23}$/.test(trimmed)) {
     return { valid: false, error: 'Invalid phone number format' };
   }
-  
+  const digits = trimmed.replace(/\D/g, '');
+  if (digits.length < 7 || digits.length > 15) {
+    return { valid: false, error: 'Invalid phone number format' };
+  }
+
   return { valid: true, value: trimmed };
 }
 
