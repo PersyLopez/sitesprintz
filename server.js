@@ -56,7 +56,7 @@ import { query, prisma } from './database/db.js';
 import publishedSiteRenderer from './server/services/publishedSiteRenderer.js';
 import SEOService from './server/services/seoService.js';
 import { readFile } from 'fs/promises';
-import { injectPublishedSiteEmbed, isSafeSiteIdentifier, liveSiteDocumentIdentifier, liveSiteRedirectTarget, liveViewDocumentIdentifier, deferPublishedViewFonts, stripPublishedViewThirdParties } from './server/utils/siteIsolation.js';
+import { injectPublishedSiteEmbed, isSafeSiteIdentifier, liveSiteDocumentIdentifier, liveSiteRedirectTarget, liveViewDocumentIdentifier, crawlerPublishedDocumentUrl, deferPublishedViewFonts, stripPublishedViewThirdParties } from './server/utils/siteIsolation.js';
 import testRoutes from './server/routes/test.routes.js';
 import healthRoutes from './server/routes/health.js';
 
@@ -173,6 +173,11 @@ app.use((req, res, next) => {
 
 app.use((req, res, next) => {
   if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+  const crawlerDocUrl = crawlerPublishedDocumentUrl(req.path, req.originalUrl, isCrawlerRequest(req));
+  if (crawlerDocUrl) {
+    req.url = crawlerDocUrl;
+    return next();
+  }
   const siteIdentifier = liveSiteDocumentIdentifier(req.path);
   if (!siteIdentifier) return next();
   if (!isCrawlerRequest(req)) {

@@ -121,6 +121,25 @@ export function liveSiteRedirectTarget(pathname, originalUrl = '') {
 }
 
 /**
+ * Rewrite a crawler request for a public /view/:subdomain document to the
+ * existing SSR /sites/:subdomain document, so share crawlers get the shop
+ * title/og tags. Humans stay on the composed SPA.
+ *
+ * @param {string} pathname
+ * @param {string} [originalUrl]
+ * @param {boolean} [isCrawler]
+ * @returns {string|null}
+ */
+export function crawlerPublishedDocumentUrl(pathname, originalUrl = '', isCrawler = false) {
+  if (!isCrawler) return null;
+  const siteIdentifier = liveViewDocumentIdentifier(pathname);
+  if (!siteIdentifier) return null;
+  const qIndex = String(originalUrl).indexOf('?');
+  const search = qIndex >= 0 ? originalUrl.slice(qIndex) : '';
+  return `/sites/${encodeURIComponent(siteIdentifier)}${search}`;
+}
+
+/**
  * Subdomain for a `/view/:subdomain` document. Asset-style deeper paths
  * (`/view/:id/data/site.json`) are not viewer documents.
  *

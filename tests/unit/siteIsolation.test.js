@@ -7,6 +7,7 @@ import {
   PathEscapeError,
   allocateUniqueSubdomain,
   cloneIsolatedSiteData,
+  crawlerPublishedDocumentUrl,
   deepClone,
   getDraftFilePath,
   getLegacyDraftFilePath,
@@ -95,6 +96,19 @@ describe('site isolation — live document redirect', () => {
     expect(liveSiteDocumentIdentifier('/sites/plants-and-threads/gallery/hero.jpg')).toBeNull();
     expect(liveSiteRedirectTarget('/sites/plants-and-threads/products/a.jpg')).toBeNull();
     expect(liveSiteDocumentIdentifier('/sites/site-hydrate.js')).toBeNull();
+  });
+
+  it('rewrites crawler /view documents to the SSR /sites document', () => {
+    expect(crawlerPublishedDocumentUrl('/view/gallery-salon', '/view/gallery-salon', true)).toBe('/sites/gallery-salon');
+    expect(crawlerPublishedDocumentUrl('/view/gallery-salon/', '/view/gallery-salon/?ssr=1', true)).toBe('/sites/gallery-salon?ssr=1');
+    expect(crawlerPublishedDocumentUrl('/view/gallery-salon', '/view/gallery-salon?ssr=1', true)).toBe('/sites/gallery-salon?ssr=1');
+  });
+
+  it('does not rewrite crawler /view rewrites for humans, assets, or other paths', () => {
+    expect(crawlerPublishedDocumentUrl('/view/gallery-salon', '/view/gallery-salon', false)).toBeNull();
+    expect(crawlerPublishedDocumentUrl('/view/gallery-salon/data/site.json', '/view/gallery-salon/data/site.json', true)).toBeNull();
+    expect(crawlerPublishedDocumentUrl('/showcase/gallery-salon', '/showcase/gallery-salon', true)).toBeNull();
+    expect(crawlerPublishedDocumentUrl('/view/gallery-salon', '/view/gallery-salon', undefined)).toBeNull();
   });
 });
 
