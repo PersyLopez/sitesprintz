@@ -171,8 +171,27 @@ export function injectPublishedSiteEmbed(html, payload) {
 }
 
 /**
+ * Start the hero photo from the head so it races the stylesheet and the
+ * module script. The body image stays the one the viewer paints.
+ *
+ * @param {string} html
+ * @returns {string}
+ */
+export function preloadPublishedViewHero(html) {
+  if (typeof html !== 'string' || !html.includes('</head>')) return html;
+  if (html.includes('rel="preload" as="image"')) return html;
+  const tag = html.match(/<img\b[^>]*class="ss-hero-photo"[^>]*>/i);
+  const src = tag?.[0].match(/\ssrc="([^"]+)"/);
+  const href = src?.[1] || '';
+  if (!href || /^(?:data|javascript):/i.test(href)) return html;
+  const link = `<link rel="preload" as="image" fetchpriority="high" href="${href}">`;
+  return html.replace('</head>', `${link}</head>`);
+}
+
+/**
  * Put the composed shop inside #root so the browser can paint it before the
- * module script runs. An empty fragment leaves the shell unchanged.
+ * module script runs, and preload that shop's hero photo. An empty fragment
+ * leaves the shell unchanged.
  *
  * @param {string} html
  * @param {string} fragment
@@ -182,7 +201,7 @@ export function injectPublishedViewMarkup(html, fragment) {
   if (typeof html !== 'string' || typeof fragment !== 'string' || !fragment.trim()) return html;
   const rootPattern = /<div id="root">\s*<\/div>/;
   if (!rootPattern.test(html)) return html;
-  return html.replace(rootPattern, `<div id="root">${fragment}</div>`);
+  return preloadPublishedViewHero(html.replace(rootPattern, `<div id="root">${fragment}</div>`));
 }
 
 /**

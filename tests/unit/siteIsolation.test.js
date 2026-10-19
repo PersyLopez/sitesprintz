@@ -18,6 +18,7 @@ import {
   isSafeSiteIdentifier,
   injectPublishedSiteEmbed,
   injectPublishedViewMarkup,
+  preloadPublishedViewHero,
   liveSiteDocumentIdentifier,
   liveSiteRedirectTarget,
   liveViewDocumentIdentifier,
@@ -135,6 +136,16 @@ describe('site isolation — /view document and embed', () => {
     expect(html).toContain('\\u003c');
     expect(html).not.toContain('</script>x');
     expect(html.indexOf('<script>')).toBeLessThan(html.indexOf('</head>'));
+  });
+
+  it('preloads the painted hero photo from the head', () => {
+    const shell = '<html><head></head><body><div id="root"></div></body></html>';
+    const fragment = '<div class="ss-live"><img class="ss-hero-photo" data-photo-field="hero.image" src="/photos/hero.jpg" alt="Shop" width="1600" height="900"></div>';
+    const html = injectPublishedViewMarkup(shell, fragment);
+    expect(html).toContain('<link rel="preload" as="image" fetchpriority="high" href="/photos/hero.jpg">');
+    expect(html.indexOf('rel="preload" as="image"')).toBeLessThan(html.indexOf('</head>'));
+    expect(preloadPublishedViewHero(html)).toBe(html);
+    expect(preloadPublishedViewHero(`${shell}<img class="ss-hero-photo" src="data:image/gif;base64,aaaa">`)).not.toContain('rel="preload" as="image"');
   });
 
   it('paints the shop inside the empty root', () => {
