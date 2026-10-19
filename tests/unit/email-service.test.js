@@ -89,6 +89,40 @@ describe('Email Service', () => {
         expect(result.error).toMatch(/Unknown email template/);
     });
 
+    it('includes the lead in a contact notification', async () => {
+        mockSend.mockResolvedValue({ data: { id: 'email_lead' }, error: null });
+
+        const result = await sendEmail('owner@shop.test', EmailTypes.CONTACT_FORM_SUBMISSION, {
+            businessName: 'Luxe Beauty Studio',
+            submitterName: 'Ada',
+            submitterEmail: 'ada@example.com',
+            submitterPhone: '555-0100',
+            message: 'I need a cut Friday',
+            type: 'contact',
+            siteUrl: 'gallery-salon',
+            submissionTime: 'Monday',
+        });
+
+        expect(result.success).toBe(true);
+        const sent = mockSend.mock.calls[0][0];
+        expect(sent.subject).toContain('Luxe Beauty Studio');
+        expect(sent.html).toContain('I need a cut Friday');
+        expect(sent.html).toContain('ada@example.com');
+        expect(sent.html).not.toContain('undefined');
+    });
+
+    it('keeps the reset link when sending a password email', async () => {
+        mockSend.mockResolvedValue({ data: { id: 'email_reset' }, error: null });
+
+        await sendEmail('a@b.com', EmailTypes.PASSWORD_RESET, {
+            email: 'a@b.com',
+            resetToken: 'tok',
+            resetLink: 'https://rightsitelight.com/reset-password?token=tok',
+        });
+
+        expect(mockSend.mock.calls[0][0].html).toContain('https://rightsitelight.com/reset-password?token=tok');
+    });
+
     it('passes cc and replyTo on HTML mail', async () => {
         mockSend.mockResolvedValue({ data: { id: 'email_html_1' }, error: null });
         const { sendHtmlEmail } = await import('../../email-service.js');

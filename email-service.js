@@ -768,10 +768,10 @@ export async function sendEmail(to, templateName, templateData = {}) {
       throw new Error(`Unknown email template: ${templateName}`);
     }
 
-    // Handle template functions - pass templateData as arguments
-    // Templates can accept individual params or destructure from templateData
-    const emailContent = typeof template === 'function' 
-      ? template(templateData.email || templateData[0], templateData.resetToken || templateData[1], templateData.resetLink || templateData[2])
+    // Pass fields in the order the template lists them. Named reset fields
+    // alone dropped every other template's arguments, including contact leads.
+    const emailContent = typeof template === 'function'
+      ? template(...Object.values(templateData))
       : template;
 
     console.log(`📧 Sending email to ${to}: ${emailContent.subject}`);
