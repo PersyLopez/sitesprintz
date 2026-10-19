@@ -17,7 +17,7 @@ import { validateSubdomain } from '../utils/validators.js';
 import { toPublicSiteData } from '../../src/utils/liveSiteContact.js';
 import { visitorOnlinePaymentReady } from '../services/payments/processorConnectHelpers.js';
 import { buildShowcaseKindWhere } from '../utils/showcaseDemo.js';
-import { platformCollectsPayments, publicSiteBlockedByLiveTrial } from '../config/platformPlans.js';
+import { platformCollectsPayments, publicSiteBlockedByLiveTrial, applyLiveTrialPublicWhere } from '../config/platformPlans.js';
 
 const router = express.Router();
 
@@ -90,10 +90,10 @@ router.get('/', asyncHandler(async (req, res) => {
 
   // Client sites are shops published on the platform. The public flag
   // defaults off, so the Made with row does not wait for that flag.
-  const where = {
+  const where = applyLiveTrialPublicWhere({
     status: 'published',
     ...buildShowcaseKindWhere(kind),
-  };
+  });
   if (kind !== 'clients') {
     where.is_public = true;
   }

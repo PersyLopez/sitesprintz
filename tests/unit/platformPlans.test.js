@@ -4,6 +4,8 @@ import {
   STRIPE_TRIAL_DAYS,
   liveTrialExpiresAt,
   publicSiteBlockedByLiveTrial,
+  liveTrialPublicWhere,
+  applyLiveTrialPublicWhere,
   CLAIM_PLAN,
   PLATFORM_PLAN_DETAILS,
   LABOR_SKUS,
@@ -54,6 +56,38 @@ describe('platformPlans', () => {
       expiresAt: new Date('2026-12-01T00:00:00Z'),
       now,
     })).toBe(false);
+  });
+
+  it('keeps lapsed trials in list queries while billing is closed', () => {
+    const now = new Date('2026-10-19T00:00:00Z');
+    const previous = process.env.PLATFORM_COLLECT_PAYMENTS;
+    process.env.PLATFORM_COLLECT_PAYMENTS = 'false';
+    try {
+      expect(liveTrialPublicWhere(now)).toBeNull();
+      expect(applyLiveTrialPublicWhere({ status: 'published' }, now)).toEqual({ status: 'published' });
+    } finally {
+      if (previous === undefined) delete process.env.PLATFORM_COLLECT_PAYMENTS;
+      else process.env.PLATFORM_COLLECT_PAYMENTS = previous;
+    }
+  });
+
+  it('excludes a lapsed trial from list queries while billing is open', () => {
+    const now = new Date('2026-10-19T00:00:00Z');
+    const previous = process.env.PLATFORM_COLLECT_PAYMENTS;
+    process.env.PLATFORM_COLLECT_PAYMENTS = 'true';
+    try {
+      const clause = liveTrialPublicWhere(now);
+      expect(clause.OR).toEqual(expect.arrayContaining([
+        { expires_at: null },
+        { expires_at: { gte: now } },
+      ]));
+      const where = applyLiveTrialPublicWhere({ status: 'published', is_public: true }, now);
+      expect(where.AND).toEqual([clause]);
+      expect(where.status).toBe('published');
+    } finally {
+      if (previous === undefined) delete process.env.PLATFORM_COLLECT_PAYMENTS;
+      else process.env.PLATFORM_COLLECT_PAYMENTS = previous;
+    }
   });
 
   it('normalizes legacy paid plans', () => {

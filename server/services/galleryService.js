@@ -9,6 +9,7 @@
  */
 
 import { prisma } from '../../database/db.js';
+import { applyLiveTrialPublicWhere } from '../config/platformPlans.js';
 
 class GalleryService {
   constructor() {
@@ -36,10 +37,10 @@ class GalleryService {
     const offset = (page - 1) * limit;
 
     // Build where clause
-    const where = {
+    const where = applyLiveTrialPublicWhere({
       is_public: true,
       status: 'published'
-    };
+    });
 
     if (category) {
       where.template_id = category;

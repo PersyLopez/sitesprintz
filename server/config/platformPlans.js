@@ -78,6 +78,45 @@ export function publicSiteBlockedByLiveTrial({
   return expiry.getTime() < now.getTime();
 }
 
+/**
+ * Prisma filter matching publicSiteBlockedByLiveTrial for list queries.
+ * Null when billing is closed so no-card trials stay in the gallery and sitemap.
+ *
+ * @param {Date} [now]
+ * @param {boolean} [collectsPayments]
+ * @returns {object|null}
+ */
+export function liveTrialPublicWhere(now = new Date(), collectsPayments = platformCollectsPayments()) {
+  if (!collectsPayments) return null;
+  return {
+    OR: [
+      { AND: [{ plan: { not: null } }, { plan: { not: 'trial' } }] },
+      { expires_at: null },
+      { expires_at: { gte: now } },
+      {
+        users: {
+          stripe_subscription_id: { not: null },
+          subscription_status: { in: ['active', 'trialing'] },
+        },
+      },
+    ],
+  };
+}
+
+/**
+ * @param {object} where
+ * @param {Date} [now]
+ * @returns {object}
+ */
+export function applyLiveTrialPublicWhere(where, now = new Date()) {
+  const trialWhere = liveTrialPublicWhere(now);
+  if (!trialWhere) return where;
+  return {
+    ...where,
+    AND: [...(where.AND || []), trialWhere],
+  };
+}
+
 /** Targeted claimables default to DIY Growth. Starter is self-serve only. */
 export const CLAIM_PLAN = 'growth';
 export const CLAIM_PLANS = ['growth', 'growth_managed'];
