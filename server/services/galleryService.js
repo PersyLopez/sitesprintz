@@ -94,6 +94,32 @@ class GalleryService {
   }
 
   /**
+   * Every public published shop, one gallery page at a time.
+   * The public list stays capped at maxPageSize. Sitemap callers must not.
+   * Stops at 50_000 rows (one sitemap file).
+   * @param {{ sortBy?: string, sortOrder?: string }} [options]
+   * @returns {Promise<Array>}
+   */
+  async listAllPublicSites(options = {}) {
+    const pageSize = this.maxPageSize;
+    const sortBy = options.sortBy || 'created_at';
+    const sortOrder = options.sortOrder || 'desc';
+    const sites = [];
+    let page = 1;
+
+    while (page <= 1000) {
+      const result = await this.getPublicSites({ page, pageSize, sortBy, sortOrder });
+      const batch = result?.sites || [];
+      sites.push(...batch);
+      if (batch.length < pageSize) break;
+      if (Number.isFinite(result.total) && sites.length >= result.total) break;
+      page += 1;
+    }
+
+    return sites;
+  }
+
+  /**
    * Get a single public site by subdomain
    * @param {string} subdomain
    * @returns {Promise<Object|null>}

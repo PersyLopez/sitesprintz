@@ -63,16 +63,13 @@ class ShowcaseSitemapService {
         lastmod: new Date().toISOString().split('T')[0]
       });
 
-      // Get all public sites
-      const result = await galleryService.getPublicSites({
-        page: 1,
-        pageSize: 1000, // Get all public sites
+      const sites = await galleryService.listAllPublicSites({
         sortBy: 'created_at',
         sortOrder: 'desc'
       });
 
       // Add individual site showcase pages
-      for (const site of result.sites) {
+      for (const site of sites) {
         entries.push({
           url: `${baseUrl}/showcase/${site.subdomain}`,
           changefreq: 'weekly',
