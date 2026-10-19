@@ -992,6 +992,8 @@ function flattenMenuToProducts(menuSections) {
       products.push({
         ...item,
         _category: section.name || section.id || '',
+        _categoryDescription: typeof section.description === 'string' ? section.description.trim() : '',
+        dietary: filterTags(item?.dietary),
       });
     }
   }

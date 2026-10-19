@@ -233,6 +233,24 @@ describe('sectionHtmlBridge', () => {
     expect(menuDish).toContain('/assets/hero-placeholder.jpg');
   });
 
+  it('keeps menu section names and diet labels on the catalog', () => {
+    const html = renderSectionToHtml({
+      type: 'catalog',
+      content: {
+        title: 'Menu',
+        items: [
+          { name: 'Tuna Tartare', price: 18, _category: 'Appetizers', _categoryDescription: 'Starters', dietary: ['Pescatarian'] },
+          { name: 'Halibut', price: 42, _category: 'Entrées', dietary: ['Gluten-Free'] },
+        ],
+      },
+    }, tokens);
+    expect(html.indexOf('Appetizers')).toBeLessThan(html.indexOf('Tuna Tartare'));
+    expect(html.indexOf('Tuna Tartare')).toBeLessThan(html.indexOf('Entrées'));
+    expect(html).toContain('Starters');
+    expect(html).toContain('Pescatarian');
+    expect(html).toContain('Gluten-Free');
+  });
+
   it('reserves space for service, gallery, about, and before-after photos', () => {
     const service = renderSectionToHtml({
       type: 'services',

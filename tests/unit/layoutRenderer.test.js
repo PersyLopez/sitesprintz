@@ -360,6 +360,19 @@ describe('layoutRenderer — renderSection() known types', () => {
     expect(result.content.items).toHaveLength(2);
     expect(result.content.items[0]._category).toBe('Mains');
   });
+
+  it('keeps a menu section description and diet labels on the catalog', () => {
+    const result = renderSection('catalog', {
+      sections: [{
+        name: 'Appetizers',
+        description: 'Starters',
+        items: [{ name: 'Tuna Tartare', price: 18, dietary: [' Pescatarian ', ''] }],
+      }],
+    }, {}, {});
+    expect(result.content.items[0]._category).toBe('Appetizers');
+    expect(result.content.items[0]._categoryDescription).toBe('Starters');
+    expect(result.content.items[0].dietary).toEqual(['Pescatarian']);
+  });
 });
 
 // ---------------------------------------------------------------------------

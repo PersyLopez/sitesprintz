@@ -582,6 +582,40 @@ function addToCartButton(item, index, tokens) {
   return `<button type="button" class="ss-btn ss-add-to-cart" data-ss-add-to-cart data-testid="add-to-cart-${id}" data-product-id="${escapeAttr(id)}" data-product-name="${escapeAttr(item.name || 'Item')}" data-product-price="${price}" data-product-image="${escapeAttr(item.image || '')}" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)}; margin-top: 12px; border: 0; cursor: pointer;">Add to cart</button>`;
 }
 
+function catalogCard(item, index, tokens, purchasable) {
+  const dietary = Array.isArray(item.dietary)
+    ? item.dietary.filter((tag) => typeof tag === 'string' && tag.trim())
+    : [];
+  return `<article class="ss-card" style="background: ${getSurface(tokens)}; border: 1px solid ${getTokens(tokens).theme.hairline};">
+  ${item.image
+    ? `<img class="ss-card-media" data-photo-field="catalog.items.${index}.image" src="${escapeAttr(item.image)}" alt="${escapeAttr(item.imageAlt || item.name || '')}" width="400" height="220" loading="lazy" decoding="async" />`
+    : renderPhotoPlaceholder('product', { className: 'ss-photo-placeholder--card', photoField: `catalog.items.${index}.image` })}
+  <div class="ss-card-body">
+    <h3 style="color: ${getAccent(tokens)};">${escapeHtml(item.name || '')}</h3>
+    <p style="color: ${getMuted(tokens)};">${escapeHtml(item.description || '')}</p>
+    ${dietary.length ? `<p style="color: ${getMuted(tokens)}; font-size: 0.85rem;">${escapeHtml(dietary.join(', '))}</p>` : ''}
+    ${formatPrice(item.price) ? `<div class="ss-price" style="color: ${getAccent(tokens)};">${escapeHtml(formatPrice(item.price))}</div>` : ''}
+    ${purchasable ? addToCartButton(item, index, tokens) : ''}
+  </div>
+</article>`;
+}
+
+function catalogGroups(items) {
+  const groups = [];
+  const byName = new Map();
+  items.forEach((item, index) => {
+    const name = typeof item?._category === 'string' ? item._category.trim() : '';
+    if (!byName.has(name)) {
+      const description = typeof item?._categoryDescription === 'string' ? item._categoryDescription.trim() : '';
+      const group = { name, description, entries: [] };
+      byName.set(name, group);
+      groups.push(group);
+    }
+    byName.get(name).entries.push({ item, index });
+  });
+  return groups;
+}
+
 function renderCatalog(section, tokens) {
   const c = section.content || {};
   const title = c.title || 'Menu';
@@ -597,26 +631,23 @@ function renderCatalog(section, tokens) {
 </section>`;
   }
 
-  const cardsHtml = items
-    .map((item, index) => `<article class="ss-card" style="background: ${getSurface(tokens)}; border: 1px solid ${getTokens(tokens).theme.hairline};">
-  ${item.image
-    ? `<img class="ss-card-media" data-photo-field="catalog.items.${index}.image" src="${escapeAttr(item.image)}" alt="${escapeAttr(item.imageAlt || item.name || '')}" width="400" height="220" loading="lazy" decoding="async" />`
-    : renderPhotoPlaceholder('product', { className: 'ss-photo-placeholder--card', photoField: `catalog.items.${index}.image` })}
-  <div class="ss-card-body">
-    <h3 style="color: ${getAccent(tokens)};">${escapeHtml(item.name || '')}</h3>
-    <p style="color: ${getMuted(tokens)};">${escapeHtml(item.description || '')}</p>
-    ${formatPrice(item.price) ? `<div class="ss-price" style="color: ${getAccent(tokens)};">${escapeHtml(formatPrice(item.price))}</div>` : ''}
-    ${purchasable ? addToCartButton(item, index, tokens) : ''}
+  const grouped = items.some((item) => typeof item?._category === 'string' && item._category.trim());
+  const cardsHtml = grouped
+    ? catalogGroups(items).map((group) => `<div class="ss-menu-group">
+  ${group.name ? `<h3 class="ss-h3" style="color: ${getText(tokens)};">${escapeHtml(group.name)}</h3>` : ''}
+  ${group.description ? `<p style="color: ${getMuted(tokens)};">${escapeHtml(group.description)}</p>` : ''}
+  <div class="ss-card-grid">
+    ${group.entries.map(({ item, index }) => catalogCard(item, index, tokens, purchasable)).join('\n')}
   </div>
-</article>`)
-    .join('\n');
+</div>`).join('\n')
+    : `<div class="ss-card-grid">
+      ${items.map((item, index) => catalogCard(item, index, tokens, purchasable)).join('\n')}
+    </div>`;
 
   return `<section id="catalog" class="ss-catalog ss-section" style="background: ${getBg(tokens)}; color: ${getText(tokens)};">
   <div class="ss-container">
     <h2 class="ss-h2" style="color: ${getAccent(tokens)};">${escapeHtml(title)}</h2>
-    <div class="ss-card-grid">
-      ${cardsHtml}
-    </div>
+    ${cardsHtml}
   </div>
 </section>`;
 }
