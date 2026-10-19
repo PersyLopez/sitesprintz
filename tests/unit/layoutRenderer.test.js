@@ -58,6 +58,24 @@ describe('layoutRenderer — renderSection() known types', () => {
     expect(result.content.displayVariant).toBe('list');
   });
 
+  it('reads diagnostic questions and option prices', () => {
+    const result = renderSection('diagnostic-quiz', {
+      heading: 'Device Diagnostic Tool',
+      questions: [{
+        title: 'What device needs repair?',
+        options: [
+          { label: 'iPhone', price: 0 },
+          { label: '  ', price: 10 },
+        ],
+      }],
+    }, {}, {});
+    expect(result.type).toBe('diagnostic-quiz');
+    expect(result.content.questions).toEqual([{
+      title: 'What device needs repair?',
+      options: [{ label: 'iPhone', price: 0 }],
+    }]);
+  });
+
   it('reads package items for the calculator', () => {
     const result = renderSection('interactive-calculator', {
       heading: 'Build Your Package',
@@ -311,6 +329,33 @@ describe('layoutRenderer — feature gating', () => {
     });
     const types = page.sections.map((s) => s.type);
     expect(types).toContain('booking');
+  });
+
+  it('keeps a diagnostic quiz from section settings and drops it on the trial plan', () => {
+    const sections = [{
+      type: 'diagnostic-quiz',
+      settings: {
+        heading: 'Device Diagnostic Tool',
+        questions: [{
+          title: "What's the problem?",
+          options: [{ label: 'Cracked screen', price: 150 }],
+        }],
+      },
+    }];
+    const shown = composePage({
+      siteData: { businessName: 'Repair', sections },
+      layout: 'atelier',
+      level: 'solo',
+    });
+    const quiz = shown.sections.find((section) => section.type === 'diagnostic-quiz');
+    expect(quiz?.content.questions[0].options).toEqual([{ label: 'Cracked screen', price: 150 }]);
+
+    const hidden = composePage({
+      siteData: { businessName: 'Repair', plan: 'trial', sections },
+      layout: 'atelier',
+      level: 'solo',
+    });
+    expect(hidden.sections.map((section) => section.type)).not.toContain('diagnostic-quiz');
   });
 
   it('keeps a package calculator from section settings and drops it on the trial plan', () => {

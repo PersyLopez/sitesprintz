@@ -54,6 +54,7 @@ const EXPECTED_TYPES = [
   'checkout',
   'zip-checker',
   'interactive-calculator',
+  'diagnostic-quiz',
   'placeholder',
 ];
 
@@ -781,6 +782,26 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(fragment).toContain('class="ss-live"');
     expect(fragment).toContain('Trial Shop');
     expect(renderPublishedViewFragment(null)).toBe('');
+  });
+
+  it('renders a diagnostic quiz that posts an estimate', () => {
+    const html = renderSectionToHtml({
+      type: 'diagnostic-quiz',
+      content: {
+        title: 'Device Diagnostic Tool',
+        questions: [{
+          title: "What's the problem?",
+          options: [{ label: 'Cracked screen', price: 150 }],
+        }],
+      },
+    }, { ...tokens, _contactSubdomain: 'gallery-repair' });
+    expect(html).toContain('data-testid="diagnostic-quote-form"');
+    expect(html).toContain('action="/api/submissions/contact"');
+    expect(html).toContain('name="type" value="diagnostic-quote"');
+    expect(html).toContain('value="gallery-repair"');
+    expect(html).toContain('name="answer_0"');
+    expect(html).toContain('data-price="150"');
+    expect(html).toContain('Cracked screen — $150');
   });
 
   it('renders a package calculator that posts a quote', () => {

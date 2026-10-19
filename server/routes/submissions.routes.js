@@ -39,6 +39,21 @@ import {
 const router = express.Router();
 
 /** Links in the owner email for a saved shop message. */
+export function diagnosticQuoteMessage(message, fields, type) {
+  const text = String(message || '').trim();
+  if (type !== 'diagnostic-quote' || !fields || typeof fields !== 'object') return text;
+  const picked = Object.keys(fields)
+    .filter((key) => /^answer_\d+$/.test(key))
+    .sort((a, b) => Number(a.slice(7)) - Number(b.slice(7)))
+    .map((key) => String(fields[key] || '').trim())
+    .filter(Boolean);
+  if (!picked.length) return text;
+  const list = picked.join('; ');
+  if (!text || text === 'Please estimate this repair.') return list;
+  if (text.includes(list)) return text;
+  return `${list}. ${text}`;
+}
+
 export function packageQuoteMessage(message, fields, type) {
   const text = String(message || '').trim();
   if (type !== 'package-quote' || !fields || typeof fields !== 'object') return text;
@@ -238,7 +253,11 @@ router.post('/contact', asyncHandler(async (req, res) => {
   // Create submission
   const sanitizedName = sanitizeString(name || '', 200);
   const sanitizedMessage = zipCheckMessage(
-    packageQuoteMessage(sanitizeString(message, 2000), otherFields, type),
+    packageQuoteMessage(
+      diagnosticQuoteMessage(sanitizeString(message, 2000), otherFields, type),
+      otherFields,
+      type
+    ),
     otherFields.zip,
     type
   );

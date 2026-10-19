@@ -80,6 +80,8 @@ function isEmptyOptional(section) {
       return list(c.areas).length === 0 && list(c.ranges).length === 0;
     case 'interactive-calculator':
       return list(c.items).length === 0;
+    case 'diagnostic-quiz':
+      return list(c.questions).length === 0;
     case 'process':
     case 'how-to-order':
       return list(c.steps).length === 0;

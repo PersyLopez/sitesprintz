@@ -515,6 +515,32 @@ const sectionPrimitives = {
     };
   },
 
+  'diagnostic-quiz'(content) {
+    const c = content || {};
+    const questions = (Array.isArray(c.questions) ? c.questions : [])
+      .map((question) => {
+        const title = String(question?.title || question?.label || '').trim();
+        const options = (Array.isArray(question?.options) ? question.options : [])
+          .map((option) => ({
+            label: String(option?.label || option?.name || '').trim(),
+            price: Number(option?.price) || 0,
+          }))
+          .filter((option) => option.label);
+        return { title, options };
+      })
+      .filter((question) => question.title && question.options.length);
+    return {
+      type: 'diagnostic-quiz',
+      content: {
+        title: c.heading || c.title || 'Get an estimate',
+        description: typeof (c.subheading || c.description) === 'string' ? (c.subheading || c.description) : '',
+        questions,
+      },
+      settings: {},
+      accent: false,
+    };
+  },
+
   checkout(content, siteData, _tokens) {
     const c = content || {};
     const allowCheckout = Boolean(siteData?.settings?.allowCheckout);
@@ -573,7 +599,6 @@ const SECTION_ALIASES = {
   'native-booking': 'booking',
   'service-filters': 'services',
   'video-gallery': 'gallery',
-  'diagnostic-quiz': 'faq',
   'progress-tracker': 'process',
   'enhanced-profiles': 'team',
   'multi-step-form': 'contact',
@@ -816,13 +841,13 @@ export function composePage({
     for (const section of siteData.sections) {
       if (!skeletonSet.has(section.type) && section.enabled !== false) {
         const plan = siteData?.plan || siteData?.settings?.tier;
-        const gatedFeature = section.type === 'zip-checker'
-          ? FEATURES.ZIP_CHECKER
-          : section.type === 'interactive-calculator'
-            ? FEATURES.INTERACTIVE_CALCULATOR
-            : null;
+        const gatedFeature = {
+          'zip-checker': FEATURES.ZIP_CHECKER,
+          'interactive-calculator': FEATURES.INTERACTIVE_CALCULATOR,
+          'diagnostic-quiz': FEATURES.DIAGNOSTIC_QUIZ,
+        }[section.type] || null;
         if (gatedFeature && plan && !hasFeature(plan, gatedFeature)) continue;
-        const usesSettings = section.type === 'zip-checker' || section.type === 'interactive-calculator';
+        const usesSettings = Boolean(gatedFeature);
         const extraSettings = usesSettings && section.settings && typeof section.settings === 'object'
           ? section.settings
           : {};

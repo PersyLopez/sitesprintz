@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { contactOwnerNotice, contactPostedReturnPath, packageQuoteMessage, zipCheckMessage } from '../../server/routes/submissions.routes.js';
+import { contactOwnerNotice, contactPostedReturnPath, diagnosticQuoteMessage, packageQuoteMessage, zipCheckMessage } from '../../server/routes/submissions.routes.js';
 
 describe('contactPostedReturnPath', () => {
   it('returns to the same shop path', () => {
@@ -8,6 +8,14 @@ describe('contactPostedReturnPath', () => {
       referer: 'https://rightsitelight.com/view/gallery-salon',
       subdomain: 'gallery-salon',
     })).toBe('/view/gallery-salon?contact=sent');
+  });
+
+  it('lists the diagnostic answers on the estimate note', () => {
+    expect(diagnosticQuoteMessage('Please estimate this repair.', {
+      answer_0: 'iPhone',
+      answer_1: 'Cracked screen — $150',
+    }, 'diagnostic-quote')).toBe('iPhone; Cracked screen — $150');
+    expect(diagnosticQuoteMessage('Hello', { answer_0: 'iPhone' }, 'contact')).toBe('Hello');
   });
 
   it('lists the chosen package on the quote note', () => {

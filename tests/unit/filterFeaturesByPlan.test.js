@@ -50,6 +50,17 @@ describe('filterFeaturesByPlan', () => {
     expect(growth.settings.allowCheckout).toBe(true);
   });
 
+  it('drops a diagnostic quiz on the live trial and keeps it on Growth', () => {
+    const withQuiz = {
+      sections: [
+        { type: 'hero' },
+        { type: 'diagnostic-quiz', settings: { questions: [{ title: 'Device', options: [{ label: 'iPhone' }] }] } },
+      ],
+    };
+    expect(filterFeaturesByPlan(withQuiz, 'trial').sections.map((section) => section.type)).toEqual(['hero']);
+    expect(filterFeaturesByPlan(withQuiz, 'growth').sections.map((section) => section.type)).toContain('diagnostic-quiz');
+  });
+
   it('drops a package calculator on the live trial and keeps it on Growth', () => {
     const withCalculator = {
       sections: [

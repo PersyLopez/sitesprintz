@@ -49,6 +49,7 @@ export const ALL_SECTION_TYPES = [
   'checkout',
   'zip-checker',
   'interactive-calculator',
+  'diagnostic-quiz',
   'placeholder',
 ];
 
@@ -1133,6 +1134,72 @@ function renderPackageCalculator(section, tokens) {
 </section>`;
 }
 
+function renderDiagnosticQuiz(section, tokens) {
+  const c = section.content || {};
+  const questions = (Array.isArray(c.questions) ? c.questions : [])
+    .filter((question) => question?.title && Array.isArray(question.options) && question.options.length);
+  const title = c.title || 'Get an estimate';
+  const description = c.description || '';
+  const groups = questions.map((question, questionIndex) => {
+    const options = question.options.map((option, optionIndex) => {
+      const price = Number(option?.price) || 0;
+      const label = String(option?.label || '').trim();
+      const value = price > 0 ? `${label} — ${packageMoney(price)}` : label;
+      return `<label class="ss-field" style="display: flex; gap: 12px; align-items: flex-start;">
+        <input type="radio" name="answer_${questionIndex}" value="${escapeAttr(value)}" data-price="${price}" ${optionIndex === 0 ? 'required' : ''} data-testid="diagnostic-option-${questionIndex}-${optionIndex}" />
+        <span>${escapeHtml(label)}${price > 0 ? ` ${escapeHtml(packageMoney(price))}` : ''}</span>
+      </label>`;
+    }).join('\n');
+    return `<fieldset style="border: 0; padding: 0; margin: 0 0 20px;">
+      <legend style="font-weight: 700; margin-bottom: 8px;">${escapeHtml(question.title)}</legend>
+      ${options}
+    </fieldset>`;
+  }).join('\n');
+  return `<section id="diagnostic" class="ss-diagnostic" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
+  <div class="ss-container" style="max-width: 640px; margin: 0 auto;">
+    <h2 style="text-align: center; color: ${getAccent(tokens)}; margin-bottom: 16px;">${escapeHtml(title)}</h2>
+    ${description ? `<p style="text-align: center; color: ${getMuted(tokens)}; margin-bottom: 24px;">${escapeHtml(description)}</p>` : ''}
+    <form class="ss-contact-form" data-testid="diagnostic-quote-form" data-type="diagnostic-quote" method="post" action="/api/submissions/contact" novalidate>
+      <input type="hidden" name="subdomain" value="${escapeAttr(tokens?._contactSubdomain || '')}" />
+      <input type="hidden" name="type" value="diagnostic-quote" />
+      <p class="ss-form-status" data-testid="diagnostic-form-status" data-ss-diagnostic-total role="status" aria-live="polite"></p>
+      ${groups}
+      <label class="ss-field">
+        <span>Email</span>
+        <input type="email" name="email" autocomplete="email" required maxlength="254" />
+      </label>
+      <label class="ss-field">
+        <span>Name <span class="ss-optional">(optional)</span></span>
+        <input type="text" name="name" autocomplete="name" maxlength="200" />
+      </label>
+      <label class="ss-field">
+        <span>Phone <span class="ss-optional">(optional)</span></span>
+        <input type="tel" name="phone" autocomplete="tel" maxlength="40" />
+      </label>
+      <label class="ss-field">
+        <span>Note <span class="ss-optional">(optional)</span></span>
+        <textarea name="message" rows="3" maxlength="2000">Please estimate this repair.</textarea>
+      </label>
+      <button type="submit" class="ss-btn" data-testid="diagnostic-quote-submit" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)}; border: 0; cursor: pointer;">Request estimate</button>
+    </form>
+    <script>
+    (function () {
+      var form = document.currentScript && document.currentScript.previousElementSibling;
+      if (!form || !form.querySelectorAll) return;
+      var result = form.querySelector('[data-ss-diagnostic-total]');
+      form.addEventListener('change', function () {
+        if (!result) return;
+        var total = 0;
+        var choices = form.querySelectorAll('input[type="radio"][data-price]:checked');
+        for (var i = 0; i < choices.length; i++) total += Number(choices[i].getAttribute('data-price')) || 0;
+        result.textContent = total ? ('Estimated total $' + total) : '';
+      });
+    })();
+    </script>
+  </div>
+</section>`;
+}
+
 function renderCheckout(section, tokens) {
   const c = section.content || {};
   if (c.enabled === false) return '';
@@ -1188,6 +1255,7 @@ const RENDERERS = {
   checkout: renderCheckout,
   'zip-checker': renderZipChecker,
   'interactive-calculator': renderPackageCalculator,
+  'diagnostic-quiz': renderDiagnosticQuiz,
   placeholder: renderPlaceholder,
 };
 
