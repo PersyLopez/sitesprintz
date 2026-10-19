@@ -33,7 +33,7 @@
     const tiles = [];
     for (let dy = -1; dy <= 1; dy += 1) {
       for (let dx = -1; dx <= 1; dx += 1) {
-        tiles.push(`<img alt="" width="${size}" height="${size}" src="https://tile.openstreetmap.org/${zoom}/${x + dx}/${y + dy}.png" />`);
+        tiles.push(`<img alt="" width="${size}" height="${size}" src="https://tile.openstreetmap.org/${zoom}/${x + dx}/${y + dy}.png" loading="lazy" decoding="async" />`);
       }
     }
 
@@ -46,7 +46,20 @@
   }
 
   function boot() {
-    document.querySelectorAll('[data-testid="service-area-map"]').forEach(renderMap);
+    const maps = document.querySelectorAll('[data-testid="service-area-map"]');
+    if (!maps.length) return;
+    if (typeof IntersectionObserver !== 'function') {
+      maps.forEach(renderMap);
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        renderMap(entry.target);
+        observer.unobserve(entry.target);
+      });
+    }, { rootMargin: '200px' });
+    maps.forEach((map) => observer.observe(map));
   }
 
   if (document.readyState === 'loading') {
