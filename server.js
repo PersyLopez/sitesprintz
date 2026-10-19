@@ -56,7 +56,7 @@ import { query, prisma } from './database/db.js';
 import publishedSiteRenderer from './server/services/publishedSiteRenderer.js';
 import SEOService from './server/services/seoService.js';
 import { readFile } from 'fs/promises';
-import { injectPublishedSiteEmbed, isSafeSiteIdentifier, liveSiteDocumentIdentifier, liveSiteRedirectTarget, liveViewDocumentIdentifier } from './server/utils/siteIsolation.js';
+import { injectPublishedSiteEmbed, isSafeSiteIdentifier, liveSiteDocumentIdentifier, liveSiteRedirectTarget, liveViewDocumentIdentifier, stripPublishedViewThirdParties } from './server/utils/siteIsolation.js';
 import testRoutes from './server/routes/test.routes.js';
 import healthRoutes from './server/routes/health.js';
 
@@ -680,15 +680,16 @@ app.use(async (req, res, next) => {
     const injected = spaSeoService.injectMarketingPageMeta(html, req.path, search);
     res.setHeader('Content-Type', 'text/html; charset=UTF-8');
     if (viewSubdomain) {
+      const viewHtml = stripPublishedViewThirdParties(injected);
       try {
         const showcase = await findPublishedShowcase(viewSubdomain);
         if (showcase) {
-          return res.send(injectPublishedSiteEmbed(injected, { success: true, site: showcase }));
+          return res.send(injectPublishedSiteEmbed(viewHtml, { success: true, site: showcase }));
         }
       } catch {
         // Unknown subdomain or lookup error: serve the shell without an embed
       }
-      return res.send(injected);
+      return res.send(viewHtml);
     }
     return res.send(injected);
   } catch {

@@ -23,6 +23,7 @@ import {
   removeIsolatedSiteFiles,
   resolveContainedPath,
   slugifySubdomain,
+  stripPublishedViewThirdParties,
   writeIsolatedSiteFiles
 } from '../../server/utils/siteIsolation.js';
 import {
@@ -120,6 +121,21 @@ describe('site isolation — /view document and embed', () => {
 
   it('leaves HTML without a head end tag unchanged', () => {
     expect(injectPublishedSiteEmbed('<html><body></body></html>', { a: 1 })).toBe('<html><body></body></html>');
+  });
+
+  it('strips Turnstile and Unsplash hints from the view document, keeps fonts and og', async () => {
+    const shell = await fs.readFile(path.join(process.cwd(), 'index.html'), 'utf-8');
+    expect(shell).toContain('challenges.cloudflare.com/turnstile');
+    expect(shell).toContain('images.unsplash.com');
+
+    const stripped = stripPublishedViewThirdParties(shell);
+    expect(stripped).not.toContain('challenges.cloudflare.com/turnstile');
+    expect(stripped).not.toContain('images.unsplash.com');
+    expect(stripped).toContain('fonts.googleapis.com');
+    expect(stripped).toContain('og:image');
+
+    expect(stripPublishedViewThirdParties(null)).toBe(null);
+    expect(stripPublishedViewThirdParties(undefined)).toBe(undefined);
   });
 });
 

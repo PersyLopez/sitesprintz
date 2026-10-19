@@ -151,6 +151,21 @@ export function injectPublishedSiteEmbed(html, payload) {
   return html.replace('</head>', `${script}</head>`);
 }
 
+/**
+ * Strip marketing-shell third parties that published /view documents never
+ * need: the Cloudflare Turnstile script (Register-only) and Unsplash
+ * preconnect/dns-prefetch hints. Fonts, canonical, and og tags stay.
+ *
+ * @param {string} html
+ * @returns {string}
+ */
+export function stripPublishedViewThirdParties(html) {
+  if (typeof html !== 'string') return html;
+  return html
+    .replace(/<script[^>]*challenges\.cloudflare\.com\/turnstile[^>]*>\s*<\/script>\s*/g, '')
+    .replace(/<link[^>]*href="https:\/\/images\.unsplash\.com"[^>]*>\s*/g, '');
+}
+
 export function deepClone(value) {
   if (value === undefined) {
     return undefined;
