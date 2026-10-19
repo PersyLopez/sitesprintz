@@ -6,6 +6,7 @@ import {
   publicSiteBlockedByLiveTrial,
   liveTrialPublicWhere,
   applyLiveTrialPublicWhere,
+  publishedCrawlerDocumentHidden,
   CLAIM_PLAN,
   PLATFORM_PLAN_DETAILS,
   LABOR_SKUS,
@@ -84,6 +85,30 @@ describe('platformPlans', () => {
       const where = applyLiveTrialPublicWhere({ status: 'published', is_public: true }, now);
       expect(where.AND).toEqual([clause]);
       expect(where.status).toBe('published');
+    } finally {
+      if (previous === undefined) delete process.env.PLATFORM_COLLECT_PAYMENTS;
+      else process.env.PLATFORM_COLLECT_PAYMENTS = previous;
+    }
+  });
+
+  it('keeps crawler HTML off unpublished shops', () => {
+    const previous = process.env.PLATFORM_COLLECT_PAYMENTS;
+    process.env.PLATFORM_COLLECT_PAYMENTS = 'true';
+    const now = new Date('2026-10-19T00:00:00Z');
+    try {
+      expect(publishedCrawlerDocumentHidden(null, now)).toBe(true);
+      expect(publishedCrawlerDocumentHidden({ status: 'draft', plan: 'growth' }, now)).toBe(true);
+      expect(publishedCrawlerDocumentHidden({ status: 'expired', plan: 'trial' }, now)).toBe(true);
+      expect(publishedCrawlerDocumentHidden({
+        status: 'published',
+        plan: 'growth',
+        expires_at: new Date('2020-01-01T00:00:00Z'),
+      }, now)).toBe(false);
+      expect(publishedCrawlerDocumentHidden({
+        status: 'published',
+        plan: 'trial',
+        expires_at: new Date('2020-01-01T00:00:00Z'),
+      }, now)).toBe(true);
     } finally {
       if (previous === undefined) delete process.env.PLATFORM_COLLECT_PAYMENTS;
       else process.env.PLATFORM_COLLECT_PAYMENTS = previous;

@@ -59,7 +59,7 @@ import publishedSiteRenderer from './server/services/publishedSiteRenderer.js';
 import SEOService from './server/services/seoService.js';
 import { readFile } from 'fs/promises';
 import { injectPublishedSiteEmbed, isSafeSiteIdentifier, liveSiteDocumentIdentifier, liveSiteRedirectTarget, liveViewDocumentIdentifier, crawlerPublishedDocumentUrl, deferPublishedViewFonts, preloadPublishedViewDisplayFont, stripPublishedViewThirdParties } from './server/utils/siteIsolation.js';
-import { publicSiteBlockedByLiveTrial, platformCollectsPayments } from './server/config/platformPlans.js';
+import { publishedCrawlerDocumentHidden } from './server/config/platformPlans.js';
 import testRoutes from './server/routes/test.routes.js';
 import healthRoutes from './server/routes/health.js';
 
@@ -642,19 +642,10 @@ async function renderPublishedSiteDocument(req, res, next) {
       });
     }
 
-    const trialBlocked = site && (
-      site.status === 'expired'
-      || publicSiteBlockedByLiveTrial({
-        collectsPayments: platformCollectsPayments(),
-        plan: site.plan,
-        expiresAt: site.expires_at,
-        stripeSubscriptionId: site.users?.stripe_subscription_id,
-        subscriptionStatus: site.users?.subscription_status,
-      })
-    );
+    const hidden = publishedCrawlerDocumentHidden(site);
 
     let siteData = null;
-    if (site && !trialBlocked && site.site_data) {
+    if (site && !hidden && site.site_data) {
       siteData = typeof site.site_data === 'string' ? JSON.parse(site.site_data) : site.site_data;
     }
 

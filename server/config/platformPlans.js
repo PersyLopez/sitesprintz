@@ -117,6 +117,27 @@ export function applyLiveTrialPublicWhere(where, now = new Date()) {
   };
 }
 
+/**
+ * Crawler HTML is only for a published shop that the public URL would serve.
+ * Drafts and other non-published rows stay out. A lapsed no-card trial stays
+ * hidden while billing is open.
+ *
+ * @param {object|null|undefined} site
+ * @param {Date} [now]
+ * @returns {boolean}
+ */
+export function publishedCrawlerDocumentHidden(site, now = new Date()) {
+  if (!site || site.status !== 'published') return true;
+  return publicSiteBlockedByLiveTrial({
+    collectsPayments: platformCollectsPayments(),
+    plan: site.plan,
+    expiresAt: site.expires_at,
+    stripeSubscriptionId: site.users?.stripe_subscription_id,
+    subscriptionStatus: site.users?.subscription_status,
+    now,
+  });
+}
+
 /** Targeted claimables default to DIY Growth. Starter is self-serve only. */
 export const CLAIM_PLAN = 'growth';
 export const CLAIM_PLANS = ['growth', 'growth_managed'];
