@@ -427,6 +427,12 @@ export function filterFeaturesByPlan(siteData, userPlan) {
       allowOrders: false,
       payOnSite: false
     };
+    if (Array.isArray(filtered.sections)) {
+      filtered.sections = filtered.sections.filter((section) => section?.type !== 'checkout');
+    }
+    if (Array.isArray(filtered.nav)) {
+      filtered.nav = filtered.nav.filter((item) => !String(item?.href || '').includes('#checkout'));
+    }
   } else {
     filtered.settings = {
       ...(filtered.settings || {}),

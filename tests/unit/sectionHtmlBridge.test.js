@@ -764,6 +764,22 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(html).toContain('unsplash.com');
   });
 
+  it('leaves checkout off the live page when the plan cannot take payment', () => {
+    const { html } = buildLiveSiteMarkup({
+      businessName: 'Trial Shop',
+      settings: { allowCheckout: false },
+      _layout: 'atelier',
+      _niche: 'salon',
+      _level: 'solo',
+      sections: [
+        { type: 'hero', content: { title: 'Trial Shop' } },
+        { type: 'checkout', content: { enabled: true } },
+      ],
+    });
+    expect(html).not.toContain('Ready to complete your order');
+    expect(html).not.toContain('ss-checkout');
+  });
+
   it('keeps Unsplash when gallery seed set settings.demoMode', () => {
     const { html } = buildLiveSiteMarkup({
       businessName: 'Demo Salon',

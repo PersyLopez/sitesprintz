@@ -58,6 +58,17 @@ describe('layoutRenderer — renderSection() known types', () => {
     expect(result.content.displayVariant).toBe('list');
   });
 
+  it('checkout follows the plan checkout flag', () => {
+    const off = renderSection('checkout', { enabled: true }, { settings: { allowCheckout: false } }, {});
+    expect(off.enabled).toBe(false);
+    expect(off.content.enabled).toBe(false);
+
+    const on = renderSection('checkout', {}, { settings: { allowCheckout: true, allowOrders: true } }, {});
+    expect(on.enabled).toBe(true);
+    expect(on.content.allowCheckout).toBe(true);
+    expect(on.content.allowOrders).toBe(true);
+  });
+
   it('booking section preserves enabled flag', () => {
     const result = renderSection('booking', { enabled: false }, {}, {});
     expect(result.content.enabled).toBe(false);

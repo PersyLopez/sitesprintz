@@ -470,14 +470,17 @@ const sectionPrimitives = {
   },
 
   // Checkout section
-  checkout(content, _siteData, _tokens) {
+  checkout(content, siteData, _tokens) {
     const c = content || {};
+    const allowCheckout = Boolean(siteData?.settings?.allowCheckout);
+    const enabled = allowCheckout && c.enabled !== false;
     return {
       type: 'checkout',
+      enabled,
       content: {
-        enabled: c.enabled !== undefined ? c.enabled : true,
-        allowCheckout: c.allowCheckout || false,
-        allowOrders: c.allowOrders || false,
+        enabled,
+        allowCheckout,
+        allowOrders: allowCheckout && Boolean(siteData?.settings?.allowOrders),
       },
       settings: {},
       accent: false,

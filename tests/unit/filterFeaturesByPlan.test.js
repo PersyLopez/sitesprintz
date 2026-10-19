@@ -27,6 +27,29 @@ describe('filterFeaturesByPlan', () => {
     expect(result.nav.map((item) => item.href)).toEqual(['#contact']);
   });
 
+  it('drops a checkout section on the live trial and keeps it on Growth', () => {
+    const withCheckout = {
+      sections: [
+        { type: 'hero' },
+        { type: 'checkout', content: { enabled: true } },
+        { type: 'contact' },
+      ],
+      nav: [
+        { href: '#checkout', label: 'Checkout' },
+        { href: '#contact', label: 'Contact' },
+      ],
+    };
+
+    const trial = filterFeaturesByPlan(withCheckout, 'trial');
+    expect(trial.sections.map((section) => section.type)).toEqual(['hero', 'contact']);
+    expect(trial.nav.map((item) => item.href)).toEqual(['#contact']);
+    expect(trial.settings.allowCheckout).toBe(false);
+
+    const growth = filterFeaturesByPlan(withCheckout, 'growth');
+    expect(growth.sections.map((section) => section.type)).toContain('checkout');
+    expect(growth.settings.allowCheckout).toBe(true);
+  });
+
   it('keeps FAQ and before-after on Starter', () => {
     const result = filterFeaturesByPlan(site, 'starter');
 

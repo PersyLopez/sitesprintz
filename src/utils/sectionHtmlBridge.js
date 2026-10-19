@@ -1004,13 +1004,13 @@ function renderSocial(section, tokens) {
 
 function renderCheckout(section, tokens) {
   const c = section.content || {};
-  const enabled = c.enabled !== false;
+  if (c.enabled === false) return '';
 
   return `<section class="ss-checkout" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
   <div class="ss-container" style="max-width: 600px; margin: 0 auto; text-align: center;">
     <div style="background: ${getSurface(tokens)}; padding: 40px; border-radius: 12px; border: 1px solid ${getTokens(tokens).theme.hairline};">
       <h2 style="color: ${getAccent(tokens)}; margin-bottom: 16px;">Checkout</h2>
-      <p style="color: ${enabled ? getText(tokens) : getMuted(tokens)};">${enabled ? 'Ready to complete your order.' : 'Checkout is currently unavailable.'}</p>
+      <p style="color: ${getText(tokens)};">Ready to complete your order.</p>
     </div>
   </div>
 </section>`;
