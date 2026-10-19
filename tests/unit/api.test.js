@@ -35,6 +35,8 @@ global.console = {
 describe('API Client Service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    apiClient.csrfToken = 'preset-token';
+    apiClient.csrfPromise = null;
     Object.defineProperty(window, 'localStorage', {
       value: localStorageMock,
       writable: true,
@@ -87,6 +89,35 @@ describe('API Client Service', () => {
         })
       );
       expect(result).toEqual({ id: 1 });
+    });
+
+    it('loads the CSRF token on the first mutation, not on a read', async () => {
+      apiClient.csrfToken = null;
+      global.fetch
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ data: 'site' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ csrfToken: 'fresh-token' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 201,
+          json: async () => ({ id: 2 }),
+        });
+
+      await apiClient.get('/api/showcases/gallery-salon');
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(String(fetch.mock.calls[0][0])).not.toContain('/api/csrf-token');
+
+      await apiClient.post('/api/submissions/contact', { email: 'a@b.co', message: 'Hi' });
+      expect(fetch).toHaveBeenCalledTimes(3);
+      expect(String(fetch.mock.calls[1][0])).toContain('/api/csrf-token');
+      expect(fetch.mock.calls[2][1].headers['x-csrf-token']).toBe('fresh-token');
     });
 
     it('should make PUT request', async () => {

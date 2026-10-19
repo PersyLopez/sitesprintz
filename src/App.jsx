@@ -70,7 +70,6 @@ import LegacySitePaneRedirect, { LegacyPublishedSiteRedirect } from './component
 import { LocaleProvider } from './i18n/LocaleContext.jsx';
 import { ThemeProvider } from './context/ThemeContext.jsx';
 
-import api from './services/api';
 import { useEffect } from 'react';
 import { initWebVitals } from './utils/webVitals';
 import { syncClarity } from './utils/clarity';
@@ -91,8 +90,6 @@ function ClaritySync() {
 
 function App() {
   useEffect(() => {
-    api.initCsrf();
-    // Initialize Core Web Vitals monitoring
     initWebVitals();
   }, []);
 

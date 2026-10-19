@@ -13,21 +13,38 @@ class APIClient {
   constructor(baseURL = API_BASE_URL) {
     this.baseURL = baseURL;
     this.csrfToken = null;
+    this.csrfPromise = null;
   }
 
   async initCsrf() {
+    if (this.csrfToken) return this.csrfToken;
+    if (!this.csrfPromise) {
+      this.csrfPromise = this.fetchCsrfToken().finally(() => {
+        this.csrfPromise = null;
+      });
+    }
+    return this.csrfPromise;
+  }
+
+  async fetchCsrfToken() {
     try {
       const response = await fetch(`${this.baseURL}/api/csrf-token`, {
         credentials: 'include'
       });
       if (response.ok) {
         const data = await response.json();
-        this.csrfToken = data.csrfToken;
-        console.log('CSRF token initialized');
+        this.csrfToken = data.csrfToken || null;
       }
     } catch (error) {
       console.error('Failed to initialize CSRF token:', error);
     }
+    return this.csrfToken;
+  }
+
+  async ensureCsrf(method) {
+    const verb = String(method || 'GET').toUpperCase();
+    if (verb === 'GET' || verb === 'HEAD' || verb === 'OPTIONS') return;
+    await this.initCsrf();
   }
 
   /**
@@ -229,6 +246,7 @@ class APIClient {
   }
 
   async request(endpoint, options = {}) {
+    await this.ensureCsrf(options.method);
     const url = this.buildRequestUrl(endpoint, options);
     const headers = this.buildHeaders(options);
 
@@ -273,6 +291,7 @@ class APIClient {
 
   // For file uploads (multipart/form-data)
   async upload(endpoint, formData, options = {}) {
+    await this.ensureCsrf('POST');
     const url = this.buildRequestUrl(endpoint, options);
     const headers = this.buildHeaders(options, false); // Don't include Content-Type for multipart
 
