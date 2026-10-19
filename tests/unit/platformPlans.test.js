@@ -3,6 +3,7 @@ import {
   LIVE_TRIAL_DAYS,
   STRIPE_TRIAL_DAYS,
   liveTrialExpiresAt,
+  publicSiteBlockedByLiveTrial,
   CLAIM_PLAN,
   PLATFORM_PLAN_DETAILS,
   LABOR_SKUS,
@@ -32,6 +33,27 @@ describe('platformPlans', () => {
     const start = new Date('2026-08-30T12:00:00Z');
     const expires = liveTrialExpiresAt(start);
     expect(expires.getTime() - start.getTime()).toBe(LIVE_TRIAL_DAYS * 24 * 60 * 60 * 1000);
+  });
+
+  it('hides a lapsed no-card trial only while billing is open', () => {
+    const past = new Date('2026-01-01T00:00:00Z');
+    const now = new Date('2026-10-19T00:00:00Z');
+    const lapsed = { collectsPayments: true, plan: 'trial', expiresAt: past, now };
+    expect(publicSiteBlockedByLiveTrial(lapsed)).toBe(true);
+    expect(publicSiteBlockedByLiveTrial({ ...lapsed, collectsPayments: false })).toBe(false);
+    expect(publicSiteBlockedByLiveTrial({ ...lapsed, plan: 'growth' })).toBe(false);
+    expect(publicSiteBlockedByLiveTrial({ ...lapsed, plan: null })).toBe(true);
+    expect(publicSiteBlockedByLiveTrial({
+      ...lapsed,
+      stripeSubscriptionId: 'sub_123',
+      subscriptionStatus: 'active',
+    })).toBe(false);
+    expect(publicSiteBlockedByLiveTrial({
+      collectsPayments: true,
+      plan: 'trial',
+      expiresAt: new Date('2026-12-01T00:00:00Z'),
+      now,
+    })).toBe(false);
   });
 
   it('normalizes legacy paid plans', () => {

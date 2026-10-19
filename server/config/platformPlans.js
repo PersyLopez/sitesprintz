@@ -44,6 +44,40 @@ export function liveTrialExpiresAt(fromDate = new Date()) {
   return new Date(fromDate.getTime() + LIVE_TRIAL_DAYS * 24 * 60 * 60 * 1000);
 }
 
+/**
+ * Whether a published shop should stay off the public URL.
+ * Matches deactivateExpiredTrials: billing closed keeps the no-card trial up;
+ * a paid plan or an active subscription stays up; a past expires_at on a trial does not.
+ *
+ * @param {{
+ *   collectsPayments?: boolean,
+ *   plan?: string|null,
+ *   expiresAt?: Date|string|null,
+ *   stripeSubscriptionId?: string|null,
+ *   subscriptionStatus?: string|null,
+ *   now?: Date,
+ * }} [input]
+ * @returns {boolean}
+ */
+export function publicSiteBlockedByLiveTrial({
+  collectsPayments = false,
+  plan = null,
+  expiresAt = null,
+  stripeSubscriptionId = null,
+  subscriptionStatus = null,
+  now = new Date(),
+} = {}) {
+  if (!collectsPayments) return false;
+  if (stripeSubscriptionId && (subscriptionStatus === 'active' || subscriptionStatus === 'trialing')) {
+    return false;
+  }
+  if (plan && plan !== 'trial') return false;
+  if (!expiresAt) return false;
+  const expiry = expiresAt instanceof Date ? expiresAt : new Date(expiresAt);
+  if (Number.isNaN(expiry.getTime())) return false;
+  return expiry.getTime() < now.getTime();
+}
+
 /** Targeted claimables default to DIY Growth. Starter is self-serve only. */
 export const CLAIM_PLAN = 'growth';
 export const CLAIM_PLANS = ['growth', 'growth_managed'];

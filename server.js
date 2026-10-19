@@ -59,6 +59,7 @@ import publishedSiteRenderer from './server/services/publishedSiteRenderer.js';
 import SEOService from './server/services/seoService.js';
 import { readFile } from 'fs/promises';
 import { injectPublishedSiteEmbed, isSafeSiteIdentifier, liveSiteDocumentIdentifier, liveSiteRedirectTarget, liveViewDocumentIdentifier, crawlerPublishedDocumentUrl, deferPublishedViewFonts, preloadPublishedViewDisplayFont, stripPublishedViewThirdParties } from './server/utils/siteIsolation.js';
+import { publicSiteBlockedByLiveTrial, platformCollectsPayments } from './server/config/platformPlans.js';
 import testRoutes from './server/routes/test.routes.js';
 import healthRoutes from './server/routes/health.js';
 
@@ -615,20 +616,45 @@ async function renderPublishedSiteDocument(req, res, next) {
       return next();
     }
 
+    const publicDocSelect = {
+      site_data: true,
+      status: true,
+      subdomain: true,
+      plan: true,
+      expires_at: true,
+      users: {
+        select: {
+          stripe_subscription_id: true,
+          subscription_status: true,
+        },
+      },
+    };
+
     let site = await prisma.sites.findFirst({
       where: { subdomain: siteIdentifier },
-      select: { site_data: true, status: true, subdomain: true }
+      select: publicDocSelect,
     });
 
     if (!site) {
       site = await prisma.sites.findUnique({
         where: { id: siteIdentifier },
-        select: { site_data: true, status: true, subdomain: true }
+        select: publicDocSelect,
       });
     }
 
+    const trialBlocked = site && (
+      site.status === 'expired'
+      || publicSiteBlockedByLiveTrial({
+        collectsPayments: platformCollectsPayments(),
+        plan: site.plan,
+        expiresAt: site.expires_at,
+        stripeSubscriptionId: site.users?.stripe_subscription_id,
+        subscriptionStatus: site.users?.subscription_status,
+      })
+    );
+
     let siteData = null;
-    if (site && site.site_data) {
+    if (site && !trialBlocked && site.site_data) {
       siteData = typeof site.site_data === 'string' ? JSON.parse(site.site_data) : site.site_data;
     }
 

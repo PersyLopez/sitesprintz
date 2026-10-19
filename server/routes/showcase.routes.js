@@ -17,6 +17,7 @@ import { validateSubdomain } from '../utils/validators.js';
 import { toPublicSiteData } from '../../src/utils/liveSiteContact.js';
 import { visitorOnlinePaymentReady } from '../services/payments/processorConnectHelpers.js';
 import { buildShowcaseKindWhere } from '../utils/showcaseDemo.js';
+import { platformCollectsPayments, publicSiteBlockedByLiveTrial } from '../config/platformPlans.js';
 
 const router = express.Router();
 
@@ -341,14 +342,32 @@ export async function findPublishedShowcase(rawSubdomain) {
       template_id: true,
       status: true,
       plan: true,
+      expires_at: true,
       site_data: true,
       user_id: true,
       created_at: true,
-      users: { select: { stripe_connected: true, stripe_account_id: true } },
+      users: {
+        select: {
+          stripe_connected: true,
+          stripe_account_id: true,
+          stripe_subscription_id: true,
+          subscription_status: true,
+        },
+      },
     }
   });
 
   if (!site) return null;
+
+  if (publicSiteBlockedByLiveTrial({
+    collectsPayments: platformCollectsPayments(),
+    plan: site.plan,
+    expiresAt: site.expires_at,
+    stripeSubscriptionId: site.users?.stripe_subscription_id,
+    subscriptionStatus: site.users?.subscription_status,
+  })) {
+    return null;
+  }
 
   const siteData = toPublicSiteData(parseSiteData(site));
 
