@@ -55,6 +55,7 @@ const EXPECTED_TYPES = [
   'zip-checker',
   'interactive-calculator',
   'diagnostic-quiz',
+  'progress-tracker',
   'placeholder',
 ];
 
@@ -782,6 +783,25 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(fragment).toContain('class="ss-live"');
     expect(fragment).toContain('Trial Shop');
     expect(renderPublishedViewFragment(null)).toBe('');
+  });
+
+  it('renders repair stages and marks the current one', () => {
+    const html = renderSectionToHtml({
+      type: 'progress-tracker',
+      content: {
+        title: 'Track Your Repair',
+        currentStatus: 'confirmed',
+        stages: [
+          { id: 'pending', label: 'Pending', description: 'Request received' },
+          { id: 'confirmed', label: 'Confirmed', description: 'Repair is scheduled' },
+        ],
+      },
+    }, tokens);
+    expect(html).toContain('data-testid="repair-progress"');
+    expect(html).toContain('Track Your Repair');
+    expect(html).toContain('Request received');
+    expect(html).toContain('aria-current="step"');
+    expect(html).toContain('Confirmed');
   });
 
   it('renders a diagnostic quiz that posts an estimate', () => {

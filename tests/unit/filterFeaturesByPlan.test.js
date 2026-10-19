@@ -50,6 +50,17 @@ describe('filterFeaturesByPlan', () => {
     expect(growth.settings.allowCheckout).toBe(true);
   });
 
+  it('drops a progress tracker on the live trial and keeps it on Growth', () => {
+    const withTracker = {
+      sections: [
+        { type: 'hero' },
+        { type: 'progress-tracker', settings: { statuses: [{ label: 'Pending' }] } },
+      ],
+    };
+    expect(filterFeaturesByPlan(withTracker, 'trial').sections.map((section) => section.type)).toEqual(['hero']);
+    expect(filterFeaturesByPlan(withTracker, 'growth').sections.map((section) => section.type)).toContain('progress-tracker');
+  });
+
   it('drops a diagnostic quiz on the live trial and keeps it on Growth', () => {
     const withQuiz = {
       sections: [

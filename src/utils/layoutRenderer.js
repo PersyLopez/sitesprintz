@@ -515,6 +515,28 @@ const sectionPrimitives = {
     };
   },
 
+  'progress-tracker'(content) {
+    const c = content || {};
+    const source = Array.isArray(c.statuses) ? c.statuses : (Array.isArray(c.stages) ? c.stages : []);
+    const stages = source
+      .map((stage) => ({
+        id: String(stage?.id || '').trim(),
+        label: String(stage?.label || stage?.title || stage?.name || '').trim(),
+        description: typeof stage?.description === 'string' ? stage.description : '',
+      }))
+      .filter((stage) => stage.label);
+    return {
+      type: 'progress-tracker',
+      content: {
+        title: c.title || c.heading || 'Track your repair',
+        currentStatus: typeof c.currentStatus === 'string' ? c.currentStatus : '',
+        stages,
+      },
+      settings: {},
+      accent: false,
+    };
+  },
+
   'diagnostic-quiz'(content) {
     const c = content || {};
     const questions = (Array.isArray(c.questions) ? c.questions : [])
@@ -599,7 +621,6 @@ const SECTION_ALIASES = {
   'native-booking': 'booking',
   'service-filters': 'services',
   'video-gallery': 'gallery',
-  'progress-tracker': 'process',
   'enhanced-profiles': 'team',
   'multi-step-form': 'contact',
 };
@@ -845,6 +866,7 @@ export function composePage({
           'zip-checker': FEATURES.ZIP_CHECKER,
           'interactive-calculator': FEATURES.INTERACTIVE_CALCULATOR,
           'diagnostic-quiz': FEATURES.DIAGNOSTIC_QUIZ,
+          'progress-tracker': FEATURES.PROGRESS_TRACKER,
         }[section.type] || null;
         if (gatedFeature && plan && !hasFeature(plan, gatedFeature)) continue;
         const usesSettings = Boolean(gatedFeature);

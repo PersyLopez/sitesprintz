@@ -50,6 +50,7 @@ export const ALL_SECTION_TYPES = [
   'zip-checker',
   'interactive-calculator',
   'diagnostic-quiz',
+  'progress-tracker',
   'placeholder',
 ];
 
@@ -1200,6 +1201,28 @@ function renderDiagnosticQuiz(section, tokens) {
 </section>`;
 }
 
+function renderProgressTracker(section, tokens) {
+  const c = section.content || {};
+  const stages = Array.isArray(c.stages) ? c.stages : [];
+  const title = c.title || 'Track your repair';
+  const current = c.currentStatus || '';
+  const items = stages.map((stage, index) => {
+    const mark = stage.id && stage.id === current ? ' aria-current="step"' : '';
+    return `<li${mark} data-testid="repair-stage" style="padding: 16px 0; border-bottom: 1px solid ${getTokens(tokens).theme.hairline};">
+      <strong style="color: ${getAccent(tokens)};">${index + 1}. ${escapeHtml(stage.label)}</strong>
+      ${stage.description ? `<p style="color: ${getMuted(tokens)}; margin: 4px 0 0;">${escapeHtml(stage.description)}</p>` : ''}
+    </li>`;
+  }).join('\n');
+  return `<section id="progress" class="ss-progress" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
+  <div class="ss-container" style="max-width: 720px; margin: 0 auto;">
+    <h2 style="text-align: center; color: ${getAccent(tokens)}; margin-bottom: 24px;">${escapeHtml(title)}</h2>
+    <ol data-testid="repair-progress" style="list-style: none; padding: 0; margin: 0;">
+      ${items}
+    </ol>
+  </div>
+</section>`;
+}
+
 function renderCheckout(section, tokens) {
   const c = section.content || {};
   if (c.enabled === false) return '';
@@ -1256,6 +1279,7 @@ const RENDERERS = {
   'zip-checker': renderZipChecker,
   'interactive-calculator': renderPackageCalculator,
   'diagnostic-quiz': renderDiagnosticQuiz,
+  'progress-tracker': renderProgressTracker,
   placeholder: renderPlaceholder,
 };
 

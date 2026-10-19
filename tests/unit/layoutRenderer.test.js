@@ -58,6 +58,22 @@ describe('layoutRenderer — renderSection() known types', () => {
     expect(result.content.displayVariant).toBe('list');
   });
 
+  it('reads repair stages for the progress tracker', () => {
+    const result = renderSection('progress-tracker', {
+      title: 'Track Your Repair',
+      currentStatus: 'confirmed',
+      statuses: [
+        { id: 'pending', label: 'Pending', description: 'Request received' },
+        { id: 'confirmed', label: '  ', description: 'Skip blank' },
+      ],
+    }, {}, {});
+    expect(result.type).toBe('progress-tracker');
+    expect(result.content.currentStatus).toBe('confirmed');
+    expect(result.content.stages).toEqual([
+      { id: 'pending', label: 'Pending', description: 'Request received' },
+    ]);
+  });
+
   it('reads diagnostic questions and option prices', () => {
     const result = renderSection('diagnostic-quiz', {
       heading: 'Device Diagnostic Tool',
@@ -329,6 +345,33 @@ describe('layoutRenderer — feature gating', () => {
     });
     const types = page.sections.map((s) => s.type);
     expect(types).toContain('booking');
+  });
+
+  it('keeps repair stages from section settings and drops them on the trial plan', () => {
+    const sections = [{
+      type: 'progress-tracker',
+      settings: {
+        title: 'Track Your Repair',
+        currentStatus: 'pending',
+        statuses: [{ id: 'pending', label: 'Pending', description: 'Request received' }],
+      },
+    }];
+    const shown = composePage({
+      siteData: { businessName: 'Repair', sections },
+      layout: 'atelier',
+      level: 'solo',
+    });
+    const tracker = shown.sections.find((section) => section.type === 'progress-tracker');
+    expect(tracker?.content.stages).toEqual([
+      { id: 'pending', label: 'Pending', description: 'Request received' },
+    ]);
+
+    const hidden = composePage({
+      siteData: { businessName: 'Repair', plan: 'trial', sections },
+      layout: 'atelier',
+      level: 'solo',
+    });
+    expect(hidden.sections.map((section) => section.type)).not.toContain('progress-tracker');
   });
 
   it('keeps a diagnostic quiz from section settings and drops it on the trial plan', () => {

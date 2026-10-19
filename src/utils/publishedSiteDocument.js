@@ -82,6 +82,8 @@ function isEmptyOptional(section) {
       return list(c.items).length === 0;
     case 'diagnostic-quiz':
       return list(c.questions).length === 0;
+    case 'progress-tracker':
+      return list(c.stages).length === 0;
     case 'process':
     case 'how-to-order':
       return list(c.steps).length === 0;
