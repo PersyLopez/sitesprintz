@@ -76,6 +76,17 @@ export function getAbsolutePublishedSiteUrl(subdomain, { customDomain } = {}) {
   return `${origin}${path}`;
 }
 
+/** Owner inbox for a published shop. Same origin as the public site URL. */
+export function getOwnerMessagesUrl(siteId) {
+  const id = String(siteId || '').trim();
+  if (!id) return null;
+  const siteUrl = typeof process !== 'undefined' && process.env?.SITE_URL
+    ? String(process.env.SITE_URL).replace(/\/$/, '')
+    : '';
+  const origin = siteUrl || `https://${getPublicSiteHost()}`;
+  return `${origin}/dashboard/sites/${encodeURIComponent(id)}/messages`;
+}
+
 /** Display label without protocol (share card footer). */
 export function getPublishedSiteDisplayUrl(subdomain, { customDomain } = {}) {
   const customHost = resolvedCustomDomainHost(customDomain);

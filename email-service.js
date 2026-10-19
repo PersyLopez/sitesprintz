@@ -370,7 +370,7 @@ const templates = {
     `
   }),
 
-  contactFormSubmission: (businessName, submitterName, submitterEmail, submitterPhone, message, type, siteUrl, submissionTime) => {
+  contactFormSubmission: (businessName, submitterName, submitterEmail, submitterPhone, message, type, siteUrl, submissionTime, messagesUrl) => {
     const safe = {
       businessName: escapeHtml(businessName),
       submitterName: escapeHtml(submitterName),
@@ -431,6 +431,7 @@ ${safe.message}
           <a href="${escapeHtml(siteUrl)}" style="display: inline-block; padding: 14px 32px; background: #f1f5f9; color: #475569; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 1rem;">
             View Site
           </a>
+          ${typeof messagesUrl === 'string' && /^https?:\/\//.test(messagesUrl) ? `<a href="${escapeHtml(messagesUrl)}" style="display: inline-block; padding: 14px 32px; background: #f1f5f9; color: #475569; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 1rem;">Open messages</a>` : ''}
         </div>
         
         <div style="border-top: 1px solid #e2e8f0; margin-top: 30px; padding-top: 20px;">

@@ -109,6 +109,28 @@ describe('Email Service', () => {
         expect(sent.html).toContain('I need a cut Friday');
         expect(sent.html).toContain('ada@example.com');
         expect(sent.html).not.toContain('undefined');
+        expect(sent.html).toContain('href="gallery-salon"');
+    });
+
+    it('links the lead email to the shop and Messages', async () => {
+        mockSend.mockResolvedValue({ data: { id: 'email_lead_links' }, error: null });
+
+        await sendEmail('owner@shop.test', EmailTypes.CONTACT_FORM_SUBMISSION, {
+            businessName: 'Luxe Beauty Studio',
+            submitterName: 'Ada',
+            submitterEmail: 'ada@example.com',
+            submitterPhone: '555-0100',
+            message: 'I need a cut Friday',
+            type: 'contact',
+            siteUrl: 'https://rightsitelight.com/view/gallery-salon',
+            submissionTime: 'Monday',
+            messagesUrl: 'https://rightsitelight.com/dashboard/sites/site-1/messages',
+        });
+
+        const sent = mockSend.mock.calls.at(-1)[0];
+        expect(sent.html).toContain('href="https://rightsitelight.com/view/gallery-salon"');
+        expect(sent.html).toContain('href="https://rightsitelight.com/dashboard/sites/site-1/messages"');
+        expect(sent.html).toContain('Open messages');
     });
 
     it('keeps the reset link when sending a password email', async () => {

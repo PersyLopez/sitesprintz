@@ -8,6 +8,7 @@
 import express from 'express';
 import { requireAuth } from '../middleware/auth.js';
 import { sendEmail, EmailTypes } from '../utils/email-service-wrapper.js';
+import { getAbsolutePublishedSiteUrl, getOwnerMessagesUrl } from '../../src/utils/siteWorkspace.js';
 import { prisma } from '../../database/db.js';
 import {
   sendSuccess,
@@ -36,6 +37,16 @@ import {
 } from '../utils/healthProbe.js';
 
 const router = express.Router();
+
+/** Links in the owner email for a saved shop message. */
+export function contactOwnerNotice({ subdomain, siteId, phone }) {
+  const siteUrl = getAbsolutePublishedSiteUrl(subdomain);
+  return {
+    siteUrl: siteUrl || String(subdomain || ''),
+    messagesUrl: getOwnerMessagesUrl(siteId) || '',
+    submitterPhone: phone ? String(phone) : 'Not provided',
+  };
+}
 
 /**
  * Where a no-JS contact form returns. Same-origin referer keeps the shop
@@ -226,16 +237,22 @@ router.post('/contact', asyncHandler(async (req, res) => {
 
   // Send notification email (non-blocking; never fail the submission on email errors)
   if (siteOwnerEmail && typeof sendEmail === 'function') {
+    const notice = contactOwnerNotice({
+      subdomain,
+      siteId: site.id,
+      phone: sanitizedPhone,
+    });
     Promise.resolve(
       sendEmail(siteOwnerEmail, EmailTypes.CONTACT_FORM_SUBMISSION, {
         businessName,
         submitterName: sanitizedName || 'Someone',
         submitterEmail: emailValidation.value,
-        submitterPhone: phone || 'Not provided',
+        submitterPhone: notice.submitterPhone,
         message: sanitizedMessage,
         type: type || 'contact',
-        siteUrl: subdomain,
-        submissionTime: new Date().toLocaleString()
+        siteUrl: notice.siteUrl,
+        submissionTime: new Date().toLocaleString(),
+        messagesUrl: notice.messagesUrl,
       })
     ).catch(err => {
       console.error('Failed to send submission notification email:', err);
