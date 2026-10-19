@@ -833,6 +833,29 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(renderPublishedViewFragment(null)).toBe('');
   });
 
+  it('shows an owner dish photo and the diet, not a stock plate', () => {
+    const html = renderSectionToHtml({
+      type: 'menu',
+      content: {
+        title: 'Menu',
+        sections: [{
+          name: 'Appetizers',
+          items: [{
+            name: 'Tuna Tartare',
+            price: 18,
+            image: '/uploads/tartare.jpg',
+            imageAlt: 'Tuna tartare',
+            dietary: ['Pescatarian'],
+          }],
+        }],
+      },
+    }, tokens);
+    expect(html).toContain('src="/uploads/tartare.jpg"');
+    expect(html).toContain('width="400" height="220"');
+    expect(html).toContain('Pescatarian');
+    expect(html).not.toContain('unsplash.com');
+  });
+
   it('renders credentials and a photo slot instead of a stock portrait', () => {
     const html = renderSectionToHtml({
       type: 'enhanced-profiles',

@@ -58,6 +58,30 @@ describe('layoutRenderer — renderSection() known types', () => {
     expect(result.content.displayVariant).toBe('list');
   });
 
+  it('reads a menu dish photo and drops a stock plate', () => {
+    const stock = renderSection('menu', {
+      sections: [{
+        name: 'Appetizers',
+        items: [{
+          name: 'Tuna Tartare',
+          price: 18,
+          image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600',
+          dietary: ['Pescatarian'],
+        }],
+      }],
+    }, {}, {});
+    expect(stock.content.sections[0].items[0].image).toBe('');
+    expect(stock.content.sections[0].items[0].dietary).toEqual(['Pescatarian']);
+
+    const owned = renderSection('menu', {
+      sections: [{
+        name: 'Appetizers',
+        items: [{ name: 'Tuna Tartare', image: '/uploads/tartare.jpg', imageAlt: 'Tuna tartare' }],
+      }],
+    }, {}, {});
+    expect(owned.content.sections[0].items[0].image).toBe('/uploads/tartare.jpg');
+  });
+
   it('reads groomer credentials and drops a stock portrait', () => {
     const result = renderSection('enhanced-profiles', {
       title: 'Meet Our Groomers',

@@ -320,7 +320,20 @@ const sectionPrimitives = {
   // Menu section (alias for catalog, preserves menu-specific structure)
   menu(content, siteData, _tokens) {
     const c = content || {};
-    const sections = c.sections || siteData.menu?.sections || [];
+    const source = Array.isArray(c.sections) ? c.sections : (siteData?.menu?.sections || []);
+    const sections = source.map((sec) => ({
+      name: String(sec?.name || '').trim(),
+      items: (Array.isArray(sec?.items) ? sec.items : [])
+        .map((item) => ({
+          name: String(item?.name || '').trim(),
+          price: item?.price,
+          description: typeof item?.description === 'string' ? item.description : '',
+          image: liveImage(typeof item?.image === 'string' ? item.image : '', siteData),
+          imageAlt: typeof item?.imageAlt === 'string' ? item.imageAlt : '',
+          dietary: filterTags(item?.dietary),
+        }))
+        .filter((item) => item.name),
+    })).filter((sec) => sec.name && sec.items.length);
     return {
       type: 'menu',
       content: {

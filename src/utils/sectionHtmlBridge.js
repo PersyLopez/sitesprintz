@@ -792,11 +792,13 @@ function renderMenu(section, tokens) {
     .map((sec, sectionIndex) => {
       const itemsHtml = (sec.items || [])
         .map((item, itemIndex) => `<div style="padding: 12px 0; border-bottom: 1px solid ${getTokens(tokens).theme.hairline};">
+  ${item.image ? `<img class="ss-card-media" src="${escapeAttr(item.image)}" alt="${escapeAttr(item.imageAlt || item.name || '')}" width="400" height="220" loading="lazy" decoding="async" />` : ''}
   <div style="display: flex; justify-content: space-between; gap: 12px; align-items: flex-start;">
     <h4 style="color: ${getText(tokens)};">${escapeHtml(item.name || '')}</h4>
     ${formatPrice(item.price) ? `<span style="color: ${getAccent(tokens)}; font-weight: 600;">${escapeHtml(formatPrice(item.price))}</span>` : ''}
   </div>
   ${item.description ? `<p style="color: ${getMuted(tokens)}; font-size: 0.9rem; margin-top: 4px;">${escapeHtml(item.description)}</p>` : ''}
+  ${item.dietary?.length ? `<p style="color: ${getMuted(tokens)}; font-size: 0.85rem;">${escapeHtml(item.dietary.join(', '))}</p>` : ''}
   ${purchasable ? addToCartButton(item, `${sectionIndex}-${itemIndex}`, tokens) : ''}
 </div>`)
         .join('\n');
