@@ -249,6 +249,24 @@ describe('sectionHtmlBridge', () => {
     expect(html).toContain('$20');
   });
 
+  it('lazy-loads real team and before-after photos', () => {
+    const team = renderSectionToHtml({
+      type: 'team',
+      content: { members: [{ name: 'Jane', role: 'Lead', photo: '/jane.jpg' }] },
+    }, tokens);
+    expect(team).toContain('src="/jane.jpg"');
+    expect(team).toContain('loading="lazy"');
+    expect(team).toContain('decoding="async"');
+
+    const beforeAfter = renderSectionToHtml({
+      type: 'before-after',
+      content: { pairs: [{ before: '/b.jpg', after: '/a.jpg' }] },
+    }, tokens);
+    expect(beforeAfter).toContain('src="/b.jpg"');
+    expect(beforeAfter).toContain('src="/a.jpg"');
+    expect((beforeAfter.match(/loading="lazy"/g) || []).length).toBe(2);
+  });
+
   it('fills team and before-after holes with sample inserts', () => {
     const team = renderSectionToHtml({
       type: 'team',

@@ -343,10 +343,10 @@ function renderBeforeAfter(section, tokens) {
     ? pairs
       .map((p, index) => `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
   <div>${p.before
-    ? `<img data-photo-field="before-after.pairs.${index}.before" src="${escapeAttr(p.before)}" alt="Before" style="width: 100%; border-radius: 8px;" />`
+    ? `<img data-photo-field="before-after.pairs.${index}.before" src="${escapeAttr(p.before)}" alt="Before" style="width: 100%; border-radius: 8px;" loading="lazy" decoding="async" />`
     : renderPhotoPlaceholder('work', { className: 'ss-photo-placeholder--card', photoField: `before-after.pairs.${index}.before` })}<p style="text-align: center; color: ${getMuted(tokens)}; margin-top: 8px;">Before</p></div>
   <div>${p.after
-    ? `<img data-photo-field="before-after.pairs.${index}.after" src="${escapeAttr(p.after)}" alt="After" style="width: 100%; border-radius: 8px;" />`
+    ? `<img data-photo-field="before-after.pairs.${index}.after" src="${escapeAttr(p.after)}" alt="After" style="width: 100%; border-radius: 8px;" loading="lazy" decoding="async" />`
     : renderPhotoPlaceholder('work', { className: 'ss-photo-placeholder--card', photoField: `before-after.pairs.${index}.after` })}<p style="text-align: center; color: ${getMuted(tokens)}; margin-top: 8px;">After</p></div>
 </div>`)
       .join('\n')
@@ -376,7 +376,7 @@ function renderTeam(section, tokens) {
   const membersHtml = members
     .map((m, index) => `<div style="text-align: center; background: ${getSurface(tokens)}; padding: 32px; border-radius: 12px;">
   ${m.photo || m.image
-    ? `<img data-photo-field="team.members.${index}.photo" src="${escapeAttr(m.photo || m.image)}" alt="${escapeAttr(m.name)}" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin-bottom: 16px; border: 4px solid ${getAccent(tokens)};" />`
+    ? `<img data-photo-field="team.members.${index}.photo" src="${escapeAttr(m.photo || m.image)}" alt="${escapeAttr(m.name)}" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin-bottom: 16px; border: 4px solid ${getAccent(tokens)};" loading="lazy" decoding="async" />`
     : renderPhotoPlaceholder('staff', { className: 'ss-photo-placeholder--avatar', photoField: `team.members.${index}.photo` })}
   <h3 style="color: ${getAccent(tokens)}; margin-bottom: 4px;">${escapeHtml(m.name || '')}</h3>
   <div style="color: ${getMuted(tokens)}; font-size: 0.9rem; margin-bottom: 12px;">${escapeHtml(m.role || m.title || '')}</div>
