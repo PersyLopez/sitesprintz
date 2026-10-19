@@ -543,6 +543,29 @@ const sectionPrimitives = {
     };
   },
 
+  'multi-step-form'(content) {
+    const c = content || {};
+    const steps = (Array.isArray(c.steps) ? c.steps : [])
+      .map((step) => ({
+        title: String(step?.title || '').trim(),
+        description: typeof step?.description === 'string' ? step.description : '',
+        fields: (Array.isArray(step?.fields) ? step.fields : [])
+          .map((field) => inquiryField(field))
+          .filter(Boolean),
+      }))
+      .filter((step) => step.title && step.fields.length);
+    return {
+      type: 'multi-step-form',
+      content: {
+        title: c.heading || c.title || 'Inquiry',
+        description: typeof (c.subheading || c.description) === 'string' ? (c.subheading || c.description) : '',
+        steps,
+      },
+      settings: {},
+      accent: false,
+    };
+  },
+
   'service-filters'(content) {
     const c = content || {};
     const items = (Array.isArray(c.items) ? c.items : [])
@@ -727,6 +750,33 @@ function resolveHeroCta(variant, _siteData) {
 // Helper: flatten menu sections to product list for catalog
 // ---------------------------------------------------------------------------
 
+function inquiryField(field) {
+  const allowed = ['text', 'email', 'tel', 'number', 'select', 'textarea'];
+  const type = allowed.includes(field?.type) ? field.type : 'text';
+  const name = String(field?.name || '').trim();
+  if (!/^[A-Za-z][A-Za-z0-9_]{0,40}$/.test(name)) return null;
+  const options = type === 'select'
+    ? (Array.isArray(field?.options) ? field.options : [])
+      .map((option) => ({
+        value: String(option?.label || option?.value || '').trim(),
+      }))
+      .filter((option) => option.value)
+    : [];
+  if (type === 'select' && !options.length) return null;
+  const min = Number(field?.min);
+  const max = Number(field?.max);
+  return {
+    name,
+    label: String(field?.label || name).trim(),
+    type,
+    required: field?.required === true,
+    placeholder: typeof field?.placeholder === 'string' ? field.placeholder : '',
+    min: Number.isFinite(min) ? min : null,
+    max: Number.isFinite(max) ? max : null,
+    options,
+  };
+}
+
 function filterTags(value) {
   const source = Array.isArray(value) ? value : (value ? [value] : []);
   return source.map((tag) => String(tag || '').trim()).filter(Boolean);
@@ -753,7 +803,6 @@ function filterOptions(items, key, configured) {
 const SECTION_ALIASES = {
   'native-booking': 'booking',
   'enhanced-profiles': 'team',
-  'multi-step-form': 'contact',
 };
 
 function asItemList(value, nestedKeys = ['items', 'members', 'images', 'steps', 'areas', 'features']) {
@@ -1002,6 +1051,7 @@ export function composePage({
           'class-scheduler': FEATURES.CLASS_SCHEDULER,
           'subscription-booking': FEATURES.SUBSCRIPTION_BOOKING,
           'service-filters': FEATURES.FILTERS,
+          'multi-step-form': FEATURES.SERVICE_REQUEST_FORMS,
         }[section.type] || null;
         if (gatedFeature && plan && !hasFeature(plan, gatedFeature)) continue;
         const usesSettings = Boolean(gatedFeature);

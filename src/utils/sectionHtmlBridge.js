@@ -55,6 +55,7 @@ export const ALL_SECTION_TYPES = [
   'class-scheduler',
   'subscription-booking',
   'service-filters',
+  'multi-step-form',
   'placeholder',
 ];
 
@@ -1205,6 +1206,106 @@ function renderDiagnosticQuiz(section, tokens) {
 </section>`;
 }
 
+function inquiryControlName(name) {
+  if (name === 'contactEmail') return 'email';
+  if (name === 'contactName') return 'name';
+  if (name === 'contactPhone') return 'phone';
+  return name;
+}
+
+function renderInquiryField(field) {
+  const inputName = inquiryControlName(field.name);
+  const required = field.required ? 'required data-ss-required="true"' : '';
+  const placeholder = field.placeholder ? ` placeholder="${escapeAttr(field.placeholder)}"` : '';
+  if (field.type === 'textarea') {
+    return `<label class="ss-field"><span>${escapeHtml(field.label)}</span><textarea name="${escapeAttr(inputName)}" rows="4" maxlength="2000" ${required}${placeholder}></textarea></label>`;
+  }
+  if (field.type === 'select') {
+    const options = field.options.map((option) => `<option value="${escapeAttr(option.value)}">${escapeHtml(option.value)}</option>`).join('');
+    return `<label class="ss-field"><span>${escapeHtml(field.label)}</span><select name="${escapeAttr(inputName)}" ${required}><option value="">Choose</option>${options}</select></label>`;
+  }
+  const min = field.type === 'number' && field.min != null ? ` min="${field.min}"` : '';
+  const max = field.type === 'number' && field.max != null ? ` max="${field.max}"` : '';
+  const autocomplete = inputName === 'email' ? ' autocomplete="email"' : inputName === 'name' ? ' autocomplete="name"' : inputName === 'phone' ? ' autocomplete="tel"' : '';
+  return `<label class="ss-field"><span>${escapeHtml(field.label)}</span><input type="${escapeAttr(field.type)}" name="${escapeAttr(inputName)}" maxlength="200"${autocomplete}${min}${max} ${required}${placeholder} /></label>`;
+}
+
+function renderMultiStepForm(section, tokens) {
+  const c = section.content || {};
+  const steps = Array.isArray(c.steps) ? c.steps : [];
+  const title = c.title || 'Inquiry';
+  const description = c.description || '';
+  const stepHtml = steps.map((step, index) => {
+    const fields = (step.fields || []).map((field) => renderInquiryField(field)).join('\n');
+    return `<fieldset data-ss-step data-testid="inquiry-step" style="border: 0; padding: 0; margin: 0 0 20px;">
+      <legend style="font-weight: 700; margin-bottom: 8px;">${index + 1}. ${escapeHtml(step.title)}</legend>
+      ${step.description ? `<p style="color: ${getMuted(tokens)};">${escapeHtml(step.description)}</p>` : ''}
+      ${fields}
+    </fieldset>`;
+  }).join('\n');
+  return `<section id="inquiry" class="ss-inquiry" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
+  <div class="ss-container" style="max-width: 640px; margin: 0 auto;">
+    <h2 style="text-align: center; color: ${getAccent(tokens)}; margin-bottom: 16px;">${escapeHtml(title)}</h2>
+    ${description ? `<p style="text-align: center; color: ${getMuted(tokens)}; margin-bottom: 24px;">${escapeHtml(description)}</p>` : ''}
+    <form class="ss-contact-form" data-testid="inquiry-form" data-type="inquiry" method="post" action="/api/submissions/contact" novalidate>
+      <input type="hidden" name="subdomain" value="${escapeAttr(tokens?._contactSubdomain || '')}" />
+      <input type="hidden" name="type" value="inquiry" />
+      <input type="hidden" name="message" value="Please tell us about this event." />
+      <p class="ss-form-status" data-testid="inquiry-form-status" role="status" aria-live="polite"></p>
+      ${stepHtml}
+      <button type="submit" class="ss-btn" data-ss-step-submit data-testid="inquiry-submit" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)}; border: 0; cursor: pointer;">Submit inquiry</button>
+    </form>
+    <script>
+    (function () {
+      var form = document.currentScript && document.currentScript.previousElementSibling;
+      if (!form || !form.querySelectorAll) return;
+      var steps = form.querySelectorAll('[data-ss-step]');
+      if (steps.length < 2) return;
+      var index = 0;
+      var bar = document.createElement('div');
+      bar.style.display = 'flex';
+      bar.style.gap = '12px';
+      bar.style.marginBottom = '16px';
+      var back = document.createElement('button');
+      back.type = 'button';
+      back.textContent = 'Back';
+      back.setAttribute('data-ss-step-back', '');
+      var next = document.createElement('button');
+      next.type = 'button';
+      next.textContent = 'Next';
+      next.setAttribute('data-ss-step-next', '');
+      bar.appendChild(back);
+      bar.appendChild(next);
+      var submit = form.querySelector('[data-ss-step-submit]');
+      form.insertBefore(bar, submit);
+      function show(nextIndex) {
+        index = nextIndex;
+        for (var i = 0; i < steps.length; i++) {
+          var on = i === index;
+          steps[i].hidden = !on;
+          var fields = steps[i].querySelectorAll('[data-ss-required]');
+          for (var j = 0; j < fields.length; j++) fields[j].required = on;
+        }
+        back.hidden = index === 0;
+        next.hidden = index === steps.length - 1;
+        if (submit) submit.hidden = index !== steps.length - 1;
+      }
+      form.addEventListener('click', function (event) {
+        if (event.target.closest('[data-ss-step-next]')) {
+          event.preventDefault();
+          if (form.reportValidity()) show(Math.min(index + 1, steps.length - 1));
+        } else if (event.target.closest('[data-ss-step-back]')) {
+          event.preventDefault();
+          show(Math.max(index - 1, 0));
+        }
+      });
+      show(0);
+    })();
+    </script>
+  </div>
+</section>`;
+}
+
 function filterDataAttr(key) {
   return key === 'petType' ? 'pettype' : key;
 }
@@ -1518,6 +1619,7 @@ const RENDERERS = {
   'class-scheduler': renderClassScheduler,
   'subscription-booking': renderSubscriptionBooking,
   'service-filters': renderServiceFilters,
+  'multi-step-form': renderMultiStepForm,
   placeholder: renderPlaceholder,
 };
 

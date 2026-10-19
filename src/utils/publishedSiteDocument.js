@@ -92,6 +92,8 @@ function isEmptyOptional(section) {
       return list(c.plans).length === 0;
     case 'service-filters':
       return list(c.items).length === 0;
+    case 'multi-step-form':
+      return list(c.steps).length === 0;
     case 'process':
     case 'how-to-order':
       return list(c.steps).length === 0;

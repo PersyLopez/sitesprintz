@@ -255,10 +255,10 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
   };
 
   const handleContactSubmit = async (event) => {
-    const form = event.target.closest('form[data-type="contact"], form#contact-form, form[data-type="zip-check"], form[data-type="package-quote"], form[data-type="diagnostic-quote"], form[data-type="class-request"], form[data-type="plan-request"]');
+    const form = event.target.closest('form[data-type="contact"], form#contact-form, form[data-type="zip-check"], form[data-type="package-quote"], form[data-type="diagnostic-quote"], form[data-type="class-request"], form[data-type="plan-request"], form[data-type="inquiry"]');
     if (!form) return;
     event.preventDefault();
-    const status = form.querySelector('[data-testid="contact-form-status"], [data-testid="zip-form-status"], [data-testid="package-form-status"], [data-testid="diagnostic-form-status"], [data-testid="class-form-status"], [data-testid="plan-form-status"]');
+    const status = form.querySelector('[data-testid="contact-form-status"], [data-testid="zip-form-status"], [data-testid="package-form-status"], [data-testid="diagnostic-form-status"], [data-testid="class-form-status"], [data-testid="plan-form-status"], [data-testid="inquiry-form-status"]');
     const formData = new FormData(form);
     const body = Object.fromEntries(formData.entries());
     body.subdomain = body.subdomain || subdomain || subdomainFromLivePath(window.location.pathname);

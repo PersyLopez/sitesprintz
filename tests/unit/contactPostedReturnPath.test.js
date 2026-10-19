@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { classRequestMessage, contactOwnerNotice, contactPostedReturnPath, diagnosticQuoteMessage, packageQuoteMessage, planRequestMessage, zipCheckMessage } from '../../server/routes/submissions.routes.js';
+import { classRequestMessage, contactOwnerNotice, contactPostedReturnPath, diagnosticQuoteMessage, inquiryMessage, packageQuoteMessage, planRequestMessage, zipCheckMessage } from '../../server/routes/submissions.routes.js';
 
 describe('contactPostedReturnPath', () => {
   it('returns to the same shop path', () => {
@@ -8,6 +8,15 @@ describe('contactPostedReturnPath', () => {
       referer: 'https://rightsitelight.com/view/gallery-salon',
       subdomain: 'gallery-salon',
     })).toBe('/view/gallery-salon?contact=sent');
+  });
+
+  it('lists the inquiry answers on the note', () => {
+    expect(inquiryMessage('Please tell us about this event.', {
+      eventType: 'Corporate Event',
+      guestCount: '40',
+      preferredDate: '06/12/2026',
+    }, 'inquiry')).toBe('Corporate Event; 40; 06/12/2026');
+    expect(inquiryMessage('Hello', { eventType: 'Wedding Reception' }, 'contact')).toBe('Hello');
   });
 
   it('lists the requested plan and frequency on the note', () => {

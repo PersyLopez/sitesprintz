@@ -50,6 +50,17 @@ describe('filterFeaturesByPlan', () => {
     expect(growth.settings.allowCheckout).toBe(true);
   });
 
+  it('drops an inquiry form below Growth and keeps it on Growth', () => {
+    const withInquiry = {
+      sections: [
+        { type: 'hero' },
+        { type: 'multi-step-form', settings: { steps: [{ title: 'Event', fields: [{ name: 'eventType', label: 'Event Type' }] }] } },
+      ],
+    };
+    expect(filterFeaturesByPlan(withInquiry, 'starter').sections.map((section) => section.type)).toEqual(['hero']);
+    expect(filterFeaturesByPlan(withInquiry, 'growth').sections.map((section) => section.type)).toContain('multi-step-form');
+  });
+
   it('drops menu filters on the live trial and keeps them on Starter', () => {
     const withFilters = {
       sections: [

@@ -60,6 +60,7 @@ const EXPECTED_TYPES = [
   'class-scheduler',
   'subscription-booking',
   'service-filters',
+  'multi-step-form',
   'placeholder',
 ];
 
@@ -787,6 +788,35 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(fragment).toContain('class="ss-live"');
     expect(fragment).toContain('Trial Shop');
     expect(renderPublishedViewFragment(null)).toBe('');
+  });
+
+  it('renders inquiry steps that post to the contact inbox', () => {
+    const html = renderSectionToHtml({
+      type: 'multi-step-form',
+      content: {
+        title: 'Private Dining Inquiry',
+        steps: [
+          {
+            title: 'Event Details',
+            fields: [{ name: 'eventType', label: 'Event Type', type: 'select', required: true, options: [{ value: 'Corporate Event' }], placeholder: '', min: null, max: null }],
+          },
+          {
+            title: 'Contact Information',
+            fields: [{ name: 'contactEmail', label: 'Email Address', type: 'email', required: true, options: [], placeholder: '', min: null, max: null }],
+          },
+        ],
+      },
+    }, { ...tokens, _contactSubdomain: 'gallery-restaurant' });
+    expect(html).toContain('data-testid="inquiry-form"');
+    expect(html).toContain('action="/api/submissions/contact"');
+    expect(html).toContain('name="type" value="inquiry"');
+    expect(html).toContain('value="gallery-restaurant"');
+    expect(html).toContain('data-testid="inquiry-step"');
+    expect(html).toContain('name="eventType"');
+    expect(html).toContain('name="email"');
+    expect(html).toContain('Corporate Event');
+    expect(html).toContain('data-ss-step-next');
+    expect(html).not.toContain('console.log');
   });
 
   it('renders menu filters that hide items in the browser', () => {

@@ -39,6 +39,21 @@ import {
 const router = express.Router();
 
 /** Links in the owner email for a saved shop message. */
+export function inquiryMessage(message, fields, type) {
+  const text = String(message || '').trim();
+  if (type !== 'inquiry' || !fields || typeof fields !== 'object') return text;
+  const skipped = new Set(['subdomain', 'name', 'email', 'phone', 'message', 'type']);
+  const parts = Object.keys(fields)
+    .filter((key) => !skipped.has(key) && typeof fields[key] !== 'object')
+    .map((key) => String(fields[key] || '').trim())
+    .filter(Boolean);
+  if (!parts.length) return text;
+  const list = parts.join('; ');
+  if (!text || text === 'Please tell us about this event.') return list;
+  if (text.includes(list)) return text;
+  return `${list}. ${text}`;
+}
+
 export function planRequestMessage(message, fields, type) {
   const text = String(message || '').trim();
   if (type !== 'plan-request' || !fields || typeof fields !== 'object') return text;
@@ -279,7 +294,11 @@ router.post('/contact', asyncHandler(async (req, res) => {
     packageQuoteMessage(
       diagnosticQuoteMessage(
         classRequestMessage(
-          planRequestMessage(sanitizeString(message, 2000), otherFields, type),
+          planRequestMessage(
+            inquiryMessage(sanitizeString(message, 2000), otherFields, type),
+            otherFields,
+            type
+          ),
           otherFields,
           type
         ),

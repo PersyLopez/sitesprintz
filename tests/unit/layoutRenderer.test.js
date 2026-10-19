@@ -58,6 +58,30 @@ describe('layoutRenderer — renderSection() known types', () => {
     expect(result.content.displayVariant).toBe('list');
   });
 
+  it('reads inquiry steps and drops an unsafe field name', () => {
+    const result = renderSection('multi-step-form', {
+      heading: 'Private Dining Inquiry',
+      steps: [{
+        title: 'Event Details',
+        fields: [
+          { name: 'eventType', label: 'Event Type', type: 'select', required: true, options: [{ value: 'corporate', label: 'Corporate Event' }] },
+          { name: 'guest-count', label: 'Guests', type: 'number' },
+        ],
+      }],
+    }, {}, {});
+    expect(result.type).toBe('multi-step-form');
+    expect(result.content.steps[0].fields).toEqual([{
+      name: 'eventType',
+      label: 'Event Type',
+      type: 'select',
+      required: true,
+      placeholder: '',
+      min: null,
+      max: null,
+      options: [{ value: 'Corporate Event' }],
+    }]);
+  });
+
   it('reads menu items and dietary filters', () => {
     const result = renderSection('service-filters', {
       heading: 'Filter Menu',
@@ -428,6 +452,29 @@ describe('layoutRenderer — feature gating', () => {
     });
     const types = page.sections.map((s) => s.type);
     expect(types).toContain('booking');
+  });
+
+  it('keeps an inquiry form from section settings and drops it below Growth', () => {
+    const sections = [{
+      type: 'multi-step-form',
+      settings: {
+        heading: 'Private Dining Inquiry',
+        steps: [{ title: 'Event Details', fields: [{ name: 'eventType', label: 'Event Type', type: 'text', required: true }] }],
+      },
+    }];
+    const shown = composePage({
+      siteData: { businessName: 'Restaurant', plan: 'growth', sections },
+      layout: 'atelier',
+      level: 'solo',
+    });
+    expect(shown.sections.find((section) => section.type === 'multi-step-form')?.content.steps[0].title).toBe('Event Details');
+
+    const hidden = composePage({
+      siteData: { businessName: 'Restaurant', plan: 'starter', sections },
+      layout: 'atelier',
+      level: 'solo',
+    });
+    expect(hidden.sections.map((section) => section.type)).not.toContain('multi-step-form');
   });
 
   it('keeps menu filters from section settings and drops them on the trial plan', () => {
