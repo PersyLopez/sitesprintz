@@ -1,5 +1,5 @@
 export const LIVE_EDIT_SCOPE_HINT =
-  'Click outlined text to change it. Click a sample photo to drop in yours. Phone, hours, and booking are not edited here.';
+  'Click outlined text to change it — phone, hours, and address too. Click a sample photo to drop in yours. Booking is not edited here.';
 
 export const LIVE_EDIT_HELP_ROWS = [
   { key: 'settings', title: 'Phone, hours, address' },

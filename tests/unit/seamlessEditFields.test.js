@@ -48,6 +48,72 @@ describe('applyEditableField', () => {
     expect(() => applyEditableField({}, '..title', 'x')).toThrow(/Invalid field path/);
   });
 
+  it('writes contact.phone to the top-level, contact object, and contact section', () => {
+    const data = {
+      contactPhone: '555-0001',
+      contact: { phone: '555-0001' },
+      sections: [{ type: 'contact', content: { phone: '555-0001' } }],
+    };
+    applyEditableField(data, 'contact.phone', '(555) 010-2030');
+    expect(data.contactPhone).toBe('(555) 010-2030');
+    expect(data.contact.phone).toBe('(555) 010-2030');
+    expect(data.sections.find((s) => s.type === 'contact').content.phone).toBe('(555) 010-2030');
+  });
+
+  it('writes contact.hours to businessHours, contact, and only hero/hours sections', () => {
+    const data = {
+      sections: [
+        { type: 'hero', content: { title: 'Hi', hoursLine: 'Mon 9-5' } },
+        { type: 'hours', content: { hours: 'Mon 9-5' } },
+        { type: 'services', content: { items: [{ name: 'Cut' }] } },
+      ],
+    };
+    applyEditableField(data, 'contact.hours', 'Mon-Fri 9-5');
+    expect(data.businessHours).toBe('Mon-Fri 9-5');
+    expect(data.contact.hours).toBe('Mon-Fri 9-5');
+    expect(data.sections[0].content.hoursLine).toBe('Mon-Fri 9-5');
+    expect(data.sections[1].content.hours).toBe('Mon-Fri 9-5');
+    expect(data.sections[2].content.hours).toBeUndefined();
+    expect(data.sections[2].content.hoursLine).toBeUndefined();
+  });
+
+  it('writes contact.address only as a service area label in area display mode', () => {
+    const data = {
+      contactAddress: '12 Main St',
+      contact: { address: '12 Main St', addressDisplay: 'area', serviceAreaLabel: 'Montclair' },
+      sections: [{ type: 'contact', content: { address: '12 Main St' } }],
+    };
+    applyEditableField(data, 'contact.address', 'Essex County');
+    expect(data.contact.serviceAreaLabel).toBe('Essex County');
+    expect(data.contact.address).toBe('12 Main St');
+    expect(data.contactAddress).toBe('12 Main St');
+    expect(data.contact.privateStreet).toBeUndefined();
+    expect(data.sections[0].content.address).toBe('12 Main St');
+  });
+
+  it('parses the public area line into label and radius in area display mode', () => {
+    const data = {
+      contact: { addressDisplay: 'area', serviceAreaLabel: 'Montclair', serviceRadiusMiles: 10 },
+      sections: [{ type: 'contact', content: {} }],
+    };
+    applyEditableField(data, 'contact.address', 'Serving Essex County · within 25 miles');
+    expect(data.contact.serviceAreaLabel).toBe('Essex County');
+    expect(data.contact.serviceRadiusMiles).toBe(25);
+    expect(data.contact.address).toBeUndefined();
+    expect(data.contactAddress).toBeUndefined();
+    expect(data.contact.privateStreet).toBeUndefined();
+    expect(data.sections[0].content.address).toBeUndefined();
+  });
+
+  it('keeps a plain area label and the existing radius when no wrapper is typed', () => {
+    const data = {
+      contact: { addressDisplay: 'area', serviceAreaLabel: 'Montclair', serviceRadiusMiles: 10 },
+    };
+    applyEditableField(data, 'contact.address', 'Essex County');
+    expect(data.contact.serviceAreaLabel).toBe('Essex County');
+    expect(data.contact.serviceRadiusMiles).toBe(10);
+  });
+
   it('defaults missing version to 1', () => {
     expect(getSiteDataVersion({})).toBe(1);
     expect(getSiteDataVersion({ version: 4 })).toBe(4);

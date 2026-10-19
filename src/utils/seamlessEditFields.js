@@ -3,6 +3,8 @@
  * Paths look like: brand.name, hero.title, services.items.0.name, team.members.0.role
  */
 
+import { isAreaDisplay, normalizeServiceRadiusMiles } from './liveSiteContact';
+
 function ensureSection(siteData, type) {
   if (!Array.isArray(siteData.sections)) siteData.sections = [];
   let section = siteData.sections.find((item) => item?.type === type);
@@ -43,6 +45,72 @@ function mirrorHero(siteData, key, value) {
 }
 
 /**
+ * Shared NAP fields render in several places (header, hero, footer, contact).
+ * A live-edit commit to one of them writes every canonical location.
+ */
+const AREA_LINE_PATTERN = /\s*·\s*within\s+(\d+)\s+miles$/i;
+
+/**
+ * Owner typed text may be the public line "Serving {label} · within {N} miles"
+ * (see formatServiceAreaLine) or a plain label. Extract both parts; the radius
+ * is kept only when it is one of the offered SERVICE_RADIUS_MILES values.
+ */
+function parseServiceAreaLine(value) {
+  let label = String(value || '').trim();
+  let radiusMiles = null;
+  const match = label.match(AREA_LINE_PATTERN);
+  if (match) {
+    radiusMiles = normalizeServiceRadiusMiles(Number(match[1]));
+    label = label.slice(0, match.index).trim();
+  }
+  label = label.replace(/^Serving\s+/i, '').trim();
+  return { label, radiusMiles };
+}
+
+function applySharedContactField(siteData, field, value) {
+  if (field === 'contact.phone') {
+    if (!siteData.contact || typeof siteData.contact !== 'object') siteData.contact = {};
+    siteData.contactPhone = value;
+    siteData.contact.phone = value;
+    ensureSection(siteData, 'contact').content.phone = value;
+    return true;
+  }
+
+  if (field === 'contact.hours') {
+    if (!siteData.contact || typeof siteData.contact !== 'object') siteData.contact = {};
+    siteData.businessHours = value;
+    siteData.contact.hours = value;
+    for (const section of Array.isArray(siteData.sections) ? siteData.sections : []) {
+      if (!section?.content || typeof section.content !== 'object') continue;
+      if (section.type === 'hero') section.content.hoursLine = value;
+      if (section.type === 'hours' || section.type === 'contact') section.content.hours = value;
+    }
+    return true;
+  }
+
+  if (field === 'contact.address') {
+    if (!siteData.contact || typeof siteData.contact !== 'object') siteData.contact = {};
+    if (isAreaDisplay(siteData)) {
+      // Public line is a service area — never write a street onto the site.
+      const parsed = parseServiceAreaLine(value);
+      siteData.contact.serviceAreaLabel = parsed.label;
+      if (parsed.radiusMiles) siteData.contact.serviceRadiusMiles = parsed.radiusMiles;
+      return true;
+    }
+    siteData.contactAddress = value;
+    siteData.contact.address = value;
+    for (const section of Array.isArray(siteData.sections) ? siteData.sections : []) {
+      if (section?.type !== 'contact' && section?.type !== 'location') continue;
+      if (!section.content || typeof section.content !== 'object') section.content = {};
+      section.content.address = value;
+    }
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * @param {object} siteData
  * @param {string} field
  * @param {string|number} value
@@ -63,6 +131,10 @@ export function applyEditableField(siteData, field, value) {
     const brandKey = parts[1] || 'name';
     siteData.brand[brandKey] = value;
     if (brandKey === 'name') siteData.businessName = value;
+    return siteData;
+  }
+
+  if (root === 'contact' && applySharedContactField(siteData, field, value)) {
     return siteData;
   }
 

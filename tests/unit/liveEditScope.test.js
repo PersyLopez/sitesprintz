@@ -55,5 +55,8 @@ describe('classifyUnboundLiveEditTarget', () => {
     expect(LIVE_EDIT_SCOPE_HINT).toMatch(/outlined text/i);
     expect(LIVE_EDIT_SCOPE_HINT).toMatch(/sample photo/i);
     expect(LIVE_EDIT_SCOPE_HINT).toMatch(/not edited here/i);
+    expect(LIVE_EDIT_SCOPE_HINT).toMatch(/phone/i);
+    expect(LIVE_EDIT_SCOPE_HINT).toMatch(/hours/i);
+    expect(LIVE_EDIT_SCOPE_HINT).toMatch(/booking is not edited here/i);
   });
 });

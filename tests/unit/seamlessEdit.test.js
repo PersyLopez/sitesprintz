@@ -87,7 +87,7 @@ describe('bindSeamlessEditing', () => {
     expect(commits).toHaveLength(0);
   });
 
-  it('reports classify key for unbound phone and photo clicks', () => {
+  it('starts a contenteditable session on phone clicks instead of the settings hint', () => {
     document.body.innerHTML = `
       <div class="ss-live">
         <a data-testid="hero-phone" href="tel:555">555</a>
@@ -97,9 +97,50 @@ describe('bindSeamlessEditing', () => {
     const root = document.querySelector('.ss-live');
     const unbound = [];
     bindSeamlessEditing(root, { onUnboundClick: (result) => unbound.push(result) });
-    root.querySelector('[data-testid="hero-phone"]').click();
+    const phone = root.querySelector('[data-testid="hero-phone"]');
+    phone.click();
+    expect(phone.getAttribute('data-editable')).toBe('contact.phone');
+    expect(phone.getAttribute('contenteditable')).toBeTruthy();
     root.querySelector('img').click();
-    expect(unbound.map((item) => item.key)).toEqual(['settings', 'edit']);
+    expect(unbound.map((item) => item.key)).toEqual(['edit']);
+  });
+
+  it('mirrors a committed phone onto every spot and keeps the tel: href live', () => {
+    document.body.innerHTML = `
+      <div class="ss-live">
+        <a data-testid="header-call" href="tel:555">555</a>
+        <a data-testid="hero-phone" href="tel:555">555</a>
+      </div>
+    `;
+    const root = document.querySelector('.ss-live');
+    const commits = [];
+    bindSeamlessEditing(root, { onCommit: (change) => commits.push(change) });
+    const hero = root.querySelector('[data-testid="hero-phone"]');
+    hero.click();
+    hero.textContent = '(555) 010-2030';
+    hero.blur();
+    expect(commits).toHaveLength(1);
+    expect(commits[0]).toMatchObject({ field: 'contact.phone', value: '(555) 010-2030' });
+    const header = root.querySelector('[data-testid="header-call"]');
+    expect(header.textContent).toBe('(555) 010-2030');
+    expect(header.getAttribute('href')).toBe('tel:5550102030');
+    expect(hero.getAttribute('href')).toBe('tel:5550102030');
+  });
+
+  it('marks shared hours and address spots with contact paths', () => {
+    document.body.innerHTML = `
+      <div class="ss-live">
+        <span data-testid="hero-hours">Mon 9-5</span>
+        <span data-testid="footer-address">12 Main St</span>
+        <section class="ss-hours"><p>Mon 9-5</p></section>
+        <section class="ss-location"><p>12 Main St</p></section>
+      </div>
+    `;
+    annotateEditableMarkup(document.querySelector('.ss-live'));
+    expect(document.querySelector('[data-testid="hero-hours"]').getAttribute('data-editable')).toBe('contact.hours');
+    expect(document.querySelector('[data-testid="footer-address"]').getAttribute('data-editable')).toBe('contact.address');
+    expect(document.querySelector('.ss-hours p').getAttribute('data-editable')).toBe('contact.hours');
+    expect(document.querySelector('.ss-location p').getAttribute('data-editable')).toBe('contact.address');
   });
 
   it('opens a photo pick instead of text editing on sample inserts', () => {

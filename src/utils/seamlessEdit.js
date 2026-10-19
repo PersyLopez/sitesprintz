@@ -3,6 +3,7 @@
  */
 
 import { isPhotoEditField } from './siteImageUpload';
+import { telHref } from './liveSiteContact';
 import {
   classifyUnboundLiveEditTarget,
   getUnboundHintForKey,
@@ -19,6 +20,26 @@ export function annotateEditableMarkup(root) {
   if (!root) return;
 
   mark(root.querySelector('.ss-brand'), 'brand.name');
+
+  // Shared NAP fields: the same phone / hours / address renders in several
+  // places, so every spot gets the same data-editable path.
+  [
+    ['[data-testid="header-call"]', 'contact.phone'],
+    ['[data-testid="footer-call"]', 'contact.phone'],
+    ['[data-testid="hero-phone"]', 'contact.phone'],
+    ['[data-testid="hero-hours"]', 'contact.hours'],
+    ['[data-testid="hero-address"]', 'contact.address'],
+    ['[data-testid="footer-address"]', 'contact.address'],
+  ].forEach(([selector, path]) => {
+    mark(root.querySelector(selector), path);
+  });
+  root.querySelectorAll('.ss-nav-phone').forEach((el) => mark(el, 'contact.phone'));
+  root.querySelectorAll('section.ss-hours').forEach((section) => {
+    mark(section.querySelector('p'), 'contact.hours');
+  });
+  root.querySelectorAll('section.ss-location').forEach((section) => {
+    mark(section.querySelector('p'), 'contact.address');
+  });
 
   root.querySelectorAll('[data-photo-field]').forEach((el) => {
     mark(el, el.getAttribute('data-photo-field'));
@@ -207,6 +228,19 @@ export function bindSeamlessEditing(root, { onCommit, onPhotoPick, onUnboundClic
   if (!root) return () => {};
   annotateEditableMarkup(root);
 
+  // Shared paths (brand.name, contact.*) render in more than one spot: after a
+  // commit, put the same text on every element carrying that data-editable path.
+  const commitChange = (change) => {
+    if (!change?.field) return;
+    root.querySelectorAll(`[data-editable="${change.field}"]`).forEach((el) => {
+      el.textContent = change.value;
+      if (change.field === 'contact.phone' && el.tagName === 'A') {
+        el.setAttribute('href', telHref(change.value));
+      }
+    });
+    onCommit?.(change);
+  };
+
   const onClick = (event) => {
     const photoEl = event.target.closest('[data-photo-field], [data-editable]');
     const photoField = photoEl && root.contains(photoEl)
@@ -225,7 +259,7 @@ export function bindSeamlessEditing(root, { onCommit, onPhotoPick, onUnboundClic
       if (editable.classList.contains('is-editing') || editable.hasAttribute('contenteditable')) return;
       event.preventDefault();
       event.stopPropagation();
-      startEditableSession(editable, onCommit);
+      startEditableSession(editable, commitChange);
       return;
     }
 

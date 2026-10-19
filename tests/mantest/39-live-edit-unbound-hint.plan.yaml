@@ -1,5 +1,5 @@
 url: "http://localhost:5173/login"
-goal: Live edit shows Site settings hint when owner clicks a non-editable phone link
+goal: Live edit starts inline edit when the owner clicks the phone link
 steps:
   - action: Login form ready
     wait_for: { text: Welcome Back, timeout: 20000 }
@@ -40,10 +40,21 @@ steps:
       }
     settle_ms: 500
 
-  - action: Scope hint mentions Site settings
+  - action: Phone click starts inline edit, not the Site settings hint
     code: |
+      const phone = page.getByTestId('header-call');
+      const el = (await phone.count()) ? phone : page.getByTestId('hero-phone');
+      const editable = await el.getAttribute('data-editable');
+      const session = await el.getAttribute('contenteditable');
+      if (editable !== 'contact.phone') {
+        throw new Error('Phone link is not bound to contact.phone (data-editable=' + editable + ')');
+      }
+      if (!session) {
+        throw new Error('Phone click did not start a contenteditable session');
+      }
       const scope = page.getByTestId('seamless-edit-scope');
       const text = (await scope.innerText()).trim();
-      if (!/Site settings/i.test(text)) {
-        throw new Error('Unbound hint missing Site settings: ' + text);
+      if (/Phone, hours, and address are in Site settings/i.test(text)) {
+        throw new Error('Phone click still shows the Site settings hint: ' + text);
       }
+      await page.keyboard.press('Escape');
