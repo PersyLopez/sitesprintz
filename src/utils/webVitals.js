@@ -37,10 +37,18 @@ function sendToGA(metric) {
 }
 
 /**
+ * Google Analytics is the only consumer. Skip the library when it is absent
+ * so a published shop does not download it on first paint.
+ */
+export function shouldTrackWebVitals() {
+  return typeof window !== 'undefined' && typeof window.gtag === 'function';
+}
+
+/**
  * Initialize Core Web Vitals tracking (async ESM import — no require()).
  */
 export async function initWebVitals() {
-  if (typeof window === 'undefined') return;
+  if (!shouldTrackWebVitals()) return;
 
   try {
     const webVitals = await import('web-vitals');
