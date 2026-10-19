@@ -144,6 +144,20 @@ describe('pickBookingServicesFromSiteData', () => {
     expect(picks[0].name).toMatch(/Table/i);
   });
 
+  it('does not seed salon services when a trade lists none', () => {
+    const picks = pickBookingServicesFromSiteData({ _niche: 'auto-repair' });
+    expect(picks).toHaveLength(1);
+    expect(picks[0].name).toBe('Appointment request');
+    expect(picks[0].price).toBe(0);
+    expect(picks.map((item) => item.name).join(' ')).not.toMatch(/haircut/i);
+  });
+
+  it('does not seed salon services when the niche is missing', () => {
+    const picks = pickBookingServicesFromSiteData({});
+    expect(picks[0].name).toBe('Appointment request');
+    expect(picks.map((item) => item.name).join(' ')).not.toMatch(/haircut/i);
+  });
+
   it('does not book catalog products when sewing services are listed', () => {
     const picks = pickBookingServicesFromSiteData({
       _niche: 'product-showcase',

@@ -37,6 +37,16 @@ const BOOKING_FALLBACKS = {
   ],
 };
 
+/** Niches without a menu of their own. One honest request, not another trade’s prices. */
+const UNLISTED_BOOKING_REQUEST = [
+  {
+    name: 'Appointment request',
+    price: 0,
+    duration: 60,
+    description: 'Tell us what you need. We confirm the time and price before we start.',
+  },
+];
+
 function parseMoney(value) {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
   const parsed = Number.parseFloat(String(value || '').replace(/[^0-9.]/g, ''));
@@ -94,7 +104,7 @@ export function pickBookingServicesFromSiteData(siteData = {}) {
     return pool.map(mapBookableItem);
   }
 
-  return BOOKING_FALLBACKS[niche] || BOOKING_FALLBACKS.salon;
+  return BOOKING_FALLBACKS[niche] || UNLISTED_BOOKING_REQUEST;
 }
 
 /**
