@@ -660,9 +660,12 @@ router.post('/users/:userId/reset-password', requireAdmin, asyncHandler(async (r
   });
 
   // Send password reset email (non-blocking)
+  const baseUrl = process.env.SITE_URL || process.env.BASE_URL || 'http://localhost:3000';
+  const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
   sendEmail(user.email, EmailTypes.PASSWORD_RESET, {
     email: user.email,
-    resetToken
+    resetToken,
+    resetLink
   }).catch(err => {
     console.error('Failed to send password reset email:', err);
   });
