@@ -154,7 +154,49 @@ class SEOService {
   injectMarketingPageMeta(html, pathname, search = '') {
     const meta = this.resolveMarketingPageMeta(pathname, search);
     if (!meta || typeof html !== 'string') return html;
+    return this._applyMarketingHead(html, meta);
+  }
 
+  /**
+   * Subdomain for `/showcase/:subdomain`. The gallery index is not a detail page.
+   * @param {string} pathname
+   * @returns {string|null}
+   */
+  showcaseDocumentSubdomain(pathname) {
+    const path = this._normalizeMarketingPath(pathname);
+    const match = path.match(/^\/showcase\/([^/]+)$/);
+    return match ? match[1] : null;
+  }
+
+  /**
+   * Same title and description the example page sets after it loads, so a
+   * crawler sees the shop name instead of the homepage head.
+   * @param {string} html
+   * @param {{ name?: string, subdomain?: string, data?: object, site_data?: object }} showcase
+   * @returns {string}
+   */
+  injectShowcaseDocumentMeta(html, showcase) {
+    if (!showcase || typeof html !== 'string') return html;
+    const payload = showcase.data || showcase.site_data || {};
+    const siteTitle = showcase.name
+      || payload.brand?.name
+      || payload.hero?.title
+      || showcase.subdomain
+      || 'Untitled Site';
+    const description = payload.about?.description
+      || payload.hero?.subtitle
+      || `${siteTitle} - A beautiful website made with Right Site Light`;
+    const origin = `${this.protocol}://${getPublicSiteHost()}`;
+    const subdomain = showcase.subdomain || '';
+    return this._applyMarketingHead(html, {
+      title: `${siteTitle} - Made with Right Site Light`,
+      description,
+      canonical: `${origin}/showcase/${encodeURIComponent(subdomain)}`,
+      robots: 'index',
+    });
+  }
+
+  _applyMarketingHead(html, meta) {
     let out = html;
     out = out.replace(/<title>[^<]*<\/title>/i, `<title>${this._escapeHtml(meta.title)}</title>`);
     out = this._replaceMetaContent(out, 'name', 'description', meta.description);

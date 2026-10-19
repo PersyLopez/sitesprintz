@@ -540,6 +540,26 @@ describe('SEOService', () => {
 
       expect(injected).toBe(homepageHtml);
     });
+
+    it('names a showcase example the same way the page does', () => {
+      expect(seoService.showcaseDocumentSubdomain('/showcase')).toBeNull();
+      expect(seoService.showcaseDocumentSubdomain('/showcase/gallery-salon/')).toBe('gallery-salon');
+      expect(seoService.showcaseDocumentSubdomain('/view/gallery-salon')).toBeNull();
+
+      const injected = seoService.injectShowcaseDocumentMeta(homepageHtml, {
+        name: 'Luxe Beauty Studio',
+        subdomain: 'gallery-salon',
+        data: {
+          about: { description: 'Cuts and color on Bergenline.' },
+          hero: { subtitle: 'Ignored when about exists' },
+        },
+      });
+
+      expect(injected).toContain('<title>Luxe Beauty Studio - Made with Right Site Light</title>');
+      expect(injected).toContain('content="Cuts and color on Bergenline."');
+      expect(injected).toContain('href="https://rightsitelight.com/showcase/gallery-salon"');
+      expect(injected).not.toContain('<title>Right Site Light — A page so customers can find you again</title>');
+    });
   });
 });
 

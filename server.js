@@ -696,7 +696,19 @@ app.use(async (req, res, next) => {
       }
       return res.send(viewHtml);
     }
-    return res.send(injected);
+    let pageHtml = injected;
+    const detailSubdomain = spaSeoService.showcaseDocumentSubdomain(req.path);
+    if (detailSubdomain) {
+      try {
+        const detail = await findPublishedShowcase(detailSubdomain);
+        if (detail) {
+          pageHtml = spaSeoService.injectShowcaseDocumentMeta(pageHtml, detail);
+        }
+      } catch {
+        // Unknown example: keep the shell head
+      }
+    }
+    return res.send(pageHtml);
   } catch {
     return res.sendFile(indexPath);
   }
