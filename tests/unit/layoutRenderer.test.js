@@ -58,6 +58,22 @@ describe('layoutRenderer — renderSection() known types', () => {
     expect(result.content.displayVariant).toBe('list');
   });
 
+  it('reads package items for the calculator', () => {
+    const result = renderSection('interactive-calculator', {
+      heading: 'Build Your Package',
+      subheading: 'Select services',
+      items: [
+        { name: 'Haircut', price: 75, description: 'Cut and style' },
+        { name: '   ', price: 10 },
+      ],
+    }, {}, {});
+    expect(result.type).toBe('interactive-calculator');
+    expect(result.content.title).toBe('Build Your Package');
+    expect(result.content.items).toEqual([
+      { name: 'Haircut', price: 75, description: 'Cut and style' },
+    ]);
+  });
+
   it('reads a zip check from template settings fields', () => {
     const result = renderSection('zip-checker', {
       title: 'Check Service Availability',
@@ -295,6 +311,30 @@ describe('layoutRenderer — feature gating', () => {
     });
     const types = page.sections.map((s) => s.type);
     expect(types).toContain('booking');
+  });
+
+  it('keeps a package calculator from section settings and drops it on the trial plan', () => {
+    const sections = [{
+      type: 'interactive-calculator',
+      settings: {
+        heading: 'Build Your Package',
+        items: [{ name: 'Haircut', price: 75 }],
+      },
+    }];
+    const shown = composePage({
+      siteData: { businessName: 'Luxe', sections },
+      layout: 'atelier',
+      level: 'solo',
+    });
+    const calculator = shown.sections.find((section) => section.type === 'interactive-calculator');
+    expect(calculator?.content.items).toEqual([{ name: 'Haircut', price: 75, description: '' }]);
+
+    const hidden = composePage({
+      siteData: { businessName: 'Luxe', plan: 'trial', sections },
+      layout: 'atelier',
+      level: 'solo',
+    });
+    expect(hidden.sections.map((section) => section.type)).not.toContain('interactive-calculator');
   });
 
   it('keeps a zip check from section settings and drops it on the trial plan', () => {

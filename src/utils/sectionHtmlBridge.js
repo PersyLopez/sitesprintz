@@ -48,6 +48,7 @@ export const ALL_SECTION_TYPES = [
   'native-booking',
   'checkout',
   'zip-checker',
+  'interactive-calculator',
   'placeholder',
 ];
 
@@ -1065,6 +1066,73 @@ function renderZipChecker(section, tokens) {
 </section>`;
 }
 
+function packageMoney(amount) {
+  const price = Number(amount) || 0;
+  return Number.isInteger(price) ? `$${price}` : `$${price.toFixed(2)}`;
+}
+
+function renderPackageCalculator(section, tokens) {
+  const c = section.content || {};
+  const items = (Array.isArray(c.items) ? c.items : [])
+    .map((item) => ({
+      name: String(item?.name || '').trim(),
+      price: Number(item?.price) || 0,
+      description: typeof item?.description === 'string' ? item.description : '',
+    }))
+    .filter((item) => item.name);
+  const title = c.title || 'Build your package';
+  const description = c.description || '';
+  const choices = items.map((item, index) => `<label class="ss-field" style="display: flex; gap: 12px; align-items: flex-start;">
+        <input type="checkbox" name="item_${index}" value="${escapeAttr(`${item.name} — ${packageMoney(item.price)}`)}" data-price="${item.price}" data-testid="package-item-${index}" />
+        <span><strong>${escapeHtml(item.name)}</strong> ${escapeHtml(packageMoney(item.price))}${item.description ? `<br><span style="color: ${getMuted(tokens)};">${escapeHtml(item.description)}</span>` : ''}</span>
+      </label>`).join('\n');
+  return `<section id="package" class="ss-package" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
+  <div class="ss-container" style="max-width: 640px; margin: 0 auto;">
+    <h2 style="text-align: center; color: ${getAccent(tokens)}; margin-bottom: 16px;">${escapeHtml(title)}</h2>
+    ${description ? `<p style="text-align: center; color: ${getMuted(tokens)}; margin-bottom: 24px;">${escapeHtml(description)}</p>` : ''}
+    <form class="ss-contact-form" data-testid="package-quote-form" data-type="package-quote" method="post" action="/api/submissions/contact" novalidate>
+      <input type="hidden" name="subdomain" value="${escapeAttr(tokens?._contactSubdomain || '')}" />
+      <input type="hidden" name="type" value="package-quote" />
+      <p class="ss-form-status" data-testid="package-form-status" data-ss-package-total role="status" aria-live="polite"></p>
+      ${choices}
+      <label class="ss-field">
+        <span>Email</span>
+        <input type="email" name="email" autocomplete="email" required maxlength="254" />
+      </label>
+      <label class="ss-field">
+        <span>Name <span class="ss-optional">(optional)</span></span>
+        <input type="text" name="name" autocomplete="name" maxlength="200" />
+      </label>
+      <label class="ss-field">
+        <span>Phone <span class="ss-optional">(optional)</span></span>
+        <input type="tel" name="phone" autocomplete="tel" maxlength="40" />
+      </label>
+      <label class="ss-field">
+        <span>Note <span class="ss-optional">(optional)</span></span>
+        <textarea name="message" rows="3" maxlength="2000">Please quote this package.</textarea>
+      </label>
+      <button type="submit" class="ss-btn" data-testid="package-quote-submit" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)}; border: 0; cursor: pointer;">Request quote</button>
+    </form>
+    <script>
+    (function () {
+      var form = document.currentScript && document.currentScript.previousElementSibling;
+      if (!form || !form.querySelectorAll) return;
+      var result = form.querySelector('[data-ss-package-total]');
+      form.addEventListener('change', function () {
+        if (!result) return;
+        var total = 0;
+        var boxes = form.querySelectorAll('input[type="checkbox"][data-price]');
+        for (var i = 0; i < boxes.length; i++) {
+          if (boxes[i].checked) total += Number(boxes[i].getAttribute('data-price')) || 0;
+        }
+        result.textContent = total ? ('Estimated total $' + total) : '';
+      });
+    })();
+    </script>
+  </div>
+</section>`;
+}
+
 function renderCheckout(section, tokens) {
   const c = section.content || {};
   if (c.enabled === false) return '';
@@ -1119,6 +1187,7 @@ const RENDERERS = {
   'native-booking': renderBooking,
   checkout: renderCheckout,
   'zip-checker': renderZipChecker,
+  'interactive-calculator': renderPackageCalculator,
   placeholder: renderPlaceholder,
 };
 

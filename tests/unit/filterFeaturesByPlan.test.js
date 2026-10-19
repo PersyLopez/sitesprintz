@@ -50,6 +50,17 @@ describe('filterFeaturesByPlan', () => {
     expect(growth.settings.allowCheckout).toBe(true);
   });
 
+  it('drops a package calculator on the live trial and keeps it on Growth', () => {
+    const withCalculator = {
+      sections: [
+        { type: 'hero' },
+        { type: 'interactive-calculator', settings: { items: [{ name: 'Haircut', price: 75 }] } },
+      ],
+    };
+    expect(filterFeaturesByPlan(withCalculator, 'trial').sections.map((section) => section.type)).toEqual(['hero']);
+    expect(filterFeaturesByPlan(withCalculator, 'growth').sections.map((section) => section.type)).toContain('interactive-calculator');
+  });
+
   it('drops a zip check on the live trial and keeps it on Growth', () => {
     const withZip = {
       sections: [

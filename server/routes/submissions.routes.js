@@ -39,6 +39,21 @@ import {
 const router = express.Router();
 
 /** Links in the owner email for a saved shop message. */
+export function packageQuoteMessage(message, fields, type) {
+  const text = String(message || '').trim();
+  if (type !== 'package-quote' || !fields || typeof fields !== 'object') return text;
+  const picked = Object.keys(fields)
+    .filter((key) => /^item_\d+$/.test(key))
+    .sort((a, b) => Number(a.slice(5)) - Number(b.slice(5)))
+    .map((key) => String(fields[key] || '').trim())
+    .filter(Boolean);
+  if (!picked.length) return text;
+  const list = picked.join(', ');
+  if (!text || text === 'Please quote this package.') return list;
+  if (text.includes(list)) return text;
+  return `${list}. ${text}`;
+}
+
 export function zipCheckMessage(message, zip, type) {
   const text = String(message || '').trim();
   const code = String(zip || '').trim();
@@ -222,7 +237,11 @@ router.post('/contact', asyncHandler(async (req, res) => {
 
   // Create submission
   const sanitizedName = sanitizeString(name || '', 200);
-  const sanitizedMessage = zipCheckMessage(sanitizeString(message, 2000), otherFields.zip, type);
+  const sanitizedMessage = zipCheckMessage(
+    packageQuoteMessage(sanitizeString(message, 2000), otherFields, type),
+    otherFields.zip,
+    type
+  );
   const sanitizedPhone = phone ? sanitizeString(String(phone), 40) : null;
   const formType = sanitizeString(type || 'contact', 50) || 'contact';
   const custom = sanitizeCustomFields(otherFields);

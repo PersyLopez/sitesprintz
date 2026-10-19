@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { contactOwnerNotice, contactPostedReturnPath, zipCheckMessage } from '../../server/routes/submissions.routes.js';
+import { contactOwnerNotice, contactPostedReturnPath, packageQuoteMessage, zipCheckMessage } from '../../server/routes/submissions.routes.js';
 
 describe('contactPostedReturnPath', () => {
   it('returns to the same shop path', () => {
@@ -8,6 +8,15 @@ describe('contactPostedReturnPath', () => {
       referer: 'https://rightsitelight.com/view/gallery-salon',
       subdomain: 'gallery-salon',
     })).toBe('/view/gallery-salon?contact=sent');
+  });
+
+  it('lists the chosen package on the quote note', () => {
+    expect(packageQuoteMessage('Please quote this package.', {
+      item_0: 'Haircut — $75',
+      item_1: 'Full Color — $150',
+      email: 'ada@example.com',
+    }, 'package-quote')).toBe('Haircut — $75, Full Color — $150');
+    expect(packageQuoteMessage('Hello', {}, 'contact')).toBe('Hello');
   });
 
   it('keeps the ZIP on a service-area note', () => {

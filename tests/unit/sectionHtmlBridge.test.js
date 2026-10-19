@@ -53,6 +53,7 @@ const EXPECTED_TYPES = [
   'native-booking',
   'checkout',
   'zip-checker',
+  'interactive-calculator',
   'placeholder',
 ];
 
@@ -780,6 +781,23 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(fragment).toContain('class="ss-live"');
     expect(fragment).toContain('Trial Shop');
     expect(renderPublishedViewFragment(null)).toBe('');
+  });
+
+  it('renders a package calculator that posts a quote', () => {
+    const html = renderSectionToHtml({
+      type: 'interactive-calculator',
+      content: {
+        title: 'Build Your Package',
+        items: [{ name: 'Haircut', price: 75, description: 'Cut and style' }],
+      },
+    }, { ...tokens, _contactSubdomain: 'gallery-salon' });
+    expect(html).toContain('data-testid="package-quote-form"');
+    expect(html).toContain('action="/api/submissions/contact"');
+    expect(html).toContain('name="type" value="package-quote"');
+    expect(html).toContain('value="gallery-salon"');
+    expect(html).toContain('name="item_0"');
+    expect(html).toContain('data-price="75"');
+    expect(html).toContain('Haircut — $75');
   });
 
   it('renders a zip check that posts to the inbox', () => {

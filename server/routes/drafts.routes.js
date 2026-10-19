@@ -449,6 +449,9 @@ export function filterFeaturesByPlan(siteData, userPlan) {
   if (!hasFeature(plan, FEATURES.ZIP_CHECKER) && Array.isArray(filtered.sections)) {
     filtered.sections = filtered.sections.filter((section) => section?.type !== 'zip-checker');
   }
+  if (!hasFeature(plan, FEATURES.INTERACTIVE_CALCULATOR) && Array.isArray(filtered.sections)) {
+    filtered.sections = filtered.sections.filter((section) => section?.type !== 'interactive-calculator');
+  }
   
   if (!hasFeature(plan, FEATURES.ORDER_MANAGEMENT)) {
     filtered.settings = {

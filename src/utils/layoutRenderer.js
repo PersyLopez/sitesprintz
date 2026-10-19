@@ -494,6 +494,27 @@ const sectionPrimitives = {
     };
   },
 
+  'interactive-calculator'(content) {
+    const c = content || {};
+    const items = firstList(c.items)
+      .map((item) => ({
+        name: String(item?.name || item?.label || '').trim(),
+        price: Number(item?.price) || 0,
+        description: typeof item?.description === 'string' ? item.description : '',
+      }))
+      .filter((item) => item.name);
+    return {
+      type: 'interactive-calculator',
+      content: {
+        title: c.heading || c.title || 'Build your package',
+        description: typeof (c.subheading || c.description) === 'string' ? (c.subheading || c.description) : '',
+        items,
+      },
+      settings: {},
+      accent: false,
+    };
+  },
+
   checkout(content, siteData, _tokens) {
     const c = content || {};
     const allowCheckout = Boolean(siteData?.settings?.allowCheckout);
@@ -550,7 +571,6 @@ const SECTION_ALIASES = {
   'class-scheduler': 'booking',
   'subscription-booking': 'booking',
   'native-booking': 'booking',
-  'interactive-calculator': 'services',
   'service-filters': 'services',
   'video-gallery': 'gallery',
   'diagnostic-quiz': 'faq',
@@ -796,13 +816,19 @@ export function composePage({
     for (const section of siteData.sections) {
       if (!skeletonSet.has(section.type) && section.enabled !== false) {
         const plan = siteData?.plan || siteData?.settings?.tier;
-        if (section.type === 'zip-checker' && plan && !hasFeature(plan, FEATURES.ZIP_CHECKER)) continue;
-        const zipSettings = section.type === 'zip-checker' && section.settings && typeof section.settings === 'object'
+        const gatedFeature = section.type === 'zip-checker'
+          ? FEATURES.ZIP_CHECKER
+          : section.type === 'interactive-calculator'
+            ? FEATURES.INTERACTIVE_CALCULATOR
+            : null;
+        if (gatedFeature && plan && !hasFeature(plan, gatedFeature)) continue;
+        const usesSettings = section.type === 'zip-checker' || section.type === 'interactive-calculator';
+        const extraSettings = usesSettings && section.settings && typeof section.settings === 'object'
           ? section.settings
           : {};
         const rendered = renderSection(
           section.type,
-          { ...zipSettings, ...(section.content || {}) },
+          { ...extraSettings, ...(section.content || {}) },
           siteData,
           tokens,
           section.settings?.variant
