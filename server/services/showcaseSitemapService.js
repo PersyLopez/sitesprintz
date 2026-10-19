@@ -7,8 +7,10 @@
  * - Dynamic sitemap based on public sites
  */
 
-import { galleryService } from './galleryService.js';
-import { getPublicSiteHost } from '../../src/utils/customDomainHost.js';
+import GalleryService from './galleryService.js';
+import { getPublicSiteHost, normalizeHostname } from '../../src/utils/customDomainHost.js';
+
+const galleryService = new GalleryService();
 
 function resolveShowcaseBaseUrl() {
   const siteUrl = typeof process !== 'undefined' && process.env?.SITE_URL
@@ -17,7 +19,33 @@ function resolveShowcaseBaseUrl() {
   return siteUrl || `https://${getPublicSiteHost()}`;
 }
 
+function platformSitemapBaseUrl(hostname) {
+  const host = normalizeHostname(hostname);
+  if (!host || host === 'localhost' || host === '127.0.0.1') {
+    return resolveShowcaseBaseUrl();
+  }
+  return `https://${host}`;
+}
+
 class ShowcaseSitemapService {
+  /**
+   * Platform marketing sitemap: home, about, contact, register, plus gallery entries.
+   * @param {string} [hostname]
+   * @returns {Promise<string>} XML sitemap
+   */
+  async generatePlatformSitemap(hostname) {
+    const baseUrl = platformSitemapBaseUrl(hostname);
+    const lastmod = new Date().toISOString().split('T')[0];
+    const marketing = [
+      { url: `${baseUrl}/`, changefreq: 'weekly', priority: 1.0, lastmod },
+      { url: `${baseUrl}/about`, changefreq: 'monthly', priority: 0.8, lastmod },
+      { url: `${baseUrl}/contact`, changefreq: 'monthly', priority: 0.8, lastmod },
+      { url: `${baseUrl}/register`, changefreq: 'monthly', priority: 0.7, lastmod },
+    ];
+    const gallery = await this.generateSitemapEntries(baseUrl);
+    return this.generateXML([...marketing, ...gallery]);
+  }
+
   /**
    * Generate sitemap entries for showcase pages
    * @param {string} baseUrl - Base URL of the site (e.g., https://rightsitelight.com)

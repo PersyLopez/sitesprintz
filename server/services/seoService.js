@@ -4,7 +4,9 @@
  * Following TDD: Implementation written to pass tests
  */
 
-import { getPublicSiteHost } from '../../src/utils/customDomainHost.js';
+import { getPublicSiteHost, normalizeHostname } from '../../src/utils/customDomainHost.js';
+
+const MARKETING_APEX_HOSTS = new Set(['rightsitelight.com', 'sitesprintz.com', 'localhost', '127.0.0.1']);
 import { livePublishedPath } from '../../src/utils/visitorExperience.js';
 
 class SEOService {
@@ -22,6 +24,51 @@ class SEOService {
   _platformSiteOrigin(subdomain) {
     return `${this.protocol}://${this.publicHost}${livePublishedPath(subdomain)}`;
   }
+
+  /**
+   * Marketing apex only (not tenant hosts like testsite.sitesprintz.com).
+   * www. is stripped by normalizeHostname.
+   * @param {string} hostname
+   * @returns {boolean}
+   */
+  isMarketingApexHost(hostname) {
+    const host = normalizeHostname(hostname);
+    if (!host) return false;
+    if (MARKETING_APEX_HOSTS.has(host)) return true;
+    return host === getPublicSiteHost();
+  }
+
+  /**
+   * Public host used in platform sitemap/robots URLs.
+   * @param {string} hostname
+   * @returns {string}
+   */
+  platformSitemapHost(hostname) {
+    const host = normalizeHostname(hostname);
+    if (!host || host === 'localhost' || host === '127.0.0.1') {
+      return getPublicSiteHost();
+    }
+    return host;
+  }
+
+  /**
+   * robots.txt for the marketing site (not a tenant shop).
+   * @param {string} hostname
+   * @returns {string}
+   */
+  generatePlatformRobotsTxt(hostname) {
+    const host = this.platformSitemapHost(hostname);
+    return [
+      '# IAB Tech Lab content signals',
+      '# search=yes,ai-train=no',
+      'User-agent: *',
+      'Allow: /',
+      '',
+      `Sitemap: https://${host}/sitemap.xml`,
+      '',
+    ].join('\n');
+  }
+
 
   /**
    * Canonical base URL for a site (custom domain or /view/:subdomain).

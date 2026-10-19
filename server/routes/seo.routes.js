@@ -6,6 +6,7 @@
 
 import express from 'express';
 import SEOService from '../services/seoService.js';
+import { showcaseSitemapService } from '../services/showcaseSitemapService.js';
 import { prisma } from '../../database/db.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { sanitizeSiteDataForStorage } from '../utils/siteDataSanitizer.js';
@@ -20,6 +21,13 @@ const seoService = new SEOService();
  */
 router.get('/sitemap.xml', async (req, res) => {
   try {
+    if (seoService.isMarketingApexHost(req.hostname)) {
+      const sitemap = await showcaseSitemapService.generatePlatformSitemap(req.hostname);
+      res.header('Content-Type', 'application/xml');
+      res.header('Cache-Control', 'public, max-age=3600');
+      return res.send(sitemap);
+    }
+
     // Extract subdomain from request (assumes middleware sets req.subdomain)
     const subdomain = req.subdomain || req.hostname.split('.')[0];
 
@@ -63,7 +71,7 @@ router.get('/sitemap.xml', async (req, res) => {
     const sitemap = await seoService.generateSitemap(
       subdomain,
       pages,
-      {}
+      site.custom_domain ? { customDomain: site.custom_domain } : {}
     );
 
     res.header('Content-Type', 'application/xml');
@@ -83,6 +91,13 @@ router.get('/sitemap.xml', async (req, res) => {
  */
 router.get('/robots.txt', async (req, res) => {
   try {
+    if (seoService.isMarketingApexHost(req.hostname)) {
+      const robotsTxt = seoService.generatePlatformRobotsTxt(req.hostname);
+      res.header('Content-Type', 'text/plain');
+      res.header('Cache-Control', 'public, max-age=3600');
+      return res.send(robotsTxt);
+    }
+
     // Extract subdomain from request
     const subdomain = req.subdomain || req.hostname.split('.')[0];
 
@@ -102,12 +117,13 @@ router.get('/robots.txt', async (req, res) => {
       return res.status(404).send('User-agent: *\nDisallow: /');
     }
 
-    const seoConfig = {};
+    const seoConfig = site.site_data?.seo || site.seo_config || {};
 
     // Generate robots.txt
     const robotsTxt = seoService.generateRobotsTxt(subdomain, {
       disallow: seoConfig.disallow || [],
-      noindex: seoConfig.noindex || false
+      noindex: seoConfig.noindex || false,
+      customDomain: site.custom_domain || undefined
     });
 
     res.header('Content-Type', 'text/plain');

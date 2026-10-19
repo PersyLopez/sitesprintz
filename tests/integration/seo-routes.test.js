@@ -6,17 +6,44 @@
 import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 import request from 'supertest';
 import express from 'express';
+import { seedPrismaData } from '../mocks/prisma.js';
+
+vi.mock('../../server/middleware/auth.js', () => ({
+  authenticateToken: (req, res, next) => {
+    if (!req.headers.authorization) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    req.user = { id: 'test-user-id', email: 'test@example.com', role: 'user' };
+    next();
+  },
+}));
+
 import seoRoutes from '../../server/routes/seo.routes.js';
-import { query } from '../../database/db.js';
+
+function seedPublishedSite(overrides = {}) {
+  seedPrismaData({
+    sites: [{
+      id: overrides.id || 'site-123',
+      subdomain: overrides.subdomain || 'testsite',
+      user_id: overrides.user_id || 'test-user-id',
+      status: overrides.status || 'published',
+      custom_domain: overrides.custom_domain ?? null,
+      seo_config: overrides.seo_config || {},
+      is_public: overrides.is_public ?? false,
+      site_data: overrides.site_data || { businessName: 'Test Business' },
+    }],
+  });
+}
 
 const createTestApp = () => {
   const app = express();
   app.use(express.json());
-  
-  // Mock subdomain extraction middleware
+
+  // x-subdomain keeps tenant path; Host header is Express req.hostname (getter-only)
   app.use((req, res, next) => {
-    req.subdomain = req.headers['x-subdomain'] || 'testsite';
-    req.hostname = `${req.subdomain}.sitesprintz.com`;
+    if (req.headers['x-subdomain']) {
+      req.subdomain = req.headers['x-subdomain'];
+    }
     next();
   });
   
@@ -45,22 +72,16 @@ describe('SEO Routes Integration Tests', () => {
 
   describe('GET /sitemap.xml', () => {
     it('should generate and return XML sitemap for published site', async () => {
-      // Mock database response
-      vi.mocked(query).mockResolvedValueOnce({
-        rows: [{
-          id: 'site-123',
-          subdomain: 'testsite',
-          is_published: true,
-          site_data: {
-            businessName: 'Test Business',
-            pages: [{ path: '/menu' }]
-          },
-          custom_domain: null
-        }]
+      seedPublishedSite({
+        site_data: {
+          businessName: 'Test Business',
+          pages: [{ path: '/menu' }]
+        }
       });
 
       const response = await request(app)
         .get('/sitemap.xml')
+        .set('Host', 'testsite.sitesprintz.com')
         .set('x-subdomain', 'testsite');
 
       expect([200, 404, 500]).toContain(response.status);
@@ -72,10 +93,9 @@ describe('SEO Routes Integration Tests', () => {
     });
 
     it('should return 404 for non-existent site', async () => {
-      vi.mocked(query).mockResolvedValueOnce({ rows: [] });
-
       const response = await request(app)
         .get('/sitemap.xml')
+        .set('Host', 'nonexistent.sitesprintz.com')
         .set('x-subdomain', 'nonexistent');
 
       expect(response.status).toBe(404);
@@ -83,18 +103,11 @@ describe('SEO Routes Integration Tests', () => {
     });
 
     it('should include custom domain in sitemap URLs', async () => {
-      vi.mocked(query).mockResolvedValueOnce({
-        rows: [{
-          id: 'site-123',
-          subdomain: 'testsite',
-          is_published: true,
-          site_data: { businessName: 'Test Business' },
-          custom_domain: 'www.example.com'
-        }]
-      });
+      seedPublishedSite({ custom_domain: 'www.example.com' });
 
       const response = await request(app)
         .get('/sitemap.xml')
+        .set('Host', 'testsite.sitesprintz.com')
         .set('x-subdomain', 'testsite');
 
       expect(response.status).toBe(200);
@@ -103,39 +116,58 @@ describe('SEO Routes Integration Tests', () => {
     });
 
     it('should cache sitemap with appropriate headers', async () => {
-      vi.mocked(query).mockResolvedValueOnce({
-        rows: [{
-          id: 'site-123',
-          subdomain: 'testsite',
-          is_published: true,
-          site_data: { businessName: 'Test Business' }
-        }]
-      });
+      seedPublishedSite();
 
       const response = await request(app)
         .get('/sitemap.xml')
+        .set('Host', 'testsite.sitesprintz.com')
         .set('x-subdomain', 'testsite');
 
       expect(response.status).toBe(200);
       expect(response.header['cache-control']).toContain('public');
       expect(response.header['cache-control']).toContain('max-age=3600');
     });
+
+    it('serves platform urlset for rightsitelight.com without tenant subdomain', async () => {
+      seedPublishedSite({
+        subdomain: 'wren-hair',
+        is_public: true,
+        site_data: { businessName: 'Wren Hair' }
+      });
+
+      const response = await request(app)
+        .get('/sitemap.xml')
+        .set('Host', 'rightsitelight.com');
+
+      expect(response.status).toBe(200);
+      expect(response.header['content-type']).toContain('application/xml');
+      expect(response.text).toContain('<urlset');
+      expect(response.text).toContain('<loc>https://rightsitelight.com/</loc>');
+      expect(response.text).toContain('<loc>https://rightsitelight.com/showcase</loc>');
+      expect(response.text).toContain('<loc>https://rightsitelight.com/showcase/wren-hair</loc>');
+    });
+
+    it('serves platform urlset for www.rightsitelight.com even when x-subdomain is www', async () => {
+      const response = await request(app)
+        .get('/sitemap.xml')
+        .set('Host', 'www.rightsitelight.com')
+        .set('x-subdomain', 'www');
+
+      expect(response.status).toBe(200);
+      expect(response.header['content-type']).toContain('application/xml');
+      expect(response.text).toContain('<urlset');
+      expect(response.text).toContain('<loc>https://rightsitelight.com/</loc>');
+      expect(response.text).not.toContain('Site not found');
+    });
   });
 
   describe('GET /robots.txt', () => {
     it('should generate and return robots.txt for published site', async () => {
-      vi.mocked(query).mockResolvedValueOnce({
-        rows: [{
-          id: 'site-123',
-          subdomain: 'testsite',
-          is_published: true,
-          custom_domain: null,
-          seo_config: {}
-        }]
-      });
+      seedPublishedSite();
 
       const response = await request(app)
         .get('/robots.txt')
+        .set('Host', 'testsite.sitesprintz.com')
         .set('x-subdomain', 'testsite');
 
       expect(response.status).toBe(200);
@@ -146,17 +178,11 @@ describe('SEO Routes Integration Tests', () => {
     });
 
     it('should respect noindex configuration', async () => {
-      vi.mocked(query).mockResolvedValueOnce({
-        rows: [{
-          id: 'site-123',
-          subdomain: 'testsite',
-          is_published: true,
-          seo_config: { noindex: true }
-        }]
-      });
+      seedPublishedSite({ seo_config: { noindex: true } });
 
       const response = await request(app)
         .get('/robots.txt')
+        .set('Host', 'testsite.sitesprintz.com')
         .set('x-subdomain', 'testsite');
 
       expect(response.status).toBe(200);
@@ -165,43 +191,53 @@ describe('SEO Routes Integration Tests', () => {
     });
 
     it('should include custom disallow paths', async () => {
-      vi.mocked(query).mockResolvedValueOnce({
-        rows: [{
-          id: 'site-123',
-          subdomain: 'testsite',
-          is_published: true,
-          seo_config: { disallow: ['/admin', '/private'] }
-        }]
-      });
+      seedPublishedSite({ seo_config: { disallow: ['/admin', '/private'] } });
 
       const response = await request(app)
         .get('/robots.txt')
+        .set('Host', 'testsite.sitesprintz.com')
         .set('x-subdomain', 'testsite');
 
       expect(response.status).toBe(200);
       expect(response.text).toContain('Disallow: /admin');
       expect(response.text).toContain('Disallow: /private');
     });
+
+    it('serves allow-all robots with sitemap on apex host', async () => {
+      const response = await request(app)
+        .get('/robots.txt')
+        .set('Host', 'rightsitelight.com');
+
+      expect(response.status).toBe(200);
+      expect(response.header['content-type']).toContain('text/plain');
+      expect(response.text).toContain('User-agent: *');
+      expect(response.text).toContain('Allow: /');
+      expect(response.text).toContain('Sitemap:');
+      expect(response.text).toContain('https://rightsitelight.com/sitemap.xml');
+    });
+
+    it('serves platform robots on www.rightsitelight.com even when x-subdomain is www', async () => {
+      const response = await request(app)
+        .get('/robots.txt')
+        .set('Host', 'www.rightsitelight.com')
+        .set('x-subdomain', 'www');
+
+      expect(response.status).toBe(200);
+      expect(response.header['content-type']).toContain('text/plain');
+      expect(response.text).toContain('User-agent: *');
+      expect(response.text).toContain('Allow: /');
+      expect(response.text).toContain('Sitemap: https://rightsitelight.com/sitemap.xml');
+    });
   });
 
   describe('GET /api/seo/:subdomain', () => {
     it('should return SEO config for authenticated user', async () => {
-      vi.mocked(query).mockResolvedValueOnce({
-        rows: [{
-          id: 'site-123',
-          subdomain: 'testsite',
-          user_id: 'test-user-id',
-          site_data: {
-            businessName: 'Test Business',
-            businessDescription: 'A test business',
-            category: 'restaurant'
-          },
-          seo_config: {
-            metaTags: { title: 'Custom Title' },
-            disallow: [],
-            noindex: false
-          }
-        }]
+      seedPublishedSite({
+        site_data: {
+          businessName: 'Test Business',
+          businessDescription: 'A test business',
+          category: 'restaurant'
+        }
       });
 
       const response = await request(app)
@@ -226,8 +262,6 @@ describe('SEO Routes Integration Tests', () => {
     });
 
     it('should return 404 for non-existent site', async () => {
-      vi.mocked(query).mockResolvedValueOnce({ rows: [] });
-
       const response = await request(app)
         .get('/api/seo/nonexistent')
         .set('authorization', 'Bearer test-token');
@@ -239,11 +273,7 @@ describe('SEO Routes Integration Tests', () => {
 
   describe('PUT /api/seo/:subdomain', () => {
     it('should update SEO config for authenticated user', async () => {
-      vi.mocked(query)
-        .mockResolvedValueOnce({
-          rows: [{ id: 'site-123' }]
-        })
-        .mockResolvedValueOnce({ rows: [] }); // UPDATE query
+      seedPublishedSite();
 
       const response = await request(app)
         .put('/api/seo/testsite')
@@ -265,9 +295,7 @@ describe('SEO Routes Integration Tests', () => {
     });
 
     it('should validate meta tags before saving', async () => {
-      vi.mocked(query).mockResolvedValueOnce({
-        rows: [{ id: 'site-123' }]
-      });
+      seedPublishedSite();
 
       const response = await request(app)
         .put('/api/seo/testsite')
@@ -286,7 +314,6 @@ describe('SEO Routes Integration Tests', () => {
     });
 
     it('should return 404 for non-owned site', async () => {
-      vi.mocked(query).mockResolvedValueOnce({ rows: [] });
 
       const response = await request(app)
         .put('/api/seo/notmysite')
@@ -305,19 +332,14 @@ describe('SEO Routes Integration Tests', () => {
 
   describe('GET /api/seo/:subdomain/schema', () => {
     it('should return Schema.org markup for published site', async () => {
-      vi.mocked(query).mockResolvedValueOnce({
-        rows: [{
-          id: 'site-123',
-          subdomain: 'testsite',
-          is_published: true,
-          site_data: {
-            businessName: 'Test Restaurant',
-            businessDescription: 'Best food in town',
-            businessAddress: '123 Main St, City, ST 12345',
-            businessPhone: '555-1234',
-            category: 'restaurant'
-          }
-        }]
+      seedPublishedSite({
+        site_data: {
+          businessName: 'Test Restaurant',
+          businessDescription: 'Best food in town',
+          businessAddress: '123 Main St, City, ST 12345',
+          businessPhone: '555-1234',
+          category: 'restaurant'
+        }
       });
 
       const response = await request(app)
@@ -332,7 +354,6 @@ describe('SEO Routes Integration Tests', () => {
     });
 
     it('should return 404 for non-published site', async () => {
-      vi.mocked(query).mockResolvedValueOnce({ rows: [] });
 
       const response = await request(app)
         .get('/api/seo/nonexistent/schema');
@@ -343,9 +364,7 @@ describe('SEO Routes Integration Tests', () => {
 
   describe('POST /api/seo/:subdomain/validate', () => {
     it('should validate meta tags and return recommendations', async () => {
-      vi.mocked(query).mockResolvedValueOnce({
-        rows: [{ id: 'site-123' }]
-      });
+      seedPublishedSite();
 
       const response = await request(app)
         .post('/api/seo/testsite/validate')
@@ -368,9 +387,7 @@ describe('SEO Routes Integration Tests', () => {
     });
 
     it('should return validation errors for invalid meta tags', async () => {
-      vi.mocked(query).mockResolvedValueOnce({
-        rows: [{ id: 'site-123' }]
-      });
+      seedPublishedSite();
 
       const response = await request(app)
         .post('/api/seo/testsite/validate')
