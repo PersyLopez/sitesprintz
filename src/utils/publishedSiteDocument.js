@@ -86,6 +86,8 @@ function isEmptyOptional(section) {
       return list(c.stages).length === 0;
     case 'video-gallery':
       return list(c.videos).length === 0;
+    case 'class-scheduler':
+      return list(c.classes).length === 0;
     case 'process':
     case 'how-to-order':
       return list(c.steps).length === 0;

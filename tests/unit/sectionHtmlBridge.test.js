@@ -57,6 +57,7 @@ const EXPECTED_TYPES = [
   'diagnostic-quiz',
   'progress-tracker',
   'video-gallery',
+  'class-scheduler',
   'placeholder',
 ];
 
@@ -784,6 +785,28 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(fragment).toContain('class="ss-live"');
     expect(fragment).toContain('Trial Shop');
     expect(renderPublishedViewFragment(null)).toBe('');
+  });
+
+  it('lists classes and posts a spot request', () => {
+    const html = renderSectionToHtml({
+      type: 'class-scheduler',
+      content: {
+        title: 'Class Schedule',
+        classes: [{
+          name: 'Strength Foundations',
+          time: '6:00 AM',
+          daysOfWeek: [1, 3, 5],
+          instructor: 'Mike Rodriguez',
+        }],
+      },
+    }, { ...tokens, _contactSubdomain: 'gallery-gym' });
+    expect(html).toContain('data-testid="class-request-form"');
+    expect(html).toContain('action="/api/submissions/contact"');
+    expect(html).toContain('name="type" value="class-request"');
+    expect(html).toContain('value="gallery-gym"');
+    expect(html).toContain('Strength Foundations — Mon, Wed, Fri · 6:00 AM');
+    expect(html).toContain('Mike Rodriguez');
+    expect(html).not.toContain('booked');
   });
 
   it('links a workout video without embedding it', () => {

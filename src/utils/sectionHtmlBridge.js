@@ -52,6 +52,7 @@ export const ALL_SECTION_TYPES = [
   'diagnostic-quiz',
   'progress-tracker',
   'video-gallery',
+  'class-scheduler',
   'placeholder',
 ];
 
@@ -1202,6 +1203,66 @@ function renderDiagnosticQuiz(section, tokens) {
 </section>`;
 }
 
+const CLASS_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+function classWhen(item) {
+  const days = (item.daysOfWeek || []).map((day) => CLASS_DAYS[day]).filter(Boolean).join(', ');
+  return [days, item.time].filter(Boolean).join(' · ');
+}
+
+function classChoiceLabel(item) {
+  const when = classWhen(item);
+  return when ? `${item.name} — ${when}` : item.name;
+}
+
+function renderClassScheduler(section, tokens) {
+  const c = section.content || {};
+  const classes = Array.isArray(c.classes) ? c.classes : [];
+  const title = c.title || 'Class schedule';
+  const description = c.description || '';
+  const choices = classes.map((item, index) => {
+    const detail = [item.type, item.duration, item.instructor].filter(Boolean).join(' · ');
+    return `<label class="ss-field" style="display: flex; gap: 12px; align-items: flex-start; padding: 16px; background: ${getSurface(tokens)}; border-radius: 12px;">
+      <input type="radio" name="class_choice" value="${escapeAttr(classChoiceLabel(item))}" ${index === 0 ? 'required' : ''} data-testid="class-choice" />
+      <span>
+        <strong>${escapeHtml(item.name)}</strong>
+        ${detail ? `<span style="display: block; color: ${getMuted(tokens)};">${escapeHtml(detail)}</span>` : ''}
+        <span style="display: block;">${escapeHtml(classWhen(item))}</span>
+        ${item.description ? `<span style="display: block; color: ${getMuted(tokens)};">${escapeHtml(item.description)}</span>` : ''}
+      </span>
+    </label>`;
+  }).join('\n');
+  return `<section id="schedule" class="ss-schedule" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
+  <div class="ss-container" style="max-width: 720px; margin: 0 auto;">
+    <h2 style="text-align: center; color: ${getAccent(tokens)}; margin-bottom: 16px;">${escapeHtml(title)}</h2>
+    ${description ? `<p style="text-align: center; color: ${getMuted(tokens)}; margin-bottom: 24px;">${escapeHtml(description)}</p>` : ''}
+    <form class="ss-contact-form" data-testid="class-request-form" data-type="class-request" method="post" action="/api/submissions/contact" novalidate>
+      <input type="hidden" name="subdomain" value="${escapeAttr(tokens?._contactSubdomain || '')}" />
+      <input type="hidden" name="type" value="class-request" />
+      <p class="ss-form-status" data-testid="class-form-status" role="status" aria-live="polite"></p>
+      <div style="display: grid; gap: 12px; margin-bottom: 20px;">${choices}</div>
+      <label class="ss-field">
+        <span>Email</span>
+        <input type="email" name="email" autocomplete="email" required maxlength="254" />
+      </label>
+      <label class="ss-field">
+        <span>Name <span class="ss-optional">(optional)</span></span>
+        <input type="text" name="name" autocomplete="name" maxlength="200" />
+      </label>
+      <label class="ss-field">
+        <span>Phone <span class="ss-optional">(optional)</span></span>
+        <input type="tel" name="phone" autocomplete="tel" maxlength="40" />
+      </label>
+      <label class="ss-field">
+        <span>Note <span class="ss-optional">(optional)</span></span>
+        <textarea name="message" rows="3" maxlength="2000">Please hold a spot in this class.</textarea>
+      </label>
+      <button type="submit" class="ss-btn" data-testid="class-request-submit" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)}; border: 0; cursor: pointer;">Request a spot</button>
+    </form>
+  </div>
+</section>`;
+}
+
 function videoWatchUrl(provider, videoId) {
   const id = String(videoId || '').trim();
   if (provider === 'youtube' && /^[\w-]{11}$/.test(id)) {
@@ -1325,6 +1386,7 @@ const RENDERERS = {
   'diagnostic-quiz': renderDiagnosticQuiz,
   'progress-tracker': renderProgressTracker,
   'video-gallery': renderVideoGallery,
+  'class-scheduler': renderClassScheduler,
   placeholder: renderPlaceholder,
 };
 

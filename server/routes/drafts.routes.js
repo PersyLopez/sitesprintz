@@ -461,6 +461,9 @@ export function filterFeaturesByPlan(siteData, userPlan) {
   if (!hasFeature(plan, FEATURES.VIDEO_GALLERY) && Array.isArray(filtered.sections)) {
     filtered.sections = filtered.sections.filter((section) => section?.type !== 'video-gallery');
   }
+  if (!hasFeature(plan, FEATURES.CLASS_SCHEDULER) && Array.isArray(filtered.sections)) {
+    filtered.sections = filtered.sections.filter((section) => section?.type !== 'class-scheduler');
+  }
   
   if (!hasFeature(plan, FEATURES.ORDER_MANAGEMENT)) {
     filtered.settings = {

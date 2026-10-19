@@ -58,6 +58,27 @@ describe('layoutRenderer — renderSection() known types', () => {
     expect(result.content.displayVariant).toBe('list');
   });
 
+  it('reads class names and weekdays', () => {
+    const result = renderSection('class-scheduler', {
+      heading: 'Class Schedule',
+      classes: [
+        { name: 'Strength Foundations', time: '6:00 AM', daysOfWeek: [1, 3, 5], booked: 12, capacity: 20 },
+        { name: '  ', time: '7:00 AM' },
+      ],
+    }, {}, {});
+    expect(result.type).toBe('class-scheduler');
+    expect(result.content.classes).toEqual([{
+      name: 'Strength Foundations',
+      type: '',
+      time: '6:00 AM',
+      duration: '',
+      instructor: '',
+      description: '',
+      daysOfWeek: [1, 3, 5],
+    }]);
+    expect(result.content.classes[0].booked).toBeUndefined();
+  });
+
   it('reads workout videos and drops a blank title', () => {
     const result = renderSection('video-gallery', {
       title: 'On-Demand Workout Library',
@@ -364,6 +385,30 @@ describe('layoutRenderer — feature gating', () => {
     });
     const types = page.sections.map((s) => s.type);
     expect(types).toContain('booking');
+  });
+
+  it('keeps the class list from section settings and drops it on the trial plan', () => {
+    const sections = [{
+      type: 'class-scheduler',
+      settings: {
+        heading: 'Class Schedule',
+        classes: [{ name: 'HIIT Burn', time: '7:00 AM', daysOfWeek: [2, 4] }],
+      },
+    }];
+    const shown = composePage({
+      siteData: { businessName: 'Gym', sections },
+      layout: 'atelier',
+      level: 'solo',
+    });
+    const schedule = shown.sections.find((section) => section.type === 'class-scheduler');
+    expect(schedule?.content.classes[0].name).toBe('HIIT Burn');
+
+    const hidden = composePage({
+      siteData: { businessName: 'Gym', plan: 'trial', sections },
+      layout: 'atelier',
+      level: 'solo',
+    });
+    expect(hidden.sections.map((section) => section.type)).not.toContain('class-scheduler');
   });
 
   it('keeps workout videos from section settings and drops them on the trial plan', () => {

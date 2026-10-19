@@ -515,6 +515,33 @@ const sectionPrimitives = {
     };
   },
 
+  'class-scheduler'(content) {
+    const c = content || {};
+    const classes = (Array.isArray(c.classes) ? c.classes : [])
+      .map((item) => ({
+        name: String(item?.name || '').trim(),
+        type: String(item?.type || '').trim(),
+        time: String(item?.time || '').trim(),
+        duration: String(item?.duration || '').trim(),
+        instructor: String(item?.instructor || '').trim(),
+        description: typeof item?.description === 'string' ? item.description : '',
+        daysOfWeek: Array.isArray(item?.daysOfWeek)
+          ? item.daysOfWeek.filter((day) => Number.isInteger(day) && day >= 0 && day <= 6)
+          : [],
+      }))
+      .filter((item) => item.name);
+    return {
+      type: 'class-scheduler',
+      content: {
+        title: c.heading || c.title || 'Class schedule',
+        description: typeof (c.subheading || c.description) === 'string' ? (c.subheading || c.description) : '',
+        classes,
+      },
+      settings: {},
+      accent: false,
+    };
+  },
+
   'video-gallery'(content) {
     const c = content || {};
     const videos = (Array.isArray(c.videos) ? c.videos : [])
@@ -641,7 +668,6 @@ function resolveHeroCta(variant, _siteData) {
 // ---------------------------------------------------------------------------
 
 const SECTION_ALIASES = {
-  'class-scheduler': 'booking',
   'subscription-booking': 'booking',
   'native-booking': 'booking',
   'service-filters': 'services',
@@ -892,6 +918,7 @@ export function composePage({
           'diagnostic-quiz': FEATURES.DIAGNOSTIC_QUIZ,
           'progress-tracker': FEATURES.PROGRESS_TRACKER,
           'video-gallery': FEATURES.VIDEO_GALLERY,
+          'class-scheduler': FEATURES.CLASS_SCHEDULER,
         }[section.type] || null;
         if (gatedFeature && plan && !hasFeature(plan, gatedFeature)) continue;
         const usesSettings = Boolean(gatedFeature);

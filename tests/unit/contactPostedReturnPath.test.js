@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { contactOwnerNotice, contactPostedReturnPath, diagnosticQuoteMessage, packageQuoteMessage, zipCheckMessage } from '../../server/routes/submissions.routes.js';
+import { classRequestMessage, contactOwnerNotice, contactPostedReturnPath, diagnosticQuoteMessage, packageQuoteMessage, zipCheckMessage } from '../../server/routes/submissions.routes.js';
 
 describe('contactPostedReturnPath', () => {
   it('returns to the same shop path', () => {
@@ -8,6 +8,13 @@ describe('contactPostedReturnPath', () => {
       referer: 'https://rightsitelight.com/view/gallery-salon',
       subdomain: 'gallery-salon',
     })).toBe('/view/gallery-salon?contact=sent');
+  });
+
+  it('lists the requested class on the note', () => {
+    expect(classRequestMessage('Please hold a spot in this class.', {
+      class_choice: 'Strength Foundations — Mon, Wed, Fri · 6:00 AM',
+    }, 'class-request')).toBe('Strength Foundations — Mon, Wed, Fri · 6:00 AM');
+    expect(classRequestMessage('Hello', { class_choice: 'HIIT Burn' }, 'contact')).toBe('Hello');
   });
 
   it('lists the diagnostic answers on the estimate note', () => {

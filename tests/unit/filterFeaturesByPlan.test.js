@@ -50,6 +50,17 @@ describe('filterFeaturesByPlan', () => {
     expect(growth.settings.allowCheckout).toBe(true);
   });
 
+  it('drops a class schedule on the live trial and keeps it on Growth', () => {
+    const withClasses = {
+      sections: [
+        { type: 'hero' },
+        { type: 'class-scheduler', settings: { classes: [{ name: 'HIIT Burn' }] } },
+      ],
+    };
+    expect(filterFeaturesByPlan(withClasses, 'trial').sections.map((section) => section.type)).toEqual(['hero']);
+    expect(filterFeaturesByPlan(withClasses, 'growth').sections.map((section) => section.type)).toContain('class-scheduler');
+  });
+
   it('drops a video library on the live trial and keeps it on Growth', () => {
     const withVideos = {
       sections: [
