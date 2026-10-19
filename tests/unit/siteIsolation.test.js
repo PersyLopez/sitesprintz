@@ -25,6 +25,8 @@ import {
   resolveContainedPath,
   slugifySubdomain,
   deferPublishedViewFonts,
+  preloadPublishedViewDisplayFont,
+  PUBLISHED_VIEW_DISPLAY_FONT_HREF,
   stripPublishedViewThirdParties,
   writeIsolatedSiteFiles
 } from '../../server/utils/siteIsolation.js';
@@ -173,6 +175,20 @@ describe('site isolation — /view document and embed', () => {
 
     expect(deferPublishedViewFonts(null)).toBe(null);
     expect(deferPublishedViewFonts(undefined)).toBe(undefined);
+  });
+
+  it('starts the Fraunces display face in the view document without a second copy', () => {
+    const shell = '<html><head><title>Shop</title></head><body></body></html>';
+    const preloaded = preloadPublishedViewDisplayFont(shell);
+    expect(preloaded).toContain('id="ss-live-fonts"');
+    expect(preloaded).toContain(`href="${PUBLISHED_VIEW_DISPLAY_FONT_HREF}"`);
+    expect(preloaded).toContain('media="print" onload="this.media=\'all\'"');
+    expect(preloaded.indexOf('id="ss-live-fonts"')).toBeLessThan(preloaded.indexOf('</head>'));
+    expect(preloaded.match(/family=Fraunces/g)).toHaveLength(2);
+
+    expect(preloadPublishedViewDisplayFont(preloaded).match(/id="ss-live-fonts"/g)).toHaveLength(1);
+    expect(preloadPublishedViewDisplayFont('<html><body></body></html>')).toBe('<html><body></body></html>');
+    expect(preloadPublishedViewDisplayFont(null)).toBe(null);
   });
 });
 

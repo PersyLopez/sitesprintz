@@ -75,6 +75,7 @@ describe('PublishedSiteViewer booking portal', () => {
   });
 
   afterEach(() => {
+    document.getElementById('ss-live-fonts')?.remove();
     vi.restoreAllMocks();
   });
 
@@ -89,6 +90,11 @@ describe('PublishedSiteViewer booking portal', () => {
 
     expect(screen.getByTestId('booking-widget')).toBeInTheDocument();
     expect(screen.getByTestId('live-booking-widget').textContent).toContain('Book');
+
+    const fontLink = document.getElementById('ss-live-fonts');
+    expect(fontLink).toBeTruthy();
+    expect(fontLink.media).toBe('print');
+    expect(fontLink.href).toContain('family=Fraunces');
   });
 
   it('shows the edit toolbar for the owner in edit mode', async () => {
