@@ -51,6 +51,7 @@ export const ALL_SECTION_TYPES = [
   'interactive-calculator',
   'diagnostic-quiz',
   'progress-tracker',
+  'video-gallery',
   'placeholder',
 ];
 
@@ -1201,6 +1202,49 @@ function renderDiagnosticQuiz(section, tokens) {
 </section>`;
 }
 
+function videoWatchUrl(provider, videoId) {
+  const id = String(videoId || '').trim();
+  if (provider === 'youtube' && /^[\w-]{11}$/.test(id)) {
+    return `https://www.youtube.com/watch?v=${id}`;
+  }
+  if (provider === 'vimeo' && /^\d{6,12}$/.test(id)) {
+    return `https://vimeo.com/${id}`;
+  }
+  return '';
+}
+
+function renderVideoGallery(section, tokens) {
+  const c = section.content || {};
+  const videos = Array.isArray(c.videos) ? c.videos : [];
+  const title = c.title || 'Videos';
+  const description = c.description || '';
+  const cards = videos.map((video) => {
+    const watchUrl = videoWatchUrl(video.provider, video.videoId);
+    const category = c.showCategories !== false && video.category
+      ? `<p style="color: ${getMuted(tokens)}; margin: 0 0 8px;">${escapeHtml(video.category)}</p>`
+      : '';
+    const watch = watchUrl
+      ? `<a href="${escapeAttr(watchUrl)}" target="_blank" rel="noopener noreferrer" data-testid="video-watch">Watch</a>`
+      : '';
+    return `<li data-testid="video-card" style="padding: 20px; background: ${getSurface(tokens)}; border-radius: 12px;">
+      ${category}
+      <h3 style="color: ${getAccent(tokens)}; margin: 0 0 8px;">${escapeHtml(video.title)}</h3>
+      ${video.description ? `<p style="color: ${getMuted(tokens)}; margin: 0 0 8px;">${escapeHtml(video.description)}</p>` : ''}
+      ${video.duration ? `<p style="margin: 0 0 12px;">${escapeHtml(video.duration)}</p>` : ''}
+      ${watch}
+    </li>`;
+  }).join('\n');
+  return `<section id="videos" class="ss-videos" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
+  <div class="ss-container" style="max-width: 960px; margin: 0 auto;">
+    <h2 style="text-align: center; color: ${getAccent(tokens)}; margin-bottom: 16px;">${escapeHtml(title)}</h2>
+    ${description ? `<p style="text-align: center; color: ${getMuted(tokens)}; margin-bottom: 24px;">${escapeHtml(description)}</p>` : ''}
+    <ul data-testid="video-library" style="list-style: none; padding: 0; margin: 0; display: grid; gap: 16px;">
+      ${cards}
+    </ul>
+  </div>
+</section>`;
+}
+
 function renderProgressTracker(section, tokens) {
   const c = section.content || {};
   const stages = Array.isArray(c.stages) ? c.stages : [];
@@ -1280,6 +1324,7 @@ const RENDERERS = {
   'interactive-calculator': renderPackageCalculator,
   'diagnostic-quiz': renderDiagnosticQuiz,
   'progress-tracker': renderProgressTracker,
+  'video-gallery': renderVideoGallery,
   placeholder: renderPlaceholder,
 };
 

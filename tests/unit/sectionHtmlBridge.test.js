@@ -56,6 +56,7 @@ const EXPECTED_TYPES = [
   'interactive-calculator',
   'diagnostic-quiz',
   'progress-tracker',
+  'video-gallery',
   'placeholder',
 ];
 
@@ -783,6 +784,24 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(fragment).toContain('class="ss-live"');
     expect(fragment).toContain('Trial Shop');
     expect(renderPublishedViewFragment(null)).toBe('');
+  });
+
+  it('links a workout video without embedding it', () => {
+    const html = renderSectionToHtml({
+      type: 'video-gallery',
+      content: {
+        title: 'On-Demand Workout Library',
+        videos: [
+          { title: '20-Minute HIIT Workout', provider: 'youtube', videoId: 'dQw4w9WgXcQ', duration: '20 min', category: 'HIIT' },
+          { title: 'Notes only', provider: 'youtube', videoId: 'not-an-id' },
+        ],
+      },
+    }, tokens);
+    expect(html).toContain('data-testid="video-library"');
+    expect(html).toContain('20-Minute HIIT Workout');
+    expect(html).toContain('href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"');
+    expect(html).not.toContain('<iframe');
+    expect(html).not.toContain('not-an-id');
   });
 
   it('renders repair stages and marks the current one', () => {

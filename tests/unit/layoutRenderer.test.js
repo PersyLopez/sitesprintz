@@ -58,6 +58,25 @@ describe('layoutRenderer — renderSection() known types', () => {
     expect(result.content.displayVariant).toBe('list');
   });
 
+  it('reads workout videos and drops a blank title', () => {
+    const result = renderSection('video-gallery', {
+      title: 'On-Demand Workout Library',
+      videos: [
+        { title: '20-Minute HIIT Workout', provider: 'youtube', videoId: 'dQw4w9WgXcQ', duration: '20 min', category: 'HIIT' },
+        { title: '  ', provider: 'youtube', videoId: 'abcdefghijk' },
+      ],
+    }, {}, {});
+    expect(result.type).toBe('video-gallery');
+    expect(result.content.videos).toEqual([{
+      title: '20-Minute HIIT Workout',
+      description: '',
+      category: 'HIIT',
+      provider: 'youtube',
+      videoId: 'dQw4w9WgXcQ',
+      duration: '20 min',
+    }]);
+  });
+
   it('reads repair stages for the progress tracker', () => {
     const result = renderSection('progress-tracker', {
       title: 'Track Your Repair',
@@ -345,6 +364,30 @@ describe('layoutRenderer — feature gating', () => {
     });
     const types = page.sections.map((s) => s.type);
     expect(types).toContain('booking');
+  });
+
+  it('keeps workout videos from section settings and drops them on the trial plan', () => {
+    const sections = [{
+      type: 'video-gallery',
+      settings: {
+        title: 'On-Demand Workout Library',
+        videos: [{ title: 'Morning Yoga Flow', provider: 'vimeo', videoId: '123456789', duration: '30 min' }],
+      },
+    }];
+    const shown = composePage({
+      siteData: { businessName: 'Gym', sections },
+      layout: 'atelier',
+      level: 'solo',
+    });
+    const library = shown.sections.find((section) => section.type === 'video-gallery');
+    expect(library?.content.videos[0].title).toBe('Morning Yoga Flow');
+
+    const hidden = composePage({
+      siteData: { businessName: 'Gym', plan: 'trial', sections },
+      layout: 'atelier',
+      level: 'solo',
+    });
+    expect(hidden.sections.map((section) => section.type)).not.toContain('video-gallery');
   });
 
   it('keeps repair stages from section settings and drops them on the trial plan', () => {

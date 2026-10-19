@@ -515,6 +515,31 @@ const sectionPrimitives = {
     };
   },
 
+  'video-gallery'(content) {
+    const c = content || {};
+    const videos = (Array.isArray(c.videos) ? c.videos : [])
+      .map((video) => ({
+        title: String(video?.title || '').trim(),
+        description: typeof video?.description === 'string' ? video.description : '',
+        category: typeof video?.category === 'string' ? video.category : '',
+        provider: String(video?.provider || '').trim().toLowerCase(),
+        videoId: String(video?.videoId || '').trim(),
+        duration: typeof video?.duration === 'string' ? video.duration : '',
+      }))
+      .filter((video) => video.title);
+    return {
+      type: 'video-gallery',
+      content: {
+        title: c.title || c.heading || 'Videos',
+        description: typeof (c.description || c.subheading) === 'string' ? (c.description || c.subheading) : '',
+        showCategories: c.showCategories !== false,
+        videos,
+      },
+      settings: {},
+      accent: false,
+    };
+  },
+
   'progress-tracker'(content) {
     const c = content || {};
     const source = Array.isArray(c.statuses) ? c.statuses : (Array.isArray(c.stages) ? c.stages : []);
@@ -620,7 +645,6 @@ const SECTION_ALIASES = {
   'subscription-booking': 'booking',
   'native-booking': 'booking',
   'service-filters': 'services',
-  'video-gallery': 'gallery',
   'enhanced-profiles': 'team',
   'multi-step-form': 'contact',
 };
@@ -867,6 +891,7 @@ export function composePage({
           'interactive-calculator': FEATURES.INTERACTIVE_CALCULATOR,
           'diagnostic-quiz': FEATURES.DIAGNOSTIC_QUIZ,
           'progress-tracker': FEATURES.PROGRESS_TRACKER,
+          'video-gallery': FEATURES.VIDEO_GALLERY,
         }[section.type] || null;
         if (gatedFeature && plan && !hasFeature(plan, gatedFeature)) continue;
         const usesSettings = Boolean(gatedFeature);

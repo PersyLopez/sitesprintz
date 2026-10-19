@@ -50,6 +50,17 @@ describe('filterFeaturesByPlan', () => {
     expect(growth.settings.allowCheckout).toBe(true);
   });
 
+  it('drops a video library on the live trial and keeps it on Growth', () => {
+    const withVideos = {
+      sections: [
+        { type: 'hero' },
+        { type: 'video-gallery', settings: { videos: [{ title: 'Morning Yoga Flow' }] } },
+      ],
+    };
+    expect(filterFeaturesByPlan(withVideos, 'trial').sections.map((section) => section.type)).toEqual(['hero']);
+    expect(filterFeaturesByPlan(withVideos, 'growth').sections.map((section) => section.type)).toContain('video-gallery');
+  });
+
   it('drops a progress tracker on the live trial and keeps it on Growth', () => {
     const withTracker = {
       sections: [

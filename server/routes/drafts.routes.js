@@ -458,6 +458,9 @@ export function filterFeaturesByPlan(siteData, userPlan) {
   if (!hasFeature(plan, FEATURES.PROGRESS_TRACKER) && Array.isArray(filtered.sections)) {
     filtered.sections = filtered.sections.filter((section) => section?.type !== 'progress-tracker');
   }
+  if (!hasFeature(plan, FEATURES.VIDEO_GALLERY) && Array.isArray(filtered.sections)) {
+    filtered.sections = filtered.sections.filter((section) => section?.type !== 'video-gallery');
+  }
   
   if (!hasFeature(plan, FEATURES.ORDER_MANAGEMENT)) {
     filtered.settings = {
