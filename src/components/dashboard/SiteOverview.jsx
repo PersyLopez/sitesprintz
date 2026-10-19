@@ -8,7 +8,7 @@ import { api } from '../../services/api';
 import { OWNER_ORDER_FILTERS, countOrdersForOwnerFilter } from '../../utils/orderOwnerStatus';
 
 function SiteOverview() {
-  const { site } = useSiteWorkspace();
+  const { site, unreadMessages } = useSiteWorkspace();
   const { user } = useAuth();
   const { isGrowth } = usePlan();
   const [today, setToday] = useState({ nextAppointment: null, newOrderCount: 0 });
@@ -79,6 +79,13 @@ function SiteOverview() {
         : 'Ordering is available if you turn it on for this site.',
       meta: isGrowth ? 'Open order inbox' : 'Growth plan required',
       testId: 'site-overview-orders',
+    },
+    {
+      to: paths.messages,
+      title: 'Messages',
+      body: 'Contact form messages for this site.',
+      meta: unreadMessages > 0 ? `${unreadMessages} unread` : 'Open messages',
+      testId: 'site-overview-messages',
     },
     {
       to: paths.appointments,

@@ -226,6 +226,8 @@ describe('SiteDashboard', () => {
       expect(screen.getByTestId('site-nav-messages-unread')).toHaveTextContent('2');
     });
     expect(screen.getByTestId('site-nav-messages')).toHaveAccessibleName(/Messages\s*2/);
+    expect(screen.getByTestId('site-overview-messages')).toHaveAttribute('href', '/dashboard/sites/site-1/messages');
+    expect(screen.getByTestId('site-overview-messages')).toHaveTextContent('2 unread');
   });
 
   it('shows no unread count when the submissions array is missing', async () => {
@@ -236,6 +238,7 @@ describe('SiteDashboard', () => {
     });
 
     expect(screen.queryByTestId('site-nav-messages-unread')).not.toBeInTheDocument();
+    expect(screen.getByTestId('site-overview-messages')).toHaveTextContent('Open messages');
   });
 
 });

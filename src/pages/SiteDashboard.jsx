@@ -162,7 +162,7 @@ function SiteDashboard() {
   ];
 
   return (
-    <SiteWorkspaceProvider site={site} siteId={site.id} refreshUnreadMessages={refreshUnreadMessages}>
+    <SiteWorkspaceProvider site={site} siteId={site.id} unreadMessages={unreadMessages} refreshUnreadMessages={refreshUnreadMessages}>
       <div className="site-workspace-page">
         <a href="#site-workspace-main" className="skip-to-content">Skip to main content</a>
         <Header />

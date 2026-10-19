@@ -27,6 +27,15 @@ steps:
       await page.waitForURL((u) => /\/dashboard\/sites\//.test(u.pathname), { timeout: 20000 });
     settle_ms: 1500
 
+  - action: Overview Messages card visible and linked
+    code: |
+      const card = page.getByTestId('site-overview-messages');
+      await card.waitFor({ state: 'visible', timeout: 15000 });
+      const href = await card.getAttribute('href');
+      if (!href || !href.endsWith('/messages')) {
+        throw new Error('Overview Messages card href does not end with /messages: ' + href);
+      }
+
   - action: Open Messages nav
     click: { testId: site-nav-messages }
     wait_for: { text: Messages, timeout: 15000 }
