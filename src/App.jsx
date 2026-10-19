@@ -21,6 +21,7 @@ const SiteOverview = lazy(() => import('./components/dashboard/SiteOverview'));
 const SiteSettingsPanel = lazy(() => import('./components/dashboard/SiteSettingsPanel'));
 const Setup = lazy(() => import('./pages/Setup'));
 const Orders = lazy(() => import('./pages/Orders'));
+const Inquiries = lazy(() => import('./pages/Inquiries'));
 const Analytics = lazy(() => import('./pages/Analytics'));
 const Admin = lazy(() => import('./pages/Admin'));
 const AdminUsers = lazy(() => import('./pages/AdminUsers'));
@@ -296,6 +297,14 @@ function App() {
                   element={
                     <Suspense fallback={<LoadingFallback message="Loading orders..." />}>
                       <Orders />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="messages"
+                  element={
+                    <Suspense fallback={<LoadingFallback message="Loading messages..." />}>
+                      <Inquiries />
                     </Suspense>
                   }
                 />

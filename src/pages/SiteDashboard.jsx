@@ -124,6 +124,7 @@ function SiteDashboard() {
   const navItems = [
     { to: paths.overview, label: 'Overview', end: true, testId: 'site-nav-overview' },
     { to: paths.orders, label: 'Orders', testId: 'site-nav-orders' },
+    { to: paths.messages, label: 'Messages', testId: 'site-nav-messages' },
     { to: paths.appointments, label: 'Appointments', testId: 'site-nav-appointments' },
     { to: paths.products, label: 'Products', testId: 'site-nav-products' },
     { to: paths.settings, label: 'Settings', testId: 'site-nav-settings' },

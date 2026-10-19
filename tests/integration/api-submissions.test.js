@@ -267,39 +267,43 @@ describe('Submissions Routes Integration Tests', () => {
 
   describe('PATCH /api/submissions/:submissionId/read', () => {
     it('should mark submission as read when authenticated', async () => {
-      // Use a valid UUID
-      const submissionId = randomUUID();
+      // Use a numeric id that follows the mock's success path
+      prisma.submissions.findUnique.mockResolvedValue({
+        id: 17,
+        site_id: testSiteId,
+        form_type: 'contact',
+        data: {},
+        status: 'unread',
+        created_at: new Date(),
+        sites: { user_id: testUserId }
+      });
+      prisma.submissions.update.mockResolvedValue({ id: 17, status: 'read' });
 
       const response = await request(authApp)
-        .patch(`/api/submissions/${submissionId}/read`)
+        .patch('/api/submissions/17/read')
         .set('Authorization', 'Bearer test-token');
 
-      // Should succeed (UPDATE succeeds even if no rows affected)
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('success', true);
       expect(response.body).toHaveProperty('message');
     });
 
     it('should reject unauthenticated requests', async () => {
-      const submissionId = randomUUID();
-
       const response = await request(app)
-        .patch(`/api/submissions/${submissionId}/read`);
+        .patch('/api/submissions/17/read');
       // No auth token
 
       // Should require authentication
       expect([401, 403]).toContain(response.status);
     });
 
-    it('should handle invalid submission ID gracefully', async () => {
-      const submissionId = randomUUID();
-
+    it('should reject a non-numeric submission ID with 400', async () => {
       const response = await request(authApp)
-        .patch(`/api/submissions/${submissionId}/read`)
+        .patch('/api/submissions/not-a-number/read')
         .set('Authorization', 'Bearer test-token');
 
-      // Should succeed (UPDATE doesn't fail on 0 rows)
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('code', 'INVALID_ID');
     });
 
     it('should handle empty submission ID', async () => {

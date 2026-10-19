@@ -1,0 +1,80 @@
+url: http://localhost:5173/login
+goal: Owner opens Messages in the site workspace and sees this site's contact submissions; opening one marks it read
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter email
+    fill: { testId: login-email, value: "test@example.com" }
+
+  - action: Enter password
+    fill: { testId: login-password, value: "SecurePass!2024" }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 4000
+
+  - action: Reach a site workspace
+    code: |
+      const url = page.url();
+      if (!/\/dashboard\/sites\//.test(url)) {
+        const manage = page.getByTestId('manage-site-button').first();
+        if ((await manage.count()) === 0) {
+          throw new Error('Not on a site workspace and no Manage button, at ' + url);
+        }
+        await manage.click();
+      }
+      await page.waitForURL((u) => /\/dashboard\/sites\//.test(u.pathname), { timeout: 20000 });
+    settle_ms: 1500
+
+  - action: Open Messages nav
+    click: { testId: site-nav-messages }
+    wait_for: { text: Messages, timeout: 15000 }
+    settle_ms: 1000
+
+  - action: Seed a contact submission for this site
+    code: |
+      const h1 = page.locator('h1[title]').first();
+      if ((await h1.count()) === 0) throw new Error('Workspace h1 with title attribute not found');
+      const subdomain = await h1.getAttribute('title');
+      if (!subdomain) throw new Error('Workspace h1 title attribute empty');
+      const res = await page.evaluate(async (sub) => {
+        const r = await fetch('/api/submissions/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            subdomain: sub,
+            name: 'Mantest Lead',
+            email: 'lead@example.com',
+            message: 'Mantest lead'
+          })
+        });
+        return r.json();
+      }, subdomain);
+      if (!res || res.demo !== true) {
+        await page.reload();
+        await page.getByTestId('site-inquiries').waitFor({ state: 'visible', timeout: 20000 });
+      }
+    settle_ms: 1200
+
+  - action: Demo site shows empty state, non-demo shows the lead
+    code: |
+      if (await page.getByTestId('site-inquiries-empty').count()) return;
+      const rows = page.getByTestId('site-inquiry-row');
+      const text = await page.getByTestId('site-inquiries').innerText();
+      if (!text.includes('Mantest lead')) {
+        throw new Error('Seeded message not visible in Messages list');
+      }
+    settle_ms: 400
+
+  - action: Opening the row marks it read
+    code: |
+      if (await page.getByTestId('site-inquiries-empty').count()) return;
+      const row = page.getByTestId('site-inquiry-row').first();
+      await row.click();
+      await page.waitForTimeout(1000);
+      const rowText = await page.getByTestId('site-inquiry-row').first().innerText();
+      if (/\bNew\b/.test(rowText)) {
+        throw new Error('Row still shows New after being opened');
+      }
+    settle_ms: 400

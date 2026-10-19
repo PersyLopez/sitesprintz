@@ -104,6 +104,7 @@ export function getSiteWorkspacePaths(siteId, site = {}) {
   return {
     overview: base,
     orders: `${base}/orders`,
+    messages: `${base}/messages`,
     appointments: `${base}/appointments`,
     products: `${base}/products`,
     settings: `${base}/settings`,

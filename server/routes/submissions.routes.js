@@ -324,7 +324,10 @@ router.get('/site/:subdomain', requireAuth, asyncHandler(async (req, res) => {
  * Get a single submission
  */
 router.get('/:submissionId', requireAuth, asyncHandler(async (req, res) => {
-  const { submissionId } = req.params;
+  const submissionId = Number.parseInt(req.params.submissionId, 10);
+  if (!Number.isFinite(submissionId)) {
+    return sendBadRequest(res, 'Invalid submission id', 'INVALID_ID');
+  }
   const userId = req.user.id || req.user.userId;
 
   const submission = await prisma.submissions.findUnique({
@@ -375,7 +378,10 @@ router.get('/:submissionId', requireAuth, asyncHandler(async (req, res) => {
  * Mark submission as read
  */
 router.patch('/:submissionId/read', requireAuth, asyncHandler(async (req, res) => {
-  const { submissionId } = req.params;
+  const submissionId = Number.parseInt(req.params.submissionId, 10);
+  if (!Number.isFinite(submissionId)) {
+    return sendBadRequest(res, 'Invalid submission id', 'INVALID_ID');
+  }
   const userId = req.user.id || req.user.userId;
 
   // Find submission with site ownership check
@@ -413,7 +419,10 @@ router.patch('/:submissionId/read', requireAuth, asyncHandler(async (req, res) =
  * Archive a submission
  */
 router.patch('/:submissionId/archive', requireAuth, asyncHandler(async (req, res) => {
-  const { submissionId } = req.params;
+  const submissionId = Number.parseInt(req.params.submissionId, 10);
+  if (!Number.isFinite(submissionId)) {
+    return sendBadRequest(res, 'Invalid submission id', 'INVALID_ID');
+  }
   const userId = req.user.id || req.user.userId;
 
   const submission = await prisma.submissions.findUnique({
@@ -446,7 +455,10 @@ router.patch('/:submissionId/archive', requireAuth, asyncHandler(async (req, res
  * Delete a submission
  */
 router.delete('/:submissionId', requireAuth, asyncHandler(async (req, res) => {
-  const { submissionId } = req.params;
+  const submissionId = Number.parseInt(req.params.submissionId, 10);
+  if (!Number.isFinite(submissionId)) {
+    return sendBadRequest(res, 'Invalid submission id', 'INVALID_ID');
+  }
   const userId = req.user.id || req.user.userId;
 
   const submission = await prisma.submissions.findUnique({
