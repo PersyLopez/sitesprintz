@@ -42,6 +42,7 @@ vi.mock('../../src/utils/visitorExperience', () => ({
   siteWantsNativeBooking: () => true,
   siteFeesEnabled: () => false,
   subdomainFromLivePath: () => 'gallery-salon',
+  livePublishedPath: (subdomain) => `/view/${subdomain}`,
 }));
 
 function renderViewer(entry = '/view/gallery-salon') {

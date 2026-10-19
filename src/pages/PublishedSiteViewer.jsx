@@ -4,11 +4,9 @@
  * with cart overlay when checkout is enabled.
  */
 
-import React, { useState, useEffect, useLayoutEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import BookingWidget from '../components/BookingWidget';
-import ShoppingCart from '../components/ecommerce/ShoppingCart';
 import SeamlessEditToolbar from '../components/published/SeamlessEditToolbar';
 import { CartProvider } from '../context/CartContext';
 import { useCart } from '../hooks/useCart';
@@ -24,6 +22,9 @@ import { post } from '../utils/api';
 import { tLive } from '../i18n/liveChrome/index.js';
 import { useLocale } from '../i18n/LocaleContext.jsx';
 import '../styles/published-site-viewer.css';
+
+const BookingWidget = lazy(() => import('../components/BookingWidget'));
+const ShoppingCart = lazy(() => import('../components/ecommerce/ShoppingCart'));
 
 /**
  * Server-inlined showcase JSON (window.__RSL_PUBLISHED_SITE__) lets the FIRST
@@ -300,16 +301,18 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
     site?.online_payment_ready === true || site?.stripe_connected === true
   );
   const bookingWidget = bookingEnabled ? (
-    <BookingWidget
-      userId={ownerUserId}
-      siteId={siteId}
-      demoMode={demoMode}
-      businessMode={bookingMode}
-      noPreferenceText={bookingNoPreference}
-      pageCatalogMode={pageCatalogMode}
-      feesEnabled={feesEnabled}
-      paymentsReady={paymentsReady}
-    />
+    <Suspense fallback={null}>
+      <BookingWidget
+        userId={ownerUserId}
+        siteId={siteId}
+        demoMode={demoMode}
+        businessMode={bookingMode}
+        noPreferenceText={bookingNoPreference}
+        pageCatalogMode={pageCatalogMode}
+        feesEnabled={feesEnabled}
+        paymentsReady={paymentsReady}
+      />
+    </Suspense>
   ) : null;
 
   const portalTarget = bookingMount?.isConnected ? bookingMount : null;
@@ -352,13 +355,15 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
       )}
 
       {checkoutEnabled && (
-        <ShoppingCart
-          stripePublishableKey={import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY}
-          siteId={siteId}
-          paymentsReady={paymentsReady}
-          payOnSite={demoMode || isPayOnSiteEnabled(payload)}
-          deliveryConfig={getPublicDeliveryConfig(payload)}
-        />
+        <Suspense fallback={null}>
+          <ShoppingCart
+            stripePublishableKey={import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY}
+            siteId={siteId}
+            paymentsReady={paymentsReady}
+            payOnSite={demoMode || isPayOnSiteEnabled(payload)}
+            deliveryConfig={getPublicDeliveryConfig(payload)}
+          />
+        </Suspense>
       )}
 
       {markup ? (
