@@ -59,6 +59,7 @@ const EXPECTED_TYPES = [
   'video-gallery',
   'class-scheduler',
   'subscription-booking',
+  'service-filters',
   'placeholder',
 ];
 
@@ -786,6 +787,33 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(fragment).toContain('class="ss-live"');
     expect(fragment).toContain('Trial Shop');
     expect(renderPublishedViewFragment(null)).toBe('');
+  });
+
+  it('renders menu filters that hide items in the browser', () => {
+    const html = renderSectionToHtml({
+      type: 'service-filters',
+      content: {
+        title: 'Filter Menu',
+        items: [{
+          name: 'Vegan Power Bowl',
+          price: 24,
+          category: 'Main Course',
+          dietary: ['vegan', 'gluten-free'],
+          petType: [],
+        }],
+        groups: [{
+          key: 'dietary',
+          label: 'Dietary Restrictions',
+          options: [{ value: 'vegan', label: 'Vegan' }],
+        }],
+      },
+    }, tokens);
+    expect(html).toContain('data-testid="filter-list"');
+    expect(html).toContain('data-dietary="vegan|gluten-free"');
+    expect(html).toContain('Dietary Restrictions');
+    expect(html).toContain('Vegan Power Bowl');
+    expect(html).toContain('items[i].hidden');
+    expect(html).not.toContain('console.log');
   });
 
   it('lists plans and posts a request without a checkout', () => {

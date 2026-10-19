@@ -50,6 +50,17 @@ describe('filterFeaturesByPlan', () => {
     expect(growth.settings.allowCheckout).toBe(true);
   });
 
+  it('drops menu filters on the live trial and keeps them on Starter', () => {
+    const withFilters = {
+      sections: [
+        { type: 'hero' },
+        { type: 'service-filters', settings: { items: [{ name: 'Caesar Salad' }] } },
+      ],
+    };
+    expect(filterFeaturesByPlan(withFilters, 'trial').sections.map((section) => section.type)).toEqual(['hero']);
+    expect(filterFeaturesByPlan(withFilters, 'starter').sections.map((section) => section.type)).toContain('service-filters');
+  });
+
   it('drops a maintenance plan on the live trial and keeps it on Growth', () => {
     const withPlans = {
       sections: [

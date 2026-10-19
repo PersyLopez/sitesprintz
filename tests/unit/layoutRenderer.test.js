@@ -58,6 +58,31 @@ describe('layoutRenderer — renderSection() known types', () => {
     expect(result.content.displayVariant).toBe('list');
   });
 
+  it('reads menu items and dietary filters', () => {
+    const result = renderSection('service-filters', {
+      heading: 'Filter Menu',
+      filters: ['category', 'dietary'],
+      filterConfig: {
+        dietary: { label: 'Dietary Restrictions', options: [{ value: 'vegan', label: 'Vegan' }] },
+      },
+      items: [
+        { name: 'Vegan Power Bowl', category: 'Main Course', price: 24, dietary: ['vegan', 'gluten-free'] },
+        { name: '  ', price: 1 },
+      ],
+    }, {}, {});
+    expect(result.type).toBe('service-filters');
+    expect(result.content.items).toEqual([{
+      name: 'Vegan Power Bowl',
+      price: 24,
+      description: '',
+      category: 'Main Course',
+      dietary: ['vegan', 'gluten-free'],
+      petType: [],
+    }]);
+    expect(result.content.groups.map((group) => group.key)).toEqual(['category', 'dietary']);
+    expect(result.content.groups[1].options).toEqual([{ value: 'vegan', label: 'Vegan' }]);
+  });
+
   it('reads plan names and prices', () => {
     const result = renderSection('subscription-booking', {
       title: 'Maintenance Plans',
@@ -403,6 +428,31 @@ describe('layoutRenderer — feature gating', () => {
     });
     const types = page.sections.map((s) => s.type);
     expect(types).toContain('booking');
+  });
+
+  it('keeps menu filters from section settings and drops them on the trial plan', () => {
+    const sections = [{
+      type: 'service-filters',
+      settings: {
+        heading: 'Filter Menu',
+        filters: ['dietary'],
+        items: [{ name: 'Caesar Salad', dietary: ['vegetarian'] }],
+      },
+    }];
+    const shown = composePage({
+      siteData: { businessName: 'Restaurant', sections },
+      layout: 'atelier',
+      level: 'solo',
+    });
+    const filters = shown.sections.find((section) => section.type === 'service-filters');
+    expect(filters?.content.items[0].dietary).toEqual(['vegetarian']);
+
+    const hidden = composePage({
+      siteData: { businessName: 'Restaurant', plan: 'trial', sections },
+      layout: 'atelier',
+      level: 'solo',
+    });
+    expect(hidden.sections.map((section) => section.type)).not.toContain('service-filters');
   });
 
   it('keeps maintenance plans from section settings and drops them on the trial plan', () => {

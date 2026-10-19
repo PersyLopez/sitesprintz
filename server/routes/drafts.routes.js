@@ -467,6 +467,9 @@ export function filterFeaturesByPlan(siteData, userPlan) {
   if (!hasFeature(plan, FEATURES.SUBSCRIPTION_BOOKING) && Array.isArray(filtered.sections)) {
     filtered.sections = filtered.sections.filter((section) => section?.type !== 'subscription-booking');
   }
+  if (!hasFeature(plan, FEATURES.FILTERS) && Array.isArray(filtered.sections)) {
+    filtered.sections = filtered.sections.filter((section) => section?.type !== 'service-filters');
+  }
   
   if (!hasFeature(plan, FEATURES.ORDER_MANAGEMENT)) {
     filtered.settings = {

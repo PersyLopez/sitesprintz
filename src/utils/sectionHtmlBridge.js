@@ -54,6 +54,7 @@ export const ALL_SECTION_TYPES = [
   'video-gallery',
   'class-scheduler',
   'subscription-booking',
+  'service-filters',
   'placeholder',
 ];
 
@@ -1204,6 +1205,76 @@ function renderDiagnosticQuiz(section, tokens) {
 </section>`;
 }
 
+function filterDataAttr(key) {
+  return key === 'petType' ? 'pettype' : key;
+}
+
+function renderServiceFilters(section, tokens) {
+  const c = section.content || {};
+  const items = Array.isArray(c.items) ? c.items : [];
+  const groups = Array.isArray(c.groups) ? c.groups : [];
+  const title = c.title || 'Filter';
+  const description = c.description || '';
+  const controls = groups.map((group) => {
+    const attr = filterDataAttr(group.key);
+    const options = (group.options || []).map((option) => `<option value="${escapeAttr(option.value)}">${escapeHtml(option.label)}</option>`).join('');
+    return `<label class="ss-field">
+      <span>${escapeHtml(group.label)}</span>
+      <select data-ss-filter="${escapeAttr(attr)}" data-testid="service-filter">
+        <option value="">All</option>
+        ${options}
+      </select>
+    </label>`;
+  }).join('\n');
+  const cards = items.map((item) => {
+    const price = Number(item.price) > 0 ? packageMoney(item.price) : '';
+    return `<li data-ss-filter-item data-category="${escapeAttr(item.category || '')}" data-dietary="${escapeAttr((item.dietary || []).join('|'))}" data-pettype="${escapeAttr((item.petType || []).join('|'))}" data-testid="filter-item" style="padding: 16px; background: ${getSurface(tokens)}; border-radius: 12px;">
+      <strong>${escapeHtml(item.name)}</strong>
+      ${price ? `<span> ${escapeHtml(price)}</span>` : ''}
+      ${item.category ? `<p style="color: ${getMuted(tokens)}; margin: 4px 0 0;">${escapeHtml(item.category)}</p>` : ''}
+      ${item.description ? `<p style="margin: 4px 0 0;">${escapeHtml(item.description)}</p>` : ''}
+    </li>`;
+  }).join('\n');
+  return `<section id="filters" class="ss-filters" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
+  <div class="ss-container" style="max-width: 720px; margin: 0 auto;">
+    <h2 style="text-align: center; color: ${getAccent(tokens)}; margin-bottom: 16px;">${escapeHtml(title)}</h2>
+    ${description ? `<p style="text-align: center; color: ${getMuted(tokens)}; margin-bottom: 24px;">${escapeHtml(description)}</p>` : ''}
+    <div data-ss-filter-root>
+      <div style="display: grid; gap: 12px; margin-bottom: 16px;">${controls}</div>
+      <p data-ss-filter-count data-testid="filter-count" role="status" aria-live="polite"></p>
+      <ul data-testid="filter-list" style="list-style: none; padding: 0; margin: 0; display: grid; gap: 12px;">${cards}</ul>
+    </div>
+    <script>
+    (function () {
+      var root = document.currentScript && document.currentScript.previousElementSibling;
+      if (!root || !root.querySelectorAll) return;
+      var items = root.querySelectorAll('[data-ss-filter-item]');
+      var count = root.querySelector('[data-ss-filter-count]');
+      function apply() {
+        var controls = root.querySelectorAll('[data-ss-filter]');
+        var shown = 0;
+        for (var i = 0; i < items.length; i++) {
+          var visible = true;
+          for (var j = 0; j < controls.length; j++) {
+            var value = controls[j].value;
+            if (!value) continue;
+            var attr = 'data-' + controls[j].getAttribute('data-ss-filter');
+            var parts = (items[i].getAttribute(attr) || '').split('|');
+            if (parts.indexOf(value) === -1) visible = false;
+          }
+          items[i].hidden = !visible;
+          if (visible) shown += 1;
+        }
+        if (count) count.textContent = 'Showing ' + shown + ' of ' + items.length;
+      }
+      root.addEventListener('change', apply);
+      apply();
+    })();
+    </script>
+  </div>
+</section>`;
+}
+
 function renderSubscriptionBooking(section, tokens) {
   const c = section.content || {};
   const plans = Array.isArray(c.plans) ? c.plans : [];
@@ -1446,6 +1517,7 @@ const RENDERERS = {
   'video-gallery': renderVideoGallery,
   'class-scheduler': renderClassScheduler,
   'subscription-booking': renderSubscriptionBooking,
+  'service-filters': renderServiceFilters,
   placeholder: renderPlaceholder,
 };
 

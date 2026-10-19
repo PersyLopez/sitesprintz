@@ -543,6 +543,38 @@ const sectionPrimitives = {
     };
   },
 
+  'service-filters'(content) {
+    const c = content || {};
+    const items = (Array.isArray(c.items) ? c.items : [])
+      .map((item) => ({
+        name: String(item?.name || '').trim(),
+        price: Number(item?.price) || 0,
+        description: typeof item?.description === 'string' ? item.description : '',
+        category: String(item?.category || '').trim(),
+        dietary: filterTags(item?.dietary),
+        petType: filterTags(item?.petType),
+      }))
+      .filter((item) => item.name);
+    const config = c.filterConfig && typeof c.filterConfig === 'object' ? c.filterConfig : {};
+    const keys = Array.isArray(c.filters) ? c.filters.map((key) => String(key || '').trim()).filter(Boolean) : [];
+    const groups = keys.map((key) => ({
+      key,
+      label: String(config[key]?.label || (key === 'category' ? 'Category' : key === 'petType' ? 'Pet type' : 'Dietary')).trim(),
+      options: filterOptions(items, key, config[key]),
+    })).filter((group) => group.options.length);
+    return {
+      type: 'service-filters',
+      content: {
+        title: c.heading || c.title || 'Filter',
+        description: typeof (c.subheading || c.description) === 'string' ? (c.subheading || c.description) : '',
+        items,
+        groups,
+      },
+      settings: {},
+      accent: false,
+    };
+  },
+
   'class-scheduler'(content) {
     const c = content || {};
     const classes = (Array.isArray(c.classes) ? c.classes : [])
@@ -695,9 +727,31 @@ function resolveHeroCta(variant, _siteData) {
 // Helper: flatten menu sections to product list for catalog
 // ---------------------------------------------------------------------------
 
+function filterTags(value) {
+  const source = Array.isArray(value) ? value : (value ? [value] : []);
+  return source.map((tag) => String(tag || '').trim()).filter(Boolean);
+}
+
+function filterOptions(items, key, configured) {
+  const fromConfig = Array.isArray(configured?.options)
+    ? configured.options
+      .map((option) => ({
+        value: String(option?.value || '').trim(),
+        label: String(option?.label || option?.value || '').trim(),
+      }))
+      .filter((option) => option.value && option.label)
+    : [];
+  if (fromConfig.length) return fromConfig;
+  const seen = new Set();
+  items.forEach((item) => {
+    const tags = key === 'category' ? filterTags(item.category) : filterTags(item[key]);
+    tags.forEach((tag) => seen.add(tag));
+  });
+  return [...seen].map((value) => ({ value, label: value }));
+}
+
 const SECTION_ALIASES = {
   'native-booking': 'booking',
-  'service-filters': 'services',
   'enhanced-profiles': 'team',
   'multi-step-form': 'contact',
 };
@@ -947,6 +1001,7 @@ export function composePage({
           'video-gallery': FEATURES.VIDEO_GALLERY,
           'class-scheduler': FEATURES.CLASS_SCHEDULER,
           'subscription-booking': FEATURES.SUBSCRIPTION_BOOKING,
+          'service-filters': FEATURES.FILTERS,
         }[section.type] || null;
         if (gatedFeature && plan && !hasFeature(plan, gatedFeature)) continue;
         const usesSettings = Boolean(gatedFeature);

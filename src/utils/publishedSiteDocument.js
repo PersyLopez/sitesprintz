@@ -90,6 +90,8 @@ function isEmptyOptional(section) {
       return list(c.classes).length === 0;
     case 'subscription-booking':
       return list(c.plans).length === 0;
+    case 'service-filters':
+      return list(c.items).length === 0;
     case 'process':
     case 'how-to-order':
       return list(c.steps).length === 0;
