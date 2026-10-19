@@ -225,6 +225,7 @@ app.use('/api/webhooks', webhookRoutes);
 
 // Enable JSON parser for the rest of the API
 app.use(bodyParser.json({ limit: '1mb' }));
+app.use(bodyParser.urlencoded({ extended: false, limit: '32kb' }));
 app.use(cookieParser());
 
 // Apply general API rate limiting (excludes webhooks which are handled separately)

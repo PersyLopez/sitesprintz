@@ -125,7 +125,7 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
   const markup = useMemo(() => {
     if (!payload || Object.keys(payload).length === 0) return null;
     try {
-      return buildLiveSiteMarkup(payload, { locale });
+      return buildLiveSiteMarkup(payload, { locale, subdomain });
     } catch {
       return null;
     }
@@ -178,8 +178,15 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
     const node = bookingEnabled ? root.querySelector('[data-ss-booking-mount]') : null;
     setBookingMount((current) => (current === node ? current : node));
     mountGoogleReviews(root);
+    if (searchParams.get('contact') === 'sent') {
+      const status = root.querySelector('[data-testid="contact-form-status"]');
+      if (status) {
+        status.textContent = 'Your message has been sent.';
+        status.setAttribute('data-state', 'success');
+      }
+    }
     return undefined;
-  }, [markup, bookingEnabled]);
+  }, [markup, bookingEnabled, searchParams]);
 
   if (loading) {
     return (

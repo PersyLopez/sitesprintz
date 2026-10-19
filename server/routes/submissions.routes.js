@@ -38,6 +38,34 @@ import {
 const router = express.Router();
 
 /**
+ * Where a no-JS contact form returns. Same-origin referer keeps the shop
+ * path (including a custom domain). Anything else goes to the public view.
+ */
+export function contactPostedReturnPath({ host, referer, subdomain }) {
+  const fallback = `/view/${encodeURIComponent(subdomain || '')}?contact=sent`;
+  if (!referer || !host) return fallback;
+  try {
+    const url = new URL(referer);
+    if (url.host !== host) return fallback;
+    url.searchParams.set('contact', 'sent');
+    return `${url.pathname}${url.search}`;
+  } catch {
+    return fallback;
+  }
+}
+
+function replyContactSaved(req, res, subdomain, body, message) {
+  if (req.is('application/x-www-form-urlencoded')) {
+    return res.redirect(303, contactPostedReturnPath({
+      host: req.get('host'),
+      referer: req.get('referer'),
+      subdomain,
+    }));
+  }
+  return sendCreated(res, body, message);
+}
+
+/**
  * Persist a contact-form health probe via the real submit path (no owner email).
  */
 export async function createContactHealthProbe() {
@@ -164,7 +192,7 @@ router.post('/contact', asyncHandler(async (req, res) => {
 
   const siteData = parseSiteData(site);
   if (isShowcaseDemoSite(site) || isShowcaseDemoSiteData(siteData)) {
-    return sendCreated(res, {
+    return replyContactSaved(req, res, subdomain, {
       submissionId: buildDemoOrderId(),
       demo: true,
     }, 'Your message has been sent successfully');
@@ -214,7 +242,7 @@ router.post('/contact', asyncHandler(async (req, res) => {
     });
   }
 
-  return sendCreated(res, {
+  return replyContactSaved(req, res, subdomain, {
     submissionId: submission.id
   }, 'Your message has been sent successfully');
 }));

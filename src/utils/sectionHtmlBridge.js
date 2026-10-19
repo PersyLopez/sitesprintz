@@ -518,8 +518,8 @@ function renderContact(section, tokens) {
     <h2 style="text-align: center; color: ${getAccent(tokens)}; margin-bottom: 40px;">${escapeHtml(title)}</h2>
     ${details ? `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; margin-bottom: 32px;">${details}</div>` : ''}
     ${serviceAreaMapHtml(c)}
-    <form id="contact-form" class="ss-contact-form" data-testid="contact-form" data-type="contact" novalidate>
-      <input type="hidden" name="subdomain" value="" />
+    <form id="contact-form" class="ss-contact-form" data-testid="contact-form" data-type="contact" method="post" action="/api/submissions/contact" novalidate>
+      <input type="hidden" name="subdomain" value="${escapeAttr(tokens?._contactSubdomain || '')}" />
       <p class="ss-form-status" data-testid="contact-form-status" role="status" aria-live="polite"></p>
       <label class="ss-field">
         <span>Name</span>

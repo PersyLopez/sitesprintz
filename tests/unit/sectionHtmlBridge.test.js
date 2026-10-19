@@ -390,6 +390,17 @@ describe('sectionHtmlBridge', () => {
     expect(html).toContain('data-type="contact"');
     expect(html).toContain('data-testid="contact-form-submit"');
     expect(html).toContain('name="message"');
+    expect(html).toContain('method="post"');
+    expect(html).toContain('action="/api/submissions/contact"');
+    expect(html).toContain('name="subdomain" value=""');
+  });
+
+  it('stamps the shop subdomain on the contact form', () => {
+    const html = renderSectionToHtml({
+      type: 'contact',
+      content: { title: 'Contact Us' },
+    }, { ...tokens, _contactSubdomain: 'gallery-salon' });
+    expect(html).toContain('name="subdomain" value="gallery-salon"');
   });
 
   it('renders review quotes instead of a placeholder', () => {

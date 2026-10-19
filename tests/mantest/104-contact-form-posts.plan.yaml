@@ -1,0 +1,15 @@
+url: http://localhost:5173/view/gallery-salon
+goal: The live contact form posts to the inbox and names this shop
+steps:
+  - action: Contact form is present
+    wait_for: { selector: '[data-testid="contact-form"]', timeout: 20000 }
+
+  - action: Form posts to the contact inbox with the shop subdomain
+    code: |
+      const form = page.getByTestId('contact-form');
+      const method = await form.getAttribute('method');
+      const action = await form.getAttribute('action');
+      const subdomain = await form.locator('input[name="subdomain"]').inputValue();
+      if (method !== 'post') throw new Error('method ' + method);
+      if (!action || !action.endsWith('/api/submissions/contact')) throw new Error('action ' + action);
+      if (subdomain !== 'gallery-salon') throw new Error('subdomain ' + subdomain);
