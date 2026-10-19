@@ -55,6 +55,7 @@ steps:
             subdomain: sub,
             name: 'Mantest Lead',
             email: 'lead@example.com',
+            phone: '201-555-0123',
             message: 'Mantest lead'
           })
         });
@@ -73,6 +74,10 @@ steps:
       const text = await page.getByTestId('site-inquiries').innerText();
       if (!text.includes('Mantest lead')) {
         throw new Error('Seeded message not visible in Messages list');
+      }
+      const phone = page.getByTestId('site-inquiry-phone').filter({ hasText: '201-555-0123' });
+      if ((await phone.count()) === 0) {
+        throw new Error('Seeded phone is not visible on the message');
       }
     settle_ms: 400
 

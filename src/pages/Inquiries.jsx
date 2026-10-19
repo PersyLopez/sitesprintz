@@ -133,6 +133,9 @@ function Inquiries() {
                       <div className="orders-table-customer">
                         <strong>{submission.name || 'Visitor'}</strong>
                         {submission.email && <span>{submission.email}</span>}
+                        {submission.phone && (
+                          <span data-testid="site-inquiry-phone">{submission.phone}</span>
+                        )}
                       </div>
                     </td>
                     <td>{submission.message}</td>
