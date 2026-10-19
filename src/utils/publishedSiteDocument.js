@@ -653,3 +653,20 @@ ${mapScript}`;
 
   return { css, html, page, tokens: page.tokens };
 }
+
+/**
+ * Shop HTML for the /view document, painted before the app script runs.
+ * The viewer replaces #root and writes the same composition again.
+ */
+export function renderPublishedViewFragment(site) {
+  const data = site?.data || site?.site_data;
+  if (!data || typeof data !== 'object') return '';
+  try {
+    const markup = buildLiveSiteMarkup(data, { subdomain: site?.subdomain });
+    if (!markup?.html) return '';
+    const css = String(markup.css || '').replace(/<\/style/gi, '<\\/style');
+    return `<style id="ss-prerender">${css}</style><div class="ss-live">${markup.html}</div>`;
+  } catch {
+    return '';
+  }
+}

@@ -171,6 +171,21 @@ export function injectPublishedSiteEmbed(html, payload) {
 }
 
 /**
+ * Put the composed shop inside #root so the browser can paint it before the
+ * module script runs. An empty fragment leaves the shell unchanged.
+ *
+ * @param {string} html
+ * @param {string} fragment
+ * @returns {string}
+ */
+export function injectPublishedViewMarkup(html, fragment) {
+  if (typeof html !== 'string' || typeof fragment !== 'string' || !fragment.trim()) return html;
+  const rootPattern = /<div id="root">\s*<\/div>/;
+  if (!rootPattern.test(html)) return html;
+  return html.replace(rootPattern, `<div id="root">${fragment}</div>`);
+}
+
+/**
  * Strip marketing-shell third parties that published /view documents never
  * need: the Cloudflare Turnstile script (Register-only) and Unsplash
  * preconnect/dns-prefetch hints. Fonts, canonical, and og tags stay.

@@ -58,7 +58,8 @@ import { query, prisma } from './database/db.js';
 import publishedSiteRenderer from './server/services/publishedSiteRenderer.js';
 import SEOService from './server/services/seoService.js';
 import { readFile } from 'fs/promises';
-import { injectPublishedSiteEmbed, isSafeSiteIdentifier, liveSiteDocumentIdentifier, liveSiteRedirectTarget, liveViewDocumentIdentifier, crawlerPublishedDocumentUrl, deferPublishedViewFonts, preloadPublishedViewDisplayFont, stripPublishedViewThirdParties } from './server/utils/siteIsolation.js';
+import { injectPublishedSiteEmbed, injectPublishedViewMarkup, isSafeSiteIdentifier, liveSiteDocumentIdentifier, liveSiteRedirectTarget, liveViewDocumentIdentifier, crawlerPublishedDocumentUrl, deferPublishedViewFonts, preloadPublishedViewDisplayFont, stripPublishedViewThirdParties } from './server/utils/siteIsolation.js';
+import { renderPublishedViewFragment } from './src/utils/publishedSiteDocument.js';
 import { publishedCrawlerDocumentHidden } from './server/config/platformPlans.js';
 import testRoutes from './server/routes/test.routes.js';
 import healthRoutes from './server/routes/health.js';
@@ -709,7 +710,8 @@ app.use(async (req, res, next) => {
       try {
         const showcase = await findPublishedShowcase(viewSubdomain);
         if (showcase) {
-          return res.send(injectPublishedSiteEmbed(viewHtml, { success: true, site: showcase }));
+          const withEmbed = injectPublishedSiteEmbed(viewHtml, { success: true, site: showcase });
+          return res.send(injectPublishedViewMarkup(withEmbed, renderPublishedViewFragment(showcase)));
         }
       } catch {
         // Unknown subdomain or lookup error: serve the shell without an embed

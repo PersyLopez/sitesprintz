@@ -17,6 +17,7 @@ import {
   getTemplateFilePath,
   isSafeSiteIdentifier,
   injectPublishedSiteEmbed,
+  injectPublishedViewMarkup,
   liveSiteDocumentIdentifier,
   liveSiteRedirectTarget,
   liveViewDocumentIdentifier,
@@ -134,6 +135,14 @@ describe('site isolation — /view document and embed', () => {
     expect(html).toContain('\\u003c');
     expect(html).not.toContain('</script>x');
     expect(html.indexOf('<script>')).toBeLessThan(html.indexOf('</head>'));
+  });
+
+  it('paints the shop inside the empty root', () => {
+    const shell = '<html><head></head><body><div id="root"></div></body></html>';
+    const html = injectPublishedViewMarkup(shell, '<style id="ss-prerender"></style><div class="ss-live">Oak</div>');
+    expect(html).toContain('<div id="root"><style id="ss-prerender"></style><div class="ss-live">Oak</div></div>');
+    expect(injectPublishedViewMarkup(shell, '')).toBe(shell);
+    expect(injectPublishedViewMarkup('<html><body></body></html>', '<div>Oak</div>')).toBe('<html><body></body></html>');
   });
 
   it('leaves HTML without a head end tag unchanged', () => {

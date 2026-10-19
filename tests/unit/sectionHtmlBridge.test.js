@@ -10,7 +10,7 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { renderSectionToHtml, ALL_SECTION_TYPES, withNativeBookingTokens } from '../../src/utils/sectionHtmlBridge';
-import { buildLiveSiteMarkup } from '../../src/utils/publishedSiteDocument';
+import { buildLiveSiteMarkup, renderPublishedViewFragment } from '../../src/utils/publishedSiteDocument';
 import * as liveSiteContact from '../../src/utils/liveSiteContact';
 
 // Minimal tokens for testing
@@ -762,6 +762,23 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
       ],
     });
     expect(html).toContain('unsplash.com');
+  });
+
+  it('builds a first-paint fragment from the same composition', () => {
+    const fragment = renderPublishedViewFragment({
+      subdomain: 'trial-shop',
+      data: {
+        businessName: 'Trial Shop',
+        _layout: 'atelier',
+        _niche: 'salon',
+        _level: 'solo',
+        sections: [{ type: 'hero', content: { title: 'Trial Shop' } }],
+      },
+    });
+    expect(fragment).toContain('id="ss-prerender"');
+    expect(fragment).toContain('class="ss-live"');
+    expect(fragment).toContain('Trial Shop');
+    expect(renderPublishedViewFragment(null)).toBe('');
   });
 
   it('leaves checkout off the live page when the plan cannot take payment', () => {
