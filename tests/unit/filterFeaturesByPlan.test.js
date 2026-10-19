@@ -50,6 +50,17 @@ describe('filterFeaturesByPlan', () => {
     expect(growth.settings.allowCheckout).toBe(true);
   });
 
+  it('drops groomer profiles below Growth and keeps them on Growth', () => {
+    const withProfiles = {
+      sections: [
+        { type: 'hero' },
+        { type: 'enhanced-profiles', settings: { profiles: [{ name: 'Emily Johnson' }] } },
+      ],
+    };
+    expect(filterFeaturesByPlan(withProfiles, 'starter').sections.map((section) => section.type)).toEqual(['hero']);
+    expect(filterFeaturesByPlan(withProfiles, 'growth').sections.map((section) => section.type)).toContain('enhanced-profiles');
+  });
+
   it('drops an inquiry form below Growth and keeps it on Growth', () => {
     const withInquiry = {
       sections: [

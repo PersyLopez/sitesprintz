@@ -61,6 +61,7 @@ const EXPECTED_TYPES = [
   'subscription-booking',
   'service-filters',
   'multi-step-form',
+  'enhanced-profiles',
   'placeholder',
 ];
 
@@ -788,6 +789,32 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(fragment).toContain('class="ss-live"');
     expect(fragment).toContain('Trial Shop');
     expect(renderPublishedViewFragment(null)).toBe('');
+  });
+
+  it('renders credentials and a photo slot instead of a stock portrait', () => {
+    const html = renderSectionToHtml({
+      type: 'enhanced-profiles',
+      content: {
+        title: 'Meet Our Groomers',
+        showCredentials: true,
+        showSpecializations: true,
+        profiles: [{
+          name: 'Emily Johnson',
+          title: 'Master Groomer',
+          bio: 'Certified master groomer',
+          image: '',
+          credentials: ['Fear-Free Certified'],
+          specializations: ['Anxious Pets'],
+        }],
+      },
+    }, tokens);
+    expect(html).toContain('data-testid="profile-card"');
+    expect(html).toContain('Emily Johnson');
+    expect(html).toContain('Fear-Free Certified');
+    expect(html).toContain('Anxious Pets');
+    expect(html).toContain('ss-photo-placeholder');
+    expect(html).not.toContain('unsplash.com');
+    expect(html).not.toContain('555');
   });
 
   it('renders inquiry steps that post to the contact inbox', () => {

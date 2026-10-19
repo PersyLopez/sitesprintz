@@ -56,6 +56,7 @@ export const ALL_SECTION_TYPES = [
   'subscription-booking',
   'service-filters',
   'multi-step-form',
+  'enhanced-profiles',
   'placeholder',
 ];
 
@@ -1206,6 +1207,39 @@ function renderDiagnosticQuiz(section, tokens) {
 </section>`;
 }
 
+function renderEnhancedProfiles(section, tokens) {
+  const c = section.content || {};
+  const profiles = Array.isArray(c.profiles) ? c.profiles : [];
+  const title = c.title || 'Meet the team';
+  const description = c.description || '';
+  const cards = profiles.map((profile, index) => {
+    const photo = profile.image
+      ? `<img src="${escapeAttr(profile.image)}" alt="${escapeAttr(profile.name)}" width="150" height="150" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover;" loading="lazy" decoding="async" />`
+      : renderPhotoPlaceholder('staff', { className: 'ss-photo-placeholder--avatar', photoField: `profiles.${index}.photo` });
+    const credentials = c.showCredentials !== false && profile.credentials?.length
+      ? `<ul data-testid="profile-credentials">${profile.credentials.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
+      : '';
+    const specializations = c.showSpecializations !== false && profile.specializations?.length
+      ? `<p data-testid="profile-specializations">${escapeHtml(profile.specializations.join(', '))}</p>`
+      : '';
+    return `<article data-testid="profile-card" style="background: ${getSurface(tokens)}; padding: 24px; border-radius: 12px;">
+      ${photo}
+      <h3 style="color: ${getAccent(tokens)};">${escapeHtml(profile.name)}</h3>
+      ${profile.title ? `<p style="color: ${getMuted(tokens)};">${escapeHtml(profile.title)}</p>` : ''}
+      ${profile.bio ? `<p>${escapeHtml(profile.bio)}</p>` : ''}
+      ${credentials}
+      ${specializations}
+    </article>`;
+  }).join('\n');
+  return `<section id="profiles" class="ss-profiles" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
+  <div class="ss-container" style="max-width: 960px; margin: 0 auto;">
+    <h2 style="text-align: center; color: ${getAccent(tokens)}; margin-bottom: 16px;">${escapeHtml(title)}</h2>
+    ${description ? `<p style="text-align: center; color: ${getMuted(tokens)}; margin-bottom: 24px;">${escapeHtml(description)}</p>` : ''}
+    <div data-testid="profile-list" style="display: grid; gap: 16px;">${cards}</div>
+  </div>
+</section>`;
+}
+
 function inquiryControlName(name) {
   if (name === 'contactEmail') return 'email';
   if (name === 'contactName') return 'name';
@@ -1620,6 +1654,7 @@ const RENDERERS = {
   'subscription-booking': renderSubscriptionBooking,
   'service-filters': renderServiceFilters,
   'multi-step-form': renderMultiStepForm,
+  'enhanced-profiles': renderEnhancedProfiles,
   placeholder: renderPlaceholder,
 };
 

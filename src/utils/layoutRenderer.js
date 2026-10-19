@@ -543,6 +543,40 @@ const sectionPrimitives = {
     };
   },
 
+  'enhanced-profiles'(content, siteData) {
+    const c = content || {};
+    const profiles = liveMemberPhotos((Array.isArray(c.profiles) ? c.profiles : [])
+      .map((profile) => ({
+        name: String(profile?.name || '').trim(),
+        title: String(profile?.title || profile?.role || '').trim(),
+        bio: typeof profile?.bio === 'string' ? profile.bio : '',
+        image: typeof profile?.image === 'string' ? profile.image : (typeof profile?.photo === 'string' ? profile.photo : ''),
+        credentials: filterTags(profile?.credentials),
+        specializations: filterTags(profile?.specializations),
+      }))
+      .filter((profile) => profile.name), siteData)
+      .map((profile) => ({
+        name: profile.name,
+        title: profile.title,
+        bio: profile.bio,
+        image: profile.photo || '',
+        credentials: profile.credentials,
+        specializations: profile.specializations,
+      }));
+    return {
+      type: 'enhanced-profiles',
+      content: {
+        title: c.title || c.heading || 'Meet the team',
+        description: typeof c.description === 'string' ? c.description : '',
+        showCredentials: c.showCredentials !== false,
+        showSpecializations: c.showSpecializations !== false,
+        profiles,
+      },
+      settings: {},
+      accent: false,
+    };
+  },
+
   'multi-step-form'(content) {
     const c = content || {};
     const steps = (Array.isArray(c.steps) ? c.steps : [])
@@ -802,7 +836,6 @@ function filterOptions(items, key, configured) {
 
 const SECTION_ALIASES = {
   'native-booking': 'booking',
-  'enhanced-profiles': 'team',
 };
 
 function asItemList(value, nestedKeys = ['items', 'members', 'images', 'steps', 'areas', 'features']) {
@@ -1052,6 +1085,7 @@ export function composePage({
           'subscription-booking': FEATURES.SUBSCRIPTION_BOOKING,
           'service-filters': FEATURES.FILTERS,
           'multi-step-form': FEATURES.SERVICE_REQUEST_FORMS,
+          'enhanced-profiles': FEATURES.ENHANCED_PROFILES,
         }[section.type] || null;
         if (gatedFeature && plan && !hasFeature(plan, gatedFeature)) continue;
         const usesSettings = Boolean(gatedFeature);

@@ -58,6 +58,30 @@ describe('layoutRenderer — renderSection() known types', () => {
     expect(result.content.displayVariant).toBe('list');
   });
 
+  it('reads groomer credentials and drops a stock portrait', () => {
+    const result = renderSection('enhanced-profiles', {
+      title: 'Meet Our Groomers',
+      profiles: [{
+        name: 'Emily Johnson',
+        title: 'Master Groomer',
+        bio: 'Certified master groomer',
+        image: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400',
+        credentials: ['Fear-Free Certified'],
+        specializations: ['Anxious Pets'],
+        phone: '(555) 123-4567',
+      }],
+    }, {}, {});
+    expect(result.type).toBe('enhanced-profiles');
+    expect(result.content.profiles).toEqual([{
+      name: 'Emily Johnson',
+      title: 'Master Groomer',
+      bio: 'Certified master groomer',
+      image: '',
+      credentials: ['Fear-Free Certified'],
+      specializations: ['Anxious Pets'],
+    }]);
+  });
+
   it('reads inquiry steps and drops an unsafe field name', () => {
     const result = renderSection('multi-step-form', {
       heading: 'Private Dining Inquiry',
@@ -452,6 +476,29 @@ describe('layoutRenderer — feature gating', () => {
     });
     const types = page.sections.map((s) => s.type);
     expect(types).toContain('booking');
+  });
+
+  it('keeps groomer profiles from section settings and drops them below Growth', () => {
+    const sections = [{
+      type: 'enhanced-profiles',
+      settings: {
+        title: 'Meet Our Groomers',
+        profiles: [{ name: 'Emily Johnson', credentials: ['Pet First Aid'] }],
+      },
+    }];
+    const shown = composePage({
+      siteData: { businessName: 'Pets', plan: 'growth', sections },
+      layout: 'atelier',
+      level: 'solo',
+    });
+    expect(shown.sections.find((section) => section.type === 'enhanced-profiles')?.content.profiles[0].credentials).toEqual(['Pet First Aid']);
+
+    const hidden = composePage({
+      siteData: { businessName: 'Pets', plan: 'starter', sections },
+      layout: 'atelier',
+      level: 'solo',
+    });
+    expect(hidden.sections.map((section) => section.type)).not.toContain('enhanced-profiles');
   });
 
   it('keeps an inquiry form from section settings and drops it below Growth', () => {
