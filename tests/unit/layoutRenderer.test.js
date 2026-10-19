@@ -58,6 +58,29 @@ describe('layoutRenderer — renderSection() known types', () => {
     expect(result.content.displayVariant).toBe('list');
   });
 
+  it('keeps each hours line and the note', () => {
+    const result = renderSection('hours', {}, {
+      contact: {
+        hours: {
+          items: ['Tuesday - Friday: 9:00 AM - 8:00 PM', 'Monday: Closed'],
+          note: 'Appointments required',
+        },
+      },
+    }, {});
+    expect(result.content.lines).toEqual([
+      'Tuesday - Friday: 9:00 AM - 8:00 PM',
+      'Monday: Closed',
+    ]);
+    expect(result.content.note).toBe('Appointments required');
+    expect(result.content.hours).toContain('Monday: Closed');
+    expect(result.content.hours).not.toContain('[object Object]');
+
+    const spans = renderSection('hours', {
+      hours: { monday: { open: '9:00 AM', close: '5:00 PM' }, sunday: { closed: true } },
+    }, {}, {});
+    expect(spans.content.lines).toEqual(['9:00 AM – 5:00 PM', 'Closed']);
+  });
+
   it('reads a menu dish photo and drops a stock plate', () => {
     const stock = renderSection('menu', {
       sections: [{

@@ -833,6 +833,31 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(renderPublishedViewFragment(null)).toBe('');
   });
 
+  it('lists hours and the note on the hours and contact sections', () => {
+    const hours = renderSectionToHtml({
+      type: 'hours',
+      content: {
+        title: 'Hours',
+        lines: ['Tuesday - Friday: 9:00 AM - 8:00 PM', 'Monday: Closed'],
+        note: 'Appointments required',
+      },
+    }, tokens);
+    expect(hours).toContain('<li');
+    expect(hours).toContain('Monday: Closed');
+    expect(hours).toContain('Appointments required');
+    expect(hours).not.toContain('[object Object]');
+
+    const contact = renderSectionToHtml({
+      type: 'contact',
+      content: {
+        email: 'hello@shop.test',
+        hours: 'Tuesday - Friday: 9:00 AM - 8:00 PM',
+        hoursNote: 'Appointments required',
+      },
+    }, tokens);
+    expect(contact).toContain('Appointments required');
+  });
+
   it('shows an owner dish photo and the diet, not a stock plate', () => {
     const html = renderSectionToHtml({
       type: 'menu',

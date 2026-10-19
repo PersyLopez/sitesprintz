@@ -223,6 +223,7 @@ const sectionPrimitives = {
         phone: c.phone || siteData.contactPhone || siteData.contact?.phone || '',
         address: location.displayLine,
         hours: formatHours(c.hours || siteData.businessHours || siteData.contact?.hours || ''),
+        hoursNote: readHours(c.hours || siteData.businessHours || siteData.contact?.hours || '').note,
         mapUrl: location.mode === 'area' ? '' : (c.mapUrl || siteData.googleMapsUrl || ''),
         addressDisplay: location.mode,
         publicGeo: location.publicGeo,
@@ -424,11 +425,16 @@ const sectionPrimitives = {
   // Hours section
   hours(content, siteData, _tokens) {
     const c = content || {};
+    const source = c.hours || siteData.businessHours || siteData.contact?.hours || '';
+    const parsed = readHours(source);
+    const note = (typeof c.note === 'string' && c.note.trim()) || parsed.note;
     return {
       type: 'hours',
       content: {
         title: c.title || 'Hours',
-        hours: formatHours(c.hours || siteData.businessHours || siteData.contact?.hours || ''),
+        hours: parsed.lines.join(' · '),
+        lines: parsed.lines,
+        note,
         openUntil: c.openUntil || siteData.openUntil || null,
       },
       settings: {},
@@ -930,19 +936,44 @@ function flattenGalleryImages(source) {
   return [];
 }
 
-function formatHours(hours) {
-  if (!hours) return '';
-  if (typeof hours === 'string') return hours;
-  if (Array.isArray(hours)) return hours.filter(Boolean).join(' · ');
-  if (typeof hours === 'object') {
-    if (Array.isArray(hours.items)) return hours.items.filter(Boolean).join(' · ');
-    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-    const fromDays = days
-      .map((day) => hours[day] || hours[day.charAt(0).toUpperCase() + day.slice(1)])
-      .filter(Boolean);
-    if (fromDays.length) return fromDays.join(' · ');
+function hourSpan(value) {
+  if (typeof value === 'string') return value.trim();
+  if (!value || typeof value !== 'object') return '';
+  if (value.closed === true) return 'Closed';
+  const open = typeof value.open === 'string' ? value.open.trim() : '';
+  const close = typeof value.close === 'string' ? value.close.trim() : '';
+  if (open && close) return `${open} – ${close}`;
+  return open;
+}
+
+function readHours(hours) {
+  if (!hours) return { lines: [], note: '' };
+  if (typeof hours === 'string') {
+    const line = hours.trim();
+    return { lines: line ? [line] : [], note: '' };
   }
-  return '';
+  if (Array.isArray(hours)) {
+    return {
+      lines: hours.map((item) => hourSpan(item)).filter(Boolean),
+      note: '',
+    };
+  }
+  if (typeof hours === 'object') {
+    const note = typeof hours.note === 'string' ? hours.note.trim() : '';
+    if (Array.isArray(hours.items)) {
+      return { lines: hours.items.map((item) => hourSpan(item)).filter(Boolean), note };
+    }
+    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    const lines = days
+      .map((day) => hourSpan(hours[day] || hours[day.charAt(0).toUpperCase() + day.slice(1)]))
+      .filter(Boolean);
+    return { lines, note };
+  }
+  return { lines: [], note: '' };
+}
+
+function formatHours(hours) {
+  return readHours(hours).lines.join(' · ');
 }
 
 function flattenMenuToProducts(menuSections) {

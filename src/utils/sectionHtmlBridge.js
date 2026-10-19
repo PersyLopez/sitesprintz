@@ -520,7 +520,7 @@ function renderContact(section, tokens) {
     email ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">Email</strong><a href="mailto:${escapeAttr(email)}" style="color: ${getText(tokens)}; text-decoration: none;">${escapeHtml(email)}</a></div>` : '',
     phone && telHref(phone) ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">Phone</strong><a href="${escapeAttr(telHref(phone))}" style="color: ${getText(tokens)}; text-decoration: none;">${escapeHtml(phone)}</a></div>` : '',
     address ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">${c.addressDisplay === 'area' ? 'Service area' : 'Address'}</strong>${escapeHtml(address)}</div>` : '',
-    hours ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">Hours</strong>${escapeHtml(typeof hours === 'string' ? hours : '')}</div>` : '',
+    hours ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">Hours</strong>${escapeHtml(typeof hours === 'string' ? hours : '')}${c.hoursNote ? `<p style="margin: 8px 0 0; color: ${getMuted(tokens)};">${escapeHtml(c.hoursNote)}</p>` : ''}</div>` : '',
   ].filter(Boolean).join('\n');
 
   return `<section id="contact" class="ss-contact" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
@@ -978,13 +978,22 @@ function renderHowToOrder(section, tokens) {
 function renderHours(section, tokens) {
   const c = section.content || {};
   const title = c.title || 'Hours';
-  const hours = c.hours || '';
+  const lines = Array.isArray(c.lines) && c.lines.length
+    ? c.lines.filter((line) => typeof line === 'string' && line.trim())
+    : (typeof c.hours === 'string' && c.hours.trim() ? [c.hours.trim()] : []);
+  const list = lines.length
+    ? `<ul style="list-style: none; padding: 0; margin: 0;">${lines.map((line) => `<li style="margin: 8px 0; font-size: 1.1rem; color: ${getText(tokens)};">${escapeHtml(line)}</li>`).join('')}</ul>`
+    : '';
+  const note = typeof c.note === 'string' && c.note.trim()
+    ? `<p style="color: ${getMuted(tokens)}; margin-top: 16px;">${escapeHtml(c.note.trim())}</p>`
+    : '';
 
   return `<section class="ss-hours" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
   <div class="ss-container" style="max-width: 600px; margin: 0 auto; text-align: center;">
     <h2 style="color: ${getAccent(tokens)}; margin-bottom: 24px;">${escapeHtml(title)}</h2>
     <div style="background: ${getSurface(tokens)}; padding: 32px; border-radius: 12px;">
-      <p style="font-size: 1.2rem; color: ${getText(tokens)};">${escapeHtml(hours)}</p>
+      ${list}
+      ${note}
       ${c.openUntil ? `<p style="color: ${getAccent(tokens)}; margin-top: 12px; font-weight: 600;">Open until ${escapeHtml(c.openUntil)}</p>` : ''}
     </div>
   </div>
