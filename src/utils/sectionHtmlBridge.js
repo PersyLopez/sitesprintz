@@ -47,6 +47,7 @@ export const ALL_SECTION_TYPES = [
   'social',
   'native-booking',
   'checkout',
+  'zip-checker',
   'placeholder',
 ];
 
@@ -1002,6 +1003,68 @@ function renderSocial(section, tokens) {
 </section>`;
 }
 
+function renderZipChecker(section, tokens) {
+  const c = section.content || {};
+  const areas = (Array.isArray(c.areas) ? c.areas : []).filter((zip) => /^\d{5}$/.test(String(zip)));
+  const ranges = (Array.isArray(c.ranges) ? c.ranges : [])
+    .filter((range) => Number.isFinite(Number(range?.start)) && Number.isFinite(Number(range?.end)))
+    .map((range) => `${Number(range.start)}-${Number(range.end)}`);
+  const title = c.title || 'Check service availability';
+  const description = c.description || '';
+  return `<section id="zip-check" class="ss-zip" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
+  <div class="ss-container" style="max-width: 640px; margin: 0 auto;">
+    <h2 style="text-align: center; color: ${getAccent(tokens)}; margin-bottom: 16px;">${escapeHtml(title)}</h2>
+    ${description ? `<p style="text-align: center; color: ${getMuted(tokens)}; margin-bottom: 24px;">${escapeHtml(description)}</p>` : ''}
+    <form class="ss-contact-form" data-testid="zip-check-form" data-type="zip-check" method="post" action="/api/submissions/contact" data-areas="${escapeAttr(areas.join(','))}" data-ranges="${escapeAttr(ranges.join(','))}" data-covered="${escapeAttr(c.successMessage || 'We serve your area.')}" data-outside="${escapeAttr(c.unavailableMessage || 'We do not serve that area yet.')}" novalidate>
+      <input type="hidden" name="subdomain" value="${escapeAttr(tokens?._contactSubdomain || '')}" />
+      <input type="hidden" name="type" value="zip-check" />
+      <p class="ss-form-status" data-testid="zip-form-status" data-ss-zip-result role="status" aria-live="polite"></p>
+      <label class="ss-field">
+        <span>ZIP code</span>
+        <input type="text" name="zip" inputmode="numeric" autocomplete="postal-code" required data-testid="zip-check-input" maxlength="5" pattern="[0-9]{5}" />
+      </label>
+      <label class="ss-field">
+        <span>Email</span>
+        <input type="email" name="email" autocomplete="email" required maxlength="254" />
+      </label>
+      <label class="ss-field">
+        <span>Name <span class="ss-optional">(optional)</span></span>
+        <input type="text" name="name" autocomplete="name" maxlength="200" />
+      </label>
+      <label class="ss-field">
+        <span>Phone <span class="ss-optional">(optional)</span></span>
+        <input type="tel" name="phone" autocomplete="tel" maxlength="40" />
+      </label>
+      <label class="ss-field">
+        <span>Message <span class="ss-optional">(optional)</span></span>
+        <textarea name="message" rows="3" maxlength="2000">Please check this ZIP.</textarea>
+      </label>
+      <button type="submit" class="ss-btn" data-testid="zip-check-submit" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)}; border: 0; cursor: pointer;">Check ZIP</button>
+    </form>
+    <script>
+    (function () {
+      var form = document.currentScript && document.currentScript.previousElementSibling;
+      if (!form || !form.getAttribute) return;
+      var result = form.querySelector('[data-ss-zip-result]');
+      var areas = (form.getAttribute('data-areas') || '').split(',').filter(Boolean);
+      var ranges = (form.getAttribute('data-ranges') || '').split(',').filter(Boolean).map(function (pair) {
+        var parts = pair.split('-');
+        return { start: Number(parts[0]), end: Number(parts[1]) };
+      });
+      form.addEventListener('input', function (event) {
+        if (!event.target || event.target.name !== 'zip' || !result) return;
+        var zip = String(event.target.value || '').trim();
+        if (!/^\\d{5}$/.test(zip)) { result.textContent = ''; return; }
+        var n = Number(zip);
+        var covered = areas.indexOf(zip) !== -1 || ranges.some(function (range) { return n >= range.start && n <= range.end; });
+        result.textContent = covered ? (form.getAttribute('data-covered') || '') : (form.getAttribute('data-outside') || '');
+      });
+    })();
+    </script>
+  </div>
+</section>`;
+}
+
 function renderCheckout(section, tokens) {
   const c = section.content || {};
   if (c.enabled === false) return '';
@@ -1055,6 +1118,7 @@ const RENDERERS = {
   social: renderSocial,
   'native-booking': renderBooking,
   checkout: renderCheckout,
+  'zip-checker': renderZipChecker,
   placeholder: renderPlaceholder,
 };
 

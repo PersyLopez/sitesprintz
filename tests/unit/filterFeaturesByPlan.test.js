@@ -50,6 +50,17 @@ describe('filterFeaturesByPlan', () => {
     expect(growth.settings.allowCheckout).toBe(true);
   });
 
+  it('drops a zip check on the live trial and keeps it on Growth', () => {
+    const withZip = {
+      sections: [
+        { type: 'hero' },
+        { type: 'zip-checker', settings: { serviceAreas: ['75001'] } },
+      ],
+    };
+    expect(filterFeaturesByPlan(withZip, 'trial').sections.map((section) => section.type)).toEqual(['hero']);
+    expect(filterFeaturesByPlan(withZip, 'growth').sections.map((section) => section.type)).toContain('zip-checker');
+  });
+
   it('keeps FAQ and before-after on Starter', () => {
     const result = filterFeaturesByPlan(site, 'starter');
 

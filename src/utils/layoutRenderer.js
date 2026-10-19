@@ -18,6 +18,7 @@
  *   - sectionPrimitives — the map of type → primitive renderer
  */
 
+import { FEATURES, hasFeature } from './planFeatures.js';
 import { resolveTheme, suggestLevel } from '../config/layoutTokens.js';
 import { normalizeSiteThemeId } from '../config/siteThemes.js';
 import { isUniqueLookTheme } from '../config/uniqueLook.js';
@@ -470,6 +471,29 @@ const sectionPrimitives = {
   },
 
   // Checkout section
+  'zip-checker'(content) {
+    const c = content || {};
+    const areas = firstList(c.serviceAreas, c.areas, c.zips)
+      .map((zip) => String(zip).trim())
+      .filter((zip) => /^\d{5}$/.test(zip));
+    const ranges = (Array.isArray(c.serviceAreaRanges) ? c.serviceAreaRanges : [])
+      .map((range) => ({ start: Number(range?.start), end: Number(range?.end) }))
+      .filter((range) => Number.isFinite(range.start) && Number.isFinite(range.end));
+    return {
+      type: 'zip-checker',
+      content: {
+        title: c.title || 'Check service availability',
+        description: typeof c.description === 'string' ? c.description : '',
+        areas,
+        ranges,
+        successMessage: c.successMessage || 'We serve your area.',
+        unavailableMessage: c.errorMessage || 'We do not serve that area yet. Send a note and we will tell you if that changes.',
+      },
+      settings: {},
+      accent: false,
+    };
+  },
+
   checkout(content, siteData, _tokens) {
     const c = content || {};
     const allowCheckout = Boolean(siteData?.settings?.allowCheckout);
@@ -528,7 +552,6 @@ const SECTION_ALIASES = {
   'native-booking': 'booking',
   'interactive-calculator': 'services',
   'service-filters': 'services',
-  'zip-checker': 'service-areas',
   'video-gallery': 'gallery',
   'diagnostic-quiz': 'faq',
   'progress-tracker': 'process',
@@ -772,9 +795,14 @@ export function composePage({
     const skeletonSet = new Set(skeleton);
     for (const section of siteData.sections) {
       if (!skeletonSet.has(section.type) && section.enabled !== false) {
+        const plan = siteData?.plan || siteData?.settings?.tier;
+        if (section.type === 'zip-checker' && plan && !hasFeature(plan, FEATURES.ZIP_CHECKER)) continue;
+        const zipSettings = section.type === 'zip-checker' && section.settings && typeof section.settings === 'object'
+          ? section.settings
+          : {};
         const rendered = renderSection(
           section.type,
-          section.content || {},
+          { ...zipSettings, ...(section.content || {}) },
           siteData,
           tokens,
           section.settings?.variant

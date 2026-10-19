@@ -445,6 +445,10 @@ export function filterFeaturesByPlan(siteData, userPlan) {
       filtered.products = flattenMenuToProducts(filtered.menu);
     }
   }
+
+  if (!hasFeature(plan, FEATURES.ZIP_CHECKER) && Array.isArray(filtered.sections)) {
+    filtered.sections = filtered.sections.filter((section) => section?.type !== 'zip-checker');
+  }
   
   if (!hasFeature(plan, FEATURES.ORDER_MANAGEMENT)) {
     filtered.settings = {

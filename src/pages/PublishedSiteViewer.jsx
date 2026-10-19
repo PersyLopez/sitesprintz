@@ -255,10 +255,10 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
   };
 
   const handleContactSubmit = async (event) => {
-    const form = event.target.closest('form[data-type="contact"], form#contact-form');
+    const form = event.target.closest('form[data-type="contact"], form#contact-form, form[data-type="zip-check"]');
     if (!form) return;
     event.preventDefault();
-    const status = form.querySelector('[data-testid="contact-form-status"]');
+    const status = form.querySelector('[data-testid="contact-form-status"], [data-testid="zip-form-status"]');
     const formData = new FormData(form);
     const body = Object.fromEntries(formData.entries());
     body.subdomain = body.subdomain || subdomain || subdomainFromLivePath(window.location.pathname);

@@ -39,6 +39,14 @@ import {
 const router = express.Router();
 
 /** Links in the owner email for a saved shop message. */
+export function zipCheckMessage(message, zip, type) {
+  const text = String(message || '').trim();
+  const code = String(zip || '').trim();
+  if (type !== 'zip-check' || !/^\d{5}$/.test(code)) return text;
+  if (text.startsWith(`ZIP ${code}:`)) return text;
+  return text ? `ZIP ${code}: ${text}` : `ZIP ${code}`;
+}
+
 export function contactOwnerNotice({ subdomain, siteId, phone }) {
   const siteUrl = getAbsolutePublishedSiteUrl(subdomain);
   return {
@@ -214,7 +222,7 @@ router.post('/contact', asyncHandler(async (req, res) => {
 
   // Create submission
   const sanitizedName = sanitizeString(name || '', 200);
-  const sanitizedMessage = sanitizeString(message, 2000);
+  const sanitizedMessage = zipCheckMessage(sanitizeString(message, 2000), otherFields.zip, type);
   const sanitizedPhone = phone ? sanitizeString(String(phone), 40) : null;
   const formType = sanitizeString(type || 'contact', 50) || 'contact';
   const custom = sanitizeCustomFields(otherFields);

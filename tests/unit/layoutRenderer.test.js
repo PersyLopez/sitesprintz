@@ -58,6 +58,17 @@ describe('layoutRenderer — renderSection() known types', () => {
     expect(result.content.displayVariant).toBe('list');
   });
 
+  it('reads a zip check from template settings fields', () => {
+    const result = renderSection('zip-checker', {
+      title: 'Check Service Availability',
+      serviceAreas: ['75001', 'nope'],
+      serviceAreaRanges: [{ start: 75000, end: 75999 }],
+    }, {}, {});
+    expect(result.type).toBe('zip-checker');
+    expect(result.content.areas).toEqual(['75001']);
+    expect(result.content.ranges).toEqual([{ start: 75000, end: 75999 }]);
+  });
+
   it('checkout follows the plan checkout flag', () => {
     const off = renderSection('checkout', { enabled: true }, { settings: { allowCheckout: false } }, {});
     expect(off.enabled).toBe(false);
@@ -284,6 +295,27 @@ describe('layoutRenderer — feature gating', () => {
     });
     const types = page.sections.map((s) => s.type);
     expect(types).toContain('booking');
+  });
+
+  it('keeps a zip check from section settings and drops it on the trial plan', () => {
+    const sections = [{
+      type: 'zip-checker',
+      settings: { serviceAreas: ['75001'], title: 'Check Service Availability' },
+    }];
+    const shown = composePage({
+      siteData: { businessName: 'Pipes', sections },
+      layout: 'craftsman',
+      level: 'solo',
+    });
+    const zip = shown.sections.find((section) => section.type === 'zip-checker');
+    expect(zip?.content.areas).toEqual(['75001']);
+
+    const hidden = composePage({
+      siteData: { businessName: 'Pipes', plan: 'trial', sections },
+      layout: 'craftsman',
+      level: 'solo',
+    });
+    expect(hidden.sections.map((section) => section.type)).not.toContain('zip-checker');
   });
 
   it('atelier excludes booking when user disables it', () => {

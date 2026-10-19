@@ -76,6 +76,8 @@ function isEmptyOptional(section) {
         .some((key) => c[key]);
     case 'service-areas':
       return list(c.areas).length === 0;
+    case 'zip-checker':
+      return list(c.areas).length === 0 && list(c.ranges).length === 0;
     case 'process':
     case 'how-to-order':
       return list(c.steps).length === 0;

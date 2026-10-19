@@ -52,6 +52,7 @@ const EXPECTED_TYPES = [
   'social',
   'native-booking',
   'checkout',
+  'zip-checker',
   'placeholder',
 ];
 
@@ -779,6 +780,24 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(fragment).toContain('class="ss-live"');
     expect(fragment).toContain('Trial Shop');
     expect(renderPublishedViewFragment(null)).toBe('');
+  });
+
+  it('renders a zip check that posts to the inbox', () => {
+    const html = renderSectionToHtml({
+      type: 'zip-checker',
+      content: {
+        title: 'Check Service Availability',
+        areas: ['75001'],
+        ranges: [{ start: 75000, end: 75999 }],
+        successMessage: 'We serve your area.',
+      },
+    }, { ...tokens, _contactSubdomain: 'gallery-plumbing' });
+    expect(html).toContain('data-testid="zip-check-form"');
+    expect(html).toContain('action="/api/submissions/contact"');
+    expect(html).toContain('name="type" value="zip-check"');
+    expect(html).toContain('value="gallery-plumbing"');
+    expect(html).toContain('data-areas="75001"');
+    expect(html).toContain('data-ranges="75000-75999"');
   });
 
   it('leaves checkout off the live page when the plan cannot take payment', () => {
