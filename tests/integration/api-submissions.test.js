@@ -316,6 +316,21 @@ describe('Submissions Routes Integration Tests', () => {
     });
   });
 
+  describe('GET /api/submissions/site/:subdomain', () => {
+    it('excludes archived messages by default (where.status.not === archived)', async () => {
+      prisma.submissions.findMany.mockClear();
+
+      const response = await request(authApp)
+        .get('/api/submissions/site/test-restaurant')
+        .set('Authorization', 'Bearer test-token');
+
+      expect(response.status).toBe(200);
+      expect(prisma.submissions.findMany).toHaveBeenCalledTimes(1);
+      const where = prisma.submissions.findMany.mock.calls[0][0].where;
+      expect(where.status).toEqual({ not: 'archived' });
+    });
+  });
+
   describe('Database Integration', () => {
     it('should save submission to database with correct structure', async () => {
       const contactData = {

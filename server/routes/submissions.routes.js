@@ -289,10 +289,12 @@ router.get('/site/:subdomain', requireAuth, asyncHandler(async (req, res) => {
     return sendForbidden(res, 'Not authorized to view these submissions', 'ACCESS_DENIED');
   }
 
-  // Build query
+  // Build query (archived messages are excluded from the inbox unless explicitly requested)
   const where = { site_id: site.id };
   if (status) {
     where.status = status;
+  } else {
+    where.status = { not: 'archived' };
   }
 
   const submissions = await prisma.submissions.findMany({

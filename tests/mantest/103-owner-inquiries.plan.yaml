@@ -107,3 +107,32 @@ steps:
         throw new Error(`Messages nav unread count did not drop after opening a message (${before} -> ${count})`);
       }
     settle_ms: 400
+
+  - action: Archive removes the seeded lead from the inbox
+    code: |
+      if (await page.getByTestId('site-inquiries-empty').count()) return;
+      for (let i = 0; i < 10; i++) {
+        const list = page.getByTestId('site-inquiries');
+        if ((await list.count()) === 0) break;
+        const text = await list.innerText();
+        if (!text.includes('Mantest lead')) break;
+        await page.getByTestId('site-inquiry-archive').first().click();
+        await page.waitForTimeout(600);
+      }
+      const list = page.getByTestId('site-inquiries');
+      const text = (await list.count()) ? await list.innerText() : '';
+      if (text.includes('Mantest lead')) {
+        throw new Error('Archived lead is still visible in the Messages list');
+      }
+    settle_ms: 400
+
+  - action: Archived lead stays gone after reload
+    code: |
+      await page.reload();
+      await page.getByTestId('site-inquiries-empty').or(page.getByTestId('site-inquiries')).first().waitFor({ state: 'visible', timeout: 20000 });
+      if (await page.getByTestId('site-inquiries-empty').count()) return;
+      const text = await page.getByTestId('site-inquiries').innerText();
+      if (text.includes('Mantest lead')) {
+        throw new Error('Archived lead reappeared in the Messages list after reload');
+      }
+    settle_ms: 400

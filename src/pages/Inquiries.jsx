@@ -56,6 +56,19 @@ function Inquiries() {
     }
   };
 
+  const archiveMessage = async (submission, event) => {
+    event.stopPropagation();
+    try {
+      await api.patch(`/api/submissions/${submission.id}/archive`, {});
+      setSubmissions((prev) => prev.filter((s) => s.id !== submission.id));
+      if (submission.status === 'unread') {
+        refreshUnreadMessages();
+      }
+    } catch (error) {
+      showError('Failed to archive message');
+    }
+  };
+
   const Container = embedded ? 'div' : 'main';
   const PageTitle = embedded ? 'h2' : 'h1';
 
@@ -109,6 +122,7 @@ function Inquiries() {
                     tabIndex="0"
                     aria-label={`Message from ${submission.name || 'Visitor'}`}
                     onKeyDown={(event) => {
+                      if (event.target.closest('button')) return;
                       if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault();
                         markRead(submission);
@@ -127,6 +141,15 @@ function Inquiries() {
                       {submission.status === 'unread' && (
                         <span className="orders-status-badge">New</span>
                       )}
+                      <button
+                        type="button"
+                        className="orders-status-badge"
+                        data-testid="site-inquiry-archive"
+                        aria-label={`Archive message from ${submission.name || 'visitor'}`}
+                        onClick={(event) => archiveMessage(submission, event)}
+                      >
+                        Archive
+                      </button>
                     </td>
                   </tr>
                 ))}

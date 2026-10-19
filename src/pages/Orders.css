@@ -308,6 +308,18 @@
   color: var(--danger-color);
 }
 
+button.orders-status-badge {
+  margin-left: 6px;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+button.orders-status-badge:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
 .orders-loading {
   padding: var(--spacing-xl) 0;
 }
