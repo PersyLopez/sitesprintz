@@ -7,11 +7,9 @@
 import React, { useState, useEffect, useLayoutEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import SeamlessEditToolbar from '../components/published/SeamlessEditToolbar';
 import { CartProvider } from '../context/CartContext';
 import { useCart } from '../hooks/useCart';
 import { useAuth } from '../hooks/useAuth';
-import { usePublishedSeamlessEdit } from '../hooks/usePublishedSeamlessEdit';
 import { buildLiveSiteMarkup, getLiveSiteThemeVars } from '../utils/publishedSiteDocument';
 import { mountGoogleReviews } from '../utils/mountGoogleReviews';
 import { getSiteWorkspacePaths } from '../utils/siteWorkspace';
@@ -25,6 +23,7 @@ import '../styles/published-site-viewer.css';
 
 const BookingWidget = lazy(() => import('../components/BookingWidget'));
 const ShoppingCart = lazy(() => import('../components/ecommerce/ShoppingCart'));
+const PublishedLiveEdit = lazy(() => import('../components/published/PublishedLiveEdit'));
 
 /**
  * Server-inlined showcase JSON (window.__RSL_PUBLISHED_SITE__) lets the FIRST
@@ -162,15 +161,6 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
       setUserId(siteData.userId || siteData.user_id);
     }
   }, [subdomain, onSiteId]);
-
-  const edit = usePublishedSeamlessEdit({
-    enabled: editEnabled,
-    subdomain,
-    liveRef,
-    siteData: payload,
-    bindKey: markup?.html || '',
-    onRestored: reloadPublishedSite,
-  });
 
   useLayoutEffect(() => {
     const root = liveRef.current;
@@ -330,27 +320,20 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
         </div>
       )}
       {editEnabled && (
-        <SeamlessEditToolbar
-          saveState={edit.saveState}
-          canUndo={edit.canUndo}
-          onUndo={edit.undo}
-          onOpenHistory={edit.openHistory}
-          historyOpen={edit.historyOpen}
-          history={edit.history}
-          historyError={edit.historyError}
-          selectedVersion={edit.selectedVersion}
-          onSelectVersion={edit.setSelectedVersion}
-          onCloseHistory={edit.closeHistory}
-          onRestore={edit.restore}
-          restoring={edit.restoring}
-          formatHistoryTime={edit.formatHistoryTime}
-          dashboardHref={workspacePaths?.overview || '/dashboard'}
-          settingsHref={workspacePaths?.settings}
-          builderHref={workspacePaths?.edit}
-          appointmentsHref={workspacePaths?.appointments}
-          productsHref={workspacePaths?.products}
-          unboundHint={edit.unboundHint}
-        />
+        <Suspense fallback={null}>
+          <PublishedLiveEdit
+            subdomain={subdomain}
+            liveRef={liveRef}
+            siteData={payload}
+            bindKey={markup?.html || ''}
+            onRestored={reloadPublishedSite}
+            dashboardHref={workspacePaths?.overview || '/dashboard'}
+            settingsHref={workspacePaths?.settings}
+            builderHref={workspacePaths?.edit}
+            appointmentsHref={workspacePaths?.appointments}
+            productsHref={workspacePaths?.products}
+          />
+        </Suspense>
       )}
       {demoMode && (
         <div className="showcase-demo-banner" data-testid="showcase-demo-banner" role="status">
