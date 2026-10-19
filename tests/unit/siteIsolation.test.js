@@ -23,6 +23,7 @@ import {
   removeIsolatedSiteFiles,
   resolveContainedPath,
   slugifySubdomain,
+  deferPublishedViewFonts,
   stripPublishedViewThirdParties,
   writeIsolatedSiteFiles
 } from '../../server/utils/siteIsolation.js';
@@ -136,6 +137,28 @@ describe('site isolation — /view document and embed', () => {
 
     expect(stripPublishedViewThirdParties(null)).toBe(null);
     expect(stripPublishedViewThirdParties(undefined)).toBe(undefined);
+  });
+
+  it('defers the Inter font stylesheet on the view document, keeps preconnects', async () => {
+    const shell = await fs.readFile(path.join(process.cwd(), 'index.html'), 'utf-8');
+    expect(shell).toContain('fonts.googleapis.com/css2');
+    expect(shell).toContain('fonts.gstatic.com');
+
+    const deferred = deferPublishedViewFonts(shell);
+    const asyncMatch = deferred.match(/<link[^>]*rel="stylesheet" media="print" onload="this\.media='all'"[^>]*>/);
+    expect(asyncMatch).not.toBeNull();
+    expect(asyncMatch[0]).toContain('fonts.googleapis.com/css2');
+
+    const noscriptMatch = deferred.match(/<noscript>(<link[^>]*rel="stylesheet"[^>]*>)<\/noscript>/);
+    expect(noscriptMatch).not.toBeNull();
+    expect(noscriptMatch[1]).toContain('fonts.googleapis.com/css2');
+    expect(noscriptMatch[1]).not.toContain('media="print"');
+
+    expect(deferred).toContain('href="https://fonts.gstatic.com"');
+    expect(deferred.match(/fonts\.googleapis\.com\/css2/g).length).toBe(2);
+
+    expect(deferPublishedViewFonts(null)).toBe(null);
+    expect(deferPublishedViewFonts(undefined)).toBe(undefined);
   });
 });
 

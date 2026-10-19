@@ -166,6 +166,24 @@ export function stripPublishedViewThirdParties(html) {
     .replace(/<link[^>]*href="https:\/\/images\.unsplash\.com"[^>]*>\s*/g, '');
 }
 
+/**
+ * Make the Inter font stylesheet non-blocking on published /view documents:
+ * the link loads with media="print" then swaps to all on load, with a
+ * noscript copy so the blocking tag still applies without JS. Preconnect
+ * hints and marketing pages are untouched.
+ *
+ * @param {string} html
+ * @returns {string}
+ */
+export function deferPublishedViewFonts(html) {
+  if (typeof html !== 'string') return html;
+  const fontLinkPattern = /<link[^>]*href="https:\/\/fonts\.googleapis\.com\/css2[^"]*"[^>]*rel="stylesheet"[^>]*>/g;
+  return html.replace(fontLinkPattern, (link) => {
+    const asyncLink = link.replace(' rel="stylesheet"', ' rel="stylesheet" media="print" onload="this.media=\'all\'"');
+    return `${asyncLink}\n    <noscript>${link}</noscript>`;
+  });
+}
+
 export function deepClone(value) {
   if (value === undefined) {
     return undefined;

@@ -56,7 +56,7 @@ import { query, prisma } from './database/db.js';
 import publishedSiteRenderer from './server/services/publishedSiteRenderer.js';
 import SEOService from './server/services/seoService.js';
 import { readFile } from 'fs/promises';
-import { injectPublishedSiteEmbed, isSafeSiteIdentifier, liveSiteDocumentIdentifier, liveSiteRedirectTarget, liveViewDocumentIdentifier, stripPublishedViewThirdParties } from './server/utils/siteIsolation.js';
+import { injectPublishedSiteEmbed, isSafeSiteIdentifier, liveSiteDocumentIdentifier, liveSiteRedirectTarget, liveViewDocumentIdentifier, deferPublishedViewFonts, stripPublishedViewThirdParties } from './server/utils/siteIsolation.js';
 import testRoutes from './server/routes/test.routes.js';
 import healthRoutes from './server/routes/health.js';
 
@@ -680,7 +680,7 @@ app.use(async (req, res, next) => {
     const injected = spaSeoService.injectMarketingPageMeta(html, req.path, search);
     res.setHeader('Content-Type', 'text/html; charset=UTF-8');
     if (viewSubdomain) {
-      const viewHtml = stripPublishedViewThirdParties(injected);
+      const viewHtml = deferPublishedViewFonts(stripPublishedViewThirdParties(injected));
       try {
         const showcase = await findPublishedShowcase(viewSubdomain);
         if (showcase) {
