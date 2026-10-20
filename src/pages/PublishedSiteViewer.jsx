@@ -12,6 +12,7 @@ import { useCart } from '../hooks/useCart';
 import { useAuth } from '../hooks/useAuth';
 import { buildLiveSiteMarkup, getLiveSiteThemeVars } from '../utils/publishedSiteDocument';
 import { mountGoogleReviews } from '../utils/mountGoogleReviews';
+import { mountPublishedInteractions } from '../utils/mountPublishedInteractions';
 import { getSiteWorkspacePaths } from '../utils/siteWorkspace';
 import { isPayOnSiteEnabled } from '../utils/payOnSite';
 import { getPublicDeliveryConfig } from '../utils/delivery';
@@ -178,6 +179,7 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
     const node = bookingEnabled ? root.querySelector('[data-ss-booking-mount]') : null;
     setBookingMount((current) => (current === node ? current : node));
     mountGoogleReviews(root);
+    mountPublishedInteractions(root);
     if (searchParams.get('contact') === 'sent') {
       const status = root.querySelector('[data-testid="contact-form-status"]');
       if (status) {
