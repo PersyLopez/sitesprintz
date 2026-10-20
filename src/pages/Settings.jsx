@@ -14,7 +14,7 @@ import { isPaidHostingPlan, isTrialingStatus } from '../config/tiers.js';
 import { PLATFORM_SUPPORT_EMAIL } from '../config/pricing.config';
 import './Settings.css';
 
-function BillingSection({ user, token }) {
+export function BillingSection({ user, token }) {
   const [loading, setLoading] = useState(false);
   const [collectsPayments, setCollectsPayments] = useState(false);
   const [onActiveLiveTrial, setOnActiveLiveTrial] = useState(false);
@@ -142,16 +142,20 @@ function BillingSection({ user, token }) {
       <p className="section-description">Manage your subscription and payment methods</p>
       
       <div className="settings-card">
-        <h3>Subscription & Payment Method</h3>
-        <p>Access the Stripe Customer Portal to manage your subscription and payment methods.</p>
-        <button 
-          onClick={openBillingPortal}
-          disabled={loading}
-          className="btn btn-primary"
-          data-testid="open-billing-portal"
-        >
-          {loading ? '⏳ Loading...' : '📊 Open Billing Portal'}
-        </button>
+        <h3>Subscription &amp; Payment Method</h3>
+        {collectsPayments !== false && (
+          <>
+            <p>Access the Stripe Customer Portal to manage your subscription and payment methods.</p>
+            <button
+              onClick={openBillingPortal}
+              disabled={loading}
+              className="btn btn-primary"
+              data-testid="open-billing-portal"
+            >
+              {loading ? '⏳ Loading...' : '📊 Open Billing Portal'}
+            </button>
+          </>
+        )}
         <p className="section-description" style={{ marginTop: '0.75rem' }}>
           Billing questions:{' '}
           <a href={`mailto:${PLATFORM_SUPPORT_EMAIL}`}>{PLATFORM_SUPPORT_EMAIL}</a>
