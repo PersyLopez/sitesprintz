@@ -46,6 +46,9 @@ export default function HeroStoryVideo() {
   const [captionIdx, setCaptionIdx] = useState(0);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [inView, setInView] = useState(true);
+  // QA PF-01: story.mp4 is the LCP download. Poster renders immediately; the
+  // mp4 src attaches only once the browser is idle, with preload="none".
+  const [srcReady, setSrcReady] = useState(false);
 
   const story = STORIES.find((s) => s.id === activeId) ?? STORIES[0];
   const caption = story.captions[captionIdx] ?? story.captions[0];
@@ -70,11 +73,24 @@ export default function HeroStoryVideo() {
   }, []);
 
   useEffect(() => {
+    if (typeof window.requestIdleCallback === 'function') {
+      const id = window.requestIdleCallback(() => setSrcReady(true), { timeout: 1500 });
+      return () => window.cancelIdleCallback?.(id);
+    }
+    const timer = window.setTimeout(() => setSrcReady(true), 1);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     const video = videoRef.current;
     if (!video) return undefined;
 
     setProgress(0);
     setCaptionIdx(0);
+
+    // No src attached yet — nothing to load, play, or wire listeners to
+    if (!srcReady) return undefined;
+
     video.load();
 
     if (reduceMotion) {
@@ -131,12 +147,12 @@ export default function HeroStoryVideo() {
       video.removeEventListener('pause', onPause);
       video.removeEventListener('ended', onEnded);
     };
-  }, [activeId, reduceMotion, story]);
+  }, [activeId, reduceMotion, story, srcReady]);
 
   // Pause decode/composite work while the hero is off-screen
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || reduceMotion) return undefined;
+    if (!video || reduceMotion || !srcReady) return undefined;
     if (!inView) {
       video.pause();
       return undefined;
@@ -146,7 +162,7 @@ export default function HeroStoryVideo() {
       playPromise.catch(() => setPlaying(false));
     }
     return undefined;
-  }, [inView, reduceMotion, activeId]);
+  }, [inView, reduceMotion, activeId, srcReady]);
 
   const togglePlay = useCallback(() => {
     if (reduceMotion) return;
@@ -163,11 +179,11 @@ export default function HeroStoryVideo() {
           key={story.id}
           ref={videoRef}
           className="hero-ambient-video"
-          src={story.video}
+          src={srcReady ? story.video : undefined}
           poster={story.poster}
           muted
           playsInline
-          preload="metadata"
+          preload="none"
           aria-label={caption.text}
           data-testid="hero-story-video"
         />
