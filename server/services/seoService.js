@@ -288,6 +288,7 @@ class SEOService {
     const withHead = this._applyMarketingHead(html, {
       title: tags.title,
       description: tags.description,
+      siteName: businessName,
       canonical: this.getCanonicalUrl(subdomain, '/'),
       robots: 'index',
     });
@@ -351,6 +352,7 @@ class SEOService {
     out = this._replaceHreflang(out, meta);
     out = this._replaceMetaContent(out, 'property', 'og:url', meta.canonical);
     out = this._replaceMetaContent(out, 'property', 'og:title', meta.title);
+    out = this._replaceOrInsertMetaContent(out, 'property', 'og:site_name', meta.siteName || 'Right Site Light');
     out = this._replaceMetaContent(out, 'property', 'og:description', meta.description);
     out = this._replaceMetaContent(out, 'name', 'twitter:title', meta.title);
     out = this._replaceMetaContent(out, 'name', 'twitter:description', meta.description);
@@ -405,6 +407,15 @@ class SEOService {
     );
     if (!re.test(html)) return html;
     return html.replace(re, `<meta$1${attrKey}="${attrVal}"$2content="${escaped}"$3$4>`);
+  }
+
+  _replaceOrInsertMetaContent(html, attrKey, attrVal, content) {
+    const escaped = this._escapeHtml(content);
+    if (new RegExp(`<meta\\s+${attrKey}="${attrVal}"`, 'i').test(html)) {
+      return this._replaceMetaContent(html, attrKey, attrVal, content);
+    }
+    const tag = `<meta ${attrKey}="${attrVal}" content="${escaped}" />`;
+    return html.replace(/<\/head>/i, `    ${tag}\n  </head>`);
   }
 
   _replaceCanonicalHref(html, href) {

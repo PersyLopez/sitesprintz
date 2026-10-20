@@ -27,6 +27,10 @@ describe('marketing index head crawlability', () => {
     expect(attr('meta property="og:url"', 'content')).toBe('https://rightsitelight.com/');
   });
 
+  it('declares Right Site Light as og:site_name', () => {
+    expect(attr('meta property="og:site_name"', 'content')).toBe('Right Site Light');
+  });
+
   it('uses absolute, non-root-relative image URLs for og:image and twitter:image', () => {
     for (const tag of ['meta property="og:image"', 'meta name="twitter:image"']) {
       const content = attr(tag, 'content');

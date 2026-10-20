@@ -519,6 +519,7 @@ describe('SEOService', () => {
       const injected = seoService.injectMarketingPageMeta(homepageHtml, '/register', '');
 
       expect(injected).toContain('<title>Get Your Page Free — Right Site Light</title>');
+      expect(injected).toContain('<meta property="og:site_name" content="Right Site Light" />');
       expect(injected).toContain('href="https://rightsitelight.com/register"');
       expect(injected).not.toContain('<title>Right Site Light — A page so customers can find you again</title>');
     });
