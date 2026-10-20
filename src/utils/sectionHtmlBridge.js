@@ -586,10 +586,12 @@ function catalogCard(item, index, tokens, purchasable) {
   const dietary = Array.isArray(item.dietary)
     ? item.dietary.filter((tag) => typeof tag === 'string' && tag.trim())
     : [];
-  return `<article class="ss-card" style="background: ${getSurface(tokens)}; border: 1px solid ${getTokens(tokens).theme.hairline};">
-  ${item.image
+  const menuDish = typeof item._category === 'string' && item._category.trim();
+  const media = item.image
     ? `<img class="ss-card-media" data-photo-field="catalog.items.${index}.image" src="${escapeAttr(item.image)}" alt="${escapeAttr(item.imageAlt || item.name || '')}" width="400" height="220" loading="lazy" decoding="async" />`
-    : renderPhotoPlaceholder('product', { className: 'ss-photo-placeholder--card', photoField: `catalog.items.${index}.image` })}
+    : (menuDish ? '' : renderPhotoPlaceholder('product', { className: 'ss-photo-placeholder--card', photoField: `catalog.items.${index}.image` }));
+  return `<article class="ss-card" style="background: ${getSurface(tokens)}; border: 1px solid ${getTokens(tokens).theme.hairline};">
+  ${media}
   <div class="ss-card-body">
     <h3 style="color: ${getAccent(tokens)};">${escapeHtml(item.name || '')}</h3>
     <p style="color: ${getMuted(tokens)};">${escapeHtml(item.description || '')}</p>

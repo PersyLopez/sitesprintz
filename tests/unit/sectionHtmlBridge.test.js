@@ -240,7 +240,7 @@ describe('sectionHtmlBridge', () => {
         title: 'Menu',
         items: [
           { name: 'Tuna Tartare', price: 18, _category: 'Appetizers', _categoryDescription: 'Starters', dietary: ['Pescatarian'] },
-          { name: 'Halibut', price: 42, _category: 'Entrées', dietary: ['Gluten-Free'] },
+          { name: 'Halibut', price: 42, _category: 'Entrées', dietary: ['Gluten-Free'], image: '/uploads/halibut.jpg', imageAlt: 'Halibut' },
         ],
       },
     }, tokens);
@@ -249,6 +249,10 @@ describe('sectionHtmlBridge', () => {
     expect(html).toContain('Starters');
     expect(html).toContain('Pescatarian');
     expect(html).toContain('Gluten-Free');
+    expect(html).toContain('src="/uploads/halibut.jpg"');
+    expect(html).toContain('width="400" height="220"');
+    expect(html).not.toContain('photo-placeholder');
+    expect(html).not.toContain('hero-placeholder.jpg');
   });
 
   it('reserves space for service, gallery, about, and before-after photos', () => {
