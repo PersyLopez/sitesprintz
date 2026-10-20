@@ -127,11 +127,16 @@ function PayOnSiteCheckout({
       {showAsAlternative ? (
         <p className="pay-on-site-heading">{t('orPayOnSite')}</p>
       ) : (
-        <p className="pay-on-site-heading">{t('placeOrder')}</p>
+        <p className="pay-on-site-heading">{t('yourOrder')}</p>
       )}
       <p className="pay-on-site-note">
         {t('payOnSiteNote')}
       </p>
+      {isDisabled && !processing && (
+        <p className="pay-on-site-note" data-testid="pay-on-site-blocked">
+          {t('payOnSiteBlockedHint')}
+        </p>
+      )}
 
       {deliveryEnabled && (
         <fieldset className="pay-on-site-fulfillment" data-testid="fulfillment-choice">

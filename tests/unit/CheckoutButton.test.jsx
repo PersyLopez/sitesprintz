@@ -48,6 +48,9 @@ describe('CheckoutButton', () => {
   it('shows pay-on-site checkout when the owner enabled it', () => {
     render(<CheckoutButton siteId="site-1" payOnSite />);
     expect(screen.getByTestId('pay-on-site-checkout')).toBeInTheDocument();
+    expect(screen.getByText('Your order')).toBeInTheDocument();
+    expect(screen.getByTestId('pay-on-site-blocked')).toHaveTextContent(/Add your name and a valid email/);
+    expect(screen.getByTestId('pay-on-site-place-order')).toBeDisabled();
     expect(screen.getByTestId('pay-on-site-place-order')).toHaveTextContent(/Place order/);
     expect(screen.queryByTestId('checkout-upgrade-notice')).not.toBeInTheDocument();
   });

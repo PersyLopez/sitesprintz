@@ -80,6 +80,14 @@
   gap: var(--spacing-xs, 6px);
 }
 
+/* Readable disabled state: keep text on the site text/background pair (>= 4.5:1)
+   instead of the washed-out global .btn:disabled opacity. */
+.pay-on-site-form .btn:disabled {
+  opacity: 1;
+  color: var(--ss-text, var(--text-light, #f8fafc));
+  background: var(--ss-bg, var(--bg-card, #141417));
+}
+
 .pay-on-site-heading {
   margin: 0;
   font-weight: 700;
