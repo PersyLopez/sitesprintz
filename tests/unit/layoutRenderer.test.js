@@ -863,6 +863,21 @@ describe('layoutRenderer — tolerant data access', () => {
     expect(result.content.address).toContain('Montclair');
   });
 
+  it('publishes parking and access notes on the location', () => {
+    const result = renderSection('location', {}, {
+      contact: {
+        address: '425 Grand Avenue',
+        parking: ' Valet parking available ',
+        accessibility: 'Fully wheelchair accessible',
+      },
+    }, {});
+    expect(result.content.parking).toBe('Valet parking available');
+    expect(result.content.accessibility).toBe('Fully wheelchair accessible');
+
+    const blank = renderSection('location', {}, { contact: { parking: 12 } }, {});
+    expect(blank.content.parking).toBe('');
+  });
+
   it('social primitive resolves from siteData.social', () => {
     const result = renderSection('social', {}, {
       social: { instagram: 'https://instagram.com/shop', whatsapp: '15551234567' },

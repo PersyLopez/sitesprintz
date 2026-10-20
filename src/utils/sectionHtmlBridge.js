@@ -1045,6 +1045,8 @@ function renderLocation(section, tokens) {
     <div style="background: ${getSurface(tokens)}; padding: 32px; border-radius: 12px;">
       ${address ? `<p style="font-size: 1.1rem; margin-bottom: 12px; color: ${getText(tokens)};">${escapeHtml(address)}</p>` : ''}
       ${instructions ? `<p style="color: ${getMuted(tokens)};">${escapeHtml(instructions)}</p>` : ''}
+      ${c.parking ? `<p style="color: ${getText(tokens)}; margin-top: 12px;"><strong>Parking.</strong> ${escapeHtml(c.parking)}</p>` : ''}
+      ${c.accessibility ? `<p style="color: ${getText(tokens)}; margin-top: 8px;"><strong>Access.</strong> ${escapeHtml(c.accessibility)}</p>` : ''}
       ${serviceAreaMapHtml(c)}
       ${c.mapUrl ? `<a href="${escapeAttr(c.mapUrl)}" target="_blank" rel="noopener" class="ss-btn" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)};">View on Map</a>` : ''}
     </div>

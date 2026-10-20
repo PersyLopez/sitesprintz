@@ -453,6 +453,8 @@ const sectionPrimitives = {
         address: location.displayLine || c.address || '',
         mapUrl: location.mode === 'area' ? '' : (c.mapUrl || siteData.social?.maps || siteData.googleMapsUrl || ''),
         instructions: c.instructions || '',
+        parking: visitNote(c.parking || siteData.contact?.parking),
+        accessibility: visitNote(c.accessibility || siteData.contact?.accessibility),
         addressDisplay: location.mode,
         publicGeo: location.publicGeo,
         serviceRadiusMiles: location.radiusMiles,
@@ -936,6 +938,10 @@ function flattenGalleryImages(source) {
       .filter(Boolean);
   }
   return [];
+}
+
+function visitNote(value) {
+  return typeof value === 'string' ? value.trim() : '';
 }
 
 function httpUrl(value) {

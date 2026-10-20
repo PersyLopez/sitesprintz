@@ -894,6 +894,22 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(contact).toContain('Appointments required');
   });
 
+  it('shows parking and access notes on the location', () => {
+    const html = renderSectionToHtml({
+      type: 'location',
+      content: {
+        title: 'Location',
+        address: '425 Grand Avenue',
+        parking: 'Valet parking available',
+        accessibility: 'Fully wheelchair accessible',
+      },
+    }, tokens);
+    expect(html).toContain('Valet parking available');
+    expect(html).toContain('Fully wheelchair accessible');
+    expect(html).toContain('Parking.');
+    expect(html).toContain('Access.');
+  });
+
   it('shows an owner dish photo and the diet, not a stock plate', () => {
     const html = renderSectionToHtml({
       type: 'menu',
