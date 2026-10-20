@@ -5,6 +5,7 @@ import {
   getOperatingImplication,
   buildSiteNav,
   defaultNamedTeamMembers,
+  applyLevelToSiteData,
 } from '../../src/config/operatingModel';
 
 describe('operatingModel — solo vs non-solo', () => {
@@ -110,5 +111,53 @@ describe('operatingModel — nav', () => {
       sections: [{ type: 'catalog', enabled: true }],
     });
     expect(shop[0]).toEqual({ label: 'Shop', href: '#catalog' });
+  });
+});
+
+describe('applyLevelToSiteData', () => {
+  const soloSite = {
+    _niche: 'salon',
+    _level: 'solo',
+    booking: { enabled: true, provider: 'native', url: 'https://example.com/book', businessMode: 'solo' },
+    sections: [
+      { type: 'services', enabled: true, order: 1, content: { title: 'Cuts' } },
+      {
+        type: 'booking',
+        enabled: true,
+        order: 2,
+        content: { title: 'Book', businessMode: 'solo', url: 'keep-me' },
+      },
+    ],
+  };
+
+  it('switches a solo salon to a team booking setup and an empty team section', () => {
+    const next = applyLevelToSiteData(soloSite, 'studio');
+    expect(next._level).toBe('studio');
+    expect(next._operatingModel.businessMode).toBe('team');
+    expect(next.booking.businessMode).toBe('team');
+    expect(next.booking.url).toBe('https://example.com/book');
+    expect(next.sections.find((section) => section.type === 'services').content.title).toBe('Cuts');
+    expect(next.sections.find((section) => section.type === 'booking').content).toMatchObject({
+      businessMode: 'team',
+      url: 'keep-me',
+    });
+    const team = next.sections.find((section) => section.type === 'team');
+    expect(team.enabled).toBe(true);
+    expect(team.content.members).toEqual([]);
+  });
+
+  it('hides the team section for solo and keeps the people already named', () => {
+    const withTeam = applyLevelToSiteData(soloSite, 'studio');
+    withTeam.sections = withTeam.sections.map((section) => (
+      section.type === 'team'
+        ? { ...section, content: { ...section.content, members: [{ name: 'Ada' }] } }
+        : section
+    ));
+    const next = applyLevelToSiteData(withTeam, 'solo');
+    expect(next.booking.businessMode).toBe('solo');
+    expect(next._operatingModel.showTeamSection).toBe(false);
+    const team = next.sections.find((section) => section.type === 'team');
+    expect(team.enabled).toBe(false);
+    expect(team.content.members).toEqual([{ name: 'Ada' }]);
   });
 });

@@ -223,6 +223,68 @@ export function getOperatingImplication(niche, level) {
   return resolveOperatingModel(niche, level).wizardNote;
 }
 
+/**
+ * Apply a level change onto an existing site without rebuilding the page.
+ * Owner copy, services, and named people stay. Booking follows the new
+ * level, a solo site hides the team section, and a team site gains an
+ * empty team section when it does not have one yet.
+ * @param {Object} [siteData]
+ * @param {string} level
+ * @returns {Object}
+ */
+export function applyLevelToSiteData(siteData = {}, level) {
+  const niche = siteData._niche || siteData.niche || '';
+  const model = resolveOperatingModel(niche, level);
+  let sections = Array.isArray(siteData.sections)
+    ? siteData.sections.map((section) => {
+      if (!section || typeof section !== 'object') return section;
+      if (section.type === 'team') {
+        return { ...section, enabled: model.showTeamSection };
+      }
+      if (section.type === 'booking' || section.type === 'native-booking') {
+        return {
+          ...section,
+          content: {
+            ...(section.content || {}),
+            businessMode: model.businessMode,
+            noPreferenceText: model.noPreferenceText,
+          },
+        };
+      }
+      return section;
+    })
+    : siteData.sections;
+
+  if (Array.isArray(sections) && model.showTeamSection && !sections.some((section) => section?.type === 'team')) {
+    const maxOrder = sections.reduce((max, section) => Math.max(max, Number(section?.order) || 0), 0);
+    sections = [
+      ...sections,
+      {
+        id: 'team',
+        type: 'team',
+        variant: model.level === 'established' ? 'grid' : 'staff-picker',
+        enabled: true,
+        order: maxOrder + 1,
+        content: { title: model.teamTitle, members: [] },
+        settings: {},
+      },
+    ];
+  }
+
+  return {
+    ...siteData,
+    _level: model.level,
+    _operatingModel: model,
+    sections,
+    booking: {
+      ...(siteData.booking || {}),
+      businessMode: model.businessMode,
+      noPreferenceText: model.noPreferenceText,
+      staffAssignment: model.staffAssignment,
+    },
+  };
+}
+
 function navTeamLabel(teamTitle, namedCount) {
   if (namedCount <= 1) return 'About';
   const trimmed = String(teamTitle || 'Team')

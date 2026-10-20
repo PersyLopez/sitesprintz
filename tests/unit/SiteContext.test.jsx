@@ -145,6 +145,24 @@ describe('SiteContext', () => {
       expect(result.current.previewKey).toBe(initialKey + 1);
     });
 
+    it('applies one patch as a single undo step', () => {
+      const { result } = renderSiteHook();
+
+      act(() => {
+        result.current.patchSiteData({ businessName: 'Oak', heroTitle: 'Cuts' });
+      });
+
+      expect(result.current.siteData.businessName).toBe('Oak');
+      expect(result.current.siteData.heroTitle).toBe('Cuts');
+
+      act(() => {
+        result.current.undo();
+      });
+
+      expect(result.current.siteData.businessName).toBe('');
+      expect(result.current.siteData.heroTitle).toBe('');
+    });
+
     it('should undo and redo a field change', () => {
       const { result } = renderSiteHook();
 

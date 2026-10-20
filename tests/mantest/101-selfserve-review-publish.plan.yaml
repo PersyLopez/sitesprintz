@@ -202,3 +202,10 @@ steps:
     assert:
       - text contains Just me
       - text contains Me and my team
+
+  - action: Choosing solo keeps that choice
+    code: |
+      await page.getByTestId('level-solo').click();
+      const pressed = await page.getByTestId('level-solo').getAttribute('aria-pressed');
+      if (pressed !== 'true') throw new Error('solo level did not stick');
+    settle_ms: 400

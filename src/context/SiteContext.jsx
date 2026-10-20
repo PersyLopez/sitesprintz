@@ -129,6 +129,16 @@ export function SiteProvider({ children }) {
     });
   }, [historyIndex]);
 
+  const patchSiteData = useCallback((partial) => {
+    setSiteData((prev) => {
+      addToHistory(prev);
+      const next = typeof partial === 'function' ? partial(prev) : partial;
+      if (!next || typeof next !== 'object') return prev;
+      return { ...prev, ...next };
+    });
+    triggerPreviewUpdate();
+  }, [triggerPreviewUpdate, addToHistory]);
+
   const updateField = useCallback((field, value) => {
     setSiteData(prev => {
       const newData = {
@@ -459,6 +469,7 @@ export function SiteProvider({ children }) {
     previewKey, // For PreviewFrame to watch
     setAutoSaveEnabled,
     updateField,
+    patchSiteData,
     updateNestedField,
     applyLiveField,
     addService,

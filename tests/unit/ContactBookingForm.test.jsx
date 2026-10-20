@@ -54,4 +54,22 @@ describe('ContactBookingForm address privacy', () => {
     expect(screen.getByText(/Buyers still get the private address/i)).toBeInTheDocument();
     expect(screen.queryByLabelText(/Google Maps URL/i)).not.toBeInTheDocument();
   });
+
+  it('applies a team-size change onto booking and the team section', async () => {
+    const user = userEvent.setup();
+    const siteData = {
+      _niche: 'salon',
+      _level: 'solo',
+      booking: { enabled: true, businessMode: 'solo' },
+      sections: [{ type: 'services', content: { title: 'Cuts' } }],
+    };
+    const ctx = renderForm(siteData, { patchSiteData: vi.fn() });
+    await user.click(screen.getByTestId('level-studio'));
+    expect(ctx.patchSiteData).toHaveBeenCalledTimes(1);
+    const next = ctx.patchSiteData.mock.calls[0][0](siteData);
+    expect(next._level).toBe('studio');
+    expect(next.booking.businessMode).toBe('team');
+    expect(next.sections.some((section) => section.type === 'team' && section.content.members.length === 0)).toBe(true);
+    expect(next.sections.find((section) => section.type === 'services').content.title).toBe('Cuts');
+  });
 });

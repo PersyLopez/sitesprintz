@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useSite } from '../../../hooks/useSite';
 import LevelSelector from '../LevelSelector';
+import { applyLevelToSiteData } from '../../../config/operatingModel';
 import './ContactBookingForm.css';
 
 function ContactBookingForm() {
-  const { siteData, updateField, updateNestedField } = useSite();
+  const { siteData, updateField, updateNestedField, patchSiteData } = useSite();
   const [showBooking, setShowBooking] = useState(
     siteData.booking?.enabled || false
   );
@@ -270,7 +271,8 @@ function ContactBookingForm() {
               <h4>Who do customers book with?</h4>
               <LevelSelector
                 value={siteData._level || 'solo'}
-                onChange={(key) => updateField('_level', key)}
+                niche={siteData._niche || siteData.niche}
+                onChange={(key) => patchSiteData((prev) => applyLevelToSiteData(prev, key))}
               />
             </div>
 
