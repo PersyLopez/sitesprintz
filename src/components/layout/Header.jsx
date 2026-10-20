@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { bindMarketingTranslator } from '../../i18n/locale.js';
+import { tMarketing } from '../../i18n/marketing/index.js';
 import { useLocale } from '../../i18n/LocaleContext.jsx';
 import LanguageSwitcher from '../i18n/LanguageSwitcher';
 import ThemeSwitcher from './ThemeSwitcher';
@@ -11,6 +13,8 @@ import { useSiteWorkspace } from '../../context/SiteWorkspaceContext';
 import { getPublishedSiteUrl, getSiteDisplayName, getSiteWorkspacePaths } from '../../utils/siteWorkspace';
 import { LIVE_EDIT_SCOPE_HINT } from '../../utils/liveEditScope';
 import './Header.css';
+
+bindMarketingTranslator(tMarketing);
 
 function Header() {
   const { isAuthenticated, logout, user } = useAuth();

@@ -6,12 +6,11 @@ import { CartProvider } from './context/CartContext';
 import { TipsProvider } from './context/TipsContext';
 import { StaffProvider } from './context/StaffContext';
 
-import Login from './pages/Login';
-import About from './pages/About';
-import Contact from './pages/Contact';
-
-// The homepage is its own chunk so a published shop does not download it.
+// Marketing pages and their copy load on those routes, not with a published shop.
 const Landing = lazy(() => import('./pages/Landing'));
+const Login = lazy(() => import('./pages/Login'));
+const About = lazy(() => import('./pages/About'));
+const Contact = lazy(() => import('./pages/Contact'));
 const Register = lazy(() => import('./pages/Register'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const SiteDashboard = lazy(() => import('./pages/SiteDashboard'));
@@ -129,9 +128,30 @@ function App() {
                   </Suspense>
                 }
               />
-              <Route path="/login" element={<Login />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
+              <Route
+                path="/login"
+                element={
+                  <Suspense fallback={<LoadingFallback message="Loading..." />}>
+                    <Login />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/about"
+                element={
+                  <Suspense fallback={<LoadingFallback message="Loading..." />}>
+                    <About />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/contact"
+                element={
+                  <Suspense fallback={<LoadingFallback message="Loading..." />}>
+                    <Contact />
+                  </Suspense>
+                }
+              />
               <Route
                 path="/build"
                 element={

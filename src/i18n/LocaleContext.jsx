@@ -1,7 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { DEFAULT_LOCALE, persistLocale, resolveLocale } from './locale.js';
-import { tMarketing } from './marketing/index.js';
+import { callMarketingTranslator, DEFAULT_LOCALE, persistLocale, resolveLocale } from './locale.js';
 
 const LocaleContext = createContext(null);
 
@@ -36,7 +35,7 @@ export function LocaleProvider({ children }) {
     setSearchParams(nextParams, { replace: true });
   }, [searchParams, setSearchParams]);
 
-  const t = useCallback((key, vars) => tMarketing(locale, key, vars), [locale]);
+  const t = useCallback((key, vars) => callMarketingTranslator(locale, key, vars), [locale]);
 
   const value = useMemo(() => ({ locale, setLocale, t }), [locale, setLocale, t]);
 
@@ -53,6 +52,6 @@ export function useLocale() {
   return {
     locale: DEFAULT_LOCALE,
     setLocale: () => {},
-    t: (key, vars) => tMarketing(DEFAULT_LOCALE, key, vars),
+    t: (key, vars) => callMarketingTranslator(DEFAULT_LOCALE, key, vars),
   };
 }

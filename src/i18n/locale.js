@@ -76,3 +76,14 @@ export function translate(dict, fallbackDict, key, vars) {
   const raw = dict?.[key] ?? fallbackDict?.[key] ?? key;
   return interpolate(raw, vars);
 }
+
+let marketingTranslator = null;
+
+export function bindMarketingTranslator(translator) {
+  marketingTranslator = translator;
+}
+
+export function callMarketingTranslator(locale, key, vars) {
+  if (typeof marketingTranslator !== 'function') return key;
+  return marketingTranslator(locale, key, vars);
+}
