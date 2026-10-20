@@ -239,13 +239,14 @@ const sectionPrimitives = {
     const c = content || {};
     const products = firstList(c.products, c.items, siteData.products);
     const menuSections = c.sections || siteData.menu?.sections || [];
-    // If menu sections exist, flatten to products
+    const fromMenu = products.length === 0 && menuSections.length > 0;
     const items = products.length > 0 ? products : flattenMenuToProducts(menuSections);
+    const title = c.title || (siteData?._niche === 'restaurant' || fromMenu ? 'Menu' : 'Shop');
     return {
       type: 'catalog',
       variant: variant || 'grid',
       content: {
-        title: c.title || 'Menu',
+        title,
         items: liveItemPhotos(items, siteData),
         displayVariant: variant || 'grid',
         purchasable: Boolean(siteData?.settings?.allowCheckout),
@@ -794,7 +795,8 @@ function renderPlaceholder(type, content) {
 // Helper: resolve hero CTA based on variant and features
 // ---------------------------------------------------------------------------
 
-function resolveHeroCta(variant, _siteData) {
+function resolveHeroCta(variant, siteData) {
+  if (variant === 'featured' && siteData?._niche !== 'restaurant') return 'Shop';
   const defaults = {
     split: 'Book Now',
     'full-bleed': 'Get a Quote',

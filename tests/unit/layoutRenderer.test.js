@@ -378,6 +378,25 @@ describe('layoutRenderer — renderSection() known types', () => {
     expect(result.content.items[0].name).toBe('Haircut');
   });
 
+  it('names a product catalog Shop and a restaurant catalog Menu', () => {
+    const shop = renderSection('catalog', {}, {
+      _niche: 'product-showcase',
+      products: [{ name: 'Mug', price: 24 }],
+    }, {});
+    expect(shop.content.title).toBe('Shop');
+
+    const restaurant = renderSection('catalog', {}, {
+      _niche: 'restaurant',
+      menu: { sections: [{ name: 'Mains', items: [{ name: 'Burger', price: 12 }] }] },
+    }, {});
+    expect(restaurant.content.title).toBe('Menu');
+
+    const hero = renderSection('hero', {}, { _niche: 'product-showcase' }, {}, 'featured');
+    expect(hero.content.ctaText).toBe('Shop');
+    const menuHero = renderSection('hero', {}, { _niche: 'restaurant' }, {}, 'featured');
+    expect(menuHero.content.ctaText).toBe('View Menu');
+  });
+
   it('catalog section flattens menu sections to products', () => {
     const menuData = {
       sections: [
