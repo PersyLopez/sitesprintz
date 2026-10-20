@@ -2,7 +2,7 @@
  * Client-side delivery helpers (public config only — no private street).
  */
 
-import { SERVICE_RADIUS_MILES, normalizeServiceRadiusMiles } from './liveSiteContact.js';
+import { SERVICE_RADIUS_MILES, normalizeServiceRadiusMiles } from './serviceRadius.js';
 
 function parseMoney(value) {
   if (typeof value === 'number' && Number.isFinite(value)) return value;

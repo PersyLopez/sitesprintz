@@ -5,6 +5,9 @@
 import { getLayout } from '../config/layouts.js';
 import { FEATURES, hasFeature } from './planFeatures.js';
 import { PLATFORM_SUPPORT_EMAIL } from '../config/pricing.config.js';
+import { SERVICE_RADIUS_MILES, normalizeServiceRadiusMiles } from './serviceRadius.js';
+
+export { SERVICE_RADIUS_MILES, normalizeServiceRadiusMiles };
 
 const PRIMARY_BY_INTENT = {
   booking: { href: '#booking', label: 'Book', stickyTestId: 'sticky-cta-book' },
@@ -15,7 +18,6 @@ const PRIMARY_BY_INTENT = {
 
 export const ADDRESS_DISPLAY_STREET = 'street';
 export const ADDRESS_DISPLAY_AREA = 'area';
-export const SERVICE_RADIUS_MILES = Object.freeze([5, 10, 15, 25, 50]);
 export const SERVICE_AREA_LABEL_MAX = 80;
 
 const AREA_PUBLISH_ERROR = 'AREA_LOCATION_INCOMPLETE';
@@ -37,11 +39,6 @@ export function normalizeAddressDisplay(value) {
 
 export function isAreaDisplay(siteData) {
   return normalizeAddressDisplay(siteData?.contact?.addressDisplay) === ADDRESS_DISPLAY_AREA;
-}
-
-export function normalizeServiceRadiusMiles(value) {
-  const miles = Number(value);
-  return SERVICE_RADIUS_MILES.includes(miles) ? miles : null;
 }
 
 export function normalizeServiceAreaLabel(value) {
