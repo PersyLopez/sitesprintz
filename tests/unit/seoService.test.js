@@ -588,7 +588,7 @@ describe('SEOService', () => {
 
       expect(injected).toContain('<title>Luxe Beauty Studio - Made with Right Site Light</title>');
       expect(injected).toContain('content="Cuts and color on Bergenline."');
-      expect(injected).toContain('href="https://rightsitelight.com/showcase/gallery-salon"');
+      expect(injected).toContain('href="https://rightsitelight.com/view/gallery-salon/"');
       expect(injected).not.toContain('<title>Right Site Light — A page so customers can find you again</title>');
     });
 

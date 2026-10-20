@@ -329,7 +329,9 @@ class SEOService {
     return this._applyMarketingHead(html, {
       title: `${siteTitle} - Made with Right Site Light`,
       description,
-      canonical: `${origin}/showcase/${encodeURIComponent(subdomain)}`,
+      canonical: subdomain
+        ? this.getCanonicalUrl(subdomain, '/')
+        : `${origin}/showcase/${encodeURIComponent(subdomain)}`,
       robots: 'index',
     });
   }
