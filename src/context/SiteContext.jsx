@@ -222,7 +222,7 @@ export function SiteProvider({ children }) {
 
     // Verify template is present before saving
     if (!siteData.template) {
-      console.error('ERROR: saveDraft called but siteData.template is missing!', siteData);
+      console.error('saveDraft called but siteData.template is missing');
     }
     try {
       let response;
