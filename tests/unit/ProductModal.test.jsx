@@ -176,6 +176,24 @@ describe('ProductModal', () => {
       });
     });
 
+    it('should disable save button while onSave is pending', () => {
+      renderAddProduct();
+
+      fireEvent.change(screen.getByPlaceholderText('e.g. Margherita Pizza'), {
+        target: { value: 'Test Product' }
+      });
+      fireEvent.change(screen.getByPlaceholderText('0.00'), { target: { value: '10' } });
+
+      mockOnSave.mockImplementation(() => new Promise(() => {}));
+
+      fireEvent.click(screen.getByTestId('save-product-btn'));
+      fireEvent.click(screen.getByTestId('save-product-btn'));
+
+      expect(mockOnSave).toHaveBeenCalledTimes(1);
+      expect(screen.getByTestId('save-product-btn')).toBeDisabled();
+      expect(screen.getByTestId('save-product-btn')).toHaveTextContent('Adding…');
+    });
+
     it('should default category to General if empty', () => {
       renderAddProduct();
       

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useToast } from '../../hooks/useToast';
 import ImageUploader from '../setup/forms/ImageUploader';
 import './ProductModal.css';
@@ -14,6 +14,8 @@ function ProductModal({ product, onSave, onClose }) {
     stock: '',
     available: true
   });
+  const [isSaving, setIsSaving] = useState(false);
+  const isSavingRef = useRef(false);
   const [step, setStep] = useState(product ? 'details' : 'photo');
 
   useEffect(() => {
@@ -32,8 +34,10 @@ function ProductModal({ product, onSave, onClose }) {
     }
   }, [product]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (isSavingRef.current) return;
 
     if (!formData.name?.trim() || formData.price === '' || formData.price === null) {
       showError('Name and price are required');
@@ -46,16 +50,26 @@ function ProductModal({ product, onSave, onClose }) {
       return;
     }
 
-    onSave({
-      ...formData,
-      name: formData.name.trim(),
-      price,
-      category: formData.category?.trim() || 'General',
-      stock: formData.stock === '' || formData.stock === null
-        ? null
-        : parseInt(formData.stock, 10),
-      available: formData.available !== false
-    });
+    // Ref is set synchronously so a second submit before re-render is blocked
+    isSavingRef.current = true;
+    setIsSaving(true);
+    try {
+      await onSave({
+        ...formData,
+        name: formData.name.trim(),
+        price,
+        category: formData.category?.trim() || 'General',
+        stock: formData.stock === '' || formData.stock === null
+          ? null
+          : parseInt(formData.stock, 10),
+        available: formData.available !== false
+      });
+    } catch {
+      // Parent owns error surfacing; keep the modal open on failure
+    } finally {
+      isSavingRef.current = false;
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -207,8 +221,10 @@ function ProductModal({ product, onSave, onClose }) {
             <button type="button" onClick={onClose} className="btn btn-secondary" data-testid="cancel-product-btn">
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary" data-testid="save-product-btn">
-              {product ? 'Update Product' : 'Add Product'}
+            <button type="submit" className="btn btn-primary" data-testid="save-product-btn" disabled={isSaving}>
+              {isSaving
+                ? (product ? 'Updating…' : 'Adding…')
+                : (product ? 'Update Product' : 'Add Product')}
             </button>
           </div>
         </form>
