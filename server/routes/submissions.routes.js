@@ -375,6 +375,8 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
 
   if (status) {
     where.status = status;
+  } else {
+    where.status = { not: 'archived' };
   }
 
   const submissions = await prisma.submissions.findMany({
