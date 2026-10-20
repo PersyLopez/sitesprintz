@@ -714,12 +714,13 @@ app.use(async (req, res, next) => {
     const injected = spaSeoService.injectMarketingPageMeta(html, req.path, search);
     res.setHeader('Content-Type', 'text/html; charset=UTF-8');
     if (viewSubdomain) {
-      const viewHtml = preloadPublishedViewDisplayFont(deferPublishedViewFonts(stripPublishedViewThirdParties(injected)));
+      const viewHtml = deferPublishedViewFonts(stripPublishedViewThirdParties(injected));
       try {
         const showcase = await findPublishedShowcase(viewSubdomain);
         if (showcase) {
           const withEmbed = injectPublishedSiteEmbed(viewHtml, { success: true, site: showcase });
-          return res.send(injectPublishedViewMarkup(withEmbed, renderPublishedViewFragment(showcase)));
+          const withShop = injectPublishedViewMarkup(withEmbed, renderPublishedViewFragment(showcase));
+          return res.send(preloadPublishedViewDisplayFont(withShop));
         }
       } catch {
         // Unknown subdomain or lookup error: serve the shell without an embed

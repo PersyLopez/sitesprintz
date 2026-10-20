@@ -96,21 +96,6 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
   }, [subdomain, onSiteId]);
 
   useEffect(() => {
-    const existing = document.getElementById('ss-live-fonts');
-    if (!existing) {
-      const fontLink = document.createElement('link');
-      fontLink.id = 'ss-live-fonts';
-      fontLink.rel = 'stylesheet';
-      fontLink.media = 'print';
-      fontLink.onload = () => {
-        fontLink.media = 'all';
-      };
-      fontLink.href = 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap';
-      document.head.appendChild(fontLink);
-    }
-  }, []);
-
-  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('order') === 'success') {
       clearCart();
@@ -131,6 +116,22 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
       return null;
     }
   }, [payload, locale]);
+
+  useEffect(() => {
+    if (!markup?.css?.includes('Fraunces')) return;
+    const existing = document.getElementById('ss-live-fonts');
+    if (existing) return;
+    const fontLink = document.createElement('link');
+    fontLink.id = 'ss-live-fonts';
+    fontLink.rel = 'stylesheet';
+    fontLink.media = 'print';
+    fontLink.onload = () => {
+      fontLink.media = 'all';
+    };
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&display=swap';
+    document.head.appendChild(fontLink);
+  }, [markup]);
+
   const bookingEnabled = Boolean(
     ownerUserId
     && (

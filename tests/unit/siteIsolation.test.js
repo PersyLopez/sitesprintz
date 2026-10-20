@@ -198,8 +198,10 @@ describe('site isolation — /view document and embed', () => {
   });
 
   it('starts the Fraunces display face in the view document without a second copy', () => {
-    const shell = '<html><head><title>Shop</title></head><body></body></html>';
+    const shell = '<html><head><title>Shop</title></head><body><style>.ss-brand { font-family: "Fraunces", serif; }</style></body></html>';
     const preloaded = preloadPublishedViewDisplayFont(shell);
+    const interOnly = '<html><head></head><body><style>.ss-brand { font-family: "Inter", sans-serif; }</style></body></html>';
+    expect(preloadPublishedViewDisplayFont(interOnly)).toBe(interOnly);
     expect(preloaded).toContain('id="ss-live-fonts"');
     expect(preloaded).toContain(`href="${PUBLISHED_VIEW_DISPLAY_FONT_HREF}"`);
     expect(preloaded).toContain('media="print" onload="this.media=\'all\'"');

@@ -241,9 +241,10 @@ export function deferPublishedViewFonts(html) {
 export const PUBLISHED_VIEW_DISPLAY_FONT_HREF = 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&display=swap';
 
 /**
- * Start the shop display face with the /view document instead of waiting for
- * the React effect. Non-blocking, same id the viewer checks so it does not
- * add a second stylesheet. Shell Inter stays the body face.
+ * Start Fraunces with the /view document when the shop's CSS uses it.
+ * An Inter-only shop does not download that face. Non-blocking, same id the
+ * viewer checks so it does not add a second stylesheet. Shell Inter stays
+ * the body face.
  *
  * @param {string} html
  * @returns {string}
@@ -251,6 +252,7 @@ export const PUBLISHED_VIEW_DISPLAY_FONT_HREF = 'https://fonts.googleapis.com/cs
 export function preloadPublishedViewDisplayFont(html) {
   if (typeof html !== 'string' || !html.includes('</head>')) return html;
   if (html.includes('id="ss-live-fonts"')) return html;
+  if (!/font-family:[^;}{]*Fraunces/i.test(html)) return html;
   const asyncLink = `<link id="ss-live-fonts" rel="stylesheet" media="print" onload="this.media='all'" href="${PUBLISHED_VIEW_DISPLAY_FONT_HREF}">`;
   const noscript = `<noscript><link rel="stylesheet" href="${PUBLISHED_VIEW_DISPLAY_FONT_HREF}"></noscript>`;
   return html.replace('</head>', `${asyncLink}\n    ${noscript}\n</head>`);

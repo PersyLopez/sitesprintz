@@ -31,7 +31,7 @@ vi.mock('../../src/context/CartContext', () => ({
 vi.mock('../../src/utils/publishedSiteDocument', () => ({
   buildLiveSiteMarkup: () => ({
     html: '<main><div class="ss-booking-mount" data-ss-booking-mount data-testid="live-booking-widget"></div></main>',
-    css: '',
+    css: '.ss-brand { font-family: "Fraunces", serif; }',
     tokens: { theme: {} },
   }),
   getLiveSiteThemeVars: () => ({}),
