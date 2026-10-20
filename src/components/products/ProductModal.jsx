@@ -105,11 +105,7 @@ function ProductModal({ product, onSave, onClose }) {
               <button type="button" className="btn btn-primary" onClick={() => setStep('details')} data-testid="product-photo-continue">
                 Continue
               </button>
-            ) : (
-              <button type="button" className="btn btn-secondary" onClick={() => setStep('details')} data-testid="product-photo-continue-without">
-                Continue without photo
-              </button>
-            )}
+            ) : null}
           </div>
         ) : (
         <form onSubmit={handleSubmit} className="modal-body">
