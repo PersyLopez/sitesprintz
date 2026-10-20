@@ -312,6 +312,23 @@ describe('sectionHtmlBridge', () => {
     expect(specials).toContain('This week only');
     expect(specials).toContain('data-testid="menu-availability"');
 
+    const dining = renderSectionToHtml({
+      type: 'booking',
+      content: {
+        privateDiningTitle: 'Private dining',
+        privateRooms: [{
+          name: 'Wine room',
+          capacity: '8-12 guests',
+          description: 'A quiet room',
+          features: ['Custom menu'],
+        }],
+      },
+    }, tokens);
+    expect(dining).toContain('data-testid="private-dining"');
+    expect(dining).toContain('Wine room');
+    expect(dining).toContain('Custom menu');
+    expect(dining).toContain('data-testid="live-booking-widget"');
+
     const about = renderSectionToHtml({
       type: 'about',
       content: { title: 'About', image: '/uploads/about.jpg' },

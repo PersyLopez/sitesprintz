@@ -1077,6 +1077,23 @@ describe('layoutRenderer — catalog-shaped site data', () => {
     expect(asked.content.filterable).toBe(true);
   });
 
+  it('lists private dining rooms on the booking section', () => {
+    const result = renderSection('booking', {}, {
+      privateEvents: {
+        title: 'Private dining',
+        rooms: [{
+          name: 'Wine room',
+          capacity: '8-12 guests',
+          description: 'A quiet room',
+          features: ['Custom menu'],
+        }],
+      },
+    }, {});
+    expect(result.content.privateDiningTitle).toBe('Private dining');
+    expect(result.content.privateRooms[0].name).toBe('Wine room');
+    expect(result.content.privateRooms[0].features).toEqual(['Custom menu']);
+  });
+
   it('adds chef specials onto the menu catalog', () => {
     const result = renderSection('catalog', { items: [{ name: 'Steak', price: 30 }] }, {
       chefSpecials: {

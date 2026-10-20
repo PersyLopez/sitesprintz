@@ -705,6 +705,30 @@ function allowedBookingEmbedUrl(url) {
   }
 }
 
+function privateDiningHtml(section, tokens) {
+  const rooms = Array.isArray(section.content?.privateRooms) ? section.content.privateRooms : [];
+  if (!rooms.length) return '';
+  const heading = section.content?.privateDiningTitle || 'Private dining';
+  const cards = rooms.map((room) => `<article data-testid="private-room" style="background: ${getSurface(tokens)}; padding: 20px; border-radius: 12px; text-align: left;">
+  <h3 style="color: ${getAccent(tokens)}; margin: 0 0 8px;">${escapeHtml(room.name)}</h3>
+  ${room.capacity ? `<p style="color: ${getMuted(tokens)}; margin: 0 0 8px;">${escapeHtml(room.capacity)}</p>` : ''}
+  ${room.description ? `<p style="margin: 0 0 8px;">${escapeHtml(room.description)}</p>` : ''}
+  ${room.features?.length ? `<p style="color: ${getMuted(tokens)}; margin: 0;">${escapeHtml(room.features.join(' · '))}</p>` : ''}
+</article>`).join('\n');
+  return `<div data-testid="private-dining" style="margin-top: 32px;">
+  <h3 class="ss-h3" style="color: ${getAccent(tokens)}; text-align: center; margin-bottom: 16px;">${escapeHtml(heading)}</h3>
+  <div style="display: grid; gap: 16px;">${cards}</div>
+</div>`;
+}
+
+function finishBookingHtml(html, section, tokens) {
+  const extra = privateDiningHtml(section, tokens);
+  if (!extra) return html;
+  const at = html.lastIndexOf('</section>');
+  if (at < 0) return html;
+  return `${html.slice(0, at)}${extra}\n${html.slice(at)}`;
+}
+
 function renderBooking(section, tokens) {
   const c = section.content || {};
   const title = c.title || 'Book an Appointment';
@@ -1881,7 +1905,10 @@ export function renderSectionToHtml(section, tokens) {
   }
 
   const renderer = RENDERERS[section.type] || renderPlaceholder;
-  const html = renderer(section, tokens);
+  let html = renderer(section, tokens);
+  if (section.type === 'booking' || section.type === 'native-booking') {
+    html = finishBookingHtml(html, section, tokens);
+  }
   if (!html || !html.startsWith('<section')) return html;
   return html.replace(
     /^<section\b/,

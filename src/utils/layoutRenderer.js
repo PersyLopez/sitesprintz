@@ -281,6 +281,8 @@ const sectionPrimitives = {
         phone: c.phone || siteData?.contactPhone || siteData?.contact?.phone || '',
         businessMode: c.businessMode || model.businessMode,
         provider: c.provider || siteData?.booking?.provider || 'native',
+        privateDiningTitle: siteData?.privateEvents?.title || '',
+        privateRooms: privateDiningRooms(siteData),
       },
       settings: {},
       accent: true,
@@ -1024,6 +1026,18 @@ function formatHours(hours) {
 function shortHoursLine(hours) {
   const lines = readHours(hours).lines;
   return lines.length === 1 ? lines[0] : '';
+}
+
+function privateDiningRooms(siteData) {
+  const rooms = Array.isArray(siteData?.privateEvents?.rooms) ? siteData.privateEvents.rooms : [];
+  return rooms.map((room) => ({
+    name: String(room?.name || '').trim(),
+    capacity: typeof room?.capacity === 'string' ? room.capacity.trim() : '',
+    description: typeof room?.description === 'string' ? room.description : '',
+    features: Array.isArray(room?.features)
+      ? room.features.filter((feature) => typeof feature === 'string' && feature.trim())
+      : [],
+  })).filter((room) => room.name);
 }
 
 function chefSpecialProducts(siteData) {
