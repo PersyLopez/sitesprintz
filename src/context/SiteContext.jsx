@@ -223,18 +223,14 @@ export function SiteProvider({ children }) {
     // Verify template is present before saving
     if (!siteData.template) {
       console.error('ERROR: saveDraft called but siteData.template is missing!', siteData);
-    } else {
-      console.log('saveDraft called with template:', siteData.template);
     }
     try {
       let response;
       // If draftId exists and doesn't start with 'draft-', it's an existing site
       if (draftId && !draftId.startsWith('draft-')) {
-        console.log('[SiteContext] Updating existing site:', draftId);
         const { sitesService } = await import('../services/sites');
         response = await sitesService.updateSite(draftId, siteData);
       } else {
-        console.log('[SiteContext] Saving as draft. Current draftId:', draftId);
         response = await draftsService.saveDraft({
           id: draftId,
           data: siteData,

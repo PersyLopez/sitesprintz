@@ -39,11 +39,19 @@ describe('Drafts Service', () => {
 
       const result = await draftsService.saveDraft(draftData);
 
-      expect(api.post).toHaveBeenCalledWith('/api/drafts', draftData);
+      expect(api.post).toHaveBeenCalledWith(
+        '/api/drafts',
+        expect.objectContaining({
+          templateId: 'restaurant',
+          data: expect.objectContaining({
+            businessName: 'Test Business'
+          })
+        })
+      );
       expect(result.id).toBe('draft-123');
     });
 
-    it('should log draft data on save', async () => {
+    it('should not log draft data on save', async () => {
       const draftData = {
         data: {
           businessName: 'Test'
@@ -54,13 +62,7 @@ describe('Drafts Service', () => {
 
       await draftsService.saveDraft(draftData);
 
-      expect(console.log).toHaveBeenCalledWith(
-        '📤 Sending draft data:',
-        expect.objectContaining({
-          hasData: true,
-          dataKeys: ['businessName']
-        })
-      );
+      expect(console.log).not.toHaveBeenCalled();
     });
 
     it('should handle empty draft data', async () => {
@@ -70,12 +72,7 @@ describe('Drafts Service', () => {
 
       await draftsService.saveDraft(draftData);
 
-      expect(console.log).toHaveBeenCalledWith(
-        '📤 Sending draft data:',
-        expect.objectContaining({
-          dataEmpty: true
-        })
-      );
+      expect(console.log).not.toHaveBeenCalled();
     });
 
     it('should handle save errors', async () => {

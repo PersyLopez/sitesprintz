@@ -15,8 +15,6 @@ export const draftsService = {
         templateId: draft.data?.template || draft.data?.templateId || draft.data?.id,
       }
     };
-    console.log('Saving Draft Payload:', JSON.stringify(draftData));
-
     return api.post('/api/drafts', draftData);
   },
 
