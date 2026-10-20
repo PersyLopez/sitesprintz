@@ -1689,10 +1689,22 @@ function renderCheckout(section, tokens) {
   return `<section class="ss-checkout" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
   <div class="ss-container" style="max-width: 600px; margin: 0 auto; text-align: center;">
     <div style="background: ${getSurface(tokens)}; padding: 40px; border-radius: 12px; border: 1px solid ${getTokens(tokens).theme.hairline};">
-      <h2 style="color: ${getAccent(tokens)}; margin-bottom: 16px;">Checkout</h2>
-      <p style="color: ${getText(tokens)};">Ready to complete your order.</p>
+      <h2 style="color: ${getAccent(tokens)}; margin-bottom: 16px;">Your order</h2>
+      <button type="button" data-ss-open-cart data-testid="checkout-open-cart" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)}; border: 0; cursor: pointer; padding: 14px 22px;">Review your order</button>
     </div>
   </div>
+  <script>
+  (function () {
+    var section = document.currentScript && document.currentScript.previousElementSibling;
+    if (!section) return;
+    section.addEventListener('click', function (event) {
+      var button = event.target.closest('[data-ss-open-cart]');
+      if (!button || !section.contains(button)) return;
+      var toggle = document.querySelector('[data-testid="cart-toggle-button"]');
+      if (toggle) toggle.click();
+    });
+  })();
+  </script>
 </section>`;
 }
 

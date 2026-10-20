@@ -1196,6 +1196,17 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(html).not.toContain('ss-checkout');
   });
 
+  it('opens the existing cart from the checkout section', () => {
+    const html = renderSectionToHtml({
+      type: 'checkout',
+      content: { enabled: true },
+    }, tokens);
+    expect(html).toContain('data-testid="checkout-open-cart"');
+    expect(html).toContain('data-testid="cart-toggle-button"');
+    expect(html).toContain('Review your order');
+    expect(html).not.toContain('Ready to complete your order');
+  });
+
   it('keeps Unsplash when gallery seed set settings.demoMode', () => {
     const { html } = buildLiveSiteMarkup({
       businessName: 'Demo Salon',
