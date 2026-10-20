@@ -543,11 +543,19 @@ describe('SEOService', () => {
     });
 
     it('names a live shop instead of the marketing homepage', () => {
-      const injected = seoService.injectPublishedViewDocumentMeta(homepageHtml, {
+      const html = homepageHtml.replace(
+        '</head>',
+        '<meta property="og:image" content="https://rightsitelight.com/assets/og-image.jpg" />'
+        + '<meta name="twitter:image" content="https://rightsitelight.com/assets/og-image.jpg" />'
+        + '<script type="application/ld+json">{"@type":"Organization","name":"Right Site Light"}</script></head>'
+      );
+      const injected = seoService.injectPublishedViewDocumentMeta(html, {
         name: 'Oak Barber',
         subdomain: 'oak-barber',
         data: {
+          category: 'salon',
           about: { description: 'Cuts and color on Bergenline Avenue in Union City.' },
+          contact: { phone: '201-555-0100' },
         },
       });
 
@@ -556,6 +564,12 @@ describe('SEOService', () => {
       expect(injected).toContain('href="https://rightsitelight.com/view/oak-barber/"');
       expect(injected).not.toContain('href="https://rightsitelight.com/"');
       expect(injected).not.toContain('hreflang=');
+      expect(injected).toContain('/api/share/oak-barber/social');
+      expect(injected).not.toContain('og-image.jpg');
+      expect(injected).toContain('"@type":"BeautySalon"');
+      expect(injected).toContain('"name":"Oak Barber"');
+      expect(injected).toContain('"telephone":"201-555-0100"');
+      expect(injected).not.toContain('Right Site Light');
     });
 
     it('names a showcase example the same way the page does', () => {

@@ -219,18 +219,42 @@ class SEOService {
       || payload.about?.description
       || payload.hero?.subtitle
       || '';
-    const tags = this.generateMetaTags({
+    const identity = {
       ...payload,
       businessName,
       businessDescription,
       subdomain,
-    });
-    return this._applyMarketingHead(html, {
+      businessPhone: payload.businessPhone || payload.contactPhone || payload.contact?.phone || '',
+      businessEmail: payload.businessEmail || payload.contact?.email || '',
+      businessAddress: payload.businessAddress || payload.contact?.address || '',
+    };
+    const tags = this.generateMetaTags(identity);
+    const withHead = this._applyMarketingHead(html, {
       title: tags.title,
       description: tags.description,
       canonical: this.getCanonicalUrl(subdomain, '/'),
       robots: 'index',
     });
+    const category = payload.category || showcase.category || payload.niche || 'service';
+    return this._replaceJsonLd(
+      this._replaceShareImages(withHead, tags),
+      this.generateSchemaMarkup(category, identity),
+    );
+  }
+
+  _replaceShareImages(html, tags) {
+    let out = html;
+    if (tags['og:image']) out = this._replaceMetaContent(out, 'property', 'og:image', tags['og:image']);
+    if (tags['twitter:image']) out = this._replaceMetaContent(out, 'name', 'twitter:image', tags['twitter:image']);
+    return out;
+  }
+
+  _replaceJsonLd(html, schema) {
+    const json = JSON.stringify(schema).replace(/</g, '\\u003c');
+    const block = `<script type="application/ld+json">${json}</script>`;
+    const existing = /<script\s+type="application\/ld\+json">[\s\S]*?<\/script>/i;
+    if (existing.test(html)) return html.replace(existing, block);
+    return html.replace(/<\/head>/i, `${block}</head>`);
   }
 
   injectShowcaseDocumentMeta(html, showcase) {
