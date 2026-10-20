@@ -48,6 +48,14 @@ describe('LevelSelector', () => {
     expect(established.textContent.length).toBeGreaterThan('A bigger team'.length);
   });
 
+  it('solo card shows the plain description without first-person copy', () => {
+    render(<LevelSelector onChange={() => {}} />);
+
+    const solo = screen.getByTestId('level-solo');
+    expect(solo.textContent).toContain('Just you. Customers book with you directly. No team page.');
+    expect(solo.textContent).not.toContain('first-person copy');
+  });
+
   it('calls onChange with the level key when a card is clicked', () => {
     const onChange = vi.fn();
     render(<LevelSelector onChange={onChange} />);

@@ -161,7 +161,7 @@ export const CHARACTERS = {
 export const LEVELS = {
   solo: {
     name: 'Just me',
-    description: 'Just you — no team page, first-person copy, customers book with you directly',
+    description: 'Just you. Customers book with you directly. No team page.',
   },
   studio: {
     name: 'Me and my team',
