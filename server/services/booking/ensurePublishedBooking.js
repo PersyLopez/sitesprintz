@@ -137,6 +137,48 @@ export function durationCorrections(existing, picks) {
   return updates;
 }
 
+/**
+ * Services listed on the page that are not in the booking catalog yet.
+ * A name the owner already has is left alone, including a custom price.
+ *
+ * @param {Array<{ name: string }>} existing
+ * @param {Array<{ name: string }>} picks
+ * @returns {Array<object>}
+ */
+export function servicesToAdd(existing, picks) {
+  const names = new Set(
+    (existing || [])
+      .map((row) => String(row?.name || '').trim().toLowerCase())
+      .filter(Boolean)
+  );
+  const adds = [];
+  for (const pick of picks || []) {
+    const key = String(pick?.name || '').trim().toLowerCase();
+    if (!key || names.has(key)) continue;
+    names.add(key);
+    adds.push(pick);
+  }
+  return adds;
+}
+
+async function createBookedService(tenantId, item, displayOrder) {
+  await prisma.booking_services.create({
+    data: {
+      tenant_id: tenantId,
+      name: item.name,
+      description: item.description || '',
+      duration_minutes: parseDurationMinutes(item.duration),
+      price_cents: Math.round(parseMoney(item.price) * 100),
+      online_booking_enabled: true,
+      requires_approval: false,
+      requires_payment: false,
+      payment_type: 'none',
+      display_order: displayOrder,
+      status: 'active',
+    },
+  });
+}
+
 function correctedDuration(stored, label) {
   const correct = parseDurationMinutes(label);
   const storedMinutes = Number(stored);
@@ -240,7 +282,8 @@ async function loadSiteRecord(userId, siteId) {
 
 /**
  * Create or reuse a site-scoped booking tenant, seed services when empty,
- * and repair hour labels that were stored as a few minutes.
+ * add a listed service that is not booked yet, and repair hour labels
+ * that were stored as a few minutes.
  *
  * @param {object} options
  * @param {string} options.userId
@@ -275,21 +318,7 @@ export async function ensurePublishedBooking({ userId, siteId, siteData } = {}) 
   const picks = pickBookingServicesFromSiteData(data);
   if (existingCount === 0) {
     for (const [index, item] of picks.entries()) {
-      await prisma.booking_services.create({
-        data: {
-          tenant_id: tenant.id,
-          name: item.name,
-          description: item.description || '',
-          duration_minutes: parseDurationMinutes(item.duration),
-          price_cents: Math.round(parseMoney(item.price) * 100),
-          online_booking_enabled: true,
-          requires_approval: false,
-          requires_payment: false,
-          payment_type: 'none',
-          display_order: index + 1,
-          status: 'active',
-        },
-      });
+      await createBookedService(tenant.id, item, index + 1);
     }
   } else {
     const existing = await prisma.booking_services.findMany({
@@ -301,6 +330,11 @@ export async function ensurePublishedBooking({ userId, siteId, siteData } = {}) 
         where: { id: update.id },
         data: { duration_minutes: update.duration_minutes },
       });
+    }
+    const startOrder = existing.length;
+    const added = servicesToAdd(existing, picks);
+    for (const [index, item] of added.entries()) {
+      await createBookedService(tenant.id, item, startOrder + index + 1);
     }
   }
 

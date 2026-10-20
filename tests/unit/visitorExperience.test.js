@@ -11,7 +11,7 @@ import {
   hasEnabledVisitorFeePolicies,
   formatVisitorFeeNoticeLines,
 } from '../../src/utils/visitorExperience.js';
-import { pickBookingServicesFromSiteData, pickBookingStaffFromSiteData, durationCorrections } from '../../server/services/booking/ensurePublishedBooking.js';
+import { pickBookingServicesFromSiteData, pickBookingStaffFromSiteData, durationCorrections, servicesToAdd } from '../../server/services/booking/ensurePublishedBooking.js';
 
 describe('visitorExperience', () => {
   it('enables embedded booking from layout feature flags', () => {
@@ -179,6 +179,20 @@ describe('pickBookingServicesFromSiteData', () => {
       { id: 'keratin', duration_minutes: 180 },
       { id: 'correction', duration_minutes: 360 },
     ]);
+  });
+
+  it('adds a service listed after the first publish and keeps one already booked', () => {
+    const picks = pickBookingServicesFromSiteData({
+      _niche: 'salon',
+      services: [
+        { name: 'Cut', price: 40, duration: '45 min' },
+        { name: 'Color', price: 120, duration: '2 hours' },
+      ],
+    });
+    const adds = servicesToAdd([{ name: 'Cut', duration_minutes: 45 }], picks);
+    expect(adds.map((item) => item.name)).toEqual(['Color']);
+    expect(adds[0].duration).toBe(120);
+    expect(servicesToAdd([{ name: 'Cut' }, { name: 'Color' }], picks)).toEqual([]);
   });
 
   it('uses reservation fallbacks for restaurants instead of menu items', () => {
