@@ -146,10 +146,13 @@ function Login() {
         }
       }
     } catch (error) {
-      showError(error.message || t('auth.loginFail'));
+      const message = error.code === 'INVALID_CREDENTIALS'
+        ? t('auth.badLogin')
+        : (error.message || t('auth.loginFail'));
+      showError(message);
       setErrors({
         ...errors,
-        submit: error.message || t('auth.loginFail'),
+        submit: message,
       });
     } finally {
       setLoading(false);
@@ -177,9 +180,12 @@ function Login() {
 
           <form onSubmit={handleSubmit} className="auth-form" noValidate>
             {errors.submit && (
-              <div className="form-error" role="alert">
+              <div className="form-error" role="alert" data-testid="login-error">
                 <span>⚠️</span>
                 <span>{errors.submit}</span>
+                {errors.submit === t('auth.badLogin') && (
+                  <Link to="/forgot-password">{t('auth.forgot')}</Link>
+                )}
               </div>
             )}
 

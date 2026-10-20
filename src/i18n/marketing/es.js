@@ -377,6 +377,7 @@ export default {
   'auth.passwordShort': 'La contraseña debe tener al menos 6 caracteres',
   'auth.loginOk': 'Entraste correctamente',
   'auth.loginFail': 'No se pudo entrar. Revisa tus datos.',
+  'auth.badLogin': 'El correo o la contraseña no son correctos',
   'auth.oauth.oauth_failed': 'El acceso con Google se canceló. Inténtalo de nuevo.',
   'auth.oauth.auth_error': 'Falló el acceso con Google. Inténtalo de nuevo o usa el correo.',
   'auth.oauth.no_user': 'Google no devolvió un usuario. Inténtalo de nuevo.',

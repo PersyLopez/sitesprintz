@@ -379,6 +379,7 @@ export default {
   'auth.passwordShort': 'Password must be at least 6 characters',
   'auth.loginOk': 'Login successful!',
   'auth.loginFail': 'Login failed. Please check your credentials.',
+  'auth.badLogin': 'Email or password is incorrect',
   'auth.oauth.oauth_failed': 'Google sign-in was cancelled. Please try again.',
   'auth.oauth.auth_error': 'Google sign-in failed. Please try again or use email.',
   'auth.oauth.no_user': 'Google sign-in did not return a user. Please try again.',

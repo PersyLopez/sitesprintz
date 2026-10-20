@@ -2,6 +2,11 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
+function isCsrfFailure(data) {
+  const message = `${data?.message || ''} ${data?.error || ''}`;
+  return data?.code === 'CSRF_INVALID' || /csrf token required/i.test(message);
+}
+
 export function isAbortError(error) {
   if (!error) return false;
   if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') return true;
@@ -167,6 +172,7 @@ class APIClient {
    */
   async executeWithRetry(url, options, retries, delay = 1000) {
     let retriesLeft = retries;
+    let csrfRetried = false;
 
     while (retriesLeft >= 0) {
       try {
@@ -175,11 +181,35 @@ class APIClient {
           credentials: 'include'
         });
 
+        let data = null;
+        if (response.status === 401 || response.status === 403) {
+          data = await this.parseResponse(response);
+        }
+
+        if (response.status === 403 && !csrfRetried && isCsrfFailure(data)) {
+          csrfRetried = true;
+          this.csrfToken = null;
+          await this.fetchCsrfToken();
+          const previous = { ...(options.headers || {}) };
+          delete previous['x-csrf-token'];
+          options.headers = this.buildHeaders({ ...options, headers: previous });
+          continue;
+        }
+
         if (response.status === 401) {
+          if (data?.code === 'INVALID_CREDENTIALS') {
+            const credentialsError = new Error('Email or password is incorrect');
+            credentialsError.code = 'INVALID_CREDENTIALS';
+            credentialsError.statusCode = 401;
+            credentialsError.payload = data;
+            throw credentialsError;
+          }
           await this.handleAuthError(response);
         }
 
-        const data = await this.parseResponse(response);
+        if (data == null) {
+          data = await this.parseResponse(response);
+        }
 
         if (!response.ok) {
           const apiError = this.buildApiError(response, data);

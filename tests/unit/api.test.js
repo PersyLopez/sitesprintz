@@ -192,6 +192,47 @@ describe('API Client Service', () => {
       expect(window.location.href).toBe('/login');
     });
 
+    it('names a wrong password instead of Unauthorized', async () => {
+      localStorageMock.getItem.mockReturnValue(null);
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        json: async () => ({ error: 'Invalid credentials', code: 'INVALID_CREDENTIALS' }),
+      });
+
+      await expect(apiClient.post('/api/auth/login', { email: 'a@b.c', password: 'nope' }))
+        .rejects.toMatchObject({
+          message: 'Email or password is incorrect',
+          code: 'INVALID_CREDENTIALS',
+        });
+    });
+
+    it('retries a login once after the CSRF token is missing', async () => {
+      apiClient.csrfToken = 'stale-token';
+      global.fetch
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 403,
+          json: async () => ({ message: 'CSRF token required', code: 'CSRF_INVALID' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ csrfToken: 'fresh-token' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ success: true }),
+        });
+
+      const result = await apiClient.post('/api/auth/login', { email: 'a@b.c', password: 'secret' });
+      expect(result).toEqual({ success: true });
+      const loginCalls = fetch.mock.calls.filter((call) => String(call[0]).includes('/api/auth/login'));
+      expect(loginCalls).toHaveLength(2);
+      expect(loginCalls[1][1].headers['x-csrf-token']).toBe('fresh-token');
+    });
+
     it('should not include auth token if not available', async () => {
       localStorageMock.getItem.mockReturnValue(null);
 

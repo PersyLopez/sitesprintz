@@ -149,7 +149,9 @@ describe('Login Component', () => {
 
   it('should show error message when login fails', async () => {
     const user = userEvent.setup();
-    mockLogin.mockRejectedValueOnce(new Error('Invalid credentials'));
+    const error = new Error('Invalid credentials');
+    error.code = 'INVALID_CREDENTIALS';
+    mockLogin.mockRejectedValueOnce(error);
     renderLogin();
     
     await user.type(screen.getByLabelText(/email/i), 'wrong@example.com');
@@ -158,8 +160,10 @@ describe('Login Component', () => {
     await user.click(screen.getByRole('button', { name: /sign in/i }));
     
     await waitFor(() => {
-      expect(mockShowError).toHaveBeenCalledWith('Invalid credentials');
+      expect(mockShowError).toHaveBeenCalledWith('Email or password is incorrect');
     });
+    expect(screen.getByTestId('login-error')).toHaveTextContent('Email or password is incorrect');
+    expect(screen.getByTestId('login-error').querySelector('a')).toHaveAttribute('href', '/forgot-password');
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
