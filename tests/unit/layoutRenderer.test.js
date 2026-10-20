@@ -58,6 +58,21 @@ describe('layoutRenderer — renderSection() known types', () => {
     expect(result.content.displayVariant).toBe('list');
   });
 
+  it('uses the niche booking label and a stored reservation note', () => {
+    const restaurant = renderSection('booking', {}, {
+      _niche: 'restaurant',
+      contact: { reservations: { note: 'Book online or call for same-day reservations' } },
+    }, {});
+    expect(restaurant.content.title).toBe('Reserve');
+    expect(restaurant.content.description).toBe('Book online or call for same-day reservations');
+
+    const salon = renderSection('booking', {}, { _niche: 'salon' }, {});
+    expect(salon.content.title).toBe('Book an Appointment');
+
+    const named = renderSection('booking', { title: 'Private dining' }, { _niche: 'restaurant' }, {});
+    expect(named.content.title).toBe('Private dining');
+  });
+
   it('keeps a one-line hours note in the hero and leaves a full week to the hours section', () => {
     const one = renderSection('hero', {}, { businessHours: 'Tue–Sat 10am–7pm' }, {});
     expect(one.content.hoursLine).toBe('Tue–Sat 10am–7pm');

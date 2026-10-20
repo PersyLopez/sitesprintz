@@ -690,7 +690,7 @@ function renderBooking(section, tokens) {
     return `<section id="booking" class="ss-booking ss-section booking-section" style="background: ${getBg(tokens)}; color: ${getText(tokens)};">
   <div class="ss-container" style="max-width: 900px; margin: 0 auto;">
     <h2 class="ss-h2" style="color: ${getAccent(tokens)};">${escapeHtml(title)}</h2>
-    <p class="ss-lead" style="text-align: center; margin: -24px auto 28px;">Book your appointment online — fast and easy.</p>
+    <p class="ss-lead" style="text-align: center; margin: -24px auto 28px;">${escapeHtml(c.description || (title === 'Book an Appointment' ? 'Book your appointment online — fast and easy.' : ''))}</p>
     <div class="ss-booking-embed" data-testid="live-booking-embed" style="background: ${getSurface(tokens)}; border-radius: 12px; overflow: hidden; border: 1px solid ${getTokens(tokens).theme.hairline};">
       <button type="button" data-ss-booking-open data-embed-src="${escapeAttr(embedUrl)}" data-testid="booking-embed-open" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)}; border: 0; cursor: pointer; padding: 14px 22px;">Show scheduler</button>
     </div>
@@ -705,7 +705,7 @@ function renderBooking(section, tokens) {
         if (src.indexOf('https://') !== 0) return;
         var frame = document.createElement('iframe');
         frame.src = src;
-        frame.title = 'Book an Appointment';
+        frame.title = ${JSON.stringify(title)};
         frame.loading = 'lazy';
         frame.style.cssText = 'width:100%;min-height:700px;border:0;display:block';
         button.replaceWith(frame);
@@ -724,7 +724,7 @@ function renderBooking(section, tokens) {
     : 'Book Now';
   const copy = c.description || c.subtitle || (isLinkOnly
     ? 'Reach out to reserve a time — we will confirm your appointment.'
-    : 'Book your appointment online — fast and easy.');
+    : (title === 'Book an Appointment' ? 'Book your appointment online — fast and easy.' : ''));
 
   if (isLinkOnly) {
     return `<section id="booking" class="ss-booking ss-section" style="background: ${getBg(tokens)}; color: ${getText(tokens)};">

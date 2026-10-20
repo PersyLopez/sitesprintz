@@ -258,19 +258,21 @@ const sectionPrimitives = {
   // Booking section
   booking(content, siteData, tokens, variant) {
     const c = content || {};
+    const model = resolveOperatingModel(siteData?._niche, tokens?.level || siteData?._level);
+    const label = model.bookingNavLabel || 'Book';
+    const reservationNote = visitNote(siteData?.contact?.reservations?.note);
     return {
       type: 'booking',
       variant: variant || 'panel',
       content: {
-        title: c.title || 'Book an Appointment',
-        description: c.description || c.subtitle || '',
+        title: c.title || (label === 'Book' ? 'Book an Appointment' : label),
+        description: c.description || c.subtitle || reservationNote,
         enabled: c.enabled !== undefined ? c.enabled : true,
         mode: c.mode || siteData?.booking?.mode || 'native',
         embedded: c.embedded !== undefined ? c.embedded : siteData?.booking?.embedded,
         url: c.url || siteData?.booking?.url || '',
         phone: c.phone || siteData?.contactPhone || siteData?.contact?.phone || '',
-        businessMode: c.businessMode
-          || resolveOperatingModel(siteData?._niche, tokens?.level || siteData?._level).businessMode,
+        businessMode: c.businessMode || model.businessMode,
         provider: c.provider || siteData?.booking?.provider || 'native',
       },
       settings: {},

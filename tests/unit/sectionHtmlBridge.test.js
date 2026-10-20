@@ -372,6 +372,21 @@ describe('sectionHtmlBridge', () => {
     expect(html).toContain(tokens.theme.accent);
   });
 
+  it('does not call a reservation an appointment', () => {
+    const html = renderSectionToHtml({
+      type: 'booking',
+      content: {
+        title: 'Reserve',
+        description: 'Book online or call for same-day reservations',
+        enabled: true,
+      },
+    }, tokens);
+    expect(html).toContain('Reserve');
+    expect(html).toContain('same-day reservations');
+    expect(html).not.toContain('Book an Appointment');
+    expect(html).not.toContain('Book your appointment online');
+  });
+
   it('keeps a link-only booking CTA without a widget mount', () => {
     const html = renderSectionToHtml({
       type: 'booking',
