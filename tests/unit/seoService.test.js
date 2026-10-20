@@ -537,6 +537,34 @@ describe('SEOService', () => {
       expect(meta.canonical).toBe('https://rightsitelight.com/register');
     });
 
+    it('titles the noindex auth and track pages instead of the homepage', () => {
+      const homeTitle = `${tMarketing('en', 'brand.name')} — ${tMarketing('en', 'footer.tagline')}`;
+      const homeDescription = tMarketing('en', 'landing.hero.subtitle');
+      const cases = [
+        ['/forgot-password', `${tMarketing('en', 'auth.forgot.h')} — Right Site Light`, tMarketing('en', 'auth.forgot.p')],
+        ['/reset-password', 'Reset Password — Right Site Light', tMarketing('en', 'auth.forgot.p')],
+        ['/verify-email', 'Verify email — Right Site Light', null],
+        ['/track', 'Track Your Order — Right Site Light', null],
+      ];
+
+      for (const [path, title, description] of cases) {
+        const meta = seoService.resolveMarketingPageMeta(path, '');
+
+        expect(meta.title).toBe(title);
+        expect(meta.title).not.toBe(homeTitle);
+        if (description) {
+          expect(meta.description).toBe(description);
+        } else {
+          expect(meta.description).not.toBe(homeDescription);
+        }
+        expect(meta.robots).toBe('noindex,nofollow');
+
+        const injected = seoService.injectMarketingPageMeta(homepageHtml, path, '');
+        expect(injected).toContain(`<title>${title}</title>`);
+        expect(injected).not.toContain(homeTitle);
+      }
+    });
+
     it('leaves unknown paths with the homepage head', () => {
       const injected = seoService.injectMarketingPageMeta(homepageHtml, '/not-a-real-page', '');
 

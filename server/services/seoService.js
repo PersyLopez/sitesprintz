@@ -158,6 +158,7 @@ class SEOService {
       '/verify-email',
       '/oauth/callback',
       '/build',
+      '/track',
     ]);
 
     if (path === '/') return home;
@@ -210,10 +211,21 @@ class SEOService {
       const titled = {
         '/login': `${t('nav.login')} — ${brand}`,
         '/build': `${t('nav.getStarted')} — ${brand}`,
+        '/forgot-password': `${t('auth.forgot.h')} — ${brand}`,
+        '/reset-password': `Reset Password — ${brand}`,
+        '/verify-email': `Verify email — ${brand}`,
+        '/track': `Track Your Order — ${brand}`,
+      };
+      const descriptions = {
+        '/login': t('auth.login.p'),
+        '/forgot-password': t('auth.forgot.p'),
+        '/reset-password': t('auth.forgot.p'),
+        '/verify-email': 'Confirm your email address to finish setting up your account.',
+        '/track': 'Enter your order number to look up the status of an order you placed.',
       };
       return {
         title: titled[path] || home.title,
-        description: path === '/login' ? t('auth.login.p') : home.description,
+        description: descriptions[path] || home.description,
         canonical,
         alternates,
         robots: 'noindex,nofollow',
