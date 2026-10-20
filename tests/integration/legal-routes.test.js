@@ -37,6 +37,19 @@ describe('GET /legal/:page', () => {
       expect(res.text).not.toContain('November 14, 2025');
       expect(res.text).not.toContain('&copy; 2025');
       expect(res.text).toContain(`&copy; ${new Date().getFullYear()} Right Site Light. All rights reserved.`);
+
+      // QA AX-02: policy content must live inside a <main> landmark that
+      // opens immediately after <body>; the footer stays outside as a
+      // footer landmark.
+      expect(res.text).toMatch(/<body>\s*<main>/);
+      const mainStart = res.text.indexOf('<main>');
+      const mainEnd = res.text.indexOf('</main>');
+      expect(mainStart).toBeGreaterThan(-1);
+      expect(mainEnd).toBeGreaterThan(mainStart);
+      expect(res.text.slice(mainStart, mainEnd)).toContain('<h1>');
+      expect(res.text.indexOf('<footer>')).toBeGreaterThan(mainEnd);
+      expect(res.text.split('<main>').length - 1).toBe(1);
+      expect(res.text.split('</main>').length - 1).toBe(1);
     });
   });
 });

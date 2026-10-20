@@ -89,6 +89,7 @@ router.get('/terms', (req, res) => {
     </style>
 </head>
 <body>
+    <main>
     <h1>Terms of Service</h1>
     <p class="last-updated">Last Updated: ${POLICY_LAST_UPDATED}</p>
     
@@ -243,6 +244,8 @@ router.get('/terms', (req, res) => {
         Email: support@rightsitelight.com
     </p>
 
+    </main>
+
     <footer>
         <p>&copy; ${CURRENT_YEAR} Right Site Light. All rights reserved.</p>
         <p>
@@ -297,6 +300,7 @@ router.get('/privacy', (req, res) => {
     </style>
 </head>
 <body>
+    <main>
     <h1>Privacy Policy</h1>
     <p class="last-updated">Last Updated: ${POLICY_LAST_UPDATED}</p>
     
@@ -437,6 +441,8 @@ router.get('/privacy', (req, res) => {
         Email: support@rightsitelight.com
     </p>
 
+    </main>
+
     <footer>
         <p>&copy; ${CURRENT_YEAR} Right Site Light. All rights reserved.</p>
         <p>
@@ -488,6 +494,7 @@ router.get('/cookies', (req, res) => {
     </style>
 </head>
 <body>
+    <main>
     <h1>Cookie Policy</h1>
     <p class="last-updated">Last Updated: ${POLICY_LAST_UPDATED}</p>
     
@@ -579,6 +586,8 @@ router.get('/cookies', (req, res) => {
         Email: support@rightsitelight.com
     </p>
 
+    </main>
+
     <footer>
         <p>&copy; ${CURRENT_YEAR} Right Site Light. All rights reserved.</p>
         <p>
@@ -633,6 +642,7 @@ router.get('/refunds', (req, res) => {
     </style>
 </head>
 <body>
+    <main>
     <h1>Refund & Cancellation Policy</h1>
     <p class="last-updated">Last Updated: ${POLICY_LAST_UPDATED}</p>
     
@@ -790,6 +800,8 @@ router.get('/refunds', (req, res) => {
         Response time: Within 24 hours (usually faster)
     </p>
 
+    </main>
+
     <footer>
         <p>&copy; ${CURRENT_YEAR} Right Site Light. All rights reserved.</p>
         <p>
@@ -858,6 +870,7 @@ router.get(['/third-party-services', '/third-party', '/data-handling'], (req, re
     </style>
 </head>
 <body>
+    <main>
     <h1>Third-Party Services & Data Handling Disclosure</h1>
     <p class="last-updated">Last Updated: ${POLICY_LAST_UPDATED}</p>
     <p class="version">Policy Version: ${POLICY_VERSION} &middot; Service provided during an ongoing beta period on an &ldquo;as is&rdquo; basis.</p>
@@ -966,6 +979,8 @@ router.get(['/third-party-services', '/third-party', '/data-handling'], (req, re
         Questions about this Disclosure or our Providers?<br>
         Email: support@rightsitelight.com
     </p>
+
+    </main>
 
     <footer>
         <p>&copy; ${CURRENT_YEAR} Right Site Light. All rights reserved.</p>
