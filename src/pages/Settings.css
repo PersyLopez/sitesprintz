@@ -82,6 +82,53 @@
   margin: 0;
 }
 
+.settings-section h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-light);
+  margin: 0 0 16px 0;
+}
+
+.settings-section h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-light);
+  margin: 0 0 12px 0;
+}
+
+.settings-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-dark);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.settings-card + .settings-card {
+  margin-top: 20px;
+}
+
+.section-description {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+}
+
+.settings-section a {
+  color: var(--primary-light);
+  text-decoration: none;
+}
+
+.settings-section a:hover {
+  text-decoration: underline;
+}
+
+.settings-section a:focus-visible {
+  outline: 2px solid var(--primary-light);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 @media (max-width: 768px) {
   .settings-container {
     flex-direction: column;
