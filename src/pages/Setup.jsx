@@ -198,11 +198,13 @@ function Setup() {
     return (
       <div className="setup-page setup-page-wizard">
         <Header />
-        <QuickStartWizard
-          initialTemplate={searchParams.get('template')}
-          onComplete={handleWizardComplete}
-          onSkip={handleWizardSkip}
-        />
+        <main id="setup-wizard">
+          <QuickStartWizard
+            initialTemplate={searchParams.get('template')}
+            onComplete={handleWizardComplete}
+            onSkip={handleWizardSkip}
+          />
+        </main>
       </div>
     );
   }
@@ -273,7 +275,8 @@ function Setup() {
       </a>
       <Header />
 
-      <div className="setup-header">
+      <main id="setup-main">
+        <div className="setup-header">
         <div className="setup-title">
           <h1>{siteData.businessName || 'New site'}</h1>
           <p>{siteData.template ? `Template: ${siteData.template}` : 'Pick a template to start'}</p>
@@ -311,7 +314,7 @@ function Setup() {
         </div>
       </div>
 
-      <div id="setup-main" className="setup-container">
+      <div className="setup-container">
         {/* Mobile tabs */}
         <div className="mobile-tabs">
           <button
@@ -412,6 +415,7 @@ function Setup() {
           </div>
         </div>
       </div>
+      </main>
 
       {showPublishModal && (
         <PublishModal

@@ -176,6 +176,11 @@ describe('Setup Page', () => {
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: /My Business/i })).toBeInTheDocument();
       });
+
+      const mains = screen.getAllByRole('main');
+      expect(mains).toHaveLength(1);
+      expect(mains[0]).toHaveAttribute('id', 'setup-main');
+      expect(mains[0]).toContainElement(screen.getByRole('heading', { name: /My Business/i }));
     });
 
     it('should show selected template name', async () => {
@@ -316,6 +321,11 @@ describe('Setup Page', () => {
         expect(screen.getByTestId('quickstart-wizard')).toHaveAttribute('data-initial-template', 'salon');
       });
       expect(screen.queryByTestId('template-grid')).not.toBeInTheDocument();
+
+      const mains = screen.getAllByRole('main');
+      expect(mains).toHaveLength(1);
+      expect(mains[0]).toHaveAttribute('id', 'setup-wizard');
+      expect(mains[0]).toContainElement(screen.getByTestId('quickstart-wizard'));
     });
 
     it('should show the review screen after wizard completion', async () => {
