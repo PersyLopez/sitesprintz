@@ -89,7 +89,7 @@ function VerifyEmail() {
     <div className="auth-page story-public">
       <Header />
 
-      <div className="auth-container">
+      <main className="auth-container">
         <div className="auth-card">
           {loading ? (
             <div className="verification-status">
@@ -140,7 +140,7 @@ function VerifyEmail() {
             </div>
           )}
         </div>
-      </div>
+      </main>
       <Footer />
     </div>
   );
