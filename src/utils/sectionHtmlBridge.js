@@ -52,6 +52,7 @@ export const ALL_SECTION_TYPES = [
   'diagnostic-quiz',
   'progress-tracker',
   'video-gallery',
+  'resource-center',
   'class-scheduler',
   'subscription-booking',
   'service-filters',
@@ -1737,6 +1738,64 @@ function renderCheckout(section, tokens) {
 </section>`;
 }
 
+function resourceHref(url) {
+  const value = String(url || '').trim();
+  if (/^https?:\/\//i.test(value)) return value;
+  if (value.startsWith('/') && !value.startsWith('//')) return value;
+  return '';
+}
+
+function resourceItems(section) {
+  const content = section.content || {};
+  const settings = section.settings || {};
+  if (Array.isArray(content.items) && content.items.length) return content.items;
+  if (Array.isArray(content.resources) && content.resources.length) return content.resources;
+  if (Array.isArray(settings.resources)) return settings.resources;
+  return [];
+}
+
+function renderResourceCenter(section, tokens) {
+  const content = section.content || {};
+  const settings = section.settings || {};
+  const items = resourceItems(section);
+  const title = content.title || settings.title || 'Resources';
+  const description = content.description || settings.description || '';
+  const searchable = content.searchable !== false && settings.searchable !== false && items.length > 0;
+  const cards = items.map((item) => {
+    const href = resourceHref(item.url || item.href);
+    const label = item.title || item.name || 'Resource';
+    const haystack = [label, item.description, item.category].filter(Boolean).join(' ');
+    const link = href
+      ? `<a href="${escapeAttr(href)}" target="_blank" rel="noopener noreferrer" data-testid="resource-open">${escapeHtml(label)}</a>`
+      : `<strong>${escapeHtml(label)}</strong>`;
+    return `<li data-ss-resource-item data-resource-text="${escapeAttr(haystack)}" data-testid="resource-card" style="padding: 20px; background: ${getSurface(tokens)}; border-radius: 12px;">
+      ${item.category ? `<p style="color: ${getMuted(tokens)}; margin: 0 0 8px;">${escapeHtml(item.category)}</p>` : ''}
+      <h3 style="color: ${getAccent(tokens)}; margin: 0 0 8px;">${link}</h3>
+      ${item.description ? `<p style="color: ${getMuted(tokens)}; margin: 0;">${escapeHtml(item.description)}</p>` : ''}
+    </li>`;
+  }).join('\n');
+  const search = searchable
+    ? `<label class="ss-field" style="display: block; margin-bottom: 16px;">
+      <span>Search</span>
+      <input type="search" data-ss-resource-search data-testid="resource-search" />
+    </label>`
+    : '';
+  const empty = items.length
+    ? ''
+    : `<p style="text-align: center; color: ${getMuted(tokens)};">No resources yet.</p>`;
+  return `<section id="resources" class="ss-resources" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
+  <div class="ss-container" style="max-width: 960px; margin: 0 auto;">
+    <h2 style="text-align: center; color: ${getAccent(tokens)}; margin-bottom: 16px;">${escapeHtml(title)}</h2>
+    ${description ? `<p style="text-align: center; color: ${getMuted(tokens)}; margin-bottom: 24px;">${escapeHtml(description)}</p>` : ''}
+    ${search}
+    ${empty}
+    <ul data-ss-resource-root data-testid="resource-list" style="list-style: none; padding: 0; margin: 0; display: grid; gap: 16px;">
+      ${cards}
+    </ul>
+  </div>
+</section>`;
+}
+
 function renderPlaceholder(section, tokens) {
   const originalType = section.type || 'unknown';
 
@@ -1781,6 +1840,7 @@ const RENDERERS = {
   'diagnostic-quiz': renderDiagnosticQuiz,
   'progress-tracker': renderProgressTracker,
   'video-gallery': renderVideoGallery,
+  'resource-center': renderResourceCenter,
   'class-scheduler': renderClassScheduler,
   'subscription-booking': renderSubscriptionBooking,
   'service-filters': renderServiceFilters,

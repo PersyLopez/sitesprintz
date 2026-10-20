@@ -123,4 +123,22 @@ describe('mountPublishedInteractions', () => {
     expect(steps[1].hidden).toBe(false);
     expect(document.querySelector('[data-ss-step-submit]').hidden).toBe(false);
   });
+
+  it('hides resource guides that do not match the search', () => {
+    document.body.innerHTML = `
+      <section>
+        <input data-ss-resource-search />
+        <ul data-ss-resource-root>
+          <li data-ss-resource-item data-resource-text="Panel safety electrical">Panel</li>
+          <li data-ss-resource-item data-resource-text="Winterizing a home">Winter</li>
+        </ul>
+      </section>`;
+    mountPublishedInteractions(document);
+    const input = document.querySelector('[data-ss-resource-search]');
+    input.value = 'panel';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    const items = document.querySelectorAll('[data-ss-resource-item]');
+    expect(items[0].hidden).toBe(false);
+    expect(items[1].hidden).toBe(true);
+  });
 });

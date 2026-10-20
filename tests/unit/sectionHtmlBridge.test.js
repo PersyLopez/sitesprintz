@@ -57,6 +57,7 @@ const EXPECTED_TYPES = [
   'diagnostic-quiz',
   'progress-tracker',
   'video-gallery',
+  'resource-center',
   'class-scheduler',
   'subscription-booking',
   'service-filters',
@@ -1124,6 +1125,30 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(html).toContain('href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"');
     expect(html).not.toContain('<iframe');
     expect(html).not.toContain('not-an-id');
+  });
+
+  it('renders a resource guide instead of an unsupported placeholder', () => {
+    const html = renderSectionToHtml({
+      type: 'resource-center',
+      settings: { title: 'Guides' },
+      content: {
+        resources: [
+          {
+            title: 'Panel safety',
+            description: 'How to shut off the main',
+            category: 'Electrical',
+            url: 'https://example.com/panel.pdf',
+          },
+          { title: 'Bad link', url: 'javascript:alert(1)' },
+        ],
+      },
+    }, tokens);
+    expect(html).toContain('data-testid="resource-list"');
+    expect(html).toContain('Panel safety');
+    expect(html).toContain('href="https://example.com/panel.pdf"');
+    expect(html).toContain('data-testid="resource-search"');
+    expect(html).not.toContain('not yet supported');
+    expect(html).not.toContain('javascript:');
   });
 
   it('renders repair stages and marks the current one', () => {

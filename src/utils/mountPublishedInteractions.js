@@ -173,6 +173,22 @@ function mountServiceAreaMaps(root) {
   document.body.appendChild(script);
 }
 
+function mountResourceSearch(root) {
+  root.querySelectorAll('[data-ss-resource-root]').forEach((list) => {
+    const section = list.closest('section') || list.parentElement;
+    const input = section?.querySelector('[data-ss-resource-search]');
+    if (!input || !bindOnce(list)) return;
+    const apply = () => {
+      const query = input.value.trim().toLowerCase();
+      list.querySelectorAll('[data-ss-resource-item]').forEach((item) => {
+        const haystack = (item.getAttribute('data-resource-text') || '').toLowerCase();
+        item.hidden = Boolean(query) && !haystack.includes(query);
+      });
+    };
+    input.addEventListener('input', apply);
+  });
+}
+
 function mountCheckoutOpens(root) {
   root.querySelectorAll('[data-ss-open-cart]').forEach((button) => {
     if (!bindOnce(button)) return;
@@ -194,6 +210,7 @@ export function mountPublishedInteractions(root = typeof document !== 'undefined
   mountDiagnosticTotals(root);
   mountInquirySteps(root);
   mountFilters(root);
+  mountResourceSearch(root);
   mountCheckoutOpens(root);
   mountServiceAreaMaps(root);
 }
