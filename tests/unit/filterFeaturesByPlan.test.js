@@ -116,6 +116,18 @@ describe('filterFeaturesByPlan', () => {
     expect(filterFeaturesByPlan(withVideos, 'growth').sections.map((section) => section.type)).toContain('video-gallery');
   });
 
+  it('drops a resource center on the live trial and keeps it on Growth', () => {
+    const withGuides = {
+      sections: [
+        { type: 'hero' },
+        { type: 'resource-center', content: { items: [{ title: 'Panel safety' }] } },
+      ],
+    };
+    expect(filterFeaturesByPlan(withGuides, 'trial').sections.map((section) => section.type)).toEqual(['hero']);
+    expect(filterFeaturesByPlan(withGuides, 'starter').sections.map((section) => section.type)).toEqual(['hero']);
+    expect(filterFeaturesByPlan(withGuides, 'growth').sections.map((section) => section.type)).toContain('resource-center');
+  });
+
   it('drops a progress tracker on the live trial and keeps it on Growth', () => {
     const withTracker = {
       sections: [
