@@ -68,11 +68,11 @@ function isEmptyOptional(section) {
     case 'about':
       return !c.body && !c.description;
     case 'hours':
-      return !c.hours;
+      return !c.hours && !c.note;
     case 'location':
-      return !c.address && !c.publicGeo;
+      return !c.address && !c.publicGeo && !c.parking && !c.accessibility;
     case 'social':
-      return !['facebook', 'instagram', 'whatsapp', 'tiktok', 'maps', 'website', 'linkedin', 'twitter', 'youtube']
+      return !['facebook', 'instagram', 'whatsapp', 'tiktok', 'maps', 'website', 'linkedin', 'twitter', 'youtube', 'yelp', 'pinterest']
         .some((key) => c[key]);
     case 'service-areas':
       return list(c.areas).length === 0;

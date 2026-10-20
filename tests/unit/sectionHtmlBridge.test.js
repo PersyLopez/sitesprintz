@@ -654,6 +654,23 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(html).toContain('tel:5550100');
   });
 
+  it('keeps Yelp, a parking note, and an hours note when those are the only facts', () => {
+    const { html } = buildLiveSiteMarkup({
+      businessName: 'Shop',
+      _layout: 'mercantile',
+      _niche: 'restaurant',
+      _level: 'solo',
+      social: { yelp: 'https://yelp.com/biz/shop' },
+      contact: {
+        parking: 'Lot behind the shop',
+        hours: { note: 'By appointment' },
+      },
+    });
+    expect(html).toContain('https://yelp.com/biz/shop');
+    expect(html).toContain('Lot behind the shop');
+    expect(html).toContain('By appointment');
+  });
+
   it('keeps the Right Site Light badge on Growth and still shows NAP in the footer', () => {
     const { html } = buildLiveSiteMarkup({
       businessName: 'Studio Luxe',
