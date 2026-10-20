@@ -59,8 +59,9 @@ import publishedSiteRenderer from './server/services/publishedSiteRenderer.js';
 import SEOService from './server/services/seoService.js';
 import { readFile } from 'fs/promises';
 import { existsSync } from 'fs';
-import { injectPublishedSiteEmbed, injectPublishedViewMarkup, isSafeSiteIdentifier, liveSiteDocumentIdentifier, liveSiteRedirectTarget, liveViewDocumentIdentifier, crawlerPublishedDocumentUrl, deferPublishedViewFonts, preloadPublishedViewDisplayFont, stripPublishedViewThirdParties, publishedDocumentShell } from './server/utils/siteIsolation.js';
+import { injectPublishedSiteEmbed, injectPublishedViewMarkup, isSafeSiteIdentifier, liveSiteDocumentIdentifier, liveSiteRedirectTarget, liveViewDocumentIdentifier, crawlerPublishedDocumentUrl, deferPublishedViewFonts, preloadPublishedViewDisplayFont, stripPublishedViewThirdParties, publishedDocumentShell, resolvePublishedDocumentSubdomain } from './server/utils/siteIsolation.js';
 import { renderPublishedViewFragment } from './src/utils/publishedSiteDocument.js';
+import { domainService } from './server/services/domainService.js';
 import { publishedCrawlerDocumentHidden } from './server/config/platformPlans.js';
 import testRoutes from './server/routes/test.routes.js';
 import healthRoutes from './server/routes/health.js';
@@ -701,12 +702,21 @@ app.use(async (req, res, next) => {
 
   // Live view documents are per-visitor: no caching, and the composed
   // viewer gets the showcase JSON inlined so first paint skips the fetch.
-  const viewSubdomain = liveViewDocumentIdentifier(req.path);
+  let viewSubdomain = null;
+  try {
+    viewSubdomain = await resolvePublishedDocumentSubdomain(
+      req.path,
+      req.hostname,
+      (host) => domainService.lookupByHost(host)
+    );
+  } catch {
+    viewSubdomain = liveViewDocumentIdentifier(req.path);
+  }
   if (viewSubdomain) {
     res.setHeader('Cache-Control', 'no-store');
   }
 
-  const shellName = publishedDocumentShell(req.path);
+  const shellName = viewSubdomain ? 'view.html' : publishedDocumentShell(req.path);
   let indexPath = path.join(publicDir, shellName);
   if (shellName !== 'index.html' && !existsSync(indexPath)) {
     indexPath = path.join(publicDir, 'index.html');

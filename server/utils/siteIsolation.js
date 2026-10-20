@@ -16,6 +16,7 @@ import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import { validateDraftId, validateSubdomain, validateTemplateId } from './validators.js';
 import { toPublicSiteData } from '../../src/utils/liveSiteContact.js';
+import { isPlatformHostname } from '../../src/utils/customDomainHost.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -157,6 +158,25 @@ export function liveViewDocumentIdentifier(pathname) {
 /** HTML shell for a direct document load. Published /view uses the shop entry. */
 export function publishedDocumentShell(pathname) {
   return liveViewDocumentIdentifier(pathname) ? 'view.html' : 'index.html';
+}
+
+/**
+ * Subdomain for this document. /view/:subdomain wins. A connected customer
+ * domain uses the host lookup. Platform hosts stay on the app shell.
+ *
+ * @param {string} pathname
+ * @param {string} host
+ * @param {(host: string) => Promise<{ subdomain?: string } | null>} [lookupHost]
+ * @returns {Promise<string|null>}
+ */
+export async function resolvePublishedDocumentSubdomain(pathname, host, lookupHost) {
+  const fromPath = liveViewDocumentIdentifier(pathname);
+  if (fromPath) return fromPath;
+  if (isPlatformHostname(host) || typeof lookupHost !== 'function') return null;
+  const site = await lookupHost(host);
+  const subdomain = site?.subdomain;
+  if (!isSafeSiteIdentifier(subdomain)) return null;
+  return subdomain;
 }
 
 /**

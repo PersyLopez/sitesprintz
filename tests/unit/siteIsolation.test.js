@@ -23,6 +23,7 @@ import {
   liveSiteRedirectTarget,
   liveViewDocumentIdentifier,
   publishedDocumentShell,
+  resolvePublishedDocumentSubdomain,
   loadTemplateCopy,
   removeIsolatedSiteFiles,
   resolveContainedPath,
@@ -109,6 +110,15 @@ describe('site isolation — live document redirect', () => {
     expect(publishedDocumentShell('/')).toBe('index.html');
     expect(publishedDocumentShell('/dashboard')).toBe('index.html');
     expect(publishedDocumentShell('/view/../etc/passwd')).toBe('index.html');
+  });
+
+  it('uses the shop document for a connected customer domain and the app shell for the platform', async () => {
+    const lookup = async (host) => (host === 'oak.example' ? { subdomain: 'oak-barber' } : null);
+    expect(await resolvePublishedDocumentSubdomain('/view/gallery-salon', 'rightsitelight.com', lookup)).toBe('gallery-salon');
+    expect(await resolvePublishedDocumentSubdomain('/', 'oak.example', lookup)).toBe('oak-barber');
+    expect(await resolvePublishedDocumentSubdomain('/', 'rightsitelight.com', lookup)).toBeNull();
+    expect(await resolvePublishedDocumentSubdomain('/', 'localhost', lookup)).toBeNull();
+    expect(await resolvePublishedDocumentSubdomain('/', 'missing.example', lookup)).toBeNull();
   });
 
   it('rewrites crawler /view documents to the SSR /sites document', () => {
