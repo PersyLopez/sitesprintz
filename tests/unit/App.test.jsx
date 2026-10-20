@@ -202,6 +202,28 @@ describe('App Routing', () => {
         expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
       }, { timeout: 2000 });
     });
+
+    it('should render setup when the owner is signed in', async () => {
+      const { authService } = await import('../../src/services/auth');
+      authService.getCurrentUser.mockResolvedValueOnce({ user: { id: '1' } });
+      vi.stubGlobal('localStorage', {
+        getItem: (key) => (key === 'accessToken' ? 'token' : null),
+        setItem: () => {},
+        removeItem: () => {},
+        clear: () => {},
+      });
+      window.history.pushState({}, '', '/setup');
+
+      render(<App />);
+
+      try {
+        await waitFor(() => {
+          expect(screen.getByText('Setup Page')).toBeInTheDocument();
+        });
+      } finally {
+        vi.unstubAllGlobals();
+      }
+    });
   });
 
   // 404 Handling (2 tests)

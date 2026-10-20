@@ -2,7 +2,6 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
-import { SiteProvider } from './context/SiteContext';
 import { CartProvider } from './context/CartContext';
 import { TipsProvider } from './context/TipsContext';
 import { StaffProvider } from './context/StaffContext';
@@ -18,7 +17,23 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const SiteDashboard = lazy(() => import('./pages/SiteDashboard'));
 const SiteOverview = lazy(() => import('./components/dashboard/SiteOverview'));
 const SiteSettingsPanel = lazy(() => import('./components/dashboard/SiteSettingsPanel'));
-const Setup = lazy(() => import('./pages/Setup'));
+// The editor draft lives on /setup. Load it with that page so a shop does not download it.
+const Setup = lazy(() =>
+  Promise.all([
+    import('./pages/Setup'),
+    import('./context/SiteContext'),
+  ]).then(([setupModule, siteModule]) => ({
+    default: function SetupWithSite() {
+      const SetupPage = setupModule.default;
+      const { SiteProvider } = siteModule;
+      return (
+        <SiteProvider>
+          <SetupPage />
+        </SiteProvider>
+      );
+    },
+  }))
+);
 const Orders = lazy(() => import('./pages/Orders'));
 const Inquiries = lazy(() => import('./pages/Inquiries'));
 const Analytics = lazy(() => import('./pages/Analytics'));
@@ -388,11 +403,9 @@ function App() {
                 path="/setup"
                 element={
                   <ProtectedRoute>
-                    <SiteProvider>
-                      <Suspense fallback={<LoadingFallback message="Loading setup..." />}>
-                        <Setup />
-                      </Suspense>
-                    </SiteProvider>
+                    <Suspense fallback={<LoadingFallback message="Loading setup..." />}>
+                      <Setup />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
