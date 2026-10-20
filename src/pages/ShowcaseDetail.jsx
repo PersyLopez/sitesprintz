@@ -315,9 +315,9 @@ function ShowcaseDetail() {
               type="button"
               onClick={() => handleShare('twitter')}
               className="share-btn share-twitter"
-              aria-label="Share on Twitter"
+              aria-label="Share on X"
             >
-              Twitter
+              X
             </button>
             <button
               type="button"

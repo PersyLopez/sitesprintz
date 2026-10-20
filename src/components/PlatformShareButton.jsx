@@ -108,7 +108,7 @@ function PlatformShareButton({ className = '' }) {
                 className="platform-share-btn twitter"
                 onClick={() => handleShare('twitter')}
               >
-                <span>𝕏</span> Twitter
+                <span>𝕏</span> X
               </button>
               <button 
                 className="platform-share-btn linkedin"

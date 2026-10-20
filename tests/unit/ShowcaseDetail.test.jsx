@@ -9,6 +9,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import ShowcaseDetail from '../../src/pages/ShowcaseDetail';
+import { ToastProvider } from '../../src/context/ToastContext';
 
 // Mock fetch globally
 global.fetch = vi.fn();
@@ -54,11 +55,13 @@ const mockSite = {
 // Helper to render with router + route params
 function renderWithRouter(component, route = '/showcase/amazing-restaurant') {
   return render(
-    <MemoryRouter initialEntries={[route]}>
-      <Routes>
-        <Route path="/showcase/:subdomain" element={component} />
-      </Routes>
-    </MemoryRouter>
+    <ToastProvider>
+      <MemoryRouter initialEntries={[route]}>
+        <Routes>
+          <Route path="/showcase/:subdomain" element={component} />
+        </Routes>
+      </MemoryRouter>
+    </ToastProvider>
   );
 }
 
@@ -367,7 +370,7 @@ describe('ShowcaseDetail Component', () => {
       renderWithRouter(<ShowcaseDetail />);
       
       await waitFor(() => {
-        expect(screen.getByLabelText(/Share on Twitter/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/Share on X$/)).toBeInTheDocument();
         expect(screen.getByLabelText(/Share on Facebook/i)).toBeInTheDocument();
       });
     });

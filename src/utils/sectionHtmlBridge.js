@@ -1138,7 +1138,7 @@ function renderSocial(section, tokens) {
     { key: 'maps', label: 'Find us on the map' },
     { key: 'website', label: 'Website' },
     { key: 'linkedin', label: 'LinkedIn' },
-    { key: 'twitter', label: 'Twitter' },
+    { key: 'twitter', label: 'X' },
     { key: 'youtube', label: 'YouTube' },
     { key: 'yelp', label: 'Yelp' },
     { key: 'pinterest', label: 'Pinterest' },
