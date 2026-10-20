@@ -72,6 +72,21 @@ class ServiceManagementService {
 
       const services = await prisma.booking_services.findMany({
         where,
+        // Later columns (payment, buffers, reminder interval) are optional.
+        // Selecting them makes this public list 500 when a migration has not landed.
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          category: true,
+          duration_minutes: true,
+          price_cents: true,
+          online_booking_enabled: true,
+          requires_approval: true,
+          display_order: true,
+          status: true,
+          created_at: true,
+        },
         orderBy: [
           { display_order: 'asc' },
           { created_at: 'desc' }

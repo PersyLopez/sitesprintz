@@ -77,6 +77,21 @@ function publicSiteId(req) {
   return String(raw).slice(0, 255);
 }
 
+function publicServicePrice(cents) {
+  const amount = typeof cents === 'bigint' ? Number(cents) : Number(cents);
+  const safe = Number.isFinite(amount) ? amount : 0;
+  return `$${(safe / 100).toFixed(2)}`;
+}
+
+async function listPublicServices(tenantId) {
+  try {
+    return await bookingService.getServices(tenantId, false);
+  } catch (error) {
+    console.error('Error fetching services:', error);
+    return [];
+  }
+}
+
 async function resolvePublicTenant(userId, siteId) {
   return bookingService.getOrCreateTenant(userId, siteId || null);
 }
@@ -132,14 +147,14 @@ router.get('/tenants/:userId/services', asyncHandler(async (req, res) => {
 
   const tenant = await resolvePublicTenant(userId, publicSiteId(req));
 
-  // Get active services
-  let services = await bookingService.getServices(tenant.id, false);
+  // Get active services. A catalog read must not take down the booking section.
+  let services = await listPublicServices(tenant.id);
   if (!services.length) {
     await ensurePublishedBooking({
       userId,
       siteId: publicSiteId(req) || tenant.site_id,
     }).catch(() => {});
-    services = await bookingService.getServices(tenant.id, false);
+    services = await listPublicServices(tenant.id);
   }
 
   sendSuccess(res, {
@@ -149,8 +164,8 @@ router.get('/tenants/:userId/services', asyncHandler(async (req, res) => {
       description: s.description,
       category: s.category,
       duration_minutes: s.duration_minutes,
-      price_cents: s.price_cents,
-      price_display: `$${(s.price_cents / 100).toFixed(2)}`,
+      price_cents: Number.isFinite(Number(s.price_cents)) ? Number(s.price_cents) : 0,
+      price_display: publicServicePrice(s.price_cents),
       online_booking_enabled: s.online_booking_enabled,
       requires_approval: s.requires_approval,
       // Payment fields (Phase 2)

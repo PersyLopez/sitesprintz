@@ -234,8 +234,14 @@ describe('BookingService - Tenant & Service Management', () => {
       expect(result).toEqual(mockServices);
       expect(prisma.booking_services.findMany).toHaveBeenCalledWith({
         where: { tenant_id: mockTenantId, status: 'active' },
+        select: expect.objectContaining({
+          name: true,
+          price_cents: true,
+          duration_minutes: true,
+        }),
         orderBy: [{ display_order: 'asc' }, { created_at: 'desc' }],
       });
+      expect(prisma.booking_services.findMany.mock.calls[0][0].select).not.toHaveProperty('reminder_interval_days');
     });
 
     it('should return all services when includeInactive is true', async () => {
@@ -251,6 +257,7 @@ describe('BookingService - Tenant & Service Management', () => {
       expect(result).toEqual(mockServices);
       expect(prisma.booking_services.findMany).toHaveBeenCalledWith({
         where: { tenant_id: mockTenantId },
+        select: expect.objectContaining({ name: true, price_cents: true }),
         orderBy: [{ display_order: 'asc' }, { created_at: 'desc' }],
       });
     });
