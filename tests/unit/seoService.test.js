@@ -542,6 +542,22 @@ describe('SEOService', () => {
       expect(injected).toBe(homepageHtml);
     });
 
+    it('names a live shop instead of the marketing homepage', () => {
+      const injected = seoService.injectPublishedViewDocumentMeta(homepageHtml, {
+        name: 'Oak Barber',
+        subdomain: 'oak-barber',
+        data: {
+          about: { description: 'Cuts and color on Bergenline Avenue in Union City.' },
+        },
+      });
+
+      expect(injected).toContain('<title>Oak Barber</title>');
+      expect(injected).toContain('Cuts and color on Bergenline Avenue in Union City.');
+      expect(injected).toContain('href="https://rightsitelight.com/view/oak-barber/"');
+      expect(injected).not.toContain('href="https://rightsitelight.com/"');
+      expect(injected).not.toContain('hreflang=');
+    });
+
     it('names a showcase example the same way the page does', () => {
       expect(seoService.showcaseDocumentSubdomain('/showcase')).toBeNull();
       expect(seoService.showcaseDocumentSubdomain('/showcase/gallery-salon/')).toBe('gallery-salon');

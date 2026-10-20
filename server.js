@@ -720,7 +720,8 @@ app.use(async (req, res, next) => {
         if (showcase) {
           const withEmbed = injectPublishedSiteEmbed(viewHtml, { success: true, site: showcase });
           const withShop = injectPublishedViewMarkup(withEmbed, renderPublishedViewFragment(showcase));
-          return res.send(preloadPublishedViewDisplayFont(withShop));
+          const withMeta = spaSeoService.injectPublishedViewDocumentMeta(withShop, showcase);
+          return res.send(preloadPublishedViewDisplayFont(withMeta));
         }
       } catch {
         // Unknown subdomain or lookup error: serve the shell without an embed

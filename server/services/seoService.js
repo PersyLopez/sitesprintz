@@ -199,6 +199,40 @@ class SEOService {
    * @param {{ name?: string, subdomain?: string, data?: object, site_data?: object }} showcase
    * @returns {string}
    */
+  /**
+   * The live /view document otherwise keeps the marketing homepage title,
+   * description, and canonical. Link previews and the tab then name every
+   * shop Right Site Light.
+   * @param {string} html
+   * @param {{ name?: string, subdomain?: string, data?: object, site_data?: object }} showcase
+   * @returns {string}
+   */
+  injectPublishedViewDocumentMeta(html, showcase) {
+    if (!showcase || typeof html !== 'string') return html;
+    const payload = showcase.data || showcase.site_data || {};
+    const subdomain = showcase.subdomain || payload.subdomain || '';
+    const businessName = showcase.name
+      || payload.businessName
+      || payload.brand?.name
+      || subdomain;
+    const businessDescription = payload.businessDescription
+      || payload.about?.description
+      || payload.hero?.subtitle
+      || '';
+    const tags = this.generateMetaTags({
+      ...payload,
+      businessName,
+      businessDescription,
+      subdomain,
+    });
+    return this._applyMarketingHead(html, {
+      title: tags.title,
+      description: tags.description,
+      canonical: this.getCanonicalUrl(subdomain, '/'),
+      robots: 'index',
+    });
+  }
+
   injectShowcaseDocumentMeta(html, showcase) {
     if (!showcase || typeof html !== 'string') return html;
     const payload = showcase.data || showcase.site_data || {};

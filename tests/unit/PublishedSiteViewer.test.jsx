@@ -91,6 +91,8 @@ describe('PublishedSiteViewer booking portal', () => {
     expect(screen.getByTestId('booking-widget')).toBeInTheDocument();
     expect(screen.getByTestId('live-booking-widget').textContent).toContain('Book');
 
+    expect(document.title).toBe('Luxe Beauty Studio');
+
     const fontLink = document.getElementById('ss-live-fonts');
     expect(fontLink).toBeTruthy();
     expect(fontLink.media).toBe('print');

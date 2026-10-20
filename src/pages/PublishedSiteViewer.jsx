@@ -108,6 +108,12 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
 
   const payload = site?.data || site?.site_data || {};
   const ownerUserId = userId || site?.userId || site?.user_id || null;
+  const shopTitle = site?.name || payload?.brand?.name || payload?.businessName || subdomain || '';
+
+  useEffect(() => {
+    if (!shopTitle) return;
+    document.title = shopTitle;
+  }, [shopTitle]);
   const markup = useMemo(() => {
     if (!payload || Object.keys(payload).length === 0) return null;
     try {
