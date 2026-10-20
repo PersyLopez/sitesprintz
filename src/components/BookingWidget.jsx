@@ -238,7 +238,7 @@ const BookingWidget = ({
 
     const applyPick = (detail) => {
       if (!detail) return;
-      if (!services.length) {
+      if (!services.length || staffLoading) {
         pendingPagePickRef.current = detail;
         return;
       }
@@ -263,7 +263,7 @@ const BookingWidget = ({
     const onPagePick = (event) => applyPick(event.detail || {});
     window.addEventListener('ss-book-service-select', onPagePick);
     return () => window.removeEventListener('ss-book-service-select', onPagePick);
-  }, [pageCatalogMode, services, showStaff, businessMode, staff]);
+  }, [pageCatalogMode, services, showStaff, businessMode, staff, staffLoading]);
 
   useEffect(() => {
     if (!selectedService?.id) {

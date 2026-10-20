@@ -119,6 +119,40 @@ describe('Live BookingWidget catalog mode', () => {
     });
   });
 
+  it('waits for the team list before a page pick skips the stylist step', async () => {
+    let resolveStaff;
+    api.get.mockImplementation((url) => {
+      if (url.includes('/services')) return Promise.resolve({ services: mockServices });
+      if (url.includes('/staff')) {
+        return new Promise((resolve) => {
+          resolveStaff = () => resolve({
+            staff: [
+              { id: 'stylist-1', name: 'Ava' },
+              { id: 'stylist-2', name: 'Noah' },
+            ],
+          });
+        });
+      }
+      return Promise.resolve({ slots: [] });
+    });
+
+    renderWidget({ pageCatalogMode: true, businessMode: 'team' });
+    await waitFor(() => {
+      expect(typeof resolveStaff).toBe('function');
+    });
+    await act(async () => {
+      window.dispatchEvent(new CustomEvent('ss-book-service-select', {
+        detail: { name: 'Haircut & Style' },
+      }));
+    });
+    expect(screen.queryByTestId('staff-selection-step')).not.toBeInTheDocument();
+    resolveStaff();
+    await waitFor(() => {
+      expect(screen.getByTestId('staff-selection-step')).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId('date-picker')).not.toBeInTheDocument();
+  });
+
   it('refetches slots and surfaces error when slot is no longer available', async () => {
     const user = userEvent.setup();
     const tomorrow = new Date();
