@@ -6,6 +6,21 @@ import SkeletonLoader from '../components/common/SkeletonLoader';
 import { api } from '../services/api';
 import './Orders.css';
 
+const INQUIRY_KIND_LABELS = {
+  'zip-check': 'ZIP check',
+  'package-quote': 'Package quote',
+  'diagnostic-quote': 'Estimate',
+  inquiry: 'Inquiry',
+  'plan-request': 'Plan request',
+  'class-request': 'Class request',
+};
+
+export function inquiryKindLabel(type) {
+  const key = String(type || 'contact');
+  if (key === 'contact') return '';
+  return INQUIRY_KIND_LABELS[key] || key.replace(/-/g, ' ');
+}
+
 function Inquiries() {
   const { embedded, site, refreshUnreadMessages } = useSiteWorkspace();
   const { loading: authLoading } = useAuth();
@@ -132,6 +147,9 @@ function Inquiries() {
                     <td>
                       <div className="orders-table-customer">
                         <strong>{submission.name || 'Visitor'}</strong>
+                        {inquiryKindLabel(submission.type) ? (
+                          <span data-testid="site-inquiry-kind">{inquiryKindLabel(submission.type)}</span>
+                        ) : null}
                         {submission.email && <span>{submission.email}</span>}
                         {submission.phone && (
                           <span data-testid="site-inquiry-phone">{submission.phone}</span>

@@ -56,7 +56,8 @@ steps:
             name: 'Mantest Lead',
             email: 'lead@example.com',
             phone: '201-555-0123',
-            message: 'Mantest lead'
+            message: 'Mantest lead',
+            type: 'zip-check'
           })
         });
         return r.json();
@@ -78,6 +79,10 @@ steps:
       const phone = page.getByTestId('site-inquiry-phone').filter({ hasText: '201-555-0123' });
       if ((await phone.count()) === 0) {
         throw new Error('Seeded phone is not visible on the message');
+      }
+      const kind = page.getByTestId('site-inquiry-kind').filter({ hasText: 'ZIP check' });
+      if ((await kind.count()) === 0) {
+        throw new Error('Seeded ZIP check is not labeled on the message');
       }
     settle_ms: 400
 
