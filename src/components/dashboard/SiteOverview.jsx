@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { usePlan } from '../../hooks/usePlan';
 import { useAuth } from '../../hooks/useAuth';
 import { useSiteWorkspace } from '../../context/SiteWorkspaceContext';
-import { getSiteDisplayName, getSiteFeatures, getSiteWorkspacePaths } from '../../utils/siteWorkspace';
+import { getSiteDisplayName, getSiteWorkspacePaths } from '../../utils/siteWorkspace';
+import { getSiteFeatures } from '../../utils/siteNiche.js';
 import { api } from '../../services/api';
 import { OWNER_ORDER_FILTERS, countOrdersForOwnerFilter } from '../../utils/orderOwnerStatus';
 

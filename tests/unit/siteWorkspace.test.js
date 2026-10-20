@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
   getSiteDisplayName,
-  getSiteNiche,
   getPublishedSiteUrl,
   getAbsolutePublishedSiteUrl,
   getSiteWorkspacePaths,
@@ -11,6 +10,7 @@ import {
   resolveOwnerPostLoginPath,
   withShareTracking,
 } from '../../src/utils/siteWorkspace';
+import { getSiteNiche } from '../../src/utils/siteNiche.js';
 
 describe('siteWorkspace helpers', () => {
   it('normalizes API site payloads', () => {
