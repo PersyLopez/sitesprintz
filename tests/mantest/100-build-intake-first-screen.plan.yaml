@@ -16,10 +16,12 @@ steps:
 
   - action: Verify required markers and attributes
     code: |
-      const required = await page.evaluate(() => [...document.querySelectorAll('input[required]')].map((input) => ({
-        id: input.id,
-        marker: getComputedStyle(input.previousElementSibling, '::after').content,
-      })));
+      const required = await page.evaluate(() => [...document.querySelectorAll('input[required]')]
+        .filter((input) => input.previousElementSibling instanceof Element)
+        .map((input) => ({
+          id: input.id,
+          marker: getComputedStyle(input.previousElementSibling, '::after').content,
+        })));
       if (!required.some(({ id }) => id === 'contactName')) throw new Error('Contact name is not required');
       if (!required.some(({ id }) => id === 'contactEmail')) throw new Error('Contact email is not required');
       if (!required.some(({ id }) => id === 'businessName')) throw new Error('Business name is not required');
@@ -33,3 +35,13 @@ steps:
     code: |
       const isValid = await page.evaluate(() => document.querySelector('[data-testid="build-intake-form"]').checkValidity());
       if (isValid) throw new Error('Empty submission should fail required-field validation');
+
+  - action: Verify submit-blocked hint is visible while acknowledgement is unchecked
+    code: |
+      const submit = page.getByTestId('build-intake-submit');
+      await submit.waitFor({ state: 'visible', timeout: 5000 });
+      if (!(await submit.isDisabled())) throw new Error('Submit should be disabled until the plan acknowledgement is checked');
+      const hint = page.getByTestId('build-submit-blocked');
+      await hint.waitFor({ state: 'visible', timeout: 5000 });
+      const hintBox = await hint.boundingBox();
+      if (!hintBox) throw new Error('build-submit-blocked hint should render with a bounding box');

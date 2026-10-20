@@ -621,6 +621,11 @@ function BuildIntake() {
               >
                 {status === 'submitting' ? t('build.submitting') : t('build.submit')}
               </button>
+              {!offerActive && !acceptedManagedPlan && (
+                <div className="build-intake-message build-intake-message--error" data-testid="build-submit-blocked">
+                  {t('build.planAckRequired')}
+                </div>
+              )}
             </div>
           </form>
         </div>

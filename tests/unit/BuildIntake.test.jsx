@@ -8,6 +8,10 @@ import { MemoryRouter } from 'react-router-dom';
 import { ToastProvider } from '../../src/context/ToastContext';
 import BuildIntake from '../../src/pages/BuildIntake.jsx';
 import { isSetupOfferActive } from '../../src/config/pricing.config.js';
+import { bindMarketingTranslator } from '../../src/i18n/locale.js';
+import { tMarketing } from '../../src/i18n/marketing/index.js';
+
+bindMarketingTranslator(tMarketing);
 
 vi.mock('../../src/components/layout/Header', () => ({
   default: () => <div data-testid="header">Header</div>,
@@ -48,6 +52,8 @@ describe('BuildIntake — Growth Managed', () => {
     expect(screen.getByTestId('build-plan-callout')).toHaveTextContent('$75');
     expect(screen.getByTestId('build-plan-ack')).not.toBeChecked();
     expect(screen.getByTestId('build-intake-submit')).toBeDisabled();
+    expect(screen.getByTestId('build-submit-blocked')).toBeInTheDocument();
+    expect(screen.getByTestId('build-submit-blocked')).toHaveTextContent(/confirm Growth Managed/i);
     expect(screen.getByRole('link', { name: /edit it myself on Growth/i })).toHaveAttribute(
       'href',
       '/register?plan=growth',
@@ -65,6 +71,7 @@ describe('BuildIntake — setup offer', () => {
     expect(screen.getByTestId('build-intake-email-alt')).toHaveAttribute('href', expect.stringMatching(/^mailto:support@rightsitelight\.com/));
     expect(screen.queryByTestId('build-plan-ack')).toBeNull();
     expect(screen.getByTestId('build-intake-submit')).not.toBeDisabled();
+    expect(screen.queryByTestId('build-submit-blocked')).toBeNull();
     expect(document.body.textContent).not.toMatch(/hero/i);
     expect(document.body.textContent).not.toMatch(/no setup fee/i);
   });
