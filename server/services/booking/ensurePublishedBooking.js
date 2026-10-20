@@ -102,12 +102,48 @@ function asItemList(value) {
  * @returns {Array<{ name: string, description: string, price: number, duration: number }>}
  */
 function mapBookableItem(item) {
+  const sourceDuration = item.duration || item.duration_minutes || 60;
   return {
     name: item.name,
     description: item.description || '',
     price: parseMoney(item.price),
-    duration: parseDurationMinutes(item.duration || item.duration_minutes || 60),
+    duration: parseDurationMinutes(sourceDuration),
+    sourceDuration,
   };
+}
+
+/**
+ * Republish repair for durations that were stored with the old minute parse.
+ * "3 hours" used to become 3. An owner edit that is no longer that leftover stays.
+ *
+ * @param {Array<{ id: string, name: string, duration_minutes: number }>} existing
+ * @param {Array<{ name: string, duration: number, sourceDuration?: string|number }>} picks
+ * @returns {Array<{ id: string, duration_minutes: number }>}
+ */
+export function durationCorrections(existing, picks) {
+  const byName = new Map();
+  for (const pick of picks || []) {
+    const key = String(pick?.name || '').trim().toLowerCase();
+    if (key && !byName.has(key)) byName.set(key, pick);
+  }
+  const updates = [];
+  for (const row of existing || []) {
+    const pick = byName.get(String(row?.name || '').trim().toLowerCase());
+    if (!pick) continue;
+    const next = correctedDuration(row.duration_minutes, pick.sourceDuration ?? pick.duration);
+    if (next == null || !row.id) continue;
+    updates.push({ id: row.id, duration_minutes: next });
+  }
+  return updates;
+}
+
+function correctedDuration(stored, label) {
+  const correct = parseDurationMinutes(label);
+  const storedMinutes = Number(stored);
+  if (!Number.isFinite(storedMinutes) || storedMinutes === correct) return null;
+  const broken = Number.parseInt(String(label ?? '').trim(), 10);
+  if (Number.isFinite(broken) && storedMinutes === broken && broken !== correct) return correct;
+  return null;
 }
 
 export function pickBookingServicesFromSiteData(siteData = {}) {
@@ -203,7 +239,8 @@ async function loadSiteRecord(userId, siteId) {
 }
 
 /**
- * Create or reuse a site-scoped booking tenant and seed services when empty.
+ * Create or reuse a site-scoped booking tenant, seed services when empty,
+ * and repair hour labels that were stored as a few minutes.
  *
  * @param {object} options
  * @param {string} options.userId
@@ -235,8 +272,8 @@ export async function ensurePublishedBooking({ userId, siteId, siteData } = {}) 
     where: { tenant_id: tenant.id },
   });
 
+  const picks = pickBookingServicesFromSiteData(data);
   if (existingCount === 0) {
-    const picks = pickBookingServicesFromSiteData(data);
     for (const [index, item] of picks.entries()) {
       await prisma.booking_services.create({
         data: {
@@ -252,6 +289,17 @@ export async function ensurePublishedBooking({ userId, siteId, siteData } = {}) 
           display_order: index + 1,
           status: 'active',
         },
+      });
+    }
+  } else {
+    const existing = await prisma.booking_services.findMany({
+      where: { tenant_id: tenant.id },
+      select: { id: true, name: true, duration_minutes: true },
+    });
+    for (const update of durationCorrections(existing, picks)) {
+      await prisma.booking_services.update({
+        where: { id: update.id },
+        data: { duration_minutes: update.duration_minutes },
       });
     }
   }

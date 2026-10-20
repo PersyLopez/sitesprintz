@@ -11,7 +11,7 @@ import {
   hasEnabledVisitorFeePolicies,
   formatVisitorFeeNoticeLines,
 } from '../../src/utils/visitorExperience.js';
-import { pickBookingServicesFromSiteData, pickBookingStaffFromSiteData } from '../../server/services/booking/ensurePublishedBooking.js';
+import { pickBookingServicesFromSiteData, pickBookingStaffFromSiteData, durationCorrections } from '../../server/services/booking/ensurePublishedBooking.js';
 
 describe('visitorExperience', () => {
   it('enables embedded booking from layout feature flags', () => {
@@ -157,6 +157,28 @@ describe('pickBookingServicesFromSiteData', () => {
       ],
     });
     expect(picks.map((item) => item.duration)).toEqual([180, 210, 360, 60]);
+  });
+
+  it('repairs a leftover hour stored as minutes and keeps an owner edit', () => {
+    const picks = pickBookingServicesFromSiteData({
+      _niche: 'salon',
+      services: [
+        { name: 'Keratin', price: 250, duration: '3 hours' },
+        { name: 'Correction', price: 300, duration: '4-6 hours' },
+        { name: 'Cut', price: 85, duration: '60 min' },
+        { name: 'Color', price: 125, duration: '2 hours' },
+      ],
+    });
+    const updates = durationCorrections([
+      { id: 'keratin', name: 'Keratin', duration_minutes: 3 },
+      { id: 'correction', name: 'Correction', duration_minutes: 4 },
+      { id: 'cut', name: 'Cut', duration_minutes: 60 },
+      { id: 'color', name: 'Color', duration_minutes: 90 },
+    ], picks);
+    expect(updates).toEqual([
+      { id: 'keratin', duration_minutes: 180 },
+      { id: 'correction', duration_minutes: 360 },
+    ]);
   });
 
   it('uses reservation fallbacks for restaurants instead of menu items', () => {
