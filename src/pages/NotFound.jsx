@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import './NotFound.css';
 
 function NotFound() {
   const navigate = useNavigate();
+  // useAuth throws outside a provider; a missing context means logged out.
+  const auth = useContext(AuthContext);
+  const isAuthenticated = Boolean(auth?.isAuthenticated);
 
   return (
     <div className="not-found-page">
@@ -37,26 +41,42 @@ function NotFound() {
             <Link to="/" className="btn btn-primary">
               🏠 Go Home
             </Link>
-            <Link to="/dashboard" className="btn btn-secondary">
-              📊 Dashboard
+            <Link to="/showcase" className="btn btn-secondary">
+              🖼️ Gallery
             </Link>
           </div>
-          
+
           <div className="helpful-links">
             <h3>Helpful Links</h3>
             <div className="links-grid">
-              <Link to="/setup" className="helpful-link">
-                <span className="link-icon">✨</span>
-                <span className="link-text">Create New Site</span>
+              <Link to="/showcase" className="helpful-link">
+                <span className="link-icon">🖼️</span>
+                <span className="link-text">Gallery</span>
               </Link>
-              <Link to="/orders" className="helpful-link">
-                <span className="link-icon">📦</span>
-                <span className="link-text">View Orders</span>
-              </Link>
-              <Link to="/analytics" className="helpful-link">
-                <span className="link-icon">📊</span>
-                <span className="link-text">Analytics</span>
-              </Link>
+              {isAuthenticated && (
+                <Link to="/dashboard" className="helpful-link">
+                  <span className="link-icon">📊</span>
+                  <span className="link-text">Dashboard</span>
+                </Link>
+              )}
+              {isAuthenticated && (
+                <Link to="/setup" className="helpful-link">
+                  <span className="link-icon">✨</span>
+                  <span className="link-text">Create New Site</span>
+                </Link>
+              )}
+              {isAuthenticated && (
+                <Link to="/orders" className="helpful-link">
+                  <span className="link-icon">📦</span>
+                  <span className="link-text">View Orders</span>
+                </Link>
+              )}
+              {isAuthenticated && (
+                <Link to="/analytics" className="helpful-link">
+                  <span className="link-icon">📊</span>
+                  <span className="link-text">Analytics</span>
+                </Link>
+              )}
               <Link to="/login" className="helpful-link">
                 <span className="link-icon">🔐</span>
                 <span className="link-text">Login</span>

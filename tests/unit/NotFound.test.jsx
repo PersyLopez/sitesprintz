@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
+import { AuthContext } from '../../src/context/AuthContext';
 import NotFound from '../../src/pages/NotFound';
 
 // Mock navigate
@@ -90,12 +91,36 @@ describe('NotFound Page', () => {
       expect(homeLink).toHaveAttribute('href', '/');
     });
 
-    it('should have dashboard link', () => {
+    it('should have gallery link for logged-out visitors', () => {
       renderNotFound();
-      
-      const dashboardLink = screen.getByRole('link', { name: /dashboard/i });
-      expect(dashboardLink).toBeInTheDocument();
-      expect(dashboardLink).toHaveAttribute('href', '/dashboard');
+
+      const galleryLinks = screen.getAllByRole('link', { name: /gallery/i });
+      expect(galleryLinks.length).toBeGreaterThan(0);
+      expect(galleryLinks[0]).toHaveAttribute('href', '/showcase');
+    });
+
+    it('should not show owner links to logged-out visitors', () => {
+      renderNotFound();
+
+      expect(screen.queryByRole('link', { name: /dashboard/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: /create new site/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: /view orders/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: /analytics/i })).not.toBeInTheDocument();
+    });
+
+    it('should show owner links to signed-in users', () => {
+      render(
+        <AuthContext.Provider value={{ isAuthenticated: true, user: { id: 1 } }}>
+          <BrowserRouter>
+            <NotFound />
+          </BrowserRouter>
+        </AuthContext.Provider>
+      );
+
+      expect(screen.getByRole('link', { name: /dashboard/i })).toHaveAttribute('href', '/dashboard');
+      expect(screen.getByRole('link', { name: /create new site/i })).toHaveAttribute('href', '/setup');
+      expect(screen.getByRole('link', { name: /view orders/i })).toHaveAttribute('href', '/orders');
+      expect(screen.getByRole('link', { name: /analytics/i })).toHaveAttribute('href', '/analytics');
     });
   });
 
@@ -106,28 +131,25 @@ describe('NotFound Page', () => {
       expect(screen.getByRole('heading', { name: /helpful links/i })).toBeInTheDocument();
     });
 
-    it('should have create new site link', () => {
+    it('should not show create new site link when logged out', () => {
       renderNotFound();
-      
-      const setupLink = screen.getByRole('link', { name: /create new site/i });
-      expect(setupLink).toBeInTheDocument();
-      expect(setupLink).toHaveAttribute('href', '/setup');
+
+      const setupLink = screen.queryByRole('link', { name: /create new site/i });
+      expect(setupLink).not.toBeInTheDocument();
     });
 
-    it('should have view orders link', () => {
+    it('should not show view orders link when logged out', () => {
       renderNotFound();
-      
-      const ordersLink = screen.getByRole('link', { name: /view orders/i });
-      expect(ordersLink).toBeInTheDocument();
-      expect(ordersLink).toHaveAttribute('href', '/orders');
+
+      const ordersLink = screen.queryByRole('link', { name: /view orders/i });
+      expect(ordersLink).not.toBeInTheDocument();
     });
 
-    it('should have analytics link', () => {
+    it('should not show analytics link when logged out', () => {
       renderNotFound();
-      
-      const analyticsLink = screen.getByRole('link', { name: /analytics/i });
-      expect(analyticsLink).toBeInTheDocument();
-      expect(analyticsLink).toHaveAttribute('href', '/analytics');
+
+      const analyticsLink = screen.queryByRole('link', { name: /analytics/i });
+      expect(analyticsLink).not.toBeInTheDocument();
     });
 
     it('should have login link', () => {

@@ -617,5 +617,24 @@ describe('SEOService', () => {
       expect(injected).not.toContain('hreflang=');
     });
   });
+
+  describe('spaDocumentStatus', () => {
+    it('should return 200 for the marketing home', () => {
+      expect(seoService.spaDocumentStatus('/')).toBe(200);
+    });
+
+    it('should return 200 for a known app path', () => {
+      expect(seoService.spaDocumentStatus('/login')).toBe(200);
+      expect(seoService.spaDocumentStatus('/dashboard/sites/northshore-cuts/orders')).toBe(200);
+    });
+
+    it('should return 404 for an unknown marketing path', () => {
+      expect(seoService.spaDocumentStatus('/this-page-does-not-exist')).toBe(404);
+    });
+
+    it('should return 404 for a missing static asset', () => {
+      expect(seoService.spaDocumentStatus('/assets/missing.js')).toBe(404);
+    });
+  });
 });
 

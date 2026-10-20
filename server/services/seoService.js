@@ -11,6 +11,62 @@ import { DEFAULT_LOCALE, parseLocale } from '../../src/i18n/locale.js';
 
 const MARKETING_APEX_HOSTS = new Set(['rightsitelight.com', 'sitesprintz.com', 'localhost', '127.0.0.1']);
 
+const SPA_EXACT_PATHS = new Set([
+  '/login',
+  '/about',
+  '/contact',
+  '/build',
+  '/register',
+  '/verify-email',
+  '/forgot-password',
+  '/reset-password',
+  '/oauth/callback',
+  '/showcase',
+  '/payment-success',
+  '/payment-cancel',
+  '/track',
+  '/dashboard',
+  '/dashboard/orders',
+  '/dashboard/analytics',
+  '/dashboard/payment-settings',
+  '/dashboard/settings/payments',
+  '/dashboard/stripe',
+  '/setup',
+  '/orders',
+  '/analytics',
+  '/products',
+  '/booking-dashboard',
+  '/staff/dashboard',
+  '/admin',
+  '/admin/analytics',
+  '/admin/users',
+  '/admin/sites',
+  '/admin/candidates',
+  '/admin/build-intakes',
+  '/admin/pricing',
+  '/admin/plan-features',
+  '/admin/coupons',
+  '/admin/templates',
+]);
+
+const SPA_PATH_PATTERNS = [
+  /^\/showcase\/[^/]+$/,
+  /^\/view\/[^/]+$/,
+  /^\/sites\/[^/]+$/,
+  /^\/sites\/[^/]+\/foundation$/,
+  /^\/booking\/user\/[^/]+$/,
+  /^\/booking\/appointment\/[^/]+$/,
+  /^\/track\/order\/[^/]+$/,
+  /^\/track\/appointment\/[^/]+$/,
+  /^\/staff\/accept\/[^/]+$/,
+  /^\/staff\/(?:appointments|schedule|orders)\/[^/]+$/,
+  /^\/claim\/[^/]+$/,
+  /^\/dashboard\/sites\/[^/]+(?:\/(?:orders|messages|appointments|products|settings|analytics))?$/,
+  /^\/analytics\/[^/]+$/,
+  /^\/settings(?:\/.*)?$/,
+  /^\/admin\/templates\/[^/]+$/,
+];
+
 class SEOService {
   constructor() {
     this.publicHost = getPublicSiteHost();
@@ -304,6 +360,31 @@ class SEOService {
     const raw = String(pathname).split('?')[0];
     const trimmed = raw.replace(/\/+$/, '') || '/';
     return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  }
+
+  /**
+   * A static file that reached the SPA fallback was not on disk.
+   * @param {string} pathname
+   * @returns {boolean}
+   */
+  isMissingAssetPath(pathname) {
+    const path = String(pathname || '').split('?')[0];
+    return /\.(?:js|mjs|css|map|png|jpe?g|gif|webp|avif|svg|ico|woff2?|ttf|eot|mp4|webm|pdf|webmanifest)$/i.test(path);
+  }
+
+  /**
+   * HTTP status for the marketing document. Unknown pages are real 404s.
+   * Published /view and /showcase details are decided by the lookup.
+   * @param {string} pathname
+   * @returns {200|404}
+   */
+  spaDocumentStatus(pathname) {
+    if (this.isMissingAssetPath(pathname)) return 404;
+    const path = this._normalizeMarketingPath(pathname);
+    if (path === '/' || SPA_EXACT_PATHS.has(path) || SPA_PATH_PATTERNS.some((pattern) => pattern.test(path))) {
+      return 200;
+    }
+    return 404;
   }
 
   _escapeHtml(value) {

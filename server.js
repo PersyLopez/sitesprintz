@@ -700,6 +700,11 @@ app.use(async (req, res, next) => {
     return next();
   }
 
+  // A static file that reached the fallback was not on disk: real 404.
+  if (spaSeoService.isMissingAssetPath(req.path)) {
+    return res.status(404).type('text/plain').send('Not found');
+  }
+
   // Live view documents are per-visitor: no caching, and the composed
   // viewer gets the showcase JSON inlined so first paint skips the fetch.
   let viewSubdomain = null;
@@ -738,10 +743,12 @@ app.use(async (req, res, next) => {
           const withMeta = spaSeoService.injectPublishedViewDocumentMeta(withShop, showcase);
           return res.send(preloadPublishedViewDisplayFont(withMeta));
         }
+        // Unknown subdomain: the shell with a real 404 status
+        return res.status(404).send(viewHtml);
       } catch {
-        // Unknown subdomain or lookup error: serve the shell without an embed
+        // Lookup error: serve the shell with 200 (never 404 on a DB error)
+        return res.send(viewHtml);
       }
-      return res.send(viewHtml);
     }
     let pageHtml = injected;
     const detailSubdomain = spaSeoService.showcaseDocumentSubdomain(req.path);
@@ -750,12 +757,16 @@ app.use(async (req, res, next) => {
         const detail = await findPublishedShowcase(detailSubdomain);
         if (detail) {
           pageHtml = spaSeoService.injectShowcaseDocumentMeta(pageHtml, detail);
+        } else {
+          // Unknown example: the shell with a real 404 status
+          return res.status(404).send(pageHtml);
         }
       } catch {
-        // Unknown example: keep the shell head
+        // Lookup error: keep the shell head with 200
       }
     }
-    return res.send(pageHtml);
+    // Unknown marketing pages are real 404s; known app paths stay 200
+    return res.status(spaSeoService.spaDocumentStatus(req.path)).send(pageHtml);
   } catch {
     return res.sendFile(indexPath);
   }
