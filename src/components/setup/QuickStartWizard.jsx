@@ -20,6 +20,8 @@ const WIZARD_STEPS = [
 
 const EMPTY_OFFER = { name: '', price: '', description: '' };
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 function mapOfferRows(items) {
   return items.map((item) => ({
     name: item.name || '',
@@ -164,11 +166,15 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
 
   const handleBasicsNext = () => {
     setBasicsSubmitAttempted(true);
-    // Validate: business name required, at least phone or email
+    // Validate: business name required, at least phone or a valid email
     if (!formData.businessName.trim()) {
       return;
     }
-    if (!formData.phone.trim() && !formData.email.trim()) {
+    const email = formData.email.trim();
+    if (email && !EMAIL_PATTERN.test(email)) {
+      return;
+    }
+    if (!email && !formData.phone.trim()) {
       return;
     }
     setCurrentStep(2);
@@ -366,8 +372,12 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
                 <label htmlFor="email">Email Address</label>
                 <FieldValidation
                   value={formData.email}
-                  validator={(value) => Boolean(value.trim() || formData.phone.trim())}
-                  errorMessage="Please enter at least a phone number or email address"
+                  validator={(value) => {
+                    const email = value.trim();
+                    // Empty email is fine when a phone is present; a non-empty email must be well-formed
+                    return email ? EMAIL_PATTERN.test(email) : Boolean(formData.phone.trim());
+                  }}
+                  errorMessage="Please enter a valid email address, or use a phone number instead"
                   forceTouched={basicsSubmitAttempted}
                 >
                   <input

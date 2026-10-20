@@ -98,7 +98,44 @@ describe('QuickStartWizard', () => {
     fireEvent.change(screen.getByTestId('business-name-input'), { target: { value: 'Studio Luxe' } });
     fireEvent.click(nextButton());
 
-    expect(screen.getAllByText('Please enter at least a phone number or email address')).toHaveLength(2);
+    expect(screen.getByText('Please enter at least a phone number or email address')).toBeTruthy();
+    expect(screen.getByText('Please enter a valid email address, or use a phone number instead')).toBeTruthy();
+  });
+
+  it('does not advance when the email is non-empty but not an email', () => {
+    render(<QuickStartWizard onComplete={() => {}} onSkip={() => {}} />);
+    clickIndustry('Salon');
+
+    fireEvent.change(screen.getByTestId('business-name-input'), { target: { value: 'Studio Luxe' } });
+    fireEvent.change(screen.getByTestId('contact-email-input'), { target: { value: 'not-an-email' } });
+    fireEvent.click(nextButton());
+
+    // Still on the basics step, with the inline email error
+    expect(screen.getByTestId('business-name-input')).toBeTruthy();
+    expect(screen.queryByTestId('wizard-level-step')).toBeNull();
+    expect(screen.getByText('Please enter a valid email address, or use a phone number instead')).toBeTruthy();
+  });
+
+  it('advances when the email is blank and a phone is present', () => {
+    render(<QuickStartWizard onComplete={() => {}} onSkip={() => {}} />);
+    clickIndustry('Salon');
+
+    fireEvent.change(screen.getByTestId('business-name-input'), { target: { value: 'Studio Luxe' } });
+    fireEvent.change(screen.getByTestId('contact-phone-input'), { target: { value: '555-1234' } });
+    fireEvent.click(nextButton());
+
+    expect(screen.getByTestId('wizard-level-step')).toBeTruthy();
+  });
+
+  it('advances when the email is a real address', () => {
+    render(<QuickStartWizard onComplete={() => {}} onSkip={() => {}} />);
+    clickIndustry('Salon');
+
+    fireEvent.change(screen.getByTestId('business-name-input'), { target: { value: 'Studio Luxe' } });
+    fireEvent.change(screen.getByTestId('contact-email-input'), { target: { value: 'hello@studioluxe.com' } });
+    fireEvent.click(nextButton());
+
+    expect(screen.getByTestId('wizard-level-step')).toBeTruthy();
   });
 
   it('passes the default solo level through to buildSiteDataFromWizard on completion', async () => {
