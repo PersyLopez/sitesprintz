@@ -12,6 +12,7 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const html = readFileSync(join(__dirname, '../../index.html'), 'utf8');
+const ogImage = readFileSync(join(__dirname, '../../public/assets/og-image.jpg'));
 
 const attr = (tag, name) => {
   const match = html.match(new RegExp(`<${tag}[^>]*\\b${name}="([^"]*)"`));
@@ -37,6 +38,11 @@ describe('marketing index head crawlability', () => {
       expect(content, tag).toMatch(/^https:\/\/rightsitelight\.com\//);
       expect(content, tag).not.toMatch(/^\/(?!\/)/);
     }
+  });
+
+  it('ships og-image.jpg as a real JPEG under 300 KB (S-04)', () => {
+    expect(ogImage.length, `${ogImage.length} bytes`).toBeLessThan(300 * 1024);
+    expect([ogImage[0], ogImage[1], ogImage[2]]).toEqual([0xff, 0xd8, 0xff]);
   });
 
   it('declares Organization and WebSite JSON-LD and no LocalBusiness', () => {
