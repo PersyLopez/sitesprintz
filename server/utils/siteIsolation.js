@@ -245,10 +245,28 @@ export function stripPublishedViewThirdParties(html) {
 }
 
 /**
+ * Let the hero photo use the connection before the shop's JavaScript.
+ * The module entry and its preloads stay in the document; they load at a
+ * lower priority than the image preload added after this step.
+ *
+ * @param {string} html
+ * @returns {string}
+ */
+export function yieldPublishedViewModules(html) {
+  if (typeof html !== 'string') return html;
+  const lower = (tag, name) => (
+    new RegExp(`\\sfetchpriority=`).test(tag) ? tag : tag.replace(name, `${name} fetchpriority="low"`)
+  );
+  return html
+    .replace(/<link\b[^>]*\srel="modulepreload"[^>]*>/g, (tag) => lower(tag, '<link'))
+    .replace(/<script\b[^>]*\stype="module"[^>]*>/g, (tag) => lower(tag, '<script'));
+}
+
+/**
  * Make the Inter font stylesheet non-blocking on published /view documents:
  * the link loads with media="print" then swaps to all on load, with a
  * noscript copy so the blocking tag still applies without JS. Preconnect
- * hints and marketing pages are untouched.
+ * hints and marketing pages are untouched. Module preloads yield to the hero.
  *
  * @param {string} html
  * @returns {string}
@@ -256,10 +274,11 @@ export function stripPublishedViewThirdParties(html) {
 export function deferPublishedViewFonts(html) {
   if (typeof html !== 'string') return html;
   const fontLinkPattern = /<link[^>]*href="https:\/\/fonts\.googleapis\.com\/css2[^"]*"[^>]*rel="stylesheet"[^>]*>/g;
-  return html.replace(fontLinkPattern, (link) => {
+  const deferred = html.replace(fontLinkPattern, (link) => {
     const asyncLink = link.replace(' rel="stylesheet"', ' rel="stylesheet" media="print" onload="this.media=\'all\'"');
     return `${asyncLink}\n    <noscript>${link}</noscript>`;
   });
+  return yieldPublishedViewModules(deferred);
 }
 
 /** Same family the composed viewer requests after mount. */

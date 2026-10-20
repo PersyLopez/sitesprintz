@@ -19,6 +19,7 @@ import {
   injectPublishedSiteEmbed,
   injectPublishedViewMarkup,
   preloadPublishedViewHero,
+  yieldPublishedViewModules,
   liveSiteDocumentIdentifier,
   liveSiteRedirectTarget,
   liveViewDocumentIdentifier,
@@ -214,6 +215,24 @@ describe('site isolation — /view document and embed', () => {
 
     expect(deferPublishedViewFonts(null)).toBe(null);
     expect(deferPublishedViewFonts(undefined)).toBe(undefined);
+  });
+
+  it('lets the hero photo outrank the shop module graph', () => {
+    const shell = [
+      '<html><head>',
+      '<link rel="modulepreload" crossorigin href="/assets/global.js">',
+      '<link rel="preload" as="image" fetchpriority="high" href="/photos/hero.jpg">',
+      '</head><body>',
+      '<script type="module" crossorigin src="/assets/view.js"></script>',
+      '</body></html>',
+    ].join('');
+    const yielded = yieldPublishedViewModules(shell);
+    expect(yielded).toContain('<link fetchpriority="low" rel="modulepreload" crossorigin href="/assets/global.js">');
+    expect(yielded).toContain('<script fetchpriority="low" type="module" crossorigin src="/assets/view.js"></script>');
+    expect(yielded).toContain('rel="preload" as="image" fetchpriority="high" href="/photos/hero.jpg"');
+    expect(yieldPublishedViewModules(yielded)).toBe(yielded);
+    expect(deferPublishedViewFonts(shell)).toContain('fetchpriority="low" rel="modulepreload"');
+    expect(yieldPublishedViewModules(null)).toBe(null);
   });
 
   it('starts the Fraunces display face in the view document without a second copy', () => {
