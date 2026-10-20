@@ -230,6 +230,28 @@ describe('SEO Routes Integration Tests', () => {
     });
   });
 
+  describe('GET /.well-known/security.txt', () => {
+    it('returns RFC 9116 security.txt with Contact and future Expires', async () => {
+      const response = await request(app)
+        .get('/.well-known/security.txt')
+        .set('Host', 'rightsitelight.com');
+
+      expect(response.status).toBe(200);
+      expect(response.header['content-type']).toContain('text/plain');
+      expect(response.header['cache-control']).toContain('public');
+      expect(response.header['cache-control']).toContain('max-age=86400');
+      expect(response.text).toContain('Contact: mailto:support@rightsitelight.com');
+      expect(response.text).toContain('Preferred-Languages: en');
+      expect(response.text).toContain('Canonical: https://rightsitelight.com/.well-known/security.txt');
+      const expiresLine = response.text
+        .split('\n')
+        .find(line => line.startsWith('Expires: '));
+      expect(expiresLine).toBeDefined();
+      const expires = new Date(expiresLine.replace('Expires: ', ''));
+      expect(expires.getTime()).toBeGreaterThan(Date.now());
+    });
+  });
+
   describe('GET /api/seo/:subdomain', () => {
     it('should return SEO config for authenticated user', async () => {
       seedPublishedSite({

@@ -137,6 +137,29 @@ router.get('/robots.txt', async (req, res) => {
 });
 
 /**
+ * GET /.well-known/security.txt
+ * RFC 9116 security disclosure document for the platform
+ * Access: Public (marketing apex host)
+ */
+router.get('/.well-known/security.txt', (req, res) => {
+  // Refresh annually, truncated to the start of a UTC day — always well past the 90-day RFC minimum
+  const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+  expires.setUTCHours(0, 0, 0, 0);
+
+  const securityTxt = [
+    'Contact: mailto:support@rightsitelight.com',
+    `Expires: ${expires.toISOString()}`,
+    'Preferred-Languages: en',
+    'Canonical: https://rightsitelight.com/.well-known/security.txt',
+    '',
+  ].join('\n');
+
+  res.header('Content-Type', 'text/plain; charset=utf-8');
+  res.header('Cache-Control', 'public, max-age=86400');
+  res.send(securityTxt);
+});
+
+/**
  * GET /api/seo/:subdomain
  * Get SEO configuration for a site
  * Access: Authenticated (site owner)
