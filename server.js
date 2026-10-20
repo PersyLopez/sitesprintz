@@ -74,6 +74,7 @@ import { getRequiredSecret } from './server/config/secrets.js';
 import { paidPlanFromQuery } from './src/config/tiers.js';
 import { createGoogleOAuthState, consumeGoogleOAuthState } from './server/services/auth/googleOAuthState.js';
 import { setAuthCookies } from './server/utils/authCookies.js';
+import { marketingHtmlCacheHeader, publicAssetCacheHeader } from './server/utils/publicAssetCache.js';
 import { buildCorsOptions } from './server/config/cors.js';
 validateEnv();
 logBootSummary();
@@ -205,7 +206,15 @@ app.use((req, res, next) => {
   return next();
 });
 
-const servePublic = express.static(publicDir, { dotfiles: 'ignore' });
+const servePublic = express.static(publicDir, {
+  dotfiles: 'ignore',
+  setHeaders(res, filePath) {
+    const cacheHeader = publicAssetCacheHeader(filePath);
+    if (cacheHeader) {
+      res.setHeader('Cache-Control', cacheHeader);
+    }
+  }
+});
 app.use((req, res, next) => {
   if ((req.method === 'GET' || req.method === 'HEAD') && liveSiteDocumentIdentifier(req.path)) {
     return next();
@@ -728,6 +737,14 @@ app.use(async (req, res, next) => {
   }
   try {
     const html = await readFile(indexPath, 'utf8');
+    // Marketing shells must revalidate so deploys are picked up; a resolved
+    // view subdomain already set no-store above and keeps it.
+    if (!viewSubdomain) {
+      const htmlCacheHeader = marketingHtmlCacheHeader(path.basename(indexPath));
+      if (htmlCacheHeader) {
+        res.setHeader('Cache-Control', htmlCacheHeader);
+      }
+    }
     const rawUrl = String(req.originalUrl || req.url || '');
     const qIndex = rawUrl.indexOf('?');
     const search = qIndex >= 0 ? rawUrl.slice(qIndex) : '';
