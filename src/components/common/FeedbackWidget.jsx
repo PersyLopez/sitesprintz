@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useToast } from '../../hooks/useToast';
 import { PLATFORM_SUPPORT_EMAIL } from '../../config/pricing.config';
 import './FeedbackWidget.css';
@@ -73,8 +74,9 @@ function FeedbackWidget({ hideFab = false, open: controlledOpen, onClose }) {
         </button>
       )}
 
-      {isOpen && (
-        <div className="feedback-overlay" onClick={closeModal}>
+      {isOpen &&
+        createPortal(
+          <div className="feedback-overlay" data-testid="feedback-overlay" onClick={closeModal}>
           <div className="feedback-modal" onClick={(e) => e.stopPropagation()}>
             <div className="feedback-header">
               <h3>Send Feedback</h3>
@@ -168,8 +170,9 @@ function FeedbackWidget({ hideFab = false, open: controlledOpen, onClose }) {
               </p>
             </form>
           </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 }
