@@ -286,6 +286,21 @@ describe('sectionHtmlBridge', () => {
       content: { images: [{ src: '/uploads/shop.jpg', alt: 'Shop' }] },
     }, tokens);
     expect(gallery).toContain('width="400" height="240"');
+    expect(gallery).not.toContain('gallery-filter');
+
+    const filtered = renderSectionToHtml({
+      type: 'gallery',
+      content: {
+        filterable: true,
+        images: [
+          { src: '/uploads/cut.jpg', alt: 'Cut', category: 'Hair' },
+          { src: '/uploads/color.jpg', alt: 'Color', category: 'Color' },
+        ],
+      },
+    }, tokens);
+    expect(filtered).toContain('data-testid="gallery-filter"');
+    expect(filtered).toContain('data-category="Hair"');
+    expect(filtered).toContain('data-ss-filter-root');
 
     const about = renderSectionToHtml({
       type: 'about',

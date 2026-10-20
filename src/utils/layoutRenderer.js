@@ -128,7 +128,11 @@ const sectionPrimitives = {
       content: {
         title: c.title || catalogGallery.title || 'Gallery',
         images,
-        filterable: c.filterable || false,
+        filterable: Boolean(
+          c.filterable
+          || catalogGallery.filterable
+          || siteData?.features?.gallery?.filterable
+        ),
       },
       settings: {},
       accent: false,
@@ -937,9 +941,15 @@ function flattenGalleryImages(source) {
     return source.images.map(normalizeImage).filter(Boolean);
   }
   if (Array.isArray(source.categories)) {
-    return source.categories
-      .flatMap((category) => (category.images || []).map(normalizeImage))
-      .filter(Boolean);
+    return source.categories.flatMap((category) => {
+      const name = String(category?.name || category?.label || '').trim();
+      return (category.images || []).map((image) => {
+        const normalized = normalizeImage(image);
+        if (!normalized) return null;
+        if (!normalized.category && name) normalized.category = name;
+        return normalized;
+      }).filter(Boolean);
+    });
   }
   return [];
 }

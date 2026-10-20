@@ -141,4 +141,22 @@ describe('mountPublishedInteractions', () => {
     expect(items[0].hidden).toBe(false);
     expect(items[1].hidden).toBe(true);
   });
+
+  it('hides gallery photos that are not in the chosen category', () => {
+    document.body.innerHTML = `
+      <div data-ss-filter-root>
+        <select data-ss-filter="category"><option value="">All</option><option value="Hair">Hair</option></select>
+        <p data-ss-filter-count></p>
+        <img data-ss-filter-item data-category="Hair" />
+        <img data-ss-filter-item data-category="Color" />
+      </div>`;
+    mountPublishedInteractions(document);
+    const select = document.querySelector('select');
+    select.value = 'Hair';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    const photos = document.querySelectorAll('[data-ss-filter-item]');
+    expect(photos[0].hidden).toBe(false);
+    expect(photos[1].hidden).toBe(true);
+    expect(document.querySelector('[data-ss-filter-count]').textContent).toBe('Showing 1 of 2');
+  });
 });

@@ -1067,6 +1067,14 @@ describe('layoutRenderer — catalog-shaped site data', () => {
     const result = renderSection('gallery', {}, catalogSite, {});
     expect(result.content.images).toHaveLength(2);
     expect(result.content.images[0].src).toContain('a.jpg');
+    expect(result.content.images[0].category).toBe('Hair');
+    expect(result.content.images[1].category).toBe('Color');
+    expect(result.content.filterable).toBe(false);
+    const asked = renderSection('gallery', {}, {
+      ...catalogSite,
+      features: { gallery: { filterable: true } },
+    }, {});
+    expect(asked.content.filterable).toBe(true);
   });
 
   it('unwraps catalog team.members', () => {

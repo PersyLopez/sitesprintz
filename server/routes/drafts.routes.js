@@ -405,11 +405,19 @@ export function filterFeaturesByPlan(siteData, userPlan) {
     }
   }
   
-  // Remove filterable gallery if user doesn't have FILTERS
+  // Keep the photos. Categories hold the images; only the filter control is Starter+.
   if (!hasFeature(plan, FEATURES.FILTERS)) {
-    if (filtered.gallery) {
-      filtered.gallery = { ...filtered.gallery };
-      delete filtered.gallery.categories;
+    if (filtered.gallery && typeof filtered.gallery === 'object' && !Array.isArray(filtered.gallery)) {
+      filtered.gallery = { ...filtered.gallery, filterable: false };
+    }
+    if (Array.isArray(filtered.sections)) {
+      filtered.sections = filtered.sections.map((section) => {
+        if (section?.type !== 'gallery') return section;
+        return {
+          ...section,
+          content: { ...(section.content || {}), filterable: false },
+        };
+      });
     }
   }
   

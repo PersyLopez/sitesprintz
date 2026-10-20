@@ -128,6 +128,26 @@ describe('filterFeaturesByPlan', () => {
     expect(filterFeaturesByPlan(withGuides, 'growth').sections.map((section) => section.type)).toContain('resource-center');
   });
 
+  it('keeps gallery photos on the live trial and turns the filter off', () => {
+    const site = {
+      gallery: {
+        filterable: true,
+        categories: [
+          { name: 'Hair', images: [{ url: 'https://example.com/a.jpg' }] },
+        ],
+      },
+      sections: [{ type: 'gallery', content: { filterable: true, images: [{ src: '/a.jpg' }] } }],
+    };
+    const trial = filterFeaturesByPlan(site, 'trial');
+    expect(trial.gallery.categories).toHaveLength(1);
+    expect(trial.gallery.filterable).toBe(false);
+    expect(trial.sections[0].content.filterable).toBe(false);
+    const growth = filterFeaturesByPlan(site, 'growth');
+    expect(growth.gallery.categories).toHaveLength(1);
+    expect(growth.gallery.filterable).toBe(true);
+    expect(growth.sections[0].content.filterable).toBe(true);
+  });
+
   it('drops a progress tracker on the live trial and keeps it on Growth', () => {
     const withTracker = {
       sections: [

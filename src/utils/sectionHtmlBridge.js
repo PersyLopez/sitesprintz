@@ -349,18 +349,31 @@ function renderGallery(section, tokens) {
     .map((img, index) => {
       const src = typeof img === 'string' ? img : (img.src || img.url || '');
       const alt = typeof img === 'string' ? '' : (img.alt || '');
+      const category = typeof img === 'object' && img ? String(img.category || '').trim() : '';
       const field = `gallery.images.${index}.src`;
       if (!src) {
         return renderPhotoPlaceholder('work', { className: 'ss-photo-placeholder--tile', photoField: field });
       }
-      return `<img class="ss-gallery-item" data-photo-field="${escapeAttr(field)}" src="${escapeAttr(src)}" alt="${escapeAttr(alt)}" width="400" height="240" loading="lazy" decoding="async" />`;
+      const filterAttr = c.filterable && category
+        ? ` data-ss-filter-item data-category="${escapeAttr(category)}" data-testid="gallery-photo"`
+        : '';
+      return `<img class="ss-gallery-item"${filterAttr} data-photo-field="${escapeAttr(field)}" src="${escapeAttr(src)}" alt="${escapeAttr(alt)}" width="400" height="240" loading="lazy" decoding="async" />`;
     })
     .join('\n');
+
+  const categories = [...new Set(images.map((img) => (
+    typeof img === 'object' && img ? String(img.category || '').trim() : ''
+  )).filter(Boolean))];
+  const showFilter = c.filterable === true && categories.length > 1;
+  const controls = showFilter
+    ? `<label class="ss-field"><span>Show</span><select data-ss-filter="category" data-testid="gallery-filter"><option value="">All</option>${categories.map((name) => `<option value="${escapeAttr(name)}">${escapeHtml(name)}</option>`).join('')}</select></label><p data-ss-filter-count data-testid="gallery-filter-count" role="status" aria-live="polite"></p>`
+    : '';
 
   return `<section class="ss-gallery ss-section" style="background: ${getBg(tokens)}; color: ${getText(tokens)};">
   <div class="ss-container">
     <h2 class="ss-h2" style="color: ${getAccent(tokens)};">${escapeHtml(title)}</h2>
-    <div class="ss-gallery-grid">
+    ${controls}
+    <div class="ss-gallery-grid"${showFilter ? ' data-ss-filter-root' : ''}>
       ${imgsHtml}
     </div>
   </div>
