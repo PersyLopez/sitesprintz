@@ -7,13 +7,12 @@ import { CartProvider } from './context/CartContext';
 import { TipsProvider } from './context/TipsContext';
 import { StaffProvider } from './context/StaffContext';
 
-// Critical pages - load immediately (above the fold)
-import Landing from './pages/Landing';
 import Login from './pages/Login';
 import About from './pages/About';
 import Contact from './pages/Contact';
 
-// Lazy load all other pages for code splitting
+// The homepage is its own chunk so a published shop does not download it.
+const Landing = lazy(() => import('./pages/Landing'));
 const Register = lazy(() => import('./pages/Register'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const SiteDashboard = lazy(() => import('./pages/SiteDashboard'));
@@ -107,7 +106,14 @@ function App() {
               <CustomDomainGate>
               <Routes>
               {/* Public routes */}
-              <Route path="/" element={<Landing />} />
+              <Route
+                path="/"
+                element={
+                  <Suspense fallback={<LoadingFallback message="Loading..." />}>
+                    <Landing />
+                  </Suspense>
+                }
+              />
               <Route path="/login" element={<Login />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
