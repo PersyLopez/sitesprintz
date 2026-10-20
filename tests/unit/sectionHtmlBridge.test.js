@@ -500,6 +500,8 @@ describe('sectionHtmlBridge', () => {
     expect(html).toContain('method="post"');
     expect(html).toContain('action="/api/submissions/contact"');
     expect(html).toContain('name="subdomain" value=""');
+    expect(html).toContain('name="website"');
+    expect(html).toContain('tabindex="-1"');
   });
 
   it('stamps the shop subdomain on the contact form', () => {

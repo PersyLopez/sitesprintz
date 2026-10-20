@@ -42,7 +42,7 @@ const router = express.Router();
 export function inquiryMessage(message, fields, type) {
   const text = String(message || '').trim();
   if (type !== 'inquiry' || !fields || typeof fields !== 'object') return text;
-  const skipped = new Set(['subdomain', 'name', 'email', 'phone', 'message', 'type']);
+  const skipped = new Set(['subdomain', 'name', 'email', 'phone', 'message', 'type', 'website']);
   const parts = Object.keys(fields)
     .filter((key) => !skipped.has(key) && typeof fields[key] !== 'object')
     .map((key) => String(fields[key] || '').trim())
@@ -113,6 +113,11 @@ export function zipCheckMessage(message, zip, type) {
   if (type !== 'zip-check' || !/^\d{5}$/.test(code)) return text;
   if (text.startsWith(`ZIP ${code}:`)) return text;
   return text ? `ZIP ${code}: ${text}` : `ZIP ${code}`;
+}
+
+export function contactHoneypotFilled(body) {
+  const value = body?.website;
+  return typeof value === 'string' && value.trim().length > 0;
 }
 
 export function contactOwnerNotice({ subdomain, siteId, phone }) {
@@ -242,6 +247,10 @@ router.post('/contact', asyncHandler(async (req, res) => {
       submissionId: result.submissionId,
       probe: true,
     }, 'Health probe recorded');
+  }
+
+  if (contactHoneypotFilled(req.body)) {
+    return replyContactSaved(req, res, subdomain, { accepted: true }, 'Your message has been sent successfully');
   }
 
   // Validate required fields

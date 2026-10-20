@@ -223,6 +223,10 @@ function serviceKey(item, index) {
   return `${slug}-${index}`;
 }
 
+function contactHoneypotField() {
+  return '<div aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden;"><label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>';
+}
+
 function bookServiceLink(item, index, tokens) {
   const id = serviceKey(item, index);
   const name = item.name || item.title || '';
@@ -548,6 +552,7 @@ function renderContact(section, tokens) {
     ${serviceAreaMapHtml(c)}
     <form id="contact-form" class="ss-contact-form" data-testid="contact-form" data-type="contact" method="post" action="/api/submissions/contact" novalidate>
       <input type="hidden" name="subdomain" value="${escapeAttr(tokens?._contactSubdomain || '')}" />
+      ${contactHoneypotField()}
       <p class="ss-form-status" data-testid="contact-form-status" role="status" aria-live="polite"></p>
       <label class="ss-field">
         <span>Name</span>
@@ -1134,6 +1139,7 @@ function renderZipChecker(section, tokens) {
     ${description ? `<p style="text-align: center; color: ${getMuted(tokens)}; margin-bottom: 24px;">${escapeHtml(description)}</p>` : ''}
     <form class="ss-contact-form" data-testid="zip-check-form" data-type="zip-check" method="post" action="/api/submissions/contact" data-areas="${escapeAttr(areas.join(','))}" data-ranges="${escapeAttr(ranges.join(','))}" data-covered="${escapeAttr(c.successMessage || 'We serve your area.')}" data-outside="${escapeAttr(c.unavailableMessage || 'We do not serve that area yet.')}" novalidate>
       <input type="hidden" name="subdomain" value="${escapeAttr(tokens?._contactSubdomain || '')}" />
+      ${contactHoneypotField()}
       <input type="hidden" name="type" value="zip-check" />
       <p class="ss-form-status" data-testid="zip-form-status" data-ss-zip-result role="status" aria-live="polite"></p>
       <label class="ss-field">
@@ -1208,6 +1214,7 @@ function renderPackageCalculator(section, tokens) {
     ${description ? `<p style="text-align: center; color: ${getMuted(tokens)}; margin-bottom: 24px;">${escapeHtml(description)}</p>` : ''}
     <form class="ss-contact-form" data-testid="package-quote-form" data-type="package-quote" method="post" action="/api/submissions/contact" novalidate>
       <input type="hidden" name="subdomain" value="${escapeAttr(tokens?._contactSubdomain || '')}" />
+      ${contactHoneypotField()}
       <input type="hidden" name="type" value="package-quote" />
       <p class="ss-form-status" data-testid="package-form-status" data-ss-package-total role="status" aria-live="polite"></p>
       ${choices}
@@ -1276,6 +1283,7 @@ function renderDiagnosticQuiz(section, tokens) {
     ${description ? `<p style="text-align: center; color: ${getMuted(tokens)}; margin-bottom: 24px;">${escapeHtml(description)}</p>` : ''}
     <form class="ss-contact-form" data-testid="diagnostic-quote-form" data-type="diagnostic-quote" method="post" action="/api/submissions/contact" novalidate>
       <input type="hidden" name="subdomain" value="${escapeAttr(tokens?._contactSubdomain || '')}" />
+      ${contactHoneypotField()}
       <input type="hidden" name="type" value="diagnostic-quote" />
       <p class="ss-form-status" data-testid="diagnostic-form-status" data-ss-diagnostic-total role="status" aria-live="polite"></p>
       ${groups}
@@ -1391,6 +1399,7 @@ function renderMultiStepForm(section, tokens) {
     ${description ? `<p style="text-align: center; color: ${getMuted(tokens)}; margin-bottom: 24px;">${escapeHtml(description)}</p>` : ''}
     <form class="ss-contact-form" data-testid="inquiry-form" data-type="inquiry" method="post" action="/api/submissions/contact" novalidate>
       <input type="hidden" name="subdomain" value="${escapeAttr(tokens?._contactSubdomain || '')}" />
+      ${contactHoneypotField()}
       <input type="hidden" name="type" value="inquiry" />
       <input type="hidden" name="message" value="Please tell us about this event." />
       <p class="ss-form-status" data-testid="inquiry-form-status" role="status" aria-live="polite"></p>
@@ -1549,6 +1558,7 @@ function renderSubscriptionBooking(section, tokens) {
     ${description ? `<p style="text-align: center; color: ${getMuted(tokens)}; margin-bottom: 24px;">${escapeHtml(description)}</p>` : ''}
     <form class="ss-contact-form" data-testid="plan-request-form" data-type="plan-request" method="post" action="/api/submissions/contact" novalidate>
       <input type="hidden" name="subdomain" value="${escapeAttr(tokens?._contactSubdomain || '')}" />
+      ${contactHoneypotField()}
       <input type="hidden" name="type" value="plan-request" />
       <p class="ss-form-status" data-testid="plan-form-status" role="status" aria-live="polite"></p>
       <div style="display: grid; gap: 12px; margin-bottom: 20px;">${planChoices}</div>
@@ -1610,6 +1620,7 @@ function renderClassScheduler(section, tokens) {
     ${description ? `<p style="text-align: center; color: ${getMuted(tokens)}; margin-bottom: 24px;">${escapeHtml(description)}</p>` : ''}
     <form class="ss-contact-form" data-testid="class-request-form" data-type="class-request" method="post" action="/api/submissions/contact" novalidate>
       <input type="hidden" name="subdomain" value="${escapeAttr(tokens?._contactSubdomain || '')}" />
+      ${contactHoneypotField()}
       <input type="hidden" name="type" value="class-request" />
       <p class="ss-form-status" data-testid="class-form-status" role="status" aria-live="polite"></p>
       <div style="display: grid; gap: 12px; margin-bottom: 20px;">${choices}</div>

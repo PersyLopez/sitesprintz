@@ -139,6 +139,24 @@ describe('Submissions Routes Integration Tests', () => {
       expect(response.body.message).toContain('sent successfully');
     });
 
+    it('accepts a filled honeypot without saving the lead', async () => {
+      const before = prisma.submissions.create.mock.calls.length;
+      const response = await request(app)
+        .post('/api/submissions/contact')
+        .send({
+          name: 'Bot',
+          email: 'bot@example.com',
+          message: 'Buy this',
+          subdomain: 'test-restaurant',
+          website: 'https://spam.example',
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.message).toContain('sent successfully');
+      expect(prisma.submissions.create.mock.calls.length).toBe(before);
+      expect(sendEmail).not.toHaveBeenCalled();
+    });
+
     it('should reject submission without required fields (no name)', async () => {
       const contactData = {
         email: 'john@example.com',
