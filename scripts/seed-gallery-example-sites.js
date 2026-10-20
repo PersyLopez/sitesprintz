@@ -26,6 +26,7 @@ import StaffManagementService from '../server/services/booking/StaffManagementSe
 import BookingFeeService from '../server/services/booking/BookingFeeService.js';
 import { applyShopIntakeSiteFeatures } from '../server/services/booking/shopIntakeFlags.js';
 import { parseSiteData } from '../server/utils/parseSiteData.js';
+import { pickBookingServicesFromSiteData } from '../server/services/booking/ensurePublishedBooking.js';
 
 dotenv.config();
 
@@ -637,68 +638,6 @@ async function upsertSite(owner, example) {
   return { subdomain: example.subdomain, name: example.businessName, status: 'created' };
 }
 
-function parseMoney(value) {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  const parsed = Number.parseFloat(String(value || '').replace(/[^0-9.]/g, ''));
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function parseDurationMinutes(value) {
-  const parsed = Number.parseInt(String(value || ''), 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 60;
-}
-
-const BOOKING_FALLBACKS = {
-  salon: [
-    { name: 'Signature Haircut', price: 85, duration: 60, description: 'Precision cut with consultation' },
-    { name: 'Blowout & Style', price: 55, duration: 45, description: 'Shampoo, condition, and blowout' },
-    { name: 'Color Refresh', price: 120, duration: 90, description: 'Tone and gloss for vibrant color' },
-  ],
-  gym: [
-    { name: 'Intro Training Session', price: 65, duration: 60, description: '1:1 assessment and workout plan' },
-    { name: 'Small Group Class', price: 35, duration: 45, description: 'Coach-led strength circuit' },
-    { name: 'Recovery Massage', price: 80, duration: 50, description: 'Post-workout soft tissue work' },
-  ],
-  'pet-care': [
-    { name: 'Full Groom', price: 75, duration: 75, description: 'Bath, trim, nails, and ears' },
-    { name: 'Bath & Brush', price: 45, duration: 45, description: 'Gentle wash and fluff dry' },
-    { name: 'Nail Trim', price: 20, duration: 20, description: 'Quick, low-stress nail care' },
-  ],
-  restaurant: [
-    { name: 'Table for 2', price: 0, duration: 90, description: 'Evening dining reservation' },
-    { name: 'Table for 4', price: 0, duration: 90, description: 'Family or friends reservation' },
-    { name: 'Chef’s Counter', price: 25, duration: 120, description: 'Tasting seats with a small booking fee' },
-  ],
-};
-
-function bookingServicePicks(example, siteData) {
-  const niche = example.niche;
-  const fromServices = Array.isArray(siteData.services)
-    ? siteData.services
-    : Array.isArray(siteData.services?.items)
-      ? siteData.services.items
-      : [];
-  const fromMenu = (siteData.menu?.sections || []).flatMap((section) => section.items || []);
-  const fromSections = (siteData.sections || [])
-    .filter((section) => ['services', 'menu', 'catalog'].includes(section?.type))
-    .flatMap((section) => section.content?.items || section.content?.sections?.flatMap((s) => s.items || []) || []);
-  const fromProducts = Array.isArray(siteData.products) ? siteData.products : [];
-  const pool = [...fromServices, ...fromSections, ...fromMenu, ...fromProducts]
-    .filter((item) => item && item.name)
-    .slice(0, 3);
-
-  if (pool.length > 0 && niche !== 'restaurant') {
-    return pool.map((item) => ({
-      name: item.name,
-      description: item.description || '',
-      price: parseMoney(item.price),
-      duration: item.duration || item.duration_minutes || 60,
-    }));
-  }
-
-  return BOOKING_FALLBACKS[niche] || BOOKING_FALLBACKS.salon;
-}
-
 const GALLERY_DEMO_FEE_POLICIES = {
   cancellationPolicy: {
     enabled: true,
@@ -812,15 +751,18 @@ async function ensureSiteBooking(owner, example) {
   await prisma.appointments.deleteMany({ where: { tenant_id: tenant.id } }).catch(() => {});
   await prisma.booking_services.deleteMany({ where: { tenant_id: tenant.id } });
 
-  const services = bookingServicePicks(example, siteData);
+  const services = pickBookingServicesFromSiteData({
+    ...siteData,
+    _niche: siteData?._niche || siteData?.niche || example.niche,
+  });
   for (const [index, item] of services.entries()) {
     await prisma.booking_services.create({
       data: {
         tenant_id: tenant.id,
         name: item.name,
         description: item.description || '',
-        duration_minutes: parseDurationMinutes(item.duration),
-        price_cents: Math.round(parseMoney(item.price) * 100),
+        duration_minutes: item.duration,
+        price_cents: Math.round(Number(item.price) * 100),
         online_booking_enabled: true,
         requires_approval: false,
         display_order: index + 1,
