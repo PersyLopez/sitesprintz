@@ -54,8 +54,39 @@ function parseMoney(value) {
 }
 
 function parseDurationMinutes(value) {
-  const parsed = Number.parseInt(String(value || ''), 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 60;
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+    return clampBookableMinutes(value);
+  }
+  const text = String(value ?? '').trim().toLowerCase();
+  if (!text) return 60;
+
+  const range = text.match(
+    /(\d+(?:\.\d+)?)\s*[-–—]\s*(\d+(?:\.\d+)?)\s*(hours?|hrs?|minutes?|mins?|m)?/
+  );
+  if (range) {
+    return clampBookableMinutes(toMinutes(range[2], range[3]));
+  }
+
+  const labeled = text.match(/(\d+(?:\.\d+)?)\s*(hours?|hrs?|minutes?|mins?|m)\b/);
+  if (labeled) {
+    return clampBookableMinutes(toMinutes(labeled[1], labeled[2]));
+  }
+
+  const bare = Number.parseFloat(text);
+  if (Number.isFinite(bare) && bare > 0) return clampBookableMinutes(bare);
+  return 60;
+}
+
+function toMinutes(amount, unit) {
+  const value = Number.parseFloat(amount);
+  if (!Number.isFinite(value) || value <= 0) return 60;
+  return String(unit || '').startsWith('h') ? value * 60 : value;
+}
+
+function clampBookableMinutes(minutes) {
+  const rounded = Math.round(minutes);
+  if (!Number.isFinite(rounded) || rounded < 1) return 60;
+  return Math.min(480, rounded);
 }
 
 function asItemList(value) {
@@ -75,7 +106,7 @@ function mapBookableItem(item) {
     name: item.name,
     description: item.description || '',
     price: parseMoney(item.price),
-    duration: item.duration || item.duration_minutes || 60,
+    duration: parseDurationMinutes(item.duration || item.duration_minutes || 60),
   };
 }
 

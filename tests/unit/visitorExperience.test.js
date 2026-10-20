@@ -146,6 +146,19 @@ describe('pickBookingServicesFromSiteData', () => {
     expect(picks[5].name).toBe('Service 6');
   });
 
+  it('books an hours label as minutes, using the longer end of a range', () => {
+    const picks = pickBookingServicesFromSiteData({
+      _niche: 'salon',
+      services: [
+        { name: 'Keratin', price: 250, duration: '3 hours' },
+        { name: 'Ombre', price: 215, duration: '3.5 hours' },
+        { name: 'Correction', price: 300, duration: '4-6 hours' },
+        { name: 'Cut', price: 85, duration: '60 min' },
+      ],
+    });
+    expect(picks.map((item) => item.duration)).toEqual([180, 210, 360, 60]);
+  });
+
   it('uses reservation fallbacks for restaurants instead of menu items', () => {
     const picks = pickBookingServicesFromSiteData({
       _niche: 'restaurant',
