@@ -159,6 +159,20 @@ function mountFilters(root) {
   });
 }
 
+function mountServiceAreaMaps(root) {
+  if (!root.querySelector('[data-testid="service-area-map"]')) return;
+  const paint = window.ssPaintServiceAreaMaps;
+  if (typeof paint === 'function') {
+    paint();
+    return;
+  }
+  if (document.querySelector('script[data-ss-map-boot]')) return;
+  const script = document.createElement('script');
+  script.src = '/vendor/service-area-map.js';
+  script.dataset.ssMapBoot = '1';
+  document.body.appendChild(script);
+}
+
 function mountCheckoutOpens(root) {
   root.querySelectorAll('[data-ss-open-cart]').forEach((button) => {
     if (!bindOnce(button)) return;
@@ -181,4 +195,5 @@ export function mountPublishedInteractions(root = typeof document !== 'undefined
   mountInquirySteps(root);
   mountFilters(root);
   mountCheckoutOpens(root);
+  mountServiceAreaMaps(root);
 }

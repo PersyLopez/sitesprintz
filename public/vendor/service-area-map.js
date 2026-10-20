@@ -48,8 +48,15 @@
   function boot() {
     const maps = document.querySelectorAll('[data-testid="service-area-map"]');
     if (!maps.length) return;
+    const pending = [];
+    maps.forEach((map) => {
+      if (map.dataset.ssMapWatch === '1' || map.querySelector('img')) return;
+      map.dataset.ssMapWatch = '1';
+      pending.push(map);
+    });
+    if (!pending.length) return;
     if (typeof IntersectionObserver !== 'function') {
-      maps.forEach(renderMap);
+      pending.forEach(renderMap);
       return;
     }
     const observer = new IntersectionObserver((entries) => {
@@ -59,8 +66,10 @@
         observer.unobserve(entry.target);
       });
     }, { rootMargin: '200px' });
-    maps.forEach((map) => observer.observe(map));
+    pending.forEach((map) => observer.observe(map));
   }
+
+  window.ssPaintServiceAreaMaps = boot;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);

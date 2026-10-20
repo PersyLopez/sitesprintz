@@ -85,6 +85,28 @@ describe('mountPublishedInteractions', () => {
     expect(document.querySelector('[data-ss-booking-open]')).toBeNull();
   });
 
+  it('paints a service area map after the page HTML is replaced', () => {
+    document.body.innerHTML = '<div data-testid="service-area-map" data-lat="40.82" data-lng="-74.21" data-radius-miles="10"></div>';
+    let paints = 0;
+    window.ssPaintServiceAreaMaps = () => {
+      paints += 1;
+    };
+    mountPublishedInteractions(document);
+    mountPublishedInteractions(document);
+    expect(paints).toBe(2);
+    delete window.ssPaintServiceAreaMaps;
+  });
+
+  it('loads the map script when the painter is not on the page yet', () => {
+    document.body.innerHTML = '<div data-testid="service-area-map" data-lat="40.82" data-lng="-74.21" data-radius-miles="10"></div>';
+    delete window.ssPaintServiceAreaMaps;
+    mountPublishedInteractions(document);
+    mountPublishedInteractions(document);
+    const scripts = document.querySelectorAll('script[data-ss-map-boot]');
+    expect(scripts.length).toBe(1);
+    expect(scripts[0].getAttribute('src')).toBe('/vendor/service-area-map.js');
+  });
+
   it('shows one inquiry step at a time', () => {
     document.body.innerHTML = `
       <form data-type="inquiry">
