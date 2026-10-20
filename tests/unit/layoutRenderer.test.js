@@ -1077,6 +1077,19 @@ describe('layoutRenderer — catalog-shaped site data', () => {
     expect(asked.content.filterable).toBe(true);
   });
 
+  it('adds chef specials onto the menu catalog', () => {
+    const result = renderSection('catalog', { items: [{ name: 'Steak', price: 30 }] }, {
+      chefSpecials: {
+        title: "Chef's specials",
+        items: [{ name: 'Scallops', price: 44, availability: 'This week only' }],
+      },
+    }, {});
+    const names = result.content.items.map((item) => item.name);
+    expect(names).toEqual(['Steak', 'Scallops']);
+    expect(result.content.items[1]._category).toBe("Chef's specials");
+    expect(result.content.items[1].availability).toBe('This week only');
+  });
+
   it('unwraps catalog team.members', () => {
     const result = renderSection('team', {}, catalogSite, {});
     expect(result.content.members).toHaveLength(1);

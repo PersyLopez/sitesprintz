@@ -148,6 +148,22 @@ describe('filterFeaturesByPlan', () => {
     expect(growth.sections[0].content.filterable).toBe(true);
   });
 
+  it('keeps chef specials on Starter and private dining on Growth', () => {
+    const site = {
+      chefSpecials: { title: "Chef's specials", items: [{ name: 'Scallops', price: 44 }] },
+      privateEvents: { title: 'Private dining', rooms: [{ name: 'Wine room' }] },
+    };
+    const trial = filterFeaturesByPlan(site, 'trial');
+    expect(trial.chefSpecials).toBeUndefined();
+    expect(trial.privateEvents).toBeUndefined();
+    const starter = filterFeaturesByPlan(site, 'starter');
+    expect(starter.chefSpecials.items[0].name).toBe('Scallops');
+    expect(starter.privateEvents).toBeUndefined();
+    const growth = filterFeaturesByPlan(site, 'growth');
+    expect(growth.chefSpecials.items[0].name).toBe('Scallops');
+    expect(growth.privateEvents.rooms[0].name).toBe('Wine room');
+  });
+
   it('drops a progress tracker on the live trial and keeps it on Growth', () => {
     const withTracker = {
       sections: [

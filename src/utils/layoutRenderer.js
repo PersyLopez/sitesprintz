@@ -245,13 +245,15 @@ const sectionPrimitives = {
     const menuSections = c.sections || siteData.menu?.sections || [];
     const fromMenu = products.length === 0 && menuSections.length > 0;
     const items = products.length > 0 ? products : flattenMenuToProducts(menuSections);
+    const listed = new Set(items.map((item) => String(item?.name || '').trim().toLowerCase()));
+    const specials = chefSpecialProducts(siteData).filter((item) => !listed.has(item.name.toLowerCase()));
     const title = c.title || (siteData?._niche === 'restaurant' || fromMenu ? 'Menu' : 'Shop');
     return {
       type: 'catalog',
       variant: variant || 'grid',
       content: {
         title,
-        items: liveItemPhotos(items, siteData),
+        items: liveItemPhotos([...items, ...specials], siteData),
         displayVariant: variant || 'grid',
         purchasable: Boolean(siteData?.settings?.allowCheckout),
       },
@@ -342,6 +344,22 @@ const sectionPrimitives = {
         }))
         .filter((item) => item.name),
     })).filter((sec) => sec.name && sec.items.length);
+    const specials = chefSpecialProducts(siteData);
+    const specialName = specials[0]?._category || '';
+    if (specials.length && !sections.some((sec) => sec.name.toLowerCase() === specialName.toLowerCase())) {
+      sections.push({
+        name: specialName,
+        items: specials.map((item) => ({
+          name: item.name,
+          price: item.price,
+          description: item.description,
+          image: item.image,
+          imageAlt: item.imageAlt,
+          dietary: item.dietary,
+          availability: item.availability,
+        })),
+      });
+    }
     return {
       type: 'menu',
       content: {
@@ -1006,6 +1024,24 @@ function formatHours(hours) {
 function shortHoursLine(hours) {
   const lines = readHours(hours).lines;
   return lines.length === 1 ? lines[0] : '';
+}
+
+function chefSpecialProducts(siteData) {
+  const block = siteData?.chefSpecials;
+  const items = Array.isArray(block?.items) ? block.items : [];
+  const category = String(block?.title || "Chef's specials").trim() || "Chef's specials";
+  const description = typeof block?.subtitle === 'string' ? block.subtitle.trim() : '';
+  return items.map((item) => ({
+    name: String(item?.name || '').trim(),
+    price: item?.price,
+    description: typeof item?.description === 'string' ? item.description : '',
+    image: liveImage(typeof item?.image === 'string' ? item.image : '', siteData),
+    imageAlt: typeof item?.imageAlt === 'string' ? item.imageAlt : String(item?.name || '').trim(),
+    dietary: filterTags(item?.dietary),
+    availability: typeof item?.availability === 'string' ? item.availability.trim() : '',
+    _category: category,
+    _categoryDescription: description,
+  })).filter((item) => item.name);
 }
 
 function flattenMenuToProducts(menuSections) {

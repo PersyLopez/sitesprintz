@@ -16,7 +16,7 @@ import { hasFeature, FEATURES } from '../../src/utils/planFeatures.js';
 import { resolvePayOnSiteForPublish } from '../../src/utils/payOnSite.js';
 import { siteWantsEmbeddedBooking, livePublishedPath } from '../../src/utils/visitorExperience.js';
 import { ensurePublishedBooking } from '../services/booking/ensurePublishedBooking.js';
-import { normalizeTier } from '../../src/config/tiers.js';
+import { hasTierAccess, normalizeTier } from '../../src/config/tiers.js';
 import { resolveUserPlan } from '../utils/resolveUserPlan.js';
 import {
   canOccupyPublishedSiteSlot,
@@ -421,10 +421,12 @@ export function filterFeaturesByPlan(siteData, userPlan) {
     }
   }
   
-  // Remove private events / chef specials without embedded booking
+  // Private dining needs booking. Chef's specials are a Starter menu and stay.
   if (!hasFeature(plan, FEATURES.EMBEDDED_BOOKING)) {
     delete filtered.privateEvents;
-    delete filtered.chefSpecials;
+    if (!hasTierAccess(plan, 'starter')) {
+      delete filtered.chefSpecials;
+    }
   }
   
   // Checkout flags — keep display prices on Starter (service display), disable checkout only

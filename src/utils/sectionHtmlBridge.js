@@ -633,6 +633,7 @@ function catalogCard(item, index, tokens, purchasable) {
     <h3 style="color: ${getAccent(tokens)};">${escapeHtml(item.name || '')}</h3>
     <p style="color: ${getMuted(tokens)};">${escapeHtml(item.description || '')}</p>
     ${dietary.length ? `<p style="color: ${getMuted(tokens)}; font-size: 0.85rem;">${escapeHtml(dietary.join(', '))}</p>` : ''}
+    ${item.availability ? `<p data-testid="menu-availability" style="color: ${getMuted(tokens)}; font-size: 0.85rem;">${escapeHtml(item.availability)}</p>` : ''}
     ${formatPrice(item.price) ? `<div class="ss-price" style="color: ${getAccent(tokens)};">${escapeHtml(formatPrice(item.price))}</div>` : ''}
     ${purchasable ? addToCartButton(item, index, tokens) : ''}
   </div>
@@ -869,6 +870,7 @@ function renderMenu(section, tokens) {
   </div>
   ${item.description ? `<p style="color: ${getMuted(tokens)}; font-size: 0.9rem; margin-top: 4px;">${escapeHtml(item.description)}</p>` : ''}
   ${item.dietary?.length ? `<p style="color: ${getMuted(tokens)}; font-size: 0.85rem;">${escapeHtml(item.dietary.join(', '))}</p>` : ''}
+  ${item.availability ? `<p data-testid="menu-availability" style="color: ${getMuted(tokens)}; font-size: 0.85rem;">${escapeHtml(item.availability)}</p>` : ''}
   ${purchasable ? addToCartButton(item, `${sectionIndex}-${itemIndex}`, tokens) : ''}
 </div>`)
         .join('\n');

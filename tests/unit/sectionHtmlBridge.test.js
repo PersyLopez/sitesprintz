@@ -302,6 +302,16 @@ describe('sectionHtmlBridge', () => {
     expect(filtered).toContain('data-category="Hair"');
     expect(filtered).toContain('data-ss-filter-root');
 
+    const specials = renderSectionToHtml({
+      type: 'catalog',
+      content: {
+        items: [{ name: 'Scallops', price: 44, availability: 'This week only', _category: "Chef's specials" }],
+      },
+    }, tokens);
+    expect(specials).toContain('Chef&#039;s specials');
+    expect(specials).toContain('This week only');
+    expect(specials).toContain('data-testid="menu-availability"');
+
     const about = renderSectionToHtml({
       type: 'about',
       content: { title: 'About', image: '/uploads/about.jpg' },
