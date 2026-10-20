@@ -86,6 +86,7 @@ import { ThemeProvider } from './context/ThemeContext.jsx';
 import { useEffect } from 'react';
 import { initWebVitals } from './utils/webVitals';
 import { syncClarity } from './utils/clarity';
+import ClarityConsent from './components/common/ClarityConsent';
 
 function ClaritySync() {
   const { pathname } = useLocation();
@@ -110,6 +111,7 @@ function App() {
     <ErrorBoundary>
       <Router>
         <ClaritySync />
+        <ClarityConsent />
         <LocaleProvider>
         <ThemeProvider>
         <AuthProvider>

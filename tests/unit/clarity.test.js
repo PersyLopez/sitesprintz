@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  CLARITY_CONSENT_STORAGE_KEY,
   CLARITY_PROJECT_ID,
   isClarityMarketingPath,
   shouldLoadClarity,
@@ -10,6 +11,7 @@ describe('clarity', () => {
   beforeEach(() => {
     document.head.innerHTML = '';
     delete window.clarity;
+    window.localStorage.clear();
   });
 
   it('allows only platform marketing paths', () => {
@@ -23,6 +25,7 @@ describe('clarity', () => {
   });
 
   it('requires production platform hosts and rejects local or custom hosts', () => {
+    window.localStorage.setItem(CLARITY_CONSENT_STORAGE_KEY, 'granted');
     const base = { isProd: true, pathname: '/' };
     expect(shouldLoadClarity({ ...base, hostname: 'rightsitelight.com' })).toBe(true);
     expect(shouldLoadClarity({ ...base, hostname: 'localhost' })).toBe(false);
@@ -31,7 +34,17 @@ describe('clarity', () => {
     expect(shouldLoadClarity({ ...base, hostname: 'rightsitelight.com', pathname: '/view/foo' })).toBe(false);
   });
 
+  it('requires consent before loading', () => {
+    const base = { isProd: true, hostname: 'rightsitelight.com', pathname: '/' };
+    expect(shouldLoadClarity(base)).toBe(false);
+    window.localStorage.setItem(CLARITY_CONSENT_STORAGE_KEY, 'denied');
+    expect(shouldLoadClarity(base)).toBe(false);
+    window.localStorage.setItem(CLARITY_CONSENT_STORAGE_KEY, 'granted');
+    expect(shouldLoadClarity(base)).toBe(true);
+  });
+
   it('injects the Clarity script once and stops it outside the allowlist', () => {
+    window.localStorage.setItem(CLARITY_CONSENT_STORAGE_KEY, 'granted');
     syncClarity({ isProd: true, hostname: 'rightsitelight.com', pathname: '/' });
     syncClarity({ isProd: true, hostname: 'rightsitelight.com', pathname: '/about' });
 
@@ -42,6 +55,19 @@ describe('clarity', () => {
 
     window.clarity = vi.fn();
     syncClarity({ isProd: true, hostname: 'rightsitelight.com', pathname: '/view/foo' });
+    expect(window.clarity).toHaveBeenCalledWith('stop');
+  });
+
+  it('does not inject the script without consent and stops an existing session', () => {
+    // Missing consent.
+    syncClarity({ isProd: true, hostname: 'rightsitelight.com', pathname: '/' });
+    expect(document.querySelectorAll('script[data-clarity-project]')).toHaveLength(0);
+
+    // Denied consent.
+    window.clarity = vi.fn();
+    window.localStorage.setItem(CLARITY_CONSENT_STORAGE_KEY, 'denied');
+    syncClarity({ isProd: true, hostname: 'rightsitelight.com', pathname: '/' });
+    expect(document.querySelectorAll('script[data-clarity-project]')).toHaveLength(0);
     expect(window.clarity).toHaveBeenCalledWith('stop');
   });
 });

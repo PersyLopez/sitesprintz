@@ -4,6 +4,17 @@ const DEFAULT_CLARITY_PROJECT_ID = 'yer91x2gqo';
 const CLARITY_SCRIPT_PREFIX = 'https://www.clarity.ms/tag/';
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1']);
 
+export const CLARITY_CONSENT_STORAGE_KEY = 'rsl-clarity-consent';
+
+export function getClarityConsent() {
+  if (typeof window === 'undefined' || !window.localStorage) return '';
+  try {
+    return window.localStorage.getItem(CLARITY_CONSENT_STORAGE_KEY) || '';
+  } catch {
+    return '';
+  }
+}
+
 const MARKETING_PATHS = new Set([
   '/',
   '/about',
@@ -32,6 +43,7 @@ export function shouldLoadClarity({ isProd, hostname, pathname }) {
       && !LOCAL_HOSTS.has(normalizedHostname)
       && isPlatformHostname(hostname)
       && isClarityMarketingPath(pathname)
+      && getClarityConsent() === 'granted'
   );
 }
 
@@ -57,7 +69,9 @@ export function syncClarity({ isProd, hostname, pathname }) {
 }
 
 export default {
+  CLARITY_CONSENT_STORAGE_KEY,
   CLARITY_PROJECT_ID,
+  getClarityConsent,
   isClarityMarketingPath,
   shouldLoadClarity,
   syncClarity,

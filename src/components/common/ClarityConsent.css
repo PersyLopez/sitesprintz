@@ -1,0 +1,54 @@
+.clarity-consent {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10005;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-elevated);
+  color: var(--text-light);
+  border-top: 1px solid var(--primary-dark);
+}
+
+.clarity-consent__text {
+  flex: 1 1 16rem;
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.clarity-consent__text a {
+  color: var(--text-light);
+  text-decoration: underline;
+}
+
+.clarity-consent__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.clarity-consent__btn {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 1.25rem;
+  border: 1px solid var(--primary-dark);
+  border-radius: 4px;
+  background: var(--primary-dark);
+  color: var(--on-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.clarity-consent__btn--decline {
+  background: transparent;
+  color: var(--text-light);
+}
+
+.clarity-consent__btn:focus-visible {
+  outline: 2px solid var(--text-light);
+  outline-offset: 2px;
+}
