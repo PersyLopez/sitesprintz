@@ -157,6 +157,24 @@ describe('sectionHtmlBridge', () => {
     expect(html).toContain('ss-hero');
   });
 
+  it('keeps a service group name and does not double the duration', () => {
+    const html = renderSectionToHtml({
+      type: 'services',
+      content: {
+        title: 'Services',
+        items: [
+          { name: 'Signature Haircut', price: 85, duration: '60 min', _category: 'Hair Styling', _categoryDescription: 'Cuts and styling' },
+          { name: 'Color', price: 120, duration: 90, _category: 'Color' },
+        ],
+      },
+    }, tokens);
+    expect(html.indexOf('Hair Styling')).toBeLessThan(html.indexOf('Signature Haircut'));
+    expect(html).toContain('Cuts and styling');
+    expect(html).toContain('60 min');
+    expect(html).not.toContain('60 min min');
+    expect(html).toContain('90 min');
+  });
+
   it('renders labeled photo inserts when images are missing', () => {
     const hero = renderSectionToHtml({ type: 'hero', content: { title: 'Hello' } }, tokens);
     expect(hero).toContain('Use your business photo here');

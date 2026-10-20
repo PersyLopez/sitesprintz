@@ -229,6 +229,42 @@ function bookServiceLink(item, index, tokens) {
   return `<a class="ss-btn" href="#booking" data-ss-book-service data-service-id="${escapeAttr(id)}" data-service-name="${escapeAttr(name)}" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)}; margin-top: 12px; display: inline-block; text-decoration: none;">Book</a>`;
 }
 
+function serviceDuration(value) {
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) return `${value} min`;
+  const text = String(value || '').trim();
+  if (!text) return '';
+  if (/min|hour|hr/i.test(text)) return text;
+  if (/^\d+$/.test(text)) return `${text} min`;
+  return text;
+}
+
+function serviceCard(item, index, tokens) {
+  const name = item.name || item.title || '';
+  const desc = item.description || '';
+  const price = formatPrice(item.price);
+  const image = item.image || item.src || '';
+  const genericImage = image ? null : genericServiceInsertSrc(name);
+  const duration = serviceDuration(item.duration || item.duration_minutes);
+  const serviceId = serviceKey(item, index);
+  const media = image || genericImage
+    ? `<img class="ss-card-media" data-photo-field="services.items.${index}.image" src="${escapeAttr(image || genericImage)}" alt="${escapeAttr(item.imageAlt || name)}" width="400" height="220" loading="lazy" decoding="async" />`
+    : renderPhotoPlaceholder('service', {
+        offerName: name,
+        className: 'ss-photo-placeholder--card',
+        photoField: `services.items.${index}.image`,
+      });
+  return `<article class="ss-card" data-service-id="${escapeAttr(serviceId)}" data-service-name="${escapeAttr(name)}" style="background: ${getSurface(tokens)}; border: 1px solid ${getTokens(tokens).theme.hairline};">
+  ${media}
+  <div class="ss-card-body">
+    <h3 style="color: ${getAccent(tokens)};">${escapeHtml(name)}</h3>
+    ${desc ? `<p style="color: ${getMuted(tokens)};">${escapeHtml(desc)}</p>` : ''}
+    ${duration ? `<p class="ss-duration" style="color: ${getMuted(tokens)};">${escapeHtml(duration)}</p>` : ''}
+    ${price ? `<div class="ss-price" style="color: ${getAccent(tokens)};">${escapeHtml(price)}</div>` : ''}
+    ${tokens?._nativeBooking ? bookServiceLink(item, index, tokens) : ''}
+  </div>
+</article>`;
+}
+
 function renderServices(section, tokens) {
   const c = section.content || {};
   const title = c.title || 'Our Services';
@@ -243,41 +279,23 @@ function renderServices(section, tokens) {
 </section>`;
   }
 
-  const cardsHtml = items
-    .map((item, index) => {
-      const name = item.name || item.title || '';
-      const desc = item.description || '';
-      const price = formatPrice(item.price);
-      const image = item.image || item.src || '';
-      const genericImage = image ? null : genericServiceInsertSrc(name);
-      const duration = item.duration || item.duration_minutes;
-      const serviceId = serviceKey(item, index);
-      const media = image || genericImage
-        ? `<img class="ss-card-media" data-photo-field="services.items.${index}.image" src="${escapeAttr(image || genericImage)}" alt="${escapeAttr(item.imageAlt || name)}" width="400" height="220" loading="lazy" decoding="async" />`
-        : renderPhotoPlaceholder('service', {
-            offerName: name,
-            className: 'ss-photo-placeholder--card',
-            photoField: `services.items.${index}.image`,
-          });
-      return `<article class="ss-card" data-service-id="${escapeAttr(serviceId)}" data-service-name="${escapeAttr(name)}" style="background: ${getSurface(tokens)}; border: 1px solid ${getTokens(tokens).theme.hairline};">
-  ${media}
-  <div class="ss-card-body">
-    <h3 style="color: ${getAccent(tokens)};">${escapeHtml(name)}</h3>
-    ${desc ? `<p style="color: ${getMuted(tokens)};">${escapeHtml(desc)}</p>` : ''}
-    ${duration ? `<p class="ss-duration" style="color: ${getMuted(tokens)};">${escapeHtml(String(duration))} min</p>` : ''}
-    ${price ? `<div class="ss-price" style="color: ${getAccent(tokens)};">${escapeHtml(price)}</div>` : ''}
-    ${tokens?._nativeBooking ? bookServiceLink(item, index, tokens) : ''}
+  const grouped = items.some((item) => typeof item?._category === 'string' && item._category.trim());
+  const cardsHtml = grouped
+    ? catalogGroups(items).map((group) => `<div class="ss-menu-group">
+  ${group.name ? `<h3 class="ss-h3" style="color: ${getText(tokens)};">${escapeHtml(group.name)}</h3>` : ''}
+  ${group.description ? `<p style="color: ${getMuted(tokens)};">${escapeHtml(group.description)}</p>` : ''}
+  <div class="ss-card-grid">
+    ${group.entries.map(({ item, index }) => serviceCard(item, index, tokens)).join('\n')}
   </div>
-</article>`;
-    })
-    .join('\n');
+</div>`).join('\n')
+    : `<div class="ss-card-grid">
+      ${items.map((item, index) => serviceCard(item, index, tokens)).join('\n')}
+    </div>`;
 
   return `<section id="services" class="ss-services ss-section" style="background: ${getBg(tokens)}; color: ${getText(tokens)};">
   <div class="ss-container">
     <h2 class="ss-h2" style="color: ${getAccent(tokens)};">${escapeHtml(title)}</h2>
-    <div class="ss-card-grid">
-      ${cardsHtml}
-    </div>
+    ${cardsHtml}
   </div>
 </section>`;
 }
