@@ -1,5 +1,8 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import {
   injectPublishedSiteEmbed,
   liveSiteRedirectTarget,
@@ -7,6 +10,7 @@ import {
 } from './server/utils/siteIsolation.js';
 
 const apiTarget = process.env.API_URL || 'http://localhost:3000';
+const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
 function liveSiteRedirectPlugin() {
   const redirect = (req, res, next) => {
@@ -41,6 +45,24 @@ function liveSiteRedirectPlugin() {
       handler: embedShowcase,
     },
     configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+        const pathOnly = String(req.url || '').split('?')[0];
+        if (!liveViewDocumentIdentifier(pathOnly)) return next();
+        try {
+          const html = fs.readFileSync(path.join(rootDir, 'view.html'), 'utf8');
+          const transformed = await server.transformIndexHtml(req.originalUrl || req.url, html);
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          if (req.method === 'HEAD') {
+            res.end();
+            return;
+          }
+          res.end(transformed);
+        } catch (error) {
+          next(error);
+        }
+      });
       server.middlewares.use(redirect);
     },
     configurePreviewServer(server) {
@@ -81,6 +103,12 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        main: path.resolve(rootDir, 'index.html'),
+        view: path.resolve(rootDir, 'view.html'),
+      },
+    },
   },
   // Exclude published sites and other backend files
   publicDir: 'public',

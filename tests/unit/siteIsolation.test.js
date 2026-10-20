@@ -22,6 +22,7 @@ import {
   liveSiteDocumentIdentifier,
   liveSiteRedirectTarget,
   liveViewDocumentIdentifier,
+  publishedDocumentShell,
   loadTemplateCopy,
   removeIsolatedSiteFiles,
   resolveContainedPath,
@@ -100,6 +101,14 @@ describe('site isolation — live document redirect', () => {
     expect(liveSiteDocumentIdentifier('/sites/plants-and-threads/gallery/hero.jpg')).toBeNull();
     expect(liveSiteRedirectTarget('/sites/plants-and-threads/products/a.jpg')).toBeNull();
     expect(liveSiteDocumentIdentifier('/sites/site-hydrate.js')).toBeNull();
+  });
+
+  it('uses the shop shell for a published view and the app shell otherwise', () => {
+    expect(publishedDocumentShell('/view/gallery-salon')).toBe('view.html');
+    expect(publishedDocumentShell('/view/gallery-salon/')).toBe('view.html');
+    expect(publishedDocumentShell('/')).toBe('index.html');
+    expect(publishedDocumentShell('/dashboard')).toBe('index.html');
+    expect(publishedDocumentShell('/view/../etc/passwd')).toBe('index.html');
   });
 
   it('rewrites crawler /view documents to the SSR /sites document', () => {

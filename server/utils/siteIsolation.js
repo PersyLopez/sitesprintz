@@ -154,6 +154,11 @@ export function liveViewDocumentIdentifier(pathname) {
   return siteIdentifier;
 }
 
+/** HTML shell for a direct document load. Published /view uses the shop entry. */
+export function publishedDocumentShell(pathname) {
+  return liveViewDocumentIdentifier(pathname) ? 'view.html' : 'index.html';
+}
+
 /**
  * Inline the published showcase JSON the composed viewer would otherwise
  * fetch, so /view first paint renders without the extra round trip. `<` is

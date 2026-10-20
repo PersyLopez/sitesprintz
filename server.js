@@ -58,7 +58,8 @@ import { query, prisma } from './database/db.js';
 import publishedSiteRenderer from './server/services/publishedSiteRenderer.js';
 import SEOService from './server/services/seoService.js';
 import { readFile } from 'fs/promises';
-import { injectPublishedSiteEmbed, injectPublishedViewMarkup, isSafeSiteIdentifier, liveSiteDocumentIdentifier, liveSiteRedirectTarget, liveViewDocumentIdentifier, crawlerPublishedDocumentUrl, deferPublishedViewFonts, preloadPublishedViewDisplayFont, stripPublishedViewThirdParties } from './server/utils/siteIsolation.js';
+import { existsSync } from 'fs';
+import { injectPublishedSiteEmbed, injectPublishedViewMarkup, isSafeSiteIdentifier, liveSiteDocumentIdentifier, liveSiteRedirectTarget, liveViewDocumentIdentifier, crawlerPublishedDocumentUrl, deferPublishedViewFonts, preloadPublishedViewDisplayFont, stripPublishedViewThirdParties, publishedDocumentShell } from './server/utils/siteIsolation.js';
 import { renderPublishedViewFragment } from './src/utils/publishedSiteDocument.js';
 import { publishedCrawlerDocumentHidden } from './server/config/platformPlans.js';
 import testRoutes from './server/routes/test.routes.js';
@@ -705,7 +706,11 @@ app.use(async (req, res, next) => {
     res.setHeader('Cache-Control', 'no-store');
   }
 
-  const indexPath = path.join(publicDir, 'index.html');
+  const shellName = publishedDocumentShell(req.path);
+  let indexPath = path.join(publicDir, shellName);
+  if (shellName !== 'index.html' && !existsSync(indexPath)) {
+    indexPath = path.join(publicDir, 'index.html');
+  }
   try {
     const html = await readFile(indexPath, 'utf8');
     const rawUrl = String(req.originalUrl || req.url || '');
