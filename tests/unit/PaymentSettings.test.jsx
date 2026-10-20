@@ -132,6 +132,16 @@ describe('PaymentSettings', () => {
     expect(screen.getByTestId('pay-on-site-toggle')).toBeDisabled();
   });
 
+  it('shows only the upgrade line on Starter plans for unconnected processors', async () => {
+    usePlan.mockReturnValue({ isGrowth: false });
+    renderSettings();
+
+    const squareCard = await screen.findByTestId('processor-square');
+    expect(within(squareCard).getByText(/Upgrade to Growth to connect Square\./i)).toBeInTheDocument();
+    expect(within(squareCard).queryByText(/You can connect Square now/i)).not.toBeInTheDocument();
+    expect(within(squareCard).queryByTestId('square-visitor-checkout-pending')).not.toBeInTheDocument();
+  });
+
   it('asks the owner to publish a site first', async () => {
     api.get.mockImplementation((url) => {
       if (url === '/api/connect/status') {

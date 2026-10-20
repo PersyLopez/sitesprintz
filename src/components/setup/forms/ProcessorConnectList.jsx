@@ -348,7 +348,7 @@ function ProcessorConnectList({
                 {processor.fee}
                 {processor.highlight ? ` · ${processor.highlight}` : ''}
               </p>
-              {!visitorCheckoutLive && (
+              {!visitorCheckoutLive && (isGrowth || connectedCheckoutPending) && (
                 <p className="processor-unavailable" data-testid={`${processor.id}-visitor-checkout-pending`}>
                   {connectedCheckoutPending
                     ? `${processor.name} is connected, but online checkout for customers is coming soon. Visitors still pay with Stripe or on site.`
