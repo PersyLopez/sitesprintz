@@ -470,12 +470,23 @@
     flex: 1 1 auto;
   }
 
+  .products-table {
+    min-width: 0;
+  }
+
+  .products-table th,
+  .products-table td {
+    height: auto;
+    white-space: normal;
+  }
+
   .product-actions {
     flex-direction: column;
   }
 
   .product-action-btn {
     width: 100%;
+    min-height: 44px;
     justify-content: center;
   }
 }
