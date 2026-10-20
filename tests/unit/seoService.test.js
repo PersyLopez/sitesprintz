@@ -572,10 +572,19 @@ describe('SEOService', () => {
       expect(gallery.title).toBe(tMarketing('es', 'showcase.title'));
       expect(gallery.description).toBe(tMarketing('es', 'showcase.meta'));
       expect(gallery.lang).toBe('es');
+      expect(gallery.canonical).toBe('https://rightsitelight.com/showcase?lang=es');
 
       const injected = seoService.injectMarketingPageMeta('<html lang="en"><head><title>old</title></head></html>', '/about', '?lang=es');
       expect(injected).toContain('lang="es"');
       expect(injected).toContain(`<title>${tMarketing('es', 'about.title')}</title>`);
+      expect(injected).toContain('hreflang="es" href="https://rightsitelight.com/about?lang=es"');
+      expect(injected).toContain('hreflang="en" href="https://rightsitelight.com/about"');
+      expect(injected).toContain('hreflang="x-default" href="https://rightsitelight.com/about"');
+    });
+
+    it('does not advertise a language alternate for a noindex page', () => {
+      const injected = seoService.injectMarketingPageMeta(homepageHtml, '/login', '?lang=es');
+      expect(injected).not.toContain('hreflang=');
     });
   });
 });

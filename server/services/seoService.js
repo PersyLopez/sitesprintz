@@ -84,10 +84,14 @@ class SEOService {
     const locale = params.has('lang') ? parseLocale(params.get('lang')) : DEFAULT_LOCALE;
     const t = (key) => tMarketing(locale, key);
     const brand = t('brand.name');
+    const bare = path === '/' ? `${origin}/` : `${origin}${path}`;
+    const canonical = locale === 'es' ? `${bare}?lang=es` : bare;
+    const alternates = { en: bare, es: `${bare}?lang=es`, xDefault: bare };
     const home = {
       title: `${brand} — ${t('footer.tagline')}`,
       description: t('landing.hero.subtitle'),
-      canonical: `${origin}/`,
+      canonical,
+      alternates,
       robots: 'index',
       lang: locale,
     };
@@ -106,7 +110,8 @@ class SEOService {
       return {
         title: t('about.title'),
         description: t('about.p2'),
-        canonical: `${origin}/about`,
+        canonical,
+        alternates,
         robots: 'index',
         lang: locale,
       };
@@ -116,7 +121,8 @@ class SEOService {
       return {
         title: `${t('contact.title')} — ${brand}`,
         description: t('contact.p'),
-        canonical: `${origin}/contact`,
+        canonical,
+        alternates,
         robots: 'index',
         lang: locale,
       };
@@ -126,7 +132,8 @@ class SEOService {
       return {
         title: t('showcase.title'),
         description: t('showcase.meta'),
-        canonical: `${origin}/showcase`,
+        canonical,
+        alternates,
         robots: 'index',
         lang: locale,
       };
@@ -136,7 +143,8 @@ class SEOService {
       return {
         title: `${t('nav.getStarted')} — ${brand}`,
         description: t('auth.register.p'),
-        canonical: `${origin}/register`,
+        canonical,
+        alternates,
         robots: params.has('template') ? 'noindex,nofollow' : 'index',
         lang: locale,
       };
@@ -150,7 +158,8 @@ class SEOService {
       return {
         title: titled[path] || home.title,
         description: path === '/login' ? t('auth.login.p') : home.description,
-        canonical: `${origin}${path}`,
+        canonical,
+        alternates,
         robots: 'noindex,nofollow',
         lang: locale,
       };
@@ -223,6 +232,7 @@ class SEOService {
     out = out.replace(/<title>[^<]*<\/title>/i, `<title>${this._escapeHtml(meta.title)}</title>`);
     out = this._replaceMetaContent(out, 'name', 'description', meta.description);
     out = this._replaceCanonicalHref(out, meta.canonical);
+    out = this._replaceHreflang(out, meta);
     out = this._replaceMetaContent(out, 'property', 'og:url', meta.canonical);
     out = this._replaceMetaContent(out, 'property', 'og:title', meta.title);
     out = this._replaceMetaContent(out, 'property', 'og:description', meta.description);
@@ -261,6 +271,25 @@ class SEOService {
     const re = /<link(\s+)rel="canonical"(\s+)href="[^"]*"(\s*)(\/?)>/i;
     if (!re.test(html)) return html;
     return html.replace(re, `<link$1rel="canonical"$2href="${escaped}"$3$4>`);
+  }
+
+  _replaceHreflang(html, meta) {
+    const stripped = html.replace(
+      /\s*<link\s+rel="alternate"\s+hreflang="[^"]+"\s+href="[^"]*"\s*\/?>/gi,
+      ''
+    );
+    if (meta.robots !== 'index' || !meta.alternates) return stripped;
+    const block = [
+      ['en', meta.alternates.en],
+      ['es', meta.alternates.es],
+      ['x-default', meta.alternates.xDefault],
+    ].map(([lang, href]) => (
+      `<link rel="alternate" hreflang="${lang}" href="${this._escapeHtml(href)}" />`
+    )).join('\n    ');
+    if (/<link\s+rel="canonical"[^>]*>/i.test(stripped)) {
+      return stripped.replace(/(<link\s+rel="canonical"[^>]*>)/i, `$1\n    ${block}`);
+    }
+    return stripped.replace(/<\/head>/i, `    ${block}\n  </head>`);
   }
 
   _replaceOrInsertRobots(html, robots) {
