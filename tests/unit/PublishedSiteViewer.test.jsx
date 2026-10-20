@@ -151,4 +151,25 @@ describe('PublishedSiteViewer booking portal', () => {
     expect(buildLiveSiteMarkup).not.toHaveBeenCalled();
     expect(document.getElementById('ss-live-fonts')).toBeNull();
   });
+
+  it('shows the posted form was sent when the shop returns without JavaScript', async () => {
+    window.__RSL_PUBLISHED_SITE__ = {
+      site: {
+        id: 'luxe-beauty-studio',
+        subdomain: 'gallery-salon',
+        name: 'Luxe Beauty Studio',
+        userId: 'owner-1',
+        data: { settings: { allowCheckout: false }, sections: [{ type: 'booking' }] },
+      },
+    };
+    window.__RSL_PUBLISHED_HTML__ = [
+      '<style id="ss-prerender">.ss-live { --ss-bg: #111111; --ss-text: #ffffff; --ss-accent: #c2683a; }</style>',
+      '<div class="ss-live"><p data-testid="zip-form-status"></p><p data-testid="contact-form-status"></p></div>',
+    ].join('');
+
+    renderViewer('/view/gallery-salon?contact=sent&lead=zip-check');
+
+    expect(await screen.findByTestId('zip-form-status')).toHaveTextContent('Your message has been sent.');
+    expect(screen.getByTestId('contact-form-status')).toHaveTextContent('');
+  });
 });

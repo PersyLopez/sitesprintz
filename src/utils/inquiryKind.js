@@ -25,3 +25,22 @@ export function contactLeadPhrase(type) {
   if (type === 'quote') return 'quote request';
   return INQUIRY_KIND_LABELS[String(type || '')] || 'contact form submission';
 }
+
+const FORM_STATUS_TEST_ID = {
+  'zip-check': 'zip-form-status',
+  'package-quote': 'package-form-status',
+  'diagnostic-quote': 'diagnostic-form-status',
+  inquiry: 'inquiry-form-status',
+  'plan-request': 'plan-form-status',
+  'class-request': 'class-form-status',
+};
+
+/** Kind that may appear on the no-JS return URL. Contact stays unmarked. */
+export function contactReturnLead(type) {
+  const key = String(type || '');
+  return FORM_STATUS_TEST_ID[key] ? key : '';
+}
+
+export function contactFormStatusTestId(type) {
+  return FORM_STATUS_TEST_ID[String(type || '')] || 'contact-form-status';
+}

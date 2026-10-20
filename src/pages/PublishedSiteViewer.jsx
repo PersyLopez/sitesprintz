@@ -17,6 +17,7 @@ import { isPayOnSiteEnabled } from '../utils/payOnSite';
 import { getPublicDeliveryConfig } from '../utils/delivery';
 import { siteFeesEnabled, siteWantsNativeBooking, subdomainFromLivePath } from '../utils/visitorExperience';
 import { post } from '../utils/api';
+import { contactFormStatusTestId } from '../utils/inquiryKind.js';
 import { tLive } from '../i18n/liveChrome/index.js';
 import { useLocale } from '../i18n/LocaleContext.jsx';
 import '../styles/published-site-viewer.css';
@@ -274,7 +275,7 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
     mountGoogleReviews(root);
     mountPublishedInteractions(root);
     if (searchParams.get('contact') === 'sent') {
-      const status = root.querySelector('[data-testid="contact-form-status"]');
+      const status = root.querySelector(`[data-testid="${contactFormStatusTestId(searchParams.get('lead'))}"]`);
       if (status) {
         status.textContent = 'Your message has been sent.';
         status.setAttribute('data-state', 'success');

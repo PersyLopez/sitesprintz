@@ -10,6 +10,7 @@ import { requireAuth } from '../middleware/auth.js';
 import { contactLimiter } from '../middleware/rateLimiting.js';
 import { sendEmail, EmailTypes } from '../utils/email-service-wrapper.js';
 import { getAbsolutePublishedSiteUrl, getOwnerMessagesUrl } from '../../src/utils/siteWorkspace.js';
+import { contactReturnLead } from '../../src/utils/inquiryKind.js';
 import { prisma } from '../../database/db.js';
 import {
   sendSuccess,
@@ -134,17 +135,25 @@ export function contactOwnerNotice({ subdomain, siteId, phone }) {
  * Where a no-JS contact form returns. Same-origin referer keeps the shop
  * path (including a custom domain). Anything else goes to the public view.
  */
-export function contactPostedReturnPath({ host, referer, subdomain }) {
-  const fallback = `/view/${encodeURIComponent(subdomain || '')}?contact=sent`;
-  if (!referer || !host) return fallback;
-  try {
-    const url = new URL(referer);
-    if (url.host !== host) return fallback;
-    url.searchParams.set('contact', 'sent');
-    return `${url.pathname}${url.search}`;
-  } catch {
-    return fallback;
+export function contactPostedReturnPath({ host, referer, subdomain, type }) {
+  let pathname = `/view/${encodeURIComponent(subdomain || '')}`;
+  let search = '';
+  if (referer && host) {
+    try {
+      const url = new URL(referer);
+      if (url.host === host) {
+        pathname = url.pathname;
+        search = url.search;
+      }
+    } catch {
+      search = '';
+    }
   }
+  const params = new URLSearchParams(search);
+  params.set('contact', 'sent');
+  const lead = contactReturnLead(type);
+  if (lead) params.set('lead', lead);
+  return `${pathname}?${params.toString()}`;
 }
 
 function replyContactSaved(req, res, subdomain, body, message) {
@@ -153,6 +162,7 @@ function replyContactSaved(req, res, subdomain, body, message) {
       host: req.get('host'),
       referer: req.get('referer'),
       subdomain,
+      type: req.body?.type,
     }));
   }
   return sendCreated(res, body, message);

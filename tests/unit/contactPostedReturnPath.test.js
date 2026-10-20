@@ -75,4 +75,19 @@ describe('contactPostedReturnPath', () => {
       subdomain: 'gallery-salon',
     })).toBe('/view/gallery-salon?contact=sent');
   });
+
+  it('names the form that was posted so that form can show it was sent', () => {
+    expect(contactPostedReturnPath({
+      host: 'oak.example',
+      referer: 'https://oak.example/',
+      subdomain: 'oak-barber',
+      type: 'zip-check',
+    })).toBe('/?contact=sent&lead=zip-check');
+    expect(contactPostedReturnPath({
+      host: 'rightsitelight.com',
+      referer: 'https://rightsitelight.com/view/gallery-salon',
+      subdomain: 'gallery-salon',
+      type: '<script>',
+    })).toBe('/view/gallery-salon?contact=sent');
+  });
 });
