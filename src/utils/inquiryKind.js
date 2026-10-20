@@ -44,3 +44,36 @@ export function contactReturnLead(type) {
 export function contactFormStatusTestId(type) {
   return FORM_STATUS_TEST_ID[String(type || '')] || 'contact-form-status';
 }
+
+function postedInquiryName(name) {
+  if (name === 'contactEmail') return 'email';
+  if (name === 'contactName') return 'name';
+  if (name === 'contactPhone') return 'phone';
+  return String(name || '').trim();
+}
+
+function inquirySteps(section) {
+  if (section?.type !== 'multi-step-form') return [];
+  const fromContent = section.content?.steps;
+  if (Array.isArray(fromContent) && fromContent.length) return fromContent;
+  const fromSettings = section.settings?.steps;
+  return Array.isArray(fromSettings) ? fromSettings : [];
+}
+
+/** Question text for each posted inquiry field, taken from the published form. */
+export function inquiryAnswerLabels(sections) {
+  const labels = {};
+  const list = Array.isArray(sections) ? sections : [];
+  for (const section of list) {
+    for (const step of inquirySteps(section)) {
+      const fields = Array.isArray(step?.fields) ? step.fields : [];
+      for (const field of fields) {
+        const name = postedInquiryName(field?.name);
+        const label = String(field?.label || '').trim();
+        if (!name || !label || labels[name]) continue;
+        labels[name] = label;
+      }
+    }
+  }
+  return labels;
+}

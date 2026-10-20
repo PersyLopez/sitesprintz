@@ -10,7 +10,7 @@ import { requireAuth } from '../middleware/auth.js';
 import { contactLimiter } from '../middleware/rateLimiting.js';
 import { sendEmail, EmailTypes } from '../utils/email-service-wrapper.js';
 import { getAbsolutePublishedSiteUrl, getOwnerMessagesUrl } from '../../src/utils/siteWorkspace.js';
-import { contactReturnLead } from '../../src/utils/inquiryKind.js';
+import { contactReturnLead, inquiryAnswerLabels } from '../../src/utils/inquiryKind.js';
 import { prisma } from '../../database/db.js';
 import {
   sendSuccess,
@@ -41,13 +41,19 @@ import {
 const router = express.Router();
 
 /** Links in the owner email for a saved shop message. */
-export function inquiryMessage(message, fields, type) {
+export function inquiryMessage(message, fields, type, sections) {
   const text = String(message || '').trim();
   if (type !== 'inquiry' || !fields || typeof fields !== 'object') return text;
   const skipped = new Set(['subdomain', 'name', 'email', 'phone', 'message', 'type', 'website']);
+  const labels = inquiryAnswerLabels(sections);
   const parts = Object.keys(fields)
     .filter((key) => !skipped.has(key) && typeof fields[key] !== 'object')
-    .map((key) => String(fields[key] || '').trim())
+    .map((key) => {
+      const value = String(fields[key] || '').trim();
+      if (!value) return '';
+      const label = String(labels[key] || '').trim();
+      return label ? `${label}: ${value}` : value;
+    })
     .filter(Boolean);
   if (!parts.length) return text;
   const list = parts.join('; ');
@@ -315,7 +321,7 @@ router.post('/contact', contactLimiter, asyncHandler(async (req, res) => {
       diagnosticQuoteMessage(
         classRequestMessage(
           planRequestMessage(
-            inquiryMessage(sanitizeString(message, 2000), otherFields, type),
+            inquiryMessage(sanitizeString(message, 2000), otherFields, type, siteData?.sections),
             otherFields,
             type
           ),

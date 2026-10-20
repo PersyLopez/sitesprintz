@@ -16,6 +16,24 @@ describe('contactPostedReturnPath', () => {
       guestCount: '40',
       preferredDate: '06/12/2026',
     }, 'inquiry')).toBe('Corporate Event; 40; 06/12/2026');
+    expect(inquiryMessage('Please tell us about this event.', {
+      eventType: 'Corporate Event',
+      guestCount: '40',
+      preferredDate: '06/12/2026',
+      email: 'guest@example.com',
+    }, 'inquiry', [{
+      type: 'multi-step-form',
+      settings: {
+        steps: [{
+          fields: [
+            { name: 'eventType', label: 'Event Type' },
+            { name: 'guestCount', label: 'Number of Guests' },
+            { name: 'preferredDate', label: 'Preferred Date' },
+            { name: 'contactEmail', label: 'Your email' },
+          ],
+        }],
+      },
+    }])).toBe('Event Type: Corporate Event; Number of Guests: 40; Preferred Date: 06/12/2026');
     expect(inquiryMessage('Hello', { eventType: 'Wedding Reception' }, 'contact')).toBe('Hello');
   });
 
