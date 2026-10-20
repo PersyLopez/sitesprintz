@@ -49,6 +49,7 @@ router.get('/terms', (req, res) => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Terms of Service - Right Site Light</title>
+    <meta name="description" content="Terms of Service for Right Site Light.">
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -267,6 +268,7 @@ router.get('/privacy', (req, res) => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Privacy Policy - Right Site Light</title>
+    <meta name="description" content="Privacy Policy for Right Site Light.">
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -460,6 +462,7 @@ router.get('/cookies', (req, res) => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cookie Policy - Right Site Light</title>
+    <meta name="description" content="Cookie Policy for Right Site Light.">
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -601,6 +604,7 @@ router.get('/refunds', (req, res) => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Refund & Cancellation Policy - Right Site Light</title>
+    <meta name="description" content="Refund and cancellation policy for Right Site Light.">
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -814,6 +818,7 @@ router.get(['/third-party-services', '/third-party', '/data-handling'], (req, re
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Third-Party Services & Data Handling Disclosure - Right Site Light</title>
+    <meta name="description" content="Third-party services disclosure for Right Site Light.">
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -963,7 +968,7 @@ router.get(['/third-party-services', '/third-party', '/data-handling'], (req, re
     </p>
 
     <footer>
-        <p>&copy; 2026 Right Site Light. All rights reserved.</p>
+        <p>&copy; ${CURRENT_YEAR} Right Site Light. All rights reserved.</p>
         <p>
             <a href="/legal/terms">Terms of Service</a> |
             <a href="/legal/privacy">Privacy Policy</a> |

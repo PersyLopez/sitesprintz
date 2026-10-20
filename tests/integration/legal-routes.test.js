@@ -16,14 +16,23 @@ const createTestApp = () => {
   return app;
 };
 
+const PAGE_DESCRIPTIONS = {
+  '/terms': 'Terms of Service for Right Site Light.',
+  '/privacy': 'Privacy Policy for Right Site Light.',
+  '/cookies': 'Cookie Policy for Right Site Light.',
+  '/refunds': 'Refund and cancellation policy for Right Site Light.',
+  '/third-party-services': 'Third-party services disclosure for Right Site Light.',
+};
+
 describe('GET /legal/:page', () => {
   const app = createTestApp();
 
-  ['/terms', '/privacy', '/cookies', '/refunds'].forEach((page) => {
-    it(`renders ${page} with the policy date and current copyright year`, async () => {
+  Object.keys(PAGE_DESCRIPTIONS).forEach((page) => {
+    it(`renders ${page} with its meta description, the policy date and current copyright year`, async () => {
       const res = await request(app).get(`/legal${page}`);
 
       expect(res.status).toBe(200);
+      expect(res.text).toContain(`<meta name="description" content="${PAGE_DESCRIPTIONS[page]}">`);
       expect(res.text).toContain(`Last Updated: ${POLICY_LAST_UPDATED}`);
       expect(res.text).not.toContain('November 14, 2025');
       expect(res.text).not.toContain('&copy; 2025');
