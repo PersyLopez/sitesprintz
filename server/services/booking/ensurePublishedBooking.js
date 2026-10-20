@@ -88,7 +88,7 @@ export function pickBookingServicesFromSiteData(siteData = {}) {
   const explicit = [...fromServices, ...fromServiceSections].filter((item) => item && item.name);
 
   if (explicit.length > 0 && niche !== 'restaurant') {
-    return explicit.slice(0, 5).map(mapBookableItem);
+    return explicit.slice(0, 40).map(mapBookableItem);
   }
 
   const fromMenu = (siteData.menu?.sections || []).flatMap((section) => section.items || []);
@@ -98,7 +98,7 @@ export function pickBookingServicesFromSiteData(siteData = {}) {
   const fromProducts = Array.isArray(siteData.products) ? siteData.products : [];
   const pool = [...fromSections, ...fromMenu, ...fromProducts]
     .filter((item) => item && item.name)
-    .slice(0, 5);
+    .slice(0, 40);
 
   if (pool.length > 0 && niche !== 'restaurant') {
     return pool.map(mapBookableItem);

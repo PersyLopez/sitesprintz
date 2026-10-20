@@ -136,6 +136,16 @@ describe('pickBookingServicesFromSiteData', () => {
     expect(picks[0]).toEqual(expect.objectContaining({ name: 'Haircut', price: 45 }));
   });
 
+  it('keeps a service past the old five-item cutoff bookable', () => {
+    const services = Array.from({ length: 6 }, (_, index) => ({
+      name: `Service ${index + 1}`,
+      price: 20,
+    }));
+    const picks = pickBookingServicesFromSiteData({ _niche: 'salon', services });
+    expect(picks).toHaveLength(6);
+    expect(picks[5].name).toBe('Service 6');
+  });
+
   it('uses reservation fallbacks for restaurants instead of menu items', () => {
     const picks = pickBookingServicesFromSiteData({
       _niche: 'restaurant',
