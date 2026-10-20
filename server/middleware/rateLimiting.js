@@ -16,6 +16,16 @@ const isTest = process.env.NODE_ENV === 'test';
 console.log(`[RateLimit] NODE_ENV="${process.env.NODE_ENV}", isTest=${isTest}`);
 
 /**
+ * One key per address. ipKeyGenerator must receive the IP string.
+ * Passing the request object makes every hit a new Map key, so the limit never trips.
+ * @param {import('express').Request} req
+ * @returns {string}
+ */
+export function visitorIpKey(req) {
+  return ipKeyGenerator(req.ip);
+}
+
+/**
  * Registration Rate Limiter
  * 
  * Limits: 3 registrations per 15 minutes per IP
@@ -32,7 +42,7 @@ export const registrationLimiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   skipSuccessfulRequests: false, // Count all attempts, even successful ones
-  keyGenerator: (req) => ipKeyGenerator(req),
+  keyGenerator: visitorIpKey,
   handler: (req, res) => {
     res.status(429).json({
       error: 'Too many registration attempts',
@@ -59,7 +69,7 @@ export const loginLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true, // Don't count successful logins
-  keyGenerator: (req) => ipKeyGenerator(req),
+  keyGenerator: visitorIpKey,
   handler: (req, res) => {
     res.status(429).json({
       error: 'Too many login attempts',
@@ -116,7 +126,7 @@ export const apiLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => ipKeyGenerator(req),
+  keyGenerator: visitorIpKey,
   handler: (req, res) => {
     res.status(429).json({
       error: 'Too many requests',
@@ -142,7 +152,7 @@ export const uploadLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => ipKeyGenerator(req),
+  keyGenerator: visitorIpKey,
   handler: (req, res) => {
     res.status(429).json({
       error: 'Upload limit exceeded',
@@ -168,7 +178,7 @@ export const checkoutLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => ipKeyGenerator(req),
+  keyGenerator: visitorIpKey,
   handler: (req, res) => {
     res.status(429).json({
       error: 'Too many orders',
@@ -194,7 +204,7 @@ export const orderLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => ipKeyGenerator(req),
+  keyGenerator: visitorIpKey,
   handler: (req, res) => {
     res.status(429).json({
       error: 'Order limit exceeded',
@@ -225,7 +235,7 @@ export const feedbackLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => ipKeyGenerator(req),
+  keyGenerator: visitorIpKey,
   handler: (req, res) => {
     res.status(429).json({
       error: 'Too many feedback submissions',
@@ -250,7 +260,7 @@ export const buildIntakeLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => ipKeyGenerator(req),
+  keyGenerator: visitorIpKey,
   handler: (req, res) => {
     res.status(429).json({
       error: 'Too many build requests',
@@ -278,9 +288,7 @@ export function createContactLimiter(max = isTest ? 1000 : 8) {
     },
     standardHeaders: true,
     legacyHeaders: false,
-    // ipKeyGenerator expects the address. Passing the request object makes
-    // every hit a new key, so the limit never trips.
-    keyGenerator: (req) => ipKeyGenerator(req.ip),
+    keyGenerator: visitorIpKey,
     handler: (req, res) => {
       res.status(429).json({
         error: 'Too many messages',
@@ -303,7 +311,7 @@ export const claimAcceptLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => ipKeyGenerator(req),
+  keyGenerator: visitorIpKey,
   handler: (req, res) => {
     res.status(429).json({
       error: 'Too many claim attempts',
