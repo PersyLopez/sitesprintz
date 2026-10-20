@@ -7,6 +7,7 @@
 
 import express from 'express';
 import { requireAuth } from '../middleware/auth.js';
+import { contactLimiter } from '../middleware/rateLimiting.js';
 import { sendEmail, EmailTypes } from '../utils/email-service-wrapper.js';
 import { getAbsolutePublishedSiteUrl, getOwnerMessagesUrl } from '../../src/utils/siteWorkspace.js';
 import { prisma } from '../../database/db.js';
@@ -227,7 +228,7 @@ function parseSiteData(site) {
  * POST /api/submissions/contact
  * Submit a contact form
  */
-router.post('/contact', asyncHandler(async (req, res) => {
+router.post('/contact', contactLimiter, asyncHandler(async (req, res) => {
   const { subdomain, name, email, phone, message, type, ...otherFields } = req.body;
   const probeHeader = req.headers[HEALTH_PROBE_HEADER];
   const wantsProbe = Boolean(probeHeader || type === HEALTH_PROBE_FORM_TYPE);

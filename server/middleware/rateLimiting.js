@@ -260,6 +260,39 @@ export const buildIntakeLimiter = rateLimit({
   },
 });
 
+/**
+ * Shop contact rate limiter
+ *
+ * Limits: 8 posts per 15 minutes per IP
+ * Purpose: A contact, quote, or ZIP check emails the owner. The honeypot
+ * drops bots that fill every field; this stops a script that leaves it blank.
+ */
+export function createContactLimiter(max = isTest ? 1000 : 8) {
+  return rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max,
+    message: {
+      error: 'Too many messages',
+      message: 'Please wait before sending another message.',
+      retryAfter: 15 * 60
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    // ipKeyGenerator expects the address. Passing the request object makes
+    // every hit a new key, so the limit never trips.
+    keyGenerator: (req) => ipKeyGenerator(req.ip),
+    handler: (req, res) => {
+      res.status(429).json({
+        error: 'Too many messages',
+        message: 'Please wait before sending another message.',
+        retryAfter: 15 * 60
+      });
+    }
+  });
+}
+
+export const contactLimiter = createContactLimiter();
+
 export const claimAcceptLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: isTest ? 1000 : 10,

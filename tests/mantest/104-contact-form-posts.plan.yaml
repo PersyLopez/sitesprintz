@@ -1,5 +1,5 @@
 url: http://localhost:5173/view/gallery-salon
-goal: The live contact form posts to the inbox and names this shop
+goal: The live contact form posts once to the inbox and names this shop
 steps:
   - action: Contact form is present
     wait_for: { selector: '[data-testid="contact-form"]', timeout: 20000 }
@@ -13,3 +13,24 @@ steps:
       if (method !== 'post') throw new Error('method ' + method);
       if (!action || !action.endsWith('/api/submissions/contact')) throw new Error('action ' + action);
       if (subdomain !== 'gallery-salon') throw new Error('subdomain ' + subdomain);
+
+  - action: A double click sends one message
+    code: |
+      let posts = 0;
+      await page.route('**/api/submissions/contact', async (route) => {
+        if (route.request().method() !== 'POST') return route.continue();
+        posts += 1;
+        await new Promise((resolve) => setTimeout(resolve, 400));
+        await route.fulfill({
+          status: 201,
+          contentType: 'application/json',
+          body: JSON.stringify({ message: 'Your message has been sent successfully' }),
+        });
+      });
+      await page.getByTestId('contact-form-email').fill('ada@example.com');
+      await page.getByTestId('contact-form-message').fill('Hello from the desk');
+      const submit = page.getByTestId('contact-form-submit');
+      await submit.click();
+      await submit.click({ force: true });
+      await page.getByText('Your message has been sent successfully').waitFor({ timeout: 8000 });
+      if (posts !== 1) throw new Error('posts ' + posts);

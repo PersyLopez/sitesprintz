@@ -258,6 +258,10 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
     const form = event.target.closest('form[data-type="contact"], form#contact-form, form[data-type="zip-check"], form[data-type="package-quote"], form[data-type="diagnostic-quote"], form[data-type="class-request"], form[data-type="plan-request"], form[data-type="inquiry"]');
     if (!form) return;
     event.preventDefault();
+    if (form.dataset.ssSending === '1') return;
+    form.dataset.ssSending = '1';
+    const button = form.querySelector('button[type="submit"]');
+    if (button) button.disabled = true;
     const status = form.querySelector('[data-testid="contact-form-status"], [data-testid="zip-form-status"], [data-testid="package-form-status"], [data-testid="diagnostic-form-status"], [data-testid="class-form-status"], [data-testid="plan-form-status"], [data-testid="inquiry-form-status"]');
     const formData = new FormData(form);
     const body = Object.fromEntries(formData.entries());
@@ -267,8 +271,8 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
       status.setAttribute('data-state', '');
     }
     try {
-      // Same api client as BookingWidget / PayOnSiteCheckout (credentials + CSRF when present)
-      const data = await post('/api/submissions/contact', body);
+      // retries: 0 — a 429 is the limit, not a blip to hammer again
+      const data = await post('/api/submissions/contact', body, { retries: 0 });
       form.reset();
       if (status) {
         status.textContent = data.message || 'Your message has been sent.';
@@ -279,6 +283,9 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
         status.textContent = err.message || 'Failed to send message. Please try again.';
         status.setAttribute('data-state', 'error');
       }
+    } finally {
+      delete form.dataset.ssSending;
+      if (button?.isConnected) button.disabled = false;
     }
   };
 
