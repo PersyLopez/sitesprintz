@@ -434,13 +434,21 @@
     display: inline-block;
   }
 
+  /* QA M-01: five labels collide on narrow screens — show only the active step's label */
   .wizard-progress {
     padding: 0 10px;
+    margin-bottom: 70px;
   }
 
   .step-label {
+    display: none;
     font-size: 0.75rem;
-    max-width: 80px;
+  }
+
+  .progress-step.active .step-label {
+    display: block;
+    max-width: none;
+    white-space: normal;
   }
 
   .wizard-content {
