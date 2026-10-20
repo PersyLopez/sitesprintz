@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { OptimizedImage } from '../common/OptimizedImage';
 import { LIVE_EDIT_SCOPE_HINT } from '../../utils/liveEditScope';
+import { TIER_INFO } from '../../config/tiers';
 import { getSiteDisplayName, getPublishedSiteUrl, getSiteWorkspacePaths } from '../../utils/siteWorkspace';
 import ShareModal from '../ShareModal';
 import './SiteCard.css';
@@ -73,7 +74,7 @@ function SiteCard({ site, onDelete, onDuplicate }) {
         <h3>{name}</h3>
         <p className="site-template">{templateLabel}</p>
         {site.plan && (
-          <p className="site-plan">Plan: <span className={`plan-badge ${site.plan}`}>{site.plan}</span></p>
+          <p className="site-plan">Plan: <span className={`plan-badge ${site.plan}`}>{TIER_INFO[site.plan]?.displayName ?? site.plan}</span></p>
         )}
         <p className="site-date">
           {site.status === 'published' ? 'Published' : 'Created'}: {formatDate(site.publishedAt || site.createdAt)}

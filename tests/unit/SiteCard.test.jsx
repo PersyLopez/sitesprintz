@@ -224,7 +224,8 @@ describe('SiteCard', () => {
     );
 
     expect(screen.getByText(/Plan:/)).toBeInTheDocument();
-    expect(screen.getByText('starter')).toBeInTheDocument();
+    expect(screen.getByText('Starter')).toBeInTheDocument();
+    expect(screen.queryByText('starter')).not.toBeInTheDocument();
   });
 
   it('should render hero image when available', () => {
