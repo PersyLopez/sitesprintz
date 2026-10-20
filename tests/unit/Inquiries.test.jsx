@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import Inquiries, { inquiryKindLabel } from '../../src/pages/Inquiries';
+import Inquiries from '../../src/pages/Inquiries';
+import { inquiryKindLabel, contactLeadPhrase, contactLeadSubject } from '../../src/utils/inquiryKind.js';
 
 vi.mock('../../src/context/SiteWorkspaceContext', () => ({
   useSiteWorkspace: () => ({
@@ -53,6 +54,12 @@ describe('inquiry kind label', () => {
     expect(inquiryKindLabel('contact')).toBe('');
     expect(inquiryKindLabel('')).toBe('');
     expect(inquiryKindLabel('service-request')).toBe('service request');
+    expect(contactLeadSubject('zip-check', 'Oak Barber')).toBe('New ZIP check - Oak Barber');
+    expect(contactLeadSubject('contact', 'Oak Barber')).toBe('New Contact Form Submission - Oak Barber');
+    expect(contactLeadSubject('quote', 'Oak Barber')).toBe('New Quote Request Submission - Oak Barber');
+    expect(contactLeadSubject('<b>', 'Oak Barber')).toBe('New Contact Form Submission - Oak Barber');
+    expect(contactLeadPhrase('diagnostic-quote')).toBe('Estimate');
+    expect(contactLeadPhrase('contact')).toBe('contact form submission');
   });
 
   it('shows the kind on the message row', async () => {

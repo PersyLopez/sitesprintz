@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import { livePublishedPath } from './src/utils/visitorExperience.js';
+import { contactLeadPhrase, contactLeadSubject } from './src/utils/inquiryKind.js';
 
 // Initialize Resend lazily to allow env vars to load
 let resend = null;
@@ -380,7 +381,7 @@ const templates = {
       submissionTime: escapeHtml(submissionTime)
     };
     return {
-    subject: `New ${type === 'quote' ? 'Quote Request' : 'Contact Form'} Submission - ${businessName}`,
+    subject: contactLeadSubject(type, businessName),
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; margin-bottom: 30px;">
@@ -389,7 +390,7 @@ const templates = {
         
         <div style="background: #f0fdf4; border-radius: 12px; padding: 30px; margin-bottom: 20px; border: 2px solid #86efac;">
           <p style="font-size: 1.1rem; color: #1e293b; line-height: 1.6; margin: 0 0 20px 0;">
-            You have a new ${type === 'quote' ? 'quote request' : 'contact form submission'} for <strong>${safe.businessName}</strong>!
+            You have a new ${escapeHtml(contactLeadPhrase(type))} for <strong>${safe.businessName}</strong>!
           </p>
           
           <div style="background: white; border-radius: 8px; padding: 20px; margin: 20px 0;">

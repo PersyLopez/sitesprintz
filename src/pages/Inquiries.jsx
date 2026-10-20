@@ -4,22 +4,10 @@ import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import SkeletonLoader from '../components/common/SkeletonLoader';
 import { api } from '../services/api';
+import { inquiryKindLabel } from '../utils/inquiryKind.js';
 import './Orders.css';
 
-const INQUIRY_KIND_LABELS = {
-  'zip-check': 'ZIP check',
-  'package-quote': 'Package quote',
-  'diagnostic-quote': 'Estimate',
-  inquiry: 'Inquiry',
-  'plan-request': 'Plan request',
-  'class-request': 'Class request',
-};
-
-export function inquiryKindLabel(type) {
-  const key = String(type || 'contact');
-  if (key === 'contact') return '';
-  return INQUIRY_KIND_LABELS[key] || key.replace(/-/g, ' ');
-}
+export { inquiryKindLabel };
 
 function Inquiries() {
   const { embedded, site, refreshUnreadMessages } = useSiteWorkspace();
