@@ -10,7 +10,6 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { CartProvider } from '../context/CartContext';
 import { useCart } from '../hooks/useCart';
 import { useAuth } from '../hooks/useAuth';
-import { buildLiveSiteMarkup, getLiveSiteThemeVars } from '../utils/publishedSiteDocument';
 import { mountGoogleReviews } from '../utils/mountGoogleReviews';
 import { mountPublishedInteractions } from '../utils/mountPublishedInteractions';
 import { getSiteWorkspacePaths } from '../utils/siteWorkspace';
@@ -25,6 +24,48 @@ import '../styles/published-site-viewer.css';
 const BookingWidget = lazy(() => import('../components/BookingWidget'));
 const ShoppingCart = lazy(() => import('../components/ecommerce/ShoppingCart'));
 const PublishedLiveEdit = lazy(() => import('../components/published/PublishedLiveEdit'));
+
+function fragmentLocale(siteData) {
+  const value = siteData?.locale || siteData?.settings?.locale;
+  return value === 'es' ? 'es' : 'en';
+}
+
+function readPrerenderHtml() {
+  if (typeof window === 'undefined') return '';
+  const html = window.__RSL_PUBLISHED_HTML__;
+  if (typeof html !== 'string' || !html.includes('id="ss-prerender"') || !html.includes('class="ss-live"')) {
+    return '';
+  }
+  return html;
+}
+
+function themeVarsFromLiveCss(css) {
+  const block = String(css || '').match(/\.ss-live\s*\{([^}]*)\}/);
+  if (!block) return undefined;
+  const vars = {};
+  for (const match of block[1].matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)) {
+    vars[match[1]] = match[2].trim();
+  }
+  if (vars['--ss-accent']) vars['--primary-color'] = vars['--ss-accent'];
+  if (vars['--ss-surface']) {
+    vars['--bg-card'] = vars['--ss-surface'];
+    vars['--bg-elevated'] = vars['--ss-surface'];
+  }
+  if (vars['--ss-bg']) vars['--bg-darker'] = vars['--ss-bg'];
+  if (vars['--ss-text']) vars['--text-light'] = vars['--ss-text'];
+  if (vars['--ss-muted']) vars['--text-muted'] = vars['--ss-muted'];
+  if (vars['--ss-hairline']) vars['--border-dark'] = vars['--ss-hairline'];
+  return Object.keys(vars).length ? vars : undefined;
+}
+
+function splitPrerender(html) {
+  if (!html || typeof DOMParser === 'undefined') return null;
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const css = doc.getElementById('ss-prerender')?.textContent || '';
+  const live = doc.querySelector('.ss-live');
+  if (!css || !live) return null;
+  return { css, html: live.innerHTML, themeVars: themeVarsFromLiveCss(css) };
+}
 
 /**
  * Server-inlined showcase JSON (window.__RSL_PUBLISHED_SITE__) lets the FIRST
@@ -54,6 +95,9 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
   const [userId, setUserId] = useState(embeddedSite?.userId || embeddedSite?.user_id || null);
   const [siteId, setSiteId] = useState(embeddedSite?.id || embeddedSite?.subdomain || null);
   const [bookingMount, setBookingMount] = useState(null);
+  const [prerenderHtml] = useState(readPrerenderHtml);
+  const [composed, setComposed] = useState(null);
+  const [composeFailed, setComposeFailed] = useState(false);
 
   useEffect(() => {
     // When the embed matches this route the state above is already primed;
@@ -114,14 +158,56 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
     if (!shopTitle) return;
     document.title = shopTitle;
   }, [shopTitle]);
+  const adopted = useMemo(() => {
+    if (!prerenderHtml || !readEmbeddedSite(subdomain)) return null;
+    if (locale !== fragmentLocale(payload)) return null;
+    if (searchParams.get('edit') === 'true') return null;
+    return splitPrerender(prerenderHtml);
+  }, [prerenderHtml, subdomain, locale, payload, searchParams]);
+
+  useEffect(() => {
+    if (adopted) return undefined;
+    if (!payload || Object.keys(payload).length === 0) return undefined;
+    let cancelled = false;
+    setComposed(null);
+    setComposeFailed(false);
+    import('../utils/publishedSiteDocument.js')
+      .then((mod) => {
+        if (cancelled) return;
+        try {
+          const next = mod.buildLiveSiteMarkup(payload, { locale, subdomain });
+          if (!next?.html) {
+            setComposed(null);
+            setComposeFailed(true);
+            return;
+          }
+          setComposed({
+            html: next.html,
+            css: next.css,
+            themeVars: mod.getLiveSiteThemeVars(next.tokens),
+          });
+        } catch {
+          if (!cancelled) {
+            setComposed(null);
+            setComposeFailed(true);
+          }
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setComposed(null);
+          setComposeFailed(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [adopted, payload, locale, subdomain]);
+
   const markup = useMemo(() => {
-    if (!payload || Object.keys(payload).length === 0) return null;
-    try {
-      return buildLiveSiteMarkup(payload, { locale, subdomain });
-    } catch {
-      return null;
-    }
-  }, [payload, locale]);
+    if (adopted) return { html: adopted.html, css: adopted.css };
+    return composed;
+  }, [adopted, composed]);
 
   useEffect(() => {
     if (!markup?.css?.includes('Fraunces')) return;
@@ -145,7 +231,7 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
       || Boolean(markup?.html?.includes('data-ss-booking-mount'))
     )
   );
-  const themeVars = markup?.tokens ? getLiveSiteThemeVars(markup.tokens) : undefined;
+  const themeVars = adopted?.themeVars || composed?.themeVars;
   const wantsEdit = searchParams.get('edit') === 'true';
   const canEditPublished = Boolean(
     user?.id
@@ -387,11 +473,13 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
             onSubmit={handleContactSubmit}
           />
         </>
-      ) : (
+      ) : composeFailed ? (
         <div className="published-site-viewer error">
           <h2>{site.name || payload.brand?.name || 'Published Site'}</h2>
           <p>This site could not be rendered.</p>
         </div>
+      ) : (
+        <div className="spinner" data-testid="published-compose-pending"></div>
       )}
 
       {bookingWidget && portalTarget && createPortal(bookingWidget, portalTarget)}

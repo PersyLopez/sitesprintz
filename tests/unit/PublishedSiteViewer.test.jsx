@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import PublishedSiteViewer from '../../src/pages/PublishedSiteViewer';
 import { useAuth } from '../../src/hooks/useAuth';
+import { buildLiveSiteMarkup } from '../../src/utils/publishedSiteDocument';
 
 vi.mock('../../src/hooks/useAuth', () => ({
   useAuth: vi.fn(() => ({ user: null, isAuthenticated: false, loading: false })),
@@ -29,12 +30,12 @@ vi.mock('../../src/context/CartContext', () => ({
 }));
 
 vi.mock('../../src/utils/publishedSiteDocument', () => ({
-  buildLiveSiteMarkup: () => ({
+  buildLiveSiteMarkup: vi.fn(() => ({
     html: '<main><div class="ss-booking-mount" data-ss-booking-mount data-testid="live-booking-widget"></div></main>',
     css: '.ss-brand { font-family: "Fraunces", serif; }',
     tokens: { theme: {} },
-  }),
-  getLiveSiteThemeVars: () => ({}),
+  })),
+  getLiveSiteThemeVars: vi.fn(() => ({})),
 }));
 
 vi.mock('../../src/utils/visitorExperience', () => ({
@@ -76,6 +77,8 @@ describe('PublishedSiteViewer booking portal', () => {
 
   afterEach(() => {
     document.getElementById('ss-live-fonts')?.remove();
+    delete window.__RSL_PUBLISHED_HTML__;
+    delete window.__RSL_PUBLISHED_SITE__;
     vi.restoreAllMocks();
   });
 
@@ -125,5 +128,27 @@ describe('PublishedSiteViewer booking portal', () => {
     await waitFor(() => {
       expect(screen.getByTestId('seamless-edit-toolbar')).toBeInTheDocument();
     });
+  });
+
+  it('keeps the server paint and does not compose again when the locale matches', async () => {
+    window.__RSL_PUBLISHED_SITE__ = {
+      site: {
+        id: 'luxe-beauty-studio',
+        subdomain: 'gallery-salon',
+        name: 'Luxe Beauty Studio',
+        userId: 'owner-1',
+        data: { settings: { allowCheckout: false }, sections: [{ type: 'booking' }] },
+      },
+    };
+    window.__RSL_PUBLISHED_HTML__ = [
+      '<style id="ss-prerender">.ss-live { --ss-bg: #111111; --ss-text: #ffffff; --ss-accent: #c2683a; }</style>',
+      '<div class="ss-live"><h1>Prerendered shop</h1></div>',
+    ].join('');
+
+    renderViewer();
+
+    expect(await screen.findByText('Prerendered shop')).toBeInTheDocument();
+    expect(buildLiveSiteMarkup).not.toHaveBeenCalled();
+    expect(document.getElementById('ss-live-fonts')).toBeNull();
   });
 });

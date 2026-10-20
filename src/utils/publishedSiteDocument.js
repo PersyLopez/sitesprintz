@@ -676,7 +676,7 @@ ${mapScript}`;
 
 /**
  * Shop HTML for the /view document, painted before the app script runs.
- * The viewer replaces #root and writes the same composition again.
+ * The viewer keeps this paint when the visitor locale matches it.
  */
 export function renderPublishedViewFragment(site) {
   const data = site?.data || site?.site_data;
