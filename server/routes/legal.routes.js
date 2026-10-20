@@ -3,6 +3,9 @@ import { POLICY_VERSION, POLICY_LAST_UPDATED, THIRD_PARTY_PROCESSORS } from '../
 
 const router = express.Router();
 
+// Public legal pages must always show the current calendar year in the footer.
+const CURRENT_YEAR = new Date().getFullYear();
+
 /**
  * Escape untrusted strings before injecting into HTML responses.
  */
@@ -86,7 +89,7 @@ router.get('/terms', (req, res) => {
 </head>
 <body>
     <h1>Terms of Service</h1>
-    <p class="last-updated">Last Updated: November 14, 2025</p>
+    <p class="last-updated">Last Updated: ${POLICY_LAST_UPDATED}</p>
     
     <div class="highlight">
         <strong>Service availability:</strong> Right Site Light is provided on an &ldquo;as is&rdquo; basis while we continue to improve reliability and support.
@@ -240,7 +243,7 @@ router.get('/terms', (req, res) => {
     </p>
 
     <footer>
-        <p>&copy; 2025 Right Site Light. All rights reserved.</p>
+        <p>&copy; ${CURRENT_YEAR} Right Site Light. All rights reserved.</p>
         <p>
             <a href="/legal/privacy">Privacy Policy</a> |
             <a href="/legal/cookies">Cookie Policy</a> |
@@ -293,7 +296,7 @@ router.get('/privacy', (req, res) => {
 </head>
 <body>
     <h1>Privacy Policy</h1>
-    <p class="last-updated">Last Updated: November 14, 2025</p>
+    <p class="last-updated">Last Updated: ${POLICY_LAST_UPDATED}</p>
     
     <div class="highlight">
         <strong>📋 Summary:</strong> We collect only what we need to provide the Service. We don't sell your data.
@@ -433,7 +436,7 @@ router.get('/privacy', (req, res) => {
     </p>
 
     <footer>
-        <p>&copy; 2025 Right Site Light. All rights reserved.</p>
+        <p>&copy; ${CURRENT_YEAR} Right Site Light. All rights reserved.</p>
         <p>
             <a href="/legal/terms">Terms of Service</a> |
             <a href="/legal/cookies">Cookie Policy</a> |
@@ -483,7 +486,7 @@ router.get('/cookies', (req, res) => {
 </head>
 <body>
     <h1>Cookie Policy</h1>
-    <p class="last-updated">Last Updated: November 14, 2025</p>
+    <p class="last-updated">Last Updated: ${POLICY_LAST_UPDATED}</p>
     
     <h2>What Are Cookies?</h2>
     <p>
@@ -574,7 +577,7 @@ router.get('/cookies', (req, res) => {
     </p>
 
     <footer>
-        <p>&copy; 2025 Right Site Light. All rights reserved.</p>
+        <p>&copy; ${CURRENT_YEAR} Right Site Light. All rights reserved.</p>
         <p>
             <a href="/legal/terms">Terms of Service</a> |
             <a href="/legal/privacy">Privacy Policy</a> |
@@ -627,7 +630,7 @@ router.get('/refunds', (req, res) => {
 </head>
 <body>
     <h1>Refund & Cancellation Policy</h1>
-    <p class="last-updated">Last Updated: November 14, 2025</p>
+    <p class="last-updated">Last Updated: ${POLICY_LAST_UPDATED}</p>
     
     <div class="highlight">
         <strong>✅ 30-Day Money-Back Guarantee:</strong> Try Right Site Light risk-free. If you're not satisfied within
@@ -784,7 +787,7 @@ router.get('/refunds', (req, res) => {
     </p>
 
     <footer>
-        <p>&copy; 2025 Right Site Light. All rights reserved.</p>
+        <p>&copy; ${CURRENT_YEAR} Right Site Light. All rights reserved.</p>
         <p>
             <a href="/legal/terms">Terms of Service</a> |
             <a href="/legal/privacy">Privacy Policy</a> |
