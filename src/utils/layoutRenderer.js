@@ -65,7 +65,7 @@ const sectionPrimitives = {
         imageAlt: c.imageAlt || catalogHero.imageAlt || '',
         ctaText: c.ctaText || ctaFromCatalog || resolveHeroCta(heroVariant, siteData),
         ctaLink: c.ctaLink || catalogHero.cta?.[0]?.href || resolvePrimaryCta(siteData).href,
-        hoursLine: c.hoursLine || formatHours(c.hours || siteData.businessHours || siteData.contact?.hours || ''),
+        hoursLine: c.hoursLine || shortHoursLine(c.hours || siteData.businessHours || siteData.contact?.hours || ''),
         addressLine: c.addressLine || resolveSiteAddress(siteData),
         phone: c.phone || resolveSitePhone(siteData),
         rating: c.rating || siteData.googleRating || '',
@@ -987,6 +987,11 @@ function readHours(hours) {
 
 function formatHours(hours) {
   return readHours(hours).lines.join(' · ');
+}
+
+function shortHoursLine(hours) {
+  const lines = readHours(hours).lines;
+  return lines.length === 1 ? lines[0] : '';
 }
 
 function flattenMenuToProducts(menuSections) {

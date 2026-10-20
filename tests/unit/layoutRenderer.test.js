@@ -58,6 +58,20 @@ describe('layoutRenderer — renderSection() known types', () => {
     expect(result.content.displayVariant).toBe('list');
   });
 
+  it('keeps a one-line hours note in the hero and leaves a full week to the hours section', () => {
+    const one = renderSection('hero', {}, { businessHours: 'Tue–Sat 10am–7pm' }, {});
+    expect(one.content.hoursLine).toBe('Tue–Sat 10am–7pm');
+
+    const week = renderSection('hero', {}, {
+      contact: {
+        hours: {
+          items: ['Tuesday - Friday: 9:00 AM - 8:00 PM', 'Monday: Closed'],
+        },
+      },
+    }, {});
+    expect(week.content.hoursLine).toBe('');
+  });
+
   it('keeps each hours line and the note', () => {
     const result = renderSection('hours', {}, {
       contact: {
