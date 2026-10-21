@@ -340,13 +340,26 @@ router.get('/tenants/:userId/availability', asyncHandler(async (req, res) => {
  */
 router.post('/tenants/:userId/appointments', asyncHandler(async (req, res) => {
   const { userId } = req.params;
-
-  const allowed = await requireGrowthBooking(userId);
-  if (!allowed) {
-    return sendForbidden(res, 'Native booking requires Growth plan', 'GROWTH_PLAN_REQUIRED');
-  }
-  const appointmentData = req.body;
   const siteId = publicSiteId(req);
+
+  // Resolve the public path id the same way the public service list does,
+  // so a published subdomain books against its owner's plan.
+  const target = await resolvePublicBookingTarget(userId, siteId);
+  if (target.kind === 'unknown') {
+    return sendNotFound(res, 'Booking tenant', 'BOOKING_TENANT_NOT_FOUND');
+  }
+
+  // Owner path (owner UUID or published subdomain): plan check on the resolved
+  // owner id, never the raw path id. Tenant UUID posts skip the plan check.
+  const resolvedOwnerId = target.kind === 'owner' ? target.userId : null;
+  if (resolvedOwnerId) {
+    const allowed = await requireGrowthBooking(resolvedOwnerId);
+    if (!allowed) {
+      return sendForbidden(res, 'Native booking requires Growth plan', 'GROWTH_PLAN_REQUIRED');
+    }
+  }
+
+  const appointmentData = req.body;
 
   // Validation
   const required = ['service_id', 'start_time', 'customer_name', 'customer_email'];
@@ -356,7 +369,13 @@ router.post('/tenants/:userId/appointments', asyncHandler(async (req, res) => {
     }
   }
 
-  const tenant = await resolvePublicTenant(userId, siteId);
+  // A booking_tenants UUID skips tenant resolution entirely (no create on demand).
+  let tenant;
+  if (target.kind === 'tenant') {
+    tenant = { id: target.tenantId };
+  } else {
+    tenant = await resolvePublicTenant(resolvedOwnerId, target.siteId);
+  }
 
   // Get or use default staff
   let staffId = requestedStaffId(appointmentData.staff_id);
@@ -365,7 +384,10 @@ router.post('/tenants/:userId/appointments', asyncHandler(async (req, res) => {
     staffId = defaultStaff.id;
   }
 
-  const demoSite = await loadSiteForDemo(userId, siteId || tenant.site_id);
+  // Demo/showcase behavior is owner-path only; a tenant UUID has no site to load.
+  const demoSite = resolvedOwnerId
+    ? await loadSiteForDemo(resolvedOwnerId, siteId || tenant.site_id)
+    : null;
   if (isShowcaseDemoSite(demoSite)) {
     const service = await prisma.booking_services.findFirst({
       where: { id: appointmentData.service_id, tenant_id: tenant.id },

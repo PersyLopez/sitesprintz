@@ -394,9 +394,53 @@ describe('Booking API Integration Tests', () => {
   });
 
   describe('POST /api/booking/tenants/:userId/appointments', () => {
-    it('should return 400 if required fields are missing', async () => {
+    const OWNER_UUID = '9f1c3b2a-7c4d-4e8a-9b2f-1a6e5d3c7b90';
+    const TENANT_UUID = '2b8e4f61-9a3c-4d7b-8e5f-0c1d2a3b4e5f';
+    const growthUser = { id: OWNER_UUID, plan: 'growth', subscription_plan: 'growth' };
+
+    it('should resolve a published subdomain to its owner before the plan check', async () => {
+      mockPrisma.sites.findFirst.mockResolvedValue({ user_id: OWNER_UUID, id: 'site-1' });
+      mockPrisma.users.findUnique.mockResolvedValue(growthUser);
+
       const response = await request(app)
-        .post('/api/booking/tenants/user-123/appointments')
+        .post('/api/booking/tenants/gallery-salon/appointments')
+        .send({
+          service_id: 'service-1',
+          // Missing start_time, customer_name, customer_email
+        })
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toContain('required');
+      expect(mockPrisma.users.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: OWNER_UUID } })
+      );
+    });
+
+    it('should return 404 for an unknown subdomain without creating anything', async () => {
+      mockPrisma.sites.findFirst.mockResolvedValue(null);
+
+      const response = await request(app)
+        .post('/api/booking/tenants/no-such-shop/appointments')
+        .send({
+          service_id: 'service-1',
+          start_time: '2026-11-01T10:00:00Z',
+          customer_name: 'Jane Doe',
+          customer_email: 'jane@example.com',
+        })
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+      expect(mockPrisma.booking_tenants.create).not.toHaveBeenCalled();
+      expect(mockPrisma.users.findUnique).not.toHaveBeenCalled();
+    });
+
+    it('should return 400 if required fields are missing for a Growth owner UUID', async () => {
+      mockPrisma.booking_tenants.findUnique.mockResolvedValue(null);
+      mockPrisma.users.findUnique.mockResolvedValue(growthUser);
+
+      const response = await request(app)
+        .post(`/api/booking/tenants/${OWNER_UUID}/appointments`)
         .send({
           service_id: 'service-1',
           // Missing start_time, customer_name, customer_email
@@ -406,12 +450,53 @@ describe('Booking API Integration Tests', () => {
       expect(response.body.success).toBe(false);
       expect(response.body.error).toContain('required');
     });
+
+    it('should return 403 GROWTH_PLAN_REQUIRED when the owner is not on Growth', async () => {
+      mockPrisma.booking_tenants.findUnique.mockResolvedValue(null);
+      mockPrisma.users.findUnique.mockResolvedValue({
+        id: OWNER_UUID,
+        plan: 'starter',
+        subscription_plan: 'starter',
+      });
+
+      const response = await request(app)
+        .post(`/api/booking/tenants/${OWNER_UUID}/appointments`)
+        .send({
+          service_id: 'service-1',
+          start_time: '2026-11-01T10:00:00Z',
+          customer_name: 'Jane Doe',
+          customer_email: 'jane@example.com',
+        })
+        .expect(403);
+
+      expect(response.body.code).toBe('GROWTH_PLAN_REQUIRED');
+      expect(mockPrisma.booking_tenants.create).not.toHaveBeenCalled();
+      expect(mockPrisma.booking_appointments.create).not.toHaveBeenCalled();
+    });
+
+    it('should skip the plan check for a booking tenant UUID and still validate fields', async () => {
+      mockPrisma.booking_tenants.findUnique.mockResolvedValue({ id: TENANT_UUID });
+
+      const response = await request(app)
+        .post(`/api/booking/tenants/${TENANT_UUID}/appointments`)
+        .send({
+          service_id: 'service-1',
+          // Missing start_time, customer_name, customer_email
+        })
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toContain('required');
+      expect(mockPrisma.users.findUnique).not.toHaveBeenCalled();
+    });
   });
 
   describe('GET /api/booking/tenants/:userId/appointments/:identifier', () => {
     it('should return 404 if appointment not found', async () => {
       mockPrisma.booking_tenants.findFirst.mockResolvedValue({ id: 'tenant-123' });
       mockPrisma.booking_appointments.findFirst.mockResolvedValue(null);
+      // Self-contained: do not rely on a growth-user mock left over from an earlier test
+      mockPrisma.users.findUnique.mockResolvedValue({ id: 'user-123', plan: 'growth', subscription_plan: 'growth' });
 
       const response = await request(app)
         .get('/api/booking/tenants/user-123/appointments/nonexistent')
