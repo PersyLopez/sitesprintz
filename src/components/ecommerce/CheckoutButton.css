@@ -21,10 +21,13 @@
   cursor: pointer;
 }
 
-.btn-checkout:disabled {
-  background: rgba(100, 116, 139, 0.3);
+/* Readable disabled state: keep the enabled accent pair (same var() fallbacks)
+   and beat global .btn:disabled opacity — same pattern as pay-on-site disabled. */
+.checkout-button-container .btn-checkout:disabled {
+  background: var(--ss-accent, var(--primary-color, #06b6d4));
+  color: var(--ss-on-accent, #fff);
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 1;
 }
 
 .checkout-spinner {

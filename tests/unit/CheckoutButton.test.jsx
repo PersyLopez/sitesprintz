@@ -95,6 +95,7 @@ describe('CheckoutButton', () => {
 
     render(<CheckoutButton siteId="site-1" paymentsReady />);
     expect(screen.getByTestId('checkout-button')).toBeDisabled();
+    expect(screen.getByTestId('checkout-button').className).toContain('btn-checkout');
   });
 
   it('redirects to the payment processor on Stripe checkout', async () => {
