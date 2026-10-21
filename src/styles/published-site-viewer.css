@@ -77,8 +77,13 @@
   color: #333;
 }
 
+.published-site-viewer.error h1,
 .published-site-viewer.error h2 {
   color: #c00;
+}
+
+.published-site-viewer.error h1 {
+  font-size: clamp(1.5rem, 4vw + 0.5rem, 2.25rem);
 }
 
 .published-site-viewer.error p {

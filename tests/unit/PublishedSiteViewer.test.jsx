@@ -172,4 +172,12 @@ describe('PublishedSiteViewer booking portal', () => {
     expect(await screen.findByTestId('zip-form-status')).toHaveTextContent('Your message has been sent.');
     expect(screen.getByTestId('contact-form-status')).toHaveTextContent('');
   });
+
+  it('announces a missing shop with a level-1 heading', async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 404, json: async () => ({}) });
+
+    renderViewer('/view/missing-shop');
+
+    expect(await screen.findByRole('heading', { level: 1, name: /Site Not Found/i })).toBeInTheDocument();
+  });
 });

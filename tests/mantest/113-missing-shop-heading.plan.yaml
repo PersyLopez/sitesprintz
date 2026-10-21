@@ -1,0 +1,19 @@
+url: http://localhost:5173/view/does-not-exist-xyz
+goal: Missing shop viewer announces its error as an h1 first on the page, no login (QA AX-02)
+steps:
+  - action: Not-found state appears
+    wait_for: { text: Site Not Found, timeout: 20000 }
+
+  - action: First heading on the page is h1
+    code: |
+      const firstHeading = page.locator('h1, h2, h3, h4, h5, h6').first();
+      await firstHeading.waitFor({ timeout: 15000 });
+      const tag = await firstHeading.evaluate((el) => el.tagName.toLowerCase());
+      const text = (await firstHeading.textContent()) || '';
+      if (tag !== 'h1') {
+        throw new Error('First heading on /view/does-not-exist-xyz is <' + tag + '>, not <h1>');
+      }
+      if (!text.includes('Site Not Found')) {
+        throw new Error('First heading text is "' + text.trim() + '", expected it to include "Site Not Found"');
+      }
+    settle_ms: 400

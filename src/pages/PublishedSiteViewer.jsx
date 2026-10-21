@@ -296,7 +296,7 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
   if (error || !site) {
     return (
       <div className="published-site-viewer error">
-        <h2>Site Not Found</h2>
+        <h1>Site Not Found</h1>
         <p>{error || 'This site is no longer available'}</p>
         <button type="button" onClick={() => navigate('/showcase')} className="btn btn-primary">
           Back to Gallery
@@ -476,7 +476,7 @@ function PublishedSiteViewerContent({ onSiteId, forcedSubdomain }) {
         </>
       ) : composeFailed ? (
         <div className="published-site-viewer error">
-          <h2>{site.name || payload.brand?.name || 'Published Site'}</h2>
+          <h1>{site.name || payload.brand?.name || 'Published Site'}</h1>
           <p>This site could not be rendered.</p>
         </div>
       ) : (
