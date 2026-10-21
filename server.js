@@ -171,6 +171,12 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' } // Allow images from any origin
 }));
 
+// Permissions-Policy — QA SP-03 (set beside the helmet headers)
+app.use((req, res, next) => {
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(self "https://js.stripe.com")');
+  next();
+});
+
 // CORS — strict allowlist in production, localhost permitted in development
 app.use(cors(buildCorsOptions()));
 

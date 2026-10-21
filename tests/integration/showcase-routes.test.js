@@ -81,6 +81,7 @@ describe('Showcase Routes Integration Tests', () => {
       expect(response.body.sites).toBeInstanceOf(Array);
       expect(response.body.total).toBeGreaterThan(0);
       expect(response.body.page).toBe(1);
+      expect(response.headers['permissions-policy']).toBe('camera=(), microphone=(), geolocation=(), payment=(self "https://js.stripe.com")');
     });
 
     it('should not include private sites', async () => {
