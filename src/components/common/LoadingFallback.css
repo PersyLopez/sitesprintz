@@ -15,11 +15,15 @@
   font-size: var(--font-size-base);
 }
 
+/* Table skeleton width inside the centered fallback column */
+.loading-fallback .skeleton-loader {
+  width: min(640px, 100%);
+}
+
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
-  .loading-spinner {
+  .loading-fallback .skeleton-loader::after {
     animation: none;
-    border-top-color: var(--primary-color);
   }
 }
 

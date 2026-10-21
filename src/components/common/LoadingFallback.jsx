@@ -4,12 +4,13 @@
  */
 
 import React from 'react';
+import SkeletonLoader from './SkeletonLoader';
 import './LoadingFallback.css';
 
 export function LoadingFallback({ message = 'Loading...', title }) {
   return (
     <div className="loading-fallback" role="status" aria-live="polite">
-      <div className="loading-spinner"></div>
+      <SkeletonLoader variant="table" lines={4} />
       {title ? (
         <h1 className="loading-text loading-title">{title}</h1>
       ) : (
