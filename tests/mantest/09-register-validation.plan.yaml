@@ -37,8 +37,50 @@ steps:
   - action: Fill registration fields
     fill: { testId: register-email, value: "local-only-test@example.com", clear: true }
 
+  - action: Bad email shows inline error
+    code: |
+      const email = page.getByTestId('register-email');
+      await email.fill('bad');
+      await email.press('Tab');
+      await page.waitForFunction(() => {
+        const t = document.body?.innerText || '';
+        return /please enter a valid email address/i.test(t);
+      }, { timeout: 8000 });
+      const err = page.getByTestId('register-email-error');
+      if ((await err.count()) === 0) throw new Error('inline email error missing');
+      if ((await email.getAttribute('aria-invalid')) !== 'true') throw new Error('email aria-invalid not set');
+    settle_ms: 200
+    assert:
+      - text contains Please enter a valid email address
+
   - action: Password value
     fill: { testId: register-password, value: "SecurePass!2024AA", clear: true }
+
+  - action: Google button precedes the or divider
+    code: |
+      const ok = await page.evaluate(() => {
+        const btn = Array.from(document.querySelectorAll('button')).find((b) => /continue with google/i.test(b.textContent || ''));
+        const divider = document.querySelector('.divider');
+        if (!btn || !divider) return false;
+        return (btn.compareDocumentPosition(divider) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+      });
+      if (!ok) throw new Error('Google button should precede the or divider');
+    settle_ms: 200
+
+  - action: Short password shows inline error
+    code: |
+      const pw = page.getByTestId('register-password');
+      await pw.fill('short1!');
+      await pw.press('Tab');
+      await page.waitForFunction(() => {
+        const t = document.body?.innerText || '';
+        return /at least 12 characters/i.test(t);
+      }, { timeout: 8000 });
+      const err = page.getByTestId('register-password-error');
+      if ((await err.count()) === 0) throw new Error('inline password error missing');
+    settle_ms: 200
+    assert:
+      - text contains Password must be at least 12 characters long
 
   - action: Show password toggle
     code: |

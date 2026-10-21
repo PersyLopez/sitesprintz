@@ -30,6 +30,8 @@ function Register() {
   );
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [inviteOnly, setInviteOnly] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
 
   useLayoutEffect(() => {
     document.title = `${t('nav.getStarted')} — ${t('brand.name')}`;
@@ -130,11 +132,60 @@ function Register() {
     };
   }, [showError, turnstileSiteKey, locale]);
 
+  const validateEmail = (email) => {
+    if (!email) return t('auth.emailRequired');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return t('auth.emailInvalid');
+    return '';
+  };
+
+  const validatePassword = (password) => {
+    if (!password) return t('auth.passwordRequired');
+    if (password.length < 12) return 'Password must be at least 12 characters long';
+    if (!/[A-Z]/.test(password)) return 'Password must contain at least one uppercase letter';
+    if (!/[a-z]/.test(password)) return 'Password must contain at least one lowercase letter';
+    if (!/[0-9]/.test(password)) return 'Password must contain at least one number';
+    if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) return 'Password must contain at least one special character (!@#$%^&*()_+-=[]{}|;:,.<>?)';
+    return '';
+  };
+
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors({
+        ...errors,
+        [name]: '',
+      });
+    }
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setTouched({
+      ...touched,
+      [name]: true,
+    });
+
+    // Validate on blur
+    let error = '';
+    if (name === 'email') {
+      error = validateEmail(value);
+    } else if (name === 'password') {
+      error = validatePassword(value);
+    }
+
+    if (error) {
+      setErrors({
+        ...errors,
+        [name]: error,
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -145,15 +196,19 @@ function Register() {
       return;
     }
 
-    // Validate email
-    if (!formData.email) {
-      showError('Email is required');
-      return;
-    }
+    // Validate email and password inline before touching the server
+    const emailError = validateEmail(formData.email);
+    const passwordError = validatePassword(formData.password);
 
-    // Validate password
-    if (!formData.password) {
-      showError('Password is required');
+    if (emailError || passwordError) {
+      setErrors({
+        email: emailError,
+        password: passwordError,
+      });
+      setTouched({
+        email: true,
+        password: true,
+      });
       return;
     }
 
@@ -255,10 +310,6 @@ function Register() {
             </div>
           )}
 
-          <div className="divider">
-            <span>or</span>
-          </div>
-
           <button
             type="button"
             onClick={handleGoogleSignup}
@@ -275,6 +326,10 @@ function Register() {
             {t('auth.google')}
           </button>
 
+          <div className="divider">
+            <span>or</span>
+          </div>
+
           <form onSubmit={handleSubmit} className="auth-form" noValidate>
             <div className="form-group">
               <label htmlFor="email">{t('auth.email')}</label>
@@ -286,10 +341,20 @@ function Register() {
                 data-testid="register-email"
                 value={formData.email}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="you@example.com"
                 required
                 disabled={loading || inviteOnly}
+                aria-invalid={errors.email && touched.email ? 'true' : 'false'}
+                aria-describedby={errors.email && touched.email ? 'email-error' : undefined}
+                className={errors.email && touched.email ? 'error' : ''}
               />
+              {errors.email && touched.email && (
+                <div className="form-error" id="email-error" role="alert" data-testid="register-email-error">
+                  <span>⚠️</span>
+                  <span>{errors.email}</span>
+                </div>
+              )}
             </div>
 
             <div className="form-group">
@@ -303,10 +368,14 @@ function Register() {
                   data-testid="register-password"
                   value={formData.password}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   placeholder="Create a secure password"
                   required
                   disabled={loading || inviteOnly}
                   minLength={12}
+                  aria-invalid={errors.password && touched.password ? 'true' : 'false'}
+                  aria-describedby={errors.password && touched.password ? 'password-error' : undefined}
+                  className={errors.password && touched.password ? 'error' : ''}
                 />
                 <button
                   type="button"
@@ -319,6 +388,12 @@ function Register() {
                   {showPassword ? 'Hide' : 'Show'}
                 </button>
               </div>
+              {errors.password && touched.password && (
+                <div className="form-error" id="password-error" role="alert" data-testid="register-password-error">
+                  <span>⚠️</span>
+                  <span>{errors.password}</span>
+                </div>
+              )}
               <small className="form-hint">At least 12 characters, with a number and a symbol.</small>
             </div>
 

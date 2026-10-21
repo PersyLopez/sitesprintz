@@ -71,7 +71,7 @@ describe('Register Component', () => {
     expect(screen.getByText('At least 12 characters, with a number and a symbol.')).toBeInTheDocument();
   });
 
-  it('should show an error when submitting without a password', async () => {
+  it('should show an inline error when submitting without a password', async () => {
     const user = userEvent.setup();
     renderRegister();
 
@@ -81,9 +81,50 @@ describe('Register Component', () => {
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
     await waitFor(() => {
-      expect(mockShowError).toHaveBeenCalledWith('Password is required');
+      expect(screen.getByTestId('register-password-error')).toHaveTextContent('Password is required');
     });
     expect(mockRegister).not.toHaveBeenCalled();
+  });
+
+  it('should show an inline error when the email is invalid', async () => {
+    const user = userEvent.setup();
+    renderRegister();
+
+    const emailInput = screen.getByLabelText(/email/i);
+    await user.type(emailInput, 'bad');
+    await user.tab();
+    await acceptTerms(user);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('register-email-error')).toHaveTextContent('Please enter a valid email address');
+    });
+    expect(emailInput).toHaveAttribute('aria-invalid', 'true');
+    expect(emailInput).toHaveAttribute('aria-describedby', 'email-error');
+  });
+
+  it('should name the missing password rule inline', async () => {
+    const user = userEvent.setup();
+    renderRegister();
+
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com');
+    await user.type(screen.getByLabelText(/^password$/i), 'short1!');
+    await user.tab();
+    await acceptTerms(user);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('register-password-error')).toHaveTextContent('Password must be at least 12 characters long');
+    });
+    expect(mockRegister).not.toHaveBeenCalled();
+  });
+
+  it('should render the Google button above the or divider', () => {
+    renderRegister();
+
+    const googleButton = screen.getByRole('button', { name: /continue with google/i });
+    const divider = document.querySelector('.divider');
+    expect(googleButton).toBeInTheDocument();
+    expect(divider).toBeInTheDocument();
+    expect(googleButton.compareDocumentPosition(divider) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('should toggle password visibility', async () => {
