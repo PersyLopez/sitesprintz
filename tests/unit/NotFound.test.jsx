@@ -175,9 +175,11 @@ describe('NotFound Page', () => {
       
       const h1 = screen.getByRole('heading', { level: 1 });
       expect(h1).toHaveTextContent('Page Not Found');
-      
-      const h3 = screen.getByRole('heading', { level: 3 });
-      expect(h3).toHaveTextContent('Helpful Links');
+
+      const h2 = screen.getByRole('heading', { level: 2 });
+      expect(h2).toHaveTextContent('Helpful Links');
+
+      expect(screen.queryByRole('heading', { level: 3 })).not.toBeInTheDocument();
     });
 
     it('should have descriptive link text', () => {

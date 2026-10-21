@@ -64,3 +64,13 @@ steps:
     assert:
       - text contains Page Not Found
       - text contains Go Home
+    code: |
+      const headings = await page.locator('main h1, main h2, main h3, main h4, main h5, main h6').all();
+      const first = headings[0];
+      const second = headings[1];
+      if (!first || (await first.evaluate(el => el.tagName)) !== 'H1' || !(await first.textContent()).includes('Page Not Found')) {
+        throw new Error('First 404 heading is not h1 Page Not Found');
+      }
+      if (!second || (await second.evaluate(el => el.tagName)) !== 'H2' || !(await second.textContent()).includes('Helpful Links')) {
+        throw new Error('Second 404 heading is not h2 Helpful Links');
+      }

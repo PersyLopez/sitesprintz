@@ -47,7 +47,7 @@ function NotFound() {
           </div>
 
           <div className="helpful-links">
-            <h3>Helpful Links</h3>
+            <h2>Helpful Links</h2>
             <div className="links-grid">
               <Link to="/showcase" className="helpful-link">
                 <span className="link-icon">🖼️</span>
