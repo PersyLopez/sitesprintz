@@ -138,11 +138,11 @@ export function BillingSection({ user, token }) {
 
   return (
     <div className="settings-section">
-      <h2>💳 Billing Management</h2>
+      <h1>💳 Billing Management</h1>
       <p className="section-description">Manage your subscription and payment methods</p>
       
       <div className="settings-card">
-        <h3>Subscription &amp; Payment Method</h3>
+        <h2>Subscription &amp; Payment Method</h2>
         {collectsPayments !== false && (
           <>
             <p>Access the Stripe Customer Portal to manage your subscription and payment methods.</p>
@@ -163,7 +163,7 @@ export function BillingSection({ user, token }) {
       </div>
 
       <div className="settings-card">
-        <h3>Current Plan</h3>
+        <h2>Current Plan</h2>
         <div className="billing-info">
           <div className="info-row">
             <span className="label">Plan: </span>
@@ -333,7 +333,7 @@ function Settings() {
       <Header />
       <main className="settings-container">
         <div className="settings-sidebar">
-          <h2>Settings</h2>
+          <p className="settings-sidebar-title">Settings</p>
           <nav className="settings-nav">
             {settingsTabs.map(tab => (
               <Link
@@ -357,7 +357,7 @@ function Settings() {
                 <FoundationSettings site={primarySite} onUpdate={() => {}} />
               ) : (
                 <div className="settings-section" data-testid="settings-foundation-empty">
-                  <h2>🏢 Foundation Settings</h2>
+                  <h1>🏢 Foundation Settings</h1>
                   {sitesLoading ? (
                     <p>Loading foundation settings...</p>
                   ) : (
@@ -379,7 +379,7 @@ function Settings() {
                 <CustomDomainSettings subdomain={primarySubdomain} />
               ) : (
                 <div className="settings-section" data-testid="settings-domain-empty">
-                  <h2>🌐 Custom Domain</h2>
+                  <h1>🌐 Custom Domain</h1>
                   {sitesLoading ? (
                     <p>Loading domain settings...</p>
                   ) : (

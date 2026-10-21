@@ -26,6 +26,13 @@
   margin: 0 0 24px 0;
 }
 
+.settings-sidebar-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-light);
+  margin: 0 0 24px 0;
+}
+
 .settings-nav {
   display: flex;
   flex-direction: column;
@@ -83,6 +90,13 @@
 }
 
 .settings-section h2 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-light);
+  margin: 0 0 12px 0;
+}
+
+.settings-section h1 {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--text-light);

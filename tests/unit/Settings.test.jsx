@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import { BillingSection } from '../../src/pages/Settings';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import Settings, { BillingSection } from '../../src/pages/Settings';
 
 function mockFetch(healthBilling) {
   vi.stubGlobal('fetch', vi.fn((url) => {
@@ -21,6 +21,18 @@ vi.mock('../../src/components/pricing/LaborCheckoutButtons', () => ({
 vi.mock('../../src/components/pricing/LaborExtrasNote', () => ({
   default: () => null,
 }));
+vi.mock('../../src/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: 'u1' }, token: 'tok' }),
+}));
+vi.mock('../../src/components/layout/Header', () => ({ default: () => null }));
+vi.mock('../../src/components/layout/Footer', () => ({ default: () => null }));
+vi.mock('../../src/components/common/HelpPanel', () => ({
+  default: ({ children }) => children ?? null,
+}));
+vi.mock('../../src/components/common/FAQWidget', () => ({ default: () => null }));
+vi.mock('../../src/components/setup/forms/PaymentSettings', () => ({ default: () => null }));
+vi.mock('../../src/components/dashboard/FoundationSettings', () => ({ default: () => null }));
+vi.mock('../../src/components/dashboard/CustomDomainSettings', () => ({ default: () => null }));
 
 function renderBilling(user = { id: 'u1' }) {
   return render(
@@ -66,5 +78,43 @@ describe('Settings BillingSection', () => {
     renderBilling({ id: 'u1', plan: 'pro' });
 
     expect(await screen.findByTestId('billing-plan-name')).toHaveTextContent('Growth');
+  });
+});
+
+describe('Settings heading order (QA AX-02)', () => {
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
+
+  function renderSettingsPage() {
+    return render(
+      <MemoryRouter initialEntries={['/settings/billing']}>
+        <Routes>
+          <Route path="/settings/*" element={<Settings />} />
+        </Routes>
+      </MemoryRouter>
+    );
+  }
+
+  it('announces Billing Management as h1 and its blocks as h2 on the billing route', async () => {
+    mockFetch(true);
+    renderSettingsPage();
+
+    const pageHeading = await screen.findByRole('heading', { level: 1, name: /Billing Management/ });
+    expect(pageHeading).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: /Subscription & Payment Method/ })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: /Current Plan/ })).toBeInTheDocument();
+  });
+
+  it('renders the sidebar label as text, not a heading', async () => {
+    mockFetch(true);
+    renderSettingsPage();
+
+    await screen.findByRole('heading', { level: 1, name: /Billing Management/ });
+    expect(screen.getByText('Settings')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Settings' })).not.toBeInTheDocument();
   });
 });
