@@ -6,6 +6,33 @@
 // - Pro: Single-page with advanced features (products, booking, payments)
 // - Premium: Multi-page website with full navigation, subpages, galleries
 
+/**
+ * QA C-06: demo/template content must not advertise accounts the business does
+ * not own. Walk the content and blank any string linking to a social or
+ * booking account. Maps search URLs are kept. Pure: returns a new value.
+ */
+const UNOWNED_ACCOUNT_HOSTS = [
+  'facebook.com/',
+  'instagram.com/',
+  'twitter.com/',
+  'tiktok.com/',
+  'yelp.com/',
+  'calendly.com/',
+];
+
+export function stripUnownedAccountLinks(value) {
+  if (typeof value === 'string') {
+    return UNOWNED_ACCOUNT_HOSTS.some((host) => value.includes(host)) ? '' : value;
+  }
+  if (Array.isArray(value)) return value.map(stripUnownedAccountLinks);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, stripUnownedAccountLinks(entry)])
+    );
+  }
+  return value;
+}
+
 export const generateDemoContent = (templateId) => {
   const baseTemplate = templateId.split('-')[0]; // e.g., 'restaurant' from 'restaurant-pro'
   const tier = templateId.includes('-premium') ? 'premium' 
@@ -1284,25 +1311,25 @@ export const generateDemoContent = (templateId) => {
   // Get the demo content for this template and tier
   const templateContent = demoContent[baseTemplate];
   if (!templateContent) {
-    return {
+    return stripUnownedAccountLinks({
       template: templateId,
       templateId: templateId,
       id: templateId,
       businessName: 'Demo Business',
       services: [],
       products: []
-    };
+    });
   }
   
   const content = templateContent[tier] || templateContent.pro || templateContent.starter;
   
-  return {
+  return stripUnownedAccountLinks({
     ...content,
     template: templateId,
     templateId: templateId,
     id: templateId,
     tier: tier,
-  };
+  });
 };
 
 export default generateDemoContent;

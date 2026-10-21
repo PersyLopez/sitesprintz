@@ -492,6 +492,38 @@ describe('SiteContext', () => {
       expect(result.current.siteData.businessName).toBe('Template Name');
       expect(result.current.canUndo).toBe(false);
     });
+
+    it('strips unowned social and booking account links on load', () => {
+      // QA C-06: choosing a template must not copy accounts the business
+      // does not own into the draft. Maps search URLs stay.
+      const { result } = renderSiteHook();
+      act(() => {
+        result.current.loadTemplate({
+          id: 'salon',
+          businessName: 'Luxe Beauty Studio',
+          menu: { sections: [{ name: 'Hair' }] },
+          social: {
+            facebook: 'https://facebook.com/luxebeautystudio',
+            maps: 'https://maps.google.com/?q=Luxe+Beauty+Studio',
+          },
+          features: {
+            bookingWidget: {
+              enabled: true,
+              provider: 'calendly',
+              url: 'https://calendly.com/luxebeautystudio',
+            },
+          },
+        });
+      });
+
+      const stored = JSON.stringify(result.current.siteData);
+      expect(stored).not.toContain('facebook.com/');
+      expect(stored).not.toContain('calendly.com/');
+      expect(result.current.siteData.social.maps).toBe(
+        'https://maps.google.com/?q=Luxe+Beauty+Studio'
+      );
+      expect(result.current.siteData.businessName).toBe('Luxe Beauty Studio');
+    });
   });
 
   describe('Auto-save', () => {

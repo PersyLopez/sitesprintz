@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import { draftsService } from '../services/drafts';
 import { useToast } from '../hooks/useToast';
-import { generateDemoContent } from '../utils/demoContent';
+import { generateDemoContent, stripUnownedAccountLinks } from '../utils/demoContent';
 import { colorsFromSiteTheme, DEFAULT_SITE_THEME_ID, normalizeSiteThemeId } from '../config/siteThemes';
 import { normalizeTemplateSections } from '../utils/sectionNormalizer';
 import { getLayoutForNiche } from '../config/layouts';
@@ -309,7 +309,7 @@ export function SiteProvider({ children }) {
     const hasRichContent = templateData.menu || templateData.team || templateData.gallery || templateData.testimonials
       || (Array.isArray(templateData.sections) && templateData.sections.length > 0);
 
-    const fullTemplateData = hasRichContent ? {
+    const fullTemplateData = stripUnownedAccountLinks(hasRichContent ? {
       // Use actual template data as primary source for Pro templates
       ...templateData,
       // Ensure core IDs are set
@@ -369,7 +369,7 @@ export function SiteProvider({ children }) {
       template: templateKey,
       templateId: templateKey,
       id: templateKey
-    };
+    });
 
     const nicheId = fullTemplateData.template || fullTemplateData.id;
     const existingSections = Array.isArray(fullTemplateData.sections) ? fullTemplateData.sections : [];

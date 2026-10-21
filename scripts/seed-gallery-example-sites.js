@@ -21,6 +21,7 @@ import {
   getSiteTheme,
 } from '../src/config/siteThemes.js';
 import { TEMPLATE_TO_SHOWCASE_SUBDOMAIN } from '../src/utils/galleryTemplateMap.js';
+import { stripUnownedAccountLinks } from '../src/utils/demoContent.js';
 import { PLATFORM_SUPPORT_EMAIL } from '../src/config/pricing.config.js';
 import StaffManagementService from '../server/services/booking/StaffManagementService.js';
 import BookingFeeService from '../server/services/booking/BookingFeeService.js';
@@ -261,30 +262,11 @@ export function stripNicheTemplateOverlay(catalog) {
 
 /**
  * QA C-06: gallery demos must not advertise accounts the demo business does
- * not own. Walk the catalog and blank any string linking to a social or
- * booking account. Maps search URLs are kept. Pure: returns a new value.
+ * not own. stripUnownedAccountLinks lives in src/utils/demoContent.js so
+ * template loads and publish copies share the same host list; re-exported
+ * here for the gallery seed tests.
  */
-const UNOWNED_ACCOUNT_HOSTS = [
-  'facebook.com/',
-  'instagram.com/',
-  'twitter.com/',
-  'tiktok.com/',
-  'yelp.com/',
-  'calendly.com/',
-];
-
-export function stripUnownedAccountLinks(value) {
-  if (typeof value === 'string') {
-    return UNOWNED_ACCOUNT_HOSTS.some((host) => value.includes(host)) ? '' : value;
-  }
-  if (Array.isArray(value)) return value.map(stripUnownedAccountLinks);
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.entries(value).map(([key, entry]) => [key, stripUnownedAccountLinks(entry)])
-    );
-  }
-  return value;
-}
+export { stripUnownedAccountLinks } from '../src/utils/demoContent.js';
 
 function flattenProducts(catalog, generated) {
   if (Array.isArray(generated.products) && generated.products.length > 0) {

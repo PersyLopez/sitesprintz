@@ -345,6 +345,15 @@ describe('site isolation — template copies', () => {
     copyA.brand.name = 'Mutated Tenant';
     expect(copyB.brand?.name).not.toBe('Mutated Tenant');
   });
+
+  it('loadTemplateCopy strips unowned account links but keeps brand', async () => {
+    // QA C-06: salon template carries facebook + calendly links the business
+    // does not own yet; a fresh template copy must not inherit them.
+    const copy = await loadTemplateCopy('salon');
+    expect(JSON.stringify(copy)).not.toContain('facebook.com/');
+    expect(JSON.stringify(copy)).not.toContain('calendly.com/');
+    expect(copy.brand?.name).toBe('Luxe Beauty Studio');
+  });
 });
 
 describe('site isolation — subdomain allocation', () => {

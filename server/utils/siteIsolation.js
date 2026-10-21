@@ -17,6 +17,7 @@ import { fileURLToPath } from 'url';
 import { validateDraftId, validateSubdomain, validateTemplateId } from './validators.js';
 import { toPublicSiteData } from '../../src/utils/liveSiteContact.js';
 import { isPlatformHostname } from '../../src/utils/customDomainHost.js';
+import { stripUnownedAccountLinks } from '../../src/utils/demoContent.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -443,7 +444,9 @@ export async function deleteDraftFile(draftId) {
 export async function loadTemplateCopy(templateId) {
   const templatePath = getTemplateFilePath(templateId);
   const raw = await fs.readFile(templatePath, 'utf-8');
-  return deepClone(JSON.parse(raw));
+  // QA C-06: catalog templates carry social/booking account links the
+  // business does not own; blank them so drafts and publish copies start clean.
+  return stripUnownedAccountLinks(deepClone(JSON.parse(raw)));
 }
 
 export async function writeIsolatedSiteFiles(subdomain, siteData) {
