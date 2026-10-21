@@ -200,8 +200,7 @@ class GalleryService {
       const updatedSite = await prisma.sites.update({
         where: { id: siteId },
         data: {
-          is_public: isPublic,
-          updated_at: new Date()
+          is_public: isPublic
         },
         select: {
           id: true,
