@@ -269,7 +269,7 @@
 
 .gl-tag {
   background: var(--accent-soft, #fff1de);
-  color: var(--accent-deep, #c45a0a);
+  color: var(--text-secondary, #5c4a3d);
   padding: 3px 8px;
   border-radius: 6px;
   font-size: 0.7rem;
@@ -286,7 +286,7 @@
   font-family: var(--font-display, 'Outfit', sans-serif);
   font-size: 0.85rem;
   font-weight: 700;
-  color: var(--accent-deep, #c45a0a);
+  color: var(--sp-accent-action, #b4550c);
   transition: letter-spacing 180ms ease;
 }
 

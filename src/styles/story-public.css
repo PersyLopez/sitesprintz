@@ -226,10 +226,13 @@
 }
 
 .story-public .footer-tagline,
-.public-page .footer-tagline,
+.public-page .footer-tagline {
+  color: #c4a484;
+}
+
 .story-public .footer-copyright,
 .public-page .footer-copyright {
-  color: #c4a484;
+  color: var(--sp-muted);
 }
 
 .story-public .footer-column .footer-heading,
