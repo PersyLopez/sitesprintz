@@ -67,6 +67,7 @@ describe('BookingDashboard Component - TDD', () => {
     it('should show loading state initially', () => {
       renderWithProviders(<BookingDashboard />);
       expect(screen.getAllByText(/loading/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByLabelText(/loading content/i).length).toBeGreaterThanOrEqual(3);
     });
 
     it('should render navigation tabs', async () => {

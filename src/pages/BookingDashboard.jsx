@@ -11,6 +11,7 @@ import AppointmentList from '../components/booking/AppointmentList';
 import TeamCalendar from '../components/booking/TeamCalendar';
 import AvailabilityScheduler from '../components/booking/AvailabilityScheduler';
 import BookingIntakeSettings from '../components/booking/BookingIntakeSettings';
+import SkeletonLoader from '../components/common/SkeletonLoader';
 import './BookingDashboard.css';
 
 const BookingDashboard = () => {
@@ -199,7 +200,18 @@ const BookingDashboard = () => {
 
             {/* Stats Cards */}
             {loading && (
-              <div className="loading" role="status">Loading...</div>
+              <div className="stats-row stats-row-loading" data-testid="stats-row-loading" aria-busy="true">
+                <span className="sr-only">Loading stats...</span>
+                <div className="stats-row-item">
+                  <SkeletonLoader variant="card" width="100%" height="72px" />
+                </div>
+                <div className="stats-row-item">
+                  <SkeletonLoader variant="card" width="100%" height="72px" />
+                </div>
+                <div className="stats-row-item">
+                  <SkeletonLoader variant="card" width="100%" height="72px" />
+                </div>
+              </div>
             )}
 
             {statsError && (
