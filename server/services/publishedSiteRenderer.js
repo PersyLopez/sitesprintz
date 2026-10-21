@@ -35,7 +35,10 @@ class PublishedSiteRenderer {
     });
     const schema = this.seoService.generateSchemaMarkup(siteData.category || 'service', siteData);
     const canonicalUrl = this.seoService.getCanonicalUrl(resolvedSubdomain, '/', { customDomain });
-    const markup = buildLiveSiteMarkup(siteData, { locale: options.locale || 'en' });
+    const markup = buildLiveSiteMarkup(siteData, {
+      locale: options.locale || 'en',
+      subdomain: resolvedSubdomain
+    });
 
     return this._buildHtmlDocument({
       metaTags,

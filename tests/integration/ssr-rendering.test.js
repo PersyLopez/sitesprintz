@@ -56,6 +56,26 @@ describe('Published Site SSR Rendering', () => {
       expect(html).toContain('property="og:image:height"');
     });
 
+    it('should write the resolved subdomain into the contact form hidden input', async () => {
+      const html = await publishedSiteRenderer.render(
+        {
+          businessName: 'Best Pizza',
+          businessDescription: 'Test business description that is long enough',
+          sections: [
+            {
+              type: 'contact',
+              enabled: true,
+              content: { email: 'orders@bestpizza.com' }
+            }
+          ]
+        },
+        { siteIdentifier: 'best-pizza' }
+      );
+
+      expect(html).toContain('name="subdomain"');
+      expect(html).toContain('value="best-pizza"');
+    });
+
     it('should include Twitter Card meta tags', async () => {
       const siteData = {
         businessName: 'Test Business',
