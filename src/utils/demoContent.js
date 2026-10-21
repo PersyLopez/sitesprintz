@@ -533,11 +533,11 @@ export const generateDemoContent = (templateId) => {
         
         // Social
         social: {
-          facebook: 'https://facebook.com/thegrandtable',
-          instagram: 'https://instagram.com/thegrandtable',
-          twitter: 'https://twitter.com/thegrandtable',
-          maps: 'https://maps.google.com/?q=The+Grand+Table+Restaurant',
-          yelp: 'https://yelp.com/biz/thegrandtable'
+          facebook: '',
+          instagram: '',
+          twitter: '',
+          maps: '',
+          yelp: ''
         },
         
         // Colors
@@ -552,7 +552,7 @@ export const generateDemoContent = (templateId) => {
           bookingWidget: {
             enabled: true,
             provider: 'calendly',
-            url: 'https://calendly.com/thegrandtable'
+            url: ''
           },
           tabbedMenu: true,
           ownerDashboard: true,

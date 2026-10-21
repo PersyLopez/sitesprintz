@@ -62,7 +62,7 @@
     "bookingWidget": {
       "enabled": true,
       "provider": "calendly",
-      "url": "https://calendly.com/thegrandtable"
+      "url": ""
     },
     "tabbedMenu": true,
     "ownerDashboard": true,
@@ -522,15 +522,15 @@
     },
     "reservations": {
       "phone": "(555) 789-0123",
-      "online": "https://calendly.com/thegrandtable",
+      "online": "",
       "note": "Book online or call for same-day reservations"
     }
   },
   "social": {
-    "facebook": "https://facebook.com/thegrandtable",
-    "instagram": "https://instagram.com/thegrandtable",
-    "googleMaps": "https://maps.google.com/thegrandtable",
-    "yelp": "https://yelp.com/biz/thegrandtable-sf"
+    "facebook": "",
+    "instagram": "",
+    "googleMaps": "",
+    "yelp": ""
   },
   "stats": {
     "items": [

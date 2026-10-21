@@ -1,0 +1,19 @@
+url: http://localhost:5173/view/gallery-restaurant
+goal: Grand Table demo site renders no unowned social or Calendly links (QA C-06)
+steps:
+  - action: Page settled
+    wait_for: { text: The Grand Table, timeout: 30000 }
+    settle_ms: 2000
+
+  - action: No unowned social or booking links in page HTML
+    code: |
+      const html = await page.content();
+      const forbidden = [
+        'facebook.com/thegrandtable',
+        'instagram.com/thegrandtable',
+        'yelp.com/biz/thegrandtable',
+        'calendly.com/thegrandtable',
+      ];
+      for (const host of forbidden) {
+        if (html.includes(host)) throw new Error('Forbidden link found on gallery-restaurant: ' + host);
+      }
