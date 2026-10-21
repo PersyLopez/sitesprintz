@@ -161,21 +161,29 @@ describe('ShowcaseDetail Component', () => {
         status: 404,
         json: async () => ({ error: 'Site not found' })
       });
-      
+
       renderWithRouter(<ShowcaseDetail />);
-      
+
       await waitFor(() => {
         expect(screen.getByText(/not found/i)).toBeInTheDocument();
+        const errorHeading = screen.getByRole('heading', {
+          name: /Oops! Something went wrong/i
+        });
+        expect(errorHeading).toHaveProperty('tagName', 'H1');
       });
     });
 
     it('should handle network errors gracefully', async () => {
       global.fetch.mockRejectedValueOnce(new Error('Network error'));
-      
+
       renderWithRouter(<ShowcaseDetail />);
-      
+
       await waitFor(() => {
         expect(screen.getByText(/error/i)).toBeInTheDocument();
+        const errorHeading = screen.getByRole('heading', {
+          name: /Oops! Something went wrong/i
+        });
+        expect(errorHeading).toHaveProperty('tagName', 'H1');
       });
     });
   });

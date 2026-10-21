@@ -171,7 +171,7 @@ function ShowcaseDetail() {
     return (
       <PublicPageLayout className="showcase-detail-page">
         <div className="showcase-detail-error">
-          <h2>Oops! Something went wrong</h2>
+          <h1>Oops! Something went wrong</h1>
           <p>{error}</p>
           <div className="error-actions">
             <button type="button" onClick={handleRetry} className="btn btn-primary">
@@ -190,7 +190,7 @@ function ShowcaseDetail() {
     return (
       <PublicPageLayout className="showcase-detail-page">
         <div className="showcase-detail-error">
-          <h2>Site not found</h2>
+          <h1>Site not found</h1>
           <p>This site doesn&apos;t exist or is not public.</p>
           <Link to="/showcase" className="btn btn-primary">
             Back to Gallery

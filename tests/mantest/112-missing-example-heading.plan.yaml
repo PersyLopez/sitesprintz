@@ -1,0 +1,15 @@
+url: http://localhost:5173/showcase/does-not-exist-xyz
+goal: Missing example page announces its error as an h1 first inside main, no login (QA AX-02)
+steps:
+  - action: Not-found state appears
+    wait_for: { text: Site not found, timeout: 20000 }
+
+  - action: First heading inside main is h1
+    code: |
+      const firstHeading = page.locator('main h1, main h2, main h3, main h4, main h5, main h6').first();
+      await firstHeading.waitFor({ timeout: 15000 });
+      const tag = await firstHeading.evaluate((el) => el.tagName.toLowerCase());
+      if (tag !== 'h1') {
+        throw new Error('First heading inside main on /showcase/does-not-exist-xyz is <' + tag + '>, not <h1>');
+      }
+    settle_ms: 400

@@ -37,6 +37,7 @@
   to { transform: rotate(360deg); }
 }
 
+.showcase-detail-error h1,
 .showcase-detail-error h2 {
   font-family: var(--sp-font-display, 'Outfit', sans-serif);
   font-size: 1.85rem;
