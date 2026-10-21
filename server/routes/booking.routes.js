@@ -469,13 +469,27 @@ router.get('/tenants/:userId/appointments/:identifier', asyncHandler(async (req,
   const { userId, identifier } = req.params;
   const email = req.query.email || req.headers['x-customer-email'];
 
-  const allowed = await requireGrowthBooking(userId);
-  if (!allowed) {
-    return sendForbidden(res, 'Native booking requires Growth plan', 'GROWTH_PLAN_REQUIRED');
+  // Resolve the public path id the same way appointment creation does, so a
+  // visitor who booked by shop address can look the appointment up by it.
+  const target = await resolvePublicBookingTarget(userId, publicSiteId(req));
+  if (target.kind === 'unknown') {
+    return sendNotFound(res, 'Booking tenant', 'BOOKING_TENANT_NOT_FOUND');
   }
 
-  const tenant = await bookingService.getOrCreateTenant(userId, publicSiteId(req));
-  const appointment = await bookingService.getAppointment(identifier, tenant.id);
+  // A booking_tenants UUID skips the plan check and tenant resolution entirely.
+  let tenantId;
+  if (target.kind === 'tenant') {
+    tenantId = target.tenantId;
+  } else {
+    const allowed = await requireGrowthBooking(target.userId);
+    if (!allowed) {
+      return sendForbidden(res, 'Native booking requires Growth plan', 'GROWTH_PLAN_REQUIRED');
+    }
+    const tenant = await resolvePublicTenant(target.userId, target.siteId);
+    tenantId = tenant.id;
+  }
+
+  const appointment = await bookingService.getAppointment(identifier, tenantId);
 
   if (!appointment) {
     return sendNotFound(res, 'Appointment', 'APPOINTMENT_NOT_FOUND');
@@ -505,20 +519,36 @@ router.delete('/tenants/:userId/appointments/:identifier', asyncHandler(async (r
   const { userId, identifier } = req.params;
   const { reason, cancelled_by = 'customer', customer_email } = req.body || {};
 
-  const allowed = await requireGrowthBooking(userId);
-  if (!allowed) {
-    return sendForbidden(res, 'Native booking requires Growth plan', 'GROWTH_PLAN_REQUIRED');
+  // Resolve the public path id the same way appointment creation does.
+  const target = await resolvePublicBookingTarget(userId, publicSiteId(req));
+  if (target.kind === 'unknown') {
+    return sendNotFound(res, 'Booking tenant', 'BOOKING_TENANT_NOT_FOUND');
   }
 
-  const tenant = await bookingService.getOrCreateTenant(userId, publicSiteId(req));
-  const existing = await bookingService.getAppointment(identifier, tenant.id);
+  // A booking_tenants UUID skips the plan check and tenant resolution entirely.
+  let tenantId;
+  if (target.kind === 'tenant') {
+    tenantId = target.tenantId;
+  } else {
+    const allowed = await requireGrowthBooking(target.userId);
+    if (!allowed) {
+      return sendForbidden(res, 'Native booking requires Growth plan', 'GROWTH_PLAN_REQUIRED');
+    }
+    const tenant = await resolvePublicTenant(target.userId, target.siteId);
+    tenantId = tenant.id;
+  }
+
+  const existing = await bookingService.getAppointment(identifier, tenantId);
   if (!existing) {
     return sendNotFound(res, 'Appointment', 'APPOINTMENT_NOT_FOUND_OR_CANCELLED');
   }
 
+  // Owner cancel is judged against the resolved owner id: a published
+  // subdomain must still count as that owner, never a tenant-UUID lookup.
+  const ownerIdForCancel = target.kind === 'owner' ? target.userId : userId;
   const isOwnerCancel = ['admin', 'owner'].includes(cancelled_by)
     && req.user
-    && ((req.user.id || req.user.userId) === userId || req.user.role === 'admin');
+    && ((req.user.id || req.user.userId) === ownerIdForCancel || req.user.role === 'admin');
 
   if (!isOwnerCancel) {
     if (!customer_email) {
@@ -530,7 +560,7 @@ router.delete('/tenants/:userId/appointments/:identifier', asyncHandler(async (r
   }
 
   try {
-    const appointment = await bookingService.cancelAppointment(identifier, tenant.id, {
+    const appointment = await bookingService.cancelAppointment(identifier, tenantId, {
       reason: sanitizeCancelReason(reason),
       cancelled_by: isOwnerCancel ? 'admin' : cancelled_by,
     });

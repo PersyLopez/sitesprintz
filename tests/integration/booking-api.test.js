@@ -492,9 +492,15 @@ describe('Booking API Integration Tests', () => {
   });
 
   describe('GET /api/booking/tenants/:userId/appointments/:identifier', () => {
+    const OWNER_UUID = '9f1c3b2a-7c4d-4e8a-9b2f-1a6e5d3c7b90';
+    const TENANT_UUID = '2b8e4f61-9a3c-4d7b-8e5f-0c1d2a3b4e5f';
+    const growthUser = { id: OWNER_UUID, plan: 'growth', subscription_plan: 'growth' };
+
     it('should return 404 if appointment not found', async () => {
+      mockPrisma.sites.findFirst.mockResolvedValue({ user_id: 'user-123', id: 'site-1' });
       mockPrisma.booking_tenants.findFirst.mockResolvedValue({ id: 'tenant-123' });
       mockPrisma.booking_appointments.findFirst.mockResolvedValue(null);
+      mockPrisma.appointments.findFirst.mockResolvedValue(null);
       // Self-contained: do not rely on a growth-user mock left over from an earlier test
       mockPrisma.users.findUnique.mockResolvedValue({ id: 'user-123', plan: 'growth', subscription_plan: 'growth' });
 
@@ -503,6 +509,63 @@ describe('Booking API Integration Tests', () => {
         .expect(404);
 
       expect(response.body.success).toBe(false);
+    });
+
+    it('should resolve a published subdomain to its owner before the plan check', async () => {
+      mockPrisma.sites.findFirst.mockResolvedValue({ user_id: OWNER_UUID, id: 'site-1' });
+      mockPrisma.users.findUnique.mockResolvedValue(growthUser);
+      mockPrisma.booking_tenants.findFirst.mockResolvedValue({ id: 'tenant-123' });
+      mockPrisma.booking_appointments.findFirst.mockResolvedValue(null);
+      mockPrisma.appointments.findFirst.mockResolvedValue(null);
+
+      const response = await request(app)
+        .get('/api/booking/tenants/gallery-salon/appointments/nonexistent')
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+      expect(mockPrisma.users.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: OWNER_UUID } })
+      );
+    });
+
+    it('should return 404 for an unknown subdomain without touching users or tenants', async () => {
+      mockPrisma.sites.findFirst.mockResolvedValue(null);
+
+      const response = await request(app)
+        .get('/api/booking/tenants/no-such-shop/appointments/nonexistent')
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+      expect(mockPrisma.users.findUnique).not.toHaveBeenCalled();
+      expect(mockPrisma.booking_tenants.create).not.toHaveBeenCalled();
+    });
+
+    it('should skip the plan check when the id is a booking tenant UUID', async () => {
+      mockPrisma.booking_tenants.findUnique.mockResolvedValue({ id: TENANT_UUID });
+      mockPrisma.booking_appointments.findFirst.mockResolvedValue(null);
+      mockPrisma.appointments.findFirst.mockResolvedValue(null);
+
+      const response = await request(app)
+        .get(`/api/booking/tenants/${TENANT_UUID}/appointments/nonexistent`)
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+      expect(mockPrisma.users.findUnique).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('DELETE /api/booking/tenants/:userId/appointments/:identifier', () => {
+    it('should return 404 for an unknown subdomain without reaching cancel', async () => {
+      mockPrisma.sites.findFirst.mockResolvedValue(null);
+
+      const response = await request(app)
+        .delete('/api/booking/tenants/no-such-shop/appointments/nonexistent')
+        .send({ customer_email: 'jane@example.com' })
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+      expect(mockPrisma.booking_appointments.update).not.toHaveBeenCalled();
+      expect(mockPrisma.booking_tenants.create).not.toHaveBeenCalled();
     });
   });
 
