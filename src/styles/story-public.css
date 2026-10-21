@@ -227,7 +227,7 @@
 
 .story-public .footer-tagline,
 .public-page .footer-tagline {
-  color: #c4a484;
+  color: var(--sp-muted);
 }
 
 .story-public .footer-copyright,
