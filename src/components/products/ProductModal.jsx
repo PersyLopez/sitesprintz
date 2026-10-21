@@ -108,7 +108,7 @@ function ProductModal({ product, onSave, onClose }) {
             ) : null}
           </div>
         ) : (
-        <form onSubmit={handleSubmit} className="modal-body">
+        <form onSubmit={handleSubmit} noValidate className="modal-body">
           {product ? (
             <div className="form-group">
               <label>Product image</label>

@@ -73,6 +73,19 @@ steps:
       if (!ok) throw new Error('Add product UI did not open');
     settle_ms: 300
 
+  - action: Empty submit shows toast, no native bubble
+    code: |
+      const skipBtn = page.getByTestId('product-photo-skip');
+      if (await skipBtn.count()) {
+        await skipBtn.click();
+      }
+      await page.getByTestId('save-product-btn').click();
+      const body = await page.locator('body').innerText();
+      if (!body.includes('Name and price are required')) {
+        throw new Error('Expected validation toast "Name and price are required"');
+      }
+    settle_ms: 500
+
   - action: Close modal without saving
     code: |
       await page.keyboard.press('Escape').catch(() => {});

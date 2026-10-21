@@ -80,6 +80,16 @@ describe('ProductModal', () => {
   });
 
   describe('Form Validation', () => {
+    it('should show toast instead of native bubble when name is empty', () => {
+      renderAddProduct();
+
+      const submitButton = screen.getByRole('button', { name: /Add Product/i });
+      fireEvent.click(submitButton);
+
+      expect(screen.getByText('Name and price are required')).toBeInTheDocument();
+      expect(mockOnSave).not.toHaveBeenCalled();
+    });
+
     it('should prevent submit with empty name', () => {
       renderAddProduct();
       
