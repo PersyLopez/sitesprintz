@@ -235,7 +235,7 @@ describe('ShowcaseDetail Component', () => {
       
       await waitFor(() => {
         expect(screen.getByText(/Example for/i)).toBeInTheDocument();
-        expect(screen.getByText(/Plan shown/i)).toBeInTheDocument();
+        expect(screen.getByText(/^Theme$/)).toBeInTheDocument();
       });
     });
 
@@ -247,11 +247,11 @@ describe('ShowcaseDetail Component', () => {
       });
     });
 
-    it('should display site plan tier', async () => {
+    it('should display the example theme', async () => {
       renderWithRouter(<ShowcaseDetail />);
-      
+
       await waitFor(() => {
-        expect(screen.getByText(/Pro Plan/i)).toBeInTheDocument();
+        expect(screen.getByText(/Right Site Light theme/i)).toBeInTheDocument();
       });
     });
   });

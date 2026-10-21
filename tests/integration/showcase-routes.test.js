@@ -302,10 +302,10 @@ describe('Showcase Routes Integration Tests', () => {
       expect(response.text).toContain(publicSite.subdomain);
     });
 
-    it('serves the shell without a forged embed for unknown subdomains', async () => {
+    it('returns a 404 shell without a forged embed for unknown subdomains', async () => {
       const response = await request(app)
         .get('/view/no-such-published-site')
-        .expect(200)
+        .expect(404)
         .expect('Content-Type', /html/)
         .expect('Cache-Control', 'no-store');
 

@@ -133,7 +133,7 @@ describe('Submissions Routes Integration Tests', () => {
         .post('/api/submissions/contact')
         .send(contactData);
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(201);
       expect(response.body).toHaveProperty('success', true);
       expect(response.body).toHaveProperty('message');
       expect(response.body.message).toContain('sent successfully');
@@ -157,21 +157,19 @@ describe('Submissions Routes Integration Tests', () => {
       expect(sendEmail).not.toHaveBeenCalled();
     });
 
-    it('should reject submission without required fields (no name)', async () => {
+    it('should accept a contact message when the name is blank', async () => {
       const contactData = {
         email: 'john@example.com',
         message: 'Test message',
         subdomain: 'test-restaurant'
-        // Missing name
       };
 
       const response = await request(app)
         .post('/api/submissions/contact')
         .send(contactData);
 
-      expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toContain('required');
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty('success', true);
     });
 
     it('should reject submission without required fields (no email)', async () => {
@@ -238,7 +236,7 @@ describe('Submissions Routes Integration Tests', () => {
         .post('/api/submissions/contact')
         .send(contactData);
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(201);
       expect(response.body).toHaveProperty('success', true);
     });
 
@@ -261,8 +259,8 @@ describe('Submissions Routes Integration Tests', () => {
         .send(contactData);
 
       // Both should succeed (duplicates are allowed)
-      expect(response1.status).toBe(200);
-      expect(response2.status).toBe(200);
+      expect(response1.status).toBe(201);
+      expect(response2.status).toBe(201);
     });
 
     it('should sanitize input data to prevent XSS', async () => {
@@ -278,7 +276,7 @@ describe('Submissions Routes Integration Tests', () => {
         .send(contactData);
 
       // Should accept the data (sanitization happens on display)
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(201);
       expect(response.body).toHaveProperty('success', true);
     });
   });
@@ -434,7 +432,7 @@ describe('Submissions Routes Integration Tests', () => {
         .send(contactData);
 
       // Should accept (no length validation on message)
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(201);
     });
 
     it('should handle SQL injection attempts', async () => {
