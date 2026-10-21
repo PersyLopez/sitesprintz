@@ -52,6 +52,7 @@ describe('Header Component', () => {
       const homeLink = screen.getByTestId('header-logo');
       expect(homeLink).toHaveAttribute('href', '/');
       expect(homeLink).toHaveTextContent('Right Site Light');
+      expect(homeLink).toHaveAttribute('aria-label', 'Right Site Light');
     });
   });
 

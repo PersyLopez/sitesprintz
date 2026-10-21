@@ -16,7 +16,7 @@ function Footer() {
       <div className="footer-container">
         <div className="footer-content">
           <div className="footer-brand">
-            <Link to="/" className="logo" aria-label={t('header.home')}>
+            <Link to="/" className="logo" aria-label={t('brand.name')}>
               <span className="logo-icon" aria-hidden="true">
                 <PlatformMark />
               </span>

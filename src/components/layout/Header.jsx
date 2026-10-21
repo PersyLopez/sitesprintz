@@ -110,7 +110,7 @@ function Header() {
         <Link 
           to="/" 
           className="logo"
-          aria-label={t('header.home')}
+          aria-label={t('brand.name')}
           data-testid="header-logo"
         >
           <span className="logo-icon" aria-hidden="true">
