@@ -259,6 +259,33 @@ export function stripNicheTemplateOverlay(catalog) {
   };
 }
 
+/**
+ * QA C-06: gallery demos must not advertise accounts the demo business does
+ * not own. Walk the catalog and blank any string linking to a social or
+ * booking account. Maps search URLs are kept. Pure: returns a new value.
+ */
+const UNOWNED_ACCOUNT_HOSTS = [
+  'facebook.com/',
+  'instagram.com/',
+  'twitter.com/',
+  'tiktok.com/',
+  'yelp.com/',
+  'calendly.com/',
+];
+
+export function stripUnownedAccountLinks(value) {
+  if (typeof value === 'string') {
+    return UNOWNED_ACCOUNT_HOSTS.some((host) => value.includes(host)) ? '' : value;
+  }
+  if (Array.isArray(value)) return value.map(stripUnownedAccountLinks);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, stripUnownedAccountLinks(entry)])
+    );
+  }
+  return value;
+}
+
 function flattenProducts(catalog, generated) {
   if (Array.isArray(generated.products) && generated.products.length > 0) {
     return generated.products;
@@ -520,9 +547,10 @@ export function assembleSiteData(example) {
     };
   }
 
-  const catalog = example.niche === 'product-ordering'
+  const rawCatalog = example.niche === 'product-ordering'
     ? stripNicheTemplateOverlay(loadCatalog(example.niche))
     : loadCatalog(example.niche);
+  const catalog = stripUnownedAccountLinks(rawCatalog);
   const isCommerce = ['restaurant', 'product-showcase', 'product-ordering'].includes(example.niche);
   const isBooking = ['salon', 'gym', 'pet-care', 'tech-repair', 'restaurant'].includes(example.niche);
   const generated = buildNicheSiteData(example.niche, {
