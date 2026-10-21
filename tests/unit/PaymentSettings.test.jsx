@@ -63,6 +63,16 @@ describe('PaymentSettings', () => {
     expect(screen.getByTestId('stripe-connect-button')).toBeInTheDocument();
   });
 
+  it('uses a h1 for Payment Configuration and h2 for the Pay on site card', async () => {
+    renderSettings();
+    await screen.findByTestId('pay-on-site-toggle');
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: /payment configuration/i })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: /pay on site/i })).toBeInTheDocument();
+  });
+
   it('shows Stripe, Square, and PayPal connect cards', async () => {
     renderSettings();
     expect(await screen.findByTestId('processor-stripe')).toBeInTheDocument();

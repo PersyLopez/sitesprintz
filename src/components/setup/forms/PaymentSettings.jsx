@@ -218,7 +218,7 @@ function PaymentSettings({ site: siteProp = null }) {
   return (
     <div className="payment-settings">
       <div className="editor-header">
-        <h3>Payment Configuration</h3>
+        <h1>Payment Configuration</h1>
         <p className="form-description">
           {sites.length > 1
             ? 'Choose how this site takes payment. You can keep it unique, reuse it on future sites, or copy it to every site you already have.'
@@ -305,7 +305,7 @@ function PaymentSettings({ site: siteProp = null }) {
       {site?.id && (
         <div className="stripe-status-card payment-reuse-card">
           <div className="status-header">
-            <h4>Reuse this setup</h4>
+            <h2>Reuse this setup</h2>
           </div>
           <p className="status-message">
             New sites start without payments unless you opt in. You can also copy this site’s
@@ -337,7 +337,7 @@ function PaymentSettings({ site: siteProp = null }) {
 
       <div className="stripe-status-card pay-on-site-card">
         <div className="status-header">
-          <h4>Pay on site</h4>
+          <h2>Pay on site</h2>
           <div className={`status-badge ${payOnSite ? 'ready' : 'not_started'}`}>
             {payOnSite ? 'Enabled' : 'Off'}
           </div>
@@ -380,7 +380,7 @@ function PaymentSettings({ site: siteProp = null }) {
 
       <div className="stripe-status-card pay-on-site-card" data-testid="delivery-options-card">
         <div className="status-header">
-          <h4>Delivery</h4>
+          <h2>Delivery</h2>
           <div className={`status-badge ${delivery.enabled ? 'ready' : 'not_started'}`}>
             {delivery.enabled ? 'Enabled' : 'Off'}
           </div>

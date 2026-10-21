@@ -1,0 +1,36 @@
+url: http://localhost:5173/login
+goal: Payment settings route announces Payment Configuration as an h1 before any other heading (QA AX-02)
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter email
+    fill: { testId: login-email, value: "test@example.com" }
+
+  - action: Enter password
+    fill: { testId: login-password, value: "SecurePass!2024" }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 2500
+
+  - action: Dashboard
+    wait_for: { url: /dashboard, timeout: 20000 }
+
+  - action: Open payment settings
+    goto: http://localhost:5173/settings/payments
+    settle_ms: 2000
+
+  - action: First heading on page is Payment Configuration h1
+    code: |
+      const firstHeading = page.locator('h1, h2, h3, h4, h5, h6').first();
+      await firstHeading.waitFor({ timeout: 15000 });
+      const tag = await firstHeading.evaluate((el) => el.tagName.toLowerCase());
+      const text = (await firstHeading.innerText()).trim();
+      if (tag !== 'h1') {
+        throw new Error('First heading on /settings/payments is <' + tag + '>, not <h1>');
+      }
+      if (!/Payment Configuration/i.test(text)) {
+        throw new Error('First heading is not Payment Configuration: ' + text);
+      }
+    settle_ms: 400
