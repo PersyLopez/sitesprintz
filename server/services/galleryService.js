@@ -54,7 +54,7 @@ class GalleryService {
     }
 
     // Build sort
-    const allowedSortFields = ['created_at', 'name', 'updated_at'];
+    const allowedSortFields = ['created_at', 'name'];
     const safeSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'created_at';
     const safeSortOrder = sortOrder.toLowerCase() === 'asc' ? 'asc' : 'desc';
     const orderBy = { [safeSortBy]: safeSortOrder };
@@ -71,7 +71,7 @@ class GalleryService {
             plan: true,
             is_public: true,
             created_at: true,
-            updated_at: true,
+            published_at: true,
             site_data: true
           },
           orderBy,
@@ -151,7 +151,7 @@ class GalleryService {
           plan: true,
           is_public: true,
           created_at: true,
-          updated_at: true,
+          published_at: true,
           site_data: true,
           user_id: true
         }

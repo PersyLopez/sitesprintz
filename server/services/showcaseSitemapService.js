@@ -74,7 +74,11 @@ class ShowcaseSitemapService {
           url: `${baseUrl}/showcase/${site.subdomain}`,
           changefreq: 'weekly',
           priority: 0.6,
-          lastmod: site.updated_at ? new Date(site.updated_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+          lastmod: site.published_at
+            ? new Date(site.published_at).toISOString().split('T')[0]
+            : site.created_at
+              ? new Date(site.created_at).toISOString().split('T')[0]
+              : new Date().toISOString().split('T')[0],
           images: this.extractImages(site)
         });
       }
