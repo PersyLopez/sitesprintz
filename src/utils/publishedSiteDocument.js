@@ -453,10 +453,10 @@ export function getLiveSiteCss(tokens = {}) {
   display: inline-flex; align-items: center; justify-content: center;
   min-height: 44px; min-width: 44px; padding: 6px 10px;
   border-radius: 999px; font-size: 0.68rem; font-weight: 500; letter-spacing: 0.02em;
-  color: color-mix(in srgb, var(--ss-muted) 65%, transparent);
+  color: var(--ss-muted);
   text-decoration: none; white-space: nowrap;
   pointer-events: auto;
-  background: color-mix(in srgb, var(--ss-surface) 11%, transparent);
+  background: var(--ss-bg);
   border: 1px solid color-mix(in srgb, var(--ss-hairline) 25%, transparent);
   box-shadow: none;
   -webkit-backdrop-filter: blur(24px) saturate(170%);
@@ -465,7 +465,7 @@ export function getLiveSiteCss(tokens = {}) {
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .ss-sitesprintz-badge {
-    background: color-mix(in srgb, var(--ss-surface) 30%, transparent);
+    background: var(--ss-bg);
   }
 }
 .ss-live:has(.ss-sticky-cta) .ss-sitesprintz-badge {
@@ -604,6 +604,7 @@ function renderFooter(siteData, options = {}) {
     <div class="ss-footer-nap">${nap}</div>
     ${demoSupport}
   </div>
+  ${renderSiteBadge(siteData, options)}
 </footer>`;
 }
 
@@ -667,7 +668,6 @@ export function buildLiveSiteMarkup(siteData, options = {}) {
   ${sectionsHtml}
 </main>
 ${renderFooter(liveData, options)}
-${renderSiteBadge(liveData, options)}
 ${buildStickyCtaBar(liveData, page)}
 ${mapScript}`;
 

@@ -854,6 +854,12 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(html).toContain('data-testid="sitesprintz-badge"');
     expect(html).toContain('href="https://rightsitelight.com"');
     expect(html).toContain('Powered by Right Site Light');
+    const badgeIndex = html.indexOf('data-testid="sitesprintz-badge"');
+    const footerStart = html.indexOf('<footer');
+    const footerEnd = html.indexOf('</footer>');
+    expect(badgeIndex).toBeGreaterThan(footerStart);
+    expect(badgeIndex).toBeLessThan(footerEnd);
+    expect(html.split('data-testid="sitesprintz-badge"').length - 1).toBe(1);
   });
 
   it('keeps the clickable badge on gallery demo seeds', () => {

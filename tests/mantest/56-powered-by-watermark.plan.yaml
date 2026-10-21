@@ -21,6 +21,10 @@ steps:
       if (tag !== 'a') {
         throw new Error('Badge should be a link, got ' + tag);
       }
+      const inFooter = await badge.evaluate((el) => Boolean(el.closest('footer')));
+      if (!inFooter) {
+        throw new Error('Badge should live inside the footer landmark');
+      }
       const position = await badge.evaluate((el) => getComputedStyle(el).position);
       if (position !== 'fixed') {
         throw new Error('Badge should be position:fixed, got ' + position);
