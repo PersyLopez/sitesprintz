@@ -96,6 +96,13 @@ describe('FoundationSettings Component', () => {
       expect(screen.getByText('Configure core features for your website')).toBeInTheDocument();
     });
 
+    it('should use h1 for Foundation Features and h2 for panel titles', () => {
+      render(<FoundationSettings site={mockSite} onUpdate={mockOnUpdate} />);
+
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Foundation Features');
+      expect(screen.getByRole('heading', { level: 2, name: 'Trust Signals' })).toBeInTheDocument();
+    });
+
     it('should render all feature tabs', () => {
       render(<FoundationSettings site={mockSite} onUpdate={mockOnUpdate} />);
       

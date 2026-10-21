@@ -118,7 +118,7 @@ export default function FoundationSettings({ site, onUpdate }) {
       {/* Settings Panel */}
       <div className={`foundation-settings ${showPreview ? 'with-preview' : ''}`}>
         <div className="settings-header">
-          <h2>Foundation Features</h2>
+          <h1>Foundation Features</h1>
           <p>Configure core features for your website</p>
 
           {/* Desktop Preview Toggle */}
@@ -170,7 +170,7 @@ export default function FoundationSettings({ site, onUpdate }) {
           {/* Trust Signals Tab */}
           {activeTab === 'trustSignals' && (
             <div className="settings-panel">
-              <h3>Trust Signals</h3>
+              <h2>Trust Signals</h2>
               <p className="panel-description">
                 Display trust badges to increase credibility and conversions
               </p>
@@ -241,7 +241,7 @@ export default function FoundationSettings({ site, onUpdate }) {
           {/* Contact Form Tab */}
           {activeTab === 'contactForm' && (
             <div className="settings-panel">
-              <h3>Contact Form</h3>
+              <h2>Contact Form</h2>
               <p className="panel-description">
                 Capture leads with a professional contact form
               </p>
@@ -315,7 +315,7 @@ export default function FoundationSettings({ site, onUpdate }) {
           {/* SEO Tab */}
           {activeTab === 'seo' && (
             <div className="settings-panel">
-              <h3>SEO Optimization</h3>
+              <h2>SEO Optimization</h2>
               <p className="panel-description">
                 Improve your search engine rankings automatically
               </p>
@@ -396,7 +396,7 @@ export default function FoundationSettings({ site, onUpdate }) {
           {/* Social Media Tab */}
           {activeTab === 'socialMedia' && (
             <div className="settings-panel">
-              <h3>Social Media</h3>
+              <h2>Social Media</h2>
               <p className="panel-description">
                 Connect your social media profiles
               </p>
@@ -453,7 +453,7 @@ export default function FoundationSettings({ site, onUpdate }) {
           {/* Contact Bar Tab */}
           {activeTab === 'contactBar' && (
             <div className="settings-panel">
-              <h3>Contact Bar</h3>
+              <h2>Contact Bar</h2>
               <p className="panel-description">
                 Quick access buttons for customers to reach you
               </p>
