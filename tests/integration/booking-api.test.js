@@ -46,6 +46,9 @@ const { mockPrisma, mockNotificationService } = vi.hoisted(() => {
     users: {
       findUnique: vi.fn(),
     },
+    sites: {
+      findFirst: vi.fn(),
+    },
     $transaction: vi.fn((fn) => fn()),
   };
 
@@ -99,6 +102,17 @@ describe('Booking API Integration Tests', () => {
   // ==================== PUBLIC ENDPOINTS ====================
 
   describe('GET /api/booking/tenants/:userId/services', () => {
+    const OWNER_UUID = '9f1c3b2a-7c4d-4e8a-9b2f-1a6e5d3c7b90';
+    const TENANT_UUID = '2b8e4f61-9a3c-4d7b-8e5f-0c1d2a3b4e5f';
+    const growthUser = { id: 'user-123', plan: 'growth', subscription_plan: 'growth' };
+
+    function mockOwnerPathServices({ services, site = { user_id: 'user-123', id: 'site-1' }, tenant = { id: 'tenant-123', user_id: 'user-123' } }) {
+      mockPrisma.sites.findFirst.mockResolvedValue(site);
+      mockPrisma.users.findUnique.mockResolvedValue(growthUser);
+      mockPrisma.booking_tenants.findFirst.mockResolvedValue(tenant);
+      mockPrisma.booking_services.findMany.mockResolvedValue(services);
+    }
+
     it('should return list of services for a tenant', async () => {
       const mockTenant = {
         id: 'tenant-123',
@@ -129,8 +143,7 @@ describe('Booking API Integration Tests', () => {
         },
       ];
 
-      mockPrisma.booking_tenants.findFirst.mockResolvedValue(mockTenant);
-      mockPrisma.booking_services.findMany.mockResolvedValue(mockServices);
+      mockOwnerPathServices({ tenant: mockTenant, services: mockServices });
 
       const response = await request(app)
         .get('/api/booking/tenants/user-123/services')
@@ -143,9 +156,78 @@ describe('Booking API Integration Tests', () => {
       expect(response.body.services[0].price_display).toBe('$50.00');
     });
 
+    it('should return 200 with the owner services for a real owner UUID on Growth', async () => {
+      mockPrisma.booking_tenants.findUnique.mockResolvedValue(null);
+      mockPrisma.users.findUnique.mockResolvedValue(growthUser);
+      mockPrisma.booking_tenants.findFirst.mockResolvedValue({ id: 'tenant-123', user_id: OWNER_UUID });
+      mockPrisma.booking_services.findMany.mockResolvedValue([
+        { id: 'service-1', name: 'Haircut', price_cents: 5000, duration_minutes: 60 },
+      ]);
+
+      const response = await request(app)
+        .get(`/api/booking/tenants/${OWNER_UUID}/services`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.services).toHaveLength(1);
+      expect(mockPrisma.users.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: OWNER_UUID } })
+      );
+    });
+
+    it('should return 200 with that tenant services when the id is a booking tenant UUID', async () => {
+      mockPrisma.booking_tenants.findUnique.mockResolvedValue({ id: TENANT_UUID });
+      mockPrisma.booking_services.findMany.mockResolvedValue([
+        { id: 'service-1', name: 'Haircut', price_cents: 5000, duration_minutes: 60 },
+      ]);
+
+      // A mismatched siteId must not turn into a 500.
+      const response = await request(app)
+        .get(`/api/booking/tenants/${TENANT_UUID}/services?siteId=other-site`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.services).toHaveLength(1);
+      expect(mockPrisma.users.findUnique).not.toHaveBeenCalled();
+      expect(mockPrisma.booking_tenants.create).not.toHaveBeenCalled();
+    });
+
+    it('should resolve a non-UUID subdomain to the published site owner', async () => {
+      mockOwnerPathServices({
+        site: { user_id: OWNER_UUID, id: 'site-1' },
+        services: [{ id: 'service-1', name: 'Haircut', price_cents: 5000, duration_minutes: 60 }],
+      });
+
+      const response = await request(app)
+        .get('/api/booking/tenants/gallery-salon/services')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.services).toHaveLength(1);
+      expect(mockPrisma.sites.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { subdomain: 'gallery-salon', status: 'published' },
+        })
+      );
+      expect(mockPrisma.users.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: OWNER_UUID } })
+      );
+    });
+
+    it('should return 200 with an empty list when the subdomain has no site', async () => {
+      mockPrisma.sites.findFirst.mockResolvedValue(null);
+
+      const response = await request(app)
+        .get('/api/booking/tenants/gallery-salon/services')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.services).toEqual([]);
+      expect(mockPrisma.users.findUnique).not.toHaveBeenCalled();
+    });
+
     it('should return empty array if no services found', async () => {
-      mockPrisma.booking_tenants.findFirst.mockResolvedValue({ id: 'tenant-123', user_id: 'user-123' });
-      mockPrisma.booking_services.findMany.mockResolvedValue([]);
+      mockOwnerPathServices({ services: [] });
 
       const response = await request(app)
         .get('/api/booking/tenants/user-123/services')
@@ -156,9 +238,10 @@ describe('Booking API Integration Tests', () => {
     });
 
     it('should create tenant if not exists', async () => {
-      const mockUser = { id: 'user-123', email: 'test@example.com' };
+      const mockUser = { id: 'user-123', email: 'test@example.com', plan: 'growth', subscription_plan: 'growth' };
       const mockNewTenant = { id: 'new-tenant', user_id: 'user-123' };
 
+      mockPrisma.sites.findFirst.mockResolvedValue({ user_id: 'user-123', id: 'site-1' });
       mockPrisma.booking_tenants.findFirst.mockResolvedValue(null);
       mockPrisma.users.findUnique.mockResolvedValue(mockUser);
       mockPrisma.booking_tenants.create.mockResolvedValue(mockNewTenant);
@@ -261,7 +344,7 @@ describe('Booking API Integration Tests', () => {
 
   describe('Error Handling', () => {
     it('should handle database connection errors', async () => {
-      mockPrisma.booking_tenants.findFirst.mockRejectedValue(new Error('Connection refused'));
+      mockPrisma.sites.findFirst.mockRejectedValue(new Error('Connection refused'));
 
       const response = await request(app)
         .get('/api/booking/tenants/user-123/services')

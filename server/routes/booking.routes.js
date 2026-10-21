@@ -58,16 +58,27 @@ function sanitizeCancelReason(reason) {
   return sanitizeString(reason || 'No reason provided', 500);
 }
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isUuid(value) {
+  return UUID_PATTERN.test(String(value || ''));
+}
+
 /**
  * Ensure site owner has Growth booking access
  */
 async function requireGrowthBooking(userId) {
-  const user = await prisma.users.findUnique({
-    where: { id: userId },
-    select: { plan: true, subscription_plan: true }
-  });
-  const limits = resolvePlanLimits(user);
-  return Boolean(limits.booking);
+  try {
+    const user = await prisma.users.findUnique({
+      where: { id: userId },
+      select: { plan: true, subscription_plan: true }
+    });
+    const limits = resolvePlanLimits(user);
+    return Boolean(limits.booking);
+  } catch (error) {
+    console.error('Error checking Growth booking access:', error);
+    return false;
+  }
 }
 
 /** Optional siteId from query/body — scopes gallery tenants that share one owner. */
@@ -133,49 +144,82 @@ const authorizeBookingAdmin = asyncHandler(async (req, res, next) => {
  * These endpoints are used by customers to browse and book appointments
  */
 
-/**
- * GET /api/booking/tenants/:userId/services
- * Get all available services for booking
- */
-router.get('/tenants/:userId/services', asyncHandler(async (req, res) => {
-  const { userId } = req.params;
+/** Public-safe service payload shared by the public services paths. */
+function toPublicService(s) {
+  return {
+    id: s.id,
+    name: s.name,
+    description: s.description,
+    category: s.category,
+    duration_minutes: s.duration_minutes,
+    price_cents: Number.isFinite(Number(s.price_cents)) ? Number(s.price_cents) : 0,
+    price_display: publicServicePrice(s.price_cents),
+    online_booking_enabled: s.online_booking_enabled,
+    requires_approval: s.requires_approval,
+    // Payment fields (Phase 2)
+    requires_payment: s.requires_payment || false,
+    payment_type: s.payment_type || 'none',
+    deposit_percentage: s.deposit_percentage || 50,
+    buffer_minutes_before: s.buffer_minutes_before || 0,
+    buffer_minutes_after: s.buffer_minutes_after || 0,
+  };
+}
 
+/** Owner-path serving: growth check → tenant → services (create on demand). */
+async function sendPublicOwnerServices(res, userId, siteId) {
   const allowed = await requireGrowthBooking(userId);
   if (!allowed) {
     return sendForbidden(res, 'Native booking requires Growth plan', 'GROWTH_PLAN_REQUIRED');
   }
 
-  const tenant = await resolvePublicTenant(userId, publicSiteId(req));
+  const tenant = await resolvePublicTenant(userId, siteId);
 
   // Get active services. A catalog read must not take down the booking section.
   let services = await listPublicServices(tenant.id);
   if (!services.length) {
     await ensurePublishedBooking({
       userId,
-      siteId: publicSiteId(req) || tenant.site_id,
+      siteId: siteId || tenant.site_id,
     }).catch(() => {});
     services = await listPublicServices(tenant.id);
   }
 
-  sendSuccess(res, {
-    services: services.map((s) => ({
-      id: s.id,
-      name: s.name,
-      description: s.description,
-      category: s.category,
-      duration_minutes: s.duration_minutes,
-      price_cents: Number.isFinite(Number(s.price_cents)) ? Number(s.price_cents) : 0,
-      price_display: publicServicePrice(s.price_cents),
-      online_booking_enabled: s.online_booking_enabled,
-      requires_approval: s.requires_approval,
-      // Payment fields (Phase 2)
-      requires_payment: s.requires_payment || false,
-      payment_type: s.payment_type || 'none',
-      deposit_percentage: s.deposit_percentage || 50,
-      buffer_minutes_before: s.buffer_minutes_before || 0,
-      buffer_minutes_after: s.buffer_minutes_after || 0,
-    })),
-  });
+  sendSuccess(res, { services: services.map(toPublicService) });
+}
+
+/**
+ * GET /api/booking/tenants/:userId/services
+ * Get all available services for booking
+ */
+router.get('/tenants/:userId/services', asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const siteId = publicSiteId(req);
+
+  if (isUuid(userId)) {
+    // A booking_tenants.id is not a users.id: serve its catalog directly.
+    // Never getOrCreateTenant with a tenant id, and ignore a mismatched siteId.
+    const tenant = await prisma.booking_tenants.findUnique({
+      where: { id: userId },
+      select: { id: true },
+    });
+    if (tenant) {
+      const services = await listPublicServices(tenant.id);
+      return sendSuccess(res, { services: services.map(toPublicService) });
+    }
+  } else {
+    // Non-UUID path ids (site subdomains/slugs) must not hit users.findUnique
+    // (Prisma P2023 on non-UUID input). Resolve the published site instead.
+    const site = await prisma.sites.findFirst({
+      where: { subdomain: userId, status: 'published' },
+      select: { user_id: true, id: true },
+    });
+    if (!site?.user_id) {
+      return sendSuccess(res, { services: [] });
+    }
+    return sendPublicOwnerServices(res, site.user_id, siteId || site.id);
+  }
+
+  return sendPublicOwnerServices(res, userId, siteId);
 }));
 
 /**
