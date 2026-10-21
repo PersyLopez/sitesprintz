@@ -191,6 +191,50 @@ describe('ShowcaseDetail Component', () => {
       });
     });
 
+    it('should display about body text when description is missing', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ...mockSite,
+          site_data: {
+            ...mockSite.site_data,
+            about: {
+              title: 'Our Story',
+              body: 'Luxe Beauty Studio opened in 2018 with a passion for beauty.'
+            }
+          }
+        })
+      });
+
+      renderWithRouter(<ShowcaseDetail />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Our Story')).toBeInTheDocument();
+        expect(screen.getByText(/opened in 2018/i)).toBeInTheDocument();
+      });
+    });
+
+    it('should not render about section when it has only a title', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ...mockSite,
+          site_data: {
+            ...mockSite.site_data,
+            about: { title: 'Our Story' }
+          }
+        })
+      });
+
+      renderWithRouter(<ShowcaseDetail />);
+
+      await waitFor(() => {
+        expect(screen.getByText('The Amazing Restaurant')).toBeInTheDocument();
+      });
+      expect(screen.queryByText('Our Story')).not.toBeInTheDocument();
+      expect(document.querySelector('.showcase-about')).toBeNull();
+    });
+
     it('should display contact information if available', async () => {
       renderWithRouter(<ShowcaseDetail />);
       

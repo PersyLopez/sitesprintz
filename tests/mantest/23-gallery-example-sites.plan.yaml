@@ -60,6 +60,13 @@ steps:
       if (/Site not found|not public/i.test(t)) {
         throw new Error('Salon example is not public');
       }
+      const aboutSection = page.locator('.showcase-about');
+      if ((await aboutSection.count()) > 0) {
+        const aboutText = await aboutSection.locator('p').innerText();
+        if (!aboutText.trim()) {
+          throw new Error('Salon example about section renders an empty paragraph');
+        }
+      }
 
   - action: Visit live salon site
     goto: http://localhost:5173/view/gallery-salon

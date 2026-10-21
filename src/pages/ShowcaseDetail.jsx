@@ -31,7 +31,7 @@ function ShowcaseDetail() {
       }
       const payload = site.data || site.site_data || {};
       const description =
-        payload.about?.description ||
+        getSiteAboutCopy(site) ||
         payload.hero?.subtitle ||
         `${siteTitle} - A beautiful website made with Right Site Light`;
       metaDescription.setAttribute('content', description);
@@ -84,6 +84,11 @@ function ShowcaseDetail() {
   const getSiteSubtitle = (siteData) => {
     const payload = siteData?.data || siteData?.site_data || {};
     return payload.hero?.subtitle || payload.brand?.tagline || '';
+  };
+
+  const getSiteAboutCopy = (siteData) => {
+    const payload = siteData?.data || siteData?.site_data || {};
+    return (payload.about?.body || payload.about?.description || '').trim();
   };
 
   const getSiteHeroImage = (siteData) => {
@@ -259,10 +264,10 @@ function ShowcaseDetail() {
             </span>
           </div>
         </section>
-        {payload.about && (
+        {payload.about && getSiteAboutCopy(site) && (
           <section className="showcase-about">
             <h2>{payload.about.title || 'About'}</h2>
-            <p>{payload.about.description}</p>
+            <p>{getSiteAboutCopy(site)}</p>
           </section>
         )}
 

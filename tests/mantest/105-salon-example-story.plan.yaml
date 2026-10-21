@@ -1,0 +1,18 @@
+url: http://localhost:5173/showcase/gallery-salon
+goal: The salon example page shows the story stored on about.body
+steps:
+  - action: Salon example loads
+    wait_for: { text: Luxe Beauty Studio, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Story is on the page
+    code: |
+      const about = page.locator('.showcase-about');
+      if ((await about.count()) === 0) {
+        throw new Error('About section missing on gallery-salon');
+      }
+      const copy = (await about.locator('p').innerText()).trim();
+      if (!/opened in 2018/i.test(copy)) {
+        throw new Error('Salon story missing: ' + copy.slice(0, 180));
+      }
+    settle_ms: 300
