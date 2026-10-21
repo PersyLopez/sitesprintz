@@ -217,6 +217,48 @@ function loadCatalog(niche) {
   }
 }
 
+/**
+ * QA C-05: the product-ordering gallery demo (Oak & Anchor Supply) must not
+ * wear the electronics template. Keep the generated niche hero lines, leave
+ * the hero image and contact address empty, and do not copy the template's
+ * about, tagline, or photos onto products, catalog items, gallery, or team.
+ */
+export function stripNicheTemplateOverlay(catalog) {
+  if (!catalog || typeof catalog !== 'object') return {};
+  const stripPhoto = (item) => {
+    if (!item || typeof item !== 'object') return item;
+    const { image, src, photo, url, ...rest } = item;
+    return rest;
+  };
+  const stripItems = (items) => (Array.isArray(items) ? items.map(stripPhoto) : items);
+  return {
+    ...catalog,
+    hero: {},
+    about: undefined,
+    brand: undefined,
+    contact: { ...catalog.contact, address: '' },
+    products: stripItems(catalog.products),
+    featuredProducts: catalog.featuredProducts
+      ? { ...catalog.featuredProducts, items: stripItems(catalog.featuredProducts.items) }
+      : catalog.featuredProducts,
+    menu: catalog.menu?.sections
+      ? { ...catalog.menu, sections: catalog.menu.sections.map((section) => ({ ...section, items: stripItems(section.items) })) }
+      : catalog.menu,
+    gallery: catalog.gallery
+      ? {
+        ...catalog.gallery,
+        images: [],
+        categories: (catalog.gallery.categories || []).map((category) => ({ ...category, images: [] })),
+      }
+      : catalog.gallery,
+    team: Array.isArray(catalog.team)
+      ? stripItems(catalog.team)
+      : catalog.team?.members
+        ? { ...catalog.team, members: stripItems(catalog.team.members) }
+        : catalog.team,
+  };
+}
+
 function flattenProducts(catalog, generated) {
   if (Array.isArray(generated.products) && generated.products.length > 0) {
     return generated.products;
@@ -402,7 +444,7 @@ function applyCuratedTheme(siteData, example) {
   };
 }
 
-function assembleSiteData(example) {
+export function assembleSiteData(example) {
   example = { ...example, contactEmail: PLATFORM_SUPPORT_EMAIL };
   if (example.bazaar) {
     const generated = buildBazaarSiteData({
@@ -478,7 +520,9 @@ function assembleSiteData(example) {
     };
   }
 
-  const catalog = loadCatalog(example.niche);
+  const catalog = example.niche === 'product-ordering'
+    ? stripNicheTemplateOverlay(loadCatalog(example.niche))
+    : loadCatalog(example.niche);
   const isCommerce = ['restaurant', 'product-showcase', 'product-ordering'].includes(example.niche);
   const isBooking = ['salon', 'gym', 'pet-care', 'tech-repair', 'restaurant'].includes(example.niche);
   const generated = buildNicheSiteData(example.niche, {

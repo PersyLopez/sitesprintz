@@ -1,0 +1,21 @@
+url: http://localhost:5173/view/gallery-ordering
+goal: The Oak & Anchor Supply demo keeps its generated hero copy and never shows the electronics template copy or address.
+steps:
+  - action: Demo loads
+    wait_for: { text: Oak & Anchor Supply, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Generated hero is on the page
+    wait_for: { text: Order online or pick up in person, timeout: 10000 }
+    settle_ms: 300
+
+  - action: Electronics template copy is gone
+    code: |
+      const body = await page.locator('body').innerText();
+      if (/Sell online with integrated checkout/i.test(body)) {
+        throw new Error('gallery-ordering still shows the electronics template hero');
+      }
+      if (/Tech Park/i.test(body)) {
+        throw new Error('gallery-ordering still shows the template address');
+      }
+    settle_ms: 300
