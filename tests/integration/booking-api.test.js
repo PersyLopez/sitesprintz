@@ -21,10 +21,13 @@ const { mockPrisma, mockNotificationService } = vi.hoisted(() => {
     booking_staff: {
       findFirst: vi.fn(),
       findMany: vi.fn(),
+      findUnique: vi.fn(),
       create: vi.fn(),
     },
     booking_availability_rules: {
       findMany: vi.fn(),
+      findFirst: vi.fn(),
+      count: vi.fn(),
       deleteMany: vi.fn(),
       createMany: vi.fn(),
     },
@@ -256,23 +259,137 @@ describe('Booking API Integration Tests', () => {
     });
   });
 
-  describe('GET /api/booking/tenants/:userId/availability', () => {
-    it('should return 400 if service_id is missing', async () => {
+  describe('GET /api/booking/tenants/:userId/staff', () => {
+    const OWNER_UUID = '9f1c3b2a-7c4d-4e8a-9b2f-1a6e5d3c7b90';
+    const TENANT_UUID = '2b8e4f61-9a3c-4d7b-8e5f-0c1d2a3b4e5f';
+    const growthUser = { id: 'user-123', plan: 'growth', subscription_plan: 'growth' };
+
+    it('should return 200 with that tenant staff when the id is a booking tenant UUID', async () => {
+      mockPrisma.booking_tenants.findUnique.mockResolvedValue({ id: TENANT_UUID });
+      mockPrisma.booking_staff.findFirst.mockResolvedValue({ id: 'staff-1' });
+      mockPrisma.booking_availability_rules.count.mockResolvedValue(1);
+      mockPrisma.booking_staff.findMany.mockResolvedValue([
+        { id: 'staff-1', name: 'John Staff' },
+      ]);
+
+      // A mismatched siteId must not turn into a 500.
       const response = await request(app)
-        .get('/api/booking/tenants/user-123/availability?date=2024-01-15')
+        .get(`/api/booking/tenants/${TENANT_UUID}/staff?siteId=other-site`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.staff).toHaveLength(1);
+      expect(mockPrisma.users.findUnique).not.toHaveBeenCalled();
+      expect(mockPrisma.booking_tenants.create).not.toHaveBeenCalled();
+    });
+
+    it('should return 200 with an empty staff list when the subdomain has no site', async () => {
+      mockPrisma.sites.findFirst.mockResolvedValue(null);
+
+      const response = await request(app)
+        .get('/api/booking/tenants/gallery-salon/staff')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.staff).toEqual([]);
+      expect(mockPrisma.users.findUnique).not.toHaveBeenCalled();
+    });
+
+    it('should return 200 with the owner staff for a real owner UUID on Growth', async () => {
+      mockPrisma.booking_tenants.findUnique.mockResolvedValue(null);
+      mockPrisma.users.findUnique.mockResolvedValue(growthUser);
+      mockPrisma.booking_tenants.findFirst.mockResolvedValue({ id: 'tenant-123', user_id: OWNER_UUID });
+      mockPrisma.booking_staff.findFirst.mockResolvedValue({ id: 'staff-1' });
+      mockPrisma.booking_availability_rules.count.mockResolvedValue(1);
+      mockPrisma.booking_staff.findMany.mockResolvedValue([
+        { id: 'staff-1', name: 'John Staff' },
+      ]);
+
+      const response = await request(app)
+        .get(`/api/booking/tenants/${OWNER_UUID}/staff`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.staff).toHaveLength(1);
+      expect(mockPrisma.users.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: OWNER_UUID } })
+      );
+    });
+  });
+
+  describe('GET /api/booking/tenants/:userId/availability', () => {
+    const OWNER_UUID = '9f1c3b2a-7c4d-4e8a-9b2f-1a6e5d3c7b90';
+    const TENANT_UUID = '2b8e4f61-9a3c-4d7b-8e5f-0c1d2a3b4e5f';
+    const growthUser = { id: 'user-123', plan: 'growth', subscription_plan: 'growth' };
+
+    it('should return 400 if service_id is missing for a real owner', async () => {
+      mockPrisma.users.findUnique.mockResolvedValue(growthUser);
+
+      const response = await request(app)
+        .get(`/api/booking/tenants/${OWNER_UUID}/availability?date=2024-01-15`)
         .expect(400);
 
       expect(response.body.success).toBe(false);
       expect(response.body.error).toContain('required');
     });
 
-    it('should return 400 if date is missing', async () => {
+    it('should return 400 if date is missing for a real owner', async () => {
+      mockPrisma.users.findUnique.mockResolvedValue(growthUser);
+
       const response = await request(app)
-        .get('/api/booking/tenants/user-123/availability?service_id=service-1')
+        .get(`/api/booking/tenants/${OWNER_UUID}/availability?service_id=service-1`)
         .expect(400);
 
       expect(response.body.success).toBe(false);
       expect(response.body.error).toContain('required');
+    });
+
+    it('should return 200 with empty slots when the subdomain has no site', async () => {
+      mockPrisma.sites.findFirst.mockResolvedValue(null);
+
+      const response = await request(app)
+        .get('/api/booking/tenants/gallery-salon/availability?service_id=service-1&date=2024-01-15')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.slots).toEqual([]);
+      expect(response.body.total_slots).toBe(0);
+      expect(mockPrisma.users.findUnique).not.toHaveBeenCalled();
+    });
+
+    it('should compute availability for that tenant when the id is a booking tenant UUID', async () => {
+      mockPrisma.booking_tenants.findUnique.mockResolvedValue({ id: TENANT_UUID });
+      mockPrisma.booking_staff.findFirst.mockResolvedValue({ id: 'staff-1' });
+      mockPrisma.booking_availability_rules.count.mockResolvedValue(1);
+      mockPrisma.booking_services.findUnique.mockResolvedValue({
+        id: 'service-1',
+        duration_minutes: 60,
+        buffer_minutes_before: 0,
+        buffer_minutes_after: 0,
+      });
+      mockPrisma.booking_staff.findUnique.mockResolvedValue({
+        id: 'staff-1',
+        buffer_time_after: 0,
+        min_advance_booking_hours: 2,
+        max_advance_booking_days: 90,
+      });
+      mockPrisma.booking_availability_rules.findFirst.mockResolvedValue({
+        is_available: true,
+        start_time: new Date('1970-01-01T09:00:00Z'),
+        end_time: new Date('1970-01-01T17:00:00Z'),
+      });
+      mockPrisma.appointments.findMany.mockResolvedValue([]);
+
+      const response = await request(app)
+        .get(`/api/booking/tenants/${TENANT_UUID}/availability?service_id=service-1&date=2026-11-15`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.staff_id).toBe('staff-1');
+      expect(response.body.slots.length).toBeGreaterThan(0);
+      expect(response.body.total_slots).toBe(response.body.slots.length);
+      expect(mockPrisma.users.findUnique).not.toHaveBeenCalled();
+      expect(mockPrisma.booking_tenants.create).not.toHaveBeenCalled();
     });
   });
 

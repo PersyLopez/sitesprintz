@@ -188,38 +188,53 @@ async function sendPublicOwnerServices(res, userId, siteId) {
 }
 
 /**
- * GET /api/booking/tenants/:userId/services
- * Get all available services for booking
+ * Resolve the public path id to a booking target before any plan check:
+ * - a booking_tenants UUID → that tenant (never getOrCreateTenant with it,
+ *   and a mismatched siteId is ignored)
+ * - a non-UUID (site subdomain/slug) → the published site's owner. Must not
+ *   hit users.findUnique (Prisma P2023 on non-UUID input).
+ * - an owner UUID → the raw users.id on the owner path
  */
-router.get('/tenants/:userId/services', asyncHandler(async (req, res) => {
-  const { userId } = req.params;
-  const siteId = publicSiteId(req);
-
+async function resolvePublicBookingTarget(userId, siteId) {
   if (isUuid(userId)) {
-    // A booking_tenants.id is not a users.id: serve its catalog directly.
-    // Never getOrCreateTenant with a tenant id, and ignore a mismatched siteId.
     const tenant = await prisma.booking_tenants.findUnique({
       where: { id: userId },
       select: { id: true },
     });
     if (tenant) {
-      const services = await listPublicServices(tenant.id);
-      return sendSuccess(res, { services: services.map(toPublicService) });
+      return { kind: 'tenant', tenantId: tenant.id };
     }
   } else {
-    // Non-UUID path ids (site subdomains/slugs) must not hit users.findUnique
-    // (Prisma P2023 on non-UUID input). Resolve the published site instead.
     const site = await prisma.sites.findFirst({
       where: { subdomain: userId, status: 'published' },
       select: { user_id: true, id: true },
     });
     if (!site?.user_id) {
-      return sendSuccess(res, { services: [] });
+      return { kind: 'unknown' };
     }
-    return sendPublicOwnerServices(res, site.user_id, siteId || site.id);
+    return { kind: 'owner', userId: site.user_id, siteId: siteId || site.id };
   }
 
-  return sendPublicOwnerServices(res, userId, siteId);
+  return { kind: 'owner', userId, siteId };
+}
+
+/**
+ * GET /api/booking/tenants/:userId/services
+ * Get all available services for booking
+ */
+router.get('/tenants/:userId/services', asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const target = await resolvePublicBookingTarget(userId, publicSiteId(req));
+
+  if (target.kind === 'tenant') {
+    const services = await listPublicServices(target.tenantId);
+    return sendSuccess(res, { services: services.map(toPublicService) });
+  }
+  if (target.kind === 'unknown') {
+    return sendSuccess(res, { services: [] });
+  }
+
+  return sendPublicOwnerServices(res, target.userId, target.siteId);
 }));
 
 /**
@@ -228,16 +243,25 @@ router.get('/tenants/:userId/services', asyncHandler(async (req, res) => {
  */
 router.get('/tenants/:userId/staff', asyncHandler(async (req, res) => {
   const { userId } = req.params;
+  const target = await resolvePublicBookingTarget(userId, publicSiteId(req));
 
-  const allowed = await requireGrowthBooking(userId);
+  if (target.kind === 'tenant') {
+    await bookingService.getOrCreateDefaultStaff(target.tenantId);
+    const staff = await bookingService.getStaffForTenant(target.tenantId);
+    return sendSuccess(res, { staff });
+  }
+  if (target.kind === 'unknown') {
+    return sendSuccess(res, { staff: [] });
+  }
+
+  const allowed = await requireGrowthBooking(target.userId);
   if (!allowed) {
     return sendForbidden(res, 'Native booking requires Growth plan', 'GROWTH_PLAN_REQUIRED');
   }
 
-  const tenant = await resolvePublicTenant(userId, publicSiteId(req));
+  const tenant = await resolvePublicTenant(target.userId, target.siteId);
   await bookingService.getOrCreateDefaultStaff(tenant.id);
   const staff = await bookingService.getStaffForTenant(tenant.id);
-
   sendSuccess(res, { staff });
 }));
 
@@ -248,12 +272,25 @@ router.get('/tenants/:userId/staff', asyncHandler(async (req, res) => {
  */
 router.get('/tenants/:userId/availability', asyncHandler(async (req, res) => {
   const { userId } = req.params;
-
-  const allowed = await requireGrowthBooking(userId);
-  if (!allowed) {
-    return sendForbidden(res, 'Native booking requires Growth plan', 'GROWTH_PLAN_REQUIRED');
-  }
   const { service_id, staff_id, date, timezone = 'America/New_York' } = req.query;
+
+  const target = await resolvePublicBookingTarget(userId, publicSiteId(req));
+  if (target.kind === 'unknown') {
+    return sendSuccess(res, {
+      date: date || null,
+      timezone,
+      service_id: service_id || null,
+      slots: [],
+      total_slots: 0,
+    });
+  }
+
+  if (target.kind === 'owner') {
+    const allowed = await requireGrowthBooking(target.userId);
+    if (!allowed) {
+      return sendForbidden(res, 'Native booking requires Growth plan', 'GROWTH_PLAN_REQUIRED');
+    }
+  }
 
   if (!service_id || !date) {
     console.log('Missing service_id or date', { service_id, date });
@@ -261,19 +298,26 @@ router.get('/tenants/:userId/availability', asyncHandler(async (req, res) => {
   }
   console.log(`Availability request: userId=${userId}, service=${service_id}, date=${date}`);
 
-  // Get or create tenant (site-scoped when siteId is provided)
-  const tenant = await resolvePublicTenant(userId, publicSiteId(req));
+  // A booking_tenants UUID skips tenant resolution entirely (no create on demand).
+  let tenantId;
+  if (target.kind === 'tenant') {
+    tenantId = target.tenantId;
+  } else {
+    // Get or create tenant (site-scoped when siteId is provided)
+    const tenant = await resolvePublicTenant(target.userId, target.siteId);
+    tenantId = tenant.id;
+  }
 
   // Get or use default staff
   let staffIdToUse = requestedStaffId(staff_id);
   if (!staffIdToUse) {
-    const defaultStaff = await bookingService.getOrCreateDefaultStaff(tenant.id);
+    const defaultStaff = await bookingService.getOrCreateDefaultStaff(tenantId);
     staffIdToUse = defaultStaff.id;
   }
 
   // Calculate available slots
   const slots = await bookingService.calculateAvailableSlots(
-    tenant.id,
+    tenantId,
     service_id,
     staffIdToUse,
     date,
