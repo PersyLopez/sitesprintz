@@ -22,10 +22,10 @@ vi.mock('../../src/components/pricing/LaborExtrasNote', () => ({
   default: () => null,
 }));
 
-function renderBilling() {
+function renderBilling(user = { id: 'u1' }) {
   return render(
     <MemoryRouter initialEntries={['/settings/billing']}>
-      <BillingSection user={{ id: 'u1' }} token="tok" />
+      <BillingSection user={user} token="tok" />
     </MemoryRouter>
   );
 }
@@ -50,5 +50,21 @@ describe('Settings BillingSection', () => {
 
     expect(await screen.findByTestId('open-billing-portal')).toBeInTheDocument();
     expect(screen.queryByTestId('billing-collection-closed')).not.toBeInTheDocument();
+  });
+
+  it('shows the tier display name for the current plan', async () => {
+    mockFetch(false);
+    renderBilling({ id: 'u1', subscriptionPlan: 'starter' });
+
+    const planName = await screen.findByTestId('billing-plan-name');
+    expect(planName).toHaveTextContent('Starter');
+    expect(planName.closest('.info-row')).toHaveTextContent(/Plan: Starter/);
+  });
+
+  it('maps legacy plan ids onto canonical tier display names', async () => {
+    mockFetch(false);
+    renderBilling({ id: 'u1', plan: 'pro' });
+
+    expect(await screen.findByTestId('billing-plan-name')).toHaveTextContent('Growth');
   });
 });

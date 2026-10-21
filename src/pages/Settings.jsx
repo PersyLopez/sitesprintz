@@ -10,7 +10,7 @@ import HelpPanel from '../components/common/HelpPanel';
 import FAQWidget from '../components/common/FAQWidget';
 import LaborExtrasNote from '../components/pricing/LaborExtrasNote';
 import LaborCheckoutButtons from '../components/pricing/LaborCheckoutButtons';
-import { isPaidHostingPlan, isTrialingStatus } from '../config/tiers.js';
+import { isPaidHostingPlan, isTrialingStatus, TIER_INFO, normalizeTier } from '../config/tiers.js';
 import { PLATFORM_SUPPORT_EMAIL } from '../config/pricing.config';
 import './Settings.css';
 
@@ -166,8 +166,11 @@ export function BillingSection({ user, token }) {
         <h3>Current Plan</h3>
         <div className="billing-info">
           <div className="info-row">
-            <span className="label">Plan:</span>
-            <span className="value">{user?.subscriptionPlan || user?.plan || 'Trial'}</span>
+            <span className="label">Plan: </span>
+            <span className="value" data-testid="billing-plan-name">
+              {TIER_INFO[normalizeTier(user?.subscriptionPlan || user?.plan)]?.displayName
+                ?? user?.subscriptionPlan ?? user?.plan ?? 'Trial'}
+            </span>
           </div>
           <div className="info-row">
             <span className="label">Status:</span>

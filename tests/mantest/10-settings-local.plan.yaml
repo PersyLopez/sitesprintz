@@ -64,6 +64,12 @@ steps:
       } else {
         await page.goto('http://localhost:5173/settings/billing', { waitUntil: 'load' });
       }
+      const planName = page.locator('[data-testid="billing-plan-name"]');
+      await planName.waitFor({ state: 'visible', timeout: 10000 });
+      const planLabel = (await planName.textContent())?.trim();
+      if (!['Trial', 'Starter', 'Growth', 'Growth Managed'].includes(planLabel)) {
+        throw new Error(`Unexpected billing plan label: ${planLabel}`);
+      }
     settle_ms: 1000
     assert:
       - url contains /settings/billing
