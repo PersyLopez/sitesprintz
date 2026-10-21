@@ -121,7 +121,8 @@ app.use(helmet({
         "https://js.stripe.com", // Stripe.js
         "https://checkout.stripe.com", // Stripe Checkout
         "https://www.clarity.ms", // Microsoft Clarity
-        "https://scripts.clarity.ms" // Microsoft Clarity
+        "https://scripts.clarity.ms", // Microsoft Clarity
+        "https://static.cloudflareinsights.com" // Cloudflare Web Analytics beacon
       ],
       scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
@@ -132,7 +133,10 @@ app.use(helmet({
         "https://challenges.cloudflare.com",
         "https://resend.com",
         "https://*.clarity.ms",
-        "https://c.bing.com"
+        "https://c.bing.com",
+        "https://static.cloudflareinsights.com", // Cloudflare Web Analytics beacon
+        "https://cloudflareinsights.com", // Cloudflare Web Analytics
+        "https://fonts.googleapis.com" // Google Fonts CSS (style fetched via connect-src)
       ],
       fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
       objectSrc: ["'none'"],
