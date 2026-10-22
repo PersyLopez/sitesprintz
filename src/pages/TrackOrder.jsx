@@ -4,6 +4,7 @@ import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import ProgressTimeline from '../components/tracking/ProgressTimeline';
+import SkeletonLoader from '../components/common/SkeletonLoader';
 import { usePolling } from '../hooks/usePolling';
 import api from '../services/api';
 import './Tracking.css';
@@ -53,11 +54,9 @@ function TrackOrder() {
       <div className="tracking-page">
         <Header />
         <main className="tracking-container">
-          <div className="tracking-card">
-            <div className="loading-message">
-              <div className="spinner"></div>
-              <p>Loading order details...</p>
-            </div>
+          <div className="tracking-card" aria-busy="true">
+            <span className="sr-only">Loading order details...</span>
+            <SkeletonLoader variant="table" lines={5} />
           </div>
         </main>
         <Footer />
