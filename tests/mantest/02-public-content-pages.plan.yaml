@@ -66,6 +66,10 @@ steps:
       if (title !== 'Track Your Order — Right Site Light') {
         throw new Error(`Track title: ${title}`);
       }
+      const heading = (await page.locator('h1').innerText()).trim();
+      if (heading !== 'Track Your Order or Appointment') {
+        throw new Error(`Track heading: ${heading}`);
+      }
 
   - action: Track form empty submit stays on page
     click: { role: button, name: Track }

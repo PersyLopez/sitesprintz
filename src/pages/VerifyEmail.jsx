@@ -107,7 +107,7 @@ function VerifyEmail() {
           ) : status === 'success' ? (
             <div className="verification-status success">
               <div className="success-icon">✓</div>
-              <h1>Email Verified! 🎉</h1>
+              <h1>Email Verified!</h1>
               <p>{message}</p>
               <p className="redirect-message">Redirecting to login...</p>
               <Link to="/login" className="btn btn-primary btn-full">

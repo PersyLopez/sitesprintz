@@ -24,6 +24,17 @@ steps:
         throw new Error(`Verify email title: ${title}`);
       }
 
+  - action: Open forgot password
+    goto: http://localhost:5173/forgot-password
+
+  - action: Forgot password heading has no emoji
+    code: |
+      await page.getByRole('heading', { level: 1, name: 'Forgot Password' }).waitFor({ timeout: 15000 });
+      const heading = (await page.locator('h1').innerText()).trim();
+      if (heading !== 'Forgot Password') {
+        throw new Error(`Forgot heading: ${heading}`);
+      }
+
   - action: Payment cancel page
     goto: http://localhost:5173/payment-cancel
 

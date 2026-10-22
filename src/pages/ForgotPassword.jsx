@@ -75,7 +75,7 @@ function ForgotPassword() {
       <main className="auth-container">
         <div className="auth-card">
           <div className="auth-header">
-            <h1>🔑 {t('auth.forgot.h')}</h1>
+            <h1>{t('auth.forgot.h')}</h1>
             <p>{t('auth.forgot.p')}</p>
           </div>
 

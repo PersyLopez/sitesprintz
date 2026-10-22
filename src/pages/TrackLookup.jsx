@@ -60,7 +60,7 @@ function TrackLookup() {
       <main className="tracking-container">
         <div className="tracking-card">
           <div className="tracking-header">
-            <h1>📦 Track Your Order or Appointment</h1>
+            <h1>Track Your Order or Appointment</h1>
             <p>Enter your order ID or confirmation code and email to track your status</p>
           </div>
 
