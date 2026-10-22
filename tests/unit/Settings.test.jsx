@@ -103,6 +103,10 @@ describe('Settings heading order (QA AX-02)', () => {
 
     const pageHeading = await screen.findByRole('heading', { level: 1, name: /Billing Management/ });
     expect(pageHeading).toBeInTheDocument();
+    expect(pageHeading).toHaveTextContent(/^Billing Management$/);
+    const portalButton = screen.getByTestId('open-billing-portal');
+    expect(portalButton).toHaveTextContent(/^Open Billing Portal$/);
+    expect(portalButton.textContent).not.toMatch(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u);
     expect(
       screen.getByRole('heading', { level: 2, name: /Subscription & Payment Method/ })
     ).toBeInTheDocument();

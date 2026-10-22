@@ -30,7 +30,7 @@ steps:
       if (tag !== 'h1') {
         throw new Error('First heading on /settings/billing is <' + tag + '>, not <h1>');
       }
-      if (!/Billing Management/i.test(text)) {
-        throw new Error('First heading is not Billing Management: ' + text);
+      if (!/^Billing Management$/.test(text)) {
+        throw new Error('First heading is not exactly Billing Management: ' + text);
       }
     settle_ms: 400

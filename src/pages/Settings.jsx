@@ -138,7 +138,7 @@ export function BillingSection({ user, token }) {
 
   return (
     <div className="settings-section">
-      <h1>💳 Billing Management</h1>
+      <h1>Billing Management</h1>
       <p className="section-description">Manage your subscription and payment methods</p>
       
       <div className="settings-card">
@@ -152,7 +152,7 @@ export function BillingSection({ user, token }) {
               className="btn btn-primary"
               data-testid="open-billing-portal"
             >
-              {loading ? '⏳ Loading...' : '📊 Open Billing Portal'}
+              {loading ? 'Loading...' : 'Open Billing Portal'}
             </button>
           </>
         )}
@@ -322,10 +322,10 @@ function Settings() {
   }, [user?.id, token]);
 
   const settingsTabs = [
-    { id: 'payments', label: '💳 Payment Settings', path: '/settings/payments' },
-    { id: 'billing', label: '📊 Billing', path: '/settings/billing' },
-    { id: 'foundation', label: '🏢 Foundation Settings', path: '/settings/foundation' },
-    { id: 'domain', label: '🌐 Custom Domain', path: '/settings/domain' },
+    { id: 'payments', label: 'Payment Settings', path: '/settings/payments' },
+    { id: 'billing', label: 'Billing', path: '/settings/billing' },
+    { id: 'foundation', label: 'Foundation Settings', path: '/settings/foundation' },
+    { id: 'domain', label: 'Custom Domain', path: '/settings/domain' },
   ];
 
   return (
@@ -357,7 +357,7 @@ function Settings() {
                 <FoundationSettings site={primarySite} onUpdate={() => {}} />
               ) : (
                 <div className="settings-section" data-testid="settings-foundation-empty">
-                  <h1>🏢 Foundation Settings</h1>
+                  <h1>Foundation Settings</h1>
                   {sitesLoading ? (
                     <p>Loading foundation settings...</p>
                   ) : (
@@ -379,7 +379,7 @@ function Settings() {
                 <CustomDomainSettings subdomain={primarySubdomain} />
               ) : (
                 <div className="settings-section" data-testid="settings-domain-empty">
-                  <h1>🌐 Custom Domain</h1>
+                  <h1>Custom Domain</h1>
                   {sitesLoading ? (
                     <p>Loading domain settings...</p>
                   ) : (
@@ -401,7 +401,7 @@ function Settings() {
                   className="btn btn-primary"
                   onClick={() => setShowHelp(true)}
                 >
-                  📚 Help & FAQ
+                  Help & FAQ
                 </button>
               </div>
             } />
