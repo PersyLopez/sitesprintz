@@ -7,6 +7,7 @@ import { usePolling } from '../hooks/usePolling';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import api from '../services/api';
+import SkeletonLoader from '../components/common/SkeletonLoader';
 import './StaffDashboard.css';
 
 function isToday(dateValue) {
@@ -188,9 +189,9 @@ function StaffOrders() {
           </div>
 
           {loading ? (
-            <div className="loading-message">
-              <div className="spinner"></div>
-              <p>Loading orders...</p>
+            <div className="orders-loading" aria-busy="true" aria-label="Loading orders...">
+              <span className="sr-only">Loading orders...</span>
+              <SkeletonLoader variant="table" lines={5} />
             </div>
           ) : todayOrders.length === 0 ? (
             <div className="empty-state" data-testid="staff-orders-empty">

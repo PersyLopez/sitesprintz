@@ -31,8 +31,8 @@ vi.mock('../../src/services/api', () => ({
 
 const tenantId = 'tenant-abc';
 
-function renderStaffOrders(staffValue, orders = []) {
-  mockGet.mockResolvedValue({ orders });
+function renderStaffOrders(staffValue, orders = [], { pending = false } = {}) {
+  if (!pending) mockGet.mockResolvedValue({ orders });
 
   return render(
     <MemoryRouter initialEntries={[`/staff/orders/${tenantId}`]}>
@@ -98,5 +98,14 @@ describe('StaffOrders', () => {
     await waitFor(() => {
       expect(screen.getByTestId('staff-orders-empty')).toBeInTheDocument();
     });
+  });
+
+  it('shows table skeleton while orders are loading', () => {
+    mockGet.mockReturnValue(new Promise(() => {}));
+
+    renderStaffOrders(assignedStaff, [], { pending: true });
+
+    expect(screen.getByText(/Loading orders/i, { selector: '.sr-only' })).toBeInTheDocument();
+    expect(document.querySelector('.skeleton-loader')).toBeInTheDocument();
   });
 });
