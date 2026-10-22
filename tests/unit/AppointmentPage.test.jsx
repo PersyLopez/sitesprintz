@@ -32,3 +32,15 @@ describe('AppointmentPage loading state', () => {
     expect(status.textContent).toContain('Loading appointment...');
   });
 });
+
+describe('AppointmentPage error state', () => {
+  it('announces the failure as the level-1 heading when the request rejects', async () => {
+    const { get } = await import('../../src/utils/api');
+    get.mockRejectedValueOnce(new Error('network down'));
+
+    renderAt('/booking/appointment/ABC123');
+
+    const heading = await screen.findByRole('heading', { level: 1 });
+    expect(heading).toHaveTextContent('Failed to load appointment details');
+  });
+});

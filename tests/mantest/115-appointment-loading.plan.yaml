@@ -6,3 +6,17 @@ steps:
 
   - action: Failure message appears
     wait_for: { text: Failed to load appointment details, timeout: 20000 }
+
+  - action: First heading on the page is the failure h1
+    code: |
+      const firstHeading = page.locator('h1, h2, h3, h4, h5, h6').first();
+      await firstHeading.waitFor({ timeout: 15000 });
+      const tag = await firstHeading.evaluate((el) => el.tagName.toLowerCase());
+      const text = ((await firstHeading.textContent()) || '').trim();
+      if (tag !== 'h1') {
+        throw new Error('First heading on /booking/appointment/does-not-exist-xyz is <' + tag + '>, not <h1>');
+      }
+      if (text !== 'Failed to load appointment details.') {
+        throw new Error('First heading text is "' + text + '", expected exactly "Failed to load appointment details."');
+      }
+    settle_ms: 400

@@ -90,8 +90,28 @@ const AppointmentPage = () => {
             </div>
         );
     }
-    if (error) return <div className="error">{error}</div>;
-    if (!appointment) return <div className="not-found">Appointment not found</div>;
+    if (error) {
+        return (
+            <div className="appointment-page">
+                <Header />
+                <main className="container mx-auto px-4 py-8">
+                    <h1 className="text-2xl font-bold mb-6">{error}</h1>
+                </main>
+                <Footer />
+            </div>
+        );
+    }
+    if (!appointment) {
+        return (
+            <div className="appointment-page">
+                <Header />
+                <main className="container mx-auto px-4 py-8">
+                    <h1 className="text-2xl font-bold mb-6">Appointment not found</h1>
+                </main>
+                <Footer />
+            </div>
+        );
+    }
 
     return (
         <div className="appointment-page">
