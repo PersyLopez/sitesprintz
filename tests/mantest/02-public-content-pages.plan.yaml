@@ -13,6 +13,12 @@ steps:
       if (title !== 'About Right Site Light') {
         throw new Error(`About title: ${title}`);
       }
+      for (const name of ['Get Your Page Free', 'View Examples']) {
+        const box = await page.locator('main').getByRole('link', { name }).boundingBox();
+        if (!box || box.height < 44) {
+          throw new Error(`About ${name} height ${box ? box.height : 'none'} is under 44px`);
+        }
+      }
 
   - action: Open Spanish about
     goto: "http://localhost:5173/about?lang=es"
@@ -39,6 +45,12 @@ steps:
       const title = await page.title();
       if (title !== `${heading} — Right Site Light`) {
         throw new Error(`Contact title: ${title}`);
+      }
+      for (const name of ['Get Your Page Free', 'View Examples']) {
+        const box = await page.locator('main').getByRole('link', { name }).boundingBox();
+        if (!box || box.height < 44) {
+          throw new Error(`Contact ${name} height ${box ? box.height : 'none'} is under 44px`);
+        }
       }
 
   - action: Go to Track lookup

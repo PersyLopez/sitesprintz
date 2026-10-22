@@ -66,10 +66,10 @@ function Contact() {
             <h2>{t('contact.cta.h')}</h2>
             <p>{t('contact.cta.p')}</p>
             <div className="cta-buttons">
-              <Link to="/register" className="btn-primary-large">
+              <Link to="/register" className="btn btn-primary">
                 {t('landing.cta.guest')}
               </Link>
-              <Link to="/showcase" className="btn-secondary-large">
+              <Link to="/showcase" className="btn btn-secondary">
                 {t('about.cta.examples')}
               </Link>
             </div>
