@@ -368,3 +368,11 @@
   flex: 1;
   min-width: 0;
 }
+
+@media (max-width: 767px) {
+  .site-overview-card p {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+}

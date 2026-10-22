@@ -1,0 +1,59 @@
+url: http://localhost:5173/login
+goal: At 700px the site overview description wraps instead of clipping with an ellipsis
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter gallery email
+    fill: { testId: login-email, value: "gallery@sitesprintz.com", clear: true }
+
+  - action: Enter gallery password
+    fill: { testId: login-password, value: "GalleryDemo123!", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard with gallery sites
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 1000
+
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      }
+
+  - action: Open gallery-ordering workspace
+    code: |
+      const card = page.locator('[data-testid="site-card"][data-subdomain="gallery-ordering"]');
+      if ((await card.count()) === 0) {
+        throw new Error('Missing gallery-ordering site card');
+      }
+      await card.getByTestId('manage-site-button').click();
+    settle_ms: 1500
+
+  - action: Overview pane ready
+    code: |
+      await page.getByTestId('site-overview').waitFor({ timeout: 20000 });
+
+  - action: Overview description wraps at 700px
+    code: |
+      await page.setViewportSize({ width: 700, height: 900 });
+      const para = page.locator('[data-testid="site-overview-edit"] p');
+      await para.waitFor({ timeout: 15000 });
+      const styles = await para.evaluate((el) => {
+        const cs = getComputedStyle(el);
+        return { whiteSpace: cs.whiteSpace, text: el.innerText.trim() };
+      });
+      if (styles.whiteSpace !== 'normal') {
+        throw new Error(`Overview description does not wrap: white-space=${styles.whiteSpace}`);
+      }
+      const expected = [
+        'Edit outlined text directly on your live site.',
+        'Change pages, sections, and content for this site.',
+      ];
+      if (!expected.includes(styles.text)) {
+        throw new Error(`Unexpected overview description text: "${styles.text}"`);
+      }
