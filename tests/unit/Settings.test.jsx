@@ -1,7 +1,16 @@
-import { describe, it, expect, afterEach, vi } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/react';
+import { describe, it, expect, afterEach, vi, beforeEach } from 'vitest';
+import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import Settings, { BillingSection } from '../../src/pages/Settings';
+
+const mockShowError = vi.fn();
+
+vi.mock('../../src/hooks/useToast', () => ({
+  useToast: () => ({
+    showSuccess: vi.fn(),
+    showError: mockShowError,
+  }),
+}));
 
 function mockFetch(healthBilling) {
   vi.stubGlobal('fetch', vi.fn((url) => {
@@ -43,6 +52,10 @@ function renderBilling(user = { id: 'u1' }) {
 }
 
 describe('Settings BillingSection', () => {
+  beforeEach(() => {
+    mockShowError.mockClear();
+  });
+
   afterEach(() => {
     cleanup();
     vi.unstubAllGlobals();
@@ -78,6 +91,57 @@ describe('Settings BillingSection', () => {
     renderBilling({ id: 'u1', plan: 'pro' });
 
     expect(await screen.findByTestId('billing-plan-name')).toHaveTextContent('Growth');
+  });
+
+  it('shows an error toast when the billing portal fails to open', async () => {
+    mockFetch(true);
+    vi.stubGlobal('fetch', vi.fn((url) => {
+      if (url === '/api/health') {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ billing: { collectsPayments: true } }),
+        });
+      }
+      return Promise.resolve({ ok: false, json: () => Promise.resolve({ error: 'No subscription' }) });
+    }));
+    renderBilling();
+
+    fireEvent.click(await screen.findByTestId('open-billing-portal'));
+
+    await waitFor(() => {
+      expect(mockShowError).toHaveBeenCalledWith('Failed to open billing portal');
+    });
+  });
+
+  it('shows the unused-slot reason when checkout returns SITE_SLOT_AVAILABLE', async () => {
+    mockFetch(true);
+    vi.stubGlobal('fetch', vi.fn((url) => {
+      if (url === '/api/health') {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ billing: { collectsPayments: true } }),
+        });
+      }
+      if (url === '/api/payments/create-subscription-checkout') {
+        return Promise.resolve({
+          ok: false,
+          json: () => Promise.resolve({
+            code: 'SITE_SLOT_AVAILABLE',
+            error: 'You already have an unused site slot. Publish without paying again.',
+          }),
+        });
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+    }));
+    renderBilling({ id: 'u1' });
+
+    fireEvent.click(await screen.findByTestId('subscribe-starter'));
+
+    await waitFor(() => {
+      expect(mockShowError).toHaveBeenCalledWith(
+        'You already have an unused site slot. Publish without paying again.'
+      );
+    });
   });
 });
 

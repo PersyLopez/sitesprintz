@@ -11,11 +11,13 @@ import FAQWidget from '../components/common/FAQWidget';
 import LaborExtrasNote from '../components/pricing/LaborExtrasNote';
 import LaborCheckoutButtons from '../components/pricing/LaborCheckoutButtons';
 import { isPaidHostingPlan, isTrialingStatus, TIER_INFO, normalizeTier } from '../config/tiers.js';
+import { useToast } from '../hooks/useToast';
 import { PLATFORM_SUPPORT_EMAIL } from '../config/pricing.config';
 import './Settings.css';
 
 export function BillingSection({ user, token }) {
   const [loading, setLoading] = useState(false);
+  const { showError } = useToast();
   const [collectsPayments, setCollectsPayments] = useState(false);
   const [onActiveLiveTrial, setOnActiveLiveTrial] = useState(false);
   const [searchParams] = useSearchParams();
@@ -101,7 +103,7 @@ export function BillingSection({ user, token }) {
       window.location.href = url;
     } catch (error) {
       console.error('Error opening billing portal:', error);
-      alert('Failed to open billing portal. Please try again.');
+      showError('Failed to open billing portal');
     } finally {
       setLoading(false);
     }
@@ -130,7 +132,7 @@ export function BillingSection({ user, token }) {
       throw new Error(data.error || 'Failed to create checkout session');
     } catch (error) {
       console.error('Error starting subscription checkout:', error);
-      alert('Failed to start checkout. Please try again.');
+      showError(error?.message || 'Failed to start checkout. Please try again.');
     } finally {
       setLoading(false);
     }
