@@ -36,13 +36,13 @@ function NotFound() {
               onClick={() => navigate(-1)}
               className="btn btn-secondary"
             >
-              ← Go Back
+              Go Back
             </button>
             <Link to="/" className="btn btn-primary">
-              🏠 Go Home
+              Go Home
             </Link>
             <Link to="/showcase" className="btn btn-secondary">
-              🖼️ Gallery
+              Gallery
             </Link>
           </div>
 
@@ -50,35 +50,29 @@ function NotFound() {
             <h2>Helpful Links</h2>
             <div className="links-grid">
               <Link to="/showcase" className="helpful-link">
-                <span className="link-icon">🖼️</span>
                 <span className="link-text">Gallery</span>
               </Link>
               {isAuthenticated && (
                 <Link to="/dashboard" className="helpful-link">
-                  <span className="link-icon">📊</span>
                   <span className="link-text">Dashboard</span>
                 </Link>
               )}
               {isAuthenticated && (
                 <Link to="/setup" className="helpful-link">
-                  <span className="link-icon">✨</span>
                   <span className="link-text">Create New Site</span>
                 </Link>
               )}
               {isAuthenticated && (
                 <Link to="/orders" className="helpful-link">
-                  <span className="link-icon">📦</span>
                   <span className="link-text">View Orders</span>
                 </Link>
               )}
               {isAuthenticated && (
                 <Link to="/analytics" className="helpful-link">
-                  <span className="link-icon">📊</span>
                   <span className="link-text">Analytics</span>
                 </Link>
               )}
               <Link to="/login" className="helpful-link">
-                <span className="link-icon">🔐</span>
                 <span className="link-text">Login</span>
               </Link>
             </div>

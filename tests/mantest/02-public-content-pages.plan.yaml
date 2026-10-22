@@ -95,3 +95,7 @@ steps:
       if (!second || (await second.evaluate(el => el.tagName)) !== 'H2' || !(await second.textContent()).includes('Helpful Links')) {
         throw new Error('Second 404 heading is not h2 Helpful Links');
       }
+      const goHomeName = (await page.locator('main').getByRole('link', { name: 'Go Home', exact: true }).first().innerText()).trim();
+      if (goHomeName !== 'Go Home') {
+        throw new Error(`Go Home accessible name is "${goHomeName}", expected exactly "Go Home"`);
+      }
