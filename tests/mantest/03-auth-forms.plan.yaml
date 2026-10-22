@@ -44,7 +44,7 @@ steps:
       }, { timeout: 10000 });
     settle_ms: 500
     assert:
-      - text contains Unauthorized
+      - text contains Email or password is incorrect
 
   - action: Open forgot password
     click: { text: Forgot password? }
