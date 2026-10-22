@@ -9,6 +9,7 @@ import Footer from '../components/layout/Footer';
 import StatsCard from '../components/analytics/StatsCard';
 import SiteAnalyticsTable from '../components/analytics/SiteAnalyticsTable';
 import LoadingFallback from '../components/common/LoadingFallback';
+import SkeletonLoader from '../components/common/SkeletonLoader';
 import FeatureGate from '../components/common/FeatureGate';
 import { api } from '../services/api';
 import { sitesService } from '../services/sites';
@@ -349,9 +350,12 @@ function Analytics() {
       upgradeMessage="Upgrade to Growth to view traffic and performance for this site."
     />
   ) : loading ? (
-    <div className="analytics-loading" data-testid="analytics-loading" aria-busy="true" aria-label="Loading analytics">
-      <div className="loading-spinner" />
-      <p>Loading analytics...</p>
+    <div className="stats-grid" data-testid="analytics-loading" aria-busy="true">
+      <span className="sr-only">Loading analytics...</span>
+      <SkeletonLoader variant="card" width="100%" height="72px" />
+      <SkeletonLoader variant="card" width="100%" height="72px" />
+      <SkeletonLoader variant="card" width="100%" height="72px" />
+      <SkeletonLoader variant="card" width="100%" height="72px" />
     </div>
   ) : loadError ? (
     <div className="empty-state analytics-error-state" data-testid="analytics-load-error">

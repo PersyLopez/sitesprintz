@@ -214,6 +214,7 @@ describe('Analytics Page', () => {
       );
 
       expect(screen.getByTestId('analytics-loading')).toBeInTheDocument();
+      expect(screen.getAllByRole('status', { name: 'Loading content' }).length).toBeGreaterThanOrEqual(4);
     });
 
     it('should handle account rollup without site ID', async () => {
