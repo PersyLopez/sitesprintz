@@ -106,6 +106,21 @@ export function liveSiteDocumentIdentifier(pathname) {
   return siteIdentifier;
 }
 
+const BLOCKED_PUBLIC_TREES = ['/drafts', '/users', '/data/drafts', '/data/users'];
+
+/**
+ * Public-tree document paths that must never be served by express.static:
+ * unpublished drafts and user records, at their legacy root and /data
+ * locations. API routes and public data documents stay allowed.
+ *
+ * @param {string} pathname
+ * @returns {boolean}
+ */
+export function blockedPublicTreePath(pathname) {
+  const cleanPath = String(pathname || '');
+  return BLOCKED_PUBLIC_TREES.some((tree) => cleanPath === tree || cleanPath.startsWith(`${tree}/`));
+}
+
 /**
  * Browser visits to the leftover `/sites/:id` page (and its index.html)
  * go to `/view/:id`. Asset paths like `/sites/:id/gallery/hero.jpg` stay.

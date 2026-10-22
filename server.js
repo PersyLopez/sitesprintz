@@ -59,7 +59,7 @@ import publishedSiteRenderer from './server/services/publishedSiteRenderer.js';
 import SEOService from './server/services/seoService.js';
 import { readFile } from 'fs/promises';
 import { existsSync } from 'fs';
-import { injectPublishedSiteEmbed, injectPublishedViewMarkup, isSafeSiteIdentifier, liveSiteDocumentIdentifier, liveSiteRedirectTarget, liveViewDocumentIdentifier, crawlerPublishedDocumentUrl, deferPublishedViewFonts, preloadPublishedViewDisplayFont, stripPublishedViewThirdParties, publishedDocumentShell, resolvePublishedDocumentSubdomain } from './server/utils/siteIsolation.js';
+import { blockedPublicTreePath, injectPublishedSiteEmbed, injectPublishedViewMarkup, isSafeSiteIdentifier, liveSiteDocumentIdentifier, liveSiteRedirectTarget, liveViewDocumentIdentifier, crawlerPublishedDocumentUrl, deferPublishedViewFonts, preloadPublishedViewDisplayFont, stripPublishedViewThirdParties, publishedDocumentShell, resolvePublishedDocumentSubdomain } from './server/utils/siteIsolation.js';
 import { renderPublishedViewFragment } from './src/utils/publishedSiteDocument.js';
 import { domainService } from './server/services/domainService.js';
 import { publishedCrawlerDocumentHidden } from './server/config/platformPlans.js';
@@ -188,8 +188,7 @@ app.use((req, res, next) => {
   if (req.method !== 'GET' && req.method !== 'HEAD') {
     return next();
   }
-  const blocked = req.path === '/drafts' || req.path.startsWith('/drafts/')
-    || req.path === '/users' || req.path.startsWith('/users/');
+  const blocked = blockedPublicTreePath(req.path);
   if (blocked) {
     return res.status(404).end();
   }

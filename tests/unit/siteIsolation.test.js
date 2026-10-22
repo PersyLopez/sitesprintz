@@ -6,6 +6,7 @@ import { TemplateNormalizer } from '../../server/services/templateNormalizer.js'
 import {
   PathEscapeError,
   allocateUniqueSubdomain,
+  blockedPublicTreePath,
   cloneIsolatedSiteData,
   crawlerPublishedDocumentUrl,
   deepClone,
@@ -133,6 +134,30 @@ describe('site isolation — live document redirect', () => {
     expect(crawlerPublishedDocumentUrl('/view/gallery-salon/data/site.json', '/view/gallery-salon/data/site.json', true)).toBeNull();
     expect(crawlerPublishedDocumentUrl('/showcase/gallery-salon', '/showcase/gallery-salon', true)).toBeNull();
     expect(crawlerPublishedDocumentUrl('/view/gallery-salon', '/view/gallery-salon', undefined)).toBeNull();
+  });
+});
+
+describe('site isolation — blocked public trees', () => {
+  it('blocks drafts and users trees at their legacy root and /data locations', () => {
+    expect(blockedPublicTreePath('/drafts')).toBe(true);
+    expect(blockedPublicTreePath('/drafts/gym-demo-1762266441700.json')).toBe(true);
+    expect(blockedPublicTreePath('/users')).toBe(true);
+    expect(blockedPublicTreePath('/users/persylopez9_gmail_com.json')).toBe(true);
+    expect(blockedPublicTreePath('/data/drafts')).toBe(true);
+    expect(blockedPublicTreePath('/data/drafts/gym-demo-1762266441700.json')).toBe(true);
+    expect(blockedPublicTreePath('/data/users')).toBe(true);
+    expect(blockedPublicTreePath('/data/users/persylopez9_gmail_com.json')).toBe(true);
+  });
+
+  it('allows api routes, other public data documents, and empty input', () => {
+    expect(blockedPublicTreePath('/api/users')).toBe(false);
+    expect(blockedPublicTreePath('/api/users/me')).toBe(false);
+    expect(blockedPublicTreePath('/api/drafts')).toBe(false);
+    expect(blockedPublicTreePath('/data/templates')).toBe(false);
+    expect(blockedPublicTreePath('/data/templates/salon.json')).toBe(false);
+    expect(blockedPublicTreePath('/data/section-registry.json')).toBe(false);
+    expect(blockedPublicTreePath('')).toBe(false);
+    expect(blockedPublicTreePath(null)).toBe(false);
   });
 });
 
