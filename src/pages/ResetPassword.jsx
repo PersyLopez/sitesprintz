@@ -1,21 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { PasswordStrengthMeter } from '../components/auth/PasswordStrengthMeter';
+import { useLocale } from '../i18n/LocaleContext.jsx';
 import { PLATFORM_SUPPORT_EMAIL } from '../config/pricing.config';
 import './Auth.css';
 
 function ResetPassword() {
   const navigate = useNavigate();
   const { showSuccess, showError } = useToast();
+  const { t } = useLocale();
   const [searchParams] = useSearchParams();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState('');
   const [validToken, setValidToken] = useState(true);
+
+  useLayoutEffect(() => {
+    document.title = `Reset Password — ${t('brand.name')}`;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', t('auth.forgot.p'));
+  }, [t]);
 
   useEffect(() => {
     // Get token from URL

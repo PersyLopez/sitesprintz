@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { useToast } from '../hooks/useToast';
+import { useLocale } from '../i18n/LocaleContext.jsx';
 import { PLATFORM_SUPPORT_EMAIL } from '../config/pricing.config';
 import './Auth.css';
 
@@ -10,10 +11,16 @@ function VerifyEmail() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { showSuccess, showError } = useToast();
+  const { t } = useLocale();
   
   const [status, setStatus] = useState('verifying'); // verifying, success, error, expired
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
+
+  useLayoutEffect(() => {
+    document.title = `Verify email — ${t('brand.name')}`;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', 'Confirm your email address to finish setting up your account.');
+  }, [t]);
 
   useEffect(() => {
     const token = searchParams.get('token');

@@ -7,6 +7,22 @@ steps:
       - text contains invalid or has expired
       - text contains Request New Link
       - text contains Back to Login
+    code: |
+      const title = await page.title();
+      if (title !== 'Reset Password — Right Site Light') {
+        throw new Error(`Reset password title: ${title}`);
+      }
+
+  - action: Open verify email without a token
+    goto: http://localhost:5173/verify-email
+
+  - action: Verify email page without token shows failure
+    code: |
+      await page.getByText('Verification Failed', { exact: false }).first().waitFor({ state: 'visible', timeout: 15000 });
+      const title = await page.title();
+      if (title !== 'Verify email — Right Site Light') {
+        throw new Error(`Verify email title: ${title}`);
+      }
 
   - action: Payment cancel page
     goto: http://localhost:5173/payment-cancel
