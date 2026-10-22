@@ -10,7 +10,7 @@ import './Auth.css';
 function StaffInviteAccept() {
   const { token } = useParams();
   const navigate = useNavigate();
-  const { user, isAuthenticated, login } = useAuth();
+  const { user, isAuthenticated, login, loading: authLoading } = useAuth();
   const { showSuccess, showError } = useToast();
   
   const [loading, setLoading] = useState(true);
@@ -66,7 +66,9 @@ function StaffInviteAccept() {
     }
   };
 
-  if (loading) {
+  // Wait for the auth session check to finish before deciding logged-in vs
+  // logged-out, matching ProtectedRoute's wait-while-loading pattern.
+  if (authLoading || loading) {
     return (
       <div className="auth-page story-public">
         <Header />

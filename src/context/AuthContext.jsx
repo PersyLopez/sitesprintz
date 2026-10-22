@@ -38,10 +38,16 @@ export function AuthProvider({ children }) {
         }
       } catch (error) {
         console.error('Auth check failed:', error);
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('authToken'); // Clean up old format
-        setToken(null);
+        // Only clear the stored session on definitive auth rejections (401/403).
+        // Transient failures (429 rate limit, network errors) keep the stored
+        // tokens so a slow or rate-limited check doesn't log the person out.
+        const statusCode = error?.statusCode;
+        if (statusCode === 401 || statusCode === 403) {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('authToken'); // Clean up old format
+          setToken(null);
+        }
         setUser(null);
       }
     } else if (allowCookieSession) {

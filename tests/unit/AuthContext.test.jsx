@@ -93,9 +93,11 @@ describe('AuthContext', () => {
     });
   });
 
-  it('should clear token if getCurrentUser fails', async () => {
+  it('should clear token if getCurrentUser fails with 401', async () => {
     localStorage.setItem('authToken', 'invalid-token');
-    authService.getCurrentUser.mockRejectedValueOnce(new Error('Invalid token'));
+    const authError = new Error('Invalid token');
+    authError.statusCode = 401;
+    authService.getCurrentUser.mockRejectedValueOnce(authError);
 
     render(
       <AuthProvider>
@@ -106,6 +108,25 @@ describe('AuthContext', () => {
     await waitFor(() => {
       expect(localStorage.getItem('authToken')).toBeNull();
       expect(contextValue.token).toBeNull();
+      expect(contextValue.user).toBeNull();
+    });
+  });
+
+  it('should keep stored token if getCurrentUser fails with 429', async () => {
+    localStorage.setItem('accessToken', 'stored-token');
+    const rateLimitError = new Error('Too many requests');
+    rateLimitError.statusCode = 429;
+    authService.getCurrentUser.mockRejectedValueOnce(rateLimitError);
+
+    render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>
+    );
+
+    await waitFor(() => {
+      expect(contextValue.loading).toBe(false);
+      expect(localStorage.getItem('accessToken')).toBe('stored-token');
       expect(contextValue.user).toBeNull();
     });
   });
