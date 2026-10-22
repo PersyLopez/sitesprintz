@@ -167,6 +167,35 @@ steps:
       await page.evaluate(() => window.scrollTo(0, 0));
       await page.setViewportSize({ width: 1280, height: 800 });
 
+  - action: Footer text meets dark-surface contrast
+    code: |
+      const readFooterPaint = async (selector) =>
+        page.locator(selector).evaluate((element) => {
+          const style = window.getComputedStyle(element);
+          let node = element;
+          let background = '';
+          while (node && node !== document.documentElement) {
+            const bg = window.getComputedStyle(node).backgroundColor;
+            if (bg && bg !== 'transparent' && !bg.startsWith('rgba(0, 0, 0, 0')) {
+              background = bg;
+              break;
+            }
+            node = node.parentElement;
+          }
+          return { color: style.color, background };
+        });
+      const tagline = await readFooterPaint('.footer-tagline');
+      const copyright = await readFooterPaint('.footer-bottom p');
+      for (const [label, paint] of [['tagline', tagline], ['copyright', copyright]]) {
+        if (!paint.background) throw new Error(`Footer ${label} has no opaque background`);
+        if (paint.background !== 'rgb(20, 36, 40)') {
+          throw new Error(`Footer ${label} background not --sp-hero: ${paint.background}`);
+        }
+        if (paint.color !== 'rgb(245, 217, 184)') {
+          throw new Error(`Footer ${label} color not #f5d9b8: ${paint.color}`);
+        }
+      }
+
   - action: Feedback lives in the footer
     code: |
       if (await page.getByTestId('nav-feedback').count()) {

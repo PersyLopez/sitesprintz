@@ -226,8 +226,10 @@
 }
 
 .story-public .footer-tagline,
-.public-page .footer-tagline {
-  color: var(--sp-muted);
+.public-page .footer-tagline,
+.story-public .footer-bottom p,
+.public-page .footer-bottom p {
+  color: #f5d9b8;
 }
 
 .story-public .footer-copyright,
