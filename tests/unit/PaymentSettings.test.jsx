@@ -140,6 +140,8 @@ describe('PaymentSettings', () => {
 
     expect(await screen.findByTestId('pay-on-site-upgrade')).toBeInTheDocument();
     expect(screen.getByTestId('pay-on-site-toggle')).toBeDisabled();
+    expect(screen.getByTestId('pay-on-site-upgrade').querySelector('a')).toHaveAttribute('href', '/#pricing');
+    expect(screen.getByTestId('delivery-upgrade').querySelector('a')).toHaveAttribute('href', '/#pricing');
   });
 
   it('shows only the upgrade line on Starter plans for unconnected processors', async () => {

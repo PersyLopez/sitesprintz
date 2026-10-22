@@ -138,4 +138,8 @@ steps:
       if (await pay.count()) {
         if (await pay.isEnabled()) throw new Error('Pay on site should be disabled on Starter');
       }
+      const payUpgradeHref = await page.getByTestId('pay-on-site-upgrade').locator('a').getAttribute('href');
+      if (payUpgradeHref !== '/#pricing') throw new Error('Pay-on-site upgrade link should go to /#pricing, got: ' + payUpgradeHref);
+      const deliveryUpgradeHref = await page.getByTestId('delivery-upgrade').locator('a').getAttribute('href');
+      if (deliveryUpgradeHref !== '/#pricing') throw new Error('Delivery upgrade link should go to /#pricing, got: ' + deliveryUpgradeHref);
     settle_ms: 300

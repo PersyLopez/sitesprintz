@@ -351,7 +351,7 @@ function PaymentSettings({ site: siteProp = null }) {
         {!isGrowth && (
           <p className="pay-on-site-upgrade" data-testid="pay-on-site-upgrade">
             Ordering is available on Growth.{' '}
-            <Link to="/pricing">Upgrade to enable pay on site.</Link>
+            <Link to="/#pricing">Upgrade to enable pay on site.</Link>
           </p>
         )}
 
@@ -394,7 +394,7 @@ function PaymentSettings({ site: siteProp = null }) {
         {!isGrowth && (
           <p className="pay-on-site-upgrade" data-testid="delivery-upgrade">
             Delivery is available on Growth.{' '}
-            <Link to="/pricing">Upgrade to enable delivery.</Link>
+            <Link to="/#pricing">Upgrade to enable delivery.</Link>
           </p>
         )}
 
