@@ -615,7 +615,7 @@ function BuildIntake() {
               )}
               <button
                 type="submit"
-                className="btn-primary-large"
+                className="btn btn-primary"
                 disabled={status === 'submitting' || (!offerActive && !acceptedManagedPlan)}
                 data-testid="build-intake-submit"
               >
