@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { get, del, post } from '../utils/api';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+import LoadingFallback from '../components/common/LoadingFallback';
 import './AppointmentPage.css';
 
 const AppointmentPage = () => {
@@ -78,7 +79,17 @@ const AppointmentPage = () => {
         }
     };
 
-    if (loading) return <div className="loading">Loading...</div>;
+    if (loading) {
+        return (
+            <div className="appointment-page">
+                <Header />
+                <main className="container mx-auto px-4 py-8">
+                    <LoadingFallback message="Loading appointment..." />
+                </main>
+                <Footer />
+            </div>
+        );
+    }
     if (error) return <div className="error">{error}</div>;
     if (!appointment) return <div className="not-found">Appointment not found</div>;
 

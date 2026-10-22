@@ -1,0 +1,8 @@
+url: http://localhost:5173/booking/appointment/does-not-exist-xyz
+goal: Appointment page shows its failure message with page chrome; no bare Loading line
+steps:
+  - action: Open a nonexistent appointment link
+    goto: http://localhost:5173/booking/appointment/does-not-exist-xyz
+
+  - action: Failure message appears
+    wait_for: { text: Failed to load appointment details, timeout: 20000 }
