@@ -1,0 +1,42 @@
+url: http://localhost:5173/login
+goal: Booking settings tab shows skeleton loading state inside the dashboard
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter gallery email
+    fill: { testId: login-email, value: "gallery@sitesprintz.com", clear: true }
+
+  - action: Enter gallery password
+    fill: { testId: login-password, value: "GalleryDemo123!", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 800
+
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+    settle_ms: 300
+
+  - action: Open salon appointments dashboard
+    goto: http://localhost:5173/dashboard/sites/gallery-salon/appointments
+    settle_ms: 800
+    wait_for: { testId: booking-dashboard-page, timeout: 20000 }
+
+  - action: Open settings tab and see loaded panel
+    click: { testId: settings-tab }
+    settle_ms: 800
+    wait_for: { testId: booking-intake-settings, timeout: 15000 }
+
+  - action: Panel heading ready
+    wait_for: { text: Booking settings, timeout: 15000 }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { get, put } from '../../utils/api';
 import { useToast } from '../../hooks/useToast';
+import SkeletonLoader from '../common/SkeletonLoader';
 import FeeConfiguration from './FeeConfiguration';
 
 function normalizeSettings(apiSettings, firstService) {
@@ -113,7 +114,13 @@ export default function BookingIntakeSettings({ userId, siteId }) {
   };
 
   if (loading) {
-    return <div className="loading" role="status">Loading settings...</div>;
+    return (
+      <div className="phase2-settings-panel" role="status">
+        <span className="sr-only">Loading settings...</span>
+        <SkeletonLoader variant="card" width="100%" height="72px" />
+        <SkeletonLoader variant="card" width="100%" height="72px" />
+      </div>
+    );
   }
 
   return (

@@ -108,6 +108,15 @@ describe('BookingIntakeSettings', () => {
     expect(screen.getByTestId('fee-configuration-mock')).toBeInTheDocument();
   });
 
+  it('shows skeleton cards with a status announcement while settings load', async () => {
+    api.get.mockImplementation(() => new Promise(() => {}));
+    renderSettings();
+
+    const statuses = screen.getAllByRole('status');
+    expect(statuses.some((el) => el.textContent.includes('Loading settings'))).toBe(true);
+    expect(screen.getAllByLabelText('Loading content').length).toBeGreaterThanOrEqual(2);
+  });
+
   it('saves intake flags via reminder-settings endpoint', async () => {
     renderSettings({ siteId: 'site-1' });
     await waitFor(() => expect(screen.getByTestId('save-booking-settings-btn')).toBeInTheDocument());
