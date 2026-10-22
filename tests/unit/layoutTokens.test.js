@@ -95,6 +95,18 @@ describe('layoutTokens — Accent palette', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Business levels (between accent palette and characters)
+// ---------------------------------------------------------------------------
+
+describe('layoutTokens — Business levels', () => {
+  it('every level description ends with a period', () => {
+    for (const level of Object.values(LEVELS)) {
+      expect(level.description.endsWith('.')).toBe(true);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
 // 3. Characters
 // ---------------------------------------------------------------------------
 

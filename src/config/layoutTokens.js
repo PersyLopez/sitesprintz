@@ -165,11 +165,11 @@ export const LEVELS = {
   },
   studio: {
     name: 'Me and my team',
-    description: 'A small team — show your people, let customers pick who they see',
+    description: 'A small team — show your people, let customers pick who they see.',
   },
   established: {
     name: 'A bigger team',
-    description: 'A larger business — full team grid, reviews, credentials, and stats',
+    description: 'A larger business — full team grid, reviews, credentials, and stats.',
   },
 };
 
