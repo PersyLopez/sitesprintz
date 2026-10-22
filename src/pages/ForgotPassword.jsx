@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
@@ -13,6 +13,11 @@ function ForgotPassword() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+
+  useLayoutEffect(() => {
+    document.title = `${t('auth.forgot.h')} — ${t('brand.name')}`;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', t('auth.forgot.p'));
+  }, [t]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

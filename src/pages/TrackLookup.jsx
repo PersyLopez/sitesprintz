@@ -1,18 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/useToast';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import api from '../services/api';
+import { useLocale } from '../i18n/LocaleContext.jsx';
 import './Tracking.css';
 
 function TrackLookup() {
   const navigate = useNavigate();
   const { showError } = useToast();
+  const { t } = useLocale();
   const [type, setType] = useState('order');
   const [referenceId, setReferenceId] = useState('');
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useLayoutEffect(() => {
+    document.title = `Track Your Order — ${t('brand.name')}`;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', 'Enter your order number to look up the status of an order you placed.');
+  }, [t]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

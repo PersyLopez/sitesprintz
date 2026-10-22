@@ -55,6 +55,11 @@ steps:
     wait_for: { text: Forgot Password, timeout: 15000 }
     assert:
       - text contains reset link
+    code: |
+      const title = await page.title();
+      if (title !== 'Forgot Password — Right Site Light') {
+        throw new Error(`Forgot password title: ${title}`);
+      }
 
   - action: Forgot-password email field present
     expect:

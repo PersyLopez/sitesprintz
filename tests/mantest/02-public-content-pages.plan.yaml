@@ -61,6 +61,11 @@ steps:
     assert:
       - text contains Order ID
       - text contains Email Address
+    code: |
+      const title = await page.title();
+      if (title !== 'Track Your Order — Right Site Light') {
+        throw new Error(`Track title: ${title}`);
+      }
 
   - action: Track form empty submit stays on page
     click: { role: button, name: Track }
