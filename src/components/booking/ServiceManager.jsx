@@ -58,7 +58,6 @@ const ServiceManager = ({ userId, siteId = null, onRefresh }) => {
   };
 
   const validateForm = () => {
-    console.log('Validating form:', formData);
     const errors = {};
 
     if (!formData.name || formData.name.trim() === '') {
@@ -74,7 +73,6 @@ const ServiceManager = ({ userId, siteId = null, onRefresh }) => {
     }
 
     setFormErrors(errors);
-    console.log('Validation errors:', errors);
     return Object.keys(errors).length === 0;
   };
 
@@ -155,17 +153,13 @@ const ServiceManager = ({ userId, siteId = null, onRefresh }) => {
       let serviceId;
       if (editingService) {
         // Update existing service
-        console.log('Updating service:', editingService.id, serviceData);
-        const response = await put(`/api/booking/admin/${userId}/services/${editingService.id}`, serviceData);
+        await put(`/api/booking/admin/${userId}/services/${editingService.id}`, serviceData);
         serviceId = editingService.id;
-        console.log('Service updated successfully');
         showSuccess('Service updated successfully');
       } else {
         // Create new service
-        console.log('Creating new service:', serviceData);
         const response = await post(`/api/booking/admin/${userId}/services`, serviceData);
         serviceId = response.service?.id;
-        console.log('Service created successfully');
         showSuccess('Service created successfully');
       }
 

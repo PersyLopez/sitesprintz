@@ -217,6 +217,46 @@ describe('ServiceManager Component - TDD', () => {
       });
     });
 
+    it('should not print form data or service payload to console', async () => {
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      api.get.mockResolvedValue({ success: true, services: [] });
+      api.post.mockResolvedValue({ success: true, service: { id: '1', name: 'New Service' } });
+
+      const user = userEvent.setup();
+      renderWithProviders(<ServiceManager userId={mockUserId} onRefresh={mockOnRefresh} />);
+
+      await waitFor(() => {
+        fireEvent.click(screen.getByTestId('add-service-btn'));
+      });
+
+      await user.type(screen.getByLabelText(/service name/i), 'New Service');
+      await user.type(screen.getByLabelText(/duration/i), '60');
+      await user.type(screen.getByLabelText(/price/i), '50');
+
+      fireEvent.click(screen.getByRole('button', { name: /save/i }));
+
+      await waitFor(() => {
+        expect(api.post).toHaveBeenCalled();
+      });
+
+      const forbidden = [
+        'Validating form:',
+        'Validation errors:',
+        'Updating service:',
+        'Service updated successfully',
+        'Creating new service:',
+        'Service created successfully',
+      ];
+      for (const call of logSpy.mock.calls) {
+        const message = call.join(' ');
+        for (const text of forbidden) {
+          expect(message).not.toContain(text);
+        }
+      }
+
+      logSpy.mockRestore();
+    });
+
     it('should validate required fields', async () => {
       api.get.mockResolvedValue({ success: true, services: [] });
       renderWithProviders(<ServiceManager userId={mockUserId} onRefresh={mockOnRefresh} />);
