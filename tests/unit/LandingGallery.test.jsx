@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import LandingGallery from '../../src/components/landing/LandingGallery';
 
@@ -153,5 +153,76 @@ describe('LandingGallery', () => {
     renderGallery();
     const salonUse = screen.getByTestId('gallery-card-salon-use');
     expect(salonUse.getAttribute('href')).toBe('/register?template=salon');
+  });
+
+  describe('showcase hero photos', () => {
+    it('renders the same-origin showcase heroImage on the matching template card', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          sites: [
+            { subdomain: 'gallery-salon', name: 'Luxe Salon', heroImage: '/assets/salon-hero.jpg' },
+            { subdomain: 'gallery-gym', name: 'Hotlink Gym', heroImage: 'https://images.unsplash.com/photo-gym?w=1200' },
+            { subdomain: 'gallery-restaurant', name: 'Bistro', heroImage: null },
+          ],
+          total: 3,
+        }),
+      });
+
+      renderGallery();
+
+      const salonCard = await waitFor(() => screen.getByTestId('gallery-card-salon'));
+      const img = salonCard.querySelector('img');
+      expect(img).toBeTruthy();
+      expect(img.getAttribute('src')).toBe('/assets/salon-hero.jpg');
+      expect(img.getAttribute('alt')).toBe('Luxe Salon');
+      expect(img.getAttribute('loading')).toBe('lazy');
+      expect(img.getAttribute('decoding')).toBe('async');
+      // A third-party hero URL never reaches the homepage
+      const gymCard = screen.getByTestId('gallery-card-gym');
+      expect(gymCard.querySelector('img')).toBeNull();
+      // Called once — one request total, not per-card
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch.mock.calls[0][0]).toBe('/api/showcases?kind=examples&page=1&pageSize=50');
+    });
+
+    it('keeps the emoji fallback on cards without a same-origin heroImage', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          sites: [
+            { subdomain: 'gallery-salon', name: 'Luxe Salon', heroImage: 'https://images.unsplash.com/photo-salon?w=1200' },
+          ],
+          total: 1,
+        }),
+      });
+
+      renderGallery();
+
+      await waitFor(() => expect(global.fetch).toHaveBeenCalled());
+      const salonCard = screen.getByTestId('gallery-card-salon');
+      expect(salonCard.querySelector('img')).toBeNull();
+      const restaurantCard = screen.getByTestId('gallery-card-restaurant');
+      expect(restaurantCard.querySelector('img')).toBeNull();
+      expect(restaurantCard.querySelector('.gl-card-emoji').textContent).toBe('🍽️');
+      expect(restaurantCard.querySelectorAll('.gl-section-block').length).toBeGreaterThan(0);
+    });
+
+    it('falls back to preview on every card when the fetch rejects', async () => {
+      global.fetch = vi.fn().mockRejectedValue(new Error('network down'));
+
+      renderGallery();
+
+      await waitFor(() => {
+        expect(global.fetch).toHaveBeenCalled();
+      });
+      const cards = document.querySelectorAll('.gl-card');
+      expect(cards.length).toBe(14);
+      for (const card of cards) {
+        expect(card.querySelector('img')).toBeNull();
+        expect(card.querySelector('.gl-card-emoji')).toBeTruthy();
+        expect(card.querySelectorAll('.gl-section-block').length).toBeGreaterThan(0);
+      }
+    });
   });
 });

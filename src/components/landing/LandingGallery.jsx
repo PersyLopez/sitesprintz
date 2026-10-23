@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useLocale } from '../../i18n/LocaleContext.jsx';
@@ -218,7 +218,7 @@ function SectionPreview({ sections, accent }) {
 /* ──────────────────────────────────────────────
    Template card
    ────────────────────────────────────────────── */
-function TemplateCard({ template, showcaseTo, useLookTo, onUseLook, isSelected, style, t }) {
+function TemplateCard({ template, showcaseTo, heroPreview, useLookTo, onUseLook, isSelected, style, t }) {
   const [hovered, setHovered] = useState(false);
 
   return (
@@ -235,10 +235,24 @@ function TemplateCard({ template, showcaseTo, useLookTo, onUseLook, isSelected, 
         data-testid={`gallery-card-${template.id}-example`}
       >
         <div className="gl-card-preview">
-          <SectionPreview sections={template.sections} accent={template.accent} />
-          <div className="gl-card-emoji-wrap">
-            <span className="gl-card-emoji">{template.emoji}</span>
-          </div>
+          {heroPreview ? (
+            <img
+              src={heroPreview.heroImage}
+              alt={heroPreview.name}
+              width="272"
+              height="130"
+              loading="lazy"
+              decoding="async"
+              className="gl-card-photo"
+            />
+          ) : (
+            <>
+              <SectionPreview sections={template.sections} accent={template.accent} />
+              <div className="gl-card-emoji-wrap">
+                <span className="gl-card-emoji">{template.emoji}</span>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="gl-card-info">
@@ -273,8 +287,43 @@ function TemplateCard({ template, showcaseTo, useLookTo, onUseLook, isSelected, 
    ────────────────────────────────────────────── */
 export default function LandingGallery({ selectedTemplateId, onSelectTemplate }) {
   const [activeCategory, setActiveCategory] = useState('all');
+  const [heroPreviews, setHeroPreviews] = useState({});
   const { isAuthenticated } = useAuth();
   const { t } = useLocale();
+
+  /* Pull the published example hero photos once — same endpoint the
+     showcase gallery uses (ShowcaseGallery.jsx), matched back to template
+     ids via the showcase path that getShowcasePath embeds. */
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchHeroPreviews = async () => {
+      try {
+        const response = await fetch('/api/showcases?kind=examples&page=1&pageSize=50', {
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error('Failed to fetch showcase examples');
+        const data = await response.json();
+        const byPath = {};
+        for (const site of data.sites || []) {
+          // Same-origin photos only: demo data still carries third-party
+          // stock URLs, and the homepage must not hotlink those.
+          if (site?.subdomain && typeof site.heroImage === 'string' && site.heroImage.startsWith('/')) {
+            byPath[`/showcase/${site.subdomain}`] = {
+              heroImage: site.heroImage,
+              name: site.name || site.subdomain,
+            };
+          }
+        }
+        setHeroPreviews(byPath);
+      } catch (err) {
+        if (err.name !== 'AbortError') setHeroPreviews({});
+      }
+    };
+
+    fetchHeroPreviews();
+    return () => controller.abort();
+  }, []);
 
   const handleUseLook = (templateId) => {
     onSelectTemplate?.(templateId);
@@ -322,6 +371,7 @@ export default function LandingGallery({ selectedTemplateId, onSelectTemplate })
               key={template.id}
               template={template}
               showcaseTo={showcaseTo(template.id)}
+              heroPreview={heroPreviews[showcaseTo(template.id)] || null}
               useLookTo={useLookTo(template.id)}
               onUseLook={() => handleUseLook(template.id)}
               isSelected={selectedTemplateId === template.id}

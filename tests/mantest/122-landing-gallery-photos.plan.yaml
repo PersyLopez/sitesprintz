@@ -1,0 +1,33 @@
+url: http://localhost:5173/
+goal: Landing template cards show real published example photos, not only emoji
+steps:
+  - action: Landing ready
+    wait_for: { text: Get Your Page Free, timeout: 20000 }
+
+  - action: Accept analytics consent if present
+    code: |
+      const accept = page.getByRole('button', { name: 'Accept', exact: true });
+      if (await accept.count()) {
+        await accept.click({ timeout: 4000 }).catch(() => {});
+      }
+
+  - action: Gallery cards render
+    code: |
+      await page.locator('.gl-card').first().waitFor({ timeout: 20000 });
+
+  - action: Example photos stay same-origin
+    code: |
+      await page.locator('.gl-card').first().waitFor({ timeout: 20000 });
+      await page.waitForTimeout(1500);
+      const sources = await page.locator('img.gl-card-photo').evaluateAll((imgs) =>
+        imgs.map((img) => img.getAttribute('src'))
+      );
+      const external = sources.filter((src) => /^https?:/i.test(src));
+      if (external.length) {
+        throw new Error(`External photo sources on the landing gallery: ${external.join(', ')}`);
+      }
+      // Card previews still render (photo or fallback) on every card
+      const cards = await page.locator('.gl-card').count();
+      if (!cards) {
+        throw new Error('No gallery cards rendered');
+      }
