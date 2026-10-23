@@ -1,0 +1,53 @@
+url: http://localhost:5173/login
+goal: A blank custom-site name shows an inline error instead of a browser alert
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter owner email
+    fill: { testId: login-email, value: "test@example.com", clear: true }
+
+  - action: Enter owner password
+    fill: { testId: login-password, value: "SecurePass!2024", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Land on the dashboard
+    wait_for: { url: /dashboard, timeout: 20000 }
+
+  - action: Open setup
+    code: |
+      await page.goto('http://localhost:5173/setup', { waitUntil: 'load' });
+
+  - action: Start a custom site
+    code: |
+      const skip = page.getByTestId('wizard-skip');
+      if (await skip.count()) {
+        await skip.scrollIntoViewIfNeeded();
+        await skip.click();
+      }
+      const start = page.getByRole('button', { name: 'Start building your custom website', exact: true });
+      await start.waitFor({ state: 'attached', timeout: 20000 });
+      await start.scrollIntoViewIfNeeded();
+      await start.click();
+
+  - action: Reach the business name step
+    code: |
+      const next = page.getByRole('button', { name: /Next/ });
+      await next.click();
+      await next.click();
+      await page.getByRole('button', { name: /Create My Website/ }).waitFor({ timeout: 10000 });
+
+  - action: Blank name shows the inline error
+    code: |
+      page.once('dialog', () => {
+        throw new Error('A browser alert opened');
+      });
+      await page.getByRole('button', { name: /Create My Website/ }).click();
+      const message = page.getByText('Please enter your business name');
+      await message.waitFor({ timeout: 5000 });
+      if (!(await message.isVisible())) {
+        throw new Error('Business name error is not visible');
+      }

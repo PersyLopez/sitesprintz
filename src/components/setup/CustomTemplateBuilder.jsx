@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import FieldValidation from '../common/FieldValidation';
 import './CustomTemplateBuilder.css';
 
 /**
@@ -18,6 +19,7 @@ function CustomTemplateBuilder({ onComplete, onCancel }) {
     tagline: '',
     type: '',
   });
+  const [nameSubmitAttempted, setNameSubmitAttempted] = useState(false);
 
   const layouts = [
     {
@@ -109,7 +111,7 @@ function CustomTemplateBuilder({ onComplete, onCancel }) {
 
   const handleComplete = () => {
     if (!businessInfo.name.trim()) {
-      alert('Please enter your business name');
+      setNameSubmitAttempted(true);
       return;
     }
 
@@ -349,14 +351,21 @@ function CustomTemplateBuilder({ onComplete, onCancel }) {
             
             <div className="form-group">
               <label htmlFor="business-name">Business Name *</label>
-              <input
-                id="business-name"
-                type="text"
-                placeholder="Enter your business name"
+              <FieldValidation
                 value={businessInfo.name}
-                onChange={(e) => handleBusinessInfoChange('name', e.target.value)}
-                maxLength="50"
-              />
+                validator={(value) => Boolean(value.trim())}
+                errorMessage="Please enter your business name"
+                forceTouched={nameSubmitAttempted}
+              >
+                <input
+                  id="business-name"
+                  type="text"
+                  placeholder="Enter your business name"
+                  value={businessInfo.name}
+                  onChange={(e) => handleBusinessInfoChange('name', e.target.value)}
+                  maxLength="50"
+                />
+              </FieldValidation>
               <span className="char-count">{businessInfo.name.length}/50</span>
             </div>
 
