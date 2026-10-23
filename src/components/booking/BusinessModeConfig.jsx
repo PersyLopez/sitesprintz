@@ -219,7 +219,7 @@ export default function BusinessModeConfig({ tenantId, onConfigUpdated }) {
               className={`mode-card ${config.configuredMode === mode ? 'selected' : ''} ${config.isSoloOperation && mode !== BUSINESS_MODES.SOLO ? 'disabled' : ''}`}
               onClick={() => {
                 if (config.isSoloOperation && mode !== BUSINESS_MODES.SOLO) {
-                  alert('Add more staff members to enable team modes');
+                  setError('Add more staff members to enable team modes');
                   return;
                 }
                 handleModeChange(mode);
