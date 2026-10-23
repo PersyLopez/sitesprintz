@@ -167,7 +167,7 @@ const ShareModal = ({ subdomain, shopName, customDomain, onClose }) => {
 
   const handleNativeShare = async () => {
     if (!navigator.share) {
-      alert('Native sharing is not supported on this device');
+      setError('Native sharing is not supported on this device');
       return;
     }
 

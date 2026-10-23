@@ -237,4 +237,26 @@ describe('ShareModal', () => {
     expect(screen.queryByRole('button', { name: /View live share page/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/View live share page/i)).not.toBeInTheDocument();
   });
+
+  it('shows the native-share fallback as an inline error, not an alert', async () => {
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+    navigator.share = vi.fn().mockResolvedValue(undefined);
+    try {
+      const onClose = vi.fn();
+      render(<ShareModal subdomain="river-salon" onClose={onClose} />);
+
+      const moreButton = screen.getByRole('button', { name: /More…/ });
+      expect(moreButton).toBeVisible();
+
+      fireEvent.click(moreButton);
+      await waitFor(() => {
+        expect(navigator.share).toHaveBeenCalledWith(
+          expect.objectContaining({ url: PUBLIC_SITE_URL })
+        );
+      });
+      expect(alertSpy).not.toHaveBeenCalled();
+    } finally {
+      delete navigator.share;
+    }
+  });
 });
