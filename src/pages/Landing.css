@@ -262,7 +262,7 @@
 
 .jump-nav {
   position: sticky;
-  top: 76px;
+  top: 93px;
   z-index: 40;
   display: flex;
   gap: var(--space-sm);

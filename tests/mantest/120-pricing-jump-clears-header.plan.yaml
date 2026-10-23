@@ -1,0 +1,39 @@
+url: http://localhost:5173/#pricing
+goal: At 700px the sticky Pricing jump chip clears the global header (jump-nav top 93px)
+steps:
+  - action: Landing pricing ready
+    wait_for: { role: button, name: Pricing, timeout: 20000 }
+
+  - action: Accept analytics consent if present
+    code: |
+      const accept = page.getByRole('button', { name: 'Accept', exact: true });
+      if (await accept.count()) {
+        await accept.click({ timeout: 4000 }).catch(() => {});
+      }
+
+  - action: Shrink viewport to 700px
+    code: |
+      await page.setViewportSize({ width: 700, height: 900 });
+
+  - action: Scroll pricing section into view
+    code: |
+      await page.evaluate(() => {
+        const section = document.querySelector('#pricing');
+        if (!section) throw new Error('Missing #pricing section');
+        section.scrollIntoView();
+      });
+      await page.waitForTimeout(500);
+
+  - action: Pricing jump chip clears the global header
+    code: |
+      const chip = page.getByRole('button', { name: 'Pricing', exact: true });
+      const { chipY, headerBottom } = await chip.evaluate((el) => {
+        const header = document.querySelector('header.site-header');
+        if (!header) throw new Error('Missing header.site-header');
+        const chipBox = el.getBoundingClientRect();
+        const headerBox = header.getBoundingClientRect();
+        return { chipY: chipBox.y, headerBottom: headerBox.y + headerBox.height };
+      });
+      if (chipY < headerBottom - 1) {
+        throw new Error(`Pricing jump chip at y=${chipY} is under header bottom ${headerBottom}`);
+      }
