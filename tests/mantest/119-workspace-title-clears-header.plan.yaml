@@ -1,0 +1,62 @@
+url: http://localhost:5173/login
+goal: At 700px the sticky workspace title clears the global header (toolbar top 93px)
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter gallery email
+    fill: { testId: login-email, value: "gallery@sitesprintz.com", clear: true }
+
+  - action: Enter gallery password
+    fill: { testId: login-password, value: "GalleryDemo123!", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Dashboard with gallery sites
+    wait_for: { url: /dashboard, timeout: 20000 }
+    settle_ms: 1000
+
+  - action: Dismiss welcome if present
+    code: |
+      const dismiss = page.getByTestId('welcome-dismiss');
+      if (await dismiss.count()) {
+        await dismiss.click({ timeout: 4000 }).catch(() => {});
+      }
+
+  - action: Open gallery-ordering workspace
+    code: |
+      const card = page.locator('[data-testid="site-card"][data-subdomain="gallery-ordering"]');
+      if ((await card.count()) === 0) {
+        throw new Error('Missing gallery-ordering site card');
+      }
+      await card.getByTestId('manage-site-button').click();
+    settle_ms: 1500
+
+  - action: Workspace title heading ready
+    code: |
+      await page.getByRole('heading', { name: 'Oak & Anchor' }).waitFor({ timeout: 20000 });
+
+  - action: Shrink viewport to 700px
+    code: |
+      await page.setViewportSize({ width: 700, height: 900 });
+
+  - action: Scroll so the toolbar is sticky
+    code: |
+      await page.mouse.wheel(0, 200);
+      await page.waitForTimeout(500);
+
+  - action: Workspace title clears the global header
+    code: |
+      const heading = page.getByRole('heading', { name: 'Oak & Anchor' });
+      const { titleY, headerBottom } = await heading.evaluate((el) => {
+        const header = document.querySelector('header.site-header');
+        if (!header) throw new Error('Missing header.site-header');
+        const titleBox = el.getBoundingClientRect();
+        const headerBox = header.getBoundingClientRect();
+        return { titleY: titleBox.y, headerBottom: headerBox.y + headerBox.height };
+      });
+      if (titleY < headerBottom - 1) {
+        throw new Error(`Workspace title at y=${titleY} is under header bottom ${headerBottom}`);
+      }
