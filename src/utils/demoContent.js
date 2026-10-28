@@ -1,3 +1,5 @@
+import { allowsDemoStockPhotos, isStockImageUrl } from './stockPhotos.js';
+
 // Demo content generator for templates
 // Provides realistic, rich content to showcase each template's potential
 // 
@@ -31,6 +33,115 @@ export function stripUnownedAccountLinks(value) {
     );
   }
   return value;
+}
+
+function blankStockStrings(value) {
+  if (typeof value === 'string') return isStockImageUrl(value) ? '' : value;
+  if (Array.isArray(value)) return value.map(blankStockStrings);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, blankStockStrings(entry)])
+    );
+  }
+  return value;
+}
+
+function imagesWithSources(images) {
+  if (!Array.isArray(images)) return [];
+  return images.filter((image) => {
+    if (typeof image === 'string') return image.trim() !== '';
+    const src = image?.url || image?.src || image?.image || '';
+    return typeof src === 'string' && src.trim() !== '';
+  });
+}
+
+/**
+ * A catalog template or demo fill is a starting layout, not the customer's
+ * facts. Drop invented names, reviews, hours, contact details, and stock photos.
+ * Services stay so the owner can edit the starter list. Pass keepBusinessName
+ * when the caller already typed a name.
+ */
+export function stripUnownedSiteFacts(siteData, { keepBusinessName = false } = {}) {
+  if (!siteData || typeof siteData !== 'object') return siteData;
+  if (allowsDemoStockPhotos(siteData)) return siteData;
+
+  const next = blankStockStrings(JSON.parse(JSON.stringify(siteData)));
+
+  if (!keepBusinessName) {
+    next.businessName = '';
+    if (next.brand && typeof next.brand === 'object') next.brand.name = '';
+  }
+  if (next.brand && typeof next.brand === 'object') {
+    next.brand.phone = '';
+    next.brand.email = '';
+  }
+
+  next.contactPhone = '';
+  next.contactEmail = '';
+  next.contactAddress = '';
+  next.businessHours = '';
+  next.heroImage = typeof next.heroImage === 'string' ? next.heroImage : '';
+
+  if (next.contact && typeof next.contact === 'object') {
+    next.contact.phone = '';
+    next.contact.email = '';
+    next.contact.address = '';
+    next.contact.hours = '';
+    next.contact.coordinates = null;
+    next.contact.parking = '';
+    next.contact.accessibility = '';
+  }
+
+  if (next.team && typeof next.team === 'object') next.team.members = [];
+  if (next.testimonials && typeof next.testimonials === 'object') {
+    next.testimonials.items = [];
+    next.testimonials.stats = {};
+  }
+  if (next.beforeAfter && typeof next.beforeAfter === 'object') next.beforeAfter.items = [];
+
+  if (next.gallery && typeof next.gallery === 'object') {
+    if (Array.isArray(next.gallery.images)) {
+      next.gallery.images = imagesWithSources(next.gallery.images);
+    }
+    if (Array.isArray(next.gallery.categories)) {
+      next.gallery.categories = next.gallery.categories.map((category) => ({
+        ...category,
+        images: imagesWithSources(category?.images),
+      }));
+    }
+  }
+
+  if (Array.isArray(next.nav)) {
+    next.nav = next.nav.filter((item) => item?.href !== '#team');
+  }
+
+  if (Array.isArray(next.sections)) {
+    next.sections = next.sections.map((section) => {
+      if (!section || typeof section !== 'object') return section;
+      const content = { ...(section.content || {}) };
+      if (section.type === 'team') content.members = [];
+      if (section.type === 'testimonials') {
+        content.items = [];
+        content.stats = {};
+      }
+      if (section.type === 'hours') content.hours = '';
+      if (section.type === 'contact') {
+        content.phone = '';
+        content.email = '';
+        content.address = '';
+        content.hours = '';
+      }
+      if (section.type === 'gallery') {
+        content.images = imagesWithSources(content.images);
+      }
+      if (section.type === 'hero' && typeof content.image === 'string' && !content.image) {
+        content.image = '';
+      }
+      return { ...section, content };
+    });
+  }
+
+  return next;
 }
 
 export const generateDemoContent = (templateId) => {

@@ -409,10 +409,56 @@ describe('SiteContext', () => {
       });
 
       expect(result.current.siteData.template).toBe('restaurant');
-      expect(result.current.siteData.businessName).toBe('Restaurant Name');
+      expect(result.current.siteData.businessName).toBe('');
       expect(result.current.siteData.heroTitle).toBe('Welcome');
       expect(result.current.siteData.services).toHaveLength(1);
       expect(result.current.siteData.colors.primary).toBeDefined();
+    });
+
+    it('drops catalog fiction when a design is picked', () => {
+      const { result } = renderSiteHook();
+      act(() => {
+        result.current.loadTemplate({
+          id: 'salon',
+          brand: { name: 'Luxe Beauty Studio', phone: '(555) 234-5678', email: 'hello@luxebeautystudio.com' },
+          hero: { title: 'Where Beauty Meets Artistry', image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200' },
+          team: { members: [{ name: 'Sarah Williams', title: 'Master Colorist' }] },
+          testimonials: { items: [{ author: 'Emily Martinez', text: 'Sarah is a color genius' }] },
+          contact: {
+            phone: '(555) 234-5678',
+            email: 'hello@luxebeautystudio.com',
+            address: '789 Fashion Boulevard, Beverly Hills, CA 90210',
+            hours: 'Tue-Sat 9am-7pm',
+          },
+          services: [{ name: 'Haircut' }],
+          nav: [{ label: 'Team', href: '#team' }, { label: 'Services', href: '#services' }],
+        });
+      });
+
+      const saved = JSON.stringify(result.current.siteData);
+      expect(result.current.siteData.businessName).toBe('');
+      expect(result.current.siteData.heroTitle).toBe('Where Beauty Meets Artistry');
+      expect(result.current.siteData.services).toHaveLength(1);
+      expect(saved).not.toMatch(/Sarah Williams|Emily Martinez|555|Fashion Boulevard|unsplash/i);
+      expect(result.current.siteData.nav.some((item) => item.href === '#team')).toBe(false);
+    });
+
+    it('keeps the name and contact the wizard already collected', () => {
+      const { result } = renderSiteHook();
+      act(() => {
+        result.current.loadTemplate({
+          id: 'salon',
+          _layout: 'atelier',
+          businessName: 'Wren Hair Studio',
+          contactPhone: '(856) 555-0194',
+          businessHours: 'Tue–Fri 10am–7pm',
+          sections: [{ type: 'hero', content: { title: 'Wren Hair Studio' } }],
+        });
+      });
+
+      expect(result.current.siteData.businessName).toBe('Wren Hair Studio');
+      expect(result.current.siteData.contactPhone).toBe('(856) 555-0194');
+      expect(result.current.siteData.businessHours).toBe('Tue–Fri 10am–7pm');
     });
 
     it('should preserve template demo content', () => {

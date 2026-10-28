@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import { draftsService } from '../services/drafts';
 import { useToast } from '../hooks/useToast';
-import { generateDemoContent, stripUnownedAccountLinks } from '../utils/demoContent';
+import { generateDemoContent, stripUnownedAccountLinks, stripUnownedSiteFacts } from '../utils/demoContent';
 import { colorsFromSiteTheme, DEFAULT_SITE_THEME_ID, normalizeSiteThemeId } from '../config/siteThemes';
 import { normalizeTemplateSections } from '../utils/sectionNormalizer';
 import { getLayoutForNiche } from '../config/layouts';
@@ -309,7 +309,7 @@ export function SiteProvider({ children }) {
     const hasRichContent = templateData.menu || templateData.team || templateData.gallery || templateData.testimonials
       || (Array.isArray(templateData.sections) && templateData.sections.length > 0);
 
-    const fullTemplateData = stripUnownedAccountLinks(hasRichContent ? {
+    let fullTemplateData = stripUnownedAccountLinks(hasRichContent ? {
       // Use actual template data as primary source for Pro templates
       ...templateData,
       // Ensure core IDs are set
@@ -370,6 +370,14 @@ export function SiteProvider({ children }) {
       templateId: templateKey,
       id: templateKey
     });
+
+    // Wizard builds already carry the owner's name, contact, and hours.
+    // A catalog pick or demo fill does not.
+    if (!templateData._layout) {
+      fullTemplateData = stripUnownedSiteFacts(fullTemplateData, {
+        keepBusinessName: Boolean(String(templateData.businessName || '').trim()),
+      });
+    }
 
     const nicheId = fullTemplateData.template || fullTemplateData.id;
     const existingSections = Array.isArray(fullTemplateData.sections) ? fullTemplateData.sections : [];

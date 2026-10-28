@@ -1,0 +1,51 @@
+url: http://localhost:5173/login
+goal: Picking a catalog design does not copy invented staff, contact, hours, or stock photos into the editor
+steps:
+  - action: Login form ready
+    wait_for: { text: Welcome Back, timeout: 20000 }
+
+  - action: Enter starter email
+    fill: { testId: login-email, value: "starter@example.com", clear: true }
+
+  - action: Enter starter password
+    fill: { testId: login-password, value: "StarterPass!2024", clear: true }
+
+  - action: Submit login
+    click: { testId: login-submit }
+    settle_ms: 3000
+
+  - action: Land on the dashboard
+    wait_for: { url: /dashboard, timeout: 20000 }
+
+  - action: Open setup
+    code: |
+      await page.goto('http://localhost:5173/setup', { waitUntil: 'load' });
+
+  - action: Reach the template grid
+    code: |
+      const skip = page.getByTestId('wizard-skip');
+      if (await skip.count()) {
+        await skip.scrollIntoViewIfNeeded();
+        await skip.click();
+      }
+      const salon = page.getByRole('heading', { name: 'Salon', exact: true });
+      await salon.waitFor({ timeout: 20000 });
+
+  - action: Use the salon design
+    code: |
+      const useSalon = page.getByRole('button', { name: 'Use Salon template' }).first();
+      await useSalon.scrollIntoViewIfNeeded();
+      await useSalon.click();
+      const switchModal = page.getByTestId('template-switch-modal');
+      if (await switchModal.count()) {
+        await page.getByTestId('template-switch-cancel').click();
+        throw new Error('starter already has editor work; refused to replace it');
+      }
+
+  - action: Editor has no catalog fiction
+    code: |
+      await page.getByRole('button', { name: 'Save' }).waitFor({ timeout: 20000 });
+      const text = await page.locator('body').innerText();
+      if (/Sarah Williams|Luxe Beauty Studio|Beauty Studio|Fashion Boulevard|Style Street|unsplash|hello@beautystudio|hello@luxebeautystudio|\(555\)/i.test(text)) {
+        throw new Error('catalog fiction reached the editor: ' + text.slice(0, 400));
+      }
