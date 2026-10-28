@@ -1,0 +1,17 @@
+url: http://localhost:5173/
+goal: Gallery jump chip and chip hover use the darker action orange on the light page
+steps:
+  - action: Homepage ready
+    code: |
+      const accept = page.getByTestId('clarity-consent-accept');
+      if (await accept.count()) await accept.click();
+      await page.getByTestId('jump-nav-gallery').waitFor({ timeout: 15000 });
+
+  - action: Gallery chip is the action orange
+    code: |
+      const chip = page.getByTestId('jump-nav-gallery');
+      const resting = await chip.evaluate((el) => getComputedStyle(el).color);
+      if (resting !== 'rgb(180, 85, 12)') throw new Error('gallery chip color ' + resting);
+      await chip.hover();
+      const hovered = await chip.evaluate((el) => getComputedStyle(el).color);
+      if (hovered !== 'rgb(180, 85, 12)') throw new Error('hovered chip color ' + hovered);

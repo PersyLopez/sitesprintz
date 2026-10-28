@@ -298,12 +298,12 @@
 
 .jump-chip--gallery {
   border-color: rgba(194, 104, 58, 0.45);
-  color: var(--accent-deep);
+  color: var(--accent-action);
 }
 
 .jump-chip:hover {
   border-color: var(--accent);
-  color: var(--accent-deep);
+  color: var(--accent-action);
   transform: translateY(-1px);
 }
 
