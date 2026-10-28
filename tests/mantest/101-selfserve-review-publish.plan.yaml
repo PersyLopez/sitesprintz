@@ -104,12 +104,12 @@ steps:
     assert:
       - text contains Your services
 
-  - action: Haircut is prefilled
+  - action: Offer name starts blank
     code: |
       const name = page.getByTestId('wizard-offer-name-0');
       await name.waitFor({ timeout: 5000 });
       const v = await name.inputValue();
-      if (!/Haircut/i.test(v)) throw new Error('expected Haircut prefill, got ' + v);
+      if (v !== '') throw new Error('expected a blank offer name, got ' + v);
 
   - action: Next to look
     click: { testId: wizard-next }
@@ -143,6 +143,10 @@ steps:
       }
       if (await page.getByTestId('template-grid').count()) {
         throw new Error('Template grid shown after wizard create');
+      }
+      const text = await page.locator('body').innerText();
+      if (/Haircut & Style|\$45|Color Treatment|Manicure/i.test(text)) {
+        throw new Error('niche starter offers reached the new page: ' + text.slice(0, 300));
       }
     settle_ms: 200
 

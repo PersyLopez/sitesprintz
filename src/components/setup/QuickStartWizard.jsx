@@ -22,32 +22,17 @@ const EMPTY_OFFER = { name: '', price: '', description: '' };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function mapOfferRows(items) {
-  return items.map((item) => ({
-    name: item.name || '',
-    price: item.price || '',
-    description: item.description || '',
-  }));
-}
-
 function seedOffersFromNiche(nicheId) {
   const niche = getNicheConfig(nicheId);
-  if (!niche) {
-    return { kind: 'services', items: [{ ...EMPTY_OFFER }] };
-  }
-  if (Array.isArray(niche.services) && niche.services.length) {
-    return { kind: 'services', items: mapOfferRows(niche.services) };
-  }
+  const blank = { kind: 'services', items: [{ ...EMPTY_OFFER }] };
+  if (!niche) return blank;
   if (Array.isArray(niche.products) && niche.products.length) {
-    return { kind: 'products', items: mapOfferRows(niche.products) };
+    return { kind: 'products', items: [{ ...EMPTY_OFFER }] };
   }
   if (Array.isArray(niche.menuSections) && niche.menuSections.length) {
-    const items = niche.menuSections.flatMap((section) => section.items || []);
-    if (items.length) {
-      return { kind: 'products', items: mapOfferRows(items) };
-    }
+    return { kind: 'products', items: [{ ...EMPTY_OFFER }] };
   }
-  return { kind: 'services', items: [{ ...EMPTY_OFFER }] };
+  return blank;
 }
 
 function seedOffersFromIndustry(industryId) {
@@ -244,7 +229,8 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
           contact,
           themeId: selectedTheme.id,
           hours: hoursAcceptDefault ? (nicheDefaultHours || '') : formData.hours,
-          ...(catalogItems.length ? { catalogItems, kind: offerKind } : {}),
+          catalogItems,
+          kind: offerKind,
         });
         await loadTemplate(siteData);
         onComplete(siteData);

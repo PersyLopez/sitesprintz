@@ -128,7 +128,7 @@ function ensureSocial(siteData) {
  * @returns {Object|null} siteData, or null when the niche is unknown
  */
 function applyWizardCatalogItems(siteData, catalogItems) {
-  if (!siteData || !Array.isArray(catalogItems) || catalogItems.length === 0) {
+  if (!siteData || !Array.isArray(catalogItems)) {
     return siteData;
   }
 

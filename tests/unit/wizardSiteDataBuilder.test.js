@@ -259,6 +259,17 @@ describe('wizardSiteDataBuilder — buildSiteDataFromWizard', () => {
     ]);
   });
 
+  it('drops niche starter offers when the owner leaves the list empty', () => {
+    const siteData = buildSiteDataFromWizard({
+      niche: 'salon',
+      businessName: 'Studio Luxe',
+      level: 'solo',
+      catalogItems: [],
+    });
+    const services = siteData.sections.find((s) => s.type === 'services');
+    expect(services.content.items).toEqual([]);
+  });
+
   it('keeps niche default offers when catalogItems is omitted', () => {
     const siteData = buildSiteDataFromWizard({
       niche: 'salon',

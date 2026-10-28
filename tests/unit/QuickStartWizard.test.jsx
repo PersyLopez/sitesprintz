@@ -177,7 +177,7 @@ describe('QuickStartWizard', () => {
     expect(callArg.level).toBe('solo');
     expect(callArg.businessName).toBe('Studio Luxe');
     expect(callArg.kind).toBe('services');
-    expect(callArg.catalogItems.some((item) => /Haircut/i.test(item.name))).toBe(true);
+    expect(callArg.catalogItems).toEqual([]);
   });
 
   it('passes a bigger team through to buildSiteDataFromWizard', async () => {
