@@ -55,11 +55,9 @@ describe('operatingModel — default named team', () => {
     expect(defaultNamedTeamMembers('salon', 'solo')).toEqual([]);
   });
 
-  it('names salon studio stylists customers can book', () => {
-    const members = defaultNamedTeamMembers('salon', 'studio');
-    expect(members.length).toBeGreaterThanOrEqual(2);
-    expect(members[0].name).toBeTruthy();
-    expect(members[0].title).toBeTruthy();
+  it('does not invent people for a salon studio', () => {
+    expect(defaultNamedTeamMembers('salon', 'studio')).toEqual([]);
+    expect(defaultNamedTeamMembers('salon', 'established')).toEqual([]);
   });
 });
 

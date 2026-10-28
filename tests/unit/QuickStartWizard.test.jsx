@@ -202,8 +202,8 @@ describe('QuickStartWizard', () => {
     expect(getBuildMock().mock.calls[0][0].level).toBe('established');
   });
 
-  // Hours accept-default: checked by default, no hours passed to the builder
-  it('passes no hours when the accept-default-hours box stays checked', async () => {
+  // Hours stay blank until the owner types them or opts into the sample hours.
+  it('passes empty hours when the sample-hours box stays unchecked', async () => {
     const onComplete = vi.fn();
     render(<QuickStartWizard onComplete={onComplete} onSkip={() => {}} />);
 
@@ -213,10 +213,9 @@ describe('QuickStartWizard', () => {
     fireEvent.change(screen.getByTestId('contact-phone-input'), { target: { value: '555-1234' } });
 
     const checkbox = screen.getByTestId('wizard-hours-accept-default');
-    expect(checkbox.checked).toBe(true);
-    // Accessible name carries that niche's real defaultHours
+    expect(checkbox.checked).toBe(false);
     expect(checkbox.closest('label').textContent).toContain('Tue–Sat 9am–6pm');
-    expect(screen.queryByTestId('wizard-hours-input')).toBeNull();
+    expect(screen.getByTestId('wizard-hours-input').value).toBe('');
 
     fireEvent.click(nextButton());
     fireEvent.click(nextButton());
@@ -229,10 +228,10 @@ describe('QuickStartWizard', () => {
     fireEvent.click(screen.getByRole('button', { name: /Create My Website/i }));
 
     await waitFor(() => expect(getBuildMock()).toHaveBeenCalledTimes(1));
-    expect(getBuildMock().mock.calls[0][0].hours).toBeUndefined();
+    expect(getBuildMock().mock.calls[0][0].hours).toBe('');
   });
 
-  it('passes the edited hours when the accept-default-hours box is unchecked', async () => {
+  it('passes the edited hours when the owner types them', async () => {
     const onComplete = vi.fn();
     render(<QuickStartWizard onComplete={onComplete} onSkip={() => {}} />);
 
@@ -241,9 +240,8 @@ describe('QuickStartWizard', () => {
     fireEvent.change(screen.getByTestId('business-name-input'), { target: { value: 'Studio Luxe' } });
     fireEvent.change(screen.getByTestId('contact-phone-input'), { target: { value: '555-1234' } });
 
-    fireEvent.click(screen.getByTestId('wizard-hours-accept-default'));
     const hoursInput = screen.getByTestId('wizard-hours-input');
-    expect(hoursInput.value).toBe('Tue–Sat 9am–6pm');
+    expect(hoursInput.value).toBe('');
     fireEvent.change(hoursInput, { target: { value: 'Mon–Wed 10am–4pm' } });
 
     fireEvent.click(nextButton());

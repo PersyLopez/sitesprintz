@@ -119,10 +119,10 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
     businessName: '',
     phone: '',
     email: '',
-    hours: defaultHoursForIndustry(preselectedIndustry) || '',
+    hours: '',
     level: 'solo'
   });
-  const [hoursAcceptDefault, setHoursAcceptDefault] = useState(true);
+  const [hoursAcceptDefault, setHoursAcceptDefault] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState(null);
   const [loading, setLoading] = useState(false);
   const [basicsSubmitAttempted, setBasicsSubmitAttempted] = useState(false);
@@ -152,9 +152,9 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
     const seeded = seedOffersFromIndustry(industryId);
     setOfferKind(seeded.kind);
     setOfferRows(seeded.items);
-    // Hours: reset to the new niche's default and back to the checked accept-default box
-    setFormData(prev => ({ ...prev, hours: defaultHoursForIndustry(industryId) }));
-    setHoursAcceptDefault(true);
+    // Hours stay blank until the owner types them or checks the sample-hours box.
+    setFormData(prev => ({ ...prev, hours: '' }));
+    setHoursAcceptDefault(false);
     // Store industry preference for template recommendations
     localStorage.setItem('userIndustryPreference', industryId);
     setCurrentStep(1);
@@ -243,8 +243,7 @@ function QuickStartWizard({ onComplete, onSkip, initialTemplate }) {
           level: formData.level,
           contact,
           themeId: selectedTheme.id,
-          // Only pass hours when the user opted out of the niche default (empty string counts)
-          ...(!hoursAcceptDefault ? { hours: formData.hours } : {}),
+          hours: hoursAcceptDefault ? (nicheDefaultHours || '') : formData.hours,
           ...(catalogItems.length ? { catalogItems, kind: offerKind } : {}),
         });
         await loadTemplate(siteData);

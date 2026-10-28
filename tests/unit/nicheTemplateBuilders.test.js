@@ -278,11 +278,10 @@ describe('nicheTemplateBuilders — Atelier build', () => {
     const team = studio.sections.find((s) => s.type === 'team');
     const booking = studio.sections.find((s) => s.type === 'booking');
     expect(team.content.title).toBe('Meet Our Stylists');
-    expect(team.content.members.length).toBeGreaterThanOrEqual(2);
-    expect(team.content.members[0].name).toBeTruthy();
+    expect(team.content.members).toEqual([]);
     expect(booking.content.businessMode).toBe('team');
     expect(booking.content.noPreferenceText).toBe('Any Available Stylist');
-    expect(studio.nav.some((item) => item.href === '#team')).toBe(true);
+    expect(studio.nav.some((item) => item.href === '#team')).toBe(false);
   });
 });
 
@@ -400,7 +399,7 @@ describe('nicheTemplateBuilders — hours, location, social seeds', () => {
       expect(types[contactIdx + 1], `${nicheId} social after contact`).toBe('social');
 
       const hours = siteData.sections.find((s) => s.type === 'hours');
-      expect(hours.content.hours).toBe(NICHE_CONFIGS[nicheId].defaultHours);
+      expect(hours.content.hours).toBe('');
 
       const social = siteData.sections.find((s) => s.type === 'social');
       expect(social.content.title).toBe('Find us');

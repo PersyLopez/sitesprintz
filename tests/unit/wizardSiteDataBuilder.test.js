@@ -282,7 +282,7 @@ describe('wizardSiteDataBuilder — buildSiteDataFromWizard', () => {
     expect(siteData.businessHours).toBe('Mon–Thu 10am–4pm');
   });
 
-  it('keeps the niche defaultHours when hours is omitted', () => {
+  it('leaves hours blank when the owner has not entered any', () => {
     const siteData = buildSiteDataFromWizard({
       niche: 'salon',
       businessName: 'Studio Luxe',
@@ -290,8 +290,8 @@ describe('wizardSiteDataBuilder — buildSiteDataFromWizard', () => {
     });
 
     const hoursSection = siteData.sections.find((s) => s.type === 'hours');
-    expect(hoursSection.content.hours).toBe('Tue–Sat 9am–6pm');
-    expect(siteData.businessHours).toBe('Tue–Sat 9am–6pm');
+    expect(hoursSection.content.hours).toBe('');
+    expect(siteData.businessHours).toBe('');
   });
 
   it('salon + studio emits a team section with staff-picker variant and team businessMode', () => {

@@ -350,7 +350,7 @@ function pushHoursLocationContactSocial(sections, order, niche, contactTitle) {
     type: 'hours',
     enabled: true,
     order: order++,
-    content: { title: 'Hours', hours: niche.defaultHours || '' },
+    content: { title: 'Hours', hours: '' },
     settings: {},
   });
   sections.push({
@@ -944,7 +944,7 @@ export function buildNicheSiteData(nicheId, opts = {}) {
   const buildSections = SECTION_BUILDERS[layoutKey];
   const sections = buildSections
     ? buildSections(niche, level, features, {
-      includeStockPhotos: opts.includeStockPhotos !== false,
+      includeStockPhotos: opts.includeStockPhotos === true,
     })
     : [];
 
@@ -962,7 +962,7 @@ export function buildNicheSiteData(nicheId, opts = {}) {
     contactPhone: opts.contactPhone || '',
     contactEmail: opts.contactEmail || '',
     contactAddress: opts.contactAddress || '',
-    businessHours: niche.defaultHours || '',
+    businessHours: '',
     social: { ...DEFAULT_SOCIAL },
     products,
     sections,

@@ -61,14 +61,16 @@ steps:
   - action: Fill phone
     fill: { testId: contact-phone-input, value: "555-0199", clear: true }
 
-  - action: Default hours box is checked with salon hours
+  - action: Sample hours box starts unchecked
     code: |
       const box = page.getByTestId('wizard-hours-accept-default');
       await box.waitFor({ timeout: 5000 });
-      if (!(await box.isChecked())) throw new Error('wizard-hours-accept-default should start checked');
+      if (await box.isChecked()) throw new Error('wizard-hours-accept-default should start unchecked');
       const byName = page.getByRole('checkbox', { name: /Tue–Sat 9am–6pm/ });
-      if (!(await byName.count())) throw new Error('checkbox accessible name missing salon default hours (Tue–Sat 9am–6pm)');
-      if (await page.getByTestId('wizard-hours-input').count()) throw new Error('wizard-hours-input should be hidden while box is checked');
+      if (!(await byName.count())) throw new Error('checkbox accessible name missing salon sample hours (Tue–Sat 9am–6pm)');
+      const hours = page.getByTestId('wizard-hours-input');
+      await hours.waitFor({ timeout: 5000 });
+      if ((await hours.inputValue()) !== '') throw new Error('hours input should start empty');
     settle_ms: 200
 
   - action: Next to business size
