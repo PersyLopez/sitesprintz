@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { usePlan } from '../hooks/usePlan';
 import { useSiteWorkspace } from '../context/SiteWorkspaceContext';
+import { getSiteFeatures } from '../utils/siteNiche.js';
 import { get } from '../utils/api';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
@@ -18,8 +19,9 @@ const BookingDashboard = () => {
   const { user } = useAuth();
   const { showError } = useToast();
   const { isAbove, isGrowth, isPro } = usePlan();
-  const { embedded, siteId } = useSiteWorkspace();
+  const { embedded, siteId, site } = useSiteWorkspace();
   const siteQuery = siteId ? { siteId } : undefined;
+  const bookingOff = Boolean(site) && getSiteFeatures(site).booking?.enabled === false;
 
   const [activeTab, setActiveTab] = useState('appointments');
   const [loading, setLoading] = useState(true);
@@ -39,6 +41,11 @@ const BookingDashboard = () => {
   const hasBookingAccess = (typeof isAbove === 'function' && isAbove('growth')) || Boolean(isGrowth || isPro);
 
   useEffect(() => {
+    if (bookingOff) {
+      setLoading(false);
+      return;
+    }
+
     if (!hasBookingAccess) {
       showError('Booking features require a Growth plan');
       return;
@@ -47,7 +54,7 @@ const BookingDashboard = () => {
     if (user?.id) {
       fetchStats();
     }
-  }, [user, hasBookingAccess, siteId]);
+  }, [user, hasBookingAccess, siteId, bookingOff]);
 
   const fetchStats = async () => {
     try {
@@ -141,7 +148,14 @@ const BookingDashboard = () => {
 
       <PageContainer className="dashboard-container" data-testid="booking-dashboard-page">
         {/* Growth Access Gate */}
-        {!hasBookingAccess ? (
+        {bookingOff ? (
+          <div className="access-denied" data-testid="booking-off-notice">
+            <div className="access-denied-card">
+              <h2>Appointments are off</h2>
+              <p>This site takes shop orders. Customers do not book a time here. Open Orders to see what they asked for, including a needed-by date.</p>
+            </div>
+          </div>
+        ) : !hasBookingAccess ? (
           <div className="access-denied">
             <div className="access-denied-card">
               <h2>Growth Feature</h2>

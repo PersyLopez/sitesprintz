@@ -2,7 +2,7 @@
  * Tests for layouts.js — TDD red-green cycles
  *
  * Seams tested:
- *   1. LAYOUTS structure — all 5 layouts, required keys
+ *   1. LAYOUTS structure — named layouts, required keys
  *   2. getLayout() — lookup
  *   3. getLayoutForNiche() — niche → layout mapping
  *   4. getSkeleton() — per-level section ordering
@@ -30,13 +30,13 @@ import {
 
 describe('layouts — Structure', () => {
   const REQUIRED_KEYS = ['name', 'description', 'character', 'niches', 'hero', 'sections', 'levels', 'features'];
-  const LAYOUT_NAMES = ['atelier', 'craftsman', 'counsel', 'mercantile', 'bazaar'];
+  const LAYOUT_NAMES = ['atelier', 'craftsman', 'counsel', 'mercantile', 'bazaar', 'heritage'];
 
-  it('defines all 5 layouts', () => {
+  it('defines the named layouts', () => {
     for (const name of LAYOUT_NAMES) {
       expect(LAYOUTS[name]).toBeDefined();
     }
-    expect(Object.keys(LAYOUTS)).toHaveLength(5);
+    expect(Object.keys(LAYOUTS)).toHaveLength(LAYOUT_NAMES.length);
   });
 
   it('each layout has all required keys', () => {
@@ -47,8 +47,12 @@ describe('layouts — Structure', () => {
     }
   });
 
-  it('each layout has at least one niche', () => {
+  it('niche layouts claim at least one niche, and heritage stays unclaimed', () => {
     for (const [key, layout] of Object.entries(LAYOUTS)) {
+      if (key === 'heritage') {
+        expect(layout.niches).toEqual([]);
+        continue;
+      }
       expect(layout.niches.length).toBeGreaterThan(0);
     }
   });
@@ -249,7 +253,29 @@ describe('layouts — resolveFeatures()', () => {
 
   it('unknown layout returns default features', () => {
     const features = resolveFeatures('nonexistent');
-    expect(features.booking).toBeDefined();
+    expect(features.booking.enabled).toBe(true);
+    expect(features.onlineOrdering.enabled).toBe(true);
+  });
+
+  it('unknown layout keeps explicit shop flags', () => {
+    const features = resolveFeatures('nonexistent', {
+      booking: { enabled: false, offered: false },
+      onlineOrdering: { enabled: true },
+    });
+    expect(features.booking.enabled).toBe(false);
+    expect(features.booking.offered).toBe(false);
+    expect(features.onlineOrdering.enabled).toBe(true);
+  });
+
+  it('heritage solo skeleton is a shop, with booking off and ordering on', () => {
+    expect(getSkeleton('heritage', 'solo')).toEqual([
+      'hero', 'catalog', 'about', 'gallery', 'hours', 'location', 'contact', 'social',
+    ]);
+    const features = resolveFeatures('heritage');
+    expect(features.booking.enabled).toBe(false);
+    expect(features.onlineOrdering.enabled).toBe(true);
+    expect(features.onlinePayment.enabled).toBe(false);
+    expect(features.cashPayment.enabled).toBe(true);
   });
 });
 

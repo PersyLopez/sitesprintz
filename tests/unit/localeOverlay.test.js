@@ -40,6 +40,16 @@ describe('localeOverlay', () => {
     expect(values).not.toContain('https://maria.example.com');
   });
 
+  it('skips theme ids and booking mode so Spanish cannot rewrite them', () => {
+    const strings = collectTranslatableStrings({
+      colors: { mode: 'light', themeId: 'heritage-atelier' },
+      booking: { mode: 'off', provider: 'native' },
+      hero: { variant: 'featured' },
+      sections: [{ type: 'hero', content: { title: 'Shop' } }],
+    });
+    expect(Object.values(strings)).toEqual(['Shop']);
+  });
+
   it('skips privateStreet so it is not copied into the Spanish overlay', () => {
     const strings = collectTranslatableStrings({
       contact: { privateStreet: '429 Walnut Avenue, Trenton, NJ', serviceAreaLabel: 'Trenton, NJ' },

@@ -26,6 +26,7 @@ function isPrice(value) {
 function shouldSkipKey(key) {
   if (!key || SKIP_KEYS.has(key)) return true;
   if (key.startsWith('_')) return true;
+  if (key === 'mode' || key === 'themeId' || key === 'provider' || key === 'variant') return true;
   return /phone|email|address|street|href|url|image|price|tel/i.test(key);
 }
 

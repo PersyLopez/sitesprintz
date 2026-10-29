@@ -5,7 +5,8 @@ const KNOWN_NICHES = Array.from(
 );
 
 export function getSiteNiche(site) {
-  const raw = site?.templateId || site?.template || site?.data?.niche || '';
+  const data = site?.data || site?.site_data || {};
+  const raw = data._niche || data.niche || site?.templateId || site?.template || data.template || '';
   const value = String(raw).toLowerCase().trim();
   if (!value) return '';
   return KNOWN_NICHES.find((niche) => (
@@ -14,7 +15,8 @@ export function getSiteNiche(site) {
 }
 
 export function getSiteFeatures(site) {
-  const niche = getSiteNiche(site);
-  const layoutKey = site?.data?.layout || getLayoutForNiche(niche);
-  return resolveFeatures(layoutKey, site?.data?.features);
+  const data = site?.data || site?.site_data || {};
+  const layoutKey = data.layout || data._layout || getLayoutForNiche(getSiteNiche(site));
+  const userFeatures = data.features || data._features;
+  return resolveFeatures(layoutKey, userFeatures);
 }

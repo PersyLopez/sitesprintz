@@ -10,6 +10,7 @@
 
 import { resolveTeamHeading, shouldRenderTeam, getNamedTeamMembers } from './businessScale.js';
 import { telHref } from './liveSiteContact.js';
+import { tLive } from '../i18n/liveChrome/index.js';
 import { getBookingEmbedUrl, isExternalBookingProvider } from './bookingEmbed.js';
 import {
   genericServiceInsertSrc,
@@ -536,55 +537,59 @@ function renderCredentials(section, tokens) {
 </section>`;
 }
 
-function serviceAreaMapHtml(content) {
+function serviceAreaMapHtml(content, tokens) {
   const geo = content?.publicGeo;
   const miles = Number(content?.serviceRadiusMiles);
   if (!geo || !Number.isFinite(Number(geo.lat)) || !Number.isFinite(Number(geo.lng)) || !Number.isFinite(miles) || miles <= 0) {
     return '';
   }
-  return `<div class="ss-service-area-map" data-testid="service-area-map" data-lat="${escapeAttr(String(geo.lat))}" data-lng="${escapeAttr(String(geo.lng))}" data-radius-miles="${escapeAttr(String(miles))}" role="img" aria-label="Approximate service area"></div>`;
+  return `<div class="ss-service-area-map" data-testid="service-area-map" data-lat="${escapeAttr(String(geo.lat))}" data-lng="${escapeAttr(String(geo.lng))}" data-radius-miles="${escapeAttr(String(miles))}" role="img" aria-label="${escapeAttr(liveLabel(tokens, 'approximateServiceArea'))}"></div>`;
+}
+
+function liveLabel(tokens, key) {
+  return tLive(tokens?._locale === 'es' ? 'es' : 'en', key);
 }
 
 function renderContact(section, tokens) {
   const c = section.content || {};
-  const title = c.title || 'Contact Us';
+  const title = c.title || liveLabel(tokens, 'contactUs');
   const email = c.email || '';
   const phone = c.phone || '';
   const address = c.address || '';
   const hours = c.hours || '';
   const details = [
-    email ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">Email</strong><a href="mailto:${escapeAttr(email)}" style="color: ${getText(tokens)}; text-decoration: none;">${escapeHtml(email)}</a></div>` : '',
-    phone && telHref(phone) ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">Phone</strong><a href="${escapeAttr(telHref(phone))}" style="color: ${getText(tokens)}; text-decoration: none;">${escapeHtml(phone)}</a></div>` : '',
-    address ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">${c.addressDisplay === 'area' ? 'Service area' : 'Address'}</strong>${escapeHtml(address)}</div>` : '',
-    hours ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">Hours</strong>${escapeHtml(typeof hours === 'string' ? hours : '')}${c.hoursNote ? `<p style="margin: 8px 0 0; color: ${getMuted(tokens)};">${escapeHtml(c.hoursNote)}</p>` : ''}</div>` : '',
+    email ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">${escapeHtml(liveLabel(tokens, 'email'))}</strong><a href="mailto:${escapeAttr(email)}" style="color: ${getText(tokens)}; text-decoration: none;">${escapeHtml(email)}</a></div>` : '',
+    phone && telHref(phone) ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">${escapeHtml(liveLabel(tokens, 'phone'))}</strong><a href="${escapeAttr(telHref(phone))}" style="color: ${getText(tokens)}; text-decoration: none;">${escapeHtml(phone)}</a></div>` : '',
+    address ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">${escapeHtml(liveLabel(tokens, c.addressDisplay === 'area' ? 'serviceArea' : 'address'))}</strong>${escapeHtml(address)}</div>` : '',
+    hours ? `<div><strong style="display: block; margin-bottom: 8px; color: ${getAccent(tokens)};">${escapeHtml(liveLabel(tokens, 'hours'))}</strong>${escapeHtml(typeof hours === 'string' ? hours : '')}${c.hoursNote ? `<p style="margin: 8px 0 0; color: ${getMuted(tokens)};">${escapeHtml(c.hoursNote)}</p>` : ''}</div>` : '',
   ].filter(Boolean).join('\n');
 
   return `<section id="contact" class="ss-contact" style="padding: 60px 20px; background: ${getBg(tokens)}; color: ${getText(tokens)};">
   <div class="ss-container" style="max-width: 800px; margin: 0 auto;">
     <h2 style="text-align: center; color: ${getAccent(tokens)}; margin-bottom: 40px;">${escapeHtml(title)}</h2>
     ${details ? `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; margin-bottom: 32px;">${details}</div>` : ''}
-    ${serviceAreaMapHtml(c)}
+    ${serviceAreaMapHtml(c, tokens)}
     <form id="contact-form" class="ss-contact-form" data-testid="contact-form" data-type="contact" method="post" action="/api/submissions/contact" novalidate>
       <input type="hidden" name="subdomain" value="${escapeAttr(tokens?._contactSubdomain || '')}" />
       ${contactHoneypotField()}
       <p class="ss-form-status" data-testid="contact-form-status" role="status" aria-live="polite"></p>
       <label class="ss-field">
-        <span>Name</span>
+        <span>${escapeHtml(liveLabel(tokens, 'name'))}</span>
         <input type="text" name="name" autocomplete="name" data-testid="contact-form-name" maxlength="200" />
       </label>
       <label class="ss-field">
-        <span>Email</span>
+        <span>${escapeHtml(liveLabel(tokens, 'email'))}</span>
         <input type="email" name="email" autocomplete="email" required data-testid="contact-form-email" maxlength="254" />
       </label>
       <label class="ss-field">
-        <span>Phone <span class="ss-optional">(optional)</span></span>
+        <span>${escapeHtml(liveLabel(tokens, 'phone'))} <span class="ss-optional">${escapeHtml(liveLabel(tokens, 'optional'))}</span></span>
         <input type="tel" name="phone" autocomplete="tel" data-testid="contact-form-phone" maxlength="40" />
       </label>
       <label class="ss-field">
-        <span>Message</span>
+        <span>${escapeHtml(liveLabel(tokens, 'message'))}</span>
         <textarea name="message" required rows="5" data-testid="contact-form-message" maxlength="2000"></textarea>
       </label>
-      <button type="submit" class="ss-btn" data-testid="contact-form-submit" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)}; border: 0; cursor: pointer;">Send Message</button>
+      <button type="submit" class="ss-btn" data-testid="contact-form-submit" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)}; border: 0; cursor: pointer;">${escapeHtml(liveLabel(tokens, 'sendMessage'))}</button>
     </form>
   </div>
 </section>`;
@@ -616,7 +621,7 @@ function addToCartButton(item, index, tokens) {
   const price = parseMoney(item?.price);
   if (price <= 0) return '';
   const id = productKey(item, index);
-  return `<button type="button" class="ss-btn ss-add-to-cart" data-ss-add-to-cart data-testid="add-to-cart-${id}" data-product-id="${escapeAttr(id)}" data-product-name="${escapeAttr(item.name || 'Item')}" data-product-price="${price}" data-product-image="${escapeAttr(item.image || '')}" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)}; margin-top: 12px; border: 0; cursor: pointer;">Add to cart</button>`;
+  return `<button type="button" class="ss-btn ss-add-to-cart" data-ss-add-to-cart data-testid="add-to-cart-${id}" data-product-id="${escapeAttr(id)}" data-product-name="${escapeAttr(item.name || 'Item')}" data-product-price="${price}" data-product-image="${escapeAttr(item.image || '')}" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)}; margin-top: 12px; border: 0; cursor: pointer;">${escapeHtml(liveLabel(tokens, 'addToCart'))}</button>`;
 }
 
 function catalogCard(item, index, tokens, purchasable) {
@@ -1110,8 +1115,8 @@ function renderLocation(section, tokens) {
       ${instructions ? `<p style="color: ${getMuted(tokens)};">${escapeHtml(instructions)}</p>` : ''}
       ${c.parking ? `<p style="color: ${getText(tokens)}; margin-top: 12px;"><strong>Parking.</strong> ${escapeHtml(c.parking)}</p>` : ''}
       ${c.accessibility ? `<p style="color: ${getText(tokens)}; margin-top: 8px;"><strong>Access.</strong> ${escapeHtml(c.accessibility)}</p>` : ''}
-      ${serviceAreaMapHtml(c)}
-      ${c.mapUrl ? `<a href="${escapeAttr(c.mapUrl)}" target="_blank" rel="noopener" class="ss-btn" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)};">View on Map</a>` : ''}
+      ${serviceAreaMapHtml(c, tokens)}
+      ${c.mapUrl ? `<a href="${escapeAttr(c.mapUrl)}" target="_blank" rel="noopener" class="ss-btn" style="background: ${getAccent(tokens)}; color: ${getOnAccent(tokens)};">${escapeHtml(liveLabel(tokens, 'viewOnMap'))}</a>` : ''}
     </div>
   </div>
 </section>`;

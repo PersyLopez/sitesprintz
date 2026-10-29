@@ -208,8 +208,7 @@ export class FoundationService {
       await this.db.sites.update({
         where: { subdomain },
         data: {
-          site_data: JSON.stringify(siteData),
-          updated_at: new Date()
+          site_data: siteData
         }
       });
 

@@ -10,7 +10,7 @@ import {
   resolveOwnerPostLoginPath,
   withShareTracking,
 } from '../../src/utils/siteWorkspace';
-import { getSiteNiche } from '../../src/utils/siteNiche.js';
+import { getSiteFeatures, getSiteNiche } from '../../src/utils/siteNiche.js';
 
 describe('siteWorkspace helpers', () => {
   it('normalizes API site payloads', () => {
@@ -36,6 +36,30 @@ describe('siteWorkspace helpers', () => {
   it('resolves known niches from template ids', () => {
     expect(getSiteNiche({ templateId: 'restaurant-casual' })).toBe('restaurant');
     expect(getSiteNiche({ template: 'salon' })).toBe('salon');
+    expect(getSiteNiche({
+      templateId: 'heritage',
+      data: { _niche: 'product-showcase' },
+    })).toBe('product-showcase');
+  });
+
+  it('reads heritage shop flags from _layout and _features', () => {
+    const features = getSiteFeatures({
+      templateId: 'heritage',
+      data: {
+        _layout: 'heritage',
+        _niche: 'product-showcase',
+        _features: {
+          booking: { enabled: false, offered: false },
+          onlineOrdering: { enabled: true, offered: true },
+          onlinePayment: { enabled: false, offered: true },
+          cashPayment: { enabled: true, offered: true },
+        },
+      },
+    });
+    expect(features.booking.enabled).toBe(false);
+    expect(features.onlineOrdering.enabled).toBe(true);
+    expect(features.onlinePayment.enabled).toBe(false);
+    expect(features.cashPayment.enabled).toBe(true);
   });
 
   it('builds per-site dashboard paths', () => {

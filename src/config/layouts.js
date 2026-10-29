@@ -1,5 +1,5 @@
 /**
- * Layout Definitions — 5 named layouts with per-level skeletons and section slots.
+ * Layout Definitions — named layouts with per-level skeletons and section slots.
  *
  * Each layout defines:
  *   - which sections are required vs optional
@@ -193,6 +193,44 @@ export const LAYOUTS = {
     },
   },
 
+  heritage: {
+    name: 'Heritage',
+    description: 'Multi-page shop — catalog, gallery, and visit details',
+    character: 'refined',
+    niches: [],
+    hero: { variant: 'full-bleed', ctaDefault: 'ordering' },
+    sections: {
+      catalog:   { type: 'catalog',   required: false, variant: 'grid' },
+      about:     { type: 'about',     required: false },
+      gallery:   { type: 'gallery',   required: false, variant: 'grid' },
+      contact:   { type: 'contact',   required: true },
+      hours:     { type: 'hours',     required: false },
+      location:  { type: 'location',  required: false },
+      social:    { type: 'social',    required: false },
+      services:  { type: 'services',  required: false, variant: 'grid' },
+      reviews:   { type: 'reviews',   required: false },
+      team:      { type: 'team',      required: false, variant: 'grid' },
+      booking:   { type: 'booking',   required: false },
+    },
+    levels: {
+      solo: [
+        'hero', 'catalog', 'about', 'gallery', 'hours', 'location', 'contact', 'social',
+      ],
+      studio: [
+        'hero', 'catalog', 'about', 'gallery', 'team', 'hours', 'location', 'contact', 'social',
+      ],
+      established: [
+        'hero', 'catalog', 'about', 'gallery', 'team', 'reviews', 'hours', 'location', 'contact', 'social',
+      ],
+    },
+    features: {
+      booking:        { offered: true, defaultOn: false },
+      onlineOrdering: { offered: true, defaultOn: true },
+      onlinePayment:  { offered: true, defaultOn: false },
+      cashPayment:    { offered: true, defaultOn: true },
+    },
+  },
+
   bazaar: {
     name: 'Bazaar',
     description: 'Pop-up / temporary selling — minimal config, full online experience',
@@ -301,7 +339,18 @@ export function getSectionsForLevel(layoutKey, level) {
  */
 export function resolveFeatures(layoutKey, userFeatures) {
   const layout = LAYOUTS[layoutKey];
-  if (!layout) return getDefaultFeatures();
+  if (!layout) {
+    const defaults = getDefaultFeatures();
+    if (!userFeatures) return defaults;
+    const resolved = {};
+    for (const [key, config] of Object.entries(defaults)) {
+      resolved[key] = {
+        offered: userFeatures[key]?.offered ?? config.offered,
+        enabled: userFeatures[key]?.enabled ?? config.enabled,
+      };
+    }
+    return resolved;
+  }
 
   const resolved = {};
   for (const [key, config] of Object.entries(layout.features)) {

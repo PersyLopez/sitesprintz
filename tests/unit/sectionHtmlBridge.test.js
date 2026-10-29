@@ -863,7 +863,7 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
   });
 
   it('keeps the clickable badge on gallery demo seeds', () => {
-    const { html } = buildLiveSiteMarkup({
+    const { html, css } = buildLiveSiteMarkup({
       businessName: 'The Grand Table',
       plan: 'growth',
       settings: { demoMode: true },
@@ -877,6 +877,8 @@ describe('buildLiveSiteMarkup conversion chrome', () => {
     expect(html).toContain('href="https://rightsitelight.com"');
     expect(html).toContain('Powered by Right Site Light');
     expect(html).toContain('class="ss-sitesprintz-badge"');
+    expect(css).toContain('background: color-mix(in srgb, var(--ss-bg) 28%, transparent)');
+    expect(css).not.toMatch(/\.ss-sitesprintz-badge \{[^}]*background: var\(--ss-bg\)/);
   });
 
   it('omits the badge when branding removal is enabled for the plan', () => {

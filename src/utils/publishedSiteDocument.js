@@ -456,16 +456,19 @@ export function getLiveSiteCss(tokens = {}) {
   color: var(--ss-muted);
   text-decoration: none; white-space: nowrap;
   pointer-events: auto;
-  background: var(--ss-bg);
-  border: 1px solid color-mix(in srgb, var(--ss-hairline) 25%, transparent);
+  background: color-mix(in srgb, var(--ss-bg) 28%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ss-text) 16%, transparent);
   box-shadow: none;
-  -webkit-backdrop-filter: blur(24px) saturate(170%);
-  backdrop-filter: blur(24px) saturate(170%);
-  transition: color 0.18s ease;
+  text-shadow:
+    0 0 1px color-mix(in srgb, var(--ss-bg) 70%, transparent),
+    0 1px 2px color-mix(in srgb, var(--ss-text) 12%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+  transition: color 0.18s ease, background 0.18s ease;
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .ss-sitesprintz-badge {
-    background: var(--ss-bg);
+    background: color-mix(in srgb, var(--ss-bg) 72%, transparent);
   }
 }
 .ss-live:has(.ss-sticky-cta) .ss-sitesprintz-badge {
@@ -533,7 +536,7 @@ export function getLiveSiteCss(tokens = {}) {
 
 function renderLangSwitch(locale) {
   const isEs = locale === 'es';
-  return `<div class="ss-lang" data-testid="language-switcher" role="group" aria-label="Language">
+  return `<div class="ss-lang" data-testid="language-switcher" role="group" aria-label="${escapeAttr(tLive(locale, 'language'))}">
     <button type="button" class="ss-lang-btn" data-testid="language-switcher-en" data-ss-lang="en" aria-pressed="${isEs ? 'false' : 'true'}">EN</button>
     <button type="button" class="ss-lang-btn" data-testid="language-switcher-es" data-ss-lang="es" aria-pressed="${isEs ? 'true' : 'false'}">ES</button>
   </div>`;
@@ -562,7 +565,7 @@ function renderNav(siteData, page, locale = 'en') {
     : '';
   const ctaLink = `<a class="ss-nav-cta" data-testid="header-cta" href="${escapeAttr(primary.href)}">${escapeHtml(primary.label)}</a>`;
 
-  return `<a class="ss-skip" href="#main">Skip to content</a>
+  return `<a class="ss-skip" href="#main">${escapeHtml(tLive(locale, 'skipToContent'))}</a>
 <nav class="ss-nav" aria-label="Site">
   <div class="ss-nav-inner">
     <a class="ss-brand" href="#main" data-editable="brand.name">${escapeHtml(brand)}</a>
@@ -612,7 +615,7 @@ function renderFooter(siteData, options = {}) {
  * Sticky Call / Book / Quote bar. Omitted only when there is no phone and
  * no in-page action target.
  */
-export function buildStickyCtaBar(siteData, page) {
+export function buildStickyCtaBar(siteData, page, locale = 'en') {
   const primary = resolvePrimaryCta(siteData, page);
   const phoneHref = telHref(resolveSitePhone(siteData));
   const actions = [];
@@ -620,7 +623,7 @@ export function buildStickyCtaBar(siteData, page) {
   actions.push({ href: primary.href, label: primary.label, testId: primary.stickyTestId });
 
   if (phoneHref) {
-    actions.unshift({ href: phoneHref, label: 'Call', testId: 'sticky-cta-call' });
+    actions.unshift({ href: phoneHref, label: tLive(locale, 'call'), testId: 'sticky-cta-call' });
   }
 
   if (!actions.length) return '';
@@ -648,6 +651,7 @@ export function buildLiveSiteMarkup(siteData, options = {}) {
     .filter((section) => section && section.enabled !== false && !isEmptyOptional(section));
   const renderTokens = {
     ...withNativeBookingTokens(page.tokens, enabledSections, liveData),
+    _locale: locale,
     _contactSubdomain: String(
       options.subdomain || liveData?.subdomain || liveData?._isolation?.subdomain || ''
     ),
@@ -668,7 +672,7 @@ export function buildLiveSiteMarkup(siteData, options = {}) {
   ${sectionsHtml}
 </main>
 ${renderFooter(liveData, options)}
-${buildStickyCtaBar(liveData, page)}
+${buildStickyCtaBar(liveData, page, locale)}
 ${mapScript}`;
 
   return { css, html, page, tokens: page.tokens };

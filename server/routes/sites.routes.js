@@ -448,10 +448,19 @@ router.get('/:siteId/products', requireAuth, asyncHandler(async (req, res) => {
     }
   }
 
-  // Normalize products/services structure
+  // Normalize products/services structure. A heritage catalog can live on the
+  // section before site_data.products is filled in.
+  const catalogSection = (Array.isArray(siteData.sections) ? siteData.sections : [])
+    .find((section) => section?.type === 'catalog');
+  const catalogItems = Array.isArray(catalogSection?.content?.items)
+    ? catalogSection.content.items
+    : [];
+  const productSource = Array.isArray(siteData.products) && siteData.products.length
+    ? siteData.products
+    : catalogItems;
   let products = [];
-  if (Array.isArray(siteData.products)) {
-    products = siteData.products.map((p, index) => ({
+  if (productSource.length) {
+    products = productSource.map((p, index) => ({
       id: p.id || `product-${index}`,
       name: p.name || '',
       description: p.description || '',

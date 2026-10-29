@@ -312,7 +312,15 @@ export function preservePrivateLocation(ownerData, incoming) {
 export function resolvePrimaryCta(siteData, page) {
   const layoutKey = page?.layout || siteData?._layout;
   const intent = getLayout(layoutKey)?.hero?.ctaDefault || 'contact';
-  return PRIMARY_BY_INTENT[intent] || PRIMARY_BY_INTENT.contact;
+  const fallback = PRIMARY_BY_INTENT[intent] || PRIMARY_BY_INTENT.contact;
+  const hero = (Array.isArray(siteData?.sections) ? siteData.sections : [])
+    .find((section) => section?.type === 'hero');
+  const ctaText = typeof hero?.content?.ctaText === 'string' ? hero.content.ctaText.trim() : '';
+  const ctaLink = typeof hero?.content?.ctaLink === 'string' ? hero.content.ctaLink.trim() : '';
+  if (ctaText && ctaLink.startsWith('#')) {
+    return { href: ctaLink, label: ctaText, stickyTestId: fallback.stickyTestId };
+  }
+  return fallback;
 }
 
 export function shouldRemoveBranding(siteData) {
