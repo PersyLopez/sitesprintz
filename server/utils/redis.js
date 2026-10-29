@@ -46,6 +46,27 @@ function getRedisClient() {
       });
       return 'OK';
     },
+
+    /**
+     * Set only if missing. Returns 1 when this caller won, 0 when the key exists.
+     * Used for payment fulfillment claims.
+     */
+    setnx: async (key, value) => {
+      const existing = memoryStore.get(key);
+      if (existing && (!existing.expiresAt || Date.now() <= existing.expiresAt)) {
+        return 0;
+      }
+      memoryStore.set(key, { value, expiresAt: null });
+      return 1;
+    },
+
+    expire: async (key, seconds) => {
+      const existing = memoryStore.get(key);
+      if (!existing) return 0;
+      existing.expiresAt = Date.now() + (seconds * 1000);
+      memoryStore.set(key, existing);
+      return 1;
+    },
     
     del: async (key) => {
       memoryStore.delete(key);

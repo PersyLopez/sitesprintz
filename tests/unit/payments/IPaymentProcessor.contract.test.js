@@ -296,7 +296,7 @@ export function runProcessorContractTests(ProcessorClass, mockCredentials) {
       it('should return processor name', () => {
         const name = processor.getProcessorName();
         expect(typeof name).toBe('string');
-        expect(['stripe', 'square', 'paypal']).toContain(name);
+        expect(['stripe', 'square', 'paypal', 'clover']).toContain(name);
       });
     });
   });

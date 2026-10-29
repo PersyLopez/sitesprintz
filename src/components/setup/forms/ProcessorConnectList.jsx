@@ -44,6 +44,15 @@ const PROCESSORS = [
     description: 'Adds a PayPal button at checkout for customers who prefer PayPal. Requires a PayPal Business account — personal wallets cannot run checkout.',
     connectTestId: 'paypal-connect-button',
     defaultTestId: 'paypal-set-default-button'
+  },
+  {
+    id: 'clover',
+    name: 'Clover',
+    fee: 'Card-not-present rate is on your Clover plan',
+    highlight: 'US & Canada',
+    description: 'Best if you already take cards on a Clover device. Checkout opens on Clover. In the Clover dashboard, leave Hosted Checkout redirect URLs blank so customers return to this site. Never paste a private key here.',
+    connectTestId: 'clover-connect-button',
+    defaultTestId: 'clover-set-default-button'
   }
 ];
 
@@ -54,6 +63,7 @@ function redirectUrl(data) {
 function processorLabel(id) {
   if (id === 'square') return 'Square';
   if (id === 'paypal') return 'PayPal';
+  if (id === 'clover') return 'Clover';
   return 'Stripe';
 }
 
@@ -270,7 +280,7 @@ function ProcessorConnectList({
     <div className="processor-connect-list">
       <div className="processor-trust-banner" data-testid="processor-trust-banner">
         <strong>Payments are set per site.</strong>
-        {' '}Stripe, Square, and PayPal handle identity checks and payouts on their sites.
+        {' '}Stripe, Square, PayPal, and Clover handle identity checks and payouts on their sites.
         Right Site Light never sees card numbers, bank details, or KYC documents — never paste API keys or secrets here.
       </div>
 

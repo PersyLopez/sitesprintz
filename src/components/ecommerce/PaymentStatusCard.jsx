@@ -72,7 +72,7 @@ function PaymentStatusCard({ className = '', compact = false }) {
     [STATUS.NOT_STARTED]: {
       icon: '💳',
       title: 'Connect payments in Settings',
-      message: 'Start with Stripe for cards on your site, or connect Square or PayPal if you already use them. Never paste API keys. Identity checks happen on the provider.',
+      message: 'Start with Stripe for cards on your site, or connect Square, PayPal, or Clover if you already use them. Never paste API keys. Identity checks happen on the provider.',
       badgeClass: 'not-started'
     },
     [STATUS.ERROR]: {
@@ -90,7 +90,7 @@ function PaymentStatusCard({ className = '', compact = false }) {
   }[stripeStatus] || {
     icon: '💳',
     title: 'Connect payments in Settings',
-    message: 'Start with Stripe for cards on your site, or connect Square or PayPal if you already use them. Never paste API keys. Identity checks happen on the provider.',
+    message: 'Start with Stripe for cards on your site, or connect Square, PayPal, or Clover if you already use them. Never paste API keys. Identity checks happen on the provider.',
     badgeClass: 'not-started'
   };
 

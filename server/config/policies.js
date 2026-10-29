@@ -8,8 +8,8 @@
  * changes require users to re-accept (clickwrap enforceability requirement).
  */
 
-export const POLICY_VERSION = '2026-09-07';
-export const POLICY_LAST_UPDATED = 'September 7, 2026';
+export const POLICY_VERSION = '2026-10-29';
+export const POLICY_LAST_UPDATED = 'October 29, 2026';
 
 /**
  * Independent third-party providers that process data on the platform's
@@ -38,6 +38,13 @@ export const THIRD_PARTY_PROCESSORS = [
     data: 'Payment card details and transaction data',
     privacyUrl: 'https://squareup.com/us/en/legal/general/privacy',
     termsUrl: 'https://squareup.com/us/en/legal/general/ua',
+  },
+  {
+    name: 'Clover Network, LLC',
+    purpose: 'Optional alternative payment processing for US and Canada merchants',
+    data: 'Payment card details and transaction data',
+    privacyUrl: 'https://www.clover.com/privacy-policy',
+    termsUrl: 'https://www.clover.com/terms',
   },
   {
     name: 'Google LLC',

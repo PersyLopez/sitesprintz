@@ -5,9 +5,11 @@ import Stripe from 'stripe';
 import { prisma } from '../../database/db.js';
 import { WebhookProcessor } from '../services/webhookProcessor.js';
 import { PayPalProcessor } from '../services/payments/PayPalProcessor.js';
+import { CloverProcessor } from '../services/payments/CloverProcessor.js';
 import {
   handleSquareWebhook,
   handlePayPalWebhook,
+  handleCloverWebhook,
   normalizeWebhookPayloadString,
 } from '../webhooks/multi-processor-handler.js';
 
@@ -28,6 +30,8 @@ const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET || '';
 const PAYPAL_API_BASE = process.env.NODE_ENV === 'production'
   ? 'https://api-m.paypal.com'
   : 'https://api-m.sandbox.paypal.com';
+
+const CLOVER_WEBHOOK_SECRET = process.env.CLOVER_WEBHOOK_SECRET || '';
 
 // Webhook event failure queue (persisted to DB for retry)
 const failureQueue = [];
@@ -83,6 +87,19 @@ function createSquareWebhookProcessor(webhookProcessor) {
       return webhookProcessor.processSquarePaymentEvent(event);
     },
     getProcessorName: () => 'square',
+  };
+}
+
+function createCloverWebhookProcessor(webhookProcessor) {
+  return {
+    verifyWebhookSignature(payload, signature, secret) {
+      const checker = new CloverProcessor('webhook-verify', 'webhook-verify');
+      return checker.verifyWebhookSignature(payload, signature, secret);
+    },
+    async handleWebhook(event) {
+      return webhookProcessor.processCloverPaymentEvent(event);
+    },
+    getProcessorName: () => 'clover',
   };
 }
 
@@ -254,6 +271,45 @@ if (!PAYPAL_WEBHOOK_ID || !PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
             });
         } catch (error) {
             console.error('Error processing PayPal webhook:', error);
+            return res.status(500).json({ error: error.message });
+        }
+    });
+}
+
+if (!CLOVER_WEBHOOK_SECRET) {
+    router.post('/clover', (req, res) => {
+        console.warn('Clover webhook received but CLOVER_WEBHOOK_SECRET not configured');
+        return res.status(503).json({ error: 'Clover not configured' });
+    });
+} else {
+    router.post('/clover', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
+        try {
+            const webhookProcessor = new WebhookProcessor(prisma, null, null);
+            const result = await handleCloverWebhook(req, {
+                processor: createCloverWebhookProcessor(webhookProcessor),
+                webhookSecret: CLOVER_WEBHOOK_SECRET,
+                prisma,
+            });
+
+            if (result.status === 400) {
+                return res.status(400).json({ error: result.error });
+            }
+            if (result.status === 503) {
+                return res.status(503).json({ error: result.error || 'Webhook temporarily unavailable' });
+            }
+            if (result.status === 500) {
+                return res.status(500).json({ error: result.error || 'Webhook processing failed' });
+            }
+            if (result.action === 'duplicate') {
+                return res.status(200).json({ success: true, duplicate: true });
+            }
+            return res.status(200).json({
+                success: true,
+                action: result.action,
+                data: result.data,
+            });
+        } catch (error) {
+            console.error('Error processing Clover webhook:', error);
             return res.status(500).json({ error: error.message });
         }
     });

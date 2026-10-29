@@ -222,7 +222,7 @@ function PaymentSettings({ site: siteProp = null }) {
         <p className="form-description">
           {sites.length > 1
             ? 'Choose how this site takes payment. You can keep it unique, reuse it on future sites, or copy it to every site you already have.'
-            : 'Choose how this site takes payment. Stripe is recommended for cards. Square and PayPal are there if you already use them.'}
+            : 'Choose how this site takes payment. Stripe is recommended for cards. Square, PayPal, and Clover are there if you already use them.'}
         </p>
       </div>
 

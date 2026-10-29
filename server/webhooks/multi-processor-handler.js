@@ -210,12 +210,101 @@ export async function handleStripeWebhook(request, options) {
   }
 }
 
+async function saveCloverWebhookEvent(prismaClient, existingEvent, eventData) {
+  if (existingEvent?.id) {
+    return prismaClient.webhook_events.update({
+      where: { id: existingEvent.id },
+      data: {
+        status: eventData.status,
+        payload: eventData.payload,
+        processed_at: new Date()
+      }
+    });
+  }
+  return recordWebhookEvent(eventData, prismaClient);
+}
+
 /**
- * Handle Square webhook
- * @param {object} request - HTTP request object
- * @param {object} options - Handler options
- * @returns {Promise<object>} Response object
+ * Handle Clover Hosted Checkout webhook.
+ * Header Clover-Signature: t=<unix>,v1=<hex>.
+ * @param {object} request
+ * @param {object} options
  */
+export async function handleCloverWebhook(request, options) {
+  const { processor, webhookSecret, prisma: prismaClient = prisma, logger: log = logger } = options;
+
+  try {
+    const payload = request.body;
+    const signature = request.headers['clover-signature'];
+    if (!signature) {
+      return { status: 400, error: 'Clover signature required' };
+    }
+
+    const payloadString = normalizeWebhookPayloadString(payload);
+    const isValid = processor.verifyWebhookSignature(payloadString, signature, webhookSecret);
+    if (!isValid) {
+      log.warn('Clover webhook signature verification failed');
+      return { status: 400, error: 'Invalid webhook signature' };
+    }
+
+    const event = JSON.parse(payloadString);
+    const paymentId = event.id || event.Id || null;
+    const sessionId = event.data || event.Data || null;
+    const status = event.status || event.Status || 'unknown';
+    const eventId = event.event_id || `clover:${paymentId || sessionId}:${status}`;
+    if (!paymentId && !sessionId) {
+      return { status: 400, error: 'Missing event id' };
+    }
+
+    let existingEvent;
+    try {
+      existingEvent = await prismaClient.webhook_events.findUnique({
+        where: {
+          event_id_processor: { event_id: eventId, processor: 'clover' }
+        }
+      });
+    } catch (idemError) {
+      log.error('Clover idempotency unavailable', { eventId, error: idemError.message });
+      return { status: 503, error: 'Webhook temporarily unavailable' };
+    }
+    if (existingEvent?.status === 'processed') {
+      return { status: 200, action: 'duplicate' };
+    }
+
+    try {
+      const result = await processor.handleWebhook(event);
+      if (result.action === 'in_progress') {
+        return { status: 503, error: 'Webhook temporarily unavailable' };
+      }
+      await saveCloverWebhookEvent(prismaClient, existingEvent, {
+        event_id: eventId,
+        processor: 'clover',
+        event_type: event.type || event.Type || 'PAYMENT',
+        payload: event,
+        status: 'processed'
+      });
+      return {
+        status: 200,
+        action: result.action,
+        data: result.data
+      };
+    } catch (processingError) {
+      log.error('Clover webhook processing failed', { eventId, error: processingError.message });
+      await saveCloverWebhookEvent(prismaClient, existingEvent, {
+        event_id: eventId,
+        processor: 'clover',
+        event_type: event.type || event.Type || 'PAYMENT',
+        payload: event,
+        status: 'failed'
+      }).catch(() => {});
+      return { status: 500, error: 'Webhook processing failed' };
+    }
+  } catch (error) {
+    log.error('Clover webhook handler error', { error: error.message });
+    return { status: 500, error: 'Webhook processing failed' };
+  }
+}
+
 export async function handleSquareWebhook(request, options) {
   const { processor, webhookSecret, prisma: prismaClient = prisma, logger: log = logger } = options;
   

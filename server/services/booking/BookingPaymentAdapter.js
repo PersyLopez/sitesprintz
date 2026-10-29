@@ -183,7 +183,7 @@ class BookingPaymentAdapter {
       const productDescription = `Booking for ${appointment.customer_name} on ${new Date(appointment.start_time).toLocaleDateString()}`;
 
       // Square / PayPal when site default resolves there and visitor flag is on
-      if (checkoutProcessor === 'square' || checkoutProcessor === 'paypal') {
+      if (checkoutProcessor === 'square' || checkoutProcessor === 'paypal' || checkoutProcessor === 'clover') {
         if (!siteId) {
           return this.confirmPayOnSite(appointmentId);
         }
@@ -207,6 +207,7 @@ class BookingPaymentAdapter {
           successUrl,
           cancelUrl,
           metadata: bookingMetadata,
+          customerEmail: appointment.customer_email || null,
           platformFeeCents: 0,
         });
 
@@ -372,13 +373,14 @@ class BookingPaymentAdapter {
     const connected = await getConnectedProcessors(userId, siteId);
     const preferred = connected.defaultProcessor;
     if (
-      (preferred === 'square' || preferred === 'paypal')
+      (preferred === 'square' || preferred === 'paypal' || preferred === 'clover')
       && processorCredentialReady(connected.byProcessor, preferred)
     ) {
       return preferred;
     }
     if (processorCredentialReady(connected.byProcessor, 'square')) return 'square';
     if (processorCredentialReady(connected.byProcessor, 'paypal')) return 'paypal';
+    if (processorCredentialReady(connected.byProcessor, 'clover')) return 'clover';
     return null;
   }
 
@@ -440,6 +442,25 @@ class BookingPaymentAdapter {
         throw new Error('Checkout session is not paid');
       }
       return this.handlePaymentSuccess(sessionId, appointment.id);
+    }
+
+    if (processor === 'clover') {
+      const clover = await PaymentServiceFactory.getProcessor(siteId, 'clover');
+      const status = await clover.getTransactionStatus(sessionId);
+      const expectedCents = Number(appointment.payment_amount_cents);
+      const amountMatches = Number.isFinite(expectedCents) && status?.amount === expectedCents;
+      if (status?.status !== 'paid' || !amountMatches) {
+        throw new Error('Checkout session is not paid');
+      }
+      const { WebhookProcessor } = await import('../webhookProcessor.js');
+      const webhookProcessor = new WebhookProcessor(prisma, null, null);
+      const result = await webhookProcessor.fulfillCloverCheckout(sessionId, status.metadata?.paymentId || null, {
+        amountCents: status.amount,
+      });
+      if (result.action === 'ignored' || result.action === 'in_progress') {
+        throw new Error('Checkout session is not paid');
+      }
+      return { success: true, appointmentId: appointment.id, paymentStatus: 'paid' };
     }
 
     throw new Error('Appointment not found for this checkout session');

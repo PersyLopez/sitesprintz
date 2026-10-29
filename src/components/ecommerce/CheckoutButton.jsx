@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useCart } from '../../hooks/useCart';
 import { useLocale } from '../../i18n/LocaleContext.jsx';
 import { tLive } from '../../i18n/liveChrome/index.js';
@@ -27,6 +27,28 @@ function CheckoutButton({
   const [fulfillment, setFulfillment] = useState('pickup');
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const isDelivery = deliveryEnabled && fulfillment === 'delivery';
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('clover_session');
+    if (!sessionId || !siteId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        await api.post('/api/payments/checkout/confirm-clover', { siteId, sessionId });
+      } catch {
+        // A signed Clover webhook can still mark the order paid.
+      }
+      if (cancelled) return;
+      params.delete('clover_session');
+      const qs = params.toString();
+      const nextUrl = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
+      window.history.replaceState({}, '', nextUrl);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [siteId]);
 
   if (!paymentsReady && !payOnSite) {
     return (

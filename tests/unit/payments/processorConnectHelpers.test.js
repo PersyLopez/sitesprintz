@@ -300,6 +300,7 @@ describe('site-specific processor connections', () => {
 describe('visitor checkout processor gating', () => {
   const previousSquareCheckout = process.env.SQUARE_CHECKOUT_ENABLED;
   const previousPaypalCheckout = process.env.PAYPAL_CHECKOUT_ENABLED;
+  const previousCloverCheckout = process.env.CLOVER_CHECKOUT_ENABLED;
 
   afterEach(() => {
     if (previousSquareCheckout === undefined) {
@@ -311,6 +312,11 @@ describe('visitor checkout processor gating', () => {
       delete process.env.PAYPAL_CHECKOUT_ENABLED;
     } else {
       process.env.PAYPAL_CHECKOUT_ENABLED = previousPaypalCheckout;
+    }
+    if (previousCloverCheckout === undefined) {
+      delete process.env.CLOVER_CHECKOUT_ENABLED;
+    } else {
+      process.env.CLOVER_CHECKOUT_ENABLED = previousCloverCheckout;
     }
   });
 
@@ -333,6 +339,7 @@ describe('visitor checkout processor gating', () => {
       stripe: true,
       square: false,
       paypal: false,
+      clover: false,
     });
 
     const stripeUser = { stripe_account_id: 'acct_1', stripe_connected: true };
@@ -368,6 +375,7 @@ describe('visitor checkout processor gating', () => {
       stripe: true,
       square: true,
       paypal: false,
+      clover: false,
     });
 
     expect(visitorOnlinePaymentReady({
@@ -426,6 +434,7 @@ describe('visitor checkout processor gating', () => {
       stripe: true,
       square: false,
       paypal: true,
+      clover: false,
     });
 
     expect(visitorOnlinePaymentReady({
@@ -442,5 +451,26 @@ describe('visitor checkout processor gating', () => {
     process.env.PAYPAL_CHECKOUT_ENABLED = 'false';
     expect(isVisitorProcessorPublic('paypal')).toBe(false);
     expect(visitorCheckoutPublicMap().paypal).toBe(false);
+  });
+
+  it('keeps Clover off public checkout until CLOVER_CHECKOUT_ENABLED=true', async () => {
+    delete process.env.CLOVER_CHECKOUT_ENABLED;
+    const { isVisitorProcessorPublic, publicVisitorCheckoutProcessor } = await import(
+      '../../../server/services/payments/processorConnectHelpers.js'
+    );
+    expect(isVisitorProcessorPublic('clover')).toBe(false);
+    expect(publicVisitorCheckoutProcessor({
+      user: { stripe_connected: false },
+      byProcessor: { clover: { account_id: 'MID123' } },
+      defaultProcessor: 'clover',
+    })).toBeNull();
+
+    process.env.CLOVER_CHECKOUT_ENABLED = 'true';
+    expect(isVisitorProcessorPublic('clover')).toBe(true);
+    expect(publicVisitorCheckoutProcessor({
+      user: { stripe_connected: false },
+      byProcessor: { clover: { account_id: 'MID123' } },
+      defaultProcessor: 'clover',
+    })).toBe('clover');
   });
 });

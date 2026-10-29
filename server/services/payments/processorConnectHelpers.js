@@ -10,13 +10,13 @@ import { resolvePlanLimits } from '../../utils/resolveUserPlan.js';
 import { getRedis } from '../../utils/redis.js';
 import { stripeKeyMode } from '../../config/betaMode.js';
 
-export const PROCESSORS = ['stripe', 'square', 'paypal'];
+export const PROCESSORS = ['stripe', 'square', 'paypal', 'clover'];
 
 /**
  * Processors always allowed for visitor checkout (no env gate).
  * Square/PayPal can be connected in the owner dashboard; they stay off
  * public checkout until their per-processor flag is set
- * (SQUARE_CHECKOUT_ENABLED / PAYPAL_CHECKOUT_ENABLED === 'true').
+ * (SQUARE_CHECKOUT_ENABLED / PAYPAL_CHECKOUT_ENABLED / CLOVER_CHECKOUT_ENABLED === 'true').
  */
 export const PUBLIC_VISITOR_PROCESSORS = ['stripe'];
 
@@ -25,6 +25,7 @@ export function isVisitorProcessorPublic(processor) {
   // Read at call time so flips take effect without restart in tests / hot reload.
   if (processor === 'square') return process.env.SQUARE_CHECKOUT_ENABLED === 'true';
   if (processor === 'paypal') return process.env.PAYPAL_CHECKOUT_ENABLED === 'true';
+  if (processor === 'clover') return process.env.CLOVER_CHECKOUT_ENABLED === 'true';
   return false;
 }
 
@@ -51,7 +52,7 @@ export function visitorOnlinePaymentReady(connected = {}) {
  * Which processor should run visitor Checkout. Null → pay on site.
  *
  * @param {{ user?: object, byProcessor?: object, defaultProcessor?: string|null }} [connected]
- * @returns {'stripe'|'square'|'paypal'|null}
+ * @returns {'stripe'|'square'|'paypal'|'clover'|null}
  */
 export function publicVisitorCheckoutProcessor(connected = {}) {
   const { user, byProcessor, defaultProcessor } = connected;
@@ -195,6 +196,9 @@ export function isProcessorConfigured(processor) {
   }
   if (processor === 'paypal') {
     return Boolean(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET);
+  }
+  if (processor === 'clover') {
+    return Boolean(process.env.CLOVER_APP_ID && process.env.CLOVER_APP_SECRET);
   }
   return false;
 }
@@ -594,7 +598,8 @@ export async function getPaymentConnectStatus(userId, requestedSiteId) {
     stripe: isProcessorConfigured('stripe'),
     stripeOAuth: Boolean(stripeSecret && process.env.STRIPE_CLIENT_ID),
     square: isProcessorConfigured('square'),
-    paypal: isProcessorConfigured('paypal')
+    paypal: isProcessorConfigured('paypal'),
+    clover: isProcessorConfigured('clover')
   };
   const stripeTestMode = platformIsStripeTestMode();
 
@@ -606,6 +611,7 @@ export async function getPaymentConnectStatus(userId, requestedSiteId) {
     payoutsEnabled: false,
     square: { connected: false, accountId: null },
     paypal: { connected: false, accountId: null },
+    clover: { connected: false, accountId: null },
     stripe: { connected: false, accountAvailable: false, accountId: null, testMode: stripeTestMode },
     defaultProcessor: null,
     futureDefaults: { enabled: false, sourceSiteId: null },
@@ -613,7 +619,8 @@ export async function getPaymentConnectStatus(userId, requestedSiteId) {
       stripe: false,
       stripeOAuth: false,
       square: false,
-      paypal: false
+      paypal: false,
+      clover: false
     },
     visitorCheckout: visitorCheckoutPublicMap(),
   };
@@ -643,9 +650,10 @@ export async function getPaymentConnectStatus(userId, requestedSiteId) {
     const stripeSiteConnected = Boolean(extra.byProcessor.stripe);
     const squareConnected = Boolean(extra.byProcessor.square);
     const paypalConnected = Boolean(extra.byProcessor.paypal);
+    const cloverConnected = Boolean(extra.byProcessor.clover);
 
     return {
-      connected: stripeSiteConnected || squareConnected || paypalConnected,
+      connected: stripeSiteConnected || squareConnected || paypalConnected || cloverConnected,
       accountId: stripeAccountId,
       siteId,
       chargesEnabled: stripeAccountReady,
@@ -658,6 +666,10 @@ export async function getPaymentConnectStatus(userId, requestedSiteId) {
       paypal: {
         connected: paypalConnected,
         accountId: extra.byProcessor.paypal?.account_id || null
+      },
+      clover: {
+        connected: cloverConnected,
+        accountId: extra.byProcessor.clover?.account_id || null
       },
       stripe: {
         connected: stripeSiteConnected,

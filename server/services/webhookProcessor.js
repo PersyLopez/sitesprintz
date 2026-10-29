@@ -1688,6 +1688,135 @@ export class WebhookProcessor {
       throw error;
     }
   }
+
+  /**
+   * Clover Hosted Checkout webhook. Status APPROVED fulfills the checkout
+   * context stored when the session was created.
+   */
+  async processCloverPaymentEvent(event) {
+    const status = String(event?.status || event?.Status || '').toUpperCase();
+    const eventType = String(event?.type || event?.Type || 'PAYMENT').toUpperCase();
+    if (eventType !== 'PAYMENT') {
+      return { action: 'unhandled', type: eventType };
+    }
+    if (status !== 'APPROVED') {
+      return { action: 'ignored', reason: 'not_approved', status };
+    }
+    const sessionId = event?.data || event?.Data || event?.checkoutSessionId || null;
+    const paymentId = event?.id || event?.Id || null;
+    if (!sessionId) {
+      return { action: 'unhandled', type: 'missing_session' };
+    }
+    const reportedAmount = event?.amount ?? event?.Amount ?? null;
+    return this.fulfillCloverCheckout(sessionId, paymentId, {
+      merchantId: event?.merchantId || event?.MerchantId || null,
+      amountCents: reportedAmount === null || reportedAmount === undefined || reportedAmount === ''
+        ? null
+        : Number(reportedAmount),
+    });
+  }
+
+  /**
+   * Mark a stored Clover checkout paid once. The cart, amount, and merchant
+   * come from the context written at session creation. A second call is a no-op.
+   */
+  async fulfillCloverCheckout(sessionId, paymentId = null, proof = {}) {
+    const {
+      loadCloverCheckoutContext,
+      claimCloverFulfillment,
+      releaseCloverFulfillment,
+    } = await import('./payments/cloverCheckoutContext.js');
+
+    const context = await loadCloverCheckoutContext(sessionId);
+    if (!context) {
+      return { action: 'ignored', reason: 'missing_checkout_context' };
+    }
+
+    if (proof.merchantId && context.merchantId && String(proof.merchantId) !== String(context.merchantId)) {
+      return { action: 'ignored', reason: 'merchant_mismatch' };
+    }
+
+    if (proof.amountCents !== null && proof.amountCents !== undefined && Number.isFinite(proof.amountCents)) {
+      if (proof.amountCents !== context.amountCents) {
+        return { action: 'ignored', reason: 'amount_mismatch' };
+      }
+    }
+
+    if (context.metadata?.site_id && context.siteId && context.metadata.site_id !== context.siteId) {
+      return { action: 'ignored', reason: 'site_mismatch' };
+    }
+
+    const existing = await this.db.orders.findFirst({
+      where: { stripe_session_id: sessionId }
+    });
+    if (existing?.payment_status === 'paid') {
+      if (context.siteId && existing.site_id !== context.siteId) {
+        return { action: 'ignored', reason: 'site_mismatch' };
+      }
+      return { action: 'payment_processed', orderId: existing.id, reason: 'already_fulfilled' };
+    }
+
+    const claimed = await claimCloverFulfillment(sessionId);
+    if (!claimed) {
+      const again = await this.db.orders.findFirst({
+        where: { stripe_session_id: sessionId }
+      });
+      if (again?.payment_status === 'paid') {
+        return { action: 'payment_processed', orderId: again.id, reason: 'already_fulfilled' };
+      }
+      return { action: 'in_progress', reason: 'fulfillment_in_progress' };
+    }
+
+    try {
+      if (context.type === 'booking' && context.appointmentId) {
+        const appointment = await this.db.appointments.findFirst({
+          where: { id: context.appointmentId }
+        });
+        if (!appointment || appointment.stripe_session_id !== sessionId) {
+          await releaseCloverFulfillment(sessionId);
+          return { action: 'ignored', reason: 'appointment_mismatch' };
+        }
+        if (appointment.payment_status === 'paid') {
+          return { action: 'booking_paid', appointmentId: appointment.id, reason: 'already_fulfilled' };
+        }
+        const { default: BookingPaymentAdapter } = await import('./booking/BookingPaymentAdapter.js');
+        const adapter = new BookingPaymentAdapter();
+        await adapter.handlePaymentSuccess(sessionId, context.appointmentId);
+        return { action: 'booking_paid', appointmentId: context.appointmentId };
+      }
+
+      const metadata = {
+        ...(context.metadata || {}),
+        processor: 'clover',
+        clover_checkout_session_id: sessionId,
+        ...(paymentId ? { clover_payment_id: paymentId } : {}),
+      };
+
+      return await this.handlePaymentCheckout({
+        id: sessionId,
+        amount_total: context.amountCents || 0,
+        currency: context.currency || 'usd',
+        customer_email: context.customerEmail || 'guest@unknown.local',
+        customer_details: {
+          email: context.customerEmail || 'guest@unknown.local',
+          name: 'Guest',
+        },
+        metadata,
+        payment_intent: paymentId,
+      });
+    } catch (error) {
+      if (error?.code === 'P2002') {
+        const raced = await this.db.orders.findFirst({
+          where: { stripe_session_id: sessionId }
+        });
+        if (raced) {
+          return { action: 'payment_processed', orderId: raced.id, reason: 'already_fulfilled' };
+        }
+      }
+      await releaseCloverFulfillment(sessionId);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance

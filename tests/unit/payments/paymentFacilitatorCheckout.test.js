@@ -345,6 +345,46 @@ describe('Payment facilitator Square checkout', () => {
     expect(squareCreateCheckout.mock.calls[0][0]).not.toHaveProperty('application_fee');
   });
 
+  it('creates Clover checkout via factory when Clover is the site provider', async () => {
+    process.env.CLOVER_CHECKOUT_ENABLED = 'true';
+    prisma.site_payment_method.findUnique.mockResolvedValue({
+      provider: 'clover',
+      account_id: 'MID123',
+      is_active: true
+    });
+    squareCreateCheckout.mockResolvedValue({
+      sessionId: 'clv-session-1',
+      checkoutUrl: 'https://checkout.clover.com/clv-session-1'
+    });
+    validateAndRebuildCheckout.mockResolvedValue({
+      items: [{
+        productId: 'product-1',
+        name: 'Catalog product',
+        price: 25.5,
+        quantity: 1
+      }]
+    });
+
+    const response = await request(app)
+      .post('/api/payments/checkout/create-session')
+      .send({
+        siteId: 'site-123',
+        items: [{ productId: 'product-1', name: 'Tampered', price: 0.01, quantity: 1 }],
+        successUrl: 'https://example.com/success',
+        cancelUrl: 'https://example.com/cancel'
+      })
+      .expect(200);
+
+    expect(response.body).toMatchObject({
+      success: true,
+      redirectUrl: 'https://checkout.clover.com/clv-session-1',
+      sessionId: 'clv-session-1',
+      provider: 'clover'
+    });
+    expect(getProcessor).toHaveBeenCalledWith('site-123', 'clover');
+    delete process.env.CLOVER_CHECKOUT_ENABLED;
+  });
+
   it('returns INVALID_CHECKOUT when catalog validation fails', async () => {
     validateAndRebuildCheckout.mockRejectedValue(new Error('Product not found: unknown'));
 

@@ -8,6 +8,7 @@ import {
   sendForbidden,
   sendNotFound,
   sendServerError,
+  sendServiceUnavailable,
   asyncHandler
 } from '../utils/apiResponse.js';
 import { platformIsStripeTestMode } from '../services/payments/processorConnectHelpers.js';
@@ -293,6 +294,19 @@ router.post('/checkout/create-session', asyncHandler(async (req, res) => {
       );
     }
 
+    if (provider === 'clover') {
+      return await handleCloverCheckout(
+        req,
+        res,
+        site,
+        account_id,
+        items,
+        successUrl,
+        cancelUrl,
+        { fulfillment, deliveryAddress, deliveryAddressLine2 }
+      );
+    }
+
     if (provider === 'paypal') {
       return await handlePayPalCheckout(
         req,
@@ -553,6 +567,147 @@ async function handleSquareCheckout(
     provider: 'square',
   });
 }
+
+/**
+ * Clover: Hosted Checkout redirect. Public only when CLOVER_CHECKOUT_ENABLED=true.
+ * Neighbor: handleSquareCheckout — same validate/rebuild + delivery.
+ */
+async function handleCloverCheckout(
+  req,
+  res,
+  site,
+  _cloverMerchantId,
+  items,
+  successUrl,
+  cancelUrl,
+  deliveryOptions = {}
+) {
+  const { isVisitorProcessorPublic } = await import('../services/payments/processorConnectHelpers.js');
+  if (!isVisitorProcessorPublic('clover')) {
+    return sendBadRequest(res, 'Clover checkout is not enabled', 'CHECKOUT_NOT_ENABLED');
+  }
+
+  const { PaymentServiceFactory } = await import('../services/payments/PaymentServiceFactory.js');
+  const { buildDeliveryCharge } = await import('../utils/delivery.js');
+  const { parseSiteData } = await import('../utils/parseSiteData.js');
+  const siteData = parseSiteData(site);
+
+  let rebuiltCheckout;
+  try {
+    const catalogService = new ProductCatalogService();
+    rebuiltCheckout = await catalogService.validateAndRebuildCheckout(items, site.id, siteData);
+  } catch (error) {
+    console.error('Checkout validation failed:', error.message);
+    return sendBadRequest(res, error.message, 'INVALID_CHECKOUT');
+  }
+
+  const deliveryCharge = await buildDeliveryCharge(siteData, {
+    fulfillment: deliveryOptions.fulfillment,
+    address: deliveryOptions.deliveryAddress,
+    addressLine2: deliveryOptions.deliveryAddressLine2,
+  });
+  if (!deliveryCharge.ok) {
+    return sendBadRequest(res, deliveryCharge.error, deliveryCharge.code || 'INVALID_DELIVERY');
+  }
+
+  const checkoutItems = [...rebuiltCheckout.items];
+  if (deliveryCharge.fee > 0) {
+    checkoutItems.push({
+      name: 'Delivery',
+      price: deliveryCharge.fee,
+      quantity: 1,
+    });
+  }
+
+  const totalCents = Math.round(
+    checkoutItems.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity || 1), 0) * 100
+  );
+
+  const processor = await PaymentServiceFactory.getProcessor(site.id, 'clover');
+  const { checkoutUrl, sessionId } = await processor.createCheckout({
+    items: checkoutItems,
+    totalCents,
+    successUrl,
+    cancelUrl,
+    metadata: {
+      site_id: site.id,
+      user_id: site.user_id || '',
+      order_items: JSON.stringify(rebuiltCheckout.items),
+      type: 'order',
+      fulfillment_type: deliveryCharge.fulfillmentType,
+      ...(deliveryCharge.shippingAddress
+        ? { shipping_address: JSON.stringify(deliveryCharge.shippingAddress) }
+        : {}),
+    },
+  });
+
+  sendSuccess(res, {
+    redirectUrl: checkoutUrl,
+    sessionId,
+    provider: 'clover',
+  });
+}
+
+/**
+ * POST /api/payments/checkout/confirm-clover
+ * Success return is not proof of payment. Confirms only when Clover reports the session paid,
+ * then fulfills the stored checkout context.
+ */
+router.post('/checkout/confirm-clover', asyncHandler(async (req, res) => {
+  const { sessionId, siteId } = req.body || {};
+  if (!sessionId || !siteId) {
+    return sendBadRequest(res, 'sessionId and siteId are required', 'MISSING_CONFIRM_FIELDS');
+  }
+
+  const { isCloverSessionId } = await import('../services/payments/cloverCheckoutContext.js');
+  if (!isCloverSessionId(sessionId)) {
+    return sendBadRequest(res, 'Checkout session not found for this site', 'SESSION_NOT_FOUND');
+  }
+
+  const { isVisitorProcessorPublic } = await import('../services/payments/processorConnectHelpers.js');
+  if (!isVisitorProcessorPublic('clover')) {
+    return sendBadRequest(res, 'Clover checkout is not enabled', 'CHECKOUT_NOT_ENABLED');
+  }
+
+  const { loadCloverCheckoutContext } = await import('../services/payments/cloverCheckoutContext.js');
+  const context = await loadCloverCheckoutContext(sessionId);
+  if (!context || context.siteId !== siteId) {
+    return sendBadRequest(res, 'Checkout session not found for this site', 'SESSION_NOT_FOUND');
+  }
+
+  const existing = await prisma.orders.findFirst({
+    where: { stripe_session_id: sessionId }
+  });
+  if (existing?.payment_status === 'paid' && existing.site_id === siteId) {
+    return sendSuccess(res, { orderId: existing.id, status: 'paid', provider: 'clover' });
+  }
+
+  try {
+    const { PaymentServiceFactory } = await import('../services/payments/PaymentServiceFactory.js');
+    const processor = await PaymentServiceFactory.getProcessor(siteId, 'clover');
+    const status = await processor.getTransactionStatus(sessionId);
+    const amountMatches = status?.status === 'paid' && status.amount === context.amountCents;
+    if (!amountMatches) {
+      return sendBadRequest(res, 'Checkout session is not paid', 'NOT_PAID');
+    }
+    const { WebhookProcessor } = await import('../services/webhookProcessor.js');
+    const webhookProcessor = new WebhookProcessor(prisma, null, null);
+    const result = await webhookProcessor.fulfillCloverCheckout(sessionId, status.metadata?.paymentId || null, {
+      merchantId: context.merchantId,
+      amountCents: status.amount,
+    });
+    if (result.action === 'in_progress') {
+      return sendServiceUnavailable(res, 'Payment is still being recorded', 'FULFILLMENT_IN_PROGRESS');
+    }
+    if (result.action === 'ignored') {
+      return sendBadRequest(res, 'Checkout session is not paid', 'NOT_PAID');
+    }
+    sendSuccess(res, { ...result, provider: 'clover' });
+  } catch (error) {
+    console.error('Clover confirm error:', error?.message || 'confirm failed');
+    return sendServerError(res, error, 'Failed to confirm Clover checkout');
+  }
+}));
 
 /**
  * PayPal: Create order and return redirect URL

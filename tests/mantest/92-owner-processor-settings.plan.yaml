@@ -1,5 +1,5 @@
 url: http://localhost:5173/login
-goal: Owner payment settings shows Stripe, Square, and PayPal cards plus trust banner
+goal: Owner payment settings shows Stripe, Square, PayPal, and Clover cards plus trust banner
 steps:
   - action: Login form ready
     wait_for: { text: Welcome Back, timeout: 20000 }
@@ -40,6 +40,9 @@ steps:
 
   - action: PayPal processor card
     wait_for: { selector: '[data-testid="processor-paypal"]', timeout: 10000 }
+
+  - action: Clover processor card
+    wait_for: { selector: '[data-testid="processor-clover"]', timeout: 10000 }
 
   - action: Trust banner present
     wait_for: { selector: '[data-testid="processor-trust-banner"]', timeout: 10000 }

@@ -84,6 +84,28 @@ describe('PaymentServiceFactory', () => {
       expect(mockDecrypt).toHaveBeenCalledWith('encrypted_token');
     });
 
+    it('should return CloverProcessor for Clover site', async () => {
+      mockPrisma.sites.findFirst.mockResolvedValue({
+        id: 'site_123',
+        payment_processor: 'clover'
+      });
+
+      mockPrisma.payment_processor_credentials.findFirst.mockResolvedValue({
+        id: 'cred_1',
+        processor: 'clover',
+        account_id: 'MID123',
+        access_token_encrypted: 'encrypted_clover_token',
+        refresh_token_encrypted: 'encrypted_refresh',
+        expires_at: null
+      });
+
+      const processor = await PaymentServiceFactory.getProcessor('site_123');
+
+      expect(processor.getProcessorName()).toBe('clover');
+      expect(processor.merchantId).toBe('MID123');
+      expect(mockDecrypt).toHaveBeenCalledWith('encrypted_clover_token');
+    });
+
     it('should return PayPalProcessor for PayPal site', async () => {
       mockPrisma.sites.findFirst.mockResolvedValue({
         id: 'site_123',

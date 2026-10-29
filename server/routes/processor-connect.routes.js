@@ -18,6 +18,7 @@ import {
 } from '../utils/apiResponse.js';
 import { initiateSquareOAuth, handleSquareCallback } from '../services/payments/SquareOAuthService.js';
 import { initiatePayPalOAuth, handlePayPalCallback, isPayPalConfigured } from '../services/payments/PayPalOAuthService.js';
+import { initiateCloverOAuth, handleCloverCallback } from '../services/payments/CloverOAuthService.js';
 import {
   initiateStripeOAuth,
   handleStripeOAuthCallback,
@@ -206,6 +207,64 @@ router.post(['/disconnect/paypal', '/paypal/disconnect'], requireAuth, asyncHand
 }));
 
 /**
+ * GET /clover — OAuth for a Clover merchant (US/Canada Hosted Checkout app)
+ */
+router.get(['/clover', '/connect/clover'], requireAuth, asyncHandler(async (req, res) => {
+  if (!(await requirePaymentsAccess(req, res))) return;
+
+  if (!isProcessorConfigured('clover')) {
+    return sendServiceUnavailable(res, 'Clover not configured', 'CLOVER_NOT_CONFIGURED');
+  }
+
+  const siteId = await resolveOwnedSiteId(req.user.id, req.query.siteId);
+  const applyTo = normalizeApplyTo(req.query.applyTo);
+
+  try {
+    const redirectUri = process.env.CLOVER_REDIRECT_URL || `${getApiOrigin(req)}/api/connect/clover/callback`;
+    const { authorizeUrl, state } = await initiateCloverOAuth(siteId, req.user.id, redirectUri, applyTo);
+    sendSuccess(res, { authorizeUrl, url: authorizeUrl, state });
+  } catch (error) {
+    handleOAuthStartError(res, error, 'Clover');
+  }
+}));
+
+router.get(['/clover/callback', '/connect/clover/callback'], asyncHandler(async (req, res) => {
+  const { code, state, error, merchant_id: merchantId } = req.query;
+
+  if (error) {
+    return redirectToSettings(res, req, { connect: 'error', processor: 'clover', message: String(error) });
+  }
+
+  if (!code || !state) {
+    return sendBadRequest(res, 'Authorization code and state required', 'MISSING_OAUTH_PARAMS');
+  }
+
+  try {
+    const result = await handleCloverCallback(code, state, merchantId ? String(merchantId) : '');
+    return redirectToSettings(res, req, {
+      connect: 'success',
+      processor: 'clover',
+      ...(result.siteId ? { site: result.siteId } : {})
+    });
+  } catch (callbackError) {
+    if (callbackError.message.includes('Invalid or expired state token')) {
+      return redirectToSettings(res, req, { connect: 'error', processor: 'clover', message: 'expired' });
+    }
+    return redirectToSettings(res, req, { connect: 'error', processor: 'clover', message: 'token_exchange' });
+  }
+}));
+
+router.post(['/disconnect/clover', '/clover/disconnect'], requireAuth, asyncHandler(async (req, res) => {
+  await deactivateProcessor({
+    siteId: await resolveOwnedSiteId(req.user.id, req.body?.siteId),
+    userId: req.user.id,
+    processor: 'clover',
+    applyTo: normalizeApplyTo(req.body?.applyTo)
+  });
+  sendSuccess(res, {}, 'Clover account disconnected');
+}));
+
+/**
  * GET /stripe/oauth — connect an existing Stripe account (Standard OAuth)
  */
 router.get(['/stripe/oauth', '/connect/stripe/oauth'], requireAuth, asyncHandler(async (req, res) => {
@@ -331,7 +390,7 @@ router.post(['/attach', '/connect/attach'], requireAuth, asyncHandler(async (req
     return sendSuccess(res, { processor: 'stripe', siteId, applyTo }, 'Stripe attached to this site');
   }
 
-  return sendBadRequest(res, 'Use Copy setup to reuse Square or PayPal on another site', 'COPY_SETUP_REQUIRED');
+  return sendBadRequest(res, 'Use Copy setup to reuse Square, PayPal, or Clover on another site', 'COPY_SETUP_REQUIRED');
 }));
 
 router.post(['/apply-setup', '/connect/apply-setup'], requireAuth, asyncHandler(async (req, res) => {

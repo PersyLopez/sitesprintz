@@ -73,11 +73,13 @@ describe('PaymentSettings', () => {
     expect(screen.getByRole('heading', { level: 2, name: /pay on site/i })).toBeInTheDocument();
   });
 
-  it('shows Stripe, Square, and PayPal connect cards', async () => {
+  it('shows Stripe, Square, PayPal, and Clover connect cards', async () => {
     renderSettings();
     expect(await screen.findByTestId('processor-stripe')).toBeInTheDocument();
     expect(screen.getByTestId('processor-square')).toBeInTheDocument();
     expect(screen.getByTestId('processor-paypal')).toBeInTheDocument();
+    expect(screen.getByTestId('processor-clover')).toBeInTheDocument();
+    expect(screen.getByTestId('clover-connect-button')).toBeInTheDocument();
     expect(screen.getByTestId('processor-trust-banner')).toBeInTheDocument();
     expect(screen.getByTestId('processor-recommended-pill')).toHaveTextContent(/recommended/i);
     expect(screen.getAllByText(/2\.9% \+ 30¢/i).length).toBeGreaterThanOrEqual(1);

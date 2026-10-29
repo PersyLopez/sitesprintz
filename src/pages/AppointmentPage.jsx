@@ -19,7 +19,7 @@ const AppointmentPage = () => {
     const [cancelLoading, setCancelLoading] = useState(false);
 
     useEffect(() => {
-        const sessionId = searchParams.get('session_id');
+        const sessionId = searchParams.get('session_id') || searchParams.get('clover_session');
         const run = async () => {
             if (sessionId) {
                 try {

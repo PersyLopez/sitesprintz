@@ -15,8 +15,11 @@ import { decrypt } from '../../utils/encryption.js';
 import { StripeProcessor } from './StripeProcessor.js';
 import { SquareProcessor } from './SquareProcessor.js';
 import { PayPalProcessor } from './PayPalProcessor.js';
+import { CloverProcessor } from './CloverProcessor.js';
+import { refreshCloverAccessToken } from './CloverOAuthService.js';
+import { encrypt } from '../../utils/encryption.js';
 
-const SUPPORTED_PROCESSORS = ['stripe', 'square', 'paypal'];
+const SUPPORTED_PROCESSORS = ['stripe', 'square', 'paypal', 'clover'];
 
 function resolveSquareLocationId(metadata) {
   if (!metadata || typeof metadata !== 'object') return null;
@@ -61,6 +64,8 @@ export class PaymentServiceFactory {
         return PaymentServiceFactory._createSquareProcessor(siteId);
       case 'paypal':
         return PaymentServiceFactory._createPayPalProcessor(siteId);
+      case 'clover':
+        return PaymentServiceFactory._createCloverProcessor(siteId);
       default:
         throw new Error(`Unsupported processor: ${processorType}`);
     }
@@ -132,6 +137,44 @@ export class PaymentServiceFactory {
       : null;
 
     return new PayPalProcessor(clientId, clientSecret);
+  }
+
+  /**
+   * Create Clover processor for site. Refreshes the access token when it is near expiry.
+   * @private
+   */
+  static async _createCloverProcessor(siteId) {
+    const credentials = await prisma.payment_processor_credentials.findFirst({
+      where: {
+        site_id: siteId,
+        processor: 'clover',
+        disconnected_at: null
+      }
+    });
+
+    if (!credentials?.access_token_encrypted || !credentials.account_id) {
+      throw new Error('Clover not configured for this site');
+    }
+
+    let accessToken = decrypt(credentials.access_token_encrypted);
+    const expiresAt = credentials.expires_at ? new Date(credentials.expires_at).getTime() : null;
+    const refreshDue = expiresAt !== null && expiresAt < Date.now() + 2 * 60 * 1000;
+
+    if (refreshDue && credentials.refresh_token_encrypted) {
+      const refreshed = await refreshCloverAccessToken(decrypt(credentials.refresh_token_encrypted));
+      accessToken = refreshed.accessToken;
+      await prisma.payment_processor_credentials.update({
+        where: { id: credentials.id },
+        data: {
+          access_token_encrypted: encrypt(refreshed.accessToken),
+          refresh_token_encrypted: encrypt(refreshed.refreshToken),
+          expires_at: refreshed.expiresAt,
+          updated_at: new Date(),
+        }
+      });
+    }
+
+    return new CloverProcessor(accessToken, credentials.account_id);
   }
 
   /**
